@@ -66,7 +66,7 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.FI ->
                             listOf(Field("Etunimi"), Field("Sukunimi"), Field("Nimike"), Field("Puhelinnumero"))
                         VasuLanguage.SV ->
-                            listOf(Field("Förnamn"), Field("Efternamn"), Field("Titel"), Field("Telefonnummer"))
+                            listOf(Field("Förnamn"), Field("Efternamn"), Field("Benämning"), Field("Telefonnummer"))
                     },
                     value = listOf("", "", "", "")
                 ),
@@ -79,7 +79,7 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.FI ->
                             listOf(Field("Etunimi"), Field("Sukunimi"), Field("Nimike"), Field("Puhelinnumero"))
                         VasuLanguage.SV ->
-                            listOf(Field("Förnamn"), Field("Efternamn"), Field("Titel"), Field("Telefonnummer"))
+                            listOf(Field("Förnamn"), Field("Efternamn"), Field("Benämning"), Field("Telefonnummer"))
                     },
                     value = listOf()
                 ),
@@ -598,7 +598,7 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.FI ->
                             listOf(Field("Etunimi"), Field("Sukunimi"), Field("Nimike"), Field("Puhelinnumero"))
                         VasuLanguage.SV ->
-                            listOf(Field("Förnamn"), Field("Efternamn"), Field("Titel"), Field("Telefonnummer"))
+                            listOf(Field("Förnamn"), Field("Efternamn"), Field("Benämning"), Field("Telefonnummer"))
                     },
                     value = listOf("", "", "", "")
                 ),
@@ -611,7 +611,7 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.FI ->
                             listOf(Field("Etunimi"), Field("Sukunimi"), Field("Nimike"), Field("Puhelinnumero"))
                         VasuLanguage.SV ->
-                            listOf(Field("Förnamn"), Field("Efternamn"), Field("Titel"), Field("Telefonnummer"))
+                            listOf(Field("Förnamn"), Field("Efternamn"), Field("Benämning"), Field("Telefonnummer"))
                     },
                     value = listOf(listOf("", "", "", ""))
                 ),
@@ -707,7 +707,7 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
                                 "Tässä kohdassa huomioidaan seuraavat asiat, jos lapsi on liittyvässä varhaiskasvatuksessa:\n" +
                                 "Miten sovitut pedagogiset, rakenteelliset ja/tai hoidolliset tuen muodot ovat toteutuneet, ja mitkä ovat olleet niiden vaikutukset? Lapsen tuen tarvetta sekä tuen riittävyyttä, tarkoituksenmukaisuutta ja vaikuttavuutta on arvioitava ja seurattava sekä leopsia päivitettävä aina tuen tarpeen muuttuessa. Tuen vaikuttavuuden arviointi pitää sisällään kuvauksen tukitoimista, niiden vaikuttavuuden arvioinnista ja kehittämisestä sekä perustelut siitä, millaisista tuen toimista lapsi hyötyy ja mitkä parhaiten toteuttavat yksilöllisesti lapsen etua. Jos lapsi saa tehostettua tai erityistä tukea, tai tukipalveluita osana yleistä tukea leopsia päivitetään hallinnollisen päätöksen sisällön mukaisesti."
                         VasuLanguage.SV ->
-                            "Utvärderingen av stödet omfattar en beskrivning av stödåtgärderna och en utvärdering av hur väl de fungerat. Har barnets stöd och stödåtgärderna som getts varit effektiva och tillräckliga?\nHur har de överenskomna pedagogiska, strukturella och/eller vårdinriktade stödformerna genomförts och vilka effekter har de haft? Hur har det sektorsövergripande samarbetet genomförts?\n\n" +
+                            "Detta fält fylls i om barnet har fått stöd. Utvärderingen av stödet omfattar en beskrivning av stödåtgärderna och en utvärdering av hur väl de fungerat. Har barnets stöd och stödåtgärderna som getts varit effektiva och tillräckliga?\nHur har de överenskomna pedagogiska, strukturella och/eller vårdinriktade stödformerna genomförts och vilka effekter har de haft? Hur har det sektorsövergripande samarbetet genomförts?\n\n" +
                                 "Om barnet deltar i kompletterande småbarnspedagogik ska även följande stycke beaktas i detta fält:\n\n" +
                                 "Barnets behov av stöd samt stödets tillräcklighet, ändamålsenlighet och effekt ska utvärderas och följas upp och plan för barnets lärande ska uppdateras alltid när stödbehovet ändrar. Utvärderingen av stödets effekt ska omfatta en beskrivning av stödåtgärderna och deras effekt samt argument för vilka stödåtgärder som bäst gynnar barnet. Om barnet får intensifierat eller särskilt stöd eller stödtjänster som en del av det allmänna stödet uppdateras plan för barnets lärande i förskolan i enlighet med förvaltningsbeslutet."
                     },
@@ -786,7 +786,10 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.FI -> "Lapsen tukeen liittyvät tarpeet, tuen järjestämiseen liittyvät asiat sekä tuen muodot (pedagogiset, rakenteelliset ja hoidolliset) esiopetuksessa ja liittyvässä varhaiskasvatuksessa"
                         VasuLanguage.SV -> "Barnets behov av stöd, ordnande av stödet samt stödformerna (pedagogiska, strukturella och vårdinriktade) i förskoleundervisningen och den kompletterande småbarnspedagogiken"
                     },
-                    paragraph = "Tuen järjestämisen lähtökohtana on lapsen kokonaisen päivän huomioiminen."
+                    paragraph = when (lang) {
+                        VasuLanguage.FI -> "Tuen järjestämisen lähtökohtana on lapsen kokonaisen päivän huomioiminen."
+                        VasuLanguage.SV -> "Hela barnets dag beaktas när stödet ordnas."
+                    }
                 ),
                 VasuQuestion.TextQuestion(
                     name = when (lang) {
@@ -819,7 +822,7 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
                             },
                             info = when (lang) {
                                 VasuLanguage.FI -> "Jos lapsella ilmenee vaikeuksia oppimisessaan, on hänellä oikeus saada osa-aikaista erityisopetusta muun esiopetuksen ohessa kaikilla tuen tasoilla. Osa-aikaisen erityisopetuksen tavoitteena on vahvistaa lapsen oppimisen edellytyksiä, ehkäistä kehityksen ja oppimisen vaikeuksia. Osa-aikaisen erityisopetuksen tarve arvioidaan ja suunnitellaan yhteistyössä esiopettajan ja varhaiskasvatuksen erityisopettajan kanssa. Osa-aikaista erityisopetusta annetaan joustavin järjestelyin samanaikaisopetuksena, pienryhmissä tai yksilöllisesti. Tavoitteet sisällytetään lapsen saamaan muuhun opetukseen. Vaikutuksia arvioidaan opettajien yhteistyönä sekä lapsen että huoltajien kanssa. Huoltajille tiedotetaan yksikön toimintatavoista."
-                                VasuLanguage.SV -> "Om barnet har inlärningssvårigheter har hen rätt att få specialundervisning på deltid vid sidan av annan förskoleundervisning på alla stödnivåer. Syftet med specialundervisning på deltid är att stärka förutsättningarna för barnets lärande och förebygga utvecklings- och inlärningssvårigheter. Behovet av specialundervisning på deltid bedöms och planeras i samarbete med förskolelärare och speciallärare inom småbarnspedagogik. Specialundervisning på deltid ges med flexibla arrangemang genom kompanjonundervisning, i små grupper eller individuellt. Målen ingår i den övriga undervisningen som barnet får. Effekterna bedöms av lärarna i samarbete med både barnet och vårdnadshavarna. Vårdnadshavarna informeras om enhetens förfaringssätt."
+                                VasuLanguage.SV -> "Ett barn som har svårigheter i sitt lärande eller sin skolgång har rätt att få specialundervisning på deltid vid sidan om den övriga förskoleundervisningen.Målet med specialundervisningen på deltid är att stärka barnets inlärningsförutsättningar och förebygga svårigheter i utvecklingen och lärandet. Specialundervisning på deltid ges på alla nivåer av stöd. Behovet av specialundervisning på deltid bedöms och planeras i samarbete med förskolelärare och speciallärare inom småbarnspedagogik. Specialundervisningen på deltid ska ordnas flexibelt som kompanjonundervisning, i en liten grupp eller som individuell undervisning.Målen för och innehållet i specialundervisningen på deltid ska integreras i barnets övriga undervisning.Effekten av undervisningen bedöms av lärarna i samråd med både barnet och vårdnadshavarna. Alla vårdnadshavare ska informeras om hur specialundervisning på deltid genomförs i förskolan."
                             }
                         ),
                         QuestionOption(
@@ -864,7 +867,7 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
                     },
                     info = when (lang) {
                         VasuLanguage.FI -> "Lisäksi tähän kuvataan tarvittavat\n• pedagogiset ratkaisut: oppimisympäristöihin liittyvät ratkaisut sekä lapsen tukeen liittyvät ratkaisut (joustavat ryhmittelyt, samanaikaisopetus, opetusmenetelmät, työskentely- ja kommunikointitavat tms.)\n• lapselle tarjottava osa-aikainen erityisopetus\n• esiopetukseen osallistumisen edellyttämät perusopetuslain mukaiset tulkitsemis- ja avustajapalvelut, muut opetuspalvelut ja erityiset apuvälineet, joista on tehty päätös."
-                        VasuLanguage.SV -> "Här beskrivs\n\n• Pedagogiska lösningar: lösningar gällande lärmiljöer samt lösningar gällande barnets stöd (flexibel gruppindelning, kompanjonundervisning, undervisningsmetoder, alternativ kommunikation etc.)\n• Specialundervisning på deltid för barnet\n• Tolknings- och assistenttjänster som är nödvändiga för att barnet ska kunna delta i förskoleundervisningen, övriga stödtjänster som det beslutats om"
+                        VasuLanguage.SV -> "Här beskrivs\n\n• Pedagogiska lösningar: lösningar gällande lärmiljöer samt lösningar i anslutning till barnets stöd (såsom flexibel gruppindelning, kompanjonundervisning, undervisningsmetoder, arbetssätt och sätt att kommunicera)\n• Specialundervisning på deltid som ges till barnet\n• Tolknings- och assistenttjänster som är nödvändiga för att barnet ska kunna delta i förskoleundervisningen, övriga stödtjänster som det beslutats om"
                     },
                     multiline = true,
                     value = ""
@@ -1047,7 +1050,7 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
         VasuSection(
             name = when (lang) {
                 VasuLanguage.FI -> "Laatimisessa hyödynnetyt muut mahdolliset asiakirjat ja suunnitelmat"
-                VasuLanguage.SV -> "Eventuella övriga dokument och planer som använts vid uppgörandet av planen"
+                VasuLanguage.SV -> "Eventuella övriga dokument och planer som använts vid uppgörandet av plan för barnets lärande"
             },
             questions = listOf(
                 VasuQuestion.TextQuestion(
