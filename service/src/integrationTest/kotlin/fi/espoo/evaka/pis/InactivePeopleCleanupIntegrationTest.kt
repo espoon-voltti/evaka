@@ -260,7 +260,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
 
             val contentId = tx.insertMessageContent("content", employeeAccount)
             val threadId = tx.insertThread(MessageType.MESSAGE, "title", urgent = false)
-            val messageId = tx.insertMessage(RealEvakaClock(), contentId, threadId, employeeAccount, listOf("recipient name"))
+            val messageId = tx.insertMessage(RealEvakaClock().now(), contentId, threadId, employeeAccount, listOf("recipient name"))
             tx.insertRecipients(setOf(personAccount), messageId)
         }
 
@@ -279,7 +279,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
 
             val contentId = tx.insertMessageContent("content", personAccount)
             val threadId = tx.insertThread(MessageType.MESSAGE, "title", urgent = false)
-            val messageId = tx.insertMessage(RealEvakaClock(), contentId, threadId, personAccount, listOf("employee name"))
+            val messageId = tx.insertMessage(RealEvakaClock().now(), contentId, threadId, personAccount, listOf("employee name"))
             tx.insertRecipients(setOf(employeeAccount), messageId)
         }
 

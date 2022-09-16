@@ -158,7 +158,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             val contentId = tx.insertMessageContent("content", employeeAccount)
             val threadId = tx.insertThread(MessageType.MESSAGE, "title", urgent = false)
-            val messageId = tx.insertMessage(RealEvakaClock(), contentId, threadId, employeeAccount, allAccounts.map { it.name })
+            val messageId = tx.insertMessage(RealEvakaClock().now(), contentId, threadId, employeeAccount, allAccounts.map { it.name })
             tx.insertRecipients(allAccounts.map { it.id }.toSet(), messageId)
         }
 

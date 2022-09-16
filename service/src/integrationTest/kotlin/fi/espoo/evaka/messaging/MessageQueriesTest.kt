@@ -157,7 +157,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             val recipients = listOf(employee1Account)
             val contentId = it.insertMessageContent(content = "Just replying here", sender = person1Account)
             val messageId = it.insertMessage(
-                RealEvakaClock(),
+                RealEvakaClock().now(),
                 contentId = contentId,
                 threadId = thread2Id,
                 sender = person1Account,
@@ -310,7 +310,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val participants2 = db.transaction { tx ->
             val contentId = tx.insertMessageContent("foo", person2Account)
             val messageId = tx.insertMessage(
-                RealEvakaClock(),
+                RealEvakaClock().now(),
                 contentId = contentId,
                 threadId = threadId,
                 sender = person2Account,
@@ -508,7 +508,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             val threadId = tx.insertThread(MessageType.MESSAGE, title, urgent = false)
             val messageId =
                 tx.insertMessage(
-                    RealEvakaClock(),
+                    RealEvakaClock().now(),
                     contentId = contentId,
                     threadId = threadId,
                     sender = sender,
