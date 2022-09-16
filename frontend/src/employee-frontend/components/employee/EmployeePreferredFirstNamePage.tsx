@@ -4,8 +4,7 @@
 
 import React, { useEffect, useState } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import { EmployeePreferredFirstName } from 'lib-common/generated/api-types/pis'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Select from 'lib-components/atoms/dropdowns/Select'
@@ -21,17 +20,11 @@ import { useTranslation } from '../../state/i18n'
 
 export default React.memo(function EmployeePreferredFirstNamePage() {
   const { i18n } = useTranslation()
-  const [preferredFirstName, setPreferredFirstName] = useState<
-    Result<EmployeePreferredFirstName>
-  >(Loading.of())
+  const [preferredFirstName] = useApiState(getEmployeePreferredFirstName, [])
+
   const [selectedPreferredFirstName, setSelectedPreferredFirstName] = useState<
     string | null
   >(null)
-
-  useEffect(() => {
-    setPreferredFirstName(Loading.of())
-    void getEmployeePreferredFirstName().then(setPreferredFirstName)
-  }, [])
 
   useEffect(() => {
     if (preferredFirstName.isSuccess) {
