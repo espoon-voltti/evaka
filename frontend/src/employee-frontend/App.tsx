@@ -101,7 +101,7 @@ import { hasRole } from './utils/roles'
 
 export default function App() {
   const { i18n } = useTranslation()
-  const authStatus = useAuthStatus()
+  const { authStatus, refreshAuthStatus } = useAuthStatus()
 
   if (authStatus === undefined) {
     return null
@@ -578,7 +578,9 @@ export default function App() {
                     path="/preferred-first-name"
                     element={
                       <EmployeeRoute title={i18n.titles.preferredFirstName}>
-                        <EmployeePreferredFirstNamePage />
+                        <EmployeePreferredFirstNamePage
+                          refreshAuthStatus={refreshAuthStatus}
+                        />
                       </EmployeeRoute>
                     }
                   />
@@ -707,7 +709,12 @@ function RedirectToMainPage() {
   }
 }
 
-function useAuthStatus(): AuthStatus<User> | undefined {
+interface AuthStatusWithRefresh {
+  authStatus: AuthStatus<User> | undefined
+  refreshAuthStatus: () => void
+}
+
+function useAuthStatus(): AuthStatusWithRefresh {
   const [authStatus, setAuthStatus] = useState<AuthStatus<User>>()
 
   const refreshAuthStatus = useCallback(
@@ -729,7 +736,10 @@ function useAuthStatus(): AuthStatus<User> | undefined {
     )
   }, [refreshAuthStatus])
 
-  return authStatus
+  return {
+    authStatus,
+    refreshAuthStatus
+  }
 }
 
 const PairingModal = React.memo(function GlobalModals() {

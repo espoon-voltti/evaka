@@ -18,7 +18,13 @@ import {
 } from '../../api/employees'
 import { useTranslation } from '../../state/i18n'
 
-export default React.memo(function EmployeePreferredFirstNamePage() {
+interface Props {
+  refreshAuthStatus: () => void
+}
+
+export default React.memo(function EmployeePreferredFirstNamePage({
+  refreshAuthStatus
+}: Props) {
   const { i18n } = useTranslation()
   const [preferredFirstName] = useApiState(getEmployeePreferredFirstName, [])
 
@@ -73,7 +79,7 @@ export default React.memo(function EmployeePreferredFirstNamePage() {
             disabled={disableConfirm()}
             text={i18n.preferredFirstName.confirm}
             onClick={onSave}
-            onSuccess={() => location.reload()}
+            onSuccess={() => refreshAuthStatus()}
             data-qa="confirm-button"
           />
         </FixedSpaceColumn>
