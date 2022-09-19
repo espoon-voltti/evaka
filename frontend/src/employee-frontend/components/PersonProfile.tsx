@@ -90,6 +90,19 @@ const layouts: Layouts<typeof components> = {
     { component: 'invoiceCorrections', open: false },
     { component: 'voucherValueDecisions', open: false }
   ],
+  ['DIRECTOR']: [
+    { component: 'family-overview', open: true },
+    { component: 'partners', open: false },
+    { component: 'fridge-children', open: false },
+    { component: 'dependants', open: false },
+    { component: 'applications', open: false },
+    { component: 'decisions', open: false },
+    { component: 'income', open: false },
+    { component: 'fee-decisions', open: false },
+    { component: 'invoices', open: false },
+    { component: 'invoiceCorrections', open: false },
+    { component: 'voucherValueDecisions', open: false }
+  ],
   ['FINANCE_ADMIN']: [
     { component: 'family-overview', open: true },
     { component: 'income', open: true },
