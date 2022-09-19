@@ -449,6 +449,12 @@ fun Database.Transaction.deleteDraftInvoicesByDateRange(range: DateRange) {
         .execute()
 }
 
+fun Database.Transaction.lockInvoices(ids: List<InvoiceId>) {
+    createUpdate("SELECT id FROM invoice WHERE id = ANY(:ids) FOR UPDATE")
+        .bind("ids", ids)
+        .execute()
+}
+
 fun Database.Transaction.upsertInvoices(invoices: List<Invoice>) {
     upsertInvoicesWithoutRows(invoices)
     val rowsWithInvoiceIds = invoices.map { it.id to it.rows }
