@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
+import { Action } from 'lib-common/generated/action'
 import {
   VasuDocumentEventType,
   VasuDocumentState
@@ -26,7 +27,6 @@ import colors from 'lib-customizations/common'
 import { faCheck, faQuestion } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
-import { RequireRole } from '../../utils/roles'
 
 import { updateDocumentState } from './api'
 import { LeaveVasuPageButton } from './components/LeaveVasuPageButton'
@@ -39,10 +39,12 @@ const PublishingDisclaimer = styled(FixedSpaceRow)`
 export function VasuStateTransitionButtons({
   childId,
   documentId,
+  permittedActions,
   state
 }: {
   childId: UUID
   documentId: UUID
+  permittedActions: Action.VasuDocument[]
   state: VasuDocumentState
 }) {
   const { i18n } = useTranslation()
@@ -68,6 +70,11 @@ export function VasuStateTransitionButtons({
       data-qa={`transition-button-${eventType}`}
     />
   )
+
+  const isMovedToReadyAllowed =
+    state === 'DRAFT' && permittedActions.includes('EVENT_MOVED_TO_READY')
+  const isMovedToReviewedAllowed =
+    state === 'READY' && permittedActions.includes('EVENT_MOVED_TO_REVIEWED')
 
   return (
     <FullWidthDiv>
@@ -113,35 +120,37 @@ export function VasuStateTransitionButtons({
         />
       )}
       <ButtonContainer>
-        {state === 'DRAFT' && getStateTransitionButton('MOVED_TO_READY')}
-        {state === 'READY' && getStateTransitionButton('MOVED_TO_REVIEWED')}
+        {isMovedToReadyAllowed && getStateTransitionButton('MOVED_TO_READY')}
+        {isMovedToReviewedAllowed &&
+          getStateTransitionButton('MOVED_TO_REVIEWED')}
         {state === 'REVIEWED' && (
           <>
-            <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
-              {getStateTransitionButton('RETURNED_TO_READY')}
-              <RequireRole oneOf={['ADMIN']}>
-                {getStateTransitionButton('MOVED_TO_CLOSED')}
-              </RequireRole>
-            </RequireRole>
+            {permittedActions.includes('EVENT_RETURNED_TO_READY') &&
+              getStateTransitionButton('RETURNED_TO_READY')}
+            {permittedActions.includes('EVENT_MOVED_TO_CLOSED') &&
+              getStateTransitionButton('MOVED_TO_CLOSED')}
           </>
         )}
         {state === 'CLOSED' ? (
-          <RequireRole oneOf={['ADMIN']}>
-            {getStateTransitionButton('RETURNED_TO_REVIEWED', false)}
-          </RequireRole>
+          permittedActions.includes('EVENT_RETURNED_TO_REVIEWED') &&
+          getStateTransitionButton('RETURNED_TO_REVIEWED', false)
         ) : (
           <>
-            {getStateTransitionButton('PUBLISHED', false)}
-            <Button
-              data-qa="edit-button"
-              text={i18n.common.edit}
-              onClick={() => navigate(`/vasu/${documentId}/edit`)}
-            />
+            {permittedActions.includes('EVENT_PUBLISHED') &&
+              getStateTransitionButton('PUBLISHED', false)}
+            {permittedActions.includes('UPDATE') && (
+              <Button
+                data-qa="edit-button"
+                text={i18n.common.edit}
+                disabled={!permittedActions.includes('UPDATE')}
+                onClick={() => navigate(`/vasu/${documentId}/edit`)}
+              />
+            )}
           </>
         )}
         <LeaveVasuPageButton childId={childId} />
       </ButtonContainer>
-      {(state === 'DRAFT' || state === 'READY') && (
+      {(isMovedToReadyAllowed || isMovedToReviewedAllowed) && (
         <PublishingDisclaimer alignItems="center" spacing="xs">
           <RoundIcon content="!" color={colors.main.m2} size="m" />
           <span>{i18n.vasu.transitions.vasuIsPublishedToGuardians}</span>

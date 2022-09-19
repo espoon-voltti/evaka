@@ -80,12 +80,28 @@ class VasuController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable childId: ChildId
-    ): List<VasuDocumentSummary> {
+    ): List<VasuDocumentSummaryWithPermittedActions> {
         Audit.ChildVasuDocumentsRead.log(childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_VASU_DOCUMENT, childId)
 
-        return db.connect { dbc -> dbc.read { tx -> tx.getVasuDocumentSummaries(childId) } }
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                val summaries = tx.getVasuDocumentSummaries(childId)
+                val permittedActions = accessControl.getPermittedActions<VasuDocumentId, Action.VasuDocument>(
+                    tx,
+                    user,
+                    clock,
+                    summaries.map { it.id }
+                )
+                summaries.map { VasuDocumentSummaryWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
+            }
+        }
     }
+
+    data class VasuDocumentSummaryWithPermittedActions(
+        val data: VasuDocumentSummary,
+        val permittedActions: Set<Action.VasuDocument>,
+    )
 
     data class ChangeDocumentStateRequest(
         val eventType: VasuDocumentEventType
@@ -97,7 +113,7 @@ class VasuController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable id: VasuDocumentId
-    ): VasuDocument {
+    ): VasuDocumentWithPermittedActions {
         Audit.VasuDocumentRead.log(id)
         accessControl.requirePermissionFor(user, clock, Action.VasuDocument.READ, id)
 
@@ -118,18 +134,23 @@ class VasuController(
 
                 val employeeNames = if (employeeIds.isEmpty()) emptyMap() else tx.getEmployeeNamesByIds(employeeIds)
 
-                doc.copy(
-                    content = doc.content.mapQuestions { question, _, _ ->
-                        if (question.type === VasuQuestionType.FOLLOWUP) {
-                            (question as VasuQuestion.Followup).withEmployeeNames(employeeNames)
-                        } else {
-                            question
+                VasuDocumentWithPermittedActions(
+                    data = doc.copy(
+                        content = doc.content.mapQuestions { question, _, _ ->
+                            if (question.type === VasuQuestionType.FOLLOWUP) {
+                                (question as VasuQuestion.Followup).withEmployeeNames(employeeNames)
+                            } else {
+                                question
+                            }
                         }
-                    }
+                    ),
+                    permittedActions = accessControl.getPermittedActions(tx, user, clock, doc.id)
                 )
             }
         }
     }
+
+    data class VasuDocumentWithPermittedActions(val data: VasuDocument, val permittedActions: Set<Action.VasuDocument>)
 
     data class UpdateDocumentRequest(val content: VasuContent, val childLanguage: ChildLanguage?)
 

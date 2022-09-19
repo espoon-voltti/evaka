@@ -8,10 +8,12 @@ import {
   useAutosave,
   AutosaveStatus
 } from 'employee-frontend/utils/use-autosave'
+import { Action } from 'lib-common/generated/action'
 import {
   ChildLanguage,
   VasuContent,
-  VasuDocument
+  VasuDocument,
+  VasuDocumentWithPermittedActions
 } from 'lib-common/generated/api-types/vasu'
 import { VasuTranslations, vasuTranslations } from 'lib-customizations/employee'
 
@@ -31,6 +33,7 @@ interface Vasu {
   setContent: Dispatch<SetStateAction<VasuContent>>
   childLanguage: ChildLanguage | null
   setChildLanguage: Dispatch<ChildLanguage>
+  permittedActions: Action.VasuDocument[]
   status: AutosaveStatus
   translations: VasuTranslations
 }
@@ -42,12 +45,19 @@ export function useVasu(id: string): Vasu {
     hasDynamicFirstSection: false
   })
   const [childLanguage, setChildLanguage] = useState<ChildLanguage | null>(null)
+  const [permittedActions, setPermittedActions] = useState<
+    Action.VasuDocument[]
+  >([])
 
   const handleVasuDocLoaded = useCallback(
-    ({ content, ...meta }: VasuDocument) => {
+    ({
+      data: { content, ...meta },
+      permittedActions
+    }: VasuDocumentWithPermittedActions) => {
       setVasu(meta)
       setContent(content)
       setChildLanguage(meta.basics.childLanguage)
+      setPermittedActions(permittedActions)
     },
     []
   )
@@ -97,6 +107,7 @@ export function useVasu(id: string): Vasu {
     setContent: setContentCallback,
     childLanguage,
     setChildLanguage: setChildLanguageCallback,
+    permittedActions,
     status,
     translations
   }

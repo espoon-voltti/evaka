@@ -381,19 +381,19 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun getVasuSummaries(childId: ChildId): List<VasuDocumentSummary> {
         val (_, res, result) = http.get("/children/$childId/vasu-summaries")
             .asUser(adminUser)
-            .responseObject<List<VasuDocumentSummary>>(jsonMapper)
+            .responseObject<List<VasuController.VasuDocumentSummaryWithPermittedActions>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
-        return result.get()
+        return result.get().map { it.data }
     }
 
     private fun getVasuDocument(id: VasuDocumentId): VasuDocument {
         val (_, res, result) = http.get("/vasu/$id")
             .asUser(adminUser)
-            .responseObject<VasuDocument>(jsonMapper)
+            .responseObject<VasuController.VasuDocumentWithPermittedActions>(jsonMapper)
 
         assertEquals(200, res.statusCode)
-        return result.get()
+        return result.get().data
     }
 
     private fun putVasuDocument(id: VasuDocumentId, request: VasuController.UpdateDocumentRequest) {
