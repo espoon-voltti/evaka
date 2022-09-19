@@ -81,8 +81,8 @@ const features: Features = {
       mobileMessages: false,
       leops: true,
       citizenVasu: true,
-      assistanceNeedDecisions: false,
-      assistanceNeedDecisionsLanguageSelect: false,
+      assistanceNeedDecisions: true,
+      assistanceNeedDecisionsLanguageSelect: true,
       staffAttendanceTypes: false
     }
   }
