@@ -8,6 +8,7 @@ import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeDecision
+import fi.espoo.evaka.invoicing.domain.FeeDecisionChild
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.Invoice
 import fi.espoo.evaka.invoicing.domain.InvoiceRow
@@ -98,7 +99,6 @@ class DraftInvoiceGenerator(
         val priceBeforeFeeAlterations: Int,
         val feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
         val finalPrice: Int,
-        val maxPrice: Int,
         val contractDaysPerMonth: Int?,
     )
 
@@ -127,6 +127,42 @@ class DraftInvoiceGenerator(
         val childrenFullMonthAbsences =
             getFullMonthAbsences(placements, decisions, operationalDays, absences, plannedAbsences)
 
+        val getInvoiceMaxFee: (ChildId) -> Int = { childId ->
+            val childDecisions = decisions
+                .mapNotNull { decision ->
+                    val childDecisionPart = decision.children.find { it.child.id == childId }
+                    val dateRange = invoicePeriod.intersection(decision.validDuring)
+                    if (dateRange != null && childDecisionPart != null) dateRange to childDecisionPart
+                    else null
+                }
+
+            val getDecisionPartMaxFee: (FeeDecisionChild) -> Int = { part ->
+                val maxFeeBeforeFeeAlterations = calculateMaxFee(part.baseFee, part.siblingDiscount)
+                part.feeAlterations.fold(maxFeeBeforeFeeAlterations) { currentFee, feeAlteration ->
+                    currentFee + feeAlterationEffect(
+                        currentFee,
+                        feeAlteration.type,
+                        feeAlteration.amount,
+                        feeAlteration.isAbsolute
+                    )
+                }
+            }
+
+            if (featureConfig.useContractDaysAsDailyFeeDivisor) {
+                childDecisions.maxOf { getDecisionPartMaxFee(it.second) }
+            } else {
+                childDecisions
+                    .map { (dateRange, decisionPart) ->
+                        val maxFee = getDecisionPartMaxFee(decisionPart)
+                        val daysInRange = operationalDays.generalCase.filter { dateRange.includes(it) }.size
+                        (BigDecimal(maxFee) * BigDecimal(daysInRange))
+                            .divide(BigDecimal(operationalDays.generalCase.size), 2, RoundingMode.HALF_UP)
+                    }
+                    .fold(BigDecimal.ZERO) { sum, maxFee -> sum + maxFee }
+                    .toInt()
+            }
+        }
+
         val rowStubs = placements.flatMap { (placementsPeriod, _, childPlacementPairs) ->
             val relevantPeriod = DateRange(
                 maxOf(invoicePeriod.start, placementsPeriod.start),
@@ -149,7 +185,6 @@ class DraftInvoiceGenerator(
                                     fee,
                                     listOf(),
                                     fee,
-                                    fee,
                                     null,
                                 )
                             )
@@ -162,15 +197,6 @@ class DraftInvoiceGenerator(
                                 }
                                 .filterNot { (_, part) -> freeChildren.contains(part.child.id) }
                                 .map { (decisionPeriod, part) ->
-                                    val maxFeeBeforeFeeAlterations = calculateMaxFee(part.baseFee, part.siblingDiscount)
-                                    val maxFee = part.feeAlterations.fold(maxFeeBeforeFeeAlterations) { currentFee, feeAlteration ->
-                                        currentFee + feeAlterationEffect(
-                                            currentFee,
-                                            feeAlteration.type,
-                                            feeAlteration.amount,
-                                            feeAlteration.isAbsolute
-                                        )
-                                    }
                                     DateRange(
                                         maxOf(relevantPeriod.start, decisionPeriod.start),
                                         minOf(orMax(relevantPeriod.end), orMax(decisionPeriod.end))
@@ -182,7 +208,6 @@ class DraftInvoiceGenerator(
                                             Pair(feeAlteration.type, feeAlteration.effect)
                                         },
                                         part.finalFee,
-                                        maxFee,
                                         part.serviceNeed.contractDaysPerMonth,
                                     )
                                 }
@@ -233,8 +258,9 @@ class DraftInvoiceGenerator(
 
                 separatePeriods
                     .filter { (_, rowStub) -> rowStub.finalPrice != 0 }
-                    .flatMap { (period, rowStub) ->
-                        toInvoiceRows(
+                    .fold(listOf<InvoiceRow>()) { accumulatedRows, (period, rowStub) ->
+                        accumulatedRows + toInvoiceRows(
+                            accumulatedRows,
                             period,
                             rowStub,
                             rowStub.placement.unit,
@@ -243,6 +269,7 @@ class DraftInvoiceGenerator(
                             attendanceDates,
                             relevantAbsences,
                             fullMonthAbsenceType,
+                            getInvoiceMaxFee
                         )
                     }
             }
@@ -412,6 +439,7 @@ class DraftInvoiceGenerator(
     }
 
     private fun toInvoiceRows(
+        accumulatedRows: List<InvoiceRow>,
         period: DateRange,
         invoiceRowStub: InvoiceRowStub,
         unitId: DaycareId,
@@ -420,6 +448,7 @@ class DraftInvoiceGenerator(
         attendanceDates: List<LocalDate>,
         absences: List<AbsenceStub>,
         fullMonthAbsenceType: FullMonthAbsenceType,
+        getInvoiceMaxFee: (ChildId) -> Int
     ): List<InvoiceRow> {
         return when (invoiceRowStub.placement.type) {
             PlacementType.TEMPORARY_DAYCARE,
@@ -434,12 +463,12 @@ class DraftInvoiceGenerator(
                 absences
             )
             else -> toPermanentPlacementInvoiceRows(
+                accumulatedRows,
                 period,
                 invoiceRowStub.child,
                 invoiceRowStub.placement,
                 invoiceRowStub.priceBeforeFeeAlterations,
                 invoiceRowStub.finalPrice,
-                invoiceRowStub.maxPrice,
                 unitId,
                 dailyFeeDivisor,
                 invoiceRowStub.contractDaysPerMonth,
@@ -447,7 +476,8 @@ class DraftInvoiceGenerator(
                 attendanceDates,
                 invoiceRowStub.feeAlterations,
                 absences,
-                fullMonthAbsenceType
+                fullMonthAbsenceType,
+                getInvoiceMaxFee
             )
         }
     }
@@ -488,12 +518,12 @@ class DraftInvoiceGenerator(
     }
 
     private fun toPermanentPlacementInvoiceRows(
+        accumulatedRows: List<InvoiceRow>,
         period: DateRange,
         child: ChildWithDateOfBirth,
         placement: PlacementStub,
         price: Int,
         finalPrice: Int,
-        maxPrice: Int,
         unitId: DaycareId,
         dailyFeeDivisor: Int,
         contractDaysPerMonth: Int?,
@@ -502,6 +532,7 @@ class DraftInvoiceGenerator(
         feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
         absences: List<AbsenceStub>,
         fullMonthAbsenceType: FullMonthAbsenceType,
+        getInvoiceMaxFee: (ChildId) -> Int
     ): List<InvoiceRow> {
         // Make sure the number of operational days in a month doesn't exceed `dailyFeeDivisor`.
         //
@@ -550,11 +581,11 @@ class DraftInvoiceGenerator(
         }
 
         val withDailyModifiers = initialRows + surplusContractDays(
+            accumulatedRows,
             period,
             child,
             finalPrice,
             initialRows.sumOf { it.price },
-            maxPrice,
             unitId,
             contractDaysPerMonth,
             attendanceDates,
@@ -562,7 +593,8 @@ class DraftInvoiceGenerator(
             fullMonthAbsenceType in listOf(
                 FullMonthAbsenceType.SICK_LEAVE_FULL_MONTH,
                 FullMonthAbsenceType.ABSENCE_FULL_MONTH
-            )
+            ),
+            getInvoiceMaxFee
         ) + dailyAbsenceRefund(
             period,
             initialRows,
@@ -605,21 +637,23 @@ class DraftInvoiceGenerator(
     private val plannedAbsenceTypes = setOf(AbsenceType.PLANNED_ABSENCE, AbsenceType.FREE_ABSENCE)
 
     private fun surplusContractDays(
+        accumulatedRows: List<InvoiceRow>,
         period: DateRange,
         child: ChildWithDateOfBirth,
         monthlyPrice: Int,
         invoiceRowSum: Int,
-        maxPrice: Int,
         unitId: DaycareId,
         contractDaysPerMonth: Int?,
         attendanceDates: List<LocalDate>,
         absences: List<AbsenceStub>,
-        isAbsentFullMonth: Boolean
+        isAbsentFullMonth: Boolean,
+        getInvoiceMaxFee: (ChildId) -> Int
     ): List<InvoiceRow> {
         if (contractDaysPerMonth == null || isAbsentFullMonth) return listOf()
 
         fun hasAbsence(date: LocalDate) = absences.any { it.date == date }
 
+        val accumulatedInvoiceRowSum = accumulatedRows.sumOf { it.price } + invoiceRowSum
         val attendancesBeforePeriod = attendanceDates.filter { it < period.start && !hasAbsence(it) }.size
         val attendancesInPeriod = attendanceDates.filter { period.includes(it) && !hasAbsence(it) }.size
         val unplannedAbsenceSurplusDays = if (featureConfig.unplannedAbsencesAreContractSurplusDays)
@@ -635,26 +669,32 @@ class DraftInvoiceGenerator(
             val surplusAttendanceDays = attendanceDays - contractDaysPerMonth
             val surplusDailyPrice = calculateDailyPriceForInvoiceRow(monthlyPrice, contractDaysPerMonth)
             val totalAddition = surplusAttendanceDays * surplusDailyPrice
+            val maxPrice = getInvoiceMaxFee(child.id)
             val (amount, unitPrice) = when {
                 // surplus days increase takes invoice row sum above max price threshold
-                invoiceRowSum + totalAddition > maxPrice -> 1 to (maxPrice - invoiceRowSum)
+                accumulatedInvoiceRowSum + totalAddition > maxPrice -> 1 to (maxPrice - accumulatedInvoiceRowSum)
                 // total attendances days is over the max contract day surplus threshold
-                featureConfig.maxContractDaySurplusThreshold ?: Int.MAX_VALUE < attendanceDays -> 1 to (maxPrice - invoiceRowSum)
+                featureConfig.maxContractDaySurplusThreshold ?: Int.MAX_VALUE < attendanceDays ->
+                    1 to (maxPrice - accumulatedInvoiceRowSum)
                 else -> surplusAttendanceDays to surplusDailyPrice
             }
-            listOf(
-                InvoiceRow(
-                    id = InvoiceRowId(UUID.randomUUID()),
-                    periodStart = period.start,
-                    periodEnd = period.end!!,
-                    child = child.id,
-                    product = productProvider.contractSurplusDay,
-                    unitId = unitId,
-                    amount = amount,
-                    unitPrice = unitPrice,
-                    correctionId = null
+            // it is possible that the max fee is not over the already accumulated invoice total so this prevents the
+            // surplus from being a 0€ row or a discount
+            if (unitPrice > 0) {
+                listOf(
+                    InvoiceRow(
+                        id = InvoiceRowId(UUID.randomUUID()),
+                        periodStart = period.start,
+                        periodEnd = period.end!!,
+                        child = child.id,
+                        product = productProvider.contractSurplusDay,
+                        unitId = unitId,
+                        amount = amount,
+                        unitPrice = unitPrice,
+                        correctionId = null
+                    )
                 )
-            )
+            } else listOf()
         } else listOf()
     }
 
