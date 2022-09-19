@@ -140,7 +140,8 @@ private fun Database.Transaction.upsertDecisions(decisions: List<FeeDecision>) {
             head_of_family_income,
             partner_income,
             family_size,
-            fee_thresholds
+            fee_thresholds,
+            total_fee
         ) VALUES (
             :id,
             :status::fee_decision_status,
@@ -152,7 +153,8 @@ private fun Database.Transaction.upsertDecisions(decisions: List<FeeDecision>) {
             :headOfFamilyIncome,
             :partnerIncome,
             :familySize,
-            :feeThresholds
+            :feeThresholds,
+            :totalFee
         ) ON CONFLICT (id) DO UPDATE SET
             status = :status::fee_decision_status,
             decision_number = :decisionNumber,
@@ -163,7 +165,8 @@ private fun Database.Transaction.upsertDecisions(decisions: List<FeeDecision>) {
             head_of_family_income = :headOfFamilyIncome,
             partner_income = :partnerIncome,
             family_size = :familySize,
-            fee_thresholds = :feeThresholds
+            fee_thresholds = :feeThresholds,
+            total_fee = :totalFee
     """
 
     val batch = prepareBatch(sql)
