@@ -4,7 +4,8 @@
 
 import {
   MessageReceiver,
-  MessageReceiversResponse
+  MessageReceiversResponse,
+  MessageRecipient
 } from 'lib-common/generated/api-types/messaging'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -22,6 +23,7 @@ export interface SelectorNode {
   selectorId: UUID
   selected: boolean
   name: string
+  messageRecipient: MessageRecipient
   childNodes: SelectorNode[]
 }
 
@@ -88,11 +90,9 @@ export const updateSelector = (
 export const getReceiverOptions = (
   selectorNode: SelectorNode
 ): ReactSelectOption[] => {
-  return !selectorNode.selected && selectorNode.childNodes.length > 0
+  return !selectorNode.selected
     ? [asSelectOption(selectorNode)].concat(
-        selectorNode.childNodes.flatMap((childNode: SelectorNode) =>
-          getReceiverOptions(childNode)
-        )
+        selectorNode.childNodes.flatMap(getReceiverOptions)
       )
     : []
 }
@@ -122,30 +122,20 @@ export const unitAsSelectorNode = (
   selectorId: id,
   selected: false,
   name,
+  messageRecipient: { type: 'UNIT', id },
   childNodes: receiverGroups.map((group: MessageReceiversResponse) => ({
     selectorId: group.groupId,
     selected: false,
     name: group.groupName,
+    messageRecipient: { type: 'GROUP', id: group.groupId },
     childNodes: group.receivers.map<ChildSelectorNode>(
-      ({
-        childId,
-        childFirstName,
-        childLastName,
-        childDateOfBirth,
-        receiverPersons
-      }) => ({
+      ({ childId, childFirstName, childLastName, childDateOfBirth }) => ({
         selectorId: childId,
         selected: false,
         name: `${childFirstName} ${childLastName}`,
+        messageRecipient: { type: 'CHILD', id: childId },
         dateOfBirth: childDateOfBirth,
-        childNodes: receiverPersons.map(
-          ({ accountId, receiverFirstName, receiverLastName }) => ({
-            selectorId: accountId,
-            selected: false,
-            name: `${receiverFirstName} ${receiverLastName}`,
-            childNodes: []
-          })
-        )
+        childNodes: []
       })
     )
   }))
@@ -159,16 +149,26 @@ export const getSelectedBottomElements = (selector: SelectorNode): UUID[] => {
   }
 }
 
-export const asSelectOption = (selector: SelectorNode): ReactSelectOption => ({
+export const asSelectOption = (selector: {
+  selectorId: string
+  name: string
+}): ReactSelectOption => ({
   value: selector.selectorId,
   label: selector.name
 })
 
-export const getSelected = (selector: SelectorNode): ReactSelectOption[] => {
+type SelectedNode = {
+  selectorId: UUID
+  name: string
+  messageRecipient: MessageRecipient
+}
+
+export const getSelected = (selector: SelectorNode): SelectedNode[] => {
   if (!selector.selected) {
-    return selector.childNodes ? selector.childNodes.flatMap(getSelected) : []
+    return selector.childNodes.flatMap(getSelected)
   } else {
-    return [asSelectOption(selector)]
+    const { selectorId, name, messageRecipient } = selector
+    return [{ selectorId, name, messageRecipient }]
   }
 }
 
@@ -193,12 +193,6 @@ export const receiverAsSelectorNode = (r: MessageReceiver): SelectorNode => ({
   selectorId: r.childId,
   selected: true,
   name: `${r.childFirstName} ${r.childLastName}`,
-  childNodes: r.receiverPersons.map(
-    ({ accountId, receiverFirstName, receiverLastName }) => ({
-      selectorId: accountId,
-      selected: true,
-      name: `${receiverFirstName} ${receiverLastName}`,
-      childNodes: []
-    })
-  )
+  messageRecipient: { type: 'CHILD', id: r.childId },
+  childNodes: []
 })

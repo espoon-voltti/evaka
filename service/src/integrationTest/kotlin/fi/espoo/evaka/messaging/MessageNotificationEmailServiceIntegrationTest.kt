@@ -104,15 +104,10 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest(reset
     @Test
     fun `notifications are sent to citizens`() {
         val employeeAccount = db.read { it.getEmployeeMessageAccountIds(employeeId).first() }
-        val personAccounts = db.read { tx ->
-            testPersons.map {
-                tx.getCitizenMessageAccount(it.id)
-            }
-        }
 
         postNewThread(
             sender = employeeAccount,
-            recipients = personAccounts,
+            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
             user = employee,
         )
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
@@ -128,7 +123,7 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest(reset
 
     private fun postNewThread(
         sender: MessageAccountId,
-        recipients: List<MessageAccountId>,
+        recipients: List<MessageRecipient>,
         user: AuthenticatedUser.Employee,
     ) {
         val (_, response) = http.post("/messages/$sender")
@@ -138,7 +133,7 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest(reset
                         title = "Juhannus",
                         content = "Juhannus tulee pian",
                         type = MessageType.MESSAGE,
-                        recipientAccountIds = recipients.toSet(),
+                        recipients = recipients.toSet(),
                         recipientNames = listOf(),
                         urgent = false
                     )

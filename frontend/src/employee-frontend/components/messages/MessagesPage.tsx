@@ -130,11 +130,7 @@ export default React.memo(function MessagesPage() {
           showEditor={() => setShowEditor(true)}
           setSelectedReceivers={setSelectedReceivers}
         />
-        {(selectedAccount?.view === 'RECEIVED' ||
-          selectedAccount?.view === 'SENT' ||
-          selectedAccount?.view === 'DRAFTS') && (
-          <MessageList {...selectedAccount} />
-        )}
+        {selectedAccount?.view && <MessageList {...selectedAccount} />}
         {showEditor &&
           accounts.isSuccess &&
           selectedReceivers &&

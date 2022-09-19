@@ -5,6 +5,7 @@
 import {
   Message,
   MessageAccount,
+  MessageCopy,
   MessageThread,
   ThreadReply
 } from '../../generated/api-types/messaging'
@@ -49,4 +50,12 @@ export const deserializeReplyResponse = (
 ): ThreadReply => ({
   threadId: responseData.threadId,
   message: deserializeMessage(responseData.message, staffAnnotation)
+})
+
+export const deserializeMessageCopy = (
+  json: JsonOf<MessageCopy>
+): MessageCopy => ({
+  ...json,
+  sentAt: HelsinkiDateTime.parseIso(json.sentAt),
+  readAt: json.readAt ? HelsinkiDateTime.parseIso(json.readAt) : null
 })

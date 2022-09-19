@@ -60,7 +60,6 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
@@ -179,30 +178,6 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 
-    @Test
-    fun `only guardians are returned in valid recipients`() {
-        val receivers = getReceivers(testDaycare.id, employee1)
-        assertEquals(2, receivers.size)
-
-        val group1Receivers = receivers.find { it.groupId == groupId1 }
-        assertNotNull(group1Receivers)
-
-        // fridge head of child 1 is not in the receivers
-        val children = listOf(
-            testChild_1.id to setOf(testAdult_1, testAdult_2),
-            testChild_3.id to setOf(testAdult_2, testAdult_3)
-        )
-        assertEquals(children.map { it.first }.toSet(), group1Receivers.receivers.map { it.childId }.toSet())
-        children.forEach { (childId, guardianAccountIds) ->
-            val child = group1Receivers.receivers.find { it.childId == childId }!!
-            assertNotNull(child)
-            assertEquals(
-                getAccounts(guardianAccountIds.map { it.id }),
-                child.receiverPersons.map { it.accountId }.toSet()
-            )
-        }
-    }
-
     private fun getAccounts(personAccountIds: List<PersonId>): Set<MessageAccountId> = db.read {
         it.createQuery("SELECT acc.id FROM message_account acc WHERE acc.person_id = ANY(:personIds)")
             .bind("personIds", personAccountIds.toTypedArray())
@@ -227,7 +202,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "Juhannus tulee pian",
             messageType = MessageType.MESSAGE,
             sender = employee1Account,
-            recipients = listOf(person1Account, person2Account),
+            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
             user = employee1,
         )
 
@@ -398,7 +373,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         // when a new thread is created to several recipients who do not all have common children
         val title = "Thread splitting"
         val content = "This message is sent to several participants and split to threads"
-        val recipients = listOf(person1Account, person2Account, person3Account, person4Account)
+        val recipients = listOf(
+            MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
+            MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
+            MessageRecipient(MessageRecipientType.CHILD, testChild_4.id)
+        )
         val recipientNames = listOf("Hippiäiset", "Jani")
         postNewThread(
             title = title,
@@ -423,7 +402,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(1, sentMessages.total)
         assertEquals(1, sentMessages.data.size)
         assertEquals(recipientNames, sentMessages.data.flatMap { it.recipientNames })
-        assertEquals(recipients.toSet(), sentMessages.data.flatMap { msg -> msg.recipients.map { it.id } }.toSet())
+        assertEquals(
+            setOf(person1Account, person2Account, person3Account, person4Account),
+            sentMessages.data.flatMap { msg -> msg.recipients.map { it.id } }.toSet()
+        )
         assertEquals(title, sentMessages.data[0].threadTitle)
         assertEquals(MessageType.MESSAGE, sentMessages.data[0].type)
         assertEquals(content, sentMessages.data[0].content)
@@ -502,7 +484,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "Juhannus tulee pian",
             messageType = MessageType.BULLETIN,
             sender = employee1Account,
-            recipients = listOf(person1Account),
+            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
             user = employee1,
         )
 
@@ -567,7 +549,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "m1",
             messageType = MessageType.MESSAGE,
             sender = employee1Account,
-            recipients = listOf(person1Account, person2Account),
+            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
             user = employee1,
         )
 
@@ -602,11 +584,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `messages can have attachments`() {
         // given
-        val (employee1Account, person1Account, person2Account) = db.read {
+        val (employee1Account, person1Account) = db.read {
             listOf(
                 it.getEmployeeMessageAccountIds(employee1Id).first(),
-                it.getCitizenMessageAccount(person1Id),
-                it.getCitizenMessageAccount(person2Id)
+                it.getCitizenMessageAccount(person1Id)
             )
         }
 
@@ -635,7 +616,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             message = "m1",
             messageType = MessageType.MESSAGE,
             sender = employee1Account,
-            recipients = listOf(person1Account, person2Account),
+            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
             user = employee1,
             attachmentIds = attachmentIds,
             draftId = draftId
@@ -670,28 +651,58 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `employee with access to two groups cannot send messages as group1 to group2`() {
         val group1Account = db.transaction { it.createDaycareGroupMessageAccount(groupId1) }
         val group2Account = db.transaction { it.createDaycareGroupMessageAccount(groupId2) }
-        // person4 is the guardian of testChild_4 that is placed in group2
-        val person4Account = db.transaction { it.getCitizenMessageAccount(person4Id) }
+        val person4Account = db.read { it.getCitizenMessageAccount(person4Id) }
 
         postNewThread(
             title = "Juhannus",
             message = "Juhannus tulee pian",
             messageType = MessageType.MESSAGE,
             sender = group1Account,
-            recipients = listOf(person4Account),
+            recipients = listOf(MessageRecipient(MessageRecipientType.GROUP, groupId2)),
             user = employee1,
-            statusCode = 403
+            statusCode = 200
         )
+        assertEquals(0, getMessageThreads(person4Account, person4).size)
 
         postNewThread(
             title = "Juhannus",
             message = "Juhannus tulee pian",
             messageType = MessageType.MESSAGE,
             sender = group2Account,
-            recipients = listOf(person4Account),
+            recipients = listOf(MessageRecipient(MessageRecipientType.GROUP, groupId2)),
             user = employee1,
             statusCode = 200
         )
+        assertEquals(1, getMessageThreads(person4Account, person4).size)
+    }
+
+    @Test
+    fun `employee with access to two groups cannot send messages as group1 to child in group2`() {
+        val group1Account = db.transaction { it.createDaycareGroupMessageAccount(groupId1) }
+        val group2Account = db.transaction { it.createDaycareGroupMessageAccount(groupId2) }
+        val person4Account = db.read { it.getCitizenMessageAccount(person4Id) }
+
+        postNewThread(
+            title = "Juhannus",
+            message = "Juhannus tulee pian",
+            messageType = MessageType.MESSAGE,
+            sender = group1Account,
+            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_4.id)),
+            user = employee1,
+            statusCode = 200
+        )
+        assertEquals(0, getMessageThreads(person4Account, person4).size)
+
+        postNewThread(
+            title = "Juhannus",
+            message = "Juhannus tulee pian",
+            messageType = MessageType.MESSAGE,
+            sender = group2Account,
+            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_4.id)),
+            user = employee1,
+            statusCode = 200
+        )
+        assertEquals(1, getMessageThreads(person4Account, person4).size)
     }
 
     private fun deleteAttachment(
@@ -750,7 +761,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         message: String,
         messageType: MessageType,
         sender: MessageAccountId,
-        recipients: List<MessageAccountId>,
+        recipients: List<MessageRecipient>,
         recipientNames: List<String> = listOf(),
         user: AuthenticatedUser.Employee,
         attachmentIds: Set<AttachmentId> = setOf(),
@@ -763,8 +774,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     title = title,
                     content = message,
                     type = messageType,
+                    recipients = recipients.toSet(),
                     recipientNames = recipientNames,
-                    recipientAccountIds = recipients.toSet(),
                     attachmentIds = attachmentIds,
                     draftId = draftId,
                     urgent = false

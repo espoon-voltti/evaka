@@ -42,7 +42,7 @@ const getUniqueParticipants: (t: MessageThread) => string[] = (
 
 export interface Props {
   account: MessageAccount
-  view: Exclude<View, 'RECEIVERS'>
+  view: View
 }
 
 export default React.memo(function ThreadListContainer({
@@ -54,6 +54,7 @@ export default React.memo(function ThreadListContainer({
     receivedMessages,
     sentMessages,
     messageDrafts,
+    messageCopies,
     page,
     setPage,
     pages,
@@ -76,10 +77,12 @@ export default React.memo(function ThreadListContainer({
       return sentMessages.value.length > 0
     } else if (view === 'DRAFTS' && messageDrafts.isSuccess) {
       return messageDrafts.value.length > 0
+    } else if (view === 'COPIES' && messageCopies.isSuccess) {
+      return messageCopies.value.length > 0
     } else {
       return false
     }
-  }, [view, receivedMessages, sentMessages, messageDrafts])
+  }, [view, receivedMessages, sentMessages, messageDrafts, messageCopies])
 
   if (selectedThread) {
     return (
@@ -137,6 +140,37 @@ export default React.memo(function ThreadListContainer({
       }))
   )
 
+  const messageCopiesAsThreads: Result<MessageThread[]> = messageCopies.map(
+    (value) =>
+      value.map((message) => ({
+        ...message,
+        id: message.threadId,
+        participants: [message.recipientName],
+        messages: [
+          {
+            id: message.messageId,
+            sender: {
+              id: message.senderId,
+              name: message.senderName,
+              type: message.senderAccountType
+            },
+            sentAt: message.sentAt,
+            recipients: [
+              {
+                id: message.recipientId,
+                name: message.recipientName,
+                type: message.recipientAccountType
+              }
+            ],
+            readAt: message.readAt,
+            content: message.content,
+            attachments: message.attachments,
+            recipientNames: message.recipientNames
+          }
+        ]
+      }))
+  )
+
   const receivedMessageItems: Result<ThreadListItem[]> = receivedMessages.map(
     (value) =>
       value.map((t) => threadToListItem(t, true, 'received-message-row'))
@@ -160,12 +194,15 @@ export default React.memo(function ThreadListContainer({
         dataQa: 'draft-message-row'
       }))
   )
+  const messageCopyItems = messageCopiesAsThreads.map((value) =>
+    value.map((t) => threadToListItem(t, true, 'message-copy-row'))
+  )
 
   const threadListItems: Result<ThreadListItem[]> = {
     RECEIVED: receivedMessageItems,
-    RECEIVERS: receivedMessageItems,
     SENT: sentMessageItems,
-    DRAFTS: draftMessageItems
+    DRAFTS: draftMessageItems,
+    COPIES: messageCopyItems
   }[view]
 
   return hasMessages ? (
@@ -185,7 +222,8 @@ export default React.memo(function ThreadListContainer({
       loading={
         (view === 'RECEIVED' && receivedMessages.isLoading) ||
         (view === 'SENT' && sentMessages.isLoading) ||
-        (view === 'DRAFTS' && messageDrafts.isLoading)
+        (view === 'DRAFTS' && messageDrafts.isLoading) ||
+        (view === 'COPIES' && messageCopies.isLoading)
       }
       iconColor={colors.grayscale.g35}
       text={i18n.messages.emptyInbox}

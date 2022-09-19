@@ -14,7 +14,7 @@ import { faChevronDown, faChevronUp } from 'lib-icons'
 
 import MessageBox, { MessageBoxRow } from './MessageBox'
 import { MessageContext } from './MessageContext'
-import { AccountView, messageBoxes } from './types-view'
+import { AccountView, groupMessageBoxes } from './types-view'
 
 const AccountContainer = styled.div`
   margin: 12px 0;
@@ -88,7 +88,7 @@ export default function GroupMessageAccountList({
           startCollapsed={startCollapsed(acc, i)}
           title={acc.daycareGroup.name}
         >
-          {messageBoxes.map((view) => (
+          {groupMessageBoxes.map((view) => (
             <MessageBox
               key={view}
               view={view}

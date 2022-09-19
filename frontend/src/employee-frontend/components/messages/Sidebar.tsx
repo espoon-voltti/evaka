@@ -30,7 +30,7 @@ import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
 import { MessageContext } from './MessageContext'
 import { getReceivers } from './api'
-import { messageBoxes } from './types-view'
+import { personalMessageBoxes } from './types-view'
 
 const Container = styled.div`
   flex: 0 1 260px;
@@ -148,7 +148,7 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsProps) {
       {personalAccount && (
         <AccountSection data-qa="personal-account">
           <AccountHeader>{i18n.messages.sidePanel.ownMessages}</AccountHeader>
-          {messageBoxes.map((view) => (
+          {personalMessageBoxes.map((view) => (
             <MessageBox
               key={view}
               view={view}

@@ -226,7 +226,8 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 urgent = false,
                 sender = senderDuplicateAccount,
                 recipientGroups = setOf(setOf(receiverAccount)),
-                recipientNames = listOf()
+                recipientNames = listOf(),
+                staffCopyRecipients = setOf()
             )
         }
         assertEquals(
@@ -275,7 +276,8 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 urgent = false,
                 sender = senderAccount,
                 recipientGroups = setOf(setOf(receiverDuplicateAccount)),
-                recipientNames = listOf()
+                recipientNames = listOf(),
+                staffCopyRecipients = setOf()
             )
         }
         assertEquals(

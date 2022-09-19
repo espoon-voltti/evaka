@@ -45,12 +45,24 @@ export default function MessageBox({
   const { i18n } = useTranslation()
   const { unreadCountsByAccount } = useContext(MessageContext)
   const active = view == activeView?.view && account.id == activeView.account.id
-  const unreadCount =
-    (unreadCountsByAccount.isSuccess
-      ? unreadCountsByAccount.value.find(
-          ({ accountId }) => accountId === account.id
-        )?.unreadCount
-      : null) || 0
+  const unreadCount = unreadCountsByAccount
+    .map((unreadCounts) => {
+      if (view === 'RECEIVED') {
+        return (
+          unreadCounts.find(({ accountId }) => accountId === account.id)
+            ?.unreadCount ?? 0
+        )
+      }
+      if (view === 'COPIES') {
+        return (
+          unreadCounts.find(({ accountId }) => accountId === account.id)
+            ?.unreadCopyCount ?? 0
+        )
+      }
+
+      return 0
+    })
+    .getOrElse(0)
   return (
     <MessageBoxRow
       onClick={() => setView({ account: account, view: view })}
@@ -58,9 +70,7 @@ export default function MessageBox({
       data-qa={`message-box-row-${view}`}
     >
       {i18n.messages.messageBoxes.names[view]}{' '}
-      {view === 'RECEIVED' && unreadCount > 0 && (
-        <UnreadCount>{unreadCount}</UnreadCount>
-      )}
+      {unreadCount > 0 && <UnreadCount>{unreadCount}</UnreadCount>}
     </MessageBoxRow>
   )
 }

@@ -24,6 +24,7 @@ import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Radio from 'lib-components/atoms/form/Radio'
 import {
+  asSelectOption,
   deselectAll,
   getReceiverOptions,
   getSelected,
@@ -55,28 +56,32 @@ import Combobox from '../../atoms/dropdowns/Combobox'
 import Checkbox from '../../atoms/form/Checkbox'
 import { InfoBox } from '../../molecules/MessageBoxes'
 
-type Message = UpdatableDraftContent & {
+type Message = Omit<
+  UpdatableDraftContent,
+  'recipientIds' | 'recipientNames'
+> & {
   sender: ReactSelectOption
-  recipientAccountIds: UUID[]
   attachments: Attachment[]
 }
 
-const messageToUpdatableDraftWithAccount = (m: Message): Draft => ({
-  content: m.content,
-  urgent: m.urgent,
-  recipientIds: m.recipientIds,
-  recipientNames: m.recipientNames,
-  title: m.title,
-  type: m.type,
-  accountId: m.sender.value
-})
+const messageToUpdatableDraftWithAccount = (
+  m: Message,
+  recipients: ReactSelectOption[]
+): Draft => {
+  return {
+    content: m.content,
+    urgent: m.urgent,
+    recipientIds: recipients.map(({ value }) => value),
+    recipientNames: recipients.map(({ label }) => label),
+    title: m.title,
+    type: m.type,
+    accountId: m.sender.value
+  }
+}
 
-const emptyMessage = {
+const emptyMessage: Omit<Message, 'sender'> = {
   content: '',
   urgent: false,
-  recipientIds: [],
-  recipientNames: [],
-  recipientAccountIds: [],
   attachments: [],
   title: '',
   type: 'MESSAGE' as const
@@ -85,13 +90,12 @@ const emptyMessage = {
 const getInitialMessage = (
   draft: DraftContent | undefined,
   sender: ReactSelectOption
-): Message =>
-  draft
-    ? { ...draft, sender, recipientAccountIds: [] }
-    : { sender, ...emptyMessage }
+): Message => (draft ? { ...draft, sender } : { sender, ...emptyMessage })
 
-const areRequiredFieldsFilled = (msg: Message): boolean =>
-  !!(msg.recipientAccountIds?.length && msg.type && msg.content && msg.title)
+const areRequiredFieldsFilled = (
+  msg: Message,
+  recipients: { selectorId: UUID }[]
+): boolean => !!(recipients.length > 0 && msg.type && msg.content && msg.title)
 
 const createReceiverTree = (tree: SelectorNode, selectedIds: UUID[]) =>
   selectedIds.reduce(
@@ -184,6 +188,10 @@ export default React.memo(function MessageEditor({
     () => getSelected(receiverTree),
     [receiverTree]
   )
+  const selectedReceiverOptions = useMemo(
+    () => selectedReceivers.map(asSelectOption),
+    [selectedReceivers]
+  )
   const receiverOptions = useMemo(
     () => getReceiverOptions(receiverTree),
     [receiverTree]
@@ -214,9 +222,12 @@ export default React.memo(function MessageEditor({
 
   useEffect(
     function syncDraftContentOnMessageChanges() {
-      contentTouched && setDraft(messageToUpdatableDraftWithAccount(message))
+      contentTouched &&
+        setDraft(
+          messageToUpdatableDraftWithAccount(message, selectedReceiverOptions)
+        )
     },
-    [contentTouched, message, setDraft]
+    [contentTouched, message, selectedReceiverOptions, setDraft]
   )
 
   const updateReceiverTree = useCallback(
@@ -234,12 +245,10 @@ export default React.memo(function MessageEditor({
   useEffect(
     function updateSelectedReceiversOnReceiverTreeChanges() {
       const selected = getSelected(receiverTree)
-      const recipientAccountIds = getSelectedBottomElements(receiverTree)
       setMessage((old) => ({
         ...old,
-        recipientAccountIds,
-        recipientIds: selected.map((s) => s.value),
-        recipientNames: selected.map((s) => s.label)
+        recipientIds: selected.map((s) => s.selectorId),
+        recipientNames: selected.map((s) => s.name)
       }))
     },
     [receiverTree]
@@ -310,8 +319,16 @@ export default React.memo(function MessageEditor({
       ...rest
     } = message
     const attachmentIds = attachments.map(({ id }) => id)
-    onSend(senderId, { ...rest, attachmentIds, draftId })
-  }, [onSend, message, draftId])
+    onSend(senderId, {
+      ...rest,
+      attachmentIds,
+      draftId,
+      recipients: selectedReceivers.map(
+        ({ messageRecipient }) => messageRecipient
+      ),
+      recipientNames: selectedReceivers.map(({ name }) => name)
+    })
+  }, [onSend, message, selectedReceivers, draftId])
 
   const handleAttachmentUpload = useCallback(
     async (
@@ -372,7 +389,9 @@ export default React.memo(function MessageEditor({
   )
 
   const sendEnabled =
-    !sending && draftState === 'clean' && areRequiredFieldsFilled(message)
+    !sending &&
+    draftState === 'clean' &&
+    areRequiredFieldsFilled(message, selectedReceivers)
 
   const urgent = (
     <Checkbox
@@ -472,7 +491,7 @@ export default React.memo(function MessageEditor({
                   <Bold>{i18n.receivers}</Bold>
                   <MultiSelect
                     placeholder={i18n.search}
-                    value={selectedReceivers}
+                    value={selectedReceiverOptions}
                     options={receiverOptions}
                     onChange={updateReceiverTree}
                     noOptionsMessage={i18n.noResults}
@@ -600,20 +619,16 @@ export default React.memo(function MessageEditor({
           <Bold>{i18n.receivers}</Bold>
           <Gap size="xs" />
         </div>
-        {receiverOptions.length > 1 ? (
-          <MultiSelect
-            placeholder={i18n.search}
-            value={selectedReceivers}
-            options={receiverOptions}
-            onChange={updateReceiverTree}
-            noOptionsMessage={i18n.noResults}
-            getOptionId={({ value }) => value}
-            getOptionLabel={({ label }) => label}
-            data-qa="select-receiver"
-          />
-        ) : (
-          message.recipientNames.join(', ')
-        )}
+        <MultiSelect
+          placeholder={i18n.search}
+          value={selectedReceiverOptions}
+          options={receiverOptions}
+          onChange={updateReceiverTree}
+          noOptionsMessage={i18n.noResults}
+          getOptionId={({ value }) => value}
+          getOptionLabel={({ label }) => label}
+          data-qa="select-receiver"
+        />
         <Gap size="s" />
         <Bold>{i18n.urgent.heading}</Bold>
         {urgent}

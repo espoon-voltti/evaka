@@ -4,11 +4,17 @@
 
 import { MessageAccount } from 'lib-common/generated/api-types/messaging'
 
-export type View = 'RECEIVED' | 'SENT' | 'DRAFTS'
+export type View = 'RECEIVED' | 'SENT' | 'DRAFTS' | 'COPIES'
 
 export interface AccountView {
   account: MessageAccount
   view: View
 }
 
-export const messageBoxes: View[] = ['RECEIVED', 'SENT', 'DRAFTS']
+export const personalMessageBoxes: View[] = ['RECEIVED', 'SENT', 'DRAFTS']
+export const groupMessageBoxes: View[] = [
+  'RECEIVED',
+  'SENT',
+  'DRAFTS',
+  'COPIES'
+]

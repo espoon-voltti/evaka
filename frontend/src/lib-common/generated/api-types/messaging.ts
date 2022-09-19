@@ -91,6 +91,28 @@ export interface MessageAccount {
 }
 
 /**
+* Generated from fi.espoo.evaka.messaging.MessageCopy
+*/
+export interface MessageCopy {
+  attachments: MessageAttachment[]
+  content: string
+  messageId: UUID
+  readAt: HelsinkiDateTime | null
+  recipientAccountType: AccountType
+  recipientId: UUID
+  recipientName: string
+  recipientNames: string[]
+  senderAccountType: AccountType
+  senderId: UUID
+  senderName: string
+  sentAt: HelsinkiDateTime
+  threadId: UUID
+  title: string
+  type: MessageType
+  urgent: boolean
+}
+
+/**
 * Generated from fi.espoo.evaka.messaging.MessageReceiver
 */
 export interface MessageReceiver {
@@ -98,16 +120,6 @@ export interface MessageReceiver {
   childFirstName: string
   childId: UUID
   childLastName: string
-  receiverPersons: MessageReceiverPerson[]
-}
-
-/**
-* Generated from fi.espoo.evaka.messaging.MessageReceiverPerson
-*/
-export interface MessageReceiverPerson {
-  accountId: UUID
-  receiverFirstName: string
-  receiverLastName: string
 }
 
 /**
@@ -118,6 +130,22 @@ export interface MessageReceiversResponse {
   groupName: string
   receivers: MessageReceiver[]
 }
+
+/**
+* Generated from fi.espoo.evaka.messaging.MessageRecipient
+*/
+export interface MessageRecipient {
+  id: UUID
+  type: MessageRecipientType
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.MessageRecipientType
+*/
+export type MessageRecipientType =
+  | 'UNIT'
+  | 'GROUP'
+  | 'CHILD'
 
 /**
 * Generated from fi.espoo.evaka.messaging.MessageThread
@@ -144,8 +172,8 @@ export interface PostMessageBody {
   attachmentIds: UUID[]
   content: string
   draftId: UUID | null
-  recipientAccountIds: UUID[]
   recipientNames: string[]
+  recipients: MessageRecipient[]
   title: string
   type: MessageType
   urgent: boolean
@@ -197,6 +225,7 @@ export interface ThreadReply {
 */
 export interface UnreadCountByAccount {
   accountId: UUID
+  unreadCopyCount: number
   unreadCount: number
 }
 
@@ -206,6 +235,7 @@ export interface UnreadCountByAccount {
 export interface UnreadCountByAccountAndGroup {
   accountId: UUID
   groupId: UUID
+  unreadCopyCount: number
   unreadCount: number
 }
 

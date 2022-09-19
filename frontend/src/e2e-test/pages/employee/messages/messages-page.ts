@@ -8,7 +8,8 @@ import {
   TextInput,
   Page,
   Checkbox,
-  MultiSelect
+  MultiSelect,
+  Combobox
 } from '../../../utils/page'
 
 export default class MessagesPage {
@@ -20,6 +21,7 @@ export default class MessagesPage {
     '[data-qa="close-message-editor-btn"]'
   )
   #discardMessageButton = this.page.find('[data-qa="discard-draft-btn"]')
+  #senderSelection = new Combobox(this.page.findByDataQa('select-sender'))
   #receiverSelection = new MultiSelect(
     this.page.find('[data-qa="select-receiver"]')
   )
@@ -27,12 +29,10 @@ export default class MessagesPage {
   #inputContent = new TextInput(this.page.find('[data-qa="input-content"]'))
   #fileUpload = this.page.find('[data-qa="upload-message-attachment"]')
   #personalAccount = this.page.find('[data-qa="personal-account"]')
-  #firstSentMessagesBoxRow = this.page
-    .findAll('[data-qa="message-box-row-SENT"]')
-    .first()
   #draftMessagesBoxRow = new TextInput(
     this.#personalAccount.find('[data-qa="message-box-row-DRAFTS"]')
   )
+  #messageCopiesInbox = this.page.findByDataQa('message-box-row-COPIES')
   #receivedMessage = this.page.find('[data-qa="received-message-row"]')
   #draftMessage = this.page.find('[data-qa="draft-message-row"]')
   #messageContent = (index = 0) =>
@@ -46,6 +46,7 @@ export default class MessagesPage {
     this.page.find('[data-qa="message-reply-content"]')
   )
   #urgent = new Checkbox(this.page.findByDataQa('checkbox-urgent'))
+  #emptyInboxText = this.page.findByDataQa('empty-inbox-text')
 
   async getReceivedMessageCount() {
     return await this.page.findAll('[data-qa="received-message-row"]').count()
@@ -60,6 +61,7 @@ export default class MessagesPage {
   }
 
   async assertMessageIsSentForParticipants(nth: number, participants: string) {
+    await this.page.findAll('[data-qa="message-box-row-SENT"]').first().click()
     await waitUntilEqual(
       () =>
         this.page
@@ -100,6 +102,7 @@ export default class MessagesPage {
     content: string
     urgent?: boolean
     attachmentCount?: number
+    sender?: string
     receiver?: string
   }) {
     const attachmentCount = message.attachmentCount ?? 0
@@ -109,6 +112,9 @@ export default class MessagesPage {
     await this.#inputTitle.fill(message.title)
     await this.#inputContent.fill(message.content)
 
+    if (message.sender) {
+      await this.#senderSelection.fillAndSelectFirst(message.sender)
+    }
     if (message.receiver) {
       await this.#receiverSelection.fillAndSelectFirst(message.receiver)
     } else {
@@ -132,9 +138,6 @@ export default class MessagesPage {
     }
     await this.#sendMessageButton.click()
     await waitUntilEqual(() => this.isEditorVisible(), false)
-
-    await this.#firstSentMessagesBoxRow.click()
-    await waitUntilTrue(() => this.existsSentMessage())
   }
 
   async addAttachment() {
@@ -198,6 +201,23 @@ export default class MessagesPage {
 
   async assertNoDrafts() {
     await this.#draftMessagesBoxRow.click()
-    await this.#draftMessage.waitUntilHidden()
+    await this.#emptyInboxText.waitUntilVisible()
+  }
+
+  async assertCopyContent(title: string, content: string) {
+    await this.#messageCopiesInbox.click()
+    await waitUntilEqual(
+      () => this.page.findByDataQa('thread-list-item-title').innerText,
+      title
+    )
+    await waitUntilEqual(
+      () => this.page.findByDataQa('thread-list-item-content').innerText,
+      content
+    )
+  }
+
+  async assertNoCopies() {
+    await this.#messageCopiesInbox.click()
+    await this.#emptyInboxText.waitUntilVisible()
   }
 }

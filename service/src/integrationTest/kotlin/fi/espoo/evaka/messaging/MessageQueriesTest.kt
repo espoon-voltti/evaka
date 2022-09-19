@@ -301,6 +301,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             ThreadWithParticipants(
                 threadId = threadId,
                 type = MessageType.MESSAGE,
+                isCopy = false,
                 senders = setOf(employee1Account),
                 recipients = setOf(person1Account, person2Account)
             ),
@@ -323,6 +324,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             ThreadWithParticipants(
                 threadId = threadId,
                 type = MessageType.MESSAGE,
+                isCopy = false,
                 senders = setOf(employee1Account, person2Account),
                 recipients = setOf(person1Account, person2Account, employee1Account)
             ),
@@ -505,7 +507,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     ) =
         db.transaction { tx ->
             val contentId = tx.insertMessageContent(content, sender)
-            val threadId = tx.insertThread(MessageType.MESSAGE, title, urgent = false)
+            val threadId = tx.insertThread(MessageType.MESSAGE, title, urgent = false, isCopy = false)
             val messageId =
                 tx.insertMessage(
                     RealEvakaClock().now(),
