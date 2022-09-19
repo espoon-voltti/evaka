@@ -197,10 +197,7 @@ class FeeDecisionService(
             error("Cannot send fee decision ${decision.id} - missing document key")
         }
 
-        // If receiver has restricted details enabled, still send the message via sfi so
-        // that if the receiver has the electric channel enabled he can receive the message that way,
-        // if not, the paper channel message is sent to financial handlers
-        if (!decision.headOfFamily.restrictedDetailsEnabled && decision.requiresManualSending) {
+        if (decision.requiresManualSending) {
             tx.setFeeDecisionWaitingForManualSending(decision.id)
             return false
         }
@@ -210,8 +207,8 @@ class FeeDecisionService(
 
         // If address is missing (restricted info enabled), use the financial handling address instead
         val sendAddress = DecisionSendAddress.fromPerson(recipient) ?: when (lang) {
-            "sv" -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.SV)
-            else -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI)
+            "sv" -> messageProvider.getDefaultFinancialDecisionAddress(MessageLanguage.SV)
+            else -> messageProvider.getDefaultFinancialDecisionAddress(MessageLanguage.FI)
         }
 
         val feeDecisionDisplayName =

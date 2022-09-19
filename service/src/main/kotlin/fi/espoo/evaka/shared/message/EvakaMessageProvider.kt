@@ -119,7 +119,7 @@ Klientavgiften för småbarnspedagogik gäller tills vidare och familjen är sky
         )
     }
 
-    override fun getDefaultFeeDecisionAddress(lang: MessageLanguage): DecisionSendAddress = when (lang) {
+    override fun getDefaultFinancialDecisionAddress(lang: MessageLanguage): DecisionSendAddress = when (lang) {
         MessageLanguage.FI -> DecisionSendAddress(
             "",
             "02700",

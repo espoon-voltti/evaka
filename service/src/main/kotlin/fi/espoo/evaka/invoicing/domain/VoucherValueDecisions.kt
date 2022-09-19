@@ -227,7 +227,10 @@ data class VoucherValueDecisionDetailed(
 
     val requiresManualSending
         get(): Boolean {
-            if (decisionType !== VoucherValueDecisionType.NORMAL || headOfFamily.forceManualFeeDecisions) {
+            // Restricted will be sent to allow fast receiving via suomi.fi e-channel.
+            if (headOfFamily.restrictedDetailsEnabled) {
+                return false
+            } else if (decisionType !== VoucherValueDecisionType.NORMAL || headOfFamily.forceManualFeeDecisions) {
                 return true
             }
             return this.headOfFamily.let {

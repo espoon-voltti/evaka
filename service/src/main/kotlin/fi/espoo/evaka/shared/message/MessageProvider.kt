@@ -24,7 +24,7 @@ interface IMessageProvider {
     /**
      * Returns address used for fee decisions when person is missing address.
      */
-    fun getDefaultFeeDecisionAddress(lang: MessageLanguage): DecisionSendAddress
+    fun getDefaultFinancialDecisionAddress(lang: MessageLanguage): DecisionSendAddress
 }
 
 enum class MessageLanguage {

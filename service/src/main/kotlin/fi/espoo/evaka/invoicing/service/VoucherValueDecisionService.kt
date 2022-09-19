@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.service
 
 import fi.espoo.evaka.BucketEnv
+import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecision
 import fi.espoo.evaka.invoicing.data.getVoucherValueDecisionDocumentKey
 import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
@@ -29,6 +30,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IMessageProvider
+import fi.espoo.evaka.shared.message.MessageLanguage
 import fi.espoo.evaka.shared.message.langWithDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
@@ -78,6 +80,13 @@ class VoucherValueDecisionService(
         }
 
         val lang = if (decision.headOfFamily.language == "sv") "sv" else "fi"
+
+        // If address is missing (restricted info enabled), use the financial handling address instead
+        val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily) ?: when (lang) {
+            "sv" -> messageProvider.getDefaultFinancialDecisionAddress(MessageLanguage.SV)
+            else -> messageProvider.getDefaultFinancialDecisionAddress(MessageLanguage.FI)
+        }
+
         val documentDisplayName = suomiFiDocumentFileName(lang)
         val messageHeader = messageProvider.getVoucherValueDecisionHeader(langWithDefault(lang))
         val messageContent = messageProvider.getVoucherValueDecisionContent(langWithDefault(lang))
@@ -94,9 +103,9 @@ class VoucherValueDecisionService(
                         language = lang,
                         firstName = decision.headOfFamily.firstName,
                         lastName = decision.headOfFamily.lastName,
-                        streetAddress = decision.headOfFamily.streetAddress,
-                        postalCode = decision.headOfFamily.postalCode,
-                        postOffice = decision.headOfFamily.postOffice,
+                        streetAddress = sendAddress.street,
+                        postalCode = sendAddress.postalCode,
+                        postOffice = sendAddress.postOffice,
                         ssn = decision.headOfFamily.ssn!!,
                         messageHeader = messageHeader,
                         messageContent = messageContent
