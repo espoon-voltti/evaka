@@ -287,7 +287,7 @@ fun Database.Read.searchFeeDecisions(
         FeeDecisionSortParam.CREATED -> "decision.created"
         FeeDecisionSortParam.SENT -> "decision.sent_at"
         FeeDecisionSortParam.STATUS -> "decision.status"
-        FeeDecisionSortParam.FINAL_PRICE -> "sum"
+        FeeDecisionSortParam.FINAL_PRICE -> "total_fee"
     }
 
     val retroactiveOnly = distinctiveParams.contains(DistinctiveParams.RETROACTIVE)
@@ -373,19 +373,13 @@ fun Database.Read.searchFeeDecisions(
         WITH decision_ids AS (
             ${if (areas.isNotEmpty() || financeDecisionHandlerId != null) youngestChildQuery else ""}
             ${if (noStartingPlacements) firstPlacementStartingThisMonthChildQuery else ""}
-            SELECT decision.id, count(*) OVER (), max(sums.sum) sum
+            SELECT decision.id, count(*) OVER ()
             FROM fee_decision AS decision
             LEFT JOIN fee_decision_child AS part ON decision.id = part.fee_decision_id
             LEFT JOIN person AS head ON decision.head_of_family_id = head.id
             LEFT JOIN person AS partner ON decision.partner_id = partner.id
             LEFT JOIN person AS child ON part.child_id = child.id
             LEFT JOIN daycare AS placement_unit ON placement_unit.id = part.placement_unit_id
-            LEFT JOIN (
-                SELECT fee_decision.id, coalesce(sum(fee_decision_child.final_fee), 0) sum
-                FROM fee_decision
-                LEFT JOIN fee_decision_child ON fee_decision.id = fee_decision_child.fee_decision_id
-                GROUP BY fee_decision.id
-            ) sums ON decision.id = sums.id
             ${if (areas.isNotEmpty() || financeDecisionHandlerId != null) youngestChildJoin else ""}
             ${if (noStartingPlacements) firstPlacementStartingThisMonthChildIdsQueryJoin else ""}
             ${if (conditions.isNotEmpty()) """
@@ -398,7 +392,6 @@ fun Database.Read.searchFeeDecisions(
         )
         SELECT
             decision_ids.count,
-            decision_ids.sum,
             decision.*,
             part.child_id,
             part.child_date_of_birth,

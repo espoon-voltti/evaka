@@ -356,6 +356,6 @@ val feeDecisionSummaryRowMapper = RowViewMapper { rv ->
         approvedAt = rv.mapColumn("approved_at"),
         created = rv.mapColumn("created"),
         sentAt = rv.mapColumn("sent_at"),
-        finalPrice = rv.mapColumn("sum")
+        finalPrice = rv.mapColumn("total_fee")
     )
 }
