@@ -16,6 +16,7 @@ import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesPaged
 import fi.espoo.evaka.pis.getFinanceDecisionHandlers
 import fi.espoo.evaka.pis.isPinLocked
+import fi.espoo.evaka.pis.setEmployeePreferredFirstName
 import fi.espoo.evaka.pis.updateEmployee
 import fi.espoo.evaka.pis.upsertPinCode
 import fi.espoo.evaka.shared.EmployeeId
@@ -146,6 +147,61 @@ class EmployeeController(private val accessControl: AccessControl) {
                 getEmployeesPaged(tx, body.page ?: 1, (body.pageSize ?: 50).coerceAtMost(100), body.searchTerm ?: "")
             }
         }
+    }
+
+    data class EmployeePreferredFirstName(
+        val preferredFirstName: String?,
+        val preferredFirstNameOptions: List<String>
+    )
+    @GetMapping("/preferred-first-name")
+    fun getEmployeePreferredFirstName(
+        db: Database,
+        user: AuthenticatedUser
+    ): EmployeePreferredFirstName {
+        Audit.EmployeePreferredFirstNameRead.log()
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                val employee = tx.getEmployee(EmployeeId(user.rawId())) ?: throw NotFound()
+                EmployeePreferredFirstName(
+                    preferredFirstName = employee.preferredFirstName,
+                    preferredFirstNameOptions = possiblePreferredFirstNames(employee)
+                )
+            }
+        }
+    }
+
+    data class EmployeeSetPreferredFirstNameUpdateRequest(
+        val preferredFirstName: String?
+    )
+    @PostMapping("/preferred-first-name")
+    fun setEmployeePreferredFirstName(
+        db: Database,
+        user: AuthenticatedUser,
+        @RequestBody body: EmployeeSetPreferredFirstNameUpdateRequest
+    ) {
+        Audit.EmployePreferredFirstNameUpdate.log()
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val employee = tx.getEmployee(EmployeeId(user.rawId())) ?: throw NotFound()
+                if (body.preferredFirstName == null) {
+                    tx.setEmployeePreferredFirstName(EmployeeId(user.rawId()), null)
+                } else {
+                    if (possiblePreferredFirstNames(employee).contains(body.preferredFirstName)) {
+                        tx.setEmployeePreferredFirstName(EmployeeId(user.rawId()), body.preferredFirstName)
+                    } else throw NotFound("Given preferred first name is not allowed")
+                }
+            }
+        }
+    }
+
+    private fun possiblePreferredFirstNames(employee: Employee): List<String> {
+        val fullFirstNames = employee.firstName.split("\\s+".toRegex())
+        val splitTwoPartNames = fullFirstNames
+            .filter { it.contains('-') }
+            .map { it.split("\\-+".toRegex()) }
+            .flatten()
+
+        return fullFirstNames + splitTwoPartNames
     }
 }
 

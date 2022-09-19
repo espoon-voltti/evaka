@@ -98,7 +98,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
             firstName = "Teppo", lastName = "Testaaja", email = null
         )
         db.transaction { tx ->
-            tx.insertTestEmployee(DevEmployee(id = employeeId, externalId = externalId, roles = setOf(UserRole.FINANCE_ADMIN)))
+            tx.insertTestEmployee(DevEmployee(id = employeeId, externalId = externalId, roles = setOf(UserRole.FINANCE_ADMIN), preferredFirstName = "Kutsumanimi"))
         }
 
         val (_, res, result) = http.post("/system/employee-login")
@@ -109,7 +109,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertTrue(res.isSuccessful)
         val expected = EmployeeUser(
             id = employeeId,
-            firstName = "Teppo", lastName = "Testaaja", globalRoles = setOf(UserRole.FINANCE_ADMIN), allScopedRoles = setOf()
+            firstName = "Kutsumanimi", lastName = "Testaaja", globalRoles = setOf(UserRole.FINANCE_ADMIN), allScopedRoles = setOf()
         )
         assertEquals(expected, result.get())
         assertEquals("666666", db.read { tx -> tx.getEmployeeNumber(result.get().id) })

@@ -70,7 +70,23 @@ export interface Employee {
   firstName: string
   id: UUID
   lastName: string
+  preferredFirstName: string | null
   updated: HelsinkiDateTime | null
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.EmployeePreferredFirstName
+*/
+export interface EmployeePreferredFirstName {
+  preferredFirstName: string | null
+  preferredFirstNameOptions: string[]
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.EmployeeController.EmployeeSetPreferredFirstNameUpdateRequest
+*/
+export interface EmployeeSetPreferredFirstNameUpdateRequest {
+  preferredFirstName: string | null
 }
 
 /**
@@ -89,6 +105,7 @@ export interface EmployeeUser {
   globalRoles: UserRole[]
   id: UUID
   lastName: string
+  preferredFirstName: string | null
 }
 
 /**

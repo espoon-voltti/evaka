@@ -37,6 +37,7 @@ export const fi = {
     createUnit: 'Luo uusi yksikkö',
     personalMobileDevices: 'Johtajan eVaka-mobiili',
     employeePinCode: 'PIN-koodin hallinta',
+    preferredFirstName: 'Kutsumanimen hallinta',
     welcomePage: 'Tervetuloa eVakaan',
     vasuPage: 'Vasu 2021',
     vasuTemplates: 'Vasu-pohjat',
@@ -3648,5 +3649,13 @@ export const fi = {
     requiresStrongAuth: 'Vahva tunnistautuminen',
     conditionContinuousPlacement:
       'Kyselyyn voi vastata jos lapsella yhtäjaksoinen sijoitus'
+  },
+  preferredFirstName: {
+    popupLink: 'Kutsumanimi',
+    title: 'Kutsumanimi',
+    description:
+      'Voit määritellä eVakassa käytössä olevan kutsumanimesi. Kutsumanimen tulee olla jokin etunimistäsi. Jos nimesi on vaihtunut ja sinulla on tarve päivittää eVakaan uusi nimesi, ole yhteydessä Espoon HelpDeskiin.',
+    select: 'Valitse kutsumanimi',
+    confirm: 'Vahvista'
   }
 }

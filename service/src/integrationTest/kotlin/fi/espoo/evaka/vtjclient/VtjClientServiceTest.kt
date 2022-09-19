@@ -164,6 +164,7 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
 
     private val requestingUser = Employee(
         id = EmployeeId(NIL_ID),
+        preferredFirstName = null,
         firstName = "Integration",
         lastName = "Test",
         email = "integration-test@example.org",

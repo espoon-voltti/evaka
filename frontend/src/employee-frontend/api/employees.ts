@@ -5,6 +5,10 @@
 import { Failure, Paged, Result, Success } from 'lib-common/api'
 import { GlobalRole } from 'lib-common/api-types/employee-auth'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
+import {
+  EmployeePreferredFirstName,
+  EmployeeSetPreferredFirstNameUpdateRequest
+} from 'lib-common/generated/api-types/pis'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
@@ -95,5 +99,23 @@ export function getPersonalMobileDevices(): Promise<Result<MobileDevice[]>> {
   return client
     .get<JsonOf<MobileDevice[]>>('/mobile-devices/personal')
     .then(({ data }) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export function getEmployeePreferredFirstName(): Promise<
+  Result<EmployeePreferredFirstName>
+> {
+  return client
+    .get<JsonOf<EmployeePreferredFirstName>>('/employee/preferred-first-name')
+    .then(({ data }) => Success.of(data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export function setEmployeePreferredFirstName(
+  preferredFirstName: EmployeeSetPreferredFirstNameUpdateRequest
+): Promise<Result<void>> {
+  return client
+    .post('/employee/preferred-first-name', preferredFirstName)
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

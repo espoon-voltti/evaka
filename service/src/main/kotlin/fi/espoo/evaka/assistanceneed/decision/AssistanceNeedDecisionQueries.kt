@@ -141,9 +141,9 @@ fun Database.Read.getAssistanceNeedDecisionById(id: AssistanceNeedDecisionId): A
           service_opt_interpretation_and_assistance_services, service_opt_special_aides, services_motivation,
           expert_responsibilities, guardians_heard_on, view_of_guardians, other_representative_heard, other_representative_details, 
           assistance_levels, motivation_for_decision,
-          decision_maker_employee_id, decision_maker_title, concat(dm.first_name, ' ', dm.last_name) decision_maker_name,
-          preparer_1_employee_id, preparer_1_title, concat(p1.first_name, ' ', p1.last_name) preparer_1_name, preparer_1_phone_number,
-          preparer_2_employee_id, preparer_2_title, concat(p2.first_name, ' ', p2.last_name) preparer_2_name, preparer_2_phone_number,
+          decision_maker_employee_id, decision_maker_title, concat(coalesce(dm.preferred_first_name, dm.first_name), ' ', dm.last_name) decision_maker_name,
+          preparer_1_employee_id, preparer_1_title, concat(coalesce(p1.preferred_first_name, p1.first_name), ' ', p1.last_name) preparer_1_name, preparer_1_phone_number,
+          preparer_2_employee_id, preparer_2_title, concat(coalesce(p2.preferred_first_name, p2.first_name), ' ', p2.last_name) preparer_2_name, preparer_2_phone_number,
           coalesce(jsonb_agg(jsonb_build_object(
             'id', dg.id,
             'personId', dg.person_id,

@@ -93,7 +93,7 @@ SELECT
     partner.postal_code as partner_postal_code,
     partner.post_office as partner_post_office,
     partner.restricted_details_enabled as partner_restricted_details_enabled,
-    approved_by.first_name as approved_by_first_name,
+    coalesce(approved_by.preferred_first_name, approved_by.first_name) as approved_by_first_name,
     approved_by.last_name as approved_by_last_name,
     child.first_name as child_first_name,
     child.last_name as child_last_name,
@@ -106,7 +106,7 @@ SELECT
     daycare.language as placement_unit_lang,
     care_area.id as placement_unit_area_id,
     care_area.name as placement_unit_area_name,
-    finance_decision_handler.first_name AS finance_decision_handler_first_name,
+    coalesce(finance_decision_handler.preferred_first_name, finance_decision_handler.first_name) AS finance_decision_handler_first_name,
     finance_decision_handler.last_name AS finance_decision_handler_last_name
 FROM fee_decision as decision
 LEFT JOIN fee_decision_child as part ON decision.id = part.fee_decision_id

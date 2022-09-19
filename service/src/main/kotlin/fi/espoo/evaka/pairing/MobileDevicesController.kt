@@ -105,7 +105,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
                     tx.markEmployeeLastLogin(clock, params.employeeId)
                     tx.resetEmployeePinFailureCount(params.employeeId)
                     tx.getEmployeeUser(params.employeeId)
-                        ?.let { PinLoginResponse(PinLoginStatus.SUCCESS, Employee(it.firstName, it.lastName)) }
+                        ?.let { PinLoginResponse(PinLoginStatus.SUCCESS, Employee(it.preferredFirstName ?: it.firstName, it.lastName)) }
                         ?: PinLoginResponse(PinLoginStatus.WRONG_PIN)
                 } else {
                     if (tx.updateEmployeePinFailureCountAndCheckIfLocked(params.employeeId)) {

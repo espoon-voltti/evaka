@@ -48,6 +48,7 @@ import AssistanceNeedDecisionPage from './components/child-information/assistanc
 import ErrorMessage from './components/common/ErrorMessage'
 import DecisionPage from './components/decision-draft/DecisionDraft'
 import EmployeePinCodePage from './components/employee/EmployeePinCodePage'
+import EmployeePreferredFirstNamePage from './components/employee/EmployeePreferredFirstNamePage'
 import EmployeePage from './components/employees/EmployeePage'
 import EmployeesPage from './components/employees/EmployeesPage'
 import FeeDecisionDetailsPage from './components/fee-decision-details/FeeDecisionDetailsPage'
@@ -100,7 +101,7 @@ import { hasRole } from './utils/roles'
 
 export default function App() {
   const { i18n } = useTranslation()
-  const authStatus = useAuthStatus()
+  const { authStatus, refreshAuthStatus } = useAuthStatus()
 
   if (authStatus === undefined) {
     return null
@@ -574,6 +575,16 @@ export default function App() {
                     }
                   />
                   <Route
+                    path="/preferred-first-name"
+                    element={
+                      <EmployeeRoute title={i18n.titles.preferredFirstName}>
+                        <EmployeePreferredFirstNamePage
+                          refreshAuthStatus={refreshAuthStatus}
+                        />
+                      </EmployeeRoute>
+                    }
+                  />
+                  <Route
                     path="/employees"
                     element={
                       <EmployeeRoute title={i18n.employees.title}>
@@ -698,7 +709,12 @@ function RedirectToMainPage() {
   }
 }
 
-function useAuthStatus(): AuthStatus<User> | undefined {
+interface AuthStatusWithRefresh {
+  authStatus: AuthStatus<User> | undefined
+  refreshAuthStatus: () => void
+}
+
+function useAuthStatus(): AuthStatusWithRefresh {
   const [authStatus, setAuthStatus] = useState<AuthStatus<User>>()
 
   const refreshAuthStatus = useCallback(
@@ -720,7 +736,10 @@ function useAuthStatus(): AuthStatus<User> | undefined {
     )
   }, [refreshAuthStatus])
 
-  return authStatus
+  return {
+    authStatus,
+    refreshAuthStatus
+  }
 }
 
 const PairingModal = React.memo(function GlobalModals() {

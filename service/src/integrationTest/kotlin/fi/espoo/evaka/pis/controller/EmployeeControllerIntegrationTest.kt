@@ -88,6 +88,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     val employee1 = Employee(
         email = "employee1@espoo.fi",
+        preferredFirstName = null,
         firstName = "etunimi1",
         lastName = "sukunimi1",
         externalId = ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString()),
@@ -98,6 +99,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
 
     val employee2 = Employee(
         email = "employee2@espoo.fi",
+        preferredFirstName = null,
         firstName = "etunimi2",
         lastName = "sukunimi2",
         externalId = ExternalId.of(namespace = "espoo-ad", value = UUID.randomUUID().toString()),

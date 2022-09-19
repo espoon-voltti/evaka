@@ -74,7 +74,7 @@ private fun Database.Read.getDaycaresQuery() = createQuery(
 SELECT
   daycare.*,
   finance_decision_handler.id AS finance_decision_handler_id,
-  finance_decision_handler.first_name AS finance_decision_handler_first_name,
+  coalesce(finance_decision_handler.preferred_first_name, finance_decision_handler.first_name) AS finance_decision_handler_first_name,
   finance_decision_handler.last_name AS finance_decision_handler_last_name,
   finance_decision_handler.created AS finance_decision_handler_created,
   um.name AS unit_manager_name, um.email AS unit_manager_email, um.phone AS unit_manager_phone,
