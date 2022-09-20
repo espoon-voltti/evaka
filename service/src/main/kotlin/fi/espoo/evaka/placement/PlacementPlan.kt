@@ -23,10 +23,13 @@ data class PlacementPlan(
 sealed interface PlacementPlanExtent {
     /** Simple placement plan that corresponds to a single placement */
     data class FullSingle(val period: FiniteDateRange) : PlacementPlanExtent
+
     /** Double placement plan, only preschool */
     data class OnlyPreschool(val period: FiniteDateRange) : PlacementPlanExtent
+
     /** Double placement plan, only preschool+daycare */
     data class OnlyPreschoolDaycare(val period: FiniteDateRange) : PlacementPlanExtent
+
     /** Double placement plan, both parts */
     data class FullDouble(
         val period: FiniteDateRange,

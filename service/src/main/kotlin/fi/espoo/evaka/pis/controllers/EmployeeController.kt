@@ -77,6 +77,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     }
 
     data class EmployeeUpdate(val globalRoles: List<UserRole>)
+
     @PutMapping("/{id}")
     fun updateEmployee(
         db: Database,
@@ -168,6 +169,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         val preferredFirstName: String?,
         val preferredFirstNameOptions: List<String>
     )
+
     @GetMapping("/preferred-first-name")
     fun getEmployeePreferredFirstName(
         db: Database,
@@ -186,6 +188,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     }
 
     data class EmployeeSetPreferredFirstNameUpdateRequest(val preferredFirstName: String?)
+
     @PostMapping("/preferred-first-name")
     fun setEmployeePreferredFirstName(
         db: Database,

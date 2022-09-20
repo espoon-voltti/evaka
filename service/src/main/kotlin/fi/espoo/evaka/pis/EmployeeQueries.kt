@@ -247,7 +247,6 @@ fun getEmployeesPaged(
     pageSize: Int,
     searchTerm: String = ""
 ): Paged<EmployeeWithDaycareRoles> {
-
     val (freeTextQuery, freeTextParams) =
         freeTextSearchQueryForColumns(
             listOf("employee"),

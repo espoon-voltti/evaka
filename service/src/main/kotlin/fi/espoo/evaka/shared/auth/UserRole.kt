@@ -17,6 +17,7 @@ enum class UserRole : DatabaseEnum {
     UNIT_SUPERVISOR,
     STAFF,
     SPECIAL_EDUCATION_TEACHER,
+
     /** Varhaiskasvatussihteeri */
     EARLY_CHILDHOOD_EDUCATION_SECRETARY,
     MOBILE,

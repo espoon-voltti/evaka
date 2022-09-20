@@ -134,7 +134,6 @@ class PDFServiceTest {
 
     @Test
     fun createFinnishPDFs() {
-
         createPDF(daycareTransferDecision, true, "fi")
         createPDF(daycareDecision, false, "fi")
         createPDF(daycareDecisionPartTime, false, "fi")
@@ -147,7 +146,6 @@ class PDFServiceTest {
 
     @Test
     fun createSwedishPDFs() {
-
         createPDF(daycareTransferDecision, true, "sv")
         createPDF(daycareDecision, false, "sv")
         createPDF(daycareDecisionPartTime, false, "sv")

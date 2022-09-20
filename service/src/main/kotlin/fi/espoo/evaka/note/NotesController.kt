@@ -28,6 +28,7 @@ class NotesController(private val ac: AccessControl) {
         val childStickyNotes: List<ChildStickyNote>,
         val groupNotes: List<GroupNote>
     )
+
     @GetMapping("/daycare-groups/{groupId}/notes")
     fun getNotesByGroup(
         user: AuthenticatedUser,

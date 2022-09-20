@@ -38,7 +38,6 @@ class VtjClientService(
     private val logger = KotlinLogging.logger {}
 
     override fun query(query: VTJQuery): Henkilo? {
-
         val request = query.toRequest()
 
         logger.auditVTJ(toLogParamsMap(query = query, status = CREATING_REQUEST)) {

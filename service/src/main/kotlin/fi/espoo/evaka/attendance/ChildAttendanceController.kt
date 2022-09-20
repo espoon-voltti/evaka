@@ -467,7 +467,6 @@ private fun Database.Read.fetchChildPlacementTypeDates(
     startDate: LocalDate,
     endDate: LocalDate
 ): List<PlacementTypeDate> {
-
     // language=sql
     val sql =
         """

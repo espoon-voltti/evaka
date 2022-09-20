@@ -44,6 +44,7 @@ class PairingsController(
         data class Unit(val unitId: DaycareId) : PostPairingReq(unitId)
         data class Employee(val employeeId: EmployeeId) : PostPairingReq(employeeId)
     }
+
     @PostMapping("/pairings")
     fun postPairing(
         db: Database,
@@ -97,6 +98,7 @@ class PairingsController(
      * Pairing status changes from WAITING_CHALLENGE to WAITING_RESPONSE.
      */
     data class PostPairingChallengeReq(val challengeKey: String)
+
     @PostMapping("/public/pairings/challenge")
     fun postPairingChallenge(
         db: Database,
@@ -118,6 +120,7 @@ class PairingsController(
      * Pairing status changes from WAITING_RESPONSE to READY.
      */
     data class PostPairingResponseReq(val challengeKey: String, val responseKey: String)
+
     @PostMapping("/pairings/{id}/response")
     fun postPairingResponse(
         db: Database,
@@ -160,6 +163,7 @@ class PairingsController(
      * Pairing status changes from READY to PAIRED.
      */
     data class PostPairingValidationReq(val challengeKey: String, val responseKey: String)
+
     @PostMapping("/system/pairings/{id}/validation")
     fun postPairingValidation(
         db: Database,
@@ -185,6 +189,7 @@ class PairingsController(
      * Endpoint takes in the previously received pairing id and returns the pairing status.
      */
     data class PairingStatusRes(val status: PairingStatus)
+
     @GetMapping("/public/pairings/{id}/status")
     fun getPairingStatus(db: Database, @PathVariable id: PairingId): PairingStatusRes {
         Audit.PairingStatusRead.log(targetId = id)

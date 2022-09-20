@@ -253,8 +253,8 @@ data class Aikajakso(val alku: LocalDate, val loppu: LocalDate?) {
 }
 
 enum class PerusteenDiaarinumero {
-    @JsonProperty("102/011/2014") // "Esiopetuksen opetussuunnitelman perusteet 2014"
     // https://eperusteet.opintopolku.fi/#/en/esiopetus/419551/tiedot
+    @JsonProperty("102/011/2014") // "Esiopetuksen opetussuunnitelman perusteet 2014"
     PRESCHOOL,
     @JsonProperty(
         "57/011/2015"

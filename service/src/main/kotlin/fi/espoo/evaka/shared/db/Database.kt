@@ -81,6 +81,7 @@ class Database(private val jdbi: Jdbi) {
                 lazyHandle.value
             }
         }
+
         /**
          * Enters read mode, runs the given function, and exits read mode regardless of any
          * exceptions the function may have thrown.

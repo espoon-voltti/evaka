@@ -287,21 +287,28 @@ data class AbsenceWithModifierInfo(
 enum class AbsenceType : DatabaseEnum {
     /** A normal absence that has been informed to the staff */
     OTHER_ABSENCE,
+
     /** An absence caused by sickness */
     SICKLEAVE,
+
     /** A planned shift work absence or contract based absence */
     PLANNED_ABSENCE,
+
     /** An absence that has not been informed to the staff */
     UNKNOWN_ABSENCE,
+
     /** A forced absence (e.g. the daycare is closed) */
     FORCE_MAJEURE,
+
     /** An absence because of a parent leave */
     PARENTLEAVE,
+
     /**
      * An absence during a holiday season that fulfils specific requirements for being free of
      * charge
      */
     FREE_ABSENCE,
+
     /** An absence during a holiday season that warrants to charge a fine */
     UNAUTHORIZED_ABSENCE,
     ;

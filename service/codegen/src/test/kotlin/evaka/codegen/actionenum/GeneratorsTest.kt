@@ -9,15 +9,18 @@ import kotlin.test.assertEquals
 
 class GeneratorsTest {
     private enum class Empty
+
     @Suppress("unused")
     private enum class Single { VARIANT }
+
     @Suppress("unused")
     private enum class Multi { A, B, C }
 
     @Test
     fun `an enum with no variants should generate a type aliased to never`() {
         assertEquals(
-            "export type Empty = never\n", generateEnum<Empty>()()
+            "export type Empty = never\n",
+            generateEnum<Empty>()()
         )
     }
 

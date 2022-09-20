@@ -27,6 +27,7 @@ class StaticActionRuleTest : AccessControlTest() {
     private val employee = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), emptySet())
 
     private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
+
     @Test
     fun `IsCitizen permits only strongly authenticated citizen if allowWeakLogin = false`() {
         val action = Action.Global.READ_HOLIDAY_PERIODS

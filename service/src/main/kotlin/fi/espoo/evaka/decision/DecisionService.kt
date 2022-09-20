@@ -453,7 +453,6 @@ private fun createTemplate(
                 if (isTransferApplication) {
                     templateProvider.getDaycareTransferDecisionPath()
                 } else {
-
                     templateProvider.getDaycareDecisionPath()
                 }
             }

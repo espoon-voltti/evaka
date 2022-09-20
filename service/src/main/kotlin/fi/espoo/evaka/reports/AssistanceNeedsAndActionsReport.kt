@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class AssistanceNeedsAndActionsReportController(
+class AssistanceNeedsAndActionsReport(
     private val acl: AccessControlList,
     private val accessControl: AccessControl
 ) {
@@ -180,5 +180,5 @@ ORDER BY ca.name, u.name, g.name
         .bind("targetDate", date)
         .bind("units", authorizedUnits.ids)
         .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
-        .mapTo<AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow>()
+        .mapTo<AssistanceNeedsAndActionsReport.AssistanceNeedsAndActionsReportRow>()
         .list()

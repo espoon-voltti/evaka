@@ -303,7 +303,6 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
     @Test
     fun `terminating PRESCHOOL_DAYCARE with daycare only changes the remainder of the preschool to PRESCHOOL and terminates upcoming daycare`() {
-
         // |------------ PRESCHOOL_DAYCARE -------------||--------- DAYCARE --------||---
         // PRESCHOOL_DAYCARE ---|
         // 1. terminateDaycareOnly = true
@@ -424,7 +423,6 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
     @Test
     fun `terminating PRESCHOOL_DAYCARE with daycare only does not affect anything before termination date`() {
-
         // |--- PRESCHOOL_DAYCARE ---||--------- DAYCARE --------||--- PRESCHOOL_DAYCARE ---|
         // 1. terminateDaycareOnly = true
         //                                                          terminationDate   x

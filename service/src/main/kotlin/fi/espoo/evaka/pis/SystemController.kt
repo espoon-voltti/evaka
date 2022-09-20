@@ -29,11 +29,11 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
-@RestController
 /**
  * Controller for "system" endpoints intended to be only called from apigw as the system internal
  * user
  */
+@RestController
 class SystemController(
     private val personService: PersonService,
     private val accessControl: AccessControl

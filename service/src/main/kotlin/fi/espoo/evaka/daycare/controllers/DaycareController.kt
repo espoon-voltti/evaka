@@ -188,6 +188,7 @@ class DaycareController(
         val startDate: LocalDate,
         val endDate: LocalDate?
     )
+
     @PutMapping("/{daycareId}/groups/{groupId}")
     fun updateGroup(
         db: Database,

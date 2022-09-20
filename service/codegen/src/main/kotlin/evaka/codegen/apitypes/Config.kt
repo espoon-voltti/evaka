@@ -47,7 +47,11 @@ data class TSMapping(
 )
 
 val kotlinCollectionClasses = listOf(
-    Collection::class, Array::class, IntArray::class, DoubleArray::class, BooleanArray::class
+    Collection::class,
+    Array::class,
+    IntArray::class,
+    DoubleArray::class,
+    BooleanArray::class
 )
 
 val validMapKeyTypes = listOf(String::class, UUID::class, Id::class, LocalDate::class)

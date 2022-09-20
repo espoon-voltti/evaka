@@ -53,4 +53,3 @@ val wsdl2javaTask = tasks.register<JavaExec>("wsdl2java") {
 tasks.getByName<JavaCompile>("compileJava") {
     dependsOn(wsdl2javaTask)
 }
-

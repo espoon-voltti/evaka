@@ -24,13 +24,19 @@ class NoJUnit4Imports : Rule("no-old-junit-imports") {
             val importDirective = node.psi as KtImportDirective
             val path = importDirective.importPath?.pathStr
             if (path != null && path.contains("org.junit") && !path.contains("jupiter")) {
-                emit(node.startOffset, "Importing from JUnit 4, use org.junit.jupiter.* for JUnit 5 instead.",
-                    false)
+                emit(
+                    node.startOffset,
+                    "Importing from JUnit 4, use org.junit.jupiter.* for JUnit 5 instead.",
+                    false
+                )
             }
 
             if (path != null && path.contains("org.junit.jupiter.api.Assertions.")) {
-                emit(node.startOffset, "Use kotlin.test assertions instead of junit assertions for better type-safety",
-                    false)
+                emit(
+                    node.startOffset,
+                    "Use kotlin.test assertions instead of junit assertions for better type-safety",
+                    false
+                )
             }
         }
     }

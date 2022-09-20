@@ -399,6 +399,7 @@ private val excludedPlacementTypes =
         fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE_PART_DAY,
         fi.espoo.evaka.placement.PlacementType.SCHOOL_SHIFT_CARE
     )
+
 /**
  * Leaves out club and temporary placements since they shouldn't have an effect on fee or value
  * decisions

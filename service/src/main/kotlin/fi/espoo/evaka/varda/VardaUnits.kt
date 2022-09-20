@@ -156,9 +156,9 @@ enum class VardaUnitType(val vardaCode: String) {
 
 //  https://virkailija.opintopolku.fi/koodisto-service/rest/json/kieli/koodi
 enum class VardaLanguage(val vardaCode: String) {
-    fi("FI"),
-    sv("SV"),
-    en("EN")
+    FI("FI"),
+    SV("SV"),
+    EN("EN")
 }
 
 // https://virkailija.opintopolku.fi/koodisto-service/rest/json/vardakasvatusopillinenjarjestelma/koodi

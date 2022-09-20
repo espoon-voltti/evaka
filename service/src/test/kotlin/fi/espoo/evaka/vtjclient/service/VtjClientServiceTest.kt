@@ -169,7 +169,6 @@ class VtjClientServiceTest {
             service.query(query)
             fail<Exception>("Exception not thrown")
         } catch (ex: ClassCastException) {
-
             assertThat(ex.message).isEqualTo(expectedException.message)
 
             argumentCaptor<ILoggingEvent>().apply {
@@ -233,7 +232,6 @@ class VtjClientServiceTest {
 
     @Test
     fun `the service should use the request adapter to add required SOAP headers`() {
-
         val requestedBy = createPerson()
         val query =
             VTJQuery(
@@ -254,7 +252,6 @@ class VtjClientServiceTest {
 
     @Test
     fun `the service should create a request using correct details`() {
-
         val requestedBy = createPerson()
         val query =
             VTJQuery(
@@ -334,7 +331,6 @@ class VtjClientServiceTest {
     }
 
     private fun ILoggingEvent.assertLogArgumentsContain(query: VTJQuery, status: String) {
-
         // is there an easier way to verify that the values were passed to the logger?
         // this is dumb because it relies on internals of MapEntriesAppendingMarker
 

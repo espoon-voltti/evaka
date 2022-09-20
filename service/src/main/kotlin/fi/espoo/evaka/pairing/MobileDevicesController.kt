@@ -64,6 +64,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
     }
 
     data class RenameRequest(val name: String)
+
     @PutMapping("/mobile-devices/{id}/name")
     fun putMobileDeviceName(
         db: Database,

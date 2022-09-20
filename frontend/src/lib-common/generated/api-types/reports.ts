@@ -49,7 +49,7 @@ export interface AssistanceNeedDecisionsReportRow {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReport
+* Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReport.AssistanceNeedsAndActionsReport
 */
 export interface AssistanceNeedsAndActionsReport {
   actions: AssistanceActionOption[]
@@ -58,7 +58,7 @@ export interface AssistanceNeedsAndActionsReport {
 }
 
 /**
-* Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow
+* Generated from fi.espoo.evaka.reports.AssistanceNeedsAndActionsReport.AssistanceNeedsAndActionsReportRow
 */
 export interface AssistanceNeedsAndActionsReportRow {
   actionCounts: Record<string, number>

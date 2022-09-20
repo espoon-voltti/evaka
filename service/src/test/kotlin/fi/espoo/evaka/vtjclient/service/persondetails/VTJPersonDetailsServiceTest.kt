@@ -64,7 +64,6 @@ class VTJPersonDetailsServiceTest {
 
     @Test
     fun `details query service should return results with dependant details with a successful query`() {
-
         val expectedChildResult =
             validPerson.copy(firstNames = "Lapsi Lapsonen", socialSecurityNumber = "291013A950S")
         val expectedResult = validPerson.copy(dependants = listOf(expectedChildResult))

@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.utils
 import java.text.Normalizer
 
 private val REGEX_UNACCENT = "\\p{InCombiningDiacriticalMarks}+".toRegex()
+
 /** Converts accented characters into non-accented equivalents. */
 val stripAccent: (String) -> String = {
     val temp = Normalizer.normalize(it, Normalizer.Form.NFD)
@@ -14,6 +15,7 @@ val stripAccent: (String) -> String = {
 }
 
 private val REGEX_NON_ALPHANUMERIC = "[^\\w]".toRegex()
+
 /**
  * Completely strips all non-alphanumeric characters and replaces them with white space so the words
  * get split afterwards.

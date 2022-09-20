@@ -51,8 +51,8 @@ data class VoucherValueDecisionPdfData(
 )
 
 enum class DocumentLang {
-    fi,
-    sv
+    FI,
+    SV
 }
 
 fun BigDecimal.toDecimalString(): String = this.toString().replace('.', ',')
@@ -166,8 +166,8 @@ class PDFService(
             "value" to formatCents(decision.voucherValue),
             "voucherValueDescription" to
                 when (lang) {
-                    DocumentLang.fi -> decision.serviceNeed.voucherValueDescriptionFi
-                    DocumentLang.sv -> decision.serviceNeed.voucherValueDescriptionSv
+                    DocumentLang.FI -> decision.serviceNeed.voucherValueDescriptionFi
+                    DocumentLang.SV -> decision.serviceNeed.voucherValueDescriptionSv
                 },
             "headIncomeTotal" to formatCents(decision.headOfFamilyIncome?.total),
             "headIncomeEffect" to
@@ -215,7 +215,6 @@ class PDFService(
     }
 
     private fun createFeeDecisionPdfContext(data: FeeDecisionPdfData): Context {
-
         return Context().apply {
             locale = Locale.Builder().setLanguage(data.lang).build()
             setVariables(getFeeDecisionPdfVariables(data))
