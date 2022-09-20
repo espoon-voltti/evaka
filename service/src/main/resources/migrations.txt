@@ -269,3 +269,5 @@ V268__employee_preferred_first_name.sql
 V269__message_thread_is_copy.sql
 V270__fee_decision_sum_cache.sql
 V271__message_thread_children.sql
+V272__message_thread_participant.sql
+V273__message_thread_participant_data.sql

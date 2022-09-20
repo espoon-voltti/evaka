@@ -292,7 +292,7 @@ class MessageController(
 
             messageService.replyToThread(
                 db = dbc,
-                clock = clock,
+                now = clock.now(),
                 replyToMessageId = messageId,
                 senderAccount = accountId,
                 recipientAccountIds = body.recipientAccountIds,

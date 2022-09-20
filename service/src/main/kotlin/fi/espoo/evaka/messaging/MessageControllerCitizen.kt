@@ -127,7 +127,7 @@ class MessageControllerCitizen(
 
             messageService.replyToThread(
                 db = dbc,
-                clock = clock,
+                now = clock.now(),
                 replyToMessageId = messageId,
                 senderAccount = accountId,
                 recipientAccountIds = body.recipientAccountIds,
@@ -145,25 +145,30 @@ class MessageControllerCitizen(
         clock: EvakaClock,
         @RequestBody body: CitizenMessageBody,
     ): MessageThreadId {
+        val now = clock.now()
+        val today = now.toLocalDate()
+
         return db.connect { dbc ->
-            val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
-            val validReceivers = dbc.read { it.getCitizenReceivers(clock.today(), accountId).keys }
+            val senderId = dbc.read { it.getCitizenMessageAccount(user.id) }
+            val validReceivers = dbc.read { it.getCitizenReceivers(today, senderId).keys }
             val allReceiversValid =
                 body.recipients.all { validReceivers.map { receiver -> receiver.id }.contains(it.id) }
             if (allReceiversValid) {
+                val recipientIds = body.recipients.map { it.id }.toSet()
                 dbc.transaction { tx ->
-                    val contentId = tx.insertMessageContent(body.content, accountId)
+                    val contentId = tx.insertMessageContent(body.content, senderId)
                     val threadId = tx.insertThread(MessageType.MESSAGE, body.title, urgent = false, isCopy = false)
+                    tx.upsertThreadParticipants(threadId, senderId, recipientIds, now)
                     val messageId =
                         tx.insertMessage(
                             now = clock.now(),
                             contentId = contentId,
                             threadId = threadId,
-                            sender = accountId,
+                            sender = senderId,
                             recipientNames = body.recipients.map { it.name }
                         )
                     tx.insertMessageThreadChildren(body.children, threadId)
-                    tx.insertRecipients(body.recipients.map { it.id }.toSet(), messageId)
+                    tx.insertRecipients(recipientIds, messageId)
                     threadId
                 }
             } else {

@@ -151,6 +151,41 @@ fun Database.Transaction.insertMessageThreadChildren(
     batch.execute()
 }
 
+fun Database.Transaction.upsertThreadParticipants(
+    threadId: MessageThreadId,
+    senderId: MessageAccountId,
+    receiverIds: Set<MessageAccountId>,
+    now: HelsinkiDateTime,
+) {
+    this.createUpdate(
+        """
+        INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_sent_timestamp)
+        VALUES (:threadId, :accountId, :now, :now)
+        ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = :now, last_sent_timestamp = :now
+    """
+    )
+        .bind("threadId", threadId)
+        .bind("accountId", senderId)
+        .bind("now", now)
+        .execute()
+
+    val batch = this.prepareBatch(
+        """
+        INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_received_timestamp)
+        VALUES (:threadId, :accountId, :now, :now)
+        ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = :now, last_received_timestamp = :now
+    """
+    )
+    receiverIds.forEach {
+        batch
+            .bind("threadId", threadId)
+            .bind("accountId", it)
+            .bind("now", now)
+            .add()
+    }
+    batch.execute()
+}
+
 fun Database.Transaction.insertThread(
     type: MessageType,
     title: String,
