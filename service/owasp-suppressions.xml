@@ -45,4 +45,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         ]]></notes>
         <cve>CVE-2022-38751</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Misidentification
+        ]]></notes>
+        <cve>CVE-2021-42550</cve>
+    </suppress>
 </suppressions>
