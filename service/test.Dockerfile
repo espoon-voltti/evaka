@@ -5,6 +5,7 @@
 ARG BASE_IMAGE=evaka-service-builder:latest
 FROM "${BASE_IMAGE}"
 
+RUN ./gradlew --no-daemon ktfmtCheck
 RUN ./gradlew --no-daemon lintKotlin
 RUN ./gradlew --no-daemon codegenCheck
 RUN ./circle-check-migrations.sh
