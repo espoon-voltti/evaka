@@ -416,7 +416,6 @@ export interface InvoiceDetailed {
 export interface InvoiceDetailedResponse {
   data: InvoiceDetailed
   permittedActions: Action.Invoice[]
-  permittedCorrectionActions: Record<string, Action.InvoiceCorrection[]>
 }
 
 /**

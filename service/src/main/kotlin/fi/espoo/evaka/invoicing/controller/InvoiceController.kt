@@ -18,7 +18,6 @@ import fi.espoo.evaka.invoicing.service.InvoiceGenerator
 import fi.espoo.evaka.invoicing.service.InvoiceService
 import fi.espoo.evaka.invoicing.service.markManuallySent
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
@@ -178,14 +177,7 @@ class InvoiceController(
                 val invoice = tx.getDetailedInvoice(id) ?: throw NotFound("No invoice found with given ID ($id)")
                 val permittedActions =
                     accessControl.getPermittedActions<InvoiceId, Action.Invoice>(tx, user, clock, invoice.id)
-                val permittedCorrectionActions =
-                    accessControl.getPermittedActions<InvoiceCorrectionId, Action.InvoiceCorrection>(
-                        tx,
-                        user,
-                        clock,
-                        invoice.rows.mapNotNull { it.correctionId }
-                    )
-                InvoiceDetailedResponse(invoice, permittedActions, permittedCorrectionActions)
+                InvoiceDetailedResponse(invoice, permittedActions)
             }
         }
         return Wrapper(res)
@@ -194,7 +186,6 @@ class InvoiceController(
     data class InvoiceDetailedResponse(
         val data: InvoiceDetailed,
         val permittedActions: Set<Action.Invoice>,
-        val permittedCorrectionActions: Map<InvoiceCorrectionId, Set<Action.InvoiceCorrection>>,
     )
 
     @GetMapping("/head-of-family/{uuid}")

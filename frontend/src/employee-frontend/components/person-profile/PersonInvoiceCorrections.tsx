@@ -288,11 +288,11 @@ const ChildSection = React.memo(function ChildSection({
                 savedCostCenter: null,
                 price: correction.amount * correction.unitPrice
               }}
-              permittedActions={permittedActions}
               products={products}
               unitIds={unitIds}
               unitDetails={unitDetails}
               editable={false}
+              deletable={permittedActions.includes('DELETE')}
               update={() => undefined}
               remove={
                 correction.invoiceStatus && correction.invoiceStatus !== 'DRAFT'
@@ -320,11 +320,11 @@ const ChildSection = React.memo(function ChildSection({
           {editState?.childId === child.id && (
             <InvoiceRowSectionRow
               row={editState}
-              permittedActions={['UPDATE_NOTE', 'DELETE']}
               products={products}
               unitIds={unitIds}
               unitDetails={unitDetails}
               editable={true}
+              deletable={false}
               update={updateState}
               remove={undefined}
               addNote={() => editNote(editState.id, editState.note)}

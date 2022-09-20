@@ -84,9 +84,6 @@ export default React.memo(function InvoiceDetailsPage() {
             <InvoiceRowsSection
               rows={invoice.value.data.rows}
               permittedActions={invoice.value.permittedActions}
-              permittedCorrectionActions={
-                invoice.value.permittedCorrectionActions
-              }
               updateRows={updateRows}
               invoiceCodes={invoiceCodes}
               editable={editable}

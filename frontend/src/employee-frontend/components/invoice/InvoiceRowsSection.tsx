@@ -73,7 +73,6 @@ const emptyInvoiceRow = (
 interface Props {
   rows: InvoiceRowDetailed[]
   permittedActions: Action.Invoice[]
-  permittedCorrectionActions: Record<string, Action.InvoiceCorrection[]>
   updateRows: (rows: InvoiceRowDetailed[]) => void
   invoiceCodes: Result<InvoiceCodes>
   editable: boolean
@@ -110,7 +109,6 @@ const TotalPriceTh = styled(Th)`
 export default React.memo(function InvoiceRowsSection({
   rows,
   permittedActions,
-  permittedCorrectionActions,
   updateRows,
   invoiceCodes,
   editable
@@ -221,12 +219,6 @@ export default React.memo(function InvoiceRowsSection({
                     <InvoiceRowsSectionRow
                       key={firstRow.id || ''}
                       row={firstRow}
-                      permittedActions={
-                        firstRow.correctionId !== null
-                          ? permittedCorrectionActions[firstRow.correctionId] ??
-                            []
-                          : []
-                      }
                       update={updateInvoiceRow(updateRows, rows, firstRow)}
                       remove={
                         editable
@@ -239,17 +231,13 @@ export default React.memo(function InvoiceRowsSection({
                       products={products}
                       unitIds={unitIds}
                       unitDetails={unitDetails}
-                      editable={editable}
+                      editable={editable && permittedActions.includes('UPDATE')}
+                      deletable={permittedActions.includes('DELETE')}
                     />
                     {otherRows.map((row, index) => (
                       <InvoiceRowsSectionRow
                         key={index}
                         row={row}
-                        permittedActions={
-                          row.correctionId !== null
-                            ? permittedCorrectionActions[row.correctionId] ?? []
-                            : []
-                        }
                         update={updateInvoiceRow(updateRows, rows, row)}
                         remove={
                           editable
@@ -262,7 +250,10 @@ export default React.memo(function InvoiceRowsSection({
                         products={products}
                         unitIds={unitIds}
                         unitDetails={unitDetails}
-                        editable={editable}
+                        editable={
+                          editable && permittedActions.includes('UPDATE')
+                        }
+                        deletable={permittedActions.includes('DELETE')}
                       />
                     ))}
                   </Tbody>
