@@ -27,6 +27,27 @@ export const fi = {
     PRESCHOOL: 'JulkL 24.1 §:n kohdat 25 ja 30'
   },
   noRecord: 'Ei merkintää',
+  events: {
+    DAYCARE: 'Varhaiskasvatussuunnitelman tapahtumat',
+    PRESCHOOL: 'Lapsen esiopetuksen oppimissuunnitelman tapahtumat'
+  },
+  eventTypes: {
+    PUBLISHED: 'Julkaistu huoltajalle',
+    MOVED_TO_READY: 'Julkaistu Laadittu-tilaan',
+    RETURNED_TO_READY: 'Palautettu Laadittu-tilaan',
+    MOVED_TO_REVIEWED: 'Julkaistu Arvioitu-tilaan',
+    RETURNED_TO_REVIEWED: 'Palautettu Arvioitu-tilaan',
+    MOVED_TO_CLOSED: 'Päättynyt'
+  },
+  state: 'Suunnitelman tila',
+  states: {
+    DRAFT: 'Luonnos',
+    READY: 'Laadittu',
+    REVIEWED: 'Arvioitu',
+    CLOSED: 'Päättynyt'
+  },
+  lastModified: 'Viimeisin muokkauspäivämäärä',
+  lastPublished: 'Viimeksi julkaistu huoltajalle',
   validationErrors: {
     validDate: 'Anna muodossa pp.kk.vvvv',
     dateTooEarly: 'Valitse myöhäisempi päivä',

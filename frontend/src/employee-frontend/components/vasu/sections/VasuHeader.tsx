@@ -11,7 +11,6 @@ import { fontWeights, H1, H2 } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
 import { vasuTranslations } from 'lib-customizations/employee'
 
-import { useTranslation } from '../../../state/i18n'
 import { VasuStateChip } from '../../common/VasuStateChip'
 
 const HeaderSection = styled(ContentArea)`
@@ -55,7 +54,6 @@ export function VasuHeader({
     type
   }
 }: Props) {
-  const { i18n } = useTranslation()
   const translations = vasuTranslations[language]
 
   return (
@@ -67,7 +65,7 @@ export function VasuHeader({
         </H2>
       </Titles>
       <StateAndConfidentiality>
-        <VasuStateChip state={documentState} labels={i18n.vasu.states} />
+        <VasuStateChip state={documentState} labels={translations.states} />
         <Confidential>{translations.confidential}</Confidential>
         <div>{translations.law[type]}</div>
       </StateAndConfidentiality>

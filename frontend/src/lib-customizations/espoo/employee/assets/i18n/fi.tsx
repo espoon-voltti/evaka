@@ -1183,18 +1183,8 @@ export const fi = {
     }
   },
   vasu: {
-    lastModified: 'Viimeisin muokkauspäivämäärä',
-    lastPublished: 'Viimeksi julkaistu huoltajalle',
     leavePage: 'Poistu',
     edited: 'muokattu',
-    eventTypes: {
-      PUBLISHED: 'Julkaistu huoltajalle',
-      MOVED_TO_READY: 'Julkaistu Laadittu-tilaan',
-      RETURNED_TO_READY: 'Palautettu Laadittu-tilaan',
-      MOVED_TO_REVIEWED: 'Julkaistu Arvioitu-tilaan',
-      RETURNED_TO_REVIEWED: 'Palautettu Arvioitu-tilaan',
-      MOVED_TO_CLOSED: 'Päättynyt'
-    },
     states: {
       DRAFT: 'Luonnos',
       READY: 'Laadittu',
@@ -1251,12 +1241,6 @@ export const fi = {
         successText: ''
       }
     },
-    state: 'Suunnitelman tila',
-    events: {
-      DAYCARE: 'Varhaiskasvatussuunnitelman tapahtumat',
-      PRESCHOOL: 'Lapsen esiopetuksen oppimissuunnitelman tapahtumat'
-    },
-    noRecord: 'Ei merkintää',
     checkInPreview: 'Tarkista esikatselussa',
     newFollowUpEntryPlaceholder: 'Kirjoita uusi kirjaus...'
   },

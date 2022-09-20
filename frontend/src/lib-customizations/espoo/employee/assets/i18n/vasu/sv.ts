@@ -30,6 +30,28 @@ export const sv: typeof fi = {
     PRESCHOOL: 'OffentlighetsL 24.1 §§ punkt 25 och 30'
   },
   noRecord: 'Ingen markering',
+  events: {
+    DAYCARE: 'Händelser gällande barnets plan för småbarnspedagogik',
+    PRESCHOOL:
+      'Händelser gällande plan för barnets lärande inom förskoleundervisning'
+  },
+  eventTypes: {
+    PUBLISHED: 'Publicerad till vårdnadshavare',
+    MOVED_TO_READY: 'Publicerat i Behandlad-läge',
+    RETURNED_TO_READY: 'Återställt från Behandlad-läge',
+    MOVED_TO_REVIEWED: 'Publicerat i Granskad-läge',
+    RETURNED_TO_REVIEWED: 'Återställt från Granskad-läge',
+    MOVED_TO_CLOSED: 'Avslutad'
+  },
+  state: 'Planens läge',
+  states: {
+    DRAFT: 'Utkast',
+    READY: 'Behandlad',
+    REVIEWED: 'Granskad',
+    CLOSED: 'Avslutad'
+  },
+  lastModified: 'Senaste redigeringsdatum',
+  lastPublished: 'Senaste publicering för vårdnadshavare',
   validationErrors: {
     validDate: 'Ange i format dd.mm.åååå',
     dateTooEarly: 'Välj ett senare datum',
