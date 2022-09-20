@@ -82,9 +82,9 @@ export async function getUnreadMessagesCount(): Promise<
 
 export async function sendMessage(
   message: CitizenMessageBody
-): Promise<Result<UUID[]>> {
+): Promise<Result<UUID>> {
   return client
-    .post<JsonOf<UUID[]>>(`/citizen/messages`, message)
+    .post<JsonOf<UUID>>(`/citizen/messages`, message)
     .then(({ data }) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 }

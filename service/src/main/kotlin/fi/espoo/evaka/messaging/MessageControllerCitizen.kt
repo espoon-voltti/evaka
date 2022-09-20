@@ -144,7 +144,7 @@ class MessageControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @RequestBody body: CitizenMessageBody,
-    ): List<MessageThreadId> {
+    ): MessageThreadId {
         return db.connect { dbc ->
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
             val validReceivers = dbc.read { it.getCitizenReceivers(clock.today(), accountId).keys }
@@ -164,9 +164,7 @@ class MessageControllerCitizen(
                         )
                     tx.insertMessageThreadChildren(body.children, threadId)
                     tx.insertRecipients(body.recipients.map { it.id }.toSet(), messageId)
-                    body.recipients.map {
-                        threadId
-                    }
+                    threadId
                 }
             } else {
                 throw Forbidden("Permission denied.")
