@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -38,7 +39,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 enum class InvoiceDistinctiveParams {
     MISSING_ADDRESS
@@ -73,22 +73,21 @@ class InvoiceController(
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         return db.connect { dbc ->
-            dbc
-                .read { tx ->
-                    tx.paginatedSearch(
-                        body.page,
-                        body.pageSize,
-                        body.sortBy ?: InvoiceSortParam.STATUS,
-                        body.sortDirection ?: SortDirection.DESC,
-                        body.status ?: emptyList(),
-                        body.area ?: emptyList(),
-                        body.unit,
-                        body.distinctions ?: emptyList(),
-                        body.searchTerms ?: "",
-                        body.periodStart,
-                        body.periodEnd,
-                    )
-                }
+            dbc.read { tx ->
+                tx.paginatedSearch(
+                    body.page,
+                    body.pageSize,
+                    body.sortBy ?: InvoiceSortParam.STATUS,
+                    body.sortDirection ?: SortDirection.DESC,
+                    body.status ?: emptyList(),
+                    body.area ?: emptyList(),
+                    body.unit,
+                    body.distinctions ?: emptyList(),
+                    body.searchTerms ?: "",
+                    body.periodStart,
+                    body.periodEnd,
+                )
+            }
         }
     }
 
@@ -100,7 +99,12 @@ class InvoiceController(
     }
 
     @PostMapping("/delete-drafts")
-    fun deleteDraftInvoices(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody invoiceIds: List<InvoiceId>) {
+    fun deleteDraftInvoices(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestBody invoiceIds: List<InvoiceId>
+    ) {
         Audit.InvoicesDeleteDrafts.log(targetId = invoiceIds)
         accessControl.requirePermissionFor(user, clock, Action.Invoice.DELETE, invoiceIds)
         db.connect { dbc -> dbc.transaction { it.deleteDraftInvoices(invoiceIds) } }
@@ -112,9 +116,11 @@ class InvoiceController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        @RequestParam(required = false) invoiceDate: LocalDate?,
+        @RequestParam(required = false)
+        invoiceDate: LocalDate?,
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        @RequestParam(required = false) dueDate: LocalDate?,
+        @RequestParam(required = false)
+        dueDate: LocalDate?,
         @RequestBody invoiceIds: List<InvoiceId>
     ) {
         Audit.InvoicesSend.log(targetId = invoiceIds)
@@ -138,24 +144,42 @@ class InvoiceController(
             dbc.transaction { tx ->
                 val invoiceIds = service.getInvoiceIds(tx, payload.from, payload.to, payload.areas)
                 accessControl.requirePermissionFor(user, clock, Action.Invoice.SEND, invoiceIds)
-                service.sendInvoices(tx, user, clock, invoiceIds, payload.invoiceDate, payload.dueDate)
+                service.sendInvoices(
+                    tx,
+                    user,
+                    clock,
+                    invoiceIds,
+                    payload.invoiceDate,
+                    payload.dueDate
+                )
             }
         }
     }
 
     @PostMapping("/mark-sent")
-    fun markInvoicesSent(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody invoiceIds: List<InvoiceId>) {
+    fun markInvoicesSent(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestBody invoiceIds: List<InvoiceId>
+    ) {
         Audit.InvoicesMarkSent.log(targetId = invoiceIds)
         accessControl.requirePermissionFor(user, clock, Action.Invoice.UPDATE, invoiceIds)
         db.connect { dbc -> dbc.transaction { it.markManuallySent(user, clock.now(), invoiceIds) } }
     }
 
     @GetMapping("/{id}")
-    fun getInvoice(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable id: InvoiceId): Wrapper<InvoiceDetailed> {
+    fun getInvoice(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable id: InvoiceId
+    ): Wrapper<InvoiceDetailed> {
         Audit.InvoicesRead.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Invoice.READ, id)
-        val res = db.connect { dbc -> dbc.read { it.getDetailedInvoice(id) } }
-            ?: throw NotFound("No invoice found with given ID ($id)")
+        val res =
+            db.connect { dbc -> dbc.read { it.getDetailedInvoice(id) } }
+                ?: throw NotFound("No invoice found with given ID ($id)")
         return Wrapper(res)
     }
 
@@ -185,13 +209,23 @@ class InvoiceController(
     }
 
     @GetMapping("/codes")
-    fun getInvoiceCodes(db: Database, user: AuthenticatedUser, clock: EvakaClock): Wrapper<InvoiceCodes> {
+    fun getInvoiceCodes(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock
+    ): Wrapper<InvoiceCodes> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_INVOICE_CODES)
         return Wrapper(db.connect { dbc -> dbc.read { service.getInvoiceCodes(it) } })
     }
 }
 
-data class InvoicePayload(val from: LocalDate, val to: LocalDate, val areas: List<String>, val invoiceDate: LocalDate?, val dueDate: LocalDate?)
+data class InvoicePayload(
+    val from: LocalDate,
+    val to: LocalDate,
+    val areas: List<String>,
+    val invoiceDate: LocalDate?,
+    val dueDate: LocalDate?
+)
 
 data class SearchInvoicesRequest(
     val page: Int,

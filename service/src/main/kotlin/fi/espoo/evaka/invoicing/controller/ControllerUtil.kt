@@ -7,8 +7,9 @@ package fi.espoo.evaka.invoicing.controller
 import fi.espoo.evaka.shared.domain.BadRequest
 import java.util.UUID
 
-fun parseUUID(uuid: String): UUID = try {
-    UUID.fromString(uuid)
-} catch (e: IllegalArgumentException) {
-    throw BadRequest("Given ID ($uuid) is not a valid UUID")
-}
+fun parseUUID(uuid: String): UUID =
+    try {
+        UUID.fromString(uuid)
+    } catch (e: IllegalArgumentException) {
+        throw BadRequest("Given ID ($uuid) is not a valid UUID")
+    }

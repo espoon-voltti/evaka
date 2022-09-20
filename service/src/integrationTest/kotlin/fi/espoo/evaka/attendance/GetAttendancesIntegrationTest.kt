@@ -35,8 +35,6 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.withMockedTime
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -45,6 +43,8 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val mobileUser = AuthenticatedUser.MobileDevice(MobileDeviceId(UUID.randomUUID()))
@@ -61,8 +61,12 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
-            tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId2, daycareId = testDaycare2.id, name = groupName))
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName)
+            )
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(id = groupId2, daycareId = testDaycare2.id, name = groupName)
+            )
             tx.insertTestPlacement(
                 id = daycarePlacementId,
                 childId = testChild_1.id,
@@ -157,7 +161,10 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val child = expectOneChild()
         assertEquals(AttendanceStatus.PRESENT, child.status)
         assertNotNull(child.attendance)
-        assertEquals(arrived.withTime(arrived.toLocalTime().withSecond(0).withNano(0)), child.attendance!!.arrived)
+        assertEquals(
+            arrived.withTime(arrived.toLocalTime().withSecond(0).withNano(0)),
+            child.attendance!!.arrived
+        )
         assertNull(child.attendance!!.departed)
         assertEquals(0, child.absences.size)
     }
@@ -177,8 +184,14 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val child = expectOneChild()
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
-        assertEquals(arrived.withTime(arrived.toLocalTime().withSecond(0).withNano(0)), child.attendance!!.arrived)
-        assertEquals(departed.withTime(departed.toLocalTime().withSecond(0).withNano(0)), child.attendance!!.departed)
+        assertEquals(
+            arrived.withTime(arrived.toLocalTime().withSecond(0).withNano(0)),
+            child.attendance!!.arrived
+        )
+        assertEquals(
+            departed.withTime(departed.toLocalTime().withSecond(0).withNano(0)),
+            child.attendance!!.departed
+        )
         assertEquals(0, child.absences.size)
     }
 
@@ -215,15 +228,13 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     @Test
     fun `child has regular daily service times`() {
-        val testTimes = DailyServiceTimes.RegularTimes(
-            regularTimes = TimeRange(LocalTime.of(8, 15), LocalTime.of(17, 19)),
-            validityPeriod = DateRange(now.toLocalDate().minusDays(10), null)
-        )
-        db.transaction { tx ->
-            tx.createChildDailyServiceTimes(
-                childId = testChild_1.id,
-                times = testTimes
+        val testTimes =
+            DailyServiceTimes.RegularTimes(
+                regularTimes = TimeRange(LocalTime.of(8, 15), LocalTime.of(17, 19)),
+                validityPeriod = DateRange(now.toLocalDate().minusDays(10), null)
             )
+        db.transaction { tx ->
+            tx.createChildDailyServiceTimes(childId = testChild_1.id, times = testTimes)
         }
         val child = expectOneChild()
         assertEquals(testTimes, child.dailyServiceTimes)
@@ -231,21 +242,19 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     @Test
     fun `child has irregular daily service times`() {
-        val testTimes = DailyServiceTimes.IrregularTimes(
-            monday = TimeRange(LocalTime.of(8, 15), LocalTime.of(17, 19)),
-            tuesday = TimeRange(LocalTime.of(8, 16), LocalTime.of(17, 19)),
-            wednesday = TimeRange(LocalTime.of(8, 17), LocalTime.of(17, 19)),
-            thursday = null,
-            friday = TimeRange(LocalTime.of(8, 19), LocalTime.of(17, 19)),
-            saturday = null,
-            sunday = TimeRange(LocalTime.of(10, 0), LocalTime.of(17, 30)),
-            validityPeriod = DateRange(now.toLocalDate().minusDays(10), null)
-        )
-        db.transaction { tx ->
-            tx.createChildDailyServiceTimes(
-                childId = testChild_1.id,
-                times = testTimes
+        val testTimes =
+            DailyServiceTimes.IrregularTimes(
+                monday = TimeRange(LocalTime.of(8, 15), LocalTime.of(17, 19)),
+                tuesday = TimeRange(LocalTime.of(8, 16), LocalTime.of(17, 19)),
+                wednesday = TimeRange(LocalTime.of(8, 17), LocalTime.of(17, 19)),
+                thursday = null,
+                friday = TimeRange(LocalTime.of(8, 19), LocalTime.of(17, 19)),
+                saturday = null,
+                sunday = TimeRange(LocalTime.of(10, 0), LocalTime.of(17, 30)),
+                validityPeriod = DateRange(now.toLocalDate().minusDays(10), null)
             )
+        db.transaction { tx ->
+            tx.createChildDailyServiceTimes(childId = testChild_1.id, times = testTimes)
         }
         val child = expectOneChild()
         assertEquals(testTimes, child.dailyServiceTimes)
@@ -265,7 +274,10 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val child = expectOneChild()
         assertEquals(AttendanceStatus.PRESENT, child.status)
         assertNotNull(child.attendance)
-        assertEquals(arrived.withTime(arrived.toLocalTime().withSecond(0).withNano(0)), child.attendance!!.arrived)
+        assertEquals(
+            arrived.withTime(arrived.toLocalTime().withSecond(0).withNano(0)),
+            child.attendance!!.arrived
+        )
         assertNull(child.attendance!!.departed)
         assertEquals(0, child.absences.size)
     }
@@ -285,8 +297,14 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val child = expectOneChild()
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
-        assertEquals(arrived.withTime(arrived.toLocalTime().withSecond(0).withNano(0)), child.attendance!!.arrived)
-        assertEquals(departed.withTime(departed.toLocalTime().withSecond(0).withNano(0)), child.attendance!!.departed)
+        assertEquals(
+            arrived.withTime(arrived.toLocalTime().withSecond(0).withNano(0)),
+            child.attendance!!.arrived
+        )
+        assertEquals(
+            departed.withTime(departed.toLocalTime().withSecond(0).withNano(0)),
+            child.attendance!!.departed
+        )
         assertEquals(0, child.absences.size)
     }
 
@@ -379,7 +397,10 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         }
         val child = expectOneChild()
-        assertEquals(listOf(AttendanceReservation(reservationStart, reservationEnd)), child.reservations)
+        assertEquals(
+            listOf(AttendanceReservation(reservationStart, reservationEnd)),
+            child.reservations
+        )
     }
 
     @Test
@@ -406,30 +427,43 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         }
         val childInBackup = expectOneChild(backupUnitId, mobileUser2)
-        assertEquals(listOf(AttendanceReservation(reservationStart, reservationEnd)), childInBackup.reservations)
+        assertEquals(
+            listOf(AttendanceReservation(reservationStart, reservationEnd)),
+            childInBackup.reservations
+        )
     }
 
     private fun fetchUnitInfo(): UnitInfo {
-        val (_, res, result) = http.get("/mobile/units/${testDaycare.id}")
-            .asUser(mobileUser)
-            .withMockedTime(now)
-            .responseObject<UnitInfo>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get("/mobile/units/${testDaycare.id}")
+                .asUser(mobileUser)
+                .withMockedTime(now)
+                .responseObject<UnitInfo>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
     }
 
-    private fun fetchAttendances(unitId: DaycareId = testDaycare.id, user: AuthenticatedUser = mobileUser): AttendanceResponse {
-        val (_, res, result) = http.get("/attendances/units/$unitId")
-            .asUser(user)
-            .withMockedTime(now)
-            .responseObject<AttendanceResponse>(jsonMapper)
+    private fun fetchAttendances(
+        unitId: DaycareId = testDaycare.id,
+        user: AuthenticatedUser = mobileUser
+    ): AttendanceResponse {
+        val (_, res, result) =
+            http
+                .get("/attendances/units/$unitId")
+                .asUser(user)
+                .withMockedTime(now)
+                .responseObject<AttendanceResponse>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
     }
 
-    private fun expectOneChild(unitId: DaycareId = testDaycare.id, user: AuthenticatedUser = mobileUser): Child {
+    private fun expectOneChild(
+        unitId: DaycareId = testDaycare.id,
+        user: AuthenticatedUser = mobileUser
+    ): Child {
         val response = fetchAttendances(unitId, user)
         assertEquals(1, response.children.size)
         return response.children.first()

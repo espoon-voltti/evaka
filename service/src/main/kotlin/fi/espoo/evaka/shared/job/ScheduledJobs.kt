@@ -45,7 +45,7 @@ enum class ScheduledJob(val fn: (ScheduledJobs, Database.Connection, EvakaClock)
     InactiveEmployeesRoleReset(ScheduledJobs::inactiveEmployeesRoleReset)
 }
 
-private val logger = KotlinLogging.logger { }
+private val logger = KotlinLogging.logger {}
 
 @Component
 class ScheduledJobs(
@@ -69,8 +69,8 @@ class ScheduledJobs(
     fun endOfDayAttendanceUpkeep(db: Database.Connection, clock: EvakaClock) {
         db.transaction {
             it.createUpdate(
-                // language=SQL
-                """
+                    // language=SQL
+                    """
 WITH attendances_to_end AS (
     SELECT ca.id
     FROM child_attendance ca
@@ -90,30 +90,33 @@ WITH attendances_to_end AS (
 )
 UPDATE child_attendance SET end_time = '23:59'::time
 WHERE id IN (SELECT id FROM attendances_to_end)
-                """.trimIndent()
-            ).bind("today", clock.today()).execute()
+                """.trimIndent(
+                    )
+                )
+                .bind("today", clock.today())
+                .execute()
         }
     }
 
     fun endOfDayStaffAttendanceUpkeep(db: Database.Connection, clock: EvakaClock) {
-        db.transaction {
-            it.addMissingStaffAttendanceDepartures(clock.now())
-        }
+        db.transaction { it.addMissingStaffAttendanceDepartures(clock.now()) }
     }
 
     fun endOfDayReservationUpkeep(db: Database.Connection, clock: EvakaClock) {
         db.transaction {
             it.createUpdate(
-                // language=SQL
-                """
+                    // language=SQL
+                    """
                     DELETE FROM attendance_reservation ar
                     WHERE NOT EXISTS (
                         SELECT 1 FROM placement p
                         WHERE p.child_id = ar.child_id
                         AND ar.date BETWEEN p.start_date AND p.end_date
                     )
-                """.trimIndent()
-            ).execute()
+                """.trimIndent(
+                    )
+                )
+                .execute()
         }
     }
 
@@ -138,10 +141,11 @@ WHERE id IN (SELECT id FROM attendances_to_end)
     }
 
     fun cancelOutdatedTransferApplications(db: Database.Connection, clock: EvakaClock) {
-        val canceledApplications = db.transaction {
-            val applicationIds = it.cancelOutdatedSentTransferApplications(clock)
-            applicationIds
-        }
+        val canceledApplications =
+            db.transaction {
+                val applicationIds = it.cancelOutdatedSentTransferApplications(clock)
+                applicationIds
+            }
         logger.info {
             "Canceled ${canceledApplications.size} outdated transfer applications (ids: ${canceledApplications.joinToString(", ")})"
         }
@@ -153,14 +157,7 @@ WHERE id IN (SELECT id FROM attendances_to_end)
 
     fun freezeVoucherValueReports(db: Database.Connection, clock: EvakaClock) {
         val now = clock.now()
-        db.transaction {
-            freezeVoucherValueReportRows(
-                it,
-                now.year,
-                now.month.value,
-                now
-            )
-        }
+        db.transaction { freezeVoucherValueReportRows(it, now.year, now.month.value, now) }
     }
 
     fun removeExpiredNotes(db: Database.Connection, clock: EvakaClock) {

@@ -25,6 +25,9 @@ import fi.espoo.evaka.vtjclient.soap.HenkiloTunnusKyselyReqBody
 import fi.espoo.evaka.vtjclient.soap.HenkiloTunnusKyselyResBody
 import fi.espoo.evaka.vtjclient.soap.ObjectFactory
 import fi.espoo.evaka.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo
+import java.time.LocalDate
+import java.util.UUID
+import javax.xml.bind.JAXBElement
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -45,9 +48,6 @@ import org.mockito.kotlin.whenever
 import org.slf4j.LoggerFactory
 import org.springframework.ws.client.core.WebServiceMessageCallback
 import org.springframework.ws.client.core.WebServiceTemplate
-import java.time.LocalDate
-import java.util.UUID
-import javax.xml.bind.JAXBElement
 
 const val STATUS_CREATE_QUERY = "creating request"
 const val STATUS_RESPONSE_RECEIVED = "response received"
@@ -59,33 +59,26 @@ const val DEFAULT_PERSON_SSN = "270372-905L"
 @ExtendWith(MockitoExtension::class)
 class VtjClientServiceTest {
 
-    @Spy
-    var vtjObjectFactory: ObjectFactory = ObjectFactory()
+    @Spy var vtjObjectFactory: ObjectFactory = ObjectFactory()
 
-    @Mock
-    lateinit var mockWSTemplate: WebServiceTemplate
+    @Mock lateinit var mockWSTemplate: WebServiceTemplate
 
-    @Mock
-    lateinit var mockVtjProps: VtjEnv
+    @Mock lateinit var mockVtjProps: VtjEnv
 
-    @Mock
-    lateinit var mockRequestAdapter: SoapRequestAdapter
+    @Mock lateinit var mockRequestAdapter: SoapRequestAdapter
 
-    @Mock
-    lateinit var mockCallback: WebServiceMessageCallback
+    @Mock lateinit var mockCallback: WebServiceMessageCallback
 
-    @Mock
-    lateinit var responseMapper: VTJResponseMapper
+    @Mock lateinit var responseMapper: VTJResponseMapper
 
-    @InjectMocks
-    lateinit var service: VtjClientService
+    @InjectMocks lateinit var service: VtjClientService
 
     lateinit var responseBody: HenkiloTunnusKyselyResBody
 
     lateinit var response: JAXBElement<HenkiloTunnusKyselyResBody>
 
     /* TODO:  This is a lot of mocks for a single service which might indicate the target service has too many responsibilities
-              is there a split that could be done here? */
+    is there a split that could be done here? */
 
     @BeforeEach
     fun setup() {
@@ -99,12 +92,15 @@ class VtjClientServiceTest {
 
         val ssn = "050482-9741"
         val requestedBy = createPerson(externalId = SSN.getInstance(ssn))
-        val query = VTJQuery(requestingUserId = requestedBy.id.raw, type = HUOLTAJA_HUOLLETTAVA, ssn = ssn)
+        val query =
+            VTJQuery(requestingUserId = requestedBy.id.raw, type = HUOLTAJA_HUOLLETTAVA, ssn = ssn)
 
         whenever(mockRequestAdapter.createCallback(query)).thenReturn(mockCallback)
         // see: NB1
-        whenever(mockWSTemplate.marshalSendAndReceive(any<Any>(), eq(mockCallback))).thenReturn(response)
-        whenever(responseMapper.mapResponseToHenkilo(response)).thenReturn(createPersonResponse(forSsn = ssn))
+        whenever(mockWSTemplate.marshalSendAndReceive(any<Any>(), eq(mockCallback)))
+            .thenReturn(response)
+        whenever(responseMapper.mapResponseToHenkilo(response))
+            .thenReturn(createPersonResponse(forSsn = ssn))
 
         service.query(query)
 
@@ -120,7 +116,10 @@ class VtjClientServiceTest {
 
             assertThat(responseLogEvent.message).isEqualTo("VTJ results received")
 
-            responseLogEvent.assertLogArgumentsContain(query = query, status = STATUS_RESPONSE_RECEIVED)
+            responseLogEvent.assertLogArgumentsContain(
+                query = query,
+                status = STATUS_RESPONSE_RECEIVED
+            )
         }
     }
 
@@ -131,7 +130,8 @@ class VtjClientServiceTest {
 
         whenever(mockRequestAdapter.createCallback(query)).thenReturn(mockCallback)
         // see: NB1
-        whenever(mockWSTemplate.marshalSendAndReceive(any<Any>(), eq(mockCallback))).thenReturn(response)
+        whenever(mockWSTemplate.marshalSendAndReceive(any<Any>(), eq(mockCallback)))
+            .thenReturn(response)
         whenever(responseMapper.mapResponseToHenkilo(response)).thenReturn(null)
 
         service.query(query)
@@ -145,10 +145,11 @@ class VtjClientServiceTest {
             queryLogEvent.assertLogArgumentsContain(query = query, status = STATUS_CREATE_QUERY)
 
             val responseLogEvent = secondValue
-            assertThat(responseLogEvent.message).isEqualTo(
-                "Did not receive VTJ results"
+            assertThat(responseLogEvent.message).isEqualTo("Did not receive VTJ results")
+            responseLogEvent.assertLogArgumentsContain(
+                query = query,
+                status = STATUS_NO_RESPONSE_OR_PARSING_ERROR
             )
-            responseLogEvent.assertLogArgumentsContain(query = query, status = STATUS_NO_RESPONSE_OR_PARSING_ERROR)
         }
     }
 
@@ -179,10 +180,12 @@ class VtjClientServiceTest {
                 queryLogEvent.assertLogArgumentsContain(query = query, status = STATUS_CREATE_QUERY)
 
                 val responseLogEvent = secondValue
-                assertThat(responseLogEvent.message).isEqualTo(
-                    "There was an error requesting VTJ data. Results were not received."
+                assertThat(responseLogEvent.message)
+                    .isEqualTo("There was an error requesting VTJ data. Results were not received.")
+                responseLogEvent.assertLogArgumentsContain(
+                    query = query,
+                    status = STATUS_ERROR_DURING_REQUEST
                 )
-                responseLogEvent.assertLogArgumentsContain(query = query, status = STATUS_ERROR_DURING_REQUEST)
             }
         }
     }
@@ -196,12 +199,18 @@ class VtjClientServiceTest {
         val query = VTJQuery(requestingUserId = requestedBy.id.raw, type = PERUSSANOMA3, ssn = ssn)
 
         whenever(mockRequestAdapter.createCallback(query)).thenReturn(mockCallback)
-        // NB1: we don't actually care about the mock callback equalling here but mockito returns null
-        // from marshalSendAndReceive(any<Any>(), any()) and marshalSendAndReceive(any<Any>(), any<WebServiceMessageCallback())
-        // maybe due to how it tries to map the method with similar signature, which causes an exception as
+        // NB1: we don't actually care about the mock callback equalling here but mockito returns
+        // null
+        // from marshalSendAndReceive(any<Any>(), any()) and marshalSendAndReceive(any<Any>(),
+        // any<WebServiceMessageCallback())
+        // maybe due to how it tries to map the method with similar signature, which causes an
+        // exception
+        // as
         // the service expects at least non-null JAXBElement<*> as a response
-        whenever(mockWSTemplate.marshalSendAndReceive(any<Any>(), eq(mockCallback))).thenReturn(response)
-        whenever(responseMapper.mapResponseToHenkilo(response)).thenReturn(createPersonResponse(forSsn = ssn))
+        whenever(mockWSTemplate.marshalSendAndReceive(any<Any>(), eq(mockCallback)))
+            .thenReturn(response)
+        whenever(responseMapper.mapResponseToHenkilo(response))
+            .thenReturn(createPersonResponse(forSsn = ssn))
 
         service.query(query)
 
@@ -215,7 +224,10 @@ class VtjClientServiceTest {
 
             val responseLogEvent = secondValue
             assertThat(responseLogEvent.message).isEqualTo("VTJ results received")
-            responseLogEvent.assertLogArgumentsContain(query = query, status = STATUS_RESPONSE_RECEIVED)
+            responseLogEvent.assertLogArgumentsContain(
+                query = query,
+                status = STATUS_RESPONSE_RECEIVED
+            )
         }
     }
 
@@ -223,14 +235,16 @@ class VtjClientServiceTest {
     fun `the service should use the request adapter to add required SOAP headers`() {
 
         val requestedBy = createPerson()
-        val query = VTJQuery(
-            requestingUserId = requestedBy.id.raw,
-            type = HUOLTAJA_HUOLLETTAVA,
-            ssn = requestedBy.identity.toString()
-        )
+        val query =
+            VTJQuery(
+                requestingUserId = requestedBy.id.raw,
+                type = HUOLTAJA_HUOLLETTAVA,
+                ssn = requestedBy.identity.toString()
+            )
 
         whenever(mockRequestAdapter.createCallback(query)).thenReturn(mockCallback)
-        whenever(mockWSTemplate.marshalSendAndReceive(any<Any>(), eq(mockCallback))).thenReturn(response)
+        whenever(mockWSTemplate.marshalSendAndReceive(any<Any>(), eq(mockCallback)))
+            .thenReturn(response)
         whenever(responseMapper.mapResponseToHenkilo(response)).thenReturn(createPersonResponse())
 
         service.query(query)
@@ -242,14 +256,16 @@ class VtjClientServiceTest {
     fun `the service should create a request using correct details`() {
 
         val requestedBy = createPerson()
-        val query = VTJQuery(
-            requestingUserId = requestedBy.id.raw,
-            type = HUOLTAJA_HUOLLETTAVA,
-            ssn = requestedBy.identity.toString()
-        )
+        val query =
+            VTJQuery(
+                requestingUserId = requestedBy.id.raw,
+                type = HUOLTAJA_HUOLLETTAVA,
+                ssn = requestedBy.identity.toString()
+            )
 
         whenever(mockRequestAdapter.createCallback(query)).thenReturn(mockCallback)
-        whenever(mockWSTemplate.marshalSendAndReceive(any<Any>(), eq(mockCallback))).thenReturn(response)
+        whenever(mockWSTemplate.marshalSendAndReceive(any<Any>(), eq(mockCallback)))
+            .thenReturn(response)
         whenever(responseMapper.mapResponseToHenkilo(response)).thenReturn(createPersonResponse())
 
         val userName = "sdfhj2o123ju1l23"
@@ -285,31 +301,29 @@ class VtjClientServiceTest {
         postalOffice: String = "Jokukaupunki",
         postalCode: String = "00100",
         dateOfBirth: LocalDate = LocalDate.of(1972, 3, 27)
-    ) = PersonDTO(
-        id = id,
-        identity = externalId,
-        ssnAddingDisabled = false,
-        firstName = firstName,
-        lastName = lastName,
-        preferredName = preferredName,
-        email = email,
-        phone = phone,
-        backupPhone = backupPhone,
-        language = language,
-        dateOfBirth = dateOfBirth,
-        streetAddress = streetAddress,
-        postOffice = postalOffice,
-        postalCode = postalCode,
-        residenceCode = "",
-        restrictedDetailsEnabled = false,
-        restrictedDetailsEndDate = null
-    )
+    ) =
+        PersonDTO(
+            id = id,
+            identity = externalId,
+            ssnAddingDisabled = false,
+            firstName = firstName,
+            lastName = lastName,
+            preferredName = preferredName,
+            email = email,
+            phone = phone,
+            backupPhone = backupPhone,
+            language = language,
+            dateOfBirth = dateOfBirth,
+            streetAddress = streetAddress,
+            postOffice = postalOffice,
+            postalCode = postalCode,
+            residenceCode = "",
+            restrictedDetailsEnabled = false,
+            restrictedDetailsEndDate = null
+        )
 
-    private fun createPersonResponse(forSsn: String? = DEFAULT_PERSON_SSN) = Henkilo()
-        .apply {
-            henkilotunnus = Henkilo.Henkilotunnus()
-                .apply { value = forSsn }
-        }
+    private fun createPersonResponse(forSsn: String? = DEFAULT_PERSON_SSN) =
+        Henkilo().apply { henkilotunnus = Henkilo.Henkilotunnus().apply { value = forSsn } }
 
     private fun createDefaultQuery(
         ssn: String = DEFAULT_PERSON_SSN,
@@ -326,8 +340,7 @@ class VtjClientServiceTest {
 
         assertThat(argumentArray).hasSize(1)
 
-        @Suppress("UNCHECKED_CAST")
-        val marker = argumentArray[0] as MapEntriesAppendingMarker
+        @Suppress("UNCHECKED_CAST") val marker = argumentArray[0] as MapEntriesAppendingMarker
 
         val mockGenerator: JsonGenerator = mock()
 
@@ -340,7 +353,12 @@ class VtjClientServiceTest {
 
         argumentCaptor<Any>().apply {
             verify(mockGenerator, times(3)).writeObject(capture())
-            assertThat(allValues).contains(mapOf("queryName" to query.type.queryName), status, query.ssn.subSequence(0, 6))
+            assertThat(allValues)
+                .contains(
+                    mapOf("queryName" to query.type.queryName),
+                    status,
+                    query.ssn.subSequence(0, 6)
+                )
         }
     }
 

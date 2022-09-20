@@ -21,14 +21,23 @@ import org.springframework.web.bind.annotation.RestController
 class SettingController(private val accessControl: AccessControl) {
 
     @GetMapping
-    fun getSettings(db: Database, user: AuthenticatedUser, clock: EvakaClock): Map<SettingType, String> {
+    fun getSettings(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock
+    ): Map<SettingType, String> {
         Audit.SettingsRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.UPDATE_SETTINGS)
         return db.connect { dbc -> dbc.read { tx -> tx.getSettings() } }
     }
 
     @PutMapping
-    fun setSettings(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody settings: Map<SettingType, String>) {
+    fun setSettings(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestBody settings: Map<SettingType, String>
+    ) {
         Audit.SettingsUpdate.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.UPDATE_SETTINGS)
         return db.connect { dbc -> dbc.transaction { tx -> tx.setSettings(settings) } }

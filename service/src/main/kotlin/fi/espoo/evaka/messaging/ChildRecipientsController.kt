@@ -34,9 +34,7 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
         return db.connect { dbc -> dbc.read { it.fetchRecipients(childId) } }
     }
 
-    data class EditRecipientRequest(
-        val blocklisted: Boolean
-    )
+    data class EditRecipientRequest(val blocklisted: Boolean)
     @PutMapping("/child/{childId}/recipients/{personId}")
     fun editRecipient(
         db: Database,
@@ -47,7 +45,12 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
         @RequestBody body: EditRecipientRequest
     ) {
         Audit.MessagingBlocklistEdit.log(childId)
-        accessControl.requirePermissionFor(user, clock, Action.Child.UPDATE_CHILD_RECIPIENT, childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Child.UPDATE_CHILD_RECIPIENT,
+            childId
+        )
 
         db.connect { dbc ->
             dbc.transaction { tx ->

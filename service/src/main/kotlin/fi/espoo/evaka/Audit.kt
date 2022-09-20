@@ -66,11 +66,19 @@ enum class Audit(
     ChildAssistanceNeedUpdate("evaka.child.assistance-need.update"),
     ChildAssistanceNeedDecisionCreate("evaka.child.assistance-need-decision.create"),
     ChildAssistanceNeedDecisionDelete("evaka.child.assistance-need-decision.delete"),
-    ChildAssistanceNeedDecisionDownloadCitizen("evaka.citizen.child.assistance-need-decision.download"),
-    ChildAssistanceNeedDecisionGetUnreadCountCitizen("evaka.citizen.child.assistance-need-decision.get-unread-count"),
-    ChildAssistanceNeedDecisionMarkReadCitizen("evaka.citizen.child.assistance-need-decision.mark-as-read"),
+    ChildAssistanceNeedDecisionDownloadCitizen(
+        "evaka.citizen.child.assistance-need-decision.download"
+    ),
+    ChildAssistanceNeedDecisionGetUnreadCountCitizen(
+        "evaka.citizen.child.assistance-need-decision.get-unread-count"
+    ),
+    ChildAssistanceNeedDecisionMarkReadCitizen(
+        "evaka.citizen.child.assistance-need-decision.mark-as-read"
+    ),
     ChildAssistanceNeedDecisionRead("evaka.child.assistance-need-decision.read"),
-    ChildAssistanceNeedDecisionReadDecisionMakerOptions("evaka.child.assistance-need-decision.read-decision-maker-options"),
+    ChildAssistanceNeedDecisionReadDecisionMakerOptions(
+        "evaka.child.assistance-need-decision.read-decision-maker-options"
+    ),
     ChildAssistanceNeedDecisionReadCitizen("evaka.citizen.child.assistance-need-decision.read"),
     ChildAssistanceNeedDecisionUpdate("evaka.child.assistance-need-decision.update"),
     ChildAssistanceNeedDecisionsList("evaka.child.assistance-need-decision.list"),
@@ -78,11 +86,21 @@ enum class Audit(
     ChildAssistanceNeedDecisionSend("evaka.child.assistance-need-decision.send"),
     ChildAssistanceNeedDecisionDecide("evaka.child.assistance-need-decision.decide"),
     ChildAssistanceNeedDecisionOpened("evaka.child.assistance-need-decision.opened"),
-    ChildAssistanceNeedDecisionUpdateDecisionMaker("evaka.child.assistance-need-decision.update-decision-maker"),
-    ChildAssistanceNeedVoucherCoefficientCreate("evaka.child.assistance-need-voucher-coefficient.create"),
-    ChildAssistanceNeedVoucherCoefficientRead("evaka.child.assistance-need-voucher-coefficient.read"),
-    ChildAssistanceNeedVoucherCoefficientUpdate("evaka.child.assistance-need-voucher-coefficient.update"),
-    ChildAssistanceNeedVoucherCoefficientDelete("evaka.child.assistance-need-voucher-coefficient.delete"),
+    ChildAssistanceNeedDecisionUpdateDecisionMaker(
+        "evaka.child.assistance-need-decision.update-decision-maker"
+    ),
+    ChildAssistanceNeedVoucherCoefficientCreate(
+        "evaka.child.assistance-need-voucher-coefficient.create"
+    ),
+    ChildAssistanceNeedVoucherCoefficientRead(
+        "evaka.child.assistance-need-voucher-coefficient.read"
+    ),
+    ChildAssistanceNeedVoucherCoefficientUpdate(
+        "evaka.child.assistance-need-voucher-coefficient.update"
+    ),
+    ChildAssistanceNeedVoucherCoefficientDelete(
+        "evaka.child.assistance-need-voucher-coefficient.delete"
+    ),
     ChildAttendancesRead("evaka.child-attendances.read"),
     ChildAttendancesUpsert("evaka.child-attendances.upsert"),
     ChildAttendancesArrivalCreate("evaka.child-attendances.arrival.create"),
@@ -110,7 +128,9 @@ enum class Audit(
     ChildDailyServiceTimesEdit("evaka.child.daily-service-times.edit"),
     ChildDailyServiceTimesRead("evaka.child.daily-service-times.read"),
     ChildDailyServiceTimeNotificationsRead("evaka.child.daily-service-time-notifications.read"),
-    ChildDailyServiceTimeNotificationsDismiss("evaka.child.daily-service-time-notifications.dismiss"),
+    ChildDailyServiceTimeNotificationsDismiss(
+        "evaka.child.daily-service-time-notifications.dismiss"
+    ),
     ChildFeeAlterationsCreate("evaka.child.fee-alterations.create"),
     ChildFeeAlterationsDelete("evaka.child.fee-alterations.delete"),
     ChildFeeAlterationsRead("evaka.child.fee-alterations.read"),
@@ -125,7 +145,11 @@ enum class Audit(
     ChildStickyNoteDelete("evaka.child-sticky-note.delete"),
     ChildVasuDocumentsRead("evaka.child.vasu-documents.read"),
     ChildVasuDocumentsReadByGuardian("evaka.child.vasu-documents.read-by-guardian"),
-    CitizenChildrenRead("evaka.citizen.children.read", securityEvent = true, securityLevel = "high"),
+    CitizenChildrenRead(
+        "evaka.citizen.children.read",
+        securityEvent = true,
+        securityLevel = "high"
+    ),
     CitizenChildRead("evaka.citizen.child.read", securityEvent = true, securityLevel = "high"),
     CitizenLogin("evaka.citizen.login", securityEvent = true, securityLevel = "high"),
     DaycareGroupPlacementCreate("evaka.daycare-group-placement.create"),
@@ -145,7 +169,11 @@ enum class Audit(
     DuplicatePeopleReportRead("evaka.duplicate-people-report.read"),
     EmployeeCreate("evaka.employee.create", securityEvent = true, securityLevel = "high"),
     EmployeeDelete("evaka.employee.delete", securityEvent = true, securityLevel = "high"),
-    EmployeeGetOrCreate("evaka.employee.get-or-create", securityEvent = true, securityLevel = "high"),
+    EmployeeGetOrCreate(
+        "evaka.employee.get-or-create",
+        securityEvent = true,
+        securityLevel = "high"
+    ),
     EmployeeLogin("evaka.employee.login", securityEvent = true, securityLevel = "high"),
     EmployeeRead("evaka.employee.read", securityEvent = true),
     EmployeeUpdate("evaka.employee.update", securityEvent = true, securityLevel = "high"),
@@ -160,7 +188,9 @@ enum class Audit(
     FeeDecisionConfirm("evaka.fee-decision.confirm"),
     FeeDecisionGenerate("evaka.fee-decision.generate"),
     FeeDecisionHeadOfFamilyRead("evaka.fee-decision.head-of-family.read"),
-    FeeDecisionHeadOfFamilyCreateRetroactive("evaka.fee-decision.head-of-family.create-retroactive"),
+    FeeDecisionHeadOfFamilyCreateRetroactive(
+        "evaka.fee-decision.head-of-family.create-retroactive"
+    ),
     FeeDecisionMarkSent("evaka.fee-decision.mark-sent"),
     FeeDecisionPdfRead("evaka.fee-decision-pdf.read"),
     FeeDecisionRead("evaka.fee-decision.read"),
@@ -225,7 +255,9 @@ enum class Audit(
     MessagingUpdateDraft("messaging.messages.update-draft.write"),
     MessagingDeleteDraft("messaging.messages.drafts.delete"),
     MessagingReplyToMessageWrite("messaging.messages.reply-to-message.write"),
-    MessagingCitizenFetchReceiversForAccount("messaging.messages.fetch-receivers-for-citizen-account"),
+    MessagingCitizenFetchReceiversForAccount(
+        "messaging.messages.fetch-receivers-for-citizen-account"
+    ),
     MessagingCitizenSendMessage("messaging.messages.citizen-send-message"),
     MissingHeadOfFamilyReportRead("evaka.missing-head-of-family-report.read"),
     MissingServiceNeedReportRead("evaka.missing-service-need-report.read"),
@@ -261,13 +293,29 @@ enum class Audit(
     PaymentsCreate("evaka.payments.create"),
     PaymentsSend("evaka.payments.send"),
     PedagogicalDocumentCountUnread("evaka.pedagogical-document.count-unread"),
-    PedagogicalDocumentReadByGuardian("evaka.pedagogical-document.read-by-guardian", securityEvent = true, securityLevel = "high"),
-    PedagogicalDocumentRead("evaka.pedagogical-document.read", securityEvent = true, securityLevel = "high"),
-    PedagogicalDocumentUpdate("evaka.pedagogical-document.update", securityEvent = true, securityLevel = "high"),
+    PedagogicalDocumentReadByGuardian(
+        "evaka.pedagogical-document.read-by-guardian",
+        securityEvent = true,
+        securityLevel = "high"
+    ),
+    PedagogicalDocumentRead(
+        "evaka.pedagogical-document.read",
+        securityEvent = true,
+        securityLevel = "high"
+    ),
+    PedagogicalDocumentUpdate(
+        "evaka.pedagogical-document.update",
+        securityEvent = true,
+        securityLevel = "high"
+    ),
     PersonalDataUpdate("evaka.personal-data.update", securityEvent = true, securityLevel = "high"),
     PersonCreate("evaka.person.create", securityEvent = true, securityLevel = "high"),
     PersonDelete("evaka.person.delete", securityEvent = true, securityLevel = "high"),
-    PersonDependantRead("evaka.person-dependant.read", securityEvent = true, securityLevel = "high"),
+    PersonDependantRead(
+        "evaka.person-dependant.read",
+        securityEvent = true,
+        securityLevel = "high"
+    ),
     PersonGuardianRead("evaka.person-guardian.read", securityEvent = true, securityLevel = "high"),
     PersonDetailsRead("evaka.person-details.read", securityEvent = true, securityLevel = "high"),
     PersonDetailsSearch("evaka.person-details.search"),
@@ -344,7 +392,9 @@ enum class Audit(
     VasuDocumentCreate("evaka.vasu-document.create"),
     VasuDocumentRead("evaka.vasu-document.read"),
     VasuDocumentReadByGuardian("evaka.vasu-document.read-by-guardian"),
-    VasuDocumentGivePermissionToShareByGuardian("evaka.vasu-document.give-permission-to-share-by-guardian"),
+    VasuDocumentGivePermissionToShareByGuardian(
+        "evaka.vasu-document.give-permission-to-share-by-guardian"
+    ),
     VasuDocumentUpdate("evaka.vasu-document.update"),
     VasuDocumentEventCreate("evaka.vasu-document-event.create"),
     VasuDocumentEditFollowupEntry("evaka.vasu-document.edit-followup"),
@@ -354,7 +404,9 @@ enum class Audit(
     VasuTemplateDelete("evaka.vasu-template.delete"),
     VasuTemplateRead("evaka.vasu-template.read"),
     VasuTemplateUpdate("evaka.vasu-template.update"),
-    VoucherValueDecisionHeadOfFamilyCreateRetroactive("evaka.value-decision.head-of-family.create-retroactive"),
+    VoucherValueDecisionHeadOfFamilyCreateRetroactive(
+        "evaka.value-decision.head-of-family.create-retroactive"
+    ),
     VoucherValueDecisionHeadOfFamilyRead("evaka.value-decision.head-of-family.read"),
     VoucherValueDecisionMarkSent("evaka.value-decision.mark-sent"),
     VoucherValueDecisionRead("evaka.value-decision.read"),
@@ -372,7 +424,9 @@ enum class Audit(
                 "securityLevel" to securityLevel,
                 "securityEvent" to securityEvent
             )
-        ) { eventCode }
+        ) {
+            eventCode
+        }
     }
 }
 

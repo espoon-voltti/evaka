@@ -4,12 +4,12 @@
 
 package fi.espoo.evaka.shared.domain
 
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.Test
 
 class TimeTest {
     @Test
@@ -24,10 +24,11 @@ class TimeTest {
 
     @Test
     fun `asDistinctPeriods works with two periods`() {
-        val periods = listOf(
-            DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 3)),
-            DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 5))
-        )
+        val periods =
+            listOf(
+                DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 3)),
+                DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 5))
+            )
         val spanningPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 5))
 
         val result = asDistinctPeriods(periods, spanningPeriod)
@@ -53,10 +54,11 @@ class TimeTest {
 
     @Test
     fun `asDistinctPeriods works with two periods with one null end date`() {
-        val periods = listOf(
-            DateRange(LocalDate.of(2019, 1, 5), LocalDate.of(2019, 1, 7)),
-            DateRange(LocalDate.of(2019, 1, 1), null)
-        )
+        val periods =
+            listOf(
+                DateRange(LocalDate.of(2019, 1, 5), LocalDate.of(2019, 1, 7)),
+                DateRange(LocalDate.of(2019, 1, 1), null)
+            )
         val spanningPeriod = DateRange(LocalDate.of(2019, 1, 1), null)
 
         val result = asDistinctPeriods(periods, spanningPeriod)
@@ -83,10 +85,11 @@ class TimeTest {
 
     @Test
     fun `asDistinctPeriods with a gap in periods`() {
-        val periods = listOf(
-            DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 5)),
-            DateRange(LocalDate.of(2019, 1, 10), LocalDate.of(2019, 1, 15))
-        )
+        val periods =
+            listOf(
+                DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 5)),
+                DateRange(LocalDate.of(2019, 1, 10), LocalDate.of(2019, 1, 15))
+            )
         val spanningPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
         val result = asDistinctPeriods(periods, spanningPeriod)
@@ -104,11 +107,12 @@ class TimeTest {
 
     @Test
     fun `mergePeriods works in simple case`() {
-        val periods = listOf(
-            DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)) to 1,
-            DateRange(LocalDate.of(2019, 2, 1), LocalDate.of(2019, 6, 30)) to 1,
-            DateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2020, 1, 1)) to 2
-        )
+        val periods =
+            listOf(
+                DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)) to 1,
+                DateRange(LocalDate.of(2019, 2, 1), LocalDate.of(2019, 6, 30)) to 1,
+                DateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2020, 1, 1)) to 2
+            )
 
         val result = mergePeriods(periods)
 
@@ -123,15 +127,16 @@ class TimeTest {
 
     @Test
     fun `mergePeriods works with different value every day`() {
-        val periods = listOf(
-            DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 1)) to 1,
-            DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2)) to 2,
-            DateRange(LocalDate.of(2019, 1, 3), LocalDate.of(2019, 1, 3)) to 3,
-            DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 4)) to 4,
-            DateRange(LocalDate.of(2019, 1, 5), LocalDate.of(2019, 1, 5)) to 5,
-            DateRange(LocalDate.of(2019, 1, 6), LocalDate.of(2019, 1, 6)) to 6,
-            DateRange(LocalDate.of(2019, 1, 7), LocalDate.of(2019, 1, 7)) to 7
-        )
+        val periods =
+            listOf(
+                DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 1)) to 1,
+                DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2)) to 2,
+                DateRange(LocalDate.of(2019, 1, 3), LocalDate.of(2019, 1, 3)) to 3,
+                DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 4)) to 4,
+                DateRange(LocalDate.of(2019, 1, 5), LocalDate.of(2019, 1, 5)) to 5,
+                DateRange(LocalDate.of(2019, 1, 6), LocalDate.of(2019, 1, 6)) to 6,
+                DateRange(LocalDate.of(2019, 1, 7), LocalDate.of(2019, 1, 7)) to 7
+            )
 
         val result = mergePeriods(periods)
 
@@ -140,10 +145,11 @@ class TimeTest {
 
     @Test
     fun `mergePeriods works with periods that have a gap between them`() {
-        val periods = listOf(
-            DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 1)) to 1,
-            DateRange(LocalDate.of(2019, 1, 7), LocalDate.of(2019, 1, 7)) to 1
-        )
+        val periods =
+            listOf(
+                DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 1)) to 1,
+                DateRange(LocalDate.of(2019, 1, 7), LocalDate.of(2019, 1, 7)) to 1
+            )
 
         val result = mergePeriods(periods)
 
@@ -152,24 +158,29 @@ class TimeTest {
 
     @Test
     fun `mergePeriods works with periods that are not distinct`() {
-        val periods = listOf(
-            DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 5)) to 1,
-            DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 3)) to 1,
-            DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 7)) to 1
-        )
+        val periods =
+            listOf(
+                DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 5)) to 1,
+                DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 3)) to 1,
+                DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 7)) to 1
+            )
 
         val result = mergePeriods(periods)
 
-        assertEquals(listOf(DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 7)) to 1), result)
+        assertEquals(
+            listOf(DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 7)) to 1),
+            result
+        )
     }
 
     @Test
     fun `mergePeriods works with periods with multiple undefined ends`() {
-        val periods = listOf(
-            DateRange(LocalDate.of(2019, 1, 1), null) to 1,
-            DateRange(LocalDate.of(2019, 1, 2), null) to 1,
-            DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 7)) to 1
-        )
+        val periods =
+            listOf(
+                DateRange(LocalDate.of(2019, 1, 1), null) to 1,
+                DateRange(LocalDate.of(2019, 1, 2), null) to 1,
+                DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 7)) to 1
+            )
 
         val result = mergePeriods(periods)
 
@@ -178,10 +189,11 @@ class TimeTest {
 
     @Test
     fun `mergePeriods works with periods that are not in chronological order`() {
-        val periods = listOf(
-            DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 7)) to 1,
-            DateRange(LocalDate.of(2019, 1, 1), null) to 1
-        )
+        val periods =
+            listOf(
+                DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 7)) to 1,
+                DateRange(LocalDate.of(2019, 1, 1), null) to 1
+            )
 
         val result = mergePeriods(periods)
 
@@ -300,5 +312,6 @@ class TimeTest {
         assertEquals(listOf(testRange(1, 31)), complement)
     }
 
-    private fun testRange(from: Int, to: Int) = FiniteDateRange(LocalDate.of(2019, 1, from), LocalDate.of(2019, 1, to))
+    private fun testRange(from: Int, to: Int) =
+        FiniteDateRange(LocalDate.of(2019, 1, from), LocalDate.of(2019, 1, to))
 }

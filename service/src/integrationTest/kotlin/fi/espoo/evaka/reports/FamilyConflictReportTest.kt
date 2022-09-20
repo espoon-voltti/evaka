@@ -23,11 +23,11 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     val today = LocalDate.now()
@@ -127,21 +127,30 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         getAndAssert(today, today, listOf(toReportRow(testAdult_1, 0, 1, testDaycare2)))
     }
 
-    private val testUser = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+    private val testUser =
+        AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
 
-    private fun getAndAssert(from: LocalDate, to: LocalDate, expected: List<FamilyConflictReportRow>) {
-        val (_, response, result) = http.get(
-            "/reports/family-conflicts",
-            listOf("from" to from, "to" to to)
-        )
-            .asUser(testUser)
-            .responseObject<List<FamilyConflictReportRow>>(jsonMapper)
+    private fun getAndAssert(
+        from: LocalDate,
+        to: LocalDate,
+        expected: List<FamilyConflictReportRow>
+    ) {
+        val (_, response, result) =
+            http
+                .get("/reports/family-conflicts", listOf("from" to from, "to" to to))
+                .asUser(testUser)
+                .responseObject<List<FamilyConflictReportRow>>(jsonMapper)
 
         assertEquals(200, response.statusCode)
         assertEquals(expected, result.get())
     }
 
-    private fun insertPlacement(childId: ChildId, startDate: LocalDate, endDate: LocalDate, unitId: DaycareId = testDaycare.id) =
+    private fun insertPlacement(
+        childId: ChildId,
+        startDate: LocalDate,
+        endDate: LocalDate,
+        unitId: DaycareId = testDaycare.id
+    ) =
         db.transaction { tx ->
             tx.insertTestPlacement(
                 childId = childId,
@@ -156,15 +165,16 @@ class FamilyConflictReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         partnerConflictCount: Int,
         childConflictCount: Int,
         unit: DevDaycare = testDaycare
-    ) = FamilyConflictReportRow(
-        careAreaName = allAreas.find { it.id == unit.areaId }?.name ?: "",
-        unitId = unit.id,
-        unitName = unit.name,
-        id = person.id,
-        firstName = person.firstName,
-        lastName = person.lastName,
-        socialSecurityNumber = person.ssn,
-        partnerConflictCount = partnerConflictCount,
-        childConflictCount = childConflictCount
-    )
+    ) =
+        FamilyConflictReportRow(
+            careAreaName = allAreas.find { it.id == unit.areaId }?.name ?: "",
+            unitId = unit.id,
+            unitName = unit.name,
+            id = person.id,
+            firstName = person.firstName,
+            lastName = person.lastName,
+            socialSecurityNumber = person.ssn,
+            partnerConflictCount = partnerConflictCount,
+            childConflictCount = childConflictCount
+        )
 }

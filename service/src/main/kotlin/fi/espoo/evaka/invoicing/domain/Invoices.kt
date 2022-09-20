@@ -17,10 +17,10 @@ import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import org.jdbi.v3.core.mapper.Nested
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
+import org.jdbi.v3.core.mapper.Nested
 
 interface RowWithPrice {
     val price: Int
@@ -58,8 +58,7 @@ enum class InvoiceStatus : DatabaseEnum {
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class InvoiceRow(
     val id: InvoiceRowId?,
-    @Nested
-    val child: ChildId,
+    @Nested val child: ChildId,
     val amount: Int,
     val unitPrice: Int,
     val periodStart: LocalDate,

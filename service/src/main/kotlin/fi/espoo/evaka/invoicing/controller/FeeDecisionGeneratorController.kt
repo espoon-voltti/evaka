@@ -15,17 +15,14 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
-data class GenerateDecisionsBody(
-    val starting: String,
-    val targetHeads: List<PersonId?>
-)
+data class GenerateDecisionsBody(val starting: String, val targetHeads: List<PersonId?>)
 
 @RestController
 @RequestMapping("/fee-decision-generator")
@@ -34,7 +31,12 @@ class FeeDecisionGeneratorController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @PostMapping("/generate")
-    fun generateDecisions(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody data: GenerateDecisionsBody) {
+    fun generateDecisions(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestBody data: GenerateDecisionsBody
+    ) {
         Audit.FeeDecisionGenerate.log(targetId = data.targetHeads)
         accessControl.requirePermissionFor(user, clock, Action.Global.GENERATE_FEE_DECISIONS)
         db.connect { dbc ->
@@ -47,7 +49,20 @@ class FeeDecisionGeneratorController(
         }
     }
 
-    private fun generateAllStartingFrom(db: Database.Connection, clock: EvakaClock, starting: LocalDate, targetHeads: List<PersonId>) {
-        db.transaction { planFinanceDecisionGeneration(it, clock, asyncJobRunner, DateRange(starting, null), targetHeads) }
+    private fun generateAllStartingFrom(
+        db: Database.Connection,
+        clock: EvakaClock,
+        starting: LocalDate,
+        targetHeads: List<PersonId>
+    ) {
+        db.transaction {
+            planFinanceDecisionGeneration(
+                it,
+                clock,
+                asyncJobRunner,
+                DateRange(starting, null),
+                targetHeads
+            )
+        }
     }
 }

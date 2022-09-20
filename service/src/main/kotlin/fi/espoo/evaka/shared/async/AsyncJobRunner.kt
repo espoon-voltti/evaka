@@ -11,8 +11,6 @@ import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.voltti.logging.MdcKey
 import fi.espoo.voltti.logging.loggers.error
 import fi.espoo.voltti.logging.loggers.info
-import mu.KotlinLogging
-import org.jdbi.v3.core.Jdbi
 import java.lang.reflect.UndeclaredThrowableException
 import java.time.Duration
 import java.time.Instant
@@ -28,14 +26,18 @@ import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 import kotlin.reflect.KClass
+import mu.KotlinLogging
+import org.jdbi.v3.core.Jdbi
 
-private const val defaultRetryCount = 24 * 60 / 5 // 24h when used with default 5 minute retry interval
+private const val defaultRetryCount =
+    24 * 60 / 5 // 24h when used with default 5 minute retry interval
 private val defaultRetryInterval = Duration.ofMinutes(5)
 
-private data class Registration<T : AsyncJobPayload>(val handler: (db: Database, clock: EvakaClock, msg: T) -> Unit) {
+private data class Registration<T : AsyncJobPayload>(
+    val handler: (db: Database, clock: EvakaClock, msg: T) -> Unit
+) {
     fun run(db: Database, clock: EvakaClock, msg: AsyncJobPayload) =
-        @Suppress("UNCHECKED_CAST")
-        handler(db, clock, msg as T)
+        @Suppress("UNCHECKED_CAST") handler(db, clock, msg as T)
 }
 
 data class AsyncJobRunnerConfig(
@@ -43,23 +45,29 @@ data class AsyncJobRunnerConfig(
     val throttleInterval: Duration? = null,
 )
 
-class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private val jdbi: Jdbi, private val config: AsyncJobRunnerConfig) : AutoCloseable {
-    private val logger = KotlinLogging.logger("${AsyncJobRunner::class.qualifiedName}.${payloadType.simpleName}")
+class AsyncJobRunner<T : AsyncJobPayload>(
+    val payloadType: KClass<T>,
+    private val jdbi: Jdbi,
+    private val config: AsyncJobRunnerConfig
+) : AutoCloseable {
+    private val logger =
+        KotlinLogging.logger("${AsyncJobRunner::class.qualifiedName}.${payloadType.simpleName}")
 
-    private val executor: ScheduledThreadPoolExecutor = ScheduledThreadPoolExecutor(
-        config.threadPoolSize,
-        object : ThreadFactory {
-            private val default = Executors.defaultThreadFactory()
-            override fun newThread(r: Runnable): Thread = default.newThread(r).also {
-                it.priority = Thread.MIN_PRIORITY
+    private val executor: ScheduledThreadPoolExecutor =
+        ScheduledThreadPoolExecutor(
+            config.threadPoolSize,
+            object : ThreadFactory {
+                private val default = Executors.defaultThreadFactory()
+                override fun newThread(r: Runnable): Thread =
+                    default.newThread(r).also { it.priority = Thread.MIN_PRIORITY }
             }
-        }
-    )
+        )
     private val periodicRunner: AtomicReference<ScheduledFuture<*>> = AtomicReference()
     private val activeWorkerCount: AtomicInteger = AtomicInteger(0)
 
     private val handlersLock: Lock = ReentrantLock()
-    private val handlers: ConcurrentHashMap<AsyncJobType<out T>, Registration<*>> = ConcurrentHashMap()
+    private val handlers: ConcurrentHashMap<AsyncJobType<out T>, Registration<*>> =
+        ConcurrentHashMap()
     private val wakeUpHook: () -> Unit = { wakeUp() }
 
     val isStarted: Boolean
@@ -68,15 +76,27 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
     val isBusy: Boolean
         get() = activeWorkerCount.get() > 0
 
-    inline fun <reified P : T> registerHandler(noinline handler: (db: Database.Connection, clock: EvakaClock, msg: P) -> Unit) =
-        registerHandler(AsyncJobType(P::class)) { db, clock, msg -> db.connect { handler(it, clock, msg) } }
+    inline fun <reified P : T> registerHandler(
+        noinline handler: (db: Database.Connection, clock: EvakaClock, msg: P) -> Unit
+    ) =
+        registerHandler(AsyncJobType(P::class)) { db, clock, msg ->
+            db.connect { handler(it, clock, msg) }
+        }
 
-    fun <P : T> registerHandler(jobType: AsyncJobType<out P>, handler: (db: Database, clock: EvakaClock, msg: P) -> Unit): Unit = handlersLock.withLock {
-        require(!handlers.containsKey(jobType)) { "handler for $jobType has already been registered" }
-        val ambiguousKey = handlers.keys.find { it.name == jobType.name }
-        require(ambiguousKey == null) { "handlers for $jobType and $ambiguousKey have a name conflict" }
-        handlers[jobType] = Registration(handler)
-    }
+    fun <P : T> registerHandler(
+        jobType: AsyncJobType<out P>,
+        handler: (db: Database, clock: EvakaClock, msg: P) -> Unit
+    ): Unit =
+        handlersLock.withLock {
+            require(!handlers.containsKey(jobType)) {
+                "handler for $jobType has already been registered"
+            }
+            val ambiguousKey = handlers.keys.find { it.name == jobType.name }
+            require(ambiguousKey == null) {
+                "handlers for $jobType and $ambiguousKey have a name conflict"
+            }
+            handlers[jobType] = Registration(handler)
+        }
 
     fun plan(
         tx: Database.Transaction,
@@ -99,12 +119,13 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
     }
 
     fun start(pollingInterval: Duration) {
-        val newRunner = this.executor.scheduleWithFixedDelay(
-            { this.runPendingJobs(RealEvakaClock()) },
-            0,
-            pollingInterval.toNanos(),
-            TimeUnit.NANOSECONDS
-        )
+        val newRunner =
+            this.executor.scheduleWithFixedDelay(
+                { this.runPendingJobs(RealEvakaClock()) },
+                0,
+                pollingInterval.toNanos(),
+                TimeUnit.NANOSECONDS
+            )
         this.periodicRunner.getAndSet(newRunner)?.cancel(false)
     }
 
@@ -149,29 +170,38 @@ class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private va
         }
     }
 
-    private fun runPendingJob(db: Database.Connection, clock: EvakaClock, job: ClaimedJobRef<out T>) {
-        val logMeta = mapOf(
-            "jobId" to job.jobId,
-            "jobType" to job.jobType.name,
-            "remainingAttempts" to job.remainingAttempts
-        )
+    private fun runPendingJob(
+        db: Database.Connection,
+        clock: EvakaClock,
+        job: ClaimedJobRef<out T>
+    ) {
+        val logMeta =
+            mapOf(
+                "jobId" to job.jobId,
+                "jobType" to job.jobType.name,
+                "remainingAttempts" to job.remainingAttempts
+            )
         try {
             MdcKey.TRACE_ID.set(job.jobId.toString())
             MdcKey.SPAN_ID.set(job.jobId.toString())
             logger.info(logMeta) { "Running async job $job" }
-            val completed = db.transaction { tx ->
-                tx.setLockTimeout(Duration.ofSeconds(5))
-                val registration = handlers[job.jobType] ?: throw IllegalStateException("No handler found for ${job.jobType}")
-                tx.startJob(job, clock.now())?.let { msg ->
-                    msg.user?.let {
-                        MdcKey.USER_ID.set(it.rawId().toString())
-                        MdcKey.USER_ID_HASH.set(it.rawIdHash.toString())
+            val completed =
+                db.transaction { tx ->
+                    tx.setLockTimeout(Duration.ofSeconds(5))
+                    val registration =
+                        handlers[job.jobType]
+                            ?: throw IllegalStateException("No handler found for ${job.jobType}")
+                    tx.startJob(job, clock.now())?.let { msg ->
+                        msg.user?.let {
+                            MdcKey.USER_ID.set(it.rawId().toString())
+                            MdcKey.USER_ID_HASH.set(it.rawIdHash.toString())
+                        }
+                        registration.run(Database(jdbi), clock, msg)
+                        tx.completeJob(job, clock.now())
+                        true
                     }
-                    registration.run(Database(jdbi), clock, msg)
-                    tx.completeJob(job, clock.now())
-                    true
-                } ?: false
-            }
+                        ?: false
+                }
             if (completed) {
                 logger.info(logMeta) { "Completed async job $job" }
             } else {

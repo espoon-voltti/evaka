@@ -22,11 +22,11 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
@@ -38,25 +38,46 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     internal fun setUp() {
         db.transaction {
-            it.insertTestPerson(DevPerson(id = personId, firstName = "Firstname", lastName = "Person"))
+            it.insertTestPerson(
+                DevPerson(id = personId, firstName = "Firstname", lastName = "Person")
+            )
             it.createPersonMessageAccount(personId)
 
-            it.insertTestEmployee(DevEmployee(id = supervisorId, firstName = "Firstname", lastName = "Supervisor"))
+            it.insertTestEmployee(
+                DevEmployee(id = supervisorId, firstName = "Firstname", lastName = "Supervisor")
+            )
             it.upsertEmployeeMessageAccount(supervisorId)
 
-            it.insertTestEmployee(DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee 1"))
-            it.insertTestEmployee(DevEmployee(id = employee2Id, firstName = "Firstname", lastName = "Employee 2"))
+            it.insertTestEmployee(
+                DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee 1")
+            )
+            it.insertTestEmployee(
+                DevEmployee(id = employee2Id, firstName = "Firstname", lastName = "Employee 2")
+            )
 
-            val randomUuid = it.insertTestEmployee(DevEmployee(firstName = "Random", lastName = "Employee"))
+            val randomUuid =
+                it.insertTestEmployee(DevEmployee(firstName = "Random", lastName = "Employee"))
             it.upsertEmployeeMessageAccount(randomUuid)
 
             val areaId = it.insertTestCareArea(DevCareArea())
-            val daycareId = it.insertTestDaycare(DevDaycare(areaId = areaId, enabledPilotFeatures = setOf(PilotFeature.MESSAGING)))
+            val daycareId =
+                it.insertTestDaycare(
+                    DevDaycare(
+                        areaId = areaId,
+                        enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+                    )
+                )
 
-            val groupId = it.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycareId, name = "Testiläiset"))
+            val groupId =
+                it.insertTestDaycareGroup(
+                    DevDaycareGroup(daycareId = daycareId, name = "Testiläiset")
+                )
             it.createDaycareGroupMessageAccount(groupId)
 
-            val group2Id = it.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycareId, name = "Koekaniinit"))
+            val group2Id =
+                it.insertTestDaycareGroup(
+                    DevDaycareGroup(daycareId = daycareId, name = "Koekaniinit")
+                )
             it.createDaycareGroupMessageAccount(group2Id)
 
             it.insertDaycareAclRow(daycareId, supervisorId, UserRole.UNIT_SUPERVISOR)
@@ -68,8 +89,16 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.insertDaycareAclRow(daycareId, employee2Id, UserRole.STAFF)
 
             // There should be no permissions to anything about this daycare
-            val daycare2Id = it.insertTestDaycare(DevDaycare(areaId = areaId, name = "Väärä päiväkoti", enabledPilotFeatures = setOf(PilotFeature.MESSAGING)))
-            val group3Id = it.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycare2Id, name = "Väärät"))
+            val daycare2Id =
+                it.insertTestDaycare(
+                    DevDaycare(
+                        areaId = areaId,
+                        name = "Väärä päiväkoti",
+                        enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
+                    )
+                )
+            val group3Id =
+                it.insertTestDaycareGroup(DevDaycareGroup(daycareId = daycare2Id, name = "Väärät"))
             it.createDaycareGroupMessageAccount(group3Id)
         }
     }
@@ -91,19 +120,22 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val accounts2 = db.read { it.getAuthorizedMessageAccountsForEmployee(supervisorId) }
         assertEquals(3, accounts2.size)
         val personalAccount =
-            accounts2.find { it.account.type === AccountType.PERSONAL } ?: throw Error("Personal account not found")
+            accounts2.find { it.account.type === AccountType.PERSONAL }
+                ?: throw Error("Personal account not found")
         assertEquals(personalAccountName, personalAccount.account.name)
         assertEquals(AccountType.PERSONAL, personalAccount.account.type)
         assertNull(personalAccount.daycareGroup)
 
         val groupAccount =
-            accounts2.find { it.account.name == group1AccountName } ?: throw Error("Group account $group1AccountName not found")
+            accounts2.find { it.account.name == group1AccountName }
+                ?: throw Error("Group account $group1AccountName not found")
         assertEquals(AccountType.GROUP, groupAccount.account.type)
         assertEquals("Test Daycare", groupAccount.daycareGroup?.unitName)
         assertEquals("Testiläiset", groupAccount.daycareGroup?.name)
 
         val group2Account =
-            accounts2.find { it.account.name == group2AccountName } ?: throw Error("Group account $group2AccountName not found")
+            accounts2.find { it.account.name == group2AccountName }
+                ?: throw Error("Group account $group2AccountName not found")
         assertEquals(AccountType.GROUP, group2Account.account.type)
         assertEquals("Test Daycare", group2Account.daycareGroup?.unitName)
         assertEquals("Koekaniinit", group2Account.daycareGroup?.name)
@@ -120,7 +152,8 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(1, accounts2.size)
         assertNull(accounts2.find { it.account.type === AccountType.PERSONAL })
 
-        val groupAccount = accounts2.find { it.daycareGroup != null } ?: throw Error("Group account not found")
+        val groupAccount =
+            accounts2.find { it.daycareGroup != null } ?: throw Error("Group account not found")
         assertEquals(groupAccountName, groupAccount.account.name)
         assertEquals(AccountType.GROUP, groupAccount.account.type)
         assertEquals("Test Daycare", groupAccount.daycareGroup?.unitName)
@@ -147,22 +180,46 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `unread counts`() {
-        val counts = db.read { it.getUnreadMessagesCounts(it.getEmployeeMessageAccountIds(supervisorId)) }
+        val counts =
+            db.read { it.getUnreadMessagesCounts(it.getEmployeeMessageAccountIds(supervisorId)) }
         assertEquals(0, counts.first().unreadCount)
 
         val employeeAccount = counts.first().accountId
         db.transaction { tx ->
             val allAccounts =
-                tx.createQuery("SELECT id, account_name as name, 'PERSONAL' as type from message_account_name_view").mapTo<MessageAccount>()
+                tx.createQuery(
+                        "SELECT id, account_name as name, 'PERSONAL' as type from message_account_name_view"
+                    )
+                    .mapTo<MessageAccount>()
                     .list()
 
             val contentId = tx.insertMessageContent("content", employeeAccount)
-            val threadId = tx.insertThread(MessageType.MESSAGE, "title", urgent = false, isCopy = false)
-            val messageId = tx.insertMessage(RealEvakaClock().now(), contentId, threadId, employeeAccount, allAccounts.map { it.name })
+            val threadId =
+                tx.insertThread(MessageType.MESSAGE, "title", urgent = false, isCopy = false)
+            val messageId =
+                tx.insertMessage(
+                    RealEvakaClock().now(),
+                    contentId,
+                    threadId,
+                    employeeAccount,
+                    allAccounts.map { it.name }
+                )
             tx.insertRecipients(allAccounts.map { it.id }.toSet(), messageId)
         }
 
-        assertEquals(3, db.read { it.getUnreadMessagesCounts(counts.map { counts -> counts.accountId }.toSet()).map { it.unreadCount }.sum() })
-        assertEquals(1, db.read { it.getUnreadMessagesCounts(it.getEmployeeMessageAccountIds(supervisorId)) }.first().unreadCount)
+        assertEquals(
+            3,
+            db.read {
+                it.getUnreadMessagesCounts(counts.map { counts -> counts.accountId }.toSet())
+                    .map { it.unreadCount }
+                    .sum()
+            }
+        )
+        assertEquals(
+            1,
+            db.read { it.getUnreadMessagesCounts(it.getEmployeeMessageAccountIds(supervisorId)) }
+                .first()
+                .unreadCount
+        )
     }
 }

@@ -11,8 +11,12 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
 import java.time.LocalDate
 
-fun Database.Transaction.insertAssistanceAction(user: AuthenticatedUser, childId: ChildId, data: AssistanceActionRequest): AssistanceAction {
-    //language=sql
+fun Database.Transaction.insertAssistanceAction(
+    user: AuthenticatedUser,
+    childId: ChildId,
+    data: AssistanceActionRequest
+): AssistanceAction {
+    // language=sql
     val sql =
         """
         INSERT INTO assistance_action (
@@ -32,38 +36,44 @@ fun Database.Transaction.insertAssistanceAction(user: AuthenticatedUser, childId
             :measures::assistance_measure[]
         )
         RETURNING id
-        """.trimIndent()
+        """.trimIndent(
+        )
 
-    val id = createQuery(sql)
-        .bind("childId", childId)
-        .bind("startDate", data.startDate)
-        .bind("endDate", data.endDate)
-        .bind("updatedBy", user.evakaUserId)
-        .bind("otherAction", data.otherAction)
-        .bind("measures", data.measures.map { it.toString() })
-        .mapTo<AssistanceActionId>()
-        .first()
+    val id =
+        createQuery(sql)
+            .bind("childId", childId)
+            .bind("startDate", data.startDate)
+            .bind("endDate", data.endDate)
+            .bind("updatedBy", user.evakaUserId)
+            .bind("otherAction", data.otherAction)
+            .bind("measures", data.measures.map { it.toString() })
+            .mapTo<AssistanceActionId>()
+            .first()
 
     insertAssistanceActionOptionRefs(id, data.actions)
 
     return getAssistanceActionById(id)
 }
 
-fun Database.Transaction.insertAssistanceActionOptionRefs(actionId: AssistanceActionId, options: Set<String>): IntArray {
-    //language=sql
+fun Database.Transaction.insertAssistanceActionOptionRefs(
+    actionId: AssistanceActionId,
+    options: Set<String>
+): IntArray {
+    // language=sql
     val sql =
         """
         INSERT INTO assistance_action_option_ref (action_id, option_id)
         VALUES (:action_id, (SELECT id FROM assistance_action_option WHERE value = :option))
         ON CONFLICT DO NOTHING
-        """.trimIndent()
+        """.trimIndent(
+        )
     val batch = prepareBatch(sql)
     options.forEach { option -> batch.bind("action_id", actionId).bind("option", option).add() }
     return batch.execute()
 }
 
 fun Database.Read.getAssistanceActionById(id: AssistanceActionId): AssistanceAction {
-    //language=sql
+    // language=sql
     val sql =
         """
         SELECT aa.id, child_id, start_date, end_date, array_remove(array_agg(value), null) AS actions, other_action, measures
@@ -72,12 +82,13 @@ fun Database.Read.getAssistanceActionById(id: AssistanceActionId): AssistanceAct
         LEFT JOIN assistance_action_option aao ON aao.id = aaor.option_id
         WHERE aa.id = :id
         GROUP BY aa.id, child_id, start_date, end_date, other_action, measures
-        """.trimIndent()
+        """.trimIndent(
+        )
     return createQuery(sql).bind("id", id).mapTo<AssistanceAction>().first()
 }
 
 fun Database.Read.getAssistanceActionsByChild(childId: ChildId): List<AssistanceAction> {
-    //language=sql
+    // language=sql
     val sql =
         """
         SELECT aa.id, child_id, start_date, end_date, array_remove(array_agg(value), null) AS actions, other_action, measures
@@ -87,15 +98,17 @@ fun Database.Read.getAssistanceActionsByChild(childId: ChildId): List<Assistance
         WHERE child_id = :childId
         GROUP BY aa.id, child_id, start_date, end_date, other_action, measures
         ORDER BY start_date DESC
-        """.trimIndent()
-    return createQuery(sql)
-        .bind("childId", childId)
-        .mapTo<AssistanceAction>()
-        .list()
+        """.trimIndent(
+        )
+    return createQuery(sql).bind("childId", childId).mapTo<AssistanceAction>().list()
 }
 
-fun Database.Transaction.updateAssistanceAction(user: AuthenticatedUser, id: AssistanceActionId, data: AssistanceActionRequest): AssistanceAction {
-    //language=sql
+fun Database.Transaction.updateAssistanceAction(
+    user: AuthenticatedUser,
+    id: AssistanceActionId,
+    data: AssistanceActionRequest
+): AssistanceAction {
+    // language=sql
     val sql =
         """
         UPDATE assistance_action SET 
@@ -106,7 +119,8 @@ fun Database.Transaction.updateAssistanceAction(user: AuthenticatedUser, id: Ass
             measures = :measures::assistance_measure[]
         WHERE id = :id
         RETURNING id
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     createQuery(sql)
         .bind("id", id)
@@ -116,7 +130,8 @@ fun Database.Transaction.updateAssistanceAction(user: AuthenticatedUser, id: Ass
         .bind("otherAction", data.otherAction)
         .bind("measures", data.measures.map { it.toString() })
         .mapTo<AssistanceActionId>()
-        .firstOrNull() ?: throw NotFound("Assistance action $id not found")
+        .firstOrNull()
+        ?: throw NotFound("Assistance action $id not found")
 
     deleteAssistanceActionOptionRefsByActionId(id, data.actions)
     insertAssistanceActionOptionRefs(id, data.actions)
@@ -124,15 +139,21 @@ fun Database.Transaction.updateAssistanceAction(user: AuthenticatedUser, id: Ass
     return getAssistanceActionById(id)
 }
 
-fun Database.Transaction.shortenOverlappingAssistanceAction(user: AuthenticatedUser, childId: ChildId, startDate: LocalDate, endDate: LocalDate) {
-    //language=sql
+fun Database.Transaction.shortenOverlappingAssistanceAction(
+    user: AuthenticatedUser,
+    childId: ChildId,
+    startDate: LocalDate,
+    endDate: LocalDate
+) {
+    // language=sql
     val sql =
         """
         UPDATE assistance_action 
         SET end_date = :startDate - interval '1 day', updated_by = :updatedBy
         WHERE child_id = :childId AND daterange(start_date, end_date, '[]') @> :startDate AND start_date <> :startDate
         RETURNING *
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     createUpdate(sql)
         .bind("childId", childId)
@@ -143,28 +164,30 @@ fun Database.Transaction.shortenOverlappingAssistanceAction(user: AuthenticatedU
 }
 
 fun Database.Transaction.deleteAssistanceAction(id: AssistanceActionId) {
-    //language=sql
+    // language=sql
     val sql = "DELETE FROM assistance_action WHERE id = :id"
     val deleted = createUpdate(sql).bind("id", id).execute()
     if (deleted == 0) throw NotFound("Assistance action $id not found")
 }
 
-fun Database.Transaction.deleteAssistanceActionOptionRefsByActionId(actionId: AssistanceActionId, excluded: Set<String>): Int {
-    //language=sql
+fun Database.Transaction.deleteAssistanceActionOptionRefsByActionId(
+    actionId: AssistanceActionId,
+    excluded: Set<String>
+): Int {
+    // language=sql
     val sql =
         """
         DELETE FROM assistance_action_option_ref
         WHERE action_id = :action_id
         AND option_id NOT IN (SELECT id FROM assistance_action_option WHERE value = ANY(:excluded))
-        """.trimIndent()
-    return createUpdate(sql)
-        .bind("action_id", actionId)
-        .bind("excluded", excluded)
-        .execute()
+        """.trimIndent(
+        )
+    return createUpdate(sql).bind("action_id", actionId).bind("excluded", excluded).execute()
 }
 
 fun Database.Read.getAssistanceActionOptions(): List<AssistanceActionOption> {
-    //language=sql
-    val sql = "SELECT value, name_fi, description_fi FROM assistance_action_option ORDER BY display_order"
+    // language=sql
+    val sql =
+        "SELECT value, name_fi, description_fi FROM assistance_action_option ORDER BY display_order"
     return createQuery(sql).mapTo<AssistanceActionOption>().list()
 }

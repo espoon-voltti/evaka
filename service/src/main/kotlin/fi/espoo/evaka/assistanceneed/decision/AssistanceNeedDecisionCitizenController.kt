@@ -31,9 +31,16 @@ class AssistanceNeedDecisionCitizenController(
         clock: EvakaClock
     ): List<AssistanceNeedDecisionCitizenListItem> {
         Audit.AssistanceNeedDecisionsListCitizen.log(targetId = user.id)
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_ASSISTANCE_NEED_DECISIONS, user.id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.READ_ASSISTANCE_NEED_DECISIONS,
+            user.id
+        )
 
-        return db.connect { dbc -> dbc.transaction { tx -> tx.getAssistanceNeedDecisionsForCitizen(user.id) } }
+        return db.connect { dbc ->
+            dbc.transaction { tx -> tx.getAssistanceNeedDecisionsForCitizen(user.id) }
+        }
     }
 
     @GetMapping("/children/assistance-need-decision/{id}")
@@ -44,13 +51,23 @@ class AssistanceNeedDecisionCitizenController(
         @PathVariable id: AssistanceNeedDecisionId
     ): AssistanceNeedDecision {
         Audit.ChildAssistanceNeedDecisionReadCitizen.log(targetId = id)
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.AssistanceNeedDecision.READ, id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.AssistanceNeedDecision.READ,
+            id
+        )
         return db.connect { dbc ->
             dbc.read { tx ->
                 val decision = tx.getAssistanceNeedDecisionById(id)
 
-                if (decision.status != AssistanceNeedDecisionStatus.ACCEPTED && decision.status != AssistanceNeedDecisionStatus.REJECTED) {
-                    throw NotFound("Citizen can only view accepted and rejected assistance need decisions")
+                if (
+                    decision.status != AssistanceNeedDecisionStatus.ACCEPTED &&
+                        decision.status != AssistanceNeedDecisionStatus.REJECTED
+                ) {
+                    throw NotFound(
+                        "Citizen can only view accepted and rejected assistance need decisions"
+                    )
                 }
 
                 decision
@@ -66,7 +83,12 @@ class AssistanceNeedDecisionCitizenController(
         @PathVariable id: AssistanceNeedDecisionId
     ): ResponseEntity<Any> {
         Audit.ChildAssistanceNeedDecisionDownloadCitizen.log(targetId = id)
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.AssistanceNeedDecision.DOWNLOAD, id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.AssistanceNeedDecision.DOWNLOAD,
+            id
+        )
         return db.connect { assistanceNeedDecisionService.getDecisionPdfResponse(it, id) }
     }
 
@@ -78,11 +100,14 @@ class AssistanceNeedDecisionCitizenController(
         @PathVariable id: AssistanceNeedDecisionId
     ) {
         Audit.ChildAssistanceNeedDecisionMarkReadCitizen.log(targetId = id)
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.AssistanceNeedDecision.MARK_AS_READ, id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.AssistanceNeedDecision.MARK_AS_READ,
+            id
+        )
         return db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.markAssistanceNeedDecisionAsReadByGuardian(id, user.id)
-            }
+            dbc.transaction { tx -> tx.markAssistanceNeedDecisionAsReadByGuardian(id, user.id) }
         }
     }
 
@@ -93,11 +118,14 @@ class AssistanceNeedDecisionCitizenController(
         clock: EvakaClock,
     ): List<UnreadAssistanceNeedDecisionItem> {
         Audit.ChildAssistanceNeedDecisionGetUnreadCountCitizen.log(targetId = user.id)
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT, user.id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT,
+            user.id
+        )
         return db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.getAssistanceNeedDecisionsUnreadCountsForCitizen(user.id)
-            }
+            dbc.transaction { tx -> tx.getAssistanceNeedDecisionsUnreadCountsForCitizen(user.id) }
         }
     }
 }

@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.jdbi.v3.core.JdbiException
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -29,7 +30,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 class BackupCareController(private val accessControl: AccessControl) {
@@ -47,8 +47,16 @@ class BackupCareController(private val accessControl: AccessControl) {
                 dbc.read { tx ->
                     val backupCares = tx.getBackupCaresForChild(childId)
                     val backupCareIds = backupCares.map { bc -> bc.id }
-                    val permittedActions = accessControl.getPermittedActions<BackupCareId, Action.BackupCare>(tx, user, clock, backupCareIds)
-                    backupCares.map { bc -> ChildBackupCareResponse(bc, permittedActions[bc.id] ?: emptySet()) }
+                    val permittedActions =
+                        accessControl.getPermittedActions<BackupCareId, Action.BackupCare>(
+                            tx,
+                            user,
+                            clock,
+                            backupCareIds
+                        )
+                    backupCares.map { bc ->
+                        ChildBackupCareResponse(bc, permittedActions[bc.id] ?: emptySet())
+                    }
                 }
             }
         )
@@ -65,18 +73,25 @@ class BackupCareController(private val accessControl: AccessControl) {
         Audit.ChildBackupCareCreate.log(targetId = childId, objectId = body.unitId)
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_BACKUP_CARE, childId)
         try {
-            val id = db.connect {
-                    dbc ->
-                dbc.transaction { tx ->
-                    if (!tx.childPlacementsHasConsecutiveRange(childId, body.period)) {
-                        throw BadRequest("The new backup care period is not contained within a placement")
+            val id =
+                db.connect { dbc ->
+                    dbc.transaction { tx ->
+                        if (!tx.childPlacementsHasConsecutiveRange(childId, body.period)) {
+                            throw BadRequest(
+                                "The new backup care period is not contained within a placement"
+                            )
+                        }
+                        tx.getPlacementsForChildDuring(childId, body.period.start, body.period.end)
+                            .forEach { placement ->
+                                tx.clearCalendarEventAttendees(
+                                    childId,
+                                    placement.unitId,
+                                    body.period
+                                )
+                            }
+                        tx.createBackupCare(childId, body)
                     }
-                    tx.getPlacementsForChildDuring(childId, body.period.start, body.period.end).forEach { placement ->
-                        tx.clearCalendarEventAttendees(childId, placement.unitId, body.period)
-                    }
-                    tx.createBackupCare(childId, body)
                 }
-            }
             return BackupCareCreateResponse(id)
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
@@ -96,8 +111,15 @@ class BackupCareController(private val accessControl: AccessControl) {
         try {
             db.connect { dbc ->
                 dbc.transaction { tx ->
-                    if (!tx.childPlacementsHasConsecutiveRange(tx.getBackupCareChildId(backupCareId), body.period)) {
-                        throw BadRequest("The new backup care period is not contained within a placement")
+                    if (
+                        !tx.childPlacementsHasConsecutiveRange(
+                            tx.getBackupCareChildId(backupCareId),
+                            body.period
+                        )
+                    ) {
+                        throw BadRequest(
+                            "The new backup care period is not contained within a placement"
+                        )
                     }
 
                     val existing = tx.getBackupCare(backupCareId)
@@ -108,18 +130,31 @@ class BackupCareController(private val accessControl: AccessControl) {
                                 tx.clearCalendarEventAttendees(
                                     existing.childId,
                                     existing.unitId,
-                                    FiniteDateRange(existing.period.start, body.period.start.minusDays(1))
+                                    FiniteDateRange(
+                                        existing.period.start,
+                                        body.period.start.minusDays(1)
+                                    )
                                 )
                             } else {
-                                // the backup care was extended; clear calendar event attendees for the main placement
+                                // the backup care was extended; clear calendar event attendees for
+                                // the main
+                                // placement
                                 // for the extended period
-                                tx.getPlacementsForChildDuring(existing.childId, body.period.start, existing.period.start).forEach { placement ->
-                                    tx.clearCalendarEventAttendees(
+                                tx.getPlacementsForChildDuring(
                                         existing.childId,
-                                        placement.unitId,
-                                        FiniteDateRange(body.period.start, existing.period.start)
+                                        body.period.start,
+                                        existing.period.start
                                     )
-                                }
+                                    .forEach { placement ->
+                                        tx.clearCalendarEventAttendees(
+                                            existing.childId,
+                                            placement.unitId,
+                                            FiniteDateRange(
+                                                body.period.start,
+                                                existing.period.start
+                                            )
+                                        )
+                                    }
                             }
                         }
 
@@ -129,18 +164,28 @@ class BackupCareController(private val accessControl: AccessControl) {
                                 tx.clearCalendarEventAttendees(
                                     existing.childId,
                                     existing.unitId,
-                                    FiniteDateRange(body.period.end.plusDays(1), existing.period.end)
+                                    FiniteDateRange(
+                                        body.period.end.plusDays(1),
+                                        existing.period.end
+                                    )
                                 )
                             } else {
-                                // the backup care was extended; clear calendar event attendees for the main placement
+                                // the backup care was extended; clear calendar event attendees for
+                                // the main
+                                // placement
                                 // for the extended period
-                                tx.getPlacementsForChildDuring(existing.childId, existing.period.end, body.period.end).forEach { placement ->
-                                    tx.clearCalendarEventAttendees(
+                                tx.getPlacementsForChildDuring(
                                         existing.childId,
-                                        placement.unitId,
-                                        FiniteDateRange(existing.period.end, body.period.end)
+                                        existing.period.end,
+                                        body.period.end
                                     )
-                                }
+                                    .forEach { placement ->
+                                        tx.clearCalendarEventAttendees(
+                                            existing.childId,
+                                            placement.unitId,
+                                            FiniteDateRange(existing.period.end, body.period.end)
+                                        )
+                                    }
                             }
                         }
                     }
@@ -165,7 +210,11 @@ class BackupCareController(private val accessControl: AccessControl) {
             dbc.transaction { tx ->
                 val backupCare = tx.getBackupCare(backupCareId)
                 if (backupCare != null) {
-                    tx.clearCalendarEventAttendees(backupCare.childId, backupCare.unitId, backupCare.period)
+                    tx.clearCalendarEventAttendees(
+                        backupCare.childId,
+                        backupCare.unitId,
+                        backupCare.period
+                    )
                 }
                 tx.deleteBackupCare(backupCareId)
             }
@@ -178,17 +227,27 @@ class BackupCareController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable("daycareId") daycareId: DaycareId,
-        @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
+        @RequestParam("startDate")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        startDate: LocalDate,
         @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate
     ): UnitBackupCaresResponse {
         Audit.DaycareBackupCareRead.log(targetId = daycareId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_BACKUP_CARE, daycareId)
-        val backupCares = db.connect { dbc -> dbc.read { it.getBackupCaresForDaycare(daycareId, FiniteDateRange(startDate, endDate)) } }
+        val backupCares =
+            db.connect { dbc ->
+                dbc.read {
+                    it.getBackupCaresForDaycare(daycareId, FiniteDateRange(startDate, endDate))
+                }
+            }
         return UnitBackupCaresResponse(backupCares)
     }
 }
 
 data class ChildBackupCaresResponse(val backupCares: List<ChildBackupCareResponse>)
+
 data class UnitBackupCaresResponse(val backupCares: List<UnitBackupCare>)
+
 data class BackupCareUpdateRequest(val period: FiniteDateRange, val groupId: GroupId?)
+
 data class BackupCareCreateResponse(val id: BackupCareId)

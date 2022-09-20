@@ -63,9 +63,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         return db.connect { dbc -> dbc.read { it.getDevice(id) } }
     }
 
-    data class RenameRequest(
-        val name: String
-    )
+    data class RenameRequest(val name: String)
     @PutMapping("/mobile-devices/{id}/name")
     fun putMobileDeviceName(
         db: Database,
@@ -104,8 +102,12 @@ class MobileDevicesController(private val accessControl: AccessControl) {
                 if (tx.employeePinIsCorrect(params.employeeId, params.pin)) {
                     tx.markEmployeeLastLogin(clock, params.employeeId)
                     tx.resetEmployeePinFailureCount(params.employeeId)
-                    tx.getEmployeeUser(params.employeeId)
-                        ?.let { PinLoginResponse(PinLoginStatus.SUCCESS, Employee(it.preferredFirstName ?: it.firstName, it.lastName)) }
+                    tx.getEmployeeUser(params.employeeId)?.let {
+                        PinLoginResponse(
+                            PinLoginStatus.SUCCESS,
+                            Employee(it.preferredFirstName ?: it.firstName, it.lastName)
+                        )
+                    }
                         ?: PinLoginResponse(PinLoginStatus.WRONG_PIN)
                 } else {
                     if (tx.updateEmployeePinFailureCountAndCheckIfLocked(params.employeeId)) {
@@ -119,21 +121,14 @@ class MobileDevicesController(private val accessControl: AccessControl) {
     }
 }
 
-data class PinLoginRequest(
-    val pin: String,
-    val employeeId: EmployeeId
-)
+data class PinLoginRequest(val pin: String, val employeeId: EmployeeId)
 
 enum class PinLoginStatus {
-    SUCCESS, WRONG_PIN, PIN_LOCKED
+    SUCCESS,
+    WRONG_PIN,
+    PIN_LOCKED
 }
 
-data class Employee(
-    val firstName: String,
-    val lastName: String
-)
+data class Employee(val firstName: String, val lastName: String)
 
-data class PinLoginResponse(
-    val status: PinLoginStatus,
-    val employee: Employee? = null
-)
+data class PinLoginResponse(val status: PinLoginStatus, val employee: Employee? = null)

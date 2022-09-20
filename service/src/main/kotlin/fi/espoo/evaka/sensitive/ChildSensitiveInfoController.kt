@@ -17,9 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class ChildSensitiveInfoController(
-    private val ac: AccessControl
-) {
+class ChildSensitiveInfoController(private val ac: AccessControl) {
 
     @GetMapping("/children/{childId}/sensitive-info")
     fun getSensitiveInfo(
@@ -32,6 +30,10 @@ class ChildSensitiveInfoController(
 
         ac.requirePermissionFor(user, clock, Action.Child.READ_SENSITIVE_INFO, childId)
 
-        return db.connect { dbc -> dbc.read { it.getChildSensitiveInfo(clock, childId) ?: throw NotFound("Child not found") } }
+        return db.connect { dbc ->
+            dbc.read {
+                it.getChildSensitiveInfo(clock, childId) ?: throw NotFound("Child not found")
+            }
+        }
     }
 }

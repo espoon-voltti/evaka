@@ -27,8 +27,8 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.orMax
-import org.springframework.stereotype.Component
 import java.time.LocalDate
+import org.springframework.stereotype.Component
 
 data class Quadruple<out A, out B, out C, out D>(
     val first: A,
@@ -46,7 +46,11 @@ class FinanceDecisionGenerator(
 ) {
     private val feeDecisionMinDate = env.feeDecisionMinDate
 
-    fun createRetroactiveFeeDecisions(tx: Database.Transaction, headOfFamily: PersonId, from: LocalDate) {
+    fun createRetroactiveFeeDecisions(
+        tx: Database.Transaction,
+        headOfFamily: PersonId,
+        from: LocalDate
+    ) {
         val families = tx.findFamiliesByHeadOfFamily(headOfFamily, from)
         tx.handleFeeDecisionChanges(
             jsonMapper,
@@ -57,14 +61,17 @@ class FinanceDecisionGenerator(
         )
     }
 
-    fun createRetroactiveValueDecisions(tx: Database.Transaction, clock: EvakaClock, headOfFamily: PersonId, from: LocalDate) {
+    fun createRetroactiveValueDecisions(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        headOfFamily: PersonId,
+        from: LocalDate
+    ) {
         val families = tx.findFamiliesByHeadOfFamily(headOfFamily, from)
         families
             .flatMap { family -> family.children.map { it to family } }
             .groupingBy { (child, _) -> child }
-            .fold(listOf<FridgeFamily>()) { childFamilies, (_, family) ->
-                childFamilies + family
-            }
+            .fold(listOf<FridgeFamily>()) { childFamilies, (_, family) -> childFamilies + family }
             .forEach { (child, families) ->
                 tx.handleValueDecisionChanges(
                     featureConfig,
@@ -78,13 +85,23 @@ class FinanceDecisionGenerator(
             }
     }
 
-    fun generateNewDecisionsForAdult(tx: Database.Transaction, clock: EvakaClock, personId: PersonId, from: LocalDate) {
+    fun generateNewDecisionsForAdult(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        personId: PersonId,
+        from: LocalDate
+    ) {
         val fromOrMinDate = maxOf(feeDecisionMinDate, from)
         val families = tx.findFamiliesByAdult(personId, fromOrMinDate)
         handleDecisionChangesForFamilies(tx, clock, fromOrMinDate, families)
     }
 
-    fun generateNewDecisionsForChild(tx: Database.Transaction, clock: EvakaClock, personId: ChildId, from: LocalDate) {
+    fun generateNewDecisionsForChild(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        personId: ChildId,
+        from: LocalDate
+    ) {
         val fromOrMinDate = maxOf(feeDecisionMinDate, from)
         val families = tx.findFamiliesByChild(personId, fromOrMinDate)
         handleDecisionChangesForFamilies(tx, clock, fromOrMinDate, families)
@@ -111,9 +128,7 @@ class FinanceDecisionGenerator(
         families
             .flatMap { family -> family.children.map { it to family } }
             .groupingBy { (child, _) -> child }
-            .fold(listOf<FridgeFamily>()) { childFamilies, (_, family) ->
-                childFamilies + family
-            }
+            .fold(listOf<FridgeFamily>()) { childFamilies, (_, family) -> childFamilies + family }
             .forEach { (child, families) ->
                 tx.handleValueDecisionChanges(
                     featureConfig,
@@ -128,15 +143,23 @@ class FinanceDecisionGenerator(
     }
 }
 
-private fun Database.Read.findFamiliesByChild(childId: ChildId, from: LocalDate): List<FridgeFamily> {
+private fun Database.Read.findFamiliesByChild(
+    childId: ChildId,
+    from: LocalDate
+): List<FridgeFamily> {
     val dateRange = DateRange(from, null)
-    val parentRelations = getParentships(null, childId, includeConflicts = false, period = dateRange)
+    val parentRelations =
+        getParentships(null, childId, includeConflicts = false, period = dateRange)
 
     return parentRelations.flatMap {
-        val fridgePartners = getPartnersForPerson(it.headOfChildId, includeConflicts = false, period = dateRange)
-        val fridgeChildren = getParentships(it.headOfChildId, null, includeConflicts = false, period = dateRange)
+        val fridgePartners =
+            getPartnersForPerson(it.headOfChildId, includeConflicts = false, period = dateRange)
+        val fridgeChildren =
+            getParentships(it.headOfChildId, null, includeConflicts = false, period = dateRange)
         val fridgePartnerParentships =
-            fridgePartners.flatMap { partner -> getParentships(partner.person.id, null, false, dateRange) }
+            fridgePartners.flatMap { partner ->
+                getParentships(partner.person.id, null, false, dateRange)
+            }
 
         generateFamilyCompositions(
             maxOf(dateRange.start, it.startDate),
@@ -148,19 +171,29 @@ private fun Database.Read.findFamiliesByChild(childId: ChildId, from: LocalDate)
     }
 }
 
-private fun Database.Read.findFamiliesByAdult(personId: PersonId, from: LocalDate): List<FridgeFamily> {
-    val possibleHeadsOfFamily = getPartnersForPerson(personId, includeConflicts = false, period = DateRange(from, null))
-        .map { it.person.id }
-        .distinct() + personId
+private fun Database.Read.findFamiliesByAdult(
+    personId: PersonId,
+    from: LocalDate
+): List<FridgeFamily> {
+    val possibleHeadsOfFamily =
+        getPartnersForPerson(personId, includeConflicts = false, period = DateRange(from, null))
+            .map { it.person.id }
+            .distinct() + personId
 
     return possibleHeadsOfFamily.flatMap { findFamiliesByHeadOfFamily(it, from) }
 }
 
-private fun Database.Read.findFamiliesByHeadOfFamily(headOfFamilyId: PersonId, from: LocalDate): List<FridgeFamily> {
+private fun Database.Read.findFamiliesByHeadOfFamily(
+    headOfFamilyId: PersonId,
+    from: LocalDate
+): List<FridgeFamily> {
     val dateRange = DateRange(from, null)
-    val childRelations = getParentships(headOfFamilyId, null, includeConflicts = false, period = dateRange)
-    val partners = getPartnersForPerson(headOfFamilyId, includeConflicts = false, period = dateRange)
-    val fridgePartnerParentships = partners.flatMap { getParentships(it.person.id, null, false, dateRange) }
+    val childRelations =
+        getParentships(headOfFamilyId, null, includeConflicts = false, period = dateRange)
+    val partners =
+        getPartnersForPerson(headOfFamilyId, includeConflicts = false, period = dateRange)
+    val fridgePartnerParentships =
+        partners.flatMap { getParentships(it.person.id, null, false, dateRange) }
 
     return generateFamilyCompositions(
         from,
@@ -178,63 +211,70 @@ private fun generateFamilyCompositions(
     parentships: Iterable<Parentship>,
     fridgePartnerParentships: Iterable<Parentship>
 ): List<FridgeFamily> {
-    val periodsWhenChildrenAreNotAdults = parentships.map {
-        val birthday = it.child.dateOfBirth
-        DateRange(birthday, birthday.plusYears(18))
-    }
+    val periodsWhenChildrenAreNotAdults =
+        parentships.map {
+            val birthday = it.child.dateOfBirth
+            DateRange(birthday, birthday.plusYears(18))
+        }
 
-    val allPeriods = partners.map { DateRange(it.startDate, it.endDate) } +
-        parentships.map { DateRange(it.startDate, it.endDate) } +
-        fridgePartnerParentships.map { DateRange(it.startDate, it.endDate) } +
-        periodsWhenChildrenAreNotAdults
+    val allPeriods =
+        partners.map { DateRange(it.startDate, it.endDate) } +
+            parentships.map { DateRange(it.startDate, it.endDate) } +
+            fridgePartnerParentships.map { DateRange(it.startDate, it.endDate) } +
+            periodsWhenChildrenAreNotAdults
 
-    val familyPeriods = asDistinctPeriods(allPeriods, DateRange(from, null))
-        .map { period ->
-            val partner = partners.find { DateRange(it.startDate, it.endDate).contains(period) }?.person
-            val children = parentships
-                .filter { DateRange(it.startDate, it.endDate).contains(period) }
-                // Do not include children that are over 18 years old during the period
-                .filter { it.child.dateOfBirth.plusYears(18) >= period.start }
-                .map { it.child }
-            val fridgePartnerChildren = fridgePartnerParentships
-                .filter { it.headOfChild == partner }
-                .filter { DateRange(it.startDate, it.endDate).contains(period) }
-                // Do not include children that are over 18 years old during the period
-                .filter { it.child.dateOfBirth.plusYears(18) >= period.start }
-                .map { it.child }
-            period to Quadruple(
-                headOfFamily,
-                partner?.id,
-                children.map { ChildWithDateOfBirth(ChildId(it.id.raw), it.dateOfBirth) },
-                fridgePartnerChildren.map { ChildWithDateOfBirth(ChildId(it.id.raw), it.dateOfBirth) }
-            )
+    val familyPeriods =
+        asDistinctPeriods(allPeriods, DateRange(from, null)).map { period ->
+            val partner =
+                partners.find { DateRange(it.startDate, it.endDate).contains(period) }?.person
+            val children =
+                parentships
+                    .filter { DateRange(it.startDate, it.endDate).contains(period) }
+                    // Do not include children that are over 18 years old during the period
+                    .filter { it.child.dateOfBirth.plusYears(18) >= period.start }
+                    .map { it.child }
+            val fridgePartnerChildren =
+                fridgePartnerParentships
+                    .filter { it.headOfChild == partner }
+                    .filter { DateRange(it.startDate, it.endDate).contains(period) }
+                    // Do not include children that are over 18 years old during the period
+                    .filter { it.child.dateOfBirth.plusYears(18) >= period.start }
+                    .map { it.child }
+            period to
+                Quadruple(
+                    headOfFamily,
+                    partner?.id,
+                    children.map { ChildWithDateOfBirth(ChildId(it.id.raw), it.dateOfBirth) },
+                    fridgePartnerChildren.map {
+                        ChildWithDateOfBirth(ChildId(it.id.raw), it.dateOfBirth)
+                    }
+                )
         }
 
     return mergePeriods(familyPeriods).map { (period, familyData) ->
         val children = familyData.third + familyData.fourth
-        val (head, partner) = run {
-            val firstParentsYoungestChild = familyData.third.minByOrNull { it.dateOfBirth }
-            val secondParentsYoungestChild = familyData.fourth.minByOrNull { it.dateOfBirth }
-            when {
-                familyData.second == null -> familyData.first to familyData.second
-                firstParentsYoungestChild == null -> familyData.second to familyData.first
-                secondParentsYoungestChild == null -> familyData.first to familyData.second
-                // First parent has more fridge children
-                familyData.third.size > familyData.fourth.size -> familyData.first to familyData.second
-                // Second parent has more fridge children
-                familyData.third.size < familyData.fourth.size -> familyData.second to familyData.first
-                // First parent has the youngest fridge child
-                firstParentsYoungestChild.dateOfBirth.isAfter(secondParentsYoungestChild.dateOfBirth) ->
-                    familyData.first to familyData.second
-                else -> familyData.second to familyData.first
+        val (head, partner) =
+            run {
+                val firstParentsYoungestChild = familyData.third.minByOrNull { it.dateOfBirth }
+                val secondParentsYoungestChild = familyData.fourth.minByOrNull { it.dateOfBirth }
+                when {
+                    familyData.second == null -> familyData.first to familyData.second
+                    firstParentsYoungestChild == null -> familyData.second to familyData.first
+                    secondParentsYoungestChild == null -> familyData.first to familyData.second
+                    // First parent has more fridge children
+                    familyData.third.size > familyData.fourth.size ->
+                        familyData.first to familyData.second
+                    // Second parent has more fridge children
+                    familyData.third.size < familyData.fourth.size ->
+                        familyData.second to familyData.first
+                    // First parent has the youngest fridge child
+                    firstParentsYoungestChild.dateOfBirth.isAfter(
+                        secondParentsYoungestChild.dateOfBirth
+                    ) -> familyData.first to familyData.second
+                    else -> familyData.second to familyData.first
+                }
             }
-        }
-        FridgeFamily(
-            headOfFamily = head,
-            partner = partner,
-            children = children,
-            period = period
-        )
+        FridgeFamily(headOfFamily = head, partner = partner, children = children, period = period)
     }
 }
 
@@ -244,19 +284,33 @@ internal fun <Decision : FinanceDecision<Decision>> mergeAndFilterUnnecessaryDra
 ): List<Decision> {
     if (drafts.isEmpty()) return drafts
 
-    val minDate = drafts.map { it.validFrom }.minOrNull()!! // min always exists when list is non-empty
+    val minDate =
+        drafts.map { it.validFrom }.minOrNull()!! // min always exists when list is non-empty
     val maxDate = drafts.map { it.validTo }.maxByOrNull { orMax(it) }
 
-    return asDistinctPeriods((drafts + active).map { DateRange(it.validFrom, it.validTo) }, DateRange(minDate, maxDate))
+    return asDistinctPeriods(
+            (drafts + active).map { DateRange(it.validFrom, it.validTo) },
+            DateRange(minDate, maxDate)
+        )
         .fold(listOf<Decision>()) { decisions, period ->
-            val keptDraft = drafts.find { DateRange(it.validFrom, it.validTo).contains(period) }?.let { draft ->
-                val decision = active.find { DateRange(it.validFrom, it.validTo).contains(period) }
-                if (draftIsUnnecessary(draft, decision, alreadyGeneratedDrafts = decisions.isNotEmpty())) {
-                    null
-                } else {
-                    draft.withValidity(DateRange(period.start, period.end))
-                }
-            }
+            val keptDraft =
+                drafts
+                    .find { DateRange(it.validFrom, it.validTo).contains(period) }
+                    ?.let { draft ->
+                        val decision =
+                            active.find { DateRange(it.validFrom, it.validTo).contains(period) }
+                        if (
+                            draftIsUnnecessary(
+                                draft,
+                                decision,
+                                alreadyGeneratedDrafts = decisions.isNotEmpty()
+                            )
+                        ) {
+                            null
+                        } else {
+                            draft.withValidity(DateRange(period.start, period.end))
+                        }
+                    }
             if (keptDraft != null) decisions + keptDraft else decisions
         }
         .let { mergeDecisions(it) }
@@ -297,48 +351,55 @@ internal fun <Decision : FinanceDecision<Decision>> updateExistingDecisions(
     existingDrafts: List<Decision>,
     activeDecisions: List<Decision>
 ): UpdatedExistingDecisions<Decision> {
-    val draftsWithUpdatedDates = filterOrUpdateStaleDrafts(existingDrafts, DateRange(from, null))
-        .map { it.withRandomId() }
+    val draftsWithUpdatedDates =
+        filterOrUpdateStaleDrafts(existingDrafts, DateRange(from, null)).map { it.withRandomId() }
 
-    val (withUpdatedEndDates, mergedDrafts) = updateDecisionEndDatesAndMergeDrafts(
-        activeDecisions,
-        newDrafts + draftsWithUpdatedDates
+    val (withUpdatedEndDates, mergedDrafts) =
+        updateDecisionEndDatesAndMergeDrafts(activeDecisions, newDrafts + draftsWithUpdatedDates)
+
+    return UpdatedExistingDecisions(
+        updatedDrafts = mergedDrafts,
+        updatedActiveDecisions = withUpdatedEndDates
     )
-
-    return UpdatedExistingDecisions(updatedDrafts = mergedDrafts, updatedActiveDecisions = withUpdatedEndDates)
 }
 
 internal fun <Decision : FinanceDecision<Decision>> filterOrUpdateStaleDrafts(
     drafts: List<Decision>,
     period: DateRange
 ): List<Decision> {
-    val (overlappingDrafts, nonOverlappingDrafts) = drafts.partition {
-        DateRange(it.validFrom, it.validTo).overlaps(period)
-    }
+    val (overlappingDrafts, nonOverlappingDrafts) =
+        drafts.partition { DateRange(it.validFrom, it.validTo).overlaps(period) }
 
-    val updatedOverlappingDrafts = when (period.end) {
-        null -> overlappingDrafts.flatMap {
-            when {
-                it.validFrom < period.start -> listOf(it.withValidity(DateRange(it.validFrom, period.start.minusDays(1))))
-                else -> emptyList()
-            }
+    val updatedOverlappingDrafts =
+        when (period.end) {
+            null ->
+                overlappingDrafts.flatMap {
+                    when {
+                        it.validFrom < period.start ->
+                            listOf(
+                                it.withValidity(DateRange(it.validFrom, period.start.minusDays(1)))
+                            )
+                        else -> emptyList()
+                    }
+                }
+            else ->
+                overlappingDrafts.flatMap {
+                    when {
+                        it.validFrom < period.start && orMax(it.validTo) > orMax(period.end) ->
+                            listOf(
+                                it.withValidity(DateRange(it.validFrom, period.start.minusDays(1))),
+                                it.withValidity(DateRange(period.end.plusDays(1), it.validTo))
+                            )
+                        it.validFrom < period.start && orMax(it.validTo) <= orMax(period.end) ->
+                            listOf(
+                                it.withValidity(DateRange(it.validFrom, period.start.minusDays(1)))
+                            )
+                        it.validFrom >= period.start && orMax(it.validTo) > orMax(period.end) ->
+                            listOf(it.withValidity(DateRange(period.end.plusDays(1), it.validTo)))
+                        else -> emptyList()
+                    }
+                }
         }
-        else -> overlappingDrafts.flatMap {
-            when {
-                it.validFrom < period.start && orMax(it.validTo) > orMax(period.end) -> listOf(
-                    it.withValidity(DateRange(it.validFrom, period.start.minusDays(1))),
-                    it.withValidity(DateRange(period.end.plusDays(1), it.validTo))
-                )
-                it.validFrom < period.start && orMax(it.validTo) <= orMax(period.end) -> listOf(
-                    it.withValidity(DateRange(it.validFrom, period.start.minusDays(1)))
-                )
-                it.validFrom >= period.start && orMax(it.validTo) > orMax(period.end) -> listOf(
-                    it.withValidity(DateRange(period.end.plusDays(1), it.validTo))
-                )
-                else -> emptyList()
-            }
-        }
-    }
 
     return nonOverlappingDrafts + updatedOverlappingDrafts
 }
@@ -353,25 +414,32 @@ internal fun <Decision : FinanceDecision<Decision>> updateDecisionEndDatesAndMer
      * Immediately update the validity end dates for active decisions if a new draft has the same contents and they
      * both are valid to the future
      */
-    val (updatedActives, keptDrafts) = actives.fold(
-        Pair(listOf<Decision>(), mergedDrafts)
-    ) { (updatedActives, keptDrafts), decision ->
-        val firstOverlappingSimilarDraft = keptDrafts.filter { draft ->
-            decision.validFrom == draft.validFrom
-        }.firstOrNull { draft -> decision.contentEquals(draft) }
+    val (updatedActives, keptDrafts) =
+        actives.fold(Pair(listOf<Decision>(), mergedDrafts)) {
+            (updatedActives, keptDrafts),
+            decision ->
+            val firstOverlappingSimilarDraft =
+                keptDrafts
+                    .filter { draft -> decision.validFrom == draft.validFrom }
+                    .firstOrNull { draft -> decision.contentEquals(draft) }
 
-        firstOverlappingSimilarDraft?.let { similarDraft ->
-            val now = LocalDate.now(europeHelsinki)
-            if (orMax(decision.validTo) >= now && orMax(similarDraft.validTo) >= now) {
-                Pair(
-                    updatedActives + decision.withValidity(DateRange(decision.validFrom, similarDraft.validTo)),
-                    keptDrafts.filterNot { it.id == similarDraft.id }
-                )
-            } else null
-        } ?: Pair(updatedActives, keptDrafts)
-    }
+            firstOverlappingSimilarDraft?.let { similarDraft ->
+                val now = LocalDate.now(europeHelsinki)
+                if (orMax(decision.validTo) >= now && orMax(similarDraft.validTo) >= now) {
+                    Pair(
+                        updatedActives +
+                            decision.withValidity(
+                                DateRange(decision.validFrom, similarDraft.validTo)
+                            ),
+                        keptDrafts.filterNot { it.id == similarDraft.id }
+                    )
+                } else null
+            }
+                ?: Pair(updatedActives, keptDrafts)
+        }
 
-    val allUpdatedActives = actives.map { decision -> updatedActives.find { it.id == decision.id } ?: decision }
+    val allUpdatedActives =
+        actives.map { decision -> updatedActives.find { it.id == decision.id } ?: decision }
     val filteredDrafts = mergeAndFilterUnnecessaryDrafts(keptDrafts, allUpdatedActives)
 
     return Pair(updatedActives, filteredDrafts)
@@ -381,7 +449,11 @@ internal fun addECHAFeeAlterations(
     children: Set<ChildWithDateOfBirth>,
     incomes: List<Income>
 ): List<FeeAlteration> {
-    return incomes.filter { it.worksAtECHA }.flatMap { income ->
-        children.map { child -> getECHAIncrease(child.id, DateRange(income.validFrom, income.validTo)) }
-    }
+    return incomes
+        .filter { it.worksAtECHA }
+        .flatMap { income ->
+            children.map { child ->
+                getECHAIncrease(child.id, DateRange(income.validFrom, income.validTo))
+            }
+        }
 }

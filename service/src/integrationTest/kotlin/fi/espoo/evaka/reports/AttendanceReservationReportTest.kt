@@ -36,9 +36,6 @@ import fi.espoo.evaka.testChild_8
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.DayOfWeek
 import java.time.DayOfWeek.FRIDAY
 import java.time.DayOfWeek.MONDAY
@@ -49,6 +46,9 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter.ISO_DATE
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val admin =
@@ -64,12 +64,14 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         val startDate = LocalDate.of(2022, 8, 8) // Mon
         val endDate = LocalDate.of(2022, 8, 14) // Sun
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}",
-            listOf("start" to startDate.format(ISO_DATE), "end" to endDate.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}",
+                    listOf("start" to startDate.format(ISO_DATE), "end" to endDate.format(ISO_DATE))
+                )
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
 
         val expected = createEmptyReport(startDate, endDate.minusDays(2)) // Mon-Fri
         assertThat(res.statusCode).isEqualTo(200)
@@ -80,12 +82,14 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
     fun `end date is inclusive`() {
         val date = LocalDate.of(2022, 8, 10)
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}",
+                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
+                )
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
 
         val expected = createEmptyReport(date, date)
         assertThat(res.statusCode).isEqualTo(200)
@@ -107,12 +111,14 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}",
+                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
+                )
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
 
         val expected = createEmptyReport(date, date)
         assertThat(res.statusCode).isEqualTo(200)
@@ -140,12 +146,14 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}",
+                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
+                )
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
 
         val expected = createEmptyReport(date, date)
         assertThat(res.statusCode).isEqualTo(200)
@@ -173,38 +181,41 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
-        val expected = createEmptyReport(date, date).also {
-            addExpectedRow(
-                it,
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 1.75,
-                    staffCountRequired = 0.3
-                ),
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 1.75,
-                    staffCountRequired = 0.3
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}",
+                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
                 )
-            )
-        }
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+
+        val expected =
+            createEmptyReport(date, date).also {
+                addExpectedRow(
+                    it,
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    ),
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    )
+                )
+            }
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get()).containsExactlyElementsOf(expected.values)
     }
@@ -213,12 +224,13 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
     fun `service need factor is picked from placement's service need`() {
         val date = LocalDate.of(2020, 5, 28)
         db.transaction { tx ->
-            val placementId = tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = date,
-                endDate = date
-            )
+            val placementId =
+                tx.insertTestPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = date,
+                    endDate = date
+                )
             tx.insertTestServiceNeed(
                 confirmedBy = admin.evakaUserId,
                 placementId = placementId,
@@ -236,38 +248,41 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
-        val expected = createEmptyReport(date, date).also {
-            addExpectedRow(
-                it,
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 0.88,
-                    staffCountRequired = 0.1
-                ),
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 0.88,
-                    staffCountRequired = 0.1
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}",
+                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
                 )
-            )
-        }
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+
+        val expected =
+            createEmptyReport(date, date).also {
+                addExpectedRow(
+                    it,
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 0.88,
+                        staffCountRequired = 0.1
+                    ),
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 0.88,
+                        staffCountRequired = 0.1
+                    )
+                )
+            }
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get()).containsExactlyElementsOf(expected.values)
     }
@@ -303,58 +318,61 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}",
-            listOf("start" to startDate.format(ISO_DATE), "end" to endDate.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
-        val expected = createEmptyReport(startDate, endDate).also {
-            addExpectedRow(
-                it,
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 29), LocalTime.of(8, 0)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 1.75,
-                    staffCountRequired = 0.3
-                ),
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 29), LocalTime.of(8, 30)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 1.75,
-                    staffCountRequired = 0.3
-                ),
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 6, 1), LocalTime.of(8, 0)),
-                    childCountUnder3 = 0,
-                    childCountOver3 = 1,
-                    childCount = 1,
-                    capacityFactor = 1.0,
-                    staffCountRequired = 0.1
-                ),
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 6, 1), LocalTime.of(8, 30)),
-                    childCountUnder3 = 0,
-                    childCountOver3 = 1,
-                    childCount = 1,
-                    capacityFactor = 1.0,
-                    staffCountRequired = 0.1
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}",
+                    listOf("start" to startDate.format(ISO_DATE), "end" to endDate.format(ISO_DATE))
                 )
-            )
-        }
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+
+        val expected =
+            createEmptyReport(startDate, endDate).also {
+                addExpectedRow(
+                    it,
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 29), LocalTime.of(8, 0)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    ),
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 29), LocalTime.of(8, 30)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    ),
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 6, 1), LocalTime.of(8, 0)),
+                        childCountUnder3 = 0,
+                        childCountOver3 = 1,
+                        childCount = 1,
+                        capacityFactor = 1.0,
+                        staffCountRequired = 0.1
+                    ),
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 6, 1), LocalTime.of(8, 30)),
+                        childCountUnder3 = 0,
+                        childCountOver3 = 1,
+                        childCount = 1,
+                        capacityFactor = 1.0,
+                        staffCountRequired = 0.1
+                    )
+                )
+            }
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get()).containsExactlyElementsOf(expected.values)
     }
@@ -389,38 +407,41 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
-        val expected = createEmptyReport(date, date).also {
-            addExpectedRow(
-                it,
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 8.75,
-                    staffCountRequired = 1.3
-                ),
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 8.75,
-                    staffCountRequired = 1.3
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}",
+                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
                 )
-            )
-        }
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+
+        val expected =
+            createEmptyReport(date, date).also {
+                addExpectedRow(
+                    it,
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 8.75,
+                        staffCountRequired = 1.3
+                    ),
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 8.75,
+                        staffCountRequired = 1.3
+                    )
+                )
+            }
 
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get()).containsExactlyElementsOf(expected.values)
@@ -430,20 +451,22 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
     fun `backup care is supported`() {
         val date = LocalDate.of(2020, 5, 28)
         db.transaction { tx ->
-            val groupId = tx.insertTestDaycareGroup(
-                DevDaycareGroup(
-                    daycareId = testDaycare2.id,
-                    startDate = date,
-                    endDate = date,
+            val groupId =
+                tx.insertTestDaycareGroup(
+                    DevDaycareGroup(
+                        daycareId = testDaycare2.id,
+                        startDate = date,
+                        endDate = date,
+                    )
                 )
-            )
             tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = tx.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare2.id,
-                    startDate = date,
-                    endDate = date
-                ),
+                daycarePlacementId =
+                    tx.insertTestPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare2.id,
+                        startDate = date,
+                        endDate = date
+                    ),
                 groupId = groupId,
                 startDate = date,
                 endDate = date
@@ -465,38 +488,41 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
-        val expected = createEmptyReport(date, date).also {
-            addExpectedRow(
-                it,
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 1.75,
-                    staffCountRequired = 0.3
-                ),
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 1.75,
-                    staffCountRequired = 0.3
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}",
+                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
                 )
-            )
-        }
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+
+        val expected =
+            createEmptyReport(date, date).also {
+                addExpectedRow(
+                    it,
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    ),
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    )
+                )
+            }
 
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get()).containsExactlyElementsOf(expected.values)
@@ -523,31 +549,33 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}",
+                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
+                )
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
 
-        val changedRows = LocalTimeRange(LocalTime.of(8, 0), LocalTime.of(15, 30), Duration.ofMinutes(30)).map {
-            AttendanceReservationReportRow(
-                groupId = null,
-                groupName = null,
-                HelsinkiDateTime.of(
-                    LocalDate.of(2020, 5, 28),
-                    it,
-                ),
-                childCountUnder3 = 1,
-                childCountOver3 = 0,
-                childCount = 1,
-                capacityFactor = 1.75,
-                staffCountRequired = 0.3
-            )
-        }
-        val expected = createEmptyReport(date, date).also {
-            addExpectedRow(it, *(changedRows).toTypedArray())
-        }
+        val changedRows =
+            LocalTimeRange(LocalTime.of(8, 0), LocalTime.of(15, 30), Duration.ofMinutes(30)).map {
+                AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
+                    HelsinkiDateTime.of(
+                        LocalDate.of(2020, 5, 28),
+                        it,
+                    ),
+                    childCountUnder3 = 1,
+                    childCountOver3 = 0,
+                    childCount = 1,
+                    capacityFactor = 1.75,
+                    staffCountRequired = 0.3
+                )
+            }
+        val expected =
+            createEmptyReport(date, date).also { addExpectedRow(it, *(changedRows).toTypedArray()) }
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get()).containsExactlyElementsOf(expected.values)
     }
@@ -573,31 +601,33 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}",
+                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
+                )
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
 
-        val changedRows = LocalTimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0), Duration.ofMinutes(30)).map {
-            AttendanceReservationReportRow(
-                groupId = null,
-                groupName = null,
-                HelsinkiDateTime.of(
-                    LocalDate.of(2020, 5, 28),
-                    it,
-                ),
-                childCountUnder3 = 1,
-                childCountOver3 = 0,
-                childCount = 1,
-                capacityFactor = 1.75,
-                staffCountRequired = 0.3
-            )
-        }
-        val expected = createEmptyReport(date, date).also {
-            addExpectedRow(it, *(changedRows).toTypedArray())
-        }
+        val changedRows =
+            LocalTimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0), Duration.ofMinutes(30)).map {
+                AttendanceReservationReportRow(
+                    groupId = null,
+                    groupName = null,
+                    HelsinkiDateTime.of(
+                        LocalDate.of(2020, 5, 28),
+                        it,
+                    ),
+                    childCountUnder3 = 1,
+                    childCountOver3 = 0,
+                    childCount = 1,
+                    capacityFactor = 1.75,
+                    staffCountRequired = 0.3
+                )
+            }
+        val expected =
+            createEmptyReport(date, date).also { addExpectedRow(it, *(changedRows).toTypedArray()) }
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get()).containsExactlyElementsOf(expected.values)
     }
@@ -623,38 +653,41 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
-        val expected = createEmptyReport(date, date).also {
-            addExpectedRow(
-                it,
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 1.75,
-                    staffCountRequired = 0.3
-                ),
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 1.75,
-                    staffCountRequired = 0.3
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}",
+                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
                 )
-            )
-        }
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+
+        val expected =
+            createEmptyReport(date, date).also {
+                addExpectedRow(
+                    it,
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    ),
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    )
+                )
+            }
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get()).containsExactlyElementsOf(expected.values)
     }
@@ -664,15 +697,15 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
         val date = LocalDate.of(2020, 5, 28)
         db.transaction { tx ->
             listOf(
-                testChild_1,
-                testChild_2,
-                testChild_3,
-                testChild_4,
-                testChild_5,
-                testChild_6,
-                testChild_7,
-                testChild_8
-            )
+                    testChild_1,
+                    testChild_2,
+                    testChild_3,
+                    testChild_4,
+                    testChild_5,
+                    testChild_6,
+                    testChild_7,
+                    testChild_8
+                )
                 .forEach { testChild ->
                     tx.insertTestPlacement(
                         childId = testChild.id,
@@ -692,38 +725,41 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 }
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
-        val expected = createEmptyReport(date, date).also {
-            addExpectedRow(
-                it,
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
-                    childCountUnder3 = 6,
-                    childCountOver3 = 2,
-                    childCount = 8,
-                    capacityFactor = 12.5,
-                    staffCountRequired = 1.8
-                ),
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
-                    childCountUnder3 = 6,
-                    childCountOver3 = 2,
-                    childCount = 8,
-                    capacityFactor = 12.5,
-                    staffCountRequired = 1.8
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}",
+                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
                 )
-            )
-        }
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+
+        val expected =
+            createEmptyReport(date, date).also {
+                addExpectedRow(
+                    it,
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                        childCountUnder3 = 6,
+                        childCountOver3 = 2,
+                        childCount = 8,
+                        capacityFactor = 12.5,
+                        staffCountRequired = 1.8
+                    ),
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
+                        childCountUnder3 = 6,
+                        childCountOver3 = 2,
+                        childCount = 8,
+                        capacityFactor = 12.5,
+                        staffCountRequired = 1.8
+                    )
+                )
+            }
 
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get()).containsExactlyElementsOf(expected.values)
@@ -732,30 +768,29 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
     @Test
     fun `group ids filter works`() {
         val date = LocalDate.of(2020, 5, 28)
-        val group1 = db.transaction { tx ->
-            tx.insertTestDaycareGroup(
-                DevDaycareGroup(
-                    daycareId = testDaycare.id,
-                    name = "Testiläiset 1"
-                )
-            ).let { Group(it, "Testiläiset 1") }
-        }
-        val group2 = db.transaction { tx ->
-            tx.insertTestDaycareGroup(
-                DevDaycareGroup(
-                    daycareId = testDaycare.id,
-                    name = "Testiläiset 2"
-                )
-            ).let { Group(it, "Testiläiset 2") }
-        }
+        val group1 =
+            db.transaction { tx ->
+                tx.insertTestDaycareGroup(
+                        DevDaycareGroup(daycareId = testDaycare.id, name = "Testiläiset 1")
+                    )
+                    .let { Group(it, "Testiläiset 1") }
+            }
+        val group2 =
+            db.transaction { tx ->
+                tx.insertTestDaycareGroup(
+                        DevDaycareGroup(daycareId = testDaycare.id, name = "Testiläiset 2")
+                    )
+                    .let { Group(it, "Testiläiset 2") }
+            }
         db.transaction { tx ->
             tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = tx.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    startDate = date,
-                    endDate = date
-                ),
+                daycarePlacementId =
+                    tx.insertTestPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = date,
+                        endDate = date
+                    ),
                 groupId = group1.id,
                 startDate = date,
                 endDate = date
@@ -770,12 +805,13 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 )
             )
             tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = tx.insertTestPlacement(
-                    childId = testChild_2.id,
-                    unitId = testDaycare.id,
-                    startDate = date,
-                    endDate = date
-                ),
+                daycarePlacementId =
+                    tx.insertTestPlacement(
+                        childId = testChild_2.id,
+                        unitId = testDaycare.id,
+                        startDate = date,
+                        endDate = date
+                    ),
                 groupId = group1.id,
                 startDate = date,
                 endDate = date
@@ -790,12 +826,13 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 )
             )
             tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = tx.insertTestPlacement(
-                    childId = testChild_3.id,
-                    unitId = testDaycare.id,
-                    startDate = date,
-                    endDate = date
-                ),
+                daycarePlacementId =
+                    tx.insertTestPlacement(
+                        childId = testChild_3.id,
+                        unitId = testDaycare.id,
+                        startDate = date,
+                        endDate = date
+                    ),
                 groupId = group2.id,
                 startDate = date,
                 endDate = date
@@ -826,62 +863,65 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}",
-            listOf(
-                "start" to date.format(ISO_DATE),
-                "end" to date.format(ISO_DATE),
-                "groupIds" to "${group1.id},${group2.id}"
-            )
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
-        val expected = createEmptyReport(date, date, listOf(group1, group2)).also {
-            addExpectedRow(
-                it,
-                AttendanceReservationReportRow(
-                    groupId = group1.id,
-                    groupName = group1.name,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 1,
-                    childCount = 2,
-                    capacityFactor = 2.75,
-                    staffCountRequired = 0.4
-                ),
-                AttendanceReservationReportRow(
-                    groupId = group1.id,
-                    groupName = group1.name,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 1,
-                    childCount = 2,
-                    capacityFactor = 2.75,
-                    staffCountRequired = 0.4
-                ),
-                AttendanceReservationReportRow(
-                    groupId = group2.id,
-                    groupName = group2.name,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 1.75,
-                    staffCountRequired = 0.3
-                ),
-                AttendanceReservationReportRow(
-                    groupId = group2.id,
-                    groupName = group2.name,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 1.75,
-                    staffCountRequired = 0.3
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}",
+                    listOf(
+                        "start" to date.format(ISO_DATE),
+                        "end" to date.format(ISO_DATE),
+                        "groupIds" to "${group1.id},${group2.id}"
+                    )
                 )
-            )
-        }
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+
+        val expected =
+            createEmptyReport(date, date, listOf(group1, group2)).also {
+                addExpectedRow(
+                    it,
+                    AttendanceReservationReportRow(
+                        groupId = group1.id,
+                        groupName = group1.name,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 1,
+                        childCount = 2,
+                        capacityFactor = 2.75,
+                        staffCountRequired = 0.4
+                    ),
+                    AttendanceReservationReportRow(
+                        groupId = group1.id,
+                        groupName = group1.name,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 1,
+                        childCount = 2,
+                        capacityFactor = 2.75,
+                        staffCountRequired = 0.4
+                    ),
+                    AttendanceReservationReportRow(
+                        groupId = group2.id,
+                        groupName = group2.name,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    ),
+                    AttendanceReservationReportRow(
+                        groupId = group2.id,
+                        groupName = group2.name,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    )
+                )
+            }
 
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get()).containsExactlyInAnyOrderElementsOf(expected.values)
@@ -891,19 +931,17 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
     fun `group placement without group ids filter works`() {
         val date = LocalDate.of(2020, 5, 28)
         db.transaction { tx ->
-            val placementId = tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = date,
-                endDate = date
-            )
-            val groupId = tx.insertTestDaycareGroup(
-                DevDaycareGroup(
-                    daycareId = testDaycare.id,
+            val placementId =
+                tx.insertTestPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
                     startDate = date,
                     endDate = date
                 )
-            )
+            val groupId =
+                tx.insertTestDaycareGroup(
+                    DevDaycareGroup(daycareId = testDaycare.id, startDate = date, endDate = date)
+                )
             tx.insertTestDaycareGroupPlacement(
                 daycarePlacementId = placementId,
                 groupId = groupId,
@@ -921,38 +959,41 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
-        val expected = createEmptyReport(date, date).also {
-            addExpectedRow(
-                it,
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 1.75,
-                    staffCountRequired = 0.3
-                ),
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 1.75,
-                    staffCountRequired = 0.3
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}",
+                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
                 )
-            )
-        }
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+
+        val expected =
+            createEmptyReport(date, date).also {
+                addExpectedRow(
+                    it,
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    ),
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    )
+                )
+            }
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get()).containsExactlyElementsOf(expected.values)
     }
@@ -978,38 +1019,45 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE), "groupIds" to "")
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
-
-        val expected = createEmptyReport(date, date).also {
-            addExpectedRow(
-                it,
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 1.75,
-                    staffCountRequired = 0.3
-                ),
-                AttendanceReservationReportRow(
-                    groupId = null,
-                    groupName = null,
-                    HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
-                    childCountUnder3 = 1,
-                    childCountOver3 = 0,
-                    childCount = 1,
-                    capacityFactor = 1.75,
-                    staffCountRequired = 0.3
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}",
+                    listOf(
+                        "start" to date.format(ISO_DATE),
+                        "end" to date.format(ISO_DATE),
+                        "groupIds" to ""
+                    )
                 )
-            )
-        }
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportRow>>(jsonMapper)
+
+        val expected =
+            createEmptyReport(date, date).also {
+                addExpectedRow(
+                    it,
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 0)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    ),
+                    AttendanceReservationReportRow(
+                        groupId = null,
+                        groupName = null,
+                        HelsinkiDateTime.of(LocalDate.of(2020, 5, 28), LocalTime.of(8, 30)),
+                        childCountUnder3 = 1,
+                        childCountOver3 = 0,
+                        childCount = 1,
+                        capacityFactor = 1.75,
+                        staffCountRequired = 0.3
+                    )
+                )
+            }
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get()).containsExactlyElementsOf(expected.values)
     }
@@ -1030,11 +1078,21 @@ private fun createEmptyReport(
     while (time < endDateTime) {
         if (operationDays.contains(time.dayOfWeek)) {
             if (groups.isEmpty())
-                times[RowKey(null, time)] = AttendanceReservationReportRow(null, null, time, 0, 0, 0, 0.0, 0.0)
+                times[RowKey(null, time)] =
+                    AttendanceReservationReportRow(null, null, time, 0, 0, 0, 0.0, 0.0)
             else
                 groups.forEach { group ->
                     times[RowKey(group, time)] =
-                        AttendanceReservationReportRow(group.id, group.name, time, 0, 0, 0, 0.0, 0.0)
+                        AttendanceReservationReportRow(
+                            group.id,
+                            group.name,
+                            time,
+                            0,
+                            0,
+                            0,
+                            0.0,
+                            0.0
+                        )
                 }
         }
         time = time.plusMinutes(30)
@@ -1046,5 +1104,7 @@ private fun addExpectedRow(
     map: MutableMap<RowKey, AttendanceReservationReportRow>,
     vararg rows: AttendanceReservationReportRow
 ) {
-    rows.forEach { row -> map[RowKey(row.groupId?.let { Group(it, row.groupName!!) }, row.dateTime)] = row }
+    rows.forEach { row ->
+        map[RowKey(row.groupId?.let { Group(it, row.groupName!!) }, row.dateTime)] = row
+    }
 }

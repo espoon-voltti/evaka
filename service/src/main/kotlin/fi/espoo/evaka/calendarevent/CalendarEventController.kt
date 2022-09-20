@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -26,7 +27,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 class CalendarEventController(private val accessControl: AccessControl) {
@@ -68,23 +68,43 @@ class CalendarEventController(private val accessControl: AccessControl) {
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                accessControl.requirePermissionFor(user, clock, Action.Unit.CREATE_CALENDAR_EVENT, body.unitId)
+                accessControl.requirePermissionFor(
+                    user,
+                    clock,
+                    Action.Unit.CREATE_CALENDAR_EVENT,
+                    body.unitId
+                )
 
                 if (body.tree != null) {
-                    accessControl.requirePermissionFor(user, clock, Action.Group.CREATE_CALENDAR_EVENT, body.tree.keys)
+                    accessControl.requirePermissionFor(
+                        user,
+                        clock,
+                        Action.Group.CREATE_CALENDAR_EVENT,
+                        body.tree.keys
+                    )
 
-                    val unitGroupIds = tx.getDaycareGroups(body.unitId, body.period.start, body.period.end)
+                    val unitGroupIds =
+                        tx.getDaycareGroups(body.unitId, body.period.start, body.period.end)
 
-                    if (body.tree.keys.any { groupId -> !unitGroupIds.any { unitGroup -> unitGroup.id == groupId } }) {
+                    if (
+                        body.tree.keys.any { groupId ->
+                            !unitGroupIds.any { unitGroup -> unitGroup.id == groupId }
+                        }
+                    ) {
                         throw BadRequest("Group ID is not of the specified unit's")
                     }
 
                     body.tree.forEach { (groupId, childIds) ->
                         if (childIds != null) {
                             val groupChildIds = tx.getGroupPlacementChildren(groupId, body.period)
-                            val backupCareChildren = tx.getBackupCareChildrenInGroup(body.unitId, groupId, body.period)
+                            val backupCareChildren =
+                                tx.getBackupCareChildrenInGroup(body.unitId, groupId, body.period)
 
-                            if (childIds.any { !groupChildIds.contains(it) && !backupCareChildren.contains(it) }) {
+                            if (
+                                childIds.any {
+                                    !groupChildIds.contains(it) && !backupCareChildren.contains(it)
+                                }
+                            ) {
                                 throw BadRequest("Child is not placed into the selected group")
                             }
                         }
@@ -105,9 +125,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
     ) {
         Audit.CalendarEventDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.CalendarEvent.DELETE, id)
-        return db.connect { dbc ->
-            dbc.transaction { tx -> tx.deleteCalendarEvent(id) }
-        }
+        return db.connect { dbc -> dbc.transaction { tx -> tx.deleteCalendarEvent(id) } }
     }
 
     @PatchMapping("/calendar-event/{id}")
@@ -120,9 +138,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
     ) {
         Audit.CalendarEventUpdate.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.CalendarEvent.UPDATE, id)
-        return db.connect { dbc ->
-            dbc.transaction { tx -> tx.updateCalendarEvent(id, body) }
-        }
+        return db.connect { dbc -> dbc.transaction { tx -> tx.updateCalendarEvent(id, body) } }
     }
 
     @GetMapping("/citizen/calendar-events")
@@ -134,7 +150,12 @@ class CalendarEventController(private val accessControl: AccessControl) {
         @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
     ): List<CitizenCalendarEvent> {
         Audit.UnitCalendarEventsRead.log(targetId = user.id)
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_CALENDAR_EVENTS, user.id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.READ_CALENDAR_EVENTS,
+            user.id
+        )
 
         if (start.isAfter(end)) {
             throw BadRequest("Start must be before or equal to the end")
@@ -148,23 +169,30 @@ class CalendarEventController(private val accessControl: AccessControl) {
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.getCalendarEventsForGuardian(user.id, range).groupBy { it.id }.map { (eventId, attendees) ->
-                    CitizenCalendarEvent(
-                        id = eventId,
-                        title = attendees[0].title,
-                        description = attendees[0].description,
-                        attendingChildren = attendees.groupBy { it.childId }.mapValues { (_, attendee) ->
-                            attendee.groupBy { Triple(it.type, it.groupId, it.unitId) }.map { (t, attendance) ->
-                                AttendingChild(
-                                    periods = attendance.map { it.period },
-                                    type = t.first,
-                                    groupName = attendance[0].groupName,
-                                    unitName = attendance[0].unitName
-                                )
-                            }
-                        }
-                    )
-                }
+                tx.getCalendarEventsForGuardian(user.id, range)
+                    .groupBy { it.id }
+                    .map { (eventId, attendees) ->
+                        CitizenCalendarEvent(
+                            id = eventId,
+                            title = attendees[0].title,
+                            description = attendees[0].description,
+                            attendingChildren =
+                                attendees
+                                    .groupBy { it.childId }
+                                    .mapValues { (_, attendee) ->
+                                        attendee
+                                            .groupBy { Triple(it.type, it.groupId, it.unitId) }
+                                            .map { (t, attendance) ->
+                                                AttendingChild(
+                                                    periods = attendance.map { it.period },
+                                                    type = t.first,
+                                                    groupName = attendance[0].groupName,
+                                                    unitName = attendance[0].unitName
+                                                )
+                                            }
+                                    }
+                        )
+                    }
             }
         }
     }

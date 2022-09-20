@@ -30,20 +30,13 @@ data class CitizenMessageBody(
 
 @RestController
 @RequestMapping("/citizen/messages")
-class MessageControllerCitizen(
-    messageNotificationEmailService: MessageNotificationEmailService
-) {
+class MessageControllerCitizen(messageNotificationEmailService: MessageNotificationEmailService) {
     private val messageService = MessageService(messageNotificationEmailService)
 
     @GetMapping("/my-account")
-    fun getMyAccount(
-        db: Database,
-        user: AuthenticatedUser.Citizen
-    ): MessageAccountId {
+    fun getMyAccount(db: Database, user: AuthenticatedUser.Citizen): MessageAccountId {
         Audit.MessagingMyAccountsRead.log()
-        return db.connect { dbc ->
-            dbc.read { it.getCitizenMessageAccount(user.id) }
-        }
+        return db.connect { dbc -> dbc.read { it.getCitizenMessageAccount(user.id) } }
     }
 
     @GetMapping("/unread-count")
@@ -147,11 +140,20 @@ class MessageControllerCitizen(
         return db.connect { dbc ->
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
             val validReceivers = dbc.read { it.getCitizenReceivers(clock.today(), accountId) }
-            val allReceiversValid = body.recipients.all { validReceivers.map { receiver -> receiver.id }.contains(it.id) }
+            val allReceiversValid =
+                body.recipients.all {
+                    validReceivers.map { receiver -> receiver.id }.contains(it.id)
+                }
             if (allReceiversValid) {
                 dbc.transaction { tx ->
                     val contentId = tx.insertMessageContent(body.content, accountId)
-                    val threadId = tx.insertThread(MessageType.MESSAGE, body.title, urgent = false, isCopy = false)
+                    val threadId =
+                        tx.insertThread(
+                            MessageType.MESSAGE,
+                            body.title,
+                            urgent = false,
+                            isCopy = false
+                        )
                     val messageId =
                         tx.insertMessage(
                             now = clock.now(),

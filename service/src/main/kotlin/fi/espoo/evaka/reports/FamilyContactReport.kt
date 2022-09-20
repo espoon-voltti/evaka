@@ -13,12 +13,12 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 class FamilyContactReportController(private val accessControl: AccessControl) {
@@ -30,7 +30,12 @@ class FamilyContactReportController(private val accessControl: AccessControl) {
         @RequestParam unitId: DaycareId
     ): List<FamilyContactReportRow> {
         Audit.FamilyContactReportRead.log()
-        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_FAMILY_CONTACT_REPORT, unitId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Unit.READ_FAMILY_CONTACT_REPORT,
+            unitId
+        )
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
@@ -40,7 +45,10 @@ class FamilyContactReportController(private val accessControl: AccessControl) {
     }
 }
 
-private fun Database.Read.getFamilyContacts(today: LocalDate, unitId: DaycareId): List<FamilyContactReportRow> {
+private fun Database.Read.getFamilyContacts(
+    today: LocalDate,
+    unitId: DaycareId
+): List<FamilyContactReportRow> {
     // language=sql
     val sql =
         """
@@ -93,7 +101,8 @@ private fun Database.Read.getFamilyContacts(today: LocalDate, unitId: DaycareId)
             LEFT JOIN person gu1 ON gu1.id = g1.guardian_id
             LEFT JOIN person gu2 ON gu2.id = g2.guardian_id
             ORDER BY dg.name, ch.last_name, ch.first_name
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     return createQuery(sql)
         .bind("today", today)
@@ -111,17 +120,13 @@ data class FamilyContactReportRow(
     val streetAddress: String,
     val postalCode: String,
     val postOffice: String,
-    @Nested("hoc_")
-    val headOfChild: Contact?,
-    @Nested("gu1_")
-    val guardian1: Contact?,
-    @Nested("gu2_")
-    val guardian2: Contact?
+    @Nested("hoc_") val headOfChild: Contact?,
+    @Nested("gu1_") val guardian1: Contact?,
+    @Nested("gu2_") val guardian2: Contact?
 )
 
 data class Contact(
-    @PropagateNull
-    val id: PersonId,
+    @PropagateNull val id: PersonId,
     val firstName: String,
     val lastName: String,
     val phone: String,

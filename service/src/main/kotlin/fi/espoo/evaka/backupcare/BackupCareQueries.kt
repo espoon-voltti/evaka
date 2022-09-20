@@ -11,9 +11,10 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 
-fun Database.Read.getBackupCaresForChild(childId: ChildId): List<ChildBackupCare> = createQuery(
-    // language=SQL
-    """
+fun Database.Read.getBackupCaresForChild(childId: ChildId): List<ChildBackupCare> =
+    createQuery(
+            // language=SQL
+            """
 SELECT
   backup_care.id,
   daycare.id AS unit_id,
@@ -28,14 +29,18 @@ LEFT JOIN daycare_group
 ON daycare_group.id = group_id
 WHERE child_id = :childId
 """
-)
-    .bind("childId", childId)
-    .mapTo<ChildBackupCare>()
-    .list()
+        )
+        .bind("childId", childId)
+        .mapTo<ChildBackupCare>()
+        .list()
 
-fun Database.Read.getBackupCaresForDaycare(daycareId: DaycareId, period: FiniteDateRange): List<UnitBackupCare> = createQuery(
-    // language=SQL
-    """
+fun Database.Read.getBackupCaresForDaycare(
+    daycareId: DaycareId,
+    period: FiniteDateRange
+): List<UnitBackupCare> =
+    createQuery(
+            // language=SQL
+            """
 SELECT
   backup_care.id,
   person.id AS child_id,
@@ -65,68 +70,75 @@ ON daycare_group.id = group_id
 WHERE unit_id = :daycareId
 AND daterange(backup_care.start_date, backup_care.end_date, '[]') && :period
 """
-)
-    .bind("daycareId", daycareId)
-    .bind("period", period)
-    .mapTo<UnitBackupCare>()
-    .list()
+        )
+        .bind("daycareId", daycareId)
+        .bind("period", period)
+        .mapTo<UnitBackupCare>()
+        .list()
 
 fun Database.Read.getBackupCareChildrenInGroup(
     daycareId: DaycareId,
     groupId: GroupId,
     period: FiniteDateRange
-): List<ChildId> = createQuery(
-    """
+): List<ChildId> =
+    createQuery(
+            """
     SELECT child_id FROM backup_care
     WHERE unit_id = :daycareId
       AND group_id = :groupId
       AND daterange(start_date, end_date, '[]') && :period
-    """.trimIndent()
-)
-    .bind("daycareId", daycareId)
-    .bind("groupId", groupId)
-    .bind("period", period)
-    .mapTo<ChildId>()
-    .list()
+    """.trimIndent(
+            )
+        )
+        .bind("daycareId", daycareId)
+        .bind("groupId", groupId)
+        .bind("period", period)
+        .mapTo<ChildId>()
+        .list()
 
-data class BackupCareInfo(
-    val childId: ChildId,
-    val unitId: DaycareId,
-    val period: FiniteDateRange
-)
+data class BackupCareInfo(val childId: ChildId, val unitId: DaycareId, val period: FiniteDateRange)
 
-fun Database.Read.getBackupCare(
-    id: BackupCareId
-): BackupCareInfo? = createQuery(
-    """
+fun Database.Read.getBackupCare(id: BackupCareId): BackupCareInfo? =
+    createQuery(
+            """
     SELECT child_id, unit_id, daterange(start_date, end_date, '[]') period FROM backup_care
     WHERE id = :id
-    """.trimIndent()
-)
-    .bind("id", id)
-    .mapTo<BackupCareInfo>()
-    .firstOrNull()
+    """.trimIndent(
+            )
+        )
+        .bind("id", id)
+        .mapTo<BackupCareInfo>()
+        .firstOrNull()
 
-fun Database.Transaction.createBackupCare(childId: ChildId, backupCare: NewBackupCare): BackupCareId = createUpdate(
-    // language=SQL
-    """
+fun Database.Transaction.createBackupCare(
+    childId: ChildId,
+    backupCare: NewBackupCare
+): BackupCareId =
+    createUpdate(
+            // language=SQL
+            """
 INSERT INTO backup_care (child_id, unit_id, group_id, start_date, end_date)
 VALUES (:childId, :unitId, :groupId, :start, :end)
 RETURNING id
 """
-)
-    .bind("childId", childId)
-    .bind("unitId", backupCare.unitId)
-    .bind("groupId", backupCare.groupId)
-    .bind("start", backupCare.period.start)
-    .bind("end", backupCare.period.end)
-    .executeAndReturnGeneratedKeys()
-    .mapTo<BackupCareId>()
-    .one()
+        )
+        .bind("childId", childId)
+        .bind("unitId", backupCare.unitId)
+        .bind("groupId", backupCare.groupId)
+        .bind("start", backupCare.period.start)
+        .bind("end", backupCare.period.end)
+        .executeAndReturnGeneratedKeys()
+        .mapTo<BackupCareId>()
+        .one()
 
-fun Database.Transaction.updateBackupCare(id: BackupCareId, period: FiniteDateRange, groupId: GroupId?) = createUpdate(
-    // language=SQL
-    """
+fun Database.Transaction.updateBackupCare(
+    id: BackupCareId,
+    period: FiniteDateRange,
+    groupId: GroupId?
+) =
+    createUpdate(
+            // language=SQL
+            """
 UPDATE backup_care
 SET
   start_date = :start,
@@ -134,71 +146,81 @@ SET
   group_id = :groupId
 WHERE id = :id
 """
-)
-    .bind("id", id)
-    .bind("start", period.start)
-    .bind("end", period.end)
-    .bind("groupId", groupId)
-    .execute()
+        )
+        .bind("id", id)
+        .bind("start", period.start)
+        .bind("end", period.end)
+        .bind("groupId", groupId)
+        .execute()
 
-fun Database.Transaction.deleteBackupCare(id: BackupCareId) = createUpdate(
-    // language=SQL
-    """
+fun Database.Transaction.deleteBackupCare(id: BackupCareId) =
+    createUpdate(
+            // language=SQL
+            """
 DELETE FROM backup_care
 WHERE id = :id
 """
-).bind("id", id)
-    .execute()
+        )
+        .bind("id", id)
+        .execute()
 
-fun Database.Read.getBackupCareChildId(id: BackupCareId): ChildId = createQuery(
-    // language=SQL
-    """
-    SELECT child_id FROM backup_care WHERE id = :id
-    """.trimIndent()
-)
-    .bind("id", id)
-    .mapTo<ChildId>()
-    .one()
-
-fun Database.Transaction.deleteOrMoveConflictingBackupCares(childId: ChildId, oldRange: FiniteDateRange, newRange: FiniteDateRange?) {
-    if (newRange == null) {
-        createUpdate(
+fun Database.Read.getBackupCareChildId(id: BackupCareId): ChildId =
+    createQuery(
             // language=SQL
             """
+    SELECT child_id FROM backup_care WHERE id = :id
+    """.trimIndent()
+        )
+        .bind("id", id)
+        .mapTo<ChildId>()
+        .one()
+
+fun Database.Transaction.deleteOrMoveConflictingBackupCares(
+    childId: ChildId,
+    oldRange: FiniteDateRange,
+    newRange: FiniteDateRange?
+) {
+    if (newRange == null) {
+        createUpdate(
+                // language=SQL
+                """
             DELETE FROM backup_care
             WHERE child_id = :childId AND :range @> daterange(start_date, end_date, '[]')
-            """.trimIndent()
-        )
+            """.trimIndent(
+                )
+            )
             .bind("childId", childId)
             .bind("range", oldRange)
             .execute()
 
         createUpdate(
-            // language=SQL
-            """
+                // language=SQL
+                """
             UPDATE backup_care
             SET end_date = :startDate - INTERVAL '1 day'
             WHERE child_id = :childId AND :startDate BETWEEN start_date AND end_date
-            """.trimIndent()
-        )
+            """.trimIndent(
+                )
+            )
             .bind("childId", childId)
             .bind("startDate", oldRange.start)
             .execute()
 
         createUpdate(
-            """
+                """
             UPDATE backup_care
             SET start_date = :endDate + INTERVAL '1 day'
             WHERE child_id = :childId AND :endDate BETWEEN start_date AND end_date
-            """.trimIndent()
-        )
+            """.trimIndent(
+                )
+            )
             .bind("childId", childId)
             .bind("endDate", oldRange.end)
             .execute()
     } else {
         createUpdate(
-            // language=SQL
-            """
+                // language=SQL
+                """
             DELETE FROM backup_care
             WHERE child_id = :childId
             AND (
@@ -208,8 +230,9 @@ fun Database.Transaction.deleteOrMoveConflictingBackupCares(childId: ChildId, ol
                 OR (start_date BETWEEN :oldStart AND :newStart AND :newStart > end_date)
                 OR (end_date BETWEEN :newEnd AND :oldEnd AND :newEnd < start_date)
             )
-            """.trimIndent()
-        )
+            """.trimIndent(
+                )
+            )
             .bind("childId", childId)
             .bind("oldRange", oldRange)
             .bind("newRange", newRange)
@@ -222,13 +245,14 @@ fun Database.Transaction.deleteOrMoveConflictingBackupCares(childId: ChildId, ol
         if (newRange.start.isAfter(oldRange.start)) {
             // the range was shrunk by moving the start date to a later date
             createUpdate(
-                // language=SQL
-                """
+                    // language=SQL
+                    """
                 UPDATE backup_care
                 SET start_date = :newStart
                 WHERE child_id = :childId AND start_date BETWEEN :oldStart AND :newStart
-                """.trimIndent()
-            )
+                """.trimIndent(
+                    )
+                )
                 .bind("childId", childId)
                 .bind("newStart", newRange.start)
                 .bind("oldStart", oldRange.start)
@@ -238,13 +262,14 @@ fun Database.Transaction.deleteOrMoveConflictingBackupCares(childId: ChildId, ol
         if (newRange.end.isBefore(oldRange.end)) {
             // the range was shrunk by moving the end date to an earlier date
             createUpdate(
-                // language=SQL
-                """
+                    // language=SQL
+                    """
                 UPDATE backup_care
                 SET end_date = :newEnd
                 WHERE child_id = :childId AND end_date BETWEEN :newEnd AND :oldEnd
-                """.trimIndent()
-            )
+                """.trimIndent(
+                    )
+                )
                 .bind("childId", childId)
                 .bind("newEnd", newRange.end)
                 .bind("oldEnd", oldRange.end)

@@ -15,14 +15,17 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
-class ApplicationsReportController(private val accessControl: AccessControl, private val acl: AccessControlList) {
+class ApplicationsReportController(
+    private val accessControl: AccessControl,
+    private val acl: AccessControlList
+) {
     @GetMapping("/reports/applications")
     fun getApplicationsReport(
         db: Database,
@@ -84,7 +87,8 @@ private fun Database.Read.getApplicationsRows(
         FROM data
         GROUP BY care_area_name, unit_id, unit_name, unit_provider_type
         ORDER BY care_area_name, unit_name;
-        """.trimIndent()
+        """.trimIndent(
+        )
     return createQuery(sql)
         .bind("from", from)
         .bind("to", to)

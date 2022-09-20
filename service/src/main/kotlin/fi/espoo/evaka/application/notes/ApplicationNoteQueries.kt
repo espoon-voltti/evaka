@@ -21,15 +21,15 @@ SELECT
 FROM application_note n
 WHERE application_id = :applicationId
 ORDER BY n.created
-        """.trimIndent()
+        """.trimIndent(
+        )
 
-    return createQuery(sql)
-        .bind("applicationId", applicationId)
-        .mapTo<ApplicationNote>()
-        .toList()
+    return createQuery(sql).bind("applicationId", applicationId).mapTo<ApplicationNote>().toList()
 }
 
-fun Database.Read.getApplicationSpecialEducationTeacherNotes(applicationId: ApplicationId): List<ApplicationNote> {
+fun Database.Read.getApplicationSpecialEducationTeacherNotes(
+    applicationId: ApplicationId
+): List<ApplicationNote> {
     // language=SQL
     val sql =
         """
@@ -41,15 +41,17 @@ FROM application_note n
 WHERE application_id = :applicationId
 AND created_by IN (SELECT employee_id FROM daycare_acl WHERE role = 'SPECIAL_EDUCATION_TEACHER'::user_role)
 ORDER BY n.created
-        """.trimIndent()
+        """.trimIndent(
+        )
 
-    return createQuery(sql)
-        .bind("applicationId", applicationId)
-        .mapTo<ApplicationNote>()
-        .toList()
+    return createQuery(sql).bind("applicationId", applicationId).mapTo<ApplicationNote>().toList()
 }
 
-fun Database.Transaction.createApplicationNote(applicationId: ApplicationId, content: String, createdBy: EvakaUserId): ApplicationNote {
+fun Database.Transaction.createApplicationNote(
+    applicationId: ApplicationId,
+    content: String,
+    createdBy: EvakaUserId
+): ApplicationNote {
     // language=SQL
     val sql =
         """
@@ -69,7 +71,8 @@ SELECT
     n.updated
 FROM new_note n
 LEFT JOIN evaka_user eu ON n.created_by = eu.id
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     return createQuery(sql)
         .bind("applicationId", applicationId)
@@ -79,7 +82,11 @@ LEFT JOIN evaka_user eu ON n.created_by = eu.id
         .first()
 }
 
-fun Database.Transaction.updateApplicationNote(id: ApplicationNoteId, content: String, updatedBy: EvakaUserId): ApplicationNote {
+fun Database.Transaction.updateApplicationNote(
+    id: ApplicationNoteId,
+    content: String,
+    updatedBy: EvakaUserId
+): ApplicationNote {
     // language=SQL
     val sql =
         """
@@ -113,7 +120,5 @@ fun Database.Transaction.deleteApplicationNote(id: ApplicationNoteId) {
     // language=SQL
     val sql = "DELETE FROM application_note WHERE id = :id"
 
-    createUpdate(sql)
-        .bind("id", id)
-        .execute()
+    createUpdate(sql).bind("id", id).execute()
 }

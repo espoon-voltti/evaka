@@ -19,18 +19,17 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import org.jdbi.v3.core.mapper.Nested
-import org.jdbi.v3.core.mapper.PropagateNull
 import java.math.BigDecimal
 import java.time.LocalDate
+import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.core.mapper.PropagateNull
 
 data class ServiceNeed(
     val id: ServiceNeedId,
     val placementId: PlacementId,
     val startDate: LocalDate,
     val endDate: LocalDate,
-    @Nested("option")
-    val option: ServiceNeedOptionSummary,
+    @Nested("option") val option: ServiceNeedOptionSummary,
     val shiftCare: Boolean,
     @Nested("confirmed")
     @JsonDeserialize(using = ServiceNeedConfirmationDeserializer::class)
@@ -38,10 +37,7 @@ data class ServiceNeed(
     val updated: HelsinkiDateTime
 )
 
-data class ServiceNeedChildRange(
-    val childId: ChildId,
-    val dateRange: FiniteDateRange
-)
+data class ServiceNeedChildRange(val childId: ChildId, val dateRange: FiniteDateRange)
 
 data class ServiceNeedOptionSummary(
     val id: ServiceNeedOptionId,
@@ -52,8 +48,7 @@ data class ServiceNeedOptionSummary(
 )
 
 data class ServiceNeedConfirmation(
-    @PropagateNull
-    val userId: EvakaUserId,
+    @PropagateNull val userId: EvakaUserId,
     val name: String,
     val at: HelsinkiDateTime?
 )
@@ -100,12 +95,14 @@ fun validateServiceNeed(
     }
 
     // language=sql
-    val sql = """
+    val sql =
+        """
         SELECT 1
         FROM placement pl
         JOIN service_need_option sno ON sno.valid_placement_type = pl.type
         WHERE pl.id = :placementId AND sno.id = :optionId
-    """.trimIndent()
+    """.trimIndent(
+        )
     db.createQuery(sql)
         .bind("placementId", placementId)
         .bind("optionId", optionId)
@@ -114,11 +111,13 @@ fun validateServiceNeed(
         .let { if (it.isEmpty()) throw BadRequest("Invalid service need type") }
 
     // language=sql
-    val sql2 = """
+    val sql2 =
+        """
         SELECT 1
         FROM placement pl
         WHERE pl.id = :placementId AND daterange(pl.start_date, pl.end_date, '[]') @> daterange(:startDate, :endDate, '[]')
-    """.trimIndent()
+    """.trimIndent(
+        )
     db.createQuery(sql2)
         .bind("placementId", placementId)
         .bind("startDate", startDate)
@@ -164,10 +163,20 @@ fun updateServiceNeed(
     val old = tx.getServiceNeed(id)
     validateServiceNeed(tx, old.placementId, startDate, endDate, optionId)
     if (startDate.isBefore(old.startDate)) {
-        clearServiceNeedsFromPeriod(tx, old.placementId, FiniteDateRange(startDate, old.startDate.minusDays(1)), excluding = id)
+        clearServiceNeedsFromPeriod(
+            tx,
+            old.placementId,
+            FiniteDateRange(startDate, old.startDate.minusDays(1)),
+            excluding = id
+        )
     }
     if (endDate.isAfter(old.endDate)) {
-        clearServiceNeedsFromPeriod(tx, old.placementId, FiniteDateRange(old.endDate.plusDays(1), endDate), excluding = id)
+        clearServiceNeedsFromPeriod(
+            tx,
+            old.placementId,
+            FiniteDateRange(old.endDate.plusDays(1), endDate),
+            excluding = id
+        )
     }
 
     tx.updateServiceNeed(
@@ -181,63 +190,79 @@ fun updateServiceNeed(
     )
 }
 
-fun clearServiceNeedsFromPeriod(tx: Database.Transaction, placementId: PlacementId, periodToClear: FiniteDateRange, excluding: ServiceNeedId? = null) {
-    tx.getOverlappingServiceNeeds(placementId, periodToClear.start, periodToClear.end, excluding).forEach { old ->
-        val oldPeriod = FiniteDateRange(old.startDate, old.endDate)
-        when {
-            periodToClear.contains(oldPeriod) -> {
-                tx.deleteServiceNeed(old.id)
-            }
-            periodToClear.includes(oldPeriod.start) -> {
-                tx.updateServiceNeed(
-                    id = old.id,
-                    startDate = periodToClear.end.plusDays(1),
-                    endDate = old.endDate,
-                    optionId = old.option.id,
-                    shiftCare = old.shiftCare,
-                    confirmedBy = old.confirmed?.userId,
-                    confirmedAt = old.confirmed?.at
-                )
-            }
-            periodToClear.includes(oldPeriod.end) -> {
-                tx.updateServiceNeed(
-                    id = old.id,
-                    startDate = old.startDate,
-                    endDate = periodToClear.start.minusDays(1),
-                    optionId = old.option.id,
-                    shiftCare = old.shiftCare,
-                    confirmedBy = old.confirmed?.userId,
-                    confirmedAt = old.confirmed?.at
-                )
-            }
-            else -> {
-                tx.updateServiceNeed(
-                    id = old.id,
-                    startDate = old.startDate,
-                    endDate = periodToClear.start.minusDays(1),
-                    optionId = old.option.id,
-                    shiftCare = old.shiftCare,
-                    confirmedBy = old.confirmed?.userId,
-                    confirmedAt = old.confirmed?.at
-                )
-                tx.insertServiceNeed(
-                    placementId = placementId,
-                    startDate = periodToClear.end.plusDays(1),
-                    endDate = old.endDate,
-                    optionId = old.option.id,
-                    shiftCare = old.shiftCare,
-                    confirmedBy = old.confirmed?.userId,
-                    confirmedAt = old.confirmed?.at
-                )
+fun clearServiceNeedsFromPeriod(
+    tx: Database.Transaction,
+    placementId: PlacementId,
+    periodToClear: FiniteDateRange,
+    excluding: ServiceNeedId? = null
+) {
+    tx.getOverlappingServiceNeeds(placementId, periodToClear.start, periodToClear.end, excluding)
+        .forEach { old ->
+            val oldPeriod = FiniteDateRange(old.startDate, old.endDate)
+            when {
+                periodToClear.contains(oldPeriod) -> {
+                    tx.deleteServiceNeed(old.id)
+                }
+                periodToClear.includes(oldPeriod.start) -> {
+                    tx.updateServiceNeed(
+                        id = old.id,
+                        startDate = periodToClear.end.plusDays(1),
+                        endDate = old.endDate,
+                        optionId = old.option.id,
+                        shiftCare = old.shiftCare,
+                        confirmedBy = old.confirmed?.userId,
+                        confirmedAt = old.confirmed?.at
+                    )
+                }
+                periodToClear.includes(oldPeriod.end) -> {
+                    tx.updateServiceNeed(
+                        id = old.id,
+                        startDate = old.startDate,
+                        endDate = periodToClear.start.minusDays(1),
+                        optionId = old.option.id,
+                        shiftCare = old.shiftCare,
+                        confirmedBy = old.confirmed?.userId,
+                        confirmedAt = old.confirmed?.at
+                    )
+                }
+                else -> {
+                    tx.updateServiceNeed(
+                        id = old.id,
+                        startDate = old.startDate,
+                        endDate = periodToClear.start.minusDays(1),
+                        optionId = old.option.id,
+                        shiftCare = old.shiftCare,
+                        confirmedBy = old.confirmed?.userId,
+                        confirmedAt = old.confirmed?.at
+                    )
+                    tx.insertServiceNeed(
+                        placementId = placementId,
+                        startDate = periodToClear.end.plusDays(1),
+                        endDate = old.endDate,
+                        optionId = old.option.id,
+                        shiftCare = old.shiftCare,
+                        confirmedBy = old.confirmed?.userId,
+                        confirmedAt = old.confirmed?.at
+                    )
+                }
             }
         }
-    }
 }
 
-fun notifyServiceNeedUpdated(tx: Database.Transaction, clock: EvakaClock, asyncJobRunner: AsyncJobRunner<AsyncJob>, childRange: ServiceNeedChildRange) {
+fun notifyServiceNeedUpdated(
+    tx: Database.Transaction,
+    clock: EvakaClock,
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    childRange: ServiceNeedChildRange
+) {
     asyncJobRunner.plan(
         tx,
-        listOf(AsyncJob.GenerateFinanceDecisions.forChild(childRange.childId, childRange.dateRange.asDateRange())),
+        listOf(
+            AsyncJob.GenerateFinanceDecisions.forChild(
+                childRange.childId,
+                childRange.dateRange.asDateRange()
+            )
+        ),
         runAt = clock.now()
     )
 }

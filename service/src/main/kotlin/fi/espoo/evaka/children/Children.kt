@@ -10,11 +10,7 @@ import fi.espoo.evaka.shared.GroupId
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 
-data class Group(
-    @PropagateNull
-    val id: GroupId,
-    val name: String
-)
+data class Group(@PropagateNull val id: GroupId, val name: String)
 
 data class Child(
     val id: ChildId,
@@ -22,8 +18,7 @@ data class Child(
     val preferredName: String,
     val lastName: String,
     val imageId: ChildImageId?,
-    @Nested("group")
-    val group: Group?,
+    @Nested("group") val group: Group?,
     val hasUpcomingPlacements: Boolean,
     val hasPedagogicalDocuments: Boolean,
     val hasCurriculums: Boolean

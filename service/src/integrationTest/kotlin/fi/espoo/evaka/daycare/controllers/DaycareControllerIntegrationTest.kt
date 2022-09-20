@@ -32,8 +32,6 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -41,6 +39,8 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val childId = testChild_1.id
@@ -159,9 +159,11 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     private fun getDaycare(daycareId: DaycareId): DaycareController.DaycareResponse {
-        val (_, res, body) = http.get("/daycares/$daycareId")
-            .asUser(staffMember)
-            .responseObject<DaycareController.DaycareResponse>(jsonMapper)
+        val (_, res, body) =
+            http
+                .get("/daycares/$daycareId")
+                .asUser(staffMember)
+                .responseObject<DaycareController.DaycareResponse>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return body.get()
@@ -173,42 +175,47 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         startDate: LocalDate,
         initialCaretakers: Double
     ): DaycareGroup {
-        val (_, res, body) = http.post("/daycares/$daycareId/groups")
-            .jsonBody(
-                jsonMapper.writeValueAsString(
-                    DaycareController.CreateGroupRequest(
-                        name = name,
-                        startDate = startDate,
-                        initialCaretakers = initialCaretakers
+        val (_, res, body) =
+            http
+                .post("/daycares/$daycareId/groups")
+                .jsonBody(
+                    jsonMapper.writeValueAsString(
+                        DaycareController.CreateGroupRequest(
+                            name = name,
+                            startDate = startDate,
+                            initialCaretakers = initialCaretakers
+                        )
                     )
                 )
-            )
-            .asUser(supervisor)
-            .responseObject<DaycareGroup>(jsonMapper)
+                .asUser(supervisor)
+                .responseObject<DaycareGroup>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return body.get()
     }
 
-    private fun deleteDaycareGroup(daycareId: DaycareId, groupId: GroupId, expectedStatus: Int = 200) {
-        val (_, res) = http.delete("/daycares/$daycareId/groups/$groupId")
-            .asUser(supervisor)
-            .response()
+    private fun deleteDaycareGroup(
+        daycareId: DaycareId,
+        groupId: GroupId,
+        expectedStatus: Int = 200
+    ) {
+        val (_, res) =
+            http.delete("/daycares/$daycareId/groups/$groupId").asUser(supervisor).response()
 
         assertEquals(expectedStatus, res.statusCode)
     }
 
     private fun groupHasMessageAccount(groupId: GroupId): Boolean {
         // language=SQL
-        val sql = """
+        val sql =
+            """
             SELECT EXISTS(
                 SELECT * FROM message_account WHERE daycare_group_id = :daycareGroupId AND active = true
             )
-        """.trimIndent()
+        """.trimIndent(
+            )
         return db.read {
-            it.createQuery(sql)
-                .bind("daycareGroupId", groupId)
-                .mapTo<Boolean>().first()
+            it.createQuery(sql).bind("daycareGroupId", groupId).mapTo<Boolean>().first()
         }
     }
 }

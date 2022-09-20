@@ -23,34 +23,34 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class AssistanceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val assistanceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val assistanceWorker =
+        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
     private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
     private val testDaycareId = testDaycare.id
 
     @BeforeEach
     private fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
     fun `post first assistance need, no bases`() {
-        val assistanceNeed = whenPostAssistanceNeedThenExpectSuccess(
-            AssistanceNeedRequest(
-                startDate = testDate(10),
-                endDate = testDate(20),
-                capacityFactor = 1.5
+        val assistanceNeed =
+            whenPostAssistanceNeedThenExpectSuccess(
+                AssistanceNeedRequest(
+                    startDate = testDate(10),
+                    endDate = testDate(20),
+                    capacityFactor = 1.5
+                )
             )
-        )
 
         assertEquals(
             AssistanceNeed(
@@ -69,14 +69,15 @@ class AssistanceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun `post first assistance need, with bases`() {
         val allBases = db.transaction { it.getAssistanceBasisOptions() }.map { it.value }.toSet()
 
-        val assistanceNeed = whenPostAssistanceNeedThenExpectSuccess(
-            AssistanceNeedRequest(
-                startDate = testDate(10),
-                endDate = testDate(20),
-                capacityFactor = 1.5,
-                bases = allBases,
+        val assistanceNeed =
+            whenPostAssistanceNeedThenExpectSuccess(
+                AssistanceNeedRequest(
+                    startDate = testDate(10),
+                    endDate = testDate(20),
+                    capacityFactor = 1.5,
+                    bases = allBases,
+                )
             )
-        )
 
         assertEquals(
             AssistanceNeed(
@@ -104,8 +105,12 @@ class AssistanceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val assistanceNeeds = db.read { it.getAssistanceNeedsByChild(testChild_1.id) }
         assertEquals(2, assistanceNeeds.size)
-        assertTrue(assistanceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(15) })
-        assertTrue(assistanceNeeds.any { it.startDate == testDate(16) && it.endDate == testDate(30) })
+        assertTrue(
+            assistanceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(15) }
+        )
+        assertTrue(
+            assistanceNeeds.any { it.startDate == testDate(16) && it.endDate == testDate(30) }
+        )
     }
 
     @Test
@@ -160,8 +165,12 @@ class AssistanceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val assistanceNeeds = db.read { it.getAssistanceNeedsByChild(testChild_1.id) }
         assertEquals(2, assistanceNeeds.size)
-        assertTrue(assistanceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(19) })
-        assertTrue(assistanceNeeds.any { it.startDate == testDate(20) && it.endDate == testDate(30) })
+        assertTrue(
+            assistanceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(19) }
+        )
+        assertTrue(
+            assistanceNeeds.any { it.startDate == testDate(20) && it.endDate == testDate(30) }
+        )
     }
 
     @Test
@@ -177,8 +186,12 @@ class AssistanceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val assistanceNeeds = db.read { it.getAssistanceNeedsByChild(testChild_1.id) }
         assertEquals(2, assistanceNeeds.size)
-        assertTrue(assistanceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(10) })
-        assertTrue(assistanceNeeds.any { it.startDate == testDate(11) && it.endDate == testDate(15) })
+        assertTrue(
+            assistanceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(10) }
+        )
+        assertTrue(
+            assistanceNeeds.any { it.startDate == testDate(11) && it.endDate == testDate(15) }
+        )
     }
 
     @Test
@@ -205,14 +218,15 @@ class AssistanceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun `update assistance need`() {
         val id1 = givenAssistanceNeed(testDate(1), testDate(5))
         val id2 = givenAssistanceNeed(testDate(10), testDate(20))
-        val updated = whenPutAssistanceNeedThenExpectSuccess(
-            id2,
-            AssistanceNeedRequest(
-                startDate = testDate(9),
-                endDate = testDate(22),
-                capacityFactor = 1.5
+        val updated =
+            whenPutAssistanceNeedThenExpectSuccess(
+                id2,
+                AssistanceNeedRequest(
+                    startDate = testDate(9),
+                    endDate = testDate(22),
+                    capacityFactor = 1.5
+                )
             )
-        )
 
         assertEquals(id2, updated.id)
         assertEquals(testDate(9), updated.startDate)
@@ -221,8 +235,14 @@ class AssistanceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val fetched = whenGetAssistanceNeedsThenExpectSuccess(testChild_1.id)
         assertEquals(2, fetched.size)
-        assertTrue(fetched.any { it.id == id1 && it.startDate == testDate(1) && it.endDate == testDate(5) })
-        assertTrue(fetched.any { it.id == id2 && it.startDate == testDate(9) && it.endDate == testDate(22) })
+        assertTrue(
+            fetched.any { it.id == id1 && it.startDate == testDate(1) && it.endDate == testDate(5) }
+        )
+        assertTrue(
+            fetched.any {
+                it.id == id2 && it.startDate == testDate(9) && it.endDate == testDate(22)
+            }
+        )
     }
 
     @Test
@@ -290,14 +310,13 @@ class AssistanceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 .execute()
         }
 
-        // With a preschool placement, expect only seeing the assistance need starting after the placement
+        // With a preschool placement, expect only seeing the assistance need starting after the
+        // placement
         givenPlacement(today, today, PlacementType.PRESCHOOL)
         val assistanceNeeds = whenGetAssistanceNeedsThenExpectSuccess(testChild_1.id)
         assertEquals(1, assistanceNeeds.size)
 
-        with(assistanceNeeds[0]) {
-            assertEquals(assistanceNeedNow, id)
-        }
+        with(assistanceNeeds[0]) { assertEquals(assistanceNeedNow, id) }
 
         // Admin sees all
         assertEquals(2, whenGetAssistanceNeedsThenExpectSuccess(testChild_1.id, admin).size)
@@ -316,7 +335,11 @@ class AssistanceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     private fun testDate(day: Int) = LocalDate.now().withMonth(1).withDayOfMonth(day)
 
-    private fun givenAssistanceNeed(startDate: LocalDate, endDate: LocalDate, childId: ChildId = testChild_1.id): AssistanceNeedId {
+    private fun givenAssistanceNeed(
+        startDate: LocalDate,
+        endDate: LocalDate,
+        childId: ChildId = testChild_1.id
+    ): AssistanceNeedId {
         return db.transaction {
             it.insertTestAssistanceNeed(
                 DevAssistanceNeed(
@@ -329,7 +352,12 @@ class AssistanceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         }
     }
 
-    private fun givenPlacement(startDate: LocalDate, endDate: LocalDate, type: PlacementType, childId: ChildId = testChild_1.id): PlacementId {
+    private fun givenPlacement(
+        startDate: LocalDate,
+        endDate: LocalDate,
+        type: PlacementType,
+        childId: ChildId = testChild_1.id
+    ): PlacementId {
         return db.transaction {
             it.insertTestPlacement(
                 DevPlacement(
@@ -343,65 +371,83 @@ class AssistanceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         }
     }
 
-    private fun whenPostAssistanceNeedThenExpectSuccess(request: AssistanceNeedRequest): AssistanceNeed {
-        val (_, res, result) = http.post("/children/${testChild_1.id}/assistance-needs")
-            .jsonBody(jsonMapper.writeValueAsString(request))
-            .asUser(assistanceWorker)
-            .responseObject<AssistanceNeed>(jsonMapper)
+    private fun whenPostAssistanceNeedThenExpectSuccess(
+        request: AssistanceNeedRequest
+    ): AssistanceNeed {
+        val (_, res, result) =
+            http
+                .post("/children/${testChild_1.id}/assistance-needs")
+                .jsonBody(jsonMapper.writeValueAsString(request))
+                .asUser(assistanceWorker)
+                .responseObject<AssistanceNeed>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
     }
 
     private fun whenPostAssistanceNeedThenExpectError(request: AssistanceNeedRequest, status: Int) {
-        val (_, res, _) = http.post("/children/${testChild_1.id}/assistance-needs")
-            .jsonBody(jsonMapper.writeValueAsString(request))
-            .asUser(assistanceWorker)
-            .response()
+        val (_, res, _) =
+            http
+                .post("/children/${testChild_1.id}/assistance-needs")
+                .jsonBody(jsonMapper.writeValueAsString(request))
+                .asUser(assistanceWorker)
+                .response()
 
         assertEquals(status, res.statusCode)
     }
 
-    private fun whenGetAssistanceNeedsThenExpectSuccess(childId: ChildId, asUser: AuthenticatedUser = assistanceWorker): List<AssistanceNeed> {
-        val (_, res, result) = http.get("/children/$childId/assistance-needs")
-            .asUser(asUser)
-            .responseObject<List<AssistanceNeedResponse>>(jsonMapper)
+    private fun whenGetAssistanceNeedsThenExpectSuccess(
+        childId: ChildId,
+        asUser: AuthenticatedUser = assistanceWorker
+    ): List<AssistanceNeed> {
+        val (_, res, result) =
+            http
+                .get("/children/$childId/assistance-needs")
+                .asUser(asUser)
+                .responseObject<List<AssistanceNeedResponse>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get().map { it.need }
     }
 
-    private fun whenPutAssistanceNeedThenExpectSuccess(id: AssistanceNeedId, request: AssistanceNeedRequest): AssistanceNeed {
-        val (_, res, result) = http.put("/assistance-needs/$id")
-            .jsonBody(jsonMapper.writeValueAsString(request))
-            .asUser(assistanceWorker)
-            .responseObject<AssistanceNeed>(jsonMapper)
+    private fun whenPutAssistanceNeedThenExpectSuccess(
+        id: AssistanceNeedId,
+        request: AssistanceNeedRequest
+    ): AssistanceNeed {
+        val (_, res, result) =
+            http
+                .put("/assistance-needs/$id")
+                .jsonBody(jsonMapper.writeValueAsString(request))
+                .asUser(assistanceWorker)
+                .responseObject<AssistanceNeed>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
     }
 
-    private fun whenPutAssistanceNeedThenExpectError(id: AssistanceNeedId, request: AssistanceNeedRequest, status: Int) {
-        val (_, res, _) = http.put("/assistance-needs/$id")
-            .jsonBody(jsonMapper.writeValueAsString(request))
-            .asUser(assistanceWorker)
-            .response()
+    private fun whenPutAssistanceNeedThenExpectError(
+        id: AssistanceNeedId,
+        request: AssistanceNeedRequest,
+        status: Int
+    ) {
+        val (_, res, _) =
+            http
+                .put("/assistance-needs/$id")
+                .jsonBody(jsonMapper.writeValueAsString(request))
+                .asUser(assistanceWorker)
+                .response()
 
         assertEquals(status, res.statusCode)
     }
 
     private fun whenDeleteAssistanceNeedThenExpectSuccess(id: AssistanceNeedId) {
-        val (_, res, _) = http.delete("/assistance-needs/$id")
-            .asUser(assistanceWorker)
-            .response()
+        val (_, res, _) = http.delete("/assistance-needs/$id").asUser(assistanceWorker).response()
 
         assertEquals(200, res.statusCode)
     }
 
     private fun whenDeleteAssistanceNeedThenExpectError(id: AssistanceNeedId, status: Int) {
-        val (_, res, _) = http.delete("/assistance-needs/$id")
-            .asUser(assistanceWorker)
-            .response()
+        val (_, res, _) = http.delete("/assistance-needs/$id").asUser(assistanceWorker).response()
 
         assertEquals(status, res.statusCode)
     }

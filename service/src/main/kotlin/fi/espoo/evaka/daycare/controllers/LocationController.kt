@@ -17,12 +17,12 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
+import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 class LocationController {
@@ -34,7 +34,16 @@ class LocationController {
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
         @RequestParam shiftCare: Boolean?
     ): List<PublicUnit> {
-        return db.connect { dbc -> dbc.read { it.getApplicationUnits(type, date, shiftCare, onlyApplicable = user is AuthenticatedUser.Citizen) } }
+        return db.connect { dbc ->
+            dbc.read {
+                it.getApplicationUnits(
+                    type,
+                    date,
+                    shiftCare,
+                    onlyApplicable = user is AuthenticatedUser.Citizen
+                )
+            }
+        }
     }
 
     @GetMapping("/public/units/{applicationType}")
@@ -57,14 +66,21 @@ class LocationController {
     }
 
     @GetMapping("/filters/units")
-    fun getUnits(db: Database, @RequestParam type: UnitTypeFilter, @RequestParam area: String?): List<UnitStub> {
+    fun getUnits(
+        db: Database,
+        @RequestParam type: UnitTypeFilter,
+        @RequestParam area: String?
+    ): List<UnitStub> {
         val areas = area?.split(",") ?: listOf()
         return db.connect { dbc -> dbc.read { it.getUnits(areas, type) } }
     }
 }
 
 enum class ApplicationUnitType {
-    CLUB, DAYCARE, PRESCHOOL, PREPARATORY;
+    CLUB,
+    DAYCARE,
+    PRESCHOOL,
+    PREPARATORY
 }
 
 data class PublicUnit(
@@ -87,19 +103,22 @@ data class PublicUnit(
     val clubApplyPeriod: DateRange?
 )
 
-data class AreaJSON(
-    val id: AreaId,
-    val name: String,
-    val shortName: String
-)
+data class AreaJSON(val id: AreaId, val name: String, val shortName: String)
 
 enum class UnitTypeFilter {
-    ALL, CLUB, DAYCARE, PRESCHOOL
+    ALL,
+    CLUB,
+    DAYCARE,
+    PRESCHOOL
 }
 
-fun Database.Read.getUnits(areaShortNames: Collection<String>, type: UnitTypeFilter): List<UnitStub> = createQuery(
-    // language=SQL
-    """
+fun Database.Read.getUnits(
+    areaShortNames: Collection<String>,
+    type: UnitTypeFilter
+): List<UnitStub> =
+    createQuery(
+            // language=SQL
+            """
 SELECT unit.id, unit.name
 FROM daycare unit
 JOIN care_area area ON unit.care_area_id = area.id
@@ -110,8 +129,10 @@ AND (:type = 'ALL' OR
     (:type = 'PRESCHOOL' AND '{PRESCHOOL, PREPARATORY_EDUCATION}' && unit.type)
 )
 ORDER BY name
-    """.trimIndent()
-).bind("areaShortNames", areaShortNames.takeIf { it.isNotEmpty() })
-    .bind("type", type)
-    .mapTo<UnitStub>()
-    .list()
+    """.trimIndent(
+            )
+        )
+        .bind("areaShortNames", areaShortNames.takeIf { it.isNotEmpty() })
+        .bind("type", type)
+        .mapTo<UnitStub>()
+        .list()

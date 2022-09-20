@@ -14,13 +14,14 @@ fun Database.Transaction.insertAssistanceNeedVoucherCoefficient(
     childId: ChildId,
     data: AssistanceNeedVoucherCoefficientRequest
 ): AssistanceNeedVoucherCoefficient {
-    //language=sql
+    // language=sql
     val sql =
         """
         INSERT INTO assistance_need_voucher_coefficient (child_id, coefficient, validity_period)
         VALUES (:childId, :coefficient, :validityPeriod)
         RETURNING id, child_id, coefficient, validity_period
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     return createQuery(sql)
         .bindKotlin(data)
@@ -29,28 +30,32 @@ fun Database.Transaction.insertAssistanceNeedVoucherCoefficient(
         .first()
 }
 
-fun Database.Read.getAssistanceNeedVoucherCoefficientById(id: AssistanceNeedVoucherCoefficientId): AssistanceNeedVoucherCoefficient {
-    //language=sql
+fun Database.Read.getAssistanceNeedVoucherCoefficientById(
+    id: AssistanceNeedVoucherCoefficientId
+): AssistanceNeedVoucherCoefficient {
+    // language=sql
     val sql =
         """
         SELECT id, child_id, coefficient, validity_period
         FROM assistance_need_voucher_coefficient
         WHERE id = :id
-        """.trimIndent()
-    return createQuery(sql)
-        .bind("id", id)
-        .mapTo<AssistanceNeedVoucherCoefficient>()
-        .firstOrNull() ?: throw NotFound("Assistance need voucher coefficient $id not found")
+        """.trimIndent(
+        )
+    return createQuery(sql).bind("id", id).mapTo<AssistanceNeedVoucherCoefficient>().firstOrNull()
+        ?: throw NotFound("Assistance need voucher coefficient $id not found")
 }
 
-fun Database.Read.getAssistanceNeedVoucherCoefficientsForChild(childId: ChildId): List<AssistanceNeedVoucherCoefficient> {
-    //language=sql
+fun Database.Read.getAssistanceNeedVoucherCoefficientsForChild(
+    childId: ChildId
+): List<AssistanceNeedVoucherCoefficient> {
+    // language=sql
     val sql =
         """
         SELECT id, child_id, coefficient, validity_period
         FROM assistance_need_voucher_coefficient
         WHERE child_id = :childId
-        """.trimIndent()
+        """.trimIndent(
+        )
     return createQuery(sql)
         .bind("childId", childId)
         .mapTo<AssistanceNeedVoucherCoefficient>()
@@ -61,7 +66,7 @@ fun Database.Transaction.updateAssistanceNeedVoucherCoefficient(
     id: AssistanceNeedVoucherCoefficientId,
     data: AssistanceNeedVoucherCoefficientRequest
 ): AssistanceNeedVoucherCoefficient {
-    //language=sql
+    // language=sql
     val sql =
         """
         UPDATE assistance_need_voucher_coefficient
@@ -69,22 +74,27 @@ fun Database.Transaction.updateAssistanceNeedVoucherCoefficient(
             validity_period = :validityPeriod
         WHERE id = :id
         RETURNING id, child_id, coefficient, validity_period
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     return createQuery(sql)
         .bindKotlin(data)
         .bind("id", id)
         .mapTo<AssistanceNeedVoucherCoefficient>()
-        .firstOrNull() ?: throw NotFound("Assistance need voucher coefficient $id not found")
+        .firstOrNull()
+        ?: throw NotFound("Assistance need voucher coefficient $id not found")
 }
 
-fun Database.Transaction.deleteAssistanceNeedVoucherCoefficient(id: AssistanceNeedVoucherCoefficientId): Boolean {
+fun Database.Transaction.deleteAssistanceNeedVoucherCoefficient(
+    id: AssistanceNeedVoucherCoefficientId
+): Boolean {
     val sql =
         """
         DELETE FROM assistance_need_voucher_coefficient
         WHERE id = :id
         RETURNING id
-        """.trimIndent()
+        """.trimIndent(
+        )
     return createQuery(sql)
         .bind("id", id)
         .mapTo<AssistanceNeedVoucherCoefficientId>()
@@ -95,14 +105,15 @@ fun Database.Read.getOverlappingAssistanceNeedVoucherCoefficientsForChild(
     childId: ChildId,
     range: FiniteDateRange
 ): List<AssistanceNeedVoucherCoefficient> {
-    //language=sql
+    // language=sql
     val sql =
         """
         SELECT id, child_id, coefficient, validity_period
         FROM assistance_need_voucher_coefficient
         WHERE child_id = :childId
           AND :range && validity_period
-        """.trimIndent()
+        """.trimIndent(
+        )
     return createQuery(sql)
         .bind("childId", childId)
         .bind("range", range)

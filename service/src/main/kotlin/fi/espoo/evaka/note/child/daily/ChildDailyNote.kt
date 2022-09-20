@@ -32,10 +32,14 @@ data class ChildDailyNoteBody(
 
 @ConstList("childDailyNoteLevelValues")
 enum class ChildDailyNoteLevel {
-    GOOD, MEDIUM, NONE
+    GOOD,
+    MEDIUM,
+    NONE
 }
 
 @ConstList("childDailyNoteReminderValues")
 enum class ChildDailyNoteReminder {
-    DIAPERS, CLOTHES, LAUNDRY
+    DIAPERS,
+    CLOTHES,
+    LAUNDRY
 }

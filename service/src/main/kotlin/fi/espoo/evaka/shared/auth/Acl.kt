@@ -27,37 +27,49 @@ sealed class AclAuthorization {
     }
 
     companion object {
-        fun from(filter: AccessControlFilter<DaycareId>) = when (filter) {
-            AccessControlFilter.PermitAll -> All
-            is AccessControlFilter.Some -> Subset(filter.filter)
-        }
+        fun from(filter: AccessControlFilter<DaycareId>) =
+            when (filter) {
+                AccessControlFilter.PermitAll -> All
+                is AccessControlFilter.Some -> Subset(filter.filter)
+            }
     }
 }
 
 class AccessControlList(private val jdbi: Jdbi) {
-    fun getAuthorizedUnits(user: AuthenticatedUser): AclAuthorization = getAuthorizedUnits(user, UserRole.SCOPED_ROLES)
+    fun getAuthorizedUnits(user: AuthenticatedUser): AclAuthorization =
+        getAuthorizedUnits(user, UserRole.SCOPED_ROLES)
 
     fun getAuthorizedUnits(user: AuthenticatedUser, roles: Set<UserRole>): AclAuthorization =
-        if (user is AuthenticatedUser.Employee && setOf(
-                UserRole.ADMIN,
-                UserRole.FINANCE_ADMIN,
-                UserRole.SERVICE_WORKER,
-                UserRole.DIRECTOR,
-                UserRole.REPORT_VIEWER
-            ).any { user.globalRoles.contains(it) }
+        if (
+            user is AuthenticatedUser.Employee &&
+                setOf(
+                        UserRole.ADMIN,
+                        UserRole.FINANCE_ADMIN,
+                        UserRole.SERVICE_WORKER,
+                        UserRole.DIRECTOR,
+                        UserRole.REPORT_VIEWER
+                    )
+                    .any { user.globalRoles.contains(it) }
         ) {
             AclAuthorization.All
         } else {
-            AclAuthorization.Subset(Database(jdbi).connect { db -> db.read { it.selectAuthorizedDaycares(user, roles) } })
+            AclAuthorization.Subset(
+                Database(jdbi).connect { db ->
+                    db.read { it.selectAuthorizedDaycares(user, roles) }
+                }
+            )
         }
 }
 
-private fun Database.Read.selectAuthorizedDaycares(user: AuthenticatedUser, roles: Set<UserRole>? = null): Set<DaycareId> {
+private fun Database.Read.selectAuthorizedDaycares(
+    user: AuthenticatedUser,
+    roles: Set<UserRole>? = null
+): Set<DaycareId> {
     if (roles?.isEmpty() == true) return emptySet()
 
     return createQuery(
-        "SELECT daycare_id FROM daycare_acl_view WHERE employee_id = :userId AND (:roles::user_role[] IS NULL OR role = ANY(:roles::user_role[]))"
-    )
+            "SELECT daycare_id FROM daycare_acl_view WHERE employee_id = :userId AND (:roles::user_role[] IS NULL OR role = ANY(:roles::user_role[]))"
+        )
         .bind("userId", user.rawId())
         .bind("roles", roles)
         .mapTo<DaycareId>()

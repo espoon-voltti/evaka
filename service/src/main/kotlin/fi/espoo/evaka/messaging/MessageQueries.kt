@@ -21,12 +21,15 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
-import org.jdbi.v3.json.Json
 import java.time.LocalDate
+import org.jdbi.v3.json.Json
 
-fun Database.Read.getUnreadMessagesCounts(accountIds: Set<MessageAccountId>): Set<UnreadCountByAccount> {
+fun Database.Read.getUnreadMessagesCounts(
+    accountIds: Set<MessageAccountId>
+): Set<UnreadCountByAccount> {
     // language=SQL
-    val sql = """
+    val sql =
+        """
         SELECT 
             acc.id as account_id,
             SUM(CASE WHEN mr.id IS NOT NULL AND mr.read_at IS NULL AND NOT mt.is_copy THEN 1 ELSE 0 END) as unread_count,
@@ -37,16 +40,21 @@ fun Database.Read.getUnreadMessagesCounts(accountIds: Set<MessageAccountId>): Se
         LEFT JOIN message_thread mt ON m.thread_id = mt.id
         WHERE acc.id = ANY(:accountIds)
         GROUP BY acc.id
-    """.trimIndent()
+    """.trimIndent(
+        )
 
     return this.createQuery(sql)
         .bind("accountIds", accountIds)
-        .mapTo<UnreadCountByAccount>().toSet()
+        .mapTo<UnreadCountByAccount>()
+        .toSet()
 }
 
-fun Database.Read.getUnreadMessagesCountsByDaycare(daycareId: DaycareId): Set<UnreadCountByAccountAndGroup> {
+fun Database.Read.getUnreadMessagesCountsByDaycare(
+    daycareId: DaycareId
+): Set<UnreadCountByAccountAndGroup> {
     // language=SQL
-    val sql = """
+    val sql =
+        """
         SELECT
             acc.id as account_id,
             acc.daycare_group_id as group_id,
@@ -59,16 +67,23 @@ fun Database.Read.getUnreadMessagesCountsByDaycare(daycareId: DaycareId): Set<Un
         JOIN daycare_group dg ON acc.daycare_group_id = dg.id AND dg.daycare_id = :daycareId
         WHERE acc.active = true
         GROUP BY acc.id, acc.daycare_group_id
-    """.trimIndent()
+    """.trimIndent(
+        )
 
     return this.createQuery(sql)
         .bind("daycareId", daycareId)
-        .mapTo<UnreadCountByAccountAndGroup>().toSet()
+        .mapTo<UnreadCountByAccountAndGroup>()
+        .toSet()
 }
 
-fun Database.Transaction.markThreadRead(clock: EvakaClock, accountId: MessageAccountId, threadId: MessageThreadId): Int {
+fun Database.Transaction.markThreadRead(
+    clock: EvakaClock,
+    accountId: MessageAccountId,
+    threadId: MessageThreadId
+): Int {
     // language=SQL
-    val sql = """
+    val sql =
+        """
 UPDATE message_recipients rec
 SET read_at = :now
 FROM message msg
@@ -76,7 +91,8 @@ WHERE rec.message_id = msg.id
   AND msg.thread_id = :threadId
   AND rec.recipient_id = :accountId
   AND read_at IS NULL;
-    """.trimIndent()
+    """.trimIndent(
+        )
 
     return this.createUpdate(sql)
         .bind("now", clock.now())
@@ -94,13 +110,15 @@ fun Database.Transaction.insertMessage(
     repliesToMessageId: MessageId? = null,
 ): MessageId {
     // language=SQL
-    val insertMessageSql = """
+    val insertMessageSql =
+        """
         INSERT INTO message (content_id, thread_id, sender_id, sender_name, replies_to, sent_at, recipient_names)
         SELECT :contentId, :threadId, :senderId, name_view.account_name, :repliesToId, :now, :recipientNames
         FROM message_account_name_view name_view
         WHERE name_view.id = :senderId
         RETURNING id
-    """.trimIndent()
+    """.trimIndent(
+        )
     return createQuery(insertMessageSql)
         .bind("now", now)
         .bind("contentId", contentId)
@@ -117,7 +135,8 @@ fun Database.Transaction.insertMessageContent(
     sender: MessageAccountId
 ): MessageContentId {
     // language=SQL
-    val messageContentSql = "INSERT INTO message_content (content, author_id) VALUES (:content, :authorId) RETURNING id"
+    val messageContentSql =
+        "INSERT INTO message_content (content, author_id) VALUES (:content, :authorId) RETURNING id"
     return createQuery(messageContentSql)
         .bind("content", content)
         .bind("authorId", sender)
@@ -145,7 +164,8 @@ fun Database.Transaction.insertThread(
     isCopy: Boolean
 ): MessageThreadId {
     // language=SQL
-    val insertThreadSql = "INSERT INTO message_thread (message_type, title, urgent, is_copy) VALUES (:messageType, :title, :urgent, :isCopy) RETURNING id"
+    val insertThreadSql =
+        "INSERT INTO message_thread (message_type, title, urgent, is_copy) VALUES (:messageType, :title, :urgent, :isCopy) RETURNING id"
     return createQuery(insertThreadSql)
         .bind("messageType", type)
         .bind("title", title)
@@ -155,17 +175,21 @@ fun Database.Transaction.insertThread(
         .one()
 }
 
-fun Database.Transaction.reAssociateMessageAttachments(attachmentIds: Set<AttachmentId>, messageContentId: MessageContentId): Int {
+fun Database.Transaction.reAssociateMessageAttachments(
+    attachmentIds: Set<AttachmentId>,
+    messageContentId: MessageContentId
+): Int {
     return createUpdate(
-        """
+            """
 UPDATE attachment
 SET
     message_content_id = :messageContentId,
     message_draft_id = NULL
 WHERE
     id = ANY(:attachmentIds)
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("attachmentIds", attachmentIds)
         .bind("messageContentId", messageContentId)
         .execute()
@@ -187,13 +211,18 @@ data class ReceivedMessageResultItem(
     val recipientId: MessageAccountId,
     val recipientName: String,
     val recipientAccountType: AccountType,
-    @Json
-    val attachments: List<MessageAttachment>
+    @Json val attachments: List<MessageAttachment>
 )
 
-fun Database.Read.getMessagesReceivedByAccount(accountId: MessageAccountId, pageSize: Int, page: Int, isCitizen: Boolean = false): Paged<MessageThread> {
+fun Database.Read.getMessagesReceivedByAccount(
+    accountId: MessageAccountId,
+    pageSize: Int,
+    page: Int,
+    isCitizen: Boolean = false
+): Paged<MessageThread> {
     // language=SQL
-    val sql = """
+    val sql =
+        """
 WITH
 participated_messages AS (
     SELECT 
@@ -265,7 +294,8 @@ SELECT
     FROM threads t
     JOIN participated_messages msg ON msg.thread_id = t.id
     ORDER BY t.last_message DESC, msg.sent_at ASC
-    """.trimIndent()
+    """.trimIndent(
+        )
 
     return createQuery(sql)
         .bind("accountId", accountId)
@@ -281,27 +311,35 @@ SELECT
                     type = threads[0].type,
                     title = threads[0].title,
                     urgent = threads[0].urgent,
-                    messages = threads
-                        .groupBy { it.messageId }
-                        .map { (messageId, messages) ->
-                            Message(
-                                id = messageId,
-                                content = messages[0].content,
-                                sender = MessageAccount(
-                                    id = messages[0].senderId,
-                                    name = messages[0].senderName,
-                                    type = messages[0].senderAccountType
-                                ),
-                                sentAt = messages[0].sentAt,
-                                readAt = messages.find { it.recipientId == accountId }?.readAt,
-                                recipients = messages
-                                    .groupBy { it.recipientId }
-                                    .map { (recipientId, recipients) ->
-                                        MessageAccount(recipientId, recipients[0].recipientName, recipients[0].recipientAccountType)
-                                    }.toSet(),
-                                attachments = messages[0].attachments
-                            )
-                        }
+                    messages =
+                        threads
+                            .groupBy { it.messageId }
+                            .map { (messageId, messages) ->
+                                Message(
+                                    id = messageId,
+                                    content = messages[0].content,
+                                    sender =
+                                        MessageAccount(
+                                            id = messages[0].senderId,
+                                            name = messages[0].senderName,
+                                            type = messages[0].senderAccountType
+                                        ),
+                                    sentAt = messages[0].sentAt,
+                                    readAt = messages.find { it.recipientId == accountId }?.readAt,
+                                    recipients =
+                                        messages
+                                            .groupBy { it.recipientId }
+                                            .map { (recipientId, recipients) ->
+                                                MessageAccount(
+                                                    recipientId,
+                                                    recipients[0].recipientName,
+                                                    recipients[0].recipientAccountType
+                                                )
+                                            }
+                                            .toSet(),
+                                    attachments = messages[0].attachments
+                                )
+                            }
                 )
             )
         }
@@ -324,13 +362,17 @@ data class MessageCopy(
     val recipientName: String,
     val recipientAccountType: AccountType,
     val recipientNames: List<String>,
-    @Json
-    val attachments: List<MessageAttachment>
+    @Json val attachments: List<MessageAttachment>
 )
 
-fun Database.Read.getMessageCopiesByAccount(accountId: MessageAccountId, pageSize: Int, page: Int): Paged<MessageCopy> {
+fun Database.Read.getMessageCopiesByAccount(
+    accountId: MessageAccountId,
+    pageSize: Int,
+    page: Int
+): Paged<MessageCopy> {
     // language=SQL
-    val sql = """
+    val sql =
+        """
 SELECT
     COUNT(*) OVER () AS count,
     t.id AS thread_id,
@@ -386,12 +428,12 @@ data class MessageResultItem(
     val recipientAccountType: AccountType,
     val sentAt: HelsinkiDateTime,
     val content: String,
-    @Json
-    val attachments: List<MessageAttachment>
+    @Json val attachments: List<MessageAttachment>
 )
 
 fun Database.Read.getMessage(id: MessageId): Message {
-    val sql = """
+    val sql =
+        """
         SELECT 
             m.id,
             m.sender_id,
@@ -417,7 +459,8 @@ fun Database.Read.getMessage(id: MessageId): Message {
         JOIN message_account sender_acc ON m.sender_id = sender_acc.id
         JOIN message_account_name_view recipient_acc_name ON rec.recipient_id = recipient_acc_name.id
         WHERE m.id = :id
-    """.trimIndent()
+    """.trimIndent(
+        )
 
     return this.createQuery(sql)
         .bind("id", id)
@@ -428,21 +471,35 @@ fun Database.Read.getMessage(id: MessageId): Message {
                 id = id,
                 content = messages[0].content,
                 sentAt = messages[0].sentAt,
-                sender = MessageAccount(
-                    id = messages[0].senderId,
-                    name = messages[0].senderName,
-                    type = messages[0].senderAccountType
-                ),
-                recipients = messages.map { MessageAccount(it.recipientId, it.recipientName, it.recipientAccountType) }.toSet(),
+                sender =
+                    MessageAccount(
+                        id = messages[0].senderId,
+                        name = messages[0].senderName,
+                        type = messages[0].senderAccountType
+                    ),
+                recipients =
+                    messages
+                        .map {
+                            MessageAccount(
+                                it.recipientId,
+                                it.recipientName,
+                                it.recipientAccountType
+                            )
+                        }
+                        .toSet(),
                 attachments = messages[0].attachments
             )
         }
         .single()
 }
 
-fun Database.Read.getCitizenReceivers(today: LocalDate, accountId: MessageAccountId): List<MessageAccount> {
+fun Database.Read.getCitizenReceivers(
+    today: LocalDate,
+    accountId: MessageAccountId
+): List<MessageAccount> {
     // language=SQL
-    val sql = """
+    val sql =
+        """
 WITH backup_care_placements AS (
     SELECT p.id, p.unit_id, p.child_id, p.group_id
     FROM guardian g
@@ -554,7 +611,8 @@ mixed_accounts AS (
 )
 SELECT id, name, type FROM mixed_accounts
 ORDER BY type, name  -- groups first
-    """.trimIndent()
+    """.trimIndent(
+        )
 
     return this.createQuery(sql)
         .bind("accountId", accountId)
@@ -563,9 +621,14 @@ ORDER BY type, name  -- groups first
         .toList()
 }
 
-fun Database.Read.getMessagesSentByAccount(accountId: MessageAccountId, pageSize: Int, page: Int): Paged<SentMessage> {
+fun Database.Read.getMessagesSentByAccount(
+    accountId: MessageAccountId,
+    pageSize: Int,
+    page: Int
+): Paged<SentMessage> {
     // language=SQL
-    val sql = """
+    val sql =
+        """
 WITH pageable_messages AS (
     SELECT
         m.content_id,
@@ -620,7 +683,8 @@ JOIN recipients rec ON msg.content_id = rec.content_id
 JOIN message_content mc ON msg.content_id = mc.id
 GROUP BY msg.count, msg.content_id, msg.sent_at, msg.recipient_names, mc.content, msg.message_type, msg.urgent, msg.title
 ORDER BY msg.sent_at DESC
-    """.trimIndent()
+    """.trimIndent(
+        )
 
     return this.createQuery(sql)
         .bind("accountId", accountId)
@@ -638,7 +702,8 @@ data class ThreadWithParticipants(
 )
 
 fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticipants? {
-    val sql = """
+    val sql =
+        """
         SELECT
             t.id AS threadId,
             t.message_type AS type,
@@ -651,7 +716,8 @@ fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticip
             JOIN message_recipients rec ON rec.message_id = m2.id
             WHERE m.id = :messageId
             GROUP BY t.id, t.message_type
-    """.trimIndent()
+    """.trimIndent(
+        )
     return this.createQuery(sql)
         .bind("messageId", messageId)
         .mapTo<ThreadWithParticipants>()
@@ -672,7 +738,8 @@ fun Database.Read.getReceiversForNewMessage(
     unitId: DaycareId
 ): List<MessageReceiversResponse> {
     // language=sql
-    val sql = """
+    val sql =
+        """
         WITH children AS (
             SELECT pl.child_id, dg.id group_id, dg.name group_name
             FROM daycare_group dg
@@ -732,7 +799,8 @@ fun Database.Read.getReceiversForNewMessage(
             LEFT JOIN messaging_blocklist bl ON g.guardian_id = bl.blocked_recipient AND c.child_id = bl.child_id
             WHERE g.child_id = c.child_id AND bl.id IS NULL
         )
-    """.trimIndent()
+    """.trimIndent(
+        )
 
     return this.createQuery(sql)
         .bind("employeeOrMobileId", employeeOrMobileId)
@@ -745,8 +813,8 @@ fun Database.Read.getReceiversForNewMessage(
             MessageReceiversResponse(
                 groupId = groupId,
                 groupName = receiverChildren.first().groupName,
-                receivers = receiverChildren
-                    .map { child ->
+                receivers =
+                    receiverChildren.map { child ->
                         MessageReceiver(
                             childId = child.childId,
                             childFirstName = child.firstName,
@@ -765,7 +833,7 @@ fun Database.Read.getMessageAccountsForRecipients(
 ): List<MessageAccountId> {
     val groupedRecipients = recipients.groupBy { it.type }
     return this.createQuery(
-        """
+            """
 WITH sender AS (
     SELECT daycare_group_id, employee_id FROM message_account WHERE id = :senderId
 ), children AS (
@@ -805,26 +873,37 @@ WHERE NOT EXISTS (
     AND bl.blocked_recipient = g.guardian_id
 )
 """
-    )
+        )
         .bind("senderId", accountId)
         .bind("date", date)
-        .bind("unitRecipients", groupedRecipients[MessageRecipientType.UNIT]?.map { it.id } ?: listOf())
-        .bind("groupRecipients", groupedRecipients[MessageRecipientType.GROUP]?.map { it.id } ?: listOf())
-        .bind("childRecipients", groupedRecipients[MessageRecipientType.CHILD]?.map { it.id } ?: listOf())
+        .bind(
+            "unitRecipients",
+            groupedRecipients[MessageRecipientType.UNIT]?.map { it.id } ?: listOf()
+        )
+        .bind(
+            "groupRecipients",
+            groupedRecipients[MessageRecipientType.GROUP]?.map { it.id } ?: listOf()
+        )
+        .bind(
+            "childRecipients",
+            groupedRecipients[MessageRecipientType.CHILD]?.map { it.id } ?: listOf()
+        )
         .mapTo<MessageAccountId>()
         .toList()
 }
 
-fun Database.Transaction.markNotificationAsSent(id: MessageRecipientId, timestamp: HelsinkiDateTime) {
-    val sql = """
+fun Database.Transaction.markNotificationAsSent(
+    id: MessageRecipientId,
+    timestamp: HelsinkiDateTime
+) {
+    val sql =
+        """
         UPDATE message_recipients
         SET notification_sent_at = :timestamp
         WHERE id = :id
-    """.trimIndent()
-    this.createUpdate(sql)
-        .bind("id", id)
-        .bind("timestamp", timestamp)
-        .execute()
+    """.trimIndent(
+        )
+    this.createUpdate(sql).bind("id", id).bind("timestamp", timestamp).execute()
 }
 
 fun Database.Read.getStaffCopyRecipients(
@@ -834,7 +913,7 @@ fun Database.Read.getStaffCopyRecipients(
     date: LocalDate
 ): Set<MessageAccountId> {
     return this.createQuery(
-        """
+            """
 SELECT receiver_acc.id
 FROM message_account sender_acc
 JOIN daycare_acl_view acl ON sender_acc.employee_id = acl.employee_id
@@ -843,7 +922,7 @@ JOIN daycare_group g ON u.id = g.daycare_id
 JOIN message_account receiver_acc ON g.id = receiver_acc.daycare_group_id
 WHERE sender_acc.id = :senderId AND (u.id = ANY(:unitIds) OR g.id = ANY(:groupIds))
 """
-    )
+        )
         .bind("senderId", senderId)
         .bind("unitIds", unitIds)
         .bind("groupIds", groupIds)

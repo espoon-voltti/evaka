@@ -68,9 +68,10 @@ data class DaycareFields(
 
 data class DaycareGroupSummary(val id: GroupId, val name: String, val endDate: LocalDate?)
 
-private fun Database.Read.getDaycaresQuery() = createQuery(
-    // language=SQL
-    """
+private fun Database.Read.getDaycaresQuery() =
+    createQuery(
+        // language=SQL
+        """
 SELECT
   daycare.*,
   finance_decision_handler.id AS finance_decision_handler_id,
@@ -85,12 +86,10 @@ LEFT JOIN employee finance_decision_handler ON finance_decision_handler.id = fin
 JOIN care_area ca ON care_area_id = ca.id
 WHERE :idFilter::uuid[] IS NULL OR daycare.id = ANY(:idFilter)
 """
-)
+    )
 
-fun Database.Read.getDaycares(authorizedUnits: AclAuthorization): List<Daycare> = getDaycaresQuery()
-    .bind("idFilter", authorizedUnits.ids)
-    .mapTo<Daycare>()
-    .toList()
+fun Database.Read.getDaycares(authorizedUnits: AclAuthorization): List<Daycare> =
+    getDaycaresQuery().bind("idFilter", authorizedUnits.ids).mapTo<Daycare>().toList()
 
 data class UnitApplyPeriods(
     val id: DaycareId,
@@ -99,46 +98,53 @@ data class UnitApplyPeriods(
     val clubApplyPeriod: DateRange?
 )
 
-fun Database.Read.getUnitApplyPeriods(ids: Collection<DaycareId>): List<UnitApplyPeriods> = createQuery(
-    // language=SQL
-    """
+fun Database.Read.getUnitApplyPeriods(ids: Collection<DaycareId>): List<UnitApplyPeriods> =
+    createQuery(
+            // language=SQL
+            """
 SELECT id, daycare_apply_period, preschool_apply_period, club_apply_period
 FROM daycare
 WHERE id = ANY(:ids)
-    """.trimIndent()
-).bind("ids", ids)
-    .mapTo<UnitApplyPeriods>()
-    .toList()
+    """.trimIndent(
+            )
+        )
+        .bind("ids", ids)
+        .mapTo<UnitApplyPeriods>()
+        .toList()
 
-fun Database.Read.getDaycare(id: DaycareId): Daycare? = getDaycaresQuery()
-    .bind("idFilter", listOf(id))
-    .mapTo<Daycare>()
-    .asSequence()
-    .firstOrNull()
+fun Database.Read.getDaycare(id: DaycareId): Daycare? =
+    getDaycaresQuery().bind("idFilter", listOf(id)).mapTo<Daycare>().asSequence().firstOrNull()
 
-fun Database.Read.isValidDaycareId(id: DaycareId): Boolean = createQuery(
-    // language=SQL
-    """
+fun Database.Read.isValidDaycareId(id: DaycareId): Boolean =
+    createQuery(
+            // language=SQL
+            """
 SELECT EXISTS (SELECT 1 FROM daycare WHERE id = :id) AS valid
     """.trimIndent()
-).bind("id", id).mapTo<Boolean>().asSequence().single()
+        )
+        .bind("id", id)
+        .mapTo<Boolean>()
+        .asSequence()
+        .single()
 
-fun Database.Read.getDaycareStub(daycareId: DaycareId): UnitStub? = createQuery(
-    // language=SQL
-    """
+fun Database.Read.getDaycareStub(daycareId: DaycareId): UnitStub? =
+    createQuery(
+            // language=SQL
+            """
 SELECT id, name
 FROM daycare
 WHERE id = :daycareId
 """
-)
-    .bind("daycareId", daycareId)
-    .mapTo<UnitStub>()
-    .asSequence()
-    .firstOrNull()
+        )
+        .bind("daycareId", daycareId)
+        .mapTo<UnitStub>()
+        .asSequence()
+        .firstOrNull()
 
-fun Database.Transaction.createDaycare(areaId: AreaId, name: String): DaycareId = createUpdate(
-    // language=SQL
-    """
+fun Database.Transaction.createDaycare(areaId: AreaId, name: String): DaycareId =
+    createUpdate(
+            // language=SQL
+            """
 WITH insert_manager AS (
   INSERT INTO unit_manager DEFAULT VALUES
   RETURNING id
@@ -147,16 +153,17 @@ INSERT INTO daycare (name, care_area_id, unit_manager_id)
 SELECT :name, :areaId, insert_manager.id
 FROM insert_manager
 """
-)
-    .bind("name", name)
-    .bind("areaId", areaId)
-    .executeAndReturnGeneratedKeys()
-    .mapTo<DaycareId>()
-    .one()
+        )
+        .bind("name", name)
+        .bind("areaId", areaId)
+        .executeAndReturnGeneratedKeys()
+        .mapTo<DaycareId>()
+        .one()
 
-fun Database.Transaction.updateDaycareManager(daycareId: DaycareId, manager: UnitManager) = createUpdate(
-    // language=SQL
-    """
+fun Database.Transaction.updateDaycareManager(daycareId: DaycareId, manager: UnitManager) =
+    createUpdate(
+            // language=SQL
+            """
 UPDATE unit_manager
 SET
   name = :name,
@@ -164,14 +171,15 @@ SET
   phone = :phone
 WHERE id = (SELECT unit_manager_id FROM daycare WHERE id = :daycareId)
 """
-)
-    .bind("daycareId", daycareId)
-    .bindKotlin(manager)
-    .execute()
+        )
+        .bind("daycareId", daycareId)
+        .bindKotlin(manager)
+        .execute()
 
-fun Database.Transaction.updateDaycare(id: DaycareId, fields: DaycareFields) = createUpdate(
-    // language=SQL
-    """
+fun Database.Transaction.updateDaycare(id: DaycareId, fields: DaycareFields) =
+    createUpdate(
+            // language=SQL
+            """
 UPDATE daycare
 SET
   name = :name,
@@ -217,9 +225,10 @@ SET
   provider_id = :providerId
 WHERE id = :id
 """
-).bind("id", id)
-    .bindKotlin(fields)
-    .execute()
+        )
+        .bind("id", id)
+        .bindKotlin(fields)
+        .execute()
 
 fun Database.Read.getApplicationUnits(
     type: ApplicationUnitType,
@@ -228,7 +237,8 @@ fun Database.Read.getApplicationUnits(
     onlyApplicable: Boolean
 ): List<PublicUnit> {
     // language=sql
-    val sql = """
+    val sql =
+        """
 SELECT
     id,
     name,
@@ -256,7 +266,8 @@ WHERE :date <= COALESCE(closing_date, 'infinity'::date)
         OR (:preparatory AND type && '{PREPARATORY_EDUCATION}'::care_types[] AND (NOT :onlyApplicable OR (preschool_apply_period @> :date)))
     )
 ORDER BY name ASC
-    """.trimIndent()
+    """.trimIndent(
+        )
     return createQuery(sql)
         .bind("date", date)
         .bind("onlyApplicable", onlyApplicable)
@@ -270,14 +281,16 @@ ORDER BY name ASC
 }
 
 fun Database.Read.getAllApplicableUnits(applicationType: ApplicationType): List<PublicUnit> {
-    val applyPeriod = when (applicationType) {
-        ApplicationType.CLUB -> "club_apply_period"
-        ApplicationType.DAYCARE -> "daycare_apply_period"
-        ApplicationType.PRESCHOOL -> "preschool_apply_period"
-    }
+    val applyPeriod =
+        when (applicationType) {
+            ApplicationType.CLUB -> "club_apply_period"
+            ApplicationType.DAYCARE -> "daycare_apply_period"
+            ApplicationType.PRESCHOOL -> "preschool_apply_period"
+        }
 
     // language=sql
-    val sql = """
+    val sql =
+        """
 SELECT
     id,
     name,
@@ -302,7 +315,8 @@ FROM daycare
 WHERE daterange(null, closing_date) @> :today AND
     ($applyPeriod && daterange(:today, null, '[]') OR provider_type = 'PRIVATE')
 ORDER BY name ASC
-    """.trimIndent()
+    """.trimIndent(
+        )
 
     return createQuery(sql)
         .bind("today", HelsinkiDateTime.now().toLocalDate())
@@ -310,50 +324,57 @@ ORDER BY name ASC
         .toList()
 }
 
-fun Database.Read.getUnitManager(unitId: DaycareId): DaycareManager? = createQuery(
-    // language=SQL
-    """
+fun Database.Read.getUnitManager(unitId: DaycareId): DaycareManager? =
+    createQuery(
+            // language=SQL
+            """
     SELECT coalesce(m.name, '') AS name, coalesce(m.email, '') AS email, coalesce(m.phone, '') AS phone
     FROM unit_manager m
     JOIN daycare u ON m.id = u.unit_manager_id
     WHERE u.id = :unitId
-    """.trimIndent()
-)
-    .bind("unitId", unitId)
-    .mapTo<DaycareManager>()
-    .firstOrNull()
+    """.trimIndent(
+            )
+        )
+        .bind("unitId", unitId)
+        .mapTo<DaycareManager>()
+        .firstOrNull()
 
-fun Database.Read.getDaycareGroupSummaries(daycareId: DaycareId): List<DaycareGroupSummary> = createQuery(
-    """
+fun Database.Read.getDaycareGroupSummaries(daycareId: DaycareId): List<DaycareGroupSummary> =
+    createQuery(
+            """
 SELECT id, name, end_date
 FROM daycare_group
 WHERE daycare_id = :daycareId
     """
-).bind("daycareId", daycareId)
-    .mapTo<DaycareGroupSummary>()
-    .list()
+        )
+        .bind("daycareId", daycareId)
+        .mapTo<DaycareGroupSummary>()
+        .list()
 
-fun Database.Read.getUnitFeatures(): List<UnitFeatures> = createQuery(
-    """
+fun Database.Read.getUnitFeatures(): List<UnitFeatures> =
+    createQuery(
+            """
     SELECT id, name, enabled_pilot_features AS features, provider_type, type
     FROM daycare
     ORDER BY name
-    """.trimIndent()
-)
-    .mapTo<UnitFeatures>()
-    .list()
+    """.trimIndent(
+            )
+        )
+        .mapTo<UnitFeatures>()
+        .list()
 
 fun Database.Transaction.addUnitFeatures(
     daycareIds: List<DaycareId>,
     features: List<PilotFeature>
 ) {
     createUpdate(
-        """
+            """
         UPDATE daycare
         SET enabled_pilot_features = enabled_pilot_features || (:features)::pilot_feature[]
         WHERE id = ANY(:ids)
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("ids", daycareIds)
         .bind("features", features)
         .execute()
@@ -364,7 +385,7 @@ fun Database.Transaction.removeUnitFeatures(
     features: List<PilotFeature>
 ) {
     createUpdate(
-        """
+            """
         UPDATE daycare
         SET enabled_pilot_features = array(
             SELECT unnest(enabled_pilot_features)
@@ -372,20 +393,23 @@ fun Database.Transaction.removeUnitFeatures(
             SELECT unnest((:features)::pilot_feature[])
         )::pilot_feature[]
         WHERE id = ANY(:ids)
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("ids", daycareIds)
         .bind("features", features)
         .execute()
 }
 
-fun Database.Read.getUnitFeatures(id: DaycareId): UnitFeatures? = createQuery(
-    """
+fun Database.Read.getUnitFeatures(id: DaycareId): UnitFeatures? =
+    createQuery(
+            """
     SELECT id, name, enabled_pilot_features AS features, provider_type, type
     FROM daycare
     WHERE id = :id
-    """.trimIndent()
-)
-    .bind("id", id)
-    .mapTo<UnitFeatures>()
-    .first()
+    """.trimIndent(
+            )
+        )
+        .bind("id", id)
+        .mapTo<UnitFeatures>()
+        .first()

@@ -17,81 +17,91 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.utils.applyIf
-import org.jdbi.v3.core.result.RowView
 import java.time.LocalDate
+import org.jdbi.v3.core.result.RowView
 
-val personDTOColumns = listOf(
-    "id",
-    "social_security_number",
-    "ssn_adding_disabled",
-    "first_name",
-    "last_name",
-    "preferred_name",
-    "email",
-    "phone",
-    "backup_phone",
-    "language",
-    "date_of_birth",
-    "date_of_death",
-    "nationalities",
-    "restricted_details_enabled",
-    "restricted_details_end_date",
-    "street_address",
-    "postal_code",
-    "post_office",
-    "residence_code",
-    "updated_from_vtj",
-    "vtj_guardians_queried",
-    "vtj_dependants_queried",
-    "invoice_recipient_name",
-    "invoicing_street_address",
-    "invoicing_postal_code",
-    "invoicing_post_office",
-    "force_manual_fee_decisions",
-    "oph_person_oid",
-    "updated_from_vtj"
-)
+val personDTOColumns =
+    listOf(
+        "id",
+        "social_security_number",
+        "ssn_adding_disabled",
+        "first_name",
+        "last_name",
+        "preferred_name",
+        "email",
+        "phone",
+        "backup_phone",
+        "language",
+        "date_of_birth",
+        "date_of_death",
+        "nationalities",
+        "restricted_details_enabled",
+        "restricted_details_end_date",
+        "street_address",
+        "postal_code",
+        "post_office",
+        "residence_code",
+        "updated_from_vtj",
+        "vtj_guardians_queried",
+        "vtj_dependants_queried",
+        "invoice_recipient_name",
+        "invoicing_street_address",
+        "invoicing_postal_code",
+        "invoicing_post_office",
+        "force_manual_fee_decisions",
+        "oph_person_oid",
+        "updated_from_vtj"
+    )
 val commaSeparatedPersonDTOColumns = personDTOColumns.joinToString()
 
 data class CitizenUser(val id: PersonId)
 
-fun Database.Read.getCitizenUserBySsn(ssn: String): CitizenUser? = createQuery(
-    "SELECT id FROM person WHERE social_security_number = :ssn"
-).bind("ssn", ssn).mapTo<CitizenUser>().firstOrNull()
+fun Database.Read.getCitizenUserBySsn(ssn: String): CitizenUser? =
+    createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
+        .bind("ssn", ssn)
+        .mapTo<CitizenUser>()
+        .firstOrNull()
 
 fun Database.Read.getPersonById(id: PersonId): PersonDTO? {
     return createQuery(
-        """
+            """
 SELECT
 $commaSeparatedPersonDTOColumns
 FROM person
 WHERE id = :id
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("id", id)
         .map(toPersonDTO)
         .firstOrNull()
 }
 
-fun Database.Transaction.lockPersonBySSN(ssn: String): PersonDTO? = createQuery(
-    """
+fun Database.Transaction.lockPersonBySSN(ssn: String): PersonDTO? =
+    createQuery(
+            """
 SELECT
 $commaSeparatedPersonDTOColumns
 FROM person
 WHERE social_security_number = :ssn
 FOR UPDATE
-    """.trimIndent()
-).bind("ssn", ssn).map(toPersonDTO).firstOrNull()
+    """.trimIndent(
+            )
+        )
+        .bind("ssn", ssn)
+        .map(toPersonDTO)
+        .firstOrNull()
 
 fun Database.Read.getPersonBySSN(ssn: String): PersonDTO? {
     return createQuery(
-        """
+            """
 SELECT
 $commaSeparatedPersonDTOColumns
 FROM person
 WHERE social_security_number = :ssn
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("ssn", ssn)
         .map(toPersonDTO)
         .firstOrNull()
@@ -121,18 +131,23 @@ fun Database.Read.searchPeople(
     if (searchTerms.isBlank()) return listOf()
 
     val direction = if (sortDirection.equals("DESC", ignoreCase = true)) "DESC" else "ASC"
-    val orderBy = sortColumns.split(",").map { it.trim() }.let { columns ->
-        if (personSortColumns.containsAll(columns)) {
-            columns.joinToString(", ") { column -> "$column $direction" }
-        } else {
-            "last_name $direction"
-        }
-    }
+    val orderBy =
+        sortColumns
+            .split(",")
+            .map { it.trim() }
+            .let { columns ->
+                if (personSortColumns.containsAll(columns)) {
+                    columns.joinToString(", ") { column -> "$column $direction" }
+                } else {
+                    "last_name $direction"
+                }
+            }
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("person"), searchTerms)
 
     // language=SQL
-    val sql = """
+    val sql =
+        """
         SELECT
             id,
             social_security_number,
@@ -147,7 +162,8 @@ fun Database.Read.searchPeople(
         ${if (restricted) "AND id IN (SELECT person_id FROM person_acl_view acl WHERE acl.employee_id = :userId)" else ""}
         ORDER BY $orderBy
         LIMIT 100
-    """.trimIndent()
+    """.trimIndent(
+        )
 
     return createQuery(sql)
         .addBindings(freeTextParams)
@@ -163,12 +179,10 @@ fun Database.Transaction.createPerson(person: CreatePersonBody): PersonId {
         INSERT INTO person (first_name, last_name, date_of_birth, street_address, postal_code, post_office, phone, email)
         VALUES (:firstName, :lastName, :dateOfBirth, :streetAddress, :postalCode, :postOffice, :phone, :email)
         RETURNING id
-        """.trimIndent()
+        """.trimIndent(
+        )
 
-    return createQuery(sql)
-        .bindKotlin(person)
-        .mapTo<PersonId>()
-        .first()
+    return createQuery(sql).bindKotlin(person).mapTo<PersonId>().first()
 }
 
 fun Database.Transaction.createEmptyPerson(evakaClock: EvakaClock): PersonDTO {
@@ -178,7 +192,8 @@ fun Database.Transaction.createEmptyPerson(evakaClock: EvakaClock): PersonDTO {
         INSERT INTO person (first_name, last_name, email, date_of_birth)
         VALUES (:firstName, :lastName, :email, :dateOfBirth)
         RETURNING *
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     return createQuery(sql)
         .bind("firstName", "Etunimi")
@@ -263,7 +278,11 @@ fun Database.Transaction.updatePersonFromVtj(person: PersonDTO): PersonDTO {
         .first()
 }
 
-fun Database.Transaction.updatePersonBasicContactInfo(id: PersonId, email: String, phone: String): Boolean {
+fun Database.Transaction.updatePersonBasicContactInfo(
+    id: PersonId,
+    email: String,
+    phone: String
+): Boolean {
     // language=SQL
     val sql =
         """
@@ -272,7 +291,8 @@ fun Database.Transaction.updatePersonBasicContactInfo(id: PersonId, email: Strin
             phone = :phone
         WHERE id = :id
         RETURNING id
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     return createQuery(sql)
         .bind("id", id)
@@ -299,13 +319,10 @@ fun Database.Transaction.updatePersonNonVtjDetails(id: PersonId, patch: PersonPa
             oph_person_oid = coalesce(:ophPersonOid, oph_person_oid)
         WHERE id = :id
         RETURNING id
-        """.trimIndent()
+        """.trimIndent(
+        )
 
-    return createQuery(sql)
-        .bind("id", id)
-        .bindKotlin(patch)
-        .mapTo<PersonId>()
-        .firstOrNull() != null
+    return createQuery(sql).bind("id", id).bindKotlin(patch).mapTo<PersonId>().firstOrNull() != null
 }
 
 fun Database.Transaction.updateNonSsnPersonDetails(id: PersonId, patch: PersonPatch): Boolean {
@@ -330,30 +347,27 @@ fun Database.Transaction.updateNonSsnPersonDetails(id: PersonId, patch: PersonPa
             oph_person_oid = coalesce(:ophPersonOid, oph_person_oid)
         WHERE id = :id AND social_security_number IS NULL
         RETURNING id
-        """.trimIndent()
+        """.trimIndent(
+        )
 
-    return createQuery(sql)
-        .bind("id", id)
-        .bindKotlin(patch)
-        .mapTo<PersonId>()
-        .firstOrNull() != null
+    return createQuery(sql).bind("id", id).bindKotlin(patch).mapTo<PersonId>().firstOrNull() != null
 }
 
 fun Database.Transaction.addSSNToPerson(id: PersonId, ssn: String) {
     // language=SQL
     val sql = "UPDATE person SET social_security_number = :ssn WHERE id = :id"
 
-    createUpdate(sql)
-        .bind("id", id)
-        .bind("ssn", ssn)
-        .execute()
+    createUpdate(sql).bind("id", id).bind("ssn", ssn).execute()
 }
 
 private val toPersonDTO: (RowView) -> PersonDTO = { row ->
     PersonDTO(
         id = PersonId(row.mapColumn("id")),
-        identity = row.mapColumn<String?>("social_security_number")?.let { ssn -> ExternalIdentifier.SSN.getInstance(ssn) }
-            ?: ExternalIdentifier.NoID,
+        identity =
+            row.mapColumn<String?>("social_security_number")?.let { ssn ->
+                ExternalIdentifier.SSN.getInstance(ssn)
+            }
+                ?: ExternalIdentifier.NoID,
         ssnAddingDisabled = row.mapColumn("ssn_adding_disabled"),
         firstName = row.mapColumn("first_name"),
         lastName = row.mapColumn("last_name"),
@@ -383,24 +397,22 @@ private val toPersonDTO: (RowView) -> PersonDTO = { row ->
     )
 }
 
-fun Database.Transaction.markPersonLastLogin(clock: EvakaClock, id: PersonId) = createUpdate(
-    """
+fun Database.Transaction.markPersonLastLogin(clock: EvakaClock, id: PersonId) =
+    createUpdate("""
 UPDATE person 
 SET last_login = :now
 WHERE id = :id
-    """.trimIndent()
-).bind("id", id)
-    .bind("now", clock.now())
-    .execute()
+    """.trimIndent())
+        .bind("id", id)
+        .bind("now", clock.now())
+        .execute()
 
-data class PersonReference(
-    val table: String,
-    val column: String
-)
+data class PersonReference(val table: String, val column: String)
 
 fun Database.Read.getTransferablePersonReferences(): List<PersonReference> {
     // language=sql
-    val sql = """
+    val sql =
+        """
         select source.relname as "table", attr.attname as "column"
         from pg_constraint const
             join pg_class source on source.oid = const.conrelid
@@ -411,32 +423,35 @@ fun Database.Read.getTransferablePersonReferences(): List<PersonReference> {
             and source.relname not in ('person', 'child', 'guardian', 'guardian_blocklist', 'message_account')
             and source.relname not like 'old_%'
         order by source.relname, attr.attname
-    """.trimIndent()
+    """.trimIndent(
+        )
     return createQuery(sql).mapTo<PersonReference>().list()
 }
 
 fun Database.Read.getGuardianDependants(personId: PersonId) =
     createQuery(
-        """
+            """
 SELECT
 $commaSeparatedPersonDTOColumns
 FROM person
 WHERE id IN (SELECT child_id FROM guardian WHERE guardian_id = :personId)
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("personId", personId)
         .map(toPersonDTO)
         .toList()
 
 fun Database.Read.getDependantGuardians(personId: ChildId) =
     createQuery(
-        """
+            """
 SELECT
 $commaSeparatedPersonDTOColumns
 FROM person
 WHERE id IN (SELECT guardian_id FROM guardian WHERE child_id = :personId)
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("personId", personId)
         .map(toPersonDTO)
         .toList()

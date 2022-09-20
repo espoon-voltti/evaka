@@ -15,18 +15,18 @@ import fi.espoo.evaka.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo.NykyinenSuk
 import fi.espoo.evaka.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo.NykyisetEtunimet
 import fi.espoo.evaka.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo.Turvakielto
 import fi.espoo.evaka.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo.VakinainenKotimainenLahiosoite
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.Month
 import java.time.format.DateTimeFormatter
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
 
 class VtjHenkiloMapperTest {
 
     @Test
     fun `valid person should be mapped to person details`() {
-        val value = Henkilo()
-            .apply {
+        val value =
+            Henkilo().apply {
                 nykyisetEtunimet = NykyisetEtunimet().apply { etunimet = "Heikki Jaska" }
                 nykyinenSukunimi = NykyinenSukunimi().apply { sukunimi = "Heikinheimo" }
                 henkilotunnus = Henkilo.Henkilotunnus().apply { value = "33221A312Z" }
@@ -41,34 +41,37 @@ class VtjHenkiloMapperTest {
                 huollettava.add(
                     Huollettava().apply {
                         henkilotunnus = "020202A0202"
-                        nykyisetEtunimet = Huollettava.NykyisetEtunimet().apply { etunimet = "Lapsi" }
-                        nykyinenSukunimi = Huollettava.NykyinenSukunimi().apply { sukunimi = "Lapsonen" }
+                        nykyisetEtunimet =
+                            Huollettava.NykyisetEtunimet().apply { etunimet = "Lapsi" }
+                        nykyinenSukunimi =
+                            Huollettava.NykyinenSukunimi().apply { sukunimi = "Lapsonen" }
                     }
                 )
-                vakinainenKotimainenLahiosoite = VakinainenKotimainenLahiosoite()
-                    .apply {
+                vakinainenKotimainenLahiosoite =
+                    VakinainenKotimainenLahiosoite().apply {
                         lahiosoiteS = "Reitti 1"
                         postinumero = "232323"
                         postitoimipaikkaS = "Espoo"
                         lahiosoiteR = "Vägen 1"
                         postitoimipaikkaR = "Esbo"
                     }
-                vakinainenAsuinpaikka = Henkilo.VakinainenAsuinpaikka()
-                    .apply {
+                vakinainenAsuinpaikka =
+                    Henkilo.VakinainenAsuinpaikka().apply {
                         asuinpaikantunnus = "testiasuinpaikkatunnus"
                     }
-                aidinkieli = Aidinkieli().apply {
-                    kieliS = "ruotsi"
-                    kielikoodi = "sv"
-                }
+                aidinkieli =
+                    Aidinkieli().apply {
+                        kieliS = "ruotsi"
+                        kielikoodi = "sv"
+                    }
 
-                turvakielto = Turvakielto()
-                    .apply {
+                turvakielto =
+                    Turvakielto().apply {
                         turvakieltoTieto = "1"
                         turvakieltoPaattymispvm = "20191110"
                     }
-                kuolintiedot = Henkilo.Kuolintiedot()
-                    .apply {
+                kuolintiedot =
+                    Henkilo.Kuolintiedot().apply {
                         kuollut = "1"
                         kuolinpvm = "20191231"
                     }
@@ -80,34 +83,46 @@ class VtjHenkiloMapperTest {
         assertThat(result.lastName).isEqualTo(value.nykyinenSukunimi.sukunimi)
 
         assertThat(result.dependants).size().isEqualTo(1)
-        assertThat(result.dependants).allMatch { it.socialSecurityNumber == value.huollettava[0].henkilotunnus }
+        assertThat(result.dependants).allMatch {
+            it.socialSecurityNumber == value.huollettava[0].henkilotunnus
+        }
 
-        assertThat(result.address!!.streetAddress).isEqualTo(value.vakinainenKotimainenLahiosoite.lahiosoiteS)
-        assertThat(result.address!!.postOffice).isEqualTo(value.vakinainenKotimainenLahiosoite.postitoimipaikkaS)
-        assertThat(result.address!!.streetAddressSe).isEqualTo(value.vakinainenKotimainenLahiosoite.lahiosoiteR)
-        assertThat(result.address!!.postOfficeSe).isEqualTo(value.vakinainenKotimainenLahiosoite.postitoimipaikkaR)
-        assertThat(result.address!!.postalCode).isEqualTo(value.vakinainenKotimainenLahiosoite.postinumero)
+        assertThat(result.address!!.streetAddress)
+            .isEqualTo(value.vakinainenKotimainenLahiosoite.lahiosoiteS)
+        assertThat(result.address!!.postOffice)
+            .isEqualTo(value.vakinainenKotimainenLahiosoite.postitoimipaikkaS)
+        assertThat(result.address!!.streetAddressSe)
+            .isEqualTo(value.vakinainenKotimainenLahiosoite.lahiosoiteR)
+        assertThat(result.address!!.postOfficeSe)
+            .isEqualTo(value.vakinainenKotimainenLahiosoite.postitoimipaikkaR)
+        assertThat(result.address!!.postalCode)
+            .isEqualTo(value.vakinainenKotimainenLahiosoite.postinumero)
         assertThat(result.residenceCode).isEqualTo("testiasuinpaikkatunnus")
 
         assertThat(result.nativeLanguage!!.languageName).isEqualTo(value.aidinkieli.kieliS)
 
         val date = result.restrictedDetails!!.endDate!!
         // NB: this comparison is dependant on the month and day having 2 digits
-        assertThat("${date.year}${date.monthValue}${date.dayOfMonth}").isEqualTo(value.turvakielto.turvakieltoPaattymispvm)
+        assertThat("${date.year}${date.monthValue}${date.dayOfMonth}")
+            .isEqualTo(value.turvakielto.turvakieltoPaattymispvm)
     }
 
     @Test
     fun `valid dependants should be mapped to person's children`() {
-        val dependant = Huollettava().apply {
-            henkilotunnus = "010104A123E"
-            nykyisetEtunimet = Huollettava.NykyisetEtunimet().apply { etunimet = "Karlo Jaskari Jooseppi" }
-            nykyinenSukunimi = Huollettava.NykyinenSukunimi().apply { sukunimi = "Joosepinpoika" }
-        }
+        val dependant =
+            Huollettava().apply {
+                henkilotunnus = "010104A123E"
+                nykyisetEtunimet =
+                    Huollettava.NykyisetEtunimet().apply { etunimet = "Karlo Jaskari Jooseppi" }
+                nykyinenSukunimi =
+                    Huollettava.NykyinenSukunimi().apply { sukunimi = "Joosepinpoika" }
+            }
 
-        val value = Henkilo().apply {
-            huollettava.clear()
-            huollettava.add(dependant)
-        }
+        val value =
+            Henkilo().apply {
+                huollettava.clear()
+                huollettava.add(dependant)
+            }
 
         val result = value.mapDependants()
         assertThat(result).size().isEqualTo(1)
@@ -120,9 +135,7 @@ class VtjHenkiloMapperTest {
 
     @Test
     fun `empty dependants should be mapped to person's children`() {
-        val value = Henkilo().apply {
-            huollettava.clear()
-        }
+        val value = Henkilo().apply { huollettava.clear() }
 
         val result = value.mapDependants()
         assertThat(result).isEmpty()
@@ -136,8 +149,8 @@ class VtjHenkiloMapperTest {
         val addressSe = "Vägen 1"
         val postOfficeSe = "Staden"
 
-        val value = VakinainenKotimainenLahiosoite()
-            .apply {
+        val value =
+            VakinainenKotimainenLahiosoite().apply {
                 lahiosoiteS = addressFi
                 postinumero = postalCode
                 postitoimipaikkaS = postOfficeFi
@@ -157,8 +170,8 @@ class VtjHenkiloMapperTest {
 
     @Test
     fun `empty local permanent address should be mapped to person's address`() {
-        val value = VakinainenKotimainenLahiosoite()
-            .apply {
+        val value =
+            VakinainenKotimainenLahiosoite().apply {
                 lahiosoiteS = ""
                 postinumero = ""
                 postitoimipaikkaS = ""
@@ -172,19 +185,20 @@ class VtjHenkiloMapperTest {
 
     @Test
     fun `parseAddress uses mailAddress is available`() {
-        val mailAddress = Henkilo.KotimainenPostiosoite()
-            .apply {
+        val mailAddress =
+            Henkilo.KotimainenPostiosoite().apply {
                 postiosoiteS = "postiosoiteS"
                 postinumero = "postinumero"
                 postitoimipaikkaS = "postitoimipaikkaS"
                 postiosoiteR = "postiosoiteR"
                 postitoimipaikkaR = "postitoimipaikkaR"
                 postiosoiteAlkupvm = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
-                postiosoiteLoppupvm = LocalDate.now().plusDays(10).format(DateTimeFormatter.BASIC_ISO_DATE)
+                postiosoiteLoppupvm =
+                    LocalDate.now().plusDays(10).format(DateTimeFormatter.BASIC_ISO_DATE)
             }
 
-        val temporaryAddress = Henkilo.TilapainenKotimainenLahiosoite()
-            .apply {
+        val temporaryAddress =
+            Henkilo.TilapainenKotimainenLahiosoite().apply {
                 lahiosoiteS = ""
                 postinumero = ""
                 postitoimipaikkaS = ""
@@ -192,8 +206,8 @@ class VtjHenkiloMapperTest {
                 postitoimipaikkaR = ""
             }
 
-        val address = VakinainenKotimainenLahiosoite()
-            .apply {
+        val address =
+            VakinainenKotimainenLahiosoite().apply {
                 lahiosoiteS = "lahiosoiteS"
                 postinumero = "postinumero"
                 postitoimipaikkaS = "postitoimipaikkaS"
@@ -213,8 +227,8 @@ class VtjHenkiloMapperTest {
 
     @Test
     fun `parseAddress uses temporaryAddress if mailAddress is unavailable`() {
-        val mailAddress = Henkilo.KotimainenPostiosoite()
-            .apply {
+        val mailAddress =
+            Henkilo.KotimainenPostiosoite().apply {
                 postiosoiteS = ""
                 postinumero = ""
                 postitoimipaikkaS = ""
@@ -222,19 +236,20 @@ class VtjHenkiloMapperTest {
                 postitoimipaikkaR = ""
             }
 
-        val temporaryAddress = Henkilo.TilapainenKotimainenLahiosoite()
-            .apply {
+        val temporaryAddress =
+            Henkilo.TilapainenKotimainenLahiosoite().apply {
                 lahiosoiteS = "tilap-lahiosoiteS"
                 postinumero = "tilap-postinumero"
                 postitoimipaikkaS = "tilap-postitoimipaikkaS"
                 lahiosoiteR = "tilap-lahiosoiteR"
                 postitoimipaikkaR = "tilap-postitoimipaikkaR"
                 asuminenAlkupvm = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
-                asuminenLoppupvm = LocalDate.now().plusDays(10).format(DateTimeFormatter.BASIC_ISO_DATE)
+                asuminenLoppupvm =
+                    LocalDate.now().plusDays(10).format(DateTimeFormatter.BASIC_ISO_DATE)
             }
 
-        val address = VakinainenKotimainenLahiosoite()
-            .apply {
+        val address =
+            VakinainenKotimainenLahiosoite().apply {
                 lahiosoiteS = "lahiosoiteS"
                 postinumero = "postinumero"
                 postitoimipaikkaS = "postitoimipaikkaS"
@@ -252,8 +267,8 @@ class VtjHenkiloMapperTest {
 
     @Test
     fun `valid nationality should be mapped to a list of Nationalities`() {
-        val value = Henkilo()
-            .apply {
+        val value =
+            Henkilo().apply {
                 kansalaisuus.clear()
                 kansalaisuus.add(
                     Kansalaisuus().apply {
@@ -273,10 +288,7 @@ class VtjHenkiloMapperTest {
 
     @Test
     fun `empty nationality list should be mapped to an empty list of Nationalities`() {
-        val value = Henkilo()
-            .apply {
-                kansalaisuus.clear()
-            }
+        val value = Henkilo().apply { kansalaisuus.clear() }
         val result: List<Nationality> = value.mapNationalities()
 
         assertThat(result).size().isEqualTo(0)
@@ -284,8 +296,8 @@ class VtjHenkiloMapperTest {
 
     @Test
     fun `multiple nationalities should be mapped to a Nationality`() {
-        val value = Henkilo()
-            .apply {
+        val value =
+            Henkilo().apply {
                 kansalaisuus.clear()
                 kansalaisuus.add(
                     Kansalaisuus().apply {
@@ -315,12 +327,13 @@ class VtjHenkiloMapperTest {
 
     @Test
     fun `valid native language should be mapped to a NativeLanguage`() {
-        val value = Henkilo()
-            .apply {
-                aidinkieli = Aidinkieli().apply {
-                    kieliS = "suomi"
-                    kielikoodi = "fi"
-                }
+        val value =
+            Henkilo().apply {
+                aidinkieli =
+                    Aidinkieli().apply {
+                        kieliS = "suomi"
+                        kielikoodi = "fi"
+                    }
             }
         val result: NativeLanguage? = value.mapNativeLanguage()
 
@@ -330,12 +343,13 @@ class VtjHenkiloMapperTest {
 
     @Test
     fun `empty native language fields should be mapped to an empty NativeLanguage`() {
-        val value = Henkilo()
-            .apply {
-                aidinkieli = Aidinkieli().apply {
-                    kieliS = ""
-                    kielikoodi = ""
-                }
+        val value =
+            Henkilo().apply {
+                aidinkieli =
+                    Aidinkieli().apply {
+                        kieliS = ""
+                        kielikoodi = ""
+                    }
             }
         val result: NativeLanguage? = value.mapNativeLanguage()
 
@@ -345,10 +359,7 @@ class VtjHenkiloMapperTest {
 
     @Test
     fun `null native language fields should be mapped to an empty NativeLanguage`() {
-        val value = Henkilo()
-            .apply {
-                aidinkieli = Aidinkieli()
-            }
+        val value = Henkilo().apply { aidinkieli = Aidinkieli() }
         val result: NativeLanguage? = value.mapNativeLanguage()
 
         assertThat(result!!.code).isEqualTo("")
@@ -357,10 +368,11 @@ class VtjHenkiloMapperTest {
 
     @Test
     fun `valid Turvakielto end date should be mapped to a temporary RestrictedDetails`() {
-        val value = Turvakielto().apply {
-            turvakieltoTieto = "1"
-            turvakieltoPaattymispvm = "20200630"
-        }
+        val value =
+            Turvakielto().apply {
+                turvakieltoTieto = "1"
+                turvakieltoPaattymispvm = "20200630"
+            }
         val result: RestrictedDetails = value.mapToRestrictedDetails()
 
         assertThat(result.enabled).isTrue

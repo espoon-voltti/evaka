@@ -10,14 +10,13 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.Conflict
+import java.time.LocalDate
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.LocalDate
 
 class PartnershipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired
-    lateinit var partnershipService: PartnershipService
+    @Autowired lateinit var partnershipService: PartnershipService
 
     @Test
     fun `creating an overlapping partnership throws conflict`() {
@@ -40,15 +39,16 @@ class PartnershipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
         return db.transaction { tx ->
             tx.insertTestPerson(
-                DevPerson(
-                    ssn = ssn,
-                    dateOfBirth = getDobFromSsn(ssn),
-                    firstName = firstName,
-                    lastName = "Meikäläinen",
-                    email = "",
-                    language = "fi"
+                    DevPerson(
+                        ssn = ssn,
+                        dateOfBirth = getDobFromSsn(ssn),
+                        firstName = firstName,
+                        lastName = "Meikäläinen",
+                        email = "",
+                        language = "fi"
+                    )
                 )
-            ).let { tx.getPersonById(it)!! }
+                .let { tx.getPersonById(it)!! }
         }
     }
 

@@ -18,6 +18,9 @@ import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.Unauthorized
 import fi.espoo.evaka.shared.utils.asArgumentResolver
 import fi.espoo.evaka.shared.utils.convertFrom
+import java.time.ZonedDateTime
+import java.util.UUID
+import javax.servlet.http.HttpServletRequest
 import org.jdbi.v3.core.Jdbi
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter
@@ -27,17 +30,16 @@ import org.springframework.web.context.request.WebRequest
 import org.springframework.web.context.request.WebRequest.SCOPE_REQUEST
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
-import java.time.ZonedDateTime
-import java.util.UUID
-import javax.servlet.http.HttpServletRequest
 
 /**
  * Adds support for using the following types as REST function parameters:
  *
  * - `Database`: a request-scoped database instance
- * - `Database.Connection`: a request-scoped database connection, closed automatically at request completion (regardless of success or failure)
+ * - `Database.Connection`: a request-scoped database connection, closed automatically at request
+ * completion (regardless of success or failure)
  * - `AuthenticatedUser`: user performing the request
- * - `ExternalId`: an external id, is automatically parsed from a string value (e.g. path variable / query parameter, depending on annotations)
+ * - `ExternalId`: an external id, is automatically parsed from a string value (e.g. path variable /
+ * query parameter, depending on annotations)
  * - `Id<*>`: a type-safe identifier, which is serialized/deserialized as UUID (= string)
  */
 @Configuration
@@ -45,8 +47,12 @@ class SpringMvcConfig(private val jdbi: Jdbi, private val env: EvakaEnv) : WebMv
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
         resolvers.add(asArgumentResolver<AuthenticatedUser.Citizen?>(::resolveAuthenticatedUser))
         resolvers.add(asArgumentResolver<AuthenticatedUser.Employee?>(::resolveAuthenticatedUser))
-        resolvers.add(asArgumentResolver<AuthenticatedUser.MobileDevice?>(::resolveAuthenticatedUser))
-        resolvers.add(asArgumentResolver<AuthenticatedUser.SystemInternalUser?>(::resolveAuthenticatedUser))
+        resolvers.add(
+            asArgumentResolver<AuthenticatedUser.MobileDevice?>(::resolveAuthenticatedUser)
+        )
+        resolvers.add(
+            asArgumentResolver<AuthenticatedUser.SystemInternalUser?>(::resolveAuthenticatedUser)
+        )
         resolvers.add(asArgumentResolver<AuthenticatedUser?>(::resolveAuthenticatedUser))
         resolvers.add(asArgumentResolver { _, webRequest -> webRequest.getDatabaseInstance() })
         resolvers.add(asArgumentResolver { _, webRequest -> webRequest.getEvakaClock() })
@@ -57,11 +63,16 @@ class SpringMvcConfig(private val jdbi: Jdbi, private val env: EvakaEnv) : WebMv
         registry.addConverter(convertFrom<String, Id<*>> { Id<DatabaseTable>(UUID.fromString(it)) })
     }
 
-    private fun WebRequest.getDatabaseInstance(): Database = getDatabase()
-        ?: Database(jdbi).also(::setDatabase)
+    private fun WebRequest.getDatabaseInstance(): Database =
+        getDatabase() ?: Database(jdbi).also(::setDatabase)
 
-    private inline fun <reified T : AuthenticatedUser> resolveAuthenticatedUser(parameter: MethodParameter, webRequest: NativeWebRequest): T? {
-        val user = webRequest.getNativeRequest(HttpServletRequest::class.java)?.getAuthenticatedUser() as? T
+    private inline fun <reified T : AuthenticatedUser> resolveAuthenticatedUser(
+        parameter: MethodParameter,
+        webRequest: NativeWebRequest
+    ): T? {
+        val user =
+            webRequest.getNativeRequest(HttpServletRequest::class.java)?.getAuthenticatedUser()
+                as? T
         if (user == null && !parameter.isOptional) {
             throw Unauthorized("Unauthorized request (${webRequest.getDescription(false)})")
         }
@@ -71,9 +82,10 @@ class SpringMvcConfig(private val jdbi: Jdbi, private val env: EvakaEnv) : WebMv
     private fun WebRequest.getEvakaClock(): EvakaClock =
         if (!env.mockClock) RealEvakaClock()
         else {
-            val mockTime = this.getHeader("EvakaMockedTime")?.let {
-                HelsinkiDateTime.from(ZonedDateTime.parse(it))
-            }
+            val mockTime =
+                this.getHeader("EvakaMockedTime")?.let {
+                    HelsinkiDateTime.from(ZonedDateTime.parse(it))
+                }
             MockEvakaClock(mockTime ?: HelsinkiDateTime.now())
         }
 }
@@ -81,4 +93,5 @@ class SpringMvcConfig(private val jdbi: Jdbi, private val env: EvakaEnv) : WebMv
 private const val ATTR_DB = "evaka.database"
 
 private fun WebRequest.getDatabase() = getAttribute(ATTR_DB, SCOPE_REQUEST) as Database?
+
 private fun WebRequest.setDatabase(db: Database) = setAttribute(ATTR_DB, db, SCOPE_REQUEST)

@@ -15,14 +15,17 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
-class MissingServiceNeedReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
+class MissingServiceNeedReportController(
+    private val acl: AccessControlList,
+    private val accessControl: AccessControl
+) {
     @GetMapping("/reports/missing-service-need")
     fun getMissingServiceNeedReport(
         db: Database,
@@ -32,7 +35,11 @@ class MissingServiceNeedReportController(private val acl: AccessControlList, pri
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?
     ): List<MissingServiceNeedReportRow> {
         Audit.MissingServiceNeedReportRead.log()
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_MISSING_SERVICE_NEED_REPORT)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Global.READ_MISSING_SERVICE_NEED_REPORT
+        )
         if (to != null && to.isBefore(from)) throw BadRequest("Invalid time range")
 
         return db.connect { dbc ->
@@ -95,7 +102,8 @@ private fun Database.Read.getMissingServiceNeedRows(
         ${if (authorizedUnits != AclAuthorization.All) "WHERE daycare.id = ANY(:units)" else ""}
         GROUP BY 1, daycare.name, unit_id, child_id, first_name, last_name, unit_id
         ORDER BY 1, daycare.name, last_name, first_name
-        """.trimIndent()
+        """.trimIndent(
+        )
     return createQuery(sql)
         .bind("units", authorizedUnits.ids)
         .bind("from", from)

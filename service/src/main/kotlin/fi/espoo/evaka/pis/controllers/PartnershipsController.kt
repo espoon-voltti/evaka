@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -29,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 @RequestMapping("/partnerships")
@@ -46,29 +46,33 @@ class PartnershipsController(
         @RequestBody body: PartnershipRequest
     ) {
         Audit.PartnerShipsCreate.log(targetId = body.person1Id)
-        accessControl.requirePermissionFor(user, clock, Action.Person.CREATE_PARTNERSHIP, body.person1Id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Person.CREATE_PARTNERSHIP,
+            body.person1Id
+        )
 
         db.connect { dbc ->
-            dbc
-                .transaction { tx ->
-                    partnershipService.createPartnership(
-                        tx,
-                        body.person1Id,
-                        body.person2Id,
-                        body.startDate,
-                        body.endDate
-                    )
-                    asyncJobRunner.plan(
-                        tx,
-                        listOf(
-                            AsyncJob.GenerateFinanceDecisions.forAdult(
-                                body.person1Id,
-                                DateRange(body.startDate, body.endDate)
-                            )
-                        ),
-                        runAt = clock.now()
-                    )
-                }
+            dbc.transaction { tx ->
+                partnershipService.createPartnership(
+                    tx,
+                    body.person1Id,
+                    body.person2Id,
+                    body.startDate,
+                    body.endDate
+                )
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(
+                        AsyncJob.GenerateFinanceDecisions.forAdult(
+                            body.person1Id,
+                            DateRange(body.startDate, body.endDate)
+                        )
+                    ),
+                    runAt = clock.now()
+                )
+            }
         }
     }
 
@@ -82,7 +86,9 @@ class PartnershipsController(
         Audit.PartnerShipsRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_PARTNERSHIPS, personId)
 
-        return db.connect { dbc -> dbc.read { it.getPartnershipsForPerson(personId, includeConflicts = true) } }
+        return db.connect { dbc ->
+            dbc.read { it.getPartnershipsForPerson(personId, includeConflicts = true) }
+        }
     }
 
     @GetMapping("/{partnershipId}")
@@ -111,21 +117,25 @@ class PartnershipsController(
         accessControl.requirePermissionFor(user, clock, Action.Partnership.UPDATE, partnershipId)
 
         return db.connect { dbc ->
-            dbc
-                .transaction { tx ->
-                    val partnership =
-                        partnershipService.updatePartnershipDuration(tx, partnershipId, body.startDate, body.endDate)
-                    asyncJobRunner.plan(
+            dbc.transaction { tx ->
+                val partnership =
+                    partnershipService.updatePartnershipDuration(
                         tx,
-                        listOf(
-                            AsyncJob.GenerateFinanceDecisions.forAdult(
-                                partnership.partners.first().id,
-                                DateRange(partnership.startDate, partnership.endDate)
-                            )
-                        ),
-                        runAt = clock.now()
+                        partnershipId,
+                        body.startDate,
+                        body.endDate
                     )
-                }
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(
+                        AsyncJob.GenerateFinanceDecisions.forAdult(
+                            partnership.partners.first().id,
+                            DateRange(partnership.startDate, partnership.endDate)
+                        )
+                    ),
+                    runAt = clock.now()
+                )
+            }
         }
     }
 
@@ -192,8 +202,5 @@ class PartnershipsController(
         val endDate: LocalDate?
     )
 
-    data class PartnershipUpdateRequest(
-        val startDate: LocalDate,
-        val endDate: LocalDate?
-    )
+    data class PartnershipUpdateRequest(val startDate: LocalDate, val endDate: LocalDate?)
 }

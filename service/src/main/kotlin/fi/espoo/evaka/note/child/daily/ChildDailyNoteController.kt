@@ -25,9 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 private val logger = KotlinLogging.logger {}
 
 @RestController
-class ChildDailyNoteController(
-    private val ac: AccessControl
-) {
+class ChildDailyNoteController(private val ac: AccessControl) {
     @PostMapping("/children/{childId}/child-daily-notes")
     fun createChildDailyNote(
         db: Database,
@@ -60,7 +58,9 @@ class ChildDailyNoteController(
         Audit.ChildDailyNoteUpdate.log(noteId, noteId)
         ac.requirePermissionFor(user, clock, Action.ChildDailyNote.UPDATE, noteId)
 
-        return db.connect { dbc -> dbc.transaction { it.updateChildDailyNote(clock, noteId, body) } }
+        return db.connect { dbc ->
+            dbc.transaction { it.updateChildDailyNote(clock, noteId, body) }
+        }
     }
 
     @DeleteMapping("/child-daily-notes/{noteId}")

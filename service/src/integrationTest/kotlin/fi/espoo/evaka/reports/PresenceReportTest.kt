@@ -21,10 +21,10 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class PresenceReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
@@ -98,13 +98,14 @@ class PresenceReportTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private fun createPlacement(type: PlacementType) {
         db.transaction {
-            val placementId = it.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = reportStart,
-                endDate = reportEnd,
-                type = type
-            )
+            val placementId =
+                it.insertTestPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = reportStart,
+                    endDate = reportEnd,
+                    type = type
+                )
             it.insertTestDaycareGroupPlacement(
                 daycarePlacementId = placementId,
                 groupId = groupId,

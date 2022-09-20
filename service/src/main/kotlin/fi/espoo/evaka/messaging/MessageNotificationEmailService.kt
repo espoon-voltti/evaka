@@ -35,17 +35,18 @@ class MessageNotificationEmailService(
     val senderNameFi: String = emailEnv.senderNameFi
     val senderNameSv: String = emailEnv.senderNameSv
 
-    fun getFromAddress(language: Language) = when (language) {
-        Language.sv -> "$senderNameSv <$senderAddress>"
-        else -> "$senderNameFi <$senderAddress>"
-    }
+    fun getFromAddress(language: Language) =
+        when (language) {
+            Language.sv -> "$senderNameSv <$senderAddress>"
+            else -> "$senderNameFi <$senderAddress>"
+        }
 
     fun getMessageNotifications(
         tx: Database.Transaction,
         messageId: MessageId
     ): List<AsyncJob.SendMessageNotificationEmail> {
         return tx.createQuery(
-            """
+                """
             SELECT DISTINCT
                 m.thread_id,
                 mr.id as message_recipient_id,
@@ -62,8 +63,9 @@ class MessageNotificationEmailService(
               AND mr.read_at IS NULL
               AND mr.notification_sent_at IS NULL
               AND p.email IS NOT NULL
-            """.trimIndent()
-        )
+            """.trimIndent(
+                )
+            )
             .bind("messageId", messageId)
             .map { row ->
                 AsyncJob.SendMessageNotificationEmail(
@@ -94,7 +96,11 @@ class MessageNotificationEmailService(
         }
     }
 
-    fun sendMessageNotification(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.SendMessageNotificationEmail) {
+    fun sendMessageNotification(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.SendMessageNotificationEmail
+    ) {
         val (threadId, messageRecipientId, personEmail, language, urgent) = msg
 
         db.transaction { tx ->
@@ -111,7 +117,8 @@ class MessageNotificationEmailService(
     }
 
     private fun getSubject(urgent: Boolean): String {
-        val postfix = if (System.getenv("VOLTTI_ENV") == "prod") "" else " [${System.getenv("VOLTTI_ENV")}]"
+        val postfix =
+            if (System.getenv("VOLTTI_ENV") == "prod") "" else " [${System.getenv("VOLTTI_ENV")}]"
 
         return if (urgent) {
             "Uusi kiireellinen viesti eVakassa / Nytt brådskande meddelande i eVaka / New urgent message in eVaka$postfix"
@@ -121,10 +128,11 @@ class MessageNotificationEmailService(
     }
 
     private fun getCitizenMessageUrl(lang: Language, threadId: MessageThreadId?): String {
-        val base = when (lang) {
-            Language.sv -> baseUrlSv
-            else -> baseUrl
-        }
+        val base =
+            when (lang) {
+                Language.sv -> baseUrlSv
+                else -> baseUrl
+            }
         return "$base/messages${if (threadId == null) "" else "/$threadId"}"
     }
 
@@ -143,7 +151,8 @@ class MessageNotificationEmailService(
                 
                 <p>You have received a new ${if (urgent) "urgent " else ""}eVaka bulletin/message. Read the message ${if (urgent) "as soon as possible " else ""}here: <a href="$messagesUrl">$messagesUrl</a></p>
                 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>       
-        """.trimIndent()
+        """.trimIndent(
+        )
     }
 
     private fun getText(language: Language, threadId: MessageThreadId?, urgent: Boolean): String {
@@ -164,6 +173,7 @@ class MessageNotificationEmailService(
                 You have received a new ${if (urgent) "urgent " else ""}eVaka bulletin/message. Read the message ${if (urgent) "as soon as possible " else ""}here: $messageUrl
                 
                 This is an automatic message from the eVaka system. Do not reply to this message.  
-        """.trimIndent()
+        """.trimIndent(
+        )
     }
 }

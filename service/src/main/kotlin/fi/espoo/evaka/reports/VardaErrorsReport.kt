@@ -35,8 +35,9 @@ class VardaErrorReport(private val accessControl: AccessControl) {
     }
 }
 
-private fun Database.Read.getVardaErrors(): List<VardaErrorReportRow> = createQuery(
-    """
+private fun Database.Read.getVardaErrors(): List<VardaErrorReportRow> =
+    createQuery(
+            """
 SELECT
     vsn.evaka_service_need_id AS service_need_id,
     sn.start_date as service_need_start_date,
@@ -53,10 +54,11 @@ JOIN service_need_option sno ON sn.option_id = sno.id
 LEFT JOIN varda_reset_child vrc ON vrc.evaka_child_id = vsn.evaka_child_id
 WHERE vsn.update_failed = true AND vrc.reset_timestamp IS NOT NULL
 ORDER BY vsn.updated DESC
-    """.trimIndent()
-)
-    .mapTo<VardaErrorReportRow>()
-    .toList()
+    """.trimIndent(
+            )
+        )
+        .mapTo<VardaErrorReportRow>()
+        .toList()
 
 data class VardaErrorReportRow(
     val serviceNeedId: ServiceNeedId,

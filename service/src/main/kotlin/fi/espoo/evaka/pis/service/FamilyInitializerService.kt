@@ -35,24 +35,50 @@ class FamilyInitializerService(
         asyncJobRunner.registerHandler(::handleInitializeFamilyFromApplication)
     }
 
-    fun handleInitializeFamilyFromApplication(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.InitializeFamilyFromApplication) {
+    fun handleInitializeFamilyFromApplication(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.InitializeFamilyFromApplication
+    ) {
         val user = msg.user
-        val application = db.read { it.fetchApplicationDetails(msg.applicationId) }
-            ?: error("Could not initialize family, application ${msg.applicationId} not found")
+        val application =
+            db.read { it.fetchApplicationDetails(msg.applicationId) }
+                ?: error("Could not initialize family, application ${msg.applicationId} not found")
 
-        val members = db.transaction { parseFridgeFamilyMembersFromApplication(it, user, application) }
+        val members =
+            db.transaction { parseFridgeFamilyMembersFromApplication(it, user, application) }
         db.transaction { initFamilyFromApplication(it, clock, members) }
     }
 
-    private fun initFamilyFromApplication(tx: Database.Transaction, evakaClock: EvakaClock, members: FridgeFamilyMembers) {
-        tx.subTransaction { createParentship(tx, evakaClock, child = members.fridgeChild, headOfChildId = members.headOfFamily.id) }
+    private fun initFamilyFromApplication(
+        tx: Database.Transaction,
+        evakaClock: EvakaClock,
+        members: FridgeFamilyMembers
+    ) {
+        tx.subTransaction {
+            createParentship(
+                tx,
+                evakaClock,
+                child = members.fridgeChild,
+                headOfChildId = members.headOfFamily.id
+            )
+        }
 
         if (members.fridgePartner != null) {
-            tx.subTransaction { createPartnership(tx, evakaClock, members.headOfFamily.id, members.fridgePartner.id) }
+            tx.subTransaction {
+                createPartnership(tx, evakaClock, members.headOfFamily.id, members.fridgePartner.id)
+            }
         }
 
         members.fridgeSiblings.forEach { sibling ->
-            tx.subTransaction { createParentship(tx, evakaClock, child = sibling, headOfChildId = members.headOfFamily.id) }
+            tx.subTransaction {
+                createParentship(
+                    tx,
+                    evakaClock,
+                    child = sibling,
+                    headOfChildId = members.headOfFamily.id
+                )
+            }
         }
     }
 
@@ -68,26 +94,35 @@ class FamilyInitializerService(
         user: AuthenticatedUser,
         application: ApplicationDetails
     ): FridgeFamilyMembers {
-        val headOfFamily = tx.getPersonById(application.guardianId)
-            ?: error("Application guardian not found with id ${application.guardianId}")
-        val child = tx.getPersonById(application.childId)
-            ?: error("Application child not found with id ${application.childId}")
+        val headOfFamily =
+            tx.getPersonById(application.guardianId)
+                ?: error("Application guardian not found with id ${application.guardianId}")
+        val child =
+            tx.getPersonById(application.childId)
+                ?: error("Application child not found with id ${application.childId}")
 
-        val otherGuardian = personService.getGuardians(tx, user, application.childId)
-            .firstOrNull { it.id != application.guardianId }
-            ?.takeIf { otherGuardian -> personService.personsLiveInTheSameAddress(headOfFamily, otherGuardian) }
+        val otherGuardian =
+            personService
+                .getGuardians(tx, user, application.childId)
+                .firstOrNull { it.id != application.guardianId }
+                ?.takeIf { otherGuardian ->
+                    personService.personsLiveInTheSameAddress(headOfFamily, otherGuardian)
+                }
 
-        val fridgePartnerSSN = application.form.otherPartner?.socialSecurityNumber
-            ?: (otherGuardian?.identity as? SSN)?.ssn
+        val fridgePartnerSSN =
+            application.form.otherPartner?.socialSecurityNumber
+                ?: (otherGuardian?.identity as? SSN)?.ssn
 
-        val fridgePartner = fridgePartnerSSN
-            ?.let { stringToSSN(it) }
-            ?.let { personService.getOrCreatePerson(tx, user, it) }
+        val fridgePartner =
+            fridgePartnerSSN
+                ?.let { stringToSSN(it) }
+                ?.let { personService.getOrCreatePerson(tx, user, it) }
 
-        val fridgeSiblings = application.form.otherChildren
-            .mapNotNull { it.socialSecurityNumber }
-            .mapNotNull { stringToSSN(it) }
-            .mapNotNull { personService.getOrCreatePerson(tx, user, it) }
+        val fridgeSiblings =
+            application.form.otherChildren
+                .mapNotNull { it.socialSecurityNumber }
+                .mapNotNull { stringToSSN(it) }
+                .mapNotNull { personService.getOrCreatePerson(tx, user, it) }
 
         return FridgeFamilyMembers(headOfFamily, fridgePartner, child, fridgeSiblings)
     }
@@ -100,17 +135,23 @@ class FamilyInitializerService(
         }
     }
 
-    private fun createParentship(tx: Database.Transaction, evakaClock: EvakaClock, child: PersonDTO, headOfChildId: PersonId) {
+    private fun createParentship(
+        tx: Database.Transaction,
+        evakaClock: EvakaClock,
+        child: PersonDTO,
+        headOfChildId: PersonId
+    ) {
         val startDate = evakaClock.today()
-        val alreadyExists = tx.getParentships(
-            headOfChildId = headOfChildId,
-            childId = child.id,
-            includeConflicts = true
-        )
-            .any {
-                (it.startDate.isBefore(startDate) || it.startDate.isEqual(startDate)) &&
-                    (it.endDate.isAfter(startDate))
-            }
+        val alreadyExists =
+            tx.getParentships(
+                    headOfChildId = headOfChildId,
+                    childId = child.id,
+                    includeConflicts = true
+                )
+                .any {
+                    (it.startDate.isBefore(startDate) || it.startDate.isEqual(startDate)) &&
+                        (it.endDate.isAfter(startDate))
+                }
         if (alreadyExists) {
             logger.debug("Similar parentship already exists between $headOfChildId and ${child.id}")
         } else {
@@ -131,9 +172,12 @@ class FamilyInitializerService(
                 }
             } catch (e: UnableToExecuteStatementException) {
                 when (e.psqlCause()?.sqlState) {
-                    PSQLState.UNIQUE_VIOLATION.state, PSQLState.EXCLUSION_VIOLATION.state -> {
+                    PSQLState.UNIQUE_VIOLATION.state,
+                    PSQLState.EXCLUSION_VIOLATION.state -> {
                         val constraint = e.psqlCause()?.serverErrorMessage?.constraint ?: "-"
-                        logger.warn("Creating conflict parentship between $headOfChildId and ${child.id} (conflicting constraint is $constraint)")
+                        logger.warn(
+                            "Creating conflict parentship between $headOfChildId and ${child.id} (conflicting constraint is $constraint)"
+                        )
                         tx.createParentship(
                             childId = child.id,
                             headOfChildId = headOfChildId,
@@ -148,15 +192,21 @@ class FamilyInitializerService(
         }
     }
 
-    private fun createPartnership(tx: Database.Transaction, evakaClock: EvakaClock, personId1: PersonId, personId2: PersonId) {
+    private fun createPartnership(
+        tx: Database.Transaction,
+        evakaClock: EvakaClock,
+        personId1: PersonId,
+        personId2: PersonId
+    ) {
         val startDate = evakaClock.today()
         val alreadyExists =
-            tx.getPartnershipsForPerson(personId = personId1, includeConflicts = true)
-                .any { partnership ->
-                    partnership.partners.any { partner -> partner.id == personId2 } &&
-                        (partnership.startDate.isBefore(startDate) || partnership.startDate.isEqual(startDate)) &&
-                        (partnership.endDate == null || partnership.endDate.isAfter(startDate))
-                }
+            tx.getPartnershipsForPerson(personId = personId1, includeConflicts = true).any {
+                partnership ->
+                partnership.partners.any { partner -> partner.id == personId2 } &&
+                    (partnership.startDate.isBefore(startDate) ||
+                        partnership.startDate.isEqual(startDate)) &&
+                    (partnership.endDate == null || partnership.endDate.isAfter(startDate))
+            }
         if (alreadyExists) {
             logger.debug("Similar partnership already exists between $personId1 and $personId2")
         } else {
@@ -172,9 +222,12 @@ class FamilyInitializerService(
                 }
             } catch (e: UnableToExecuteStatementException) {
                 when (e.psqlCause()?.sqlState) {
-                    PSQLState.UNIQUE_VIOLATION.state, PSQLState.EXCLUSION_VIOLATION.state -> {
+                    PSQLState.UNIQUE_VIOLATION.state,
+                    PSQLState.EXCLUSION_VIOLATION.state -> {
                         val constraint = e.psqlCause()?.serverErrorMessage?.constraint ?: "-"
-                        logger.warn("Creating conflict partnership between $personId1 and $personId2 (conflicting constraint is $constraint)")
+                        logger.warn(
+                            "Creating conflict partnership between $personId1 and $personId2 (conflicting constraint is $constraint)"
+                        )
                         tx.createPartnership(
                             personId1 = personId1,
                             personId2 = personId2,

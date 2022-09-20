@@ -15,12 +15,15 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
-class AssistanceNeedDecisionsReport(private val accessControl: AccessControl, private val acl: AccessControlList) {
+class AssistanceNeedDecisionsReport(
+    private val accessControl: AccessControl,
+    private val acl: AccessControlList
+) {
     @GetMapping("/reports/assistance-need-decisions")
     fun getAssistanceNeedDecisions(
         db: Database,
@@ -32,12 +35,13 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl, pr
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                val filter = accessControl.requireAuthorizationFilter(
-                    it,
-                    user,
-                    clock,
-                    Action.Unit.READ_ASSISTANCE_NEED_DECISIONS_REPORT
-                )
+                val filter =
+                    accessControl.requireAuthorizationFilter(
+                        it,
+                        user,
+                        clock,
+                        Action.Unit.READ_ASSISTANCE_NEED_DECISIONS_REPORT
+                    )
                 it.getDecisionRows(user.evakaUserId, AclAuthorization.from(filter))
             }
         }
@@ -50,13 +54,13 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl, pr
         clock: EvakaClock,
     ): Int {
         Audit.AssistanceNeedDecisionsReportUnreadCount.log()
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_ASSISTANCE_NEED_DECISIONS_REPORT)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Global.READ_ASSISTANCE_NEED_DECISIONS_REPORT
+        )
 
-        return db.connect { dbc ->
-            dbc.read {
-                it.getDecisionMakerUnreadCount(user.evakaUserId)
-            }
-        }
+        return db.connect { dbc -> dbc.read { it.getDecisionMakerUnreadCount(user.evakaUserId) } }
     }
 }
 
@@ -76,7 +80,8 @@ private fun Database.Read.getDecisionRows(
         JOIN care_area ON care_area.id = daycare.care_area_id
         WHERE sent_for_decision IS NOT NULL
           AND (:authorizedUnits::uuid[] IS NULL OR ad.selected_unit = ANY(:authorizedUnits))
-        """.trimIndent()
+        """.trimIndent(
+        )
     return createQuery(sql)
         .bind("employeeId", userId)
         .bind("authorizedUnits", authorizedUnits.ids)
@@ -104,9 +109,7 @@ private fun Database.Read.getDecisionMakerUnreadCount(userId: EvakaUserId): Int 
         WHERE sent_for_decision IS NOT NULL
           AND decision_maker_employee_id = :employeeId
           AND NOT decision_maker_has_opened
-        """.trimIndent()
-    return createQuery(sql)
-        .bind("employeeId", userId)
-        .mapTo<Int>()
-        .first()
+        """.trimIndent(
+        )
+    return createQuery(sql).bind("employeeId", userId).mapTo<Int>().first()
 }

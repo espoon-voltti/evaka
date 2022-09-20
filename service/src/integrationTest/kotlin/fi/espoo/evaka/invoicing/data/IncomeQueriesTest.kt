@@ -18,15 +18,15 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val mapper = defaultJsonMapper()
@@ -34,24 +34,27 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     private val personId = testAdult_1.id
     private val user = AuthenticatedUser.SystemInternalUser
-    private val testIncome = Income(
-        id = IncomeId(UUID.randomUUID()),
-        personId = personId,
-        effect = IncomeEffect.INCOME,
-        data = mapOf("MAIN_INCOME" to IncomeValue(500000, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)),
-        isEntrepreneur = true,
-        worksAtECHA = true,
-        validFrom = LocalDate.of(2019, 1, 1),
-        validTo = LocalDate.of(2019, 1, 31),
-        notes = ""
-    )
+    private val testIncome =
+        Income(
+            id = IncomeId(UUID.randomUUID()),
+            personId = personId,
+            effect = IncomeEffect.INCOME,
+            data =
+                mapOf(
+                    "MAIN_INCOME" to
+                        IncomeValue(500000, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)
+                ),
+            isEntrepreneur = true,
+            worksAtECHA = true,
+            validFrom = LocalDate.of(2019, 1, 1),
+            validTo = LocalDate.of(2019, 1, 31),
+            notes = ""
+        )
     private val clock = RealEvakaClock()
 
     @Test
@@ -59,9 +62,7 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.upsertIncome(clock, mapper, testIncome, user.evakaUserId)
 
-            val result = tx.createQuery("SELECT id FROM income")
-                .mapTo<UUID>()
-                .toList()
+            val result = tx.createQuery("SELECT id FROM income").mapTo<UUID>().toList()
 
             assertEquals(1, result.size)
         }
@@ -72,9 +73,7 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.upsertIncome(clock, mapper, testIncome, user.evakaUserId)
 
-            val result = tx.createQuery("SELECT updated_at FROM income")
-                .mapTo<Instant>()
-                .toList()
+            val result = tx.createQuery("SELECT updated_at FROM income").mapTo<Instant>().toList()
 
             assertNotNull(result.first())
         }
@@ -83,10 +82,11 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `insert income with invalid date range`() {
         db.transaction { tx ->
-            val income = testIncome.copy(
-                validFrom = LocalDate.of(2000, 1, 1),
-                validTo = LocalDate.of(1900, 1, 1)
-            )
+            val income =
+                testIncome.copy(
+                    validFrom = LocalDate.of(2000, 1, 1),
+                    validTo = LocalDate.of(1900, 1, 1)
+                )
 
             assertThrows<BadRequest> { tx.upsertIncome(clock, mapper, income, user.evakaUserId) }
         }
@@ -99,7 +99,9 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             val overlappingIncome = testIncome.copy(id = IncomeId(UUID.randomUUID()))
 
-            assertThrows<Conflict> { tx.upsertIncome(clock, mapper, overlappingIncome, user.evakaUserId) }
+            assertThrows<Conflict> {
+                tx.upsertIncome(clock, mapper, overlappingIncome, user.evakaUserId)
+            }
         }
     }
 
@@ -108,11 +110,18 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.upsertIncome(clock, mapper, testIncome, user.evakaUserId)
 
-            val overlappingIncome = with(testIncome) {
-                this.copy(id = IncomeId(UUID.randomUUID()), validFrom = validTo!!, validTo = validTo!!.plusYears(1))
-            }
+            val overlappingIncome =
+                with(testIncome) {
+                    this.copy(
+                        id = IncomeId(UUID.randomUUID()),
+                        validFrom = validTo!!,
+                        validTo = validTo!!.plusYears(1)
+                    )
+                }
 
-            assertThrows<Conflict> { tx.upsertIncome(clock, mapper, overlappingIncome, user.evakaUserId) }
+            assertThrows<Conflict> {
+                tx.upsertIncome(clock, mapper, overlappingIncome, user.evakaUserId)
+            }
         }
     }
 
@@ -187,15 +196,14 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.upsertIncome(clock, mapper, testIncome, user.evakaUserId)
 
-            val updated = testIncome.copy(
-                data = mapOf(
-                    "MAIN_INCOME" to IncomeValue(
-                        1000,
-                        IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
-                        1
-                    )
+            val updated =
+                testIncome.copy(
+                    data =
+                        mapOf(
+                            "MAIN_INCOME" to
+                                IncomeValue(1000, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)
+                        )
                 )
-            )
             tx.upsertIncome(clock, mapper, updated, user.evakaUserId)
 
             val result = tx.getIncomesForPerson(mapper, incomeTypesProvider, personId)
@@ -221,13 +229,14 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.upsertIncome(clock, mapper, testIncome, user.evakaUserId)
 
-            val anotherIncome = with(testIncome) {
-                this.copy(
-                    id = IncomeId(UUID.randomUUID()),
-                    validFrom = validTo!!.plusDays(1),
-                    validTo = validTo!!.plusDays(1).plusMonths(1)
-                )
-            }
+            val anotherIncome =
+                with(testIncome) {
+                    this.copy(
+                        id = IncomeId(UUID.randomUUID()),
+                        validFrom = validTo!!.plusDays(1),
+                        validTo = validTo!!.plusDays(1).plusMonths(1)
+                    )
+                }
             tx.upsertIncome(clock, mapper, anotherIncome, user.evakaUserId)
 
             val updated = anotherIncome.copy(validFrom = testIncome.validFrom)
@@ -239,26 +248,35 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `update with multiple incomes only updates one of them`() {
         db.transaction { tx ->
-            val secondIncome = with(testIncome) {
-                this.copy(id = IncomeId(UUID.randomUUID()), validFrom = validFrom.plusYears(1), validTo = validTo!!.plusYears(1))
-            }
-            val thirdIncome = with(testIncome) {
-                this.copy(id = IncomeId(UUID.randomUUID()), validFrom = validFrom.plusYears(2), validTo = validTo!!.plusYears(2))
-            }
+            val secondIncome =
+                with(testIncome) {
+                    this.copy(
+                        id = IncomeId(UUID.randomUUID()),
+                        validFrom = validFrom.plusYears(1),
+                        validTo = validTo!!.plusYears(1)
+                    )
+                }
+            val thirdIncome =
+                with(testIncome) {
+                    this.copy(
+                        id = IncomeId(UUID.randomUUID()),
+                        validFrom = validFrom.plusYears(2),
+                        validTo = validTo!!.plusYears(2)
+                    )
+                }
 
             tx.upsertIncome(clock, mapper, testIncome, user.evakaUserId)
             tx.upsertIncome(clock, mapper, secondIncome, user.evakaUserId)
             tx.upsertIncome(clock, mapper, thirdIncome, user.evakaUserId)
 
-            val updated = testIncome.copy(
-                data = mapOf(
-                    "MAIN_INCOME" to IncomeValue(
-                        10000,
-                        IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
-                        1
-                    )
+            val updated =
+                testIncome.copy(
+                    data =
+                        mapOf(
+                            "MAIN_INCOME" to
+                                IncomeValue(10000, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)
+                        )
                 )
-            )
             tx.upsertIncome(clock, mapper, updated, user.evakaUserId)
 
             val result = tx.getIncomesForPerson(mapper, incomeTypesProvider, personId)
@@ -284,12 +302,13 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 user.evakaUserId
             )
 
-            val result = tx.getIncomesFrom(
-                mapper,
-                incomeTypesProvider,
-                listOf(testIncome.personId),
-                testIncome.validFrom
-            )
+            val result =
+                tx.getIncomesFrom(
+                    mapper,
+                    incomeTypesProvider,
+                    listOf(testIncome.personId),
+                    testIncome.validFrom
+                )
 
             assertEquals(2, result.size)
         }
@@ -310,12 +329,13 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 user.evakaUserId
             )
 
-            val result = tx.getIncomesFrom(
-                mapper,
-                incomeTypesProvider,
-                listOf(testIncome.personId),
-                testIncome.validTo!!.plusDays(1)
-            )
+            val result =
+                tx.getIncomesFrom(
+                    mapper,
+                    incomeTypesProvider,
+                    listOf(testIncome.personId),
+                    testIncome.validTo!!.plusDays(1)
+                )
 
             assertEquals(1, result.size)
         }
@@ -336,12 +356,13 @@ class IncomeQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 user.evakaUserId
             )
 
-            val result = tx.getIncomesFrom(
-                mapper,
-                incomeTypesProvider,
-                listOf(testIncome.personId),
-                testIncome.validTo!!.plusYears(1).plusDays(1)
-            )
+            val result =
+                tx.getIncomesFrom(
+                    mapper,
+                    incomeTypesProvider,
+                    listOf(testIncome.personId),
+                    testIncome.validTo!!.plusYears(1).plusDays(1)
+                )
 
             assertEquals(0, result.size)
         }

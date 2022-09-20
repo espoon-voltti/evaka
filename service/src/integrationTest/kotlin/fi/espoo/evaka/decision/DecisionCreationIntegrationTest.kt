@@ -43,24 +43,23 @@ import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toApplicationType
 import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker =
+        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
-    @Autowired
-    private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
-    @Autowired
-    private lateinit var applicationStateService: ApplicationStateService
+    @Autowired private lateinit var applicationStateService: ApplicationStateService
 
     private val decisionId = DecisionId(UUID.randomUUID())
 
@@ -69,8 +68,8 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.createUpdate(
-                // language=SQL
-                """
+                    // language=SQL
+                    """
 UPDATE daycare SET
   name = 'Test Daycare',
   decision_daycare_name = 'Test Daycare / daycare',
@@ -83,32 +82,29 @@ UPDATE daycare SET
   decision_handler_address = 'Test decision handler address'
 WHERE id = :unitId
 """
-            ).bind("unitId", testDaycare.id).execute()
+                )
+                .bind("unitId", testDaycare.id)
+                .execute()
         }
     }
 
     @Test
     fun testDaycareFullTime() {
-        val period = FiniteDateRange(
-            LocalDate.of(2020, 3, 17),
-            LocalDate.of(2023, 7, 31)
-        )
-        val applicationId = insertInitialData(
-            type = PlacementType.DAYCARE,
-            period = period
-        )
+        val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
+        val applicationId = insertInitialData(type = PlacementType.DAYCARE, period = period)
         checkDecisionDrafts(
             applicationId,
-            decisions = listOf(
-                DecisionDraft(
-                    id = decisionId,
-                    unitId = testDaycare.id,
-                    type = DecisionType.DAYCARE,
-                    startDate = period.start,
-                    endDate = period.end,
-                    planned = true
-                )
-            ),
+            decisions =
+                listOf(
+                    DecisionDraft(
+                        id = decisionId,
+                        unitId = testDaycare.id,
+                        type = DecisionType.DAYCARE,
+                        startDate = period.start,
+                        endDate = period.end,
+                        planned = true
+                    )
+                ),
             otherGuardian = testAdult_6
         )
 
@@ -124,26 +120,22 @@ WHERE id = :unitId
 
     @Test
     fun testDaycarePartTime() {
-        val period = FiniteDateRange(
-            LocalDate.of(2020, 3, 18),
-            LocalDate.of(2023, 7, 29)
-        )
-        val applicationId = insertInitialData(
-            type = PlacementType.DAYCARE_PART_TIME,
-            period = period
-        )
+        val period = FiniteDateRange(LocalDate.of(2020, 3, 18), LocalDate.of(2023, 7, 29))
+        val applicationId =
+            insertInitialData(type = PlacementType.DAYCARE_PART_TIME, period = period)
         checkDecisionDrafts(
             applicationId,
-            decisions = listOf(
-                DecisionDraft(
-                    id = decisionId,
-                    unitId = testDaycare.id,
-                    type = DecisionType.DAYCARE_PART_TIME,
-                    startDate = period.start,
-                    endDate = period.end,
-                    planned = true
-                )
-            ),
+            decisions =
+                listOf(
+                    DecisionDraft(
+                        id = decisionId,
+                        unitId = testDaycare.id,
+                        type = DecisionType.DAYCARE_PART_TIME,
+                        startDate = period.start,
+                        endDate = period.end,
+                        planned = true
+                    )
+                ),
             otherGuardian = testAdult_6
         )
 
@@ -159,34 +151,29 @@ WHERE id = :unitId
 
     @Test
     fun testPreschoolOnly() {
-        val period = FiniteDateRange(
-            LocalDate.of(2020, 8, 15),
-            LocalDate.of(2021, 5, 31)
-        )
-        val applicationId = insertInitialData(
-            type = PlacementType.PRESCHOOL,
-            period = period
-        )
+        val period = FiniteDateRange(LocalDate.of(2020, 8, 15), LocalDate.of(2021, 5, 31))
+        val applicationId = insertInitialData(type = PlacementType.PRESCHOOL, period = period)
         checkDecisionDrafts(
             applicationId,
-            decisions = listOf(
-                DecisionDraft(
-                    id = decisionId,
-                    unitId = testDaycare.id,
-                    type = DecisionType.PRESCHOOL,
-                    startDate = period.start,
-                    endDate = period.end,
-                    planned = true
+            decisions =
+                listOf(
+                    DecisionDraft(
+                        id = decisionId,
+                        unitId = testDaycare.id,
+                        type = DecisionType.PRESCHOOL,
+                        startDate = period.start,
+                        endDate = period.end,
+                        planned = true
+                    ),
+                    DecisionDraft(
+                        id = decisionId,
+                        unitId = testDaycare.id,
+                        type = DecisionType.PRESCHOOL_DAYCARE,
+                        startDate = period.start,
+                        endDate = period.end,
+                        planned = false
+                    )
                 ),
-                DecisionDraft(
-                    id = decisionId,
-                    unitId = testDaycare.id,
-                    type = DecisionType.PRESCHOOL_DAYCARE,
-                    startDate = period.start,
-                    endDate = period.end,
-                    planned = false
-                )
-            ),
             otherGuardian = testAdult_6
         )
 
@@ -202,40 +189,37 @@ WHERE id = :unitId
 
     @Test
     fun testPreschoolAll() {
-        val period = FiniteDateRange(
-            LocalDate.of(2020, 8, 15),
-            LocalDate.of(2021, 5, 31)
-        )
-        val preschoolDaycarePeriod = FiniteDateRange(
-            LocalDate.of(2020, 8, 1),
-            LocalDate.of(2021, 7, 31)
-        )
-        val applicationId = insertInitialData(
-            type = PlacementType.PRESCHOOL_DAYCARE,
-            period = period,
-            preschoolDaycarePeriod = preschoolDaycarePeriod,
-            preparatoryEducation = false
-        )
+        val period = FiniteDateRange(LocalDate.of(2020, 8, 15), LocalDate.of(2021, 5, 31))
+        val preschoolDaycarePeriod =
+            FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 7, 31))
+        val applicationId =
+            insertInitialData(
+                type = PlacementType.PRESCHOOL_DAYCARE,
+                period = period,
+                preschoolDaycarePeriod = preschoolDaycarePeriod,
+                preparatoryEducation = false
+            )
         checkDecisionDrafts(
             applicationId,
-            decisions = listOf(
-                DecisionDraft(
-                    id = decisionId,
-                    unitId = testDaycare.id,
-                    type = DecisionType.PRESCHOOL,
-                    startDate = period.start,
-                    endDate = period.end,
-                    planned = true
+            decisions =
+                listOf(
+                    DecisionDraft(
+                        id = decisionId,
+                        unitId = testDaycare.id,
+                        type = DecisionType.PRESCHOOL,
+                        startDate = period.start,
+                        endDate = period.end,
+                        planned = true
+                    ),
+                    DecisionDraft(
+                        id = decisionId,
+                        unitId = testDaycare.id,
+                        type = DecisionType.PRESCHOOL_DAYCARE,
+                        startDate = preschoolDaycarePeriod.start,
+                        endDate = preschoolDaycarePeriod.end,
+                        planned = true
+                    )
                 ),
-                DecisionDraft(
-                    id = decisionId,
-                    unitId = testDaycare.id,
-                    type = DecisionType.PRESCHOOL_DAYCARE,
-                    startDate = preschoolDaycarePeriod.start,
-                    endDate = preschoolDaycarePeriod.end,
-                    planned = true
-                )
-            ),
             otherGuardian = testAdult_6
         )
 
@@ -255,40 +239,37 @@ WHERE id = :unitId
 
     @Test
     fun testPreparatoryAll() {
-        val period = FiniteDateRange(
-            LocalDate.of(2020, 8, 15),
-            LocalDate.of(2021, 5, 31)
-        )
-        val preschoolDaycarePeriod = FiniteDateRange(
-            LocalDate.of(2020, 8, 1),
-            LocalDate.of(2021, 7, 31)
-        )
-        val applicationId = insertInitialData(
-            type = PlacementType.PRESCHOOL_DAYCARE,
-            period = period,
-            preschoolDaycarePeriod = preschoolDaycarePeriod,
-            preparatoryEducation = true
-        )
+        val period = FiniteDateRange(LocalDate.of(2020, 8, 15), LocalDate.of(2021, 5, 31))
+        val preschoolDaycarePeriod =
+            FiniteDateRange(LocalDate.of(2020, 8, 1), LocalDate.of(2021, 7, 31))
+        val applicationId =
+            insertInitialData(
+                type = PlacementType.PRESCHOOL_DAYCARE,
+                period = period,
+                preschoolDaycarePeriod = preschoolDaycarePeriod,
+                preparatoryEducation = true
+            )
         checkDecisionDrafts(
             applicationId,
-            decisions = listOf(
-                DecisionDraft(
-                    id = decisionId,
-                    unitId = testDaycare.id,
-                    type = DecisionType.PREPARATORY_EDUCATION,
-                    startDate = period.start,
-                    endDate = period.end,
-                    planned = true
+            decisions =
+                listOf(
+                    DecisionDraft(
+                        id = decisionId,
+                        unitId = testDaycare.id,
+                        type = DecisionType.PREPARATORY_EDUCATION,
+                        startDate = period.start,
+                        endDate = period.end,
+                        planned = true
+                    ),
+                    DecisionDraft(
+                        id = decisionId,
+                        unitId = testDaycare.id,
+                        type = DecisionType.PRESCHOOL_DAYCARE,
+                        startDate = preschoolDaycarePeriod.start,
+                        endDate = preschoolDaycarePeriod.end,
+                        planned = true
+                    )
                 ),
-                DecisionDraft(
-                    id = decisionId,
-                    unitId = testDaycare.id,
-                    type = DecisionType.PRESCHOOL_DAYCARE,
-                    startDate = preschoolDaycarePeriod.start,
-                    endDate = preschoolDaycarePeriod.end,
-                    planned = true
-                )
-            ),
             otherGuardian = testAdult_6
         )
 
@@ -314,51 +295,65 @@ WHERE id = :unitId
         otherGuardian: DevPerson? = null,
         decisions: List<DecisionDraft>
     ) {
-        val (_, _, body) = http.get("/v2/applications/$applicationId/decision-drafts")
-            .asUser(serviceWorker)
-            .responseObject<DecisionDraftJSON>(jsonMapper)
+        val (_, _, body) =
+            http
+                .get("/v2/applications/$applicationId/decision-drafts")
+                .asUser(serviceWorker)
+                .responseObject<DecisionDraftJSON>(jsonMapper)
         assertEquals(
             DecisionDraftJSON(
                 decisions = decisions.sortedBy { it.type },
                 placementUnitName = "Test Daycare",
-                unit = DecisionUnit(
-                    id = unit.id,
-                    name = unit.name,
-                    daycareDecisionName = "Test Daycare / daycare",
-                    preschoolDecisionName = "Test Daycare / preschool",
-                    manager = "Unit Manager",
-                    streetAddress = "Test address",
-                    postalCode = "Test postal code",
-                    postOffice = "Test post office",
-                    phone = "Test phone",
-                    decisionHandler = "Test decision handler",
-                    decisionHandlerAddress = "Test decision handler address",
-                    providerType = ProviderType.MUNICIPAL
-                ),
-                guardian = GuardianInfo(null, adult.ssn, adult.firstName, adult.lastName, isVtjGuardian = true),
-                otherGuardian = if (otherGuardian != null) GuardianInfo(
-                    otherGuardian.id,
-                    otherGuardian.ssn,
-                    otherGuardian.firstName,
-                    otherGuardian.lastName,
-                    isVtjGuardian = true
-                ) else null,
+                unit =
+                    DecisionUnit(
+                        id = unit.id,
+                        name = unit.name,
+                        daycareDecisionName = "Test Daycare / daycare",
+                        preschoolDecisionName = "Test Daycare / preschool",
+                        manager = "Unit Manager",
+                        streetAddress = "Test address",
+                        postalCode = "Test postal code",
+                        postOffice = "Test post office",
+                        phone = "Test phone",
+                        decisionHandler = "Test decision handler",
+                        decisionHandlerAddress = "Test decision handler address",
+                        providerType = ProviderType.MUNICIPAL
+                    ),
+                guardian =
+                    GuardianInfo(
+                        null,
+                        adult.ssn,
+                        adult.firstName,
+                        adult.lastName,
+                        isVtjGuardian = true
+                    ),
+                otherGuardian =
+                    if (otherGuardian != null)
+                        GuardianInfo(
+                            otherGuardian.id,
+                            otherGuardian.ssn,
+                            otherGuardian.firstName,
+                            otherGuardian.lastName,
+                            isVtjGuardian = true
+                        )
+                    else null,
                 child = ChildInfo(child.ssn, child.firstName, child.lastName)
             ),
-            body.get().copy(
-                decisions = body.get().decisions
-                    .map { it.copy(id = decisionId) }
-                    .sortedBy { it.type }
-            )
+            body
+                .get()
+                .copy(
+                    decisions =
+                        body.get().decisions.map { it.copy(id = decisionId) }.sortedBy { it.type }
+                )
         )
     }
 
-    private fun createDecisions(
-        applicationId: ApplicationId
-    ): List<DecisionTableRow> {
-        val (_, res, _) = http.post("/v2/applications/$applicationId/actions/send-decisions-without-proposal")
-            .asUser(serviceWorker)
-            .response()
+    private fun createDecisions(applicationId: ApplicationId): List<DecisionTableRow> {
+        val (_, res, _) =
+            http
+                .post("/v2/applications/$applicationId/actions/send-decisions-without-proposal")
+                .asUser(serviceWorker)
+                .response()
         assertTrue(res.isSuccessful)
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
@@ -374,31 +369,31 @@ WHERE id = :unitId
             assertNotNull(row.documentKey)
         }
         db.read { r ->
-            assertEquals(ApplicationStatus.WAITING_CONFIRMATION, r.getApplicationStatus(applicationId))
+            assertEquals(
+                ApplicationStatus.WAITING_CONFIRMATION,
+                r.getApplicationStatus(applicationId)
+            )
         }
         return rows
     }
 
     @Test
     fun testEndpointSecurity() {
-        val period = FiniteDateRange(
-            LocalDate.of(2020, 3, 17),
-            LocalDate.of(2023, 7, 31)
-        )
-        val applicationId = insertInitialData(
-            type = PlacementType.DAYCARE,
-            period = period
-        )
-        val invalidRoleLists = listOf(
-            setOf(UserRole.UNIT_SUPERVISOR),
-            setOf(UserRole.FINANCE_ADMIN),
-            setOf(UserRole.END_USER),
-            setOf()
-        )
+        val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
+        val applicationId = insertInitialData(type = PlacementType.DAYCARE, period = period)
+        val invalidRoleLists =
+            listOf(
+                setOf(UserRole.UNIT_SUPERVISOR),
+                setOf(UserRole.FINANCE_ADMIN),
+                setOf(UserRole.END_USER),
+                setOf()
+            )
         invalidRoleLists.forEach { roles ->
-            val (_, res, _) = http.get("/v2/applications/$applicationId/decision-drafts")
-                .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, roles))
-                .response()
+            val (_, res, _) =
+                http
+                    .get("/v2/applications/$applicationId/decision-drafts")
+                    .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, roles))
+                    .response()
             assertEquals(403, res.statusCode)
         }
     }
@@ -411,41 +406,43 @@ WHERE id = :unitId
         period: FiniteDateRange,
         preschoolDaycarePeriod: FiniteDateRange? = null,
         preparatoryEducation: Boolean = false
-    ): ApplicationId = db.transaction { tx ->
-        val applicationId = tx.insertTestApplication(
-            status = ApplicationStatus.WAITING_PLACEMENT,
-            guardianId = adult.id,
-            childId = child.id,
-            type = type.toApplicationType(),
-        )
-        val preschoolDaycare = type == PlacementType.PRESCHOOL_DAYCARE
-        tx.insertTestApplicationForm(
-            applicationId,
-            DaycareFormV0(
-                type = type.toApplicationType(),
-                partTime = type == PlacementType.DAYCARE_PART_TIME,
-                connectedDaycare = preschoolDaycare,
-                serviceStart = "08:00".takeIf { preschoolDaycare },
-                serviceEnd = "16:00".takeIf { preschoolDaycare },
-                careDetails = CareDetails(preparatory = preparatoryEducation),
-                child = child.toDaycareFormChild(),
-                guardian = adult.toDaycareFormAdult(),
-                apply = Apply(preferredUnits = listOf(unit.id)),
-                preferredStartDate = period.start
+    ): ApplicationId =
+        db.transaction { tx ->
+            val applicationId =
+                tx.insertTestApplication(
+                    status = ApplicationStatus.WAITING_PLACEMENT,
+                    guardianId = adult.id,
+                    childId = child.id,
+                    type = type.toApplicationType(),
+                )
+            val preschoolDaycare = type == PlacementType.PRESCHOOL_DAYCARE
+            tx.insertTestApplicationForm(
+                applicationId,
+                DaycareFormV0(
+                    type = type.toApplicationType(),
+                    partTime = type == PlacementType.DAYCARE_PART_TIME,
+                    connectedDaycare = preschoolDaycare,
+                    serviceStart = "08:00".takeIf { preschoolDaycare },
+                    serviceEnd = "16:00".takeIf { preschoolDaycare },
+                    careDetails = CareDetails(preparatory = preparatoryEducation),
+                    child = child.toDaycareFormChild(),
+                    guardian = adult.toDaycareFormAdult(),
+                    apply = Apply(preferredUnits = listOf(unit.id)),
+                    preferredStartDate = period.start
+                )
             )
-        )
 
-        applicationStateService.createPlacementPlan(
-            tx,
-            serviceWorker,
-            applicationId,
-            DaycarePlacementPlan(
-                unitId = unit.id,
-                period = period,
-                preschoolDaycarePeriod = preschoolDaycarePeriod
+            applicationStateService.createPlacementPlan(
+                tx,
+                serviceWorker,
+                applicationId,
+                DaycarePlacementPlan(
+                    unitId = unit.id,
+                    period = period,
+                    preschoolDaycarePeriod = preschoolDaycarePeriod
+                )
             )
-        )
 
-        applicationId
-    }
+            applicationId
+        }
 }

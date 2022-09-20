@@ -37,17 +37,19 @@ class PedagogicalDocumentNotificationService(
     val senderNameFi: String = emailEnv.senderNameFi
     val senderNameSv: String = emailEnv.senderNameSv
 
-    fun getFromAddress(language: Language) = when (language) {
-        Language.sv -> "$senderNameSv <$senderAddress>"
-        else -> "$senderNameFi <$senderAddress>"
-    }
+    fun getFromAddress(language: Language) =
+        when (language) {
+            Language.sv -> "$senderNameSv <$senderAddress>"
+            else -> "$senderNameFi <$senderAddress>"
+        }
 
     fun getPedagogicalDocumentationNotifications(
         tx: Database.Transaction,
         id: PedagogicalDocumentId
     ): List<AsyncJob.SendPedagogicalDocumentNotificationEmail> {
         // language=sql
-        val sql = """
+        val sql =
+            """
         SELECT DISTINCT
             p.email as recipient_email,
             coalesce(lower(p.language), 'fi') as language
@@ -57,7 +59,8 @@ class PedagogicalDocumentNotificationService(
         WHERE doc.id = :id
           AND NOT EXISTS(SELECT 1 FROM messaging_blocklist bl WHERE bl.child_id = doc.child_id AND bl.blocked_recipient = p.id)
           AND p.email IS NOT NULL
-        """.trimIndent()
+        """.trimIndent(
+            )
 
         return tx.createQuery(sql)
             .bind("id", id)
@@ -72,17 +75,25 @@ class PedagogicalDocumentNotificationService(
             .list()
     }
 
-    private fun Database.Transaction.updateDocumentEmailJobCreatedAt(id: PedagogicalDocumentId, date: HelsinkiDateTime) {
-        this.createUpdate("UPDATE pedagogical_document SET email_job_created_at = :date WHERE id = :id")
+    private fun Database.Transaction.updateDocumentEmailJobCreatedAt(
+        id: PedagogicalDocumentId,
+        date: HelsinkiDateTime
+    ) {
+        this.createUpdate(
+                "UPDATE pedagogical_document SET email_job_created_at = :date WHERE id = :id"
+            )
             .bind("id", id)
             .bind("date", date)
             .updateExactlyOne()
     }
 
-    private fun Database.Read.shouldCreateNotificationJobForDocument(id: PedagogicalDocumentId): Boolean {
-        // notification job should be created only if description is set or an attachment is uploaded
+    private fun Database.Read.shouldCreateNotificationJobForDocument(
+        id: PedagogicalDocumentId
+    ): Boolean {
+        // notification job should be created only if description is set or an attachment is
+        // uploaded
         return this.createQuery(
-            """
+                """
 SELECT EXISTS(
     SELECT 1
     FROM pedagogical_document doc
@@ -92,8 +103,9 @@ SELECT EXISTS(
         doc.email_job_created_at IS NULL AND 
         (LENGTH(doc.description) > 0 OR a.id IS NOT NULL)
 )
-            """.trimIndent()
-        )
+            """.trimIndent(
+                )
+            )
             .bind("id", id)
             .mapTo<Boolean>()
             .one()
@@ -103,7 +115,9 @@ SELECT EXISTS(
         if (tx.shouldCreateNotificationJobForDocument(id)) {
             tx.updateDocumentEmailJobCreatedAt(id, HelsinkiDateTime.now())
 
-            logger.info { "Scheduling sending of Pedagogical Documentation notification emails (id: $id)" }
+            logger.info {
+                "Scheduling sending of Pedagogical Documentation notification emails (id: $id)"
+            }
             asyncJobRunner.plan(
                 tx,
                 payloads = getPedagogicalDocumentationNotifications(tx, id),
@@ -121,7 +135,11 @@ SELECT EXISTS(
         }
     }
 
-    fun sendNotification(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.SendPedagogicalDocumentNotificationEmail) {
+    fun sendNotification(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.SendPedagogicalDocumentNotificationEmail
+    ) {
         val (pedagogicalDocumentId, recipientEmail, language) = msg
 
         db.transaction { tx ->
@@ -138,16 +156,18 @@ SELECT EXISTS(
     }
 
     private fun getSubject(): String {
-        val postfix = if (System.getenv("VOLTTI_ENV") == "prod") "" else " [${System.getenv("VOLTTI_ENV")}]"
+        val postfix =
+            if (System.getenv("VOLTTI_ENV") == "prod") "" else " [${System.getenv("VOLTTI_ENV")}]"
 
         return "Uusi pedagoginen dokumentti eVakassa / Nytt pedagogiskt dokument i eVaka / New pedagogical document in eVaka$postfix"
     }
 
     private fun getDocumentsUrl(lang: Language): String {
-        val base = when (lang) {
-            Language.sv -> baseUrlSv
-            else -> baseUrl
-        }
+        val base =
+            when (lang) {
+                Language.sv -> baseUrlSv
+                else -> baseUrl
+            }
         return "$base/pedagogical-documents"
     }
 
@@ -166,7 +186,8 @@ SELECT EXISTS(
                 
                 <p>You have received a new eVaka pedagogical document. Read the document here: <a href="$documentsUrl">$documentsUrl</a></p>
                 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>       
-        """.trimIndent()
+        """.trimIndent(
+        )
     }
 
     private fun getText(language: Language): String {
@@ -187,18 +208,22 @@ SELECT EXISTS(
                 You have received a new eVaka pedagogical document. Read the document here: $documentsUrl
                 
                 This is an automatic message from the eVaka system. Do not reply to this message.  
-        """.trimIndent()
+        """.trimIndent(
+        )
     }
 }
 
-private fun Database.Transaction.markPedagogicalDocumentNotificationSent(id: PedagogicalDocumentId) {
+private fun Database.Transaction.markPedagogicalDocumentNotificationSent(
+    id: PedagogicalDocumentId
+) {
     this.createUpdate(
-        """
+            """
             UPDATE pedagogical_document
             SET email_sent = TRUE 
             WHERE id = :id
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("id", id)
         .updateExactlyOne()
 }

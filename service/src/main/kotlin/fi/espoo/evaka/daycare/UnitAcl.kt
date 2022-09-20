@@ -33,31 +33,50 @@ fun removeUnitSupervisor(db: Database.Connection, daycareId: DaycareId, employee
     db.transaction {
         it.deleteDaycareAclRow(daycareId, employeeId, UserRole.UNIT_SUPERVISOR)
         if (!it.hasDaycareAclRowForAnyUnit(employeeId, UserRole.UNIT_SUPERVISOR)) {
-            // Deactivate the message account when the employee is not a supervisor in any unit anymore
+            // Deactivate the message account when the employee is not a supervisor in any unit
+            // anymore
             it.deactivateEmployeeMessageAccount(employeeId)
         }
     }
 }
 
-fun addSpecialEducationTeacher(db: Database.Connection, daycareId: DaycareId, employeeId: EmployeeId) {
+fun addSpecialEducationTeacher(
+    db: Database.Connection,
+    daycareId: DaycareId,
+    employeeId: EmployeeId
+) {
     db.transaction {
         it.clearDaycareGroupAcl(daycareId, employeeId)
         it.insertDaycareAclRow(daycareId, employeeId, UserRole.SPECIAL_EDUCATION_TEACHER)
     }
 }
 
-fun removeSpecialEducationTeacher(db: Database.Connection, daycareId: DaycareId, employeeId: EmployeeId) {
-    db.transaction { it.deleteDaycareAclRow(daycareId, employeeId, UserRole.SPECIAL_EDUCATION_TEACHER) }
+fun removeSpecialEducationTeacher(
+    db: Database.Connection,
+    daycareId: DaycareId,
+    employeeId: EmployeeId
+) {
+    db.transaction {
+        it.deleteDaycareAclRow(daycareId, employeeId, UserRole.SPECIAL_EDUCATION_TEACHER)
+    }
 }
 
-fun addEarlyChildhoodEducationSecretary(db: Database.Connection, daycareId: DaycareId, employeeId: EmployeeId) {
+fun addEarlyChildhoodEducationSecretary(
+    db: Database.Connection,
+    daycareId: DaycareId,
+    employeeId: EmployeeId
+) {
     db.transaction {
         it.clearDaycareGroupAcl(daycareId, employeeId)
         it.insertDaycareAclRow(daycareId, employeeId, UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)
     }
 }
 
-fun removeEarlyChildhoodEducationSecretary(db: Database.Connection, daycareId: DaycareId, employeeId: EmployeeId) {
+fun removeEarlyChildhoodEducationSecretary(
+    db: Database.Connection,
+    daycareId: DaycareId,
+    employeeId: EmployeeId
+) {
     db.transaction {
         it.clearDaycareGroupAcl(daycareId, employeeId)
         it.deleteDaycareAclRow(daycareId, employeeId, UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY)

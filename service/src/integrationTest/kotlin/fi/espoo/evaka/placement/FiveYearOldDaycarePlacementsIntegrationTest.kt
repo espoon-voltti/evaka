@@ -9,10 +9,10 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
@@ -21,9 +21,7 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
-        }
+        db.transaction { it.insertGeneralTestFixtures() }
     }
 
     @Test
@@ -31,16 +29,17 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
         val startDate = LocalDate.of(yearChildTurnsFive - 1, 8, 1)
         val endDate = LocalDate.of(yearChildTurnsFive + 2, 7, 31)
 
-        val newPlacements = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                testDaycare.id,
-                FiniteDateRange(startDate, endDate),
-                PlacementType.DAYCARE,
-                useFiveYearsOldDaycare = true
-            )
-        }
+        val newPlacements =
+            db.transaction {
+                createPlacement(
+                    it,
+                    childId,
+                    testDaycare.id,
+                    FiniteDateRange(startDate, endDate),
+                    PlacementType.DAYCARE,
+                    useFiveYearsOldDaycare = true
+                )
+            }
 
         assertEquals(3, newPlacements.size)
         newPlacements[0].let { placement ->
@@ -65,16 +64,17 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
         val startDate = LocalDate.of(yearChildTurnsFive - 1, 8, 1)
         val endDate = LocalDate.of(yearChildTurnsFive + 2, 7, 31)
 
-        val newPlacements = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                testDaycare.id,
-                FiniteDateRange(startDate, endDate),
-                PlacementType.DAYCARE,
-                useFiveYearsOldDaycare = false
-            )
-        }
+        val newPlacements =
+            db.transaction {
+                createPlacement(
+                    it,
+                    childId,
+                    testDaycare.id,
+                    FiniteDateRange(startDate, endDate),
+                    PlacementType.DAYCARE,
+                    useFiveYearsOldDaycare = false
+                )
+            }
 
         assertEquals(1, newPlacements.size)
         newPlacements[0].let { placement ->
@@ -89,16 +89,17 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
         val startDate = LocalDate.of(yearChildTurnsFive, 8, 1)
         val endDate = LocalDate.of(yearChildTurnsFive + 1, 7, 31)
 
-        val newPlacements = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                testDaycare.id,
-                FiniteDateRange(startDate, endDate),
-                PlacementType.DAYCARE_PART_TIME,
-                useFiveYearsOldDaycare = true
-            )
-        }
+        val newPlacements =
+            db.transaction {
+                createPlacement(
+                    it,
+                    childId,
+                    testDaycare.id,
+                    FiniteDateRange(startDate, endDate),
+                    PlacementType.DAYCARE_PART_TIME,
+                    useFiveYearsOldDaycare = true
+                )
+            }
 
         assertEquals(1, newPlacements.size)
         newPlacements.first().let { placement ->
@@ -113,20 +114,27 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
         val originalStartDate = LocalDate.of(yearChildTurnsFive, 1, 1)
         val originalEndDate = LocalDate.of(yearChildTurnsFive, 5, 31)
 
-        val oldPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                testDaycare.id,
-                FiniteDateRange(originalStartDate, originalEndDate),
-                PlacementType.DAYCARE,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
+        val oldPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        testDaycare.id,
+                        FiniteDateRange(originalStartDate, originalEndDate),
+                        PlacementType.DAYCARE,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
 
         val newEndDate = LocalDate.of(yearChildTurnsFive, 8, 31)
         db.transaction {
-            it.updatePlacement(oldPlacement.id, originalStartDate, newEndDate, useFiveYearsOldDaycare = true)
+            it.updatePlacement(
+                oldPlacement.id,
+                originalStartDate,
+                newEndDate,
+                useFiveYearsOldDaycare = true
+            )
         }
 
         val placements = db.read { it.getPlacementsForChild(childId) }.sortedBy { it.startDate }
@@ -148,20 +156,27 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
         val originalStartDate = LocalDate.of(yearChildTurnsFive + 1, 1, 1)
         val originalEndDate = LocalDate.of(yearChildTurnsFive + 1, 5, 31)
 
-        val oldPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                testDaycare.id,
-                FiniteDateRange(originalStartDate, originalEndDate),
-                PlacementType.DAYCARE,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
+        val oldPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        testDaycare.id,
+                        FiniteDateRange(originalStartDate, originalEndDate),
+                        PlacementType.DAYCARE,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
 
         val newEndDate = LocalDate.of(yearChildTurnsFive + 1, 8, 31)
         db.transaction {
-            it.updatePlacement(oldPlacement.id, originalStartDate, newEndDate, useFiveYearsOldDaycare = true)
+            it.updatePlacement(
+                oldPlacement.id,
+                originalStartDate,
+                newEndDate,
+                useFiveYearsOldDaycare = true
+            )
         }
 
         val placements = db.read { it.getPlacementsForChild(childId) }.sortedBy { it.startDate }
@@ -183,20 +198,27 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
         val originalStartDate = LocalDate.of(yearChildTurnsFive + 1, 8, 1)
         val originalEndDate = LocalDate.of(yearChildTurnsFive + 1, 8, 31)
 
-        val oldPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                testDaycare.id,
-                FiniteDateRange(originalStartDate, originalEndDate),
-                PlacementType.DAYCARE,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
+        val oldPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        testDaycare.id,
+                        FiniteDateRange(originalStartDate, originalEndDate),
+                        PlacementType.DAYCARE,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
 
         val newStartDate = LocalDate.of(yearChildTurnsFive + 1, 7, 1)
         db.transaction {
-            it.updatePlacement(oldPlacement.id, newStartDate, originalEndDate, useFiveYearsOldDaycare = true)
+            it.updatePlacement(
+                oldPlacement.id,
+                newStartDate,
+                originalEndDate,
+                useFiveYearsOldDaycare = true
+            )
         }
 
         val placements = db.read { it.getPlacementsForChild(childId) }.sortedBy { it.startDate }
@@ -218,20 +240,27 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
         val originalStartDate = LocalDate.of(yearChildTurnsFive, 8, 1)
         val originalEndDate = LocalDate.of(yearChildTurnsFive, 8, 31)
 
-        val oldPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                testDaycare.id,
-                FiniteDateRange(originalStartDate, originalEndDate),
-                PlacementType.DAYCARE,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
+        val oldPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        testDaycare.id,
+                        FiniteDateRange(originalStartDate, originalEndDate),
+                        PlacementType.DAYCARE,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
 
         val newStartDate = LocalDate.of(yearChildTurnsFive, 7, 1)
         db.transaction {
-            it.updatePlacement(oldPlacement.id, newStartDate, originalEndDate, useFiveYearsOldDaycare = true)
+            it.updatePlacement(
+                oldPlacement.id,
+                newStartDate,
+                originalEndDate,
+                useFiveYearsOldDaycare = true
+            )
         }
 
         val placements = db.read { it.getPlacementsForChild(childId) }.sortedBy { it.startDate }
@@ -253,21 +282,28 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
         val originalStartDate = LocalDate.of(yearChildTurnsFive, 7, 1)
         val originalEndDate = LocalDate.of(yearChildTurnsFive, 7, 31)
 
-        val oldPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                testDaycare.id,
-                FiniteDateRange(originalStartDate, originalEndDate),
-                PlacementType.DAYCARE,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
+        val oldPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        testDaycare.id,
+                        FiniteDateRange(originalStartDate, originalEndDate),
+                        PlacementType.DAYCARE,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
 
         val newStartDate = LocalDate.of(yearChildTurnsFive, 8, 1)
         val newEndDate = LocalDate.of(yearChildTurnsFive, 8, 31)
         db.transaction {
-            it.updatePlacement(oldPlacement.id, newStartDate, newEndDate, useFiveYearsOldDaycare = true)
+            it.updatePlacement(
+                oldPlacement.id,
+                newStartDate,
+                newEndDate,
+                useFiveYearsOldDaycare = true
+            )
         }
 
         val placements = db.read { it.getPlacementsForChild(childId) }.sortedBy { it.startDate }
@@ -284,21 +320,28 @@ class FiveYearOldDaycarePlacementsIntegrationTest : FullApplicationTest(resetDbB
         val originalStartDate = LocalDate.of(yearChildTurnsFive, 7, 1)
         val originalEndDate = LocalDate.of(yearChildTurnsFive, 7, 31)
 
-        val oldPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                testDaycare.id,
-                FiniteDateRange(originalStartDate, originalEndDate),
-                PlacementType.DAYCARE,
-                useFiveYearsOldDaycare = false
-            )
-        }.first()
+        val oldPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        testDaycare.id,
+                        FiniteDateRange(originalStartDate, originalEndDate),
+                        PlacementType.DAYCARE,
+                        useFiveYearsOldDaycare = false
+                    )
+                }
+                .first()
 
         val newStartDate = LocalDate.of(yearChildTurnsFive, 8, 1)
         val newEndDate = LocalDate.of(yearChildTurnsFive, 8, 31)
         db.transaction {
-            it.updatePlacement(oldPlacement.id, newStartDate, newEndDate, useFiveYearsOldDaycare = false)
+            it.updatePlacement(
+                oldPlacement.id,
+                newStartDate,
+                newEndDate,
+                useFiveYearsOldDaycare = false
+            )
         }
 
         val placements = db.read { it.getPlacementsForChild(childId) }.sortedBy { it.startDate }

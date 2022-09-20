@@ -14,14 +14,17 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
-class ChildAgeLanguageReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
+class ChildAgeLanguageReportController(
+    private val acl: AccessControlList,
+    private val accessControl: AccessControl
+) {
     @GetMapping("/reports/child-age-language")
     fun getChildAgeLanguageReport(
         db: Database,
@@ -30,7 +33,11 @@ class ChildAgeLanguageReportController(private val acl: AccessControlList, priva
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): List<ChildAgeLanguageReportRow> {
         Audit.ChildAgeLanguageReportRead.log()
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_CHILD_AGE_AND_LANGUAGE_REPORT)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Global.READ_CHILD_AGE_AND_LANGUAGE_REPORT
+        )
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
@@ -40,8 +47,12 @@ class ChildAgeLanguageReportController(private val acl: AccessControlList, priva
     }
 }
 
-private fun Database.Read.getChildAgeLanguageRows(date: LocalDate, authorizedUnits: AclAuthorization): List<ChildAgeLanguageReportRow> {
-    val daycareFilter: String = if (authorizedUnits != AclAuthorization.All) "WHERE u.id = ANY(:authorizedUnitIds)" else ""
+private fun Database.Read.getChildAgeLanguageRows(
+    date: LocalDate,
+    authorizedUnits: AclAuthorization
+): List<ChildAgeLanguageReportRow> {
+    val daycareFilter: String =
+        if (authorizedUnits != AclAuthorization.All) "WHERE u.id = ANY(:authorizedUnitIds)" else ""
 
     // language=sql
     val sql =
@@ -91,7 +102,8 @@ private fun Database.Read.getChildAgeLanguageRows(date: LocalDate, authorizedUni
         $daycareFilter
         GROUP BY ca.name, u.id, u.name, u.type, u.provider_type
         ORDER BY ca.name, u.name;
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     return createQuery(sql)
         .bind("target_date", date)

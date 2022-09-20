@@ -13,7 +13,7 @@ import java.util.UUID
 
 fun Database.Read.getDevice(id: MobileDeviceId): MobileDeviceDetails {
     return createQuery(
-        """
+            """
 SELECT
     md.id, md.name, md.employee_id,
     CASE
@@ -26,16 +26,19 @@ LEFT JOIN daycare_acl acl ON md.employee_id = acl.employee_id
 WHERE id = :id
 GROUP BY md.id, md.name, md.employee_id
 """
-    )
+        )
         .bind("id", id)
         .mapTo<MobileDeviceDetails>()
-        .firstOrNull() ?: throw NotFound("Device $id not found")
+        .firstOrNull()
+        ?: throw NotFound("Device $id not found")
 }
 
-fun Database.Read.getDeviceByToken(token: UUID): MobileDeviceIdentity = createQuery(
-    "SELECT id, long_term_token FROM mobile_device WHERE long_term_token = :token"
-).bind("token", token).mapTo<MobileDeviceIdentity>().singleOrNull()
-    ?: throw NotFound("Device not found with token $token")
+fun Database.Read.getDeviceByToken(token: UUID): MobileDeviceIdentity =
+    createQuery("SELECT id, long_term_token FROM mobile_device WHERE long_term_token = :token")
+        .bind("token", token)
+        .mapTo<MobileDeviceIdentity>()
+        .singleOrNull()
+        ?: throw NotFound("Device not found with token $token")
 
 fun Database.Read.listSharedDevices(unitId: DaycareId): List<MobileDevice> {
     return createQuery("SELECT id, name FROM mobile_device WHERE unit_id = :unitId")
@@ -60,8 +63,9 @@ fun Database.Transaction.renameDevice(id: MobileDeviceId, name: String) {
         .updateExactlyOne(notFoundMsg = "Device $id not found")
 }
 
-fun Database.Transaction.deleteDevice(id: MobileDeviceId) = createUpdate(
-    """
+fun Database.Transaction.deleteDevice(id: MobileDeviceId) =
+    createUpdate("""
 DELETE FROM mobile_device WHERE id = :id
-    """.trimIndent()
-).bind("id", id).execute()
+    """.trimIndent())
+        .bind("id", id)
+        .execute()

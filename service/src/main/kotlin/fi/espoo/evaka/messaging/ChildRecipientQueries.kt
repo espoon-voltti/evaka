@@ -17,34 +17,33 @@ data class Recipient(
 
 fun Database.Transaction.addToBlocklist(childId: ChildId, recipientId: PersonId) {
     // language=sql
-    val sql = """
+    val sql =
+        """
         INSERT INTO messaging_blocklist (child_id, blocked_recipient)
         VALUES (:childId, :recipient)
         ON CONFLICT DO NOTHING
-    """.trimIndent()
+    """.trimIndent(
+        )
 
-    this.createUpdate(sql)
-        .bind("childId", childId)
-        .bind("recipient", recipientId)
-        .execute()
+    this.createUpdate(sql).bind("childId", childId).bind("recipient", recipientId).execute()
 }
 
 fun Database.Transaction.removeFromBlocklist(childId: ChildId, recipientId: PersonId) {
     // language=sql
-    val sql = """
+    val sql =
+        """
         DELETE FROM messaging_blocklist
         WHERE child_id = :childId AND blocked_recipient = :recipient
-    """.trimIndent()
+    """.trimIndent(
+        )
 
-    this.createUpdate(sql)
-        .bind("childId", childId)
-        .bind("recipient", recipientId)
-        .execute()
+    this.createUpdate(sql).bind("childId", childId).bind("recipient", recipientId).execute()
 }
 
 fun Database.Read.fetchRecipients(childId: ChildId): List<Recipient> {
     // language=sql
-    val sql = """
+    val sql =
+        """
         SELECT 
             g.guardian_id as person_id,
             p.first_name,
@@ -53,10 +52,8 @@ fun Database.Read.fetchRecipients(childId: ChildId): List<Recipient> {
         FROM guardian g
         JOIN person p ON g.guardian_id = p.id
         WHERE g.child_id = :childId
-    """.trimIndent()
+    """.trimIndent(
+        )
 
-    return this.createQuery(sql)
-        .bind("childId", childId)
-        .mapTo<Recipient>()
-        .list()
+    return this.createQuery(sql).bind("childId", childId).mapTo<Recipient>().list()
 }

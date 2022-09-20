@@ -37,8 +37,7 @@ class ChildConsentController(
             dbc.transaction { tx ->
                 val consents = tx.getChildConsentsByChild(childId)
                 featureConfig.enabledChildConsentTypes.map { type ->
-                    consents.find { it.type == type }
-                        ?: ChildConsent(type, null, null, null, null)
+                    consents.find { it.type == type } ?: ChildConsent(type, null, null, null, null)
                 }
             }
         }
@@ -51,7 +50,12 @@ class ChildConsentController(
         clock: EvakaClock
     ): Map<ChildId, List<CitizenChildConsent>> {
         Audit.ChildConsentsReadCitizen.log(targetId = user.id)
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_CHILD_CONSENTS, user.id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.READ_CHILD_CONSENTS,
+            user.id
+        )
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.getCitizenChildConsentsForGuardian(user.id, clock.today()).mapValues { consent ->
@@ -75,13 +79,22 @@ class ChildConsentController(
         accessControl.requirePermissionFor(user, clock, Action.Child.UPSERT_CHILD_CONSENT, childId)
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                body.filter { featureConfig.enabledChildConsentTypes.contains(it.type) }.forEach { consent ->
-                    if (consent.given == null) {
-                        tx.deleteChildConsentEmployee(childId, consent.type)
-                    } else {
-                        tx.upsertChildConsentEmployee(clock, childId, consent.type, consent.given, user.id, clock.now())
+                body
+                    .filter { featureConfig.enabledChildConsentTypes.contains(it.type) }
+                    .forEach { consent ->
+                        if (consent.given == null) {
+                            tx.deleteChildConsentEmployee(childId, consent.type)
+                        } else {
+                            tx.upsertChildConsentEmployee(
+                                clock,
+                                childId,
+                                consent.type,
+                                consent.given,
+                                user.id,
+                                clock.now()
+                            )
+                        }
                     }
-                }
             }
         }
     }
@@ -95,14 +108,32 @@ class ChildConsentController(
         @RequestBody body: List<CitizenChildConsent>
     ) {
         Audit.ChildConsentsInsertCitizen.log()
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.INSERT_CHILD_CONSENTS, childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Child.INSERT_CHILD_CONSENTS,
+            childId
+        )
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                body.filter { featureConfig.enabledChildConsentTypes.contains(it.type) }.forEach { consent ->
-                    if (consent.given == null || !tx.insertChildConsentCitizen(clock, childId, consent.type, consent.given, user.id)) {
-                        throw Forbidden("Citizens may not modify consent that has already been given.")
+                body
+                    .filter { featureConfig.enabledChildConsentTypes.contains(it.type) }
+                    .forEach { consent ->
+                        if (
+                            consent.given == null ||
+                                !tx.insertChildConsentCitizen(
+                                    clock,
+                                    childId,
+                                    consent.type,
+                                    consent.given,
+                                    user.id
+                                )
+                        ) {
+                            throw Forbidden(
+                                "Citizens may not modify consent that has already been given."
+                            )
+                        }
                     }
-                }
             }
         }
     }
@@ -114,18 +145,25 @@ class ChildConsentController(
         clock: EvakaClock
     ): Map<ChildId, Int> {
         Audit.ChildConsentsReadNotificationsCitizen.log(targetId = user.id)
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_CHILD_CONSENT_NOTIFICATIONS, user.id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.READ_CHILD_CONSENT_NOTIFICATIONS,
+            user.id
+        )
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.getCitizenConsentedChildConsentTypes(user.id, clock.today()).map { (child, knownConsentTypes) ->
-                    child to featureConfig.enabledChildConsentTypes.filterNot { knownConsentTypes.contains(it) }.size
-                }.toMap()
+                tx.getCitizenConsentedChildConsentTypes(user.id, clock.today())
+                    .map { (child, knownConsentTypes) ->
+                        child to
+                            featureConfig.enabledChildConsentTypes
+                                .filterNot { knownConsentTypes.contains(it) }
+                                .size
+                    }
+                    .toMap()
             }
         }
     }
 
-    data class UpdateChildConsentRequest(
-        val type: ChildConsentType,
-        val given: Boolean?
-    )
+    data class UpdateChildConsentRequest(val type: ChildConsentType, val given: Boolean?)
 }

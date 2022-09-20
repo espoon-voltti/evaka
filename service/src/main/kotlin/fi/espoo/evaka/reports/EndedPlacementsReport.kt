@@ -11,10 +11,10 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 class EndedPlacementsReportController(private val accessControl: AccessControl) {
@@ -40,7 +40,10 @@ class EndedPlacementsReportController(private val accessControl: AccessControl) 
     }
 }
 
-private fun Database.Read.getEndedPlacementsRows(from: LocalDate, to: LocalDate): List<EndedPlacementsReportRow> {
+private fun Database.Read.getEndedPlacementsRows(
+    from: LocalDate,
+    to: LocalDate
+): List<EndedPlacementsReportRow> {
     // language=sql
     val sql =
         """
@@ -62,7 +65,8 @@ private fun Database.Read.getEndedPlacementsRows(from: LocalDate, to: LocalDate)
         GROUP BY ep.child_id, ep.first_name, ep.last_name, ep.social_security_number, ep.placement_end
         HAVING min(next.start_date) IS NULL OR min(next.start_date) > :to
         ORDER BY last_name, first_name, social_security_number
-        """.trimIndent()
+        """.trimIndent(
+        )
     return createQuery(sql)
         .bind("from", from)
         .bind("to", to)

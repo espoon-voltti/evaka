@@ -21,12 +21,13 @@ data class PreschoolTerm(
     until end of term.*/
     val applicationPeriod: FiniteDateRange
 ) {
-    fun isApplicationAccepted(date: LocalDate) = FiniteDateRange(applicationPeriod.start, extendedTerm.end).includes(date)
+    fun isApplicationAccepted(date: LocalDate) =
+        FiniteDateRange(applicationPeriod.start, extendedTerm.end).includes(date)
 }
 
 fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
     return createQuery(
-        """
+            """
         SELECT
             finnish_preschool,
             swedish_preschool,
@@ -34,8 +35,9 @@ fun Database.Read.getPreschoolTerms(): List<PreschoolTerm> {
             application_period
         FROM preschool_term
         ORDER BY extended_term
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .mapTo<PreschoolTerm>()
         .list()
 }

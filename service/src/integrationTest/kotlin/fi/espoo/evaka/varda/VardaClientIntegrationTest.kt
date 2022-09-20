@@ -5,13 +5,17 @@
 package fi.espoo.evaka.varda
 
 import com.github.kittinunf.fuel.core.isSuccessful
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.test.context.TestPropertySource
-import kotlin.test.assertTrue
 
-@TestPropertySource(properties = ["fi.espoo.voltti.vtj.xroad.trustStore.location=classpath:test-certificate/localhost.truststore"])
+@TestPropertySource(
+    properties =
+        [
+            "fi.espoo.voltti.vtj.xroad.trustStore.location=classpath:test-certificate/localhost.truststore"]
+)
 class VardaClientIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = false) {
     private lateinit var httpsServer: VardaClientIntegrationMockHttpsServer
 

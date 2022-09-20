@@ -43,6 +43,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.upsertCitizenUser
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -50,7 +51,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 enum class ApplicationTypeToggle {
     CLUB,
@@ -58,12 +58,13 @@ enum class ApplicationTypeToggle {
     PRESCHOOL,
     ALL;
 
-    fun toApplicationType(): ApplicationType? = when (this) {
-        CLUB -> ApplicationType.CLUB
-        DAYCARE -> ApplicationType.DAYCARE
-        PRESCHOOL -> ApplicationType.PRESCHOOL
-        ALL -> null
-    }
+    fun toApplicationType(): ApplicationType? =
+        when (this) {
+            CLUB -> ApplicationType.CLUB
+            DAYCARE -> ApplicationType.DAYCARE
+            PRESCHOOL -> ApplicationType.PRESCHOOL
+            ALL -> null
+        }
 }
 
 enum class ApplicationPreschoolTypeToggle {
@@ -97,25 +98,30 @@ enum class ApplicationStatusOption : DatabaseEnum {
 
     override val sqlType: String = "application_status_type"
 
-    fun toStatus(): ApplicationStatus = when (this) {
-        SENT -> ApplicationStatus.SENT
-        WAITING_PLACEMENT -> ApplicationStatus.WAITING_PLACEMENT
-        WAITING_UNIT_CONFIRMATION -> ApplicationStatus.WAITING_UNIT_CONFIRMATION
-        WAITING_DECISION -> ApplicationStatus.WAITING_DECISION
-        WAITING_MAILING -> ApplicationStatus.WAITING_MAILING
-        WAITING_CONFIRMATION -> ApplicationStatus.WAITING_CONFIRMATION
-        REJECTED -> ApplicationStatus.REJECTED
-        ACTIVE -> ApplicationStatus.ACTIVE
-        CANCELLED -> ApplicationStatus.CANCELLED
-    }
+    fun toStatus(): ApplicationStatus =
+        when (this) {
+            SENT -> ApplicationStatus.SENT
+            WAITING_PLACEMENT -> ApplicationStatus.WAITING_PLACEMENT
+            WAITING_UNIT_CONFIRMATION -> ApplicationStatus.WAITING_UNIT_CONFIRMATION
+            WAITING_DECISION -> ApplicationStatus.WAITING_DECISION
+            WAITING_MAILING -> ApplicationStatus.WAITING_MAILING
+            WAITING_CONFIRMATION -> ApplicationStatus.WAITING_CONFIRMATION
+            REJECTED -> ApplicationStatus.REJECTED
+            ACTIVE -> ApplicationStatus.ACTIVE
+            CANCELLED -> ApplicationStatus.CANCELLED
+        }
 }
 
 enum class TransferApplicationFilter {
-    TRANSFER_ONLY, NO_TRANSFER, ALL
+    TRANSFER_ONLY,
+    NO_TRANSFER,
+    ALL
 }
 
 enum class VoucherApplicationFilter {
-    VOUCHER_FIRST_CHOICE, VOUCHER_ONLY, NO_VOUCHER
+    VOUCHER_FIRST_CHOICE,
+    VOUCHER_ONLY,
+    NO_VOUCHER
 }
 
 @RestController
@@ -140,37 +146,48 @@ class ApplicationControllerV2(
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                val child = tx.getPersonById(body.childId)
-                    ?: throw BadRequest("Could not find the child with id ${body.childId}")
+                val child =
+                    tx.getPersonById(body.childId)
+                        ?: throw BadRequest("Could not find the child with id ${body.childId}")
 
                 val guardianId =
                     body.guardianId
                         ?: if (!body.guardianSsn.isNullOrEmpty())
-                            personService.getOrCreatePerson(
-                                tx,
-                                user,
-                                ExternalIdentifier.SSN.getInstance(body.guardianSsn)
-                            )?.id
-                                ?: throw BadRequest("Could not find the guardian with ssn ${body.guardianSsn}")
+                            personService
+                                .getOrCreatePerson(
+                                    tx,
+                                    user,
+                                    ExternalIdentifier.SSN.getInstance(body.guardianSsn)
+                                )
+                                ?.id
+                                ?: throw BadRequest(
+                                    "Could not find the guardian with ssn ${body.guardianSsn}"
+                                )
                         else if (body.guardianToBeCreated != null)
                             createPerson(tx, body.guardianToBeCreated)
                         else
-                            throw BadRequest("Could not find guardian info from paper application request for ${body.childId}")
+                            throw BadRequest(
+                                "Could not find guardian info from paper application request for ${body.childId}"
+                            )
 
-                val guardian = tx.getPersonById(guardianId)
-                    ?: throw BadRequest("Could not find the guardian with id $guardianId")
+                val guardian =
+                    tx.getPersonById(guardianId)
+                        ?: throw BadRequest("Could not find the guardian with id $guardianId")
 
-                // If the guardian has never logged in to eVaka, evaka_user might not contain a row for them yet
+                // If the guardian has never logged in to eVaka, evaka_user might not contain a row
+                // for them
+                // yet
                 tx.upsertCitizenUser(guardianId)
 
-                val id = tx.insertApplication(
-                    type = body.type,
-                    guardianId = guardianId,
-                    childId = body.childId,
-                    origin = ApplicationOrigin.PAPER,
-                    hideFromGuardian = body.hideFromGuardian,
-                    sentDate = body.sentDate
-                )
+                val id =
+                    tx.insertApplication(
+                        type = body.type,
+                        guardianId = guardianId,
+                        childId = body.childId,
+                        origin = ApplicationOrigin.PAPER,
+                        hideFromGuardian = body.hideFromGuardian,
+                        sentDate = body.sentDate
+                    )
                 applicationStateService.initializeApplicationForm(
                     tx,
                     user,
@@ -194,26 +211,32 @@ class ApplicationControllerV2(
     ): Paged<ApplicationSummary> {
         Audit.ApplicationSearch.log()
         if (body.periodStart != null && body.periodEnd != null && body.periodStart > body.periodEnd)
-            throw BadRequest("Date parameter periodEnd ($body.periodEnd) cannot be before periodStart ($body.periodStart)")
+            throw BadRequest(
+                "Date parameter periodEnd ($body.periodEnd) cannot be before periodStart ($body.periodStart)"
+            )
         val maxPageSize = 5000
-        if (body.pageSize != null && body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
+        if (body.pageSize != null && body.pageSize > maxPageSize)
+            throw BadRequest("Maximum page size is $maxPageSize")
 
         // TODO: convert to new action model
-        val authorizedUnitsForApplicationsWithAssistanceNeed = acl.getAuthorizedUnits(
-            user = user,
-            roles = setOf(UserRole.SPECIAL_EDUCATION_TEACHER)
-        )
-        val authorizedUnitsForApplicationsWithoutAssistanceNeed = acl.getAuthorizedUnits(
-            user = user,
-            roles = setOf(UserRole.SERVICE_WORKER)
-        )
+        val authorizedUnitsForApplicationsWithAssistanceNeed =
+            acl.getAuthorizedUnits(user = user, roles = setOf(UserRole.SPECIAL_EDUCATION_TEACHER))
+        val authorizedUnitsForApplicationsWithoutAssistanceNeed =
+            acl.getAuthorizedUnits(user = user, roles = setOf(UserRole.SERVICE_WORKER))
 
-        if (authorizedUnitsForApplicationsWithAssistanceNeed.isEmpty() && authorizedUnitsForApplicationsWithoutAssistanceNeed.isEmpty()) {
+        if (
+            authorizedUnitsForApplicationsWithAssistanceNeed.isEmpty() &&
+                authorizedUnitsForApplicationsWithoutAssistanceNeed.isEmpty()
+        ) {
             throw Forbidden("application search not allowed for any unit")
         }
 
         val canReadServiceWorkerNotes =
-            accessControl.hasPermissionFor(user, clock, Action.Global.READ_SERVICE_WORKER_APPLICATION_NOTES)
+            accessControl.hasPermissionFor(
+                user,
+                clock,
+                Action.Global.READ_SERVICE_WORKER_APPLICATION_NOTES
+            )
 
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -225,21 +248,31 @@ class ApplicationControllerV2(
                     sortDir = body.sortDir ?: ApplicationSortDirection.ASC,
                     areas = body.area?.split(",") ?: listOf(),
                     units = body.units?.split(",")?.map { DaycareId(parseUUID(it)) } ?: listOf(),
-                    basis = body.basis?.split(",")?.map { ApplicationBasis.valueOf(it) } ?: listOf(),
+                    basis = body.basis?.split(",")?.map { ApplicationBasis.valueOf(it) }
+                            ?: listOf(),
                     type = body.type,
-                    preschoolType = body.preschoolType?.split(",")?.map { ApplicationPreschoolTypeToggle.valueOf(it) }
-                        ?: listOf(),
-                    statuses = body.status?.split(",")?.map { ApplicationStatusOption.valueOf(it) } ?: listOf(),
-                    dateType = body.dateType?.split(",")?.map { ApplicationDateType.valueOf(it) } ?: listOf(),
-                    distinctions = body.distinctions?.split(",")?.map { ApplicationDistinctions.valueOf(it) }
-                        ?: listOf(),
+                    preschoolType =
+                        body.preschoolType?.split(",")?.map {
+                            ApplicationPreschoolTypeToggle.valueOf(it)
+                        }
+                            ?: listOf(),
+                    statuses = body.status?.split(",")?.map { ApplicationStatusOption.valueOf(it) }
+                            ?: listOf(),
+                    dateType = body.dateType?.split(",")?.map { ApplicationDateType.valueOf(it) }
+                            ?: listOf(),
+                    distinctions =
+                        body.distinctions?.split(",")?.map { ApplicationDistinctions.valueOf(it) }
+                            ?: listOf(),
                     periodStart = body.periodStart,
                     periodEnd = body.periodEnd,
                     searchTerms = body.searchTerms ?: "",
-                    transferApplications = body.transferApplications ?: TransferApplicationFilter.ALL,
+                    transferApplications = body.transferApplications
+                            ?: TransferApplicationFilter.ALL,
                     voucherApplications = body.voucherApplications,
-                    authorizedUnitsForApplicationsWithoutAssistanceNeed = authorizedUnitsForApplicationsWithoutAssistanceNeed,
-                    authorizedUnitsForApplicationsWithAssistanceNeed = authorizedUnitsForApplicationsWithAssistanceNeed,
+                    authorizedUnitsForApplicationsWithoutAssistanceNeed =
+                        authorizedUnitsForApplicationsWithoutAssistanceNeed,
+                    authorizedUnitsForApplicationsWithAssistanceNeed =
+                        authorizedUnitsForApplicationsWithAssistanceNeed,
                     canReadServiceWorkerNotes = canReadServiceWorkerNotes
                 )
             }
@@ -256,7 +289,9 @@ class ApplicationControllerV2(
         Audit.ApplicationRead.log(targetId = guardianId)
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_PERSON_APPLICATION)
 
-        return db.connect { dbc -> dbc.read { it.fetchApplicationSummariesForGuardian(guardianId) } }
+        return db.connect { dbc ->
+            dbc.read { it.fetchApplicationSummariesForGuardian(guardianId) }
+        }
     }
 
     @GetMapping("/by-child/{childId}")
@@ -284,28 +319,47 @@ class ApplicationControllerV2(
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                val application = tx.fetchApplicationDetails(applicationId)
-                    ?: throw NotFound("Application $applicationId was not found")
+                val application =
+                    tx.fetchApplicationDetails(applicationId)
+                        ?: throw NotFound("Application $applicationId was not found")
 
-                val action = when {
-                    application.form.child.assistanceNeeded ->
-                        Action.Application.READ_IF_HAS_ASSISTANCE_NEED
-                    else ->
-                        Action.Application.READ
-                }
+                val action =
+                    when {
+                        application.form.child.assistanceNeeded ->
+                            Action.Application.READ_IF_HAS_ASSISTANCE_NEED
+                        else -> Action.Application.READ
+                    }
                 accessControl.requirePermissionFor(user, clock, action, applicationId)
 
-                val decisions = tx.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user))
+                val decisions =
+                    tx.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user))
                 val guardians =
-                    personService.getGuardians(tx, user, application.childId)
-                        .map { personDTO -> PersonJSON.from(personDTO) }
+                    personService.getGuardians(tx, user, application.childId).map { personDTO ->
+                        PersonJSON.from(personDTO)
+                    }
 
-                val attachments = tx.getApplicationAttachments(applicationId).let { allAttachments ->
-                    val permissions = accessControl.checkPermissionFor(tx, user, clock, Action.Attachment.READ_APPLICATION_ATTACHMENT, allAttachments.map { it.id })
-                    allAttachments.filter { attachment -> permissions[attachment.id]?.isPermitted() ?: false }
-                }
+                val attachments =
+                    tx.getApplicationAttachments(applicationId).let { allAttachments ->
+                        val permissions =
+                            accessControl.checkPermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Attachment.READ_APPLICATION_ATTACHMENT,
+                                allAttachments.map { it.id }
+                            )
+                        allAttachments.filter { attachment ->
+                            permissions[attachment.id]?.isPermitted() ?: false
+                        }
+                    }
 
-                val permittedActions = accessControl.getPermittedActions<ApplicationId, Action.Application>(tx, user, clock, applicationId)
+                val permittedActions =
+                    accessControl.getPermittedActions<ApplicationId, Action.Application>(
+                        tx,
+                        user,
+                        clock,
+                        applicationId
+                    )
 
                 ApplicationResponse(
                     application = application.copy(attachments = attachments),
@@ -370,8 +424,15 @@ class ApplicationControllerV2(
         @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): PlacementPlanDraft {
         Audit.PlacementPlanDraftRead.log(targetId = applicationId)
-        accessControl.requirePermissionFor(user, clock, Action.Application.READ_PLACEMENT_PLAN_DRAFT, applicationId)
-        return db.connect { dbc -> dbc.read { placementPlanService.getPlacementPlanDraft(it, applicationId) } }
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Application.READ_PLACEMENT_PLAN_DRAFT,
+            applicationId
+        )
+        return db.connect { dbc ->
+            dbc.read { placementPlanService.getPlacementPlanDraft(it, applicationId) }
+        }
     }
 
     @GetMapping("/{applicationId}/decision-drafts")
@@ -382,15 +443,23 @@ class ApplicationControllerV2(
         @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): DecisionDraftJSON {
         Audit.DecisionDraftRead.log(targetId = applicationId)
-        accessControl.requirePermissionFor(user, clock, Action.Application.READ_DECISION_DRAFT, applicationId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Application.READ_DECISION_DRAFT,
+            applicationId
+        )
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                val application = tx.fetchApplicationDetails(applicationId)
-                    ?: throw NotFound("Application $applicationId not found")
+                val application =
+                    tx.fetchApplicationDetails(applicationId)
+                        ?: throw NotFound("Application $applicationId not found")
 
                 if (application.status !== ApplicationStatus.WAITING_DECISION) {
-                    throw Conflict("Cannot get decision drafts for application with status ${application.status}")
+                    throw Conflict(
+                        "Cannot get decision drafts for application with status ${application.status}"
+                    )
                 }
 
                 val placementUnitName = tx.getPlacementPlanUnitName(applicationId)
@@ -398,39 +467,47 @@ class ApplicationControllerV2(
                 val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
                 val unit = decisionDraftService.getDecisionUnit(tx, decisionDrafts[0].unitId)
 
-                val applicationGuardian = tx.getPersonById(application.guardianId)
-                    ?: throw NotFound("Guardian ${application.guardianId} not found")
-                val child = tx.getPersonById(application.childId)
-                    ?: throw NotFound("Child ${application.childId} not found")
+                val applicationGuardian =
+                    tx.getPersonById(application.guardianId)
+                        ?: throw NotFound("Guardian ${application.guardianId} not found")
+                val child =
+                    tx.getPersonById(application.childId)
+                        ?: throw NotFound("Child ${application.childId} not found")
                 val vtjGuardians = personService.getGuardians(tx, user, child.id)
 
-                val applicationGuardianIsVtjGuardian: Boolean = vtjGuardians.any { it.id == application.guardianId }
+                val applicationGuardianIsVtjGuardian: Boolean =
+                    vtjGuardians.any { it.id == application.guardianId }
                 val otherGuardian = application.otherGuardianId?.let { tx.getPersonById(it) }
 
                 DecisionDraftJSON(
                     decisions = decisionDrafts,
                     placementUnitName = placementUnitName,
                     unit = unit,
-                    guardian = GuardianInfo(
-                        firstName = applicationGuardian.firstName,
-                        lastName = applicationGuardian.lastName,
-                        ssn = (applicationGuardian.identity as? ExternalIdentifier.SSN)?.toString(),
-                        isVtjGuardian = applicationGuardianIsVtjGuardian
-                    ),
-                    child = ChildInfo(
-                        firstName = child.firstName,
-                        lastName = child.lastName,
-                        ssn = (child.identity as? ExternalIdentifier.SSN)?.toString()
-                    ),
-                    otherGuardian = otherGuardian?.let {
+                    guardian =
                         GuardianInfo(
-                            id = it.id,
-                            firstName = it.firstName,
-                            lastName = it.lastName,
-                            ssn = (it.identity as? ExternalIdentifier.SSN)?.toString(),
-                            isVtjGuardian = true
-                        )
-                    }
+                            firstName = applicationGuardian.firstName,
+                            lastName = applicationGuardian.lastName,
+                            ssn =
+                                (applicationGuardian.identity as? ExternalIdentifier.SSN)?.toString(
+                                ),
+                            isVtjGuardian = applicationGuardianIsVtjGuardian
+                        ),
+                    child =
+                        ChildInfo(
+                            firstName = child.firstName,
+                            lastName = child.lastName,
+                            ssn = (child.identity as? ExternalIdentifier.SSN)?.toString()
+                        ),
+                    otherGuardian =
+                        otherGuardian?.let {
+                            GuardianInfo(
+                                id = it.id,
+                                firstName = it.firstName,
+                                lastName = it.lastName,
+                                ssn = (it.identity as? ExternalIdentifier.SSN)?.toString(),
+                                isVtjGuardian = true
+                            )
+                        }
                 )
             }
         }
@@ -445,9 +522,16 @@ class ApplicationControllerV2(
         @RequestBody body: List<DecisionDraftService.DecisionDraftUpdate>
     ) {
         Audit.DecisionDraftUpdate.log(targetId = applicationId)
-        accessControl.requirePermissionFor(user, clock, Action.Application.UPDATE_DECISION_DRAFT, applicationId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Application.UPDATE_DECISION_DRAFT,
+            applicationId
+        )
 
-        db.connect { dbc -> dbc.transaction { decisionDraftService.updateDecisionDrafts(it, applicationId, body) } }
+        db.connect { dbc ->
+            dbc.transaction { decisionDraftService.updateDecisionDrafts(it, applicationId, body) }
+        }
     }
 
     @PostMapping("/placement-proposals/{unitId}/accept")
@@ -459,12 +543,7 @@ class ApplicationControllerV2(
     ) {
         db.connect { dbc ->
             dbc.transaction {
-                applicationStateService.confirmPlacementProposalChanges(
-                    it,
-                    user,
-                    clock,
-                    unitId
-                )
+                applicationStateService.confirmPlacementProposalChanges(it, user, clock, unitId)
             }
         }
     }
@@ -477,20 +556,24 @@ class ApplicationControllerV2(
         @PathVariable action: String,
         @RequestBody body: SimpleBatchRequest
     ) {
-        val simpleBatchActions = mapOf(
-            "move-to-waiting-placement" to applicationStateService::moveToWaitingPlacement,
-            "return-to-sent" to applicationStateService::returnToSent,
-            "cancel-placement-plan" to applicationStateService::cancelPlacementPlan,
-            "send-decisions-without-proposal" to applicationStateService::sendDecisionsWithoutProposal,
-            "send-placement-proposal" to applicationStateService::sendPlacementProposal,
-            "withdraw-placement-proposal" to applicationStateService::withdrawPlacementProposal,
-            "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed
-        )
+        val simpleBatchActions =
+            mapOf(
+                "move-to-waiting-placement" to applicationStateService::moveToWaitingPlacement,
+                "return-to-sent" to applicationStateService::returnToSent,
+                "cancel-placement-plan" to applicationStateService::cancelPlacementPlan,
+                "send-decisions-without-proposal" to
+                    applicationStateService::sendDecisionsWithoutProposal,
+                "send-placement-proposal" to applicationStateService::sendPlacementProposal,
+                "withdraw-placement-proposal" to applicationStateService::withdrawPlacementProposal,
+                "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed
+            )
 
         val actionFn = simpleBatchActions[action] ?: throw NotFound("Batch action not recognized")
         db.connect { dbc ->
             dbc.transaction { tx ->
-                body.applicationIds.forEach { applicationId -> actionFn.invoke(tx, user, clock, applicationId) }
+                body.applicationIds.forEach { applicationId ->
+                    actionFn.invoke(tx, user, clock, applicationId)
+                }
             }
         }
     }
@@ -504,16 +587,16 @@ class ApplicationControllerV2(
         @RequestBody body: DaycarePlacementPlan
     ) {
         Audit.PlacementPlanCreate.log(targetId = applicationId, objectId = body.unitId)
-        accessControl.requirePermissionFor(user, clock, Action.Application.CREATE_PLACEMENT_PLAN, applicationId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Application.CREATE_PLACEMENT_PLAN,
+            applicationId
+        )
 
         db.connect { dbc ->
             dbc.transaction {
-                applicationStateService.createPlacementPlan(
-                    it,
-                    user,
-                    applicationId,
-                    body
-                )
+                applicationStateService.createPlacementPlan(it, user, applicationId, body)
             }
         }
     }
@@ -573,7 +656,13 @@ class ApplicationControllerV2(
     ) {
         db.connect { dbc ->
             dbc.transaction {
-                applicationStateService.rejectDecision(it, user, clock, applicationId, body.decisionId)
+                applicationStateService.rejectDecision(
+                    it,
+                    user,
+                    clock,
+                    applicationId,
+                    body.decisionId
+                )
             }
         }
     }
@@ -586,18 +675,20 @@ class ApplicationControllerV2(
         @PathVariable applicationId: ApplicationId,
         @PathVariable action: String
     ) {
-        val simpleActions = mapOf(
-            "move-to-waiting-placement" to applicationStateService::moveToWaitingPlacement,
-            "return-to-sent" to applicationStateService::returnToSent,
-            "cancel-application" to applicationStateService::cancelApplication,
-            "set-verified" to applicationStateService::setVerified,
-            "set-unverified" to applicationStateService::setUnverified,
-            "cancel-placement-plan" to applicationStateService::cancelPlacementPlan,
-            "send-decisions-without-proposal" to applicationStateService::sendDecisionsWithoutProposal,
-            "send-placement-proposal" to applicationStateService::sendPlacementProposal,
-            "withdraw-placement-proposal" to applicationStateService::withdrawPlacementProposal,
-            "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed
-        )
+        val simpleActions =
+            mapOf(
+                "move-to-waiting-placement" to applicationStateService::moveToWaitingPlacement,
+                "return-to-sent" to applicationStateService::returnToSent,
+                "cancel-application" to applicationStateService::cancelApplication,
+                "set-verified" to applicationStateService::setVerified,
+                "set-unverified" to applicationStateService::setUnverified,
+                "cancel-placement-plan" to applicationStateService::cancelPlacementPlan,
+                "send-decisions-without-proposal" to
+                    applicationStateService::sendDecisionsWithoutProposal,
+                "send-placement-proposal" to applicationStateService::sendPlacementProposal,
+                "withdraw-placement-proposal" to applicationStateService::withdrawPlacementProposal,
+                "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed
+            )
 
         val actionFn = simpleActions[action] ?: throw NotFound("Action not recognized")
         db.connect { dbc -> dbc.transaction { actionFn.invoke(it, user, clock, applicationId) } }
@@ -643,9 +734,7 @@ data class ApplicationResponse(
     val permittedActions: Set<Action.Application>,
 )
 
-data class SimpleBatchRequest(
-    val applicationIds: Set<ApplicationId>
-)
+data class SimpleBatchRequest(val applicationIds: Set<ApplicationId>)
 
 data class PlacementProposalConfirmationUpdate(
     val status: PlacementPlanConfirmationStatus,
@@ -659,14 +748,9 @@ data class DaycarePlacementPlan(
     val preschoolDaycarePeriod: FiniteDateRange? = null
 )
 
-data class AcceptDecisionRequest(
-    val decisionId: DecisionId,
-    val requestedStartDate: LocalDate
-)
+data class AcceptDecisionRequest(val decisionId: DecisionId, val requestedStartDate: LocalDate)
 
-data class RejectDecisionRequest(
-    val decisionId: DecisionId
-)
+data class RejectDecisionRequest(val decisionId: DecisionId)
 
 data class DecisionDraftJSON(
     val decisions: List<DecisionDraft>,
@@ -677,11 +761,7 @@ data class DecisionDraftJSON(
     val child: ChildInfo
 )
 
-data class ChildInfo(
-    val ssn: String?,
-    val firstName: String,
-    val lastName: String
-)
+data class ChildInfo(val ssn: String?, val firstName: String, val lastName: String)
 
 data class GuardianInfo(
     val id: PersonId? = null,

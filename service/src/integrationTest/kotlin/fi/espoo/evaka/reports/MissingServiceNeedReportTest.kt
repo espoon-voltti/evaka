@@ -18,27 +18,26 @@ import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testVoucherDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     val today = LocalDate.now()
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
     fun `child without service need is reported`() {
         insertPlacement(testChild_1.id, today, today, testDaycare)
         getAndAssert(
-            today, today,
+            today,
+            today,
             listOf(
                 MissingServiceNeedReportRow(
                     careAreaName = testArea.name,
@@ -57,7 +56,8 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
     fun `child without service need in service voucher unit shown on service voucher care area`() {
         insertPlacement(testChild_1.id, today, today, testVoucherDaycare)
         getAndAssert(
-            today, today,
+            today,
+            today,
             listOf(
                 MissingServiceNeedReportRow(
                     careAreaName = "palvelusetelialue",
@@ -72,7 +72,12 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
         )
     }
 
-    private fun insertPlacement(childId: ChildId, startDate: LocalDate, endDate: LocalDate = startDate.plusYears(1), daycare: DevDaycare) =
+    private fun insertPlacement(
+        childId: ChildId,
+        startDate: LocalDate,
+        endDate: LocalDate = startDate.plusYears(1),
+        daycare: DevDaycare
+    ) =
         db.transaction { tx ->
             tx.insertTestPlacement(
                 childId = childId,
@@ -82,15 +87,19 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
             )
         }
 
-    private val testUser = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+    private val testUser =
+        AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
 
-    private fun getAndAssert(from: LocalDate, to: LocalDate, expected: List<MissingServiceNeedReportRow>) {
-        val (_, response, result) = http.get(
-            "/reports/missing-service-need",
-            listOf("from" to from, "to" to to)
-        )
-            .asUser(testUser)
-            .responseObject<List<MissingServiceNeedReportRow>>(jsonMapper)
+    private fun getAndAssert(
+        from: LocalDate,
+        to: LocalDate,
+        expected: List<MissingServiceNeedReportRow>
+    ) {
+        val (_, response, result) =
+            http
+                .get("/reports/missing-service-need", listOf("from" to from, "to" to to))
+                .asUser(testUser)
+                .responseObject<List<MissingServiceNeedReportRow>>(jsonMapper)
 
         assertEquals(200, response.statusCode)
         assertEquals(expected, result.get())

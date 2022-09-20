@@ -81,24 +81,21 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycareNotInvoiced
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toFeeDecisionServiceNeed
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired
-    private lateinit var generator: FinanceDecisionGenerator
+    @Autowired private lateinit var generator: FinanceDecisionGenerator
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
@@ -106,7 +103,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val decisions = getAllFeeDecisions()
         assertTrue(decisions.isEmpty())
@@ -118,7 +122,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycareNotInvoiced.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(0, decisions.size)
@@ -129,9 +140,20 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycareNotInvoiced.id)
         insertPlacement(testChild_2.id, placementPeriod, DAYCARE, testDaycare.id)
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), placementPeriod)
+        insertFamilyRelations(
+            testAdult_1.id,
+            listOf(testChild_1.id, testChild_2.id),
+            placementPeriod
+        )
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions[0].children.size)
@@ -142,15 +164,24 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, CLUB, testClub.id)
         insertPlacement(testChild_2.id, placementPeriod, DAYCARE, testDaycare.id)
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), placementPeriod)
+        insertFamilyRelations(
+            testAdult_1.id,
+            listOf(testChild_1.id, testChild_2.id),
+            placementPeriod
+        )
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions[0].children.size)
-        decisions[0].children[0].let { child ->
-            assertEquals(0, child.siblingDiscount)
-        }
+        decisions[0].children[0].let { child -> assertEquals(0, child.siblingDiscount) }
     }
 
     @Test
@@ -158,15 +189,24 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, SCHOOL_SHIFT_CARE, testClub.id)
         insertPlacement(testChild_2.id, placementPeriod, DAYCARE, testDaycare.id)
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), placementPeriod)
+        insertFamilyRelations(
+            testAdult_1.id,
+            listOf(testChild_1.id, testChild_2.id),
+            placementPeriod
+        )
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions[0].children.size)
-        decisions[0].children[0].let { child ->
-            assertEquals(0, child.siblingDiscount)
-        }
+        decisions[0].children[0].let { child -> assertEquals(0, child.siblingDiscount) }
     }
 
     @Test
@@ -175,7 +215,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
@@ -187,12 +234,26 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val original = getAllFeeDecisions()
         assertEquals(1, original.size)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val result = getAllFeeDecisions()
         assertEquals(1, original.size)
@@ -202,28 +263,36 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `drafts not overlapping with the period are not touched when generating new decisions`() {
         val periodInPast = DateRange(LocalDate.of(2015, 1, 1), LocalDate.of(2015, 12, 31))
-        val oldDraft = createFeeDecisionFixture(
-            FeeDecisionStatus.DRAFT,
-            FeeDecisionType.NORMAL,
-            periodInPast,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    testChild_2.id,
-                    LocalDate.of(2010, 1, 1),
-                    testDaycare.id,
-                    DAYCARE,
-                    snDefaultDaycare.toFeeDecisionServiceNeed()
+        val oldDraft =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.DRAFT,
+                FeeDecisionType.NORMAL,
+                periodInPast,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        testChild_2.id,
+                        LocalDate.of(2010, 1, 1),
+                        testDaycare.id,
+                        DAYCARE,
+                        snDefaultDaycare.toFeeDecisionServiceNeed()
+                    )
                 )
             )
-        )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDraft)) }
 
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val result = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, result.size)
@@ -246,7 +315,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, placementPeriod, PRESCHOOL, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val result = getAllFeeDecisions()
 
@@ -259,7 +335,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, placementPeriod, PREPARATORY, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val result = getAllFeeDecisions()
 
@@ -272,7 +355,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, placementPeriod, PRESCHOOL_DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val result = getAllFeeDecisions()
 
@@ -287,7 +377,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, placementPeriod, PREPARATORY_DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val result = getAllFeeDecisions()
 
@@ -305,7 +402,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertServiceNeed(placementId, FiniteDateRange(start, end), snDaycareContractDays15.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val result = getAllFeeDecisions()
 
@@ -319,7 +423,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE_FIVE_YEAR_OLDS, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val result = getAllFeeDecisions()
 
@@ -331,10 +442,22 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `fee decision placement infers correct service need from a part day five year olds daycare placement`() {
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
-        insertPlacement(testChild_1.id, placementPeriod, DAYCARE_PART_TIME_FIVE_YEAR_OLDS, testDaycare.id)
+        insertPlacement(
+            testChild_1.id,
+            placementPeriod,
+            DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+            testDaycare.id
+        )
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val result = getAllFeeDecisions()
 
@@ -349,15 +472,32 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val placementId = insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val original = getAllFeeDecisions()
         assertEquals(1, original.size)
-        assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), original[0].children[0].serviceNeed)
+        assertEquals(
+            snDefaultDaycare.toFeeDecisionServiceNeed(),
+            original[0].children[0].serviceNeed
+        )
 
         val serviceNeed = snDaycareFullDayPartWeek25
         insertServiceNeed(placementId, placementPeriod.asFiniteDateRange()!!, serviceNeed.id)
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val updated = getAllFeeDecisions()
         assertEquals(1, updated.size)
@@ -370,22 +510,46 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val placementId = insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val original = getAllFeeDecisions()
         assertEquals(1, original.size)
-        assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), original[0].children[0].serviceNeed)
+        assertEquals(
+            snDefaultDaycare.toFeeDecisionServiceNeed(),
+            original[0].children[0].serviceNeed
+        )
 
-        val serviceNeedPeriod = FiniteDateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2019, 12, 31))
+        val serviceNeedPeriod =
+            FiniteDateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2019, 12, 31))
         val serviceNeed = snDaycareFullDay25to35
         insertServiceNeed(placementId, serviceNeedPeriod, serviceNeed.id)
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val updated = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, updated.size)
         updated[0].let { decision ->
-            assertEquals(placementPeriod.copy(end = serviceNeedPeriod.start.minusDays(1)), decision.validDuring)
-            assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), decision.children[0].serviceNeed)
+            assertEquals(
+                placementPeriod.copy(end = serviceNeedPeriod.start.minusDays(1)),
+                decision.validDuring
+            )
+            assertEquals(
+                snDefaultDaycare.toFeeDecisionServiceNeed(),
+                decision.children[0].serviceNeed
+            )
         }
         updated[1].let { decision ->
             assertEquals(serviceNeedPeriod.asDateRange(), decision.validDuring)
@@ -395,20 +559,34 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `deleted service need that split existing decision merges decisions afterwards`() {
-        val serviceNeedPeriod = FiniteDateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2019, 12, 31))
+        val serviceNeedPeriod =
+            FiniteDateRange(LocalDate.of(2019, 7, 1), LocalDate.of(2019, 12, 31))
         val serviceNeed = snDaycareFullDay25to35
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val placementId = insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), placementPeriod)
         insertServiceNeed(placementId, serviceNeedPeriod, serviceNeed.id)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val original = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, original.size)
         original[0].let { decision ->
-            assertEquals(placementPeriod.copy(end = serviceNeedPeriod.start.minusDays(1)), decision.validDuring)
-            assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), decision.children[0].serviceNeed)
+            assertEquals(
+                placementPeriod.copy(end = serviceNeedPeriod.start.minusDays(1)),
+                decision.validDuring
+            )
+            assertEquals(
+                snDefaultDaycare.toFeeDecisionServiceNeed(),
+                decision.children[0].serviceNeed
+            )
         }
         original[1].let { decision ->
             assertEquals(serviceNeedPeriod.asDateRange(), decision.validDuring)
@@ -417,13 +595,21 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { tx ->
             tx.execute("DELETE FROM service_need WHERE placement_id = ?", placementId)
-            generator.generateNewDecisionsForChild(tx, RealEvakaClock(), testChild_1.id, serviceNeedPeriod.start)
+            generator.generateNewDecisionsForChild(
+                tx,
+                RealEvakaClock(),
+                testChild_1.id,
+                serviceNeedPeriod.start
+            )
         }
 
         val updated = getAllFeeDecisions()
         assertEquals(1, updated.size)
         assertEquals(placementPeriod, updated[0].validDuring)
-        assertEquals(snDefaultDaycare.toFeeDecisionServiceNeed(), updated[0].children[0].serviceNeed)
+        assertEquals(
+            snDefaultDaycare.toFeeDecisionServiceNeed(),
+            updated[0].children[0].serviceNeed
+        )
     }
 
     @Test
@@ -431,7 +617,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, period.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                period.start
+            )
+        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(0, decisions.size)
@@ -449,20 +642,26 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         decisionType = FeeDecisionType.NORMAL,
                         headOfFamilyId = testAdult_1.id,
                         period = period,
-                        children = listOf(
-                            createFeeDecisionChildFixture(
-                                childId = testChild_1.id,
-                                dateOfBirth = testChild_1.dateOfBirth,
-                                placementUnitId = testDaycare.id,
-                                placementType = DAYCARE,
-                                serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                        children =
+                            listOf(
+                                createFeeDecisionChildFixture(
+                                    childId = testChild_1.id,
+                                    dateOfBirth = testChild_1.dateOfBirth,
+                                    placementUnitId = testDaycare.id,
+                                    placementType = DAYCARE,
+                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                                )
                             )
-                        )
                     )
                 )
             )
 
-            generator.generateNewDecisionsForAdult(tx, RealEvakaClock(), testAdult_1.id, period.start)
+            generator.generateNewDecisionsForAdult(
+                tx,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
         }
 
         val decisions = getAllFeeDecisions()
@@ -482,20 +681,26 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         decisionType = FeeDecisionType.NORMAL,
                         headOfFamilyId = testAdult_1.id,
                         period = period,
-                        children = listOf(
-                            createFeeDecisionChildFixture(
-                                childId = testChild_1.id,
-                                dateOfBirth = testChild_1.dateOfBirth,
-                                placementUnitId = testDaycare.id,
-                                placementType = DAYCARE,
-                                serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                        children =
+                            listOf(
+                                createFeeDecisionChildFixture(
+                                    childId = testChild_1.id,
+                                    dateOfBirth = testChild_1.dateOfBirth,
+                                    placementUnitId = testDaycare.id,
+                                    placementType = DAYCARE,
+                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                                )
                             )
-                        )
                     )
                 )
             )
 
-            generator.generateNewDecisionsForAdult(tx, RealEvakaClock(), testAdult_1.id, period.start)
+            generator.generateNewDecisionsForAdult(
+                tx,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
         }
 
         val decisions = getAllFeeDecisions()
@@ -508,12 +713,24 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `fee decision is formed correctly for two children in preschool with daycare with one default and one 45h service need`() {
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val serviceNeed = snPreschoolDaycare45
-        val placementId = insertPlacement(testChild_1.id, placementPeriod, PRESCHOOL_DAYCARE, testDaycare.id)
+        val placementId =
+            insertPlacement(testChild_1.id, placementPeriod, PRESCHOOL_DAYCARE, testDaycare.id)
         insertServiceNeed(placementId, placementPeriod.asFiniteDateRange()!!, serviceNeed.id)
         insertPlacement(testChild_2.id, placementPeriod, PRESCHOOL_DAYCARE, testDaycare.id)
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), placementPeriod)
+        insertFamilyRelations(
+            testAdult_1.id,
+            listOf(testChild_1.id, testChild_2.id),
+            placementPeriod
+        )
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
@@ -531,7 +748,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             decision.children.last().let { child ->
                 assertEquals(28900, child.baseFee)
                 assertEquals(PRESCHOOL_DAYCARE, child.placement.type)
-                assertEquals(snDefaultPreschoolDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(
+                    snDefaultPreschoolDaycare.toFeeDecisionServiceNeed(),
+                    child.serviceNeed
+                )
                 assertEquals(50, child.siblingDiscount)
                 assertEquals(11600, child.fee)
                 assertEquals(11600, child.finalFee)
@@ -543,12 +763,24 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `fee decision is formed correctly for two children in preschool with daycare with one default and one 36h service need`() {
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val serviceNeed = snPreschoolDaycarePartDay35to45
-        val placementId = insertPlacement(testChild_1.id, placementPeriod, PRESCHOOL_DAYCARE, testDaycare.id)
+        val placementId =
+            insertPlacement(testChild_1.id, placementPeriod, PRESCHOOL_DAYCARE, testDaycare.id)
         insertServiceNeed(placementId, placementPeriod.asFiniteDateRange()!!, serviceNeed.id)
         insertPlacement(testChild_2.id, placementPeriod, PRESCHOOL_DAYCARE, testDaycare.id)
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), placementPeriod)
+        insertFamilyRelations(
+            testAdult_1.id,
+            listOf(testChild_1.id, testChild_2.id),
+            placementPeriod
+        )
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
@@ -566,7 +798,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             decision.children.last().let { child ->
                 assertEquals(28900, child.baseFee)
                 assertEquals(PRESCHOOL_DAYCARE, child.placement.type)
-                assertEquals(snDefaultPreschoolDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(
+                    snDefaultPreschoolDaycare.toFeeDecisionServiceNeed(),
+                    child.serviceNeed
+                )
                 assertEquals(50, child.siblingDiscount)
                 assertEquals(11600, child.fee)
                 assertEquals(11600, child.finalFee)
@@ -578,12 +813,24 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `fee decision is formed correctly for two children in preschool with daycare with one default and one 35h service need`() {
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val serviceNeed = snPreschoolDaycarePartDay35
-        val placementId = insertPlacement(testChild_1.id, placementPeriod, PRESCHOOL_DAYCARE, testDaycare.id)
+        val placementId =
+            insertPlacement(testChild_1.id, placementPeriod, PRESCHOOL_DAYCARE, testDaycare.id)
         insertServiceNeed(placementId, placementPeriod.asFiniteDateRange()!!, serviceNeed.id)
         insertPlacement(testChild_2.id, placementPeriod, PRESCHOOL_DAYCARE, testDaycare.id)
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), placementPeriod)
+        insertFamilyRelations(
+            testAdult_1.id,
+            listOf(testChild_1.id, testChild_2.id),
+            placementPeriod
+        )
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
@@ -601,7 +848,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             decision.children.last().let { child ->
                 assertEquals(28900, child.baseFee)
                 assertEquals(PRESCHOOL_DAYCARE, child.placement.type)
-                assertEquals(snDefaultPreschoolDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(
+                    snDefaultPreschoolDaycare.toFeeDecisionServiceNeed(),
+                    child.serviceNeed
+                )
                 assertEquals(50, child.siblingDiscount)
                 assertEquals(11600, child.fee)
                 assertEquals(11600, child.finalFee)
@@ -614,9 +864,20 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, PRESCHOOL, testDaycare.id)
         insertPlacement(testChild_2.id, placementPeriod, PRESCHOOL_DAYCARE, testDaycare.id)
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), placementPeriod)
+        insertFamilyRelations(
+            testAdult_1.id,
+            listOf(testChild_1.id, testChild_2.id),
+            placementPeriod
+        )
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
@@ -627,7 +888,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(testChild_2.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(PRESCHOOL_DAYCARE, child.placement.type)
-                assertEquals(snDefaultPreschoolDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(
+                    snDefaultPreschoolDaycare.toFeeDecisionServiceNeed(),
+                    child.serviceNeed
+                )
                 assertEquals(50, child.siblingDiscount)
                 assertEquals(11600, child.fee)
                 assertEquals(11600, child.finalFee)
@@ -639,12 +903,24 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `fee decision is formed correctly for two children in preparatory with daycare with one default and one 50h service need`() {
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val serviceNeed = snPreparatoryDaycare50
-        val placementId = insertPlacement(testChild_1.id, placementPeriod, PREPARATORY_DAYCARE, testDaycare.id)
+        val placementId =
+            insertPlacement(testChild_1.id, placementPeriod, PREPARATORY_DAYCARE, testDaycare.id)
         insertServiceNeed(placementId, placementPeriod.asFiniteDateRange()!!, serviceNeed.id)
         insertPlacement(testChild_2.id, placementPeriod, PREPARATORY_DAYCARE, testDaycare.id)
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), placementPeriod)
+        insertFamilyRelations(
+            testAdult_1.id,
+            listOf(testChild_1.id, testChild_2.id),
+            placementPeriod
+        )
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
@@ -662,7 +938,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             decision.children.last().let { child ->
                 assertEquals(28900, child.baseFee)
                 assertEquals(PREPARATORY_DAYCARE, child.placement.type)
-                assertEquals(snDefaultPreparatoryDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(
+                    snDefaultPreparatoryDaycare.toFeeDecisionServiceNeed(),
+                    child.serviceNeed
+                )
                 assertEquals(50, child.siblingDiscount)
                 assertEquals(11600, child.fee)
                 assertEquals(11600, child.finalFee)
@@ -674,12 +953,24 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `fee decision is formed correctly for two children in preparatory with daycare with one default and one 45h service need`() {
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val serviceNeed = snPreparatoryDaycarePartDay40to50
-        val placementId = insertPlacement(testChild_1.id, placementPeriod, PREPARATORY_DAYCARE, testDaycare.id)
+        val placementId =
+            insertPlacement(testChild_1.id, placementPeriod, PREPARATORY_DAYCARE, testDaycare.id)
         insertServiceNeed(placementId, placementPeriod.asFiniteDateRange()!!, serviceNeed.id)
         insertPlacement(testChild_2.id, placementPeriod, PREPARATORY_DAYCARE, testDaycare.id)
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), placementPeriod)
+        insertFamilyRelations(
+            testAdult_1.id,
+            listOf(testChild_1.id, testChild_2.id),
+            placementPeriod
+        )
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
@@ -697,7 +988,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             decision.children.last().let { child ->
                 assertEquals(28900, child.baseFee)
                 assertEquals(PREPARATORY_DAYCARE, child.placement.type)
-                assertEquals(snDefaultPreparatoryDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(
+                    snDefaultPreparatoryDaycare.toFeeDecisionServiceNeed(),
+                    child.serviceNeed
+                )
                 assertEquals(50, child.siblingDiscount)
                 assertEquals(11600, child.fee)
                 assertEquals(11600, child.finalFee)
@@ -709,12 +1003,24 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `fee decision is formed correctly for two children in preschool with daycare with one default and one 40h service need`() {
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val serviceNeed = snPreparatoryDaycarePartDay40
-        val placementId = insertPlacement(testChild_1.id, placementPeriod, PREPARATORY_DAYCARE, testDaycare.id)
+        val placementId =
+            insertPlacement(testChild_1.id, placementPeriod, PREPARATORY_DAYCARE, testDaycare.id)
         insertServiceNeed(placementId, placementPeriod.asFiniteDateRange()!!, serviceNeed.id)
         insertPlacement(testChild_2.id, placementPeriod, PREPARATORY_DAYCARE, testDaycare.id)
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), placementPeriod)
+        insertFamilyRelations(
+            testAdult_1.id,
+            listOf(testChild_1.id, testChild_2.id),
+            placementPeriod
+        )
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
@@ -732,7 +1038,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             decision.children.last().let { child ->
                 assertEquals(28900, child.baseFee)
                 assertEquals(PREPARATORY_DAYCARE, child.placement.type)
-                assertEquals(snDefaultPreparatoryDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(
+                    snDefaultPreparatoryDaycare.toFeeDecisionServiceNeed(),
+                    child.serviceNeed
+                )
                 assertEquals(50, child.siblingDiscount)
                 assertEquals(11600, child.fee)
                 assertEquals(11600, child.finalFee)
@@ -745,9 +1054,20 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, PREPARATORY, testDaycare.id)
         insertPlacement(testChild_2.id, placementPeriod, PREPARATORY_DAYCARE, testDaycare.id)
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), placementPeriod)
+        insertFamilyRelations(
+            testAdult_1.id,
+            listOf(testChild_1.id, testChild_2.id),
+            placementPeriod
+        )
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
@@ -758,7 +1078,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(testChild_2.id, child.child.id)
                 assertEquals(28900, child.baseFee)
                 assertEquals(PREPARATORY_DAYCARE, child.placement.type)
-                assertEquals(snDefaultPreparatoryDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
+                assertEquals(
+                    snDefaultPreparatoryDaycare.toFeeDecisionServiceNeed(),
+                    child.serviceNeed
+                )
                 assertEquals(50, child.siblingDiscount)
                 assertEquals(11600, child.fee)
                 assertEquals(11600, child.finalFee)
@@ -771,7 +1094,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
         insertPlacement(testChild_2.id, placementPeriod, DAYCARE, testDaycare.id)
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), placementPeriod)
+        insertFamilyRelations(
+            testAdult_1.id,
+            listOf(testChild_1.id, testChild_2.id),
+            placementPeriod
+        )
 
         // Adult minimal income
         insertIncome(testAdult_1.id, 310200, placementPeriod)
@@ -779,7 +1106,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         // Unlike other income, child income should affect only that child's fees
         insertIncome(testChild_1.id, 600000, placementPeriod)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
@@ -811,13 +1145,25 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `children over 18 years old are not included in families when determining base fee`() {
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
         val birthday = LocalDate.of(2001, 7, 1)
-        val childTurning18Id = db.transaction { it.insertTestPerson(DevPerson(dateOfBirth = birthday)) }
+        val childTurning18Id =
+            db.transaction { it.insertTestPerson(DevPerson(dateOfBirth = birthday)) }
 
         insertPlacement(testChild_1.id, placementPeriod, DAYCARE, testDaycare.id)
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, childTurning18Id), placementPeriod)
+        insertFamilyRelations(
+            testAdult_1.id,
+            listOf(testChild_1.id, childTurning18Id),
+            placementPeriod
+        )
         insertIncome(testAdult_1.id, 330000, placementPeriod)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, placementPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                placementPeriod.start
+            )
+        }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
@@ -862,20 +1208,26 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         decisionType = FeeDecisionType.NORMAL,
                         headOfFamilyId = testAdult_1.id,
                         period = period,
-                        children = listOf(
-                            createFeeDecisionChildFixture(
-                                childId = testChild_1.id,
-                                dateOfBirth = testChild_1.dateOfBirth,
-                                placementUnitId = testDaycare.id,
-                                placementType = DAYCARE,
-                                serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                        children =
+                            listOf(
+                                createFeeDecisionChildFixture(
+                                    childId = testChild_1.id,
+                                    dateOfBirth = testChild_1.dateOfBirth,
+                                    placementUnitId = testDaycare.id,
+                                    placementType = DAYCARE,
+                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                                )
                             )
-                        )
                     )
                 )
             )
 
-            generator.generateNewDecisionsForAdult(tx, RealEvakaClock(), testAdult_1.id, period.start)
+            generator.generateNewDecisionsForAdult(
+                tx,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
         }
 
         val decisions = getAllFeeDecisions()
@@ -896,35 +1248,42 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         decisionType = FeeDecisionType.NORMAL,
                         headOfFamilyId = testAdult_1.id,
                         period = period.copy(end = period.start.plusDays(7)),
-                        children = listOf(
-                            createFeeDecisionChildFixture(
-                                childId = testChild_1.id,
-                                dateOfBirth = testChild_1.dateOfBirth,
-                                placementUnitId = testDaycare.id,
-                                placementType = DAYCARE,
-                                serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                        children =
+                            listOf(
+                                createFeeDecisionChildFixture(
+                                    childId = testChild_1.id,
+                                    dateOfBirth = testChild_1.dateOfBirth,
+                                    placementUnitId = testDaycare.id,
+                                    placementType = DAYCARE,
+                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                                )
                             )
-                        )
                     ),
                     createFeeDecisionFixture(
                         status = FeeDecisionStatus.SENT,
                         decisionType = FeeDecisionType.NORMAL,
                         headOfFamilyId = testAdult_1.id,
                         period = period.copy(start = period.start.plusDays(8)),
-                        children = listOf(
-                            createFeeDecisionChildFixture(
-                                childId = testChild_1.id,
-                                dateOfBirth = testChild_1.dateOfBirth,
-                                placementUnitId = testDaycare.id,
-                                placementType = DAYCARE,
-                                serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                        children =
+                            listOf(
+                                createFeeDecisionChildFixture(
+                                    childId = testChild_1.id,
+                                    dateOfBirth = testChild_1.dateOfBirth,
+                                    placementUnitId = testDaycare.id,
+                                    placementType = DAYCARE,
+                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                                )
                             )
-                        )
                     )
                 )
             )
 
-            generator.generateNewDecisionsForAdult(tx, RealEvakaClock(), testAdult_1.id, period.start)
+            generator.generateNewDecisionsForAdult(
+                tx,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
         }
 
         val decisions = getAllFeeDecisions()
@@ -948,20 +1307,26 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         decisionType = FeeDecisionType.NORMAL,
                         headOfFamilyId = testAdult_1.id,
                         period = period,
-                        children = listOf(
-                            createFeeDecisionChildFixture(
-                                childId = testChild_1.id,
-                                dateOfBirth = testChild_1.dateOfBirth,
-                                placementUnitId = testDaycare.id,
-                                placementType = DAYCARE,
-                                serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                        children =
+                            listOf(
+                                createFeeDecisionChildFixture(
+                                    childId = testChild_1.id,
+                                    dateOfBirth = testChild_1.dateOfBirth,
+                                    placementUnitId = testDaycare.id,
+                                    placementType = DAYCARE,
+                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                                )
                             )
-                        )
                     )
                 )
             )
 
-            generator.generateNewDecisionsForAdult(tx, RealEvakaClock(), testAdult_1.id, period.start)
+            generator.generateNewDecisionsForAdult(
+                tx,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
         }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
@@ -1016,50 +1381,58 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         decisionType = FeeDecisionType.NORMAL,
                         headOfFamilyId = testAdult_1.id,
                         period = period,
-                        children = listOf(
-                            createFeeDecisionChildFixture(
-                                childId = testChild_1.id,
-                                dateOfBirth = testChild_1.dateOfBirth,
-                                placementUnitId = testDaycare.id,
-                                placementType = DAYCARE,
-                                serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                        children =
+                            listOf(
+                                createFeeDecisionChildFixture(
+                                    childId = testChild_1.id,
+                                    dateOfBirth = testChild_1.dateOfBirth,
+                                    placementUnitId = testDaycare.id,
+                                    placementType = DAYCARE,
+                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                                )
                             )
-                        )
                     ),
                     createFeeDecisionFixture(
                         status = FeeDecisionStatus.DRAFT,
                         decisionType = FeeDecisionType.NORMAL,
                         headOfFamilyId = testAdult_1.id,
                         period = olderPeriod,
-                        children = listOf(
-                            createFeeDecisionChildFixture(
-                                childId = testChild_1.id,
-                                dateOfBirth = testChild_1.dateOfBirth,
-                                placementUnitId = testDaycare.id,
-                                placementType = DAYCARE,
-                                serviceNeed = serviceNeed.toFeeDecisionServiceNeed()
+                        children =
+                            listOf(
+                                createFeeDecisionChildFixture(
+                                    childId = testChild_1.id,
+                                    dateOfBirth = testChild_1.dateOfBirth,
+                                    placementUnitId = testDaycare.id,
+                                    placementType = DAYCARE,
+                                    serviceNeed = serviceNeed.toFeeDecisionServiceNeed()
+                                )
                             )
-                        )
                     ),
                     createFeeDecisionFixture(
                         status = FeeDecisionStatus.DRAFT,
                         decisionType = FeeDecisionType.NORMAL,
                         headOfFamilyId = testAdult_1.id,
                         period = newerPeriod,
-                        children = listOf(
-                            createFeeDecisionChildFixture(
-                                childId = testChild_1.id,
-                                dateOfBirth = testChild_1.dateOfBirth,
-                                placementUnitId = testDaycare.id,
-                                placementType = DAYCARE,
-                                serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                        children =
+                            listOf(
+                                createFeeDecisionChildFixture(
+                                    childId = testChild_1.id,
+                                    dateOfBirth = testChild_1.dateOfBirth,
+                                    placementUnitId = testDaycare.id,
+                                    placementType = DAYCARE,
+                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                                )
                             )
-                        )
                     )
                 )
             )
 
-            generator.generateNewDecisionsForAdult(tx, RealEvakaClock(), testAdult_1.id, newerPeriod.start)
+            generator.generateNewDecisionsForAdult(
+                tx,
+                RealEvakaClock(),
+                testAdult_1.id,
+                newerPeriod.start
+            )
         }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
@@ -1090,12 +1463,33 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `fee decision generation works as expected with multiple children with partially overlapping placements`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 12, 31))
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id, testChild_3.id), period)
+        insertFamilyRelations(
+            testAdult_1.id,
+            listOf(testChild_1.id, testChild_2.id, testChild_3.id),
+            period
+        )
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-        insertPlacement(testChild_2.id, period.copy(start = period.start.plusMonths(1)), DAYCARE, testDaycare.id)
-        insertPlacement(testChild_3.id, period.copy(start = period.start.plusMonths(2)), DAYCARE, testDaycare.id)
+        insertPlacement(
+            testChild_2.id,
+            period.copy(start = period.start.plusMonths(1)),
+            DAYCARE,
+            testDaycare.id
+        )
+        insertPlacement(
+            testChild_3.id,
+            period.copy(start = period.start.plusMonths(2)),
+            DAYCARE,
+            testDaycare.id
+        )
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, period.start) }
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(3, decisions.size)
@@ -1190,7 +1584,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_2.id, period_2, DAYCARE, testDaycare.id)
         insertPlacement(testChild_3.id, period_3, DAYCARE, testDaycare.id)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, period_1.start) }
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period_1.start
+            )
+        }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(3, decisions.size)
@@ -1254,7 +1655,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertPlacement(testChild_2.id, period, DAYCARE, testDaycare.id)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, period.start) }
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
@@ -1301,7 +1709,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertIncome(testAdult_1.id, 310200, subPeriod_1)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, period.start) }
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
@@ -1347,7 +1762,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertIncome(testAdult_1.id, 310200, incomePeriod)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, period.start) }
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(1, decisions.size)
@@ -1369,7 +1791,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
 
         deleteIncomes()
-        db.transaction { generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, incomePeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                incomePeriod.start
+            )
+        }
 
         val newDecisions = getAllFeeDecisions()
         assertEquals(1, newDecisions.size)
@@ -1400,7 +1829,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertIncome(testAdult_1.id, 310200, subPeriod_1)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, period.start) }
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
@@ -1438,7 +1874,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
 
         deleteIncomes()
-        db.transaction { generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, subPeriod_1.start) }
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                subPeriod_1.start
+            )
+        }
 
         val newDecisions = getAllFeeDecisions()
         assertEquals(1, newDecisions.size)
@@ -1476,11 +1919,19 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_3.id, wholePeriod, DAYCARE, testDaycare.id)
         insertPlacement(testChild_4.id, wholePeriod, DAYCARE, testDaycare.id)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, wholePeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                wholePeriod.start
+            )
+        }
 
-        val decisions = getAllFeeDecisions()
-            .sortedBy { it.children.minOf { it.child.dateOfBirth } }
-            .sortedBy { it.validFrom }
+        val decisions =
+            getAllFeeDecisions()
+                .sortedBy { it.children.minOf { it.child.dateOfBirth } }
+                .sortedBy { it.validFrom }
         assertEquals(4, decisions.size)
         decisions[0].let { decision ->
             assertEquals(firstPeriod, decision.validDuring)
@@ -1554,8 +2005,18 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertIncome(testAdult_2.id, 310200, period)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, period.start)
-            generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_2.id, period.start)
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_2.id,
+                period.start
+            )
         }
 
         val decisions = getAllFeeDecisions()
@@ -1564,7 +2025,12 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(5, decision.familySize)
             assertEquals(3, decision.children.size)
             assertEquals(testAdult_1.id, decision.headOfFamilyId)
-            assertEquals(listOf(0, 50, 80), decision.children.sortedByDescending { it.child.dateOfBirth }.map { it.siblingDiscount })
+            assertEquals(
+                listOf(0, 50, 80),
+                decision.children
+                    .sortedByDescending { it.child.dateOfBirth }
+                    .map { it.siblingDiscount }
+            )
         }
     }
 
@@ -1587,8 +2053,18 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertIncome(testAdult_2.id, 310200, period)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, period.start)
-            generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_2.id, period.start)
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_2.id,
+                period.start
+            )
         }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
@@ -1634,14 +2110,27 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertIncome(testAdult_2.id, 310200, period)
 
         db.transaction {
-            generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, period.start)
-            generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_2.id, period.start)
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_2.id,
+                period.start
+            )
         }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
         assertEquals(setOf(3, 2), decisions.map { it.familySize }.toSet())
-        assertEquals(setOf(testAdult_1.id, testAdult_2.id), decisions.map { it.headOfFamilyId }.toSet())
+        assertEquals(
+            setOf(testAdult_1.id, testAdult_2.id),
+            decisions.map { it.headOfFamilyId }.toSet()
+        )
 
         val decisionForAdult1 = decisions.find { it.headOfFamilyId == testAdult_1.id }
         val decisionForAdult2 = decisions.find { it.headOfFamilyId == testAdult_2.id }
@@ -1649,10 +2138,25 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             setOf(testChild_1.id, testChild_2.id),
             decisionForAdult1?.children?.map { it.child.id }?.toSet()
         )
-        assertEquals(setOf(testChild_8.id), decisionForAdult2?.children?.map { it.child.id }?.toSet())
+        assertEquals(
+            setOf(testChild_8.id),
+            decisionForAdult2?.children?.map { it.child.id }?.toSet()
+        )
 
-        assertEquals(listOf(0, 50), decisionForAdult1?.children?.sortedByDescending { it.child.dateOfBirth }?.map { it.siblingDiscount })
-        assertEquals(listOf(0), decisionForAdult2?.children?.sortedByDescending { it.child.dateOfBirth }?.map { it.siblingDiscount })
+        assertEquals(
+            listOf(0, 50),
+            decisionForAdult1
+                ?.children
+                ?.sortedByDescending { it.child.dateOfBirth }
+                ?.map { it.siblingDiscount }
+        )
+        assertEquals(
+            listOf(0),
+            decisionForAdult2
+                ?.children
+                ?.sortedByDescending { it.child.dateOfBirth }
+                ?.map { it.siblingDiscount }
+        )
     }
 
     @Test
@@ -1666,7 +2170,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertIncome(testAdult_1.id, 310200, period)
         insertIncome(testAdult_2.id, 310200, period)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, period.start) }
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
@@ -1714,7 +2225,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertIncome(testAdult_1.id, 310200, period)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, period.start) }
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
@@ -1759,7 +2277,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertFeeAlteration(testChild_1.id, 50.0, period)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, period.start) }
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
@@ -1791,7 +2316,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPlacement(testChild_1.id, combinedPeriod, DAYCARE, testDaycare.id)
         insertEchaIncome(testAdult_1.id, combinedPeriod)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, combinedPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                combinedPeriod.start
+            )
+        }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
@@ -1834,28 +2366,36 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `active fee decisions have their validity end dates updated on changed future placement end date`() {
         val originalPeriod = DateRange(LocalDate.now().minusYears(1), LocalDate.now().plusYears(1))
-        val sentDecision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            originalPeriod,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    testChild_1.id,
-                    testChild_1.dateOfBirth,
-                    testDaycare.id,
-                    DAYCARE,
-                    snDefaultDaycare.toFeeDecisionServiceNeed()
+        val sentDecision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                originalPeriod,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        testChild_1.id,
+                        testChild_1.dateOfBirth,
+                        testDaycare.id,
+                        DAYCARE,
+                        snDefaultDaycare.toFeeDecisionServiceNeed()
+                    )
                 )
             )
-        )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(sentDecision)) }
 
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), originalPeriod)
         val newPeriod = originalPeriod.copy(end = originalPeriod.end!!.minusDays(7))
         insertPlacement(testChild_1.id, newPeriod, DAYCARE, testDaycare.id)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, newPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                newPeriod.start
+            )
+        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
@@ -1865,28 +2405,36 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Test
     fun `active fee decisions are not updated on changed past placement end date`() {
         val originalPeriod = DateRange(LocalDate.now().minusYears(1), LocalDate.now().minusDays(1))
-        val sentDecision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            originalPeriod,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    testChild_1.id,
-                    testChild_1.dateOfBirth,
-                    testDaycare.id,
-                    DAYCARE,
-                    snDefaultDaycare.toFeeDecisionServiceNeed()
+        val sentDecision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                originalPeriod,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        testChild_1.id,
+                        testChild_1.dateOfBirth,
+                        testDaycare.id,
+                        DAYCARE,
+                        snDefaultDaycare.toFeeDecisionServiceNeed()
+                    )
                 )
             )
-        )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(sentDecision)) }
 
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), originalPeriod)
         val newPeriod = originalPeriod.copy(end = originalPeriod.end!!.minusDays(7))
         insertPlacement(testChild_1.id, newPeriod, DAYCARE, testDaycare.id)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, newPeriod.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                newPeriod.start
+            )
+        }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(2, decisions.size)
@@ -1904,7 +2452,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val period = DateRange(LocalDate.of(2014, 6, 1), LocalDate.of(2015, 6, 1))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, period.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                period.start
+            )
+        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
@@ -1917,7 +2472,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `an empty draft is generated when a placement is moved to start later and a family update is triggered`() {
-        val originalPlacementPeriod = DateRange(LocalDate.now().minusWeeks(2), LocalDate.now().plusYears(1))
+        val originalPlacementPeriod =
+            DateRange(LocalDate.now().minusWeeks(2), LocalDate.now().plusYears(1))
         val familyPeriod = DateRange(LocalDate.now().minusYears(1), LocalDate.now().plusYears(17))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), familyPeriod)
         insertPlacement(
@@ -1934,27 +2490,33 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                         decisionType = FeeDecisionType.NORMAL,
                         headOfFamilyId = testAdult_1.id,
                         period = originalPlacementPeriod,
-                        children = listOf(
-                            createFeeDecisionChildFixture(
-                                childId = testChild_1.id,
-                                dateOfBirth = testChild_1.dateOfBirth,
-                                placementUnitId = testDaycare.id,
-                                placementType = DAYCARE,
-                                serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                        children =
+                            listOf(
+                                createFeeDecisionChildFixture(
+                                    childId = testChild_1.id,
+                                    dateOfBirth = testChild_1.dateOfBirth,
+                                    placementUnitId = testDaycare.id,
+                                    placementType = DAYCARE,
+                                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed()
+                                )
                             )
-                        )
                     )
                 )
             )
 
-            generator.generateNewDecisionsForAdult(tx, RealEvakaClock(), testAdult_1.id, familyPeriod.start)
+            generator.generateNewDecisionsForAdult(
+                tx,
+                RealEvakaClock(),
+                testAdult_1.id,
+                familyPeriod.start
+            )
         }
 
         val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
         assertEquals(3, decisions.size)
         val sent = decisions.find { it.status == FeeDecisionStatus.SENT }!!
-        val (firstDraft, secondDraft) = decisions.filter { it.status == FeeDecisionStatus.DRAFT }
-            .sortedBy { it.validFrom }
+        val (firstDraft, secondDraft) =
+            decisions.filter { it.status == FeeDecisionStatus.DRAFT }.sortedBy { it.validFrom }
 
         assertEquals(FeeDecisionStatus.DRAFT, firstDraft.status)
         assertEquals(originalPlacementPeriod.start, firstDraft.validFrom)
@@ -1972,36 +2534,44 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertIncome(adultId = testAdult_1.id, amount = 0, period = period)
         createFeeDecisionFixture(
-            status = FeeDecisionStatus.SENT,
-            decisionType = FeeDecisionType.NORMAL,
-            headOfFamilyId = testAdult_1.id,
-            period = period,
-            feeThresholds = oldTestFeeThresholds.getFeeDecisionThresholds(2),
-            headOfFamilyIncome = DecisionIncome(
-                effect = IncomeEffect.INCOME,
-                data = mapOf("MAIN_INCOME" to 0),
-                totalIncome = 0,
-                totalExpenses = 0,
-                total = 0,
-                worksAtECHA = false
-            ),
-            children = listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = DAYCARE,
-                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
-                    baseFee = 0,
-                    fee = 0
-                )
+                status = FeeDecisionStatus.SENT,
+                decisionType = FeeDecisionType.NORMAL,
+                headOfFamilyId = testAdult_1.id,
+                period = period,
+                feeThresholds = oldTestFeeThresholds.getFeeDecisionThresholds(2),
+                headOfFamilyIncome =
+                    DecisionIncome(
+                        effect = IncomeEffect.INCOME,
+                        data = mapOf("MAIN_INCOME" to 0),
+                        totalIncome = 0,
+                        totalExpenses = 0,
+                        total = 0,
+                        worksAtECHA = false
+                    ),
+                children =
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = DAYCARE,
+                            serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
+                            baseFee = 0,
+                            fee = 0
+                        )
+                    )
             )
-        ).let { fixture ->
-            db.transaction { tx ->
-                tx.upsertFeeDecisions(listOf(fixture))
-                generator.generateNewDecisionsForAdult(tx, RealEvakaClock(), testAdult_1.id, period.start)
+            .let { fixture ->
+                db.transaction { tx ->
+                    tx.upsertFeeDecisions(listOf(fixture))
+                    generator.generateNewDecisionsForAdult(
+                        tx,
+                        RealEvakaClock(),
+                        testAdult_1.id,
+                        period.start
+                    )
+                }
             }
-        }
 
         val decisions = getAllFeeDecisions()
         assertEquals(2, decisions.size)
@@ -2027,7 +2597,12 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     fun `decision is generated correctly from two identical and concurrent placements`() {
         val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
-        insertPlacement(testChild_1.id, period.copy(end = period.start.plusMonths(1)), DAYCARE, testDaycare.id)
+        insertPlacement(
+            testChild_1.id,
+            period.copy(end = period.start.plusMonths(1)),
+            DAYCARE,
+            testDaycare.id
+        )
         insertPlacement(
             testChild_1.id,
             period.copy(start = period.start.plusMonths(1).plusDays(1)),
@@ -2035,7 +2610,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             testDaycare.id
         )
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, period.start) }
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
 
         val feeDecisions = getAllFeeDecisions()
         assertEquals(1, feeDecisions.size)
@@ -2062,7 +2644,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPartnership(testAdult_1.id, testAdult_2.id, period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_1.id, period.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_1.id,
+                period.start
+            )
+        }
         assertEquals(1, getAllFeeDecisions().size)
     }
 
@@ -2075,7 +2664,14 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPartnership(testAdult_1.id, testAdult_2.id, period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
 
-        db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_2.id, period.start) }
+        db.transaction {
+            generator.generateNewDecisionsForChild(
+                it,
+                RealEvakaClock(),
+                testChild_2.id,
+                period.start
+            )
+        }
         assertEquals(1, getAllFeeDecisions().size)
     }
 
@@ -2085,27 +2681,40 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
         insertIncome(testAdult_1.id, 500000, period.copy(end = period.start.plusMonths(6)))
-        insertIncome(testAdult_1.id, 400000, period.copy(start = period.start.plusMonths(6).plusDays(1)))
-        val sentDecision = createFeeDecisionFixture(
-            status = FeeDecisionStatus.SENT,
-            decisionType = FeeDecisionType.NORMAL,
-            headOfFamilyId = testAdult_1.id,
-            period = period,
-            children = listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = DAYCARE,
-                    serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
-                    baseFee = 0,
-                    fee = 0
-                )
-            )
+        insertIncome(
+            testAdult_1.id,
+            400000,
+            period.copy(start = period.start.plusMonths(6).plusDays(1))
         )
+        val sentDecision =
+            createFeeDecisionFixture(
+                status = FeeDecisionStatus.SENT,
+                decisionType = FeeDecisionType.NORMAL,
+                headOfFamilyId = testAdult_1.id,
+                period = period,
+                children =
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = DAYCARE,
+                            serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
+                            baseFee = 0,
+                            fee = 0
+                        )
+                    )
+            )
         db.transaction { it.upsertFeeDecisions(listOf(sentDecision)) }
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, period.start) }
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
         val feeDecisions = getAllFeeDecisions()
         assertEquals(2, feeDecisions.size)
         assertEquals(1, feeDecisions.filter { it.status == FeeDecisionStatus.SENT }.size)
@@ -2121,54 +2730,62 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), period)
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertPlacement(testChild_2.id, period, DAYCARE, testDaycare.id)
-        val sentDecisions = listOf(
-            createFeeDecisionFixture(
-                status = FeeDecisionStatus.SENT,
-                decisionType = FeeDecisionType.NORMAL,
-                headOfFamilyId = testAdult_1.id,
-                partnerId = testAdult_2.id,
-                period = period,
-                feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
-                familySize = 4,
-                children = listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = DAYCARE,
-                        serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        siblingDiscount = 0,
-                        fee = 28900
-                    )
-                )
-            ),
-            createFeeDecisionFixture(
-                status = FeeDecisionStatus.SENT,
-                decisionType = FeeDecisionType.NORMAL,
-                headOfFamilyId = testAdult_2.id,
-                partnerId = testAdult_1.id,
-                period = period,
-                feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
-                familySize = 4,
-                children = listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_2.id,
-                        dateOfBirth = testChild_2.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = DAYCARE,
-                        serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        siblingDiscount = 50,
-                        fee = 14500
-                    )
+        val sentDecisions =
+            listOf(
+                createFeeDecisionFixture(
+                    status = FeeDecisionStatus.SENT,
+                    decisionType = FeeDecisionType.NORMAL,
+                    headOfFamilyId = testAdult_1.id,
+                    partnerId = testAdult_2.id,
+                    period = period,
+                    feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
+                    familySize = 4,
+                    children =
+                        listOf(
+                            createFeeDecisionChildFixture(
+                                childId = testChild_1.id,
+                                dateOfBirth = testChild_1.dateOfBirth,
+                                placementUnitId = testDaycare.id,
+                                placementType = DAYCARE,
+                                serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
+                                baseFee = 28900,
+                                siblingDiscount = 0,
+                                fee = 28900
+                            )
+                        )
+                ),
+                createFeeDecisionFixture(
+                    status = FeeDecisionStatus.SENT,
+                    decisionType = FeeDecisionType.NORMAL,
+                    headOfFamilyId = testAdult_2.id,
+                    partnerId = testAdult_1.id,
+                    period = period,
+                    feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
+                    familySize = 4,
+                    children =
+                        listOf(
+                            createFeeDecisionChildFixture(
+                                childId = testChild_2.id,
+                                dateOfBirth = testChild_2.dateOfBirth,
+                                placementUnitId = testDaycare.id,
+                                placementType = DAYCARE,
+                                serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
+                                baseFee = 28900,
+                                siblingDiscount = 50,
+                                fee = 14500
+                            )
+                        )
                 )
             )
-        )
 
         db.transaction { tx ->
             tx.upsertFeeDecisions(sentDecisions)
-            generator.generateNewDecisionsForAdult(tx, RealEvakaClock(), testAdult_1.id, period.start)
+            generator.generateNewDecisionsForAdult(
+                tx,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
         }
 
         val decisions = getAllFeeDecisions()
@@ -2186,102 +2803,123 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         insertPartnership(testAdult_1.id, testAdult_2.id, wholePeriod)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), wholePeriod)
         insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), wholePeriod)
-        insertPlacement(testChild_1.id, firstPeriod.copy(end = secondPeriod.end), DAYCARE, testDaycare.id)
+        insertPlacement(
+            testChild_1.id,
+            firstPeriod.copy(end = secondPeriod.end),
+            DAYCARE,
+            testDaycare.id
+        )
         insertPlacement(testChild_1.id, thirdPeriod, DAYCARE_PART_TIME, testDaycare.id).let { id ->
             insertServiceNeed(id, thirdPeriod.asFiniteDateRange()!!, snDaycarePartDay25.id)
         }
         insertPlacement(testChild_2.id, firstPeriod, DAYCARE, testDaycare.id)
-        insertPlacement(testChild_2.id, secondPeriod.copy(end = thirdPeriod.end), DAYCARE_FIVE_YEAR_OLDS, testDaycare.id)
-        val sentDecisions = listOf(
-            createFeeDecisionFixture(
-                status = FeeDecisionStatus.SENT,
-                decisionType = FeeDecisionType.NORMAL,
-                headOfFamilyId = testAdult_1.id,
-                partnerId = testAdult_2.id,
-                period = firstPeriod.copy(end = secondPeriod.end),
-                feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
-                familySize = 4,
-                children = listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = DAYCARE,
-                        serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        siblingDiscount = 0,
-                        fee = 28900
-                    )
-                )
-            ),
-            createFeeDecisionFixture(
-                status = FeeDecisionStatus.SENT,
-                decisionType = FeeDecisionType.NORMAL,
-                headOfFamilyId = testAdult_1.id,
-                partnerId = testAdult_2.id,
-                period = thirdPeriod,
-                feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
-                familySize = 4,
-                children = listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = DAYCARE_PART_TIME,
-                        serviceNeed = snDaycarePartDay25.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        siblingDiscount = 0,
-                        fee = 17300
-                    )
-                )
-            ),
-            createFeeDecisionFixture(
-                status = FeeDecisionStatus.SENT,
-                decisionType = FeeDecisionType.NORMAL,
-                headOfFamilyId = testAdult_2.id,
-                partnerId = testAdult_1.id,
-                period = firstPeriod,
-                feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
-                familySize = 4,
-                children = listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_2.id,
-                        dateOfBirth = testChild_2.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = DAYCARE,
-                        serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        siblingDiscount = 50,
-                        fee = 14500
-                    )
-                )
-            ),
-            createFeeDecisionFixture(
-                status = FeeDecisionStatus.SENT,
-                decisionType = FeeDecisionType.NORMAL,
-                headOfFamilyId = testAdult_2.id,
-                partnerId = testAdult_1.id,
-                period = secondPeriod.copy(end = thirdPeriod.end),
-                feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
-                familySize = 4,
-                children = listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_2.id,
-                        dateOfBirth = testChild_2.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = DAYCARE_FIVE_YEAR_OLDS,
-                        serviceNeed = snDefaultFiveYearOldsDaycare.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        siblingDiscount = 50,
-                        fee = 11600
-                    )
+        insertPlacement(
+            testChild_2.id,
+            secondPeriod.copy(end = thirdPeriod.end),
+            DAYCARE_FIVE_YEAR_OLDS,
+            testDaycare.id
+        )
+        val sentDecisions =
+            listOf(
+                createFeeDecisionFixture(
+                    status = FeeDecisionStatus.SENT,
+                    decisionType = FeeDecisionType.NORMAL,
+                    headOfFamilyId = testAdult_1.id,
+                    partnerId = testAdult_2.id,
+                    period = firstPeriod.copy(end = secondPeriod.end),
+                    feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
+                    familySize = 4,
+                    children =
+                        listOf(
+                            createFeeDecisionChildFixture(
+                                childId = testChild_1.id,
+                                dateOfBirth = testChild_1.dateOfBirth,
+                                placementUnitId = testDaycare.id,
+                                placementType = DAYCARE,
+                                serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
+                                baseFee = 28900,
+                                siblingDiscount = 0,
+                                fee = 28900
+                            )
+                        )
+                ),
+                createFeeDecisionFixture(
+                    status = FeeDecisionStatus.SENT,
+                    decisionType = FeeDecisionType.NORMAL,
+                    headOfFamilyId = testAdult_1.id,
+                    partnerId = testAdult_2.id,
+                    period = thirdPeriod,
+                    feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
+                    familySize = 4,
+                    children =
+                        listOf(
+                            createFeeDecisionChildFixture(
+                                childId = testChild_1.id,
+                                dateOfBirth = testChild_1.dateOfBirth,
+                                placementUnitId = testDaycare.id,
+                                placementType = DAYCARE_PART_TIME,
+                                serviceNeed = snDaycarePartDay25.toFeeDecisionServiceNeed(),
+                                baseFee = 28900,
+                                siblingDiscount = 0,
+                                fee = 17300
+                            )
+                        )
+                ),
+                createFeeDecisionFixture(
+                    status = FeeDecisionStatus.SENT,
+                    decisionType = FeeDecisionType.NORMAL,
+                    headOfFamilyId = testAdult_2.id,
+                    partnerId = testAdult_1.id,
+                    period = firstPeriod,
+                    feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
+                    familySize = 4,
+                    children =
+                        listOf(
+                            createFeeDecisionChildFixture(
+                                childId = testChild_2.id,
+                                dateOfBirth = testChild_2.dateOfBirth,
+                                placementUnitId = testDaycare.id,
+                                placementType = DAYCARE,
+                                serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
+                                baseFee = 28900,
+                                siblingDiscount = 50,
+                                fee = 14500
+                            )
+                        )
+                ),
+                createFeeDecisionFixture(
+                    status = FeeDecisionStatus.SENT,
+                    decisionType = FeeDecisionType.NORMAL,
+                    headOfFamilyId = testAdult_2.id,
+                    partnerId = testAdult_1.id,
+                    period = secondPeriod.copy(end = thirdPeriod.end),
+                    feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
+                    familySize = 4,
+                    children =
+                        listOf(
+                            createFeeDecisionChildFixture(
+                                childId = testChild_2.id,
+                                dateOfBirth = testChild_2.dateOfBirth,
+                                placementUnitId = testDaycare.id,
+                                placementType = DAYCARE_FIVE_YEAR_OLDS,
+                                serviceNeed =
+                                    snDefaultFiveYearOldsDaycare.toFeeDecisionServiceNeed(),
+                                baseFee = 28900,
+                                siblingDiscount = 50,
+                                fee = 11600
+                            )
+                        )
                 )
             )
-        )
 
         db.transaction { tx ->
             tx.upsertFeeDecisions(sentDecisions)
-            generator.generateNewDecisionsForAdult(tx, RealEvakaClock(), testAdult_1.id, wholePeriod.start)
+            generator.generateNewDecisionsForAdult(
+                tx,
+                RealEvakaClock(),
+                testAdult_1.id,
+                wholePeriod.start
+            )
         }
 
         val decisions = getAllFeeDecisions()
@@ -2293,7 +2931,10 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     private fun assertEqualEnoughDecisions(expected: FeeDecision, actual: FeeDecision) {
         val createdAt = HelsinkiDateTime.now()
         FeeDecisionId(UUID.randomUUID()).let { uuid ->
-            assertEquals(expected.copy(id = uuid, created = createdAt), actual.copy(id = uuid, created = createdAt))
+            assertEquals(
+                expected.copy(id = uuid, created = createdAt),
+                actual.copy(id = uuid, created = createdAt)
+            )
         }
     }
 
@@ -2307,7 +2948,12 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
     }
 
-    private fun insertPlacement(childId: ChildId, period: DateRange, type: fi.espoo.evaka.placement.PlacementType, daycareId: DaycareId): PlacementId {
+    private fun insertPlacement(
+        childId: ChildId,
+        period: DateRange,
+        type: fi.espoo.evaka.placement.PlacementType,
+        daycareId: DaycareId
+    ): PlacementId {
         return db.transaction { tx ->
             tx.insertTestPlacement(
                 childId = childId,
@@ -2319,25 +2965,37 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         }
     }
 
-    private fun insertFamilyRelations(headOfFamilyId: PersonId, childIds: List<ChildId>, period: DateRange) {
+    private fun insertFamilyRelations(
+        headOfFamilyId: PersonId,
+        childIds: List<ChildId>,
+        period: DateRange
+    ) {
         db.transaction { tx ->
             childIds.forEach { childId ->
-                tx.insertTestParentship(headOfFamilyId, childId, startDate = period.start, endDate = period.end!!)
+                tx.insertTestParentship(
+                    headOfFamilyId,
+                    childId,
+                    startDate = period.start,
+                    endDate = period.end!!
+                )
             }
         }
     }
 
     private fun insertGuardianship(guardian: PersonId, childIds: List<ChildId>) {
         db.transaction { tx ->
-            childIds.forEach { childId ->
-                tx.insertGuardian(guardian, childId)
-            }
+            childIds.forEach { childId -> tx.insertGuardian(guardian, childId) }
         }
     }
 
     private fun insertPartnership(adultId1: PersonId, adultId2: PersonId, period: DateRange) {
         db.transaction { tx ->
-            tx.insertTestPartnership(adultId1, adultId2, startDate = period.start, endDate = period.end!!)
+            tx.insertTestPartnership(
+                adultId1,
+                adultId2,
+                startDate = period.start,
+                endDate = period.end!!
+            )
         }
     }
 
@@ -2364,7 +3022,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     validFrom = period.start,
                     validTo = period.end,
                     effect = IncomeEffect.INCOME,
-                    data = mapOf("MAIN_INCOME" to IncomeValue(amount, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)),
+                    data =
+                        mapOf(
+                            "MAIN_INCOME" to
+                                IncomeValue(amount, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)
+                        ),
                     updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
                 )
             )
@@ -2388,9 +3050,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     private fun deleteIncomes() {
-        db.transaction { tx ->
-            tx.createUpdate("DELETE FROM income").execute()
-        }
+        db.transaction { tx -> tx.createUpdate("DELETE FROM income").execute() }
     }
 
     private fun insertFeeAlteration(personId: PersonId, amount: Double, period: DateRange) {
@@ -2411,10 +3071,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     private fun getAllFeeDecisions(): List<FeeDecision> {
-        return db.read { tx ->
-            tx.createQuery(feeDecisionQueryBase)
-                .mapTo<FeeDecision>()
-                .merge()
-        }.shuffled() // randomize order to expose assumptions
+        return db.read { tx -> tx.createQuery(feeDecisionQueryBase).mapTo<FeeDecision>().merge() }
+            .shuffled() // randomize order to expose assumptions
     }
 }

@@ -28,12 +28,12 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.HasUnitRole
 import fi.espoo.evaka.shared.security.actionrule.IsCitizen
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class ApplicationAccessControlTest : AccessControlTest() {
     private lateinit var creatorCitizen: AuthenticatedUser.Citizen
@@ -48,20 +48,21 @@ class ApplicationAccessControlTest : AccessControlTest() {
         creatorCitizen = createTestCitizen(CitizenAuthLevel.STRONG)
         db.transaction { tx ->
             childId = tx.insertTestPerson(DevPerson())
-            applicationId = tx.insertTestApplication(guardianId = creatorCitizen.id, childId = childId, type = ApplicationType.DAYCARE)
+            applicationId =
+                tx.insertTestApplication(
+                    guardianId = creatorCitizen.id,
+                    childId = childId,
+                    type = ApplicationType.DAYCARE
+                )
             val areaId = tx.insertTestCareArea(DevCareArea())
             daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
             tx.insertTestApplicationForm(
                 applicationId,
                 DaycareFormV0(
                     type = ApplicationType.DAYCARE,
-                    child = Child(
-                        dateOfBirth = LocalDate.of(2019, 1, 1)
-                    ),
+                    child = Child(dateOfBirth = LocalDate.of(2019, 1, 1)),
                     Adult(),
-                    apply = Apply(
-                        preferredUnits = listOf(daycareId)
-                    ),
+                    apply = Apply(preferredUnits = listOf(daycareId)),
                 )
             )
         }
@@ -81,8 +82,16 @@ class ApplicationAccessControlTest : AccessControlTest() {
     fun `HasUnitRole inPreferredUnitOfApplication`() {
         val action = Action.Application.READ
         rules.add(action, HasUnitRole(UserRole.UNIT_SUPERVISOR).inPreferredUnitOfApplication())
-        val unitSupervisor = createTestEmployee(globalRoles = emptySet(), unitRoles = mapOf(daycareId to UserRole.UNIT_SUPERVISOR))
-        val otherEmployee = createTestEmployee(globalRoles = emptySet(), unitRoles = mapOf(daycareId to UserRole.STAFF))
+        val unitSupervisor =
+            createTestEmployee(
+                globalRoles = emptySet(),
+                unitRoles = mapOf(daycareId to UserRole.UNIT_SUPERVISOR)
+            )
+        val otherEmployee =
+            createTestEmployee(
+                globalRoles = emptySet(),
+                unitRoles = mapOf(daycareId to UserRole.STAFF)
+            )
         assertTrue(accessControl.hasPermissionFor(unitSupervisor, clock, action, applicationId))
         assertFalse(accessControl.hasPermissionFor(otherEmployee, clock, action, applicationId))
     }
@@ -91,13 +100,22 @@ class ApplicationAccessControlTest : AccessControlTest() {
     fun `HasUnitRole inPlacementPlanUnitOfApplication`() {
         val action = Action.Application.READ
         rules.add(action, HasUnitRole(UserRole.UNIT_SUPERVISOR).inPlacementPlanUnitOfApplication())
-        val daycareId = db.transaction { tx ->
-            tx.execute("UPDATE application SET status = 'ACTIVE' WHERE id = ?", applicationId)
-            tx.insertTestPlacementPlan(applicationId, daycareId)
-            daycareId
-        }
-        val unitSupervisor = createTestEmployee(globalRoles = emptySet(), unitRoles = mapOf(daycareId to UserRole.UNIT_SUPERVISOR))
-        val otherEmployee = createTestEmployee(globalRoles = emptySet(), unitRoles = mapOf(daycareId to UserRole.STAFF))
+        val daycareId =
+            db.transaction { tx ->
+                tx.execute("UPDATE application SET status = 'ACTIVE' WHERE id = ?", applicationId)
+                tx.insertTestPlacementPlan(applicationId, daycareId)
+                daycareId
+            }
+        val unitSupervisor =
+            createTestEmployee(
+                globalRoles = emptySet(),
+                unitRoles = mapOf(daycareId to UserRole.UNIT_SUPERVISOR)
+            )
+        val otherEmployee =
+            createTestEmployee(
+                globalRoles = emptySet(),
+                unitRoles = mapOf(daycareId to UserRole.STAFF)
+            )
         assertTrue(accessControl.hasPermissionFor(unitSupervisor, clock, action, applicationId))
         assertFalse(accessControl.hasPermissionFor(otherEmployee, clock, action, applicationId))
     }

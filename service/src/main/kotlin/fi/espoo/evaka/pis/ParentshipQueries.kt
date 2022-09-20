@@ -13,8 +13,8 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
-import org.jdbi.v3.core.result.RowView
 import java.time.LocalDate
+import org.jdbi.v3.core.result.RowView
 
 fun Database.Read.getParentship(id: ParentshipId): Parentship? {
     // language=SQL
@@ -28,12 +28,10 @@ fun Database.Read.getParentship(id: ParentshipId): Parentship? {
         JOIN person child ON fc.child_id = child.id
         JOIN person head ON fc.head_of_child = head.id
         WHERE fc.id = :id
-        """.trimIndent()
+        """.trimIndent(
+        )
 
-    return createQuery(sql)
-        .bind("id", id)
-        .map(toParentship("child", "head"))
-        .firstOrNull()
+    return createQuery(sql).bind("id", id).map(toParentship("child", "head")).firstOrNull()
 }
 
 fun Database.Read.getParentships(
@@ -42,7 +40,8 @@ fun Database.Read.getParentships(
     includeConflicts: Boolean = false,
     period: DateRange? = null
 ): List<Parentship> {
-    if (headOfChildId == null && childId == null) throw BadRequest("Must give either headOfChildId or childId")
+    if (headOfChildId == null && childId == null)
+        throw BadRequest("Must give either headOfChildId or childId")
 
     // language=SQL
     val sql =
@@ -58,7 +57,8 @@ fun Database.Read.getParentships(
         AND (:child::uuid IS NULL OR child_id = :child)
         AND daterange(fc.start_date, fc.end_date, '[]') && daterange(:from, :to, '[]')
         AND (:includeConflicts OR conflict = false)
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     return createQuery(sql)
         .bind("headOfChild", headOfChildId)
@@ -92,7 +92,8 @@ fun Database.Transaction.createParentship(
         FROM new_fridge_child fc
         JOIN person child ON fc.child_id = child.id
         JOIN person head ON fc.head_of_child = head.id
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     return createQuery(sql)
         .bind("childId", childId)
@@ -104,7 +105,11 @@ fun Database.Transaction.createParentship(
         .first()
 }
 
-fun Database.Transaction.updateParentshipDuration(id: ParentshipId, startDate: LocalDate, endDate: LocalDate): Boolean {
+fun Database.Transaction.updateParentshipDuration(
+    id: ParentshipId,
+    startDate: LocalDate,
+    endDate: LocalDate
+): Boolean {
     // language=sql
     val sql = "UPDATE fridge_child SET start_date = :startDate, end_date = :endDate WHERE id = :id"
 
@@ -118,47 +123,43 @@ fun Database.Transaction.updateParentshipDuration(id: ParentshipId, startDate: L
 fun Database.Transaction.retryParentship(id: ParentshipId) {
     // language=SQL
     val sql = "UPDATE fridge_child SET conflict = false WHERE id = :id"
-    createUpdate(sql)
-        .bind("id", id)
-        .execute()
+    createUpdate(sql).bind("id", id).execute()
 }
 
 fun Database.Transaction.deleteParentship(id: ParentshipId): Boolean {
     // language=SQL
     val sql = "DELETE FROM fridge_child WHERE id = :id RETURNING id"
 
-    return createQuery(sql)
-        .bind("id", id)
-        .mapTo<ParentshipId>()
-        .firstOrNull() != null
+    return createQuery(sql).bind("id", id).mapTo<ParentshipId>().firstOrNull() != null
 }
 
 internal val aliasedPersonColumns: (String) -> String = { table ->
     personColumns.joinToString(", ") { column -> "$table.$column AS ${table}_$column" }
 }
 
-private val personColumns = listOf(
-    "id",
-    "social_security_number",
-    "ssn_adding_disabled",
-    "first_name",
-    "last_name",
-    "email",
-    "phone",
-    "language",
-    "date_of_birth",
-    "date_of_death",
-    "street_address",
-    "post_office",
-    "postal_code",
-    "residence_code",
-    "restricted_details_enabled",
-    "invoice_recipient_name",
-    "invoicing_street_address",
-    "postal_code",
-    "post_office",
-    "force_manual_fee_decisions"
-)
+private val personColumns =
+    listOf(
+        "id",
+        "social_security_number",
+        "ssn_adding_disabled",
+        "first_name",
+        "last_name",
+        "email",
+        "phone",
+        "language",
+        "date_of_birth",
+        "date_of_death",
+        "street_address",
+        "post_office",
+        "postal_code",
+        "residence_code",
+        "restricted_details_enabled",
+        "invoice_recipient_name",
+        "invoicing_street_address",
+        "postal_code",
+        "post_office",
+        "force_manual_fee_decisions"
+    )
 
 private val toParentship: (String, String) -> (RowView) -> Parentship = { childAlias, headAlias ->
     { row ->

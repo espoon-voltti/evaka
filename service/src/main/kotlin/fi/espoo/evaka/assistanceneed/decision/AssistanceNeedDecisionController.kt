@@ -28,9 +28,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
-data class AssistanceNeedDecisionRequest(
-    val decision: AssistanceNeedDecisionForm
-)
+data class AssistanceNeedDecisionRequest(val decision: AssistanceNeedDecisionForm)
 
 @RestController
 class AssistanceNeedDecisionController(
@@ -48,26 +46,36 @@ class AssistanceNeedDecisionController(
         @RequestBody body: AssistanceNeedDecisionRequest
     ): AssistanceNeedDecision {
         Audit.ChildAssistanceNeedDecisionCreate.log(targetId = childId)
-        accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_ASSISTANCE_NEED_DECISION, childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Child.CREATE_ASSISTANCE_NEED_DECISION,
+            childId
+        )
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                var decision: AssistanceNeedDecisionForm = body.decision.copy(
-                    status = AssistanceNeedDecisionStatus.DRAFT,
-                    sentForDecision = null,
-                    validityPeriod = body.decision.validityPeriod.copy(end = null)
-                )
+                var decision: AssistanceNeedDecisionForm =
+                    body.decision.copy(
+                        status = AssistanceNeedDecisionStatus.DRAFT,
+                        sentForDecision = null,
+                        validityPeriod = body.decision.validityPeriod.copy(end = null)
+                    )
                 if (decision.guardianInfo.isEmpty()) {
                     val guardianIds = tx.getChildGuardians(childId)
-                    decision = body.decision.copy(
-                        guardianInfo = guardianIds.map { gid ->
-                            AssistanceNeedDecisionGuardian(
-                                personId = gid,
-                                name = "", // not stored
-                                isHeard = false,
-                                details = null
-                            )
-                        }.toSet()
-                    )
+                    decision =
+                        body.decision.copy(
+                            guardianInfo =
+                                guardianIds
+                                    .map { gid ->
+                                        AssistanceNeedDecisionGuardian(
+                                            personId = gid,
+                                            name = "", // not stored
+                                            isHeard = false,
+                                            details = null
+                                        )
+                                    }
+                                    .toSet()
+                        )
                 }
 
                 tx.insertAssistanceNeedDecision(childId, decision)
@@ -111,10 +119,15 @@ class AssistanceNeedDecisionController(
             dbc.transaction { tx ->
                 val decision = tx.getAssistanceNeedDecisionById(id)
 
-                if (decision.status != AssistanceNeedDecisionStatus.NEEDS_WORK &&
-                    (decision.status != AssistanceNeedDecisionStatus.DRAFT || decision.sentForDecision != null)
+                if (
+                    decision.status != AssistanceNeedDecisionStatus.NEEDS_WORK &&
+                        (decision.status != AssistanceNeedDecisionStatus.DRAFT ||
+                            decision.sentForDecision != null)
                 ) {
-                    throw Forbidden("Only non-sent draft or workable decisions can be edited", "UNEDITABLE_DECISION")
+                    throw Forbidden(
+                        "Only non-sent draft or workable decisions can be edited",
+                        "UNEDITABLE_DECISION"
+                    )
                 }
 
                 tx.updateAssistanceNeedDecision(
@@ -123,10 +136,13 @@ class AssistanceNeedDecisionController(
                         sentForDecision = decision.sentForDecision,
                         status = decision.status,
                         validityPeriod =
-                        if (body.decision.assistanceLevels.contains(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME))
-                            body.decision.validityPeriod
-                        else
-                            body.decision.validityPeriod.copy(end = null)
+                            if (
+                                body.decision.assistanceLevels.contains(
+                                    AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME
+                                )
+                            )
+                                body.decision.validityPeriod
+                            else body.decision.validityPeriod.copy(end = null)
                     )
                 )
             }
@@ -146,10 +162,15 @@ class AssistanceNeedDecisionController(
             dbc.transaction { tx ->
                 val decision = tx.getAssistanceNeedDecisionById(id)
 
-                if (decision.status != AssistanceNeedDecisionStatus.NEEDS_WORK &&
-                    (decision.status != AssistanceNeedDecisionStatus.DRAFT || decision.sentForDecision != null)
+                if (
+                    decision.status != AssistanceNeedDecisionStatus.NEEDS_WORK &&
+                        (decision.status != AssistanceNeedDecisionStatus.DRAFT ||
+                            decision.sentForDecision != null)
                 ) {
-                    throw Forbidden("Only non-sent draft or workable decisions can be sent", "UNSENDABLE_DECISION")
+                    throw Forbidden(
+                        "Only non-sent draft or workable decisions can be sent",
+                        "UNSENDABLE_DECISION"
+                    )
                 }
 
                 if (hasMissingFields(decision)) {
@@ -162,10 +183,12 @@ class AssistanceNeedDecisionController(
 
                 tx.updateAssistanceNeedDecision(
                     id,
-                    decision.copy(
-                        sentForDecision = clock.today(),
-                        status = AssistanceNeedDecisionStatus.DRAFT
-                    ).toForm(),
+                    decision
+                        .copy(
+                            sentForDecision = clock.today(),
+                            status = AssistanceNeedDecisionStatus.DRAFT
+                        )
+                        .toForm(),
                     false
                 )
             }
@@ -180,18 +203,29 @@ class AssistanceNeedDecisionController(
         @PathVariable childId: ChildId
     ): List<AssistanceNeedDecisionBasicsResponse> {
         Audit.ChildAssistanceNeedDecisionsList.log(targetId = childId)
-        accessControl.requirePermissionFor(user, clock, Action.Child.READ_ASSISTANCE_NEED_DECISIONS, childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Child.READ_ASSISTANCE_NEED_DECISIONS,
+            childId
+        )
         return db.connect { dbc ->
             dbc.read { tx ->
                 val decisions = tx.getAssistanceNeedDecisionsByChildId(childId)
-                val permittedActions = accessControl.getPermittedActions<AssistanceNeedDecisionId, Action.AssistanceNeedDecision>(
-                    tx,
-                    user,
-                    clock,
-                    decisions.map { it.id }
-                )
+                val permittedActions =
+                    accessControl.getPermittedActions<
+                        AssistanceNeedDecisionId, Action.AssistanceNeedDecision
+                    >(
+                        tx,
+                        user,
+                        clock,
+                        decisions.map { it.id }
+                    )
                 decisions.map {
-                    AssistanceNeedDecisionBasicsResponse(decision = it, permittedActions = permittedActions[it.id]!!)
+                    AssistanceNeedDecisionBasicsResponse(
+                        decision = it,
+                        permittedActions = permittedActions[it.id]!!
+                    )
                 }
             }
         }
@@ -209,7 +243,10 @@ class AssistanceNeedDecisionController(
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 if (!tx.deleteAssistanceNeedDecision(id)) {
-                    throw NotFound("Assistance need decision $id cannot found or cannot be deleted", "DECISION_NOT_FOUND")
+                    throw NotFound(
+                        "Assistance need decision $id cannot found or cannot be deleted",
+                        "DECISION_NOT_FOUND"
+                    )
                 }
             }
         }
@@ -234,12 +271,17 @@ class AssistanceNeedDecisionController(
             dbc.transaction { tx ->
                 val decision = tx.getAssistanceNeedDecisionById(id)
 
-                if (decision.status == AssistanceNeedDecisionStatus.ACCEPTED || decision.status == AssistanceNeedDecisionStatus.REJECTED) {
+                if (
+                    decision.status == AssistanceNeedDecisionStatus.ACCEPTED ||
+                        decision.status == AssistanceNeedDecisionStatus.REJECTED
+                ) {
                     throw BadRequest("Already-decided decisions cannot be decided again")
                 }
 
                 if (decision.child?.id == null) {
-                    throw BadRequest("The assistance need decision needs to be associated with a child")
+                    throw BadRequest(
+                        "The assistance need decision needs to be associated with a child"
+                    )
                 }
 
                 if (body.status == AssistanceNeedDecisionStatus.ACCEPTED) {
@@ -253,7 +295,8 @@ class AssistanceNeedDecisionController(
                 tx.decideAssistanceNeedDecision(
                     id,
                     body.status,
-                    if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null else clock.today(),
+                    if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null
+                    else clock.today(),
                     if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null
                     else tx.getChildGuardians(decision.child.id)
                 )
@@ -281,12 +324,15 @@ class AssistanceNeedDecisionController(
         @PathVariable id: AssistanceNeedDecisionId
     ) {
         Audit.ChildAssistanceNeedDecisionOpened.log(targetId = id)
-        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.MARK_AS_OPENED, id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.AssistanceNeedDecision.MARK_AS_OPENED,
+            id
+        )
 
         return db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.markAssistanceNeedDecisionAsOpened(id)
-            }
+            dbc.transaction { tx -> tx.markAssistanceNeedDecisionAsOpened(id) }
         }
     }
 
@@ -299,27 +345,38 @@ class AssistanceNeedDecisionController(
         @RequestBody body: UpdateDecisionMakerForAssistanceNeedDecisionRequest
     ) {
         Audit.ChildAssistanceNeedDecisionUpdateDecisionMaker.log(targetId = id)
-        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.UPDATE_DECISION_MAKER, id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.AssistanceNeedDecision.UPDATE_DECISION_MAKER,
+            id
+        )
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 val decision = tx.getAssistanceNeedDecisionById(id)
 
-                if (decision.status == AssistanceNeedDecisionStatus.ACCEPTED ||
-                    decision.status == AssistanceNeedDecisionStatus.REJECTED ||
-                    decision.sentForDecision == null
+                if (
+                    decision.status == AssistanceNeedDecisionStatus.ACCEPTED ||
+                        decision.status == AssistanceNeedDecisionStatus.REJECTED ||
+                        decision.sentForDecision == null
                 ) {
-                    throw BadRequest("Decision maker cannot be changed for already-decided or unsent decisions")
+                    throw BadRequest(
+                        "Decision maker cannot be changed for already-decided or unsent decisions"
+                    )
                 }
 
                 tx.updateAssistanceNeedDecision(
                     id,
-                    decision.copy(
-                        decisionMaker = AssistanceNeedDecisionMaker(
-                            employeeId = EmployeeId(user.rawId()),
-                            title = body.title
+                    decision
+                        .copy(
+                            decisionMaker =
+                                AssistanceNeedDecisionMaker(
+                                    employeeId = EmployeeId(user.rawId()),
+                                    title = body.title
+                                )
                         )
-                    ).toForm(),
+                        .toForm(),
                     true
                 )
             }
@@ -334,7 +391,12 @@ class AssistanceNeedDecisionController(
         db: Database
     ): List<Employee> {
         Audit.ChildAssistanceNeedDecisionReadDecisionMakerOptions.log(targetId = id)
-        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.READ_DECISION_MAKER_OPTIONS, id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.AssistanceNeedDecision.READ_DECISION_MAKER_OPTIONS,
+            id
+        )
         return db.connect { dbc ->
             dbc.read { tx ->
                 assistanceNeedDecisionService.getDecisionMakerOptions(
@@ -348,17 +410,19 @@ class AssistanceNeedDecisionController(
 
     private fun hasMissingFields(decision: AssistanceNeedDecision): Boolean {
         return decision.selectedUnit == null ||
-            (decision.assistanceLevels.contains(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME) && decision.validityPeriod.end == null) ||
+            (decision.assistanceLevels.contains(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME) &&
+                decision.validityPeriod.end == null) ||
             decision.pedagogicalMotivation.isNullOrEmpty() ||
             decision.guardiansHeardOn == null ||
-            (
-                (decision.preparedBy1?.employeeId == null || decision.preparedBy1.title.isNullOrEmpty()) &&
-                    (decision.preparedBy2?.employeeId == null || decision.preparedBy2.title.isNullOrEmpty())
-                ) ||
+            ((decision.preparedBy1?.employeeId == null ||
+                decision.preparedBy1.title.isNullOrEmpty()) &&
+                (decision.preparedBy2?.employeeId == null ||
+                    decision.preparedBy2.title.isNullOrEmpty())) ||
             decision.decisionMaker?.employeeId == null ||
             decision.guardianInfo.any { !it.isHeard || it.details.isNullOrEmpty() } ||
             decision.assistanceLevels.isEmpty() ||
-            (decision.otherRepresentativeHeard && decision.otherRepresentativeDetails.isNullOrEmpty())
+            (decision.otherRepresentativeHeard &&
+                decision.otherRepresentativeDetails.isNullOrEmpty())
     }
 
     data class AssistanceNeedDecisionBasicsResponse(
@@ -372,11 +436,7 @@ class AssistanceNeedDecisionController(
         val hasMissingFields: Boolean
     )
 
-    data class DecideAssistanceNeedDecisionRequest(
-        val status: AssistanceNeedDecisionStatus
-    )
+    data class DecideAssistanceNeedDecisionRequest(val status: AssistanceNeedDecisionStatus)
 
-    data class UpdateDecisionMakerForAssistanceNeedDecisionRequest(
-        val title: String
-    )
+    data class UpdateDecisionMakerForAssistanceNeedDecisionRequest(val title: String)
 }

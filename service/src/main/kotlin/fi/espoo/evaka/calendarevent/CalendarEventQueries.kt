@@ -12,9 +12,12 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 
-fun Database.Read.getCalendarEventsByUnit(unitId: DaycareId, range: FiniteDateRange): List<CalendarEvent> =
+fun Database.Read.getCalendarEventsByUnit(
+    unitId: DaycareId,
+    range: FiniteDateRange
+): List<CalendarEvent> =
     this.createQuery(
-        """
+            """
 SELECT
     ce.id, cea.unit_id, ce.title, ce.description, ce.period,
     (
@@ -44,31 +47,36 @@ WHERE cea.unit_id = :unitId AND ce.period && :range AND (cea.child_id IS NULL OR
       AND rp.unit_id = cea.unit_id
 ))
 GROUP BY ce.id, cea.unit_id
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("unitId", unitId)
         .bind("range", range)
         .mapTo<CalendarEvent>()
         .list()
 
 fun Database.Transaction.createCalendarEvent(event: CalendarEventForm) {
-    val eventId = this.createUpdate(
-        """
+    val eventId =
+        this.createUpdate(
+                """
 INSERT INTO calendar_event (title, description, period)
 VALUES (:title, :description, :period)
 RETURNING id
-        """.trimIndent()
-    )
-        .bindKotlin(event)
-        .executeAndReturnGeneratedKeys()
-        .mapTo<CalendarEventId>()
-        .first()
+        """.trimIndent(
+                )
+            )
+            .bindKotlin(event)
+            .executeAndReturnGeneratedKeys()
+            .mapTo<CalendarEventId>()
+            .first()
 
     if (event.tree != null) {
         event.tree.forEach { (groupId, childIds) ->
             // TODO: batching
             if (childIds != null) {
-                childIds.forEach { childId -> createCalendarEventAttendee(eventId, event.unitId, groupId, childId) }
+                childIds.forEach { childId ->
+                    createCalendarEventAttendee(eventId, event.unitId, groupId, childId)
+                }
             } else {
                 createCalendarEventAttendee(eventId, event.unitId, groupId, null)
             }
@@ -79,11 +87,9 @@ RETURNING id
 }
 
 fun Database.Transaction.deleteCalendarEvent(eventId: CalendarEventId) =
-    this.createUpdate(
-        """
+    this.createUpdate("""
 DELETE FROM calendar_event WHERE id = :id
-        """.trimIndent()
-    )
+        """.trimIndent())
         .bind("id", eventId)
         .updateExactlyOne()
 
@@ -94,25 +100,30 @@ fun Database.Transaction.createCalendarEventAttendee(
     childId: ChildId?
 ) =
     this.createUpdate(
-        """
+            """
 INSERT INTO calendar_event_attendee (calendar_event_id, unit_id, group_id, child_id)
 VALUES (:eventId, :unitId, :groupId, :childId)
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("eventId", eventId)
         .bind("unitId", unitId)
         .bind("groupId", groupId)
         .bind("childId", childId)
         .updateExactlyOne()
 
-fun Database.Transaction.updateCalendarEvent(eventId: CalendarEventId, updateForm: CalendarEventUpdateForm) =
+fun Database.Transaction.updateCalendarEvent(
+    eventId: CalendarEventId,
+    updateForm: CalendarEventUpdateForm
+) =
     this.createUpdate(
-        """
+            """
 UPDATE calendar_event
 SET title = :title, description = :description
 WHERE id = :eventId
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("eventId", eventId)
         .bindKotlin(updateForm)
         .updateExactlyOne()
@@ -130,9 +141,12 @@ data class CitizenCalendarEventRow(
     val unitName: String
 )
 
-fun Database.Read.getCalendarEventsForGuardian(guardianId: PersonId, range: FiniteDateRange): List<CitizenCalendarEventRow> =
+fun Database.Read.getCalendarEventsForGuardian(
+    guardianId: PersonId,
+    range: FiniteDateRange
+): List<CitizenCalendarEventRow> =
     this.createQuery(
-        """
+            """
 WITH child AS NOT MATERIALIZED (SELECT g.child_id id FROM guardian g WHERE g.guardian_id = :guardianId),
 child_placement AS NOT MATERIALIZED (
     SELECT p.id, p.unit_id, p.child_id, placement_without_backup.range period, null backup_group_id
@@ -180,8 +194,9 @@ WHERE cp.period && ce.period
   AND ce.period && :range
   -- dgp start date can be null when the child is in backup care; this is accounted in ce.period
   AND (dgp.start_date IS NULL OR daterange(dgp.start_date, dgp.end_date, '[]') && ce.period)
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("guardianId", guardianId)
         .bind("range", range)
         .mapTo<CitizenCalendarEventRow>()
@@ -189,10 +204,11 @@ WHERE cp.period && ce.period
 
 fun Database.Read.devCalendarEventUnitAttendeeCount(unitId: DaycareId): Int =
     this.createQuery(
-        """
+            """
 SELECT COUNT(*) FROM calendar_event_attendee WHERE unit_id = :unitId
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("unitId", unitId)
         .mapTo<Int>()
         .first()

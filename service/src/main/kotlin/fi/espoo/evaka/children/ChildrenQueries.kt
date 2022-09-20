@@ -10,7 +10,7 @@ import java.time.LocalDate
 
 fun Database.Read.getChildrenByGuardian(id: PersonId, today: LocalDate): List<Child> =
     this.createQuery(
-        """
+            """
 SELECT
     p.id,
     p.first_name,
@@ -30,8 +30,9 @@ LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id AND da
 LEFT JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
 WHERE g.guardian_id = :userId
 ORDER BY p.date_of_birth, p.last_name, p.first_name
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("today", today)
         .bind("userId", id)
         .mapTo<Child>()

@@ -47,18 +47,25 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner
 @Configuration
 @Profile("espoo_evaka")
 class EspooConfig {
-    @Bean
-    fun espooEnv(env: Environment) = EspooEnv.fromEnvironment(env)
+    @Bean fun espooEnv(env: Environment) = EspooEnv.fromEnvironment(env)
 
     @Bean
-    fun invoiceIntegrationClient(env: EspooEnv, invoiceEnv: ObjectProvider<EspooInvoiceIntegrationEnv>, jsonMapper: JsonMapper): InvoiceIntegrationClient =
+    fun invoiceIntegrationClient(
+        env: EspooEnv,
+        invoiceEnv: ObjectProvider<EspooInvoiceIntegrationEnv>,
+        jsonMapper: JsonMapper
+    ): InvoiceIntegrationClient =
         when (env.invoiceIntegrationEnabled) {
             true -> EspooInvoiceIntegrationClient(invoiceEnv.getObject(), jsonMapper)
             false -> InvoiceIntegrationClient.MockClient(jsonMapper)
         }
 
     @Bean
-    fun patuIntegrationClient(env: EspooEnv, patuEnv: ObjectProvider<EspooPatuIntegrationEnv>, jsonMapper: JsonMapper): PatuIntegrationClient =
+    fun patuIntegrationClient(
+        env: EspooEnv,
+        patuEnv: ObjectProvider<EspooPatuIntegrationEnv>,
+        jsonMapper: JsonMapper
+    ): PatuIntegrationClient =
         when (env.patuIntegrationEnabled) {
             true -> EspooPatuIntegrationClient(patuEnv.getObject(), jsonMapper)
             false -> PatuIntegrationClient.MockPatuClient(jsonMapper)
@@ -66,18 +73,20 @@ class EspooConfig {
 
     @Bean
     @Lazy
-    fun espooInvoiceIntegrationEnv(env: Environment) = EspooInvoiceIntegrationEnv.fromEnvironment(env)
+    fun espooInvoiceIntegrationEnv(env: Environment) =
+        EspooInvoiceIntegrationEnv.fromEnvironment(env)
 
-    @Bean
-    fun espooInvoiceGenerationLogicChooser() = DefaultInvoiceGenerationLogic
+    @Bean fun espooInvoiceGenerationLogicChooser() = DefaultInvoiceGenerationLogic
 
     @Bean
     @Lazy
     fun espooPatuIntegrationEnv(env: Environment) = EspooPatuIntegrationEnv.fromEnvironment(env)
 
     @Bean
-    fun espooPatuAsyncJobProcessor(asyncJobRunner: AsyncJobRunner<AsyncJob>, patuIntegrationClient: PatuIntegrationClient) =
-        PatuAsyncJobProcessor(asyncJobRunner, patuIntegrationClient)
+    fun espooPatuAsyncJobProcessor(
+        asyncJobRunner: AsyncJobRunner<AsyncJob>,
+        patuIntegrationClient: PatuIntegrationClient
+    ) = PatuAsyncJobProcessor(asyncJobRunner, patuIntegrationClient)
 
     @Bean
     @Profile("local")
@@ -86,69 +95,72 @@ class EspooConfig {
 
     @Bean
     @Profile("production")
-    fun paymentIntegrationClient(): PaymentIntegrationClient = PaymentIntegrationClient.FailingClient()
+    fun paymentIntegrationClient(): PaymentIntegrationClient =
+        PaymentIntegrationClient.FailingClient()
+
+    @Bean fun messageProvider(): IMessageProvider = EvakaMessageProvider()
+
+    @Bean fun emailMessageProvider(): IEmailMessageProvider = EvakaEmailMessageProvider()
 
     @Bean
-    fun messageProvider(): IMessageProvider = EvakaMessageProvider()
+    fun documentService(
+        s3Client: S3Client,
+        s3Presigner: S3Presigner,
+        env: BucketEnv
+    ): DocumentService = DocumentService(s3Client, s3Presigner, env.proxyThroughNginx)
+
+    @Bean fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
+
+    @Bean fun jobSchedule(env: ScheduledJobsEnv): JobSchedule = DefaultJobSchedule(env)
+
+    @Bean @Profile("local") fun devDataInitializer(jdbi: Jdbi) = DevDataInitializer(jdbi)
+
+    @Bean fun incomeTypesProvider(): IncomeTypesProvider = EspooIncomeTypesProvider()
+
+    @Bean fun invoiceProductsProvider(): InvoiceProductProvider = EspooInvoiceProducts.Provider()
 
     @Bean
-    fun emailMessageProvider(): IEmailMessageProvider = EvakaEmailMessageProvider()
+    fun featureConfig(): FeatureConfig =
+        FeatureConfig(
+            valueDecisionCapacityFactorEnabled = false,
+            daycareApplicationServiceNeedOptionsEnabled = false,
+            citizenReservationThresholdHours = 150,
+            dailyFeeDivisorOperationalDaysOverride = null,
+            freeSickLeaveOnContractDays = false, // Doesn't affect Espoo
+            freeAbsenceGivesADailyRefund = true,
+            alwaysUseDaycareFinanceDecisionHandler = false, // Doesn't affect Espoo
+            invoiceNumberSeriesStart = 5000000000,
+            paymentNumberSeriesStart = 1, // Payments are not yet in use in Espoo
+            unplannedAbsencesAreContractSurplusDays = false, // Doesn't affect Espoo
+            maxContractDaySurplusThreshold = null, // Doesn't affect Espoo
+            useContractDaysAsDailyFeeDivisor = true, // Doesn't affect Espoo
+            enabledChildConsentTypes = setOf(ChildConsentType.EVAKA_PROFILE_PICTURE),
+            curriculumDocumentPermissionToShareRequired = true,
+            assistanceDecisionMakerRoles = null,
+            requestedStartUpperLimit = 14,
+        )
 
     @Bean
-    fun documentService(s3Client: S3Client, s3Presigner: S3Presigner, env: BucketEnv): DocumentService =
-        DocumentService(s3Client, s3Presigner, env.proxyThroughNginx)
+    fun tomcatCustomizer() =
+        WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
+            it.setDisableMBeanRegistry(false)
+        }
 
-    @Bean
-    fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
-
-    @Bean
-    fun jobSchedule(env: ScheduledJobsEnv): JobSchedule = DefaultJobSchedule(env)
-
-    @Bean
-    @Profile("local")
-    fun devDataInitializer(jdbi: Jdbi) = DevDataInitializer(jdbi)
-
-    @Bean
-    fun incomeTypesProvider(): IncomeTypesProvider = EspooIncomeTypesProvider()
-
-    @Bean
-    fun invoiceProductsProvider(): InvoiceProductProvider = EspooInvoiceProducts.Provider()
-
-    @Bean
-    fun featureConfig(): FeatureConfig = FeatureConfig(
-        valueDecisionCapacityFactorEnabled = false,
-        daycareApplicationServiceNeedOptionsEnabled = false,
-        citizenReservationThresholdHours = 150,
-        dailyFeeDivisorOperationalDaysOverride = null,
-        freeSickLeaveOnContractDays = false, // Doesn't affect Espoo
-        freeAbsenceGivesADailyRefund = true,
-        alwaysUseDaycareFinanceDecisionHandler = false, // Doesn't affect Espoo
-        invoiceNumberSeriesStart = 5000000000,
-        paymentNumberSeriesStart = 1, // Payments are not yet in use in Espoo
-        unplannedAbsencesAreContractSurplusDays = false, // Doesn't affect Espoo
-        maxContractDaySurplusThreshold = null, // Doesn't affect Espoo
-        useContractDaysAsDailyFeeDivisor = true, // Doesn't affect Espoo
-        enabledChildConsentTypes = setOf(ChildConsentType.EVAKA_PROFILE_PICTURE),
-        curriculumDocumentPermissionToShareRequired = true,
-        assistanceDecisionMakerRoles = null,
-        requestedStartUpperLimit = 14,
-    )
-
-    @Bean
-    fun tomcatCustomizer() = WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
-        it.setDisableMBeanRegistry(false)
-    }
-
-    @Bean
-    fun actionRuleMapping(): ActionRuleMapping = DefaultActionRuleMapping()
+    @Bean fun actionRuleMapping(): ActionRuleMapping = DefaultActionRuleMapping()
 }
 
 data class EspooEnv(val invoiceIntegrationEnabled: Boolean, val patuIntegrationEnabled: Boolean) {
     companion object {
-        fun fromEnvironment(env: Environment): EspooEnv = EspooEnv(
-            invoiceIntegrationEnabled = env.lookup("espoo.integration.invoice.enabled", "fi.espoo.integration.invoice.enabled") ?: true,
-            patuIntegrationEnabled = env.lookup("espoo.integration.patu.enabled") ?: false
-        )
+        fun fromEnvironment(env: Environment): EspooEnv =
+            EspooEnv(
+                invoiceIntegrationEnabled =
+                    env.lookup(
+                        "espoo.integration.invoice.enabled",
+                        "fi.espoo.integration.invoice.enabled"
+                    )
+                        ?: true,
+                patuIntegrationEnabled = env.lookup("espoo.integration.patu.enabled") ?: false
+            )
     }
 }
 
@@ -159,12 +171,24 @@ data class EspooInvoiceIntegrationEnv(
     val sendCodebtor: Boolean
 ) {
     companion object {
-        fun fromEnvironment(env: Environment) = EspooInvoiceIntegrationEnv(
-            url = env.lookup("espoo.integration.invoice.url", "fi.espoo.integration.invoice.url"),
-            username = env.lookup("espoo.integration.invoice.username", "fi.espoo.integration.invoice.username"),
-            password = Sensitive(env.lookup("espoo.integration.invoice.password", "fi.espoo.integration.invoice.password")),
-            sendCodebtor = env.lookup("espoo.integration.invoice.send_codebtor") ?: false
-        )
+        fun fromEnvironment(env: Environment) =
+            EspooInvoiceIntegrationEnv(
+                url =
+                    env.lookup("espoo.integration.invoice.url", "fi.espoo.integration.invoice.url"),
+                username =
+                    env.lookup(
+                        "espoo.integration.invoice.username",
+                        "fi.espoo.integration.invoice.username"
+                    ),
+                password =
+                    Sensitive(
+                        env.lookup(
+                            "espoo.integration.invoice.password",
+                            "fi.espoo.integration.invoice.password"
+                        )
+                    ),
+                sendCodebtor = env.lookup("espoo.integration.invoice.send_codebtor") ?: false
+            )
     }
 }
 
@@ -174,10 +198,11 @@ data class EspooPatuIntegrationEnv(
     val password: Sensitive<String>
 ) {
     companion object {
-        fun fromEnvironment(env: Environment) = EspooPatuIntegrationEnv(
-            url = env.lookup("fi.espoo.integration.patu.url"),
-            username = env.lookup("fi.espoo.integration.patu.username"),
-            password = Sensitive(env.lookup("fi.espoo.integration.patu.password"))
-        )
+        fun fromEnvironment(env: Environment) =
+            EspooPatuIntegrationEnv(
+                url = env.lookup("fi.espoo.integration.patu.url"),
+                username = env.lookup("fi.espoo.integration.patu.username"),
+                password = Sensitive(env.lookup("fi.espoo.integration.patu.password"))
+            )
     }
 }

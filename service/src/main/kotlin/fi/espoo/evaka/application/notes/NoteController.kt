@@ -35,21 +35,41 @@ class NoteController(private val accessControl: AccessControl) {
         @PathVariable applicationId: ApplicationId
     ): List<ApplicationNoteResponse> {
         Audit.NoteRead.log(targetId = applicationId)
-        val notesQuery: (Database.Read) -> List<ApplicationNote> = if (accessControl.hasPermissionFor(user, clock, Action.Application.READ_NOTES, applicationId)) {
-            { tx: Database.Read -> tx.getApplicationNotes(applicationId) }
-        } else {
-            accessControl
-                .requirePermissionFor(user, clock, Action.Application.READ_SPECIAL_EDUCATION_TEACHER_NOTES, applicationId)
-                .let {
-                    { tx: Database.Read -> tx.getApplicationSpecialEducationTeacherNotes(applicationId) }
-                }
-        }
+        val notesQuery: (Database.Read) -> List<ApplicationNote> =
+            if (
+                accessControl.hasPermissionFor(
+                    user,
+                    clock,
+                    Action.Application.READ_NOTES,
+                    applicationId
+                )
+            ) {
+                { tx: Database.Read -> tx.getApplicationNotes(applicationId) }
+            } else {
+                accessControl
+                    .requirePermissionFor(
+                        user,
+                        clock,
+                        Action.Application.READ_SPECIAL_EDUCATION_TEACHER_NOTES,
+                        applicationId
+                    )
+                    .let {
+                        { tx: Database.Read ->
+                            tx.getApplicationSpecialEducationTeacherNotes(applicationId)
+                        }
+                    }
+            }
 
         return db.connect { dbc ->
             dbc.read { tx ->
                 val notes = notesQuery(tx)
-                val permittedActions = accessControl
-                    .getPermittedActions<ApplicationNoteId, Action.ApplicationNote>(tx, user, clock, notes.map { it.id })
+                val permittedActions =
+                    accessControl.getPermittedActions<ApplicationNoteId, Action.ApplicationNote>(
+                        tx,
+                        user,
+                        clock,
+                        notes.map { it.id }
+                    )
 
                 notes.map {
                     ApplicationNoteResponse(
@@ -70,12 +90,15 @@ class NoteController(private val accessControl: AccessControl) {
         @RequestBody note: NoteRequest
     ): ApplicationNote {
         Audit.NoteCreate.log(targetId = applicationId)
-        accessControl.requirePermissionFor(user, clock, Action.Application.CREATE_NOTE, applicationId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Application.CREATE_NOTE,
+            applicationId
+        )
 
         return db.connect { dbc ->
-            dbc.transaction {
-                it.createApplicationNote(applicationId, note.text, user.evakaUserId)
-            }
+            dbc.transaction { it.createApplicationNote(applicationId, note.text, user.evakaUserId) }
         }
     }
 
@@ -91,9 +114,7 @@ class NoteController(private val accessControl: AccessControl) {
         accessControl.requirePermissionFor(user, clock, Action.ApplicationNote.UPDATE, noteId)
 
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.updateApplicationNote(noteId, note.text, user.evakaUserId)
-            }
+            dbc.transaction { tx -> tx.updateApplicationNote(noteId, note.text, user.evakaUserId) }
         }
     }
 
@@ -106,11 +127,7 @@ class NoteController(private val accessControl: AccessControl) {
     ) {
         Audit.NoteDelete.log(targetId = noteId)
         accessControl.requirePermissionFor(user, clock, Action.ApplicationNote.DELETE, noteId)
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.deleteApplicationNote(noteId)
-            }
-        }
+        db.connect { dbc -> dbc.transaction { tx -> tx.deleteApplicationNote(noteId) } }
     }
 
     @PutMapping("/service-worker/application/{applicationId}")
@@ -122,7 +139,11 @@ class NoteController(private val accessControl: AccessControl) {
         @RequestBody note: NoteRequest
     ) {
         Audit.ServiceWorkerNoteUpdate.log(targetId = applicationId)
-        accessControl.requirePermissionFor(user, clock, Action.Global.WRITE_SERVICE_WORKER_APPLICATION_NOTES)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Global.WRITE_SERVICE_WORKER_APPLICATION_NOTES
+        )
 
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -132,9 +153,7 @@ class NoteController(private val accessControl: AccessControl) {
     }
 }
 
-data class NoteRequest(
-    val text: String
-)
+data class NoteRequest(val text: String)
 
 data class ApplicationNoteResponse(
     val note: ApplicationNote,

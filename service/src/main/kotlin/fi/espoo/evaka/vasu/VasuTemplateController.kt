@@ -26,9 +26,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/vasu/templates")
-class VasuTemplateController(
-    private val accessControl: AccessControl
-) {
+class VasuTemplateController(private val accessControl: AccessControl) {
     data class CreateTemplateRequest(
         val name: String,
         val valid: FiniteDateRange,
@@ -72,17 +70,15 @@ class VasuTemplateController(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val template = tx.getVasuTemplateForUpdate(id) ?: throw NotFound("Template not found")
+                val template =
+                    tx.getVasuTemplateForUpdate(id) ?: throw NotFound("Template not found")
                 validateTemplateUpdate(template, body)
                 tx.updateVasuTemplate(id, body)
             }
         }
     }
 
-    data class CopyTemplateRequest(
-        val name: String,
-        val valid: FiniteDateRange
-    )
+    data class CopyTemplateRequest(val name: String, val valid: FiniteDateRange)
 
     @PostMapping("/{id}/copy")
     fun copyTemplate(
@@ -132,7 +128,8 @@ class VasuTemplateController(
         Audit.VasuTemplateRead.log(id)
         accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.READ, id)
 
-        return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplate(id) } } ?: throw NotFound("template $id not found")
+        return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplate(id) } }
+            ?: throw NotFound("template $id not found")
     }
 
     @DeleteMapping("/{id}")
@@ -161,8 +158,10 @@ class VasuTemplateController(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val template = tx.getVasuTemplateForUpdate(id) ?: throw NotFound("template $id not found")
-                if (template.documentCount > 0) throw Conflict("Template with documents cannot be updated", "TEMPLATE_IN_USE")
+                val template =
+                    tx.getVasuTemplateForUpdate(id) ?: throw NotFound("template $id not found")
+                if (template.documentCount > 0)
+                    throw Conflict("Template with documents cannot be updated", "TEMPLATE_IN_USE")
                 tx.updateVasuTemplateContent(id, content)
             }
         }

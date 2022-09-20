@@ -15,24 +15,31 @@ import java.time.LocalDate
 
 fun Database.Read.getChildDailyNote(childId: ChildId): ChildDailyNote? {
     return createQuery(
-        """
+            """
         SELECT 
             id, child_id, modified_at,
             note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note
         FROM child_daily_note 
         WHERE child_id = :childId
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("childId", childId)
         .mapTo<ChildDailyNote>()
         .firstOrNull()
 }
 
-fun Database.Read.getChildDailyNotesInGroup(groupId: GroupId, today: LocalDate): List<ChildDailyNote> {
+fun Database.Read.getChildDailyNotesInGroup(
+    groupId: GroupId,
+    today: LocalDate
+): List<ChildDailyNote> {
     return getChildDailyNotesInGroups(listOf(groupId), today)
 }
 
-fun Database.Read.getChildDailyNotesInUnit(unitId: DaycareId, today: LocalDate): List<ChildDailyNote> {
+fun Database.Read.getChildDailyNotesInUnit(
+    unitId: DaycareId,
+    today: LocalDate
+): List<ChildDailyNote> {
     return createQuery("SELECT id FROM daycare_group WHERE daycare_id = :unitId")
         .bind("unitId", unitId)
         .mapTo<GroupId>()
@@ -40,9 +47,12 @@ fun Database.Read.getChildDailyNotesInUnit(unitId: DaycareId, today: LocalDate):
         .let { groupIds -> getChildDailyNotesInGroups(groupIds, today) }
 }
 
-private fun Database.Read.getChildDailyNotesInGroups(groupIds: List<GroupId>, today: LocalDate): List<ChildDailyNote> {
+private fun Database.Read.getChildDailyNotesInGroups(
+    groupIds: List<GroupId>,
+    today: LocalDate
+): List<ChildDailyNote> {
     return createQuery(
-        """
+            """
         SELECT 
             id, child_id, modified_at,
             note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note
@@ -52,22 +62,27 @@ private fun Database.Read.getChildDailyNotesInGroups(groupIds: List<GroupId>, to
             FROM realized_placement_all(:today)
             WHERE group_id = ANY(:groupIds)
         )
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("groupIds", groupIds)
         .bind("today", today)
         .mapTo<ChildDailyNote>()
         .list()
 }
 
-fun Database.Transaction.createChildDailyNote(childId: ChildId, note: ChildDailyNoteBody): ChildDailyNoteId {
+fun Database.Transaction.createChildDailyNote(
+    childId: ChildId,
+    note: ChildDailyNoteBody
+): ChildDailyNoteId {
     return createUpdate(
-        """
+            """
 INSERT INTO child_daily_note (child_id, note, feeding_note, sleeping_note, sleeping_minutes, reminders, reminder_note)
 VALUES(:childId, :note, :feedingNote, :sleepingNote, :sleepingMinutes, :reminders::child_daily_note_reminder[], :reminderNote)
 RETURNING id
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bindKotlin(note)
         .bind("childId", childId)
         .executeAndReturnGeneratedKeys()
@@ -75,9 +90,13 @@ RETURNING id
         .one()
 }
 
-fun Database.Transaction.updateChildDailyNote(clock: EvakaClock, id: ChildDailyNoteId, note: ChildDailyNoteBody): ChildDailyNote {
+fun Database.Transaction.updateChildDailyNote(
+    clock: EvakaClock,
+    id: ChildDailyNoteId,
+    note: ChildDailyNoteBody
+): ChildDailyNote {
     return createUpdate(
-        """
+            """
 UPDATE child_daily_note SET
     note = :note, 
     feeding_note = :feedingNote, 
@@ -88,8 +107,9 @@ UPDATE child_daily_note SET
     modified_at = :now
 WHERE id = :id
 RETURNING *
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("id", id)
         .bind("now", clock.now())
         .bindKotlin(note)
@@ -99,9 +119,7 @@ RETURNING *
 }
 
 fun Database.Transaction.deleteChildDailyNote(noteId: ChildDailyNoteId) {
-    createUpdate("DELETE from child_daily_note WHERE id = :noteId")
-        .bind("noteId", noteId)
-        .execute()
+    createUpdate("DELETE from child_daily_note WHERE id = :noteId").bind("noteId", noteId).execute()
 }
 
 fun Database.Transaction.deleteExpiredNotes(now: HelsinkiDateTime) {

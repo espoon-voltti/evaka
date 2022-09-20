@@ -35,77 +35,82 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testSvebiDaycare
 import fi.espoo.evaka.withMockedTime
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired
-    lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
-    @Autowired
-    lateinit var applicationReceivedEmailService: ApplicationReceivedEmailService
+    @Autowired lateinit var applicationReceivedEmailService: ApplicationReceivedEmailService
 
     private val validDaycareForm = DaycareFormV0.fromApplication2(validDaycareApplication)
     private val validClubForm = ClubFormV0.fromForm2(validClubApplication.form, false, false)
 
-    private val serviceWorker = AuthenticatedUser.Employee(EmployeeId(testAdult_1.id.raw), setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker =
+        AuthenticatedUser.Employee(EmployeeId(testAdult_1.id.raw), setOf(UserRole.SERVICE_WORKER))
     private val endUser = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
     private val guardian = testAdult_1.copy(email = "john.doe@espootest.com")
-    private val guardianAsDaycareAdult = Adult(
-        firstName = guardian.firstName,
-        lastName = guardian.lastName,
-        phoneNumber = guardian.phone,
-        email = guardian.email,
-        socialSecurityNumber = guardian.ssn!!,
-        address = Address(
-            street = guardian.streetAddress,
-            city = guardian.postOffice,
-            postalCode = guardian.postalCode,
-            editable = false
+    private val guardianAsDaycareAdult =
+        Adult(
+            firstName = guardian.firstName,
+            lastName = guardian.lastName,
+            phoneNumber = guardian.phone,
+            email = guardian.email,
+            socialSecurityNumber = guardian.ssn!!,
+            address =
+                Address(
+                    street = guardian.streetAddress,
+                    city = guardian.postOffice,
+                    postalCode = guardian.postalCode,
+                    editable = false
+                )
         )
-    )
 
     private val mockedTime = HelsinkiDateTime.of(LocalDate.of(2021, 1, 15), LocalTime.of(12, 0))
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
         MockEmailClient.emails.clear()
     }
 
     @Test
     fun `email is sent after end user sends application`() {
-        val applicationId = db.transaction { tx ->
-            tx.insertTestApplication(
-                childId = testChild_1.id,
-                guardianId = guardian.id,
-                status = ApplicationStatus.CREATED,
-                type = ApplicationType.DAYCARE
-            ).also { id ->
-                tx.insertTestApplicationForm(
-                    applicationId = id,
-                    document = validDaycareForm.copy(
-                        guardian = guardianAsDaycareAdult,
-                        apply = validDaycareForm.apply.copy(
-                            preferredUnits = listOf(testDaycare.id)
-                        )
+        val applicationId =
+            db.transaction { tx ->
+                tx.insertTestApplication(
+                        childId = testChild_1.id,
+                        guardianId = guardian.id,
+                        status = ApplicationStatus.CREATED,
+                        type = ApplicationType.DAYCARE
                     )
-                )
+                    .also { id ->
+                        tx.insertTestApplicationForm(
+                            applicationId = id,
+                            document =
+                                validDaycareForm.copy(
+                                    guardian = guardianAsDaycareAdult,
+                                    apply =
+                                        validDaycareForm.apply.copy(
+                                            preferredUnits = listOf(testDaycare.id)
+                                        )
+                                )
+                        )
+                    }
             }
-        }
 
-        val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
-            .withMockedTime(mockedTime)
-            .asUser(endUser)
-            .response()
+        val (_, res, _) =
+            http
+                .post("/citizen/applications/$applicationId/actions/send-application")
+                .withMockedTime(mockedTime)
+                .asUser(endUser)
+                .response()
 
         assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
@@ -119,34 +124,43 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         val sentMail = sentMails[0]
         assertEquals(guardian.email, sentMail.toAddress)
         assertEquals(guardian.id.toString(), sentMail.traceId)
-        assertEquals("Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application", sentMail.subject)
+        assertEquals(
+            "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
+            sentMail.subject
+        )
     }
 
     @Test
     fun `swedish email from address is used after end user sends application to svebi daycare`() {
-        val applicationId = db.transaction { tx ->
-            tx.insertTestApplication(
-                childId = testChild_1.id,
-                guardianId = guardian.id,
-                status = ApplicationStatus.CREATED,
-                type = ApplicationType.DAYCARE
-            ).also { id ->
-                tx.insertTestApplicationForm(
-                    applicationId = id,
-                    document = validDaycareForm.copy(
-                        guardian = guardianAsDaycareAdult,
-                        apply = validDaycareForm.apply.copy(
-                            preferredUnits = listOf(testSvebiDaycare.id)
-                        )
+        val applicationId =
+            db.transaction { tx ->
+                tx.insertTestApplication(
+                        childId = testChild_1.id,
+                        guardianId = guardian.id,
+                        status = ApplicationStatus.CREATED,
+                        type = ApplicationType.DAYCARE
                     )
-                )
+                    .also { id ->
+                        tx.insertTestApplicationForm(
+                            applicationId = id,
+                            document =
+                                validDaycareForm.copy(
+                                    guardian = guardianAsDaycareAdult,
+                                    apply =
+                                        validDaycareForm.apply.copy(
+                                            preferredUnits = listOf(testSvebiDaycare.id)
+                                        )
+                                )
+                        )
+                    }
             }
-        }
 
-        val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
-            .withMockedTime(mockedTime)
-            .asUser(endUser)
-            .response()
+        val (_, res, _) =
+            http
+                .post("/citizen/applications/$applicationId/actions/send-application")
+                .withMockedTime(mockedTime)
+                .asUser(endUser)
+                .response()
 
         assertEquals(200, res.statusCode)
 
@@ -160,34 +174,43 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         assertEquals("Test email sender sv <testemail_sv@test.com>", sentMail.fromAddress)
         assertEquals(guardian.email, sentMail.toAddress)
         assertEquals(guardian.id.toString(), sentMail.traceId)
-        assertEquals("Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application", sentMail.subject)
+        assertEquals(
+            "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
+            sentMail.subject
+        )
     }
 
     @Test
     fun `email is sent after service worker sends application`() {
-        val applicationId = db.transaction { tx ->
-            tx.insertTestApplication(
-                childId = testChild_1.id,
-                guardianId = guardian.id,
-                status = ApplicationStatus.CREATED,
-                hideFromGuardian = false,
-                type = ApplicationType.DAYCARE
-            ).also { id ->
-                tx.insertTestApplicationForm(
-                    applicationId = id,
-                    document = validDaycareForm.copy(
-                        guardian = guardianAsDaycareAdult,
-                        apply = validDaycareForm.apply.copy(
-                            preferredUnits = listOf(testDaycare.id)
-                        )
+        val applicationId =
+            db.transaction { tx ->
+                tx.insertTestApplication(
+                        childId = testChild_1.id,
+                        guardianId = guardian.id,
+                        status = ApplicationStatus.CREATED,
+                        hideFromGuardian = false,
+                        type = ApplicationType.DAYCARE
                     )
-                )
+                    .also { id ->
+                        tx.insertTestApplicationForm(
+                            applicationId = id,
+                            document =
+                                validDaycareForm.copy(
+                                    guardian = guardianAsDaycareAdult,
+                                    apply =
+                                        validDaycareForm.apply.copy(
+                                            preferredUnits = listOf(testDaycare.id)
+                                        )
+                                )
+                        )
+                    }
             }
-        }
-        val (_, res, _) = http.post("/v2/applications/$applicationId/actions/send-application")
-            .withMockedTime(mockedTime)
-            .asUser(serviceWorker)
-            .response()
+        val (_, res, _) =
+            http
+                .post("/v2/applications/$applicationId/actions/send-application")
+                .withMockedTime(mockedTime)
+                .asUser(serviceWorker)
+                .response()
 
         assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
@@ -206,24 +229,28 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
 
     @Test
     fun `email is sent after sending club application`() {
-        val applicationId = db.transaction { tx ->
-            tx.insertTestApplication(
-                childId = testChild_1.id,
-                guardianId = guardian.id,
-                status = ApplicationStatus.CREATED,
-                type = ApplicationType.CLUB
-            ).also { id ->
-                tx.insertTestClubApplicationForm(
-                    applicationId = id,
-                    document = validClubForm
-                )
+        val applicationId =
+            db.transaction { tx ->
+                tx.insertTestApplication(
+                        childId = testChild_1.id,
+                        guardianId = guardian.id,
+                        status = ApplicationStatus.CREATED,
+                        type = ApplicationType.CLUB
+                    )
+                    .also { id ->
+                        tx.insertTestClubApplicationForm(
+                            applicationId = id,
+                            document = validClubForm
+                        )
+                    }
             }
-        }
 
-        val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
-            .withMockedTime(mockedTime)
-            .asUser(endUser)
-            .response()
+        val (_, res, _) =
+            http
+                .post("/citizen/applications/$applicationId/actions/send-application")
+                .withMockedTime(mockedTime)
+                .asUser(endUser)
+                .response()
 
         assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
@@ -237,7 +264,10 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
 
         val sentMail = sentMails.first()
         assertEquals(guardian.id.toString(), sentMail.traceId)
-        assertEquals("Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application", sentMail.subject)
+        assertEquals(
+            "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
+            sentMail.subject
+        )
     }
 
     @Test
@@ -252,10 +282,12 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
             )
         }
 
-        val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
-            .withMockedTime(mockedTime)
-            .asUser(endUser)
-            .response()
+        val (_, res, _) =
+            http
+                .post("/citizen/applications/$applicationId/actions/send-application")
+                .withMockedTime(mockedTime)
+                .asUser(endUser)
+                .response()
 
         assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
@@ -269,34 +301,43 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
 
         val sentMail = sentMails.first()
         assertEquals(guardian.id.toString(), sentMail.traceId)
-        assertEquals("Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application", sentMail.subject)
+        assertEquals(
+            "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application",
+            sentMail.subject
+        )
     }
 
     @Test
     fun `email is not sent when service workers sends hidden application`() {
-        val applicationId = db.transaction { tx ->
-            tx.insertTestApplication(
-                childId = testChild_1.id,
-                guardianId = guardian.id,
-                status = ApplicationStatus.CREATED,
-                hideFromGuardian = true,
-                type = ApplicationType.DAYCARE
-            ).also { id ->
-                tx.insertTestApplicationForm(
-                    applicationId = id,
-                    document = validDaycareForm.copy(
-                        guardian = guardianAsDaycareAdult,
-                        apply = validDaycareForm.apply.copy(
-                            preferredUnits = listOf(testDaycare.id)
-                        )
+        val applicationId =
+            db.transaction { tx ->
+                tx.insertTestApplication(
+                        childId = testChild_1.id,
+                        guardianId = guardian.id,
+                        status = ApplicationStatus.CREATED,
+                        hideFromGuardian = true,
+                        type = ApplicationType.DAYCARE
                     )
-                )
+                    .also { id ->
+                        tx.insertTestApplicationForm(
+                            applicationId = id,
+                            document =
+                                validDaycareForm.copy(
+                                    guardian = guardianAsDaycareAdult,
+                                    apply =
+                                        validDaycareForm.apply.copy(
+                                            preferredUnits = listOf(testDaycare.id)
+                                        )
+                                )
+                        )
+                    }
             }
-        }
-        val (_, res, _) = http.post("/v2/applications/$applicationId/actions/send-application")
-            .withMockedTime(mockedTime)
-            .asUser(serviceWorker)
-            .response()
+        val (_, res, _) =
+            http
+                .post("/v2/applications/$applicationId/actions/send-application")
+                .withMockedTime(mockedTime)
+                .asUser(serviceWorker)
+                .response()
 
         assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
@@ -308,29 +349,35 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
 
     @Test
     fun `email is not sent to invalid email`() {
-        val applicationId = db.transaction { tx ->
-            tx.insertTestApplication(
-                childId = testChild_1.id,
-                guardianId = testAdult_1.id,
-                status = ApplicationStatus.CREATED,
-                type = ApplicationType.DAYCARE
-            ).also { id ->
-                tx.insertTestApplicationForm(
-                    applicationId = id,
-                    document = validDaycareForm.copy(
-                        guardian = guardianAsDaycareAdult.copy(email = "not@valid"),
-                        apply = validDaycareForm.apply.copy(
-                            preferredUnits = listOf(testDaycare.id)
-                        )
+        val applicationId =
+            db.transaction { tx ->
+                tx.insertTestApplication(
+                        childId = testChild_1.id,
+                        guardianId = testAdult_1.id,
+                        status = ApplicationStatus.CREATED,
+                        type = ApplicationType.DAYCARE
                     )
-                )
+                    .also { id ->
+                        tx.insertTestApplicationForm(
+                            applicationId = id,
+                            document =
+                                validDaycareForm.copy(
+                                    guardian = guardianAsDaycareAdult.copy(email = "not@valid"),
+                                    apply =
+                                        validDaycareForm.apply.copy(
+                                            preferredUnits = listOf(testDaycare.id)
+                                        )
+                                )
+                        )
+                    }
             }
-        }
 
-        val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
-            .withMockedTime(mockedTime)
-            .asUser(endUser)
-            .response()
+        val (_, res, _) =
+            http
+                .post("/citizen/applications/$applicationId/actions/send-application")
+                .withMockedTime(mockedTime)
+                .asUser(endUser)
+                .response()
 
         assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
@@ -345,25 +392,29 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
     @Test
     fun `application keeps its manually set sent date after it is sent`() {
         val manuallySetSentDate = LocalDate.of(2020, 1, 1)
-        val applicationId = db.transaction { tx ->
-            tx.insertTestApplication(
-                childId = testChild_1.id,
-                guardianId = testAdult_1.id,
-                status = ApplicationStatus.CREATED,
-                sentDate = manuallySetSentDate,
-                type = ApplicationType.DAYCARE
-            ).also { id ->
-                tx.insertTestApplicationForm(
-                    applicationId = id,
-                    document = validDaycareForm
-                )
+        val applicationId =
+            db.transaction { tx ->
+                tx.insertTestApplication(
+                        childId = testChild_1.id,
+                        guardianId = testAdult_1.id,
+                        status = ApplicationStatus.CREATED,
+                        sentDate = manuallySetSentDate,
+                        type = ApplicationType.DAYCARE
+                    )
+                    .also { id ->
+                        tx.insertTestApplicationForm(
+                            applicationId = id,
+                            document = validDaycareForm
+                        )
+                    }
             }
-        }
 
-        val (_, res, _) = http.post("/citizen/applications/$applicationId/actions/send-application")
-            .withMockedTime(mockedTime)
-            .asUser(endUser)
-            .response()
+        val (_, res, _) =
+            http
+                .post("/citizen/applications/$applicationId/actions/send-application")
+                .withMockedTime(mockedTime)
+                .asUser(endUser)
+                .response()
 
         assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
@@ -377,7 +428,12 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
 
     @Test
     fun `valid email is sent`() {
-        applicationReceivedEmailService.sendApplicationEmail(testAdult_1.id, "working@test.fi", Language.fi, ApplicationType.DAYCARE)
+        applicationReceivedEmailService.sendApplicationEmail(
+            testAdult_1.id,
+            "working@test.fi",
+            Language.fi,
+            ApplicationType.DAYCARE
+        )
         assertEmail(
             MockEmailClient.getEmail("working@test.fi"),
             "working@test.fi",
@@ -387,7 +443,12 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
             "Varhaiskasvatushakemuksella on neljän (4) kuukauden hakuaika"
         )
 
-        applicationReceivedEmailService.sendApplicationEmail(testAdult_1.id, "Working.Email@Test.Com", Language.sv, ApplicationType.DAYCARE)
+        applicationReceivedEmailService.sendApplicationEmail(
+            testAdult_1.id,
+            "Working.Email@Test.Com",
+            Language.sv,
+            ApplicationType.DAYCARE
+        )
         assertEmail(
             MockEmailClient.getEmail("Working.Email@Test.Com"),
             "Working.Email@Test.Com",
@@ -400,13 +461,30 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
 
     @Test
     fun `email with invalid toAddress is not sent`() {
-        applicationReceivedEmailService.sendApplicationEmail(testAdult_1.id, "not.working.com", Language.fi, ApplicationType.DAYCARE)
-        applicationReceivedEmailService.sendApplicationEmail(testAdult_1.id, "@test.fi", Language.fi, ApplicationType.DAYCARE)
+        applicationReceivedEmailService.sendApplicationEmail(
+            testAdult_1.id,
+            "not.working.com",
+            Language.fi,
+            ApplicationType.DAYCARE
+        )
+        applicationReceivedEmailService.sendApplicationEmail(
+            testAdult_1.id,
+            "@test.fi",
+            Language.fi,
+            ApplicationType.DAYCARE
+        )
 
         assertEquals(0, MockEmailClient.emails.size)
     }
 
-    private fun assertEmail(email: MockEmail?, expectedToAddress: String, expectedFromAddress: String, expectedSubject: String, expectedHtmlPart: String, expectedTextPart: String) {
+    private fun assertEmail(
+        email: MockEmail?,
+        expectedToAddress: String,
+        expectedFromAddress: String,
+        expectedSubject: String,
+        expectedHtmlPart: String,
+        expectedTextPart: String
+    ) {
         assertNotNull(email)
         assertEquals(expectedToAddress, email.toAddress)
         assertEquals(expectedFromAddress, email.fromAddress)

@@ -11,11 +11,11 @@ import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
 import fi.espoo.evaka.daycare.updateChild
 import fi.espoo.evaka.shared.ChildId
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID.randomUUID
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class ChildDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val childId = ChildId(randomUUID())
@@ -24,17 +24,21 @@ class ChildDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
-            tx.execute("INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')")
-            child = tx.createChild(
-                Child(
-                    id = childId,
-                    additionalInformation = AdditionalInformation(
-                        allergies = "Pähkinäallergia",
-                        diet = "Kasvisruokavalio",
-                        additionalInfo = "Ei osaa solmia kengännauhoja"
+            tx.execute(
+                "INSERT INTO person (id, date_of_birth) VALUES ('$childId', '${LocalDate.now().minusYears(1)}')"
+            )
+            child =
+                tx.createChild(
+                    Child(
+                        id = childId,
+                        additionalInformation =
+                            AdditionalInformation(
+                                allergies = "Pähkinäallergia",
+                                diet = "Kasvisruokavalio",
+                                additionalInfo = "Ei osaa solmia kengännauhoja"
+                            )
                     )
                 )
-            )
         }
     }
 
@@ -47,13 +51,15 @@ class ChildDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `Update child updates correct properties`() {
-        val updated = child.copy(
-            additionalInformation = AdditionalInformation(
-                allergies = "Retiisi",
-                diet = "Vähäglugoosinen",
-                additionalInfo = "Hankala luonne"
+        val updated =
+            child.copy(
+                additionalInformation =
+                    AdditionalInformation(
+                        allergies = "Retiisi",
+                        diet = "Vähäglugoosinen",
+                        additionalInfo = "Hankala luonne"
+                    )
             )
-        )
 
         db.transaction { it.updateChild(updated) }
 

@@ -18,6 +18,8 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.math.BigDecimal
+import java.util.UUID
 import org.jdbi.v3.core.JdbiException
 import org.jdbi.v3.core.mapper.Nested
 import org.postgresql.util.PSQLState
@@ -28,8 +30,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.math.BigDecimal
-import java.util.UUID
 
 @RestController
 @RequestMapping("/finance-basics")
@@ -38,11 +38,19 @@ class FinanceBasicsController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @GetMapping("/fee-thresholds")
-    fun getFeeThresholds(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<FeeThresholdsWithId> {
+    fun getFeeThresholds(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock
+    ): List<FeeThresholdsWithId> {
         Audit.FinanceBasicsFeeThresholdsRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_FEE_THRESHOLDS)
 
-        return db.connect { dbc -> dbc.read { tx -> tx.getFeeThresholds().sortedByDescending { it.thresholds.validDuring.start } } }
+        return db.connect { dbc ->
+            dbc.read { tx ->
+                tx.getFeeThresholds().sortedByDescending { it.thresholds.validDuring.start }
+            }
+        }
     }
 
     @PostMapping("/fee-thresholds")
@@ -61,18 +69,27 @@ class FinanceBasicsController(
                 val latest = tx.getFeeThresholds().maxByOrNull { it.thresholds.validDuring.start }
 
                 if (latest != null) {
-                    if (latest.thresholds.validDuring.end != null && latest.thresholds.validDuring.overlaps(body.validDuring))
+                    if (
+                        latest.thresholds.validDuring.end != null &&
+                            latest.thresholds.validDuring.overlaps(body.validDuring)
+                    )
                         throwDateOverlapEx()
 
                     if (latest.thresholds.validDuring.end == null)
                         tx.updateFeeThresholdsValidity(
                             latest.id,
-                            latest.thresholds.validDuring.copy(end = body.validDuring.start.minusDays(1))
+                            latest.thresholds.validDuring.copy(
+                                end = body.validDuring.start.minusDays(1)
+                            )
                         )
                 }
 
                 mapConstraintExceptions { tx.insertNewFeeThresholds(body) }
-                asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(body.validDuring)), runAt = clock.now())
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(AsyncJob.NotifyFeeThresholdsUpdated(body.validDuring)),
+                    runAt = clock.now()
+                )
             }
         }
     }
@@ -92,57 +109,64 @@ class FinanceBasicsController(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 mapConstraintExceptions { tx.updateFeeThresholds(id, thresholds) }
-                asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(thresholds.validDuring)), runAt = clock.now())
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(AsyncJob.NotifyFeeThresholdsUpdated(thresholds.validDuring)),
+                    runAt = clock.now()
+                )
             }
         }
     }
 }
 
-data class FeeThresholdsWithId(
-    val id: FeeThresholdsId,
-    @Nested
-    val thresholds: FeeThresholds
-)
+data class FeeThresholdsWithId(val id: FeeThresholdsId, @Nested val thresholds: FeeThresholds)
 
 private fun validateFeeThresholds(thresholds: FeeThresholds) {
-    val allMaxFeesMatch = listOf(
-        calculateMaxFeeFromThresholds(
-            thresholds.minIncomeThreshold2,
-            thresholds.maxIncomeThreshold2,
-            thresholds.incomeMultiplier2
-        ),
-        calculateMaxFeeFromThresholds(
-            thresholds.minIncomeThreshold3,
-            thresholds.maxIncomeThreshold3,
-            thresholds.incomeMultiplier3
-        ),
-        calculateMaxFeeFromThresholds(
-            thresholds.minIncomeThreshold4,
-            thresholds.maxIncomeThreshold4,
-            thresholds.incomeMultiplier4
-        ),
-        calculateMaxFeeFromThresholds(
-            thresholds.minIncomeThreshold5,
-            thresholds.maxIncomeThreshold5,
-            thresholds.incomeMultiplier5
-        ),
-        calculateMaxFeeFromThresholds(
-            thresholds.minIncomeThreshold6,
-            thresholds.maxIncomeThreshold6,
-            thresholds.incomeMultiplier6
-        )
-    ).all { it == thresholds.maxFee }
+    val allMaxFeesMatch =
+        listOf(
+                calculateMaxFeeFromThresholds(
+                    thresholds.minIncomeThreshold2,
+                    thresholds.maxIncomeThreshold2,
+                    thresholds.incomeMultiplier2
+                ),
+                calculateMaxFeeFromThresholds(
+                    thresholds.minIncomeThreshold3,
+                    thresholds.maxIncomeThreshold3,
+                    thresholds.incomeMultiplier3
+                ),
+                calculateMaxFeeFromThresholds(
+                    thresholds.minIncomeThreshold4,
+                    thresholds.maxIncomeThreshold4,
+                    thresholds.incomeMultiplier4
+                ),
+                calculateMaxFeeFromThresholds(
+                    thresholds.minIncomeThreshold5,
+                    thresholds.maxIncomeThreshold5,
+                    thresholds.incomeMultiplier5
+                ),
+                calculateMaxFeeFromThresholds(
+                    thresholds.minIncomeThreshold6,
+                    thresholds.maxIncomeThreshold6,
+                    thresholds.incomeMultiplier6
+                )
+            )
+            .all { it == thresholds.maxFee }
 
-    if (!allMaxFeesMatch) throw BadRequest("Inconsistent max fees from income thresholds", "inconsistent-thresholds")
+    if (!allMaxFeesMatch)
+        throw BadRequest("Inconsistent max fees from income thresholds", "inconsistent-thresholds")
 }
 
-private fun calculateMaxFeeFromThresholds(minThreshold: Int, maxThreshold: Int, multiplier: BigDecimal): Int {
+private fun calculateMaxFeeFromThresholds(
+    minThreshold: Int,
+    maxThreshold: Int,
+    multiplier: BigDecimal
+): Int {
     return roundToEuros(BigDecimal(maxThreshold - minThreshold) * multiplier).toInt()
 }
 
 fun Database.Read.getFeeThresholds(): List<FeeThresholdsWithId> =
     createQuery(
-        """
+            """
 SELECT
     id,
     valid_during,
@@ -171,14 +195,15 @@ SELECT
     temporary_fee_sibling,
     temporary_fee_sibling_part_day
 FROM fee_thresholds
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .mapTo<FeeThresholdsWithId>()
         .toList()
 
 fun Database.Transaction.insertNewFeeThresholds(thresholds: FeeThresholds) =
     createUpdate(
-        """
+            """
 INSERT INTO fee_thresholds (
     id,
     valid_during,
@@ -235,7 +260,7 @@ INSERT INTO fee_thresholds (
     :temporaryFeeSiblingPartDay
 )
 """
-    )
+        )
         .bindKotlin(thresholds)
         .bind("id", UUID.randomUUID())
         .execute()
@@ -248,7 +273,7 @@ fun Database.Transaction.updateFeeThresholdsValidity(id: FeeThresholdsId, newVal
 
 fun Database.Transaction.updateFeeThresholds(id: FeeThresholdsId, feeThresholds: FeeThresholds) =
     createUpdate(
-        """
+            """
 UPDATE fee_thresholds
 SET
     valid_during = :validDuring,
@@ -278,7 +303,7 @@ SET
     temporary_fee_sibling_part_day = :temporaryFeeSiblingPartDay
 WHERE id = :id
 """
-    )
+        )
         .bindKotlin(feeThresholds)
         .bind("id", id)
         .execute()

@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -27,11 +28,13 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 @RequestMapping("/parentships")
-class ParentshipController(private val parentshipService: ParentshipService, private val accessControl: AccessControl) {
+class ParentshipController(
+    private val parentshipService: ParentshipService,
+    private val accessControl: AccessControl
+) {
     @PostMapping
     fun createParentship(
         db: Database,
@@ -40,7 +43,12 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         @RequestBody body: ParentshipRequest
     ) {
         Audit.ParentShipsCreate.log(targetId = body.headOfChildId, objectId = body.childId)
-        accessControl.requirePermissionFor(user, clock, Action.Person.CREATE_PARENTSHIP, body.headOfChildId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Person.CREATE_PARENTSHIP,
+            body.headOfChildId
+        )
 
         db.connect { dbc ->
             dbc.transaction {
@@ -70,20 +78,33 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
             throw BadRequest("One and only one of parameters headOfChildId and childId is required")
         }
 
-        val personId = headOfChildId ?: childId
-            ?: error("One of parameters headOfChildId and childId should be validated not to be null")
+        val personId =
+            headOfChildId
+                ?: childId
+                    ?: error(
+                    "One of parameters headOfChildId and childId should be validated not to be null"
+                )
 
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_PARENTSHIPS, personId)
 
         return db.connect { dbc ->
             dbc.read { tx ->
-                val parentships = tx.getParentships(
-                    headOfChildId = headOfChildId,
-                    childId = childId,
-                    includeConflicts = true
-                )
-                val permittedActions = accessControl.getPermittedActions<ParentshipId, Action.Parentship>(tx, user, clock, parentships.map { it.id })
-                parentships.map { ParentshipWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
+                val parentships =
+                    tx.getParentships(
+                        headOfChildId = headOfChildId,
+                        childId = childId,
+                        includeConflicts = true
+                    )
+                val permittedActions =
+                    accessControl.getPermittedActions<ParentshipId, Action.Parentship>(
+                        tx,
+                        user,
+                        clock,
+                        parentships.map { it.id }
+                    )
+                parentships.map {
+                    ParentshipWithPermittedActions(it, permittedActions[it.id] ?: emptySet())
+                }
             }
         }
     }
@@ -98,8 +119,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         Audit.ParentShipsRead.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Parentship.READ, id)
 
-        return db.connect { dbc -> dbc.read { it.getParentship(id) } }
-            ?: throw NotFound()
+        return db.connect { dbc -> dbc.read { it.getParentship(id) } } ?: throw NotFound()
     }
 
     @PutMapping("/{id}")
@@ -115,7 +135,13 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
 
         return db.connect { dbc ->
             dbc.transaction {
-                parentshipService.updateParentshipDuration(it, clock, id, body.startDate, body.endDate)
+                parentshipService.updateParentshipDuration(
+                    it,
+                    clock,
+                    id,
+                    body.startDate,
+                    body.endDate
+                )
             }
         }
     }
@@ -130,7 +156,9 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         Audit.ParentShipsRetry.log(targetId = parentshipId)
         accessControl.requirePermissionFor(user, clock, Action.Parentship.RETRY, parentshipId)
 
-        db.connect { dbc -> dbc.transaction { parentshipService.retryParentship(it, clock, parentshipId) } }
+        db.connect { dbc ->
+            dbc.transaction { parentshipService.retryParentship(it, clock, parentshipId) }
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -148,7 +176,12 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
             if (parentship?.conflict == false) {
                 accessControl.requirePermissionFor(user, clock, Action.Parentship.DELETE, id)
             } else {
-                accessControl.requirePermissionFor(user, clock, Action.Parentship.DELETE_CONFLICTED_PARENTSHIP, id)
+                accessControl.requirePermissionFor(
+                    user,
+                    clock,
+                    Action.Parentship.DELETE_CONFLICTED_PARENTSHIP,
+                    id
+                )
             }
 
             dbc.transaction { parentshipService.deleteParentship(it, clock, id) }
@@ -162,10 +195,10 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         val endDate: LocalDate
     )
 
-    data class ParentshipUpdateRequest(
-        val startDate: LocalDate,
-        val endDate: LocalDate
-    )
+    data class ParentshipUpdateRequest(val startDate: LocalDate, val endDate: LocalDate)
 
-    data class ParentshipWithPermittedActions(val data: Parentship, val permittedActions: Set<Action.Parentship>)
+    data class ParentshipWithPermittedActions(
+        val data: Parentship,
+        val permittedActions: Set<Action.Parentship>
+    )
 }

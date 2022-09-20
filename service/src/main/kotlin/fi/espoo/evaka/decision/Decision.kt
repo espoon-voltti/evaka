@@ -31,21 +31,23 @@ data class Decision(
     val requestedStartDate: LocalDate?,
     val resolved: LocalDate?
 ) {
-    fun validRequestedStartDatePeriod(featureConfig: FeatureConfig) = FiniteDateRange(
-        startDate,
-        minOf(
-            endDate,
-            startDate.plusDays(
-                when (this.type) {
-                    DecisionType.CLUB -> featureConfig.requestedStartUpperLimit
-                    DecisionType.DAYCARE, DecisionType.DAYCARE_PART_TIME -> featureConfig.requestedStartUpperLimit
-                    DecisionType.PRESCHOOL -> 0
-                    DecisionType.PRESCHOOL_DAYCARE -> featureConfig.requestedStartUpperLimit
-                    DecisionType.PREPARATORY_EDUCATION -> 0
-                }.toLong()
+    fun validRequestedStartDatePeriod(featureConfig: FeatureConfig) =
+        FiniteDateRange(
+            startDate,
+            minOf(
+                endDate,
+                startDate.plusDays(
+                    when (this.type) {
+                        DecisionType.CLUB -> featureConfig.requestedStartUpperLimit
+                        DecisionType.DAYCARE,
+                        DecisionType.DAYCARE_PART_TIME -> featureConfig.requestedStartUpperLimit
+                        DecisionType.PRESCHOOL -> 0
+                        DecisionType.PRESCHOOL_DAYCARE -> featureConfig.requestedStartUpperLimit
+                        DecisionType.PREPARATORY_EDUCATION -> 0
+                    }.toLong()
+                )
             )
         )
-    )
 }
 
 data class DecisionUnit(

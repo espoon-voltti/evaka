@@ -17,33 +17,36 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
+import java.time.LocalDate
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
-import java.time.LocalDate
 
 class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private lateinit var koskiServer: MockKoskiServer
     private lateinit var koskiTester: KoskiTester
 
-    private val preschoolTerm2019 = FiniteDateRange(LocalDate.of(2019, 8, 8), LocalDate.of(2020, 5, 29))
+    private val preschoolTerm2019 =
+        FiniteDateRange(LocalDate.of(2019, 8, 8), LocalDate.of(2020, 5, 29))
 
     @BeforeAll
     fun initDependencies() {
         koskiServer = MockKoskiServer.start()
-        koskiTester = KoskiTester(
-            db,
-            KoskiClient(
-                KoskiEnv.fromEnvironment(env).copy(
-                    url = "http://localhost:${koskiServer.port}",
-                ),
-                OphEnv.fromEnvironment(env),
-                fuel = http,
-                asyncJobRunner = null
+        koskiTester =
+            KoskiTester(
+                db,
+                KoskiClient(
+                    KoskiEnv.fromEnvironment(env)
+                        .copy(
+                            url = "http://localhost:${koskiServer.port}",
+                        ),
+                    OphEnv.fromEnvironment(env),
+                    fuel = http,
+                    asyncJobRunner = null
+                )
             )
-        )
     }
 
     @BeforeEach
@@ -149,7 +152,8 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                     }
                 ]
             }
-            """.trimIndent()
+            """.trimIndent(
+            )
         JSONAssert.assertEquals(expected, stored.payload, JSONCompareMode.STRICT)
     }
 
@@ -177,12 +181,14 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         }
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
-        val stored = db.read { it.getStoredResults() }.let { studyRights ->
-            Pair(
-                studyRights.single { it.unitId == testDaycare.id },
-                studyRights.single { it.unitId == testDaycare2.id }
-            )
-        }
+        val stored =
+            db.read { it.getStoredResults() }
+                .let { studyRights ->
+                    Pair(
+                        studyRights.single { it.unitId == testDaycare.id },
+                        studyRights.single { it.unitId == testDaycare2.id }
+                    )
+                }
 
         val expected0 =
             """
@@ -340,38 +346,45 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     fun `two children with placements in the past`() {
         db.transaction { tx ->
             listOf(
-                DevPlacement(
-                    childId = testChild_2.id,
-                    unitId = testDaycare.id,
-                    startDate = LocalDate.of(2018, 8, 1),
-                    endDate = LocalDate.of(2019, 5, 31),
-                    type = PlacementType.PRESCHOOL
-                ),
-                DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    startDate = LocalDate.of(2018, 8, 2),
-                    endDate = LocalDate.of(2018, 12, 31),
-                    type = PlacementType.PRESCHOOL
-                ),
-                DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare2.id,
-                    startDate = LocalDate.of(2019, 1, 1),
-                    endDate = LocalDate.of(2019, 5, 31),
-                    type = PlacementType.PRESCHOOL
+                    DevPlacement(
+                        childId = testChild_2.id,
+                        unitId = testDaycare.id,
+                        startDate = LocalDate.of(2018, 8, 1),
+                        endDate = LocalDate.of(2019, 5, 31),
+                        type = PlacementType.PRESCHOOL
+                    ),
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = LocalDate.of(2018, 8, 2),
+                        endDate = LocalDate.of(2018, 12, 31),
+                        type = PlacementType.PRESCHOOL
+                    ),
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare2.id,
+                        startDate = LocalDate.of(2019, 1, 1),
+                        endDate = LocalDate.of(2019, 5, 31),
+                        type = PlacementType.PRESCHOOL
+                    )
                 )
-            ).forEach { tx.insertTestPlacement(it) }
+                .forEach { tx.insertTestPlacement(it) }
         }
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
-        val stored = db.read { it.getStoredResults() }.let { studyRights ->
-            Triple(
-                studyRights.single { it.childId == testChild_2.id },
-                studyRights.single { it.childId == testChild_1.id && it.unitId == testDaycare.id },
-                studyRights.single { it.childId == testChild_1.id && it.unitId == testDaycare2.id }
-            )
-        }
+        val stored =
+            db.read { it.getStoredResults() }
+                .let { studyRights ->
+                    Triple(
+                        studyRights.single { it.childId == testChild_2.id },
+                        studyRights.single {
+                            it.childId == testChild_1.id && it.unitId == testDaycare.id
+                        },
+                        studyRights.single {
+                            it.childId == testChild_1.id && it.unitId == testDaycare2.id
+                        }
+                    )
+                }
 
         val expected0 =
             """
@@ -748,22 +761,25 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
     @Test
     fun `deleting all placements voids the study right`() {
-        val placementId = db.transaction {
-            it.insertTestPlacement(
-                DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    startDate = preschoolTerm2019.start,
-                    endDate = preschoolTerm2019.end,
-                    type = PlacementType.PRESCHOOL
+        val placementId =
+            db.transaction {
+                it.insertTestPlacement(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = preschoolTerm2019.start,
+                        endDate = preschoolTerm2019.end,
+                        type = PlacementType.PRESCHOOL
+                    )
                 )
-            )
-        }
+            }
 
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(1))
 
         db.transaction {
-            it.createUpdate("DELETE FROM placement WHERE id = :placementId").bind("placementId", placementId).execute()
+            it.createUpdate("DELETE FROM placement WHERE id = :placementId")
+                .bind("placementId", placementId)
+                .execute()
         }
         koskiTester.triggerUploads(today = preschoolTerm2019.end.plusDays(2))
 

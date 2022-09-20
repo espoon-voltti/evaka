@@ -14,12 +14,17 @@ import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
-import org.springframework.stereotype.Service
 import java.time.LocalDate
+import org.springframework.stereotype.Service
 
 @Service
 class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
-    fun mergePeople(tx: Database.Transaction, clock: EvakaClock, master: PersonId, duplicate: PersonId) {
+    fun mergePeople(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        master: PersonId,
+        duplicate: PersonId
+    ) {
         // language=sql
         val feeAffectingDatesSQL =
             """
@@ -35,17 +40,20 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
                 SELECT min(start_date) AS min_date, max(end_date) AS max_date FROM placement SET WHERE child_id = :id_duplicate
             )
             SELECT min(min_date) AS min_date, max(max_date) AS max_date FROM dates HAVING min(min_date) IS NOT NULL;
-            """.trimIndent()
-        val feeAffectingDateRange = tx.createQuery(feeAffectingDatesSQL)
-            .bind("id_duplicate", duplicate)
-            .map { row ->
-                DateRange(
-                    row.mapColumn("min_date"),
-                    row.mapColumn<LocalDate?>("max_date")
-                        ?.takeIf { it.isBefore(LocalDate.of(2200, 1, 1)) } // infinity -> null
-                )
-            }
-            .firstOrNull()
+            """.trimIndent(
+            )
+        val feeAffectingDateRange =
+            tx.createQuery(feeAffectingDatesSQL)
+                .bind("id_duplicate", duplicate)
+                .map { row ->
+                    DateRange(
+                        row.mapColumn("min_date"),
+                        row.mapColumn<LocalDate?>("max_date")?.takeIf {
+                            it.isBefore(LocalDate.of(2200, 1, 1))
+                        } // infinity -> null
+                    )
+                }
+                .firstOrNull()
 
         val personReferences = tx.getTransferablePersonReferences()
 
@@ -76,7 +84,8 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
             UPDATE message_content SET author_id = (SELECT id FROM message_account WHERE person_id = :id_master) WHERE author_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
             UPDATE message_recipients SET recipient_id = (SELECT id FROM message_account WHERE person_id = :id_master) WHERE recipient_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
             UPDATE message_draft SET account_id = (SELECT id FROM message_account WHERE person_id = :id_master) WHERE account_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
-            """.trimIndent()
+            """.trimIndent(
+            )
 
         try {
             tx.createUpdate(updateSQL)
@@ -94,13 +103,11 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
                 SELECT DISTINCT head_of_child
                 FROM fridge_child
                 WHERE head_of_child = :id OR child_id = :id
-                """.trimIndent()
-            tx.createQuery(parentsSQL)
-                .bind("id", master)
-                .mapTo<PersonId>()
-                .forEach { parentId ->
-                    sendFamilyUpdatedMessage(tx, clock, parentId, feeAffectingDateRange)
-                }
+                """.trimIndent(
+                )
+            tx.createQuery(parentsSQL).bind("id", master).mapTo<PersonId>().forEach { parentId ->
+                sendFamilyUpdatedMessage(tx, clock, parentId, feeAffectingDateRange)
+            }
         }
     }
 
@@ -120,7 +127,8 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
                 (SELECT count(*) FROM message_content WHERE author_id = (SELECT id FROM message_account WHERE person_id = :id)) +
                 (SELECT count(*) FROM message_recipients WHERE recipient_id = (SELECT id FROM message_account WHERE person_id = :id)) +
                 (SELECT count(*) FROM message_draft WHERE account_id = (SELECT id FROM message_account WHERE person_id = :id)) AS count;
-            """.trimIndent()
+            """.trimIndent(
+            )
 
         val referenceCount = tx.createQuery(sql1).bind("id", id).mapTo<Int>().one()
         if (referenceCount > 0) {
@@ -134,12 +142,22 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
             DELETE FROM guardian WHERE guardian_id = :id OR child_id = :id;
             DELETE FROM child WHERE id = :id;
             DELETE FROM person WHERE id = :id;
-            """.trimIndent()
+            """.trimIndent(
+            )
 
         tx.createUpdate(sql2).bind("id", id).execute()
     }
 
-    private fun sendFamilyUpdatedMessage(tx: Database.Transaction, clock: EvakaClock, adultId: PersonId, dateRange: DateRange) {
-        asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(adultId, dateRange)), runAt = clock.now())
+    private fun sendFamilyUpdatedMessage(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        adultId: PersonId,
+        dateRange: DateRange
+    ) {
+        asyncJobRunner.plan(
+            tx,
+            listOf(AsyncJob.GenerateFinanceDecisions.forAdult(adultId, dateRange)),
+            runAt = clock.now()
+        )
     }
 }

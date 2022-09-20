@@ -18,18 +18,20 @@ import org.springframework.ws.soap.security.support.TrustManagersFactoryBean
 @Profile("production", "vtj-dev", "integration-test")
 class TrustManagerConfig {
     @Bean
-    fun trustManagers(@Qualifier("trustStore") trustStore: ObjectProvider<KeyStoreFactoryBean>): TrustManagersFactoryBean? =
+    fun trustManagers(
+        @Qualifier("trustStore") trustStore: ObjectProvider<KeyStoreFactoryBean>
+    ): TrustManagersFactoryBean? =
         trustStore.ifAvailable?.let {
             TrustManagersFactoryBean().apply { setKeyStore(it.`object`) }
         }
 
     @Bean("trustStore")
-    fun trustStore(xroadEnv: VtjXroadEnv): KeyStoreFactoryBean? = xroadEnv.trustStore?.let { store ->
-        KeyStoreFactoryBean()
-            .apply {
+    fun trustStore(xroadEnv: VtjXroadEnv): KeyStoreFactoryBean? =
+        xroadEnv.trustStore?.let { store ->
+            KeyStoreFactoryBean().apply {
                 setLocation(UrlResource(store.location))
                 setPassword(store.password?.value)
                 setType(store.type)
             }
-    }
+        }
 }

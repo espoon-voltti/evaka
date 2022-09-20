@@ -24,9 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class DailyServiceTimesController(
-    private val accessControl: AccessControl
-) {
+class DailyServiceTimesController(private val accessControl: AccessControl) {
 
     data class DailyServiceTimesResponse(
         val dailyServiceTimes: DailyServiceTimesWithId,
@@ -41,15 +39,18 @@ class DailyServiceTimesController(
         @PathVariable childId: ChildId
     ): List<DailyServiceTimesResponse> {
         Audit.ChildDailyServiceTimesRead.log(targetId = childId)
-        accessControl.requirePermissionFor(user, clock, Action.Child.READ_DAILY_SERVICE_TIMES, childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Child.READ_DAILY_SERVICE_TIMES,
+            childId
+        )
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.getChildDailyServiceTimes(childId).map {
                     DailyServiceTimesResponse(
                         it,
-                        permittedActions = accessControl.getPermittedActions(
-                            tx, user, clock, it.id
-                        )
+                        permittedActions = accessControl.getPermittedActions(tx, user, clock, it.id)
                     )
                 }
             }
@@ -65,7 +66,12 @@ class DailyServiceTimesController(
         @RequestBody body: DailyServiceTimes
     ) {
         Audit.ChildDailyServiceTimesEdit.log(targetId = childId)
-        accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_DAILY_SERVICE_TIME, childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Child.CREATE_DAILY_SERVICE_TIME,
+            childId
+        )
 
         if (body.validityPeriod.start.isBefore(clock.today())) {
             throw BadRequest("New daily service times cannot be added in the past")
@@ -74,7 +80,11 @@ class DailyServiceTimesController(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 this.checkOverlappingDailyServiceTimes(tx, childId, body.validityPeriod)
-                this.deleteCollidingReservationsAndNotify(tx, tx.createChildDailyServiceTimes(childId, body), clock)
+                this.deleteCollidingReservationsAndNotify(
+                    tx,
+                    tx.createChildDailyServiceTimes(childId, body),
+                    clock
+                )
             }
         }
     }
@@ -120,7 +130,11 @@ class DailyServiceTimesController(
 
         if (overlapping.isNotEmpty()) {
             overlapping.forEach {
-                if (range.start <= it.validityPeriod.start && (range.end == null || (it.validityPeriod.end != null && range.end >= it.validityPeriod.end))) {
+                if (
+                    range.start <= it.validityPeriod.start &&
+                        (range.end == null ||
+                            (it.validityPeriod.end != null && range.end >= it.validityPeriod.end))
+                ) {
                     tx.deleteChildDailyServiceTimes(it.id)
                 } else {
                     tx.updateChildDailyServiceTimesValidity(
@@ -129,8 +143,7 @@ class DailyServiceTimesController(
                             DateRange(it.validityPeriod.start, range.start.minusDays(1))
                         else if (range.end != null && it.validityPeriod.start <= range.end)
                             DateRange(range.end.plusDays(1), it.validityPeriod.end)
-                        else
-                            throw IllegalStateException("Unsupported overlap")
+                        else throw IllegalStateException("Unsupported overlap")
                     )
                 }
             }
@@ -148,13 +161,20 @@ class DailyServiceTimesController(
             return
         }
 
-        val actionableRange = DateRange(
-            dst.validityPeriod.start.takeIf { it.isAfter(evakaClock.today()) } ?: evakaClock.today(),
-            dst.validityPeriod.end
-        )
+        val actionableRange =
+            DateRange(
+                dst.validityPeriod.start.takeIf { it.isAfter(evakaClock.today()) }
+                    ?: evakaClock.today(),
+                dst.validityPeriod.end
+            )
 
         val deletedReservationCount = tx.clearReservationsForRange(dst.childId, actionableRange)
 
-        tx.addDailyServiceTimesNotification(id, dst.childId, actionableRange.start, deletedReservationCount > 0)
+        tx.addDailyServiceTimesNotification(
+            id,
+            dst.childId,
+            actionableRange.start,
+            deletedReservationCount > 0
+        )
     }
 }

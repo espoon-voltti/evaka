@@ -22,31 +22,37 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val employee = DaycareAclRowEmployee(
-        id = EmployeeId(UUID.randomUUID()),
-        firstName = "First",
-        lastName = "Last",
-        email = "test@example.com"
-    )
+    private val employee =
+        DaycareAclRowEmployee(
+            id = EmployeeId(UUID.randomUUID()),
+            firstName = "First",
+            lastName = "Last",
+            email = "test@example.com"
+        )
     private lateinit var admin: AuthenticatedUser
 
     @BeforeEach
     protected fun beforeEach() {
         db.transaction { tx ->
-            admin = AuthenticatedUser.Employee(
-                tx.insertTestEmployee(DevEmployee(roles = setOf(UserRole.ADMIN))),
-                roles = setOf(UserRole.ADMIN)
-            )
+            admin =
+                AuthenticatedUser.Employee(
+                    tx.insertTestEmployee(DevEmployee(roles = setOf(UserRole.ADMIN))),
+                    roles = setOf(UserRole.ADMIN)
+                )
             tx.insertTestCareArea(testArea)
-            tx.insertTestDaycare(DevDaycare(areaId = testArea.id, id = testDaycare.id, name = testDaycare.name))
-            tx.insertTestDaycare(DevDaycare(areaId = testArea.id, id = testDaycare2.id, name = testDaycare2.name))
+            tx.insertTestDaycare(
+                DevDaycare(areaId = testArea.id, id = testDaycare.id, name = testDaycare.name)
+            )
+            tx.insertTestDaycare(
+                DevDaycare(areaId = testArea.id, id = testDaycare2.id, name = testDaycare2.name)
+            )
             employee.also {
                 tx.insertTestEmployee(
                     DevEmployee(
@@ -67,7 +73,11 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         insertSupervisor(testDaycare.id)
         assertEquals(
             listOf(
-                DaycareAclRow(employee = employee, role = UserRole.UNIT_SUPERVISOR, groupIds = emptyList())
+                DaycareAclRow(
+                    employee = employee,
+                    role = UserRole.UNIT_SUPERVISOR,
+                    groupIds = emptyList()
+                )
             ),
             getAclRows()
         )
@@ -101,38 +111,36 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     private fun getAclRows(): List<DaycareAclRow> {
-        val (_, res, body) = http.get("/daycares/${testDaycare.id}/acl")
-            .asUser(admin)
-            .responseObject<DaycareAclResponse>(jsonMapper)
+        val (_, res, body) =
+            http
+                .get("/daycares/${testDaycare.id}/acl")
+                .asUser(admin)
+                .responseObject<DaycareAclResponse>(jsonMapper)
         assertTrue(res.isSuccessful)
         return body.get().rows
     }
 
     private fun insertSupervisor(daycareId: DaycareId) {
-        val (_, res, _) = http.put("/daycares/$daycareId/supervisors/${employee.id}")
-            .asUser(admin)
-            .response()
+        val (_, res, _) =
+            http.put("/daycares/$daycareId/supervisors/${employee.id}").asUser(admin).response()
         assertTrue(res.isSuccessful)
     }
 
     private fun deleteSupervisor(daycareId: DaycareId) {
-        val (_, res, _) = http.delete("/daycares/$daycareId/supervisors/${employee.id}")
-            .asUser(admin)
-            .response()
+        val (_, res, _) =
+            http.delete("/daycares/$daycareId/supervisors/${employee.id}").asUser(admin).response()
         assertTrue(res.isSuccessful)
     }
 
     private fun insertStaff() {
-        val (_, res, _) = http.put("/daycares/${testDaycare.id}/staff/${employee.id}")
-            .asUser(admin)
-            .response()
+        val (_, res, _) =
+            http.put("/daycares/${testDaycare.id}/staff/${employee.id}").asUser(admin).response()
         assertTrue(res.isSuccessful)
     }
 
     private fun deleteStaff() {
-        val (_, res, _) = http.delete("/daycares/${testDaycare.id}/staff/${employee.id}")
-            .asUser(admin)
-            .response()
+        val (_, res, _) =
+            http.delete("/daycares/${testDaycare.id}/staff/${employee.id}").asUser(admin).response()
         assertTrue(res.isSuccessful)
     }
 
@@ -144,22 +152,25 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private fun employeeMessageAccountState(): MessageAccountState =
         db.read {
-            it.createQuery(
-                """
+                it.createQuery(
+                        """
                     SELECT active FROM message_account
                     WHERE employee_id = :employeeId
-                """.trimIndent()
-            )
-                .bind("employeeId", employee.id)
-                .mapTo<Boolean>().toList()
-        }.let { accounts ->
-            if (accounts.size == 1) {
-                if (accounts[0]) {
-                    MessageAccountState.ACTIVE_ACCOUNT
-                } else {
-                    MessageAccountState.INACTIVE_ACCOUNT
-                }
-            } else if (accounts.isEmpty()) MessageAccountState.NO_ACCOUNT
-            else throw RuntimeException("Employee has more than one account")
-        }
+                """.trimIndent(
+                        )
+                    )
+                    .bind("employeeId", employee.id)
+                    .mapTo<Boolean>()
+                    .toList()
+            }
+            .let { accounts ->
+                if (accounts.size == 1) {
+                    if (accounts[0]) {
+                        MessageAccountState.ACTIVE_ACCOUNT
+                    } else {
+                        MessageAccountState.INACTIVE_ACCOUNT
+                    }
+                } else if (accounts.isEmpty()) MessageAccountState.NO_ACCOUNT
+                else throw RuntimeException("Employee has more than one account")
+            }
 }

@@ -12,8 +12,9 @@ import software.amazon.awssdk.services.ses.SesClient
 @Configuration
 class EmailConfig {
     @Bean
-    fun emailClient(client: SesClient, env: EmailEnv): IEmailClient = when (env.enabled) {
-        true -> EmailClient(client = client, whitelist = env.whitelist)
-        false -> MockEmailClient()
-    }
+    fun emailClient(client: SesClient, env: EmailEnv): IEmailClient =
+        when (env.enabled) {
+            true -> EmailClient(client = client, whitelist = env.whitelist)
+            false -> MockEmailClient()
+        }
 }

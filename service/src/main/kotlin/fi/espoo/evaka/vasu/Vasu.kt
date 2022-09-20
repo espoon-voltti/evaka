@@ -15,13 +15,13 @@ import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.europeHelsinki
-import org.jdbi.v3.json.Json
 import java.time.LocalDate
 import java.util.UUID
+import org.jdbi.v3.json.Json
 
 enum class CurriculumType {
     DAYCARE,
-    PRESCHOOL;
+    PRESCHOOL
 }
 
 enum class VasuDocumentEventType {
@@ -84,19 +84,14 @@ data class VasuDocument(
     val templateRange: FiniteDateRange,
     val type: CurriculumType,
     val language: VasuLanguage,
-    @Json
-    val events: List<VasuDocumentEvent> = listOf(),
-    @Json
-    val basics: VasuBasics,
-    @Json
-    val content: VasuContent
+    @Json val events: List<VasuDocumentEvent> = listOf(),
+    @Json val basics: VasuBasics,
+    @Json val content: VasuContent
 ) {
     val documentState: VasuDocumentState
         get() = getStateFromEvents(events)
 
-    fun redact() = this.copy(
-        content = this.content.redact()
-    )
+    fun redact() = this.copy(content = this.content.redact())
 }
 
 @Json
@@ -132,11 +127,7 @@ data class VasuPlacement(
     val range: FiniteDateRange
 )
 
-@Json
-data class ChildLanguage(
-    val nativeLanguage: String,
-    val languageSpokenAtHome: String
-)
+@Json data class ChildLanguage(val nativeLanguage: String, val languageSpokenAtHome: String)
 
 @Json
 data class VasuContent(
@@ -144,9 +135,10 @@ data class VasuContent(
     val sections: List<VasuSection>
 ) {
     fun matchesStructurally(content: VasuContent): Boolean =
-        this.sections.size == content.sections.size && this.sections.withIndex().all { (index, section) ->
-            section.matchesStructurally(content.sections.getOrNull(index))
-        }
+        this.sections.size == content.sections.size &&
+            this.sections.withIndex().all { (index, section) ->
+                section.matchesStructurally(content.sections.getOrNull(index))
+            }
 
     fun followupEntriesMissing(content: VasuContent): Boolean =
         content.sections.withIndex().any { section ->
@@ -154,7 +146,8 @@ data class VasuContent(
                 if (question.value.type === VasuQuestionType.FOLLOWUP) {
                     val followup = question.value as VasuQuestion.Followup
                     val storedFollowup =
-                        this.sections[section.index].questions[question.index] as VasuQuestion.Followup
+                        this.sections[section.index].questions[question.index]
+                            as VasuQuestion.Followup
 
                     followup.value.size < storedFollowup.value.size
                 } else {
@@ -163,21 +156,22 @@ data class VasuContent(
             }
         }
 
-    fun redact() = this.copy(
-        sections = sections.map { it.redact() }
-    )
+    fun redact() = this.copy(sections = sections.map { it.redact() })
 
     fun mapQuestions(
         transform: (question: VasuQuestion, sectionIndex: Int, questionIndex: Int) -> VasuQuestion
-    ) = this.copy(
-        sections = this.sections.mapIndexed { sectionIndex, section ->
-            section.copy(
-                questions = section.questions.mapIndexed { questionIndex, question ->
-                    transform(question, sectionIndex, questionIndex)
+    ) =
+        this.copy(
+            sections =
+                this.sections.mapIndexed { sectionIndex, section ->
+                    section.copy(
+                        questions =
+                            section.questions.mapIndexed { questionIndex, question ->
+                                transform(question, sectionIndex, questionIndex)
+                            }
+                    )
                 }
-            )
-        }
-    )
+        )
 }
 
 data class VasuSection(
@@ -186,25 +180,20 @@ data class VasuSection(
     val hideBeforeReady: Boolean = false
 ) {
     fun matchesStructurally(section: VasuSection?): Boolean =
-        section != null && section.name == this.name && section.questions.size == this.questions.size &&
-            this.questions.withIndex()
-                .all { (index, currentQuestion) ->
-                    val newQuestion = section.questions[index]
-                    val equals = currentQuestion.equalsIgnoringValue(newQuestion)
-                    val isValid = newQuestion.isValid(section)
-                    equals && isValid
-                }
+        section != null &&
+            section.name == this.name &&
+            section.questions.size == this.questions.size &&
+            this.questions.withIndex().all { (index, currentQuestion) ->
+                val newQuestion = section.questions[index]
+                val equals = currentQuestion.equalsIgnoringValue(newQuestion)
+                val isValid = newQuestion.isValid(section)
+                equals && isValid
+            }
 
-    fun redact() = this.copy(
-        questions = this.questions.map { it.redact() }
-    )
+    fun redact() = this.copy(questions = this.questions.map { it.redact() })
 }
 
-@JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.PROPERTY,
-    property = "type"
-)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes(
     JsonSubTypes.Type(value = VasuQuestion.TextQuestion::class, name = "TEXT"),
     JsonSubTypes.Type(value = VasuQuestion.CheckboxQuestion::class, name = "CHECKBOX"),
@@ -215,11 +204,12 @@ data class VasuSection(
     JsonSubTypes.Type(value = VasuQuestion.DateQuestion::class, name = "DATE"),
     JsonSubTypes.Type(value = VasuQuestion.Followup::class, name = "FOLLOWUP"),
     JsonSubTypes.Type(value = VasuQuestion.Paragraph::class, name = "PARAGRAPH"),
-    JsonSubTypes.Type(value = VasuQuestion.StaticInfoSubSection::class, name = "STATIC_INFO_SUBSECTION")
+    JsonSubTypes.Type(
+        value = VasuQuestion.StaticInfoSubSection::class,
+        name = "STATIC_INFO_SUBSECTION"
+    )
 )
-sealed class VasuQuestion(
-    val type: VasuQuestionType
-) {
+sealed class VasuQuestion(val type: VasuQuestionType) {
     abstract val name: String
     abstract val ophKey: OphQuestionKey?
     abstract val info: String
@@ -228,9 +218,8 @@ sealed class VasuQuestion(
     abstract fun equalsIgnoringValue(question: VasuQuestion?): Boolean
 
     open fun isValid(section: VasuSection): Boolean {
-        return dependsOn?.all { dep ->
-            section.questions.any { it.id == dep && it != this }
-        } ?: true
+        return dependsOn?.all { dep -> section.questions.any { it.id == dep && it != this } }
+            ?: true
     }
 
     open fun redact(): VasuQuestion = this
@@ -287,10 +276,8 @@ sealed class VasuQuestion(
         val dateRange: FiniteDateRange? = null
     ) : VasuQuestion(VasuQuestionType.RADIO_GROUP) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
-            return question is RadioGroupQuestion && question.copy(
-                value = this.value,
-                dateRange = this.dateRange
-            ) == this
+            return question is RadioGroupQuestion &&
+                question.copy(value = this.value, dateRange = this.dateRange) == this
         }
 
         override fun isValid(section: VasuSection): Boolean {
@@ -317,11 +304,12 @@ sealed class VasuQuestion(
         val dateValue: Map<String, LocalDate>? = mapOf()
     ) : VasuQuestion(VasuQuestionType.MULTISELECT) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
-            return question is MultiSelectQuestion && question.copy(
-                value = this.value,
-                textValue = this.textValue,
-                dateValue = this.dateValue
-            ) == this
+            return question is MultiSelectQuestion &&
+                question.copy(
+                    value = this.value,
+                    textValue = this.textValue,
+                    dateValue = this.dateValue
+                ) == this
         }
 
         override fun isValid(section: VasuSection): Boolean {
@@ -330,7 +318,10 @@ sealed class VasuQuestion(
             if (this.maxSelections != null && this.value.size > this.maxSelections) return false
 
             if (!this.value.all { v -> options.any { opt -> v == opt.key } }) return false
-            return this.dateValue?.keys?.all { key -> options.find { it.key == key }?.date ?: false } ?: true
+            return this.dateValue?.keys?.all { key ->
+                options.find { it.key == key }?.date ?: false
+            }
+                ?: true
         }
     }
 
@@ -345,7 +336,9 @@ sealed class VasuQuestion(
         val separateRows: Boolean = false
     ) : VasuQuestion(VasuQuestionType.MULTI_FIELD) {
         init {
-            check(keys.size == value.size) { "MultiField keys ($keys) and value ($value) sizes do not match" }
+            check(keys.size == value.size) {
+                "MultiField keys ($keys) and value ($value) sizes do not match"
+            }
         }
 
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
@@ -402,35 +395,36 @@ sealed class VasuQuestion(
             return question is Followup && question.copy(value = this.value) == this
         }
 
-        override fun redact(): VasuQuestion = this.copy(
-            value = this.value.map {
-                it.copy(
-                    authorName = null,
-                    authorId = null,
-                    edited = null,
-                    createdDate = null
-                )
-            }
-        )
-
-        fun withEmployeeNames(nameMap: Map<EmployeeId, String>) = this.copy(
-            value = this.value.map { entry ->
-                entry.copy(
-                    authorName = entry.authorId?.let { nameMap[it] },
-                    edited = entry.edited?.let { edited ->
-                        edited.copy(
-                            editorName = edited.editorId?.let { nameMap[it] }
+        override fun redact(): VasuQuestion =
+            this.copy(
+                value =
+                    this.value.map {
+                        it.copy(
+                            authorName = null,
+                            authorId = null,
+                            edited = null,
+                            createdDate = null
                         )
                     }
-                )
-            }
-        )
+            )
+
+        fun withEmployeeNames(nameMap: Map<EmployeeId, String>) =
+            this.copy(
+                value =
+                    this.value.map { entry ->
+                        entry.copy(
+                            authorName = entry.authorId?.let { nameMap[it] },
+                            edited =
+                                entry.edited?.let { edited ->
+                                    edited.copy(editorName = edited.editorId?.let { nameMap[it] })
+                                }
+                        )
+                    }
+            )
     }
 
-    data class Paragraph(
-        val title: String,
-        val paragraph: String
-    ) : VasuQuestion(VasuQuestionType.PARAGRAPH) {
+    data class Paragraph(val title: String, val paragraph: String) :
+        VasuQuestion(VasuQuestionType.PARAGRAPH) {
         override val name = ""
         override val info = ""
         override val ophKey: OphQuestionKey? = null

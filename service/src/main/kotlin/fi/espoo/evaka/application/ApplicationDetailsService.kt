@@ -10,7 +10,10 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
 import java.time.LocalDate
 
-fun Database.Read.applicationFlags(application: ApplicationDetails, today: LocalDate): ApplicationFlags {
+fun Database.Read.applicationFlags(
+    application: ApplicationDetails,
+    today: LocalDate
+): ApplicationFlags {
     return applicationFlags(
         childId = application.childId,
         formType = application.type,
@@ -28,42 +31,52 @@ fun Database.Read.applicationFlags(
     connectedDaycare: Boolean
 ): ApplicationFlags {
     return when (formType) {
-        ApplicationType.CLUB -> ApplicationFlags(
-            isTransferApplication = getPlacementsForChildDuring(childId, startDate, null)
-                .any { it.type == PlacementType.CLUB }
-        )
-        ApplicationType.DAYCARE -> ApplicationFlags(
-            isTransferApplication = getPlacementsForChildDuring(childId, startDate, null)
-                .any {
-                    listOf(
-                        PlacementType.DAYCARE,
-                        PlacementType.DAYCARE_PART_TIME,
-                        PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-                        PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
-                    ).contains(it.type)
-                }
-        )
+        ApplicationType.CLUB ->
+            ApplicationFlags(
+                isTransferApplication =
+                    getPlacementsForChildDuring(childId, startDate, null).any {
+                        it.type == PlacementType.CLUB
+                    }
+            )
+        ApplicationType.DAYCARE ->
+            ApplicationFlags(
+                isTransferApplication =
+                    getPlacementsForChildDuring(childId, startDate, null).any {
+                        listOf(
+                                PlacementType.DAYCARE,
+                                PlacementType.DAYCARE_PART_TIME,
+                                PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+                                PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
+                            )
+                            .contains(it.type)
+                    }
+            )
         ApplicationType.PRESCHOOL -> {
-            val existingPlacements = getPlacementsForChildDuring(childId, startDate, null)
-                .filter {
+            val existingPlacements =
+                getPlacementsForChildDuring(childId, startDate, null).filter {
                     listOf(
-                        PlacementType.PRESCHOOL,
-                        PlacementType.PRESCHOOL_DAYCARE,
-                        PlacementType.PREPARATORY,
-                        PlacementType.PREPARATORY_DAYCARE
-                    ).contains(it.type)
+                            PlacementType.PRESCHOOL,
+                            PlacementType.PRESCHOOL_DAYCARE,
+                            PlacementType.PREPARATORY,
+                            PlacementType.PREPARATORY_DAYCARE
+                        )
+                        .contains(it.type)
                 }
 
-            // True if the application is for connected daycare only, i.e. there already is a placement for the same
+            // True if the application is for connected daycare only, i.e. there already is a
+            // placement
+            // for the same
             // placement type *without* connected daycare
-            val isAdditionalDaycareApplication = connectedDaycare &&
-                existingPlacements.isNotEmpty() &&
-                existingPlacements.all {
-                    !preparatory && it.type == PlacementType.PRESCHOOL ||
-                        preparatory && it.type == PlacementType.PREPARATORY
-                }
+            val isAdditionalDaycareApplication =
+                connectedDaycare &&
+                    existingPlacements.isNotEmpty() &&
+                    existingPlacements.all {
+                        !preparatory && it.type == PlacementType.PRESCHOOL ||
+                            preparatory && it.type == PlacementType.PREPARATORY
+                    }
 
-            val isTransferApplication = !isAdditionalDaycareApplication && existingPlacements.isNotEmpty()
+            val isTransferApplication =
+                !isAdditionalDaycareApplication && existingPlacements.isNotEmpty()
 
             ApplicationFlags(
                 isTransferApplication = isTransferApplication,

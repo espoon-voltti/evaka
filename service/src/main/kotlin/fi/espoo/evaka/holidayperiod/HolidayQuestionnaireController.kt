@@ -45,7 +45,9 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
     ): FixedPeriodQuestionnaire {
         Audit.HolidayQuestionnaireRead.log(id)
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_QUESTIONNAIRE)
-        return db.connect { dbc -> dbc.read { it.getFixedPeriodQuestionnaire(id) ?: throw NotFound() } }
+        return db.connect { dbc ->
+            dbc.read { it.getFixedPeriodQuestionnaire(id) ?: throw NotFound() }
+        }
     }
 
     @PostMapping

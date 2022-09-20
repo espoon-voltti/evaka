@@ -8,10 +8,10 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import org.junit.jupiter.api.Test
-import org.skyscreamer.jsonassert.JSONAssert
 import java.util.UUID
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.Test
+import org.skyscreamer.jsonassert.JSONAssert
 
 class ServerSmokeTest : FullApplicationTest(resetDbBeforeEach = false) {
     @Test
@@ -24,7 +24,8 @@ class ServerSmokeTest : FullApplicationTest(resetDbBeforeEach = false) {
     "status": "UP"
 }
         """,
-            res.get(), false
+            res.get(),
+            false
         )
     }
 
@@ -33,7 +34,11 @@ class ServerSmokeTest : FullApplicationTest(resetDbBeforeEach = false) {
         val (_, res, _) = http.get("/daycares").responseString()
         assertEquals(401, res.statusCode)
 
-        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER))
+        val user =
+            AuthenticatedUser.Employee(
+                EmployeeId(UUID.randomUUID()),
+                setOf(UserRole.SERVICE_WORKER)
+            )
         val (_, res2, _) = http.get("/daycares").asUser(user).responseString()
         assertEquals(200, res2.statusCode)
     }

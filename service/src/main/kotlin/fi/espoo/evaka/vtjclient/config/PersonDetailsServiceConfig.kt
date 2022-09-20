@@ -18,13 +18,17 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class PersonDetailsServiceConfig {
     @Bean
-    fun pisPersonDetailsService(evakaEnv: EvakaEnv, ctx: ApplicationContext): IPersonDetailsService =
+    fun pisPersonDetailsService(
+        evakaEnv: EvakaEnv,
+        ctx: ApplicationContext
+    ): IPersonDetailsService =
         when (evakaEnv.vtjEnabled) {
-            true -> VTJPersonDetailsService(
-                vtjClientService = ctx.getBean(VtjClientService::class.java),
-                henkiloMapper = ctx.getBean(VtjHenkiloMapper::class.java),
-                vtjCache = ctx.getBean(VtjCache::class.java)
-            )
+            true ->
+                VTJPersonDetailsService(
+                    vtjClientService = ctx.getBean(VtjClientService::class.java),
+                    henkiloMapper = ctx.getBean(VtjHenkiloMapper::class.java),
+                    vtjCache = ctx.getBean(VtjCache::class.java)
+                )
             false -> MockPersonDetailsService()
         }
 }

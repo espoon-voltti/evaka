@@ -15,7 +15,12 @@ import org.springframework.stereotype.Service
 
 @Service
 class AssistanceActionService {
-    fun createAssistanceAction(db: Database.Connection, user: AuthenticatedUser, childId: ChildId, data: AssistanceActionRequest): AssistanceAction {
+    fun createAssistanceAction(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        childId: ChildId,
+        data: AssistanceActionRequest
+    ): AssistanceAction {
         try {
             return db.transaction { tx ->
                 validateActions(data, tx.getAssistanceActionOptions().map { it.value })
@@ -27,11 +32,19 @@ class AssistanceActionService {
         }
     }
 
-    fun getAssistanceActionsByChildId(db: Database.Connection, childId: ChildId): List<AssistanceAction> {
+    fun getAssistanceActionsByChildId(
+        db: Database.Connection,
+        childId: ChildId
+    ): List<AssistanceAction> {
         return db.read { it.getAssistanceActionsByChild(childId) }
     }
 
-    fun updateAssistanceAction(db: Database.Connection, user: AuthenticatedUser, id: AssistanceActionId, data: AssistanceActionRequest): AssistanceAction {
+    fun updateAssistanceAction(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        id: AssistanceActionId,
+        data: AssistanceActionRequest
+    ): AssistanceAction {
         try {
             return db.transaction { tx ->
                 validateActions(data, tx.getAssistanceActionOptions().map { it.value })

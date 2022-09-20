@@ -51,6 +51,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -58,7 +59,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 @RequestMapping("/value-decisions")
@@ -78,29 +78,32 @@ class VoucherValueDecisionController(
         @RequestBody body: SearchVoucherValueDecisionRequest,
     ): Paged<VoucherValueDecisionSummary> {
         Audit.VoucherValueDecisionSearch.log()
-        accessControl.requirePermissionFor(user, clock, Action.Global.SEARCH_VOUCHER_VALUE_DECISIONS)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Global.SEARCH_VOUCHER_VALUE_DECISIONS
+        )
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         return db.connect { dbc ->
-            dbc
-                .read { tx ->
-                    tx.searchValueDecisions(
-                        clock,
-                        body.page,
-                        body.pageSize,
-                        body.sortBy ?: VoucherValueDecisionSortParam.STATUS,
-                        body.sortDirection ?: SortDirection.DESC,
-                        body.status,
-                        body.area ?: emptyList(),
-                        body.unit,
-                        body.searchTerms ?: "",
-                        body.startDate,
-                        body.endDate,
-                        body.searchByStartDate,
-                        body.financeDecisionHandlerId,
-                        body.distinctions ?: emptyList()
-                    )
-                }
+            dbc.read { tx ->
+                tx.searchValueDecisions(
+                    clock,
+                    body.page,
+                    body.pageSize,
+                    body.sortBy ?: VoucherValueDecisionSortParam.STATUS,
+                    body.sortDirection ?: SortDirection.DESC,
+                    body.status,
+                    body.area ?: emptyList(),
+                    body.unit,
+                    body.searchTerms ?: "",
+                    body.startDate,
+                    body.endDate,
+                    body.searchByStartDate,
+                    body.financeDecisionHandlerId,
+                    body.distinctions ?: emptyList()
+                )
+            }
         }
     }
 
@@ -113,8 +116,9 @@ class VoucherValueDecisionController(
     ): Wrapper<VoucherValueDecisionDetailed> {
         Audit.VoucherValueDecisionRead.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.READ, id)
-        val res = db.connect { dbc -> dbc.read { it.getVoucherValueDecision(id) } }
-            ?: throw NotFound("No voucher value decision found with given ID ($id)")
+        val res =
+            db.connect { dbc -> dbc.read { it.getVoucherValueDecision(id) } }
+                ?: throw NotFound("No voucher value decision found with given ID ($id)")
         return Wrapper(res)
     }
 
@@ -126,8 +130,15 @@ class VoucherValueDecisionController(
         @PathVariable headOfFamilyId: PersonId
     ): List<VoucherValueDecisionSummary> {
         Audit.VoucherValueDecisionHeadOfFamilyRead.log(targetId = headOfFamilyId)
-        accessControl.requirePermissionFor(user, clock, Action.Person.READ_VOUCHER_VALUE_DECISIONS, headOfFamilyId)
-        return db.connect { dbc -> dbc.read { it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId) } }
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Person.READ_VOUCHER_VALUE_DECISIONS,
+            headOfFamilyId
+        )
+        return db.connect { dbc ->
+            dbc.read { it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId) }
+        }
     }
 
     @PostMapping("/send")
@@ -138,7 +149,12 @@ class VoucherValueDecisionController(
         @RequestBody decisionIds: List<VoucherValueDecisionId>
     ) {
         Audit.VoucherValueDecisionSend.log(targetId = decisionIds)
-        accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.UPDATE, decisionIds)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.VoucherValueDecision.UPDATE,
+            decisionIds
+        )
         db.connect { dbc ->
             dbc.transaction {
                 sendVoucherValueDecisions(
@@ -181,22 +197,29 @@ class VoucherValueDecisionController(
         @PathVariable decisionId: VoucherValueDecisionId
     ): ResponseEntity<Any> {
         Audit.FeeDecisionPdfRead.log(targetId = decisionId)
-        accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.READ, decisionId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.VoucherValueDecision.READ,
+            decisionId
+        )
 
         return db.connect { dbc ->
             dbc.read { tx ->
-                val decision = tx.getVoucherValueDecision(decisionId) ?: error("Cannot find voucher value decision $decisionId")
+                val decision =
+                    tx.getVoucherValueDecision(decisionId)
+                        ?: error("Cannot find voucher value decision $decisionId")
 
-                val personIds = listOfNotNull(
-                    decision.headOfFamily.id,
-                    decision.partner?.id,
-                    decision.child.id
-                )
-                val restrictedDetails = personIds.any { personId ->
-                    tx.getPersonById(personId)?.restrictedDetailsEnabled ?: false
-                }
+                val personIds =
+                    listOfNotNull(decision.headOfFamily.id, decision.partner?.id, decision.child.id)
+                val restrictedDetails =
+                    personIds.any { personId ->
+                        tx.getPersonById(personId)?.restrictedDetailsEnabled ?: false
+                    }
                 if (restrictedDetails && !user.isAdmin) {
-                    throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
+                    throw Forbidden(
+                        "Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen."
+                    )
                 }
             }
 
@@ -214,7 +237,9 @@ class VoucherValueDecisionController(
     ) {
         Audit.VoucherValueDecisionSetType.log(targetId = uuid)
         accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.UPDATE, uuid)
-        db.connect { dbc -> dbc.transaction { valueDecisionService.setType(it, uuid, request.type) } }
+        db.connect { dbc ->
+            dbc.transaction { valueDecisionService.setType(it, uuid, request.type) }
+        }
     }
 
     @PostMapping("/head-of-family/{id}/create-retroactive")
@@ -226,8 +251,15 @@ class VoucherValueDecisionController(
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
     ) {
         Audit.VoucherValueDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
-        accessControl.requirePermissionFor(user, clock, Action.Person.GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS, id)
-        db.connect { dbc -> dbc.transaction { generator.createRetroactiveValueDecisions(it, clock, id, body.from) } }
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Person.GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS,
+            id
+        )
+        db.connect { dbc ->
+            dbc.transaction { generator.createRetroactiveValueDecisions(it, clock, id, body.from) }
+        }
     }
 }
 
@@ -249,7 +281,8 @@ fun sendVoucherValueDecisions(
     }
 
     val today = now.toLocalDate()
-    val lastPossibleDecisionValidFromDate = today.plusDays(evakaEnv.nrOfDaysVoucherValueDecisionCanBeSentInAdvance)
+    val lastPossibleDecisionValidFromDate =
+        today.plusDays(evakaEnv.nrOfDaysVoucherValueDecisionCanBeSentInAdvance)
     if (decisions.any { it.validFrom > lastPossibleDecisionValidFromDate }) {
         throw BadRequest(
             "Some of the voucher value decisions are not valid yet",
@@ -257,35 +290,49 @@ fun sendVoucherValueDecisions(
         )
     }
 
-    val conflicts = decisions
-        .flatMap {
-            tx.lockValueDecisionsForChild(it.child.id)
-            tx.findValueDecisionsForChild(
-                it.child.id,
-                DateRange(it.validFrom, it.validTo),
-                listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
-            )
+    val conflicts =
+        decisions
+            .flatMap {
+                tx.lockValueDecisionsForChild(it.child.id)
+                tx.findValueDecisionsForChild(
+                    it.child.id,
+                    DateRange(it.validFrom, it.validTo),
+                    listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
+                )
+            }
+            .distinctBy { it.id }
+            .filter { !ids.contains(it.id) }
+
+    if (conflicts.any { it.status == WAITING_FOR_MANUAL_SENDING })
+        throw Conflict(
+            "Some children have overlapping value decisions waiting for manual sending",
+            "WAITING_FOR_MANUAL_SENDING"
+        )
+
+    if (conflicts.any { it.status == WAITING_FOR_SENDING })
+        error("Some children have overlapping value decisions still waiting for sending")
+
+    val (annulled, updatedDates) =
+        updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts).partition {
+            it.status == ANNULLED
         }
-        .distinctBy { it.id }
-        .filter { !ids.contains(it.id) }
-
-    if (conflicts.any { it.status == WAITING_FOR_MANUAL_SENDING }) throw Conflict(
-        "Some children have overlapping value decisions waiting for manual sending",
-        "WAITING_FOR_MANUAL_SENDING"
-    )
-
-    if (conflicts.any { it.status == WAITING_FOR_SENDING }) error("Some children have overlapping value decisions still waiting for sending")
-
-    val (annulled, updatedDates) = updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts)
-        .partition { it.status == ANNULLED }
     tx.annulVoucherValueDecisions(annulled.map { it.id }, now)
     tx.updateVoucherValueDecisionEndDates(updatedDates, now)
 
     val (emptyDecisions, validDecisions) = decisions.partition { it.isEmpty() }
     tx.deleteValueDecisions(emptyDecisions.map { it.id })
     val validIds = validDecisions.map { it.id }
-    tx.approveValueDecisionDraftsForSending(validIds, user.id, now, alwaysUseDaycareFinanceDecisionHandler)
-    asyncJobRunner.plan(tx, validIds.map { AsyncJob.NotifyVoucherValueDecisionApproved(it) }, runAt = now)
+    tx.approveValueDecisionDraftsForSending(
+        validIds,
+        user.id,
+        now,
+        alwaysUseDaycareFinanceDecisionHandler
+    )
+    asyncJobRunner.plan(
+        tx,
+        validIds.map { AsyncJob.NotifyVoucherValueDecisionApproved(it) },
+        runAt = now
+    )
 }
 
 enum class VoucherValueDecisionSortParam {
@@ -313,6 +360,4 @@ data class SearchVoucherValueDecisionRequest(
     val searchByStartDate: Boolean = false
 )
 
-data class VoucherValueDecisionTypeRequest(
-    val type: VoucherValueDecisionType
-)
+data class VoucherValueDecisionTypeRequest(val type: VoucherValueDecisionType)

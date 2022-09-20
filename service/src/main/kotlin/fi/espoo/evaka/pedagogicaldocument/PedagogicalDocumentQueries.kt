@@ -15,7 +15,7 @@ fun Database.Read.getPedagogicalDocumentAttachments(
     pedagogicalDocumentId: PedagogicalDocumentId
 ): List<Attachment> {
     return this.createQuery(
-        """
+            """
             SELECT 
                 a.id,
                 a.name,
@@ -23,8 +23,9 @@ fun Database.Read.getPedagogicalDocumentAttachments(
             FROM attachment a
             JOIN pedagogical_document pd ON a.pedagogical_document_id = pd.id
             WHERE pd.id = :pedagogicalDocumentId
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("pedagogicalDocumentId", pedagogicalDocumentId)
         .mapTo<Attachment>()
         .list()
@@ -34,15 +35,17 @@ data class PedagogicalDocumentCitizen(
     val id: PedagogicalDocumentId,
     val childId: ChildId,
     val description: String,
-    @Json
-    val attachments: List<Attachment> = emptyList(),
+    @Json val attachments: List<Attachment> = emptyList(),
     val created: HelsinkiDateTime,
     val isRead: Boolean
 )
 
-fun Database.Read.getPedagogicalDocumentsByChildForGuardian(childId: ChildId, guardianId: PersonId): List<PedagogicalDocumentCitizen> {
+fun Database.Read.getPedagogicalDocumentsByChildForGuardian(
+    childId: ChildId,
+    guardianId: PersonId
+): List<PedagogicalDocumentCitizen> {
     return this.createQuery(
-        """
+            """
             SELECT 
                 pd.id,
                 pd.child_id,
@@ -65,8 +68,9 @@ fun Database.Read.getPedagogicalDocumentsByChildForGuardian(childId: ChildId, gu
             LEFT JOIN pedagogical_document_read pdr ON pd.id = pdr.pedagogical_document_id AND pdr.person_id = g.guardian_id
             WHERE pd.child_id = :childId AND g.guardian_id = :guardianId
             ORDER BY pd.created DESC
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("childId", childId)
         .bind("guardianId", guardianId)
         .mapTo<PedagogicalDocumentCitizen>()

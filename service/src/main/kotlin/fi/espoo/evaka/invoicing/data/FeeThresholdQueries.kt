@@ -10,7 +10,7 @@ import java.time.LocalDate
 
 fun Database.Read.getFeeThresholds(from: LocalDate? = null): List<FeeThresholds> {
     return createQuery(
-        """
+            """
 SELECT
     valid_during,
     min_income_threshold_2,
@@ -39,8 +39,9 @@ SELECT
     temporary_fee_sibling_part_day
 FROM fee_thresholds
 WHERE valid_during && daterange(:from, null)
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("from", from)
         .mapTo<FeeThresholds>()
         .toList()

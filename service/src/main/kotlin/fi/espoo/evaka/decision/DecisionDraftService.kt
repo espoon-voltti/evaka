@@ -14,32 +14,48 @@ import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.NotFound
-import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.UUID
+import org.springframework.stereotype.Service
 
 @Service
 class DecisionDraftService {
-    fun createDecisionDrafts(tx: Database.Transaction, user: AuthenticatedUser, application: ApplicationDetails) {
-        val placementPlan = tx.getPlacementPlan(application.id)
-            ?: throw NotFound("Application ${application.id} has no placement")
+    fun createDecisionDrafts(
+        tx: Database.Transaction,
+        user: AuthenticatedUser,
+        application: ApplicationDetails
+    ) {
+        val placementPlan =
+            tx.getPlacementPlan(application.id)
+                ?: throw NotFound("Application ${application.id} has no placement")
 
-        val drafts: List<DecisionDraft> = when (placementPlan.type) {
-            PlacementType.CLUB -> planClubDecisionDrafts(placementPlan)
-            PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME -> planDaycareDecisionDrafts(placementPlan)
-            PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE -> planPreschoolDecisionDrafts(placementPlan, application)
-            PlacementType.SCHOOL_SHIFT_CARE -> listOf()
-            PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY,
-            PlacementType.DAYCARE_FIVE_YEAR_OLDS, PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
-                error("Cannot create decision draft from placement of type '${placementPlan.type}'")
-        }
+        val drafts: List<DecisionDraft> =
+            when (placementPlan.type) {
+                PlacementType.CLUB -> planClubDecisionDrafts(placementPlan)
+                PlacementType.DAYCARE,
+                PlacementType.DAYCARE_PART_TIME -> planDaycareDecisionDrafts(placementPlan)
+                PlacementType.PRESCHOOL,
+                PlacementType.PRESCHOOL_DAYCARE,
+                PlacementType.PREPARATORY,
+                PlacementType.PREPARATORY_DAYCARE ->
+                    planPreschoolDecisionDrafts(placementPlan, application)
+                PlacementType.SCHOOL_SHIFT_CARE -> listOf()
+                PlacementType.TEMPORARY_DAYCARE,
+                PlacementType.TEMPORARY_DAYCARE_PART_DAY,
+                PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+                PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
+                    error(
+                        "Cannot create decision draft from placement of type '${placementPlan.type}'"
+                    )
+            }
 
         // language=sql
         val sql =
             """
             INSERT INTO decision (created_by, unit_id, application_id, type, start_date, end_date, planned)
             VALUES (:createdBy, :unitId, :applicationId, :type::decision_type, :startDate, :endDate, :planned);
-            """.trimIndent()
+            """.trimIndent(
+            )
         val batch = tx.prepareBatch(sql)
         drafts.forEach { draft ->
             batch
@@ -55,14 +71,19 @@ class DecisionDraftService {
         batch.execute()
     }
 
-    fun updateDecisionDrafts(tx: Database.Transaction, applicationId: ApplicationId, updates: List<DecisionDraftUpdate>) {
+    fun updateDecisionDrafts(
+        tx: Database.Transaction,
+        applicationId: ApplicationId,
+        updates: List<DecisionDraftUpdate>
+    ) {
         // language=sql
         val sql =
             """
             UPDATE decision
             SET unit_id = :unitId, start_date = :startDate, end_date = :endDate, planned = :planned
             WHERE id = :decisionId AND application_id = :applicationId
-            """.trimIndent()
+            """.trimIndent(
+            )
 
         val batch = tx.prepareBatch(sql)
         updates.forEach {
@@ -95,10 +116,9 @@ class DecisionDraftService {
             """
             $decisionUnitQuery
             ORDER BY name
-            """.trimIndent()
-        return tx.createQuery(sql)
-            .mapTo<DecisionUnit>()
-            .toList()
+            """.trimIndent(
+            )
+        return tx.createQuery(sql).mapTo<DecisionUnit>().toList()
     }
 
     fun getDecisionUnit(tx: Database.Read, unitId: DaycareId): DecisionUnit {
@@ -107,12 +127,10 @@ class DecisionDraftService {
             """
              $decisionUnitQuery
              WHERE u.id = :id
-            """.trimIndent()
+            """.trimIndent(
+            )
 
-        return tx.createQuery(sql)
-            .bind("id", unitId)
-            .mapTo<DecisionUnit>()
-            .first()
+        return tx.createQuery(sql).bind("id", unitId).mapTo<DecisionUnit>().first()
     }
 
     private fun planClubDecisionDrafts(plan: PlacementPlan): List<DecisionDraft> {
@@ -145,26 +163,36 @@ class DecisionDraftService {
         )
     }
 
-    private fun planPreschoolDecisionDrafts(plan: PlacementPlan, application: ApplicationDetails): List<DecisionDraft> {
-        val primaryType = if (plan.type in listOf(PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE)) DecisionType.PREPARATORY_EDUCATION else DecisionType.PRESCHOOL
+    private fun planPreschoolDecisionDrafts(
+        plan: PlacementPlan,
+        application: ApplicationDetails
+    ): List<DecisionDraft> {
+        val primaryType =
+            if (plan.type in listOf(PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE))
+                DecisionType.PREPARATORY_EDUCATION
+            else DecisionType.PRESCHOOL
 
-        val primary = DecisionDraft(
-            id = DecisionId(UUID.randomUUID()), // placeholder
-            unitId = plan.unitId,
-            type = primaryType,
-            startDate = plan.period.start,
-            endDate = plan.period.end,
-            planned = !application.additionalDaycareApplication
-        )
+        val primary =
+            DecisionDraft(
+                id = DecisionId(UUID.randomUUID()), // placeholder
+                unitId = plan.unitId,
+                type = primaryType,
+                startDate = plan.period.start,
+                endDate = plan.period.end,
+                planned = !application.additionalDaycareApplication
+            )
 
-        val connected = DecisionDraft(
-            id = DecisionId(UUID.randomUUID()), // placeholder
-            unitId = plan.unitId,
-            type = DecisionType.PRESCHOOL_DAYCARE,
-            startDate = plan.preschoolDaycarePeriod?.start ?: plan.period.start,
-            endDate = plan.preschoolDaycarePeriod?.end ?: plan.period.end,
-            planned = plan.type in listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE)
-        )
+        val connected =
+            DecisionDraft(
+                id = DecisionId(UUID.randomUUID()), // placeholder
+                unitId = plan.unitId,
+                type = DecisionType.PRESCHOOL_DAYCARE,
+                startDate = plan.preschoolDaycarePeriod?.start ?: plan.period.start,
+                endDate = plan.preschoolDaycarePeriod?.end ?: plan.period.end,
+                planned =
+                    plan.type in
+                        listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE)
+            )
 
         return listOf(primary, connected)
     }
@@ -173,7 +201,8 @@ class DecisionDraftService {
 fun Database.Transaction.clearDecisionDrafts(applicationIds: List<ApplicationId>) {
     // language=sql
     val sql =
-        """DELETE FROM decision WHERE application_id = ANY(:applicationIds) AND sent_date IS NULL""".trimIndent()
+        """DELETE FROM decision WHERE application_id = ANY(:applicationIds) AND sent_date IS NULL""".trimIndent(
+        )
 
     createUpdate(sql).bind("applicationIds", applicationIds).execute()
 }
@@ -195,4 +224,5 @@ SELECT
     provider_type
 FROM daycare u
 LEFT JOIN unit_manager m ON u.unit_manager_id = m.id
-    """.trimIndent()
+    """.trimIndent(
+    )

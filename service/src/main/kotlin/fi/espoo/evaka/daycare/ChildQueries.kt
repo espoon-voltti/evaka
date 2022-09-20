@@ -10,12 +10,10 @@ import fi.espoo.evaka.shared.db.Database
 
 fun Database.Read.getChild(id: ChildId): Child? {
     // language=SQL
-    val sql = "SELECT child.*, person.preferred_name FROM child JOIN person ON child.id = person.id WHERE child.id = :id"
+    val sql =
+        "SELECT child.*, person.preferred_name FROM child JOIN person ON child.id = person.id WHERE child.id = :id"
 
-    return createQuery(sql)
-        .bind("id", id)
-        .mapTo<Child>()
-        .firstOrNull()
+    return createQuery(sql).bind("id", id).mapTo<Child>().firstOrNull()
 }
 
 fun Database.Transaction.createChild(child: Child): Child {
@@ -39,7 +37,8 @@ fun Database.Transaction.upsertChild(child: Child) {
         """
         INSERT INTO child (id, allergies, diet) VALUES (:id, :allergies, :diet) 
         ON CONFLICT (id) DO UPDATE SET allergies = :allergies, diet = :diet
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     createUpdate(sql)
         .bind("id", child.id)
@@ -50,7 +49,8 @@ fun Database.Transaction.upsertChild(child: Child) {
 
 fun Database.Transaction.updateChild(child: Child) {
     // language=SQL
-    val sql = "UPDATE child SET allergies = :allergies, diet = :diet, additionalinfo = :additionalInfo, medication = :medication WHERE id = :id"
+    val sql =
+        "UPDATE child SET allergies = :allergies, diet = :diet, additionalinfo = :additionalInfo, medication = :medication WHERE id = :id"
 
     createUpdate(sql)
         .bind("id", child.id)

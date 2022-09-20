@@ -22,9 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class NotesController(
-    private val ac: AccessControl
-) {
+class NotesController(private val ac: AccessControl) {
     data class NotesByGroupResponse(
         val childDailyNotes: List<ChildDailyNote>,
         val childStickyNotes: List<ChildStickyNote>,

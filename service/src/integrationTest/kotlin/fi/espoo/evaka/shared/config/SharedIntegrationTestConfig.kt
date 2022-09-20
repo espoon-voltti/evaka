@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.voltti.auth.JwtKeys
 import fi.espoo.voltti.auth.loadPublicKeys
+import javax.sql.DataSource
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig
 import org.flywaydb.core.Flyway
 import org.jdbi.v3.core.Jdbi
@@ -47,78 +48,80 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.S3Configuration
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
-import javax.sql.DataSource
 
 // Hides Closeable interface from Spring, which would close the shared instance otherwise
 class TestDataSource(pool: HikariDataSource) : DataSource by pool
 
 private val globalLock = object {}
 private var testDataSource: TestDataSource? = null
-fun getTestDataSource(): TestDataSource = synchronized(globalLock) {
-    testDataSource ?: TestDataSource(
-        HikariDataSource(
-            HikariConfig().apply {
-                jdbcUrl = "jdbc:postgresql://localhost:15432/evaka_it"
-                username = "evaka_it"
-                password = "evaka_it"
-            }
-        ).also {
-            Flyway.configure()
-                .dataSource(it)
-                .placeholders(mapOf("application_user" to "evaka_it"))
-                .load()
-                .run {
-                    migrate()
-                }
-            Database(Jdbi.create(it)).connect { db ->
-                db.transaction { tx ->
-                    tx.runDevScript("reset-database.sql")
-                    tx.resetDatabase()
-                }
-            }
-        }
-    ).also {
-        testDataSource = it
+
+fun getTestDataSource(): TestDataSource =
+    synchronized(globalLock) {
+        testDataSource
+            ?: TestDataSource(
+                    HikariDataSource(
+                            HikariConfig().apply {
+                                jdbcUrl = "jdbc:postgresql://localhost:15432/evaka_it"
+                                username = "evaka_it"
+                                password = "evaka_it"
+                            }
+                        )
+                        .also {
+                            Flyway.configure()
+                                .dataSource(it)
+                                .placeholders(mapOf("application_user" to "evaka_it"))
+                                .load()
+                                .run { migrate() }
+                            Database(Jdbi.create(it)).connect { db ->
+                                db.transaction { tx ->
+                                    tx.runDevScript("reset-database.sql")
+                                    tx.resetDatabase()
+                                }
+                            }
+                        }
+                )
+                .also { testDataSource = it }
     }
-}
 
 @TestConfiguration
 class SharedIntegrationTestConfig {
-    @Bean
-    fun jdbi(dataSource: DataSource) = configureJdbi(Jdbi.create(dataSource))
+    @Bean fun jdbi(dataSource: DataSource) = configureJdbi(Jdbi.create(dataSource))
 
-    @Bean
-    fun dataSource(): DataSource = getTestDataSource()
+    @Bean fun dataSource(): DataSource = getTestDataSource()
 
     @Bean
     fun redisPool(): JedisPool {
         // Use database 1 to avoid conflicts with normal development setup in database 0
         val database = 1
         return JedisPool(
-            GenericObjectPoolConfig(),
-            "localhost",
-            6379,
-            redis.clients.jedis.Protocol.DEFAULT_TIMEOUT,
-            null,
-            database
-        ).also { pool ->
-            pool.resource.use {
-                // Clear all data from database 1
-                it.flushDB()
+                GenericObjectPoolConfig(),
+                "localhost",
+                6379,
+                redis.clients.jedis.Protocol.DEFAULT_TIMEOUT,
+                null,
+                database
+            )
+            .also { pool ->
+                pool.resource.use {
+                    // Clear all data from database 1
+                    it.flushDB()
+                }
             }
-        }
     }
 
     @Bean
     fun s3Client(env: BucketEnv): S3Client {
-        val client = S3Client.builder()
-            .region(Region.US_EAST_1)
-            .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
-            .endpointOverride(env.s3MockUrl)
-            .credentialsProvider(
-                StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar"))
-            )
-            .build()
+        val client =
+            S3Client.builder()
+                .region(Region.US_EAST_1)
+                .serviceConfiguration(
+                    S3Configuration.builder().pathStyleAccessEnabled(true).build()
+                )
+                .endpointOverride(env.s3MockUrl)
+                .credentialsProvider(
+                    StaticCredentialsProvider.create(AwsBasicCredentials.create("foo", "bar"))
+                )
+                .build()
 
         val existingBuckets = client.listBuckets().buckets().map { it.name()!! }
         for (bucket in env.allBuckets().filterNot { existingBuckets.contains(it) }) {
@@ -142,63 +145,65 @@ class SharedIntegrationTestConfig {
     @Bean
     fun integrationTestJwtAlgorithm(): Algorithm {
         val publicKeys =
-            SecurityConfig::class.java.getResourceAsStream("/evaka-integration-test/jwks.json").use { loadPublicKeys(it) }
+            SecurityConfig::class
+                .java
+                .getResourceAsStream("/evaka-integration-test/jwks.json")
+                .use { loadPublicKeys(it) }
         return Algorithm.RSA256(JwtKeys(publicKeys))
     }
 
     @Bean
-    fun invoiceIntegrationClient(jsonMapper: JsonMapper): InvoiceIntegrationClient = InvoiceIntegrationClient.MockClient(jsonMapper)
+    fun invoiceIntegrationClient(jsonMapper: JsonMapper): InvoiceIntegrationClient =
+        InvoiceIntegrationClient.MockClient(jsonMapper)
 
     @Bean
-    fun patuIntegrationClient(jsonMapper: JsonMapper): PatuIntegrationClient = PatuIntegrationClient.MockPatuClient(jsonMapper)
+    fun patuIntegrationClient(jsonMapper: JsonMapper): PatuIntegrationClient =
+        PatuIntegrationClient.MockPatuClient(jsonMapper)
+
+    @Bean fun invoiceGenerationLogicChooser() = DefaultInvoiceGenerationLogic
 
     @Bean
-    fun invoiceGenerationLogicChooser() = DefaultInvoiceGenerationLogic
+    fun paymentIntegrationClient(jsonMapper: JsonMapper): PaymentIntegrationClient =
+        PaymentIntegrationClient.MockClient(jsonMapper)
+
+    @Bean fun messageProvider(): IMessageProvider = EvakaMessageProvider()
+
+    @Bean fun emailMessageProvider(): IEmailMessageProvider = EvakaEmailMessageProvider()
 
     @Bean
-    fun paymentIntegrationClient(jsonMapper: JsonMapper): PaymentIntegrationClient = PaymentIntegrationClient.MockClient(jsonMapper)
+    fun documentService(
+        s3Client: S3Client,
+        s3Presigner: S3Presigner,
+        env: BucketEnv
+    ): DocumentService = DocumentService(s3Client, s3Presigner, env.proxyThroughNginx)
 
-    @Bean
-    fun messageProvider(): IMessageProvider = EvakaMessageProvider()
+    @Bean fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
 
-    @Bean
-    fun emailMessageProvider(): IEmailMessageProvider = EvakaEmailMessageProvider()
+    @Bean fun incomeTypesProvider(): IncomeTypesProvider = EspooIncomeTypesProvider()
 
-    @Bean
-    fun documentService(s3Client: S3Client, s3Presigner: S3Presigner, env: BucketEnv): DocumentService =
-        DocumentService(s3Client, s3Presigner, env.proxyThroughNginx)
+    @Bean fun featureConfig(): FeatureConfig = testFeatureConfig
 
-    @Bean
-    fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
+    @Bean fun invoiceProductProvider(): InvoiceProductProvider = TestInvoiceProductProvider()
 
-    @Bean
-    fun incomeTypesProvider(): IncomeTypesProvider = EspooIncomeTypesProvider()
-
-    @Bean
-    fun featureConfig(): FeatureConfig = testFeatureConfig
-
-    @Bean
-    fun invoiceProductProvider(): InvoiceProductProvider = TestInvoiceProductProvider()
-
-    @Bean
-    fun actionRuleMapping(): ActionRuleMapping = DefaultActionRuleMapping()
+    @Bean fun actionRuleMapping(): ActionRuleMapping = DefaultActionRuleMapping()
 }
 
-val testFeatureConfig = FeatureConfig(
-    valueDecisionCapacityFactorEnabled = false,
-    daycareApplicationServiceNeedOptionsEnabled = false,
-    citizenReservationThresholdHours = 150,
-    dailyFeeDivisorOperationalDaysOverride = null,
-    freeSickLeaveOnContractDays = false,
-    freeAbsenceGivesADailyRefund = true,
-    alwaysUseDaycareFinanceDecisionHandler = false,
-    invoiceNumberSeriesStart = 5000000000,
-    paymentNumberSeriesStart = 9000000000,
-    unplannedAbsencesAreContractSurplusDays = true,
-    maxContractDaySurplusThreshold = null,
-    useContractDaysAsDailyFeeDivisor = true,
-    enabledChildConsentTypes = setOf(ChildConsentType.EVAKA_PROFILE_PICTURE),
-    curriculumDocumentPermissionToShareRequired = true,
-    assistanceDecisionMakerRoles = null,
-    requestedStartUpperLimit = 14,
-)
+val testFeatureConfig =
+    FeatureConfig(
+        valueDecisionCapacityFactorEnabled = false,
+        daycareApplicationServiceNeedOptionsEnabled = false,
+        citizenReservationThresholdHours = 150,
+        dailyFeeDivisorOperationalDaysOverride = null,
+        freeSickLeaveOnContractDays = false,
+        freeAbsenceGivesADailyRefund = true,
+        alwaysUseDaycareFinanceDecisionHandler = false,
+        invoiceNumberSeriesStart = 5000000000,
+        paymentNumberSeriesStart = 9000000000,
+        unplannedAbsencesAreContractSurplusDays = true,
+        maxContractDaySurplusThreshold = null,
+        useContractDaysAsDailyFeeDivisor = true,
+        enabledChildConsentTypes = setOf(ChildConsentType.EVAKA_PROFILE_PICTURE),
+        curriculumDocumentPermissionToShareRequired = true,
+        assistanceDecisionMakerRoles = null,
+        requestedStartUpperLimit = 14,
+    )

@@ -19,8 +19,7 @@ data class DraftContent(
     val urgent: Boolean,
     val recipientIds: Set<Id<*>>,
     val recipientNames: List<String>,
-    @Json
-    val attachments: List<MessageAttachment>,
+    @Json val attachments: List<MessageAttachment>,
 )
 
 data class UpdatableDraftContent(

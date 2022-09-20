@@ -14,6 +14,13 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import java.lang.reflect.Type
+import java.time.LocalDate
+import java.util.Optional
+import java.util.UUID
+import java.util.function.Function
+import kotlin.reflect.KClass
+import kotlin.reflect.typeOf
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.array.SqlArrayType
 import org.jdbi.v3.core.generic.GenericTypes
@@ -28,27 +35,23 @@ import org.jdbi.v3.jackson2.Jackson2Plugin
 import org.jdbi.v3.json.Json
 import org.jdbi.v3.postgres.PostgresPlugin
 import org.postgresql.util.PGobject
-import java.lang.reflect.Type
-import java.time.LocalDate
-import java.util.Optional
-import java.util.UUID
-import java.util.function.Function
-import kotlin.reflect.KClass
-import kotlin.reflect.typeOf
 
 /**
- * Registers the given JDBI column mapper, which will be used to map data from database to values of type T.
+ * Registers the given JDBI column mapper, which will be used to map data from database to values of
+ * type T.
  *
- * This works fine for simple types where there are no extra shenanigans (inheritance, type parameters).
+ * This works fine for simple types where there are no extra shenanigans (inheritance, type
+ * parameters).
  */
 private inline fun <reified T> Jdbi.register(columnMapper: ColumnMapper<T>) =
     register(columnMapper) { type -> type == T::class.java }
 
 /**
- * Registers the given JDBI column mapper, using the given function to decide when the mapper will be used.
+ * Registers the given JDBI column mapper, using the given function to decide when the mapper will
+ * be used.
  *
- * By accepting a custom `isSupported` function, we can support cases where the target type (function parameter `type`)
- * and T have a complex relationship.
+ * By accepting a custom `isSupported` function, we can support cases where the target type
+ * (function parameter `type`) and T have a complex relationship.
  */
 private inline fun <reified T> Jdbi.register(
     columnMapper: ColumnMapper<T>,
@@ -60,22 +63,23 @@ private inline fun <reified T> Jdbi.register(
         }
     )
     // Support mapping a single column result.
-    // We need an explicit row mapper for T, or JDBI KotlinMapper will try to map it field-by-field, even in the single column case
+    // We need an explicit row mapper for T, or JDBI KotlinMapper will try to map it field-by-field,
+    // even in the single column case
     val rowMapper = SingleColumnMapper(columnMapper)
     registerRowMapper(
-        RowMapperFactory { type, _ ->
-            Optional.ofNullable(rowMapper.takeIf { isSupported(type) })
-        }
+        RowMapperFactory { type, _ -> Optional.ofNullable(rowMapper.takeIf { isSupported(type) }) }
     )
 }
 
 fun configureJdbi(jdbi: Jdbi): Jdbi {
-    val jsonMapper = JsonMapper()
-        .registerModule(JavaTimeModule())
-        .registerModule(Jdk8Module())
-        .registerModule(ParameterNamesModule())
-        .registerModule(KotlinModule.Builder().build())
-    jdbi.installPlugin(KotlinPlugin())
+    val jsonMapper =
+        JsonMapper()
+            .registerModule(JavaTimeModule())
+            .registerModule(Jdk8Module())
+            .registerModule(ParameterNamesModule())
+            .registerModule(KotlinModule.Builder().build())
+    jdbi
+        .installPlugin(KotlinPlugin())
         .installPlugin(PostgresPlugin())
         .installPlugin(Jackson2Plugin())
     jdbi.getConfig(Jackson2Config::class.java).mapper = jsonMapper
@@ -95,9 +99,15 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.register(coordinateColumnMapper)
     jdbi.register(externalIdColumnMapper)
     jdbi.register(idColumnMapper) { type ->
-        // Since Id<T: DatabaseTable> has a type parameter, we can't rely on simple equals check. The parameter 'type' passed to this
-        // function will not be a JVM Class but a JVM ParameterizedType. We erase the type parameters and get the raw class
-        // before doing an assignability check. This means that our "universal" mapper for Id<*> types will be used for
+        // Since Id<T: DatabaseTable> has a type parameter, we can't rely on simple equals check.
+        // The
+        // parameter 'type' passed to this
+        // function will not be a JVM Class but a JVM ParameterizedType. We erase the type
+        // parameters
+        // and get the raw class
+        // before doing an assignability check. This means that our "universal" mapper for Id<*>
+        // types
+        // will be used for
         // all concrete types like Id<Something> or Id<SomethingElse>
         Id::class.java.isAssignableFrom(GenericTypes.getErasedType(type))
     }
@@ -115,8 +125,12 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
         Optional.ofNullable(
             (elementType as? Class<*>)?.let { elementClass ->
                 if (DatabaseEnum::class.java.isAssignableFrom(elementClass)) {
-                    // The sql type information should really be tied to the *class*, not the individual enum constants.
-                    // However, this is not really possible with interfaces, so fetch the information from the first constant
+                    // The sql type information should really be tied to the *class*, not the
+                    // individual
+                    // enum constants.
+                    // However, this is not really possible with interfaces, so fetch the
+                    // information from
+                    // the first constant
                     // as a workaround
                     (elementClass.enumConstants?.first() as? DatabaseEnum)?.let {
                         SqlArrayType.of<Any>(it.sqlType, Function.identity())
@@ -144,7 +158,10 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
  *
  * This function works with Kotlin better than row.getColumn().
  */
-inline fun <reified T> RowView.mapColumn(name: String, vararg annotations: KClass<out Annotation>): T {
+inline fun <reified T> RowView.mapColumn(
+    name: String,
+    vararg annotations: KClass<out Annotation>
+): T {
     val type = createQualifiedType<T>(*annotations)
     val value = getColumn(name, type)
     if (null !is T && value == null) {
@@ -153,9 +170,7 @@ inline fun <reified T> RowView.mapColumn(name: String, vararg annotations: KClas
     return value
 }
 
-/**
- * Maps a row json column to a value.
- */
+/** Maps a row json column to a value. */
 inline fun <reified T : Any?> RowView.mapJsonColumn(name: String): T = mapColumn(name, Json::class)
 
 /**

@@ -53,14 +53,14 @@ import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.io.File
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
@@ -71,8 +71,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val fridgeHeadId = person4Id
     private val employee1Id = EmployeeId(UUID.randomUUID())
     private val employee2Id = EmployeeId(UUID.randomUUID())
-    private val employee1 = AuthenticatedUser.Employee(id = employee1Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
-    private val employee2 = AuthenticatedUser.Employee(id = employee2Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
+    private val employee1 =
+        AuthenticatedUser.Employee(id = employee1Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
+    private val employee2 =
+        AuthenticatedUser.Employee(id = employee2Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
     private val person1 = AuthenticatedUser.Citizen(id = person1Id, CitizenAuthLevel.STRONG)
     private val person2 = AuthenticatedUser.Citizen(id = person2Id, CitizenAuthLevel.STRONG)
     private val person3 = AuthenticatedUser.Citizen(id = person3Id, CitizenAuthLevel.STRONG)
@@ -83,17 +85,20 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val placementEnd = LocalDate.now().plusDays(30)
 
     private fun insertChild(tx: Database.Transaction, child: DevPerson, groupId: GroupId) {
-        tx.insertTestPerson(DevPerson(id = child.id, firstName = child.firstName, lastName = child.lastName))
+        tx.insertTestPerson(
+            DevPerson(id = child.id, firstName = child.firstName, lastName = child.lastName)
+        )
         tx.insertTestChild(DevChild(id = child.id))
 
-        val placementId = tx.insertTestPlacement(
-            DevPlacement(
-                childId = child.id,
-                unitId = testDaycare.id,
-                startDate = placementStart,
-                endDate = placementEnd
+        val placementId =
+            tx.insertTestPlacement(
+                DevPlacement(
+                    childId = child.id,
+                    unitId = testDaycare.id,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
             )
-        )
         tx.insertTestDaycareGroupPlacement(
             placementId,
             groupId,
@@ -138,7 +143,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
 
             listOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4).map {
-                tx.insertTestPerson(DevPerson(id = it.id, firstName = it.firstName, lastName = it.lastName))
+                tx.insertTestPerson(
+                    DevPerson(id = it.id, firstName = it.firstName, lastName = it.lastName)
+                )
                 tx.createPersonMessageAccount(it.id)
             }
 
@@ -147,7 +154,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 insertChild(tx, it, groupId1)
                 tx.insertGuardian(person1Id, it.id)
                 tx.insertGuardian(person2Id, it.id)
-                tx.insertTestParentship(fridgeHeadId, it.id) // parentship alone does not allow messaging if not a guardian
+                tx.insertTestParentship(
+                    fridgeHeadId,
+                    it.id
+                ) // parentship alone does not allow messaging if not a guardian
             }
 
             // person 2 and 3 are guardian of child 3
@@ -167,34 +177,42 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 tx.insertTestParentship(fridgeHeadId, it.id) // no guardian, no messages
             }
 
-            tx.insertTestEmployee(DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee"))
+            tx.insertTestEmployee(
+                DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee")
+            )
             tx.upsertEmployeeMessageAccount(employee1Id)
             tx.insertDaycareAclRow(testDaycare.id, employee1Id, UserRole.STAFF)
             tx.insertDaycareGroupAcl(testDaycare.id, employee1Id, listOf(groupId1, groupId2))
 
-            tx.insertTestEmployee(DevEmployee(id = employee2Id, firstName = "Foo", lastName = "Supervisor"))
+            tx.insertTestEmployee(
+                DevEmployee(id = employee2Id, firstName = "Foo", lastName = "Supervisor")
+            )
             tx.upsertEmployeeMessageAccount(employee2Id)
             tx.insertDaycareAclRow(testDaycare2.id, employee2Id, UserRole.UNIT_SUPERVISOR)
         }
     }
 
-    private fun getAccounts(personAccountIds: List<PersonId>): Set<MessageAccountId> = db.read {
-        it.createQuery("SELECT acc.id FROM message_account acc WHERE acc.person_id = ANY(:personIds)")
-            .bind("personIds", personAccountIds.toTypedArray())
-            .mapTo<MessageAccountId>()
-            .toSet()
-    }
+    private fun getAccounts(personAccountIds: List<PersonId>): Set<MessageAccountId> =
+        db.read {
+            it.createQuery(
+                    "SELECT acc.id FROM message_account acc WHERE acc.person_id = ANY(:personIds)"
+                )
+                .bind("personIds", personAccountIds.toTypedArray())
+                .mapTo<MessageAccountId>()
+                .toSet()
+        }
 
     @Test
     fun `a thread is created, accessed and replied to by participants who are guardian of the same child`() {
         // given
-        val (employee1Account, person1Account, person2Account) = db.read {
-            listOf(
-                it.getEmployeeMessageAccountIds(employee1Id).first(),
-                it.getCitizenMessageAccount(person1Id),
-                it.getCitizenMessageAccount(person2Id)
-            )
-        }
+        val (employee1Account, person1Account, person2Account) =
+            db.read {
+                listOf(
+                    it.getEmployeeMessageAccountIds(employee1Id).first(),
+                    it.getCitizenMessageAccount(person1Id),
+                    it.getCitizenMessageAccount(person2Id)
+                )
+            }
 
         // when a message thread is created
         postNewThread(
@@ -207,10 +225,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
 
         // then sender does not see it in received messages
-        assertEquals(
-            listOf(),
-            getMessageThreads(employee1Account, employee1)
-        )
+        assertEquals(listOf(), getMessageThreads(employee1Account, employee1))
 
         // then recipient can see it in received messages
         val threadWithOneReply = getMessageThreads(person1Account, person1)[0]
@@ -231,14 +246,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // then recipients see the same data
         val person2Threads = getMessageThreads(person2Account, person2)
-        assertEquals(
-            getMessageThreads(person1Account, person1),
-            person2Threads
-        )
-        assertEquals(
-            getMessageThreads(employee1Account, employee1),
-            person2Threads
-        )
+        assertEquals(getMessageThreads(person1Account, person1), person2Threads)
+        assertEquals(getMessageThreads(employee1Account, employee1), person2Threads)
 
         // then thread has both messages in correct order
         assertEquals(1, person2Threads.size)
@@ -261,11 +270,12 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
 
         // then person one and employee see the new message
-        val threadContentWithTwoReplies = listOf(
-            Pair(employee1Account, "Juhannus tulee pian"),
-            Pair(person1Account, "No niinpä näyttää tulevan"),
-            Pair(person1Account, "person 2 does not see this"),
-        )
+        val threadContentWithTwoReplies =
+            listOf(
+                Pair(employee1Account, "Juhannus tulee pian"),
+                Pair(person1Account, "No niinpä näyttää tulevan"),
+                Pair(person1Account, "person 2 does not see this"),
+            )
         assertEquals(
             threadContentWithTwoReplies,
             getMessageThreads(person1Account, person1)[0].toSenderContentPairs()
@@ -344,40 +354,38 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `guardian can send a message only to group, not group staff`() {
-        db.transaction {
-            it.createDaycareGroupMessageAccount(groupId1)
-        }
+        db.transaction { it.createDaycareGroupMessageAccount(groupId1) }
         // Group account and the employee personal account
         assertEquals(getCitizenReceivers(person1).size, 2)
 
         // When a supervisor works as staff, her account is deactivated
-        db.transaction {
-            it.deactivateEmployeeMessageAccount(employee1Id)
-        }
+        db.transaction { it.deactivateEmployeeMessageAccount(employee1Id) }
         assertEquals(getCitizenReceivers(person1).size, 1)
     }
 
     @Test
     fun `a message is split to several threads by guardianship`() {
         // given
-        val (employee1Account, person1Account, person2Account, person3Account, person4Account) = db.read {
-            listOf(
-                it.getEmployeeMessageAccountIds(employee1Id).first(),
-                it.getCitizenMessageAccount(person1Id),
-                it.getCitizenMessageAccount(person2Id),
-                it.getCitizenMessageAccount(person3Id),
-                it.getCitizenMessageAccount(person4Id)
-            )
-        }
+        val (employee1Account, person1Account, person2Account, person3Account, person4Account) =
+            db.read {
+                listOf(
+                    it.getEmployeeMessageAccountIds(employee1Id).first(),
+                    it.getCitizenMessageAccount(person1Id),
+                    it.getCitizenMessageAccount(person2Id),
+                    it.getCitizenMessageAccount(person3Id),
+                    it.getCitizenMessageAccount(person4Id)
+                )
+            }
 
         // when a new thread is created to several recipients who do not all have common children
         val title = "Thread splitting"
         val content = "This message is sent to several participants and split to threads"
-        val recipients = listOf(
-            MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
-            MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
-            MessageRecipient(MessageRecipientType.CHILD, testChild_4.id)
-        )
+        val recipients =
+            listOf(
+                MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
+                MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
+                MessageRecipient(MessageRecipientType.CHILD, testChild_4.id)
+            )
         val recipientNames = listOf("Hippiäiset", "Jani")
         postNewThread(
             title = title,
@@ -391,10 +399,19 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // then three threads should be created
         db.read {
-            assertEquals(1, it.createQuery("SELECT COUNT(id) FROM message_content").mapTo<Int>().one())
-            assertEquals(3, it.createQuery("SELECT COUNT(id) FROM message_thread").mapTo<Int>().one())
+            assertEquals(
+                1,
+                it.createQuery("SELECT COUNT(id) FROM message_content").mapTo<Int>().one()
+            )
+            assertEquals(
+                3,
+                it.createQuery("SELECT COUNT(id) FROM message_thread").mapTo<Int>().one()
+            )
             assertEquals(3, it.createQuery("SELECT COUNT(id) FROM message").mapTo<Int>().one())
-            assertEquals(5, it.createQuery("SELECT COUNT(id) FROM message_recipients").mapTo<Int>().one())
+            assertEquals(
+                5,
+                it.createQuery("SELECT COUNT(id) FROM message_recipients").mapTo<Int>().one()
+            )
         }
 
         // then sent message is shown as one
@@ -428,7 +445,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertNotEquals(person1Threads, person4Threads)
         assertNotEquals(person3Threads, person4Threads)
 
-        val allThreads = listOf(person1Threads, person2Threads, person3Threads, person4Threads).flatten()
+        val allThreads =
+            listOf(person1Threads, person2Threads, person3Threads, person4Threads).flatten()
         assertEquals(5, allThreads.size)
         allThreads.forEach {
             assertEquals(title, it.title)
@@ -446,19 +464,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         // then only the participants should get the message
         val employeeThreads = getMessageThreads(employee1Account, employee1)
         assertEquals(
-            listOf(
-                Pair(employee1Account, content),
-                Pair(person1Account, "Hello")
-            ),
+            listOf(Pair(employee1Account, content), Pair(person1Account, "Hello")),
             employeeThreads.map { it.toSenderContentPairs() }.flatten()
         )
         assertEquals(employeeThreads, getMessageThreads(person1Account, person1))
         assertEquals(
             listOf(
-                listOf(
-                    Pair(employee1Account, content),
-                    Pair(person1Account, "Hello")
-                ),
+                listOf(Pair(employee1Account, content), Pair(person1Account, "Hello")),
                 listOf(Pair(employee1Account, content)),
             ),
             getMessageThreads(person2Account, person2).map { it.toSenderContentPairs() }
@@ -471,12 +483,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `a bulletin cannot be replied to by the recipients`() {
         // given
-        val (employee1Account, person1Account) = db.read {
-            listOf(
-                it.getEmployeeMessageAccountIds(employee1Id).first(),
-                it.getCitizenMessageAccount(person1Id),
-            )
-        }
+        val (employee1Account, person1Account) =
+            db.read {
+                listOf(
+                    it.getEmployeeMessageAccountIds(employee1Id).first(),
+                    it.getCitizenMessageAccount(person1Id),
+                )
+            }
 
         // when a bulletin thread is created
         postNewThread(
@@ -492,17 +505,22 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val thread = getMessageThreads(person1Account, person1).first()
         assertEquals("Tiedote", thread.title)
         assertEquals(MessageType.BULLETIN, thread.type)
-        assertEquals(listOf(Pair(employee1Account, "Juhannus tulee pian")), thread.toSenderContentPairs())
+        assertEquals(
+            listOf(Pair(employee1Account, "Juhannus tulee pian")),
+            thread.toSenderContentPairs()
+        )
 
         // when the recipient tries to reply to the bulletin, it is denied
         assertEquals(
             403,
             replyAsCitizen(
-                user = person1,
-                messageId = thread.messages.first().id,
-                recipientAccountIds = setOf(thread.messages.first().sender.id),
-                content = "Kiitos tiedosta"
-            ).second.statusCode
+                    user = person1,
+                    messageId = thread.messages.first().id,
+                    recipientAccountIds = setOf(thread.messages.first().sender.id),
+                    content = "Kiitos tiedosta"
+                )
+                .second
+                .statusCode
         )
 
         // when the author himself replies to the bulletin, it succeeds
@@ -514,12 +532,14 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(
             200,
             replyAsEmployee(
-                sender = employee1Account,
-                user = employee1,
-                messageId = thread.messages.last().id,
-                recipientAccountIds = setOf(person1Account),
-                content = "Nauttikaa siitä"
-            ).second.statusCode
+                    sender = employee1Account,
+                    user = employee1,
+                    messageId = thread.messages.last().id,
+                    recipientAccountIds = setOf(person1Account),
+                    content = "Nauttikaa siitä"
+                )
+                .second
+                .statusCode
         )
 
         // then the recipient can see it
@@ -535,13 +555,14 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `messages can be marked read`() {
         // given
-        val (employee1Account, person1Account, person2Account) = db.read {
-            listOf(
-                it.getEmployeeMessageAccountIds(employee1Id).first(),
-                it.getCitizenMessageAccount(person1Id),
-                it.getCitizenMessageAccount(person2Id)
-            )
-        }
+        val (employee1Account, person1Account, person2Account) =
+            db.read {
+                listOf(
+                    it.getEmployeeMessageAccountIds(employee1Id).first(),
+                    it.getCitizenMessageAccount(person1Id),
+                    it.getCitizenMessageAccount(person2Id)
+                )
+            }
 
         // when a message thread is created
         postNewThread(
@@ -573,7 +594,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(2, getUnreadMessages(person2Account, person2).size)
 
         // when a thread is marked read
-        markThreadRead(person2, person2Account, getMessageThreads(person2Account, person2).first().id)
+        markThreadRead(
+            person2,
+            person2Account,
+            getMessageThreads(person2Account, person2).first().id
+        )
 
         // then the thread is marked read
         assertEquals(1, getUnreadMessages(employee1Account, employee1).size)
@@ -584,12 +609,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `messages can have attachments`() {
         // given
-        val (employee1Account, person1Account) = db.read {
-            listOf(
-                it.getEmployeeMessageAccountIds(employee1Id).first(),
-                it.getCitizenMessageAccount(person1Id)
-            )
-        }
+        val (employee1Account, person1Account) =
+            db.read {
+                listOf(
+                    it.getEmployeeMessageAccountIds(employee1Id).first(),
+                    it.getCitizenMessageAccount(person1Id)
+                )
+            }
 
         val draftId = db.transaction { it.initDraft(employee1Account) }
 
@@ -608,7 +634,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         // a user cannot upload attachments to another user's draft
         assertAttachmentUploadFails(employee2, draftId)
 
-        val attachmentIds = setOf(uploadMessageAttachment(employee1, draftId), uploadMessageAttachment(employee1, draftId))
+        val attachmentIds =
+            setOf(
+                uploadMessageAttachment(employee1, draftId),
+                uploadMessageAttachment(employee1, draftId)
+            )
 
         // when a message thread with attachment is created
         postNewThread(
@@ -627,7 +657,16 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(0, db.read { it.getDrafts(employee1Account) }.size)
 
         // the attachments are associated to a message
-        assertEquals(2, db.read { it.createQuery("SELECT COUNT(*) FROM attachment WHERE message_content_id IS NOT NULL").mapTo<Int>().one() })
+        assertEquals(
+            2,
+            db.read {
+                it.createQuery(
+                        "SELECT COUNT(*) FROM attachment WHERE message_content_id IS NOT NULL"
+                    )
+                    .mapTo<Int>()
+                    .one()
+            }
+        )
 
         // the author can read the attachment
         downloadAttachment(employee1, attachmentIds.first(), 200)
@@ -710,10 +749,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         attachmentId: AttachmentId,
         expectedStatus: Int = 200
     ) =
-        http.delete("/attachments/$attachmentId")
-            .asUser(user)
-            .response()
-            .also { assertEquals(expectedStatus, it.second.statusCode) }
+        http.delete("/attachments/$attachmentId").asUser(user).response().also {
+            assertEquals(expectedStatus, it.second.statusCode)
+        }
 
     private fun downloadAttachment(
         user: AuthenticatedUser,
@@ -721,36 +759,37 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         expectedStatus: Int = 200,
         requestedFilename: String = "evaka-logo.png"
     ) =
-        http.get("/attachments/$attachmentId/download/$requestedFilename")
+        http
+            .get("/attachments/$attachmentId/download/$requestedFilename")
             .asUser(user)
             .response()
             .also { assertEquals(expectedStatus, it.second.statusCode) }
 
-    private fun getUnreadMessages(
-        accountId: MessageAccountId,
-        user: AuthenticatedUser
-    ) = getMessageThreads(
-        accountId,
-        user
-    ).flatMap { it.messages.filter { m -> m.sender.id != accountId && m.readAt == null } }
+    private fun getUnreadMessages(accountId: MessageAccountId, user: AuthenticatedUser) =
+        getMessageThreads(accountId, user).flatMap {
+            it.messages.filter { m -> m.sender.id != accountId && m.readAt == null }
+        }
 
     private fun uploadMessageAttachment(
         user: AuthenticatedUser.Employee,
         draftId: MessageDraftId
     ): AttachmentId =
-        http.upload("/attachments/messages/$draftId")
+        http
+            .upload("/attachments/messages/$draftId")
             .add(FileDataPart(File(pngFile.toURI()), name = "file"))
             .asUser(user)
             .responseObject<AttachmentId>(jsonMapper)
             .also { assertEquals(200, it.second.statusCode) }
-            .third.get()
+            .third
+            .get()
 
     private fun assertAttachmentUploadFails(
         user: AuthenticatedUser.Employee,
         draftId: MessageDraftId,
         expectedStatus: Int = 403
     ) =
-        http.upload("/attachments/messages/$draftId")
+        http
+            .upload("/attachments/messages/$draftId")
             .add(FileDataPart(File(pngFile.toURI()), name = "file"))
             .asUser(user)
             .response()
@@ -767,24 +806,26 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         attachmentIds: Set<AttachmentId> = setOf(),
         draftId: MessageDraftId? = null,
         statusCode: Int = 200
-    ) = http.post("/messages/$sender")
-        .jsonBody(
-            jsonMapper.writeValueAsString(
-                MessageController.PostMessageBody(
-                    title = title,
-                    content = message,
-                    type = messageType,
-                    recipients = recipients.toSet(),
-                    recipientNames = recipientNames,
-                    attachmentIds = attachmentIds,
-                    draftId = draftId,
-                    urgent = false
+    ) =
+        http
+            .post("/messages/$sender")
+            .jsonBody(
+                jsonMapper.writeValueAsString(
+                    MessageController.PostMessageBody(
+                        title = title,
+                        content = message,
+                        type = messageType,
+                        recipients = recipients.toSet(),
+                        recipientNames = recipientNames,
+                        attachmentIds = attachmentIds,
+                        draftId = draftId,
+                        urgent = false
+                    )
                 )
             )
-        )
-        .asUser(user)
-        .response()
-        .also { assertEquals(statusCode, it.second.statusCode) }
+            .asUser(user)
+            .response()
+            .also { assertEquals(statusCode, it.second.statusCode) }
 
     private fun replyAsCitizen(
         user: AuthenticatedUser.Citizen,
@@ -792,15 +833,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         recipientAccountIds: Set<MessageAccountId>,
         content: String,
     ) =
-        http.post(
-            "/citizen/messages/$messageId/reply",
-        )
+        http
+            .post(
+                "/citizen/messages/$messageId/reply",
+            )
             .jsonBody(
                 jsonMapper.writeValueAsString(
-                    ReplyToMessageBody(
-                        content = content,
-                        recipientAccountIds = recipientAccountIds
-                    )
+                    ReplyToMessageBody(content = content, recipientAccountIds = recipientAccountIds)
                 )
             )
             .asUser(user)
@@ -813,15 +852,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         recipientAccountIds: Set<MessageAccountId>,
         content: String,
     ) =
-        http.post(
-            "/messages/$sender/$messageId/reply",
-        )
+        http
+            .post(
+                "/messages/$sender/$messageId/reply",
+            )
             .jsonBody(
                 jsonMapper.writeValueAsString(
-                    ReplyToMessageBody(
-                        content = content,
-                        recipientAccountIds = recipientAccountIds
-                    )
+                    ReplyToMessageBody(content = content, recipientAccountIds = recipientAccountIds)
                 )
             )
             .asUser(user)
@@ -832,40 +869,68 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         accountId: MessageAccountId,
         threadId: MessageThreadId
     ) =
-        http.put(
-            if (user is AuthenticatedUser.Citizen) "/citizen/messages/threads/$threadId/read" else "/messages/$accountId/threads/$threadId/read"
-        )
+        http
+            .put(
+                if (user is AuthenticatedUser.Citizen) "/citizen/messages/threads/$threadId/read"
+                else "/messages/$accountId/threads/$threadId/read"
+            )
             .asUser(user)
             .response()
 
-    private fun getMessageThreads(accountId: MessageAccountId, user: AuthenticatedUser): List<MessageThread> = http.get(
-        if (user is AuthenticatedUser.Citizen) "/citizen/messages/received" else "/messages/$accountId/received",
-        listOf("page" to 1, "pageSize" to 100)
-    )
-        .asUser(user)
-        .responseObject<Paged<MessageThread>>(jsonMapper).third.get().data
+    private fun getMessageThreads(
+        accountId: MessageAccountId,
+        user: AuthenticatedUser
+    ): List<MessageThread> =
+        http
+            .get(
+                if (user is AuthenticatedUser.Citizen) "/citizen/messages/received"
+                else "/messages/$accountId/received",
+                listOf("page" to 1, "pageSize" to 100)
+            )
+            .asUser(user)
+            .responseObject<Paged<MessageThread>>(jsonMapper)
+            .third
+            .get()
+            .data
 
-    private fun getSentMessages(accountId: MessageAccountId, user: AuthenticatedUser): List<SentMessage> = http.get(
-        if (user is AuthenticatedUser.Citizen) "/citizen/messages/sent" else "/messages/$accountId/sent",
-        listOf("page" to 1, "pageSize" to 100)
-    )
-        .asUser(user)
-        .responseObject<Paged<SentMessage>>(jsonMapper).third.get().data
+    private fun getSentMessages(
+        accountId: MessageAccountId,
+        user: AuthenticatedUser
+    ): List<SentMessage> =
+        http
+            .get(
+                if (user is AuthenticatedUser.Citizen) "/citizen/messages/sent"
+                else "/messages/$accountId/sent",
+                listOf("page" to 1, "pageSize" to 100)
+            )
+            .asUser(user)
+            .responseObject<Paged<SentMessage>>(jsonMapper)
+            .third
+            .get()
+            .data
 
-    private fun getReceivers(unitId: DaycareId, user: AuthenticatedUser): List<MessageReceiversResponse> = http.get(
-        "/messages/receivers",
-        listOf("unitId" to unitId)
-    )
-        .asUser(user)
-        .responseObject<List<MessageReceiversResponse>>(jsonMapper).third.get()
+    private fun getReceivers(
+        unitId: DaycareId,
+        user: AuthenticatedUser
+    ): List<MessageReceiversResponse> =
+        http
+            .get("/messages/receivers", listOf("unitId" to unitId))
+            .asUser(user)
+            .responseObject<List<MessageReceiversResponse>>(jsonMapper)
+            .third
+            .get()
 
-    private fun getCitizenReceivers(user: AuthenticatedUser): List<MessageAccount> = http.get(
-        "/citizen/messages/receivers"
-    )
-        .asUser(user)
-        .responseObject<List<MessageAccount>>(jsonMapper).third.get()
+    private fun getCitizenReceivers(user: AuthenticatedUser): List<MessageAccount> =
+        http
+            .get("/citizen/messages/receivers")
+            .asUser(user)
+            .responseObject<List<MessageAccount>>(jsonMapper)
+            .third
+            .get()
 }
 
-fun MessageThread.toSenderContentPairs(): List<Pair<MessageAccountId, String>> = this.messages.map { Pair(it.sender.id, it.content) }
+fun MessageThread.toSenderContentPairs(): List<Pair<MessageAccountId, String>> =
+    this.messages.map { Pair(it.sender.id, it.content) }
+
 fun SentMessage.toContentRecipientsPair(): Pair<String, Set<MessageAccountId>> =
     Pair(this.content, this.recipients.map { it.id }.toSet())

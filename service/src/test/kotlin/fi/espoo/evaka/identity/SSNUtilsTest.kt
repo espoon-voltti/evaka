@@ -4,11 +4,11 @@
 
 package fi.espoo.evaka.identity
 
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 class SSNUtilsTest {
     @Test

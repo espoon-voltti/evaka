@@ -41,11 +41,16 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
         @PathVariable personId: PersonId
     ): List<InvoiceCorrection> {
         Audit.InvoiceCorrectionsRead.log(targetId = personId)
-        accessControl.requirePermissionFor(user, clock, Action.Person.READ_INVOICE_CORRECTIONS, personId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Person.READ_INVOICE_CORRECTIONS,
+            personId
+        )
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.createQuery(
-                    """
+                        """
 SELECT c.id, c.head_of_family_id, c.child_id, c.unit_id, c.product, c.period, c.amount, c.unit_price, c.description, c.note,
     i.id AS invoice_id,
     i.status AS invoice_status
@@ -60,7 +65,7 @@ LEFT JOIN LATERAL (
 ) i ON true
 WHERE c.head_of_family_id = :personId AND NOT applied_completely
 """
-                )
+                    )
                     .bind("personId", personId)
                     .mapTo<InvoiceCorrection>()
                     .toList()
@@ -76,15 +81,20 @@ WHERE c.head_of_family_id = :personId AND NOT applied_completely
         @RequestBody body: NewInvoiceCorrection
     ) {
         Audit.InvoiceCorrectionsCreate.log(targetId = body.headOfFamilyId, objectId = body.childId)
-        accessControl.requirePermissionFor(user, clock, Action.Person.CREATE_INVOICE_CORRECTION, body.headOfFamilyId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Person.CREATE_INVOICE_CORRECTION,
+            body.headOfFamilyId
+        )
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.createUpdate(
-                    """
+                        """
 INSERT INTO invoice_correction (head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note)
 VALUES (:headOfFamilyId, :childId, :unitId, :product, :period, :amount, :unitPrice, :description, :note)
 """
-                )
+                    )
                     .bindKotlin(body)
                     .execute()
             }
@@ -104,18 +114,22 @@ VALUES (:headOfFamilyId, :childId, :unitId, :product, :period, :amount, :unitPri
             dbc.transaction { tx ->
                 try {
                     tx.createUpdate(
-                        """
+                            """
 WITH deleted_invoice_row AS (
     DELETE FROM invoice_row r USING invoice i WHERE r.correction_id = :id AND r.invoice_id = i.id AND i.status = 'DRAFT'
 )
 DELETE FROM invoice_correction WHERE id = :id RETURNING id
 """
-                    )
+                        )
                         .bind("id", id)
                         .execute()
                 } catch (e: JdbiException) {
                     when (e.psqlCause()?.sqlState) {
-                        PSQLState.FOREIGN_KEY_VIOLATION.state -> throw BadRequest("Cannot delete an already invoiced correction", cause = e)
+                        PSQLState.FOREIGN_KEY_VIOLATION.state ->
+                            throw BadRequest(
+                                "Cannot delete an already invoiced correction",
+                                cause = e
+                            )
                         else -> throw e
                     }
                 }
@@ -137,7 +151,10 @@ DELETE FROM invoice_correction WHERE id = :id RETURNING id
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.createUpdate("UPDATE invoice_correction SET note = :note WHERE id = :id")
-                    .bind("id", id,)
+                    .bind(
+                        "id",
+                        id,
+                    )
                     .bind("note", body.note)
                     .execute()
             }

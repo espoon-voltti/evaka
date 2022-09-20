@@ -26,13 +26,13 @@ import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
@@ -51,40 +51,42 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @BeforeEach
     internal fun setUp() {
+        db.transaction { it.insertGeneralTestFixtures() }
         db.transaction {
-            it.insertGeneralTestFixtures()
-        }
-        db.transaction {
-            groupId1 = it.insertTestDaycareGroup(
-                DevDaycareGroup(
-                    daycareId = unitId,
-                    startDate = placementStart,
-                    name = "group 1"
+            groupId1 =
+                it.insertTestDaycareGroup(
+                    DevDaycareGroup(
+                        daycareId = unitId,
+                        startDate = placementStart,
+                        name = "group 1"
+                    )
                 )
-            )
-            groupId2 = it.insertTestDaycareGroup(
-                DevDaycareGroup(
-                    daycareId = unitId,
-                    startDate = placementStart,
-                    name = "group 2"
+            groupId2 =
+                it.insertTestDaycareGroup(
+                    DevDaycareGroup(
+                        daycareId = unitId,
+                        startDate = placementStart,
+                        name = "group 2"
+                    )
                 )
-            )
 
-            oldPlacement = it.insertPlacement(
-                PlacementType.PRESCHOOL,
-                childId,
-                unitId,
-                placementStart,
-                placementEnd
-            )
+            oldPlacement =
+                it.insertPlacement(
+                    PlacementType.PRESCHOOL,
+                    childId,
+                    unitId,
+                    placementStart,
+                    placementEnd
+                )
             daycarePlacementId = oldPlacement.id
 
-            groupPlacementId = it.insertTestDaycareGroupPlacement(
-                daycarePlacementId = daycarePlacementId,
-                groupId = groupId1,
-                startDate = placementStart,
-                endDate = placementEnd
-            )
+            groupPlacementId =
+                it.insertTestDaycareGroupPlacement(
+                    daycarePlacementId = daycarePlacementId,
+                    groupId = groupId1,
+                    startDate = placementStart,
+                    endDate = placementEnd
+                )
         }
     }
 
@@ -95,16 +97,21 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
      */
     @Test
     fun `inserting placement without overlap`() {
-        val newPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                unitId,
-                FiniteDateRange(LocalDate.of(year, month, 21), LocalDate.of(year, month, 30)),
-                PlacementType.PRESCHOOL,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
+        val newPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        unitId,
+                        FiniteDateRange(
+                            LocalDate.of(year, month, 21),
+                            LocalDate.of(year, month, 30)
+                        ),
+                        PlacementType.PRESCHOOL,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -119,16 +126,17 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
      */
     @Test
     fun `inserting identical placement`() {
-        val newPlacements = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                unitId,
-                FiniteDateRange(LocalDate.of(year, month, 10), LocalDate.of(year, month, 20)),
-                PlacementType.PRESCHOOL,
-                useFiveYearsOldDaycare = true
-            )
-        }
+        val newPlacements =
+            db.transaction {
+                createPlacement(
+                    it,
+                    childId,
+                    unitId,
+                    FiniteDateRange(LocalDate.of(year, month, 10), LocalDate.of(year, month, 20)),
+                    PlacementType.PRESCHOOL,
+                    useFiveYearsOldDaycare = true
+                )
+            }
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -142,16 +150,21 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
      */
     @Test
     fun `old placement starts earlier`() {
-        val newPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                unitId,
-                FiniteDateRange(LocalDate.of(year, month, 11), LocalDate.of(year, month, 20)),
-                PlacementType.PRESCHOOL,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
+        val newPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        unitId,
+                        FiniteDateRange(
+                            LocalDate.of(year, month, 11),
+                            LocalDate.of(year, month, 20)
+                        ),
+                        PlacementType.PRESCHOOL,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -168,16 +181,21 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `updating placement calls clearOldPlacements`() {
-        val newPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                unitId,
-                FiniteDateRange(LocalDate.of(year, month, 21), LocalDate.of(year, month, 30)),
-                PlacementType.PRESCHOOL,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
+        val newPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        unitId,
+                        FiniteDateRange(
+                            LocalDate.of(year, month, 21),
+                            LocalDate.of(year, month, 30)
+                        ),
+                        PlacementType.PRESCHOOL,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
 
         val originalPlacements = db.read { it.getPlacementsForChild(childId) }
 
@@ -212,16 +230,21 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
      */
     @Test
     fun `old placement starts earlier, ends earlier`() {
-        val newPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                unitId,
-                FiniteDateRange(LocalDate.of(year, month, 11), LocalDate.of(year, month, 21)),
-                PlacementType.PRESCHOOL,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
+        val newPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        unitId,
+                        FiniteDateRange(
+                            LocalDate.of(year, month, 11),
+                            LocalDate.of(year, month, 21)
+                        ),
+                        PlacementType.PRESCHOOL,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -243,16 +266,21 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
      */
     @Test
     fun `old placement starts earlier, ends later`() {
-        val newPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                unitId,
-                FiniteDateRange(LocalDate.of(year, month, 11), LocalDate.of(year, month, 19)),
-                PlacementType.PRESCHOOL,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
+        val newPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        unitId,
+                        FiniteDateRange(
+                            LocalDate.of(year, month, 11),
+                            LocalDate.of(year, month, 19)
+                        ),
+                        PlacementType.PRESCHOOL,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -267,7 +295,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         )
         assertTrue(
             placements.any {
-                it.id != oldPlacement.id && it.id != newPlacement.id &&
+                it.id != oldPlacement.id &&
+                    it.id != newPlacement.id &&
                     it.startDate.isEqual(newPlacement.endDate.plusDays(1)) &&
                     it.endDate.isEqual(oldPlacement.endDate)
             }
@@ -281,16 +310,21 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
      */
     @Test
     fun `old placement ends earlier`() {
-        val newPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                unitId,
-                FiniteDateRange(LocalDate.of(year, month, 10), LocalDate.of(year, month, 21)),
-                PlacementType.PRESCHOOL,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
+        val newPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        unitId,
+                        FiniteDateRange(
+                            LocalDate.of(year, month, 10),
+                            LocalDate.of(year, month, 21)
+                        ),
+                        PlacementType.PRESCHOOL,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -305,16 +339,21 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
      */
     @Test
     fun `old placement ends later`() {
-        val newPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                unitId,
-                FiniteDateRange(LocalDate.of(year, month, 10), LocalDate.of(year, month, 19)),
-                PlacementType.PRESCHOOL,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
+        val newPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        unitId,
+                        FiniteDateRange(
+                            LocalDate.of(year, month, 10),
+                            LocalDate.of(year, month, 19)
+                        ),
+                        PlacementType.PRESCHOOL,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -336,16 +375,21 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
      */
     @Test
     fun `old placement starts later`() {
-        val newPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                unitId,
-                FiniteDateRange(LocalDate.of(year, month, 9), LocalDate.of(year, month, 20)),
-                PlacementType.PRESCHOOL,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
+        val newPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        unitId,
+                        FiniteDateRange(
+                            LocalDate.of(year, month, 9),
+                            LocalDate.of(year, month, 20)
+                        ),
+                        PlacementType.PRESCHOOL,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -360,16 +404,21 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
      */
     @Test
     fun `old placement starts later, ends earlier`() {
-        val newPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                unitId,
-                FiniteDateRange(LocalDate.of(year, month, 9), LocalDate.of(year, month, 21)),
-                PlacementType.PRESCHOOL,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
+        val newPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        unitId,
+                        FiniteDateRange(
+                            LocalDate.of(year, month, 9),
+                            LocalDate.of(year, month, 21)
+                        ),
+                        PlacementType.PRESCHOOL,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -384,16 +433,21 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
      */
     @Test
     fun `old placement starts later, ends later`() {
-        val newPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                unitId,
-                FiniteDateRange(LocalDate.of(year, month, 9), LocalDate.of(year, month, 19)),
-                PlacementType.PRESCHOOL,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
+        val newPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        unitId,
+                        FiniteDateRange(
+                            LocalDate.of(year, month, 9),
+                            LocalDate.of(year, month, 19)
+                        ),
+                        PlacementType.PRESCHOOL,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -409,32 +463,42 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     /*
-   old         XXXYYY
-   new          ZZZZ
-   result      XZZZZY
-    */
+    old         XXXYYY
+    new          ZZZZ
+    result      XZZZZY
+     */
     @Test
     fun `placement overlaps with two earlier placements`() {
-        val old2 = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                unitId,
-                FiniteDateRange(LocalDate.of(year, month, 21), LocalDate.of(year, month, 31)),
-                PlacementType.PRESCHOOL_DAYCARE,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
-        val newPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                unitId,
-                FiniteDateRange(LocalDate.of(year, month, 15), LocalDate.of(year, month, 25)),
-                PlacementType.PREPARATORY,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
+        val old2 =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        unitId,
+                        FiniteDateRange(
+                            LocalDate.of(year, month, 21),
+                            LocalDate.of(year, month, 31)
+                        ),
+                        PlacementType.PRESCHOOL_DAYCARE,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
+        val newPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        unitId,
+                        FiniteDateRange(
+                            LocalDate.of(year, month, 15),
+                            LocalDate.of(year, month, 25)
+                        ),
+                        PlacementType.PREPARATORY,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
 
         val placements = db.read { it.getPlacementsForChild(childId) }
 
@@ -458,16 +522,21 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `updating placement endDate to be earlier`() {
-        val oldPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                unitId,
-                FiniteDateRange(LocalDate.of(year, month, 10), LocalDate.of(year, month, 20)),
-                PlacementType.DAYCARE,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
+        val oldPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        unitId,
+                        FiniteDateRange(
+                            LocalDate.of(year, month, 10),
+                            LocalDate.of(year, month, 20)
+                        ),
+                        PlacementType.DAYCARE,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
 
         db.transaction {
             it.updatePlacement(
@@ -485,17 +554,23 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `updating placement endDate to be earlier cuts group placements and service needs`() {
-        val oldPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                unitId,
-                FiniteDateRange(LocalDate.of(year, month, 10), LocalDate.of(year, month, 20)),
-                PlacementType.DAYCARE,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
-        val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
+        val oldPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        unitId,
+                        FiniteDateRange(
+                            LocalDate.of(year, month, 10),
+                            LocalDate.of(year, month, 20)
+                        ),
+                        PlacementType.DAYCARE,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
+        val groupId =
+            db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
         db.transaction {
             it.insertTestDaycareGroupPlacement(
                 groupId = groupId,
@@ -520,38 +595,48 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        val groupPlacementEndDates = db.read {
-            it.createQuery("SELECT end_date FROM daycare_group_placement WHERE daycare_group_id = :id")
-                .bind("id", groupId)
-                .mapTo<LocalDate>()
-                .list()
-        }
+        val groupPlacementEndDates =
+            db.read {
+                it.createQuery(
+                        "SELECT end_date FROM daycare_group_placement WHERE daycare_group_id = :id"
+                    )
+                    .bind("id", groupId)
+                    .mapTo<LocalDate>()
+                    .list()
+            }
         assertEquals(1, groupPlacementEndDates.size)
         assertEquals(LocalDate.of(year, month, 15), groupPlacementEndDates.first())
 
-        val serviceNeedEndDates = db.read {
-            it.createQuery("SELECT end_date FROM service_need WHERE placement_id = :id")
-                .bind("id", oldPlacement.id)
-                .mapTo<LocalDate>()
-                .list()
-        }
+        val serviceNeedEndDates =
+            db.read {
+                it.createQuery("SELECT end_date FROM service_need WHERE placement_id = :id")
+                    .bind("id", oldPlacement.id)
+                    .mapTo<LocalDate>()
+                    .list()
+            }
         assertEquals(1, serviceNeedEndDates.size)
         assertEquals(LocalDate.of(year, month, 15), serviceNeedEndDates.first())
     }
 
     @Test
     fun `changing placement type by creating new placement ends the group placements and service needs also`() {
-        val oldPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                unitId,
-                FiniteDateRange(LocalDate.of(year, month, 1), LocalDate.of(year, month, 30)),
-                PlacementType.DAYCARE,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
-        val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
+        val oldPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        unitId,
+                        FiniteDateRange(
+                            LocalDate.of(year, month, 1),
+                            LocalDate.of(year, month, 30)
+                        ),
+                        PlacementType.DAYCARE,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
+        val groupId =
+            db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = unitId)) }
         db.transaction {
             it.insertTestDaycareGroupPlacement(
                 groupId = groupId,
@@ -578,28 +663,31 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        data class QueryResult(
-            val startDate: LocalDate,
-            val endDate: LocalDate
-        )
+        data class QueryResult(val startDate: LocalDate, val endDate: LocalDate)
 
-        val groupPlacements = db.read {
-            it.createQuery("SELECT start_date, end_date FROM daycare_group_placement WHERE daycare_group_id = :id")
-                .bind("id", groupId)
-                .mapTo<QueryResult>()
-                .list()
-        }
+        val groupPlacements =
+            db.read {
+                it.createQuery(
+                        "SELECT start_date, end_date FROM daycare_group_placement WHERE daycare_group_id = :id"
+                    )
+                    .bind("id", groupId)
+                    .mapTo<QueryResult>()
+                    .list()
+            }
 
         assertEquals(1, groupPlacements.size)
         assertEquals(LocalDate.of(year, month, 1), groupPlacements.first().startDate)
         assertEquals(LocalDate.of(year, month, 14), groupPlacements.first().endDate)
 
-        val serviceNeeds = db.read {
-            it.createQuery("SELECT start_date, end_date FROM service_need WHERE placement_id = :id")
-                .bind("id", oldPlacement.id)
-                .mapTo<QueryResult>()
-                .list()
-        }
+        val serviceNeeds =
+            db.read {
+                it.createQuery(
+                        "SELECT start_date, end_date FROM service_need WHERE placement_id = :id"
+                    )
+                    .bind("id", oldPlacement.id)
+                    .mapTo<QueryResult>()
+                    .list()
+            }
 
         assertEquals(1, serviceNeeds.size)
         assertEquals(LocalDate.of(year, month, 1), serviceNeeds.first().startDate)
@@ -608,16 +696,21 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `updating placement endDate to be later`() {
-        val oldPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                unitId,
-                FiniteDateRange(LocalDate.of(year, month, 10), LocalDate.of(year, month, 20)),
-                PlacementType.DAYCARE,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
+        val oldPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        unitId,
+                        FiniteDateRange(
+                            LocalDate.of(year, month, 10),
+                            LocalDate.of(year, month, 20)
+                        ),
+                        PlacementType.DAYCARE,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
 
         db.transaction {
             it.updatePlacement(
@@ -635,16 +728,21 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `updating placement endDate to be earlier than startDate is not allowed`() {
-        val oldPlacement = db.transaction {
-            createPlacement(
-                it,
-                childId,
-                unitId,
-                FiniteDateRange(LocalDate.of(year, month, 10), LocalDate.of(year, month, 20)),
-                PlacementType.DAYCARE,
-                useFiveYearsOldDaycare = true
-            )
-        }.first()
+        val oldPlacement =
+            db.transaction {
+                    createPlacement(
+                        it,
+                        childId,
+                        unitId,
+                        FiniteDateRange(
+                            LocalDate.of(year, month, 10),
+                            LocalDate.of(year, month, 20)
+                        ),
+                        PlacementType.DAYCARE,
+                        useFiveYearsOldDaycare = true
+                    )
+                }
+                .first()
         db.transaction {
             assertThrows<BadRequest> {
                 it.updatePlacement(
@@ -660,22 +758,21 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     @Test
     fun `transferring splits the group placement`() {
         val transferDate = placementStart.plusDays(5)
-        db.transaction {
-            it.transferGroup(groupPlacementId, groupId2, transferDate)
-        }
+        db.transaction { it.transferGroup(groupPlacementId, groupId2, transferDate) }
 
-        val groupPlacements = db.read {
-            it.getDetailedDaycarePlacements(
-                daycareId = unitId,
-                childId = childId,
-                startDate = null,
-                endDate = null
-            )
-        }
-            .also { assertEquals(1, it.size) }
-            .first()
-            .groupPlacements
-            .also { assertEquals(2, it.size) }
+        val groupPlacements =
+            db.read {
+                    it.getDetailedDaycarePlacements(
+                        daycareId = unitId,
+                        childId = childId,
+                        startDate = null,
+                        endDate = null
+                    )
+                }
+                .also { assertEquals(1, it.size) }
+                .first()
+                .groupPlacements
+                .also { assertEquals(2, it.size) }
 
         val p1 = groupPlacements.first { it.groupId == groupId1 }
         val p2 = groupPlacements.first { it.groupId == groupId2 }
@@ -690,18 +787,19 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val transferDate = placementStart
         db.transaction { it.transferGroup(groupPlacementId, groupId2, transferDate) }
 
-        val groupPlacements = db.read {
-            it.getDetailedDaycarePlacements(
-                daycareId = unitId,
-                childId = childId,
-                startDate = null,
-                endDate = null
-            )
-        }
-            .also { assertEquals(1, it.size) }
-            .first()
-            .groupPlacements
-            .also { assertEquals(1, it.size) }
+        val groupPlacements =
+            db.read {
+                    it.getDetailedDaycarePlacements(
+                        daycareId = unitId,
+                        childId = childId,
+                        startDate = null,
+                        endDate = null
+                    )
+                }
+                .also { assertEquals(1, it.size) }
+                .first()
+                .groupPlacements
+                .also { assertEquals(1, it.size) }
 
         val p2 = groupPlacements.first { it.groupId == groupId2 }
         assertEquals(p2.startDate, placementStart)
@@ -726,40 +824,44 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        val placements = db.read { it.getDetailedDaycarePlacements(testDaycare2.id, null, null, null) }
+        val placements =
+            db.read { it.getDetailedDaycarePlacements(testDaycare2.id, null, null, null) }
 
         assertEquals(
             setOf(
                 DaycarePlacementWithDetails(
                     id = daycarePlacementId,
-                    child = ChildBasics(
-                        id = testChild_2.id,
-                        dateOfBirth = testChild_2.dateOfBirth,
-                        socialSecurityNumber = testChild_2.ssn,
-                        firstName = testChild_2.firstName,
-                        lastName = testChild_2.lastName
-                    ),
-                    daycare = DaycareBasics(
-                        testDaycare2.id,
-                        testDaycare2.name,
-                        testArea2.name,
-                        ProviderType.MUNICIPAL,
-                        listOf(PilotFeature.MESSAGING)
-                    ),
+                    child =
+                        ChildBasics(
+                            id = testChild_2.id,
+                            dateOfBirth = testChild_2.dateOfBirth,
+                            socialSecurityNumber = testChild_2.ssn,
+                            firstName = testChild_2.firstName,
+                            lastName = testChild_2.lastName
+                        ),
+                    daycare =
+                        DaycareBasics(
+                            testDaycare2.id,
+                            testDaycare2.name,
+                            testArea2.name,
+                            ProviderType.MUNICIPAL,
+                            listOf(PilotFeature.MESSAGING)
+                        ),
                     startDate = daycarePlacementStartDate,
                     endDate = daycarePlacementEndDate,
                     type = daycarePlacementType,
                     missingServiceNeedDays = 6,
-                    groupPlacements = listOf(
-                        DaycareGroupPlacement(
-                            id = null,
-                            groupId = null,
-                            groupName = null,
-                            daycarePlacementId = daycarePlacementId,
-                            startDate = daycarePlacementStartDate,
-                            endDate = daycarePlacementEndDate
-                        )
-                    ),
+                    groupPlacements =
+                        listOf(
+                            DaycareGroupPlacement(
+                                id = null,
+                                groupId = null,
+                                groupName = null,
+                                daycarePlacementId = daycarePlacementId,
+                                startDate = daycarePlacementStartDate,
+                                endDate = daycarePlacementEndDate
+                            )
+                        ),
                     serviceNeeds = emptyList(),
                     terminatedBy = null,
                     terminationRequestedDate = null
@@ -795,7 +897,13 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         val groupPlacementId4 = GroupPlacementId(UUID.randomUUID())
         val groupPlacementId5 = GroupPlacementId(UUID.randomUUID())
         val groupPlacementIds =
-            listOf(groupPlacementId1, groupPlacementId2, groupPlacementId3, groupPlacementId4, groupPlacementId5)
+            listOf(
+                groupPlacementId1,
+                groupPlacementId2,
+                groupPlacementId3,
+                groupPlacementId4,
+                groupPlacementId5
+            )
         val groupPlacementDays = listOf(3 to 5, 6 to 9, 12 to 12, 16 to 17, 19 to 20)
 
         db.transaction { tx ->
@@ -810,104 +918,108 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             }
         }
 
-        val placements = db.read { it.getDetailedDaycarePlacements(testDaycare2.id, null, null, null) }
+        val placements =
+            db.read { it.getDetailedDaycarePlacements(testDaycare2.id, null, null, null) }
 
         assertEquals(
             setOf(
                 DaycarePlacementWithDetails(
                     id = daycarePlacementId,
-                    child = ChildBasics(
-                        id = testChild_2.id,
-                        dateOfBirth = testChild_2.dateOfBirth,
-                        socialSecurityNumber = testChild_2.ssn,
-                        firstName = testChild_2.firstName,
-                        lastName = testChild_2.lastName
-                    ),
-                    daycare = DaycareBasics(
-                        testDaycare2.id,
-                        testDaycare2.name,
-                        testArea2.name,
-                        ProviderType.MUNICIPAL,
-                        listOf(PilotFeature.MESSAGING)
-                    ),
+                    child =
+                        ChildBasics(
+                            id = testChild_2.id,
+                            dateOfBirth = testChild_2.dateOfBirth,
+                            socialSecurityNumber = testChild_2.ssn,
+                            firstName = testChild_2.firstName,
+                            lastName = testChild_2.lastName
+                        ),
+                    daycare =
+                        DaycareBasics(
+                            testDaycare2.id,
+                            testDaycare2.name,
+                            testArea2.name,
+                            ProviderType.MUNICIPAL,
+                            listOf(PilotFeature.MESSAGING)
+                        ),
                     startDate = daycarePlacementStartDate,
                     endDate = daycarePlacementEndDate,
                     type = daycarePlacementType,
                     missingServiceNeedDays = 20,
-                    groupPlacements = listOf(
-                        DaycareGroupPlacement(
-                            id = null,
-                            groupId = null,
-                            groupName = null,
-                            daycarePlacementId = daycarePlacementId,
-                            startDate = date(1),
-                            endDate = date(2)
+                    groupPlacements =
+                        listOf(
+                            DaycareGroupPlacement(
+                                id = null,
+                                groupId = null,
+                                groupName = null,
+                                daycarePlacementId = daycarePlacementId,
+                                startDate = date(1),
+                                endDate = date(2)
+                            ),
+                            DaycareGroupPlacement(
+                                id = groupPlacementId1,
+                                groupId = groupId1,
+                                groupName = "group 1",
+                                daycarePlacementId = daycarePlacementId,
+                                startDate = date(3),
+                                endDate = date(5)
+                            ),
+                            DaycareGroupPlacement(
+                                id = groupPlacementId2,
+                                groupId = groupId1,
+                                groupName = "group 1",
+                                daycarePlacementId = daycarePlacementId,
+                                startDate = date(6),
+                                endDate = date(9)
+                            ),
+                            DaycareGroupPlacement(
+                                id = null,
+                                groupId = null,
+                                groupName = null,
+                                daycarePlacementId = daycarePlacementId,
+                                startDate = date(10),
+                                endDate = date(11)
+                            ),
+                            DaycareGroupPlacement(
+                                id = groupPlacementId3,
+                                groupId = groupId1,
+                                groupName = "group 1",
+                                daycarePlacementId = daycarePlacementId,
+                                startDate = date(12),
+                                endDate = date(12)
+                            ),
+                            DaycareGroupPlacement(
+                                id = null,
+                                groupId = null,
+                                groupName = null,
+                                daycarePlacementId = daycarePlacementId,
+                                startDate = date(13),
+                                endDate = date(15)
+                            ),
+                            DaycareGroupPlacement(
+                                id = groupPlacementId4,
+                                groupId = groupId1,
+                                groupName = "group 1",
+                                daycarePlacementId = daycarePlacementId,
+                                startDate = date(16),
+                                endDate = date(17)
+                            ),
+                            DaycareGroupPlacement(
+                                id = null,
+                                groupId = null,
+                                groupName = null,
+                                daycarePlacementId = daycarePlacementId,
+                                startDate = date(18),
+                                endDate = date(18)
+                            ),
+                            DaycareGroupPlacement(
+                                id = groupPlacementId5,
+                                groupId = groupId1,
+                                groupName = "group 1",
+                                daycarePlacementId = daycarePlacementId,
+                                startDate = date(19),
+                                endDate = date(20)
+                            )
                         ),
-                        DaycareGroupPlacement(
-                            id = groupPlacementId1,
-                            groupId = groupId1,
-                            groupName = "group 1",
-                            daycarePlacementId = daycarePlacementId,
-                            startDate = date(3),
-                            endDate = date(5)
-                        ),
-                        DaycareGroupPlacement(
-                            id = groupPlacementId2,
-                            groupId = groupId1,
-                            groupName = "group 1",
-                            daycarePlacementId = daycarePlacementId,
-                            startDate = date(6),
-                            endDate = date(9)
-                        ),
-                        DaycareGroupPlacement(
-                            id = null,
-                            groupId = null,
-                            groupName = null,
-                            daycarePlacementId = daycarePlacementId,
-                            startDate = date(10),
-                            endDate = date(11)
-                        ),
-                        DaycareGroupPlacement(
-                            id = groupPlacementId3,
-                            groupId = groupId1,
-                            groupName = "group 1",
-                            daycarePlacementId = daycarePlacementId,
-                            startDate = date(12),
-                            endDate = date(12)
-                        ),
-                        DaycareGroupPlacement(
-                            id = null,
-                            groupId = null,
-                            groupName = null,
-                            daycarePlacementId = daycarePlacementId,
-                            startDate = date(13),
-                            endDate = date(15)
-                        ),
-                        DaycareGroupPlacement(
-                            id = groupPlacementId4,
-                            groupId = groupId1,
-                            groupName = "group 1",
-                            daycarePlacementId = daycarePlacementId,
-                            startDate = date(16),
-                            endDate = date(17)
-                        ),
-                        DaycareGroupPlacement(
-                            id = null,
-                            groupId = null,
-                            groupName = null,
-                            daycarePlacementId = daycarePlacementId,
-                            startDate = date(18),
-                            endDate = date(18)
-                        ),
-                        DaycareGroupPlacement(
-                            id = groupPlacementId5,
-                            groupId = groupId1,
-                            groupName = "group 1",
-                            daycarePlacementId = daycarePlacementId,
-                            startDate = date(19),
-                            endDate = date(20)
-                        )
-                    ),
                     serviceNeeds = emptyList(),
                     terminatedBy = null,
                     terminationRequestedDate = null

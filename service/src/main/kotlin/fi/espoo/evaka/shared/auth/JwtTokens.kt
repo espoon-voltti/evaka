@@ -11,38 +11,41 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PersonId
 import java.util.UUID
 
-fun DecodedJWT.toAuthenticatedUser(): AuthenticatedUser? = this.subject?.let { subject ->
-    val id = UUID.fromString(subject)
-    val employeeId: EmployeeId? = this.claims["evaka_employee_id"]?.asString()?.let(UUID::fromString)?.let(::EmployeeId)
-    val type = this.claims["evaka_type"]?.asString()?.let(AuthenticatedUserType::valueOf)
-    val roles = (this.claims["scope"]?.asString() ?: "")
-        .let {
-            if (it.isEmpty()) emptyList()
-            else it.split(' ')
+fun DecodedJWT.toAuthenticatedUser(): AuthenticatedUser? =
+    this.subject?.let { subject ->
+        val id = UUID.fromString(subject)
+        val employeeId: EmployeeId? =
+            this.claims["evaka_employee_id"]?.asString()?.let(UUID::fromString)?.let(::EmployeeId)
+        val type = this.claims["evaka_type"]?.asString()?.let(AuthenticatedUserType::valueOf)
+        val roles =
+            (this.claims["scope"]?.asString() ?: "")
+                .let { if (it.isEmpty()) emptyList() else it.split(' ') }
+                .map { enumValueOf<UserRole>(it.removePrefix("ROLE_")) }
+                .toSet()
+        return when (type) {
+            AuthenticatedUserType.citizen ->
+                AuthenticatedUser.Citizen(PersonId(id), CitizenAuthLevel.STRONG)
+            AuthenticatedUserType.citizen_weak ->
+                AuthenticatedUser.Citizen(PersonId(id), CitizenAuthLevel.WEAK)
+            AuthenticatedUserType.employee -> AuthenticatedUser.Employee(EmployeeId(id), roles)
+            AuthenticatedUserType.mobile ->
+                AuthenticatedUser.MobileDevice(MobileDeviceId(id), employeeId)
+            AuthenticatedUserType.system -> AuthenticatedUser.SystemInternalUser
+            AuthenticatedUserType.integration -> AuthenticatedUser.Integration
+            null -> null
         }
-        .map { enumValueOf<UserRole>(it.removePrefix("ROLE_")) }
-        .toSet()
-    return when (type) {
-        AuthenticatedUserType.citizen -> AuthenticatedUser.Citizen(PersonId(id), CitizenAuthLevel.STRONG)
-        AuthenticatedUserType.citizen_weak -> AuthenticatedUser.Citizen(PersonId(id), CitizenAuthLevel.WEAK)
-        AuthenticatedUserType.employee -> AuthenticatedUser.Employee(EmployeeId(id), roles)
-        AuthenticatedUserType.mobile -> AuthenticatedUser.MobileDevice(MobileDeviceId(id), employeeId)
-        AuthenticatedUserType.system -> AuthenticatedUser.SystemInternalUser
-        AuthenticatedUserType.integration -> AuthenticatedUser.Integration
-        null -> null
     }
-}
 
-fun AuthenticatedUser.applyToJwt(jwt: JWTCreator.Builder): JWTCreator.Builder = jwt
-    .withSubject(rawId().toString())
-    .withClaim("evaka_type", this.type.toString())
-    .also {
-        if (this is AuthenticatedUser.Employee) {
-            it.withClaim("scope", (globalRoles + allScopedRoles).joinToString(" "))
+fun AuthenticatedUser.applyToJwt(jwt: JWTCreator.Builder): JWTCreator.Builder =
+    jwt.withSubject(rawId().toString())
+        .withClaim("evaka_type", this.type.toString())
+        .also {
+            if (this is AuthenticatedUser.Employee) {
+                it.withClaim("scope", (globalRoles + allScopedRoles).joinToString(" "))
+            }
         }
-    }
-    .also {
-        if (this is AuthenticatedUser.MobileDevice && employeeId != null) {
-            it.withClaim("evaka_employee_id", employeeId.toString())
+        .also {
+            if (this is AuthenticatedUser.MobileDevice && employeeId != null) {
+                it.withClaim("evaka_employee_id", employeeId.toString())
+            }
         }
-    }

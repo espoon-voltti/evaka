@@ -32,17 +32,17 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
-class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired
-    lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+class MessageNotificationEmailServiceIntegrationTest :
+    FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val testPersonFi = DevPerson(email = "fi@example.com", language = "fi")
     private val testPersonSv = DevPerson(email = "sv@example.com", language = "sv")
@@ -53,7 +53,8 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest(reset
     private val testAddresses = testPersons.mapNotNull { it.email }
 
     private val employeeId = EmployeeId(UUID.randomUUID())
-    private val employee = AuthenticatedUser.Employee(id = employeeId, roles = setOf(UserRole.UNIT_SUPERVISOR))
+    private val employee =
+        AuthenticatedUser.Employee(id = employeeId, roles = setOf(UserRole.UNIT_SUPERVISOR))
 
     @BeforeEach
     fun beforeEach() {
@@ -72,14 +73,15 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest(reset
                 )
             )
 
-            val placementId = tx.insertTestPlacement(
-                DevPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    startDate = placementStart,
-                    endDate = placementEnd
+            val placementId =
+                tx.insertTestPlacement(
+                    DevPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = placementStart,
+                        endDate = placementEnd
+                    )
                 )
-            )
             tx.insertTestDaycareGroupPlacement(
                 placementId,
                 groupId,
@@ -112,13 +114,19 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest(reset
         )
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
+        assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
-            testAddresses.toSet(),
-            MockEmailClient.emails.map { it.toAddress }.toSet()
+            "Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka [null]",
+            getEmailFor(testPersonFi).subject
         )
-        assertEquals("Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka [null]", getEmailFor(testPersonFi).subject)
-        assertEquals("Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>", getEmailFor(testPersonSv).fromAddress)
-        assertEquals("Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>", getEmailFor(testPersonEn).fromAddress)
+        assertEquals(
+            "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
+            getEmailFor(testPersonSv).fromAddress
+        )
+        assertEquals(
+            "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
+            getEmailFor(testPersonEn).fromAddress
+        )
     }
 
     private fun postNewThread(
@@ -126,21 +134,23 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest(reset
         recipients: List<MessageRecipient>,
         user: AuthenticatedUser.Employee,
     ) {
-        val (_, response) = http.post("/messages/$sender")
-            .jsonBody(
-                jsonMapper.writeValueAsString(
-                    MessageController.PostMessageBody(
-                        title = "Juhannus",
-                        content = "Juhannus tulee pian",
-                        type = MessageType.MESSAGE,
-                        recipients = recipients.toSet(),
-                        recipientNames = listOf(),
-                        urgent = false
+        val (_, response) =
+            http
+                .post("/messages/$sender")
+                .jsonBody(
+                    jsonMapper.writeValueAsString(
+                        MessageController.PostMessageBody(
+                            title = "Juhannus",
+                            content = "Juhannus tulee pian",
+                            type = MessageType.MESSAGE,
+                            recipients = recipients.toSet(),
+                            recipientNames = listOf(),
+                            urgent = false
+                        )
                     )
                 )
-            )
-            .asUser(user)
-            .response()
+                .asUser(user)
+                .response()
         assertTrue(response.isSuccessful)
     }
 

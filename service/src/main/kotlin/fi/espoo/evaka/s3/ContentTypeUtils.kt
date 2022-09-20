@@ -18,13 +18,16 @@ enum class ContentTypePattern(
     PNG("image", "png", setOf("png")),
     PDF("application", "pdf", setOf("pdf")),
     MSWORD("application", "msword", setOf("doc")),
-    MSWORD_DOCX("application", "vnd.openxmlformats-officedocument.wordprocessingml.document", setOf("docx")),
+    MSWORD_DOCX(
+        "application",
+        "vnd.openxmlformats-officedocument.wordprocessingml.document",
+        setOf("docx")
+    ),
     OPEN_DOCUMENT_TEXT("application", "vnd.oasis.opendocument.text", setOf("odt")),
     TIKA_MSOFFICE("application", "x-tika-msoffice", setOf("doc", "docx")),
     TIKA_OOXML("application", "x-tika-ooxml", setOf("doc", "docx")),
     VIDEO_ANY("video", "*", setOf("avi", "mp4", "mpeg", "mov", "ogv", "webm", "3gp")),
-    AUDIO_ANY("audio", "*", setOf("aac", "mid", "midi", "mp3", "oga", "wav", "weba", "3gp"))
-    ;
+    AUDIO_ANY("audio", "*", setOf("aac", "mid", "midi", "mp3", "oga", "wav", "weba", "3gp"));
 
     fun matchesContentType(contentType: String): Boolean {
         val parts = contentType.split("/", ";")
@@ -37,15 +40,10 @@ enum class ContentTypePattern(
     }
 }
 
-fun checkFileContentType(
-    file: InputStream,
-    allowedContentTypes: Set<ContentTypePattern>
-): String {
+fun checkFileContentType(file: InputStream, allowedContentTypes: Set<ContentTypePattern>): String {
     val detectedContentType = tika.detect(file)
-    allowedContentTypes.find { it.matchesContentType(detectedContentType) } ?: throw BadRequest(
-        "Invalid content type $detectedContentType",
-        "INVALID_CONTENT_TYPE"
-    )
+    allowedContentTypes.find { it.matchesContentType(detectedContentType) }
+        ?: throw BadRequest("Invalid content type $detectedContentType", "INVALID_CONTENT_TYPE")
     return detectedContentType
 }
 
@@ -55,10 +53,9 @@ fun checkFileContentTypeAndExtension(
     allowedContentTypes: List<ContentTypePattern>
 ): String {
     val detectedContentType = tika.detect(file)
-    val contentTypePattern = allowedContentTypes.find { it.matchesContentType(detectedContentType) } ?: throw BadRequest(
-        "Invalid content type $detectedContentType",
-        "INVALID_CONTENT_TYPE"
-    )
+    val contentTypePattern =
+        allowedContentTypes.find { it.matchesContentType(detectedContentType) }
+            ?: throw BadRequest("Invalid content type $detectedContentType", "INVALID_CONTENT_TYPE")
     if (!contentTypePattern.matchesExtension(fileExtension)) {
         throw BadRequest("Invalid file extension $fileExtension", "EXTENSION_INVALID")
     }

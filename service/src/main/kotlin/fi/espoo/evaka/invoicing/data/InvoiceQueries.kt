@@ -30,8 +30,8 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.mapToPaged
-import org.jdbi.v3.core.result.RowView
 import java.time.LocalDate
+import org.jdbi.v3.core.result.RowView
 
 val invoiceQueryBase =
     """
@@ -49,7 +49,8 @@ val invoiceQueryBase =
         row.description,
         row.correction_id
     FROM invoice LEFT JOIN invoice_row as row ON invoice.id = row.invoice_id
-    """.trimIndent()
+    """.trimIndent(
+    )
 
 val invoiceDetailedQueryBase =
     """
@@ -115,7 +116,8 @@ val invoiceDetailedQueryBase =
         LEFT JOIN daycare ON row.unit_id = daycare.id
         LEFT JOIN care_area AS row_care_area ON daycare.care_area_id = row_care_area.id
         LEFT JOIN person as child ON row.child = child.id
-    """.trimIndent()
+    """.trimIndent(
+    )
 
 fun Database.Read.getInvoicesByIds(ids: List<InvoiceId>): List<InvoiceDetailed> {
     if (ids.isEmpty()) return listOf()
@@ -127,10 +129,7 @@ fun Database.Read.getInvoicesByIds(ids: List<InvoiceId>): List<InvoiceDetailed> 
         ORDER BY invoice.id, row.idx
     """
 
-    return createQuery(sql)
-        .bind("ids", ids)
-        .map(toDetailedInvoice)
-        .let(::flattenDetailed)
+    return createQuery(sql).bind("ids", ids).map(toDetailedInvoice).let(::flattenDetailed)
 }
 
 fun Database.Read.getInvoice(id: InvoiceId): Invoice? {
@@ -141,11 +140,7 @@ fun Database.Read.getInvoice(id: InvoiceId): Invoice? {
         ORDER BY invoice.id, row.idx
     """
 
-    return createQuery(sql)
-        .bind("id", id)
-        .map(toInvoice)
-        .let(::flatten)
-        .firstOrNull()
+    return createQuery(sql).bind("id", id).map(toInvoice).let(::flatten).firstOrNull()
 }
 
 fun Database.Read.getDetailedInvoice(id: InvoiceId): InvoiceDetailed? {
@@ -169,13 +164,13 @@ fun Database.Read.getHeadOfFamilyInvoices(headOfFamilyUuid: PersonId): List<Invo
         WHERE invoice.head_of_family = :headOfFamilyId
         ORDER BY invoice.id, row.idx
     """
-    return createQuery(sql)
-        .bind("headOfFamilyId", headOfFamilyUuid)
-        .map(toInvoice)
-        .let(::flatten)
+    return createQuery(sql).bind("headOfFamilyId", headOfFamilyUuid).map(toInvoice).let(::flatten)
 }
 
-fun Database.Read.getInvoiceIdsByDates(range: FiniteDateRange, areas: List<String>): List<InvoiceId> {
+fun Database.Read.getInvoiceIdsByDates(
+    range: FiniteDateRange,
+    areas: List<String>
+): List<InvoiceId> {
     val sql =
         """
         SELECT id FROM invoice
@@ -205,39 +200,46 @@ fun Database.Read.paginatedSearch(
     periodStart: LocalDate? = null,
     periodEnd: LocalDate? = null
 ): Paged<InvoiceSummary> {
-    val sortColumn = when (sortBy) {
-        InvoiceSortParam.HEAD_OF_FAMILY -> Pair("max(head.last_name)", "head.last_name")
-        InvoiceSortParam.CHILDREN -> Pair("max(child.last_name)", "child.last_name")
-        InvoiceSortParam.START -> Pair("max(invoice.period_start)", "invoice.period_start")
-        InvoiceSortParam.END -> Pair("max(invoice.period_end)", "invoice.period_end")
-        InvoiceSortParam.SUM -> Pair("sum", "invoice_ids.sum")
-        InvoiceSortParam.STATUS -> Pair("max(invoice.status)", "invoice.status")
-        InvoiceSortParam.CREATED_AT -> Pair("max(invoice.created_at)", "invoice.created_at")
-    }
+    val sortColumn =
+        when (sortBy) {
+            InvoiceSortParam.HEAD_OF_FAMILY -> Pair("max(head.last_name)", "head.last_name")
+            InvoiceSortParam.CHILDREN -> Pair("max(child.last_name)", "child.last_name")
+            InvoiceSortParam.START -> Pair("max(invoice.period_start)", "invoice.period_start")
+            InvoiceSortParam.END -> Pair("max(invoice.period_end)", "invoice.period_end")
+            InvoiceSortParam.SUM -> Pair("sum", "invoice_ids.sum")
+            InvoiceSortParam.STATUS -> Pair("max(invoice.status)", "invoice.status")
+            InvoiceSortParam.CREATED_AT -> Pair("max(invoice.created_at)", "invoice.created_at")
+        }
 
-    val params = listOf(
-        Binding.of("page", page),
-        Binding.of("pageSize", pageSize),
-        Binding.of("periodStart", periodStart),
-        Binding.of("periodEnd", periodEnd),
-    )
-        .let { ps -> if (areas.isNotEmpty()) ps + Binding.of("area", areas) else ps }
-        .let { ps -> if (statuses.isNotEmpty()) ps + Binding.of("status", statuses) else ps }
-        .let { ps -> if (unit != null) ps + Binding.of("unit", unit) else ps }
+    val params =
+        listOf(
+                Binding.of("page", page),
+                Binding.of("pageSize", pageSize),
+                Binding.of("periodStart", periodStart),
+                Binding.of("periodEnd", periodEnd),
+            )
+            .let { ps -> if (areas.isNotEmpty()) ps + Binding.of("area", areas) else ps }
+            .let { ps -> if (statuses.isNotEmpty()) ps + Binding.of("status", statuses) else ps }
+            .let { ps -> if (unit != null) ps + Binding.of("unit", unit) else ps }
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "child"), searchTerms)
 
     val withMissingAddress = distinctiveParams.contains(InvoiceDistinctiveParams.MISSING_ADDRESS)
 
-    val conditions = listOfNotNull(
-        if (statuses.isNotEmpty()) "invoice.status = ANY(:status::invoice_status[])" else null,
-        if (areas.isNotEmpty()) "invoice.area_id IN (SELECT id FROM care_area WHERE short_name = ANY(:area))" else null,
-        if (unit != null) "row.unit_id = :unit" else null,
-        if (withMissingAddress) "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.street_address, '')) IS NULL" else null,
-        if (searchTerms.isNotBlank()) freeTextQuery else null,
-        if (periodStart != null) "invoice_date  >= :periodStart" else null,
-        if (periodEnd != null) "invoice_date  <= :periodEnd" else null
-    )
+    val conditions =
+        listOfNotNull(
+            if (statuses.isNotEmpty()) "invoice.status = ANY(:status::invoice_status[])" else null,
+            if (areas.isNotEmpty())
+                "invoice.area_id IN (SELECT id FROM care_area WHERE short_name = ANY(:area))"
+            else null,
+            if (unit != null) "row.unit_id = :unit" else null,
+            if (withMissingAddress)
+                "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.street_address, '')) IS NULL"
+            else null,
+            if (searchTerms.isNotBlank()) freeTextQuery else null,
+            if (periodStart != null) "invoice_date  >= :periodStart" else null,
+            if (periodEnd != null) "invoice_date  <= :periodEnd" else null
+        )
 
     val sql =
         """
@@ -298,7 +300,8 @@ fun Database.Read.paginatedSearch(
             LEFT JOIN invoice_row as row ON invoice.id = row.invoice_id
             LEFT JOIN person as child ON row.child = child.id
         ORDER BY ${sortColumn.second} ${sortDirection.name}, invoice.id, row.idx
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     return createQuery(sql)
         .addBindings(params)
@@ -314,25 +317,41 @@ fun Database.Read.searchInvoices(
     distinctiveParams: List<InvoiceDistinctiveParams> = listOf(),
     sentAt: DateRange? = null
 ): List<InvoiceDetailed> {
-    val params = listOf<Binding<*>>()
-        .let { ps -> if (areas.isNotEmpty()) ps + Binding.of("area", areas) else ps }
-        .let { ps -> if (statuses.isNotEmpty()) ps + Binding.of("status", statuses) else ps }
-        .let { ps -> if (unit != null) ps + (Binding.of("unit", unit)) else ps }
-        .let { ps -> if (sentAt != null) ps + listOf(Binding.of("sentAtStart", sentAt.start), Binding.of("sentAtEnd", sentAt.end)) else ps }
+    val params =
+        listOf<Binding<*>>()
+            .let { ps -> if (areas.isNotEmpty()) ps + Binding.of("area", areas) else ps }
+            .let { ps -> if (statuses.isNotEmpty()) ps + Binding.of("status", statuses) else ps }
+            .let { ps -> if (unit != null) ps + (Binding.of("unit", unit)) else ps }
+            .let { ps ->
+                if (sentAt != null)
+                    ps +
+                        listOf(
+                            Binding.of("sentAtStart", sentAt.start),
+                            Binding.of("sentAtEnd", sentAt.end)
+                        )
+                else ps
+            }
 
     val withMissingAddress = distinctiveParams.contains(InvoiceDistinctiveParams.MISSING_ADDRESS)
 
-    val conditions = listOfNotNull(
-        if (statuses.isNotEmpty()) "invoice.status = ANY(:status::invoice_status[])" else null,
-        if (areas.isNotEmpty()) "invoice.area_id IN (SELECT id FROM care_area WHERE short_name = ANY(:area))" else null,
-        if (unit != null) "row.unit_id = :unit" else null,
-        if (withMissingAddress) "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.street_address, '')) IS NULL" else null,
-        if (sentAt != null) "daterange(:sentAtStart, :sentAtEnd) @> invoice.sent_at::date" else null
-    )
+    val conditions =
+        listOfNotNull(
+            if (statuses.isNotEmpty()) "invoice.status = ANY(:status::invoice_status[])" else null,
+            if (areas.isNotEmpty())
+                "invoice.area_id IN (SELECT id FROM care_area WHERE short_name = ANY(:area))"
+            else null,
+            if (unit != null) "row.unit_id = :unit" else null,
+            if (withMissingAddress)
+                "COALESCE(NULLIF(head.invoicing_street_address, ''), NULLIF(head.street_address, '')) IS NULL"
+            else null,
+            if (sentAt != null) "daterange(:sentAtStart, :sentAtEnd) @> invoice.sent_at::date"
+            else null
+        )
 
     val where =
         if (conditions.isEmpty()) ""
-        else """
+        else
+            """
             WHERE invoice.id IN (
                 SELECT invoice.id
                 FROM invoice
@@ -341,41 +360,45 @@ fun Database.Read.searchInvoices(
                 LEFT JOIN person AS child ON row.child = child.id
                 WHERE ${conditions.joinToString("\nAND ")}
             )
-        """.trimIndent()
+        """.trimIndent(
+            )
 
     val sql =
         """
         $invoiceDetailedQueryBase
         $where
         ORDER BY status DESC, due_date, invoice.id, row.idx
-        """.trimIndent()
+        """.trimIndent(
+        )
 
-    return createQuery(sql)
-        .addBindings(params)
-        .map(toDetailedInvoice)
-        .let(::flattenDetailed)
+    return createQuery(sql).addBindings(params).map(toDetailedInvoice).let(::flattenDetailed)
 }
 
 fun Database.Read.getMaxInvoiceNumber(): Long {
-    return createQuery("SELECT max(number) FROM invoice")
-        .mapTo<Long?>()
-        .first() ?: 0
+    return createQuery("SELECT max(number) FROM invoice").mapTo<Long?>().first() ?: 0
 }
 
 fun Database.Transaction.deleteDraftInvoices(draftIds: List<InvoiceId>) {
     if (draftIds.isEmpty()) return
 
-    createUpdate("DELETE FROM invoice WHERE status = :status::invoice_status AND id = ANY(:draftIds)")
+    createUpdate(
+            "DELETE FROM invoice WHERE status = :status::invoice_status AND id = ANY(:draftIds)"
+        )
         .bind("status", InvoiceStatus.DRAFT.toString())
         .bind("draftIds", draftIds)
         .execute()
 }
 
-fun Database.Transaction.setDraftsSent(clock: EvakaClock, invoices: List<InvoiceDetailed>, sentBy: EvakaUserId) {
+fun Database.Transaction.setDraftsSent(
+    clock: EvakaClock,
+    invoices: List<InvoiceDetailed>,
+    sentBy: EvakaUserId
+) {
     if (invoices.isEmpty()) return
 
-    val batch = prepareBatch(
-        """
+    val batch =
+        prepareBatch(
+            """
 UPDATE invoice
 SET
     number = :number,
@@ -386,7 +409,7 @@ SET
     status = :status::invoice_status
 WHERE id = :id
 """
-    )
+        )
     invoices.forEach {
         batch
             .bind("id", it.id)
@@ -401,28 +424,31 @@ WHERE id = :id
     batch.execute()
 }
 
-fun Database.Transaction.saveCostCenterFields(invoiceIds: List<InvoiceId>) = createUpdate(
-    """
+fun Database.Transaction.saveCostCenterFields(invoiceIds: List<InvoiceId>) =
+    createUpdate(
+            """
 UPDATE invoice_row
 SET saved_cost_center = daycare.cost_center, saved_sub_cost_center = care_area.sub_cost_center
 FROM daycare, care_area WHERE invoice_row.unit_id = daycare.id
 AND daycare.care_area_id = care_area.id
 AND invoice_id = ANY(:invoiceIds)
-    """.trimIndent()
-)
-    .bind("invoiceIds", invoiceIds)
-    .execute()
+    """.trimIndent(
+            )
+        )
+        .bind("invoiceIds", invoiceIds)
+        .execute()
 
 fun Database.Transaction.setDraftsWaitingForManualSending(invoices: List<InvoiceDetailed>) {
     if (invoices.isEmpty()) return
 
-    val batch = prepareBatch(
-        """
+    val batch =
+        prepareBatch(
+            """
 UPDATE invoice
 SET status = :status::invoice_status, number = :number, invoice_date = :invoiceDate, due_date = :dueDate
 WHERE id = :id
 """
-    )
+        )
     invoices.forEach {
         batch
             .bind("id", it.id)
@@ -443,10 +469,7 @@ fun Database.Transaction.deleteDraftInvoicesByDateRange(range: DateRange) {
             AND daterange(period_start, period_end, '[]') && :range
         """
 
-    createUpdate(sql)
-        .bind("range", range)
-        .bind("status", InvoiceStatus.DRAFT.toString())
-        .execute()
+    createUpdate(sql).bind("range", range).bind("status", InvoiceStatus.DRAFT.toString()).execute()
 }
 
 fun Database.Transaction.lockInvoices(ids: List<InvoiceId>) {
@@ -490,11 +513,9 @@ private fun Database.Transaction.upsertInvoicesWithoutRows(invoices: List<Invoic
         ) ON CONFLICT (id) DO NOTHING
     """
 
-    val batch = prepareBatch(sql)
-        .also { batch ->
-            invoices.forEach { invoice ->
-                batch.bindKotlin(invoice).add()
-            }
+    val batch =
+        prepareBatch(sql).also { batch ->
+            invoices.forEach { invoice -> batch.bindKotlin(invoice).add() }
         }
 
     batch.execute()
@@ -508,7 +529,9 @@ private fun Database.Transaction.deleteInvoiceRows(invoiceIds: List<InvoiceId>) 
         .execute()
 }
 
-private fun Database.Transaction.insertInvoiceRows(invoiceRows: List<Pair<InvoiceId, List<InvoiceRow>>>) {
+private fun Database.Transaction.insertInvoiceRows(
+    invoiceRows: List<Pair<InvoiceId, List<InvoiceRow>>>
+) {
     val sql =
         """
             INSERT INTO invoice_row (
@@ -544,11 +567,7 @@ private fun Database.Transaction.insertInvoiceRows(invoiceRows: List<Pair<Invoic
         .also { batch ->
             invoiceRows.forEach { (invoiceId, rows) ->
                 rows.withIndex().forEach { (idx, row) ->
-                    batch
-                        .bind("invoice_id", invoiceId)
-                        .bind("idx", idx)
-                        .bindKotlin(row)
-                        .add()
+                    batch.bind("invoice_id", invoiceId).bind("idx", idx).bindKotlin(row).add()
                 }
             }
         }
@@ -565,22 +584,24 @@ val toInvoice = { rv: RowView ->
         dueDate = rv.mapColumn("due_date"),
         invoiceDate = rv.mapColumn("invoice_date"),
         areaId = rv.mapColumn("area_id"),
-        rows = rv.mapColumn<InvoiceRowId?>("invoice_row_id")?.let { rowId ->
-            listOf(
-                InvoiceRow(
-                    id = rowId,
-                    child = rv.mapColumn("child"),
-                    amount = rv.mapColumn("amount"),
-                    unitPrice = rv.mapColumn("unit_price"),
-                    periodStart = rv.mapColumn("invoice_row_period_start"),
-                    periodEnd = rv.mapColumn("invoice_row_period_end"),
-                    product = rv.mapColumn("product"),
-                    unitId = rv.mapColumn("unit_id"),
-                    description = rv.mapColumn("description"),
-                    correctionId = rv.mapColumn("correction_id")
+        rows =
+            rv.mapColumn<InvoiceRowId?>("invoice_row_id")?.let { rowId ->
+                listOf(
+                    InvoiceRow(
+                        id = rowId,
+                        child = rv.mapColumn("child"),
+                        amount = rv.mapColumn("amount"),
+                        unitPrice = rv.mapColumn("unit_price"),
+                        periodStart = rv.mapColumn("invoice_row_period_start"),
+                        periodEnd = rv.mapColumn("invoice_row_period_end"),
+                        product = rv.mapColumn("product"),
+                        unitId = rv.mapColumn("unit_id"),
+                        description = rv.mapColumn("description"),
+                        correctionId = rv.mapColumn("correction_id")
+                    )
                 )
-            )
-        } ?: listOf(),
+            }
+                ?: listOf(),
         headOfFamily = rv.mapColumn("head_of_family"),
         codebtor = rv.mapColumn("codebtor"),
         sentBy = rv.mapColumn("sent_by"),
@@ -599,71 +620,77 @@ val toDetailedInvoice = { rv: RowView ->
         invoiceDate = rv.mapColumn("invoice_date"),
         agreementType = rv.mapColumn("agreement_type"),
         areaId = rv.mapColumn("area_id"),
-        rows = rv.mapColumn<InvoiceRowId?>("invoice_row_id")?.let { rowId ->
-            listOf(
-                InvoiceRowDetailed(
-                    id = rowId,
-                    child = PersonDetailed(
-                        id = rv.mapColumn("child"),
-                        dateOfBirth = rv.mapColumn("child_date_of_birth"),
-                        firstName = rv.mapColumn("child_first_name"),
-                        lastName = rv.mapColumn("child_last_name"),
-                        ssn = rv.mapColumn("child_ssn"),
-                        streetAddress = rv.mapColumn("child_street_address"),
-                        postalCode = rv.mapColumn("child_postal_code"),
-                        postOffice = rv.mapColumn("child_post_office"),
-                        restrictedDetailsEnabled = rv.mapColumn("child_restricted_details_enabled")
-                    ),
-                    amount = rv.mapColumn("amount"),
-                    unitPrice = rv.mapColumn("unit_price"),
-                    periodStart = rv.mapColumn("invoice_row_period_start"),
-                    periodEnd = rv.mapColumn("invoice_row_period_end"),
-                    product = rv.mapColumn("product"),
-                    unitId = rv.mapColumn("unit_id"),
-                    daycareType = rv.mapColumn("type"),
-                    costCenter = rv.mapColumn("cost_center"),
-                    subCostCenter = rv.mapColumn("sub_cost_center"),
-                    savedCostCenter = rv.mapColumn("saved_cost_center"),
-                    description = rv.mapColumn("description"),
-                    correctionId = rv.mapColumn("correction_id"),
-                    note = rv.mapColumn("correction_note")
+        rows =
+            rv.mapColumn<InvoiceRowId?>("invoice_row_id")?.let { rowId ->
+                listOf(
+                    InvoiceRowDetailed(
+                        id = rowId,
+                        child =
+                            PersonDetailed(
+                                id = rv.mapColumn("child"),
+                                dateOfBirth = rv.mapColumn("child_date_of_birth"),
+                                firstName = rv.mapColumn("child_first_name"),
+                                lastName = rv.mapColumn("child_last_name"),
+                                ssn = rv.mapColumn("child_ssn"),
+                                streetAddress = rv.mapColumn("child_street_address"),
+                                postalCode = rv.mapColumn("child_postal_code"),
+                                postOffice = rv.mapColumn("child_post_office"),
+                                restrictedDetailsEnabled =
+                                    rv.mapColumn("child_restricted_details_enabled")
+                            ),
+                        amount = rv.mapColumn("amount"),
+                        unitPrice = rv.mapColumn("unit_price"),
+                        periodStart = rv.mapColumn("invoice_row_period_start"),
+                        periodEnd = rv.mapColumn("invoice_row_period_end"),
+                        product = rv.mapColumn("product"),
+                        unitId = rv.mapColumn("unit_id"),
+                        daycareType = rv.mapColumn("type"),
+                        costCenter = rv.mapColumn("cost_center"),
+                        subCostCenter = rv.mapColumn("sub_cost_center"),
+                        savedCostCenter = rv.mapColumn("saved_cost_center"),
+                        description = rv.mapColumn("description"),
+                        correctionId = rv.mapColumn("correction_id"),
+                        note = rv.mapColumn("correction_note")
+                    )
                 )
-            )
-        } ?: listOf(),
-        headOfFamily = PersonDetailed(
-            id = rv.mapColumn("head_of_family"),
-            dateOfBirth = rv.mapColumn("head_date_of_birth"),
-            firstName = rv.mapColumn("head_first_name"),
-            lastName = rv.mapColumn("head_last_name"),
-            ssn = rv.mapColumn("head_ssn"),
-            streetAddress = rv.mapColumn("head_street_address"),
-            postalCode = rv.mapColumn("head_postal_code"),
-            postOffice = rv.mapColumn("head_post_office"),
-            phone = rv.mapColumn("head_phone"),
-            email = rv.mapColumn("head_email"),
-            language = rv.mapColumn("head_language"),
-            invoiceRecipientName = rv.mapColumn("head_invoice_recipient_name"),
-            invoicingStreetAddress = rv.mapColumn("head_invoicing_street_address"),
-            invoicingPostalCode = rv.mapColumn("head_invoicing_postal_code"),
-            invoicingPostOffice = rv.mapColumn("head_invoicing_post_office"),
-            restrictedDetailsEnabled = rv.mapColumn("head_restricted_details_enabled")
-        ),
-        codebtor = rv.mapColumn<PersonId?>("codebtor")?.let { id ->
+            }
+                ?: listOf(),
+        headOfFamily =
             PersonDetailed(
-                id = id,
-                dateOfBirth = rv.mapColumn("codebtor_date_of_birth"),
-                firstName = rv.mapColumn("codebtor_first_name"),
-                lastName = rv.mapColumn("codebtor_last_name"),
-                ssn = rv.mapColumn("codebtor_ssn"),
-                streetAddress = rv.mapColumn("codebtor_street_address"),
-                postalCode = rv.mapColumn("codebtor_postal_code"),
-                postOffice = rv.mapColumn("codebtor_post_office"),
-                phone = rv.mapColumn("codebtor_phone"),
-                email = rv.mapColumn("codebtor_email"),
-                language = rv.mapColumn("codebtor_language"),
-                restrictedDetailsEnabled = rv.mapColumn("codebtor_restricted_details_enabled")
-            )
-        },
+                id = rv.mapColumn("head_of_family"),
+                dateOfBirth = rv.mapColumn("head_date_of_birth"),
+                firstName = rv.mapColumn("head_first_name"),
+                lastName = rv.mapColumn("head_last_name"),
+                ssn = rv.mapColumn("head_ssn"),
+                streetAddress = rv.mapColumn("head_street_address"),
+                postalCode = rv.mapColumn("head_postal_code"),
+                postOffice = rv.mapColumn("head_post_office"),
+                phone = rv.mapColumn("head_phone"),
+                email = rv.mapColumn("head_email"),
+                language = rv.mapColumn("head_language"),
+                invoiceRecipientName = rv.mapColumn("head_invoice_recipient_name"),
+                invoicingStreetAddress = rv.mapColumn("head_invoicing_street_address"),
+                invoicingPostalCode = rv.mapColumn("head_invoicing_postal_code"),
+                invoicingPostOffice = rv.mapColumn("head_invoicing_post_office"),
+                restrictedDetailsEnabled = rv.mapColumn("head_restricted_details_enabled")
+            ),
+        codebtor =
+            rv.mapColumn<PersonId?>("codebtor")?.let { id ->
+                PersonDetailed(
+                    id = id,
+                    dateOfBirth = rv.mapColumn("codebtor_date_of_birth"),
+                    firstName = rv.mapColumn("codebtor_first_name"),
+                    lastName = rv.mapColumn("codebtor_last_name"),
+                    ssn = rv.mapColumn("codebtor_ssn"),
+                    streetAddress = rv.mapColumn("codebtor_street_address"),
+                    postalCode = rv.mapColumn("codebtor_postal_code"),
+                    postOffice = rv.mapColumn("codebtor_post_office"),
+                    phone = rv.mapColumn("codebtor_phone"),
+                    email = rv.mapColumn("codebtor_email"),
+                    language = rv.mapColumn("codebtor_language"),
+                    restrictedDetailsEnabled = rv.mapColumn("codebtor_restricted_details_enabled")
+                )
+            },
         sentBy = rv.mapColumn("sent_by"),
         sentAt = rv.mapColumn("sent_at")
     )
@@ -675,46 +702,51 @@ val toInvoiceSummary = { row: RowView ->
         status = row.mapColumn("status"),
         periodStart = row.mapColumn("invoice_period_start"),
         periodEnd = row.mapColumn("invoice_period_end"),
-        rows = row.mapColumn<InvoiceRowId?>("invoice_row_id")?.let { rowId ->
-            listOf(
-                InvoiceRowSummary(
-                    id = rowId,
-                    child = PersonBasic(
-                        id = row.mapColumn("child"),
-                        dateOfBirth = row.mapColumn("child_date_of_birth"),
-                        firstName = row.mapColumn("child_first_name"),
-                        lastName = row.mapColumn("child_last_name"),
-                        ssn = row.mapColumn("child_ssn")
-                    ),
-                    amount = row.mapColumn("amount"),
-                    unitPrice = row.mapColumn("unit_price")
+        rows =
+            row.mapColumn<InvoiceRowId?>("invoice_row_id")?.let { rowId ->
+                listOf(
+                    InvoiceRowSummary(
+                        id = rowId,
+                        child =
+                            PersonBasic(
+                                id = row.mapColumn("child"),
+                                dateOfBirth = row.mapColumn("child_date_of_birth"),
+                                firstName = row.mapColumn("child_first_name"),
+                                lastName = row.mapColumn("child_last_name"),
+                                ssn = row.mapColumn("child_ssn")
+                            ),
+                        amount = row.mapColumn("amount"),
+                        unitPrice = row.mapColumn("unit_price")
+                    )
                 )
-            )
-        } ?: listOf(),
-        headOfFamily = PersonDetailed(
-            id = row.mapColumn("head_of_family"),
-            dateOfBirth = row.mapColumn("head_date_of_birth"),
-            firstName = row.mapColumn("head_first_name"),
-            lastName = row.mapColumn("head_last_name"),
-            ssn = row.mapColumn("head_ssn"),
-            streetAddress = row.mapColumn("head_street_address"),
-            postalCode = row.mapColumn("head_postal_code"),
-            postOffice = row.mapColumn("head_post_office"),
-            restrictedDetailsEnabled = row.mapColumn("head_restricted_details_enabled")
-        ),
-        codebtor = row.mapColumn<PersonId?>("codebtor")?.let { id ->
+            }
+                ?: listOf(),
+        headOfFamily =
             PersonDetailed(
-                id = id,
-                dateOfBirth = row.mapColumn("codebtor_date_of_birth"),
-                firstName = row.mapColumn("codebtor_first_name"),
-                lastName = row.mapColumn("codebtor_last_name"),
-                ssn = row.mapColumn("codebtor_ssn"),
-                streetAddress = row.mapColumn("codebtor_street_address"),
-                postalCode = row.mapColumn("codebtor_postal_code"),
-                postOffice = row.mapColumn("codebtor_post_office"),
-                restrictedDetailsEnabled = row.mapColumn("codebtor_restricted_details_enabled")
-            )
-        },
+                id = row.mapColumn("head_of_family"),
+                dateOfBirth = row.mapColumn("head_date_of_birth"),
+                firstName = row.mapColumn("head_first_name"),
+                lastName = row.mapColumn("head_last_name"),
+                ssn = row.mapColumn("head_ssn"),
+                streetAddress = row.mapColumn("head_street_address"),
+                postalCode = row.mapColumn("head_postal_code"),
+                postOffice = row.mapColumn("head_post_office"),
+                restrictedDetailsEnabled = row.mapColumn("head_restricted_details_enabled")
+            ),
+        codebtor =
+            row.mapColumn<PersonId?>("codebtor")?.let { id ->
+                PersonDetailed(
+                    id = id,
+                    dateOfBirth = row.mapColumn("codebtor_date_of_birth"),
+                    firstName = row.mapColumn("codebtor_first_name"),
+                    lastName = row.mapColumn("codebtor_last_name"),
+                    ssn = row.mapColumn("codebtor_ssn"),
+                    streetAddress = row.mapColumn("codebtor_street_address"),
+                    postalCode = row.mapColumn("codebtor_postal_code"),
+                    postOffice = row.mapColumn("codebtor_post_office"),
+                    restrictedDetailsEnabled = row.mapColumn("codebtor_restricted_details_enabled")
+                )
+            },
         sentBy = row.mapColumn("sent_by"),
         sentAt = row.mapColumn("sent_at"),
         createdAt = row.mapColumn("created_at")

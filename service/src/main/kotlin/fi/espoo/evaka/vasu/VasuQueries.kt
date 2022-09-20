@@ -13,57 +13,69 @@ import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
-import org.jdbi.v3.json.Json
 import java.util.UUID
+import org.jdbi.v3.json.Json
 
-fun Database.Transaction.insertVasuDocument(clock: EvakaClock, childId: ChildId, template: VasuTemplate): VasuDocumentId {
-    val child = createQuery("SELECT id, first_name, last_name, date_of_birth FROM person WHERE id = :id")
-        .bind("id", childId)
-        .mapTo<VasuChild>(qualifiers = emptyArray())
-        .one()
+fun Database.Transaction.insertVasuDocument(
+    clock: EvakaClock,
+    childId: ChildId,
+    template: VasuTemplate
+): VasuDocumentId {
+    val child =
+        createQuery("SELECT id, first_name, last_name, date_of_birth FROM person WHERE id = :id")
+            .bind("id", childId)
+            .mapTo<VasuChild>(qualifiers = emptyArray())
+            .one()
 
-    val guardians = createQuery(
-        """
+    val guardians =
+        createQuery(
+                """
         SELECT p.id, p.first_name, p.last_name
         FROM guardian g
         JOIN person p on p.id = g.guardian_id
         WHERE g.child_id = :id
-        """.trimIndent()
-    )
-        .bind("id", childId)
-        .mapTo<VasuGuardian>(qualifiers = emptyArray())
-        .list()
+        """.trimIndent(
+                )
+            )
+            .bind("id", childId)
+            .mapTo<VasuGuardian>(qualifiers = emptyArray())
+            .list()
 
-    val basics = VasuBasics(
-        child = child,
-        guardians = guardians,
-        placements = null,
-        childLanguage = when (template.type) {
-            CurriculumType.DAYCARE -> null
-            CurriculumType.PRESCHOOL -> ChildLanguage("", "")
-        }
-    )
+    val basics =
+        VasuBasics(
+            child = child,
+            guardians = guardians,
+            placements = null,
+            childLanguage =
+                when (template.type) {
+                    CurriculumType.DAYCARE -> null
+                    CurriculumType.PRESCHOOL -> ChildLanguage("", "")
+                }
+        )
 
-    val documentId = createQuery(
-        """
+    val documentId =
+        createQuery(
+                """
         INSERT INTO curriculum_document (child_id, basics, template_id, modified_at)
         VALUES (:childId, :basics, :templateId, :now)
         RETURNING id
-        """.trimIndent()
-    )
-        .bind("now", clock.now())
-        .bind("childId", childId)
-        .bind("basics", basics)
-        .bind("templateId", template.id)
-        .mapTo<VasuDocumentId>()
-        .one()
+        """.trimIndent(
+                )
+            )
+            .bind("now", clock.now())
+            .bind("childId", childId)
+            .bind("basics", basics)
+            .bind("templateId", template.id)
+            .mapTo<VasuDocumentId>()
+            .one()
 
     createUpdate(
-        """
+            """
         INSERT INTO curriculum_content (document_id, content)
         SELECT :documentId, ct.content FROM curriculum_template ct WHERE ct.id = :templateId
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("documentId", documentId)
         .bind("templateId", template.id)
         .updateExactlyOne()
@@ -73,7 +85,8 @@ fun Database.Transaction.insertVasuDocument(clock: EvakaClock, childId: ChildId,
 
 fun Database.Read.getVasuDocumentMaster(id: VasuDocumentId): VasuDocument? {
     // language=sql
-    val sql = """
+    val sql =
+        """
         SELECT
             cd.id,
             cd.child_id,
@@ -96,26 +109,20 @@ fun Database.Read.getVasuDocumentMaster(id: VasuDocumentId): VasuDocument? {
         JOIN curriculum_content vc ON vc.document_id = cd.id AND vc.master
         JOIN curriculum_template ct ON cd.template_id = ct.id
         WHERE cd.id =:id
-    """.trimIndent()
+    """.trimIndent(
+        )
 
-    return createQuery(sql)
-        .bind("id", id)
-        .mapTo<VasuDocument>()
-        .firstOrNull()
-        ?.let { document ->
-            if (document.basics.placements == null) {
-                document.copy(
-                    basics = document.basics.copy(
-                        placements = getVasuPlacements(id)
-                    )
-                )
-            } else document
-        }
+    return createQuery(sql).bind("id", id).mapTo<VasuDocument>().firstOrNull()?.let { document ->
+        if (document.basics.placements == null) {
+            document.copy(basics = document.basics.copy(placements = getVasuPlacements(id)))
+        } else document
+    }
 }
 
 fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocument? {
     // language=sql
-    val sql = """
+    val sql =
+        """
         SELECT
             cd.id,
             cd.child_id,
@@ -144,21 +151,14 @@ fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocume
         ) vc ON TRUE
         JOIN curriculum_template ct ON cd.template_id = ct.id
         WHERE cd.id =:id
-    """.trimIndent()
+    """.trimIndent(
+        )
 
-    return createQuery(sql)
-        .bind("id", id)
-        .mapTo<VasuDocument>()
-        .firstOrNull()
-        ?.let { document ->
-            if (document.basics.placements == null) {
-                document.copy(
-                    basics = document.basics.copy(
-                        placements = getVasuPlacements(id)
-                    )
-                )
-            } else document
-        }
+    return createQuery(sql).bind("id", id).mapTo<VasuDocument>().firstOrNull()?.let { document ->
+        if (document.basics.placements == null) {
+            document.copy(basics = document.basics.copy(placements = getVasuPlacements(id)))
+        } else document
+    }
 }
 
 fun Database.Transaction.updateVasuDocumentMaster(
@@ -168,21 +168,20 @@ fun Database.Transaction.updateVasuDocumentMaster(
     childLanguage: ChildLanguage?
 ) {
     // language=sql
-    val updateContentSql = "UPDATE curriculum_content SET content = :content WHERE document_id = :id AND master"
+    val updateContentSql =
+        "UPDATE curriculum_content SET content = :content WHERE document_id = :id AND master"
 
-    createUpdate(updateContentSql)
-        .bind("id", id)
-        .bind("content", content)
-        .updateExactlyOne()
+    createUpdate(updateContentSql).bind("id", id).bind("content", content).updateExactlyOne()
 
     createUpdate(
-        """
+            """
         UPDATE curriculum_document SET
             modified_at = :now,
             basics = basics || jsonb_build_object('childLanguage', :childLanguage::jsonb)
         WHERE id = :id
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("now", clock.now())
         .bind("id", id)
         .bind("childLanguage", childLanguage)
@@ -191,17 +190,16 @@ fun Database.Transaction.updateVasuDocumentMaster(
 
 fun Database.Transaction.publishVasuDocument(clock: EvakaClock, id: VasuDocumentId) {
     // language=sql
-    val insertContentSql = """
+    val insertContentSql =
+        """
         INSERT INTO curriculum_content (document_id, published_at, content)
         SELECT vc.document_id, :now, vc.content
         FROM curriculum_content vc
         WHERE vc.document_id = :id AND master
-    """.trimIndent()
+    """.trimIndent(
+        )
 
-    createUpdate(insertContentSql)
-        .bind("now", clock.now())
-        .bind("id", id)
-        .updateExactlyOne()
+    createUpdate(insertContentSql).bind("now", clock.now()).bind("id", id).updateExactlyOne()
 
     createUpdate("UPDATE curriculum_document SET modified_at = :now WHERE id = :id")
         .bind("now", clock.now())
@@ -214,8 +212,7 @@ data class SummaryResultRow(
     val name: String,
     val modifiedAt: HelsinkiDateTime,
     val publishedAt: HelsinkiDateTime? = null,
-    @Json
-    val basics: VasuBasics,
+    @Json val basics: VasuBasics,
     val eventId: UUID? = null,
     val eventCreated: HelsinkiDateTime? = null,
     val eventType: VasuDocumentEventType? = null,
@@ -224,7 +221,8 @@ data class SummaryResultRow(
 
 fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentSummary> {
     // language=sql
-    val sql = """
+    val sql =
+        """
         SELECT 
             cd.id,
             ct.name,
@@ -248,7 +246,8 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
         ) vc ON TRUE
         WHERE c.id = :childId
         ORDER BY cd.modified_at DESC
-    """.trimIndent()
+    """.trimIndent(
+        )
 
     return createQuery(sql)
         .bind("childId", childId)
@@ -260,14 +259,28 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
                 name = documents[0].name,
                 modifiedAt = documents[0].modifiedAt,
                 publishedAt = documents[0].publishedAt,
-                guardiansThatHaveGivenPermissionToShare = documents[0].basics.guardians.filter { it.hasGivenPermissionToShare }.map { it.id },
-                events = documents.mapNotNull {
-                    if (it.eventId != null && it.eventCreated != null && it.eventType != null) VasuDocumentEvent(
-                        id = it.eventId,
-                        created = it.eventCreated,
-                        eventType = it.eventType
-                    ) else null
-                }.sortedBy { it.created },
+                guardiansThatHaveGivenPermissionToShare =
+                    documents[0]
+                        .basics
+                        .guardians
+                        .filter { it.hasGivenPermissionToShare }
+                        .map { it.id },
+                events =
+                    documents
+                        .mapNotNull {
+                            if (
+                                it.eventId != null &&
+                                    it.eventCreated != null &&
+                                    it.eventType != null
+                            )
+                                VasuDocumentEvent(
+                                    id = it.eventId,
+                                    created = it.eventCreated,
+                                    eventType = it.eventType
+                                )
+                            else null
+                        }
+                        .sortedBy { it.created },
                 type = documents[0].type
             )
         }
@@ -278,11 +291,13 @@ fun Database.Transaction.insertVasuDocumentEvent(
     eventType: VasuDocumentEventType,
     employeeId: EmployeeId
 ): VasuDocumentEvent {
-    val sql = """
+    val sql =
+        """
         INSERT INTO curriculum_document_event (curriculum_document_id, employee_id, event_type)
         VALUES (:documentId, :employeeId, :eventType)
         RETURNING id, created, event_type
-    """.trimIndent()
+    """.trimIndent(
+        )
 
     return createQuery(sql)
         .bind("documentId", documentId)
@@ -300,19 +315,14 @@ fun Database.Transaction.freezeVasuPlacements(id: VasuDocumentId) {
         ?.let { basics ->
             createUpdate("UPDATE curriculum_document SET basics = :basics WHERE id = :id")
                 .bind("id", id)
-                .bind(
-                    "basics",
-                    basics.copy(
-                        placements = getVasuPlacements(id)
-                    )
-                )
+                .bind("basics", basics.copy(placements = getVasuPlacements(id)))
                 .updateExactlyOne()
         }
 }
 
 private fun Database.Read.getVasuPlacements(id: VasuDocumentId): List<VasuPlacement> {
     return createQuery(
-        """
+            """
         SELECT 
             d.id AS unit_id,
             d.name AS unit_name,
@@ -327,70 +337,79 @@ private fun Database.Read.getVasuPlacements(id: VasuDocumentId): List<VasuPlacem
         JOIN daycare_group dg ON dg.id = dgp.daycare_group_id
         WHERE cd.id = :id
         ORDER BY dgp.start_date
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("id", id)
         .mapTo<VasuPlacement>(qualifiers = emptyArray())
         .list()
 }
 
-fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(docId: VasuDocumentId, guardianId: PersonId) {
-    val currentBasics = getVasuDocumentMaster(docId)?.basics
-        ?: throw NotFound("Vasu document not found!")
+fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(
+    docId: VasuDocumentId,
+    guardianId: PersonId
+) {
+    val currentBasics =
+        getVasuDocumentMaster(docId)?.basics ?: throw NotFound("Vasu document not found!")
 
-    val (guardianFromDocument, otherGuardiansFromDocument) = currentBasics.guardians.partition {
-            g ->
-        g.id == guardianId
-    }
+    val (guardianFromDocument, otherGuardiansFromDocument) =
+        currentBasics.guardians.partition { g -> g.id == guardianId }
 
-    val guardian = if (guardianFromDocument.size == 1) guardianFromDocument[0] else {
-        createQuery(
-            """
+    val guardian =
+        if (guardianFromDocument.size == 1) guardianFromDocument[0]
+        else {
+            createQuery(
+                    """
         SELECT p.id, p.first_name, p.last_name
         FROM person p
         WHERE p.id = :id
-            """.trimIndent()
-        )
-            .bind("id", guardianId)
-            .mapTo<VasuGuardian>(qualifiers = emptyArray())
-            .first()
-    }
+            """.trimIndent(
+                    )
+                )
+                .bind("id", guardianId)
+                .mapTo<VasuGuardian>(qualifiers = emptyArray())
+                .first()
+        }
 
     createUpdate(
-        """
+            """
 UPDATE curriculum_document
 SET basics = :basics
 WHERE id = :id
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("id", docId)
         .bind(
             "basics",
             currentBasics.copy(
-                guardians = otherGuardiansFromDocument + guardian.copy(
-                    hasGivenPermissionToShare = true
-                )
+                guardians =
+                    otherGuardiansFromDocument + guardian.copy(hasGivenPermissionToShare = true)
             )
         )
         .execute()
 }
 
 fun Database.Transaction.revokeVasuGuardianHasGivenPermissionToShare(docId: VasuDocumentId) {
-    val currentBasics = getVasuDocumentMaster(docId)?.basics
-        ?: throw NotFound("Vasu document not found!")
+    val currentBasics =
+        getVasuDocumentMaster(docId)?.basics ?: throw NotFound("Vasu document not found!")
 
     createUpdate(
-        """
+            """
 UPDATE curriculum_document
 SET basics = :basics
 WHERE id = :id
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("id", docId)
         .bind(
             "basics",
             currentBasics.copy(
-                guardians = currentBasics.guardians.map { guardian -> guardian.copy(hasGivenPermissionToShare = false) }
+                guardians =
+                    currentBasics.guardians.map { guardian ->
+                        guardian.copy(hasGivenPermissionToShare = false)
+                    }
             )
         )
         .execute()

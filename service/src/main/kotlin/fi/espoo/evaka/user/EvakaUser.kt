@@ -8,12 +8,11 @@ import fi.espoo.evaka.shared.EvakaUserId
 import org.jdbi.v3.core.mapper.PropagateNull
 
 enum class EvakaUserType {
-    SYSTEM, CITIZEN, EMPLOYEE, MOBILE_DEVICE, UNKNOWN
+    SYSTEM,
+    CITIZEN,
+    EMPLOYEE,
+    MOBILE_DEVICE,
+    UNKNOWN
 }
 
-data class EvakaUser(
-    @PropagateNull
-    val id: EvakaUserId,
-    val name: String,
-    val type: EvakaUserType
-)
+data class EvakaUser(@PropagateNull val id: EvakaUserId, val name: String, val type: EvakaUserType)

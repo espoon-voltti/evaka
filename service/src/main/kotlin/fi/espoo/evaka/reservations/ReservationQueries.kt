@@ -21,7 +21,8 @@ data class AbsenceInsert(
 )
 
 // language=sql
-val notDayOffCheck = """
+val notDayOffCheck =
+    """
     (
         SELECT (
             CASE date_part('isodow', :date)
@@ -38,11 +39,13 @@ val notDayOffCheck = """
         WHERE dst.child_id = :childId AND dst.validity_period @> :date AND dst.type = 'IRREGULAR'
         LIMIT 1
     ) IS NOT TRUE
-""".trimIndent()
+""".trimIndent(
+    )
 
 fun Database.Transaction.insertAbsences(userId: PersonId, absenceInserts: List<AbsenceInsert>) {
-    val batch = prepareBatch(
-        """
+    val batch =
+        prepareBatch(
+            """
         INSERT INTO absence (child_id, date, category, absence_type, modified_by, questionnaire_id)
         SELECT
             :childId,
@@ -58,8 +61,9 @@ fun Database.Transaction.insertAbsences(userId: PersonId, absenceInserts: List<A
         ) care_type
         WHERE $notDayOffCheck
         ON CONFLICT DO NOTHING
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
 
     absenceInserts.forEach { (childId, date, absenceType, questionnaireId) ->
         batch
@@ -74,10 +78,13 @@ fun Database.Transaction.insertAbsences(userId: PersonId, absenceInserts: List<A
     batch.execute()
 }
 
-fun Database.Transaction.deleteAbsencesCreatedFromQuestionnaire(questionnaireId: HolidayQuestionnaireId, childIds: Set<ChildId>) {
+fun Database.Transaction.deleteAbsencesCreatedFromQuestionnaire(
+    questionnaireId: HolidayQuestionnaireId,
+    childIds: Set<ChildId>
+) {
     this.createUpdate(
-        "DELETE FROM absence WHERE child_id = ANY(:childIds) AND questionnaire_id = :questionnaireId"
-    )
+            "DELETE FROM absence WHERE child_id = ANY(:childIds) AND questionnaire_id = :questionnaireId"
+        )
         .bind("childIds", childIds)
         .bind("questionnaireId", questionnaireId)
         .execute()
@@ -88,16 +95,19 @@ fun Database.Transaction.deleteAbsencesCreatedFromQuestionnaire(questionnaireId:
  * - absences added by a citizen
  * - other than FREE_ABSENCE
  */
-fun Database.Transaction.clearOldCitizenEditableAbsences(childDatePairs: List<Pair<ChildId, LocalDate>>) {
-    val batch = prepareBatch(
-        """
+fun Database.Transaction.clearOldCitizenEditableAbsences(
+    childDatePairs: List<Pair<ChildId, LocalDate>>
+) {
+    val batch =
+        prepareBatch(
+            """
 DELETE FROM absence 
 WHERE child_id = :childId
 AND date = :date
 AND absence_type <> 'FREE_ABSENCE'::absence_type
 AND (SELECT evaka_user.type = 'CITIZEN' FROM evaka_user WHERE evaka_user.id = absence.modified_by)
 """
-    )
+        )
 
     childDatePairs.forEach { (childId, date) ->
         batch.bind("childId", childId).bind("date", date).add()
@@ -107,28 +117,34 @@ AND (SELECT evaka_user.type = 'CITIZEN' FROM evaka_user WHERE evaka_user.id = ab
 }
 
 fun Database.Transaction.clearOldReservations(reservations: List<Pair<ChildId, LocalDate>>) {
-    val batch = prepareBatch("DELETE FROM attendance_reservation WHERE child_id = :childId AND date = :date")
+    val batch =
+        prepareBatch(
+            "DELETE FROM attendance_reservation WHERE child_id = :childId AND date = :date"
+        )
 
     reservations.forEach { (childId, date) ->
-        batch
-            .bind("childId", childId)
-            .bind("date", date)
-            .add()
+        batch.bind("childId", childId).bind("date", date).add()
     }
 
     batch.execute()
 }
 
 fun Database.Transaction.clearReservationsForRange(childId: ChildId, range: DateRange): Int {
-    return this.createUpdate("DELETE FROM attendance_reservation WHERE child_id = :childId AND between_start_and_end(:range, date)")
+    return this.createUpdate(
+            "DELETE FROM attendance_reservation WHERE child_id = :childId AND between_start_and_end(:range, date)"
+        )
         .bind("childId", childId)
         .bind("range", range)
         .execute()
 }
 
-fun Database.Transaction.insertValidReservations(userId: EvakaUserId, requests: List<DailyReservationRequest>) {
-    val batch = prepareBatch(
-        """
+fun Database.Transaction.insertValidReservations(
+    userId: EvakaUserId,
+    requests: List<DailyReservationRequest>
+) {
+    val batch =
+        prepareBatch(
+            """
         INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
         SELECT :childId, :date, :start, :end, :userId
         FROM realized_placement_all(:date) rp
@@ -140,8 +156,9 @@ fun Database.Transaction.insertValidReservations(userId: EvakaUserId, requests: 
             NOT EXISTS(SELECT 1 FROM absence ab WHERE ab.child_id = :childId AND ab.date = :date) AND
             $notDayOffCheck
         ON CONFLICT DO NOTHING
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
 
     requests.forEach { request ->
         request.reservations?.forEach { res ->

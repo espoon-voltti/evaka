@@ -18,83 +18,84 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired
-    private lateinit var scheduledJobs: ScheduledJobs
+    @Autowired private lateinit var scheduledJobs: ScheduledJobs
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
     fun `it works`() {
-        val keepId = db.transaction { tx ->
-            tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = LocalDate.of(2019, 1, 1),
-                endDate = LocalDate.of(2019, 12, 31),
-            )
-            tx.upsertCitizenUser(testAdult_1.id)
+        val keepId =
+            db.transaction { tx ->
+                tx.insertTestPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = LocalDate.of(2019, 1, 1),
+                    endDate = LocalDate.of(2019, 12, 31),
+                )
+                tx.upsertCitizenUser(testAdult_1.id)
 
-            // Before placement starts
-            tx.insertTestReservation(
-                DevReservation(
-                    childId = testChild_1.id,
-                    date = LocalDate.of(2018, 12, 31),
-                    startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(16, 0),
-                    createdBy = EvakaUserId(testAdult_1.id.raw)
+                // Before placement starts
+                tx.insertTestReservation(
+                    DevReservation(
+                        childId = testChild_1.id,
+                        date = LocalDate.of(2018, 12, 31),
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(16, 0),
+                        createdBy = EvakaUserId(testAdult_1.id.raw)
+                    )
                 )
-            )
-            // After placement ends
-            tx.insertTestReservation(
-                DevReservation(
-                    childId = testChild_1.id,
-                    date = LocalDate.of(2020, 1, 2),
-                    startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(16, 0),
-                    createdBy = EvakaUserId(testAdult_1.id.raw)
+                // After placement ends
+                tx.insertTestReservation(
+                    DevReservation(
+                        childId = testChild_1.id,
+                        date = LocalDate.of(2020, 1, 2),
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(16, 0),
+                        createdBy = EvakaUserId(testAdult_1.id.raw)
+                    )
                 )
-            )
-            // No placement at all
-            tx.insertTestReservation(
-                DevReservation(
-                    childId = testChild_2.id,
-                    date = LocalDate.of(2019, 1, 2),
-                    startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(16, 0),
-                    createdBy = EvakaUserId(testAdult_1.id.raw)
+                // No placement at all
+                tx.insertTestReservation(
+                    DevReservation(
+                        childId = testChild_2.id,
+                        date = LocalDate.of(2019, 1, 2),
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(16, 0),
+                        createdBy = EvakaUserId(testAdult_1.id.raw)
+                    )
                 )
-            )
 
-            // Valid - will be kept
-            tx.insertTestReservation(
-                DevReservation(
-                    childId = testChild_1.id,
-                    date = LocalDate.of(2019, 1, 2),
-                    startTime = LocalTime.of(8, 0),
-                    endTime = LocalTime.of(16, 0),
-                    createdBy = EvakaUserId(testAdult_1.id.raw)
+                // Valid - will be kept
+                tx.insertTestReservation(
+                    DevReservation(
+                        childId = testChild_1.id,
+                        date = LocalDate.of(2019, 1, 2),
+                        startTime = LocalTime.of(8, 0),
+                        endTime = LocalTime.of(16, 0),
+                        createdBy = EvakaUserId(testAdult_1.id.raw)
+                    )
                 )
-            )
-        }
+            }
 
         scheduledJobs.endOfDayReservationUpkeep(db, RealEvakaClock())
 
-        val reservations = db.read { tx ->
-            tx.createQuery("""SELECT id FROM attendance_reservation""").mapTo<AttendanceReservationId>().toSet()
-        }
+        val reservations =
+            db.read { tx ->
+                tx.createQuery("""SELECT id FROM attendance_reservation""")
+                    .mapTo<AttendanceReservationId>()
+                    .toSet()
+            }
 
         assertEquals(setOf(keepId), reservations)
     }

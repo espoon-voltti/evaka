@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
@@ -33,7 +34,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 @RequestMapping("/attendance-reservations")
@@ -53,29 +53,32 @@ class AttendanceReservationController(private val ac: AccessControl) {
         val dateRange = FiniteDateRange(from, to)
         return db.connect { dbc ->
             dbc.read { tx ->
-                val unitName = tx.getDaycare(unitId)?.name ?: throw NotFound("Unit $unitId not found")
+                val unitName =
+                    tx.getDaycare(unitId)?.name ?: throw NotFound("Unit $unitId not found")
                 val operationalDays = tx.getUnitOperationalDays(unitId, dateRange)
-                tx
-                    .getAttendanceReservationData(unitId, dateRange)
+                tx.getAttendanceReservationData(unitId, dateRange)
                     .groupBy { it.group }
                     .let { groupedReservations ->
                         val ungroupedRows = groupedReservations[null]
 
-                        val childIds = groupedReservations.values.flatten().map { it.child.id }.toSet()
+                        val childIds =
+                            groupedReservations.values.flatten().map { it.child.id }.toSet()
                         val serviceTimes = tx.getDailyServiceTimes(childIds)
 
                         UnitAttendanceReservations(
                             unit = unitName,
                             operationalDays = operationalDays,
-                            groups = groupedReservations.entries.mapNotNull { (group, rows) ->
-                                if (group == null) null
-                                else UnitAttendanceReservations.GroupAttendanceReservations(
-                                    group = group,
-                                    children = toChildDayRows(rows, serviceTimes)
-                                )
-                            },
+                            groups =
+                                groupedReservations.entries.mapNotNull { (group, rows) ->
+                                    if (group == null) null
+                                    else
+                                        UnitAttendanceReservations.GroupAttendanceReservations(
+                                            group = group,
+                                            children = toChildDayRows(rows, serviceTimes)
+                                        )
+                                },
                             ungrouped = ungroupedRows?.let { toChildDayRows(it, serviceTimes) }
-                                ?: emptyList()
+                                    ?: emptyList()
                         )
                     }
             }
@@ -91,9 +94,16 @@ class AttendanceReservationController(private val ac: AccessControl) {
     ) {
         val distinctChildIds = body.map { it.childId }.toSet()
         Audit.AttendanceReservationEmployeeCreate.log(targetId = distinctChildIds.joinToString())
-        ac.requirePermissionFor(user, clock, Action.Child.CREATE_ATTENDANCE_RESERVATION, distinctChildIds)
+        ac.requirePermissionFor(
+            user,
+            clock,
+            Action.Child.CREATE_ATTENDANCE_RESERVATION,
+            distinctChildIds
+        )
 
-        db.connect { dbc -> dbc.transaction { createReservations(it, user.evakaUserId, body.validate()) } }
+        db.connect { dbc ->
+            dbc.transaction { createReservations(it, user.evakaUserId, body.validate()) }
+        }
     }
 }
 
@@ -104,21 +114,14 @@ data class UnitAttendanceReservations(
     val groups: List<GroupAttendanceReservations>,
     val ungrouped: List<ChildDailyRecords>
 ) {
-    data class OperationalDay(
-        val date: LocalDate,
-        val isHoliday: Boolean
-    )
+    data class OperationalDay(val date: LocalDate, val isHoliday: Boolean)
 
     data class GroupAttendanceReservations(
         val group: ReservationGroup,
         val children: List<ChildDailyRecords>
     )
 
-    data class ReservationGroup(
-        @PropagateNull
-        val id: GroupId,
-        val name: String
-    )
+    data class ReservationGroup(@PropagateNull val id: GroupId, val name: String)
 
     data class ChildDailyRecords(
         val child: Child,
@@ -133,21 +136,11 @@ data class UnitAttendanceReservations(
         val inOtherUnit: Boolean
     )
 
-    data class ReservationTimes(
-        val startTime: String,
-        val endTime: String
-    )
+    data class ReservationTimes(val startTime: String, val endTime: String)
 
-    data class AttendanceTimes(
-        @PropagateNull
-        val startTime: String,
-        val endTime: String?
-    )
+    data class AttendanceTimes(@PropagateNull val startTime: String, val endTime: String?)
 
-    data class Absence(
-        @PropagateNull
-        val type: AbsenceType
-    )
+    data class Absence(@PropagateNull val type: AbsenceType)
 
     data class Child(
         val id: ChildId,
@@ -158,38 +151,38 @@ data class UnitAttendanceReservations(
 
     data class QueryRow(
         val date: LocalDate,
-        @Nested("group")
-        val group: ReservationGroup?,
-        @Nested
-        val child: Child,
-        @Json
-        val reservations: List<ReservationTimes>,
-        @Json
-        val attendances: List<AttendanceTimes>,
-        @Nested("absence")
-        val absence: Absence?,
+        @Nested("group") val group: ReservationGroup?,
+        @Nested val child: Child,
+        @Json val reservations: List<ReservationTimes>,
+        @Json val attendances: List<AttendanceTimes>,
+        @Nested("absence") val absence: Absence?,
         val inOtherUnit: Boolean
     )
 }
 
-private fun Database.Read.getUnitOperationalDays(unitId: DaycareId, dateRange: FiniteDateRange) = createQuery(
-    """
+private fun Database.Read.getUnitOperationalDays(unitId: DaycareId, dateRange: FiniteDateRange) =
+    createQuery(
+            """
     SELECT t::date AS date, holiday.date IS NOT NULL AS is_holiday
     FROM generate_series(:start, :end, '1 day') t
     JOIN daycare ON daycare.id = :unitId AND date_part('isodow', t) = ANY(daycare.operation_days)
     LEFT JOIN holiday ON t = holiday.date AND NOT round_the_clock
-    """.trimIndent()
-)
-    .bind("unitId", unitId)
-    .bind("start", dateRange.start)
-    .bind("end", dateRange.end)
-    .mapTo<UnitAttendanceReservations.OperationalDay>()
-    .toList()
+    """.trimIndent(
+            )
+        )
+        .bind("unitId", unitId)
+        .bind("start", dateRange.start)
+        .bind("end", dateRange.end)
+        .mapTo<UnitAttendanceReservations.OperationalDay>()
+        .toList()
 
-private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRange: FiniteDateRange): List<UnitAttendanceReservations.QueryRow> {
+private fun Database.Read.getAttendanceReservationData(
+    unitId: DaycareId,
+    dateRange: FiniteDateRange
+): List<UnitAttendanceReservations.QueryRow> {
     val inOtherUnit = "rp.placement_unit_id <> rp.unit_id AND rp.placement_unit_id = :unitId"
     return createQuery(
-        """
+            """
         SELECT 
             t::date AS date,
             dg.id AS group_id,
@@ -242,8 +235,9 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
             LIMIT 1
         ) ab ON true
         WHERE rp.unit_id = :unitId OR rp.placement_unit_id = :unitId
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("unitId", unitId)
         .bind("start", dateRange.start)
         .bind("end", dateRange.end)
@@ -252,8 +246,9 @@ private fun Database.Read.getAttendanceReservationData(unitId: DaycareId, dateRa
 }
 
 // currently queried separately to be able to use existing mapper
-private fun Database.Read.getDailyServiceTimes(childIds: Set<ChildId>) = createQuery(
-    """
+private fun Database.Read.getDailyServiceTimes(childIds: Set<ChildId>) =
+    createQuery(
+            """
 SELECT
     id,
     child_id,
@@ -269,46 +264,61 @@ SELECT
     validity_period
 FROM daily_service_time
 WHERE child_id = ANY(:childIds)
-    """.trimIndent()
-)
-    .bind("childIds", childIds)
-    .map { row -> row.mapColumn<ChildId>("child_id") to toDailyServiceTimes(row.mapRow()).times }
-    .toList()
-    .groupBy { it.first }
-    .mapValues { it.value.map { it.second } }
+    """.trimIndent(
+            )
+        )
+        .bind("childIds", childIds)
+        .map { row ->
+            row.mapColumn<ChildId>("child_id") to toDailyServiceTimes(row.mapRow()).times
+        }
+        .toList()
+        .groupBy { it.first }
+        .mapValues { it.value.map { it.second } }
 
-private fun toChildDayRows(rows: List<UnitAttendanceReservations.QueryRow>, serviceTimes: Map<ChildId, List<DailyServiceTimes>>): List<UnitAttendanceReservations.ChildDailyRecords> {
+private fun toChildDayRows(
+    rows: List<UnitAttendanceReservations.QueryRow>,
+    serviceTimes: Map<ChildId, List<DailyServiceTimes>>
+): List<UnitAttendanceReservations.ChildDailyRecords> {
     return rows
         .groupBy { it.child }
         .map { (child, dailyData) ->
             UnitAttendanceReservations.ChildDailyRecords(
                 child = child,
-                dailyData = listOfNotNull(
-                    dailyData.associateBy(
-                        keySelector = { it.date },
-                        valueTransform = { day ->
-                            UnitAttendanceReservations.ChildRecordOfDay(
-                                reservation = day.reservations.getOrNull(0),
-                                attendance = day.attendances.getOrNull(0),
-                                absence = day.absence,
-                                dailyServiceTimes = serviceTimes[child.id]?.find { it.validityPeriod.includes(day.date) },
-                                inOtherUnit = day.inOtherUnit
+                dailyData =
+                    listOfNotNull(
+                        dailyData.associateBy(
+                            keySelector = { it.date },
+                            valueTransform = { day ->
+                                UnitAttendanceReservations.ChildRecordOfDay(
+                                    reservation = day.reservations.getOrNull(0),
+                                    attendance = day.attendances.getOrNull(0),
+                                    absence = day.absence,
+                                    dailyServiceTimes =
+                                        serviceTimes[child.id]?.find {
+                                            it.validityPeriod.includes(day.date)
+                                        },
+                                    inOtherUnit = day.inOtherUnit
+                                )
+                            }
+                        ),
+                        if (dailyData.any { it.reservations.size > 1 || it.attendances.size > 1 })
+                            dailyData.associateBy(
+                                keySelector = { it.date },
+                                valueTransform = { day ->
+                                    UnitAttendanceReservations.ChildRecordOfDay(
+                                        reservation = day.reservations.getOrNull(1),
+                                        attendance = day.attendances.getOrNull(1),
+                                        absence = day.absence,
+                                        dailyServiceTimes =
+                                            serviceTimes[child.id]?.find {
+                                                it.validityPeriod.includes(day.date)
+                                            },
+                                        inOtherUnit = day.inOtherUnit
+                                    )
+                                }
                             )
-                        }
-                    ),
-                    if (dailyData.any { it.reservations.size > 1 || it.attendances.size > 1 }) dailyData.associateBy(
-                        keySelector = { it.date },
-                        valueTransform = { day ->
-                            UnitAttendanceReservations.ChildRecordOfDay(
-                                reservation = day.reservations.getOrNull(1),
-                                attendance = day.attendances.getOrNull(1),
-                                absence = day.absence,
-                                dailyServiceTimes = serviceTimes[child.id]?.find { it.validityPeriod.includes(day.date) },
-                                inOtherUnit = day.inOtherUnit
-                            )
-                        }
-                    ) else null
-                )
+                        else null
+                    )
             )
         }
 }

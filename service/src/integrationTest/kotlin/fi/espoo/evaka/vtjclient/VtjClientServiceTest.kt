@@ -23,6 +23,7 @@ import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.RequestType.
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.RequestType.PERUSSANOMA3
 import fi.espoo.evaka.vtjclient.service.vtjclient.IVtjClientService.VTJQuery
 import fi.espoo.evaka.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo
+import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.BeforeEach
@@ -37,49 +38,62 @@ import org.springframework.ws.test.client.RequestMatchers.validPayload
 import org.springframework.ws.test.client.RequestMatchers.xpath
 import org.springframework.ws.test.client.ResponseCreators.withSoapEnvelope
 import org.springframework.xml.transform.StringSource
-import java.util.UUID
 
 val NIL_ID: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
 
 class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
 
-    @Autowired
-    lateinit var vtjClientService: IVtjClientService
+    @Autowired lateinit var vtjClientService: IVtjClientService
 
-    @Autowired
-    lateinit var mapper: VtjHenkiloMapper
+    @Autowired lateinit var mapper: VtjHenkiloMapper
 
     private val schemaResource: Resource = ClassPathResource("wsdl/query.xsd")
 
-    // If you want to run these tests against the actual VTJ, change the property fi.espoo.voltti.vtj.test.use_actual_vtj
-    // from application-integration-test.properties to true, and make sure there is an inbound port 443 in lipa-test ec2 instance
+    // If you want to run these tests against the actual VTJ, change the property
+    // fi.espoo.voltti.vtj.test.use_actual_vtj
+    // from application-integration-test.properties to true, and make sure there is an inbound port
+    // 443 in lipa-test ec2 instance
     // To run against the queries successfully against VTJ, you need to:
-    // 1. Configure the test VTJ user/pass from the SSM Parameter Store to application-integration-test.properties
-    //    The parameter names in the store are /test/evaka-vtj-client/username and /test/evaka-vtj-client/password
+    // 1. Configure the test VTJ user/pass from the SSM Parameter Store to
+    // application-integration-test.properties
+    //    The parameter names in the store are /test/evaka-vtj-client/username and
+    // /test/evaka-vtj-client/password
     //    the properties to set are fi.espoo.voltti.vtj.client.username/password
-    // 2. Set fi.espoo.voltti.vtj.xroad.trustStore.password to value from /test/evaka-srv/xroad_truststore_password
-    //    and replace resources/xroad/trustStore.jsk with S3/ evaka-deployment-test/evaka-srv/trustStore.jks
+    // 2. Set fi.espoo.voltti.vtj.xroad.trustStore.password to value from
+    // /test/evaka-srv/xroad_truststore_password
+    //    and replace resources/xroad/trustStore.jsk with S3/
+    // evaka-deployment-test/evaka-srv/trustStore.jks
     // 3. Set fi.espoo.voltti.vtj.xroad.address to point at the local xroad connectivity server
 
-    @Autowired
-    protected lateinit var wsTemplate: WebServiceTemplate
+    @Autowired protected lateinit var wsTemplate: WebServiceTemplate
 
     var mockServer: MockWebServiceServer? = null
 
     @BeforeEach
     private fun beforeEach() {
-        if (!env.lookup<Boolean>("evaka.integration.vtj.test.use_actual_vtj", "fi.espoo.voltti.vtj.test.use_actual_vtj")) {
+        if (
+            !env.lookup<Boolean>(
+                "evaka.integration.vtj.test.use_actual_vtj",
+                "fi.espoo.voltti.vtj.test.use_actual_vtj"
+            )
+        ) {
             mockServer = MockWebServiceServer.createServer(wsTemplate)
         }
     }
 
     @Test
     fun `VTJ should return results for perussanoma 3`() {
-        mockServer?.expect(validPayload(schemaResource))
+        mockServer
+            ?.expect(validPayload(schemaResource))
             ?.andExpect(vtjRequestType(PERUSSANOMA3))
             ?.andRespond(withSoapEnvelope(perussanoma3Response))
 
-        val query = VTJQuery(requestingUserId = requestingUser.id.raw, type = PERUSSANOMA3, ssn = "020501A999T")
+        val query =
+            VTJQuery(
+                requestingUserId = requestingUser.id.raw,
+                type = PERUSSANOMA3,
+                ssn = "020501A999T"
+            )
         val response = vtjClientService.query(query)
 
         val result = mapper.mapToVtjPerson(response!!)
@@ -102,11 +116,17 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
 
     @Test
     fun `VTJ should return results for dependants`() {
-        mockServer?.expect(validPayload(schemaResource))
+        mockServer
+            ?.expect(validPayload(schemaResource))
             ?.andExpect(vtjRequestType(HUOLTAJA_HUOLLETTAVA))
             ?.andRespond(withSoapEnvelope(huoltajaHuollettavatResponse))
 
-        val query = VTJQuery(requestingUserId = requestingUser.id.raw, type = HUOLTAJA_HUOLLETTAVA, ssn = "020190-9521")
+        val query =
+            VTJQuery(
+                requestingUserId = requestingUser.id.raw,
+                type = HUOLTAJA_HUOLLETTAVA,
+                ssn = "020190-9521"
+            )
         val response = vtjClientService.query(query)
 
         val result = mapper.mapToVtjPerson(response!!)
@@ -122,10 +142,16 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
 
     @Test
     fun `VTJ should return results for caretakers`() {
-        mockServer?.expect(validPayload(schemaResource))
+        mockServer
+            ?.expect(validPayload(schemaResource))
             ?.andExpect(vtjRequestType(HUOLLETTAVA_HUOLTAJAT))
             ?.andRespond(withSoapEnvelope(huollettavaHuoltajaResponse))
-        val query = VTJQuery(requestingUserId = requestingUser.id.raw, type = HUOLLETTAVA_HUOLTAJAT, ssn = "311211A9527")
+        val query =
+            VTJQuery(
+                requestingUserId = requestingUser.id.raw,
+                type = HUOLLETTAVA_HUOLTAJAT,
+                ssn = "311211A9527"
+            )
         val response = vtjClientService.query(query)
 
         val result = mapper.mapToVtjPerson(response!!)
@@ -142,13 +168,19 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
 
     @Test
     fun `VTJ should return results for resident count`() {
-        mockServer?.expect(validPayload(schemaResource))
+        mockServer
+            ?.expect(validPayload(schemaResource))
             ?.andExpect(vtjRequestType(ASUKASMAARA))
             ?.andRespond(withSoapEnvelope(asukasMaaraResponse))
         val expectedSSN = "020501A999T"
         val expectedUnderageSSNs = listOf("090702A9996")
 
-        val query = VTJQuery(requestingUserId = requestingUser.id.raw, type = ASUKASMAARA, ssn = expectedSSN)
+        val query =
+            VTJQuery(
+                requestingUserId = requestingUser.id.raw,
+                type = ASUKASMAARA,
+                ssn = expectedSSN
+            )
         val response = vtjClientService.query(query)
 
         val result = ResidentCountExample.residentCountFromHenkilo(response!!)
@@ -157,21 +189,23 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
             assertThat(ssn.ssn).isEqualTo(expectedSSN)
             assertThat(residentCount).isEqualTo(4)
             assertThat(underageResidentCount).isEqualTo(expectedUnderageSSNs.size)
-            assertThat(underageResidentSSns.map(SSN::ssn)).containsExactlyInAnyOrder(*expectedUnderageSSNs.toTypedArray())
+            assertThat(underageResidentSSns.map(SSN::ssn))
+                .containsExactlyInAnyOrder(*expectedUnderageSSNs.toTypedArray())
         }
         mockServer?.verify()
     }
 
-    private val requestingUser = Employee(
-        id = EmployeeId(NIL_ID),
-        preferredFirstName = null,
-        firstName = "Integration",
-        lastName = "Test",
-        email = "integration-test@example.org",
-        externalId = null,
-        created = HelsinkiDateTime.now(),
-        updated = null
-    )
+    private val requestingUser =
+        Employee(
+            id = EmployeeId(NIL_ID),
+            preferredFirstName = null,
+            firstName = "Integration",
+            lastName = "Test",
+            email = "integration-test@example.org",
+            externalId = null,
+            created = HelsinkiDateTime.now(),
+            updated = null
+        )
 
     private fun vtjRequestType(requestType: RequestType): RequestMatcher =
         xpath("//ns2:HenkilonTunnusKysely/ns2:request/ns2:SoSoNimi/text()", queryNamespaces)
@@ -181,21 +215,22 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
 }
 
 private val popovsWithBasicChildData: VtjPerson by lazy {
+    val address =
+        PersonAddress(
+            streetAddress = "Kurteninkatu 13 H 45",
+            postalCode = "65100",
+            postOffice = "VAASA",
+            streetAddressSe = "Kurtensgatan 13 H 45",
+            postOfficeSe = "VASA"
+        )
 
-    val address = PersonAddress(
-        streetAddress = "Kurteninkatu 13 H 45",
-        postalCode = "65100",
-        postOffice = "VAASA",
-        streetAddressSe = "Kurtensgatan 13 H 45",
-        postOfficeSe = "VASA"
-    )
-
-    val kakTy = VtjPerson(
-        firstNames = "Kak Ty",
-        lastName = "Popov",
-        socialSecurityNumber = "011014A9510",
-        restrictedDetails = null
-    )
+    val kakTy =
+        VtjPerson(
+            firstNames = "Kak Ty",
+            lastName = "Popov",
+            socialSecurityNumber = "011014A9510",
+            restrictedDetails = null
+        )
 
     val minja = kakTy.copy(firstNames = "Minja Zavutina", socialSecurityNumber = "311211A9527")
 
@@ -217,7 +252,8 @@ private val popovsWithBasicChildData: VtjPerson by lazy {
     )
 }
 
-// an example model for resident count. Decide actual model/useage later based on confirmed requirements
+// an example model for resident count. Decide actual model/useage later based on confirmed
+// requirements
 class ResidentCountExample(
     val ssn: SSN,
     val residentCount: Int,
@@ -225,16 +261,19 @@ class ResidentCountExample(
     val underageResidentSSns: List<SSN>
 ) {
     companion object Factory {
-        fun residentCountFromHenkilo(henkilo: Henkilo) = ResidentCountExample(
-            ssn = SSN.getInstance(henkilo.henkilotunnus.value),
-            residentCount = henkilo.asukasLkm.toInt(),
-            underageResidentCount = henkilo.asukkaatAlle18V.asukasLkm.toInt(),
-            underageResidentSSns = henkilo.asukasAlle18V.map { SSN.getInstance(it.henkilotunnus) }
-        )
+        fun residentCountFromHenkilo(henkilo: Henkilo) =
+            ResidentCountExample(
+                ssn = SSN.getInstance(henkilo.henkilotunnus.value),
+                residentCount = henkilo.asukasLkm.toInt(),
+                underageResidentCount = henkilo.asukkaatAlle18V.asukasLkm.toInt(),
+                underageResidentSSns =
+                    henkilo.asukasAlle18V.map { SSN.getInstance(it.henkilotunnus) }
+            )
     }
 }
 
-// Below are actual VTJ responses to the queries above, if they are done against the actual VTJ. The username has been blanked out
+// Below are actual VTJ responses to the queries above, if they are done against the actual VTJ. The
+// username has been blanked out
 @Language("xml")
 private val perussanoma3Response =
     """
@@ -464,7 +503,9 @@ private val perussanoma3Response =
         </HenkilonTunnusKyselyResponse>
     </s:Body>
 </s:Envelope>
-    """.trimIndent().let(::StringSource)
+    """
+        .trimIndent()
+        .let(::StringSource)
 
 @Language("xml")
 private val huoltajaHuollettavatResponse =
@@ -677,7 +718,9 @@ private val huoltajaHuollettavatResponse =
         </HenkilonTunnusKyselyResponse>
     </s:Body>
 </s:Envelope>
-    """.trimIndent().let(::StringSource)
+    """
+        .trimIndent()
+        .let(::StringSource)
 
 @Language("xml")
 private val huollettavaHuoltajaResponse =
@@ -860,7 +903,9 @@ private val huollettavaHuoltajaResponse =
         </HenkilonTunnusKyselyResponse>
     </s:Body>
 </s:Envelope>    
-    """.trimIndent().let(::StringSource)
+    """
+        .trimIndent()
+        .let(::StringSource)
 
 @Language("xml")
 private val asukasMaaraResponse =
@@ -937,4 +982,6 @@ private val asukasMaaraResponse =
         </HenkilonTunnusKyselyResponse>
     </s:Body>
 </s:Envelope>
-    """.trimIndent().let(::StringSource)
+    """
+        .trimIndent()
+        .let(::StringSource)

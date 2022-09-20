@@ -31,14 +31,11 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.user.EvakaUser
+import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
-import java.time.LocalDate
 
-data class ApplicationServiceNeed(
-    val optionId: ServiceNeedOptionId,
-    val shiftCare: Boolean
-)
+data class ApplicationServiceNeed(val optionId: ServiceNeedOptionId, val shiftCare: Boolean)
 
 fun createPlacements(
     tx: Database.Transaction,
@@ -48,16 +45,19 @@ fun createPlacements(
     serviceNeed: ApplicationServiceNeed? = null
 ): List<Placement> {
     val timeline = Timeline.of(placementTypePeriods.map { it.first })
-    timeline.ranges().forEach {
-        tx.clearOldPlacements(childId, it.start, it.end)
-    }
+    timeline.ranges().forEach { tx.clearOldPlacements(childId, it.start, it.end) }
 
     return placementTypePeriods.map { (period, type) ->
         val placement = tx.insertPlacement(type, childId, unitId, period.start, period.end)
         if (serviceNeed != null) {
             tx.insertServiceNeed(
-                placement.id, period.start, period.end,
-                serviceNeed.optionId, serviceNeed.shiftCare, confirmedBy = null, confirmedAt = null
+                placement.id,
+                period.start,
+                period.end,
+                serviceNeed.optionId,
+                serviceNeed.shiftCare,
+                confirmedBy = null,
+                confirmedAt = null
             )
         }
         placement
@@ -73,11 +73,12 @@ fun createPlacement(
     serviceNeed: ApplicationServiceNeed? = null,
     useFiveYearsOldDaycare: Boolean = false,
 ): List<Placement> {
-    val placementTypePeriods = if (useFiveYearsOldDaycare) {
-        resolveFiveYearOldPlacementPeriods(tx, childId, listOf(period to type))
-    } else {
-        listOf(period to type)
-    }
+    val placementTypePeriods =
+        if (useFiveYearsOldDaycare) {
+            resolveFiveYearOldPlacementPeriods(tx, childId, listOf(period to type))
+        } else {
+            listOf(period to type)
+        }
     return createPlacements(tx, childId, unitId, placementTypePeriods, serviceNeed)
 }
 
@@ -93,30 +94,47 @@ fun Database.Transaction.updatePlacement(
     val old = getPlacement(id) ?: throw NotFound("Placement $id not found")
     if (startDate.isAfter(old.startDate)) {
         clearGroupPlacementsBefore(id, startDate)
-        clearServiceNeedsFromPeriod(this, old.id, FiniteDateRange(old.startDate, startDate.minusDays(1)))
+        clearServiceNeedsFromPeriod(
+            this,
+            old.id,
+            FiniteDateRange(old.startDate, startDate.minusDays(1))
+        )
     }
     if (endDate.isBefore(old.endDate)) {
         clearGroupPlacementsAfter(id, endDate)
         clearServiceNeedsFromPeriod(this, old.id, FiniteDateRange(endDate.plusDays(1), old.endDate))
     }
-    clearOldPlacements(childId = old.childId, from = startDate, to = endDate, excludePlacement = id, aclAuth = aclAuth)
+    clearOldPlacements(
+        childId = old.childId,
+        from = startDate,
+        to = endDate,
+        excludePlacement = id,
+        aclAuth = aclAuth
+    )
 
     try {
-        val placementTypePeriods = if (useFiveYearsOldDaycare) {
-            resolveFiveYearOldPlacementPeriods(this, old.childId, listOf(FiniteDateRange(startDate, endDate) to old.type))
-        } else {
-            listOf(FiniteDateRange(startDate, endDate) to old.type)
-        }
-        val (updatedPeriods, newPeriods) = placementTypePeriods.partition { (period, type) ->
-            period.overlaps(FiniteDateRange(old.startDate, old.endDate)) && type == old.type
-        }
+        val placementTypePeriods =
+            if (useFiveYearsOldDaycare) {
+                resolveFiveYearOldPlacementPeriods(
+                    this,
+                    old.childId,
+                    listOf(FiniteDateRange(startDate, endDate) to old.type)
+                )
+            } else {
+                listOf(FiniteDateRange(startDate, endDate) to old.type)
+            }
+        val (updatedPeriods, newPeriods) =
+            placementTypePeriods.partition { (period, type) ->
+                period.overlaps(FiniteDateRange(old.startDate, old.endDate)) && type == old.type
+            }
 
         updatedPeriods.firstOrNull()?.let { (period, _) ->
             updatePlacementStartAndEndDate(id, period.start, period.end)
-        } ?: run {
-            checkAclAuth(aclAuth, old)
-            cancelPlacement(old.id)
         }
+            ?: run {
+                checkAclAuth(aclAuth, old)
+                cancelPlacement(old.id)
+            }
 
         newPeriods.forEach { (period, type) ->
             insertPlacement(type, old.childId, old.unitId, period.start, period.end)
@@ -134,23 +152,25 @@ fun Database.Transaction.checkAndCreateGroupPlacement(
     startDate: LocalDate,
     endDate: LocalDate
 ): GroupPlacementId {
-    if (endDate.isBefore(startDate))
-        throw BadRequest("Must not end before even starting")
+    if (endDate.isBefore(startDate)) throw BadRequest("Must not end before even starting")
 
-    val daycarePlacement = getDaycarePlacement(daycarePlacementId)
-        ?: throw NotFound("Placement $daycarePlacementId does not exist")
+    val daycarePlacement =
+        getDaycarePlacement(daycarePlacementId)
+            ?: throw NotFound("Placement $daycarePlacementId does not exist")
 
     if (startDate.isBefore(daycarePlacement.startDate) || endDate.isAfter(daycarePlacement.endDate))
         throw BadRequest("Group placement must be within the daycare placement")
 
-    val group = getDaycareGroup(groupId)
-        ?: throw NotFound("Group $groupId does not exist")
-    if (group.daycareId != daycarePlacement.daycare.id)
-        throw BadRequest("Group is in wrong unit")
-    if (group.startDate.isAfter(startDate) || (group.endDate != null && group.endDate.isBefore(endDate)))
+    val group = getDaycareGroup(groupId) ?: throw NotFound("Group $groupId does not exist")
+    if (group.daycareId != daycarePlacement.daycare.id) throw BadRequest("Group is in wrong unit")
+    if (
+        group.startDate.isAfter(startDate) ||
+            (group.endDate != null && group.endDate.isBefore(endDate))
+    )
         throw BadRequest("Group is not active for the full duration")
 
-    val identicalBefore = getIdenticalPrecedingGroupPlacement(daycarePlacementId, groupId, startDate)
+    val identicalBefore =
+        getIdenticalPrecedingGroupPlacement(daycarePlacementId, groupId, startDate)
     val identicalAfter = getIdenticalPostcedingGroupPlacement(daycarePlacementId, groupId, endDate)
 
     try {
@@ -176,9 +196,13 @@ fun Database.Transaction.checkAndCreateGroupPlacement(
     }
 }
 
-fun Database.Transaction.transferGroup(groupPlacementId: GroupPlacementId, groupId: GroupId, startDate: LocalDate) {
-    val groupPlacement = getDaycareGroupPlacement(groupPlacementId)
-        ?: throw NotFound("Group placement not found")
+fun Database.Transaction.transferGroup(
+    groupPlacementId: GroupPlacementId,
+    groupId: GroupId,
+    startDate: LocalDate
+) {
+    val groupPlacement =
+        getDaycareGroupPlacement(groupPlacementId) ?: throw NotFound("Group placement not found")
 
     if (getDaycareGroup(groupPlacement.groupId!!)?.daycareId != getDaycareGroup(groupId)?.daycareId)
         throw BadRequest("Cannot transfer to a group in different unit")
@@ -187,9 +211,10 @@ fun Database.Transaction.transferGroup(groupPlacementId: GroupPlacementId, group
 
     when {
         startDate.isBefore(groupPlacement.startDate) -> {
-            throw BadRequest("Cannot transfer to another group before the original placement even starts")
+            throw BadRequest(
+                "Cannot transfer to another group before the original placement even starts"
+            )
         }
-
         startDate.isEqual(groupPlacement.startDate) -> {
             if (groupId == groupPlacement.groupId) {
                 return // no changes requested
@@ -197,30 +222,52 @@ fun Database.Transaction.transferGroup(groupPlacementId: GroupPlacementId, group
 
             deleteGroupPlacement(groupPlacementId)
             if (placement != null) {
-                clearCalendarEventAttendees(placement.childId, placement.unitId, FiniteDateRange(startDate, LocalDate.MAX))
+                clearCalendarEventAttendees(
+                    placement.childId,
+                    placement.unitId,
+                    FiniteDateRange(startDate, LocalDate.MAX)
+                )
             }
         }
-
         startDate.isAfter(groupPlacement.startDate) -> {
             if (startDate.isAfter(groupPlacement.endDate)) {
-                throw BadRequest("Cannot transfer to another group after the original placement has already ended.")
+                throw BadRequest(
+                    "Cannot transfer to another group after the original placement has already ended."
+                )
             }
 
             updateGroupPlacementEndDate(groupPlacementId, startDate.minusDays(1))
             if (placement != null) {
-                clearCalendarEventAttendees(placement.childId, placement.unitId, FiniteDateRange(startDate, LocalDate.MAX))
+                clearCalendarEventAttendees(
+                    placement.childId,
+                    placement.unitId,
+                    FiniteDateRange(startDate, LocalDate.MAX)
+                )
             }
         }
     }
 
-    createGroupPlacement(groupPlacement.daycarePlacementId, groupId, startDate, groupPlacement.endDate)
+    createGroupPlacement(
+        groupPlacement.daycarePlacementId,
+        groupId,
+        startDate,
+        groupPlacement.endDate
+    )
 }
 
-private fun Database.Transaction.clearOldPlacements(childId: ChildId, from: LocalDate, to: LocalDate, excludePlacement: PlacementId? = null, aclAuth: AclAuthorization = AclAuthorization.All) {
+private fun Database.Transaction.clearOldPlacements(
+    childId: ChildId,
+    from: LocalDate,
+    to: LocalDate,
+    excludePlacement: PlacementId? = null,
+    aclAuth: AclAuthorization = AclAuthorization.All
+) {
     if (from.isAfter(to)) throw IllegalArgumentException("inverted range")
 
     getPlacementsForChildDuring(childId, from, to)
-        .filter { placement -> if (excludePlacement != null) placement.id != excludePlacement else true }
+        .filter { placement ->
+            if (excludePlacement != null) placement.id != excludePlacement else true
+        }
         .forEach { old ->
             if (old.endDate.isBefore(from) || old.startDate.isAfter(to)) {
                 throw Error("bug discovered: query returned non-overlapping placement")
@@ -249,25 +296,40 @@ private fun Database.Transaction.clearOldPlacements(childId: ChildId, from: Loca
                     checkAclAuth(aclAuth, old)
                     movePlacementStartDateLater(old, to.plusDays(1))
                 }
-
                 else -> throw Error("bug discovered: some forgotten case?")
             }.exhaust()
         }
 }
 
-private fun Database.Transaction.movePlacementStartDateLater(placement: Placement, newStartDate: LocalDate) {
-    if (newStartDate.isBefore(placement.startDate)) throw IllegalArgumentException("Use this method only for shortening placement")
+private fun Database.Transaction.movePlacementStartDateLater(
+    placement: Placement,
+    newStartDate: LocalDate
+) {
+    if (newStartDate.isBefore(placement.startDate))
+        throw IllegalArgumentException("Use this method only for shortening placement")
 
     clearGroupPlacementsBefore(placement.id, newStartDate)
-    clearServiceNeedsFromPeriod(this, placement.id, FiniteDateRange(placement.startDate, newStartDate.minusDays(1)))
+    clearServiceNeedsFromPeriod(
+        this,
+        placement.id,
+        FiniteDateRange(placement.startDate, newStartDate.minusDays(1))
+    )
     updatePlacementStartDate(placement.id, newStartDate)
 }
 
-private fun Database.Transaction.movePlacementEndDateEarlier(placement: Placement, newEndDate: LocalDate) {
-    if (newEndDate.isAfter(placement.endDate)) throw IllegalArgumentException("Use this method only for shortening placement")
+private fun Database.Transaction.movePlacementEndDateEarlier(
+    placement: Placement,
+    newEndDate: LocalDate
+) {
+    if (newEndDate.isAfter(placement.endDate))
+        throw IllegalArgumentException("Use this method only for shortening placement")
 
     clearGroupPlacementsAfter(placement.id, newEndDate)
-    clearServiceNeedsFromPeriod(this, placement.id, FiniteDateRange(newEndDate.plusDays(1), placement.endDate))
+    clearServiceNeedsFromPeriod(
+        this,
+        placement.id,
+        FiniteDateRange(newEndDate.plusDays(1), placement.endDate)
+    )
     updatePlacementEndDate(placement.id, newEndDate)
 }
 
@@ -304,7 +366,7 @@ fun Database.Read.getUnitChildrenCapacities(
     date: LocalDate
 ): List<UnitChildrenCapacityFactors> {
     return this.createQuery(
-        """
+            """
         SELECT
             ch.id child_id,
             MAX(COALESCE(an.capacity_factor, 1)) assistance_need_factor,
@@ -323,7 +385,7 @@ fun Database.Read.getUnitChildrenCapacities(
         WHERE pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') @> :date
         GROUP BY ch.id
     """
-    )
+        )
         .bind("unitId", unitId)
         .bind("date", date)
         .mapTo<UnitChildrenCapacityFactors>()
@@ -364,7 +426,8 @@ fun Database.Read.getDetailedDaycarePlacements(
                 endDate = daycarePlacement.endDate,
                 type = daycarePlacement.type,
                 missingServiceNeedDays = daycarePlacement.missingServiceNeedDays,
-                groupPlacements = groupPlacements.filter { it.daycarePlacementId == daycarePlacement.id },
+                groupPlacements =
+                    groupPlacements.filter { it.daycarePlacementId == daycarePlacement.id },
                 serviceNeeds = serviceNeeds.filter { it.placementId == daycarePlacement.id },
                 terminatedBy = daycarePlacement.terminatedBy,
                 terminationRequestedDate = daycarePlacement.terminationRequestedDate
@@ -374,47 +437,49 @@ fun Database.Read.getDetailedDaycarePlacements(
         .toSet()
 }
 
-private fun addMissingGroupPlacements(daycarePlacement: DaycarePlacementWithDetails): DaycarePlacementWithDetails {
+private fun addMissingGroupPlacements(
+    daycarePlacement: DaycarePlacementWithDetails
+): DaycarePlacementWithDetails {
     // calculate unique sorted events from start dates and exclusive end dates
-    val eventDates = setOf<LocalDate>(
-        daycarePlacement.startDate,
-        *daycarePlacement.groupPlacements.map { it.startDate }.toTypedArray(),
-        *daycarePlacement.groupPlacements.map { it.endDate.plusDays(1) }.toTypedArray(),
-        daycarePlacement.endDate.plusDays(1)
-    ).sorted()
+    val eventDates =
+        setOf<LocalDate>(
+                daycarePlacement.startDate,
+                *daycarePlacement.groupPlacements.map { it.startDate }.toTypedArray(),
+                *daycarePlacement.groupPlacements.map { it.endDate.plusDays(1) }.toTypedArray(),
+                daycarePlacement.endDate.plusDays(1)
+            )
+            .sorted()
 
     val groupPlacements = mutableListOf<DaycareGroupPlacement>()
     for (i in 0..eventDates.size - 2) {
         val startDate = eventDates[i]
         val endDate = eventDates[i + 1].minusDays(1) // convert back to inclusive
-        val groupPlacement = daycarePlacement.groupPlacements
-            .find { groupPlacement -> startDate.isEqual(groupPlacement.startDate) }
-            ?: DaycareGroupPlacement(
-                id = null,
-                groupId = null,
-                groupName = null,
-                daycarePlacementId = daycarePlacement.id,
-                startDate = startDate,
-                endDate = endDate
-            )
+        val groupPlacement =
+            daycarePlacement.groupPlacements.find { groupPlacement ->
+                startDate.isEqual(groupPlacement.startDate)
+            }
+                ?: DaycareGroupPlacement(
+                    id = null,
+                    groupId = null,
+                    groupName = null,
+                    daycarePlacementId = daycarePlacement.id,
+                    startDate = startDate,
+                    endDate = endDate
+                )
         groupPlacements.add(groupPlacement)
     }
 
     return daycarePlacement.copy(groupPlacements = groupPlacements)
 }
 
-fun getMissingGroupPlacements(
-    tx: Database.Read,
-    unitId: DaycareId
-): List<MissingGroupPlacement> {
+fun getMissingGroupPlacements(tx: Database.Read, unitId: DaycareId): List<MissingGroupPlacement> {
     data class GroupPlacementGap(
         val backup: Boolean,
         val placementId: PlacementId,
         val placementType: PlacementType?,
         val placementRange: FiniteDateRange,
         val childId: ChildId,
-        @Json
-        val serviceNeeds: Set<ServiceNeed>,
+        @Json val serviceNeeds: Set<ServiceNeed>,
         val gapRange: FiniteDateRange
     )
 
@@ -425,12 +490,12 @@ fun getMissingGroupPlacements(
         val type: PlacementType,
         val range: FiniteDateRange,
         val childId: ChildId,
-        @Json
-        val serviceNeeds: Set<ServiceNeed>,
+        @Json val serviceNeeds: Set<ServiceNeed>,
         val groupPlacementRanges: List<FiniteDateRange>
     )
-    val placements = tx.createQuery(
-        """
+    val placements =
+        tx.createQuery(
+                """
         SELECT
             FALSE AS backup,
             pl.id,
@@ -470,24 +535,30 @@ fun getMissingGroupPlacements(
             OR greatest(min(dgp.start_date), :launch) != greatest(pl.start_date, :launch)
             OR greatest(max(dgp.end_date), :launch) != greatest(pl.end_date, :launch);
     """
-    ).bind("unitId", unitId).bind("launch", evakaLaunch).mapTo<PlacementResult>().list()
-
-    val missingGroupPlacements = placements.flatMap { placement ->
-        placement.range.complement(placement.groupPlacementRanges).map { gap ->
-            GroupPlacementGap(
-                backup = false,
-                placementId = placement.id,
-                placementType = placement.type,
-                placementRange = placement.range,
-                childId = placement.childId,
-                serviceNeeds = placement.serviceNeeds,
-                gapRange = gap
             )
-        }
-    }
+            .bind("unitId", unitId)
+            .bind("launch", evakaLaunch)
+            .mapTo<PlacementResult>()
+            .list()
 
-    val missingBackupCareGroups = tx.createQuery(
-        """
+    val missingGroupPlacements =
+        placements.flatMap { placement ->
+            placement.range.complement(placement.groupPlacementRanges).map { gap ->
+                GroupPlacementGap(
+                    backup = false,
+                    placementId = placement.id,
+                    placementType = placement.type,
+                    placementRange = placement.range,
+                    childId = placement.childId,
+                    serviceNeeds = placement.serviceNeeds,
+                    gapRange = gap
+                )
+            }
+        }
+
+    val missingBackupCareGroups =
+        tx.createQuery(
+                """
         SELECT 
             TRUE AS backup,
             id AS placement_id,
@@ -500,20 +571,25 @@ fun getMissingGroupPlacements(
         WHERE bc.unit_id = :unitId AND bc.group_id IS NULL 
             AND daterange(bc.start_date, bc.end_date, '[]') && daterange(:launch, NULL)
     """
-    ).bind("unitId", unitId).bind("launch", evakaLaunch).mapTo<GroupPlacementGap>().list()
+            )
+            .bind("unitId", unitId)
+            .bind("launch", evakaLaunch)
+            .mapTo<GroupPlacementGap>()
+            .list()
 
     val gaps = missingGroupPlacements + missingBackupCareGroups
 
-    val children = tx.createQuery(
-        """
+    val children =
+        tx.createQuery(
+                """
         SELECT id, first_name, last_name, date_of_birth, social_security_number
         FROM person WHERE id = ANY(:childIds)
     """
-    )
-        .bind("childIds", gaps.map { it.childId })
-        .mapTo<ChildBasics>()
-        .list()
-        .associateBy { it.id }
+            )
+            .bind("childIds", gaps.map { it.childId })
+            .mapTo<ChildBasics>()
+            .list()
+            .associateBy { it.id }
 
     return gaps.map { gap ->
         val child = children[gap.childId]!!
@@ -543,17 +619,14 @@ data class DaycarePlacement(
 
 data class DaycarePlacementDetails(
     val id: PlacementId,
-    @Nested("child")
-    val child: ChildBasics,
-    @Nested("daycare")
-    val daycare: DaycareBasics,
+    @Nested("child") val child: ChildBasics,
+    @Nested("daycare") val daycare: DaycareBasics,
     val startDate: LocalDate,
     val endDate: LocalDate,
     val type: PlacementType,
     val missingServiceNeedDays: Int,
     val terminationRequestedDate: LocalDate?,
-    @Nested("terminated_by")
-    val terminatedBy: EvakaUser?
+    @Nested("terminated_by") val terminatedBy: EvakaUser?
 )
 
 data class DaycarePlacementWithDetails(

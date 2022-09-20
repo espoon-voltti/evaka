@@ -29,8 +29,14 @@ fun <T> List<WithCount<T>>.mapToPaged(pageSize: Int): Paged<T> =
         Paged.forPageSize(this.map { it.data }, count, pageSize)
     }
 
-fun <T> Database.Query.mapToPaged(pageSize: Int, countColumn: String, mapper: (row: RowView) -> T): Paged<T> =
-    this.map { row -> WithCount(row.mapColumn(countColumn), mapper(row)) }.list().mapToPaged(pageSize)
+fun <T> Database.Query.mapToPaged(
+    pageSize: Int,
+    countColumn: String,
+    mapper: (row: RowView) -> T
+): Paged<T> =
+    this.map { row -> WithCount(row.mapColumn(countColumn), mapper(row)) }
+        .list()
+        .mapToPaged(pageSize)
 
 fun <T> Database.Query.mapToPaged(pageSize: Int, mapper: (row: RowView) -> T): Paged<T> =
     this.mapToPaged(pageSize, "count", mapper)
@@ -41,8 +47,5 @@ inline fun <reified T> Database.Query.mapToPaged(pageSize: Int): Paged<T> =
 data class WithCount<T>(val count: Int, val data: T)
 
 inline fun <reified T> withCountMapper(): RowViewMapper<WithCount<T>> = RowViewMapper { row ->
-    WithCount(
-        row.mapColumn("count"),
-        row.mapRow()
-    )
+    WithCount(row.mapColumn("count"), row.mapRow())
 }

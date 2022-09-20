@@ -33,12 +33,12 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.withMockedTime
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
@@ -60,7 +60,9 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             tx.insertGeneralTestFixtures()
             tx.insertGuardian(testAdult_1.id, testChild_1.id)
             tx.insertGuardian(testAdult_2.id, testChild_1.id)
-            tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = ""))
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = "")
+            )
             tx.insertTestPlacement(
                 id = daycarePlacementId,
                 childId = testChild_1.id,
@@ -120,7 +122,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         this.postReservations(
             listOf(
                 DailyReservationRequest(
-                    testChild_1.id, now.toLocalDate().plusDays(105),
+                    testChild_1.id,
+                    now.toLocalDate().plusDays(105),
                     listOf(
                         fi.espoo.evaka.reservations.TimeRange(
                             LocalTime.of(10, 0),
@@ -173,63 +176,87 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     private fun createDailyServiceTime(childId: ChildId, dailyServiceTime: DailyServiceTimes) {
-        val (_, res, _) = http.post("/children/$childId/daily-service-times")
-            .jsonBody(jsonMapper.writeValueAsString(dailyServiceTime))
-            .asUser(admin)
-            .withMockedTime(now)
-            .response()
+        val (_, res, _) =
+            http
+                .post("/children/$childId/daily-service-times")
+                .jsonBody(jsonMapper.writeValueAsString(dailyServiceTime))
+                .asUser(admin)
+                .withMockedTime(now)
+                .response()
 
         assertEquals(200, res.statusCode)
     }
 
-    private fun updateDailyServiceTime(id: DailyServiceTimesId, dailyServiceTime: DailyServiceTimes) {
-        val (_, res, _) = http.put("/daily-service-times/$id")
-            .jsonBody(jsonMapper.writeValueAsString(dailyServiceTime))
-            .asUser(admin)
-            .withMockedTime(now)
-            .response()
+    private fun updateDailyServiceTime(
+        id: DailyServiceTimesId,
+        dailyServiceTime: DailyServiceTimes
+    ) {
+        val (_, res, _) =
+            http
+                .put("/daily-service-times/$id")
+                .jsonBody(jsonMapper.writeValueAsString(dailyServiceTime))
+                .asUser(admin)
+                .withMockedTime(now)
+                .response()
 
         assertEquals(200, res.statusCode)
     }
 
-    private fun getDailyServiceTimes(childId: ChildId): List<DailyServiceTimesController.DailyServiceTimesResponse> {
-        val (_, res, result) = http.get("/children/$childId/daily-service-times")
-            .asUser(admin)
-            .withMockedTime(now)
-            .responseObject<List<DailyServiceTimesController.DailyServiceTimesResponse>>(jsonMapper)
+    private fun getDailyServiceTimes(
+        childId: ChildId
+    ): List<DailyServiceTimesController.DailyServiceTimesResponse> {
+        val (_, res, result) =
+            http
+                .get("/children/$childId/daily-service-times")
+                .asUser(admin)
+                .withMockedTime(now)
+                .responseObject<List<DailyServiceTimesController.DailyServiceTimesResponse>>(
+                    jsonMapper
+                )
 
         assertEquals(200, res.statusCode)
 
         return result.get()
     }
 
-    private fun getDailyServiceTimeNotifications(user: AuthenticatedUser.Citizen): List<DailyServiceTimeNotification> {
-        val (_, res, result) = http.get("/citizen/daily-service-time-notifications")
-            .asUser(user)
-            .withMockedTime(now)
-            .responseObject<List<DailyServiceTimeNotification>>(jsonMapper)
+    private fun getDailyServiceTimeNotifications(
+        user: AuthenticatedUser.Citizen
+    ): List<DailyServiceTimeNotification> {
+        val (_, res, result) =
+            http
+                .get("/citizen/daily-service-time-notifications")
+                .asUser(user)
+                .withMockedTime(now)
+                .responseObject<List<DailyServiceTimeNotification>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
 
         return result.get()
     }
 
-    private fun dismissDailyServiceTimeNotification(user: AuthenticatedUser.Citizen, notificationId: DailyServiceTimeNotificationId) {
-        val (_, res, _) = http.post("/citizen/daily-service-time-notifications/dismiss")
-            .jsonBody(jsonMapper.writeValueAsString(listOf(notificationId)))
-            .asUser(user)
-            .withMockedTime(now)
-            .response()
+    private fun dismissDailyServiceTimeNotification(
+        user: AuthenticatedUser.Citizen,
+        notificationId: DailyServiceTimeNotificationId
+    ) {
+        val (_, res, _) =
+            http
+                .post("/citizen/daily-service-time-notifications/dismiss")
+                .jsonBody(jsonMapper.writeValueAsString(listOf(notificationId)))
+                .asUser(user)
+                .withMockedTime(now)
+                .response()
 
         assertEquals(200, res.statusCode)
     }
 
     private fun postReservations(request: List<DailyReservationRequest>) {
-        val (_, res, _) = http.post("/citizen/reservations")
-            .jsonBody(jsonMapper.writeValueAsString(request))
-            .asUser(AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG))
-            .withMockedTime(now)
-            .response()
+        val (_, res, _) =
+            http
+                .post("/citizen/reservations")
+                .jsonBody(jsonMapper.writeValueAsString(request))
+                .asUser(AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG))
+                .withMockedTime(now)
+                .response()
 
         assertEquals(200, res.statusCode)
     }

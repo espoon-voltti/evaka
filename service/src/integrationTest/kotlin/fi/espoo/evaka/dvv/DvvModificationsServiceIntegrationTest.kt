@@ -20,26 +20,31 @@ import fi.espoo.evaka.vtjclient.dto.PersonAddress
 import fi.espoo.evaka.vtjclient.dto.RestrictedDetails
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
-class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach = true) {
+class DvvModificationsServiceIntegrationTest :
+    DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach = true) {
     @BeforeEach
     private fun beforeEach() {
-        db.transaction { tx ->
-            tx.storeDvvModificationToken("100", "101", 0, 0)
-        }
+        db.transaction { tx -> tx.storeDvvModificationToken("100", "101", 0, 0) }
     }
 
     @Test
     fun `get modification token for today`() {
-        val caretaker = testPerson.copy(firstName = "Harri", lastName = "Huoltaja", ssn = "010579-9999", dependants = emptyList())
+        val caretaker =
+            testPerson.copy(
+                firstName = "Harri",
+                lastName = "Huoltaja",
+                ssn = "010579-9999",
+                dependants = emptyList()
+            )
         createVtjPerson(caretaker)
 
         db.read { assertEquals("101", it.getNextDvvModificationToken()) }
@@ -56,29 +61,26 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
             assertEquals(1, createdDvvModificationToken.modificationsReceived)
         }
 
-        db.transaction { tx ->
-            tx.deleteDvvModificationToken("101")
-        }
+        db.transaction { tx -> tx.deleteDvvModificationToken("101") }
     }
 
     @Test
     fun `modification token is not updated if there is an exception during update`() {
         db.read { assertEquals("101", it.getNextDvvModificationToken()) }
 
-        assertThrows<Exception> {
-            updatePeopleFromDvv(listOf("rikkinainen_tietue"))
-        }
+        assertThrows<Exception> { updatePeopleFromDvv(listOf("rikkinainen_tietue")) }
 
-        db.read {
-            assertEquals("101", it.getNextDvvModificationToken())
-        }
+        db.read { assertEquals("101", it.getNextDvvModificationToken()) }
     }
 
     @Test
     fun `person date of death`() {
         createTestPerson(testPerson.copy(ssn = "010180-999A"))
         updatePeopleFromDvv(listOf("010180-999A"))
-        assertEquals(LocalDate.parse("2019-07-30"), db.read { it.getPersonBySSN("010180-999A") }?.dateOfDeath)
+        assertEquals(
+            LocalDate.parse("2019-07-30"),
+            db.read { it.getPersonBySSN("010180-999A") }?.dateOfDeath
+        )
     }
 
     @Test
@@ -104,7 +106,15 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
 
     @Test
     fun `person restricted details ended and address is set`() {
-        createTestPerson(testPerson.copy(ssn = "030180-999L", restrictedDetailsEnabled = true, streetAddress = "", postalCode = "", postOffice = ""))
+        createTestPerson(
+            testPerson.copy(
+                ssn = "030180-999L",
+                restrictedDetailsEnabled = true,
+                streetAddress = "",
+                postalCode = "",
+                postOffice = ""
+            )
+        )
         createVtjPerson(
             testPerson.copy(
                 ssn = "030180-999L",
@@ -154,8 +164,10 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
 
     @Test
     fun `new custodian added`() {
-        val custodian = testPerson.copy(firstName = "Harri", lastName = "Huollettava", ssn = "050118A999W")
-        var caretaker: DevPerson = testPerson.copy(ssn = "050180-999W", dependants = listOf(custodian))
+        val custodian =
+            testPerson.copy(firstName = "Harri", lastName = "Huollettava", ssn = "050118A999W")
+        var caretaker: DevPerson =
+            testPerson.copy(ssn = "050180-999W", dependants = listOf(custodian))
 
         caretaker = caretaker.copy(dependants = listOf(custodian))
 
@@ -170,7 +182,8 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         assertTrue(
             db.read { tx ->
                 tx.getChildGuardians(dvvCustodian.id)
-                    .map { tx.getPersonById(it) }.filterNotNull()
+                    .map { tx.getPersonById(it) }
+                    .filterNotNull()
                     .any { guardian -> guardian.identity.toString() == caretaker.ssn }
             }
         )
@@ -179,7 +192,13 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     @Test
     fun `new caretaker added`() {
         var custodian: DevPerson = testPerson.copy(ssn = "060118A999J")
-        val caretaker = testPerson.copy(firstName = "Harri", lastName = "Huoltaja", ssn = "060180-999J", dependants = listOf(custodian))
+        val caretaker =
+            testPerson.copy(
+                firstName = "Harri",
+                lastName = "Huoltaja",
+                ssn = "060180-999J",
+                dependants = listOf(custodian)
+            )
         custodian = custodian.copy(guardians = listOf(caretaker))
 
         createTestPerson(custodian)
@@ -194,7 +213,8 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         assertTrue(
             db.read { tx ->
                 tx.getGuardianChildIds(dvvCaretaker.id)
-                    .map { tx.getPersonById(it) }.filterNotNull()
+                    .map { tx.getPersonById(it) }
+                    .filterNotNull()
                     .any { child -> child.identity.toString() == custodian.ssn }
             }
         )
@@ -203,7 +223,13 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     @Test
     fun `new single caretaker modification groups cause only one VTJ update`() {
         var custodian: DevPerson = testPerson.copy(ssn = "010118-999A")
-        val caretaker = testPerson.copy(firstName = "Harri", lastName = "Huoltaja", ssn = "010579-9999", dependants = listOf(custodian))
+        val caretaker =
+            testPerson.copy(
+                firstName = "Harri",
+                lastName = "Huoltaja",
+                ssn = "010579-9999",
+                dependants = listOf(custodian)
+            )
         custodian = custodian.copy(guardians = listOf(caretaker))
 
         createTestPerson(custodian)
@@ -218,7 +244,8 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         assertTrue(
             db.read { tx ->
                 tx.getGuardianChildIds(dvvCaretaker.id)
-                    .map { tx.getPersonById(it) }.filterNotNull()
+                    .map { tx.getPersonById(it) }
+                    .filterNotNull()
                     .any { child -> child.identity.toString() == custodian.ssn }
             }
         )
@@ -226,10 +253,8 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
 
     @Test
     fun `Unknown muutostietue causes a VTJ update`() {
-        val targetPerson: DevPerson = testPerson.copy(
-            ssn = "140921A999X",
-            streetAddress = "Tuntemattoman katuosoite"
-        )
+        val targetPerson: DevPerson =
+            testPerson.copy(ssn = "140921A999X", streetAddress = "Tuntemattoman katuosoite")
         createTestPerson(targetPerson)
         createVtjPerson(targetPerson)
         updatePeopleFromDvv(listOf("tuntematon_muutos"))
@@ -240,8 +265,10 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
     @Test
     fun `name changed`() {
         val SSN = "010179-9992"
-        val personWithOldName: DevPerson = testPerson.copy(firstName = "Ville", lastName = "Vanhanimi", ssn = SSN)
-        val personWithNewName = testPerson.copy(firstName = "Urkki", lastName = "Uusinimi", ssn = SSN)
+        val personWithOldName: DevPerson =
+            testPerson.copy(firstName = "Ville", lastName = "Vanhanimi", ssn = SSN)
+        val personWithNewName =
+            testPerson.copy(firstName = "Urkki", lastName = "Uusinimi", ssn = SSN)
 
         createTestPerson(personWithOldName)
         createVtjPerson(personWithNewName)
@@ -254,24 +281,27 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
 
     @Test
     fun `paging works`() {
-        // The mock server has been rigged so that if the token is negative, it will return the requested batch with
-        // ajanTasalla=false and next token = token + 1 causing the dvv client to do a request for the subsequent page,
+        // The mock server has been rigged so that if the token is negative, it will return the
+        // requested batch with
+        // ajanTasalla=false and next token = token + 1 causing the dvv client to do a request for
+        // the
+        // subsequent page,
         // until token is 0 and then it will return ajanTasalla=true
-        // So if the paging works correctly there should Math.abs(original_token) + 1 identical records
-        db.transaction {
-            it.storeDvvModificationToken("10000", "-2", 0, 0)
-        }
+        // So if the paging works correctly there should Math.abs(original_token) + 1 identical
+        // records
+        db.transaction { it.storeDvvModificationToken("10000", "-2", 0, 0) }
         try {
             createTestPerson(testPerson.copy(ssn = "010180-999A"))
             assertEquals(3, updatePeopleFromDvv(listOf("010180-999A")))
             db.read {
                 assertEquals("1", it.getNextDvvModificationToken())
-                assertEquals(LocalDate.parse("2019-07-30"), it.getPersonBySSN("010180-999A")?.dateOfDeath)
+                assertEquals(
+                    LocalDate.parse("2019-07-30"),
+                    it.getPersonBySSN("010180-999A")?.dateOfDeath
+                )
             }
         } finally {
-            db.transaction {
-                it.deleteDvvModificationToken("0")
-            }
+            db.transaction { it.deleteDvvModificationToken("0") }
         }
     }
 
@@ -361,18 +391,24 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         val personWithoutChildren = testPerson.copy(ssn = ssn)
         val parent = testPerson.copy(id = PersonId(UUID.randomUUID()))
         val childDateOfBirth = LocalDate.of(2020, 1, 1)
-        val child = testPerson.copy(
-            id = PersonId(UUID.randomUUID()),
-            dateOfBirth = childDateOfBirth,
-            ssn = "010120A123K"
-        )
+        val child =
+            testPerson.copy(
+                id = PersonId(UUID.randomUUID()),
+                dateOfBirth = childDateOfBirth,
+                ssn = "010120A123K"
+            )
 
         createTestPerson(personWithoutChildren)
         createTestPerson(parent)
         createTestPerson(child)
         createVtjPerson(personWithoutChildren.copy(dependants = listOf(child)))
         db.transaction {
-            it.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusYears(18).minusDays(1))
+            it.createParentship(
+                child.id,
+                parent.id,
+                child.dateOfBirth,
+                child.dateOfBirth.plusYears(18).minusDays(1)
+            )
         }
 
         db.read { tx ->
@@ -393,33 +429,29 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
         currentDate: LocalDate = LocalDate.of(2020, 1, 1)
     ): Int {
         val clock = MockEvakaClock(HelsinkiDateTime.of(currentDate, LocalTime.of(3, 0)))
-        val updatedCount = dvvModificationsService.updatePersonsFromDvv(
-            db,
-            clock,
-            ssns
-        )
+        val updatedCount = dvvModificationsService.updatePersonsFromDvv(db, clock, ssns)
 
         asyncJobRunner.runPendingJobsSync(clock)
 
         return updatedCount
     }
 
-    val testPerson = DevPerson(
-        id = PersonId(UUID.randomUUID()),
-        ssn = "set this",
-        dateOfBirth = LocalDate.parse("1980-01-01"),
-        dateOfDeath = null,
-        firstName = "etunimi",
-        lastName = "sukunimi",
-        streetAddress = "Katuosoite",
-        postalCode = "02230",
-        postOffice = "Espoo",
-        restrictedDetailsEnabled = false
-    )
+    val testPerson =
+        DevPerson(
+            id = PersonId(UUID.randomUUID()),
+            ssn = "set this",
+            dateOfBirth = LocalDate.parse("1980-01-01"),
+            dateOfDeath = null,
+            firstName = "etunimi",
+            lastName = "sukunimi",
+            streetAddress = "Katuosoite",
+            postalCode = "02230",
+            postOffice = "Espoo",
+            restrictedDetailsEnabled = false
+        )
 
-    private fun createTestPerson(devPerson: DevPerson): PersonId = db.transaction { tx ->
-        tx.insertTestPerson(devPerson)
-    }
+    private fun createTestPerson(devPerson: DevPerson): PersonId =
+        db.transaction { tx -> tx.insertTestPerson(devPerson) }
 
     private fun createVtjPerson(person: DevPerson) {
         MockPersonDetailsService.addPerson(
@@ -427,27 +459,39 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
                 socialSecurityNumber = person.ssn!!,
                 firstNames = person.firstName,
                 lastName = person.lastName,
-                address = if (person.streetAddress.isNullOrBlank()) null else PersonAddress(
-                    streetAddress = person.streetAddress,
-                    postalCode = person.postalCode,
-                    postOffice = person.postOffice,
-                    postOfficeSe = person.postOffice,
-                    streetAddressSe = person.streetAddress
-                ),
+                address =
+                    if (person.streetAddress.isNullOrBlank()) null
+                    else
+                        PersonAddress(
+                            streetAddress = person.streetAddress,
+                            postalCode = person.postalCode,
+                            postOffice = person.postOffice,
+                            postOfficeSe = person.postOffice,
+                            streetAddressSe = person.streetAddress
+                        ),
                 residenceCode = person.residenceCode,
                 nativeLanguage = NativeLanguage(languageName = "FI", code = "fi"),
-                restrictedDetails = RestrictedDetails(enabled = person.restrictedDetailsEnabled, endDate = person.restrictedDetailsEndDate),
+                restrictedDetails =
+                    RestrictedDetails(
+                        enabled = person.restrictedDetailsEnabled,
+                        endDate = person.restrictedDetailsEndDate
+                    ),
                 guardians = person.guardians.map(::asVtjPerson),
                 dependants = person.dependants.map(::asVtjPerson)
             )
         )
     }
 
-    private fun asVtjPerson(person: DevPerson): VtjPerson = VtjPerson(
-        socialSecurityNumber = person.ssn!!,
-        firstNames = person.firstName,
-        lastName = person.lastName,
-        nativeLanguage = NativeLanguage(languageName = "FI", code = "fi"),
-        restrictedDetails = RestrictedDetails(enabled = person.restrictedDetailsEnabled, endDate = person.restrictedDetailsEndDate)
-    )
+    private fun asVtjPerson(person: DevPerson): VtjPerson =
+        VtjPerson(
+            socialSecurityNumber = person.ssn!!,
+            firstNames = person.firstName,
+            lastName = person.lastName,
+            nativeLanguage = NativeLanguage(languageName = "FI", code = "fi"),
+            restrictedDetails =
+                RestrictedDetails(
+                    enabled = person.restrictedDetailsEnabled,
+                    endDate = person.restrictedDetailsEndDate
+                )
+        )
 }

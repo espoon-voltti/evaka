@@ -49,22 +49,34 @@ class EmployeeController(private val accessControl: AccessControl) {
     }
 
     @GetMapping("/finance-decision-handler")
-    fun getFinanceDecisionHandlers(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<Employee> {
+    fun getFinanceDecisionHandlers(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock
+    ): List<Employee> {
         Audit.EmployeesRead.log()
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_FINANCE_DECISION_HANDLERS)
-        return db.connect { dbc -> dbc.read { it.getFinanceDecisionHandlers() } }.sortedBy { it.email }
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Global.READ_FINANCE_DECISION_HANDLERS
+        )
+        return db.connect { dbc -> dbc.read { it.getFinanceDecisionHandlers() } }
+            .sortedBy { it.email }
     }
 
     @GetMapping("/{id}")
-    fun getEmployee(db: Database, user: AuthenticatedUser.Employee, clock: EvakaClock, @PathVariable(value = "id") id: EmployeeId): Employee {
+    fun getEmployee(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock,
+        @PathVariable(value = "id") id: EmployeeId
+    ): Employee {
         Audit.EmployeeRead.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Employee.READ, id)
         return db.connect { dbc -> dbc.read { it.getEmployee(id) } } ?: throw NotFound()
     }
 
-    data class EmployeeUpdate(
-        val globalRoles: List<UserRole>
-    )
+    data class EmployeeUpdate(val globalRoles: List<UserRole>)
     @PutMapping("/{id}")
     fun updateEmployee(
         db: Database,
@@ -77,12 +89,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         accessControl.requirePermissionFor(user, clock, Action.Employee.UPDATE, id)
 
         db.connect { dbc ->
-            dbc.transaction {
-                it.updateEmployee(
-                    id = id,
-                    globalRoles = body.globalRoles
-                )
-            }
+            dbc.transaction { it.updateEmployee(id = id, globalRoles = body.globalRoles) }
         }
     }
 
@@ -101,34 +108,37 @@ class EmployeeController(private val accessControl: AccessControl) {
     }
 
     @PostMapping("")
-    fun createEmployee(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody employee: NewEmployee): Employee {
+    fun createEmployee(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestBody employee: NewEmployee
+    ): Employee {
         Audit.EmployeeCreate.log(targetId = employee.externalId)
         accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_EMPLOYEE)
         return db.connect { dbc -> dbc.transaction { it.createEmployee(employee) } }
     }
 
     @DeleteMapping("/{id}")
-    fun deleteEmployee(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable(value = "id") id: EmployeeId) {
+    fun deleteEmployee(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable(value = "id") id: EmployeeId
+    ) {
         Audit.EmployeeDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Employee.DELETE, id)
         db.connect { dbc -> dbc.transaction { it.deleteEmployee(id) } }
     }
 
     @PostMapping("/pin-code")
-    fun upsertPinCode(
-        db: Database,
-        user: AuthenticatedUser.Employee,
-        @RequestBody body: PinCode
-    ) {
+    fun upsertPinCode(db: Database, user: AuthenticatedUser.Employee, @RequestBody body: PinCode) {
         Audit.PinCodeUpdate.log(targetId = user.id)
         db.connect { dbc -> dbc.transaction { tx -> tx.upsertPinCode(user.id, body) } }
     }
 
     @GetMapping("/pin-code/is-pin-locked")
-    fun isPinLocked(
-        db: Database,
-        user: AuthenticatedUser.Employee
-    ): Boolean {
+    fun isPinLocked(db: Database, user: AuthenticatedUser.Employee): Boolean {
         Audit.PinCodeLockedRead.log(targetId = user.id)
         return db.connect { dbc -> dbc.read { tx -> tx.isPinLocked(user.id) } }
     }
@@ -144,7 +154,12 @@ class EmployeeController(private val accessControl: AccessControl) {
         accessControl.requirePermissionFor(user, clock, Action.Global.SEARCH_EMPLOYEES)
         return db.connect { dbc ->
             dbc.read { tx ->
-                getEmployeesPaged(tx, body.page ?: 1, (body.pageSize ?: 50).coerceAtMost(100), body.searchTerm ?: "")
+                getEmployeesPaged(
+                    tx,
+                    body.page ?: 1,
+                    (body.pageSize ?: 50).coerceAtMost(100),
+                    body.searchTerm ?: ""
+                )
             }
         }
     }
@@ -170,9 +185,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         }
     }
 
-    data class EmployeeSetPreferredFirstNameUpdateRequest(
-        val preferredFirstName: String?
-    )
+    data class EmployeeSetPreferredFirstNameUpdateRequest(val preferredFirstName: String?)
     @PostMapping("/preferred-first-name")
     fun setEmployeePreferredFirstName(
         db: Database,
@@ -187,7 +200,10 @@ class EmployeeController(private val accessControl: AccessControl) {
                     tx.setEmployeePreferredFirstName(EmployeeId(user.rawId()), null)
                 } else {
                     if (possiblePreferredFirstNames(employee).contains(body.preferredFirstName)) {
-                        tx.setEmployeePreferredFirstName(EmployeeId(user.rawId()), body.preferredFirstName)
+                        tx.setEmployeePreferredFirstName(
+                            EmployeeId(user.rawId()),
+                            body.preferredFirstName
+                        )
                     } else throw NotFound("Given preferred first name is not allowed")
                 }
             }
@@ -196,10 +212,8 @@ class EmployeeController(private val accessControl: AccessControl) {
 
     private fun possiblePreferredFirstNames(employee: Employee): List<String> {
         val fullFirstNames = employee.firstName.split("\\s+".toRegex())
-        val splitTwoPartNames = fullFirstNames
-            .filter { it.contains('-') }
-            .map { it.split("\\-+".toRegex()) }
-            .flatten()
+        val splitTwoPartNames =
+            fullFirstNames.filter { it.contains('-') }.map { it.split("\\-+".toRegex()) }.flatten()
 
         return fullFirstNames + splitTwoPartNames
     }

@@ -38,13 +38,13 @@ import fi.espoo.evaka.testChild_7
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.withMockedTime
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val mobileUser = AuthenticatedUser.MobileDevice(MobileDeviceId(UUID.randomUUID()))
@@ -62,10 +62,19 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            tx.addUnitFeatures(listOf(testDaycare.id), listOf(PilotFeature.REALTIME_STAFF_ATTENDANCE))
-            groupId = tx.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id, name = groupName))
-            tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId2, daycareId = testDaycare.id, name = groupName2))
-            listOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5).forEach { child ->
+            tx.addUnitFeatures(
+                listOf(testDaycare.id),
+                listOf(PilotFeature.REALTIME_STAFF_ATTENDANCE)
+            )
+            groupId =
+                tx.insertTestDaycareGroup(
+                    DevDaycareGroup(daycareId = testDaycare.id, name = groupName)
+                )
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(id = groupId2, daycareId = testDaycare.id, name = groupName2)
+            )
+            listOf(testChild_1, testChild_2, testChild_3, testChild_4, testChild_5).forEach { child
+                ->
                 val daycarePlacementId = PlacementId(UUID.randomUUID())
                 tx.insertTestPlacement(
                     id = daycarePlacementId,
@@ -155,7 +164,8 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             val child = testChild_7
             tx.insertTestPlacement(
                 DevPlacement(
-                    childId = child.id, unitId = testDaycare2.id,
+                    childId = child.id,
+                    unitId = testDaycare2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                     type = PlacementType.PRESCHOOL_DAYCARE
@@ -163,7 +173,8 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
             tx.insertTestBackupCare(
                 DevBackupCare(
-                    childId = child.id, unitId = testDaycare.id,
+                    childId = child.id,
+                    unitId = testDaycare.id,
                     period = FiniteDateRange(placementStart, placementEnd),
                     groupId = groupId
                 )
@@ -178,23 +189,27 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     private fun fetchUnitInfo(unitId: DaycareId): UnitInfo {
-        val (_, res, result) = http.get("/mobile/units/$unitId")
-            .asUser(mobileUser)
-            .withMockedTime(now)
-            .responseObject<UnitInfo>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get("/mobile/units/$unitId")
+                .asUser(mobileUser)
+                .withMockedTime(now)
+                .responseObject<UnitInfo>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
     }
 
     private fun fetchUnitStats(unitIds: List<DaycareId>): List<UnitStats> {
-        val (_, res, result) = http.get(
-            "/mobile/units/stats",
-            listOf(Pair("unitIds", unitIds.joinToString { it.toString() }))
-        )
-            .asUser(mobileUser)
-            .withMockedTime(now)
-            .responseObject<List<UnitStats>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/mobile/units/stats",
+                    listOf(Pair("unitIds", unitIds.joinToString { it.toString() }))
+                )
+                .asUser(mobileUser)
+                .withMockedTime(now)
+                .responseObject<List<UnitStats>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()

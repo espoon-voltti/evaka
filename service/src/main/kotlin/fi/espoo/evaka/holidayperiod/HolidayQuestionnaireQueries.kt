@@ -11,7 +11,8 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 
-private val questionnaireSelect = """
+private val questionnaireSelect =
+    """
 SELECT q.id,
        q.type,
        q.absence_type,
@@ -24,7 +25,8 @@ SELECT q.id,
        q.period_option_label,
        q.condition_continuous_placement
 FROM holiday_period_questionnaire q
-""".trimIndent()
+""".trimIndent(
+    )
 
 fun Database.Read.getActiveFixedPeriodQuestionnaire(date: LocalDate): FixedPeriodQuestionnaire? =
     this.createQuery("$questionnaireSelect WHERE active @> :date")
@@ -32,9 +34,12 @@ fun Database.Read.getActiveFixedPeriodQuestionnaire(date: LocalDate): FixedPerio
         .mapTo<FixedPeriodQuestionnaire>()
         .firstOrNull()
 
-fun Database.Read.getChildrenWithContinuousPlacement(guardianId: PersonId, period: FiniteDateRange): List<ChildId> {
+fun Database.Read.getChildrenWithContinuousPlacement(
+    guardianId: PersonId,
+    period: FiniteDateRange
+): List<ChildId> {
     return createQuery(
-        """
+            """
 SELECT g.child_id
 FROM guardian g, generate_series(:periodStart::date, :periodEnd::date, '1 day') d
 WHERE g.guardian_id = :guardianId
@@ -45,7 +50,7 @@ HAVING bool_and(d::date <@ ANY (
     WHERE p.child_id = g.child_id
 ))
 """
-    )
+        )
         .bind("guardianId", guardianId)
         .bind("periodStart", period.start)
         .bind("periodEnd", period.end)
@@ -53,20 +58,22 @@ HAVING bool_and(d::date <@ ANY (
         .toList()
 }
 
-fun Database.Read.getFixedPeriodQuestionnaire(id: HolidayQuestionnaireId): FixedPeriodQuestionnaire? =
+fun Database.Read.getFixedPeriodQuestionnaire(
+    id: HolidayQuestionnaireId
+): FixedPeriodQuestionnaire? =
     this.createQuery("$questionnaireSelect WHERE q.id = :id")
         .bind("id", id)
         .mapTo<FixedPeriodQuestionnaire>()
         .firstOrNull()
 
 fun Database.Read.getHolidayQuestionnaires(): List<FixedPeriodQuestionnaire> =
-    this.createQuery("$questionnaireSelect")
-        .mapTo<FixedPeriodQuestionnaire>()
-        .list()
+    this.createQuery("$questionnaireSelect").mapTo<FixedPeriodQuestionnaire>().list()
 
-fun Database.Transaction.createFixedPeriodQuestionnaire(data: FixedPeriodQuestionnaireBody): HolidayQuestionnaireId =
+fun Database.Transaction.createFixedPeriodQuestionnaire(
+    data: FixedPeriodQuestionnaireBody
+): HolidayQuestionnaireId =
     this.createQuery(
-        """
+            """
 INSERT INTO holiday_period_questionnaire (
     type,
     absence_type,
@@ -92,8 +99,9 @@ VALUES (
     :conditions.continuousPlacement
 )
 RETURNING id
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bindKotlin(data)
         .bind("type", QuestionnaireType.FIXED_PERIOD)
         .mapTo<HolidayQuestionnaireId>()
@@ -104,7 +112,7 @@ fun Database.Transaction.updateFixedPeriodQuestionnaire(
     data: FixedPeriodQuestionnaireBody
 ) =
     this.createUpdate(
-        """
+            """
 UPDATE holiday_period_questionnaire
 SET
     type = :type,
@@ -118,9 +126,9 @@ SET
     period_option_label = :periodOptionLabel,
     condition_continuous_placement = :conditions.continuousPlacement
 WHERE id = :id
-    """
-            .trimIndent()
-    )
+    """.trimIndent(
+            )
+        )
         .bindKotlin(data)
         .bind("id", id)
         .bind("type", QuestionnaireType.FIXED_PERIOD)
@@ -131,9 +139,13 @@ fun Database.Transaction.deleteHolidayQuestionnaire(id: HolidayQuestionnaireId) 
         .bind("id", id)
         .execute()
 
-fun Database.Transaction.insertQuestionnaireAnswers(modifiedBy: PersonId, answers: List<HolidayQuestionnaireAnswer>) {
-    val batch = prepareBatch(
-        """
+fun Database.Transaction.insertQuestionnaireAnswers(
+    modifiedBy: PersonId,
+    answers: List<HolidayQuestionnaireAnswer>
+) {
+    val batch =
+        prepareBatch(
+            """
 INSERT INTO holiday_questionnaire_answer (
     questionnaire_id,
     child_id,
@@ -150,25 +162,25 @@ ON CONFLICT(questionnaire_id, child_id)
     DO UPDATE SET fixed_period = EXCLUDED.fixed_period,
                   modified_by  = EXCLUDED.modified_by
 """
-    )
+        )
 
-    answers.forEach { answer ->
-        batch.bindKotlin(answer)
-            .bind("modifiedBy", modifiedBy)
-            .add()
-    }
+    answers.forEach { answer -> batch.bindKotlin(answer).bind("modifiedBy", modifiedBy).add() }
 
     batch.execute()
 }
 
-fun Database.Read.getQuestionnaireAnswers(id: HolidayQuestionnaireId, childIds: List<ChildId>): List<HolidayQuestionnaireAnswer> =
+fun Database.Read.getQuestionnaireAnswers(
+    id: HolidayQuestionnaireId,
+    childIds: List<ChildId>
+): List<HolidayQuestionnaireAnswer> =
     this.createQuery(
-        """
+            """
 SELECT questionnaire_id, child_id, fixed_period
 FROM holiday_questionnaire_answer
 WHERE questionnaire_id = :questionnaireId AND child_id = ANY(:childIds)
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("questionnaireId", id)
         .bind("childIds", childIds)
         .mapTo<HolidayQuestionnaireAnswer>()

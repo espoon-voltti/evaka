@@ -14,18 +14,16 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
-class ChildStickyNoteController(
-    private val ac: AccessControl
-) {
+class ChildStickyNoteController(private val ac: AccessControl) {
     @PostMapping("/children/{childId}/child-sticky-notes")
     fun createChildStickyNote(
         db: Database,
@@ -55,7 +53,9 @@ class ChildStickyNoteController(
 
         validateExpiration(clock, body.expires)
 
-        return db.connect { dbc -> dbc.transaction { it.updateChildStickyNote(clock, noteId, body) } }
+        return db.connect { dbc ->
+            dbc.transaction { it.updateChildStickyNote(clock, noteId, body) }
+        }
     }
 
     @DeleteMapping("/child-sticky-notes/{noteId}")
@@ -72,10 +72,7 @@ class ChildStickyNoteController(
     }
 
     private fun validateExpiration(evakaClock: EvakaClock, expires: LocalDate) {
-        val validRange = FiniteDateRange(
-            evakaClock.today(),
-            evakaClock.today().plusDays(7)
-        )
+        val validRange = FiniteDateRange(evakaClock.today(), evakaClock.today().plusDays(7))
         if (!validRange.includes(expires)) {
             throw BadRequest("Expiration date was invalid")
         }

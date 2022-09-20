@@ -20,7 +20,8 @@ data class ExternalId private constructor(val namespace: String, val value: Stri
 
     companion object {
         fun of(namespace: String, value: String): ExternalId {
-            if (namespace.contains(':')) throw IllegalArgumentException("Invalid external id namespace $namespace")
+            if (namespace.contains(':'))
+                throw IllegalArgumentException("Invalid external id namespace $namespace")
             return ExternalId(namespace, value)
         }
 

@@ -54,10 +54,7 @@ data class Gross(
     val otherIncomeInfo: String,
 )
 
-data class SelfEmployed(
-    val attachments: Boolean,
-    val estimatedIncome: EstimatedIncome?
-)
+data class SelfEmployed(val attachments: Boolean, val estimatedIncome: EstimatedIncome?)
 
 data class EstimatedIncome(
     val estimatedMonthlyIncome: Int,
@@ -65,9 +62,7 @@ data class EstimatedIncome(
     val incomeEndDate: LocalDate?,
 )
 
-data class LimitedCompany(
-    val incomeSource: IncomeSource
-)
+data class LimitedCompany(val incomeSource: IncomeSource)
 
 data class Accountant(
     val name: String,
@@ -95,10 +90,8 @@ sealed class IncomeStatementBody(
     open val endDate: LocalDate?,
 ) {
     @JsonTypeName("HIGHEST_FEE")
-    data class HighestFee(
-        override val startDate: LocalDate,
-        override val endDate: LocalDate?
-    ) : IncomeStatementBody(startDate, endDate)
+    data class HighestFee(override val startDate: LocalDate, override val endDate: LocalDate?) :
+        IncomeStatementBody(startDate, endDate)
 
     @JsonTypeName("INCOME")
     data class Income(
@@ -132,51 +125,65 @@ fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean {
                 body.entrepreneur.let { entrepreneur ->
                     entrepreneur == null ||
                         // At least one company type must be selected
-                        (
-                            (
-                                entrepreneur.selfEmployed != null ||
-                                    entrepreneur.limitedCompany != null ||
-                                    entrepreneur.partnership ||
-                                    entrepreneur.lightEntrepreneur
-                                ) &&
-                                // Accountant must be given if limitedCompany or partnership is selected
-                                (
-                                    (entrepreneur.limitedCompany == null && !entrepreneur.partnership) ||
-                                        (entrepreneur.accountant != null)
-                                    ) &&
-                                // Accountant name, phone and email must be non-empty
-                                entrepreneur.accountant.let { accountant ->
-                                    accountant == null || (accountant.name != "" && accountant.phone != "" && accountant.email != "")
-                                } &&
-                                validateEstimatedIncome(entrepreneur.selfEmployed?.estimatedIncome)
-                            )
+                        ((entrepreneur.selfEmployed != null ||
+                            entrepreneur.limitedCompany != null ||
+                            entrepreneur.partnership ||
+                            entrepreneur.lightEntrepreneur) &&
+                            // Accountant must be given if limitedCompany or partnership is selected
+                            ((entrepreneur.limitedCompany == null && !entrepreneur.partnership) ||
+                                (entrepreneur.accountant != null)) &&
+                            // Accountant name, phone and email must be non-empty
+                            entrepreneur.accountant.let { accountant ->
+                                accountant == null ||
+                                    (accountant.name != "" &&
+                                        accountant.phone != "" &&
+                                        accountant.email != "")
+                            } &&
+                            validateEstimatedIncome(entrepreneur.selfEmployed?.estimatedIncome))
                 }
     }
 }
 
-fun createIncomeStatement(dbc: Database.Connection, incomeStatementPersonId: PersonId, attachmentUploadedByPersonId: PersonId, body: IncomeStatementBody) {
+fun createIncomeStatement(
+    dbc: Database.Connection,
+    incomeStatementPersonId: PersonId,
+    attachmentUploadedByPersonId: PersonId,
+    body: IncomeStatementBody
+) {
     if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement")
 
-    if (dbc.read { tx -> tx.incomeStatementExistsForStartDate(incomeStatementPersonId, body.startDate) })
+    if (
+        dbc.read { tx ->
+            tx.incomeStatementExistsForStartDate(incomeStatementPersonId, body.startDate)
+        }
+    )
         throw BadRequest("An income statement for this start date already exists")
 
     dbc.transaction { tx ->
         val incomeStatementId = tx.createIncomeStatement(incomeStatementPersonId, body)
         when (body) {
             is IncomeStatementBody.Income ->
-                tx.associateAttachments(incomeStatementPersonId, incomeStatementId, body.attachmentIds)
+                tx.associateAttachments(
+                    incomeStatementPersonId,
+                    incomeStatementId,
+                    body.attachmentIds
+                )
             is IncomeStatementBody.ChildIncome -> {
-                tx.associateAttachments(attachmentUploadedByPersonId, incomeStatementId, body.attachmentIds)
+                tx.associateAttachments(
+                    attachmentUploadedByPersonId,
+                    incomeStatementId,
+                    body.attachmentIds
+                )
             }
-            else ->
-                Unit
+            else -> Unit
         }
     }
 }
 
 private fun validateEstimatedIncome(estimatedIncome: EstimatedIncome?): Boolean =
     // Start and end dates must be in the right order
-    estimatedIncome?.incomeEndDate == null || estimatedIncome.incomeStartDate <= estimatedIncome.incomeEndDate
+    estimatedIncome?.incomeEndDate == null ||
+        estimatedIncome.incomeStartDate <= estimatedIncome.incomeEndDate
 
 data class Attachment(
     val id: AttachmentId,
@@ -186,9 +193,7 @@ data class Attachment(
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-sealed class IncomeStatement(
-    val type: IncomeStatementType
-) {
+sealed class IncomeStatement(val type: IncomeStatementType) {
     abstract val id: IncomeStatementId
     abstract val personId: PersonId
     abstract val firstName: String

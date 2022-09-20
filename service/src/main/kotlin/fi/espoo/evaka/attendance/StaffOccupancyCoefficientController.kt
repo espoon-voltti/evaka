@@ -20,9 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/occupancy-coefficient")
-class StaffOccupancyCoefficientController(
-    private val ac: AccessControl
-) {
+class StaffOccupancyCoefficientController(private val ac: AccessControl) {
     @GetMapping
     fun getOccupancyCoefficients(
         db: Database,
@@ -43,7 +41,12 @@ class StaffOccupancyCoefficientController(
         @RequestBody body: OccupancyCoefficientUpsert,
     ) {
         Audit.StaffOccupancyCoefficientUpsert.log(body.unitId, body.employeeId)
-        ac.requirePermissionFor(user, clock, Action.Unit.UPSERT_STAFF_OCCUPANCY_COEFFICIENTS, body.unitId)
+        ac.requirePermissionFor(
+            user,
+            clock,
+            Action.Unit.UPSERT_STAFF_OCCUPANCY_COEFFICIENTS,
+            body.unitId
+        )
         db.connect { dbc -> dbc.transaction { it.upsertOccupancyCoefficient(body) } }
     }
 }

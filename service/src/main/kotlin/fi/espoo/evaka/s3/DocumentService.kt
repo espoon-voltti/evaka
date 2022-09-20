@@ -6,6 +6,8 @@ package fi.espoo.evaka.s3
 
 import com.github.kittinunf.fuel.core.Response
 import fi.espoo.evaka.shared.domain.NotFound
+import java.net.URL
+import java.time.Duration
 import org.springframework.http.ContentDisposition
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -16,8 +18,6 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest
-import java.net.URL
-import java.time.Duration
 
 data class Document(
     val name: String,
@@ -35,13 +35,14 @@ class DocumentService(
     private val proxyThroughNginx: Boolean,
 ) {
     fun get(bucketName: String, key: String): Document {
-        val request = GetObjectRequest.builder()
-            .bucket(bucketName)
-            .key(key)
-            .build()
+        val request = GetObjectRequest.builder().bucket(bucketName).key(key).build()
         val stream = s3Client.getObject(request) ?: throw NotFound("File not found")
         return stream.use {
-            Document(name = key, bytes = it.readAllBytes(), contentType = it.response().contentType())
+            Document(
+                name = key,
+                bytes = it.readAllBytes(),
+                contentType = it.response().contentType()
+            )
         }
     }
 
@@ -50,9 +51,11 @@ class DocumentService(
         Attachment("attachment")
     }
 
-    private fun getContentDispositionHeader(type: ContentDispositionType, fileName: String?): String {
-        return ContentDisposition
-            .builder(type.header)
+    private fun getContentDispositionHeader(
+        type: ContentDispositionType,
+        fileName: String?
+    ): String {
+        return ContentDisposition.builder(type.header)
             .apply {
                 if (fileName != null) {
                     this.filename(fileName)
@@ -63,15 +66,13 @@ class DocumentService(
     }
 
     private fun presignedGetUrl(bucketName: String, key: String): URL {
-        val request = GetObjectRequest.builder()
-            .bucket(bucketName)
-            .key(key)
-            .build()
+        val request = GetObjectRequest.builder().bucket(bucketName).key(key).build()
 
-        val getObjectPresignRequest = GetObjectPresignRequest.builder()
-            .signatureDuration(Duration.ofMinutes(1))
-            .getObjectRequest(request)
-            .build()
+        val getObjectPresignRequest =
+            GetObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(1))
+                .getObjectRequest(request)
+                .build()
 
         return s3Presigner.presignGetObject(getObjectPresignRequest).url()
     }
@@ -108,11 +109,12 @@ class DocumentService(
 
     fun upload(bucketName: String, document: Document): DocumentLocation {
         val key = document.name
-        val request = PutObjectRequest.builder()
-            .bucket(bucketName)
-            .key(key)
-            .contentType(document.contentType)
-            .build()
+        val request =
+            PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .contentType(document.contentType)
+                .build()
 
         val body = RequestBody.fromBytes(document.bytes)
 

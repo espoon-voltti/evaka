@@ -21,22 +21,17 @@ data class PlacementPlan(
 )
 
 sealed interface PlacementPlanExtent {
-    /**
-     * Simple placement plan that corresponds to a single placement
-     */
+    /** Simple placement plan that corresponds to a single placement */
     data class FullSingle(val period: FiniteDateRange) : PlacementPlanExtent
-    /**
-     * Double placement plan, only preschool
-     */
+    /** Double placement plan, only preschool */
     data class OnlyPreschool(val period: FiniteDateRange) : PlacementPlanExtent
-    /**
-     * Double placement plan, only preschool+daycare
-     */
+    /** Double placement plan, only preschool+daycare */
     data class OnlyPreschoolDaycare(val period: FiniteDateRange) : PlacementPlanExtent
-    /**
-     * Double placement plan, both parts
-     */
-    data class FullDouble(val period: FiniteDateRange, val preschoolDaycarePeriod: FiniteDateRange) : PlacementPlanExtent
+    /** Double placement plan, both parts */
+    data class FullDouble(
+        val period: FiniteDateRange,
+        val preschoolDaycarePeriod: FiniteDateRange
+    ) : PlacementPlanExtent
 }
 
 data class PlacementPlanDetails(
@@ -47,7 +42,8 @@ data class PlacementPlanDetails(
     val period: FiniteDateRange,
     val preschoolDaycarePeriod: FiniteDateRange?,
     val child: PlacementPlanChild,
-    val unitConfirmationStatus: PlacementPlanConfirmationStatus = PlacementPlanConfirmationStatus.PENDING,
+    val unitConfirmationStatus: PlacementPlanConfirmationStatus =
+        PlacementPlanConfirmationStatus.PENDING,
     val unitRejectReason: PlacementPlanRejectReason? = null,
     val unitRejectOtherReason: String? = null,
     val rejectedByCitizen: Boolean = false

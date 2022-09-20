@@ -38,6 +38,9 @@ import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
+import java.time.LocalDate
+import java.util.UUID
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -47,24 +50,20 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
-import java.time.LocalDate
-import java.util.UUID
-import kotlin.test.assertEquals
 
 class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     lateinit var mergeService: MergeService
 
     private lateinit var asyncJobRunnerMock: AsyncJobRunner<AsyncJob>
-    private val messageNotificationEmailService = Mockito.mock(MessageNotificationEmailService::class.java)
+    private val messageNotificationEmailService =
+        Mockito.mock(MessageNotificationEmailService::class.java)
     private val messageService: MessageService = MessageService(messageNotificationEmailService)
 
     @BeforeEach
     internal fun setUp() {
-        asyncJobRunnerMock = mock { }
+        asyncJobRunnerMock = mock {}
         mergeService = MergeService(asyncJobRunnerMock)
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
@@ -75,18 +74,26 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.insertTestChild(DevChild(id))
         }
 
-        val countBefore = db.read {
-            it.createQuery("SELECT 1 FROM person WHERE id = :id").bind("id", id).mapTo<Int>().list().size
-        }
+        val countBefore =
+            db.read {
+                it.createQuery("SELECT 1 FROM person WHERE id = :id")
+                    .bind("id", id)
+                    .mapTo<Int>()
+                    .list()
+                    .size
+            }
         assertEquals(1, countBefore)
 
-        db.transaction {
-            mergeService.deleteEmptyPerson(it, id)
-        }
+        db.transaction { mergeService.deleteEmptyPerson(it, id) }
 
-        val countAfter = db.read {
-            it.createQuery("SELECT 1 FROM person WHERE id = :id").bind("id", id).mapTo<Int>().list().size
-        }
+        val countAfter =
+            db.read {
+                it.createQuery("SELECT 1 FROM person WHERE id = :id")
+                    .bind("id", id)
+                    .mapTo<Int>()
+                    .list()
+                    .size
+            }
         assertEquals(0, countAfter)
     }
 
@@ -96,12 +103,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction {
             it.insertTestPerson(DevPerson(id = id))
             it.insertTestChild(DevChild(id))
-            it.insertTestPlacement(
-                DevPlacement(
-                    childId = id,
-                    unitId = testDaycare.id
-                )
-            )
+            it.insertTestPlacement(DevPlacement(childId = id, unitId = testDaycare.id))
         }
 
         assertThrows<Conflict> { db.transaction { mergeService.deleteEmptyPerson(it, id) } }
@@ -134,29 +136,43 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
 
-        val countBefore = db.read {
-            it.createQuery("SELECT 1 FROM income WHERE person_id = :id").bind("id", adultIdDuplicate).mapTo<Int>()
-                .list().size
-        }
+        val countBefore =
+            db.read {
+                it.createQuery("SELECT 1 FROM income WHERE person_id = :id")
+                    .bind("id", adultIdDuplicate)
+                    .mapTo<Int>()
+                    .list()
+                    .size
+            }
         assertEquals(1, countBefore)
 
-        db.transaction {
-            mergeService.mergePeople(it, RealEvakaClock(), adultId, adultIdDuplicate)
-        }
+        db.transaction { mergeService.mergePeople(it, RealEvakaClock(), adultId, adultIdDuplicate) }
 
-        val countAfter = db.read {
-            it.createQuery("SELECT 1 FROM income WHERE person_id = :id").bind("id", adultId).mapTo<Int>()
-                .list().size
-        }
+        val countAfter =
+            db.read {
+                it.createQuery("SELECT 1 FROM income WHERE person_id = :id")
+                    .bind("id", adultId)
+                    .mapTo<Int>()
+                    .list()
+                    .size
+            }
         assertEquals(1, countAfter)
 
-        verify(asyncJobRunnerMock).plan(
-            any(),
-            eq(listOf(AsyncJob.GenerateFinanceDecisions.forAdult(adultId, DateRange(validFrom, validTo)))),
-            any(),
-            any(),
-            any()
-        )
+        verify(asyncJobRunnerMock)
+            .plan(
+                any(),
+                eq(
+                    listOf(
+                        AsyncJob.GenerateFinanceDecisions.forAdult(
+                            adultId,
+                            DateRange(validFrom, validTo)
+                        )
+                    )
+                ),
+                any(),
+                any(),
+                any()
+            )
     }
 
     @Test
@@ -181,20 +197,26 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
 
-        val countBefore = db.read {
-            it.createQuery("SELECT 1 FROM placement WHERE child_id = :id").bind("id", childIdDuplicate)
-                .mapTo<Int>().list().size
-        }
+        val countBefore =
+            db.read {
+                it.createQuery("SELECT 1 FROM placement WHERE child_id = :id")
+                    .bind("id", childIdDuplicate)
+                    .mapTo<Int>()
+                    .list()
+                    .size
+            }
         assertEquals(1, countBefore)
 
-        db.transaction {
-            mergeService.mergePeople(it, RealEvakaClock(), childId, childIdDuplicate)
-        }
+        db.transaction { mergeService.mergePeople(it, RealEvakaClock(), childId, childIdDuplicate) }
 
-        val countAfter = db.read {
-            it.createQuery("SELECT 1 FROM placement WHERE child_id = :id").bind("id", childId).mapTo<Int>()
-                .list().size
-        }
+        val countAfter =
+            db.read {
+                it.createQuery("SELECT 1 FROM placement WHERE child_id = :id")
+                    .bind("id", childId)
+                    .mapTo<Int>()
+                    .list()
+                    .size
+            }
         assertEquals(1, countAfter)
 
         verifyNoInteractions(asyncJobRunnerMock)
@@ -203,18 +225,20 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `merging a person moves sent messages`() {
         val employeeId = EmployeeId(UUID.randomUUID())
-        val receiverAccount = db.transaction {
-            it.insertTestEmployee(DevEmployee(id = employeeId))
-            it.upsertEmployeeMessageAccount(employeeId)
-        }
+        val receiverAccount =
+            db.transaction {
+                it.insertTestEmployee(DevEmployee(id = employeeId))
+                it.upsertEmployeeMessageAccount(employeeId)
+            }
         val senderId = PersonId(UUID.randomUUID())
         val senderIdDuplicate = PersonId(UUID.randomUUID())
-        val (senderAccount, senderDuplicateAccount) = db.transaction { tx ->
-            listOf(senderId, senderIdDuplicate).map {
-                tx.insertTestPerson(DevPerson(id = it))
-                tx.createPersonMessageAccount(it)
+        val (senderAccount, senderDuplicateAccount) =
+            db.transaction { tx ->
+                listOf(senderId, senderIdDuplicate).map {
+                    tx.insertTestPerson(DevPerson(id = it))
+                    tx.createPersonMessageAccount(it)
+                }
             }
-        }
 
         db.transaction { tx ->
             messageService.createMessageThreadsForRecipientGroups(
@@ -230,42 +254,37 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 staffCopyRecipients = setOf()
             )
         }
-        assertEquals(
-            listOf(0, 1),
-            sentMessageCounts(senderAccount, senderDuplicateAccount)
-        )
+        assertEquals(listOf(0, 1), sentMessageCounts(senderAccount, senderDuplicateAccount))
 
         db.transaction {
             mergeService.mergePeople(it, RealEvakaClock(), senderId, senderIdDuplicate)
             mergeService.deleteEmptyPerson(it, senderIdDuplicate)
         }
 
-        assertEquals(
-            listOf(1, 0),
-            sentMessageCounts(senderAccount, senderDuplicateAccount)
-        )
+        assertEquals(listOf(1, 0), sentMessageCounts(senderAccount, senderDuplicateAccount))
     }
 
-    private fun sentMessageCounts(vararg accountIds: MessageAccountId): List<Int> = db.read { tx ->
-        accountIds.map { tx.getMessagesSentByAccount(it, 10, 1).total }
-    }
+    private fun sentMessageCounts(vararg accountIds: MessageAccountId): List<Int> =
+        db.read { tx -> accountIds.map { tx.getMessagesSentByAccount(it, 10, 1).total } }
 
     @Test
     fun `merging a person moves received messages`() {
         val employeeId = EmployeeId(UUID.randomUUID())
-        val senderAccount = db.transaction {
-            it.insertTestEmployee(DevEmployee(id = employeeId))
-            it.upsertEmployeeMessageAccount(employeeId)
-        }
+        val senderAccount =
+            db.transaction {
+                it.insertTestEmployee(DevEmployee(id = employeeId))
+                it.upsertEmployeeMessageAccount(employeeId)
+            }
 
         val receiverId = PersonId(UUID.randomUUID())
         val receiverIdDuplicate = PersonId(UUID.randomUUID())
-        val (receiverAccount, receiverDuplicateAccount) = db.transaction { tx ->
-            listOf(receiverId, receiverIdDuplicate).map {
-                tx.insertTestPerson(DevPerson(id = it))
-                tx.createPersonMessageAccount(it)
+        val (receiverAccount, receiverDuplicateAccount) =
+            db.transaction { tx ->
+                listOf(receiverId, receiverIdDuplicate).map {
+                    tx.insertTestPerson(DevPerson(id = it))
+                    tx.createPersonMessageAccount(it)
+                }
             }
-        }
         db.transaction { tx ->
             messageService.createMessageThreadsForRecipientGroups(
                 tx,
@@ -296,9 +315,13 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
     }
 
-    private fun receivedMessageCounts(accountIds: List<MessageAccountId>, isEmployee: Boolean): List<Int> = db.read { tx ->
-        accountIds.map { tx.getMessagesReceivedByAccount(it, 10, 1, isEmployee).total }
-    }
+    private fun receivedMessageCounts(
+        accountIds: List<MessageAccountId>,
+        isEmployee: Boolean
+    ): List<Int> =
+        db.read { tx ->
+            accountIds.map { tx.getMessagesReceivedByAccount(it, 10, 1, isEmployee).total }
+        }
 
     @Test
     fun `merging child sends update event to head of child`() {
@@ -331,17 +354,23 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
 
-        db.transaction {
-            mergeService.mergePeople(it, RealEvakaClock(), childId, childIdDuplicate)
-        }
+        db.transaction { mergeService.mergePeople(it, RealEvakaClock(), childId, childIdDuplicate) }
 
-        verify(asyncJobRunnerMock).plan(
-            any(),
-            eq(listOf(AsyncJob.GenerateFinanceDecisions.forAdult(adultId, DateRange(placementStart, placementEnd)))),
-            any(),
-            any(),
-            any()
-        )
+        verify(asyncJobRunnerMock)
+            .plan(
+                any(),
+                eq(
+                    listOf(
+                        AsyncJob.GenerateFinanceDecisions.forAdult(
+                            adultId,
+                            DateRange(placementStart, placementEnd)
+                        )
+                    )
+                ),
+                any(),
+                any(),
+                any()
+            )
     }
 
     @Test
@@ -355,10 +384,13 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             it.upsertCitizenUser(duplicate.id)
         }
         db.read {
-            val (citizenId, name) = it.createQuery("SELECT citizen_id, name FROM evaka_user WHERE id = :id")
-                .bind("id", duplicate.id)
-                .map { r -> r.mapColumn<PersonId?>("citizen_id") to r.mapColumn<String>("name") }
-                .first()
+            val (citizenId, name) =
+                it.createQuery("SELECT citizen_id, name FROM evaka_user WHERE id = :id")
+                    .bind("id", duplicate.id)
+                    .map { r ->
+                        r.mapColumn<PersonId?>("citizen_id") to r.mapColumn<String>("name")
+                    }
+                    .first()
 
             assertEquals(duplicate.id, citizenId)
             assertEquals("${duplicate.lastName} ${duplicate.firstName}", name)
@@ -369,10 +401,13 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             mergeService.deleteEmptyPerson(it, duplicate.id)
         }
         db.read {
-            val (citizenId, name) = it.createQuery("SELECT citizen_id, name FROM evaka_user WHERE id = :id")
-                .bind("id", duplicate.id)
-                .map { r -> r.mapColumn<PersonId?>("citizen_id") to r.mapColumn<String>("name") }
-                .first()
+            val (citizenId, name) =
+                it.createQuery("SELECT citizen_id, name FROM evaka_user WHERE id = :id")
+                    .bind("id", duplicate.id)
+                    .map { r ->
+                        r.mapColumn<PersonId?>("citizen_id") to r.mapColumn<String>("name")
+                    }
+                    .first()
 
             assertEquals(null, citizenId)
             assertEquals("${duplicate.lastName} ${duplicate.firstName}", name)

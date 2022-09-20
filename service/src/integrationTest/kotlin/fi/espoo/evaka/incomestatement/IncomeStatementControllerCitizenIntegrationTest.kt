@@ -28,23 +28,22 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.io.File
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+class IncomeStatementControllerCitizenIntegrationTest :
+    FullApplicationTest(resetDbBeforeEach = true) {
     private val citizen = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
@@ -68,7 +67,8 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                     endDate = null,
                     created = incomeStatements[0].created,
                     updated = incomeStatements[0].updated,
-                    handled = false, handlerNote = ""
+                    handled = false,
+                    handlerNote = ""
                 )
             ),
             incomeStatements,
@@ -81,36 +81,41 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
             IncomeStatementBody.Income(
                 startDate = LocalDate.of(2021, 4, 3),
                 endDate = LocalDate.of(2021, 8, 9),
-                gross = Gross(
-                    incomeSource = IncomeSource.INCOMES_REGISTER,
-                    estimatedMonthlyIncome = 500,
-                    otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
-                    otherIncomeInfo = "Elatusmaksut 100, vuoratulot 150",
-                ),
-                entrepreneur = Entrepreneur(
-                    fullTime = true,
-                    startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
-                    spouseWorksInCompany = false,
-                    startupGrant = true,
-                    checkupConsent = true,
-                    selfEmployed = SelfEmployed(
-                        attachments = true,
-                        estimatedIncome = EstimatedIncome(
-                            estimatedMonthlyIncome = 1000,
-                            incomeStartDate = LocalDate.of(2005, 6, 6),
-                            incomeEndDate = LocalDate.of(2021, 7, 7),
-                        )
+                gross =
+                    Gross(
+                        incomeSource = IncomeSource.INCOMES_REGISTER,
+                        estimatedMonthlyIncome = 500,
+                        otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
+                        otherIncomeInfo = "Elatusmaksut 100, vuoratulot 150",
                     ),
-                    limitedCompany = LimitedCompany(IncomeSource.INCOMES_REGISTER),
-                    partnership = false,
-                    lightEntrepreneur = true,
-                    accountant = Accountant(
-                        name = "Foo",
-                        address = "Bar",
-                        phone = "123",
-                        email = "foo.bar@example.com",
-                    )
-                ),
+                entrepreneur =
+                    Entrepreneur(
+                        fullTime = true,
+                        startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
+                        spouseWorksInCompany = false,
+                        startupGrant = true,
+                        checkupConsent = true,
+                        selfEmployed =
+                            SelfEmployed(
+                                attachments = true,
+                                estimatedIncome =
+                                    EstimatedIncome(
+                                        estimatedMonthlyIncome = 1000,
+                                        incomeStartDate = LocalDate.of(2005, 6, 6),
+                                        incomeEndDate = LocalDate.of(2021, 7, 7),
+                                    )
+                            ),
+                        limitedCompany = LimitedCompany(IncomeSource.INCOMES_REGISTER),
+                        partnership = false,
+                        lightEntrepreneur = true,
+                        accountant =
+                            Accountant(
+                                name = "Foo",
+                                address = "Bar",
+                                phone = "123",
+                                email = "foo.bar@example.com",
+                            )
+                    ),
                 student = false,
                 alimonyPayer = true,
                 otherInfo = "foo bar",
@@ -128,36 +133,41 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                     lastName = testAdult_1.lastName,
                     startDate = LocalDate.of(2021, 4, 3),
                     endDate = LocalDate.of(2021, 8, 9),
-                    gross = Gross(
-                        incomeSource = IncomeSource.INCOMES_REGISTER,
-                        estimatedMonthlyIncome = 500,
-                        otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
-                        otherIncomeInfo = "Elatusmaksut 100, vuoratulot 150",
-                    ),
-                    entrepreneur = Entrepreneur(
-                        fullTime = true,
-                        startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
-                        spouseWorksInCompany = false,
-                        startupGrant = true,
-                        checkupConsent = true,
-                        selfEmployed = SelfEmployed(
-                            attachments = true,
-                            estimatedIncome = EstimatedIncome(
-                                estimatedMonthlyIncome = 1000,
-                                incomeStartDate = LocalDate.of(2005, 6, 6),
-                                incomeEndDate = LocalDate.of(2021, 7, 7),
-                            )
+                    gross =
+                        Gross(
+                            incomeSource = IncomeSource.INCOMES_REGISTER,
+                            estimatedMonthlyIncome = 500,
+                            otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
+                            otherIncomeInfo = "Elatusmaksut 100, vuoratulot 150",
                         ),
-                        limitedCompany = LimitedCompany(IncomeSource.INCOMES_REGISTER),
-                        partnership = false,
-                        lightEntrepreneur = true,
-                        accountant = Accountant(
-                            name = "Foo",
-                            address = "Bar",
-                            phone = "123",
-                            email = "foo.bar@example.com",
-                        )
-                    ),
+                    entrepreneur =
+                        Entrepreneur(
+                            fullTime = true,
+                            startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
+                            spouseWorksInCompany = false,
+                            startupGrant = true,
+                            checkupConsent = true,
+                            selfEmployed =
+                                SelfEmployed(
+                                    attachments = true,
+                                    estimatedIncome =
+                                        EstimatedIncome(
+                                            estimatedMonthlyIncome = 1000,
+                                            incomeStartDate = LocalDate.of(2005, 6, 6),
+                                            incomeEndDate = LocalDate.of(2021, 7, 7),
+                                        )
+                                ),
+                            limitedCompany = LimitedCompany(IncomeSource.INCOMES_REGISTER),
+                            partnership = false,
+                            lightEntrepreneur = true,
+                            accountant =
+                                Accountant(
+                                    name = "Foo",
+                                    address = "Bar",
+                                    phone = "123",
+                                    email = "foo.bar@example.com",
+                                )
+                        ),
                     student = false,
                     alimonyPayer = true,
                     otherInfo = "foo bar",
@@ -243,12 +253,13 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                 // endDate is before startDate
                 startDate = LocalDate.of(2021, 4, 3),
                 endDate = LocalDate.of(2021, 4, 2),
-                gross = Gross(
-                    incomeSource = IncomeSource.INCOMES_REGISTER,
-                    estimatedMonthlyIncome = 1500,
-                    otherIncome = setOf(),
-                    otherIncomeInfo = "",
-                ),
+                gross =
+                    Gross(
+                        incomeSource = IncomeSource.INCOMES_REGISTER,
+                        estimatedMonthlyIncome = 1500,
+                        otherIncome = setOf(),
+                        otherIncomeInfo = "",
+                    ),
                 entrepreneur = null,
                 student = false,
                 alimonyPayer = true,
@@ -263,23 +274,25 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                 endDate = null,
                 gross = null,
                 // At least one company type is needed
-                entrepreneur = Entrepreneur(
-                    fullTime = true,
-                    startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
-                    spouseWorksInCompany = true,
-                    startupGrant = true,
-                    checkupConsent = true,
-                    selfEmployed = null,
-                    limitedCompany = null,
-                    partnership = false,
-                    lightEntrepreneur = false,
-                    accountant = Accountant(
-                        name = "Foo",
-                        address = "Bar",
-                        phone = "123",
-                        email = "foo.bar@example.com",
-                    )
-                ),
+                entrepreneur =
+                    Entrepreneur(
+                        fullTime = true,
+                        startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
+                        spouseWorksInCompany = true,
+                        startupGrant = true,
+                        checkupConsent = true,
+                        selfEmployed = null,
+                        limitedCompany = null,
+                        partnership = false,
+                        lightEntrepreneur = false,
+                        accountant =
+                            Accountant(
+                                name = "Foo",
+                                address = "Bar",
+                                phone = "123",
+                                email = "foo.bar@example.com",
+                            )
+                    ),
                 student = false,
                 alimonyPayer = false,
                 otherInfo = "foo bar",
@@ -292,19 +305,20 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                 startDate = LocalDate.of(2021, 4, 3),
                 endDate = null,
                 gross = null,
-                entrepreneur = Entrepreneur(
-                    fullTime = true,
-                    startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
-                    spouseWorksInCompany = true,
-                    startupGrant = true,
-                    checkupConsent = true,
-                    selfEmployed = null,
-                    limitedCompany = null,
-                    partnership = true,
-                    lightEntrepreneur = false,
-                    // Accountant is required if limitedCompany or partnership is given
-                    accountant = null,
-                ),
+                entrepreneur =
+                    Entrepreneur(
+                        fullTime = true,
+                        startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
+                        spouseWorksInCompany = true,
+                        startupGrant = true,
+                        checkupConsent = true,
+                        selfEmployed = null,
+                        limitedCompany = null,
+                        partnership = true,
+                        lightEntrepreneur = false,
+                        // Accountant is required if limitedCompany or partnership is given
+                        accountant = null,
+                    ),
                 student = false,
                 alimonyPayer = false,
                 otherInfo = "foo bar",
@@ -317,24 +331,26 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                 startDate = LocalDate.of(2021, 4, 3),
                 endDate = null,
                 gross = null,
-                entrepreneur = Entrepreneur(
-                    fullTime = true,
-                    startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
-                    spouseWorksInCompany = true,
-                    startupGrant = true,
-                    checkupConsent = true,
-                    selfEmployed = null,
-                    limitedCompany = null,
-                    partnership = true,
-                    lightEntrepreneur = false,
-                    // Accountant name, phone or email cannot be empty
-                    accountant = Accountant(
-                        name = "",
-                        address = "",
-                        phone = "",
-                        email = "",
-                    )
-                ),
+                entrepreneur =
+                    Entrepreneur(
+                        fullTime = true,
+                        startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
+                        spouseWorksInCompany = true,
+                        startupGrant = true,
+                        checkupConsent = true,
+                        selfEmployed = null,
+                        limitedCompany = null,
+                        partnership = true,
+                        lightEntrepreneur = false,
+                        // Accountant name, phone or email cannot be empty
+                        accountant =
+                            Accountant(
+                                name = "",
+                                address = "",
+                                phone = "",
+                                email = "",
+                            )
+                    ),
                 student = false,
                 alimonyPayer = false,
                 otherInfo = "foo bar",
@@ -352,12 +368,13 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
             IncomeStatementBody.Income(
                 startDate = LocalDate.of(2021, 4, 3),
                 endDate = null,
-                gross = Gross(
-                    incomeSource = IncomeSource.ATTACHMENTS,
-                    estimatedMonthlyIncome = 1500,
-                    otherIncome = setOf(),
-                    otherIncomeInfo = "",
-                ),
+                gross =
+                    Gross(
+                        incomeSource = IncomeSource.ATTACHMENTS,
+                        estimatedMonthlyIncome = 1500,
+                        otherIncome = setOf(),
+                        otherIncomeInfo = "",
+                    ),
                 entrepreneur = null,
                 student = false,
                 alimonyPayer = true,
@@ -376,12 +393,13 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                     lastName = testAdult_1.lastName,
                     startDate = LocalDate.of(2021, 4, 3),
                     endDate = null,
-                    gross = Gross(
-                        incomeSource = IncomeSource.ATTACHMENTS,
-                        estimatedMonthlyIncome = 1500,
-                        otherIncome = setOf(),
-                        otherIncomeInfo = "",
-                    ),
+                    gross =
+                        Gross(
+                            incomeSource = IncomeSource.ATTACHMENTS,
+                            estimatedMonthlyIncome = 1500,
+                            otherIncome = setOf(),
+                            otherIncomeInfo = "",
+                        ),
                     entrepreneur = null,
                     student = false,
                     alimonyPayer = true,
@@ -442,12 +460,13 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
             IncomeStatementBody.Income(
                 startDate = LocalDate.of(2021, 4, 3),
                 endDate = null,
-                gross = Gross(
-                    incomeSource = IncomeSource.ATTACHMENTS,
-                    estimatedMonthlyIncome = 1500,
-                    otherIncome = setOf(),
-                    otherIncomeInfo = "",
-                ),
+                gross =
+                    Gross(
+                        incomeSource = IncomeSource.ATTACHMENTS,
+                        estimatedMonthlyIncome = 1500,
+                        otherIncome = setOf(),
+                        otherIncomeInfo = "",
+                    ),
                 entrepreneur = null,
                 student = false,
                 alimonyPayer = false,
@@ -467,12 +486,13 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
             IncomeStatementBody.Income(
                 startDate = LocalDate.of(2021, 4, 3),
                 endDate = null,
-                gross = Gross(
-                    incomeSource = IncomeSource.ATTACHMENTS,
-                    estimatedMonthlyIncome = 1500,
-                    otherIncome = setOf(),
-                    otherIncomeInfo = "",
-                ),
+                gross =
+                    Gross(
+                        incomeSource = IncomeSource.ATTACHMENTS,
+                        estimatedMonthlyIncome = 1500,
+                        otherIncome = setOf(),
+                        otherIncomeInfo = "",
+                    ),
                 entrepreneur = null,
                 student = false,
                 alimonyPayer = false,
@@ -493,38 +513,43 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
             IncomeStatementBody.Income(
                 startDate = LocalDate.of(2021, 4, 3),
                 endDate = LocalDate.of(2021, 8, 9),
-                gross = Gross(
-                    incomeSource = IncomeSource.INCOMES_REGISTER,
-                    estimatedMonthlyIncome = 500,
-                    otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
-                    otherIncomeInfo = "Elatusmaksut 100, vuokratulot 150",
-                ),
-                entrepreneur = Entrepreneur(
-                    fullTime = true,
-                    startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
-                    spouseWorksInCompany = false,
-                    startupGrant = true,
-                    checkupConsent = true,
-                    selfEmployed = SelfEmployed(
-                        attachments = true,
-                        estimatedIncome = EstimatedIncome(
-                            estimatedMonthlyIncome = 1000,
-                            incomeStartDate = LocalDate.of(2005, 6, 6),
-                            incomeEndDate = LocalDate.of(2021, 7, 7),
+                gross =
+                    Gross(
+                        incomeSource = IncomeSource.INCOMES_REGISTER,
+                        estimatedMonthlyIncome = 500,
+                        otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
+                        otherIncomeInfo = "Elatusmaksut 100, vuokratulot 150",
+                    ),
+                entrepreneur =
+                    Entrepreneur(
+                        fullTime = true,
+                        startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
+                        spouseWorksInCompany = false,
+                        startupGrant = true,
+                        checkupConsent = true,
+                        selfEmployed =
+                            SelfEmployed(
+                                attachments = true,
+                                estimatedIncome =
+                                    EstimatedIncome(
+                                        estimatedMonthlyIncome = 1000,
+                                        incomeStartDate = LocalDate.of(2005, 6, 6),
+                                        incomeEndDate = LocalDate.of(2021, 7, 7),
+                                    )
+                            ),
+                        limitedCompany =
+                            LimitedCompany(
+                                incomeSource = IncomeSource.INCOMES_REGISTER,
+                            ),
+                        partnership = false,
+                        lightEntrepreneur = false,
+                        Accountant(
+                            name = "Foo",
+                            address = "Bar",
+                            phone = "123",
+                            email = "foo.bar@example.com",
                         )
                     ),
-                    limitedCompany = LimitedCompany(
-                        incomeSource = IncomeSource.INCOMES_REGISTER,
-                    ),
-                    partnership = false,
-                    lightEntrepreneur = false,
-                    Accountant(
-                        name = "Foo",
-                        address = "Bar",
-                        phone = "123",
-                        email = "foo.bar@example.com",
-                    )
-                ),
                 student = false,
                 alimonyPayer = true,
                 otherInfo = "foo bar",
@@ -540,23 +565,24 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                 startDate = LocalDate.of(2021, 6, 11),
                 endDate = null,
                 gross = null,
-                entrepreneur = Entrepreneur(
-                    fullTime = false,
-                    startOfEntrepreneurship = LocalDate.of(2019, 1, 1),
-                    spouseWorksInCompany = true,
-                    startupGrant = false,
-                    checkupConsent = false,
-                    selfEmployed = null,
-                    limitedCompany = null,
-                    partnership = true,
-                    lightEntrepreneur = false,
-                    Accountant(
-                        name = "Baz",
-                        address = "Quux",
-                        phone = "456",
-                        email = "baz.quux@example.com",
-                    )
-                ),
+                entrepreneur =
+                    Entrepreneur(
+                        fullTime = false,
+                        startOfEntrepreneurship = LocalDate.of(2019, 1, 1),
+                        spouseWorksInCompany = true,
+                        startupGrant = false,
+                        checkupConsent = false,
+                        selfEmployed = null,
+                        limitedCompany = null,
+                        partnership = true,
+                        lightEntrepreneur = false,
+                        Accountant(
+                            name = "Baz",
+                            address = "Quux",
+                            phone = "456",
+                            email = "baz.quux@example.com",
+                        )
+                    ),
                 student = true,
                 alimonyPayer = false,
                 otherInfo = "",
@@ -576,23 +602,24 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                 startDate = LocalDate.of(2021, 6, 11),
                 endDate = null,
                 gross = null,
-                entrepreneur = Entrepreneur(
-                    fullTime = false,
-                    startOfEntrepreneurship = LocalDate.of(2019, 1, 1),
-                    spouseWorksInCompany = true,
-                    startupGrant = false,
-                    checkupConsent = false,
-                    selfEmployed = null,
-                    limitedCompany = null,
-                    partnership = true,
-                    lightEntrepreneur = false,
-                    Accountant(
-                        name = "Baz",
-                        address = "Quux",
-                        phone = "456",
-                        email = "baz.quux@example.com",
-                    )
-                ),
+                entrepreneur =
+                    Entrepreneur(
+                        fullTime = false,
+                        startOfEntrepreneurship = LocalDate.of(2019, 1, 1),
+                        spouseWorksInCompany = true,
+                        startupGrant = false,
+                        checkupConsent = false,
+                        selfEmployed = null,
+                        limitedCompany = null,
+                        partnership = true,
+                        lightEntrepreneur = false,
+                        Accountant(
+                            name = "Baz",
+                            address = "Quux",
+                            phone = "456",
+                            email = "baz.quux@example.com",
+                        )
+                    ),
                 student = true,
                 alimonyPayer = false,
                 otherInfo = "",
@@ -693,16 +720,20 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
         )
     }
 
-    private fun markIncomeStatementHandled(id: IncomeStatementId, note: String) = db.transaction { tx ->
-        tx.createUpdate(
-            """
+    private fun markIncomeStatementHandled(id: IncomeStatementId, note: String) =
+        db.transaction { tx ->
+            tx.createUpdate(
+                    """
             UPDATE income_statement
             SET handler_id = (SELECT id FROM employee LIMIT 1), handler_note = :note
             WHERE id = :id
-            """.trimIndent()
-        )
-            .bind("id", id).bind("note", note).execute()
-    }
+            """.trimIndent(
+                    )
+                )
+                .bind("id", id)
+                .bind("note", note)
+                .execute()
+        }
 
     @Test
     fun `employee attachments are not visible to citizen`() {
@@ -711,45 +742,53 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
         val employeeId = EmployeeId(UUID.randomUUID())
         val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.FINANCE_ADMIN))
         db.transaction {
-            it.insertTestEmployee(DevEmployee(id = employeeId, roles = setOf(UserRole.FINANCE_ADMIN)))
+            it.insertTestEmployee(
+                DevEmployee(id = employeeId, roles = setOf(UserRole.FINANCE_ADMIN))
+            )
         }
 
         createIncomeStatement(
             IncomeStatementBody.Income(
                 startDate = LocalDate.of(2021, 4, 3),
                 endDate = LocalDate.of(2021, 8, 9),
-                gross = Gross(
-                    incomeSource = IncomeSource.INCOMES_REGISTER,
-                    estimatedMonthlyIncome = 500,
-                    otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
-                    otherIncomeInfo = "Elatusmaksut 100, vuokratulot 150",
-                ),
-                entrepreneur = Entrepreneur(
-                    fullTime = true,
-                    startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
-                    spouseWorksInCompany = false,
-                    startupGrant = true,
-                    checkupConsent = true,
-                    selfEmployed = SelfEmployed(
-                        attachments = true,
-                        estimatedIncome = EstimatedIncome(
-                            estimatedMonthlyIncome = 1000,
-                            incomeStartDate = LocalDate.of(2005, 6, 6),
-                            incomeEndDate = LocalDate.of(2021, 7, 7),
-                        )
-                    ),
-                    limitedCompany = LimitedCompany(
+                gross =
+                    Gross(
                         incomeSource = IncomeSource.INCOMES_REGISTER,
+                        estimatedMonthlyIncome = 500,
+                        otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
+                        otherIncomeInfo = "Elatusmaksut 100, vuokratulot 150",
                     ),
-                    partnership = false,
-                    lightEntrepreneur = false,
-                    accountant = Accountant(
-                        name = "Foo",
-                        address = "Bar",
-                        phone = "123",
-                        email = "foo.bar@example.com",
-                    )
-                ),
+                entrepreneur =
+                    Entrepreneur(
+                        fullTime = true,
+                        startOfEntrepreneurship = LocalDate.of(1998, 1, 1),
+                        spouseWorksInCompany = false,
+                        startupGrant = true,
+                        checkupConsent = true,
+                        selfEmployed =
+                            SelfEmployed(
+                                attachments = true,
+                                estimatedIncome =
+                                    EstimatedIncome(
+                                        estimatedMonthlyIncome = 1000,
+                                        incomeStartDate = LocalDate.of(2005, 6, 6),
+                                        incomeEndDate = LocalDate.of(2021, 7, 7),
+                                    )
+                            ),
+                        limitedCompany =
+                            LimitedCompany(
+                                incomeSource = IncomeSource.INCOMES_REGISTER,
+                            ),
+                        partnership = false,
+                        lightEntrepreneur = false,
+                        accountant =
+                            Accountant(
+                                name = "Foo",
+                                address = "Bar",
+                                phone = "123",
+                                email = "foo.bar@example.com",
+                            )
+                    ),
                 student = false,
                 alimonyPayer = true,
                 otherInfo = "foo bar",
@@ -815,15 +854,21 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
     }
 
     private fun getIncomeStatements(pageSize: Int = 10, page: Int = 1): Paged<IncomeStatement> =
-        http.get("/citizen/income-statements?page=$page&pageSize=$pageSize")
+        http
+            .get("/citizen/income-statements?page=$page&pageSize=$pageSize")
             .timeout(1000000)
             .timeoutRead(1000000)
             .asUser(citizen)
             .responseObject<Paged<IncomeStatement>>(jsonMapper)
             .let { (_, _, body) -> body.get() }
 
-    private fun getIncomeStatementsForChild(childId: ChildId, pageSize: Int = 10, page: Int = 1): Paged<IncomeStatement> =
-        http.get("/citizen/income-statements/child/$childId?page=$page&pageSize=$pageSize")
+    private fun getIncomeStatementsForChild(
+        childId: ChildId,
+        pageSize: Int = 10,
+        page: Int = 1
+    ): Paged<IncomeStatement> =
+        http
+            .get("/citizen/income-statements/child/$childId?page=$page&pageSize=$pageSize")
             .timeout(1000000)
             .timeoutRead(1000000)
             .asUser(citizen)
@@ -831,7 +876,8 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
             .let { (_, _, body) -> body.get() }
 
     private fun getIncomeStatement(id: IncomeStatementId): IncomeStatement =
-        http.get("/citizen/income-statements/$id")
+        http
+            .get("/citizen/income-statements/$id")
             .timeout(1000000)
             .timeoutRead(1000000)
             .asUser(citizen)
@@ -839,7 +885,8 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
             .let { (_, _, body) -> body.get() }
 
     private fun getIncomeStatementChildren(): List<ChildBasicInfo> =
-        http.get("/citizen/income-statements/children/")
+        http
+            .get("/citizen/income-statements/children/")
             .timeout(1000000)
             .timeoutRead(1000000)
             .asUser(citizen)
@@ -847,63 +894,71 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
             .let { (_, _, body) -> body.get() }
 
     private fun createIncomeStatement(body: IncomeStatementBody, expectedStatus: Int = 200) {
-        http.post("/citizen/income-statements")
+        http
+            .post("/citizen/income-statements")
             .asUser(citizen)
             .objectBody(body, mapper = jsonMapper)
             .response()
-            .also { (_, res, _) ->
-                assertEquals(expectedStatus, res.statusCode)
-            }
+            .also { (_, res, _) -> assertEquals(expectedStatus, res.statusCode) }
     }
 
-    private fun createIncomeStatementForChild(body: IncomeStatementBody.ChildIncome, childId: ChildId, expectedStatus: Int = 200) {
-        http.post("/citizen/income-statements/child/$childId")
+    private fun createIncomeStatementForChild(
+        body: IncomeStatementBody.ChildIncome,
+        childId: ChildId,
+        expectedStatus: Int = 200
+    ) {
+        http
+            .post("/citizen/income-statements/child/$childId")
             .asUser(citizen)
             .objectBody(body, mapper = jsonMapper)
             .response()
-            .also { (_, res, _) ->
-                assertEquals(expectedStatus, res.statusCode)
-            }
+            .also { (_, res, _) -> assertEquals(expectedStatus, res.statusCode) }
     }
 
-    private fun updateIncomeStatement(id: IncomeStatementId, body: IncomeStatementBody, expectedStatus: Int = 200) {
-        http.put("/citizen/income-statements/$id")
+    private fun updateIncomeStatement(
+        id: IncomeStatementId,
+        body: IncomeStatementBody,
+        expectedStatus: Int = 200
+    ) {
+        http
+            .put("/citizen/income-statements/$id")
             .asUser(citizen)
             .objectBody(body, mapper = jsonMapper)
             .response()
-            .also { (_, res, _) ->
-                assertEquals(expectedStatus, res.statusCode)
-            }
+            .also { (_, res, _) -> assertEquals(expectedStatus, res.statusCode) }
     }
 
     private fun deleteIncomeStatement(id: IncomeStatementId, expectedStatus: Int = 200) {
-        http.delete("/citizen/income-statements/$id")
-            .asUser(citizen)
-            .response()
-            .also { (_, res, _) ->
-                assertEquals(expectedStatus, res.statusCode)
-            }
+        http.delete("/citizen/income-statements/$id").asUser(citizen).response().also { (_, res, _)
+            ->
+            assertEquals(expectedStatus, res.statusCode)
+        }
     }
 
     private fun uploadAttachment(user: AuthenticatedUser = citizen): AttachmentId {
-        val (_, _, result) = http.upload("/attachments/citizen/income-statements")
-            .add(FileDataPart(File(pngFile.toURI()), name = "file"))
-            .asUser(user)
-            .responseObject<AttachmentId>(jsonMapper)
+        val (_, _, result) =
+            http
+                .upload("/attachments/citizen/income-statements")
+                .add(FileDataPart(File(pngFile.toURI()), name = "file"))
+                .asUser(user)
+                .responseObject<AttachmentId>(jsonMapper)
 
         return result.get()
     }
 
-    private fun idToAttachment(id: AttachmentId) = Attachment(id, "evaka-logo.png", "image/png", false)
+    private fun idToAttachment(id: AttachmentId) =
+        Attachment(id, "evaka-logo.png", "image/png", false)
 
     private fun uploadAttachmentAsEmployee(
         user: AuthenticatedUser,
         incomeStatementId: IncomeStatementId
     ): AttachmentId {
-        val (_, _, result) = http.upload("/attachments/income-statements/$incomeStatementId")
-            .add(FileDataPart(File(pngFile.toURI()), name = "file"))
-            .asUser(user)
-            .responseObject<AttachmentId>(jsonMapper)
+        val (_, _, result) =
+            http
+                .upload("/attachments/income-statements/$incomeStatementId")
+                .add(FileDataPart(File(pngFile.toURI()), name = "file"))
+                .asUser(user)
+                .responseObject<AttachmentId>(jsonMapper)
 
         return result.get()
     }

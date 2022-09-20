@@ -23,20 +23,24 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDecisionMaker_1
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 
 class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeEach = true) {
-    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker =
+        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     private fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
         createApplication(child = testChild_1, guardian = testAdult_1)
-        createApplication(child = testChild_2, guardian = testAdult_1, extendedCare = true, attachment = true)
+        createApplication(
+            child = testChild_2,
+            guardian = testAdult_1,
+            extendedCare = true,
+            attachment = true
+        )
         createApplication(child = testChild_3, guardian = testAdult_1, urgent = true)
     }
 
@@ -48,7 +52,8 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `application summary can be be filtered by attachments`() {
-        val summary = getSummary("""{"type": "ALL", "status": "SENT", "basis": "HAS_ATTACHMENTS"}""")
+        val summary =
+            getSummary("""{"type": "ALL", "status": "SENT", "basis": "HAS_ATTACHMENTS"}""")
         assertEquals(1, summary.total)
         assertEquals(1, summary.data[0].attachmentCount)
     }
@@ -61,24 +66,49 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeE
     }
 
     private fun getSummary(payload: String): Paged<ApplicationSummary> {
-        val (_, res, result) = http.post("/v2/applications/search")
-            .jsonBody(payload)
-            .asUser(serviceWorker)
-            .responseObject<Paged<ApplicationSummary>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .post("/v2/applications/search")
+                .jsonBody(payload)
+                .asUser(serviceWorker)
+                .responseObject<Paged<ApplicationSummary>>(jsonMapper)
         assertEquals(200, res.statusCode)
         return result.get()
     }
 
-    private fun createApplication(child: DevPerson, guardian: DevPerson, attachment: Boolean = false, urgent: Boolean = false, extendedCare: Boolean = false) {
-        val applicationId = db.transaction { tx ->
-            tx.insertTestApplication(childId = child.id, guardianId = guardian.id, type = ApplicationType.DAYCARE).also { id ->
-                val form = DaycareFormV0.fromApplication2(validDaycareApplication.copy(childId = child.id, guardianId = guardian.id)).copy(urgent = urgent).copy(extendedCare = extendedCare)
-                tx.insertTestApplicationForm(id, form)
+    private fun createApplication(
+        child: DevPerson,
+        guardian: DevPerson,
+        attachment: Boolean = false,
+        urgent: Boolean = false,
+        extendedCare: Boolean = false
+    ) {
+        val applicationId =
+            db.transaction { tx ->
+                tx.insertTestApplication(
+                        childId = child.id,
+                        guardianId = guardian.id,
+                        type = ApplicationType.DAYCARE
+                    )
+                    .also { id ->
+                        val form =
+                            DaycareFormV0.fromApplication2(
+                                    validDaycareApplication.copy(
+                                        childId = child.id,
+                                        guardianId = guardian.id
+                                    )
+                                )
+                                .copy(urgent = urgent)
+                                .copy(extendedCare = extendedCare)
+                        tx.insertTestApplicationForm(id, form)
+                    }
             }
-        }
 
         if (attachment) {
-            uploadAttachment(applicationId, AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG))
+            uploadAttachment(
+                applicationId,
+                AuthenticatedUser.Citizen(guardian.id, CitizenAuthLevel.STRONG)
+            )
         }
     }
 }

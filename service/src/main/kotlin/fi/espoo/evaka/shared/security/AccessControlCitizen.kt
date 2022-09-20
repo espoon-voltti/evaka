@@ -12,20 +12,31 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import org.springframework.stereotype.Service
 
 @Service
-class AccessControlCitizen(
-    val citizenCalendarEnv: CitizenCalendarEnv
-) {
-    fun getPermittedFeatures(tx: Database.Read, user: AuthenticatedUser.Citizen, clock: EvakaClock): CitizenFeatures {
+class AccessControlCitizen(val citizenCalendarEnv: CitizenCalendarEnv) {
+    fun getPermittedFeatures(
+        tx: Database.Read,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock
+    ): CitizenFeatures {
         return CitizenFeatures(
             messages = tx.citizenHasAccessToMessaging(clock, user.id),
-            reservations = tx.citizenHasAccessToReservations(clock, user.id, citizenCalendarEnv.calendarOpenBeforePlacementDays),
+            reservations =
+                tx.citizenHasAccessToReservations(
+                    clock,
+                    user.id,
+                    citizenCalendarEnv.calendarOpenBeforePlacementDays
+                ),
             childDocumentation = tx.citizenHasAccessToChildDocumentation(clock, user.id)
         )
     }
 
-    private fun Database.Read.citizenHasAccessToMessaging(clock: EvakaClock, personId: PersonId): Boolean {
+    private fun Database.Read.citizenHasAccessToMessaging(
+        clock: EvakaClock,
+        personId: PersonId
+    ): Boolean {
         // language=sql
-        val sql = """
+        val sql =
+            """
 WITH child_placements AS (
     SELECT pl.unit_id
     FROM guardian g
@@ -65,13 +76,23 @@ SELECT EXISTS (
     ON child_placements.unit_id = daycare.id
     WHERE 'MESSAGING' = ANY(enabled_pilot_features)
 )
-        """.trimIndent()
-        return createQuery(sql).bind("today", clock.today()).bind("personId", personId).mapTo<Boolean>().first()
+        """.trimIndent(
+            )
+        return createQuery(sql)
+            .bind("today", clock.today())
+            .bind("personId", personId)
+            .mapTo<Boolean>()
+            .first()
     }
 
-    private fun Database.Read.citizenHasAccessToReservations(clock: EvakaClock, personId: PersonId, calendarOpenBeforePlacementDays: Int = 0): Boolean {
+    private fun Database.Read.citizenHasAccessToReservations(
+        clock: EvakaClock,
+        personId: PersonId,
+        calendarOpenBeforePlacementDays: Int = 0
+    ): Boolean {
         // language=sql
-        val sql = """
+        val sql =
+            """
 SELECT EXISTS (
     SELECT 1
     FROM guardian g
@@ -79,7 +100,8 @@ SELECT EXISTS (
     JOIN daycare ON pl.unit_id = daycare.id
     WHERE guardian_id = :personId AND 'RESERVATIONS' = ANY(enabled_pilot_features)
 )
-        """.trimIndent()
+        """.trimIndent(
+            )
         return createQuery(sql)
             .bind("today", clock.today())
             .bind("personId", personId)
@@ -88,9 +110,13 @@ SELECT EXISTS (
             .first()
     }
 
-    private fun Database.Read.citizenHasAccessToChildDocumentation(clock: EvakaClock, personId: PersonId): Boolean {
+    private fun Database.Read.citizenHasAccessToChildDocumentation(
+        clock: EvakaClock,
+        personId: PersonId
+    ): Boolean {
         // language=sql
-        val sql = """
+        val sql =
+            """
 SELECT EXISTS (
     SELECT 1
     FROM guardian g
@@ -98,7 +124,12 @@ SELECT EXISTS (
     JOIN daycare ON pl.unit_id = daycare.id
     WHERE guardian_id = :personId AND 'VASU_AND_PEDADOC' = ANY(enabled_pilot_features)
 )
-        """.trimIndent()
-        return createQuery(sql).bind("today", clock.today()).bind("personId", personId).mapTo<Boolean>().first()
+        """.trimIndent(
+            )
+        return createQuery(sql)
+            .bind("today", clock.today())
+            .bind("personId", personId)
+            .mapTo<Boolean>()
+            .first()
     }
 }

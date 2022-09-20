@@ -7,16 +7,17 @@ package fi.espoo.evaka.pis
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.voltti.logging.loggers.info
-import mu.KotlinLogging
 import java.time.Duration
 import java.time.LocalDate
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
 fun cleanUpInactivePeople(tx: Database.Transaction, queryDate: LocalDate): Set<PersonId> {
     tx.setStatementTimeout(Duration.ofMinutes(20))
-    val deletedPeople = tx.createUpdate(
-        """
+    val deletedPeople =
+        tx.createUpdate(
+                """
 WITH people_with_no_archive_data AS (
     SELECT id FROM person
     WHERE (last_login IS NULL OR last_login::date < :twoWeeksAgo)
@@ -111,11 +112,11 @@ AND NOT EXISTS (
 )
 RETURNING id
 """
-    )
-        .bind("twoWeeksAgo", queryDate.minusDays(14))
-        .executeAndReturnGeneratedKeys()
-        .mapTo<PersonId>()
-        .toSet()
+            )
+            .bind("twoWeeksAgo", queryDate.minusDays(14))
+            .executeAndReturnGeneratedKeys()
+            .mapTo<PersonId>()
+            .toSet()
 
     logger.info(mapOf("deletedPeople" to deletedPeople)) {
         "Inactive people clean up complete, deleted people count: ${deletedPeople.size}"

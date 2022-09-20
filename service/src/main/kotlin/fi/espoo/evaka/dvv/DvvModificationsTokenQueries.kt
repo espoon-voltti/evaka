@@ -6,13 +6,19 @@ package fi.espoo.evaka.dvv
 
 import fi.espoo.evaka.shared.db.Database
 
-fun Database.Transaction.storeDvvModificationToken(token: String, nextToken: String, ssnsSent: Int, modificationsReceived: Int) {
+fun Database.Transaction.storeDvvModificationToken(
+    token: String,
+    nextToken: String,
+    ssnsSent: Int,
+    modificationsReceived: Int
+) {
     createUpdate(
-        """
+            """
 INSERT INTO dvv_modification_token (token, next_token, ssns_sent, modifications_received) 
 VALUES (:token, :nextToken, :ssnsSent, :modificationsReceived)
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("token", token)
         .bind("nextToken", nextToken)
         .bind("ssnsSent", ssnsSent)
@@ -22,30 +28,36 @@ VALUES (:token, :nextToken, :ssnsSent, :modificationsReceived)
 
 fun Database.Read.getNextDvvModificationToken(): String {
     return createQuery(
-        """
+            """
 SELECT next_token
 FROM dvv_modification_token
 ORDER BY created DESC
 LIMIT 1
-        """.trimIndent()
-    ).mapTo<String>().one()
+        """.trimIndent(
+            )
+        )
+        .mapTo<String>()
+        .one()
 }
 
 fun Database.Read.getDvvModificationToken(token: String): DvvModificationToken? {
     return createQuery(
-        """
+            """
 SELECT token, next_token, ssns_sent, modifications_received
 FROM dvv_modification_token
 WHERE token = :token
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("token", token)
         .mapTo<DvvModificationToken>()
         .one()
 }
 
 fun Database.Transaction.deleteDvvModificationToken(token: String) {
-    createUpdate("""DELETE FROM dvv_modification_token WHERE token = :token""").bind("token", token).execute()
+    createUpdate("""DELETE FROM dvv_modification_token WHERE token = :token""")
+        .bind("token", token)
+        .execute()
 }
 
 data class DvvModificationToken(

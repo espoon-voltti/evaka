@@ -26,14 +26,32 @@ fun getOrCreateVardaChildByOrganizer(
 
         val rowsByChild = getVardaOrganizerChildRows(tx, evakaPersonId)
         if (rowsByChild.isEmpty()) {
-            return@transaction createVardaPersonAndChild(tx, client, evakaPersonId, municipalOrganizerOid, organizerOid, isPaosChild, sourceSystem)
+            return@transaction createVardaPersonAndChild(
+                tx,
+                client,
+                evakaPersonId,
+                municipalOrganizerOid,
+                organizerOid,
+                isPaosChild,
+                sourceSystem
+            )
         }
 
         val vardaPerson = rowsByChild.first()
 
         val rowsByChildAndOrganizer = rowsByChild.filter { row -> row.organizerOid == organizerOid }
         if (rowsByChildAndOrganizer.isEmpty()) {
-            return@transaction createVardaChildWhenPersonExists(tx, client, evakaPersonId, vardaPerson.vardaPersonId, vardaPerson.vardaPersonOid, municipalOrganizerOid, organizerOid, isPaosChild, sourceSystem)
+            return@transaction createVardaChildWhenPersonExists(
+                tx,
+                client,
+                evakaPersonId,
+                vardaPerson.vardaPersonId,
+                vardaPerson.vardaPersonOid,
+                municipalOrganizerOid,
+                organizerOid,
+                isPaosChild,
+                sourceSystem
+            )
         }
 
         return@transaction rowsByChildAndOrganizer.first().vardaChildId
@@ -52,11 +70,13 @@ private fun getVardaOrganizerChildRows(
     tx: Database.Transaction,
     evakaPersonId: ChildId,
 ): List<VardaChildOrganizerRow> {
-    val sql = """
+    val sql =
+        """
         SELECT evaka_person_id, varda_person_id, varda_person_oid, varda_child_id, organizer_oid
         FROM varda_organizer_child
         WHERE evaka_person_id = :evakaPersonId
-    """.trimIndent()
+    """.trimIndent(
+        )
 
     return tx.createQuery(sql)
         .bind("evakaPersonId", evakaPersonId)
@@ -79,18 +99,20 @@ private fun createVardaPersonAndChild(
         "VardaUpdate: no ssn or oid for person $evakaPersonId"
     }
 
-    val vardaPerson = try {
-        client.createPerson(personPayload.toVardaPersonRequest())
-    } catch (e: Exception) {
-        client.getPersonFromVardaBySsnOrOid(
-            VardaClient.VardaPersonSearchRequest(
-                henkilotunnus = personPayload.ssn,
-                henkilo_oid = if (personPayload.ssn.isNullOrBlank()) personPayload.personOid else null
+    val vardaPerson =
+        try {
+            client.createPerson(personPayload.toVardaPersonRequest())
+        } catch (e: Exception) {
+            client.getPersonFromVardaBySsnOrOid(
+                VardaClient.VardaPersonSearchRequest(
+                    henkilotunnus = personPayload.ssn,
+                    henkilo_oid =
+                        if (personPayload.ssn.isNullOrBlank()) personPayload.personOid else null
+                )
             )
-        )
-    } catch (e: Exception) {
-        error("VardaUpdate: couldn't create nor fetch Varda person $personPayload")
-    }
+        } catch (e: Exception) {
+            error("VardaUpdate: couldn't create nor fetch Varda person $personPayload")
+        }
 
     return createVardaChildWhenPersonExists(
         tx = tx,
@@ -111,15 +133,16 @@ data class VardaChildPayload(
     val organizerOid: String,
     val sourceSystem: String
 ) {
-    fun toVardaChildRequest(evakaChildId: ChildId) = VardaChildRequest(
-        id = evakaChildId,
-        henkilo = personUrl,
-        henkilo_oid = personOid,
-        vakatoimija_oid = organizerOid,
-        oma_organisaatio_oid = null,
-        paos_organisaatio_oid = null,
-        lahdejarjestelma = sourceSystem
-    )
+    fun toVardaChildRequest(evakaChildId: ChildId) =
+        VardaChildRequest(
+            id = evakaChildId,
+            henkilo = personUrl,
+            henkilo_oid = personOid,
+            vakatoimija_oid = organizerOid,
+            oma_organisaatio_oid = null,
+            paos_organisaatio_oid = null,
+            lahdejarjestelma = sourceSystem
+        )
 }
 
 data class VardaPaosChildPayload(
@@ -129,15 +152,16 @@ data class VardaPaosChildPayload(
     val paosOrganizationOid: String,
     val sourceSystem: String
 ) {
-    fun toVardaChildRequest(evakaChildId: ChildId) = VardaChildRequest(
-        id = evakaChildId,
-        henkilo = personUrl,
-        henkilo_oid = personOid,
-        vakatoimija_oid = null,
-        oma_organisaatio_oid = organizerOid,
-        paos_organisaatio_oid = paosOrganizationOid,
-        lahdejarjestelma = sourceSystem
-    )
+    fun toVardaChildRequest(evakaChildId: ChildId) =
+        VardaChildRequest(
+            id = evakaChildId,
+            henkilo = personUrl,
+            henkilo_oid = personOid,
+            vakatoimija_oid = null,
+            oma_organisaatio_oid = organizerOid,
+            paos_organisaatio_oid = paosOrganizationOid,
+            lahdejarjestelma = sourceSystem
+        )
 }
 
 private fun createVardaChildWhenPersonExists(
@@ -152,19 +176,21 @@ private fun createVardaChildWhenPersonExists(
     sourceSystem: String
 ): Long {
     return if (isPaosChild) {
-        val vardaChildPayload = VardaPaosChildPayload(
-            personUrl = client.getPersonUrl(vardaPersonId.toLong()),
-            personOid = vardaPersonOid,
-            organizerOid = municipalOrganizerOid,
-            paosOrganizationOid = organizerOid,
-            sourceSystem = sourceSystem
-        )
+        val vardaChildPayload =
+            VardaPaosChildPayload(
+                personUrl = client.getPersonUrl(vardaPersonId.toLong()),
+                personOid = vardaPersonOid,
+                organizerOid = municipalOrganizerOid,
+                paosOrganizationOid = organizerOid,
+                sourceSystem = sourceSystem
+            )
 
-        val vardaChildId = try {
-            client.createChild(vardaChildPayload.toVardaChildRequest(evakaChildId)).id.toLong()
-        } catch (e: Exception) {
-            error("VardaUpdate: failed to create PAOS child: ${e.message}")
-        }
+        val vardaChildId =
+            try {
+                client.createChild(vardaChildPayload.toVardaChildRequest(evakaChildId)).id.toLong()
+            } catch (e: Exception) {
+                error("VardaUpdate: failed to create PAOS child: ${e.message}")
+            }
 
         insertVardaOrganizerChild(
             tx,
@@ -177,18 +203,20 @@ private fun createVardaChildWhenPersonExists(
 
         vardaChildId
     } else {
-        val vardaChildPayload = VardaChildPayload(
-            personUrl = client.getPersonUrl(vardaPersonId.toLong()),
-            personOid = vardaPersonOid,
-            organizerOid = municipalOrganizerOid,
-            sourceSystem = sourceSystem
-        )
+        val vardaChildPayload =
+            VardaChildPayload(
+                personUrl = client.getPersonUrl(vardaPersonId.toLong()),
+                personOid = vardaPersonOid,
+                organizerOid = municipalOrganizerOid,
+                sourceSystem = sourceSystem
+            )
 
-        val vardaChildId = try {
-            client.createChild(vardaChildPayload.toVardaChildRequest(evakaChildId)).id.toLong()
-        } catch (e: Exception) {
-            error("VardaUpdate: failed to create child: ${e.message}")
-        }
+        val vardaChildId =
+            try {
+                client.createChild(vardaChildPayload.toVardaChildRequest(evakaChildId)).id.toLong()
+            } catch (e: Exception) {
+                error("VardaUpdate: failed to create child: ${e.message}")
+            }
 
         insertVardaOrganizerChild(
             tx,
@@ -203,9 +231,13 @@ private fun createVardaChildWhenPersonExists(
     }
 }
 
-private fun getVardaPersonPayload(tx: Database.Transaction, evakaChildId: ChildId, organizerOid: String) =
+private fun getVardaPersonPayload(
+    tx: Database.Transaction,
+    evakaChildId: ChildId,
+    organizerOid: String
+) =
     tx.createQuery(
-        """
+            """
             SELECT 
                 p.id,
                 p.first_name,
@@ -216,8 +248,9 @@ private fun getVardaPersonPayload(tx: Database.Transaction, evakaChildId: ChildI
                 :organizerOid
             FROM person p
             WHERE id = :evakaPersonId
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("evakaPersonId", evakaChildId)
         .bind("organizerOid", organizerOid)
         .mapTo<VardaPerson>()
@@ -232,11 +265,13 @@ fun insertVardaOrganizerChild(
     vardaPersonOid: String,
     organizerOid: String
 ) {
-    //language=SQL
-    val sql = """
+    // language=SQL
+    val sql =
+        """
     INSERT INTO varda_organizer_child (evaka_person_id, varda_child_id, varda_person_id, varda_person_oid, organizer_oid)
     VALUES (:evakaPersonId, :vardaChildId, :vardaPersonId, :vardaPersonOid, :organizerOid)
-    """.trimIndent()
+    """.trimIndent(
+        )
 
     tx.createUpdate(sql)
         .bind("evakaPersonId", evakaPersonId)
@@ -255,14 +290,15 @@ data class VardaPerson(
     val ssn: String? = null,
     val personOid: String? = null
 ) {
-    fun toVardaPersonRequest() = VardaPersonRequest(
-        id = id,
-        etunimet = firstName,
-        sukunimi = lastName,
-        kutsumanimi = nickName,
-        henkilotunnus = ssn,
-        henkilo_oid = if (ssn.isNullOrBlank()) personOid else null
-    )
+    fun toVardaPersonRequest() =
+        VardaPersonRequest(
+            id = id,
+            etunimet = firstName,
+            sukunimi = lastName,
+            kutsumanimi = nickName,
+            henkilotunnus = ssn,
+            henkilo_oid = if (ssn.isNullOrBlank()) personOid else null
+        )
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -271,29 +307,20 @@ data class VardaPersonRequest(
     val etunimet: String,
     val sukunimi: String,
     val kutsumanimi: String,
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    val henkilotunnus: String? = null,
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    val henkilo_oid: String? = null
+    @JsonInclude(JsonInclude.Include.NON_NULL) val henkilotunnus: String? = null,
+    @JsonInclude(JsonInclude.Include.NON_NULL) val henkilo_oid: String? = null
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class VardaPersonResponse(
     val url: String,
-    @JsonProperty("id")
-    val vardaId: Int,
-    @JsonProperty("etunimet")
-    val firstName: String,
-    @JsonProperty("sukunimi")
-    val lastName: String,
-    @JsonProperty("kutsumanimi")
-    val nickName: String,
-    @JsonProperty("henkilo_oid")
-    val personOid: String,
-    @JsonProperty("syntyma_pvm")
-    val dob: String?,
-    @JsonProperty("lapsi")
-    val child: List<String>
+    @JsonProperty("id") val vardaId: Int,
+    @JsonProperty("etunimet") val firstName: String,
+    @JsonProperty("sukunimi") val lastName: String,
+    @JsonProperty("kutsumanimi") val nickName: String,
+    @JsonProperty("henkilo_oid") val personOid: String,
+    @JsonProperty("syntyma_pvm") val dob: String?,
+    @JsonProperty("lapsi") val child: List<String>
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -307,7 +334,4 @@ data class VardaChildRequest(
     val lahdejarjestelma: String
 )
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class VardaChildResponse(
-    val id: Int
-)
+@JsonIgnoreProperties(ignoreUnknown = true) data class VardaChildResponse(val id: Int)

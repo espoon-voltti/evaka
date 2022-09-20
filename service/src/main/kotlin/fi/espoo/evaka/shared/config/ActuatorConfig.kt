@@ -27,7 +27,9 @@ class ActuatorConfig {
 class DatabaseHealthIndicator(private val jdbi: Jdbi) : AbstractHealthIndicator() {
     override fun doHealthCheck(builder: Health.Builder) {
         try {
-            Database(jdbi).connect { db -> db.read { tx -> tx.createQuery("SELECT 1").mapTo<Int>().first() } }
+            Database(jdbi).connect { db ->
+                db.read { tx -> tx.createQuery("SELECT 1").mapTo<Int>().first() }
+            }
             builder.up()
         } catch (e: JdbiException) {
             builder.down(e)

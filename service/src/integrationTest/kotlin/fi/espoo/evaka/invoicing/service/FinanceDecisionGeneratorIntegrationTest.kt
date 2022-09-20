@@ -29,22 +29,19 @@ import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testVoucherDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
 import java.time.LocalDate
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired
-    private lateinit var generator: FinanceDecisionGenerator
+    @Autowired private lateinit var generator: FinanceDecisionGenerator
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
@@ -77,12 +74,23 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
     @Test
     fun `family with children placed into voucher and municipal daycares get sibling discounts in fee and voucher value decisions`() {
         val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
-        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id, testChild_3.id), period)
+        insertFamilyRelations(
+            testAdult_1.id,
+            listOf(testChild_1.id, testChild_2.id, testChild_3.id),
+            period
+        )
         insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
         insertPlacement(testChild_2.id, period, DAYCARE, testVoucherDaycare.id)
         insertPlacement(testChild_3.id, period, DAYCARE, testDaycare.id)
 
-        db.transaction { generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, period.start) }
+        db.transaction {
+            generator.generateNewDecisionsForAdult(
+                it,
+                RealEvakaClock(),
+                testAdult_1.id,
+                period.start
+            )
+        }
 
         val feeDecisions = getAllFeeDecisions()
         assertEquals(1, feeDecisions.size)
@@ -119,7 +127,12 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
         }
     }
 
-    private fun insertPlacement(childId: ChildId, period: DateRange, type: PlacementType, daycareId: DaycareId): PlacementId {
+    private fun insertPlacement(
+        childId: ChildId,
+        period: DateRange,
+        type: PlacementType,
+        daycareId: DaycareId
+    ): PlacementId {
         return db.transaction { tx ->
             tx.insertTestPlacement(
                 childId = childId,
@@ -131,27 +144,36 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
         }
     }
 
-    private fun insertFamilyRelations(headOfFamilyId: PersonId, childIds: List<ChildId>, period: DateRange) {
+    private fun insertFamilyRelations(
+        headOfFamilyId: PersonId,
+        childIds: List<ChildId>,
+        period: DateRange
+    ) {
         db.transaction { tx ->
             childIds.forEach { childId ->
-                tx.insertTestParentship(headOfFamilyId, childId, startDate = period.start, endDate = period.end!!)
+                tx.insertTestParentship(
+                    headOfFamilyId,
+                    childId,
+                    startDate = period.start,
+                    endDate = period.end!!
+                )
             }
         }
     }
 
     private fun getAllFeeDecisions(): List<FeeDecision> {
         return db.read { tx ->
-            tx.createQuery(feeDecisionQueryBase)
-                .mapTo<FeeDecision>()
-                .let { it.merge() }
-        }.shuffled() // randomize order to expose assumptions
+                tx.createQuery(feeDecisionQueryBase).mapTo<FeeDecision>().let { it.merge() }
+            }
+            .shuffled() // randomize order to expose assumptions
     }
 
     private fun getAllVoucherValueDecisions(): List<VoucherValueDecision> {
         return db.read { tx ->
-            tx.createQuery("SELECT * FROM voucher_value_decision")
-                .mapTo<VoucherValueDecision>()
-                .toList()
-        }.shuffled() // randomize order to expose assumptions
+                tx.createQuery("SELECT * FROM voucher_value_decision")
+                    .mapTo<VoucherValueDecision>()
+                    .toList()
+            }
+            .shuffled() // randomize order to expose assumptions
     }
 }

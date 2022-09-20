@@ -20,14 +20,14 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.math.BigDecimal
+import java.time.LocalDate
+import java.util.UUID
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.math.BigDecimal
-import java.time.LocalDate
-import java.util.UUID
 
 @RestController
 @RequestMapping("/reports/service-voucher-value")
@@ -69,16 +69,22 @@ class ServiceVoucherValueReportController(
         @RequestParam year: Int,
         @RequestParam month: Int
     ): ServiceVoucherUnitReport {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_SERVICE_VOUCHER_VALUES_REPORT, unitId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Unit.READ_SERVICE_VOUCHER_VALUES_REPORT,
+            unitId
+        )
 
         return db.connect { dbc ->
             dbc.read { tx ->
                 val snapshotTime = tx.getSnapshotDate(year, month)
-                val rows = if (snapshotTime != null) {
-                    tx.getSnapshotVoucherValues(year, month, unitIds = setOf(unitId))
-                } else {
-                    tx.getServiceVoucherValues(year, month, unitIds = setOf(unitId))
-                }
+                val rows =
+                    if (snapshotTime != null) {
+                        tx.getSnapshotVoucherValues(year, month, unitIds = setOf(unitId))
+                    } else {
+                        tx.getServiceVoucherValues(year, month, unitIds = setOf(unitId))
+                    }
 
                 ServiceVoucherUnitReport(
                     locked = snapshotTime,
@@ -90,11 +96,18 @@ class ServiceVoucherValueReportController(
     }
 }
 
-fun freezeVoucherValueReportRows(tx: Database.Transaction, year: Int, month: Int, takenAt: HelsinkiDateTime) {
+fun freezeVoucherValueReportRows(
+    tx: Database.Transaction,
+    year: Int,
+    month: Int,
+    takenAt: HelsinkiDateTime
+) {
     val rows = tx.getServiceVoucherValues(year, month)
 
     val voucherValueReportSnapshotId =
-        tx.createUpdate("INSERT INTO voucher_value_report_snapshot (month, year, taken_at) VALUES (:month, :year, :takenAt) RETURNING id")
+        tx.createUpdate(
+                "INSERT INTO voucher_value_report_snapshot (month, year, taken_at) VALUES (:month, :year, :takenAt) RETURNING id"
+            )
             .bind("year", year)
             .bind("month", month)
             .bind("takenAt", takenAt)
@@ -103,10 +116,12 @@ fun freezeVoucherValueReportRows(tx: Database.Transaction, year: Int, month: Int
             .first()
 
     // language=sql
-    val sql = """
+    val sql =
+        """
         INSERT INTO voucher_value_report_decision (voucher_value_report_snapshot_id, decision_id, realized_amount, realized_period, type)
         VALUES (:voucherValueReportSnapshotId, :decisionId, :realizedAmount, :realizedPeriod, :type)
-    """.trimIndent()
+    """.trimIndent(
+        )
     val batch = tx.prepareBatch(sql)
 
     rows.forEach { row ->
@@ -136,26 +151,32 @@ fun getServiceVoucherReport(
 ): ServiceVoucherReport {
     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
     val snapshotTime = tx.getSnapshotDate(year, month)
-    val rows = if (snapshotTime != null) {
-        tx.getSnapshotVoucherValues(year, month, areaId = areaId, unitIds = unitIds)
-    } else {
-        tx.getServiceVoucherValues(year, month, areaId = areaId, unitIds = unitIds)
-    }
-
-    val aggregates = rows
-        .groupBy { ServiceVoucherValueUnitAggregate.UnitData(it.unitId, it.unitName, it.areaId, it.areaName) }
-        .map { (unit, rows) ->
-            ServiceVoucherValueUnitAggregate(
-                unit = unit,
-                childCount = rows.map { it.childId }.distinct().size,
-                monthlyPaymentSum = rows.sumOf { row -> row.realizedAmount }
-            )
+    val rows =
+        if (snapshotTime != null) {
+            tx.getSnapshotVoucherValues(year, month, areaId = areaId, unitIds = unitIds)
+        } else {
+            tx.getServiceVoucherValues(year, month, areaId = areaId, unitIds = unitIds)
         }
 
-    return ServiceVoucherReport(
-        locked = snapshotTime,
-        rows = aggregates
-    )
+    val aggregates =
+        rows
+            .groupBy {
+                ServiceVoucherValueUnitAggregate.UnitData(
+                    it.unitId,
+                    it.unitName,
+                    it.areaId,
+                    it.areaName
+                )
+            }
+            .map { (unit, rows) ->
+                ServiceVoucherValueUnitAggregate(
+                    unit = unit,
+                    childCount = rows.map { it.childId }.distinct().size,
+                    monthlyPaymentSum = rows.sumOf { row -> row.realizedAmount }
+                )
+            }
+
+    return ServiceVoucherReport(locked = snapshotTime, rows = aggregates)
 }
 
 data class ServiceVoucherValueUnitAggregate(
@@ -197,8 +218,7 @@ data class ServiceVoucherValueRow(
     val realizedPeriod: FiniteDateRange,
     val numberOfDays: Int,
     val type: VoucherReportRowType,
-    @get:JsonProperty("isNew")
-    val isNew: Boolean
+    @get:JsonProperty("isNew") val isNew: Boolean
 )
 
 private fun Database.Read.getServiceVoucherValues(
@@ -208,7 +228,8 @@ private fun Database.Read.getServiceVoucherValues(
     unitIds: Set<DaycareId>? = null
 ): List<ServiceVoucherValueRow> {
     // language=sql
-    val sql = """
+    val sql =
+        """
 WITH min_voucher_decision_date AS (
     SELECT coalesce(min(valid_from), :reportDate) AS min_date FROM voucher_value_decision WHERE status != 'DRAFT'::voucher_value_decision_status
 ), min_change_month AS (
@@ -423,17 +444,22 @@ ORDER BY child_last_name, child_first_name, child_id, type_sort, realized_period
 }
 
 private fun Database.Read.getSnapshotDate(year: Int, month: Int): LocalDate? {
-    return createQuery("SELECT taken_at FROM voucher_value_report_snapshot WHERE year >= :year AND month >= :month")
+    return createQuery(
+            "SELECT taken_at FROM voucher_value_report_snapshot WHERE year >= :year AND month >= :month"
+        )
         .bind("year", year)
         .bind("month", month)
         .mapTo<HelsinkiDateTime>()
-        .firstOrNull()?.toLocalDate()
+        .firstOrNull()
+        ?.toLocalDate()
 }
 
 data class MonthOfYear(val year: Int, val month: Int)
 
 fun Database.Read.getLastSnapshotMonth(): MonthOfYear? {
-    return createQuery("SELECT year, month FROM voucher_value_report_snapshot ORDER BY year DESC, month DESC LIMIT 1")
+    return createQuery(
+            "SELECT year, month FROM voucher_value_report_snapshot ORDER BY year DESC, month DESC LIMIT 1"
+        )
         .mapTo<MonthOfYear>()
         .firstOrNull()
 }
@@ -492,7 +518,8 @@ private fun Database.Read.getSnapshotVoucherValues(
         WHERE sn.year = :year AND sn.month = :month
         AND (:areaId::uuid IS NULL OR area.id = :areaId)
         AND (:unitIds::uuid[] IS NULL OR unit.id = ANY(:unitIds))
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     return createQuery(sql)
         .bind("sent", VoucherValueDecisionStatus.SENT)

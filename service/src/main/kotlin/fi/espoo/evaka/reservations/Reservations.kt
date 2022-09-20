@@ -26,7 +26,9 @@ fun convertMidnightEndTime(timeRange: TimeRange) =
 
 fun validateReservationTimeRange(timeRange: TimeRange) {
     if (timeRange.endTime <= timeRange.startTime) {
-        throw BadRequest("Reservation start (${timeRange.startTime}) must be before end (${timeRange.endTime})")
+        throw BadRequest(
+            "Reservation start (${timeRange.startTime}) must be before end (${timeRange.endTime})"
+        )
     }
 }
 
@@ -37,22 +39,30 @@ data class DailyReservationRequest(
     val absent: Boolean
 )
 
-fun List<DailyReservationRequest>.validate(reservableDates: List<FiniteDateRange>? = null): List<DailyReservationRequest> {
-    if (reservableDates != null && this.any { request -> !reservableDates.any { it.includes(request.date) } }) {
+fun List<DailyReservationRequest>.validate(
+    reservableDates: List<FiniteDateRange>? = null
+): List<DailyReservationRequest> {
+    if (
+        reservableDates != null &&
+            this.any { request -> !reservableDates.any { it.includes(request.date) } }
+    ) {
         throw BadRequest("Some days are not reservable", "NON_RESERVABLE_DAYS")
     }
 
     return this.map {
-        it.copy(reservations = it.reservations?.map(::convertMidnightEndTime)?.onEach(::validateReservationTimeRange))
+        it.copy(
+            reservations =
+                it.reservations
+                    ?.map(::convertMidnightEndTime)
+                    ?.onEach(::validateReservationTimeRange)
+        )
     }
 }
 
 @JsonSerialize(using = TimeRangeSerializer::class)
 data class TimeRange(
-    @ForceCodeGenType(String::class)
-    val startTime: LocalTime,
-    @ForceCodeGenType(String::class)
-    val endTime: LocalTime,
+    @ForceCodeGenType(String::class) val startTime: LocalTime,
+    @ForceCodeGenType(String::class) val endTime: LocalTime,
 )
 
 class TimeRangeSerializer : JsonSerializer<TimeRange>() {
@@ -66,16 +76,20 @@ class TimeRangeSerializer : JsonSerializer<TimeRange>() {
 
 @JsonSerialize(using = OpenTimeRangeSerializer::class)
 data class OpenTimeRange(
-    @ForceCodeGenType(String::class)
-    val startTime: LocalTime,
-    @ForceCodeGenType(String::class)
-    val endTime: LocalTime?,
+    @ForceCodeGenType(String::class) val startTime: LocalTime,
+    @ForceCodeGenType(String::class) val endTime: LocalTime?,
 )
 
 private fun padWithZeros(hoursOrMinutes: Int) = hoursOrMinutes.toString().padStart(2, '0')
+
 private fun LocalTime.format() = "${padWithZeros(hour)}:${padWithZeros(minute)}"
+
 class OpenTimeRangeSerializer : JsonSerializer<OpenTimeRange>() {
-    override fun serialize(value: OpenTimeRange, gen: JsonGenerator, serializers: SerializerProvider) {
+    override fun serialize(
+        value: OpenTimeRange,
+        gen: JsonGenerator,
+        serializers: SerializerProvider
+    ) {
         gen.writeStartObject()
         gen.writeObjectField("startTime", value.startTime.format())
         gen.writeObjectField("endTime", value.endTime?.format())
@@ -90,9 +104,7 @@ fun createReservations(
     personId: PersonId? = null
 ) {
     tx.clearOldCitizenEditableAbsences(
-        reservations.filter {
-            it.reservations != null || it.absent
-        }.map { it.childId to it.date }
+        reservations.filter { it.reservations != null || it.absent }.map { it.childId to it.date }
     )
     tx.clearOldReservations(reservations.map { it.childId to it.date })
     tx.insertValidReservations(userId, reservations.filterNot { it.absent })
@@ -100,7 +112,8 @@ fun createReservations(
     if (personId != null) {
         tx.insertAbsences(
             personId,
-            reservations.filter { it.absent }
+            reservations
+                .filter { it.absent }
                 .map { AbsenceInsert(it.childId, it.date, AbsenceType.OTHER_ABSENCE) }
         )
     }

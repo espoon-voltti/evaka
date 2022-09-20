@@ -9,10 +9,10 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestEmployee
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
@@ -21,8 +21,11 @@ class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     internal fun setUp() {
         db.transaction { tx ->
-            val employeeId = tx.insertTestEmployee(DevEmployee(firstName = "Firstname", lastName = "Employee"))
-            tx.createUpdate("INSERT INTO message_account (id, employee_id) VALUES (:id, :employeeId)")
+            val employeeId =
+                tx.insertTestEmployee(DevEmployee(firstName = "Firstname", lastName = "Employee"))
+            tx.createUpdate(
+                    "INSERT INTO message_account (id, employee_id) VALUES (:id, :employeeId)"
+                )
                 .bind("id", accountId)
                 .bind("employeeId", employeeId)
                 .execute()
@@ -34,19 +37,21 @@ class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val content = "Content"
         val title = "Hello"
         val type = MessageType.MESSAGE
-        val recipients = setOf(MessageAccountId(UUID.randomUUID()), MessageAccountId(UUID.randomUUID()))
+        val recipients =
+            setOf(MessageAccountId(UUID.randomUUID()), MessageAccountId(UUID.randomUUID()))
         val recipientNames = listOf("Auringonkukat", "Hippiäiset")
 
         val id = db.transaction { it.initDraft(accountId) }
 
-        val fullContent = UpdatableDraftContent(
-            type = type,
-            title = title,
-            content = content,
-            recipientIds = recipients,
-            recipientNames = recipientNames,
-            urgent = false
-        )
+        val fullContent =
+            UpdatableDraftContent(
+                type = type,
+                title = title,
+                content = content,
+                recipientIds = recipients,
+                recipientNames = recipientNames,
+                urgent = false
+            )
         update(id, fullContent)
         assertContent(fullContent)
 

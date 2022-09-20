@@ -18,9 +18,16 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class FamilyConflictReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
+class FamilyConflictReportController(
+    private val acl: AccessControlList,
+    private val accessControl: AccessControl
+) {
     @GetMapping("/reports/family-conflicts")
-    fun getFamilyConflictsReport(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<FamilyConflictReportRow> {
+    fun getFamilyConflictsReport(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock
+    ): List<FamilyConflictReportRow> {
         Audit.FamilyConflictReportRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_FAMILY_CONFLICT_REPORT)
         return db.connect { dbc ->
@@ -32,7 +39,9 @@ class FamilyConflictReportController(private val acl: AccessControlList, private
     }
 }
 
-private fun Database.Read.getFamilyConflicts(authorizedUnits: AclAuthorization): List<FamilyConflictReportRow> {
+private fun Database.Read.getFamilyConflicts(
+    authorizedUnits: AclAuthorization
+): List<FamilyConflictReportRow> {
     // language=sql
     val sql =
         """
@@ -74,7 +83,8 @@ private fun Database.Read.getFamilyConflicts(authorizedUnits: AclAuthorization):
         JOIN care_area ca ON ca.id = u.care_area_id
         WHERE (:units::uuid[] IS NULL OR u.id = ANY(:units))
         ORDER BY ca.name, u.name, co.last_name, co.first_name
-        """.trimIndent()
+        """.trimIndent(
+        )
     return createQuery(sql)
         .bind("units", if (authorizedUnits != AclAuthorization.All) authorizedUnits.ids else null)
         .mapTo<FamilyConflictReportRow>()

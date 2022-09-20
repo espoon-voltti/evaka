@@ -36,7 +36,7 @@ class ChildImageController(
     private val documentClient: DocumentService,
     env: BucketEnv
 ) {
-    private val logger = KotlinLogging.logger { }
+    private val logger = KotlinLogging.logger {}
     private val bucket = env.data
 
     @PutMapping("/children/{childId}/image", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])

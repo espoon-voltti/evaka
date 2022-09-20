@@ -36,10 +36,7 @@ data class VardaDecision(
     val kokopaivainen_vaka_kytkin: Boolean = tuntimaara_viikossa >= 25
 }
 
-data class VardaDecisionResponse(
-    @JsonProperty("id")
-    val vardaDecisionId: Long
-)
+data class VardaDecisionResponse(@JsonProperty("id") val vardaDecisionId: Long)
 
 data class VardaPlacement(
     val varhaiskasvatuspaatos: String,
@@ -49,23 +46,19 @@ data class VardaPlacement(
     val lahdejarjestelma: String
 )
 
-data class VardaPlacementResponse(
-    @JsonProperty("id")
-    val vardaPlacementId: Long
-)
+data class VardaPlacementResponse(@JsonProperty("id") val vardaPlacementId: Long)
 
-internal val vardaPlacementTypes = arrayOf(
-    PlacementType.DAYCARE,
-    PlacementType.DAYCARE_PART_TIME,
-    PlacementType.DAYCARE_FIVE_YEAR_OLDS,
-    PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
-    PlacementType.PRESCHOOL_DAYCARE,
-    PlacementType.PREPARATORY_DAYCARE
-)
-internal val vardaTemporaryPlacementTypes = arrayOf(
-    PlacementType.TEMPORARY_DAYCARE,
-    PlacementType.TEMPORARY_DAYCARE_PART_DAY
-)
+internal val vardaPlacementTypes =
+    arrayOf(
+        PlacementType.DAYCARE,
+        PlacementType.DAYCARE_PART_TIME,
+        PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+        PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
+        PlacementType.PRESCHOOL_DAYCARE,
+        PlacementType.PREPARATORY_DAYCARE
+    )
+internal val vardaTemporaryPlacementTypes =
+    arrayOf(PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY)
 
 enum class FeeBasisCode(val code: String) {
     FIVE_YEAR_OLDS_DAYCARE("MP02"),
@@ -73,10 +66,8 @@ enum class FeeBasisCode(val code: String) {
 }
 
 data class VardaGuardian(
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    val henkilotunnus: String?,
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    val henkilo_oid: String? = null,
+    @JsonInclude(JsonInclude.Include.NON_NULL) val henkilotunnus: String?,
+    @JsonInclude(JsonInclude.Include.NON_NULL) val henkilo_oid: String? = null,
     val etunimet: String,
     val sukunimi: String
 )
@@ -93,10 +84,7 @@ data class VardaFeeData(
     val lahdejarjestelma: String
 )
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class VardaFeeDataResponse(
-    val id: Long
-)
+@JsonIgnoreProperties(ignoreUnknown = true) data class VardaFeeDataResponse(val id: Long)
 
 data class VardaGuardianWithId(
     val id: PersonId,
@@ -106,12 +94,13 @@ data class VardaGuardianWithId(
     val sukunimi: String,
     val asuinpaikantunnus: String?
 ) {
-    fun toVardaGuardian(): VardaGuardian = VardaGuardian(
-        henkilotunnus = henkilotunnus,
-        henkilo_oid = henkilo_oid,
-        etunimet = etunimet,
-        sukunimi = sukunimi
-    )
+    fun toVardaGuardian(): VardaGuardian =
+        VardaGuardian(
+            henkilotunnus = henkilotunnus,
+            henkilo_oid = henkilo_oid,
+            etunimet = etunimet,
+            sukunimi = sukunimi
+        )
 }
 
 data class VardaChildCalculatedServiceNeedChanges(
@@ -167,28 +156,32 @@ data class EvakaServiceNeedInfoForVarda(
 
     val asPeriod = DateRange(startDate, endDate)
 
-    fun toVardaDecisionForChild(vardaChildUrl: String, sourceSystem: String): VardaDecision = VardaDecision(
-        lapsi = vardaChildUrl,
-        hakemus_pvm = this.applicationDate,
-        alkamis_pvm = this.startDate,
-        paattymis_pvm = this.endDate,
-        pikakasittely_kytkin = this.urgent,
-        tuntimaara_viikossa = this.hoursPerWeek,
-        tilapainen_vaka_kytkin = this.temporary,
-        paivittainen_vaka_kytkin = this.daily,
-        vuorohoito_kytkin = this.shiftCare,
-        jarjestamismuoto_koodi = this.providerTypeCode,
-        lahdejarjestelma = sourceSystem
-    )
+    fun toVardaDecisionForChild(vardaChildUrl: String, sourceSystem: String): VardaDecision =
+        VardaDecision(
+            lapsi = vardaChildUrl,
+            hakemus_pvm = this.applicationDate,
+            alkamis_pvm = this.startDate,
+            paattymis_pvm = this.endDate,
+            pikakasittely_kytkin = this.urgent,
+            tuntimaara_viikossa = this.hoursPerWeek,
+            tilapainen_vaka_kytkin = this.temporary,
+            paivittainen_vaka_kytkin = this.daily,
+            vuorohoito_kytkin = this.shiftCare,
+            jarjestamismuoto_koodi = this.providerTypeCode,
+            lahdejarjestelma = sourceSystem
+        )
 
-    fun toVardaPlacement(vardaDecisionUrl: String, sourceSystem: String): VardaPlacement = VardaPlacement(
-        varhaiskasvatuspaatos = vardaDecisionUrl,
-        toimipaikka_oid = this.ophUnitOid
-            ?: error("VardaUpdate: varda placement cannot be created for service need ${this.id}: unitOid cannot be null"),
-        alkamis_pvm = this.startDate,
-        paattymis_pvm = this.endDate,
-        lahdejarjestelma = sourceSystem
-    )
+    fun toVardaPlacement(vardaDecisionUrl: String, sourceSystem: String): VardaPlacement =
+        VardaPlacement(
+            varhaiskasvatuspaatos = vardaDecisionUrl,
+            toimipaikka_oid = this.ophUnitOid
+                    ?: error(
+                        "VardaUpdate: varda placement cannot be created for service need ${this.id}: unitOid cannot be null"
+                    ),
+            alkamis_pvm = this.startDate,
+            paattymis_pvm = this.endDate,
+            lahdejarjestelma = sourceSystem
+        )
 
     fun toVardaServiceNeed(): VardaServiceNeed =
         VardaServiceNeed(
@@ -198,7 +191,4 @@ data class EvakaServiceNeedInfoForVarda(
         )
 }
 
-data class VardaChildIdPair(
-    val vardaChildId: Long,
-    val evakaChildId: ChildId
-)
+data class VardaChildIdPair(val vardaChildId: Long, val evakaChildId: ChildId)

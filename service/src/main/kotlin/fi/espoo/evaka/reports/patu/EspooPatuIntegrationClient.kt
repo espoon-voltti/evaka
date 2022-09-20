@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 package fi.espoo.evaka.reports.patu
+
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.Headers
@@ -15,15 +16,20 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-class EspooPatuIntegrationClient(private val env: EspooPatuIntegrationEnv, private val jsonMapper: JsonMapper) : PatuIntegrationClient {
+class EspooPatuIntegrationClient(
+    private val env: EspooPatuIntegrationEnv,
+    private val jsonMapper: JsonMapper
+) : PatuIntegrationClient {
     override fun send(patuReport: List<RawReportRow>): PatuIntegrationClient.Result {
         logger.info("Sending patu report of ${patuReport.size} rows")
         val payload = jsonMapper.writeValueAsString(patuReport)
-        val (_, _, result) = Fuel.post("${env.url}/report")
-            .authentication().basic(env.username, env.password.value)
-            .header(Headers.ACCEPT, "application/json")
-            .jsonBody(payload)
-            .responseString()
+        val (_, _, result) =
+            Fuel.post("${env.url}/report")
+                .authentication()
+                .basic(env.username, env.password.value)
+                .header(Headers.ACCEPT, "application/json")
+                .jsonBody(payload)
+                .responseString()
 
         return when (result) {
             is Result.Success -> {

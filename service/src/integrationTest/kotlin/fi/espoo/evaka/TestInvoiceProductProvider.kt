@@ -22,7 +22,9 @@ class TestInvoiceProductProvider : InvoiceProductProvider {
             .flatMap { placementType ->
                 val placementTypeProduct = mapToProduct(placementType)
                 FeeAlteration.Type.values()
-                    .map { feeAlterationType -> mapToFeeAlterationProduct(placementTypeProduct, feeAlterationType) }
+                    .map { feeAlterationType ->
+                        mapToFeeAlterationProduct(placementTypeProduct, feeAlterationType)
+                    }
                     .plus(placementTypeProduct)
             }
             .plus(this.dailyRefund)

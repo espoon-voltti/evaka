@@ -23,12 +23,11 @@ val europeHelsinki: ZoneId = ZoneId.of("Europe/Helsinki")
 
 fun ZonedDateTime.toHelsinkiDateTime(): HelsinkiDateTime = HelsinkiDateTime.from(this)
 
-/**
- * A timestamp in Europe/Helsinki timezone
- */
+/** A timestamp in Europe/Helsinki timezone */
 @JsonSerialize(converter = HelsinkiDateTime.ToJson::class)
 @JsonDeserialize(converter = HelsinkiDateTime.FromJson::class)
-data class HelsinkiDateTime private constructor(private val instant: Instant) : Comparable<HelsinkiDateTime> {
+data class HelsinkiDateTime private constructor(private val instant: Instant) :
+    Comparable<HelsinkiDateTime> {
     val year: Int
         get() = toZonedDateTime().year
     val month: Month
@@ -71,18 +70,15 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) : 
     fun atEndOfDay() = withTime(LocalTime.MAX)
 
     /**
-     * Returns the Europe/Helsinki local date+time at the point in time represented by this timestamp
+     * Returns the Europe/Helsinki local date+time at the point in time represented by this
+     * timestamp
      */
     fun toLocalDateTime(): LocalDateTime = LocalDateTime.ofInstant(instant, europeHelsinki)
 
-    /**
-     * Returns the Europe/Helsinki local time at the point in time represented by this timestamp
-     */
+    /** Returns the Europe/Helsinki local time at the point in time represented by this timestamp */
     fun toLocalTime(): LocalTime = LocalTime.ofInstant(instant, europeHelsinki)
 
-    /**
-     * Returns the Europe/Helsinki local date at the point in time represented by this timestamp
-     */
+    /** Returns the Europe/Helsinki local date at the point in time represented by this timestamp */
     fun toLocalDate(): LocalDate = LocalDate.ofInstant(instant, europeHelsinki)
 
     /**
@@ -95,19 +91,16 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) : 
     /**
      * Converts this timestamp to a `ZonedDateTime`.
      *
-     * The returned value represents the same point in time as this timestamp, and is guaranteed to use the Europe/Helsinki timezone.
+     * The returned value represents the same point in time as this timestamp, and is guaranteed to
+     * use the Europe/Helsinki timezone.
      */
     fun toZonedDateTime(): ZonedDateTime = ZonedDateTime.ofInstant(instant, europeHelsinki)
 
-    /**
-     * Returns the amount of time elapsed since the given timestamp
-     */
+    /** Returns the amount of time elapsed since the given timestamp */
     fun durationSince(other: HelsinkiDateTime): Duration =
         Duration.between(other.toZonedDateTime(), this.toZonedDateTime())
 
-    /**
-     * Returns the amount of time elapsed since this timestamp
-     */
+    /** Returns the amount of time elapsed since this timestamp */
     fun elapsed(clock: Clock? = Clock.systemUTC()): Duration = now(clock).durationSince(this)
 
     private inline fun update(crossinline f: (ZonedDateTime) -> ZonedDateTime): HelsinkiDateTime =
@@ -118,29 +111,37 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) : 
 
     companion object {
         /**
-         * Creates a `HelsinkiDateTime` of the point in time when the Europe/Helsinki local time matches the given values
+         * Creates a `HelsinkiDateTime` of the point in time when the Europe/Helsinki local time
+         * matches the given values
          */
-        fun of(date: LocalDate, time: LocalTime): HelsinkiDateTime = from(ZonedDateTime.of(date, time, europeHelsinki))
+        fun of(date: LocalDate, time: LocalTime): HelsinkiDateTime =
+            from(ZonedDateTime.of(date, time, europeHelsinki))
 
         /**
-         * Creates a `HelsinkiDateTime` of the point in time when the Europe/Helsinki local time matches the given value
+         * Creates a `HelsinkiDateTime` of the point in time when the Europe/Helsinki local time
+         * matches the given value
          */
-        fun of(dateTime: LocalDateTime): HelsinkiDateTime = from(ZonedDateTime.of(dateTime, europeHelsinki))
+        fun of(dateTime: LocalDateTime): HelsinkiDateTime =
+            from(ZonedDateTime.of(dateTime, europeHelsinki))
 
         /**
-         * Returns the current `HelsinkiDateTime` based on the given clock, or the system default clock
+         * Returns the current `HelsinkiDateTime` based on the given clock, or the system default
+         * clock
          */
         fun now(clock: Clock? = Clock.systemUTC()): HelsinkiDateTime = from(Instant.now(clock))
 
         /**
-         * Converts an `Instant` to `HelsinkiDateTime` by reinterpreting its timestamp in Europe/Helsinki timezone
+         * Converts an `Instant` to `HelsinkiDateTime` by reinterpreting its timestamp in
+         * Europe/Helsinki timezone
          */
         fun from(value: Instant): HelsinkiDateTime = HelsinkiDateTime(value.truncateNanos())
 
         /**
-         * Converts a `ZonedDateTime` to `HelsinkiDateTime` by reinterpreting its timestamp in Europe/Helsinki timezone
+         * Converts a `ZonedDateTime` to `HelsinkiDateTime` by reinterpreting its timestamp in
+         * Europe/Helsinki timezone
          */
-        fun from(value: ZonedDateTime): HelsinkiDateTime = HelsinkiDateTime(value.toInstant().truncateNanos())
+        fun from(value: ZonedDateTime): HelsinkiDateTime =
+            HelsinkiDateTime(value.toInstant().truncateNanos())
     }
 
     class FromJson : StdConverter<ZonedDateTime, HelsinkiDateTime>() {
@@ -152,12 +153,15 @@ data class HelsinkiDateTime private constructor(private val instant: Instant) : 
     }
 }
 
-// Truncate nanoseconds to avoid surprises when serializing to/from PostgreSQL, which only supports microsecond precision
+// Truncate nanoseconds to avoid surprises when serializing to/from PostgreSQL, which only supports
+// microsecond precision
 private fun Instant.truncateNanos() = with(ChronoField.MICRO_OF_SECOND, nano / 1000L)
 
 data class HelsinkiDateTimeRange(val start: HelsinkiDateTime, val end: HelsinkiDateTime) {
     init {
-        check(start <= end) { "Attempting to initialize invalid time range with start: $start, end: $end" }
+        check(start <= end) {
+            "Attempting to initialize invalid time range with start: $start, end: $end"
+        }
     }
 
     fun contains(other: HelsinkiDateTimeRange) = this.start <= other.start && other.end <= this.end
@@ -173,6 +177,9 @@ data class HelsinkiDateTimeRange(val start: HelsinkiDateTime, val end: HelsinkiD
 
     companion object {
         fun of(date: LocalDate, startTime: LocalTime, endTime: LocalTime) =
-            HelsinkiDateTimeRange(HelsinkiDateTime.of(date, startTime), HelsinkiDateTime.of(date, endTime))
+            HelsinkiDateTimeRange(
+                HelsinkiDateTime.of(date, startTime),
+                HelsinkiDateTime.of(date, endTime)
+            )
     }
 }

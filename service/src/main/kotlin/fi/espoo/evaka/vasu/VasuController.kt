@@ -41,9 +41,7 @@ class VasuController(
     private val accessControl: AccessControl
 ) {
 
-    data class CreateDocumentRequest(
-        val templateId: VasuTemplateId
-    )
+    data class CreateDocumentRequest(val templateId: VasuTemplateId)
 
     @PostMapping("/children/{childId}/vasu")
     fun createDocument(
@@ -58,12 +56,17 @@ class VasuController(
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                if (tx.getVasuDocumentSummaries(childId).any { it.documentState != VasuDocumentState.CLOSED }) {
+                if (
+                    tx.getVasuDocumentSummaries(childId).any {
+                        it.documentState != VasuDocumentState.CLOSED
+                    }
+                ) {
                     throw Conflict("Cannot open a new vasu document while another is still active")
                 }
 
-                val template = tx.getVasuTemplate(body.templateId)
-                    ?: throw NotFound("template ${body.templateId} not found")
+                val template =
+                    tx.getVasuTemplate(body.templateId)
+                        ?: throw NotFound("template ${body.templateId} not found")
 
                 if (!template.valid.includes(HelsinkiDateTime.now().toLocalDate())) {
                     throw BadRequest("Template is not currently valid")
@@ -87,13 +90,19 @@ class VasuController(
         return db.connect { dbc ->
             dbc.read { tx ->
                 val summaries = tx.getVasuDocumentSummaries(childId)
-                val permittedActions = accessControl.getPermittedActions<VasuDocumentId, Action.VasuDocument>(
-                    tx,
-                    user,
-                    clock,
-                    summaries.map { it.id }
-                )
-                summaries.map { VasuDocumentSummaryWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
+                val permittedActions =
+                    accessControl.getPermittedActions<VasuDocumentId, Action.VasuDocument>(
+                        tx,
+                        user,
+                        clock,
+                        summaries.map { it.id }
+                    )
+                summaries.map {
+                    VasuDocumentSummaryWithPermittedActions(
+                        it,
+                        permittedActions[it.id] ?: emptySet()
+                    )
+                }
             }
         }
     }
@@ -103,9 +112,7 @@ class VasuController(
         val permittedActions: Set<Action.VasuDocument>,
     )
 
-    data class ChangeDocumentStateRequest(
-        val eventType: VasuDocumentEventType
-    )
+    data class ChangeDocumentStateRequest(val eventType: VasuDocumentEventType)
 
     @GetMapping("/vasu/{id}")
     fun getDocument(
@@ -121,36 +128,47 @@ class VasuController(
             dbc.read { tx ->
                 val doc = tx.getVasuDocumentMaster(id) ?: throw NotFound("template $id not found")
 
-                val employeeIds = doc.content.sections.flatMap { section ->
-                    section.questions.flatMap { question ->
-                        if (question.type === VasuQuestionType.FOLLOWUP) {
-                            val followup = question as VasuQuestion.Followup
-                            followup.value.flatMap { setOfNotNull(it.authorId, it.edited?.editorId) }
-                        } else {
-                            emptySet()
-                        }
-                    }
-                }
-
-                val employeeNames = if (employeeIds.isEmpty()) emptyMap() else tx.getEmployeeNamesByIds(employeeIds)
-
-                VasuDocumentWithPermittedActions(
-                    data = doc.copy(
-                        content = doc.content.mapQuestions { question, _, _ ->
+                val employeeIds =
+                    doc.content.sections.flatMap { section ->
+                        section.questions.flatMap { question ->
                             if (question.type === VasuQuestionType.FOLLOWUP) {
-                                (question as VasuQuestion.Followup).withEmployeeNames(employeeNames)
+                                val followup = question as VasuQuestion.Followup
+                                followup.value.flatMap {
+                                    setOfNotNull(it.authorId, it.edited?.editorId)
+                                }
                             } else {
-                                question
+                                emptySet()
                             }
                         }
-                    ),
+                    }
+
+                val employeeNames =
+                    if (employeeIds.isEmpty()) emptyMap() else tx.getEmployeeNamesByIds(employeeIds)
+
+                VasuDocumentWithPermittedActions(
+                    data =
+                        doc.copy(
+                            content =
+                                doc.content.mapQuestions { question, _, _ ->
+                                    if (question.type === VasuQuestionType.FOLLOWUP) {
+                                        (question as VasuQuestion.Followup).withEmployeeNames(
+                                            employeeNames
+                                        )
+                                    } else {
+                                        question
+                                    }
+                                }
+                        ),
                     permittedActions = accessControl.getPermittedActions(tx, user, clock, doc.id)
                 )
             }
         }
     }
 
-    data class VasuDocumentWithPermittedActions(val data: VasuDocument, val permittedActions: Set<Action.VasuDocument>)
+    data class VasuDocumentWithPermittedActions(
+        val data: VasuDocument,
+        val permittedActions: Set<Action.VasuDocument>
+    )
 
     data class UpdateDocumentRequest(val content: VasuContent, val childLanguage: ChildLanguage?)
 
@@ -170,52 +188,72 @@ class VasuController(
                 val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
                 validateVasuDocumentUpdate(vasu, body)
 
-                val transformedFollowupsVasu = body.copy(
-                    content = body.content.mapQuestions { question, sectionIndex, questionIndex ->
-                        if (question.type === VasuQuestionType.FOLLOWUP) {
-                            val followup = question as VasuQuestion.Followup
-                            val storedFollowup = vasu.content.sections[sectionIndex].questions[questionIndex] as VasuQuestion.Followup
+                val transformedFollowupsVasu =
+                    body.copy(
+                        content =
+                            body.content.mapQuestions { question, sectionIndex, questionIndex ->
+                                if (question.type === VasuQuestionType.FOLLOWUP) {
+                                    val followup = question as VasuQuestion.Followup
+                                    val storedFollowup =
+                                        vasu.content.sections[sectionIndex].questions[questionIndex]
+                                            as VasuQuestion.Followup
 
-                            followup.copy(
-                                value = followup.value.mapIndexed { entryIndex, entry ->
-                                    val storedEntry = storedFollowup.value.getOrNull(entryIndex)
-                                        ?: return@mapIndexed entry.copy(
-                                            authorId = EmployeeId(user.rawId()),
-                                            edited = null,
-                                            createdDate = HelsinkiDateTime.now(),
-                                            authorName = null
-                                        )
+                                    followup.copy(
+                                        value =
+                                            followup.value.mapIndexed { entryIndex, entry ->
+                                                val storedEntry =
+                                                    storedFollowup.value.getOrNull(entryIndex)
+                                                        ?: return@mapIndexed entry.copy(
+                                                            authorId = EmployeeId(user.rawId()),
+                                                            edited = null,
+                                                            createdDate = HelsinkiDateTime.now(),
+                                                            authorName = null
+                                                        )
 
-                                    val authorEditingInGracePeriod =
-                                        storedEntry.authorId == EmployeeId(user.rawId()) && storedEntry.createdDate?.let {
-                                            HelsinkiDateTime.now().durationSince(it).toMinutes() < 15
-                                        } == true
+                                                val authorEditingInGracePeriod =
+                                                    storedEntry.authorId ==
+                                                        EmployeeId(user.rawId()) &&
+                                                        storedEntry.createdDate?.let {
+                                                            HelsinkiDateTime.now()
+                                                                .durationSince(it)
+                                                                .toMinutes() < 15
+                                                        } == true
 
-                                    val identicalContent = entry.text == storedEntry.text && entry.date.isEqual(storedEntry.date)
+                                                val identicalContent =
+                                                    entry.text == storedEntry.text &&
+                                                        entry.date.isEqual(storedEntry.date)
 
-                                    entry.copy(
-                                        authorId = storedEntry.authorId,
-                                        edited =
-                                        if (authorEditingInGracePeriod || identicalContent)
-                                            storedEntry.edited
-                                        else
-                                            FollowupEntryEditDetails(
-                                                editedAt = clock.today(),
-                                                editorId = EmployeeId(user.rawId()),
-                                                editorName = null
-                                            ),
-                                        createdDate = storedEntry.createdDate,
-                                        authorName = null
+                                                entry.copy(
+                                                    authorId = storedEntry.authorId,
+                                                    edited =
+                                                        if (
+                                                            authorEditingInGracePeriod ||
+                                                                identicalContent
+                                                        )
+                                                            storedEntry.edited
+                                                        else
+                                                            FollowupEntryEditDetails(
+                                                                editedAt = clock.today(),
+                                                                editorId = EmployeeId(user.rawId()),
+                                                                editorName = null
+                                                            ),
+                                                    createdDate = storedEntry.createdDate,
+                                                    authorName = null
+                                                )
+                                            }
                                     )
+                                } else {
+                                    question
                                 }
-                            )
-                        } else {
-                            question
-                        }
-                    }
-                )
+                            }
+                    )
 
-                tx.updateVasuDocumentMaster(clock, id, transformedFollowupsVasu.content, body.childLanguage)
+                tx.updateVasuDocumentMaster(
+                    clock,
+                    id,
+                    transformedFollowupsVasu.content,
+                    body.childLanguage
+                )
                 tx.revokeVasuGuardianHasGivenPermissionToShare(id)
             }
         }
@@ -226,15 +264,19 @@ class VasuController(
             throw BadRequest("Closed vasu document cannot be edited", "CANNOT_EDIT_CLOSED_DOCUMENT")
 
         if (!vasu.content.matchesStructurally(body.content))
-            throw BadRequest("Vasu document structure does not match template", "DOCUMENT_DOES_NOT_MATCH_TEMPLATE")
+            throw BadRequest(
+                "Vasu document structure does not match template",
+                "DOCUMENT_DOES_NOT_MATCH_TEMPLATE"
+            )
 
         if (vasu.content.followupEntriesMissing(body.content))
-            throw Forbidden("Follow-up entries may not be removed", "CANNOT_REMOVE_FOLLOWUP_COMMENTS")
+            throw Forbidden(
+                "Follow-up entries may not be removed",
+                "CANNOT_REMOVE_FOLLOWUP_COMMENTS"
+            )
     }
 
-    data class EditFollowupEntryRequest(
-        val text: String
-    )
+    data class EditFollowupEntryRequest(val text: String)
 
     @PostMapping("/vasu/{id}/update-state")
     fun updateDocumentState(
@@ -246,27 +288,65 @@ class VasuController(
     ) {
         Audit.VasuDocumentEventCreate.log(id)
 
-        val events = if (body.eventType in listOf(MOVED_TO_READY, MOVED_TO_REVIEWED)) {
-            listOf(PUBLISHED, body.eventType)
-        } else {
-            listOf(body.eventType)
-        }
+        val events =
+            if (body.eventType in listOf(MOVED_TO_READY, MOVED_TO_REVIEWED)) {
+                listOf(PUBLISHED, body.eventType)
+            } else {
+                listOf(body.eventType)
+            }
 
         events.forEach { eventType ->
             when (eventType) {
-                PUBLISHED -> accessControl.requirePermissionFor(user, clock, Action.VasuDocument.EVENT_PUBLISHED, id)
-                MOVED_TO_READY -> accessControl.requirePermissionFor(user, clock, Action.VasuDocument.EVENT_MOVED_TO_READY, id)
-                RETURNED_TO_READY -> accessControl.requirePermissionFor(user, clock, Action.VasuDocument.EVENT_RETURNED_TO_READY, id)
-                MOVED_TO_REVIEWED -> accessControl.requirePermissionFor(user, clock, Action.VasuDocument.EVENT_MOVED_TO_REVIEWED, id)
-                RETURNED_TO_REVIEWED -> accessControl.requirePermissionFor(user, clock, Action.VasuDocument.EVENT_RETURNED_TO_REVIEWED, id)
-                MOVED_TO_CLOSED -> accessControl.requirePermissionFor(user, clock, Action.VasuDocument.EVENT_MOVED_TO_CLOSED, id)
+                PUBLISHED ->
+                    accessControl.requirePermissionFor(
+                        user,
+                        clock,
+                        Action.VasuDocument.EVENT_PUBLISHED,
+                        id
+                    )
+                MOVED_TO_READY ->
+                    accessControl.requirePermissionFor(
+                        user,
+                        clock,
+                        Action.VasuDocument.EVENT_MOVED_TO_READY,
+                        id
+                    )
+                RETURNED_TO_READY ->
+                    accessControl.requirePermissionFor(
+                        user,
+                        clock,
+                        Action.VasuDocument.EVENT_RETURNED_TO_READY,
+                        id
+                    )
+                MOVED_TO_REVIEWED ->
+                    accessControl.requirePermissionFor(
+                        user,
+                        clock,
+                        Action.VasuDocument.EVENT_MOVED_TO_REVIEWED,
+                        id
+                    )
+                RETURNED_TO_REVIEWED ->
+                    accessControl.requirePermissionFor(
+                        user,
+                        clock,
+                        Action.VasuDocument.EVENT_RETURNED_TO_REVIEWED,
+                        id
+                    )
+                MOVED_TO_CLOSED ->
+                    accessControl.requirePermissionFor(
+                        user,
+                        clock,
+                        Action.VasuDocument.EVENT_MOVED_TO_CLOSED,
+                        id
+                    )
             }.exhaust()
         }
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val currentState = tx.getVasuDocumentMaster(id)?.documentState
-                    ?: throw NotFound("Vasu was not found")
+                val currentState =
+                    tx.getVasuDocumentMaster(id)?.documentState
+                        ?: throw NotFound("Vasu was not found")
                 validateStateTransition(eventType = body.eventType, currentState = currentState)
 
                 if (events.contains(PUBLISHED)) {
@@ -288,15 +368,18 @@ class VasuController(
         }
     }
 
-    private fun validateStateTransition(eventType: VasuDocumentEventType, currentState: VasuDocumentState) {
+    private fun validateStateTransition(
+        eventType: VasuDocumentEventType,
+        currentState: VasuDocumentState
+    ) {
         when (eventType) {
-            PUBLISHED -> currentState !== VasuDocumentState.CLOSED
-            MOVED_TO_READY -> currentState === VasuDocumentState.DRAFT
-            RETURNED_TO_READY -> currentState === VasuDocumentState.REVIEWED
-            MOVED_TO_REVIEWED -> currentState === VasuDocumentState.READY
-            RETURNED_TO_REVIEWED -> currentState === VasuDocumentState.CLOSED
-            MOVED_TO_CLOSED -> true
-        }
+                PUBLISHED -> currentState !== VasuDocumentState.CLOSED
+                MOVED_TO_READY -> currentState === VasuDocumentState.DRAFT
+                RETURNED_TO_READY -> currentState === VasuDocumentState.REVIEWED
+                MOVED_TO_REVIEWED -> currentState === VasuDocumentState.READY
+                RETURNED_TO_REVIEWED -> currentState === VasuDocumentState.CLOSED
+                MOVED_TO_CLOSED -> true
+            }
             .exhaust()
             .let { valid -> if (!valid) throw Conflict("Invalid state transition") }
     }

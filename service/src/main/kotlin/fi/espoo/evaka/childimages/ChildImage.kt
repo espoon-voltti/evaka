@@ -13,11 +13,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.springframework.web.multipart.MultipartFile
 
-data class ChildImage(
-    val id: ChildImageId,
-    val childId: ChildId,
-    val updated: HelsinkiDateTime
-)
+data class ChildImage(val id: ChildImageId, val childId: ChildId, val updated: HelsinkiDateTime)
 
 const val childImagesBucketPrefix = "child-images/"
 
@@ -57,7 +53,8 @@ fun removeImage(
     childId: ChildId
 ) {
     db.transaction { tx ->
-        tx.deleteChildImage(childId)
-            ?.let { imageId -> documentClient.delete(bucket, "$childImagesBucketPrefix$imageId") }
+        tx.deleteChildImage(childId)?.let { imageId ->
+            documentClient.delete(bucket, "$childImagesBucketPrefix$imageId")
+        }
     }
 }

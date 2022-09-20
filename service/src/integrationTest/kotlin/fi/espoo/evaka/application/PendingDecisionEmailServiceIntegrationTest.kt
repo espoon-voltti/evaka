@@ -28,21 +28,19 @@ import fi.espoo.evaka.testAdult_6
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired
-    lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
-    @Autowired
-    lateinit var scheduledJobs: ScheduledJobs
+    @Autowired lateinit var scheduledJobs: ScheduledJobs
 
     private val applicationId = ApplicationId(UUID.randomUUID())
     private val childId = testChild_1.id
@@ -80,8 +78,20 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
 
     @Test
     fun `Pending decision older than one week sends reminder email`() {
-        createPendingDecision(LocalDate.now().minusDays(8), null, null, 0, type = DecisionType.PRESCHOOL)
-        createPendingDecision(LocalDate.now().minusDays(8), null, null, 0, type = DecisionType.PRESCHOOL_DAYCARE)
+        createPendingDecision(
+            LocalDate.now().minusDays(8),
+            null,
+            null,
+            0,
+            type = DecisionType.PRESCHOOL
+        )
+        createPendingDecision(
+            LocalDate.now().minusDays(8),
+            null,
+            null,
+            0,
+            type = DecisionType.PRESCHOOL_DAYCARE
+        )
 
         assertEquals(1, runPendingDecisionEmailAsyncJobs())
 
@@ -108,7 +118,12 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
 
     @Test
     fun `Pending decision older than one week with sent reminder older than one week sends a new email`() {
-        createPendingDecision(LocalDate.now().minusDays(16), null, HelsinkiDateTime.now().minusSeconds(eightDaySeconds), 1)
+        createPendingDecision(
+            LocalDate.now().minusDays(16),
+            null,
+            HelsinkiDateTime.now().minusSeconds(eightDaySeconds),
+            1
+        )
         assertEquals(1, runPendingDecisionEmailAsyncJobs())
 
         val sentMails = MockEmailClient.emails
@@ -133,7 +148,14 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
 
     @Test
     fun `Bug verification - Pending decision with pending_decision_email_sent older than 1 week but already two reminders should not send reminder`() {
-        createPendingDecision(LocalDate.now().minusDays(8), null, HelsinkiDateTime.from(LocalDate.now().minusDays(8).atStartOfDay().toInstant(ZoneOffset.UTC)), 2)
+        createPendingDecision(
+            LocalDate.now().minusDays(8),
+            null,
+            HelsinkiDateTime.from(
+                LocalDate.now().minusDays(8).atStartOfDay().toInstant(ZoneOffset.UTC)
+            ),
+            2
+        )
         assertEquals(0, runPendingDecisionEmailAsyncJobs())
         val sentMails = MockEmailClient.emails
         assertEquals(0, sentMails.size)
@@ -147,7 +169,14 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
         assertEquals(0, sentMails.size)
     }
 
-    private fun assertEmail(email: MockEmail?, expectedToAddress: String, expectedFromAddress: String, expectedSubject: String, expectedHtmlPart: String, expectedTextPart: String) {
+    private fun assertEmail(
+        email: MockEmail?,
+        expectedToAddress: String,
+        expectedFromAddress: String,
+        expectedSubject: String,
+        expectedHtmlPart: String,
+        expectedTextPart: String
+    ) {
         assertNotNull(email)
         assertEquals(expectedToAddress, email.toAddress)
         assertEquals(expectedFromAddress, email.fromAddress)
@@ -156,7 +185,13 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
         assert(email.textBody.contains(expectedTextPart, true))
     }
 
-    private fun createPendingDecision(sentDate: LocalDate, resolved: HelsinkiDateTime?, pendingDecisionEmailSent: HelsinkiDateTime?, pendingDecisionEmailsSentCount: Int, type: DecisionType = DecisionType.DAYCARE) {
+    private fun createPendingDecision(
+        sentDate: LocalDate,
+        resolved: HelsinkiDateTime?,
+        pendingDecisionEmailSent: HelsinkiDateTime?,
+        pendingDecisionEmailsSentCount: Int,
+        type: DecisionType = DecisionType.DAYCARE
+    ) {
         db.transaction { tx ->
             tx.insertTestDecision(
                 TestDecision(

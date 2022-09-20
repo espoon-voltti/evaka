@@ -14,10 +14,10 @@ import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
-import java.time.LocalDate
 
 data class Message(
     val id: MessageId,
@@ -35,8 +35,7 @@ data class MessageThread(
     val type: MessageType,
     val title: String,
     val urgent: Boolean,
-    @Json
-    val messages: List<Message>,
+    @Json val messages: List<Message>,
 )
 
 data class SentMessage(
@@ -46,11 +45,9 @@ data class SentMessage(
     val threadTitle: String,
     val type: MessageType,
     val urgent: Boolean,
-    @Json
-    val recipients: Set<MessageAccount>,
+    @Json val recipients: Set<MessageAccount>,
     val recipientNames: List<String>,
-    @Json
-    val attachments: List<MessageAttachment>,
+    @Json val attachments: List<MessageAttachment>,
 )
 
 enum class MessageType {
@@ -77,25 +74,18 @@ enum class AccountType {
     CITIZEN
 }
 
-data class MessageAccount(
-    val id: MessageAccountId,
-    val name: String,
-    val type: AccountType
-)
+data class MessageAccount(val id: MessageAccountId, val name: String, val type: AccountType)
 
 data class Group(
-    @PropagateNull
-    val id: GroupId,
+    @PropagateNull val id: GroupId,
     val name: String,
     val unitId: DaycareId,
     val unitName: String,
 )
 
 data class AuthorizedMessageAccount(
-    @Nested("account_")
-    val account: MessageAccount,
-    @Nested("group_")
-    val daycareGroup: Group?
+    @Nested("account_") val account: MessageAccount,
+    @Nested("group_") val daycareGroup: Group?
 )
 
 enum class MessageRecipientType {

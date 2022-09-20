@@ -22,5 +22,8 @@ class KoskiConfig {
         ophEnv: ObjectProvider<OphEnv>,
         fuel: FuelManager,
         asyncJobRunner: AsyncJobRunner<AsyncJob>
-    ): KoskiClient? = koskiEnv.ifAvailable?.let { kEnv -> ophEnv.ifAvailable?.let { oEnv -> KoskiClient(kEnv, oEnv, fuel, asyncJobRunner) } }
+    ): KoskiClient? =
+        koskiEnv.ifAvailable?.let { kEnv ->
+            ophEnv.ifAvailable?.let { oEnv -> KoskiClient(kEnv, oEnv, fuel, asyncJobRunner) }
+        }
 }

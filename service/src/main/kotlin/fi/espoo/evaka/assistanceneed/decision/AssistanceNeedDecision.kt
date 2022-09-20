@@ -12,113 +12,94 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
-import java.time.LocalDate
 
 data class AssistanceNeedDecision(
     val id: AssistanceNeedDecisionId,
     val decisionNumber: Long? = null,
-    @Nested("child")
-    val child: AssistanceNeedDecisionChild?,
+    @Nested("child") val child: AssistanceNeedDecisionChild?,
     val validityPeriod: DateRange,
     val status: AssistanceNeedDecisionStatus,
-
     val language: AssistanceNeedDecisionLanguage,
     val decisionMade: LocalDate?,
     val sentForDecision: LocalDate?,
-    @Nested("selected_unit")
-    val selectedUnit: UnitInfo?,
-    @Nested("preparer_1")
-    val preparedBy1: AssistanceNeedDecisionEmployee?,
-    @Nested("preparer_2")
-    val preparedBy2: AssistanceNeedDecisionEmployee?,
-    @Nested("decision_maker")
-    val decisionMaker: AssistanceNeedDecisionMaker?,
-
+    @Nested("selected_unit") val selectedUnit: UnitInfo?,
+    @Nested("preparer_1") val preparedBy1: AssistanceNeedDecisionEmployee?,
+    @Nested("preparer_2") val preparedBy2: AssistanceNeedDecisionEmployee?,
+    @Nested("decision_maker") val decisionMaker: AssistanceNeedDecisionMaker?,
     val pedagogicalMotivation: String?,
     @Nested("structural_motivation_opt")
     val structuralMotivationOptions: StructuralMotivationOptions,
     val structuralMotivationDescription: String?,
     val careMotivation: String?,
-    @Nested("service_opt")
-    val serviceOptions: ServiceOptions,
+    @Nested("service_opt") val serviceOptions: ServiceOptions,
     val servicesMotivation: String?,
     val expertResponsibilities: String?,
     val guardiansHeardOn: LocalDate?,
-    @Json
-    val guardianInfo: Set<AssistanceNeedDecisionGuardian>,
+    @Json val guardianInfo: Set<AssistanceNeedDecisionGuardian>,
     val viewOfGuardians: String?,
     val otherRepresentativeHeard: Boolean,
     val otherRepresentativeDetails: String?,
-
     val assistanceLevels: Set<AssistanceLevel>,
     val motivationForDecision: String?,
-
     val hasDocument: Boolean
 ) {
-    fun toForm() = AssistanceNeedDecisionForm(
-        decisionNumber,
-        validityPeriod,
-        status,
-        language,
-        decisionMade,
-        sentForDecision,
-        selectedUnit = selectedUnit?.toForm(),
-        preparedBy1 = preparedBy1?.toForm(),
-        preparedBy2 = preparedBy2?.toForm(),
-        decisionMaker = decisionMaker?.toForm(),
-        pedagogicalMotivation,
-        structuralMotivationOptions,
-        structuralMotivationDescription,
-        careMotivation,
-        serviceOptions,
-        servicesMotivation,
-        expertResponsibilities,
-        guardiansHeardOn,
-        guardianInfo,
-        viewOfGuardians,
-        otherRepresentativeHeard,
-        otherRepresentativeDetails,
-        assistanceLevels,
-        motivationForDecision
-    )
+    fun toForm() =
+        AssistanceNeedDecisionForm(
+            decisionNumber,
+            validityPeriod,
+            status,
+            language,
+            decisionMade,
+            sentForDecision,
+            selectedUnit = selectedUnit?.toForm(),
+            preparedBy1 = preparedBy1?.toForm(),
+            preparedBy2 = preparedBy2?.toForm(),
+            decisionMaker = decisionMaker?.toForm(),
+            pedagogicalMotivation,
+            structuralMotivationOptions,
+            structuralMotivationDescription,
+            careMotivation,
+            serviceOptions,
+            servicesMotivation,
+            expertResponsibilities,
+            guardiansHeardOn,
+            guardianInfo,
+            viewOfGuardians,
+            otherRepresentativeHeard,
+            otherRepresentativeDetails,
+            assistanceLevels,
+            motivationForDecision
+        )
 }
 
 data class AssistanceNeedDecisionForm(
     val decisionNumber: Long? = null,
     val validityPeriod: DateRange,
     val status: AssistanceNeedDecisionStatus,
-
     val language: AssistanceNeedDecisionLanguage,
     val decisionMade: LocalDate?,
     val sentForDecision: LocalDate?,
-    @Nested("selected_unit")
-    val selectedUnit: UnitIdInfo?,
-    @Nested("preparer_1")
-    val preparedBy1: AssistanceNeedDecisionEmployeeForm?,
-    @Nested("preparer_2")
-    val preparedBy2: AssistanceNeedDecisionEmployeeForm?,
-    @Nested("decision_maker")
-    val decisionMaker: AssistanceNeedDecisionMakerForm?,
-
+    @Nested("selected_unit") val selectedUnit: UnitIdInfo?,
+    @Nested("preparer_1") val preparedBy1: AssistanceNeedDecisionEmployeeForm?,
+    @Nested("preparer_2") val preparedBy2: AssistanceNeedDecisionEmployeeForm?,
+    @Nested("decision_maker") val decisionMaker: AssistanceNeedDecisionMakerForm?,
     val pedagogicalMotivation: String?,
     @Nested("structural_motivation_opt")
     val structuralMotivationOptions: StructuralMotivationOptions,
     val structuralMotivationDescription: String?,
     val careMotivation: String?,
-    @Nested("service_opt")
-    val serviceOptions: ServiceOptions,
+    @Nested("service_opt") val serviceOptions: ServiceOptions,
     val servicesMotivation: String?,
     val expertResponsibilities: String?,
     val guardiansHeardOn: LocalDate?,
-    @Json
-    val guardianInfo: Set<AssistanceNeedDecisionGuardian>,
+    @Json val guardianInfo: Set<AssistanceNeedDecisionGuardian>,
     val viewOfGuardians: String?,
     val otherRepresentativeHeard: Boolean,
     val otherRepresentativeDetails: String?,
-
     val assistanceLevels: Set<AssistanceLevel>,
     val motivationForDecision: String?
 )
@@ -127,26 +108,26 @@ data class AssistanceNeedDecisionBasics(
     val id: AssistanceNeedDecisionId,
     val validityPeriod: DateRange,
     val status: AssistanceNeedDecisionStatus,
-
     val decisionMade: LocalDate?,
     val sentForDecision: LocalDate?,
-    @Nested("selected_unit")
-    val selectedUnit: UnitInfoBasics?,
-
+    @Nested("selected_unit") val selectedUnit: UnitInfoBasics?,
     val created: HelsinkiDateTime
 )
 
 enum class AssistanceNeedDecisionStatus {
-    DRAFT, NEEDS_WORK, ACCEPTED, REJECTED
+    DRAFT,
+    NEEDS_WORK,
+    ACCEPTED,
+    REJECTED
 }
 
 enum class AssistanceNeedDecisionLanguage {
-    FI, SV
+    FI,
+    SV
 }
 
 data class AssistanceNeedDecisionEmployee(
-    @PropagateNull
-    val employeeId: EmployeeId?,
+    @PropagateNull val employeeId: EmployeeId?,
     val title: String?,
     val name: String? = null,
     val phoneNumber: String?
@@ -155,15 +136,13 @@ data class AssistanceNeedDecisionEmployee(
 }
 
 data class AssistanceNeedDecisionEmployeeForm(
-    @PropagateNull
-    val employeeId: EmployeeId?,
+    @PropagateNull val employeeId: EmployeeId?,
     val title: String?,
     val phoneNumber: String?
 )
 
 data class AssistanceNeedDecisionMaker(
-    @PropagateNull
-    val employeeId: EmployeeId?,
+    @PropagateNull val employeeId: EmployeeId?,
     val title: String?,
     val name: String? = null
 ) {
@@ -171,8 +150,7 @@ data class AssistanceNeedDecisionMaker(
 }
 
 data class AssistanceNeedDecisionMakerForm(
-    @PropagateNull
-    val employeeId: EmployeeId?,
+    @PropagateNull val employeeId: EmployeeId?,
     val title: String?
 )
 
@@ -202,12 +180,14 @@ data class AssistanceNeedDecisionGuardian(
 )
 
 enum class AssistanceLevel {
-    ASSISTANCE_ENDS, ASSISTANCE_SERVICES_FOR_TIME, ENHANCED_ASSISTANCE, SPECIAL_ASSISTANCE
+    ASSISTANCE_ENDS,
+    ASSISTANCE_SERVICES_FOR_TIME,
+    ENHANCED_ASSISTANCE,
+    SPECIAL_ASSISTANCE
 }
 
 data class UnitInfo(
-    @PropagateNull
-    val id: DaycareId?,
+    @PropagateNull val id: DaycareId?,
     val name: String? = null,
     val streetAddress: String? = null,
     val postalCode: String? = null,
@@ -216,19 +196,12 @@ data class UnitInfo(
     fun toForm() = UnitIdInfo(id)
 }
 
-data class UnitIdInfo(
-    val id: DaycareId?
-)
+data class UnitIdInfo(val id: DaycareId?)
 
-data class UnitInfoBasics(
-    @PropagateNull
-    val id: DaycareId?,
-    val name: String? = null
-)
+data class UnitInfoBasics(@PropagateNull val id: DaycareId?, val name: String? = null)
 
 data class AssistanceNeedDecisionChild(
-    @PropagateNull
-    val id: ChildId?,
+    @PropagateNull val id: ChildId?,
     val name: String?,
     val dateOfBirth: LocalDate?
 )
@@ -238,16 +211,10 @@ data class AssistanceNeedDecisionCitizenListItem(
     val childId: ChildId,
     val validityPeriod: DateRange,
     val status: AssistanceNeedDecisionStatus,
-
     val decisionMade: LocalDate,
-    @Nested("selected_unit")
-    val selectedUnit: UnitInfoBasics?,
-
+    @Nested("selected_unit") val selectedUnit: UnitInfoBasics?,
     val assistanceLevels: Set<AssistanceLevel>,
     val isUnread: Boolean
 )
 
-data class UnreadAssistanceNeedDecisionItem(
-    val childId: ChildId,
-    val count: Int
-)
+data class UnreadAssistanceNeedDecisionItem(val childId: ChildId, val count: Int)

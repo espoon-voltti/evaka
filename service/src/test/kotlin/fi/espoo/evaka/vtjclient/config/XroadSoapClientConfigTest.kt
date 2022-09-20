@@ -30,10 +30,11 @@ import org.springframework.ws.transport.http.HttpsUrlConnectionMessageSender
 @ExtendWith(MockitoExtension::class)
 class XroadSoapClientConfigTest {
 
-    private val contextRunner = ApplicationContextRunner()
-        .withConfiguration(of(CommonSoapClientTestConfig::class.java))
-        .withInitializer(ConfigDataApplicationContextInitializer())
-        .withPropertyValues("fi.espoo.voltti.vtj.xroad.keyStore.location=file://fake")
+    private val contextRunner =
+        ApplicationContextRunner()
+            .withConfiguration(of(CommonSoapClientTestConfig::class.java))
+            .withInitializer(ConfigDataApplicationContextInitializer())
+            .withPropertyValues("fi.espoo.voltti.vtj.xroad.keyStore.location=file://fake")
 
     @Test
     fun `all soap https and client authentication beans should be loaded in production profile in voltti-env production`() {
@@ -65,7 +66,8 @@ class XroadSoapClientConfigTest {
 
     @Test
     fun `just soap https beans without client authentication beans should be loaded in voltti-env test`() {
-        contextRunner.withPropertyValues("spring.profiles.active=production", "voltti.env=test")
+        contextRunner
+            .withPropertyValues("spring.profiles.active=production", "voltti.env=test")
             .run {
                 assertThat(it).hasSingleBean(HttpsUrlConnectionMessageSender::class.java)
                 assertThat(it).hasSingleBean(Jaxb2Marshaller::class.java)
@@ -76,7 +78,8 @@ class XroadSoapClientConfigTest {
 
     @Test
     fun `just soap https beans without client authentication beans should be loaded in voltti-env dev`() {
-        contextRunner.withPropertyValues("spring.profiles.active=production", "voltti.env=dev")
+        contextRunner
+            .withPropertyValues("spring.profiles.active=production", "voltti.env=dev")
             .run {
                 assertThat(it).hasSingleBean(HttpsUrlConnectionMessageSender::class.java)
                 assertThat(it).hasSingleBean(Jaxb2Marshaller::class.java)
@@ -87,36 +90,35 @@ class XroadSoapClientConfigTest {
 
     @Test
     fun `no soap beans at all should be loaded in dev profile`() {
-        contextRunner.withPropertyValues("spring.profiles.active=dev")
-            .run {
-                assertThat(it).doesNotHaveBean(HttpsUrlConnectionMessageSender::class.java)
-                assertThat(it).doesNotHaveBean(Jaxb2Marshaller::class.java)
-                assertThat(it).doesNotHaveBean(WebServiceTemplate::class.java)
-            }
+        contextRunner.withPropertyValues("spring.profiles.active=dev").run {
+            assertThat(it).doesNotHaveBean(HttpsUrlConnectionMessageSender::class.java)
+            assertThat(it).doesNotHaveBean(Jaxb2Marshaller::class.java)
+            assertThat(it).doesNotHaveBean(WebServiceTemplate::class.java)
+        }
     }
 
     @Test
     fun `no soap beans at all should be loaded in local profile`() {
-        contextRunner.withPropertyValues("spring.profiles.active=local", "voltti.env=local")
-            .run {
-                assertThat(it).doesNotHaveBean(HttpsUrlConnectionMessageSender::class.java)
-                assertThat(it).doesNotHaveBean(Jaxb2Marshaller::class.java)
-                assertThat(it).doesNotHaveBean(WebServiceTemplate::class.java)
-            }
+        contextRunner.withPropertyValues("spring.profiles.active=local", "voltti.env=local").run {
+            assertThat(it).doesNotHaveBean(HttpsUrlConnectionMessageSender::class.java)
+            assertThat(it).doesNotHaveBean(Jaxb2Marshaller::class.java)
+            assertThat(it).doesNotHaveBean(WebServiceTemplate::class.java)
+        }
     }
 
     @Test
     fun `just soap https beans without client authentication beans should be loaded in vtj-dev profile`() {
-        contextRunner.withPropertyValues("spring.profiles.active=vtj-dev")
-            .run {
-                assertThat(it).hasSingleBean(HttpsUrlConnectionMessageSender::class.java)
-                assertThat(it).hasSingleBean(Jaxb2Marshaller::class.java)
-                assertThat(it).hasSingleBean(WebServiceTemplate::class.java)
-                verify(it.mockTrustBean).`object`
-            }
+        contextRunner.withPropertyValues("spring.profiles.active=vtj-dev").run {
+            assertThat(it).hasSingleBean(HttpsUrlConnectionMessageSender::class.java)
+            assertThat(it).hasSingleBean(Jaxb2Marshaller::class.java)
+            assertThat(it).hasSingleBean(WebServiceTemplate::class.java)
+            verify(it.mockTrustBean).`object`
+        }
     }
 
-    // this is glue to enable verifying the mock interactions while also using the application context runner to load
+    // this is glue to enable verifying the mock interactions while also using the application
+    // context
+    // runner to load
     // the config. perhaps there's a cleaner way to test configs with mocks?
 
     private val AssertableApplicationContext.mockKeyBean: KeyManagersFactoryBean
@@ -132,8 +134,8 @@ class XroadSoapClientConfigTest {
         lateinit var keyBean: KeyManagersFactoryBean
 
         @Bean
-        fun keyManagers() = mock<KeyManagersFactoryBean>()
-            .apply {
+        fun keyManagers() =
+            mock<KeyManagersFactoryBean>().apply {
                 whenever(this.`object`).thenReturn(arrayOf(mock()))
                 keyBean = this
             }
@@ -146,13 +148,12 @@ class XroadSoapClientConfigTest {
         lateinit var trustBean: TrustManagersFactoryBean
 
         @Bean
-        fun trustManagers() = mock<TrustManagersFactoryBean>()
-            .apply {
+        fun trustManagers() =
+            mock<TrustManagersFactoryBean>().apply {
                 lenient().`when`(this.`object`).thenReturn(arrayOf(mock()))
                 trustBean = this
             }
 
-        @Bean
-        fun xroadEnv(env: Environment) = VtjXroadEnv.fromEnvironment(env)
+        @Bean fun xroadEnv(env: Environment) = VtjXroadEnv.fromEnvironment(env)
     }
 }

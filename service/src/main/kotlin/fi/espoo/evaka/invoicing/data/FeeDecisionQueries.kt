@@ -167,11 +167,7 @@ private fun Database.Transaction.upsertDecisions(decisions: List<FeeDecision>) {
     """
 
     val batch = prepareBatch(sql)
-    decisions.forEach { decision ->
-        batch
-            .bindKotlin(decision)
-            .add()
-    }
+    decisions.forEach { decision -> batch.bindKotlin(decision).add() }
     batch.execute()
 }
 
@@ -181,7 +177,9 @@ private fun Database.Transaction.replaceChildren(decisions: List<FeeDecision>) {
     insertChildren(partsWithDecisionIds)
 }
 
-private fun Database.Transaction.insertChildren(decisions: List<Pair<FeeDecisionId, List<FeeDecisionChild>>>) {
+private fun Database.Transaction.insertChildren(
+    decisions: List<Pair<FeeDecisionId, List<FeeDecisionChild>>>
+) {
     val sql =
         """
         INSERT INTO fee_decision_child (
@@ -256,9 +254,7 @@ private fun Database.Transaction.deleteChildren(decisionIds: List<FeeDecisionId>
 fun Database.Transaction.deleteFeeDecisions(ids: List<FeeDecisionId>) {
     if (ids.isEmpty()) return
 
-    createUpdate("DELETE FROM fee_decision WHERE id = ANY(:ids)")
-        .bind("ids", ids)
-        .execute()
+    createUpdate("DELETE FROM fee_decision WHERE id = ANY(:ids)").bind("ids", ids).execute()
 }
 
 fun Database.Read.searchFeeDecisions(
@@ -277,36 +273,39 @@ fun Database.Read.searchFeeDecisions(
     searchByStartDate: Boolean = false,
     financeDecisionHandlerId: EmployeeId?
 ): Paged<FeeDecisionSummary> {
-    val sortColumn = when (sortBy) {
-        FeeDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
-        FeeDecisionSortParam.VALIDITY -> "lower(decision.valid_during)"
-        FeeDecisionSortParam.NUMBER -> "decision.decision_number"
-        FeeDecisionSortParam.CREATED -> "decision.created"
-        FeeDecisionSortParam.SENT -> "decision.sent_at"
-        FeeDecisionSortParam.STATUS -> "decision.status"
-        FeeDecisionSortParam.FINAL_PRICE -> "sum"
-    }
+    val sortColumn =
+        when (sortBy) {
+            FeeDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
+            FeeDecisionSortParam.VALIDITY -> "lower(decision.valid_during)"
+            FeeDecisionSortParam.NUMBER -> "decision.decision_number"
+            FeeDecisionSortParam.CREATED -> "decision.created"
+            FeeDecisionSortParam.SENT -> "decision.sent_at"
+            FeeDecisionSortParam.STATUS -> "decision.status"
+            FeeDecisionSortParam.FINAL_PRICE -> "sum"
+        }
 
     val retroactiveOnly = distinctiveParams.contains(DistinctiveParams.RETROACTIVE)
 
-    val params = listOfNotNull(
-        Binding.of("page", page),
-        Binding.of("pageSize", pageSize),
-        Binding.of("status", statuses),
-        Binding.of("area", areas),
-        Binding.of("unit", unit),
-        Binding.of("espooPostOffice", "ESPOO"),
-        Binding.of("start_date", startDate),
-        Binding.of("end_date", endDate),
-        Binding.of("finance_decision_handler", financeDecisionHandlerId),
-        Binding.of("firstPlacementStartDate", clock.today().withDayOfMonth(1)),
-        if (retroactiveOnly) Binding.of("now", clock.now()) else null
-    )
+    val params =
+        listOfNotNull(
+            Binding.of("page", page),
+            Binding.of("pageSize", pageSize),
+            Binding.of("status", statuses),
+            Binding.of("area", areas),
+            Binding.of("unit", unit),
+            Binding.of("espooPostOffice", "ESPOO"),
+            Binding.of("start_date", startDate),
+            Binding.of("end_date", endDate),
+            Binding.of("finance_decision_handler", financeDecisionHandlerId),
+            Binding.of("firstPlacementStartDate", clock.today().withDayOfMonth(1)),
+            if (retroactiveOnly) Binding.of("now", clock.now()) else null
+        )
 
     val numberParamsRaw = splitSearchText(searchTerms).filter(decisionNumberRegex::matches)
     val searchTextWithoutNumbers = searchTerms.replace(decisionNumberRegex, "")
 
-    val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "partner", "child"), searchTextWithoutNumbers)
+    val (freeTextQuery, freeTextParams) =
+        freeTextSearchQuery(listOf("head", "partner", "child"), searchTextWithoutNumbers)
 
     val withNullHours = distinctiveParams.contains(DistinctiveParams.UNCONFIRMED_HOURS)
 
@@ -314,25 +313,38 @@ fun Database.Read.searchFeeDecisions(
 
     val noStartingPlacements = distinctiveParams.contains(DistinctiveParams.NO_STARTING_PLACEMENTS)
 
-    val (numberQuery, numberParams) = disjointNumberQuery("decision", "decision_number", numberParamsRaw)
+    val (numberQuery, numberParams) =
+        disjointNumberQuery("decision", "decision_number", numberParamsRaw)
 
-    val conditions = listOfNotNull(
-        if (statuses.isNotEmpty()) "status = ANY(:status::fee_decision_status[])" else null,
-        if (areas.isNotEmpty()) "youngest_child.area = ANY(:area)" else null,
-        if (unit != null) "part.placement_unit_id = :unit" else null,
-        if (withNullHours) "part.service_need_missing" else null,
-        if (havingExternalChildren) "child.post_office <> '' AND child.post_office NOT ILIKE :espooPostOffice" else null,
-        if (retroactiveOnly) "lower(decision.valid_during) < date_trunc('month', COALESCE(decision.approved_at, :now))" else null,
-        if (numberParamsRaw.isNotEmpty()) numberQuery else null,
-        if (searchTextWithoutNumbers.isNotBlank()) freeTextQuery else null,
-        if ((startDate != null || endDate != null) && !searchByStartDate) "daterange(:start_date, :end_date, '[]') && valid_during" else null,
-        if ((startDate != null || endDate != null) && searchByStartDate)
-        // valid_during overlaps but does not extend to the left of search range
-        // = start date of valid_during is included in the search range
-            "(valid_during && daterange(:start_date, :end_date, '[]') AND valid_during &> daterange(:start_date, :end_date, '[]'))" else null,
-        if (financeDecisionHandlerId != null) "youngest_child.finance_decision_handler = :finance_decision_handler" else null,
-        if (noStartingPlacements) "decisions_with_first_placement_starting_this_month.fee_decision_id IS NULL" else null
-    )
+    val conditions =
+        listOfNotNull(
+            if (statuses.isNotEmpty()) "status = ANY(:status::fee_decision_status[])" else null,
+            if (areas.isNotEmpty()) "youngest_child.area = ANY(:area)" else null,
+            if (unit != null) "part.placement_unit_id = :unit" else null,
+            if (withNullHours) "part.service_need_missing" else null,
+            if (havingExternalChildren)
+                "child.post_office <> '' AND child.post_office NOT ILIKE :espooPostOffice"
+            else null,
+            if (retroactiveOnly)
+                "lower(decision.valid_during) < date_trunc('month', COALESCE(decision.approved_at, :now))"
+            else null,
+            if (numberParamsRaw.isNotEmpty()) numberQuery else null,
+            if (searchTextWithoutNumbers.isNotBlank()) freeTextQuery else null,
+            if ((startDate != null || endDate != null) && !searchByStartDate)
+                "daterange(:start_date, :end_date, '[]') && valid_during"
+            else null,
+            if ((startDate != null || endDate != null) && searchByStartDate)
+            // valid_during overlaps but does not extend to the left of search range
+            // = start date of valid_during is included in the search range
+            "(valid_during && daterange(:start_date, :end_date, '[]') AND valid_during &> daterange(:start_date, :end_date, '[]'))"
+            else null,
+            if (financeDecisionHandlerId != null)
+                "youngest_child.finance_decision_handler = :finance_decision_handler"
+            else null,
+            if (noStartingPlacements)
+                "decisions_with_first_placement_starting_this_month.fee_decision_id IS NULL"
+            else null
+        )
 
     val youngestChildQuery =
         """
@@ -346,8 +358,10 @@ fun Database.Read.searchFeeDecisions(
             LEFT JOIN daycare ON fee_decision_child.placement_unit_id = daycare.id
             LEFT JOIN care_area ON daycare.care_area_id = care_area.id
         )
-        """.trimIndent()
-    val youngestChildJoin = "LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1"
+        """.trimIndent(
+        )
+    val youngestChildJoin =
+        "LEFT JOIN youngest_child ON decision.id = youngest_child.decision_id AND rownum = 1"
 
     val firstPlacementStartingThisMonthChildQuery =
         """
@@ -359,7 +373,8 @@ fun Database.Read.searchFeeDecisions(
             LEFT JOIN placement preceding ON p.child_id = preceding.child_id AND (p.start_date - interval '1 days') = preceding.end_date AND preceding.type != 'CLUB'::placement_type
             WHERE p.start_date >= :firstPlacementStartDate AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
         )
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     val firstPlacementStartingThisMonthChildIdsQueryJoin =
         "LEFT JOIN decisions_with_first_placement_starting_this_month ON decision.id = decisions_with_first_placement_starting_this_month.fee_decision_id"
@@ -416,7 +431,8 @@ fun Database.Read.searchFeeDecisions(
         LEFT JOIN person AS head ON decision.head_of_family_id = head.id
         LEFT JOIN person AS child ON part.child_id = child.id
         ORDER BY $sortColumn ${sortDirection.name}, decision.id, part.child_date_of_birth DESC
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     return createQuery(sql)
         .addBindings(params)
@@ -429,19 +445,17 @@ fun Database.Read.searchFeeDecisions(
 fun Database.Read.getFeeDecisionsByIds(ids: List<FeeDecisionId>): List<FeeDecision> {
     if (ids.isEmpty()) return emptyList()
 
-    val sql =
-        """
+    val sql = """
 $feeDecisionQueryBase
 WHERE decision.id = ANY(:ids)
 """
 
-    return createQuery(sql)
-        .bind("ids", ids)
-        .mapTo<FeeDecision>()
-        .merge()
+    return createQuery(sql).bind("ids", ids).mapTo<FeeDecision>().merge()
 }
 
-fun Database.Read.getDetailedFeeDecisionsByIds(ids: List<FeeDecisionId>): List<FeeDecisionDetailed> {
+fun Database.Read.getDetailedFeeDecisionsByIds(
+    ids: List<FeeDecisionId>
+): List<FeeDecisionDetailed> {
     if (ids.isEmpty()) return emptyList()
 
     val sql =
@@ -451,10 +465,7 @@ WHERE decision.id = ANY(:ids)
 ORDER BY part.child_date_of_birth DESC
 """
 
-    return createQuery(sql)
-        .bind("ids", ids)
-        .mapTo<FeeDecisionDetailed>()
-        .merge()
+    return createQuery(sql).bind("ids", ids).mapTo<FeeDecisionDetailed>().merge()
 }
 
 fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
@@ -469,14 +480,16 @@ fun Database.Read.getFeeDecision(uuid: FeeDecisionId): FeeDecisionDetailed? {
         .bind("id", uuid)
         .mapTo<FeeDecisionDetailed>()
         .merge()
-        .firstOrNull()?.let { it ->
+        .firstOrNull()
+        ?.let { it ->
             it.copy(
-                partnerIsCodebtor = partnerIsCodebtor(
-                    it.headOfFamily.id,
-                    it.partner?.id,
-                    it.children.map { c -> c.child.id },
-                    it.validDuring
-                )
+                partnerIsCodebtor =
+                    partnerIsCodebtor(
+                        it.headOfFamily.id,
+                        it.partner?.id,
+                        it.children.map { c -> c.child.id },
+                        it.validDuring
+                    )
             )
         }
 }
@@ -497,11 +510,10 @@ fun Database.Read.findFeeDecisionsForHeadOfFamily(
 
     return createQuery(sql)
         .bind("headOfFamilyId", headOfFamilyId)
+        .let { query -> if (period != null) query.bind("period", period) else query }
         .let { query ->
-            if (period != null) query.bind("period", period)
-            else query
+            if (status != null) query.bind("status", status.map { it.name }) else query
         }
-        .let { query -> if (status != null) query.bind("status", status.map { it.name }) else query }
         .mapTo<FeeDecision>()
         .merge()
 }
@@ -540,7 +552,8 @@ fun Database.Transaction.approveFeeDecisionDraftsForSending(
         FROM fee_decision AS fd
         LEFT JOIN youngest_child ON youngest_child.decision_id = :id AND rownum = 1
         WHERE fd.id = :id AND fee_decision.id = fd.id
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     val batch = prepareBatch(sql)
     ids.map { id ->
@@ -595,7 +608,9 @@ fun Database.Transaction.setFeeDecisionSent(clock: EvakaClock, ids: List<FeeDeci
 }
 
 fun Database.Transaction.updateFeeDecisionStatusAndDates(updatedDecisions: List<FeeDecision>) {
-    prepareBatch("UPDATE fee_decision SET status = :status::fee_decision_status, valid_during = :validDuring WHERE id = :id")
+    prepareBatch(
+            "UPDATE fee_decision SET status = :status::fee_decision_status, valid_during = :validDuring WHERE id = :id"
+        )
         .also { batch ->
             updatedDecisions.forEach { decision ->
                 batch
@@ -616,10 +631,7 @@ fun Database.Transaction.updateFeeDecisionDocumentKey(id: FeeDecisionId, key: St
         WHERE id = :id
     """
 
-    createUpdate(sql)
-        .bind("id", id)
-        .bind("key", key)
-        .execute()
+    createUpdate(sql).bind("id", id).bind("key", key).execute()
 }
 
 fun Database.Read.getFeeDecisionDocumentKey(decisionId: FeeDecisionId): String? {
@@ -630,14 +642,11 @@ fun Database.Read.getFeeDecisionDocumentKey(decisionId: FeeDecisionId): String? 
         WHERE id = :id
     """
 
-    return createQuery(sql)
-        .bind("id", decisionId)
-        .mapTo<String>()
-        .firstOrNull()
+    return createQuery(sql).bind("id", decisionId).mapTo<String>().firstOrNull()
 }
 
 fun Database.Transaction.setFeeDecisionType(id: FeeDecisionId, type: FeeDecisionType) {
-    //language=SQL
+    // language=SQL
     val sql =
         """
         UPDATE fee_decision
@@ -670,8 +679,10 @@ fun Database.Read.partnerIsCodebtor(
     partnerId: PersonId?,
     childIds: List<ChildId>,
     dateRange: DateRange
-): Boolean = partnerId != null && createQuery(
-    """
+): Boolean =
+    partnerId != null &&
+        createQuery(
+                """
 WITH partner_children AS (
     SELECT COALESCE(ARRAY_AGG(child_id), '{}') AS ids
     FROM guardian WHERE guardian_id = :partnerId
@@ -682,10 +693,10 @@ WITH partner_children AS (
 SELECT (partner_children.ids || partner_fridge_children.ids) && :childIds
 FROM partner_children, partner_fridge_children
 """
-)
-    .bind("headOfFamilyId", headOfFamilyId)
-    .bind("partnerId", partnerId)
-    .bind("childIds", childIds)
-    .bind("dateRange", dateRange)
-    .mapTo<Boolean>()
-    .first()
+            )
+            .bind("headOfFamilyId", headOfFamilyId)
+            .bind("partnerId", partnerId)
+            .bind("childIds", childIds)
+            .bind("dateRange", dateRange)
+            .mapTo<Boolean>()
+            .first()

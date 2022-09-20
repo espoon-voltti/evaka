@@ -24,19 +24,20 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.withMockedTime
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class ChildConsentControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private final val adminId = EmployeeId(UUID.randomUUID())
     private val admin = AuthenticatedUser.Employee(adminId, setOf(UserRole.ADMIN))
 
-    private val guardian = AuthenticatedUser.Citizen(testAdult_1.id, authLevel = CitizenAuthLevel.STRONG)
+    private val guardian =
+        AuthenticatedUser.Citizen(testAdult_1.id, authLevel = CitizenAuthLevel.STRONG)
 
     private val today = LocalDate.of(2020, 3, 11)
     private val now = HelsinkiDateTime.of(today, LocalTime.of(14, 5, 1))
@@ -106,24 +107,21 @@ class ChildConsentControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     fun `citizen can give consent once`() {
         this.whenCitizenPostChildConsentThenExpectStatus(
             listOf(
-                CitizenChildConsent(
-                    type = ChildConsentType.EVAKA_PROFILE_PICTURE,
-                    given = true
-                )
+                CitizenChildConsent(type = ChildConsentType.EVAKA_PROFILE_PICTURE, given = true)
             ),
             200
         )
 
         val consent = this.whenCitizenGetChildConsentsThenExpectSuccess()[testChild_1.id]
 
-        assertEquals(true, consent?.any { it.type == ChildConsentType.EVAKA_PROFILE_PICTURE && it.given == true })
+        assertEquals(
+            true,
+            consent?.any { it.type == ChildConsentType.EVAKA_PROFILE_PICTURE && it.given == true }
+        )
 
         this.whenCitizenPostChildConsentThenExpectStatus(
             listOf(
-                CitizenChildConsent(
-                    type = ChildConsentType.EVAKA_PROFILE_PICTURE,
-                    given = true
-                )
+                CitizenChildConsent(type = ChildConsentType.EVAKA_PROFILE_PICTURE, given = true)
             ),
             403
         )
@@ -135,21 +133,27 @@ class ChildConsentControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertNull(consents[testChild_2.id])
     }
 
-    private fun whenPostChildConsentThenExpectSuccess(request: List<ChildConsentController.UpdateChildConsentRequest>) {
-        val (_, res, _) = http.post("/children/${testChild_1.id}/consent")
-            .jsonBody(jsonMapper.writeValueAsString(request))
-            .asUser(admin)
-            .withMockedTime(now)
-            .response()
+    private fun whenPostChildConsentThenExpectSuccess(
+        request: List<ChildConsentController.UpdateChildConsentRequest>
+    ) {
+        val (_, res, _) =
+            http
+                .post("/children/${testChild_1.id}/consent")
+                .jsonBody(jsonMapper.writeValueAsString(request))
+                .asUser(admin)
+                .withMockedTime(now)
+                .response()
 
         assertEquals(200, res.statusCode)
     }
 
     private fun whenGetChildConsentsThenExpectSuccess(): List<ChildConsent> {
-        val (_, res, response) = http.get("/children/${testChild_1.id}/consent")
-            .asUser(admin)
-            .withMockedTime(now)
-            .responseObject<List<ChildConsent>>(jsonMapper)
+        val (_, res, response) =
+            http
+                .get("/children/${testChild_1.id}/consent")
+                .asUser(admin)
+                .withMockedTime(now)
+                .responseObject<List<ChildConsent>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return response.get()
@@ -159,20 +163,25 @@ class ChildConsentControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
         request: List<CitizenChildConsent>,
         status: Int
     ) {
-        val (_, res, _) = http.post("/citizen/children/${testChild_1.id}/consent")
-            .jsonBody(jsonMapper.writeValueAsString(request))
-            .asUser(guardian)
-            .withMockedTime(now)
-            .response()
+        val (_, res, _) =
+            http
+                .post("/citizen/children/${testChild_1.id}/consent")
+                .jsonBody(jsonMapper.writeValueAsString(request))
+                .asUser(guardian)
+                .withMockedTime(now)
+                .response()
 
         assertEquals(status, res.statusCode)
     }
 
-    private fun whenCitizenGetChildConsentsThenExpectSuccess(): Map<ChildId, List<CitizenChildConsent>> {
-        val (_, res, response) = http.get("/citizen/children/consents")
-            .asUser(guardian)
-            .withMockedTime(now)
-            .responseObject<Map<ChildId, List<CitizenChildConsent>>>(jsonMapper)
+    private fun whenCitizenGetChildConsentsThenExpectSuccess():
+        Map<ChildId, List<CitizenChildConsent>> {
+        val (_, res, response) =
+            http
+                .get("/citizen/children/consents")
+                .asUser(guardian)
+                .withMockedTime(now)
+                .responseObject<Map<ChildId, List<CitizenChildConsent>>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return response.get()

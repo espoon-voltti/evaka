@@ -38,6 +38,7 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
+import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -48,7 +49,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 @RequestMapping("/daycares")
@@ -61,18 +61,15 @@ class DaycareController(
         Audit.UnitSearch.log()
         return db.connect { dbc ->
             dbc.read { tx ->
-                val filter = accessControl.requireAuthorizationFilter(tx, user, clock, Action.Unit.READ)
+                val filter =
+                    accessControl.requireAuthorizationFilter(tx, user, clock, Action.Unit.READ)
                 tx.getDaycares(AclAuthorization.from(filter))
             }
         }
     }
 
     @GetMapping("/features")
-    fun getFeatures(
-        db: Database,
-        user: AuthenticatedUser,
-        clock: EvakaClock
-    ): List<UnitFeatures> {
+    fun getFeatures(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<UnitFeatures> {
         Audit.UnitFeaturesRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_UNIT_FEATURES)
         return db.connect { dbc -> dbc.read { it.getUnitFeatures() } }
@@ -86,7 +83,12 @@ class DaycareController(
         @RequestBody request: UpdateFeaturesRequest
     ) {
         Audit.UnitFeaturesUpdate.log(targetId = request.unitIds)
-        accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE_FEATURES, request.unitIds)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Unit.UPDATE_FEATURES,
+            request.unitIds
+        )
 
         db.connect { dbc ->
             dbc.transaction {
@@ -112,7 +114,13 @@ class DaycareController(
             dbc.read { tx ->
                 tx.getDaycare(daycareId)?.let { daycare ->
                     val groups = tx.getDaycareGroupSummaries(daycareId)
-                    val permittedActions = accessControl.getPermittedActions<GroupId, Action.Group>(tx, user, clock, groups.map { it.id })
+                    val permittedActions =
+                        accessControl.getPermittedActions<GroupId, Action.Group>(
+                            tx,
+                            user,
+                            clock,
+                            groups.map { it.id }
+                        )
                     DaycareResponse(
                         daycare,
                         groups.map {
@@ -127,7 +135,8 @@ class DaycareController(
                     )
                 }
             }
-        } ?: throw NotFound("daycare $daycareId not found")
+        }
+            ?: throw NotFound("daycare $daycareId not found")
     }
 
     @GetMapping("/{daycareId}/groups")
@@ -136,12 +145,18 @@ class DaycareController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate? = null,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate? = null
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        from: LocalDate? = null,
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        to: LocalDate? = null
     ): List<DaycareGroup> {
         Audit.UnitGroupsSearch.log(targetId = daycareId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_GROUPS, daycareId)
-        return db.connect { dbc -> dbc.read { daycareService.getDaycareGroups(it, daycareId, from, to) } }
+        return db.connect { dbc ->
+            dbc.read { daycareService.getDaycareGroups(it, daycareId, from, to) }
+        }
     }
 
     @PostMapping("/{daycareId}/groups")
@@ -155,7 +170,17 @@ class DaycareController(
         Audit.UnitGroupsCreate.log(targetId = daycareId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.CREATE_GROUP, daycareId)
 
-        return db.connect { dbc -> dbc.transaction { daycareService.createGroup(it, daycareId, body.name, body.startDate, body.initialCaretakers) } }
+        return db.connect { dbc ->
+            dbc.transaction {
+                daycareService.createGroup(
+                    it,
+                    daycareId,
+                    body.name,
+                    body.startDate,
+                    body.initialCaretakers
+                )
+            }
+        }
     }
 
     data class GroupUpdateRequest(
@@ -175,7 +200,9 @@ class DaycareController(
         Audit.UnitGroupsUpdate.log(targetId = groupId)
         accessControl.requirePermissionFor(user, clock, Action.Group.UPDATE, groupId)
 
-        db.connect { dbc -> dbc.transaction { it.updateGroup(groupId, body.name, body.startDate, body.endDate) } }
+        db.connect { dbc ->
+            dbc.transaction { it.updateGroup(groupId, body.name, body.startDate, body.endDate) }
+        }
     }
 
     @DeleteMapping("/{daycareId}/groups/{groupId}")
@@ -278,15 +305,7 @@ class DaycareController(
         Audit.UnitGroupsCaretakersDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Group.DELETE_CARETAKERS, groupId)
 
-        db.connect { dbc ->
-            dbc.transaction {
-                deleteCaretakers(
-                    it,
-                    groupId = groupId,
-                    id = id
-                )
-            }
-        }
+        db.connect { dbc -> dbc.transaction { deleteCaretakers(it, groupId = groupId, id = id) } }
     }
 
     @PutMapping("/{daycareId}")
@@ -358,7 +377,15 @@ class DaycareController(
         val permittedActions: Set<Action.Group>
     )
 
-    data class DaycareResponse(val daycare: Daycare, val groups: List<DaycareGroupResponse>, val permittedActions: Set<Action.Unit>)
+    data class DaycareResponse(
+        val daycare: Daycare,
+        val groups: List<DaycareGroupResponse>,
+        val permittedActions: Set<Action.Unit>
+    )
 
-    data class UpdateFeaturesRequest(val unitIds: List<DaycareId>, val features: List<PilotFeature>, val enable: Boolean)
+    data class UpdateFeaturesRequest(
+        val unitIds: List<DaycareId>,
+        val features: List<PilotFeature>,
+        val enable: Boolean
+    )
 }

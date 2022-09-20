@@ -7,21 +7,25 @@ package fi.espoo.evaka.shared.auth
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.github.kittinunf.fuel.core.Request
-import org.bouncycastle.util.encoders.Base64
 import java.security.KeyFactory
 import java.security.interfaces.RSAPrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
 import java.time.Clock
 import java.time.ZonedDateTime
+import org.bouncycastle.util.encoders.Base64
 
 fun Request.asUser(user: AuthenticatedUser, clock: Clock? = Clock.systemDefaultZone()): Request {
     val now = ZonedDateTime.now(clock)
-    val token = user.applyToJwt(
-        JWT.create()
-            .withKeyId("integration-test").withIssuer("integration-test")
-            .withIssuedAt(now.toInstant())
-            .withExpiresAt(now.plusHours(12).toInstant())
-    ).sign(algorithm)
+    val token =
+        user
+            .applyToJwt(
+                JWT.create()
+                    .withKeyId("integration-test")
+                    .withIssuer("integration-test")
+                    .withIssuedAt(now.toInstant())
+                    .withExpiresAt(now.plusHours(12).toInstant())
+            )
+            .sign(algorithm)
     return this.header("Authorization", "Bearer $token")
 }
 
@@ -77,7 +81,8 @@ z6aN3kdhMg08/7jviOeuiccUXvmBCBGGF8qKerEFyFbyv2qXHfv/ooPqEHr5EP11
 cfztBMk40W05+0rxkIDQ0ov3MjZaB152PT4I8mJvDgLLQOf44isg4sknBlK8hQHw
 KlXzU4Q98gbl6+f5fHprIYrVln1ERtWT8JNgxh74sgCEUpkI9GJWOWHiTgkEgAzd
 JDuPQL7iuc5ASUjOrGoAjswTGWjDDw==
-    """.trimIndent()
+    """.trimIndent(
+    )
 
 private val algorithm: Algorithm by lazy {
     val kf = KeyFactory.getInstance("RSA")

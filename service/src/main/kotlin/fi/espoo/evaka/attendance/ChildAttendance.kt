@@ -26,10 +26,7 @@ data class ContactInfo(
     val priority: Int?
 )
 
-data class AttendanceResponse(
-    val children: List<Child>,
-    val groupNotes: List<GroupNote>
-)
+data class AttendanceResponse(val children: List<Child>, val groupNotes: List<GroupNote>)
 
 data class Child(
     val id: ChildId,
@@ -50,7 +47,10 @@ data class Child(
 )
 
 enum class AttendanceStatus {
-    COMING, PRESENT, DEPARTED, ABSENT
+    COMING,
+    PRESENT,
+    DEPARTED,
+    ABSENT
 }
 
 data class ChildAttendance(
@@ -61,16 +61,8 @@ data class ChildAttendance(
     val departed: HelsinkiDateTime?
 )
 
-data class AttendanceTimes(
-    val arrived: HelsinkiDateTime,
-    val departed: HelsinkiDateTime?
-)
+data class AttendanceTimes(val arrived: HelsinkiDateTime, val departed: HelsinkiDateTime?)
 
-data class ChildAbsence(
-    val category: AbsenceCategory
-)
+data class ChildAbsence(val category: AbsenceCategory)
 
-data class AttendanceReservation(
-    val startTime: HelsinkiDateTime,
-    val endTime: HelsinkiDateTime
-)
+data class AttendanceReservation(val startTime: HelsinkiDateTime, val endTime: HelsinkiDateTime)

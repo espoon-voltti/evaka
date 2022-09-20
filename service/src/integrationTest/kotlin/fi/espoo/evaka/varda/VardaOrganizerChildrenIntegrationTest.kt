@@ -8,24 +8,21 @@ import fi.espoo.evaka.defaultMunicipalOrganizerOid
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Autowired
 import java.lang.IllegalStateException
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
 
 class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) {
-    @Autowired
-    lateinit var mockEndpoint: MockVardaIntegrationEndpoint
+    @Autowired lateinit var mockEndpoint: MockVardaIntegrationEndpoint
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
         mockEndpoint.cleanUp()
     }
 
@@ -36,10 +33,25 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
         val vardaPersonOid = "1.2.3.4.5"
         val childId = testChild_1.id
         db.transaction {
-            insertVardaOrganizerChild(it, childId, vardaChildId, vardaPersonId, vardaPersonOid, defaultMunicipalOrganizerOid)
+            insertVardaOrganizerChild(
+                it,
+                childId,
+                vardaChildId,
+                vardaPersonId,
+                vardaPersonOid,
+                defaultMunicipalOrganizerOid
+            )
         }
 
-        val result = getOrCreateVardaChildByOrganizer(db, vardaClient, childId, defaultMunicipalOrganizerOid, "", ophEnv.organizerOid)
+        val result =
+            getOrCreateVardaChildByOrganizer(
+                db,
+                vardaClient,
+                childId,
+                defaultMunicipalOrganizerOid,
+                "",
+                ophEnv.organizerOid
+            )
         assertEquals(vardaChildId, result)
 
         assertEquals(0, mockEndpoint.people.values.size)
@@ -50,10 +62,25 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
     fun `getOrCreateVardaChildByOrganizer creates child when person exists`() {
         val childId = testChild_1.id
         db.transaction {
-            insertVardaOrganizerChild(it, childId, 31415L, 31415, "3.1.4.1.5", defaultMunicipalOrganizerOid)
+            insertVardaOrganizerChild(
+                it,
+                childId,
+                31415L,
+                31415,
+                "3.1.4.1.5",
+                defaultMunicipalOrganizerOid
+            )
         }
 
-        val result = getOrCreateVardaChildByOrganizer(db, vardaClient, childId, "otherOrganizerOid", "", ophEnv.organizerOid)
+        val result =
+            getOrCreateVardaChildByOrganizer(
+                db,
+                vardaClient,
+                childId,
+                "otherOrganizerOid",
+                "",
+                ophEnv.organizerOid
+            )
         assertEquals(1L, result)
 
         assertEquals(0, mockEndpoint.people.values.size)
@@ -63,13 +90,22 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
     @Test
     fun `getOrCreateVardaChildByOrganizer creates child & person when neither exists`() {
         val childId = testChild_1.id
-        val result = getOrCreateVardaChildByOrganizer(db, vardaClient, childId, "otherOrganizerOid", "", ophEnv.organizerOid)
+        val result =
+            getOrCreateVardaChildByOrganizer(
+                db,
+                vardaClient,
+                childId,
+                "otherOrganizerOid",
+                "",
+                ophEnv.organizerOid
+            )
         assertEquals(1L, result)
 
         db.transaction {
-            val rows = it.createQuery("SELECT * FROM varda_organizer_child")
-                .mapTo<VardaChildOrganizerRow>()
-                .toList()
+            val rows =
+                it.createQuery("SELECT * FROM varda_organizer_child")
+                    .mapTo<VardaChildOrganizerRow>()
+                    .toList()
 
             assertEquals(1, rows.size)
             assertEquals(childId, rows.first().evakaPersonId)
@@ -89,11 +125,12 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
         val childId = testChild_1.id
         db.transaction {
             it.createUpdate(
-                """
+                    """
                 UPDATE person SET social_security_number = null, oph_person_oid = null
                 WHERE id = :id
-                """.trimIndent()
-            )
+                """.trimIndent(
+                    )
+                )
                 .bind("id", childId)
                 .execute()
         }
@@ -117,16 +154,24 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
         val childId = testChild_1.id
         db.transaction {
             it.createUpdate(
-                """
+                    """
                 UPDATE person SET social_security_number = null, oph_person_oid = '1.2.3.4.5'
                 WHERE id = :id
-                """.trimIndent()
-            )
+                """.trimIndent(
+                    )
+                )
                 .bind("id", childId)
                 .execute()
         }
 
-        getOrCreateVardaChildByOrganizer(db, vardaClient, childId, "otherOrganizerOid", "", ophEnv.organizerOid)
+        getOrCreateVardaChildByOrganizer(
+            db,
+            vardaClient,
+            childId,
+            "otherOrganizerOid",
+            "",
+            ophEnv.organizerOid
+        )
 
         assertEquals(1, mockEndpoint.people.values.size)
         assertEquals(1, mockEndpoint.children.values.size)
@@ -137,16 +182,24 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
         val childId = testChild_1.id
         db.transaction {
             it.createUpdate(
-                """
+                    """
                 UPDATE person SET social_security_number = '111121-1234', oph_person_oid = null
                 WHERE id = :id
-                """.trimIndent()
-            )
+                """.trimIndent(
+                    )
+                )
                 .bind("id", childId)
                 .execute()
         }
 
-        getOrCreateVardaChildByOrganizer(db, vardaClient, childId, "otherOrganizerOid", "", ophEnv.organizerOid)
+        getOrCreateVardaChildByOrganizer(
+            db,
+            vardaClient,
+            childId,
+            "otherOrganizerOid",
+            "",
+            ophEnv.organizerOid
+        )
 
         assertEquals(1, mockEndpoint.people.values.size)
         assertEquals(1, mockEndpoint.children.values.size)
@@ -159,7 +212,14 @@ class VardaOrganizerChildrenIntegrationTest : VardaIntegrationTest(resetDbBefore
         val vardaPersonOid = "1.2.3.4.5"
         val childId = testChild_1.id
         db.transaction {
-            insertVardaOrganizerChild(it, childId, vardaChildId, vardaPersonId, vardaPersonOid, defaultMunicipalOrganizerOid)
+            insertVardaOrganizerChild(
+                it,
+                childId,
+                vardaChildId,
+                vardaPersonId,
+                vardaPersonOid,
+                defaultMunicipalOrganizerOid
+            )
         }
 
         val mapper = db.read { it.getVardaChildToEvakaChild() }

@@ -14,10 +14,10 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     val childId = testChild_1.id
@@ -27,32 +27,42 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @BeforeEach
     internal fun setUp() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
     fun `no applications means no duplicates`() {
-        db.transaction { tx -> assertFalse(tx.duplicateApplicationExists(childId, guardianId, ApplicationType.DAYCARE)) }
+        db.transaction { tx ->
+            assertFalse(tx.duplicateApplicationExists(childId, guardianId, ApplicationType.DAYCARE))
+        }
     }
 
     @Test
     fun `duplicate is found`() {
         addDaycareApplication()
-        db.transaction { tx -> assertTrue(tx.duplicateApplicationExists(childId, guardianId, ApplicationType.DAYCARE)) }
+        db.transaction { tx ->
+            assertTrue(tx.duplicateApplicationExists(childId, guardianId, ApplicationType.DAYCARE))
+        }
     }
 
     @Test
     fun `application for a different child is not a duplicate`() {
         addDaycareApplication()
-        db.transaction { tx -> assertFalse(tx.duplicateApplicationExists(childId2, guardianId, ApplicationType.DAYCARE)) }
+        db.transaction { tx ->
+            assertFalse(
+                tx.duplicateApplicationExists(childId2, guardianId, ApplicationType.DAYCARE)
+            )
+        }
     }
 
     @Test
     fun `application for a different type is not a duplicate`() {
         addDaycareApplication()
-        db.transaction { tx -> assertFalse(tx.duplicateApplicationExists(childId, guardianId, ApplicationType.PRESCHOOL)) }
+        db.transaction { tx ->
+            assertFalse(
+                tx.duplicateApplicationExists(childId, guardianId, ApplicationType.PRESCHOOL)
+            )
+        }
     }
 
     @Test
@@ -60,17 +70,20 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEac
         addDaycareApplication(ApplicationStatus.ACTIVE)
         addDaycareApplication(ApplicationStatus.REJECTED)
         addDaycareApplication(ApplicationStatus.CANCELLED)
-        db.transaction { tx -> assertFalse(tx.duplicateApplicationExists(childId, guardianId, ApplicationType.DAYCARE)) }
+        db.transaction { tx ->
+            assertFalse(tx.duplicateApplicationExists(childId, guardianId, ApplicationType.DAYCARE))
+        }
     }
 
     private fun addDaycareApplication(status: ApplicationStatus = ApplicationStatus.SENT) {
         db.transaction { tx ->
-            val appId = tx.insertTestApplication(
-                status = status,
-                childId = childId,
-                guardianId = guardianId,
-                type = ApplicationType.DAYCARE
-            )
+            val appId =
+                tx.insertTestApplication(
+                    status = status,
+                    childId = childId,
+                    guardianId = guardianId,
+                    type = ApplicationType.DAYCARE
+                )
             tx.insertTestApplicationForm(
                 applicationId = appId,
                 document = DaycareFormV0.fromApplication2(validDaycareApplication)

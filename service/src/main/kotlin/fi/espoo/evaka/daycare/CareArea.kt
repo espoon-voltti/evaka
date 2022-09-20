@@ -13,15 +13,14 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.security.PilotFeature
+import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
-import java.time.LocalDate
 
 data class VisitingAddress(
     val streetAddress: String = "", // address.street_address not nullable
     val postalCode: String = "", // address.postal_code not nullable
     val postOffice: String = ""
-
 )
 
 data class MailingAddress(
@@ -36,8 +35,7 @@ data class Daycare(
     val name: String,
     val openingDate: LocalDate?,
     val closingDate: LocalDate?,
-    @Nested("care_area_")
-    val area: DaycareCareArea,
+    @Nested("care_area_") val area: DaycareCareArea,
     val type: Set<CareType>,
     val daycareApplyPeriod: DateRange?,
     val preschoolApplyPeriod: DateRange?,
@@ -51,21 +49,16 @@ data class Daycare(
     val uploadToKoski: Boolean,
     val invoicedByMunicipality: Boolean,
     val costCenter: String?,
-    @Nested("finance_decision_handler_")
-    val financeDecisionHandler: FinanceDecisionHandler?,
+    @Nested("finance_decision_handler_") val financeDecisionHandler: FinanceDecisionHandler?,
     val additionalInfo: String?,
     val phone: String?,
     val email: String?,
     val url: String?,
-    @Nested("")
-    val visitingAddress: VisitingAddress,
+    @Nested("") val visitingAddress: VisitingAddress,
     val location: Coordinate?,
-    @Nested("mailing_")
-    val mailingAddress: MailingAddress,
-    @Nested("unit_manager_")
-    val unitManager: UnitManager,
-    @Nested("decision_")
-    val decisionCustomization: DaycareDecisionCustomization,
+    @Nested("mailing_") val mailingAddress: MailingAddress,
+    @Nested("unit_manager_") val unitManager: UnitManager,
+    @Nested("decision_") val decisionCustomization: DaycareDecisionCustomization,
     val ophUnitOid: String?,
     val ophOrganizerOid: String?,
     val operationDays: Set<Int>,
@@ -77,17 +70,9 @@ data class Daycare(
 )
 
 @PropagateNull("finance_decision_handler_id")
-data class FinanceDecisionHandler(
-    val id: EmployeeId,
-    val firstName: String,
-    val lastName: String
-)
+data class FinanceDecisionHandler(val id: EmployeeId, val firstName: String, val lastName: String)
 
-data class UnitManager(
-    val name: String?,
-    val email: String?,
-    val phone: String?
-)
+data class UnitManager(val name: String?, val email: String?, val phone: String?)
 
 data class DaycareDecisionCustomization(
     val daycareName: String,
@@ -100,7 +85,12 @@ data class DaycareCareArea(val id: AreaId, val name: String, val shortName: Stri
 
 @ConstList("careTypes")
 enum class CareType {
-    CLUB, FAMILY, CENTRE, GROUP_FAMILY, PRESCHOOL, PREPARATORY_EDUCATION
+    CLUB,
+    FAMILY,
+    CENTRE,
+    GROUP_FAMILY,
+    PRESCHOOL,
+    PREPARATORY_EDUCATION
 }
 
 data class Location(
@@ -108,10 +98,8 @@ data class Location(
     val name: String,
     val type: Set<CareType>,
     val care_area_id: AreaId,
-    @Nested("")
-    val visitingAddress: VisitingAddress,
-    @Nested("mailing")
-    val mailingAddress: MailingAddress,
+    @Nested("") val visitingAddress: VisitingAddress,
+    @Nested("mailing") val mailingAddress: MailingAddress,
     val daycareApplyPeriod: DateRange?,
     val preschoolApplyPeriod: DateRange?,
     val clubApplyPeriod: DateRange?,
@@ -122,10 +110,7 @@ data class Location(
     val url: String? = null
 )
 
-data class UnitStub(
-    val id: DaycareId,
-    val name: String
-)
+data class UnitStub(val id: DaycareId, val name: String)
 
 data class UnitFeatures(
     val id: DaycareId,

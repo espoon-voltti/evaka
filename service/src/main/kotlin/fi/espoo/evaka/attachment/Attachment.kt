@@ -18,7 +18,8 @@ sealed class AttachmentParent {
     data class Income(val incomeId: IncomeId) : AttachmentParent()
     data class MessageDraft(val draftId: MessageDraftId) : AttachmentParent()
     data class MessageContent(val messageContentId: MessageContentId) : AttachmentParent()
-    data class PedagogicalDocument(val pedagogicalDocumentId: PedagogicalDocumentId) : AttachmentParent()
+    data class PedagogicalDocument(val pedagogicalDocumentId: PedagogicalDocumentId) :
+        AttachmentParent()
     object None : AttachmentParent()
 }
 

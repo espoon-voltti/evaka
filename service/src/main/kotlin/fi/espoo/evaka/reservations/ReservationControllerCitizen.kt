@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
@@ -28,7 +29,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 class ReservationControllerCitizen(
@@ -44,34 +44,46 @@ class ReservationControllerCitizen(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ): ReservationsResponse {
         Audit.AttendanceReservationCitizenRead.log(targetId = user.id)
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_RESERVATIONS, user.id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.READ_RESERVATIONS,
+            user.id
+        )
 
-        val range = try {
-            FiniteDateRange(from, to)
-        } catch (e: IllegalArgumentException) {
-            throw BadRequest("Invalid date range $from - $to")
-        }
+        val range =
+            try {
+                FiniteDateRange(from, to)
+            } catch (e: IllegalArgumentException) {
+                throw BadRequest("Invalid date range $from - $to")
+            }
 
         return db.connect { dbc ->
             dbc.read { tx ->
                 val children = tx.getReservationChildren(user.id, range)
-                val includeWeekends = children.any {
-                    it.maxOperationalDays.contains(6) || it.maxOperationalDays.contains(7)
-                }
+                val includeWeekends =
+                    children.any {
+                        it.maxOperationalDays.contains(6) || it.maxOperationalDays.contains(7)
+                    }
                 val reservations = tx.getReservationsCitizen(user.id, range, includeWeekends)
                 val deadlines = tx.getHolidayPeriodDeadlines()
                 val reservableDayRanges =
-                    getReservableDays(clock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
-                val reservableDays = children.associate { child ->
-                    Pair(
-                        child.id,
-                        child.placements.flatMap { placement ->
-                            reservableDayRanges.flatMap { range ->
-                                listOfNotNull(range.intersection(placement))
-                            }
-                        }
+                    getReservableDays(
+                        clock.now(),
+                        featureConfig.citizenReservationThresholdHours,
+                        deadlines
                     )
-                }
+                val reservableDays =
+                    children.associate { child ->
+                        Pair(
+                            child.id,
+                            child.placements.flatMap { placement ->
+                                reservableDayRanges.flatMap { range ->
+                                    listOfNotNull(range.intersection(placement))
+                                }
+                            }
+                        )
+                    }
                 ReservationsResponse(
                     dailyData = reservations,
                     children = children,
@@ -89,14 +101,25 @@ class ReservationControllerCitizen(
         clock: EvakaClock,
         @RequestBody body: List<DailyReservationRequest>
     ) {
-        Audit.AttendanceReservationCitizenCreate.log(targetId = body.map { it.childId }.toSet().joinToString())
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_RESERVATION, body.map { it.childId })
+        Audit.AttendanceReservationCitizenCreate.log(
+            targetId = body.map { it.childId }.toSet().joinToString()
+        )
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Child.CREATE_RESERVATION,
+            body.map { it.childId }
+        )
 
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val deadlines = tx.getHolidayPeriodDeadlines()
                 val reservableDays =
-                    getReservableDays(clock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
+                    getReservableDays(
+                        clock.now(),
+                        featureConfig.citizenReservationThresholdHours,
+                        deadlines
+                    )
                 createReservations(tx, user.evakaUserId, body.validate(reservableDays), user.id)
             }
         }
@@ -110,7 +133,12 @@ class ReservationControllerCitizen(
         @RequestBody body: AbsenceRequest
     ) {
         Audit.AbsenceCitizenCreate.log(targetId = body.childIds.toSet().joinToString())
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_ABSENCE, body.childIds)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Child.CREATE_ABSENCE,
+            body.childIds
+        )
 
         if (body.dateRange.start.isBefore(clock.today()))
             throw BadRequest("Cannot mark absences for past days")
@@ -148,8 +176,7 @@ data class ReservationsResponse(
 data class DailyReservationData(
     val date: LocalDate,
     val isHoliday: Boolean,
-    @Json
-    val children: List<ChildDailyData>
+    @Json val children: List<ChildDailyData>
 )
 
 @Json
@@ -187,7 +214,7 @@ fun Database.Read.getReservationsCitizen(
     if (range.durationInDays() > 450) throw BadRequest("Range too long")
 
     return createQuery(
-        """
+            """
 SELECT
     t::date AS date,
     EXISTS(SELECT 1 FROM holiday h WHERE h.date = t::date) AS is_holiday,
@@ -257,8 +284,9 @@ LEFT JOIN LATERAL (
 ) ds ON true
 WHERE (:includeWeekends OR date_part('isodow', t) = ANY('{1, 2, 3, 4, 5}'))
 GROUP BY date, is_holiday
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("guardianId", guardianId)
         .bind("start", range.start)
         .bind("end", range.end)
@@ -267,9 +295,12 @@ GROUP BY date, is_holiday
         .toList()
 }
 
-private fun Database.Read.getReservationChildren(guardianId: PersonId, range: FiniteDateRange): List<ReservationChild> {
+private fun Database.Read.getReservationChildren(
+    guardianId: PersonId,
+    range: FiniteDateRange
+): List<ReservationChild> {
     return createQuery(
-        """
+            """
 SELECT
     ch.id,
     ch.first_name,
@@ -305,8 +336,9 @@ LEFT JOIN (
 ) p ON p.child_id = g.child_id
 WHERE p.placements IS NOT NULL
 ORDER BY ch.date_of_birth
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("guardianId", guardianId)
         .bind("range", range)
         .mapTo<ReservationChild>()

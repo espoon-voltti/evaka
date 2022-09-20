@@ -12,31 +12,39 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
-import mu.KotlinLogging
 import java.time.Instant
 import java.time.LocalDate
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-fun Database.Transaction.resetChildResetTimestamp(evakaChildId: ChildId) = this.createUpdate("UPDATE varda_reset_child SET reset_timestamp = null WHERE evaka_child_id = :id")
-    .bind("id", evakaChildId)
-    .execute()
+fun Database.Transaction.resetChildResetTimestamp(evakaChildId: ChildId) =
+    this.createUpdate(
+            "UPDATE varda_reset_child SET reset_timestamp = null WHERE evaka_child_id = :id"
+        )
+        .bind("id", evakaChildId)
+        .execute()
 
 fun Database.Read.hasVardaServiceNeeds(evakaChildId: ChildId) =
     this.createQuery(
-        """
+            """
         SELECT EXISTS (
             SELECT evaka_service_need_id FROM varda_service_need
             WHERE evaka_child_id = :evaka_child_id
         )
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("evaka_child_id", evakaChildId)
         .mapTo<Boolean>()
         .first()
 
-fun Database.Transaction.upsertVardaServiceNeed(vardaServiceNeed: VardaServiceNeed, upsertErrors: List<String> = listOf()) = createUpdate(
-    """
+fun Database.Transaction.upsertVardaServiceNeed(
+    vardaServiceNeed: VardaServiceNeed,
+    upsertErrors: List<String> = listOf()
+) =
+    createUpdate(
+            """
 INSERT INTO varda_service_need (
     evaka_service_need_id, 
     evaka_service_need_updated, 
@@ -67,48 +75,63 @@ VALUES (
         update_failed = :errorsNotEmpty,
         errors = :upsertErrors
 """
-).bindKotlin(vardaServiceNeed)
-    .bind("upsertErrors", upsertErrors)
-    .bind("errorsNotEmpty", upsertErrors.isNotEmpty())
-    .execute()
+        )
+        .bindKotlin(vardaServiceNeed)
+        .bind("upsertErrors", upsertErrors)
+        .bind("errorsNotEmpty", upsertErrors.isNotEmpty())
+        .execute()
 
-fun Database.Transaction.deleteVardaServiceNeedByEvakaServiceNeed(serviceNeedId: ServiceNeedId) = createUpdate(
-    """
+fun Database.Transaction.deleteVardaServiceNeedByEvakaServiceNeed(serviceNeedId: ServiceNeedId) =
+    createUpdate(
+            """
 DELETE FROM varda_service_need
 WHERE evaka_service_need_id = :serviceNeedId    
         """
-).bind("serviceNeedId", serviceNeedId)
-    .execute()
+        )
+        .bind("serviceNeedId", serviceNeedId)
+        .execute()
 
-fun Database.Transaction.deleteVardaServiceNeedByVardaChildId(vardaChildId: Long) = createUpdate(
-    """
+fun Database.Transaction.deleteVardaServiceNeedByVardaChildId(vardaChildId: Long) =
+    createUpdate(
+            """
 DELETE FROM varda_service_need
 WHERE varda_child_id = :vardaChildId
         """
-).bind("vardaChildId", vardaChildId)
-    .execute()
+        )
+        .bind("vardaChildId", vardaChildId)
+        .execute()
 
-fun Database.Transaction.deleteVardaOrganizerChildByVardaChildId(vardaChildId: Long) = createUpdate(
-    """
+fun Database.Transaction.deleteVardaOrganizerChildByVardaChildId(vardaChildId: Long) =
+    createUpdate(
+            """
 DELETE FROM varda_organizer_child
 WHERE varda_child_id = :vardaChildId
         """
-).bind("vardaChildId", vardaChildId)
-    .execute()
+        )
+        .bind("vardaChildId", vardaChildId)
+        .execute()
 
-fun Database.Transaction.markVardaServiceNeedUpdateFailed(serviceNeedId: ServiceNeedId, errors: List<String>) = createUpdate(
-    """
+fun Database.Transaction.markVardaServiceNeedUpdateFailed(
+    serviceNeedId: ServiceNeedId,
+    errors: List<String>
+) =
+    createUpdate(
+            """
 UPDATE varda_service_need
 SET update_failed = true, errors = :errors
 WHERE evaka_service_need_id = :serviceNeedId    
         """
-).bind("serviceNeedId", serviceNeedId)
-    .bind("errors", errors)
-    .execute()
+        )
+        .bind("serviceNeedId", serviceNeedId)
+        .bind("errors", errors)
+        .execute()
 
-fun Database.Read.getEvakaServiceNeedChanges(clock: EvakaClock, feeDecisionMinDate: LocalDate): List<ChangedChildServiceNeed> =
+fun Database.Read.getEvakaServiceNeedChanges(
+    clock: EvakaClock,
+    feeDecisionMinDate: LocalDate
+): List<ChangedChildServiceNeed> =
     createQuery(
-        """
+            """
 WITH potential_missing_varda_service_needs AS (
     SELECT
         sn.id AS service_need_id,
@@ -187,8 +210,9 @@ SELECT
     vsn.evaka_service_need_id
 FROM varda_service_need vsn
 WHERE update_failed = true       
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("today", clock.today())
         .bind("vardaPlacementTypes", vardaPlacementTypes)
         .bind("feeDecisionMinDate", feeDecisionMinDate)
@@ -197,7 +221,7 @@ WHERE update_failed = true
 
 fun Database.Read.getChildVardaServiceNeeds(evakaChildId: ChildId): List<VardaServiceNeed> =
     createQuery(
-        """
+            """
 SELECT
     evaka_child_id,
     evaka_service_need_id,
@@ -211,14 +235,16 @@ SELECT
 FROM varda_service_need
 WHERE evaka_child_id = :evakaChildId
 """
-    )
+        )
         .bind("evakaChildId", evakaChildId)
         .mapTo<VardaServiceNeed>()
         .list()
 
-fun Database.Read.getVardaServiceNeedByEvakaServiceNeedId(eVakaServiceNeedId: ServiceNeedId): VardaServiceNeed? =
+fun Database.Read.getVardaServiceNeedByEvakaServiceNeedId(
+    eVakaServiceNeedId: ServiceNeedId
+): VardaServiceNeed? =
     createQuery(
-        """
+            """
 SELECT
     evaka_child_id,
     evaka_service_need_id,
@@ -232,18 +258,26 @@ SELECT
 FROM varda_service_need
 WHERE evaka_service_need_id = :eVakaServiceNeedId
 """
-    )
+        )
         .bind("eVakaServiceNeedId", eVakaServiceNeedId)
         .mapTo<VardaServiceNeed>()
         .firstOrNull()
 
-fun Database.Read.getServiceNeedFeeData(serviceNeedId: ServiceNeedId, feeDecisionStatus: FeeDecisionStatus = FeeDecisionStatus.SENT, voucherValueDecisionStatus: VoucherValueDecisionStatus = VoucherValueDecisionStatus.SENT): List<FeeDataByServiceNeed> {
+fun Database.Read.getServiceNeedFeeData(
+    serviceNeedId: ServiceNeedId,
+    feeDecisionStatus: FeeDecisionStatus = FeeDecisionStatus.SENT,
+    voucherValueDecisionStatus: VoucherValueDecisionStatus = VoucherValueDecisionStatus.SENT
+): List<FeeDataByServiceNeed> {
     return getServiceNeedFeeDataQuery(serviceNeedId, feeDecisionStatus, voucherValueDecisionStatus)
 }
 
-private fun Database.Read.getServiceNeedFeeDataQuery(serviceNeedId: ServiceNeedId, feeDecisionStatus: FeeDecisionStatus, voucherValueDecisionStatus: VoucherValueDecisionStatus): List<FeeDataByServiceNeed> =
+private fun Database.Read.getServiceNeedFeeDataQuery(
+    serviceNeedId: ServiceNeedId,
+    feeDecisionStatus: FeeDecisionStatus,
+    voucherValueDecisionStatus: VoucherValueDecisionStatus
+): List<FeeDataByServiceNeed> =
     createQuery(
-        """
+            """
 WITH child_fees AS (
     SELECT
         fd.id AS fee_decision_id,
@@ -288,7 +322,7 @@ FROM service_need_fees
         service_need_fees.service_need_id = service_need_vouchers.service_need_id
 WHERE COALESCE(service_need_fees.service_need_id, service_need_vouchers.service_need_id) = :serviceNeedId
         """
-    )
+        )
         .bind("serviceNeedId", serviceNeedId)
         .bind("feeDecisionStatus", feeDecisionStatus)
         .bind("voucherValueDecisionStatus", voucherValueDecisionStatus)
@@ -296,9 +330,12 @@ WHERE COALESCE(service_need_fees.service_need_id, service_need_vouchers.service_
         .list()
 
 fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServiceNeedInfoForVarda {
-    // The default application date is set to be 15 days before the start because it's the minimum for Varda to not deduce the application as urgent
+    // The default application date is set to be 15 days before the start because it's the minimum
+    // for
+    // Varda to not deduce the application as urgent
     // language=sql
-    val sql = """
+    val sql =
+        """
         SELECT
             sn.id,
             p.child_id AS child_id,
@@ -337,26 +374,34 @@ fun Database.Read.getEvakaServiceNeedInfoForVarda(id: ServiceNeedId): EvakaServi
             ) application_match ON true
         LEFT JOIN application_form af ON af.application_id = application_match.id AND af.latest IS TRUE        
         WHERE sn.id = :id
-    """.trimIndent()
+    """.trimIndent(
+        )
 
     return createQuery(sql)
         .bind("id", id)
         .bind("vardaTemporaryPlacementTypes", vardaTemporaryPlacementTypes)
         .mapTo<EvakaServiceNeedInfoForVarda>()
-        .firstOrNull() ?: throw NotFound("Service need $id not found")
+        .firstOrNull()
+        ?: throw NotFound("Service need $id not found")
 }
 
-fun Database.Transaction.setVardaResetChildResetTimestamp(evakaChildId: ChildId, resetTimestamp: Instant) = createUpdate(
-    """
+fun Database.Transaction.setVardaResetChildResetTimestamp(
+    evakaChildId: ChildId,
+    resetTimestamp: Instant
+) =
+    createUpdate(
+            """
 UPDATE varda_reset_child SET reset_timestamp = :resetTimestamp
 WHERE evaka_child_id = :evakaChildId
         """
-).bind("evakaChildId", evakaChildId)
-    .bind("resetTimestamp", resetTimestamp)
-    .execute()
+        )
+        .bind("evakaChildId", evakaChildId)
+        .bind("resetTimestamp", resetTimestamp)
+        .execute()
 
-fun Database.Read.serviceNeedIsInvoicedByMunicipality(serviceNeedId: ServiceNeedId): Boolean = createQuery(
-    """
+fun Database.Read.serviceNeedIsInvoicedByMunicipality(serviceNeedId: ServiceNeedId): Boolean =
+    createQuery(
+            """
             SELECT true
             FROM service_need sn 
                 LEFT JOIN placement p ON sn.placement_id = p.id
@@ -364,11 +409,13 @@ fun Database.Read.serviceNeedIsInvoicedByMunicipality(serviceNeedId: ServiceNeed
             WHERE
                 sn.id = :serviceNeedId 
                 AND d.invoiced_by_municipality = true
-    """.trimIndent()
-)
-    .bind("serviceNeedId", serviceNeedId)
-    .mapTo<Boolean>()
-    .list().isNotEmpty()
+    """.trimIndent(
+            )
+        )
+        .bind("serviceNeedId", serviceNeedId)
+        .mapTo<Boolean>()
+        .list()
+        .isNotEmpty()
 
 fun Database.Read.getServiceNeedsForVardaByChild(
     clock: EvakaClock,
@@ -387,7 +434,8 @@ fun Database.Read.getServiceNeedsForVardaByChild(
         AND d.upload_children_to_varda = true
         AND sno.daycare_hours_per_week >= 1
         AND sn.start_date <= :today
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     return createQuery(sql)
         .bind("today", clock.today())
@@ -404,30 +452,38 @@ fun Database.Read.getSuccessfullyVardaResetEvakaChildIds(): List<ChildId> =
 
 fun Database.Transaction.setToBeReset(childIds: List<ChildId>) =
     createUpdate(
-        """
+            """
         UPDATE varda_reset_child
         SET reset_timestamp = null
         WHERE evaka_child_id = ANY(:childIds)
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("childIds", childIds)
         .execute()
 
 fun Database.Read.getVardaChildToEvakaChild(): Map<Long, ChildId?> =
     createQuery(
-        """
+            """
         SELECT varda_child_id, evaka_person_id evaka_child_id
         FROM varda_organizer_child
         WHERE varda_child_id IS NOT NULL
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .mapTo<VardaChildIdPair>()
         .associate { it.vardaChildId to it.evakaChildId }
 
-fun Database.Transaction.getVardaChildrenToReset(limit: Int, addNewChildren: Boolean): List<ChildId> {
+fun Database.Transaction.getVardaChildrenToReset(
+    limit: Int,
+    addNewChildren: Boolean
+): List<ChildId> {
     // We aim to include children by daycare units, capping each batch with <limit>
-    val updateCount = if (!addNewChildren) 0 else createUpdate(
-        """
+    val updateCount =
+        if (!addNewChildren) 0
+        else
+            createUpdate(
+                    """
         with varda_daycare as (
             select id, name from daycare
             where upload_children_to_varda = true
@@ -454,22 +510,27 @@ fun Database.Transaction.getVardaChildrenToReset(limit: Int, addNewChildren: Boo
         from child_daycare
         where name not in (select name from last_daycare)
         or 1 in (select count from daycare_count)
-        """.trimIndent()
-    )
-        .bind("limit", limit)
-        .execute()
+        """.trimIndent(
+                    )
+                )
+                .bind("limit", limit)
+                .execute()
 
     if (updateCount > 0) logger.info("VardaUpdate: added $updateCount new children to be reset")
 
-    return createQuery("SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NULL LIMIT :limit")
+    return createQuery(
+            "SELECT evaka_child_id FROM varda_reset_child WHERE reset_timestamp IS NULL LIMIT :limit"
+        )
         .bind("limit", limit)
         .mapTo<ChildId>()
         .list()
 }
 
-fun Database.Read.calculateDeletedChildServiceNeeds(clock: EvakaClock): Map<ChildId, List<ServiceNeedId>> =
+fun Database.Read.calculateDeletedChildServiceNeeds(
+    clock: EvakaClock
+): Map<ChildId, List<ServiceNeedId>> =
     this.createQuery(
-        """
+            """
 SELECT evaka_child_id AS child_id, array_agg(evaka_service_need_id::uuid) AS service_need_ids
 FROM varda_service_need
 WHERE evaka_service_need_id NOT IN (
@@ -488,9 +549,13 @@ WHERE
   AND sn.start_date <= :today
 )
 GROUP BY evaka_child_id
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("today", clock.today())
         .bind("vardaPlacementTypes", vardaPlacementTypes)
-        .map { row -> row.mapColumn<ChildId>("child_id") to row.mapColumn<List<ServiceNeedId>>("service_need_ids") }
+        .map { row ->
+            row.mapColumn<ChildId>("child_id") to
+                row.mapColumn<List<ServiceNeedId>>("service_need_ids")
+        }
         .toMap()

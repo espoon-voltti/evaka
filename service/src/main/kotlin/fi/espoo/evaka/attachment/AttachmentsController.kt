@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.util.UUID
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -39,7 +40,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
-import java.util.UUID
 
 @RestController
 @RequestMapping("/attachments")
@@ -64,15 +64,33 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         Audit.AttachmentsUploadForApplication.log(applicationId)
-        accessControl.requirePermissionFor(user, clock, Action.Application.UPLOAD_ATTACHMENT, applicationId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Application.UPLOAD_ATTACHMENT,
+            applicationId
+        )
         return db.connect { dbc ->
-            handleFileUpload(dbc, user, AttachmentParent.Application(applicationId), file, defaultAllowedAttachmentContentTypes, type).also {
-                dbc.transaction { tx -> stateService.reCalculateDueDate(tx, clock.today(), applicationId) }
-            }
+            handleFileUpload(
+                    dbc,
+                    user,
+                    AttachmentParent.Application(applicationId),
+                    file,
+                    defaultAllowedAttachmentContentTypes,
+                    type
+                )
+                .also {
+                    dbc.transaction { tx ->
+                        stateService.reCalculateDueDate(tx, clock.today(), applicationId)
+                    }
+                }
         }
     }
 
-    @PostMapping("/income-statements/{incomeStatementId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PostMapping(
+        "/income-statements/{incomeStatementId}",
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+    )
     fun uploadIncomeStatementAttachmentEmployee(
         db: Database,
         user: AuthenticatedUser,
@@ -81,11 +99,27 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         Audit.AttachmentsUploadForIncomeStatement.log(incomeStatementId)
-        accessControl.requirePermissionFor(user, clock, Action.IncomeStatement.UPLOAD_ATTACHMENT, incomeStatementId)
-        return db.connect { dbc -> handleFileUpload(dbc, user, AttachmentParent.IncomeStatement(incomeStatementId), file, defaultAllowedAttachmentContentTypes) }
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.IncomeStatement.UPLOAD_ATTACHMENT,
+            incomeStatementId
+        )
+        return db.connect { dbc ->
+            handleFileUpload(
+                dbc,
+                user,
+                AttachmentParent.IncomeStatement(incomeStatementId),
+                file,
+                defaultAllowedAttachmentContentTypes
+            )
+        }
     }
 
-    @PostMapping(value = ["/income/{incomeId}", "/income"], consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PostMapping(
+        value = ["/income/{incomeId}", "/income"],
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+    )
     fun uploadIncomeAttachment(
         db: Database,
         user: AuthenticatedUser,
@@ -95,12 +129,19 @@ class AttachmentsController(
     ): AttachmentId {
         Audit.AttachmentsUploadForIncomeStatement.log(incomeId)
         if (incomeId != null) {
-            accessControl.requirePermissionFor(user, clock, Action.Income.UPLOAD_ATTACHMENT, incomeId)
+            accessControl.requirePermissionFor(
+                user,
+                clock,
+                Action.Income.UPLOAD_ATTACHMENT,
+                incomeId
+            )
         }
         val attachTo =
             if (incomeId != null) AttachmentParent.Income(incomeId) else AttachmentParent.None
 
-        return db.connect { dbc -> handleFileUpload(dbc, user, attachTo, file, defaultAllowedAttachmentContentTypes) }
+        return db.connect { dbc ->
+            handleFileUpload(dbc, user, attachTo, file, defaultAllowedAttachmentContentTypes)
+        }
     }
 
     @PostMapping("/messages/{draftId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -112,11 +153,27 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         Audit.AttachmentsUploadForMessageDraft.log(draftId)
-        accessControl.requirePermissionFor(user, clock, Action.MessageDraft.UPLOAD_ATTACHMENT, draftId)
-        return db.connect { dbc -> handleFileUpload(dbc, user, AttachmentParent.MessageDraft(draftId), file, defaultAllowedAttachmentContentTypes) }
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.MessageDraft.UPLOAD_ATTACHMENT,
+            draftId
+        )
+        return db.connect { dbc ->
+            handleFileUpload(
+                dbc,
+                user,
+                AttachmentParent.MessageDraft(draftId),
+                file,
+                defaultAllowedAttachmentContentTypes
+            )
+        }
     }
 
-    @PostMapping("/pedagogical-documents/{documentId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PostMapping(
+        "/pedagogical-documents/{documentId}",
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+    )
     fun uploadPedagogicalDocumentAttachment(
         db: Database,
         user: AuthenticatedUser,
@@ -125,16 +182,33 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         Audit.AttachmentsUploadForPedagogicalDocument.log(documentId)
-        accessControl.requirePermissionFor(user, clock, Action.PedagogicalDocument.CREATE_ATTACHMENT, documentId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.PedagogicalDocument.CREATE_ATTACHMENT,
+            documentId
+        )
 
         return db.connect { dbc ->
-            handleFileUpload(dbc, user, AttachmentParent.PedagogicalDocument(documentId), file, pedagogicalDocumentAllowedAttachmentContentTypes) { tx ->
-                pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(tx, documentId)
+            handleFileUpload(
+                dbc,
+                user,
+                AttachmentParent.PedagogicalDocument(documentId),
+                file,
+                pedagogicalDocumentAllowedAttachmentContentTypes
+            ) { tx ->
+                pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(
+                    tx,
+                    documentId
+                )
             }
         }
     }
 
-    @PostMapping("/citizen/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PostMapping(
+        "/citizen/applications/{applicationId}",
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+    )
     fun uploadApplicationAttachmentCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
@@ -144,13 +218,25 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         Audit.AttachmentsUploadForApplication.log(applicationId)
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Application.UPLOAD_ATTACHMENT, applicationId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Application.UPLOAD_ATTACHMENT,
+            applicationId
+        )
 
         val attachTo = AttachmentParent.Application(applicationId)
         return db.connect { dbc ->
             checkAttachmentCount(dbc, attachTo, user)
 
-            handleFileUpload(dbc, user, attachTo, file, defaultAllowedAttachmentContentTypes, type) { tx ->
+            handleFileUpload(
+                dbc,
+                user,
+                attachTo,
+                file,
+                defaultAllowedAttachmentContentTypes,
+                type
+            ) { tx ->
                 stateService.reCalculateDueDate(tx, clock.today(), applicationId)
             }
         }
@@ -169,11 +255,17 @@ class AttachmentsController(
     ): AttachmentId {
         Audit.AttachmentsUploadForIncomeStatement.log(incomeStatementId)
         if (incomeStatementId != null) {
-            accessControl.requirePermissionFor(user, clock, Action.Citizen.IncomeStatement.UPLOAD_ATTACHMENT, incomeStatementId)
+            accessControl.requirePermissionFor(
+                user,
+                clock,
+                Action.Citizen.IncomeStatement.UPLOAD_ATTACHMENT,
+                incomeStatementId
+            )
         }
 
         val attachTo =
-            if (incomeStatementId != null) AttachmentParent.IncomeStatement(incomeStatementId) else AttachmentParent.None
+            if (incomeStatementId != null) AttachmentParent.IncomeStatement(incomeStatementId)
+            else AttachmentParent.None
 
         return db.connect { dbc ->
             checkAttachmentCount(dbc, attachTo, user)
@@ -181,42 +273,48 @@ class AttachmentsController(
         }
     }
 
-    private fun checkAttachmentCount(db: Database.Connection, attachTo: AttachmentParent, user: AuthenticatedUser.Citizen) {
-        val count = db.read {
-            when (attachTo) {
-                AttachmentParent.None -> it.userUnparentedAttachmentCount(user.evakaUserId)
-                is AttachmentParent.Application -> it.userApplicationAttachmentCount(attachTo.applicationId, user.evakaUserId)
-                is AttachmentParent.IncomeStatement -> it.userIncomeStatementAttachmentCount(
-                    attachTo.incomeStatementId,
-                    user.evakaUserId
-                )
-                is AttachmentParent.Income -> it.userIncomeAttachmentCount(
-                    attachTo.incomeId,
-                    user.evakaUserId
-                )
-                is AttachmentParent.PedagogicalDocument -> it.userPedagogicalDocumentCount(
-                    attachTo.pedagogicalDocumentId,
-                    user.evakaUserId
-                )
-                is AttachmentParent.MessageDraft,
-                is AttachmentParent.MessageContent -> 0
+    private fun checkAttachmentCount(
+        db: Database.Connection,
+        attachTo: AttachmentParent,
+        user: AuthenticatedUser.Citizen
+    ) {
+        val count =
+            db.read {
+                when (attachTo) {
+                    AttachmentParent.None -> it.userUnparentedAttachmentCount(user.evakaUserId)
+                    is AttachmentParent.Application ->
+                        it.userApplicationAttachmentCount(attachTo.applicationId, user.evakaUserId)
+                    is AttachmentParent.IncomeStatement ->
+                        it.userIncomeStatementAttachmentCount(
+                            attachTo.incomeStatementId,
+                            user.evakaUserId
+                        )
+                    is AttachmentParent.Income ->
+                        it.userIncomeAttachmentCount(attachTo.incomeId, user.evakaUserId)
+                    is AttachmentParent.PedagogicalDocument ->
+                        it.userPedagogicalDocumentCount(
+                            attachTo.pedagogicalDocumentId,
+                            user.evakaUserId
+                        )
+                    is AttachmentParent.MessageDraft,
+                    is AttachmentParent.MessageContent -> 0
+                }
             }
-        }
         if (count >= maxAttachmentsPerUser) {
             throw Forbidden("Too many uploaded files for ${user.id}: $maxAttachmentsPerUser")
         }
     }
 
-    private fun getAndCheckFileName(file: MultipartFile) = (
-        file.originalFilename
-            ?.takeIf { it.isNotBlank() }
-            ?: throw BadRequest("Filename missing")
-        )
+    private fun getAndCheckFileName(file: MultipartFile) =
+        (file.originalFilename?.takeIf { it.isNotBlank() } ?: throw BadRequest("Filename missing"))
 
-    private fun getFileExtension(name: String) = name
-        .split(".")
-        .also { if (it.size == 1) throw BadRequest("Missing file extension", "EXTENSION_MISSING") }
-        .last()
+    private fun getFileExtension(name: String) =
+        name
+            .split(".")
+            .also {
+                if (it.size == 1) throw BadRequest("Missing file extension", "EXTENSION_MISSING")
+            }
+            .last()
 
     private fun handleFileUpload(
         db: Database.Connection,
@@ -228,25 +326,19 @@ class AttachmentsController(
         onSuccess: ((tx: Database.Transaction) -> Unit)? = null
     ): AttachmentId {
         val fileName = getAndCheckFileName(file)
-        val contentType = checkFileContentTypeAndExtension(file.inputStream, getFileExtension(fileName), allowedContentTypes)
+        val contentType =
+            checkFileContentTypeAndExtension(
+                file.inputStream,
+                getFileExtension(fileName),
+                allowedContentTypes
+            )
 
         val id = AttachmentId(UUID.randomUUID())
         db.transaction { tx ->
-            tx.insertAttachment(
-                user,
-                id,
-                fileName,
-                contentType,
-                attachTo,
-                type = type
-            )
+            tx.insertAttachment(user, id, fileName, contentType, attachTo, type = type)
             documentClient.upload(
                 filesBucket,
-                Document(
-                    name = id.toString(),
-                    bytes = file.bytes,
-                    contentType = contentType
-                ),
+                Document(name = id.toString(), bytes = file.bytes, contentType = contentType),
             )
             if (onSuccess != null) {
                 onSuccess(tx)
@@ -267,20 +359,25 @@ class AttachmentsController(
         Audit.AttachmentsRead.log(targetId = attachmentId)
 
         val attachment =
-            db.connect { dbc -> dbc.read { it.getAttachment(attachmentId) } } ?: throw NotFound("Attachment $attachmentId not found")
+            db.connect { dbc -> dbc.read { it.getAttachment(attachmentId) } }
+                ?: throw NotFound("Attachment $attachmentId not found")
 
-        val action = when (attachment.attachedTo) {
-            is AttachmentParent.Application -> Action.Attachment.READ_APPLICATION_ATTACHMENT
-            is AttachmentParent.Income -> Action.Attachment.READ_INCOME_ATTACHMENT
-            is AttachmentParent.IncomeStatement,
-            is AttachmentParent.None -> Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT
-            is AttachmentParent.MessageContent -> Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT
-            is AttachmentParent.MessageDraft -> Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT
-            is AttachmentParent.PedagogicalDocument -> Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT
-        }.exhaust()
+        val action =
+            when (attachment.attachedTo) {
+                is AttachmentParent.Application -> Action.Attachment.READ_APPLICATION_ATTACHMENT
+                is AttachmentParent.Income -> Action.Attachment.READ_INCOME_ATTACHMENT
+                is AttachmentParent.IncomeStatement,
+                is AttachmentParent.None -> Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT
+                is AttachmentParent.MessageContent ->
+                    Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT
+                is AttachmentParent.MessageDraft -> Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT
+                is AttachmentParent.PedagogicalDocument ->
+                    Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT
+            }.exhaust()
         accessControl.requirePermissionFor(user, clock, action, attachmentId)
 
-        if (requestedFilename != attachment.name) throw BadRequest("Requested file name doesn't match actual file name for $attachmentId")
+        if (requestedFilename != attachment.name)
+            throw BadRequest("Requested file name doesn't match actual file name for $attachmentId")
 
         return documentClient.responseInline(filesBucket, "$attachmentId", attachment.name)
     }
@@ -296,17 +393,23 @@ class AttachmentsController(
 
         db.connect { dbc ->
             val attachment =
-                dbc.read { it.getAttachment(attachmentId) } ?: throw NotFound("Attachment $attachmentId not found")
+                dbc.read { it.getAttachment(attachmentId) }
+                    ?: throw NotFound("Attachment $attachmentId not found")
 
-            val action = when (attachment.attachedTo) {
-                is AttachmentParent.Application -> Action.Attachment.DELETE_APPLICATION_ATTACHMENT
-                is AttachmentParent.Income -> Action.Attachment.DELETE_INCOME_ATTACHMENT
-                is AttachmentParent.IncomeStatement,
-                is AttachmentParent.None -> Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT
-                is AttachmentParent.MessageDraft -> Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT
-                is AttachmentParent.MessageContent -> Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT
-                is AttachmentParent.PedagogicalDocument -> Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT
-            }.exhaust()
+            val action =
+                when (attachment.attachedTo) {
+                    is AttachmentParent.Application ->
+                        Action.Attachment.DELETE_APPLICATION_ATTACHMENT
+                    is AttachmentParent.Income -> Action.Attachment.DELETE_INCOME_ATTACHMENT
+                    is AttachmentParent.IncomeStatement,
+                    is AttachmentParent.None -> Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT
+                    is AttachmentParent.MessageDraft ->
+                        Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT
+                    is AttachmentParent.MessageContent ->
+                        Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT
+                    is AttachmentParent.PedagogicalDocument ->
+                        Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT
+                }.exhaust()
             accessControl.requirePermissionFor(user, clock, action, attachmentId)
 
             dbc.transaction { deleteAttachment(it, attachmentId) }
@@ -331,5 +434,6 @@ class AttachmentsController(
         )
 
     private val pedagogicalDocumentAllowedAttachmentContentTypes =
-        defaultAllowedAttachmentContentTypes + listOf(ContentTypePattern.VIDEO_ANY, ContentTypePattern.AUDIO_ANY)
+        defaultAllowedAttachmentContentTypes +
+            listOf(ContentTypePattern.VIDEO_ANY, ContentTypePattern.AUDIO_ANY)
 }

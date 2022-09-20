@@ -20,7 +20,12 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
     @GetMapping
     fun getChildren(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock): List<Child> {
         Audit.CitizenChildrenRead.log()
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_CHILDREN, user.id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.READ_CHILDREN,
+            user.id
+        )
         return db.connect { dbc -> dbc.read { it.getChildrenByGuardian(user.id, clock.today()) } }
     }
 }

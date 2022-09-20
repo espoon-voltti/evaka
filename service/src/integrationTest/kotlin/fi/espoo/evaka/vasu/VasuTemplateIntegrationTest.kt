@@ -14,21 +14,20 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class VasuTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val adminUser = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+    private val adminUser =
+        AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
 
     @BeforeEach
     private fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
@@ -78,43 +77,49 @@ class VasuTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         val template = getVasuTemplate(templateId)
 
-        val updatedContent = VasuContent(
-            sections = template.content.sections + listOf(
-                VasuSection(
-                    name = "uusi osio",
-                    questions = listOf(
-                        VasuQuestion.TextQuestion(
-                            name = "kysymys 1",
-                            multiline = false,
-                            value = ""
-                        ),
-                        VasuQuestion.CheckboxQuestion(
-                            name = "kysymys 2",
-                            value = false
-                        ),
-                        VasuQuestion.RadioGroupQuestion(
-                            name = "kysymys 3",
-                            options = listOf(
-                                QuestionOption("vaihtoehto 1", "vaihtoehto 1"),
-                                QuestionOption("vaihtoehto 2", "vaihtoehto 2")
+        val updatedContent =
+            VasuContent(
+                sections =
+                    template.content.sections +
+                        listOf(
+                            VasuSection(
+                                name = "uusi osio",
+                                questions =
+                                    listOf(
+                                        VasuQuestion.TextQuestion(
+                                            name = "kysymys 1",
+                                            multiline = false,
+                                            value = ""
+                                        ),
+                                        VasuQuestion.CheckboxQuestion(
+                                            name = "kysymys 2",
+                                            value = false
+                                        ),
+                                        VasuQuestion.RadioGroupQuestion(
+                                            name = "kysymys 3",
+                                            options =
+                                                listOf(
+                                                    QuestionOption("vaihtoehto 1", "vaihtoehto 1"),
+                                                    QuestionOption("vaihtoehto 2", "vaihtoehto 2")
+                                                ),
+                                            value = "vaihtoehto 1"
+                                        ),
+                                        VasuQuestion.MultiSelectQuestion(
+                                            name = "kysymys 4",
+                                            options =
+                                                listOf(
+                                                    QuestionOption("vaihtoehto 1", "vaihtoehto 1"),
+                                                    QuestionOption("vaihtoehto 2", "vaihtoehto 2")
+                                                ),
+                                            minSelections = 1,
+                                            maxSelections = 2,
+                                            value = listOf("vaihtoehto 1"),
+                                            textValue = emptyMap()
+                                        )
+                                    )
                             ),
-                            value = "vaihtoehto 1"
-                        ),
-                        VasuQuestion.MultiSelectQuestion(
-                            name = "kysymys 4",
-                            options = listOf(
-                                QuestionOption("vaihtoehto 1", "vaihtoehto 1"),
-                                QuestionOption("vaihtoehto 2", "vaihtoehto 2")
-                            ),
-                            minSelections = 1,
-                            maxSelections = 2,
-                            value = listOf("vaihtoehto 1"),
-                            textValue = emptyMap()
                         )
-                    )
-                ),
             )
-        )
 
         putVasuTemplateContent(templateId, updatedContent)
 
@@ -122,45 +127,51 @@ class VasuTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     private fun postVasuTemplate(request: VasuTemplateController.CreateTemplateRequest) {
-        val (_, res, _) = http.post("/vasu/templates")
-            .jsonBody(jsonMapper.writeValueAsString(request))
-            .asUser(adminUser)
-            .response()
+        val (_, res, _) =
+            http
+                .post("/vasu/templates")
+                .jsonBody(jsonMapper.writeValueAsString(request))
+                .asUser(adminUser)
+                .response()
 
         assertEquals(200, res.statusCode)
     }
 
     private fun getVasuTemplates(): List<VasuTemplateSummary> {
-        val (_, res, result) = http.get("/vasu/templates")
-            .asUser(adminUser)
-            .responseObject<List<VasuTemplateSummary>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get("/vasu/templates")
+                .asUser(adminUser)
+                .responseObject<List<VasuTemplateSummary>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
     }
 
     private fun getVasuTemplate(id: VasuTemplateId): VasuTemplate {
-        val (_, res, result) = http.get("/vasu/templates/$id")
-            .asUser(adminUser)
-            .responseObject<VasuTemplate>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get("/vasu/templates/$id")
+                .asUser(adminUser)
+                .responseObject<VasuTemplate>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
     }
 
     private fun putVasuTemplateContent(id: VasuTemplateId, request: VasuContent) {
-        val (_, res, _) = http.put("/vasu/templates/$id/content")
-            .jsonBody(jsonMapper.writeValueAsString(request))
-            .asUser(adminUser)
-            .response()
+        val (_, res, _) =
+            http
+                .put("/vasu/templates/$id/content")
+                .jsonBody(jsonMapper.writeValueAsString(request))
+                .asUser(adminUser)
+                .response()
 
         assertEquals(200, res.statusCode)
     }
 
     private fun deleteVasuTemplate(id: VasuTemplateId) {
-        val (_, res, _) = http.delete("/vasu/templates/$id")
-            .asUser(adminUser)
-            .response()
+        val (_, res, _) = http.delete("/vasu/templates/$id").asUser(adminUser).response()
 
         assertEquals(200, res.statusCode)
     }

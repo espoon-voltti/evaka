@@ -21,22 +21,24 @@ fun Database.Transaction.insertChildGuardians(childId: ChildId, guardianIds: Lis
 
 fun Database.Read.isGuardianBlocked(guardianId: PersonId, childId: ChildId): Boolean =
     createQuery(
-        """
+            """
 SELECT EXISTS (
     SELECT 1
     FROM guardian_blocklist
     WHERE guardian_id = :guardianId
     AND child_id = :childId
 )
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("guardianId", guardianId)
         .bind("childId", childId)
         .mapTo<Boolean>()
         .one()
 
 private fun Database.Transaction.insertGuardians(guardianIdChildIdPairs: List<GuardianChildPair>) {
-    val batch = prepareBatch("INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId)")
+    val batch =
+        prepareBatch("INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId)")
     guardianIdChildIdPairs.forEach {
         batch.bind("guardianId", it.guardianId).bind("childId", it.childId).add()
     }
@@ -44,57 +46,50 @@ private fun Database.Transaction.insertGuardians(guardianIdChildIdPairs: List<Gu
 }
 
 fun Database.Read.getChildGuardians(childId: ChildId): List<PersonId> {
-    //language=sql
+    // language=sql
     val sql =
         """
         select guardian_id
         from guardian
         where child_id = :childId
-        """.trimIndent()
+        """.trimIndent(
+        )
 
-    return createQuery(sql)
-        .bind("childId", childId)
-        .mapTo<PersonId>()
-        .list()
+    return createQuery(sql).bind("childId", childId).mapTo<PersonId>().list()
 }
 
 fun Database.Read.getGuardianChildIds(guardianId: PersonId): List<ChildId> {
-    //language=sql
+    // language=sql
     val sql =
         """
         select child_id
         from guardian
         where guardian_id = :guardianId
-        """.trimIndent()
+        """.trimIndent(
+        )
 
-    return createQuery(sql)
-        .bind("guardianId", guardianId)
-        .mapTo<ChildId>()
-        .list()
+    return createQuery(sql).bind("guardianId", guardianId).mapTo<ChildId>().list()
 }
 
 fun Database.Transaction.deleteGuardianChildRelationShips(guardianId: PersonId): Int {
-    //language=sql
+    // language=sql
     val sql =
         """
         DELETE FROM guardian
         WHERE guardian_id = :guardianId
-        """.trimIndent()
+        """.trimIndent(
+        )
 
-    return createUpdate(sql)
-        .bind("guardianId", guardianId)
-        .execute()
+    return createUpdate(sql).bind("guardianId", guardianId).execute()
 }
 
 fun Database.Transaction.deleteChildGuardianRelationships(childId: ChildId): Int {
-    //language=sql
+    // language=sql
     val sql =
         """
         DELETE FROM guardian
         WHERE child_id = :childId
         """.trimIndent()
 
-    return createUpdate(sql)
-        .bind("childId", childId)
-        .execute()
+    return createUpdate(sql).bind("childId", childId).execute()
 }

@@ -29,7 +29,11 @@ class PartnersInDifferentAddressReportController(
         clock: EvakaClock
     ): List<PartnersInDifferentAddressReportRow> {
         Audit.PartnersInDifferentAddressReportRead.log()
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Global.READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT
+        )
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
@@ -39,7 +43,10 @@ class PartnersInDifferentAddressReportController(
     }
 }
 
-private fun Database.Read.getPartnersInDifferentAddressRows(authorizedUnits: AclAuthorization, clock: EvakaClock): List<PartnersInDifferentAddressReportRow> {
+private fun Database.Read.getPartnersInDifferentAddressRows(
+    authorizedUnits: AclAuthorization,
+    clock: EvakaClock
+): List<PartnersInDifferentAddressReportRow> {
     // language=sql
     val sql =
         """
@@ -79,7 +86,8 @@ private fun Database.Read.getPartnersInDifferentAddressRows(authorizedUnits: Acl
             p2.street_address <> '' AND
             lower(p2.street_address) <> 'poste restante'
         ORDER BY u.name, p1.last_name, p1.first_name, p2.last_name, p2.first_name;
-        """.trimIndent()
+        """.trimIndent(
+        )
     return createQuery(sql)
         .bind("today", clock.today())
         .bind("units", authorizedUnits.ids)

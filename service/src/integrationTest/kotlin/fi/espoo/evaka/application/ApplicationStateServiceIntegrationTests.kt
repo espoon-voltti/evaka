@@ -63,13 +63,6 @@ import fi.espoo.evaka.testChild_7
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import org.mockito.kotlin.whenever
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -77,35 +70,37 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.whenever
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.MockBean
 
 class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBeforeEach = true) {
 
-    @MockBean
-    private lateinit var featureConfig: FeatureConfig
+    @MockBean private lateinit var featureConfig: FeatureConfig
 
-    @Autowired
-    private lateinit var service: ApplicationStateService
+    @Autowired private lateinit var service: ApplicationStateService
 
-    @Autowired
-    private lateinit var decisionDraftService: DecisionDraftService
+    @Autowired private lateinit var decisionDraftService: DecisionDraftService
 
-    @Autowired
-    private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
-    @Autowired
-    private lateinit var sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>
+    @Autowired private lateinit var sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>
 
-    @Autowired
-    lateinit var mapper: JsonMapper
+    @Autowired lateinit var mapper: JsonMapper
 
-    @Autowired
-    lateinit var incomeTypesProvider: IncomeTypesProvider
+    @Autowired lateinit var incomeTypesProvider: IncomeTypesProvider
 
-    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker =
+        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     private val applicationId = ApplicationId(UUID.randomUUID())
     private val mainPeriod = FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4))
-    private val connectedPeriod = FiniteDateRange(mainPeriod.start.minusDays(12), mainPeriod.end.plusDays(15))
+    private val connectedPeriod =
+        FiniteDateRange(mainPeriod.start.minusDays(12), mainPeriod.end.plusDays(15))
 
     private val today: LocalDate = LocalDate.of(2020, 2, 16)
     private val now: HelsinkiDateTime = HelsinkiDateTime.of(today, LocalTime.of(12, 0, 0))
@@ -114,9 +109,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     @BeforeEach
     private fun beforeEach() {
         MockSfiMessagesClient.clearMessages()
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
@@ -302,16 +295,31 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         assertDueDate(applicationId, null) // missing attachment
 
         // when
-        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)))
+        assertTrue(
+            uploadAttachment(
+                applicationId,
+                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
+            )
+        )
         db.transaction { tx ->
-            tx.createUpdate("UPDATE attachment SET received_at = :receivedAt WHERE application_id = :applicationId")
+            tx.createUpdate(
+                    "UPDATE attachment SET received_at = :receivedAt WHERE application_id = :applicationId"
+                )
                 .bind("applicationId", applicationId)
                 .bind("receivedAt", now.minusWeeks(1))
                 .execute()
         }
-        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)))
+        assertTrue(
+            uploadAttachment(
+                applicationId,
+                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
+            )
+        )
         // then
-        assertDueDate(applicationId, now.plusWeeks(2).toLocalDate()) // end date >= earliest attachment.receivedAt
+        assertDueDate(
+            applicationId,
+            now.plusWeeks(2).toLocalDate()
+        ) // end date >= earliest attachment.receivedAt
     }
 
     @Test
@@ -327,20 +335,36 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             )
         }
         // when
-        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG), AttachmentType.EXTENDED_CARE))
-        assertTrue(uploadAttachment(applicationId, AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG), AttachmentType.URGENCY))
+        assertTrue(
+            uploadAttachment(
+                applicationId,
+                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
+                AttachmentType.EXTENDED_CARE
+            )
+        )
+        assertTrue(
+            uploadAttachment(
+                applicationId,
+                AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG),
+                AttachmentType.URGENCY
+            )
+        )
 
         // then
         assertDueDate(applicationId, null) // application not sent
 
         // when
         db.transaction { tx ->
-            tx.createUpdate("UPDATE attachment SET received_at = :receivedAt WHERE type = :type AND application_id = :applicationId")
+            tx.createUpdate(
+                    "UPDATE attachment SET received_at = :receivedAt WHERE type = :type AND application_id = :applicationId"
+                )
                 .bind("type", AttachmentType.EXTENDED_CARE)
                 .bind("applicationId", applicationId)
                 .bind("receivedAt", now.plusWeeks(1))
                 .execute()
-            tx.createUpdate("UPDATE attachment SET received_at = :receivedAt WHERE type = :type AND application_id = :applicationId")
+            tx.createUpdate(
+                    "UPDATE attachment SET received_at = :receivedAt WHERE type = :type AND application_id = :applicationId"
+                )
                 .bind("type", AttachmentType.URGENCY)
                 .bind("applicationId", applicationId)
                 .bind("receivedAt", now.plusDays(3))
@@ -351,19 +375,23 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
         // then
-        assertDueDate(applicationId, now.plusDays(14 + 3).toLocalDate()) // attachments received after application sent
+        assertDueDate(
+            applicationId,
+            now.plusDays(14 + 3).toLocalDate()
+        ) // attachments received after application sent
     }
 
     @Test
     fun `sendApplication - daycare has not due date if a transfer application`() {
         db.transaction { tx ->
             // given
-            val draft = tx.insertApplication(
-                appliedType = PlacementType.DAYCARE,
-                urgent = false,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
-            )
+            val draft =
+                tx.insertApplication(
+                    appliedType = PlacementType.DAYCARE,
+                    urgent = false,
+                    applicationId = applicationId,
+                    preferredStartDate = LocalDate.of(2020, 8, 1)
+                )
             tx.insertTestPlacement(
                 DevPlacement(
                     childId = draft.childId,
@@ -389,12 +417,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `sendApplication - daycare application is marked as transfer application when child is in 5yo daycare`() {
         db.transaction { tx ->
             // given
-            val draft = tx.insertApplication(
-                appliedType = PlacementType.DAYCARE,
-                urgent = false,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 1)
-            )
+            val draft =
+                tx.insertApplication(
+                    appliedType = PlacementType.DAYCARE,
+                    urgent = false,
+                    applicationId = applicationId,
+                    preferredStartDate = LocalDate.of(2020, 8, 1)
+                )
             tx.insertTestPlacement(
                 DevPlacement(
                     childId = draft.childId,
@@ -420,11 +449,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `sendApplication - preschool placement already exists -- preschool+connected application is marked as additionalDaycareApplication`() {
         db.transaction { tx ->
             // given
-            val draft = tx.insertApplication(
-                appliedType = PlacementType.PRESCHOOL_DAYCARE,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 13)
-            )
+            val draft =
+                tx.insertApplication(
+                    appliedType = PlacementType.PRESCHOOL_DAYCARE,
+                    applicationId = applicationId,
+                    preferredStartDate = LocalDate.of(2020, 8, 13)
+                )
             tx.insertTestPlacement(
                 DevPlacement(
                     type = PlacementType.PRESCHOOL,
@@ -453,11 +483,12 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `sendApplication - preschool placement already exists -- preparatory+connected application is not marked as additionalDaycareApplication`() {
         db.transaction { tx ->
             // given
-            val draft = tx.insertApplication(
-                appliedType = PlacementType.PREPARATORY_DAYCARE,
-                applicationId = applicationId,
-                preferredStartDate = LocalDate.of(2020, 8, 13)
-            )
+            val draft =
+                tx.insertApplication(
+                    appliedType = PlacementType.PREPARATORY_DAYCARE,
+                    applicationId = applicationId,
+                    preferredStartDate = LocalDate.of(2020, 8, 13)
+                )
             tx.insertTestPlacement(
                 DevPlacement(
                     type = PlacementType.PRESCHOOL,
@@ -636,7 +667,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `cancelApplication from SENT - status is changed`() {
         db.transaction { tx ->
             // given
-            tx.insertApplication(applicationId = applicationId, preferredStartDate = LocalDate.of(2020, 8, 1))
+            tx.insertApplication(
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->
@@ -654,7 +688,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `cancelApplication from WAITING_PLACEMENT - status is changed`() {
         db.transaction { tx ->
             // given
-            tx.insertApplication(applicationId = applicationId, preferredStartDate = LocalDate.of(2020, 8, 1))
+            tx.insertApplication(
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
         }
@@ -673,7 +710,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `returnToSent - status is changed`() {
         db.transaction { tx ->
             // given
-            tx.insertApplication(applicationId = applicationId, preferredStartDate = LocalDate.of(2020, 8, 1))
+            tx.insertApplication(
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
             service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
         }
@@ -706,10 +746,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 applicationId,
-                DaycarePlacementPlan(
-                    unitId = testDaycare.id,
-                    period = mainPeriod
-                )
+                DaycarePlacementPlan(unitId = testDaycare.id, period = mainPeriod)
             )
         }
         db.read { tx ->
@@ -764,10 +801,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 applicationId,
-                DaycarePlacementPlan(
-                    unitId = testDaycare.id,
-                    period = mainPeriod
-                )
+                DaycarePlacementPlan(unitId = testDaycare.id, period = mainPeriod)
             )
         }
         db.read { tx ->
@@ -822,10 +856,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 tx,
                 serviceWorker,
                 applicationId,
-                DaycarePlacementPlan(
-                    unitId = testDaycare.id,
-                    period = mainPeriod
-                )
+                DaycarePlacementPlan(unitId = testDaycare.id, period = mainPeriod)
             )
         }
         db.read { tx ->
@@ -849,32 +880,36 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             assertEquals(2, decisionDrafts.size)
 
-            decisionDrafts.find { it.type == DecisionType.PRESCHOOL }!!.let {
-                assertEquals(
-                    DecisionDraft(
-                        id = it.id,
-                        type = DecisionType.PRESCHOOL,
-                        startDate = mainPeriod.start,
-                        endDate = mainPeriod.end,
-                        unitId = testDaycare.id,
-                        planned = true
-                    ),
-                    it
-                )
-            }
-            decisionDrafts.find { it.type == DecisionType.PRESCHOOL_DAYCARE }!!.let {
-                assertEquals(
-                    DecisionDraft(
-                        id = it.id,
-                        type = DecisionType.PRESCHOOL_DAYCARE,
-                        startDate = mainPeriod.start,
-                        endDate = mainPeriod.end,
-                        unitId = testDaycare.id,
-                        planned = false
-                    ),
-                    it
-                )
-            }
+            decisionDrafts
+                .find { it.type == DecisionType.PRESCHOOL }!!
+                .let {
+                    assertEquals(
+                        DecisionDraft(
+                            id = it.id,
+                            type = DecisionType.PRESCHOOL,
+                            startDate = mainPeriod.start,
+                            endDate = mainPeriod.end,
+                            unitId = testDaycare.id,
+                            planned = true
+                        ),
+                        it
+                    )
+                }
+            decisionDrafts
+                .find { it.type == DecisionType.PRESCHOOL_DAYCARE }!!
+                .let {
+                    assertEquals(
+                        DecisionDraft(
+                            id = it.id,
+                            type = DecisionType.PRESCHOOL_DAYCARE,
+                            startDate = mainPeriod.start,
+                            endDate = mainPeriod.end,
+                            unitId = testDaycare.id,
+                            planned = false
+                        ),
+                        it
+                    )
+                }
         }
     }
 
@@ -924,32 +959,36 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             assertEquals(2, decisionDrafts.size)
 
-            decisionDrafts.find { it.type == DecisionType.PRESCHOOL }!!.let {
-                assertEquals(
-                    DecisionDraft(
-                        id = it.id,
-                        type = DecisionType.PRESCHOOL,
-                        startDate = mainPeriod.start,
-                        endDate = mainPeriod.end,
-                        unitId = testDaycare.id,
-                        planned = true
-                    ),
-                    it
-                )
-            }
-            decisionDrafts.find { it.type == DecisionType.PRESCHOOL_DAYCARE }!!.let {
-                assertEquals(
-                    DecisionDraft(
-                        id = it.id,
-                        type = DecisionType.PRESCHOOL_DAYCARE,
-                        startDate = connectedPeriod.start,
-                        endDate = connectedPeriod.end,
-                        unitId = testDaycare.id,
-                        planned = true
-                    ),
-                    it
-                )
-            }
+            decisionDrafts
+                .find { it.type == DecisionType.PRESCHOOL }!!
+                .let {
+                    assertEquals(
+                        DecisionDraft(
+                            id = it.id,
+                            type = DecisionType.PRESCHOOL,
+                            startDate = mainPeriod.start,
+                            endDate = mainPeriod.end,
+                            unitId = testDaycare.id,
+                            planned = true
+                        ),
+                        it
+                    )
+                }
+            decisionDrafts
+                .find { it.type == DecisionType.PRESCHOOL_DAYCARE }!!
+                .let {
+                    assertEquals(
+                        DecisionDraft(
+                            id = it.id,
+                            type = DecisionType.PRESCHOOL_DAYCARE,
+                            startDate = connectedPeriod.start,
+                            endDate = connectedPeriod.end,
+                            unitId = testDaycare.id,
+                            planned = true
+                        ),
+                        it
+                    )
+                }
         }
     }
 
@@ -993,12 +1032,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     }
 
     @Test
-    fun `sendDecisionsWithoutProposal - applier is the only guardian`() = sendDecisionsWithoutProposalTest(
-        child = testChild_2,
-        applier = testAdult_1,
-        secondDecisionTo = null,
-        manualMailing = false
-    )
+    fun `sendDecisionsWithoutProposal - applier is the only guardian`() =
+        sendDecisionsWithoutProposalTest(
+            child = testChild_2,
+            applier = testAdult_1,
+            secondDecisionTo = null,
+            manualMailing = false
+        )
 
     @Test
     fun `sendDecisionsWithoutProposal - applier is guardian and other guardian exists in same address`() =
@@ -1019,20 +1059,22 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         )
 
     @Test
-    fun `sendDecisionsWithoutProposal - child has no ssn`() = sendDecisionsWithoutProposalTest(
-        child = testChild_7,
-        applier = testAdult_5,
-        secondDecisionTo = null,
-        manualMailing = true
-    )
+    fun `sendDecisionsWithoutProposal - child has no ssn`() =
+        sendDecisionsWithoutProposalTest(
+            child = testChild_7,
+            applier = testAdult_5,
+            secondDecisionTo = null,
+            manualMailing = true
+        )
 
     @Test
-    fun `sendDecisionsWithoutProposal - applier has no ssn, child has no guardian`() = sendDecisionsWithoutProposalTest(
-        child = testChild_7,
-        applier = testAdult_4,
-        secondDecisionTo = null,
-        manualMailing = true
-    )
+    fun `sendDecisionsWithoutProposal - applier has no ssn, child has no guardian`() =
+        sendDecisionsWithoutProposalTest(
+            child = testChild_7,
+            applier = testAdult_4,
+            secondDecisionTo = null,
+            manualMailing = true
+        )
 
     @Test
     fun `sendDecisionsWithoutProposal - applier has no ssn, child has another guardian`() =
@@ -1085,7 +1127,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 assertEquals(ApplicationStatus.WAITING_CONFIRMATION, application.status)
             }
 
-            val decisionsByApplication = it.getDecisionsByApplication(applicationId, AclAuthorization.All)
+            val decisionsByApplication =
+                it.getDecisionsByApplication(applicationId, AclAuthorization.All)
             assertEquals(1, decisionsByApplication.size)
             val decision = decisionsByApplication.first()
             assertNotNull(decision.sentDate)
@@ -1227,7 +1270,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_CONFIRMATION, application.status)
 
-            val decisionsByApplication = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
+            val decisionsByApplication =
+                tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
             assertEquals(2, decisionsByApplication.size)
             decisionsByApplication.forEach { decision ->
                 assertNotNull(decision.sentDate)
@@ -1247,7 +1291,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL_DAYCARE,
                 child = testChild_2,
-                guardian = testAdult_1, applicationId = applicationId,
+                guardian = testAdult_1,
+                applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
@@ -1262,15 +1307,19 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     preschoolDaycarePeriod = connectedPeriod
                 )
             )
-            tx.fetchDecisionDrafts(applicationId).map { draft ->
-                DecisionDraftService.DecisionDraftUpdate(
-                    id = draft.id,
-                    unitId = draft.unitId,
-                    startDate = draft.startDate,
-                    endDate = draft.endDate,
-                    planned = false
-                )
-            }.let { updates -> decisionDraftService.updateDecisionDrafts(tx, applicationId, updates) }
+            tx.fetchDecisionDrafts(applicationId)
+                .map { draft ->
+                    DecisionDraftService.DecisionDraftUpdate(
+                        id = draft.id,
+                        unitId = draft.unitId,
+                        startDate = draft.startDate,
+                        endDate = draft.endDate,
+                        planned = false
+                    )
+                }
+                .let { updates ->
+                    decisionDraftService.updateDecisionDrafts(tx, applicationId, updates)
+                }
             service.sendPlacementProposal(tx, serviceWorker, clock, applicationId)
         }
         db.transaction { tx ->
@@ -1295,7 +1344,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             assertEquals(2, decisionDrafts.size)
 
-            val decisionsByApplication = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
+            val decisionsByApplication =
+                tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
             assertEquals(0, decisionsByApplication.size)
 
             val messages = MockSfiMessagesClient.getMessages()
@@ -1423,16 +1473,21 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `accept preschool application with maxFeeAccepted - existing overlapping indefinite income will be handled`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val earlierIndefinite = Income(
-                id = IncomeId(UUID.randomUUID()),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = mainPeriod.start.minusDays(10),
-                validTo = null
-            )
+            val financeUser =
+                AuthenticatedUser.Employee(
+                    id = testDecisionMaker_1.id,
+                    roles = setOf(UserRole.FINANCE_ADMIN)
+                )
+            val earlierIndefinite =
+                Income(
+                    id = IncomeId(UUID.randomUUID()),
+                    data = mapOf(),
+                    effect = IncomeEffect.NOT_AVAILABLE,
+                    notes = "Income not available",
+                    personId = testAdult_5.id,
+                    validFrom = mainPeriod.start.minusDays(10),
+                    validTo = null
+                )
             tx.upsertIncome(clock, mapper, earlierIndefinite, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
@@ -1464,16 +1519,21 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `accept preschool application with maxFeeAccepted - existing overlapping income will be handled by not adding a new income for user`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val earlierIncome = Income(
-                id = IncomeId(UUID.randomUUID()),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = mainPeriod.start.minusDays(10),
-                validTo = mainPeriod.start.plusMonths(5)
-            )
+            val financeUser =
+                AuthenticatedUser.Employee(
+                    id = testDecisionMaker_1.id,
+                    roles = setOf(UserRole.FINANCE_ADMIN)
+                )
+            val earlierIncome =
+                Income(
+                    id = IncomeId(UUID.randomUUID()),
+                    data = mapOf(),
+                    effect = IncomeEffect.NOT_AVAILABLE,
+                    notes = "Income not available",
+                    personId = testAdult_5.id,
+                    validFrom = mainPeriod.start.minusDays(10),
+                    validTo = mainPeriod.start.plusMonths(5)
+                )
             tx.upsertIncome(clock, mapper, earlierIncome, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
@@ -1505,16 +1565,21 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `accept preschool application with maxFeeAccepted - later indefinite income will be handled by not adding a new income`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val laterIndefiniteIncome = Income(
-                id = IncomeId(UUID.randomUUID()),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = mainPeriod.start.plusMonths(5),
-                validTo = null
-            )
+            val financeUser =
+                AuthenticatedUser.Employee(
+                    id = testDecisionMaker_1.id,
+                    roles = setOf(UserRole.FINANCE_ADMIN)
+                )
+            val laterIndefiniteIncome =
+                Income(
+                    id = IncomeId(UUID.randomUUID()),
+                    data = mapOf(),
+                    effect = IncomeEffect.NOT_AVAILABLE,
+                    notes = "Income not available",
+                    personId = testAdult_5.id,
+                    validFrom = mainPeriod.start.plusMonths(5),
+                    validTo = null
+                )
             tx.upsertIncome(clock, mapper, laterIndefiniteIncome, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
@@ -1546,16 +1611,21 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `accept preschool application with maxFeeAccepted - earlier income does not affect creating a new income`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val earlierIncome = Income(
-                id = IncomeId(UUID.randomUUID()),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = mainPeriod.start.minusMonths(7),
-                validTo = mainPeriod.start.minusMonths(5)
-            )
+            val financeUser =
+                AuthenticatedUser.Employee(
+                    id = testDecisionMaker_1.id,
+                    roles = setOf(UserRole.FINANCE_ADMIN)
+                )
+            val earlierIncome =
+                Income(
+                    id = IncomeId(UUID.randomUUID()),
+                    data = mapOf(),
+                    effect = IncomeEffect.NOT_AVAILABLE,
+                    notes = "Income not available",
+                    personId = testAdult_5.id,
+                    validFrom = mainPeriod.start.minusMonths(7),
+                    validTo = mainPeriod.start.minusMonths(5)
+                )
             tx.upsertIncome(clock, mapper, earlierIncome, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
@@ -1589,16 +1659,21 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `accept preschool application with maxFeeAccepted - later income will be handled by not adding a new income`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val laterIncome = Income(
-                id = IncomeId(UUID.randomUUID()),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = mainPeriod.start.plusMonths(5),
-                validTo = mainPeriod.start.plusMonths(6)
-            )
+            val financeUser =
+                AuthenticatedUser.Employee(
+                    id = testDecisionMaker_1.id,
+                    roles = setOf(UserRole.FINANCE_ADMIN)
+                )
+            val laterIncome =
+                Income(
+                    id = IncomeId(UUID.randomUUID()),
+                    data = mapOf(),
+                    effect = IncomeEffect.NOT_AVAILABLE,
+                    notes = "Income not available",
+                    personId = testAdult_5.id,
+                    validFrom = mainPeriod.start.plusMonths(5),
+                    validTo = mainPeriod.start.plusMonths(6)
+                )
             tx.upsertIncome(clock, mapper, laterIncome, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
@@ -1630,16 +1705,21 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `accept preschool application with maxFeeAccepted - if application does not have a preferred start date income will still be created`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val earlierIndefinite = Income(
-                id = IncomeId(UUID.randomUUID()),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = mainPeriod.start.minusDays(10),
-                validTo = null
-            )
+            val financeUser =
+                AuthenticatedUser.Employee(
+                    id = testDecisionMaker_1.id,
+                    roles = setOf(UserRole.FINANCE_ADMIN)
+                )
+            val earlierIndefinite =
+                Income(
+                    id = IncomeId(UUID.randomUUID()),
+                    data = mapOf(),
+                    effect = IncomeEffect.NOT_AVAILABLE,
+                    notes = "Income not available",
+                    personId = testAdult_5.id,
+                    validFrom = mainPeriod.start.minusDays(10),
+                    validTo = null
+                )
             tx.upsertIncome(clock, mapper, earlierIndefinite, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions(preferredStartDate = null)
@@ -1669,16 +1749,21 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists indefinite income for the same day `() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val sameDayIncomeIndefinite = Income(
-                id = IncomeId(UUID.randomUUID()),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = mainPeriod.start,
-                validTo = null
-            )
+            val financeUser =
+                AuthenticatedUser.Employee(
+                    id = testDecisionMaker_1.id,
+                    roles = setOf(UserRole.FINANCE_ADMIN)
+                )
+            val sameDayIncomeIndefinite =
+                Income(
+                    id = IncomeId(UUID.randomUUID()),
+                    data = mapOf(),
+                    effect = IncomeEffect.NOT_AVAILABLE,
+                    notes = "Income not available",
+                    personId = testAdult_5.id,
+                    validFrom = mainPeriod.start,
+                    validTo = null
+                )
             tx.upsertIncome(clock, mapper, sameDayIncomeIndefinite, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
@@ -1709,16 +1794,21 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists income for the same day `() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val sameDayIncome = Income(
-                id = IncomeId(UUID.randomUUID()),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = mainPeriod.start,
-                validTo = mainPeriod.start.plusMonths(5)
-            )
+            val financeUser =
+                AuthenticatedUser.Employee(
+                    id = testDecisionMaker_1.id,
+                    roles = setOf(UserRole.FINANCE_ADMIN)
+                )
+            val sameDayIncome =
+                Income(
+                    id = IncomeId(UUID.randomUUID()),
+                    data = mapOf(),
+                    effect = IncomeEffect.NOT_AVAILABLE,
+                    notes = "Income not available",
+                    personId = testAdult_5.id,
+                    validFrom = mainPeriod.start,
+                    validTo = mainPeriod.start.plusMonths(5)
+                )
             tx.upsertIncome(clock, mapper, sameDayIncome, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
@@ -1750,16 +1840,21 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `accept preschool application with maxFeeAccepted - new income will be created if there exists indefinite income for the same day - 1 `() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val dayBeforeIncomeIndefinite = Income(
-                id = IncomeId(UUID.randomUUID()),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = mainPeriod.start.minusDays(1),
-                validTo = null
-            )
+            val financeUser =
+                AuthenticatedUser.Employee(
+                    id = testDecisionMaker_1.id,
+                    roles = setOf(UserRole.FINANCE_ADMIN)
+                )
+            val dayBeforeIncomeIndefinite =
+                Income(
+                    id = IncomeId(UUID.randomUUID()),
+                    data = mapOf(),
+                    effect = IncomeEffect.NOT_AVAILABLE,
+                    notes = "Income not available",
+                    personId = testAdult_5.id,
+                    validFrom = mainPeriod.start.minusDays(1),
+                    validTo = null
+                )
             tx.upsertIncome(clock, mapper, dayBeforeIncomeIndefinite, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
@@ -1792,16 +1887,21 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists indefinite income for the same day + 1 `() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val nextDayIncomeIndefinite = Income(
-                id = IncomeId(UUID.randomUUID()),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = mainPeriod.start.plusDays(1),
-                validTo = null
-            )
+            val financeUser =
+                AuthenticatedUser.Employee(
+                    id = testDecisionMaker_1.id,
+                    roles = setOf(UserRole.FINANCE_ADMIN)
+                )
+            val nextDayIncomeIndefinite =
+                Income(
+                    id = IncomeId(UUID.randomUUID()),
+                    data = mapOf(),
+                    effect = IncomeEffect.NOT_AVAILABLE,
+                    notes = "Income not available",
+                    personId = testAdult_5.id,
+                    validFrom = mainPeriod.start.plusDays(1),
+                    validTo = null
+                )
             tx.upsertIncome(clock, mapper, nextDayIncomeIndefinite, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
@@ -1833,16 +1933,21 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists income for the same day - 1`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val incomeDayBefore = Income(
-                id = IncomeId(UUID.randomUUID()),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = mainPeriod.start.minusDays(1),
-                validTo = mainPeriod.start.plusMonths(5)
-            )
+            val financeUser =
+                AuthenticatedUser.Employee(
+                    id = testDecisionMaker_1.id,
+                    roles = setOf(UserRole.FINANCE_ADMIN)
+                )
+            val incomeDayBefore =
+                Income(
+                    id = IncomeId(UUID.randomUUID()),
+                    data = mapOf(),
+                    effect = IncomeEffect.NOT_AVAILABLE,
+                    notes = "Income not available",
+                    personId = testAdult_5.id,
+                    validFrom = mainPeriod.start.minusDays(1),
+                    validTo = mainPeriod.start.plusMonths(5)
+                )
             tx.upsertIncome(clock, mapper, incomeDayBefore, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
@@ -1874,16 +1979,21 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists income that ends on the same day`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val earlierIncomeEndingOnSameDay = Income(
-                id = IncomeId(UUID.randomUUID()),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = mainPeriod.start.minusMonths(2),
-                validTo = mainPeriod.start
-            )
+            val financeUser =
+                AuthenticatedUser.Employee(
+                    id = testDecisionMaker_1.id,
+                    roles = setOf(UserRole.FINANCE_ADMIN)
+                )
+            val earlierIncomeEndingOnSameDay =
+                Income(
+                    id = IncomeId(UUID.randomUUID()),
+                    data = mapOf(),
+                    effect = IncomeEffect.NOT_AVAILABLE,
+                    notes = "Income not available",
+                    personId = testAdult_5.id,
+                    validFrom = mainPeriod.start.minusMonths(2),
+                    validTo = mainPeriod.start
+                )
             tx.upsertIncome(clock, mapper, earlierIncomeEndingOnSameDay, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
@@ -1915,16 +2025,21 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `accept preschool application with maxFeeAccepted - no new income will be created if there exists income that ends on the same day + 1`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val earlierIncomeEndingOnNextDay = Income(
-                id = IncomeId(UUID.randomUUID()),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = mainPeriod.start.minusMonths(2),
-                validTo = mainPeriod.start.plusDays(1)
-            )
+            val financeUser =
+                AuthenticatedUser.Employee(
+                    id = testDecisionMaker_1.id,
+                    roles = setOf(UserRole.FINANCE_ADMIN)
+                )
+            val earlierIncomeEndingOnNextDay =
+                Income(
+                    id = IncomeId(UUID.randomUUID()),
+                    data = mapOf(),
+                    effect = IncomeEffect.NOT_AVAILABLE,
+                    notes = "Income not available",
+                    personId = testAdult_5.id,
+                    validFrom = mainPeriod.start.minusMonths(2),
+                    validTo = mainPeriod.start.plusDays(1)
+                )
             tx.upsertIncome(clock, mapper, earlierIncomeEndingOnNextDay, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
@@ -1956,16 +2071,21 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     fun `accept preschool application with maxFeeAccepted - new income will be created if there exists income that ends on the same day - 1`() {
         db.transaction { tx ->
             // given
-            val financeUser = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
-            val earlierIncomeEndingOnDayBefore = Income(
-                id = IncomeId(UUID.randomUUID()),
-                data = mapOf(),
-                effect = IncomeEffect.NOT_AVAILABLE,
-                notes = "Income not available",
-                personId = testAdult_5.id,
-                validFrom = mainPeriod.start.minusMonths(2),
-                validTo = mainPeriod.start.minusDays(1)
-            )
+            val financeUser =
+                AuthenticatedUser.Employee(
+                    id = testDecisionMaker_1.id,
+                    roles = setOf(UserRole.FINANCE_ADMIN)
+                )
+            val earlierIncomeEndingOnDayBefore =
+                Income(
+                    id = IncomeId(UUID.randomUUID()),
+                    data = mapOf(),
+                    effect = IncomeEffect.NOT_AVAILABLE,
+                    notes = "Income not available",
+                    personId = testAdult_5.id,
+                    validFrom = mainPeriod.start.minusMonths(2),
+                    validTo = mainPeriod.start.minusDays(1)
+                )
             tx.upsertIncome(clock, mapper, earlierIncomeEndingOnDayBefore, financeUser.evakaUserId)
         }
         workflowForPreschoolDaycareDecisions()
@@ -2119,7 +2239,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     @Test
     fun `daycare with unknown service need option`() {
         // given
-        val serviceNeedOption = ServiceNeedOption(ServiceNeedOptionId(UUID.randomUUID()), "unknown service need option", "unknown service need option", "unknown service need option")
+        val serviceNeedOption =
+            ServiceNeedOption(
+                ServiceNeedOptionId(UUID.randomUUID()),
+                "unknown service need option",
+                "unknown service need option",
+                "unknown service need option"
+            )
         workflowForPreschoolDaycareDecisions(serviceNeedOption = serviceNeedOption)
 
         db.transaction { tx ->
@@ -2136,7 +2262,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.read {
             // then
             val application = it.fetchApplicationDetails(applicationId)!!
-            assertEquals(serviceNeedOption, application.form.preferences.serviceNeed?.serviceNeedOption)
+            assertEquals(
+                serviceNeedOption,
+                application.form.preferences.serviceNeed?.serviceNeedOption
+            )
             val serviceNeeds = it.getServiceNeedsByChild(application.childId)
             assertThat(serviceNeeds).isEmpty()
         }
@@ -2145,7 +2274,13 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     @Test
     fun `daycare with known service need option`() {
         // given
-        val serviceNeedOption = ServiceNeedOption(snPreschoolDaycare45.id, snPreschoolDaycare45.nameFi, snPreschoolDaycare45.nameSv, snPreschoolDaycare45.nameEn)
+        val serviceNeedOption =
+            ServiceNeedOption(
+                snPreschoolDaycare45.id,
+                snPreschoolDaycare45.nameFi,
+                snPreschoolDaycare45.nameSv,
+                snPreschoolDaycare45.nameEn
+            )
         workflowForPreschoolDaycareDecisions(serviceNeedOption = serviceNeedOption)
 
         db.transaction { tx ->
@@ -2162,7 +2297,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
         db.read {
             // then
             val application = it.fetchApplicationDetails(applicationId)!!
-            assertEquals(serviceNeedOption, application.form.preferences.serviceNeed?.serviceNeedOption)
+            assertEquals(
+                serviceNeedOption,
+                application.form.preferences.serviceNeed?.serviceNeedOption
+            )
             val serviceNeeds = it.getServiceNeedsByChild(application.childId)
             assertEquals(listOf(serviceNeedOption.id), serviceNeeds.map { sn -> sn.option.id })
         }
@@ -2303,7 +2441,10 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     private fun getDecision(r: Database.Read, type: DecisionType): Decision =
         r.getDecisionsByApplication(applicationId, AclAuthorization.All).first { it.type == type }
 
-    private fun workflowForPreschoolDaycareDecisions(preferredStartDate: LocalDate? = LocalDate.of(2020, 8, 1), serviceNeedOption: ServiceNeedOption? = null) {
+    private fun workflowForPreschoolDaycareDecisions(
+        preferredStartDate: LocalDate? = LocalDate.of(2020, 8, 1),
+        serviceNeedOption: ServiceNeedOption? = null
+    ) {
         db.transaction { tx ->
             tx.insertApplication(
                 guardian = testAdult_5,

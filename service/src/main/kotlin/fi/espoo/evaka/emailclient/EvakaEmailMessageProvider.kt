@@ -9,11 +9,16 @@ import fi.espoo.evaka.shared.ChildId
 
 class EvakaEmailMessageProvider : IEmailMessageProvider {
 
-    override val subjectForPendingDecisionEmail: String = "Päätös varhaiskasvatuksesta / Beslut om förskoleundervisning / Decision on early childhood education"
-    override val subjectForClubApplicationReceivedEmail: String = "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
-    override val subjectForDaycareApplicationReceivedEmail: String = "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
-    override val subjectForPreschoolApplicationReceivedEmail: String = "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
-    override val subjectForDecisionEmail: String = "Päätös eVakassa / Beslut i eVaka / Decision on eVaka"
+    override val subjectForPendingDecisionEmail: String =
+        "Päätös varhaiskasvatuksesta / Beslut om förskoleundervisning / Decision on early childhood education"
+    override val subjectForClubApplicationReceivedEmail: String =
+        "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
+    override val subjectForDaycareApplicationReceivedEmail: String =
+        "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
+    override val subjectForPreschoolApplicationReceivedEmail: String =
+        "Olemme vastaanottaneet hakemuksenne / Vi har tagit emot din ansökan / We have received your application"
+    override val subjectForDecisionEmail: String =
+        "Päätös eVakassa / Beslut i eVaka / Decision on eVaka"
 
     override fun getPendingDecisionEmailHtml(): String {
         return """
@@ -50,7 +55,8 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
             <p>
             You cannot reply to this message. If you have questions, please contact early childhood education service counselling, tel. 09 816 31000.
             </p>
-        """.trimIndent()
+        """.trimIndent(
+        )
     }
 
     override fun getPendingDecisionEmailText(): String {
@@ -76,7 +82,8 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
             The person who submitted the application can accept or reject an unanswered decision by logging in to espoonvarhaiskasvatus.fi or by sending the completed form on the last page of the decision to the address specified on the page.
 
             You cannot reply to this message. If you have questions, please contact early childhood education service counselling, tel. 09 816 31000.
-        """.trimIndent()
+        """.trimIndent(
+        )
     }
 
     override fun getClubApplicationReceivedEmailHtml(): String {
@@ -92,7 +99,8 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
             <p>Päätös on nähtävissä ja hyväksyttävissä/hylättävissä <a href="www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a>.</p>
 
             <p>Hakiessanne lapsellenne siirtoa uudella hakemuksella toiseen kerhoon. Uusi kerhopäätös tehdään paikkatilanteen sen salliessa. Hakemus on voimassa kuluvan kerhokauden. </p>
-        """.trimIndent()
+        """.trimIndent(
+        )
     }
 
     override fun getClubApplicationReceivedEmailText(): String {
@@ -108,7 +116,8 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
             Päätös on nähtävissä ja hyväksyttävissä/hylättävissä www.espoonvarhaiskasvatus.fi.
 
             Hakiessanne lapsellenne siirtoa uudella hakemuksella toiseen kerhoon. Uusi kerhopäätös tehdään paikkatilanteen sen salliessa. Hakemus on voimassa kuluvan kerhokauden.
-        """.trimIndent()
+        """.trimIndent(
+        )
     }
 
     override fun getDaycareApplicationReceivedEmailHtml(): String {
@@ -224,7 +233,8 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
             <p>
             Information about applying to private early childhood education units: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers</a>.
             </p>
-        """.trimIndent()
+        """.trimIndent(
+        )
     }
 
     override fun getDaycareApplicationReceivedEmailText(): String {
@@ -306,10 +316,13 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
             How to apply for a service voucher: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher-early-childhood-education#section-6228
 
             Information about applying to private early childhood education units: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers
-        """.trimIndent()
+        """.trimIndent(
+        )
     }
 
-    override fun getPreschoolApplicationReceivedEmailHtml(withinApplicationPeriod: Boolean): String {
+    override fun getPreschoolApplicationReceivedEmailHtml(
+        withinApplicationPeriod: Boolean
+    ): String {
         return if (withinApplicationPeriod)
             """
                 <p>Hyvä(t) huoltaja(t),</p>
@@ -341,7 +354,8 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
                 <p>You can add your supporting documents to your online application or send them by post to City of Espoo, Early childhood education service guidance, P.O. Box 3125, 02070 City of Espoo.</p>
                 <p>Information about applying for a service voucher: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher#section-6228">Service voucher</a></p>
                 <p>Information about applying to private early childhood education units: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">Private early childhood education</a></p>
-            """.trimIndent()
+            """.trimIndent(
+            )
         else
             """
                 <p>Hyvä(t) huoltaja(t),</p>
@@ -379,10 +393,13 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
                 <p>When applying for a transfer to a different pre-primary education unit by submitting a new application; the new pre-primary education decision will be made when the situation with the applicants and the available places so permit. If your child’s current pre-primary education place is terminated, your transfer application will be deleted from the system.</p>
                 <p>Information about applying for a service voucher: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher#section-6228">Service Voucher</a></p>
                 <p>Information about applying to private early childhood education units: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">Private early childhood education</a></p>
-            """.trimIndent()
+            """.trimIndent(
+            )
     }
 
-    override fun getPreschoolApplicationReceivedEmailText(withinApplicationPeriod: Boolean): String {
+    override fun getPreschoolApplicationReceivedEmailText(
+        withinApplicationPeriod: Boolean
+    ): String {
         return if (withinApplicationPeriod)
             """
                 Hyvä(t) huoltaja(t),
@@ -442,7 +459,8 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
                 Information about applying for a service voucher: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher#section-6228
 
                 Information about applying to private early childhood education units: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers
-            """.trimIndent()
+            """.trimIndent(
+            )
         else
             """
                 Hyvä(t) huoltaja(t),
@@ -514,13 +532,15 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
                 Information about applying for a service voucher: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher#section-6228
 
                 Information about applying to private early childhood education units: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers
-            """.trimIndent()
+            """.trimIndent(
+            )
     }
 
     override fun getDecisionEmailHtml(
         childId: ChildId,
         decisionId: AssistanceNeedDecisionId
-    ): String = """
+    ): String =
+        """
         <p>Hyvä(t) huoltaja(t),</p>
         <p>Lapsellenne on tehty päätös.</p>
         <p>Päätös on nähtävissä eVakassa osoitteessa <a href="https://www.espoonvarhaiskasvatus.fi/">https://www.espoonvarhaiskasvatus.fi/</a>.</p>
@@ -532,9 +552,14 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
         <p>Dear guardian(s),</p>
         <p>A decision has been made regarding your child.</p>
         <p>The decision can be viewed on eVaka at <a href="https://www.espoonvarhaiskasvatus.fi/">https://www.espoonvarhaiskasvatus.fi/</a>.</p>
-    """.trimIndent()
+    """.trimIndent(
+        )
 
-    override fun getDecisionEmailText(childId: ChildId, decisionId: AssistanceNeedDecisionId): String = """
+    override fun getDecisionEmailText(
+        childId: ChildId,
+        decisionId: AssistanceNeedDecisionId
+    ): String =
+        """
         Hyvä(t) huoltaja(t),
         
         Lapsellenne on tehty päätös.
@@ -556,5 +581,6 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
         A decision has been made regarding your child.
         
         The decision can be viewed on eVaka at https://www.espoonvarhaiskasvatus.fi/.
-    """.trimIndent()
+    """.trimIndent(
+        )
 }

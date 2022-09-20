@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -28,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 @RequestMapping("/family")
@@ -46,19 +46,22 @@ class FamilyController(
     ): FamilyOverview {
         Audit.PisFamilyRead.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_FAMILY_OVERVIEW, id)
-        val includeIncome = accessControl.hasPermissionFor(user, clock, Action.Person.READ_INCOME, id)
+        val includeIncome =
+            accessControl.hasPermissionFor(user, clock, Action.Person.READ_INCOME, id)
 
         return db.connect { dbc ->
             dbc.read {
                 val overview = familyOverviewService.getFamilyByAdult(it, clock, id)
                 if (includeIncome) overview
-                else overview?.copy(
-                    headOfFamily = overview.headOfFamily.copy(income = null),
-                    partner = overview.partner?.copy(income = null),
-                    totalIncome = null
-                )
+                else
+                    overview?.copy(
+                        headOfFamily = overview.headOfFamily.copy(income = null),
+                        partner = overview.partner?.copy(income = null),
+                        totalIncome = null
+                    )
             }
-        } ?: throw NotFound("No family overview found for person $id")
+        }
+            ?: throw NotFound("No family overview found for person $id")
     }
 
     @GetMapping("/contacts")
@@ -81,14 +84,22 @@ class FamilyController(
         @RequestBody body: FamilyContactUpdate
     ) {
         Audit.FamilyContactsUpdate.log(targetId = body.childId, objectId = body.contactPersonId)
-        accessControl.requirePermissionFor(user, clock, Action.Child.UPDATE_FAMILY_CONTACT_DETAILS, body.childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Child.UPDATE_FAMILY_CONTACT_DETAILS,
+            body.childId
+        )
         db.connect { dbc ->
             dbc.transaction {
-                if (!it.isFamilyContactForChild(clock.today(), body.childId, body.contactPersonId)) {
+                if (
+                    !it.isFamilyContactForChild(clock.today(), body.childId, body.contactPersonId)
+                ) {
                     throw BadRequest("Invalid child or contact person")
                 }
                 personService.patchUserDetails(
-                    it, body.contactPersonId,
+                    it,
+                    body.contactPersonId,
                     PersonPatch(
                         email = body.email,
                         phone = body.phone,
@@ -107,17 +118,20 @@ class FamilyController(
         @RequestBody body: FamilyContactPriorityUpdate
     ) {
         Audit.FamilyContactsUpdate.log(targetId = body.childId, objectId = body.contactPersonId)
-        accessControl.requirePermissionFor(user, clock, Action.Child.UPDATE_FAMILY_CONTACT_PRIORITY, body.childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Child.UPDATE_FAMILY_CONTACT_PRIORITY,
+            body.childId
+        )
         db.connect { dbc ->
             dbc.transaction {
-                if (!it.isFamilyContactForChild(clock.today(), body.childId, body.contactPersonId)) {
+                if (
+                    !it.isFamilyContactForChild(clock.today(), body.childId, body.contactPersonId)
+                ) {
                     throw BadRequest("Invalid child or contact person")
                 }
-                it.updateFamilyContactPriority(
-                    body.childId,
-                    body.contactPersonId,
-                    body.priority
-                )
+                it.updateFamilyContactPriority(body.childId, body.contactPersonId, body.priority)
             }
         }
     }
@@ -142,10 +156,12 @@ private fun Database.Transaction.updateFamilyContactPriority(
     contactPersonId: PersonId,
     priority: Int?
 ) {
-    this.execute("SET CONSTRAINTS unique_child_contact_person_pair, unique_child_priority_pair DEFERRED")
+    this.execute(
+        "SET CONSTRAINTS unique_child_contact_person_pair, unique_child_priority_pair DEFERRED"
+    )
 
     this.createUpdate(
-        """
+            """
 WITH deleted_contact AS (
     DELETE FROM family_contact WHERE child_id = :childId AND contact_person_id = :contactPersonId RETURNING priority AS old_priority
 )
@@ -153,7 +169,7 @@ UPDATE family_contact SET priority = priority - 1
 FROM deleted_contact
 WHERE child_id = :childId AND priority > old_priority
 """
-    )
+        )
         .bind("childId", childId)
         .bind("contactPersonId", contactPersonId)
         .execute()
@@ -161,20 +177,24 @@ WHERE child_id = :childId AND priority > old_priority
     if (priority == null) return
 
     this.createUpdate(
-        """
+            """
 UPDATE family_contact SET priority = priority + 1 WHERE child_id = :childId AND priority >= :priority;
 INSERT INTO family_contact (child_id, contact_person_id, priority) VALUES (:childId, :contactPersonId, :priority);
 """
-    )
+        )
         .bind("childId", childId)
         .bind("contactPersonId", contactPersonId)
         .bind("priority", priority)
         .execute()
 }
 
-fun Database.Read.isFamilyContactForChild(today: LocalDate, childId: ChildId, personId: PersonId): Boolean {
+fun Database.Read.isFamilyContactForChild(
+    today: LocalDate,
+    childId: ChildId,
+    personId: PersonId
+): Boolean {
     return createQuery(
-        """
+            """
 SELECT EXISTS (
     -- is a guardian
     SELECT 1 FROM guardian
@@ -197,7 +217,7 @@ SELECT EXISTS (
         )
 )
 """
-    )
+        )
         .bind("today", today)
         .bind("childId", childId)
         .bind("personId", personId)
@@ -294,10 +314,11 @@ private fun addDefaultPriorities(contacts: List<FamilyContact>): List<FamilyCont
     if (contacts.none { it.priority != null })
         contacts
             .fold(listOf<FamilyContact>()) { acc, contact ->
-                acc + if (defaultContacts.contains(contact.role)) {
-                    val highestPriority = acc.mapNotNull { it.priority }.maxOrNull() ?: 0
-                    contact.copy(priority = highestPriority + 1)
-                } else contact
+                acc +
+                    if (defaultContacts.contains(contact.role)) {
+                        val highestPriority = acc.mapNotNull { it.priority }.maxOrNull() ?: 0
+                        contact.copy(priority = highestPriority + 1)
+                    } else contact
             }
             .sortedWith(compareBy(nullsLast()) { it.priority })
     else contacts

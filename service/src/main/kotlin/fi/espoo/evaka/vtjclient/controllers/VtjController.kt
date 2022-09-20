@@ -43,7 +43,12 @@ class VtjController(
         @PathVariable(value = "personId") personId: PersonId
     ): UserDetailsResponse {
         Audit.VtjRequest.log(targetId = personId)
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_VTJ_DETAILS, personId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.READ_VTJ_DETAILS,
+            personId
+        )
         val notFound = { throw NotFound("Person not found") }
         if (user.id != personId) {
             notFound()
@@ -52,24 +57,30 @@ class VtjController(
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 val person = tx.getPersonById(personId) ?: notFound()
-                val (userDetails, ssn, children) = when (person.identity) {
-                    is ExternalIdentifier.NoID ->
-                        Triple(
-                            CitizenUserDetails.from(person, accessControlCitizen.getPermittedFeatures(tx, user, clock)),
-                            (person.identity as? ExternalIdentifier.SSN)?.ssn ?: "",
-                            emptyList()
-                        )
-                    is ExternalIdentifier.SSN ->
-                        personService.getPersonWithChildren(tx, user, personId)
-                            ?.let {
+                val (userDetails, ssn, children) =
+                    when (person.identity) {
+                        is ExternalIdentifier.NoID ->
+                            Triple(
+                                CitizenUserDetails.from(
+                                    person,
+                                    accessControlCitizen.getPermittedFeatures(tx, user, clock)
+                                ),
+                                (person.identity as? ExternalIdentifier.SSN)?.ssn ?: "",
+                                emptyList()
+                            )
+                        is ExternalIdentifier.SSN ->
+                            personService.getPersonWithChildren(tx, user, personId)?.let {
                                 Triple(
-                                    CitizenUserDetails.from(it, accessControlCitizen.getPermittedFeatures(tx, user, clock)),
+                                    CitizenUserDetails.from(
+                                        it,
+                                        accessControlCitizen.getPermittedFeatures(tx, user, clock)
+                                    ),
                                     it.socialSecurityNumber!!,
                                     it.children.map { Child.from(it) }
                                 )
                             }
-                            ?: notFound()
-                }
+                                ?: notFound()
+                    }
 
                 if (user.authLevel == CitizenAuthLevel.STRONG) {
                     UserDetailsResponse.Strong(userDetails, ssn, children)
@@ -87,19 +98,21 @@ class VtjController(
         val socialSecurityNumber: String,
     ) {
         companion object {
-            fun from(person: VtjPersonDTO): Child = Child(
-                id = ChildId(person.id),
-                firstName = person.firstName,
-                lastName = person.lastName,
-                socialSecurityNumber = person.socialSecurityNumber,
-            )
+            fun from(person: VtjPersonDTO): Child =
+                Child(
+                    id = ChildId(person.id),
+                    firstName = person.firstName,
+                    lastName = person.lastName,
+                    socialSecurityNumber = person.socialSecurityNumber,
+                )
 
-            fun from(person: PersonWithChildrenDTO) = Child(
-                id = person.id,
-                firstName = person.firstName,
-                lastName = person.lastName,
-                socialSecurityNumber = person.socialSecurityNumber!!
-            )
+            fun from(person: PersonWithChildrenDTO) =
+                Child(
+                    id = person.id,
+                    firstName = person.firstName,
+                    lastName = person.lastName,
+                    socialSecurityNumber = person.socialSecurityNumber!!
+                )
         }
     }
 
@@ -117,33 +130,35 @@ class VtjController(
         val accessibleFeatures: CitizenFeatures
     ) {
         companion object {
-            fun from(person: PersonDTO, accessibleFeatures: CitizenFeatures): CitizenUserDetails = CitizenUserDetails(
-                id = person.id,
-                firstName = person.firstName,
-                lastName = person.lastName,
-                preferredName = person.preferredName,
-                streetAddress = person.streetAddress,
-                postalCode = person.postalCode,
-                postOffice = person.postOffice,
-                phone = person.phone,
-                backupPhone = person.backupPhone,
-                email = person.email,
-                accessibleFeatures = accessibleFeatures
-            )
+            fun from(person: PersonDTO, accessibleFeatures: CitizenFeatures): CitizenUserDetails =
+                CitizenUserDetails(
+                    id = person.id,
+                    firstName = person.firstName,
+                    lastName = person.lastName,
+                    preferredName = person.preferredName,
+                    streetAddress = person.streetAddress,
+                    postalCode = person.postalCode,
+                    postOffice = person.postOffice,
+                    phone = person.phone,
+                    backupPhone = person.backupPhone,
+                    email = person.email,
+                    accessibleFeatures = accessibleFeatures
+                )
 
-            fun from(person: PersonWithChildrenDTO, accessibleFeatures: CitizenFeatures) = CitizenUserDetails(
-                id = person.id,
-                firstName = person.firstName,
-                lastName = person.lastName,
-                preferredName = person.preferredName,
-                streetAddress = person.address.streetAddress,
-                postalCode = person.address.postalCode,
-                postOffice = person.address.city,
-                phone = person.phone,
-                backupPhone = person.backupPhone,
-                email = person.email,
-                accessibleFeatures = accessibleFeatures
-            )
+            fun from(person: PersonWithChildrenDTO, accessibleFeatures: CitizenFeatures) =
+                CitizenUserDetails(
+                    id = person.id,
+                    firstName = person.firstName,
+                    lastName = person.lastName,
+                    preferredName = person.preferredName,
+                    streetAddress = person.address.streetAddress,
+                    postalCode = person.address.postalCode,
+                    postOffice = person.address.city,
+                    phone = person.phone,
+                    backupPhone = person.backupPhone,
+                    email = person.email,
+                    accessibleFeatures = accessibleFeatures
+                )
         }
     }
 
@@ -157,8 +172,7 @@ class VtjController(
             val children: List<Child>
         ) : UserDetailsResponse(details, CitizenAuthLevel.STRONG)
 
-        internal class Weak(
-            override val details: CitizenUserDetails
-        ) : UserDetailsResponse(details, CitizenAuthLevel.WEAK)
+        internal class Weak(override val details: CitizenUserDetails) :
+            UserDetailsResponse(details, CitizenAuthLevel.WEAK)
     }
 }

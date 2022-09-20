@@ -20,9 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class GroupNoteController(
-    private val ac: AccessControl
-) {
+class GroupNoteController(private val ac: AccessControl) {
     @PostMapping("/daycare-groups/{groupId}/group-notes")
     fun createGroupNote(
         db: Database,

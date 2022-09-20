@@ -38,63 +38,81 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.operationalDays
-import org.springframework.stereotype.Component
 import java.time.Duration
 import java.time.LocalDate
 import java.time.Month
 import java.time.temporal.TemporalAdjusters
 import java.util.UUID
 import kotlin.math.abs
+import org.springframework.stereotype.Component
 
 @Component
 class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator) {
-    fun createAndStoreAllDraftInvoices(tx: Database.Transaction, range: DateRange = getPreviousMonthRange()) {
+    fun createAndStoreAllDraftInvoices(
+        tx: Database.Transaction,
+        range: DateRange = getPreviousMonthRange()
+    ) {
         tx.setStatementTimeout(Duration.ofMinutes(10))
         tx.setLockTimeout(Duration.ofSeconds(15))
         tx.createUpdate("LOCK TABLE invoice IN EXCLUSIVE MODE").execute()
         val invoiceCalculationData = calculateInvoiceData(tx, range)
-        val invoices = draftInvoiceGenerator.generateDraftInvoices(
-            tx,
-            invoiceCalculationData.decisions,
-            invoiceCalculationData.placements,
-            invoiceCalculationData.period,
-            invoiceCalculationData.areaIds,
-            invoiceCalculationData.operationalDays,
-            invoiceCalculationData.feeThresholds,
-            invoiceCalculationData.absences,
-            invoiceCalculationData.plannedAbsences,
-            invoiceCalculationData.freeChildren,
-            invoiceCalculationData.codebtors
-        )
-        val invoicesWithCorrections = applyCorrections(tx, invoices, range, invoiceCalculationData.areaIds)
+        val invoices =
+            draftInvoiceGenerator.generateDraftInvoices(
+                tx,
+                invoiceCalculationData.decisions,
+                invoiceCalculationData.placements,
+                invoiceCalculationData.period,
+                invoiceCalculationData.areaIds,
+                invoiceCalculationData.operationalDays,
+                invoiceCalculationData.feeThresholds,
+                invoiceCalculationData.absences,
+                invoiceCalculationData.plannedAbsences,
+                invoiceCalculationData.freeChildren,
+                invoiceCalculationData.codebtors
+            )
+        val invoicesWithCorrections =
+            applyCorrections(tx, invoices, range, invoiceCalculationData.areaIds)
         tx.deleteDraftInvoicesByDateRange(range)
         tx.upsertInvoices(invoicesWithCorrections)
     }
 
     fun calculateInvoiceData(tx: Database.Transaction, range: DateRange): InvoiceCalculationData {
-        val feeThresholds = tx.getFeeThresholds(range.start).find { it.validDuring.includes(range.start) }
-            ?: error("Missing prices for period ${range.start} - ${range.end}, cannot generate invoices")
+        val feeThresholds =
+            tx.getFeeThresholds(range.start).find { it.validDuring.includes(range.start) }
+                ?: error(
+                    "Missing prices for period ${range.start} - ${range.end}, cannot generate invoices"
+                )
 
         val effectiveDecisions = tx.getInvoiceableFeeDecisions(range).groupBy { it.headOfFamilyId }
         val placements = tx.getInvoiceablePlacements(range).groupBy { it.headOfFamily }
         val invoicedHeadsOfFamily = tx.getInvoicedHeadsOfFamily(range)
 
-        val unhandledDecisions = effectiveDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
+        val unhandledDecisions =
+            effectiveDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
         val unhandledPlacements = placements.filterNot { invoicedHeadsOfFamily.contains(it.key) }
         val areaIds = tx.getAreaIds()
         val operationalDays = tx.operationalDays(range.start.year, range.start.month)
 
         val allAbsences = tx.getAbsenceStubs(range, setOf(AbsenceCategory.BILLABLE))
         val plannedAbsences =
-            allAbsences.filter { it.absenceType == AbsenceType.PLANNED_ABSENCE }.groupBy { it.childId }
-                .map { (childId, absences) -> childId to absences.map { it.date }.toSet() }.toMap()
+            allAbsences
+                .filter { it.absenceType == AbsenceType.PLANNED_ABSENCE }
+                .groupBy { it.childId }
+                .map { (childId, absences) -> childId to absences.map { it.date }.toSet() }
+                .toMap()
 
         val freeChildren =
-            if (range.start.month == Month.JULY && (range.end?.month == Month.JULY && range.start.year == range.end.year)) {
+            if (
+                range.start.month == Month.JULY &&
+                    (range.end?.month == Month.JULY && range.start.year == range.end.year)
+            ) {
                 tx.getFreeJulyChildren(range.start.year)
             } else emptyList()
 
-        val codebtors = unhandledDecisions.mapValues { (_, decisions) -> getInvoiceCodebtor(tx, decisions, range) }
+        val codebtors =
+            unhandledDecisions.mapValues { (_, decisions) ->
+                getInvoiceCodebtor(tx, decisions, range)
+            }
 
         return InvoiceCalculationData(
             decisions = unhandledDecisions,
@@ -134,13 +152,14 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         return partners.first().takeIf {
             decisions.all { decision ->
                 if (decision.partnerId == null) false
-                else tx.partnerIsCodebtor(
-                    decision.headOfFamilyId,
-                    decision.partnerId,
-                    decision.children.map { it.child.id },
-                    decision.validDuring.intersection(dateRange)
-                        ?: error("Decision is not valid during invoice period $dateRange")
-                )
+                else
+                    tx.partnerIsCodebtor(
+                        decision.headOfFamilyId,
+                        decision.partnerId,
+                        decision.children.map { it.child.id },
+                        decision.validDuring.intersection(dateRange)
+                            ?: error("Decision is not valid during invoice period $dateRange")
+                    )
             }
         }
     }
@@ -160,54 +179,82 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
     ): List<Invoice> {
         val corrections = getUninvoicedCorrections(tx)
 
-        val invoicesWithCorrections = corrections.map { (headOfFamily, headOfFamilyCorrections) ->
-            val invoice = invoices.find { it.headOfFamily == headOfFamily } ?: Invoice(
-                id = InvoiceId(UUID.randomUUID()),
-                status = InvoiceStatus.DRAFT,
-                periodStart = invoicePeriod.start,
-                periodEnd = invoicePeriod.end!!,
-                areaId = headOfFamilyCorrections.first().unitId.let {
-                    areaIds[it] ?: error("No areaId found for unit $it")
-                },
-                headOfFamily = headOfFamily,
-                codebtor = null,
-                rows = listOf()
-            )
+        val invoicesWithCorrections =
+            corrections
+                .map { (headOfFamily, headOfFamilyCorrections) ->
+                    val invoice =
+                        invoices.find { it.headOfFamily == headOfFamily }
+                            ?: Invoice(
+                                id = InvoiceId(UUID.randomUUID()),
+                                status = InvoiceStatus.DRAFT,
+                                periodStart = invoicePeriod.start,
+                                periodEnd = invoicePeriod.end!!,
+                                areaId =
+                                    headOfFamilyCorrections.first().unitId.let {
+                                        areaIds[it] ?: error("No areaId found for unit $it")
+                                    },
+                                headOfFamily = headOfFamily,
+                                codebtor = null,
+                                rows = listOf()
+                            )
 
-            val (additions, subtractions) = headOfFamilyCorrections.partition { it.unitPrice > 0 }
-            val withAdditions = invoice.copy(rows = invoice.rows + additions.map { it.toInvoiceRow() })
+                    val (additions, subtractions) =
+                        headOfFamilyCorrections.partition { it.unitPrice > 0 }
+                    val withAdditions =
+                        invoice.copy(rows = invoice.rows + additions.map { it.toInvoiceRow() })
 
-            subtractions
-                .sortedBy { it.period.start }
-                .fold(withAdditions) { invoiceWithSubtractions, subtraction ->
-                    if (invoiceWithSubtractions.totalPrice == 0) return@fold invoiceWithSubtractions
+                    subtractions
+                        .sortedBy { it.period.start }
+                        .fold(withAdditions) { invoiceWithSubtractions, subtraction ->
+                            if (invoiceWithSubtractions.totalPrice == 0)
+                                return@fold invoiceWithSubtractions
 
-                    if ((invoiceWithSubtractions.totalPrice + subtraction.unitPrice) >= 0) {
-                        // apply partial amount (also handles cases where the whole subtraction can be applied)
-                        // integer division gives us the max amount of full refundable units
-                        val maxApplicableAmount = invoiceWithSubtractions.totalPrice / abs(subtraction.unitPrice)
-                        val subtractionWithMaxApplicableAmount =
-                            subtraction.copy(amount = minOf(subtraction.amount, maxApplicableAmount))
-                        invoiceWithSubtractions.copy(rows = invoiceWithSubtractions.rows + subtractionWithMaxApplicableAmount.toInvoiceRow())
-                    } else {
-                        // apply partial unit price
-                        val maxUnitPrice = invoiceWithSubtractions.totalPrice / subtraction.amount
-                        if (maxUnitPrice == 0) return@fold invoiceWithSubtractions
+                            if ((invoiceWithSubtractions.totalPrice + subtraction.unitPrice) >= 0) {
+                                // apply partial amount (also handles cases where the whole
+                                // subtraction can be
+                                // applied)
+                                // integer division gives us the max amount of full refundable units
+                                val maxApplicableAmount =
+                                    invoiceWithSubtractions.totalPrice / abs(subtraction.unitPrice)
+                                val subtractionWithMaxApplicableAmount =
+                                    subtraction.copy(
+                                        amount = minOf(subtraction.amount, maxApplicableAmount)
+                                    )
+                                invoiceWithSubtractions.copy(
+                                    rows =
+                                        invoiceWithSubtractions.rows +
+                                            subtractionWithMaxApplicableAmount.toInvoiceRow()
+                                )
+                            } else {
+                                // apply partial unit price
+                                val maxUnitPrice =
+                                    invoiceWithSubtractions.totalPrice / subtraction.amount
+                                if (maxUnitPrice == 0) return@fold invoiceWithSubtractions
 
-                        val subtractionWithMaxUnitPrice = subtraction.copy(unitPrice = -1 * maxUnitPrice)
-                        invoiceWithSubtractions.copy(rows = invoiceWithSubtractions.rows + subtractionWithMaxUnitPrice.toInvoiceRow())
-                    }
+                                val subtractionWithMaxUnitPrice =
+                                    subtraction.copy(unitPrice = -1 * maxUnitPrice)
+                                invoiceWithSubtractions.copy(
+                                    rows =
+                                        invoiceWithSubtractions.rows +
+                                            subtractionWithMaxUnitPrice.toInvoiceRow()
+                                )
+                            }
+                        }
                 }
-        }.filter { it.rows.isNotEmpty() }
+                .filter { it.rows.isNotEmpty() }
 
-        return invoicesWithCorrections + invoices.filterNot { invoice ->
-            invoicesWithCorrections.any { correction -> invoice.id == correction.id }
-        }
+        return invoicesWithCorrections +
+            invoices.filterNot { invoice ->
+                invoicesWithCorrections.any { correction -> invoice.id == correction.id }
+            }
     }
 
-    private fun getUninvoicedCorrections(tx: Database.Read): Map<PersonId, List<InvoiceCorrection>> {
-        val uninvoicedCorrectionsWithInvoicedTotals = tx.createQuery(
-            """
+    private fun getUninvoicedCorrections(
+        tx: Database.Read
+    ): Map<PersonId, List<InvoiceCorrection>> {
+        val uninvoicedCorrectionsWithInvoicedTotals =
+            tx.createQuery(
+                    """
 SELECT
     c.id,
     coalesce(
@@ -221,14 +268,14 @@ WHERE NOT c.applied_completely
 GROUP BY c.id
 HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (WHERE i.id IS NOT NULL), 0)
 """
-        )
-            .map { rv ->
-                Pair<InvoiceCorrectionId, List<InvoicedTotal>>(
-                    rv.mapColumn("id"),
-                    rv.mapJsonColumn("invoiced_corrections")
                 )
-            }
-            .toMap()
+                .map { rv ->
+                    Pair<InvoiceCorrectionId, List<InvoicedTotal>>(
+                        rv.mapColumn("id"),
+                        rv.mapJsonColumn("invoiced_corrections")
+                    )
+                }
+                .toMap()
 
         return tx.createQuery("SELECT * FROM invoice_correction WHERE id = ANY(:ids)")
             .bind("ids", uninvoicedCorrectionsWithInvoicedTotals.keys)
@@ -265,18 +312,19 @@ HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (
         val unitPrice: Int,
         val description: String
     ) {
-        fun toInvoiceRow() = InvoiceRow(
-            id = InvoiceRowId(UUID.randomUUID()),
-            child = childId,
-            amount = amount,
-            unitPrice = unitPrice,
-            periodStart = period.start,
-            periodEnd = period.end,
-            product = product,
-            unitId = unitId,
-            description = description,
-            correctionId = id
-        )
+        fun toInvoiceRow() =
+            InvoiceRow(
+                id = InvoiceRowId(UUID.randomUUID()),
+                child = childId,
+                amount = amount,
+                unitPrice = unitPrice,
+                periodStart = period.start,
+                periodEnd = period.end,
+                product = product,
+                unitId = unitId,
+                description = description,
+                correctionId = id
+            )
     }
 }
 
@@ -314,7 +362,10 @@ data class AbsenceStub(
     val absenceType: AbsenceType
 )
 
-fun Database.Read.getAbsenceStubs(spanningRange: DateRange, categories: Collection<AbsenceCategory>): List<AbsenceStub> {
+fun Database.Read.getAbsenceStubs(
+    spanningRange: DateRange,
+    categories: Collection<AbsenceCategory>
+): List<AbsenceStub> {
     val sql =
         """
         SELECT child_id, date, category, absence_type
@@ -338,68 +389,79 @@ data class Placements(
     val placements: List<Pair<ChildWithDateOfBirth, PlacementStub>>
 )
 
-internal fun Database.Read.getInvoiceablePlacements(
-    spanningPeriod: DateRange
-): List<Placements> {
-    data class PlacementRow(val dateRange: DateRange, val unitId: DaycareId, val type: PlacementType)
+internal fun Database.Read.getInvoiceablePlacements(spanningPeriod: DateRange): List<Placements> {
+    data class PlacementRow(
+        val dateRange: DateRange,
+        val unitId: DaycareId,
+        val type: PlacementType
+    )
 
-    val placements = createQuery(
-        // language=sql
-        """
+    val placements =
+        createQuery(
+                // language=sql
+                """
             SELECT p.child_id, daterange(p.start_date, p.end_date, '[]') AS date_range, p.unit_id, p.type FROM placement p
             JOIN daycare u ON p.unit_id = u.id AND u.invoiced_by_municipality
             WHERE daterange(start_date, end_date, '[]') && :period
             AND p.type = ANY(:invoicedTypes::placement_type[])
-        """.trimIndent()
-    )
-        .bind("period", spanningPeriod)
-        .bind("invoicedTypes", PlacementType.invoiced())
-        .map { row -> row.mapColumn<ChildId>("child_id") to row.mapRow<PlacementRow>() }
-        .groupBy { (childId) -> childId }
-        .mapValues { it.value.map { (_, placements) -> placements } }
+        """.trimIndent(
+                )
+            )
+            .bind("period", spanningPeriod)
+            .bind("invoicedTypes", PlacementType.invoiced())
+            .map { row -> row.mapColumn<ChildId>("child_id") to row.mapRow<PlacementRow>() }
+            .groupBy { (childId) -> childId }
+            .mapValues { it.value.map { (_, placements) -> placements } }
 
-    val familyCompositions = toFamilyCompositions(
-        getChildrenWithHeadOfFamilies(placements.keys, spanningPeriod),
-        spanningPeriod
-    )
+    val familyCompositions =
+        toFamilyCompositions(
+            getChildrenWithHeadOfFamilies(placements.keys, spanningPeriod),
+            spanningPeriod
+        )
 
     return familyCompositions
         .map { (headOfFamily, families) ->
-            val relevantPlacements = families.flatMap { (period, children) ->
-                children.flatMap { child ->
-                    (placements[child.id] ?: listOf())
-                        .filter { it.dateRange.overlaps(period) }
-                        .map { (placementPeriod, placementUnit, placementType) ->
-                            Triple(placementPeriod, child, PlacementStub(placementUnit, placementType))
-                        }
+            val relevantPlacements =
+                families.flatMap { (period, children) ->
+                    children.flatMap { child ->
+                        (placements[child.id] ?: listOf())
+                            .filter { it.dateRange.overlaps(period) }
+                            .map { (placementPeriod, placementUnit, placementType) ->
+                                Triple(
+                                    placementPeriod,
+                                    child,
+                                    PlacementStub(placementUnit, placementType)
+                                )
+                            }
+                    }
                 }
-            }
 
-            val allPeriods = families.map { (period, _) -> period } +
-                relevantPlacements.map { (period) -> period }
+            val allPeriods =
+                families.map { (period, _) -> period } +
+                    relevantPlacements.map { (period) -> period }
 
-            val familyPlacementsSeries = asDistinctPeriods(allPeriods, spanningPeriod).mapNotNull { period ->
-                val family = families.find { it.first.contains(period) }
+            val familyPlacementsSeries =
+                asDistinctPeriods(allPeriods, spanningPeriod).mapNotNull { period ->
+                    val family = families.find { it.first.contains(period) }
 
-                family?.let { (_, children) ->
-                    period to children
-                        .sortedByDescending { it.dateOfBirth }
-                        .mapNotNull { child ->
-                            relevantPlacements.filter { it.first.contains(period) }.find { child.id == it.second.id }
-                                ?.let { it.second to it.third }
-                        }
+                    family?.let { (_, children) ->
+                        period to
+                            children
+                                .sortedByDescending { it.dateOfBirth }
+                                .mapNotNull { child ->
+                                    relevantPlacements
+                                        .filter { it.first.contains(period) }
+                                        .find { child.id == it.second.id }
+                                        ?.let { it.second to it.third }
+                                }
+                    }
                 }
-            }
 
             headOfFamily to mergePeriods(familyPlacementsSeries)
         }
         .flatMap { (headOfFamily, allPlacements) ->
             allPlacements.map { (period, placements) ->
-                Placements(
-                    period,
-                    headOfFamily,
-                    placements
-                )
+                Placements(period, headOfFamily, placements)
             }
         }
 }
@@ -412,12 +474,15 @@ internal fun toFamilyCompositions(
         .groupBy { (_, headOfFamily) -> headOfFamily }
         .mapValues { (_, value) -> value.map { it.first to it.third } }
         .mapValues { (_, children) ->
-            asDistinctPeriods(children.map { it.first }, spanningPeriod).map { period ->
-                period to children
-                    .filter { it.first.contains(period) }
-                    .map { (_, child) -> child }
-                    .sortedByDescending { it.dateOfBirth }
-            }.let { mergePeriods(it) }
+            asDistinctPeriods(children.map { it.first }, spanningPeriod)
+                .map { period ->
+                    period to
+                        children
+                            .filter { it.first.contains(period) }
+                            .map { (_, child) -> child }
+                            .sortedByDescending { it.dateOfBirth }
+                }
+                .let { mergePeriods(it) }
         }
 }
 
@@ -471,8 +536,8 @@ fun Database.Read.getAreaIds(): Map<DaycareId, AreaId> {
 
 fun Database.Read.getFreeJulyChildren(year: Int): List<ChildId> {
     val sql =
-        //language=sql
-        """
+    // language=sql
+    """
 WITH invoiced_placement AS (
     SELECT child_id, start_date, end_date FROM placement WHERE type = ANY(:invoicedTypes::placement_type[])
 )
@@ -508,10 +573,7 @@ WHERE
   p09.child_id = p06.child_id;
     """
 
-    return createQuery(sql)
-        .bind("invoicedTypes", PlacementType.invoiced())
-        .mapTo<ChildId>()
-        .list()
+    return createQuery(sql).bind("invoicedTypes", PlacementType.invoiced()).mapTo<ChildId>().list()
 }
 
 private fun placementOn(year: Int, month: Int): String {

@@ -10,7 +10,7 @@ import fi.espoo.evaka.shared.db.Database
 
 fun Database.Read.getDrafts(accountId: MessageAccountId): List<DraftContent> =
     this.createQuery(
-        """
+            """
         SELECT
             draft.*,
             (SELECT coalesce(jsonb_agg(json_build_object(
@@ -27,25 +27,30 @@ fun Database.Read.getDrafts(accountId: MessageAccountId): List<DraftContent> =
         WHERE draft.account_id = :accountId
         ORDER BY draft.created DESC
         """
-    )
+        )
         .bind("accountId", accountId)
         .mapTo<DraftContent>()
         .list()
 
 fun Database.Transaction.initDraft(accountId: MessageAccountId): MessageDraftId {
     return this.createQuery(
-        """
+            """
         INSERT INTO message_draft (account_id) VALUES (:accountId) RETURNING id
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("accountId", accountId)
         .mapTo<MessageDraftId>()
         .one()
 }
 
-fun Database.Transaction.updateDraft(accountId: MessageAccountId, id: MessageDraftId, draft: UpdatableDraftContent) =
+fun Database.Transaction.updateDraft(
+    accountId: MessageAccountId,
+    id: MessageDraftId,
+    draft: UpdatableDraftContent
+) =
     createUpdate(
-        """
+            """
         UPDATE message_draft
         SET
             account_id = :accountId,
@@ -56,8 +61,10 @@ fun Database.Transaction.updateDraft(accountId: MessageAccountId, id: MessageDra
             recipient_ids = :recipientIds,
             recipient_names = :recipientNames
         WHERE id = :id
-        """.trimIndent()
-    ).bindKotlin(draft)
+        """.trimIndent(
+            )
+        )
+        .bindKotlin(draft)
         .bind("id", id)
         .bind("accountId", accountId)
         .updateExactlyOne()

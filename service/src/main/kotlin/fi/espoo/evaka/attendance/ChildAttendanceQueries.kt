@@ -20,10 +20,10 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import org.jdbi.v3.core.mapper.Nested
-import org.jdbi.v3.json.Json
 import java.time.LocalDate
 import java.time.LocalTime
+import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.json.Json
 
 fun Database.Transaction.insertAttendance(
     childId: ChildId,
@@ -37,7 +37,8 @@ fun Database.Transaction.insertAttendance(
         """
         INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time)
         VALUES (:childId, :unitId, :date, :startTime, :endTime)
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     createUpdate(sql)
         .bind("childId", childId)
@@ -61,7 +62,8 @@ fun Database.Transaction.insertAbsence(
         INSERT INTO absence (child_id, date, category, absence_type, modified_by)
         VALUES (:childId, :date, :category, :absenceType, :userId)
         RETURNING *
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     return createQuery(sql)
         .bind("childId", childId)
@@ -73,7 +75,11 @@ fun Database.Transaction.insertAbsence(
         .first()
 }
 
-fun Database.Read.getChildAttendance(childId: ChildId, unitId: DaycareId, now: HelsinkiDateTime): ChildAttendance? {
+fun Database.Read.getChildAttendance(
+    childId: ChildId,
+    unitId: DaycareId,
+    now: HelsinkiDateTime
+): ChildAttendance? {
     // language=sql
     val sql =
         """
@@ -83,7 +89,8 @@ fun Database.Read.getChildAttendance(childId: ChildId, unitId: DaycareId, now: H
         AND (end_time IS NULL OR (date = :date AND (start_time != '00:00'::time OR (start_time = '00:00'::time AND :departedThreshold < end_time))))
         ORDER BY date, start_time DESC
         LIMIT 1
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     return createQuery(sql)
         .bind("childId", childId)
@@ -96,8 +103,13 @@ fun Database.Read.getChildAttendance(childId: ChildId, unitId: DaycareId, now: H
 
 data class OngoingAttendance(val id: AttendanceId, val date: LocalDate, val startTime: LocalTime)
 
-fun Database.Read.getChildOngoingAttendance(childId: ChildId, unitId: DaycareId): OngoingAttendance? =
-    createQuery("SELECT id, date, start_time FROM child_attendance WHERE child_id = :childId AND unit_id = :unitId AND end_time IS NULL")
+fun Database.Read.getChildOngoingAttendance(
+    childId: ChildId,
+    unitId: DaycareId
+): OngoingAttendance? =
+    createQuery(
+            "SELECT id, date, start_time FROM child_attendance WHERE child_id = :childId AND unit_id = :unitId AND end_time IS NULL"
+        )
         .bind("childId", childId)
         .bind("unitId", unitId)
         .mapTo<OngoingAttendance>()
@@ -124,26 +136,35 @@ data class ChildBasicsRow(
     val lastName: String,
     val preferredName: String?,
     val dateOfBirth: LocalDate,
-    @Nested("dst")
-    val dailyServiceTimes: DailyServiceTimeRow?,
+    @Nested("dst") val dailyServiceTimes: DailyServiceTimeRow?,
     val placementType: PlacementType,
     val groupId: GroupId?,
     val backup: Boolean,
-    @Json
-    val attendance: AttendanceTimes?,
-    @Json
-    val absences: List<ChildAbsence>,
+    @Json val attendance: AttendanceTimes?,
+    @Json val absences: List<ChildAbsence>,
     val imageId: String?
 ) {
-    fun toChildBasics() = ChildBasics(
-        id, firstName, lastName, preferredName, dateOfBirth,
-        dailyServiceTimes = dailyServiceTimes?.let { toDailyServiceTimes(it) },
-        placementType, groupId, backup, attendance, absences,
-        imageUrl = imageId?.let { id -> "/api/internal/child-images/$id" }
-    )
+    fun toChildBasics() =
+        ChildBasics(
+            id,
+            firstName,
+            lastName,
+            preferredName,
+            dateOfBirth,
+            dailyServiceTimes = dailyServiceTimes?.let { toDailyServiceTimes(it) },
+            placementType,
+            groupId,
+            backup,
+            attendance,
+            absences,
+            imageUrl = imageId?.let { id -> "/api/internal/child-images/$id" }
+        )
 }
 
-fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTime): List<ChildBasics> {
+fun Database.Read.fetchChildrenBasics(
+    unitId: DaycareId,
+    instant: HelsinkiDateTime
+): List<ChildBasics> {
     // language=sql
     val sql =
         """
@@ -256,7 +277,8 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTi
             FROM absence a WHERE a.child_id = pe.id AND a.date = :date
             GROUP BY a.child_id
         ) a ON true
-        """.trimIndent()
+        """.trimIndent(
+        )
 
     return createQuery(sql)
         .bind("unitId", unitId)
@@ -288,9 +310,7 @@ fun Database.Transaction.deleteAttendance(id: AttendanceId) {
         WHERE id = :id
         """.trimIndent()
 
-    createUpdate(sql)
-        .bind("id", id)
-        .execute()
+    createUpdate(sql).bind("id", id).execute()
 }
 
 fun Database.Transaction.deleteAbsencesByDate(childId: ChildId, date: LocalDate) {
@@ -299,12 +319,10 @@ fun Database.Transaction.deleteAbsencesByDate(childId: ChildId, date: LocalDate)
         """
         DELETE FROM absence
         WHERE child_id = :childId AND date = :date
-        """.trimIndent()
+        """.trimIndent(
+        )
 
-    createUpdate(sql)
-        .bind("childId", childId)
-        .bind("date", date)
-        .execute()
+    createUpdate(sql).bind("childId", childId).bind("date", date).execute()
 }
 
 fun Database.Transaction.deleteAttendancesByDate(childId: ChildId, date: LocalDate) {
@@ -314,25 +332,27 @@ fun Database.Transaction.deleteAttendancesByDate(childId: ChildId, date: LocalDa
         .execute()
 }
 
-fun Database.Transaction.deleteAbsencesByFiniteDateRange(childId: ChildId, dateRange: FiniteDateRange) {
+fun Database.Transaction.deleteAbsencesByFiniteDateRange(
+    childId: ChildId,
+    dateRange: FiniteDateRange
+) {
     // language=sql
     val sql =
         """
         DELETE FROM absence
         WHERE child_id = :childId AND between_start_and_end(:dateRange, date)
-        """.trimIndent()
+        """.trimIndent(
+        )
 
-    createUpdate(sql)
-        .bind("childId", childId)
-        .bind("dateRange", dateRange)
-        .execute()
+    createUpdate(sql).bind("childId", childId).bind("dateRange", dateRange).execute()
 }
 
 fun Database.Read.fetchAttendanceReservations(
     unitId: DaycareId,
     now: HelsinkiDateTime
-): Map<ChildId, List<AttendanceReservation>> = createQuery(
-    """
+): Map<ChildId, List<AttendanceReservation>> =
+    createQuery(
+            """
     WITH placed_children AS (
         SELECT child_id FROM placement WHERE unit_id = :unitId AND :date BETWEEN start_date AND end_date
         UNION
@@ -349,16 +369,18 @@ fun Database.Read.fetchAttendanceReservations(
     JOIN person child ON res.child_id = child.id
     LEFT JOIN attendance_reservation real_start ON res.start_time = '00:00'::time AND res.child_id = real_start.child_id AND real_start.end_time = '23:59'::time AND res.date = real_start.date + 1
     LEFT JOIN attendance_reservation real_end ON res.end_time = '23:59'::time AND res.child_id = real_end.child_id AND real_end.start_time = '00:00'::time AND res.date = real_end.date - 1
-    """.trimIndent()
-)
-    .bind("unitId", unitId)
-    .bind("date", now.toLocalDate())
-    .bind("time", now.toLocalTime())
-    .map { ctx ->
-        ctx.mapColumn<ChildId>("child_id") to AttendanceReservation(
-            HelsinkiDateTime.of(ctx.mapColumn("start_date"), ctx.mapColumn("start_time")),
-            HelsinkiDateTime.of(ctx.mapColumn("end_date"), ctx.mapColumn("end_time"))
+    """.trimIndent(
+            )
         )
-    }
-    .groupBy { (childId, _) -> childId }
-    .mapValues { it.value.map { (_, reservation) -> reservation } }
+        .bind("unitId", unitId)
+        .bind("date", now.toLocalDate())
+        .bind("time", now.toLocalTime())
+        .map { ctx ->
+            ctx.mapColumn<ChildId>("child_id") to
+                AttendanceReservation(
+                    HelsinkiDateTime.of(ctx.mapColumn("start_date"), ctx.mapColumn("start_time")),
+                    HelsinkiDateTime.of(ctx.mapColumn("end_date"), ctx.mapColumn("end_time"))
+                )
+        }
+        .groupBy { (childId, _) -> childId }
+        .mapValues { it.value.map { (_, reservation) -> reservation } }

@@ -13,23 +13,28 @@ import org.thymeleaf.TemplateEngine
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
 
-@Import(value = [fi.espoo.evaka.invoicing.service.PDFService::class, fi.espoo.voltti.pdfgen.PDFService::class])
+@Import(
+    value =
+        [
+            fi.espoo.evaka.invoicing.service.PDFService::class,
+            fi.espoo.voltti.pdfgen.PDFService::class]
+)
 @Configuration
 class PDFConfig {
-    @Bean
-    fun templateEngine(): ITemplateEngine = PDFConfig.templateEngine()
+    @Bean fun templateEngine(): ITemplateEngine = PDFConfig.templateEngine()
 
     companion object {
-        fun templateEngine(): ITemplateEngine = TemplateEngine().apply {
-            setTemplateResolver(
-                ClassLoaderTemplateResolver().apply {
-                    prefix = "WEB-INF/templates/"
-                    suffix = ".html"
-                    setTemplateMode("HTML")
-                }
-            )
-            addDialect(Java8TimeDialect())
-            addDialect(LayoutDialect())
-        }
+        fun templateEngine(): ITemplateEngine =
+            TemplateEngine().apply {
+                setTemplateResolver(
+                    ClassLoaderTemplateResolver().apply {
+                        prefix = "WEB-INF/templates/"
+                        suffix = ".html"
+                        setTemplateMode("HTML")
+                    }
+                )
+                addDialect(Java8TimeDialect())
+                addDialect(LayoutDialect())
+            }
     }
 }

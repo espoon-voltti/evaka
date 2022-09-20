@@ -32,7 +32,9 @@ class BackupPickupController(private val accessControl: AccessControl) {
     ): ChildBackupPickupCreateResponse {
         Audit.ChildBackupPickupCreate.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_BACKUP_PICKUP, childId)
-        return ChildBackupPickupCreateResponse(db.connect { dbc -> dbc.transaction { tx -> tx.createBackupPickup(childId, body) } })
+        return ChildBackupPickupCreateResponse(
+            db.connect { dbc -> dbc.transaction { tx -> tx.createBackupPickup(childId, body) } }
+        )
     }
 
     @GetMapping("/children/{childId}/backup-pickups")
@@ -78,11 +80,13 @@ fun Database.Transaction.createBackupPickup(
     data: ChildBackupPickupContent
 ): BackupPickupId {
     // language=sql
-    val sql = """
+    val sql =
+        """
         INSERT INTO backup_pickup (child_id, name, phone)
         VALUES (:childId, :name, :phone)
         RETURNING id
-    """.trimIndent()
+    """.trimIndent(
+        )
 
     return this.createQuery(sql)
         .bind("childId", childId)
@@ -99,16 +103,15 @@ fun Database.Read.getBackupPickupsForChild(childId: ChildId): List<ChildBackupPi
         .list()
 }
 
-fun Database.Transaction.updateBackupPickup(
-    id: BackupPickupId,
-    data: ChildBackupPickupContent
-) {
+fun Database.Transaction.updateBackupPickup(id: BackupPickupId, data: ChildBackupPickupContent) {
     // language=sql
-    val sql = """
+    val sql =
+        """
         UPDATE backup_pickup
         SET name = :name, phone = :phone
         WHERE id  = :id
-    """.trimIndent()
+    """.trimIndent(
+        )
 
     this.createUpdate(sql)
         .bind("id", id)
@@ -117,18 +120,11 @@ fun Database.Transaction.updateBackupPickup(
         .updateExactlyOne()
 }
 
-fun Database.Transaction.deleteBackupPickup(
-    id: BackupPickupId
-) {
-    this.createUpdate("DELETE FROM backup_pickup WHERE id = :id")
-        .bind("id", id)
-        .updateExactlyOne()
+fun Database.Transaction.deleteBackupPickup(id: BackupPickupId) {
+    this.createUpdate("DELETE FROM backup_pickup WHERE id = :id").bind("id", id).updateExactlyOne()
 }
 
-data class ChildBackupPickupContent(
-    val name: String,
-    val phone: String
-)
+data class ChildBackupPickupContent(val name: String, val phone: String)
 
 data class ChildBackupPickup(
     val id: BackupPickupId,

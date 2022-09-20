@@ -65,13 +65,16 @@ class FixtureBuilder(
         private var dateOfBirth: LocalDate? = null
         private var person: DevPerson? = null
 
-        fun withDateOfBirth(dateOfBirth: LocalDate) = this.apply {
-            this.dateOfBirth = dateOfBirth
-        }
+        fun withDateOfBirth(dateOfBirth: LocalDate) = this.apply { this.dateOfBirth = dateOfBirth }
 
-        fun withAge(years: Int, months: Int = 0, days: Int = 0) = this.apply {
-            this.dateOfBirth = today.minusYears(years.toLong()).minusMonths(months.toLong()).minusDays(days.toLong())
-        }
+        fun withAge(years: Int, months: Int = 0, days: Int = 0) =
+            this.apply {
+                this.dateOfBirth =
+                    today
+                        .minusYears(years.toLong())
+                        .minusMonths(months.toLong())
+                        .minusDays(days.toLong())
+            }
 
         fun usePerson(person: DevPerson) = this.apply { this.person = person }
 
@@ -89,11 +92,14 @@ class FixtureBuilder(
         }
 
         private fun doInsert(): ChildId {
-            val childId = person?.id ?: tx.insertTestPerson(
-                DevPerson(
-                    dateOfBirth = dateOfBirth ?: throw IllegalStateException("date of birth not set")
-                )
-            )
+            val childId =
+                person?.id
+                    ?: tx.insertTestPerson(
+                        DevPerson(
+                            dateOfBirth = dateOfBirth
+                                    ?: throw IllegalStateException("date of birth not set")
+                        )
+                    )
             if (person == null) tx.insertTestChild(DevChild(childId))
             return childId
         }
@@ -124,8 +130,10 @@ class FixtureBuilder(
         private var factor: Double = 1.0
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
-        fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
-        fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
+        fun fromDay(relativeDays: Int) =
+            this.apply { this.from = today.plusDays(relativeDays.toLong()) }
+        fun toDay(relativeDays: Int) =
+            this.apply { this.to = today.plusDays(relativeDays.toLong()) }
         fun toDay(date: LocalDate) = this.apply { this.to = date }
         fun withFactor(factor: Double) = this.apply { this.factor = factor }
         fun createdBy(employeeId: EvakaUserId) = this.apply { this.employeeId = employeeId }
@@ -154,9 +162,11 @@ class FixtureBuilder(
         private var categories: List<AbsenceCategory>? = null
 
         fun onDay(date: LocalDate) = this.apply { this.date = date }
-        fun onDay(relativeDays: Int) = this.apply { this.date = today.plusDays(relativeDays.toLong()) }
+        fun onDay(relativeDays: Int) =
+            this.apply { this.date = today.plusDays(relativeDays.toLong()) }
         fun ofType(type: AbsenceType) = this.apply { this.type = type }
-        fun forCategories(vararg categories: AbsenceCategory) = this.apply { this.categories = categories.toList() }
+        fun forCategories(vararg categories: AbsenceCategory) =
+            this.apply { this.categories = categories.toList() }
 
         fun save(): ChildFixture {
             categories?.forEach { category ->
@@ -166,7 +176,8 @@ class FixtureBuilder(
                     absenceType = type ?: throw IllegalStateException("absence type not set"),
                     category = category
                 )
-            } ?: throw IllegalStateException("care types not set")
+            }
+                ?: throw IllegalStateException("care types not set")
 
             return childFixture
         }
@@ -185,22 +196,26 @@ class FixtureBuilder(
         private var preschoolDaycareDates: FiniteDateRange? = null
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
-        fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
-        fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
+        fun fromDay(relativeDays: Int) =
+            this.apply { this.from = today.plusDays(relativeDays.toLong()) }
+        fun toDay(relativeDays: Int) =
+            this.apply { this.to = today.plusDays(relativeDays.toLong()) }
         fun toDay(date: LocalDate) = this.apply { this.to = date }
         fun toUnit(id: DaycareId) = this.apply { this.unitId = id }
         fun ofType(type: PlacementType) = this.apply { this.type = type }
         fun asDeleted() = this.apply { this.deleted = true }
-        fun withPreschoolDaycareDates(range: FiniteDateRange) = this.apply { this.preschoolDaycareDates = range }
+        fun withPreschoolDaycareDates(range: FiniteDateRange) =
+            this.apply { this.preschoolDaycareDates = range }
 
         fun save(): ChildFixture {
             val applicationGuardianId = tx.insertTestPerson(DevPerson())
-            val applicationId = tx.insertTestApplication(
-                guardianId = applicationGuardianId,
-                childId = childFixture.childId,
-                status = ApplicationStatus.WAITING_DECISION,
-                type = type?.toApplicationType() ?: error("type not set")
-            )
+            val applicationId =
+                tx.insertTestApplication(
+                    guardianId = applicationGuardianId,
+                    childId = childFixture.childId,
+                    status = ApplicationStatus.WAITING_DECISION,
+                    type = type?.toApplicationType() ?: error("type not set")
+                )
             tx.insertTestPlacementPlan(
                 applicationId = applicationId,
                 unitId = unitId ?: throw IllegalStateException("unit not set"),
@@ -226,8 +241,10 @@ class FixtureBuilder(
         private var groupId: GroupId? = null
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
-        fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
-        fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
+        fun fromDay(relativeDays: Int) =
+            this.apply { this.from = today.plusDays(relativeDays.toLong()) }
+        fun toDay(relativeDays: Int) =
+            this.apply { this.to = today.plusDays(relativeDays.toLong()) }
         fun toDay(date: LocalDate) = this.apply { this.to = date }
         fun toUnit(id: DaycareId) = this.apply { this.unitId = id }
         fun toGroup(id: GroupId) = this.apply { this.groupId = id }
@@ -255,8 +272,10 @@ class FixtureBuilder(
         private var type: PlacementType = PlacementType.DAYCARE
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
-        fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
-        fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
+        fun fromDay(relativeDays: Int) =
+            this.apply { this.from = today.plusDays(relativeDays.toLong()) }
+        fun toDay(relativeDays: Int) =
+            this.apply { this.to = today.plusDays(relativeDays.toLong()) }
         fun toDay(date: LocalDate) = this.apply { this.to = date }
         fun toUnit(id: DaycareId) = this.apply { this.unitId = id }
         fun ofType(type: PlacementType) = this.apply { this.type = type }
@@ -281,13 +300,14 @@ class FixtureBuilder(
             return childFixture
         }
 
-        private fun doInsert() = tx.insertTestPlacement(
-            childId = childFixture.childId,
-            unitId = unitId ?: throw IllegalStateException("unit not set"),
-            type = type,
-            startDate = from,
-            endDate = to
-        )
+        private fun doInsert() =
+            tx.insertTestPlacement(
+                childId = childFixture.childId,
+                unitId = unitId ?: throw IllegalStateException("unit not set"),
+                type = type,
+                startDate = from,
+                endDate = to
+            )
     }
 
     @TestFixture
@@ -312,9 +332,11 @@ class FixtureBuilder(
         private var groupId: GroupId? = null
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
-        fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
+        fun fromDay(relativeDays: Int) =
+            this.apply { this.from = today.plusDays(relativeDays.toLong()) }
         fun toDay(date: LocalDate) = this.apply { this.to = date }
-        fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
+        fun toDay(relativeDays: Int) =
+            this.apply { this.to = today.plusDays(relativeDays.toLong()) }
         fun toGroup(id: GroupId) = this.apply { this.groupId = id }
 
         fun save(): PlacementFixture {
@@ -342,11 +364,14 @@ class FixtureBuilder(
         private var id: ServiceNeedId? = null
 
         fun fromDay(date: LocalDate) = this.apply { this.from = date }
-        fun fromDay(relativeDays: Int) = this.apply { this.from = today.plusDays(relativeDays.toLong()) }
+        fun fromDay(relativeDays: Int) =
+            this.apply { this.from = today.plusDays(relativeDays.toLong()) }
         fun toDay(date: LocalDate) = this.apply { this.to = date }
-        fun toDay(relativeDays: Int) = this.apply { this.to = today.plusDays(relativeDays.toLong()) }
+        fun toDay(relativeDays: Int) =
+            this.apply { this.to = today.plusDays(relativeDays.toLong()) }
         fun withOption(id: ServiceNeedOptionId) = this.apply { this.optionId = id }
-        fun withOption(serviceNeedOption: ServiceNeedOption) = this.apply { this.serviceNeedOption = serviceNeedOption }
+        fun withOption(serviceNeedOption: ServiceNeedOption) =
+            this.apply { this.serviceNeedOption = serviceNeedOption }
         fun createdBy(employeeId: EvakaUserId) = this.apply { this.employeeId = employeeId }
         fun withUpdated(updated: HelsinkiDateTime) = this.apply { this.updated = updated }
         fun withId(id: ServiceNeedId) = this.apply { this.id = id }
@@ -357,11 +382,13 @@ class FixtureBuilder(
             tx.insertTestServiceNeed(
                 confirmedBy = employeeId ?: throw IllegalStateException("createdBy not set"),
                 placementId = placementFixture.placementId,
-                optionId = optionId ?: serviceNeedOption?.id ?: throw IllegalStateException("option not set"),
-                period = FiniteDateRange(
-                    from ?: placementFixture.placementPeriod.start,
-                    to ?: placementFixture.placementPeriod.end
-                ),
+                optionId = optionId
+                        ?: serviceNeedOption?.id ?: throw IllegalStateException("option not set"),
+                period =
+                    FiniteDateRange(
+                        from ?: placementFixture.placementPeriod.start,
+                        to ?: placementFixture.placementPeriod.end
+                    ),
                 id = id ?: ServiceNeedId(UUID.randomUUID())
             )
 
@@ -379,11 +406,13 @@ class FixtureBuilder(
         private var unitId: DaycareId? = null
 
         fun arriving(time: HelsinkiDateTime) = this.apply { this.from = time }
-        fun arriving(date: LocalDate, time: LocalTime) = this.apply { this.from = HelsinkiDateTime.Companion.of(date, time) }
+        fun arriving(date: LocalDate, time: LocalTime) =
+            this.apply { this.from = HelsinkiDateTime.Companion.of(date, time) }
         fun arriving(time: LocalTime) = arriving(today, time)
 
         fun departing(time: HelsinkiDateTime) = this.apply { this.to = time }
-        fun departing(date: LocalDate, time: LocalTime) = this.apply { this.to = HelsinkiDateTime.Companion.of(date, time) }
+        fun departing(date: LocalDate, time: LocalTime) =
+            this.apply { this.to = HelsinkiDateTime.Companion.of(date, time) }
         fun departing(time: LocalTime) = departing(from?.toLocalDate() ?: today, time)
 
         fun inUnit(unitId: DaycareId) = this.apply { this.unitId = unitId }
@@ -411,26 +440,21 @@ class FixtureBuilder(
         private var lastName: String = "Last"
         private var pinCode: String? = null
 
-        fun withGlobalRoles(roles: Set<UserRole>) = this.apply {
-            this.globalRoles = roles
-        }
+        fun withGlobalRoles(roles: Set<UserRole>) = this.apply { this.globalRoles = roles }
 
-        fun withScopedRole(role: UserRole, unitId: DaycareId) = this.apply {
-            this.unitRoles.add(Pair(role, unitId))
-        }
+        fun withScopedRole(role: UserRole, unitId: DaycareId) =
+            this.apply { this.unitRoles.add(Pair(role, unitId)) }
 
-        fun withGroupAccess(unitId: DaycareId, groupId: GroupId) = this.apply {
-            this.groups.add(Pair(unitId, groupId))
-        }
+        fun withGroupAccess(unitId: DaycareId, groupId: GroupId) =
+            this.apply { this.groups.add(Pair(unitId, groupId)) }
 
-        fun withName(firstName: String, lastName: String) = this.apply {
-            this.firstName = firstName
-            this.lastName = lastName
-        }
+        fun withName(firstName: String, lastName: String) =
+            this.apply {
+                this.firstName = firstName
+                this.lastName = lastName
+            }
 
-        fun withPinCode(pinCode: String) = this.apply {
-            this.pinCode = pinCode
-        }
+        fun withPinCode(pinCode: String) = this.apply { this.pinCode = pinCode }
 
         fun save(): FixtureBuilder {
             doInsert()
@@ -446,11 +470,16 @@ class FixtureBuilder(
         }
 
         private fun doInsert(): EmployeeId {
-            val employee = DevEmployee(roles = globalRoles, firstName = firstName, lastName = lastName)
+            val employee =
+                DevEmployee(roles = globalRoles, firstName = firstName, lastName = lastName)
             val employeeId = tx.insertTestEmployee(employee)
             unitRoles.forEach { (role, unitId) -> tx.insertDaycareAclRow(unitId, employeeId, role) }
-            groups.forEach { (unitId, groupId) -> tx.insertDaycareGroupAcl(unitId, employeeId, listOf(groupId)) }
-            pinCode.also { if (it != null) tx.insertEmployeePin(DevEmployeePin(userId = employeeId, pin = it)) }
+            groups.forEach { (unitId, groupId) ->
+                tx.insertDaycareGroupAcl(unitId, employeeId, listOf(groupId))
+            }
+            pinCode.also {
+                if (it != null) tx.insertEmployeePin(DevEmployeePin(userId = employeeId, pin = it))
+            }
             return employeeId
         }
     }
@@ -478,11 +507,13 @@ class FixtureBuilder(
         private var type: StaffAttendanceType? = null
 
         fun arriving(time: HelsinkiDateTime) = this.apply { this.from = time }
-        fun arriving(date: LocalDate, time: LocalTime) = this.apply { this.from = HelsinkiDateTime.Companion.of(date, time) }
+        fun arriving(date: LocalDate, time: LocalTime) =
+            this.apply { this.from = HelsinkiDateTime.Companion.of(date, time) }
         fun arriving(time: LocalTime) = arriving(today, time)
 
         fun departing(time: HelsinkiDateTime) = this.apply { this.to = time }
-        fun departing(date: LocalDate, time: LocalTime) = this.apply { this.to = HelsinkiDateTime.Companion.of(date, time) }
+        fun departing(date: LocalDate, time: LocalTime) =
+            this.apply { this.to = HelsinkiDateTime.Companion.of(date, time) }
         fun departing(time: LocalTime) = departing(from?.toLocalDate() ?: today, time)
 
         fun withCoefficient(coefficient: BigDecimal) = this.apply { this.coefficient = coefficient }
@@ -493,11 +524,12 @@ class FixtureBuilder(
 
         fun save(): EmployeeFixture {
             tx.createUpdate(
-                """
+                    """
                 INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, departed, occupancy_coefficient, type)
                 VALUES (:employeeId, :groupId, :arrived, :departed, :coefficient, :type)
-                """.trimIndent()
-            )
+                """.trimIndent(
+                    )
+                )
                 .bind("employeeId", employeeFixture.employeeId)
                 .bind("groupId", groupId ?: error("group must be set"))
                 .bind("arrived", from ?: error("arrival time must be set"))
@@ -519,10 +551,11 @@ class FixtureBuilder(
         private var to: HelsinkiDateTime? = null
         private var type: StaffAttendanceType? = null
 
-        fun withTime(from: HelsinkiDateTime, to: HelsinkiDateTime) = this.apply {
-            this.from = from
-            this.to = to
-        }
+        fun withTime(from: HelsinkiDateTime, to: HelsinkiDateTime) =
+            this.apply {
+                this.from = from
+                this.to = to
+            }
 
         fun save(): EmployeeFixture {
             tx.insertTestStaffAttendancePlan(
@@ -542,9 +575,7 @@ class FixtureBuilder(
 /**
  * This is needed for better control of implicit this references.
  *
- * See:
- * https://github.com/Kotlin/KEEP/pull/38
+ * See: https://github.com/Kotlin/KEEP/pull/38
  * https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-dsl-marker/
  */
-@DslMarker
-annotation class TestFixture
+@DslMarker annotation class TestFixture

@@ -14,7 +14,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
-private val logger = KotlinLogging.logger { }
+private val logger = KotlinLogging.logger {}
 
 data class KoskiSearchParams(
     val personIds: List<ChildId> = listOf(),
@@ -27,15 +27,26 @@ class KoskiUpdateService(
     private val env: EvakaEnv
 ) {
     init {
-        asyncJobRunner.registerHandler { db, clock, msg: AsyncJob.ScheduleKoskiUploads -> scheduleKoskiUploads(db, clock, msg.params) }
+        asyncJobRunner.registerHandler { db, clock, msg: AsyncJob.ScheduleKoskiUploads ->
+            scheduleKoskiUploads(db, clock, msg.params)
+        }
     }
 
-    fun scheduleKoskiUploads(db: Database.Connection, clock: EvakaClock, params: KoskiSearchParams) {
+    fun scheduleKoskiUploads(
+        db: Database.Connection,
+        clock: EvakaClock,
+        params: KoskiSearchParams
+    ) {
         if (env.koskiEnabled) {
             db.transaction { tx ->
                 val requests = tx.getPendingStudyRights(clock.today(), params)
                 logger.info { "Scheduling ${requests.size} Koski upload requests" }
-                asyncJobRunner.plan(tx, requests.map { AsyncJob.UploadToKoski(it) }, retryCount = 1, runAt = clock.now())
+                asyncJobRunner.plan(
+                    tx,
+                    requests.map { AsyncJob.UploadToKoski(it) },
+                    retryCount = 1,
+                    runAt = clock.now()
+                )
             }
         }
     }

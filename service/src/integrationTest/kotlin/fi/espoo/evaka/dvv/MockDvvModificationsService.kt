@@ -27,9 +27,7 @@ class MockDvvModificationsService {
     }
 
     @PostMapping("/v1/muutokset")
-    fun getModifications(
-        @RequestBody body: ModificationsRequest
-    ): String {
+    fun getModifications(@RequestBody body: ModificationsRequest): String {
         logger.info { "Mock dvv POST /muutokset called, body: $body" }
 
         val nextToken = body.viimeisinKirjausavain.toInt() + 1
@@ -44,11 +42,16 @@ class MockDvvModificationsService {
 }
 
 fun getModifications(ssns: List<String>): String {
-    return ssns.map { ssn -> if (modifications.containsKey(ssn)) modifications[ssn] else null }.filterNotNull().joinToString(",")
+    return ssns
+        .map { ssn -> if (modifications.containsKey(ssn)) modifications[ssn] else null }
+        .filterNotNull()
+        .joinToString(",")
 }
 
-val modifications = mapOf<String, String>(
-    "nimenmuutos" to """
+val modifications =
+    mapOf<String, String>(
+        "nimenmuutos" to
+            """
 {
   "henkilotunnus": "010579-9999",
   "tietoryhmat": [
@@ -113,8 +116,10 @@ val modifications = mapOf<String, String>(
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
-    """.trimIndent(),
-    "010179-9992" to """
+    """.trimIndent(
+            ),
+        "010179-9992" to
+            """
 {
   "henkilotunnus": "010179-9992",
   "tietoryhmat": [
@@ -131,8 +136,10 @@ val modifications = mapOf<String, String>(
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
-    """.trimIndent(),
-    "020180-999Y" to """
+    """.trimIndent(
+            ),
+        "020180-999Y" to
+            """
 {
   "henkilotunnus": "020180-999Y",
   "tietoryhmat": [
@@ -159,8 +166,10 @@ val modifications = mapOf<String, String>(
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
-    """.trimIndent(),
-    "030180-999L" to """
+    """.trimIndent(
+            ),
+        "030180-999L" to
+            """
 {
   "henkilotunnus": "030180-999L",
   "tietoryhmat": [
@@ -214,8 +223,10 @@ val modifications = mapOf<String, String>(
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
-    """.trimIndent(),
-    "010180-999A" to """
+    """.trimIndent(
+            ),
+        "010180-999A" to
+            """
 {
   "henkilotunnus": "010180-999A",
   "tietoryhmat": [
@@ -231,8 +242,10 @@ val modifications = mapOf<String, String>(
   ],
   "muutospv": "2019-09-24T21:00:00.000Z"
 }
-    """.trimIndent(),
-    "yksinhuoltaja-muutos" to """
+    """.trimIndent(
+            ),
+        "yksinhuoltaja-muutos" to
+            """
 {
   "henkilotunnus": "010579-9999",
   "tietoryhmat": [
@@ -303,8 +316,10 @@ val modifications = mapOf<String, String>(
   ],
   "muutospv": "2020-10-01T04:38:04.394Z"
 }
-    """.trimIndent(),
-    "huoltaja" to """
+    """.trimIndent(
+            ),
+        "huoltaja" to
+            """
 {
   "henkilotunnus": "010118-9999",
   "tietoryhmat": [
@@ -343,8 +358,10 @@ val modifications = mapOf<String, String>(
   ],
   "muutospv": "2020-10-01T04:38:04.394Z"
 }            
-    """.trimIndent(),
-    "010181-999K" to """
+    """.trimIndent(
+            ),
+        "010181-999K" to
+            """
 {
       "henkilotunnus": "010181-999K",
       "tietoryhmat": [
@@ -371,8 +388,10 @@ val modifications = mapOf<String, String>(
       ],
       "muutospv": "2019-09-24T21:00:00.000Z"
     }
-    """.trimIndent(),
-    "040180-9998" to """
+    """.trimIndent(
+            ),
+        "040180-9998" to
+            """
 {
   "henkilotunnus": "040180-9998",
   "tietoryhmat": [
@@ -441,8 +460,10 @@ val modifications = mapOf<String, String>(
   ],
   "muutospv": "2020-10-01T04:38:04.394Z"
 }
-    """.trimIndent(),
-    "050180-999W" to """
+    """.trimIndent(
+            ),
+        "050180-999W" to
+            """
 {
   "henkilotunnus": "050180-999W",
   "tietoryhmat": [
@@ -470,8 +491,10 @@ val modifications = mapOf<String, String>(
   ],
   "muutospv": "2020-09-30T22:01:04.568Z"
 }            
-    """.trimIndent(),
-    "060118A999J" to """
+    """.trimIndent(
+            ),
+        "060118A999J" to
+            """
 {
   "henkilotunnus": "060118A999J",
   "tietoryhmat": [
@@ -499,8 +522,10 @@ val modifications = mapOf<String, String>(
   ],
   "muutospv": "2020-09-30T22:01:04.568Z"
 }            
-    """.trimIndent(),
-    "tuntematon_muutos" to """
+    """.trimIndent(
+            ),
+        "tuntematon_muutos" to
+            """
 {
   "henkilotunnus": "140921A999X",
   "tietoryhmat": [
@@ -511,8 +536,10 @@ val modifications = mapOf<String, String>(
   ],
   "muutospv": "2021-09-14T12:01:04.568Z"
 }            
-    """.trimIndent(),
-    "010170-123F" to """
+    """.trimIndent(
+            ),
+        "010170-123F" to
+            """
 {
   "henkilotunnus": "010170-123F",
   "tietoryhmat": [
@@ -530,15 +557,18 @@ val modifications = mapOf<String, String>(
   ],
   "muutospv": "2021-09-14T12:01:04.568Z"
 }
-    """.trimIndent(),
-    "rikkinainen_tietue" to """
+    """.trimIndent(
+            ),
+        "rikkinainen_tietue" to
+            """
 {
   "henkilotunnus": "rikkinainen_tietue",
   "bogus": [],
   "bogus": "2021-09-14T12:01:04.568Z"
 }
-    """.trimIndent(),
-)
+    """.trimIndent(
+            ),
+    )
 
 data class ModificationsRequest(
     val viimeisinKirjausavain: String,

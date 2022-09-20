@@ -43,7 +43,10 @@ class DecisionController(
     ): DecisionListResponse {
         Audit.DecisionRead.log(targetId = guardianId)
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_DECISIONS, guardianId)
-        val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByGuardian(guardianId, acl.getAuthorizedUnits(user)) } }
+        val decisions =
+            db.connect { dbc ->
+                dbc.read { it.getDecisionsByGuardian(guardianId, acl.getAuthorizedUnits(user)) }
+            }
         return DecisionListResponse(decisions)
     }
 
@@ -56,7 +59,10 @@ class DecisionController(
     ): DecisionListResponse {
         Audit.DecisionRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_DECISIONS, childId)
-        val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByChild(childId, acl.getAuthorizedUnits(user)) } }
+        val decisions =
+            db.connect { dbc ->
+                dbc.read { it.getDecisionsByChild(childId, acl.getAuthorizedUnits(user)) }
+            }
         return DecisionListResponse(decisions)
     }
 
@@ -68,14 +74,28 @@ class DecisionController(
         @RequestParam("id") applicationId: ApplicationId
     ): DecisionListResponse {
         Audit.DecisionRead.log(targetId = applicationId)
-        accessControl.requirePermissionFor(user, clock, Action.Application.READ_DECISIONS, applicationId)
-        val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user)) } }
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Application.READ_DECISIONS,
+            applicationId
+        )
+        val decisions =
+            db.connect { dbc ->
+                dbc.read {
+                    it.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user))
+                }
+            }
 
         return DecisionListResponse(decisions)
     }
 
     @GetMapping("/units")
-    fun getDecisionUnits(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<DecisionUnit> {
+    fun getDecisionUnits(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock
+    ): List<DecisionUnit> {
         Audit.UnitRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_DECISION_UNITS)
         return db.connect { dbc -> dbc.read { decisionDraftService.getDecisionUnits(it) } }
@@ -92,27 +112,36 @@ class DecisionController(
         accessControl.requirePermissionFor(user, clock, Action.Decision.DOWNLOAD_PDF, decisionId)
 
         return db.connect { dbc ->
-            val decision = dbc.transaction { tx ->
-                val decision = tx.getDecision(decisionId) ?: error("Cannot find decision for decision id '$decisionId'")
-                val application = tx.fetchApplicationDetails(decision.applicationId)
-                    ?: error("Cannot find application for decision id '$decisionId'")
+            val decision =
+                dbc.transaction { tx ->
+                    val decision =
+                        tx.getDecision(decisionId)
+                            ?: error("Cannot find decision for decision id '$decisionId'")
+                    val application =
+                        tx.fetchApplicationDetails(decision.applicationId)
+                            ?: error("Cannot find application for decision id '$decisionId'")
 
-                val child = tx.getPersonById(application.childId)
-                    ?: error("Cannot find user for child id '${application.childId}'")
+                    val child =
+                        tx.getPersonById(application.childId)
+                            ?: error("Cannot find user for child id '${application.childId}'")
 
-                val guardian = tx.getPersonById(application.guardianId)
-                    ?: error("Cannot find user for guardian id '${application.guardianId}'")
+                    val guardian =
+                        tx.getPersonById(application.guardianId)
+                            ?: error("Cannot find user for guardian id '${application.guardianId}'")
 
-                if ((child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) && !user.isAdmin)
-                    throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
+                    if (
+                        (child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) &&
+                            !user.isAdmin
+                    )
+                        throw Forbidden(
+                            "Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen."
+                        )
 
-                decision
-            }
+                    decision
+                }
             decisionService.getDecisionPdf(dbc, decision)
         }
     }
 }
 
-data class DecisionListResponse(
-    val decisions: List<Decision>
-)
+data class DecisionListResponse(val decisions: List<Decision>)

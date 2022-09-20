@@ -28,36 +28,59 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class ChildController(private val accessControl: AccessControl, private val featureConfig: FeatureConfig) {
+class ChildController(
+    private val accessControl: AccessControl,
+    private val featureConfig: FeatureConfig
+) {
     @GetMapping("/children/{childId}")
-    fun getChild(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable childId: ChildId): ChildResponse {
+    fun getChild(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable childId: ChildId
+    ): ChildResponse {
         Audit.PersonDetailsRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ, childId)
         return db.connect { dbc ->
             dbc.read { tx ->
-                val child = tx.getPersonById(childId)
-                    ?.hideNonPermittedPersonData(
-                        includeInvoiceAddress = accessControl.hasPermissionFor(
-                            user,
-                            clock,
-                            Action.Person.READ_INVOICE_ADDRESS,
-                            childId
-                        ),
-                        includeOphOid = accessControl.hasPermissionFor(user, clock, Action.Person.READ_OPH_OID, childId)
-                    )
-                    ?: throw NotFound("Child $childId not found")
+                val child =
+                    tx.getPersonById(childId)
+                        ?.hideNonPermittedPersonData(
+                            includeInvoiceAddress =
+                                accessControl.hasPermissionFor(
+                                    user,
+                                    clock,
+                                    Action.Person.READ_INVOICE_ADDRESS,
+                                    childId
+                                ),
+                            includeOphOid =
+                                accessControl.hasPermissionFor(
+                                    user,
+                                    clock,
+                                    Action.Person.READ_OPH_OID,
+                                    childId
+                                )
+                        )
+                        ?: throw NotFound("Child $childId not found")
                 ChildResponse(
                     person = PersonJSON.from(child),
                     permittedActions = accessControl.getPermittedActions(tx, user, clock, childId),
-                    permittedPersonActions = accessControl.getPermittedActions(tx, user, clock, childId),
-                    assistanceNeedVoucherCoefficientsEnabled = !featureConfig.valueDecisionCapacityFactorEnabled
+                    permittedPersonActions =
+                        accessControl.getPermittedActions(tx, user, clock, childId),
+                    assistanceNeedVoucherCoefficientsEnabled =
+                        !featureConfig.valueDecisionCapacityFactorEnabled
                 )
             }
         }
     }
 
     @GetMapping("/children/{childId}/additional-information")
-    fun getAdditionalInfo(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable childId: ChildId): AdditionalInformation {
+    fun getAdditionalInfo(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable childId: ChildId
+    ): AdditionalInformation {
         Audit.ChildAdditionalInformationRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_ADDITIONAL_INFO, childId)
         return db.connect { dbc -> dbc.read { it.getAdditionalInformation(childId) } }
@@ -72,7 +95,12 @@ class ChildController(private val accessControl: AccessControl, private val feat
         @RequestBody data: AdditionalInformation
     ) {
         Audit.ChildAdditionalInformationUpdate.log(targetId = childId)
-        accessControl.requirePermissionFor(user, clock, Action.Child.UPDATE_ADDITIONAL_INFO, childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Child.UPDATE_ADDITIONAL_INFO,
+            childId
+        )
         db.connect { dbc -> dbc.transaction { it.upsertAdditionalInformation(childId, data) } }
     }
 
@@ -97,25 +125,20 @@ fun Database.Read.getAdditionalInformation(childId: ChildId): AdditionalInformat
     } else AdditionalInformation()
 }
 
-fun Database.Transaction.upsertAdditionalInformation(childId: ChildId, data: AdditionalInformation) {
+fun Database.Transaction.upsertAdditionalInformation(
+    childId: ChildId,
+    data: AdditionalInformation
+) {
     updatePreferredName(childId, data.preferredName)
     val child = getChild(childId)
     if (child != null) {
         updateChild(child.copy(additionalInformation = data))
     } else {
-        createChild(
-            Child(
-                id = childId,
-                additionalInformation = data
-            )
-        )
+        createChild(Child(id = childId, additionalInformation = data))
     }
 }
 
-data class Child(
-    val id: ChildId,
-    @Nested val additionalInformation: AdditionalInformation
-)
+data class Child(val id: ChildId, @Nested val additionalInformation: AdditionalInformation)
 
 data class AdditionalInformation(
     val allergies: String = "",

@@ -30,23 +30,36 @@ sealed class AuthenticatedUser {
 
     data class Citizen(val id: PersonId, val authLevel: CitizenAuthLevel) : AuthenticatedUser() {
         override fun rawId(): UUID = id.raw
-        override val type = when (authLevel) {
-            CitizenAuthLevel.STRONG -> AuthenticatedUserType.citizen
-            CitizenAuthLevel.WEAK -> AuthenticatedUserType.citizen_weak
-        }
+        override val type =
+            when (authLevel) {
+                CitizenAuthLevel.STRONG -> AuthenticatedUserType.citizen
+                CitizenAuthLevel.WEAK -> AuthenticatedUserType.citizen_weak
+            }
     }
 
-    data class Employee private constructor(val id: EmployeeId, val globalRoles: Set<UserRole>, val allScopedRoles: Set<UserRole>) : AuthenticatedUser() {
-        constructor(id: EmployeeId, roles: Set<UserRole>) : this(id, roles - UserRole.SCOPED_ROLES, roles.intersect(UserRole.SCOPED_ROLES))
-        constructor(employeeUser: EmployeeUser) : this(employeeUser.id, employeeUser.globalRoles, employeeUser.allScopedRoles)
+    data class Employee
+    private constructor(
+        val id: EmployeeId,
+        val globalRoles: Set<UserRole>,
+        val allScopedRoles: Set<UserRole>
+    ) : AuthenticatedUser() {
+        constructor(
+            id: EmployeeId,
+            roles: Set<UserRole>
+        ) : this(id, roles - UserRole.SCOPED_ROLES, roles.intersect(UserRole.SCOPED_ROLES))
+        constructor(
+            employeeUser: EmployeeUser
+        ) : this(employeeUser.id, employeeUser.globalRoles, employeeUser.allScopedRoles)
         override fun rawId(): UUID = id.raw
         override val isAdmin = globalRoles.contains(UserRole.ADMIN)
         override val type = AuthenticatedUserType.employee
 
-        fun hasOneOfRoles(vararg requiredRoles: UserRole) = requiredRoles.any { globalRoles.contains(it) || allScopedRoles.contains(it) }
+        fun hasOneOfRoles(vararg requiredRoles: UserRole) =
+            requiredRoles.any { globalRoles.contains(it) || allScopedRoles.contains(it) }
     }
 
-    data class MobileDevice(val id: MobileDeviceId, val employeeId: EmployeeId? = null) : AuthenticatedUser() {
+    data class MobileDevice(val id: MobileDeviceId, val employeeId: EmployeeId? = null) :
+        AuthenticatedUser() {
         val authLevel: MobileAuthLevel
             get() = if (employeeId != null) MobileAuthLevel.PIN_LOGIN else MobileAuthLevel.DEFAULT
         override fun rawId(): UUID = id.raw
@@ -66,13 +79,23 @@ sealed class AuthenticatedUser {
     }
 }
 
-enum class CitizenAuthLevel { WEAK, STRONG }
-enum class MobileAuthLevel { DEFAULT, PIN_LOGIN }
+enum class CitizenAuthLevel {
+    WEAK,
+    STRONG
+}
 
-/**
- * Low-level AuthenticatedUser type "tag" used in serialized representations (JWT, JSON).
- */
+enum class MobileAuthLevel {
+    DEFAULT,
+    PIN_LOGIN
+}
+
+/** Low-level AuthenticatedUser type "tag" used in serialized representations (JWT, JSON). */
 @Suppress("EnumEntryName")
 enum class AuthenticatedUserType {
-    citizen, citizen_weak, employee, mobile, system, integration
+    citizen,
+    citizen_weak,
+    employee,
+    mobile,
+    system,
+    integration
 }

@@ -23,19 +23,17 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
@@ -46,71 +44,80 @@ class InvoicingReportTest : FullApplicationTest(resetDbBeforeEach = true) {
         getAndAssert(
             date,
             InvoiceReport(
-                reportRows = listOf(
-                    InvoiceReportRow(
-                        areaCode = testArea.areaCode!!,
-                        amountOfInvoices = 1,
-                        totalSumCents = 28900,
-                        amountWithoutSSN = 0,
-                        amountWithoutAddress = 0,
-                        amountWithZeroPrice = 0
-                    ),
-                    InvoiceReportRow(
-                        areaCode = testArea2.areaCode!!,
-                        amountOfInvoices = 2,
-                        totalSumCents = 28900,
-                        amountWithoutSSN = 0,
-                        amountWithoutAddress = 0,
-                        amountWithZeroPrice = 1
+                reportRows =
+                    listOf(
+                        InvoiceReportRow(
+                            areaCode = testArea.areaCode!!,
+                            amountOfInvoices = 1,
+                            totalSumCents = 28900,
+                            amountWithoutSSN = 0,
+                            amountWithoutAddress = 0,
+                            amountWithZeroPrice = 0
+                        ),
+                        InvoiceReportRow(
+                            areaCode = testArea2.areaCode!!,
+                            amountOfInvoices = 2,
+                            totalSumCents = 28900,
+                            amountWithoutSSN = 0,
+                            amountWithoutAddress = 0,
+                            amountWithZeroPrice = 1
+                        )
                     )
-                )
             )
         )
     }
 
-    private val testUser = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN))
+    private val testUser =
+        AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN))
 
     private fun getAndAssert(date: LocalDate, expected: InvoiceReport) {
-        val (_, response, result) = http.get(
-            "/reports/invoices",
-            listOf("date" to date.format(DateTimeFormatter.ISO_DATE))
-        )
-            .asUser(testUser)
-            .responseObject<InvoiceReport>(jsonMapper)
+        val (_, response, result) =
+            http
+                .get("/reports/invoices", listOf("date" to date.format(DateTimeFormatter.ISO_DATE)))
+                .asUser(testUser)
+                .responseObject<InvoiceReport>(jsonMapper)
 
         assertEquals(200, response.statusCode)
         assertEquals(expected, result.get())
     }
 
-    private val testInvoices = listOf(
-        createInvoiceFixture(
-            status = InvoiceStatus.SENT,
-            headOfFamilyId = testAdult_1.id,
-            areaId = testArea.id,
-            rows = listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id))
-        ),
-        createInvoiceFixture(
-            status = InvoiceStatus.SENT,
-            headOfFamilyId = testAdult_2.id,
-            areaId = testArea2.id,
-            rows = listOf(createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare2.id))
-        ),
-        createInvoiceFixture(
-            status = InvoiceStatus.SENT,
-            headOfFamilyId = testAdult_2.id,
-            areaId = testArea2.id,
-            rows = listOf()
+    private val testInvoices =
+        listOf(
+            createInvoiceFixture(
+                status = InvoiceStatus.SENT,
+                headOfFamilyId = testAdult_1.id,
+                areaId = testArea.id,
+                rows =
+                    listOf(
+                        createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id)
+                    )
+            ),
+            createInvoiceFixture(
+                status = InvoiceStatus.SENT,
+                headOfFamilyId = testAdult_2.id,
+                areaId = testArea2.id,
+                rows =
+                    listOf(
+                        createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare2.id)
+                    )
+            ),
+            createInvoiceFixture(
+                status = InvoiceStatus.SENT,
+                headOfFamilyId = testAdult_2.id,
+                areaId = testArea2.id,
+                rows = listOf()
+            )
         )
-    )
 
     private fun insertInvoices(date: LocalDate) {
         db.transaction {
             it.upsertInvoices(testInvoices)
             it.createUpdate(
-                """
+                    """
                 UPDATE invoice SET sent_at = :sentAt
-                """.trimIndent()
-            )
+                """.trimIndent(
+                    )
+                )
                 .bind("sentAt", date)
                 .execute()
         }

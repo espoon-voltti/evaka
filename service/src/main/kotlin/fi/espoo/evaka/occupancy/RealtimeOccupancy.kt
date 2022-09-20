@@ -17,27 +17,33 @@ data class RealtimeOccupancy(
 ) {
     val childCapacitySumSeries: List<ChildCapacityPoint> by lazy {
         val isMidnight = { time: HelsinkiDateTime -> time.hour == 0 && time.minute == 0 }
-        val departedOneMinuteEarlier = { cur: ChildOccupancyAttendance, prev: ChildOccupancyAttendance ->
-            isMidnight(cur.arrived) && cur.childId == prev.childId && cur.arrived.minusMinutes(1) == prev.departed
-        }
-
-        val attns: List<ChildOccupancyAttendance> = childAttendances.fold(listOf()) { list, child ->
-            if (list.isNotEmpty() && departedOneMinuteEarlier(child, list.last())) {
-                list.dropLast(1) + list.last().copy(departed = child.departed)
-            } else {
-                list + child
+        val departedOneMinuteEarlier =
+            { cur: ChildOccupancyAttendance, prev: ChildOccupancyAttendance ->
+                isMidnight(cur.arrived) &&
+                    cur.childId == prev.childId &&
+                    cur.arrived.minusMinutes(1) == prev.departed
             }
-        }
+
+        val attns: List<ChildOccupancyAttendance> =
+            childAttendances.fold(listOf()) { list, child ->
+                if (list.isNotEmpty() && departedOneMinuteEarlier(child, list.last())) {
+                    list.dropLast(1) + list.last().copy(departed = child.departed)
+                } else {
+                    list + child
+                }
+            }
         val arrivals = attns.map { child -> ChildCapacityPoint(child.arrived, child.capacity) }
-        val departures = attns.mapNotNull { child ->
-            child.departed?.let { ChildCapacityPoint(it, -child.capacity) }
-        }
+        val departures =
+            attns.mapNotNull { child ->
+                child.departed?.let { ChildCapacityPoint(it, -child.capacity) }
+            }
         val deltas = (arrivals + departures).sortedBy { it.time }
         deltas.fold(listOf()) { list, event ->
             if (list.isEmpty()) {
                 listOf(event)
             } else if (list.last().time == event.time) {
-                list.dropLast(1) + list.last().let { it.copy(capacity = it.capacity + event.capacity) }
+                list.dropLast(1) +
+                    list.last().let { it.copy(capacity = it.capacity + event.capacity) }
             } else {
                 list + ChildCapacityPoint(event.time, list.last().capacity + event.capacity)
             }
@@ -45,16 +51,19 @@ data class RealtimeOccupancy(
     }
 
     val staffCapacitySumSeries: List<StaffCapacityPoint> by lazy {
-        val arrivals = staffAttendances.map { staff -> StaffCapacityPoint(staff.arrived, staff.capacity) }
-        val departures = staffAttendances.mapNotNull { staff ->
-            staff.departed?.let { StaffCapacityPoint(it, -staff.capacity) }
-        }
+        val arrivals =
+            staffAttendances.map { staff -> StaffCapacityPoint(staff.arrived, staff.capacity) }
+        val departures =
+            staffAttendances.mapNotNull { staff ->
+                staff.departed?.let { StaffCapacityPoint(it, -staff.capacity) }
+            }
         val deltas = (arrivals + departures).sortedBy { it.time }
         deltas.fold(listOf()) { list, event ->
             if (list.isEmpty()) {
                 listOf(event)
             } else if (list.last().time == event.time) {
-                list.dropLast(1) + list.last().let { it.copy(capacity = it.capacity + event.capacity) }
+                list.dropLast(1) +
+                    list.last().let { it.copy(capacity = it.capacity + event.capacity) }
             } else {
                 list + StaffCapacityPoint(event.time, list.last().capacity + event.capacity)
             }
@@ -63,12 +72,16 @@ data class RealtimeOccupancy(
 
     val occupancySeries: List<OccupancyPoint> by lazy {
         val times =
-            (childCapacitySumSeries.map { it.time } + staffCapacitySumSeries.map { it.time }).sorted().distinct()
+            (childCapacitySumSeries.map { it.time } + staffCapacitySumSeries.map { it.time })
+                .sorted()
+                .distinct()
         times.map { time ->
             OccupancyPoint(
                 time = time,
-                childCapacity = childCapacitySumSeries.lastOrNull { it.time <= time }?.capacity ?: 0.0,
-                staffCapacity = staffCapacitySumSeries.lastOrNull { it.time <= time }?.capacity ?: 0.0
+                childCapacity = childCapacitySumSeries.lastOrNull { it.time <= time }?.capacity
+                        ?: 0.0,
+                staffCapacity = staffCapacitySumSeries.lastOrNull { it.time <= time }?.capacity
+                        ?: 0.0
             )
         }
     }
@@ -81,10 +94,7 @@ data class ChildOccupancyAttendance(
     val capacity: Double
 )
 
-data class ChildCapacityPoint(
-    val time: HelsinkiDateTime,
-    val capacity: Double
-)
+data class ChildCapacityPoint(val time: HelsinkiDateTime, val capacity: Double)
 
 data class StaffOccupancyAttendance(
     val arrived: HelsinkiDateTime,
@@ -92,10 +102,7 @@ data class StaffOccupancyAttendance(
     val capacity: Double
 )
 
-data class StaffCapacityPoint(
-    val time: HelsinkiDateTime,
-    val capacity: Double
-)
+data class StaffCapacityPoint(val time: HelsinkiDateTime, val capacity: Double)
 
 data class OccupancyPoint(
     val time: HelsinkiDateTime,
@@ -103,18 +110,20 @@ data class OccupancyPoint(
     val staffCapacity: Double
 ) {
     val occupancyRatio: Double?
-        get() = when {
-            staffCapacity > 0 -> childCapacity / staffCapacity
-            childCapacity == 0.0 -> 0.0
-            else -> null
-        }
+        get() =
+            when {
+                staffCapacity > 0 -> childCapacity / staffCapacity
+                childCapacity == 0.0 -> 0.0
+                else -> null
+            }
 }
 
 fun Database.Read.getChildOccupancyAttendances(
     unitId: DaycareId,
     timeRange: HelsinkiDateTimeRange
-): List<ChildOccupancyAttendance> = createQuery(
-    """
+): List<ChildOccupancyAttendance> =
+    createQuery(
+            """
     SELECT 
         ca.child_id,
         (ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki' AS arrived,
@@ -134,12 +143,13 @@ fun Database.Read.getChildOccupancyAttendances(
     LEFT JOIN assistance_need an on an.child_id = ch.id AND daterange(an.start_date, an.end_date, '[]') @> ca.date
     WHERE ca.unit_id = :unitId AND tstzrange((ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki', (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki') && :timeRange
     ORDER BY ca.child_id
-    """.trimIndent()
-)
-    .bind("unitId", unitId)
-    .bind("timeRange", timeRange)
-    .mapTo<ChildOccupancyAttendance>()
-    .list()
+    """.trimIndent(
+            )
+        )
+        .bind("unitId", unitId)
+        .bind("timeRange", timeRange)
+        .mapTo<ChildOccupancyAttendance>()
+        .list()
 
 val presentStaffAttendanceTypes =
     "'{${StaffAttendanceType.values().filter { it.presentInGroup() }.joinToString()}}'::staff_attendance_type[]"
@@ -147,8 +157,9 @@ val presentStaffAttendanceTypes =
 fun Database.Read.getStaffOccupancyAttendances(
     unitId: DaycareId,
     timeRange: HelsinkiDateTimeRange
-): List<StaffOccupancyAttendance> = createQuery(
-    """
+): List<StaffOccupancyAttendance> =
+    createQuery(
+            """
     SELECT sa.arrived, sa.departed, sa.occupancy_coefficient AS capacity
     FROM staff_attendance_realtime sa
     JOIN daycare_group dg ON dg.id = sa.group_id
@@ -161,9 +172,10 @@ fun Database.Read.getStaffOccupancyAttendances(
     FROM staff_attendance_external sae
     JOIN daycare_group dg ON dg.id = sae.group_id
     WHERE dg.daycare_id = :unitId AND tstzrange(sae.arrived, sae.departed) && :timeRange
-    """.trimIndent()
-)
-    .bind("unitId", unitId)
-    .bind("timeRange", timeRange)
-    .mapTo<StaffOccupancyAttendance>()
-    .list()
+    """.trimIndent(
+            )
+        )
+        .bind("unitId", unitId)
+        .bind("timeRange", timeRange)
+        .mapTo<StaffOccupancyAttendance>()
+        .list()

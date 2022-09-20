@@ -81,10 +81,10 @@ class FeeDecisionService(
         }
         val today = confirmDateTime.toLocalDate()
         val approvedAt = confirmDateTime
-        val lastPossibleDecisionValidFromDate = today.plusDays(env.nrOfDaysFeeDecisionCanBeSentInAdvance)
-        val decisionsNotValidForConfirmation = decisions.filter {
-            it.validFrom > lastPossibleDecisionValidFromDate
-        }
+        val lastPossibleDecisionValidFromDate =
+            today.plusDays(env.nrOfDaysFeeDecisionCanBeSentInAdvance)
+        val decisionsNotValidForConfirmation =
+            decisions.filter { it.validFrom > lastPossibleDecisionValidFromDate }
         if (decisionsNotValidForConfirmation.isNotEmpty()) {
             throw BadRequest(
                 "Some of the fee decisions are not valid yet",
@@ -92,54 +92,60 @@ class FeeDecisionService(
             )
         }
 
-        val (conflicts, waitingForSending) = decisions
-            .flatMap {
-                tx.lockFeeDecisionsForHeadOfFamily(it.headOfFamilyId)
-                val ownDecisions = tx.findFeeDecisionsForHeadOfFamily(
-                    it.headOfFamilyId,
-                    DateRange(it.validFrom, it.validTo),
-                    listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
-                )
-                val partnerDecisions = it.partnerId?.let { partnerId ->
-                    tx.findFeeDecisionsForHeadOfFamily(
-                        partnerId,
-                        DateRange(it.validFrom, it.validTo),
-                        listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
-                    )
-                } ?: listOf()
-                ownDecisions + partnerDecisions
-            }
-            .distinctBy { it.id }
-            .filter { !ids.contains(it.id) }
-            .partition { it.status != WAITING_FOR_SENDING && it.status != WAITING_FOR_MANUAL_SENDING }
+        val (conflicts, waitingForSending) =
+            decisions
+                .flatMap {
+                    tx.lockFeeDecisionsForHeadOfFamily(it.headOfFamilyId)
+                    val ownDecisions =
+                        tx.findFeeDecisionsForHeadOfFamily(
+                            it.headOfFamilyId,
+                            DateRange(it.validFrom, it.validTo),
+                            listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
+                        )
+                    val partnerDecisions =
+                        it.partnerId?.let { partnerId ->
+                            tx.findFeeDecisionsForHeadOfFamily(
+                                partnerId,
+                                DateRange(it.validFrom, it.validTo),
+                                listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
+                            )
+                        }
+                            ?: listOf()
+                    ownDecisions + partnerDecisions
+                }
+                .distinctBy { it.id }
+                .filter { !ids.contains(it.id) }
+                .partition {
+                    it.status != WAITING_FOR_SENDING && it.status != WAITING_FOR_MANUAL_SENDING
+                }
 
         if (waitingForSending.isNotEmpty()) {
-            logger.info("Warning: when creating fee decisions, skipped ${waitingForSending.size} fee decisions because head of family had overlapping fee decisions waiting for sending")
+            logger.info(
+                "Warning: when creating fee decisions, skipped ${waitingForSending.size} fee decisions because head of family had overlapping fee decisions waiting for sending"
+            )
         }
 
-        val remainingDecisions = decisions.filter { fd ->
-            waitingForSending.none { wfd ->
-                wfd.headOfFamilyId == fd.headOfFamilyId
+        val remainingDecisions =
+            decisions.filter { fd ->
+                waitingForSending.none { wfd -> wfd.headOfFamilyId == fd.headOfFamilyId }
             }
-        }
 
-        val remainingConflicts = conflicts.filter { conflict ->
-            waitingForSending.none { wfd ->
-                wfd.headOfFamilyId == conflict.headOfFamilyId
+        val remainingConflicts =
+            conflicts.filter { conflict ->
+                waitingForSending.none { wfd -> wfd.headOfFamilyId == conflict.headOfFamilyId }
             }
-        }
 
-        val updatedConflicts = updateEndDatesOrAnnulConflictingDecisions(remainingDecisions, remainingConflicts)
+        val updatedConflicts =
+            updateEndDatesOrAnnulConflictingDecisions(remainingDecisions, remainingConflicts)
         tx.updateFeeDecisionStatusAndDates(updatedConflicts)
 
-        val (emptyDecisions, validDecisions) = remainingDecisions
-            .partition { it.children.isEmpty() }
+        val (emptyDecisions, validDecisions) =
+            remainingDecisions.partition { it.children.isEmpty() }
 
         tx.deleteFeeDecisions(emptyDecisions.map { it.id })
 
-        val (retroactiveDecisions, otherValidDecisions) = validDecisions.partition {
-            isRetroactive(it.validFrom, today)
-        }
+        val (retroactiveDecisions, otherValidDecisions) =
+            validDecisions.partition { isRetroactive(it.validFrom, today) }
 
         tx.approveFeeDecisionDraftsForSending(
             retroactiveDecisions.map { it.id },
@@ -148,7 +154,12 @@ class FeeDecisionService(
             approvedAt = approvedAt,
             alwaysUseDaycareFinanceDecisionHandler = alwaysUseDaycareFinanceDecisionHandler
         )
-        tx.approveFeeDecisionDraftsForSending(otherValidDecisions.map { it.id }, approvedBy = user.id, approvedAt = approvedAt, alwaysUseDaycareFinanceDecisionHandler = alwaysUseDaycareFinanceDecisionHandler)
+        tx.approveFeeDecisionDraftsForSending(
+            otherValidDecisions.map { it.id },
+            approvedBy = user.id,
+            approvedAt = approvedAt,
+            alwaysUseDaycareFinanceDecisionHandler = alwaysUseDaycareFinanceDecisionHandler
+        )
 
         return validDecisions.map { it.id }
     }
@@ -163,15 +174,18 @@ class FeeDecisionService(
     }
 
     fun createFeeDecisionPdf(tx: Database.Transaction, id: FeeDecisionId) {
-        val decision = tx.getFeeDecision(id)?.let {
-            val partnerIsCodebtor = tx.partnerIsCodebtor(
-                it.headOfFamily.id,
-                it.partner?.id,
-                it.children.map { c -> c.child.id },
-                it.validDuring
-            )
-            it.copy(partnerIsCodebtor = partnerIsCodebtor)
-        } ?: throw NotFound("No fee decision found with ID ($id)")
+        val decision =
+            tx.getFeeDecision(id)?.let {
+                val partnerIsCodebtor =
+                    tx.partnerIsCodebtor(
+                        it.headOfFamily.id,
+                        it.partner?.id,
+                        it.children.map { c -> c.child.id },
+                        it.validDuring
+                    )
+                it.copy(partnerIsCodebtor = partnerIsCodebtor)
+            }
+                ?: throw NotFound("No fee decision found with ID ($id)")
 
         if (!decision.documentKey.isNullOrBlank()) {
             throw Conflict("Fee decision $id has document key already!")
@@ -180,14 +194,25 @@ class FeeDecisionService(
         val settings = tx.getSettings()
         val lang = getDecisionLanguage(decision)
 
-        val pdfByteArray = pdfService.generateFeeDecisionPdf(FeeDecisionPdfData(decision, settings, lang))
-        val documentKey = documentClient.upload(bucket, Document("feedecision_${decision.id}_$lang.pdf", pdfByteArray, "application/pdf")).key
+        val pdfByteArray =
+            pdfService.generateFeeDecisionPdf(FeeDecisionPdfData(decision, settings, lang))
+        val documentKey =
+            documentClient
+                .upload(
+                    bucket,
+                    Document(
+                        "feedecision_${decision.id}_$lang.pdf",
+                        pdfByteArray,
+                        "application/pdf"
+                    )
+                )
+                .key
         tx.updateFeeDecisionDocumentKey(decision.id, documentKey)
     }
 
     fun sendDecision(tx: Database.Transaction, clock: EvakaClock, id: FeeDecisionId): Boolean {
-        val decision = tx.getFeeDecision(id)
-            ?: throw NotFound("No fee decision found with given ID ($id)")
+        val decision =
+            tx.getFeeDecision(id) ?: throw NotFound("No fee decision found with given ID ($id)")
 
         if (decision.status != WAITING_FOR_SENDING) {
             error("Cannot send fee decision ${decision.id} - has status ${decision.status}")
@@ -204,34 +229,42 @@ class FeeDecisionService(
 
         val recipient = decision.headOfFamily
         val lang = getDecisionLanguage(decision)
-        val sendAddress = DecisionSendAddress.fromPerson(recipient) ?: when (lang) {
-            "sv" -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.SV)
-            else -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI)
-        }
+        val sendAddress =
+            DecisionSendAddress.fromPerson(recipient)
+                ?: when (lang) {
+                    "sv" -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.SV)
+                    else -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI)
+                }
 
         val feeDecisionDisplayName =
-            if (lang == "sv") "Beslut_om_avgift_för_småbarnspedagogik.pdf" else "Varhaiskasvatuksen_maksupäätös.pdf"
+            if (lang == "sv") "Beslut_om_avgift_för_småbarnspedagogik.pdf"
+            else "Varhaiskasvatuksen_maksupäätös.pdf"
 
-        val message = SfiMessage(
-            messageId = decision.id.toString(),
-            documentId = decision.id.toString(),
-            documentDisplayName = feeDecisionDisplayName,
-            documentBucket = bucket,
-            documentKey = decision.documentKey,
-            language = lang,
-            firstName = recipient.firstName,
-            lastName = recipient.lastName,
-            streetAddress = sendAddress.street,
-            postalCode = sendAddress.postalCode,
-            postOffice = sendAddress.postOffice,
-            ssn = recipient.ssn!!,
-            messageHeader = messageProvider.getFeeDecisionHeader(langWithDefault(lang)),
-            messageContent = messageProvider.getFeeDecisionContent(langWithDefault(lang))
-        )
+        val message =
+            SfiMessage(
+                messageId = decision.id.toString(),
+                documentId = decision.id.toString(),
+                documentDisplayName = feeDecisionDisplayName,
+                documentBucket = bucket,
+                documentKey = decision.documentKey,
+                language = lang,
+                firstName = recipient.firstName,
+                lastName = recipient.lastName,
+                streetAddress = sendAddress.street,
+                postalCode = sendAddress.postalCode,
+                postOffice = sendAddress.postOffice,
+                ssn = recipient.ssn!!,
+                messageHeader = messageProvider.getFeeDecisionHeader(langWithDefault(lang)),
+                messageContent = messageProvider.getFeeDecisionContent(langWithDefault(lang))
+            )
 
         logger.info("Sending fee decision as suomi.fi message ${message.documentId}")
 
-        sfiAsyncJobRunner.plan(tx, listOf(SuomiFiAsyncJob.SendMessage(message)), runAt = clock.now())
+        sfiAsyncJobRunner.plan(
+            tx,
+            listOf(SuomiFiAsyncJob.SendMessage(message)),
+            runAt = clock.now()
+        )
         tx.setFeeDecisionSent(clock, listOf(decision.id))
 
         return true
@@ -245,15 +278,20 @@ class FeeDecisionService(
         tx.setFeeDecisionSent(clock, ids)
     }
 
-    fun getFeeDecisionPdfResponse(dbc: Database.Connection, decisionId: FeeDecisionId): ResponseEntity<Any> {
-        val documentKey = dbc.read { it.getFeeDecisionDocumentKey(decisionId) }
-            ?: throw NotFound("Document key not found for decision $decisionId")
+    fun getFeeDecisionPdfResponse(
+        dbc: Database.Connection,
+        decisionId: FeeDecisionId
+    ): ResponseEntity<Any> {
+        val documentKey =
+            dbc.read { it.getFeeDecisionDocumentKey(decisionId) }
+                ?: throw NotFound("Document key not found for decision $decisionId")
         return documentClient.responseAttachment(bucket, documentKey, null)
     }
 
     fun setType(tx: Database.Transaction, decisionId: FeeDecisionId, type: FeeDecisionType) {
-        val decision = tx.getFeeDecision(decisionId)
-            ?: throw BadRequest("Decision not found with id $decisionId")
+        val decision =
+            tx.getFeeDecision(decisionId)
+                ?: throw BadRequest("Decision not found with id $decisionId")
         if (decision.status != DRAFT) {
             throw BadRequest("Can't change type for decision $decisionId")
         }

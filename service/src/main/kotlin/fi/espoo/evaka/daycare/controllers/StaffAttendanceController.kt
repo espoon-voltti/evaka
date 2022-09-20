@@ -41,7 +41,9 @@ class StaffAttendanceController(
     ): UnitStaffAttendance {
         Audit.UnitStaffAttendanceRead.log(targetId = unitId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_STAFF_ATTENDANCES, unitId)
-        return db.connect { dbc -> staffAttendanceService.getUnitAttendancesForDate(dbc, unitId, clock.today()) }
+        return db.connect { dbc ->
+            staffAttendanceService.getUnitAttendancesForDate(dbc, unitId, clock.today())
+        }
     }
 
     @GetMapping("/group/{groupId}")
@@ -54,8 +56,16 @@ class StaffAttendanceController(
         @PathVariable groupId: GroupId
     ): Wrapper<StaffAttendanceForDates> {
         Audit.StaffAttendanceRead.log(targetId = groupId)
-        accessControl.requirePermissionFor(user, clock, Action.Group.READ_STAFF_ATTENDANCES, groupId)
-        val result = db.connect { dbc -> staffAttendanceService.getGroupAttendancesByMonth(dbc, year, month, groupId) }
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Group.READ_STAFF_ATTENDANCES,
+            groupId
+        )
+        val result =
+            db.connect { dbc ->
+                staffAttendanceService.getGroupAttendancesByMonth(dbc, year, month, groupId)
+            }
         return Wrapper(result)
     }
 
@@ -68,10 +78,20 @@ class StaffAttendanceController(
         @PathVariable groupId: GroupId
     ) {
         Audit.StaffAttendanceUpdate.log(targetId = groupId)
-        accessControl.requirePermissionFor(user, clock, Action.Group.UPDATE_STAFF_ATTENDANCES, groupId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Group.UPDATE_STAFF_ATTENDANCES,
+            groupId
+        )
         if (staffAttendance.count == null) {
             throw BadRequest("Count can't be null")
         }
-        db.connect { dbc -> staffAttendanceService.upsertStaffAttendance(dbc, staffAttendance.copy(groupId = groupId)) }
+        db.connect { dbc ->
+            staffAttendanceService.upsertStaffAttendance(
+                dbc,
+                staffAttendance.copy(groupId = groupId)
+            )
+        }
     }
 }

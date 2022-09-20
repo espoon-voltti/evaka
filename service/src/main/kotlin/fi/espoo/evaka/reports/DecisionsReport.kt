@@ -14,11 +14,11 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 class DecisionsReportController(private val accessControl: AccessControl) {
@@ -89,11 +89,9 @@ private fun Database.Read.getDecisionsRows(range: FiniteDateRange): List<Decisio
         FROM data
         GROUP BY care_area_name, unit_id, unit_name, provider_type
         ORDER BY care_area_name, unit_name
-        """.trimIndent()
-    return createQuery(sql)
-        .bind("range", range)
-        .mapTo<DecisionsReportRow>()
-        .toList()
+        """.trimIndent(
+        )
+    return createQuery(sql).bind("range", range).mapTo<DecisionsReportRow>().toList()
 }
 
 data class DecisionsReportRow(

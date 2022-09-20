@@ -33,26 +33,36 @@ fun <Decision : FinanceDecision<Decision>> updateEndDatesOrAnnulConflictingDecis
     newDecisions: List<Decision>,
     conflicting: List<Decision>
 ): List<Decision> {
-    val fixedConflicts = newDecisions
-        .sortedBy { it.validFrom }
-        .fold(conflicting) { conflicts, newDecision ->
-            val updatedConflicts = conflicts
-                .filter { conflict -> conflict.overlapsWith(newDecision) }
-                .map { conflict ->
-                    if (newDecision.validFrom <= conflict.validFrom) {
-                        conflict.annul()
-                    } else {
-                        conflict.withValidity(DateRange(conflict.validFrom, newDecision.validFrom.minusDays(1)))
-                    }
-                }
+    val fixedConflicts =
+        newDecisions
+            .sortedBy { it.validFrom }
+            .fold(conflicting) { conflicts, newDecision ->
+                val updatedConflicts =
+                    conflicts
+                        .filter { conflict -> conflict.overlapsWith(newDecision) }
+                        .map { conflict ->
+                            if (newDecision.validFrom <= conflict.validFrom) {
+                                conflict.annul()
+                            } else {
+                                conflict.withValidity(
+                                    DateRange(
+                                        conflict.validFrom,
+                                        newDecision.validFrom.minusDays(1)
+                                    )
+                                )
+                            }
+                        }
 
-            conflicts.map { conflict -> updatedConflicts.find { it.id == conflict.id } ?: conflict }
-        }
+                conflicts.map { conflict ->
+                    updatedConflicts.find { it.id == conflict.id } ?: conflict
+                }
+            }
 
     val (annulledConflicts, nonAnnulledConflicts) = fixedConflicts.partition { it.isAnnulled() }
-    val originalConflictsAnnulled = conflicting
-        .filter { conflict -> annulledConflicts.any { it.id == conflict.id } }
-        .map { it.annul() }
+    val originalConflictsAnnulled =
+        conflicting
+            .filter { conflict -> annulledConflicts.any { it.id == conflict.id } }
+            .map { it.annul() }
 
     return nonAnnulledConflicts + originalConflictsAnnulled
 }

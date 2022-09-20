@@ -24,109 +24,126 @@ import fi.espoo.evaka.toPersonBasic
 import fi.espoo.evaka.toPersonDetailed
 import fi.espoo.evaka.toUnitData
 
-fun toDetailed(feeDecision: FeeDecision): FeeDecisionDetailed = FeeDecisionDetailed(
-    id = feeDecision.id,
-    status = feeDecision.status,
-    decisionNumber = feeDecision.decisionNumber,
-    decisionType = feeDecision.decisionType,
-    validDuring = feeDecision.validDuring,
-    headOfFamily = allAdults.find { it.id == feeDecision.headOfFamilyId }!!.toPersonDetailed(),
-    partner = allAdults.find { it.id == feeDecision.partnerId }?.toPersonDetailed(),
-    headOfFamilyIncome = feeDecision.headOfFamilyIncome,
-    partnerIncome = feeDecision.partnerIncome,
-    familySize = feeDecision.familySize,
-    feeThresholds = feeDecision.feeThresholds,
-    children = feeDecision.children.map { child ->
-        FeeDecisionChildDetailed(
-            child = allChildren.find { it.id == child.child.id }!!.toPersonDetailed(),
-            placementType = child.placement.type,
-            placementUnit = allDaycares.find { it.id == child.placement.unitId }!!.toUnitData(),
-            serviceNeedFeeCoefficient = child.serviceNeed.feeCoefficient,
-            serviceNeedDescriptionFi = child.serviceNeed.descriptionFi,
-            serviceNeedDescriptionSv = child.serviceNeed.descriptionSv,
-            serviceNeedMissing = child.serviceNeed.missing,
-            baseFee = child.baseFee,
-            siblingDiscount = child.siblingDiscount,
-            fee = child.fee,
-            feeAlterations = child.feeAlterations,
-            finalFee = child.finalFee,
-            childIncome = child.childIncome
-        )
-    },
-    documentKey = feeDecision.documentKey,
-    approvedBy = allWorkers.find { it.id == feeDecision.approvedById }?.toEmployeeWithName(),
-    approvedAt = feeDecision.approvedAt,
-    financeDecisionHandlerFirstName = allWorkers.find { it.id == feeDecision.decisionHandlerId }?.firstName,
-    financeDecisionHandlerLastName = allWorkers.find { it.id == feeDecision.decisionHandlerId }?.lastName,
-    created = feeDecision.created
-)
+fun toDetailed(feeDecision: FeeDecision): FeeDecisionDetailed =
+    FeeDecisionDetailed(
+        id = feeDecision.id,
+        status = feeDecision.status,
+        decisionNumber = feeDecision.decisionNumber,
+        decisionType = feeDecision.decisionType,
+        validDuring = feeDecision.validDuring,
+        headOfFamily = allAdults.find { it.id == feeDecision.headOfFamilyId }!!.toPersonDetailed(),
+        partner = allAdults.find { it.id == feeDecision.partnerId }?.toPersonDetailed(),
+        headOfFamilyIncome = feeDecision.headOfFamilyIncome,
+        partnerIncome = feeDecision.partnerIncome,
+        familySize = feeDecision.familySize,
+        feeThresholds = feeDecision.feeThresholds,
+        children =
+            feeDecision.children.map { child ->
+                FeeDecisionChildDetailed(
+                    child = allChildren.find { it.id == child.child.id }!!.toPersonDetailed(),
+                    placementType = child.placement.type,
+                    placementUnit =
+                        allDaycares.find { it.id == child.placement.unitId }!!.toUnitData(),
+                    serviceNeedFeeCoefficient = child.serviceNeed.feeCoefficient,
+                    serviceNeedDescriptionFi = child.serviceNeed.descriptionFi,
+                    serviceNeedDescriptionSv = child.serviceNeed.descriptionSv,
+                    serviceNeedMissing = child.serviceNeed.missing,
+                    baseFee = child.baseFee,
+                    siblingDiscount = child.siblingDiscount,
+                    fee = child.fee,
+                    feeAlterations = child.feeAlterations,
+                    finalFee = child.finalFee,
+                    childIncome = child.childIncome
+                )
+            },
+        documentKey = feeDecision.documentKey,
+        approvedBy = allWorkers.find { it.id == feeDecision.approvedById }?.toEmployeeWithName(),
+        approvedAt = feeDecision.approvedAt,
+        financeDecisionHandlerFirstName =
+            allWorkers.find { it.id == feeDecision.decisionHandlerId }?.firstName,
+        financeDecisionHandlerLastName =
+            allWorkers.find { it.id == feeDecision.decisionHandlerId }?.lastName,
+        created = feeDecision.created
+    )
 
-fun toSummary(feeDecision: FeeDecision): FeeDecisionSummary = FeeDecisionSummary(
-    id = feeDecision.id,
-    status = feeDecision.status,
-    decisionNumber = feeDecision.decisionNumber,
-    validDuring = feeDecision.validDuring,
-    headOfFamily = allAdults.find { it.id == feeDecision.headOfFamilyId }!!.toPersonBasic(),
-    children = feeDecision.children.map { child ->
-        allChildren.find { it.id == child.child.id }!!.toPersonBasic()
-    },
-    approvedAt = feeDecision.approvedAt,
-    finalPrice = feeDecision.children.fold(0) { sum, child -> sum + child.finalFee },
-    created = feeDecision.created
-)
+fun toSummary(feeDecision: FeeDecision): FeeDecisionSummary =
+    FeeDecisionSummary(
+        id = feeDecision.id,
+        status = feeDecision.status,
+        decisionNumber = feeDecision.decisionNumber,
+        validDuring = feeDecision.validDuring,
+        headOfFamily = allAdults.find { it.id == feeDecision.headOfFamilyId }!!.toPersonBasic(),
+        children =
+            feeDecision.children.map { child ->
+                allChildren.find { it.id == child.child.id }!!.toPersonBasic()
+            },
+        approvedAt = feeDecision.approvedAt,
+        finalPrice = feeDecision.children.fold(0) { sum, child -> sum + child.finalFee },
+        created = feeDecision.created
+    )
 
-fun toDetailed(invoice: Invoice): InvoiceDetailed = InvoiceDetailed(
-    id = invoice.id,
-    status = invoice.status,
-    periodStart = invoice.periodStart,
-    periodEnd = invoice.periodEnd,
-    dueDate = invoice.dueDate,
-    invoiceDate = invoice.invoiceDate,
-    agreementType = allAreas.find { it.id == invoice.areaId }?.areaCode!!,
-    areaId = invoice.areaId,
-    headOfFamily = allAdults.find { it.id == invoice.headOfFamily }!!.toPersonDetailed(),
-    codebtor = allAdults.find { it.id == invoice.codebtor }?.toPersonDetailed(),
-    rows = invoice.rows.map { row ->
-        val costCenter = allDaycares.find { it.id == row.unitId }?.costCenter!!
-        val daycareType = allDaycares.find { it.id == row.unitId }?.type!!
-        InvoiceRowDetailed(
-            id = row.id!!,
-            child = allChildren.find { it.id == row.child }!!.toPersonDetailed(),
-            amount = row.amount,
-            unitPrice = row.unitPrice,
-            periodStart = row.periodStart,
-            periodEnd = row.periodEnd,
-            product = row.product,
-            unitId = row.unitId,
-            daycareType = daycareType,
-            costCenter = costCenter,
-            subCostCenter = allAreas.find { it.id == invoice.areaId }?.subCostCenter!!,
-            savedCostCenter = if (invoice.status == InvoiceStatus.SENT || invoice.status == InvoiceStatus.WAITING_FOR_SENDING) costCenter else null,
-            description = row.description,
-            correctionId = row.correctionId,
-            note = null
-        )
-    },
-    number = invoice.number,
-    sentBy = invoice.sentBy,
-    sentAt = invoice.sentAt
-)
+fun toDetailed(invoice: Invoice): InvoiceDetailed =
+    InvoiceDetailed(
+        id = invoice.id,
+        status = invoice.status,
+        periodStart = invoice.periodStart,
+        periodEnd = invoice.periodEnd,
+        dueDate = invoice.dueDate,
+        invoiceDate = invoice.invoiceDate,
+        agreementType = allAreas.find { it.id == invoice.areaId }?.areaCode!!,
+        areaId = invoice.areaId,
+        headOfFamily = allAdults.find { it.id == invoice.headOfFamily }!!.toPersonDetailed(),
+        codebtor = allAdults.find { it.id == invoice.codebtor }?.toPersonDetailed(),
+        rows =
+            invoice.rows.map { row ->
+                val costCenter = allDaycares.find { it.id == row.unitId }?.costCenter!!
+                val daycareType = allDaycares.find { it.id == row.unitId }?.type!!
+                InvoiceRowDetailed(
+                    id = row.id!!,
+                    child = allChildren.find { it.id == row.child }!!.toPersonDetailed(),
+                    amount = row.amount,
+                    unitPrice = row.unitPrice,
+                    periodStart = row.periodStart,
+                    periodEnd = row.periodEnd,
+                    product = row.product,
+                    unitId = row.unitId,
+                    daycareType = daycareType,
+                    costCenter = costCenter,
+                    subCostCenter = allAreas.find { it.id == invoice.areaId }?.subCostCenter!!,
+                    savedCostCenter =
+                        if (
+                            invoice.status == InvoiceStatus.SENT ||
+                                invoice.status == InvoiceStatus.WAITING_FOR_SENDING
+                        )
+                            costCenter
+                        else null,
+                    description = row.description,
+                    correctionId = row.correctionId,
+                    note = null
+                )
+            },
+        number = invoice.number,
+        sentBy = invoice.sentBy,
+        sentAt = invoice.sentAt
+    )
 
-fun toSummary(invoice: Invoice): InvoiceSummary = InvoiceSummary(
-    id = invoice.id,
-    status = invoice.status,
-    periodStart = invoice.periodStart,
-    periodEnd = invoice.periodEnd,
-    headOfFamily = allAdults.find { it.id == invoice.headOfFamily }!!.toPersonDetailed(),
-    codebtor = allAdults.find { it.id == invoice.codebtor }?.toPersonDetailed(),
-    rows = invoice.rows.map { row ->
-        InvoiceRowSummary(
-            id = row.id!!,
-            child = allChildren.find { it.id == row.child }!!.toPersonBasic(),
-            amount = row.amount,
-            unitPrice = row.unitPrice
-        )
-    },
-    sentBy = invoice.sentBy,
-    sentAt = invoice.sentAt
-)
+fun toSummary(invoice: Invoice): InvoiceSummary =
+    InvoiceSummary(
+        id = invoice.id,
+        status = invoice.status,
+        periodStart = invoice.periodStart,
+        periodEnd = invoice.periodEnd,
+        headOfFamily = allAdults.find { it.id == invoice.headOfFamily }!!.toPersonDetailed(),
+        codebtor = allAdults.find { it.id == invoice.codebtor }?.toPersonDetailed(),
+        rows =
+            invoice.rows.map { row ->
+                InvoiceRowSummary(
+                    id = row.id!!,
+                    child = allChildren.find { it.id == row.child }!!.toPersonBasic(),
+                    amount = row.amount,
+                    unitPrice = row.unitPrice
+                )
+            },
+        sentBy = invoice.sentBy,
+        sentAt = invoice.sentAt
+    )

@@ -40,9 +40,6 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -50,10 +47,12 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired
-    lateinit var absenceService: AbsenceService
+    @Autowired lateinit var absenceService: AbsenceService
 
     val childId = testChild_1.id
     val testUserId = EmployeeId(UUID.randomUUID())
@@ -71,7 +70,12 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             it.insertTestEmployee(DevEmployee(id = testUserId))
             it.insertTestChild(DevChild(childId))
             it.insertTestDaycareGroup(
-                DevDaycareGroup(daycareId = daycareId, id = groupId, name = groupName, startDate = placementStart)
+                DevDaycareGroup(
+                    daycareId = daycareId,
+                    id = groupId,
+                    name = groupName,
+                    startDate = placementStart
+                )
             )
         }
     }
@@ -81,7 +85,15 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertGroupPlacement(childId, PlacementType.PRESCHOOL_DAYCARE)
 
         val placementDate = placementStart
-        val result = db.read { absenceService.getAbsencesByMonth(it, groupId, placementDate.year, placementDate.monthValue) }
+        val result =
+            db.read {
+                absenceService.getAbsencesByMonth(
+                    it,
+                    groupId,
+                    placementDate.year,
+                    placementDate.monthValue
+                )
+            }
 
         assertEquals(groupId, result.groupId)
         assertEquals(daycareName, result.daycareName)
@@ -96,9 +108,20 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val placementDate = placementStart
         val groupSize = 50
         (1 until groupSize).forEach { _ ->
-            insertChildAndGroupPlacement(ChildId(UUID.randomUUID()), PlacementType.PRESCHOOL_DAYCARE)
+            insertChildAndGroupPlacement(
+                ChildId(UUID.randomUUID()),
+                PlacementType.PRESCHOOL_DAYCARE
+            )
         }
-        val result = db.read { absenceService.getAbsencesByMonth(it, groupId, placementDate.year, placementDate.monthValue) }
+        val result =
+            db.read {
+                absenceService.getAbsencesByMonth(
+                    it,
+                    groupId,
+                    placementDate.year,
+                    placementDate.monthValue
+                )
+            }
 
         assertEquals(groupSize, result.children.size)
     }
@@ -108,7 +131,15 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertGroupPlacement(childId, PlacementType.PRESCHOOL_DAYCARE)
 
         val futureDate = placementEnd.plusMonths(1)
-        val result = db.read { absenceService.getAbsencesByMonth(it, groupId, futureDate.year, futureDate.monthValue) }
+        val result =
+            db.read {
+                absenceService.getAbsencesByMonth(
+                    it,
+                    groupId,
+                    futureDate.year,
+                    futureDate.monthValue
+                )
+            }
 
         assertEquals(groupId, result.groupId)
         assertEquals(groupName, result.groupName)
@@ -120,13 +151,24 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertGroupPlacement(childId, PlacementType.PRESCHOOL_DAYCARE)
 
         val placementDate = placementStart
-        val result = db.read { absenceService.getAbsencesByMonth(it, groupId, placementDate.year, placementDate.monthValue) }
+        val result =
+            db.read {
+                absenceService.getAbsencesByMonth(
+                    it,
+                    groupId,
+                    placementDate.year,
+                    placementDate.monthValue
+                )
+            }
         val daysInMonth = placementDate.month.length(false)
         val placements = result.children[0].placements
         val absenceCategories = placements.getValue(placementDate)
 
         assertEquals(daysInMonth, placements.size)
-        assertEquals(setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE), absenceCategories)
+        assertEquals(
+            setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE),
+            absenceCategories
+        )
     }
 
     @Test
@@ -134,7 +176,15 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertGroupPlacement(childId, PlacementType.PRESCHOOL)
 
         val placementDate = placementStart
-        val result = db.read { absenceService.getAbsencesByMonth(it, groupId, placementDate.year, placementDate.monthValue) }
+        val result =
+            db.read {
+                absenceService.getAbsencesByMonth(
+                    it,
+                    groupId,
+                    placementDate.year,
+                    placementDate.monthValue
+                )
+            }
         val daysInMonth = placementDate.month.length(false)
         val placements = result.children[0].placements
         val absenceCategories = placements.getValue(placementDate)
@@ -148,7 +198,15 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertGroupPlacement(childId, PlacementType.DAYCARE)
 
         val placementDate = placementStart
-        val result = db.read { absenceService.getAbsencesByMonth(it, groupId, placementDate.year, placementDate.monthValue) }
+        val result =
+            db.read {
+                absenceService.getAbsencesByMonth(
+                    it,
+                    groupId,
+                    placementDate.year,
+                    placementDate.monthValue
+                )
+            }
         val daysInMonth = placementDate.month.length(false)
         val placements = result.children[0].placements
         val absenceCategories = placements.getValue(placementDate)
@@ -162,13 +220,24 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertGroupPlacement(childId, PlacementType.DAYCARE_FIVE_YEAR_OLDS)
 
         val placementDate = LocalDate.of(2019, 8, 1)
-        val result = db.read { absenceService.getAbsencesByMonth(it, groupId, placementDate.year, placementDate.monthValue) }
+        val result =
+            db.read {
+                absenceService.getAbsencesByMonth(
+                    it,
+                    groupId,
+                    placementDate.year,
+                    placementDate.monthValue
+                )
+            }
         val daysInMonth = placementDate.month.length(false)
         val placements = result.children[0].placements
         val absenceCategories = placements.getValue(placementDate)
 
         assertEquals(daysInMonth, placements.size)
-        assertEquals(setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE), absenceCategories)
+        assertEquals(
+            setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE),
+            absenceCategories
+        )
     }
 
     @Test
@@ -177,13 +246,23 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val placementDate = LocalDate.of(2019, 8, 1)
         val result =
-            db.read { absenceService.getAbsencesByMonth(it, groupId, placementDate.year, placementDate.monthValue) }
+            db.read {
+                absenceService.getAbsencesByMonth(
+                    it,
+                    groupId,
+                    placementDate.year,
+                    placementDate.monthValue
+                )
+            }
         val daysInMonth = placementDate.month.length(false)
         val placements = result.children[0].placements
         val absenceCategories = placements.getValue(placementDate)
 
         assertEquals(daysInMonth, placements.size)
-        assertEquals(setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE), absenceCategories)
+        assertEquals(
+            setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE),
+            absenceCategories
+        )
     }
 
     @Test
@@ -192,7 +271,15 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         var placementDate = placementStart
         while (!placementDate.isAfter(placementEnd)) {
-            val result = db.read { absenceService.getAbsencesByMonth(it, groupId, placementDate.year, placementDate.monthValue) }
+            val result =
+                db.read {
+                    absenceService.getAbsencesByMonth(
+                        it,
+                        groupId,
+                        placementDate.year,
+                        placementDate.monthValue
+                    )
+                }
             val daysInMonth = placementDate.month.length(false)
             val placements = result.children[0].placements
             val absences = result.children[0].absences
@@ -209,13 +296,20 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertGroupPlacement(childId, PlacementType.PRESCHOOL_DAYCARE)
 
         val absenceDate = placementEnd
-        val initialAbsence = createAbsence(childId, AbsenceCategory.NONBILLABLE, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence =
+            createAbsence(childId, AbsenceCategory.NONBILLABLE, AbsenceType.SICKLEAVE, absenceDate)
         val initialAbsenceList = listOf(initialAbsence)
 
-        val result = db.transaction { tx ->
-            tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
-            absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
-        }
+        val result =
+            db.transaction { tx ->
+                tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
+                absenceService.getAbsencesByMonth(
+                    tx,
+                    groupId,
+                    absenceDate.year,
+                    absenceDate.monthValue
+                )
+            }
         val absence = result.children[0].absences.getValue(absenceDate)[0]
 
         assertEquals(initialAbsence.childId, absence.childId)
@@ -229,7 +323,15 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertGroupPlacement(childId, PlacementType.PRESCHOOL_DAYCARE)
 
         val absenceDate = placementEnd
-        val result = db.read { absenceService.getAbsencesByMonth(it, groupId, absenceDate.year, absenceDate.monthValue) }
+        val result =
+            db.read {
+                absenceService.getAbsencesByMonth(
+                    it,
+                    groupId,
+                    absenceDate.year,
+                    absenceDate.monthValue
+                )
+            }
         val absences = result.children[0].absences
 
         assertEquals(absences.size, 0)
@@ -240,13 +342,20 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertGroupPlacement(childId, PlacementType.PRESCHOOL_DAYCARE)
 
         val absenceDate = placementEnd
-        val initialAbsence = createAbsence(childId, AbsenceCategory.BILLABLE, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence =
+            createAbsence(childId, AbsenceCategory.BILLABLE, AbsenceType.SICKLEAVE, absenceDate)
         val initialAbsenceList = listOf(initialAbsence)
 
-        val result = db.transaction { tx ->
-            tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
-            absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
-        }
+        val result =
+            db.transaction { tx ->
+                tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
+                absenceService.getAbsencesByMonth(
+                    tx,
+                    groupId,
+                    absenceDate.year,
+                    absenceDate.monthValue
+                )
+            }
         val absence = result.children[0].absences.getValue(absenceDate)[0]
 
         assertEquals(initialAbsence.childId, absence.childId)
@@ -260,14 +369,22 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertGroupPlacement(childId, PlacementType.PRESCHOOL_DAYCARE)
 
         val absenceDate = placementEnd
-        val initialAbsence = createAbsence(childId, AbsenceCategory.BILLABLE, AbsenceType.SICKLEAVE, absenceDate)
-        val initialAbsence2 = createAbsence(childId, AbsenceCategory.NONBILLABLE, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence =
+            createAbsence(childId, AbsenceCategory.BILLABLE, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence2 =
+            createAbsence(childId, AbsenceCategory.NONBILLABLE, AbsenceType.SICKLEAVE, absenceDate)
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
-        val result = db.transaction { tx ->
-            tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
-            absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
-        }
+        val result =
+            db.transaction { tx ->
+                tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
+                absenceService.getAbsencesByMonth(
+                    tx,
+                    groupId,
+                    absenceDate.year,
+                    absenceDate.monthValue
+                )
+            }
         val absences = result.children[0].absences.getValue(absenceDate)
 
         assertEquals(initialAbsenceList.size, absences.size)
@@ -278,14 +395,22 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertGroupPlacement(childId, PlacementType.PRESCHOOL_DAYCARE)
 
         val absenceDate = placementEnd
-        val initialAbsence = createAbsence(childId, AbsenceCategory.BILLABLE, AbsenceType.SICKLEAVE, absenceDate)
-        val initialAbsence2 = createAbsence(childId, AbsenceCategory.BILLABLE, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence =
+            createAbsence(childId, AbsenceCategory.BILLABLE, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence2 =
+            createAbsence(childId, AbsenceCategory.BILLABLE, AbsenceType.SICKLEAVE, absenceDate)
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
-        val result = db.transaction { tx ->
-            tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
-            absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
-        }
+        val result =
+            db.transaction { tx ->
+                tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
+                absenceService.getAbsencesByMonth(
+                    tx,
+                    groupId,
+                    absenceDate.year,
+                    absenceDate.monthValue
+                )
+            }
         val absences = result.children[0].absences.getValue(absenceDate)
 
         assertEquals(1, absences.size)
@@ -296,27 +421,45 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertGroupPlacement(childId, PlacementType.PRESCHOOL_DAYCARE)
 
         val absenceDate = placementEnd
-        val initialAbsence = createAbsence(childId, AbsenceCategory.BILLABLE, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence =
+            createAbsence(childId, AbsenceCategory.BILLABLE, AbsenceType.SICKLEAVE, absenceDate)
         val initialAbsenceList = listOf(initialAbsence)
 
-        var result = db.transaction { tx ->
-            tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
-            absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
-        }
+        var result =
+            db.transaction { tx ->
+                tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
+                absenceService.getAbsencesByMonth(
+                    tx,
+                    groupId,
+                    absenceDate.year,
+                    absenceDate.monthValue
+                )
+            }
         val absence = result.children[0].absences.getValue(absenceDate)[0]
 
         val newAbsenceType = AbsenceType.UNKNOWN_ABSENCE
-        val updatedAbsence = AbsenceUpsert(
-            childId = absence.childId,
-            date = absence.date,
-            category = absence.category,
-            absenceType = newAbsenceType
-        )
+        val updatedAbsence =
+            AbsenceUpsert(
+                childId = absence.childId,
+                date = absence.date,
+                category = absence.category,
+                absenceType = newAbsenceType
+            )
 
-        result = db.transaction { tx ->
-            tx.upsertAbsences(RealEvakaClock(), listOf(updatedAbsence), EvakaUserId(testUserId.raw))
-            absenceService.getAbsencesByMonth(tx, groupId, absenceDate.year, absenceDate.monthValue)
-        }
+        result =
+            db.transaction { tx ->
+                tx.upsertAbsences(
+                    RealEvakaClock(),
+                    listOf(updatedAbsence),
+                    EvakaUserId(testUserId.raw)
+                )
+                absenceService.getAbsencesByMonth(
+                    tx,
+                    groupId,
+                    absenceDate.year,
+                    absenceDate.monthValue
+                )
+            }
         val absences = result.children[0].absences.getValue(absenceDate)
         val modifiedAbsence = result.children[0].absences.getValue(absenceDate)[0]
 
@@ -329,14 +472,22 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertGroupPlacement(childId, PlacementType.PRESCHOOL_DAYCARE)
 
         val absenceDate = placementEnd
-        val initialAbsence = createAbsence(childId, AbsenceCategory.BILLABLE, AbsenceType.SICKLEAVE, absenceDate)
-        val initialAbsence2 = createAbsence(childId, AbsenceCategory.NONBILLABLE, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence =
+            createAbsence(childId, AbsenceCategory.BILLABLE, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence2 =
+            createAbsence(childId, AbsenceCategory.NONBILLABLE, AbsenceType.SICKLEAVE, absenceDate)
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
-        val absences = db.transaction { tx ->
-            tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
-            absenceService.getAbsencesByChild(tx, childId, absenceDate.year, absenceDate.monthValue)
-        }
+        val absences =
+            db.transaction { tx ->
+                tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
+                absenceService.getAbsencesByChild(
+                    tx,
+                    childId,
+                    absenceDate.year,
+                    absenceDate.monthValue
+                )
+            }
         assertEquals(initialAbsenceList.size, absences.size)
     }
 
@@ -350,14 +501,22 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         }
 
         val absenceDate = placementEnd
-        val initialAbsence = createAbsence(childId, AbsenceCategory.BILLABLE, AbsenceType.SICKLEAVE, absenceDate)
-        val initialAbsence2 = createAbsence(childId, AbsenceCategory.NONBILLABLE, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence =
+            createAbsence(childId, AbsenceCategory.BILLABLE, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence2 =
+            createAbsence(childId, AbsenceCategory.NONBILLABLE, AbsenceType.SICKLEAVE, absenceDate)
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
-        val absences = db.transaction { tx ->
-            tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
-            absenceService.getAbsencesByChild(tx, childId2, absenceDate.year, absenceDate.monthValue)
-        }
+        val absences =
+            db.transaction { tx ->
+                tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
+                absenceService.getAbsencesByChild(
+                    tx,
+                    childId2,
+                    absenceDate.year,
+                    absenceDate.monthValue
+                )
+            }
         assertEquals(0, absences.size)
     }
 
@@ -366,14 +525,22 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertGroupPlacement(childId, PlacementType.PRESCHOOL_DAYCARE)
 
         val absenceDate = placementEnd
-        val initialAbsence = createAbsence(childId, AbsenceCategory.BILLABLE, AbsenceType.SICKLEAVE, LocalDate.of(2019, 9, 1))
-        val initialAbsence2 = createAbsence(childId, AbsenceCategory.NONBILLABLE, AbsenceType.SICKLEAVE, absenceDate)
+        val initialAbsence =
+            createAbsence(
+                childId,
+                AbsenceCategory.BILLABLE,
+                AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 9, 1)
+            )
+        val initialAbsence2 =
+            createAbsence(childId, AbsenceCategory.NONBILLABLE, AbsenceType.SICKLEAVE, absenceDate)
         val initialAbsenceList = listOf(initialAbsence, initialAbsence2)
 
-        val absences = db.transaction { tx ->
-            tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
-            absenceService.getAbsencesByChild(tx, childId, 2019, 9)
-        }
+        val absences =
+            db.transaction { tx ->
+                tx.upsertAbsences(RealEvakaClock(), initialAbsenceList, EvakaUserId(testUserId.raw))
+                absenceService.getAbsencesByChild(tx, childId, 2019, 9)
+            }
         assertEquals(1, absences.size)
     }
 
@@ -398,7 +565,15 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         }
 
         val placementDate = placementStart
-        val result = db.read { absenceService.getAbsencesByMonth(it, groupId, placementDate.year, placementDate.monthValue) }
+        val result =
+            db.read {
+                absenceService.getAbsencesByMonth(
+                    it,
+                    groupId,
+                    placementDate.year,
+                    placementDate.monthValue
+                )
+            }
 
         assertEquals(groupId, result.groupId)
         assertEquals(daycareName, result.daycareName)
@@ -416,9 +591,15 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val firstOfJanuary2020 = LocalDate.of(2020, 1, 1)
         val epiphany2020 = LocalDate.of(2020, 1, 6)
         db.transaction { it.execute("INSERT INTO holiday (date) VALUES (?)", epiphany2020) }
-        val result = db.read {
-            absenceService.getAbsencesByMonth(it, groupId, firstOfJanuary2020.year, firstOfJanuary2020.monthValue)
-        }
+        val result =
+            db.read {
+                absenceService.getAbsencesByMonth(
+                    it,
+                    groupId,
+                    firstOfJanuary2020.year,
+                    firstOfJanuary2020.monthValue
+                )
+            }
 
         assertFalse(result.operationDays.contains(epiphany2020))
     }
@@ -429,11 +610,21 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val epiphany2020 = LocalDate.of(2020, 1, 6)
         db.transaction {
             it.execute("INSERT INTO holiday (date) VALUES (?)", epiphany2020)
-            it.execute("UPDATE daycare SET operation_days = ? WHERE id = ?", arrayOf(1, 2, 3, 4, 5, 6, 7), daycareId)
+            it.execute(
+                "UPDATE daycare SET operation_days = ? WHERE id = ?",
+                arrayOf(1, 2, 3, 4, 5, 6, 7),
+                daycareId
+            )
         }
-        val result = db.read {
-            absenceService.getAbsencesByMonth(it, groupId, firstOfJanuary2020.year, firstOfJanuary2020.monthValue)
-        }
+        val result =
+            db.read {
+                absenceService.getAbsencesByMonth(
+                    it,
+                    groupId,
+                    firstOfJanuary2020.year,
+                    firstOfJanuary2020.monthValue
+                )
+            }
 
         assertTrue(result.operationDays.contains(epiphany2020))
     }
@@ -441,9 +632,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `reservation sums - basic case`() {
         insertGroupPlacement(childId)
-        val reservations = generateSequence(placementStart) { it.plusDays(1) }
-            .map { HelsinkiDateTime.of(it, LocalTime.of(8, 0)) to HelsinkiDateTime.of(it, LocalTime.of(16, 0)) }
-            .take(5).toList()
+        val reservations =
+            generateSequence(placementStart) { it.plusDays(1) }
+                .map {
+                    HelsinkiDateTime.of(it, LocalTime.of(8, 0)) to
+                        HelsinkiDateTime.of(it, LocalTime.of(16, 0))
+                }
+                .take(5)
+                .toList()
         insertReservations(childId, reservations)
 
         val result = db.read { absenceService.getAbsencesByMonth(it, groupId, 2019, 8) }
@@ -452,11 +648,22 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     @Test
     fun `reservation sums - placement changes mid reservation`() {
-        insertGroupPlacement(childId, placementPeriod = FiniteDateRange(placementStart, placementStart.plusDays(1)))
-        insertGroupPlacement(childId, placementPeriod = FiniteDateRange(placementStart.plusDays(2), placementEnd))
-        val reservations = generateSequence(placementStart) { it.plusDays(1) }
-            .map { HelsinkiDateTime.of(it, LocalTime.of(21, 0)) to HelsinkiDateTime.of(it.plusDays(1), LocalTime.of(9, 0)) }
-            .take(5).toList()
+        insertGroupPlacement(
+            childId,
+            placementPeriod = FiniteDateRange(placementStart, placementStart.plusDays(1))
+        )
+        insertGroupPlacement(
+            childId,
+            placementPeriod = FiniteDateRange(placementStart.plusDays(2), placementEnd)
+        )
+        val reservations =
+            generateSequence(placementStart) { it.plusDays(1) }
+                .map {
+                    HelsinkiDateTime.of(it, LocalTime.of(21, 0)) to
+                        HelsinkiDateTime.of(it.plusDays(1), LocalTime.of(9, 0))
+                }
+                .take(5)
+                .toList()
         insertReservations(childId, reservations)
 
         val result = db.read { absenceService.getAbsencesByMonth(it, groupId, 2019, 8) }
@@ -470,8 +677,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertReservations(
             childId,
             listOf(
-                HelsinkiDateTime.of(lastDayOfMonth, LocalTime.of(12, 0))
-                    to HelsinkiDateTime.of(lastDayOfMonth.plusDays(1), LocalTime.of(12, 0))
+                HelsinkiDateTime.of(lastDayOfMonth, LocalTime.of(12, 0)) to
+                    HelsinkiDateTime.of(lastDayOfMonth.plusDays(1), LocalTime.of(12, 0))
             )
         )
 
@@ -486,8 +693,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertReservations(
             childId,
             listOf(
-                HelsinkiDateTime.of(firstDayOfMonth.minusDays(1), LocalTime.of(12, 0))
-                    to HelsinkiDateTime.of(firstDayOfMonth, LocalTime.of(12, 0))
+                HelsinkiDateTime.of(firstDayOfMonth.minusDays(1), LocalTime.of(12, 0)) to
+                    HelsinkiDateTime.of(firstDayOfMonth, LocalTime.of(12, 0))
             )
         )
 
@@ -498,12 +705,15 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `reservation sums - reservations longer than placements are cut at placement start`() {
         val placementDate = LocalDate.of(2019, 8, 15)
-        insertGroupPlacement(childId, placementPeriod = FiniteDateRange(placementDate, placementDate))
+        insertGroupPlacement(
+            childId,
+            placementPeriod = FiniteDateRange(placementDate, placementDate)
+        )
         insertReservations(
             childId,
             listOf(
-                HelsinkiDateTime.of(placementDate.minusDays(1), LocalTime.of(12, 0))
-                    to HelsinkiDateTime.of(placementDate, LocalTime.of(12, 0))
+                HelsinkiDateTime.of(placementDate.minusDays(1), LocalTime.of(12, 0)) to
+                    HelsinkiDateTime.of(placementDate, LocalTime.of(12, 0))
             )
         )
 
@@ -514,12 +724,15 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `reservation sums - reservations longer than placements are cut at placement end`() {
         val placementDate = LocalDate.of(2019, 8, 15)
-        insertGroupPlacement(childId, placementPeriod = FiniteDateRange(placementDate, placementDate))
+        insertGroupPlacement(
+            childId,
+            placementPeriod = FiniteDateRange(placementDate, placementDate)
+        )
         insertReservations(
             childId,
             listOf(
-                HelsinkiDateTime.of(placementDate, LocalTime.of(12, 0))
-                    to HelsinkiDateTime.of(placementDate.plusDays(1), LocalTime.of(12, 0))
+                HelsinkiDateTime.of(placementDate, LocalTime.of(12, 0)) to
+                    HelsinkiDateTime.of(placementDate.plusDays(1), LocalTime.of(12, 0))
             )
         )
 
@@ -530,9 +743,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `reservation sums - reservations during back up placements are included in placement unit sum`() {
         insertGroupPlacement(childId)
-        val reservations = generateSequence(placementStart) { it.plusDays(1) }
-            .map { HelsinkiDateTime.of(it, LocalTime.of(8, 0)) to HelsinkiDateTime.of(it, LocalTime.of(16, 0)) }
-            .take(5).toList()
+        val reservations =
+            generateSequence(placementStart) { it.plusDays(1) }
+                .map {
+                    HelsinkiDateTime.of(it, LocalTime.of(8, 0)) to
+                        HelsinkiDateTime.of(it, LocalTime.of(16, 0))
+                }
+                .take(5)
+                .toList()
         insertReservations(childId, reservations)
         val (backupUnit, backupGroup) = createNewUnitAndGroup()
         val backupPeriod = FiniteDateRange(placementStart.plusDays(1), placementStart.plusDays(2))
@@ -545,9 +763,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `reservation sums - only reservations during back up placements are included in backup unit sum`() {
         insertGroupPlacement(childId)
-        val reservations = generateSequence(placementStart) { it.plusDays(1) }
-            .map { HelsinkiDateTime.of(it, LocalTime.of(8, 0)) to HelsinkiDateTime.of(it, LocalTime.of(16, 0)) }
-            .take(5).toList()
+        val reservations =
+            generateSequence(placementStart) { it.plusDays(1) }
+                .map {
+                    HelsinkiDateTime.of(it, LocalTime.of(8, 0)) to
+                        HelsinkiDateTime.of(it, LocalTime.of(16, 0))
+                }
+                .take(5)
+                .toList()
         insertReservations(childId, reservations)
         val (backupUnit, backupGroup) = createNewUnitAndGroup()
         val backupPeriod = FiniteDateRange(placementStart.plusDays(1), placementStart.plusDays(2))
@@ -560,10 +783,11 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `reservation sums - daily service times are used to generate missing reservations when none are found`() {
         insertGroupPlacement(childId)
-        val dailyServiceTimes = DailyServiceTimes.RegularTimes(
-            TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-            DateRange(placementStart, null)
-        )
+        val dailyServiceTimes =
+            DailyServiceTimes.RegularTimes(
+                TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                DateRange(placementStart, null)
+            )
         insertDailyServiceTimes(childId, dailyServiceTimes)
 
         val result = db.read { absenceService.getAbsencesByMonth(it, groupId, 2019, 8) }
@@ -577,16 +801,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             childId,
             placementPeriod = FiniteDateRange(LocalDate.of(2019, 8, 5), LocalDate.of(2019, 8, 11))
         )
-        val dailyServiceTimes = DailyServiceTimes.IrregularTimes(
-            monday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-            tuesday = TimeRange(LocalTime.of(8, 0), LocalTime.of(14, 0)),
-            wednesday = null,
-            thursday = null,
-            friday = null,
-            saturday = TimeRange(LocalTime.of(8, 0), LocalTime.of(20, 0)),
-            sunday = null,
-            validityPeriod = DateRange(placementStart, null)
-        )
+        val dailyServiceTimes =
+            DailyServiceTimes.IrregularTimes(
+                monday = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                tuesday = TimeRange(LocalTime.of(8, 0), LocalTime.of(14, 0)),
+                wednesday = null,
+                thursday = null,
+                friday = null,
+                saturday = TimeRange(LocalTime.of(8, 0), LocalTime.of(20, 0)),
+                sunday = null,
+                validityPeriod = DateRange(placementStart, null)
+            )
         insertDailyServiceTimes(childId, dailyServiceTimes)
 
         val result = db.read { absenceService.getAbsencesByMonth(it, groupId, 2019, 8) }
@@ -597,10 +822,11 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `reservation sums - daily service times with inverted start and end`() {
         insertGroupPlacement(childId)
-        val dailyServiceTimes = DailyServiceTimes.RegularTimes(
-            TimeRange(LocalTime.of(21, 0), LocalTime.of(9, 0)),
-            validityPeriod = DateRange(placementStart, null)
-        )
+        val dailyServiceTimes =
+            DailyServiceTimes.RegularTimes(
+                TimeRange(LocalTime.of(21, 0), LocalTime.of(9, 0)),
+                validityPeriod = DateRange(placementStart, null)
+            )
         insertDailyServiceTimes(childId, dailyServiceTimes)
 
         val result = db.read { absenceService.getAbsencesByMonth(it, groupId, 2019, 8) }
@@ -611,16 +837,21 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `reservation sums - daily service times are used only when there is no reservation`() {
         insertGroupPlacement(childId)
-        val reservations = generateSequence(placementStart) { it.plusDays(1) }
-            .takeWhile { it < LocalDate.of(2019, 8, 30) } // last operational day
-            .filter { it.dayOfWeek != DayOfWeek.SATURDAY && it.dayOfWeek != DayOfWeek.SUNDAY }
-            .map { HelsinkiDateTime.of(it, LocalTime.of(8, 0)) to HelsinkiDateTime.of(it, LocalTime.of(16, 0)) }
-            .toList()
+        val reservations =
+            generateSequence(placementStart) { it.plusDays(1) }
+                .takeWhile { it < LocalDate.of(2019, 8, 30) } // last operational day
+                .filter { it.dayOfWeek != DayOfWeek.SATURDAY && it.dayOfWeek != DayOfWeek.SUNDAY }
+                .map {
+                    HelsinkiDateTime.of(it, LocalTime.of(8, 0)) to
+                        HelsinkiDateTime.of(it, LocalTime.of(16, 0))
+                }
+                .toList()
         insertReservations(childId, reservations)
-        val dailyServiceTimes = DailyServiceTimes.RegularTimes(
-            TimeRange(LocalTime.of(8, 0), LocalTime.of(20, 0)),
-            DateRange(placementStart, null)
-        )
+        val dailyServiceTimes =
+            DailyServiceTimes.RegularTimes(
+                TimeRange(LocalTime.of(8, 0), LocalTime.of(20, 0)),
+                DateRange(placementStart, null)
+            )
         insertDailyServiceTimes(childId, dailyServiceTimes)
 
         val result = db.read { absenceService.getAbsencesByMonth(it, groupId, 2019, 8) }
@@ -632,15 +863,17 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     fun `reservation sums - daily service times are cut when they partially overlap with a reservation`() {
         val placementPeriod = FiniteDateRange(LocalDate.of(2019, 8, 5), LocalDate.of(2019, 8, 6))
         insertGroupPlacement(childId, placementPeriod = placementPeriod)
-        val reservations = listOf(
-            HelsinkiDateTime.of(placementPeriod.start, LocalTime.of(21, 0))
-                to HelsinkiDateTime.of(placementPeriod.end, LocalTime.of(9, 0))
-        )
+        val reservations =
+            listOf(
+                HelsinkiDateTime.of(placementPeriod.start, LocalTime.of(21, 0)) to
+                    HelsinkiDateTime.of(placementPeriod.end, LocalTime.of(9, 0))
+            )
         insertReservations(childId, reservations)
-        val dailyServiceTimes = DailyServiceTimes.RegularTimes(
-            TimeRange(LocalTime.of(7, 0), LocalTime.of(15, 0)),
-            DateRange(placementStart, null)
-        )
+        val dailyServiceTimes =
+            DailyServiceTimes.RegularTimes(
+                TimeRange(LocalTime.of(7, 0), LocalTime.of(15, 0)),
+                DateRange(placementStart, null)
+            )
         insertDailyServiceTimes(childId, dailyServiceTimes)
 
         val result = db.read { absenceService.getAbsencesByMonth(it, groupId, 2019, 8) }
@@ -651,38 +884,48 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `reservation sums - absences leave out reserved times according to their start time`() {
         insertGroupPlacement(childId)
-        val reservations = generateSequence(placementStart) { it.plusDays(1) }
-            .map { HelsinkiDateTime.of(it, LocalTime.of(20, 0)) to HelsinkiDateTime.of(it.plusDays(1), LocalTime.of(8, 0)) }
-            .take(5).toList()
+        val reservations =
+            generateSequence(placementStart) { it.plusDays(1) }
+                .map {
+                    HelsinkiDateTime.of(it, LocalTime.of(20, 0)) to
+                        HelsinkiDateTime.of(it.plusDays(1), LocalTime.of(8, 0))
+                }
+                .take(5)
+                .toList()
         insertReservations(childId, reservations)
         db.transaction {
             // the start and end of absence date overlaps with two reservations
-            val absence = createAbsence(
-                childId,
-                AbsenceCategory.BILLABLE,
-                AbsenceType.OTHER_ABSENCE,
-                placementStart.plusDays(1)
-            )
+            val absence =
+                createAbsence(
+                    childId,
+                    AbsenceCategory.BILLABLE,
+                    AbsenceType.OTHER_ABSENCE,
+                    placementStart.plusDays(1)
+                )
             it.upsertAbsences(RealEvakaClock(), listOf(absence), EvakaUserId(testUserId.raw))
         }
 
         val result = db.read { absenceService.getAbsencesByMonth(it, groupId, 2019, 8) }
-        // the start and end of absence date overlaps with two reservations but only one reservation is left out
+        // the start and end of absence date overlaps with two reservations but only one reservation
+        // is
+        // left out
         assertEquals(listOf(4 * 12), result.children.map { it.reservationTotalHours })
     }
 
     @Test
     fun `reservation sums - daily service time is within another reservation`() {
         insertGroupPlacement(childId)
-        val reservations = listOf(
-            HelsinkiDateTime.of(placementStart, LocalTime.of(20, 0))
-                to HelsinkiDateTime.of(placementStart.plusDays(1), LocalTime.of(17, 0))
-        )
+        val reservations =
+            listOf(
+                HelsinkiDateTime.of(placementStart, LocalTime.of(20, 0)) to
+                    HelsinkiDateTime.of(placementStart.plusDays(1), LocalTime.of(17, 0))
+            )
         insertReservations(childId, reservations)
-        val dailyServiceTimes = DailyServiceTimes.RegularTimes(
-            TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
-            DateRange(placementStart, null)
-        )
+        val dailyServiceTimes =
+            DailyServiceTimes.RegularTimes(
+                TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                DateRange(placementStart, null)
+            )
         insertDailyServiceTimes(childId, dailyServiceTimes)
 
         val result = db.read { absenceService.getAbsencesByMonth(it, groupId, 2019, 8) }
@@ -696,8 +939,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertReservations(
             childId,
             listOf(
-                HelsinkiDateTime.of(ninthOfAugust, LocalTime.of(10, 0))
-                    to HelsinkiDateTime.of(ninthOfAugust, LocalTime.of(12, 0))
+                HelsinkiDateTime.of(ninthOfAugust, LocalTime.of(10, 0)) to
+                    HelsinkiDateTime.of(ninthOfAugust, LocalTime.of(12, 0))
             )
         )
 
@@ -733,9 +976,15 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         assertEquals(
             listOf(
                 2 + // reservation
-                    6 * 8 + // first regular times (8 h), excluding the reservation
+                6 * 8 + // first regular times (8 h), excluding the reservation
                     6 * 10 + // second regular times (10 h)
-                    7 + 7 + 2 + 8 + 6 + 7 + 7 // irregular times
+                    7 +
+                    7 +
+                    2 +
+                    8 +
+                    6 +
+                    7 +
+                    7 // irregular times
             ),
             result.children.map { it.reservationTotalHours }
         )
@@ -744,9 +993,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `attendance sums - basic case`() {
         insertGroupPlacement(childId)
-        val attendances = generateSequence(placementStart) { it.plusDays(1) }
-            .map { HelsinkiDateTime.of(it, LocalTime.of(8, 0)) to HelsinkiDateTime.of(it, LocalTime.of(16, 0)) }
-            .take(5).toList()
+        val attendances =
+            generateSequence(placementStart) { it.plusDays(1) }
+                .map {
+                    HelsinkiDateTime.of(it, LocalTime.of(8, 0)) to
+                        HelsinkiDateTime.of(it, LocalTime.of(16, 0))
+                }
+                .take(5)
+                .toList()
         insertAttendances(childId, daycareId, attendances)
 
         val result = db.read { absenceService.getAbsencesByMonth(it, groupId, 2019, 8) }
@@ -755,11 +1009,22 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
     @Test
     fun `attendance sums - placement changes mid attendance`() {
-        insertGroupPlacement(childId, placementPeriod = FiniteDateRange(placementStart, placementStart.plusDays(1)))
-        insertGroupPlacement(childId, placementPeriod = FiniteDateRange(placementStart.plusDays(2), placementEnd))
-        val attendances = generateSequence(placementStart) { it.plusDays(1) }
-            .map { HelsinkiDateTime.of(it, LocalTime.of(21, 0)) to HelsinkiDateTime.of(it.plusDays(1), LocalTime.of(9, 0)) }
-            .take(5).toList()
+        insertGroupPlacement(
+            childId,
+            placementPeriod = FiniteDateRange(placementStart, placementStart.plusDays(1))
+        )
+        insertGroupPlacement(
+            childId,
+            placementPeriod = FiniteDateRange(placementStart.plusDays(2), placementEnd)
+        )
+        val attendances =
+            generateSequence(placementStart) { it.plusDays(1) }
+                .map {
+                    HelsinkiDateTime.of(it, LocalTime.of(21, 0)) to
+                        HelsinkiDateTime.of(it.plusDays(1), LocalTime.of(9, 0))
+                }
+                .take(5)
+                .toList()
         insertAttendances(childId, daycareId, attendances)
 
         val result = db.read { absenceService.getAbsencesByMonth(it, groupId, 2019, 8) }
@@ -774,8 +1039,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             childId,
             daycareId,
             listOf(
-                HelsinkiDateTime.of(lastDayOfMonth, LocalTime.of(12, 0))
-                    to HelsinkiDateTime.of(lastDayOfMonth.plusDays(1), LocalTime.of(12, 0))
+                HelsinkiDateTime.of(lastDayOfMonth, LocalTime.of(12, 0)) to
+                    HelsinkiDateTime.of(lastDayOfMonth.plusDays(1), LocalTime.of(12, 0))
             )
         )
 
@@ -791,8 +1056,8 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             childId,
             daycareId,
             listOf(
-                HelsinkiDateTime.of(firstDayOfMonth.minusDays(1), LocalTime.of(12, 0))
-                    to HelsinkiDateTime.of(firstDayOfMonth, LocalTime.of(12, 0))
+                HelsinkiDateTime.of(firstDayOfMonth.minusDays(1), LocalTime.of(12, 0)) to
+                    HelsinkiDateTime.of(firstDayOfMonth, LocalTime.of(12, 0))
             )
         )
 
@@ -803,13 +1068,16 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `attendance sums - attendances longer than placements are cut at placement start and end`() {
         val placementDate = LocalDate.of(2019, 8, 15)
-        insertGroupPlacement(childId, placementPeriod = FiniteDateRange(placementDate, placementDate))
+        insertGroupPlacement(
+            childId,
+            placementPeriod = FiniteDateRange(placementDate, placementDate)
+        )
         insertAttendances(
             childId,
             daycareId,
             listOf(
-                HelsinkiDateTime.of(placementDate.minusDays(5), LocalTime.of(12, 0))
-                    to HelsinkiDateTime.of(placementDate.plusDays(5), LocalTime.of(12, 0))
+                HelsinkiDateTime.of(placementDate.minusDays(5), LocalTime.of(12, 0)) to
+                    HelsinkiDateTime.of(placementDate.plusDays(5), LocalTime.of(12, 0))
             )
         )
 
@@ -820,9 +1088,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `attendance sums - attendances during back up placements are included in placement unit sum`() {
         insertGroupPlacement(childId)
-        val attendances = generateSequence(placementStart) { it.plusDays(1) }
-            .map { HelsinkiDateTime.of(it, LocalTime.of(8, 0)) to HelsinkiDateTime.of(it, LocalTime.of(16, 0)) }
-            .take(5).toList()
+        val attendances =
+            generateSequence(placementStart) { it.plusDays(1) }
+                .map {
+                    HelsinkiDateTime.of(it, LocalTime.of(8, 0)) to
+                        HelsinkiDateTime.of(it, LocalTime.of(16, 0))
+                }
+                .take(5)
+                .toList()
         val (backupUnit, backupGroup) = createNewUnitAndGroup()
         val backupPeriod = FiniteDateRange(placementStart.plusDays(1), placementStart.plusDays(2))
         insertBackupPlacement(childId, backupUnit, backupGroup, backupPeriod)
@@ -835,9 +1108,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     @Test
     fun `attendance sums - only attendances during back up placements are included in backup unit sum`() {
         insertGroupPlacement(childId)
-        val attendances = generateSequence(placementStart) { it.plusDays(1) }
-            .map { HelsinkiDateTime.of(it, LocalTime.of(8, 0)) to HelsinkiDateTime.of(it, LocalTime.of(16, 0)) }
-            .take(5).toList()
+        val attendances =
+            generateSequence(placementStart) { it.plusDays(1) }
+                .map {
+                    HelsinkiDateTime.of(it, LocalTime.of(8, 0)) to
+                        HelsinkiDateTime.of(it, LocalTime.of(16, 0))
+                }
+                .take(5)
+                .toList()
         val (backupUnit, backupGroup) = createNewUnitAndGroup()
         val backupPeriod = FiniteDateRange(placementStart.plusDays(1), placementStart.plusDays(2))
         insertBackupPlacement(childId, backupUnit, backupGroup, backupPeriod)
@@ -875,18 +1153,21 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         placementPeriod: FiniteDateRange = FiniteDateRange(placementStart, placementEnd)
     ) {
         db.transaction {
-            val daycarePlacementId = it.insertTestPlacement(
-                DevPlacement(
-                    childId = childId,
-                    unitId = daycareId,
-                    type = placementType,
-                    startDate = placementPeriod.start,
-                    endDate = placementPeriod.end
+            val daycarePlacementId =
+                it.insertTestPlacement(
+                    DevPlacement(
+                        childId = childId,
+                        unitId = daycareId,
+                        type = placementType,
+                        startDate = placementPeriod.start,
+                        endDate = placementPeriod.end
+                    )
                 )
-            )
             it.insertTestDaycareGroupPlacement(
-                daycarePlacementId = daycarePlacementId, groupId = groupId,
-                startDate = placementPeriod.start, endDate = placementPeriod.end
+                daycarePlacementId = daycarePlacementId,
+                groupId = groupId,
+                startDate = placementPeriod.start,
+                endDate = placementPeriod.end
             )
         }
     }
@@ -906,12 +1187,22 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     ) {
         db.transaction {
             it.insertTestBackupCare(
-                DevBackupCare(childId = childId, unitId = unitId, groupId = groupId, period = placementPeriod)
+                DevBackupCare(
+                    childId = childId,
+                    unitId = unitId,
+                    groupId = groupId,
+                    period = placementPeriod
+                )
             )
         }
     }
 
-    private fun createAbsence(childId: ChildId, category: AbsenceCategory, absenceType: AbsenceType, date: LocalDate): AbsenceUpsert {
+    private fun createAbsence(
+        childId: ChildId,
+        category: AbsenceCategory,
+        absenceType: AbsenceType,
+        date: LocalDate
+    ): AbsenceUpsert {
         return AbsenceUpsert(
             childId = childId,
             date = date,
@@ -920,14 +1211,19 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         )
     }
 
-    private fun insertReservations(childId: ChildId, reservations: List<Pair<HelsinkiDateTime, HelsinkiDateTime>>) {
+    private fun insertReservations(
+        childId: ChildId,
+        reservations: List<Pair<HelsinkiDateTime, HelsinkiDateTime>>
+    ) {
         db.transaction { tx ->
             reservations
                 .flatMap { (start, end) ->
-                    if (start.toLocalDate().plusDays(1) == end.toLocalDate()) listOf(
-                        start to HelsinkiDateTime.of(start.toLocalDate(), LocalTime.of(23, 59)),
-                        HelsinkiDateTime.of(end.toLocalDate(), LocalTime.of(0, 0)) to end,
-                    ) else listOf(start to end)
+                    if (start.toLocalDate().plusDays(1) == end.toLocalDate())
+                        listOf(
+                            start to HelsinkiDateTime.of(start.toLocalDate(), LocalTime.of(23, 59)),
+                            HelsinkiDateTime.of(end.toLocalDate(), LocalTime.of(0, 0)) to end,
+                        )
+                    else listOf(start to end)
                 }
                 .forEach { (start, end) ->
                     tx.insertTestReservation(

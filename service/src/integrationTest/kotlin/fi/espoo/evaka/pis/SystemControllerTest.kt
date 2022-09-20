@@ -26,13 +26,13 @@ import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestMobileDevice
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
     private lateinit var areaId: AreaId
@@ -48,20 +48,28 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `employee login works without employee number`() {
         val externalId = ExternalId.of("evaka", "123456")
         val employeeId = EmployeeId(UUID.randomUUID())
-        val inputJson = """
+        val inputJson =
+            """
             {"externalId": "$externalId", "firstName": "Teppo", "lastName": "Testaaja", "email": null}
-        """.trimIndent()
+        """.trimIndent(
+            )
 
-        val (_, res, result) = http.post("/system/employee-login")
-            .asUser(AuthenticatedUser.SystemInternalUser)
-            .jsonBody(inputJson)
-            .responseObject<EmployeeUser>()
+        val (_, res, result) =
+            http
+                .post("/system/employee-login")
+                .asUser(AuthenticatedUser.SystemInternalUser)
+                .jsonBody(inputJson)
+                .responseObject<EmployeeUser>()
 
         assertTrue(res.isSuccessful)
-        val expected = EmployeeUser(
-            id = employeeId,
-            firstName = "Teppo", lastName = "Testaaja", globalRoles = setOf(), allScopedRoles = setOf()
-        )
+        val expected =
+            EmployeeUser(
+                id = employeeId,
+                firstName = "Teppo",
+                lastName = "Testaaja",
+                globalRoles = setOf(),
+                allScopedRoles = setOf()
+            )
         assertEquals(expected, result.get().copy(id = employeeId))
         assertNull(db.read { tx -> tx.getEmployeeNumber(result.get().id) })
     }
@@ -70,21 +78,31 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `employee number is set for new employee`() {
         val externalId = ExternalId.of("evaka", "123456")
         val employeeId = EmployeeId(UUID.randomUUID())
-        val input = SystemController.EmployeeLoginRequest(
-            externalId = externalId, employeeNumber = "666666",
-            firstName = "Teppo", lastName = "Testaaja", email = null
-        )
+        val input =
+            SystemController.EmployeeLoginRequest(
+                externalId = externalId,
+                employeeNumber = "666666",
+                firstName = "Teppo",
+                lastName = "Testaaja",
+                email = null
+            )
 
-        val (_, res, result) = http.post("/system/employee-login")
-            .asUser(AuthenticatedUser.SystemInternalUser)
-            .jsonBody(jsonMapper.writeValueAsString(input))
-            .responseObject<EmployeeUser>()
+        val (_, res, result) =
+            http
+                .post("/system/employee-login")
+                .asUser(AuthenticatedUser.SystemInternalUser)
+                .jsonBody(jsonMapper.writeValueAsString(input))
+                .responseObject<EmployeeUser>()
 
         assertTrue(res.isSuccessful)
-        val expected = EmployeeUser(
-            id = employeeId,
-            firstName = "Teppo", lastName = "Testaaja", globalRoles = setOf(), allScopedRoles = setOf()
-        )
+        val expected =
+            EmployeeUser(
+                id = employeeId,
+                firstName = "Teppo",
+                lastName = "Testaaja",
+                globalRoles = setOf(),
+                allScopedRoles = setOf()
+            )
         assertEquals(expected, result.get().copy(id = employeeId))
         assertEquals("666666", db.read { tx -> tx.getEmployeeNumber(result.get().id) })
     }
@@ -93,24 +111,41 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `employee number is set for existing employee`() {
         val externalId = ExternalId.of("evaka", "123456")
         val employeeId = EmployeeId(UUID.randomUUID())
-        val input = SystemController.EmployeeLoginRequest(
-            externalId = externalId, employeeNumber = "666666",
-            firstName = "Teppo", lastName = "Testaaja", email = null
-        )
+        val input =
+            SystemController.EmployeeLoginRequest(
+                externalId = externalId,
+                employeeNumber = "666666",
+                firstName = "Teppo",
+                lastName = "Testaaja",
+                email = null
+            )
         db.transaction { tx ->
-            tx.insertTestEmployee(DevEmployee(id = employeeId, externalId = externalId, roles = setOf(UserRole.FINANCE_ADMIN), preferredFirstName = "Kutsumanimi"))
+            tx.insertTestEmployee(
+                DevEmployee(
+                    id = employeeId,
+                    externalId = externalId,
+                    roles = setOf(UserRole.FINANCE_ADMIN),
+                    preferredFirstName = "Kutsumanimi"
+                )
+            )
         }
 
-        val (_, res, result) = http.post("/system/employee-login")
-            .asUser(AuthenticatedUser.SystemInternalUser)
-            .jsonBody(jsonMapper.writeValueAsString(input))
-            .responseObject<EmployeeUser>()
+        val (_, res, result) =
+            http
+                .post("/system/employee-login")
+                .asUser(AuthenticatedUser.SystemInternalUser)
+                .jsonBody(jsonMapper.writeValueAsString(input))
+                .responseObject<EmployeeUser>()
 
         assertTrue(res.isSuccessful)
-        val expected = EmployeeUser(
-            id = employeeId,
-            firstName = "Kutsumanimi", lastName = "Testaaja", globalRoles = setOf(UserRole.FINANCE_ADMIN), allScopedRoles = setOf()
-        )
+        val expected =
+            EmployeeUser(
+                id = employeeId,
+                firstName = "Kutsumanimi",
+                lastName = "Testaaja",
+                globalRoles = setOf(UserRole.FINANCE_ADMIN),
+                allScopedRoles = setOf()
+            )
         assertEquals(expected, result.get())
         assertEquals("666666", db.read { tx -> tx.getEmployeeNumber(result.get().id) })
     }
@@ -121,37 +156,57 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         val employeeNumber = "666666"
 
         val externalId1 = ExternalId.of("evaka", "1")
-        val input1 = SystemController.EmployeeLoginRequest(
-            externalId = externalId1, employeeNumber = employeeNumber,
-            firstName = "Teppo", lastName = "Testaaja", email = null
-        )
-        val (_, res1, result1) = http.post("/system/employee-login")
-            .asUser(AuthenticatedUser.SystemInternalUser)
-            .jsonBody(jsonMapper.writeValueAsString(input1))
-            .responseObject<EmployeeUser>()
+        val input1 =
+            SystemController.EmployeeLoginRequest(
+                externalId = externalId1,
+                employeeNumber = employeeNumber,
+                firstName = "Teppo",
+                lastName = "Testaaja",
+                email = null
+            )
+        val (_, res1, result1) =
+            http
+                .post("/system/employee-login")
+                .asUser(AuthenticatedUser.SystemInternalUser)
+                .jsonBody(jsonMapper.writeValueAsString(input1))
+                .responseObject<EmployeeUser>()
         assertTrue(res1.isSuccessful)
-        val expected1 = EmployeeUser(
-            id = employeeId,
-            firstName = "Teppo", lastName = "Testaaja", globalRoles = setOf(), allScopedRoles = setOf()
-        )
+        val expected1 =
+            EmployeeUser(
+                id = employeeId,
+                firstName = "Teppo",
+                lastName = "Testaaja",
+                globalRoles = setOf(),
+                allScopedRoles = setOf()
+            )
         assertEquals(expected1, result1.get().copy(id = employeeId))
         assertEquals(employeeNumber, db.read { tx -> tx.getEmployeeNumber(result1.get().id) })
         assertNotNull(db.read { tx -> tx.getEmployeeByExternalId(externalId1) })
 
         val externalId2 = ExternalId.of("evaka", "2")
-        val input2 = SystemController.EmployeeLoginRequest(
-            externalId = externalId2, employeeNumber = employeeNumber,
-            firstName = "Teppo", lastName = "Testaaja", email = null
-        )
-        val (_, res, result) = http.post("/system/employee-login")
-            .asUser(AuthenticatedUser.SystemInternalUser)
-            .jsonBody(jsonMapper.writeValueAsString(input2))
-            .responseObject<EmployeeUser>()
+        val input2 =
+            SystemController.EmployeeLoginRequest(
+                externalId = externalId2,
+                employeeNumber = employeeNumber,
+                firstName = "Teppo",
+                lastName = "Testaaja",
+                email = null
+            )
+        val (_, res, result) =
+            http
+                .post("/system/employee-login")
+                .asUser(AuthenticatedUser.SystemInternalUser)
+                .jsonBody(jsonMapper.writeValueAsString(input2))
+                .responseObject<EmployeeUser>()
         assertTrue(res.isSuccessful)
-        val expected = EmployeeUser(
-            id = employeeId,
-            firstName = "Teppo", lastName = "Testaaja", globalRoles = setOf(), allScopedRoles = setOf()
-        )
+        val expected =
+            EmployeeUser(
+                id = employeeId,
+                firstName = "Teppo",
+                lastName = "Testaaja",
+                globalRoles = setOf(),
+                allScopedRoles = setOf()
+            )
         assertEquals(expected, result.get().copy(id = employeeId))
         assertEquals(employeeNumber, db.read { tx -> tx.getEmployeeNumber(result.get().id) })
         assertNotNull(db.read { tx -> tx.getEmployeeByExternalId(externalId2) })
@@ -164,8 +219,11 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
         val token = UUID.randomUUID()
         val deviceId = db.transaction { it.insertTestDevice(longTermToken = token) }
 
-        val (_, res, result) = http.get("/system/mobile-identity/$token").asUser(AuthenticatedUser.SystemInternalUser)
-            .responseObject<MobileDeviceIdentity>()
+        val (_, res, result) =
+            http
+                .get("/system/mobile-identity/$token")
+                .asUser(AuthenticatedUser.SystemInternalUser)
+                .responseObject<MobileDeviceIdentity>()
         assertTrue(res.isSuccessful)
         assertEquals(MobileDeviceIdentity(id = deviceId, longTermToken = token), result.get())
     }

@@ -12,12 +12,12 @@ import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.europeHelsinki
-import org.jdbi.v3.core.mapper.Nested
-import org.jdbi.v3.core.mapper.PropagateNull
-import org.jdbi.v3.json.Json
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
+import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.core.mapper.PropagateNull
+import org.jdbi.v3.json.Json
 
 data class VoucherValueDecision(
     override val id: VoucherValueDecisionId,
@@ -28,26 +28,18 @@ data class VoucherValueDecision(
     val decisionNumber: Long? = null,
     val decisionType: VoucherValueDecisionType,
     val partnerId: PersonId?,
-    @Json
-    val headOfFamilyIncome: DecisionIncome?,
-    @Json
-    val partnerIncome: DecisionIncome?,
-    @Json
-    val childIncome: DecisionIncome?,
+    @Json val headOfFamilyIncome: DecisionIncome?,
+    @Json val partnerIncome: DecisionIncome?,
+    @Json val childIncome: DecisionIncome?,
     val familySize: Int,
-    @Json
-    val feeThresholds: FeeDecisionThresholds,
-    @Nested("child")
-    val child: ChildWithDateOfBirth,
-    @Nested("placement")
-    val placement: VoucherValueDecisionPlacement?,
-    @Nested("service_need")
-    val serviceNeed: VoucherValueDecisionServiceNeed?,
+    @Json val feeThresholds: FeeDecisionThresholds,
+    @Nested("child") val child: ChildWithDateOfBirth,
+    @Nested("placement") val placement: VoucherValueDecisionPlacement?,
+    @Nested("service_need") val serviceNeed: VoucherValueDecisionServiceNeed?,
     val baseCoPayment: Int,
     val siblingDiscount: Int,
     val coPayment: Int,
-    @Json
-    val feeAlterations: List<FeeAlterationWithEffect>,
+    @Json val feeAlterations: List<FeeAlterationWithEffect>,
     val finalCoPayment: Int,
     val baseValue: Int,
     val assistanceNeedCoefficient: BigDecimal,
@@ -60,16 +52,23 @@ data class VoucherValueDecision(
     val decisionHandler: UUID? = null
 ) : FinanceDecision<VoucherValueDecision> {
     override fun withRandomId() = this.copy(id = VoucherValueDecisionId(UUID.randomUUID()))
-    override fun withValidity(period: DateRange) = this.copy(validFrom = period.start, validTo = period.end)
+    override fun withValidity(period: DateRange) =
+        this.copy(validFrom = period.start, validTo = period.end)
     override fun contentEquals(decision: VoucherValueDecision): Boolean {
         if (this.isEmpty() && decision.isEmpty()) {
-            return setOf(this.headOfFamilyId, this.partnerId) == setOf(decision.headOfFamilyId, decision.partnerId)
+            return setOf(this.headOfFamilyId, this.partnerId) ==
+                setOf(decision.headOfFamilyId, decision.partnerId)
         }
 
-        return setOf(this.headOfFamilyId to this.headOfFamilyIncome, this.partnerId to this.partnerIncome) == setOf(
-            decision.headOfFamilyId to decision.headOfFamilyIncome,
-            decision.partnerId to decision.partnerIncome
-        ) && this.familySize == decision.familySize &&
+        return setOf(
+            this.headOfFamilyId to this.headOfFamilyIncome,
+            this.partnerId to this.partnerIncome
+        ) ==
+            setOf(
+                decision.headOfFamilyId to decision.headOfFamilyIncome,
+                decision.partnerId to decision.partnerIncome
+            ) &&
+            this.familySize == decision.familySize &&
             this.child == decision.child &&
             this.placement == decision.placement &&
             this.serviceNeed == decision.serviceNeed &&
@@ -84,10 +83,9 @@ data class VoucherValueDecision(
     }
 
     override fun overlapsWith(other: VoucherValueDecision): Boolean {
-        return this.child.id == other.child.id && DateRange(
-            this.validFrom,
-            this.validTo
-        ).overlaps(DateRange(other.validFrom, other.validTo))
+        return this.child.id == other.child.id &&
+            DateRange(this.validFrom, this.validTo)
+                .overlaps(DateRange(other.validFrom, other.validTo))
     }
 
     override fun isAnnulled(): Boolean = this.status == VoucherValueDecisionStatus.ANNULLED
@@ -113,32 +111,33 @@ data class VoucherValueDecision(
             siblingDiscount: Int,
             baseValue: Int,
         ): VoucherValueDecision {
-            val decision = VoucherValueDecision(
-                id = VoucherValueDecisionId(UUID.randomUUID()),
-                validFrom = validFrom,
-                validTo = validTo,
-                headOfFamilyId = headOfFamilyId,
-                status = status,
-                decisionNumber = decisionNumber,
-                decisionType = decisionType,
-                partnerId = partnerId,
-                headOfFamilyIncome = headOfFamilyIncome,
-                partnerIncome = partnerIncome,
-                childIncome = childIncome,
-                familySize = familySize,
-                feeThresholds = feeThresholds,
-                child = child,
-                placement = null,
-                serviceNeed = null,
-                baseCoPayment = baseCoPayment,
-                siblingDiscount = siblingDiscount,
-                coPayment = 0,
-                feeAlterations = listOf(),
-                finalCoPayment = 0,
-                baseValue = baseValue,
-                assistanceNeedCoefficient = BigDecimal.ZERO,
-                voucherValue = 0,
-            )
+            val decision =
+                VoucherValueDecision(
+                    id = VoucherValueDecisionId(UUID.randomUUID()),
+                    validFrom = validFrom,
+                    validTo = validTo,
+                    headOfFamilyId = headOfFamilyId,
+                    status = status,
+                    decisionNumber = decisionNumber,
+                    decisionType = decisionType,
+                    partnerId = partnerId,
+                    headOfFamilyIncome = headOfFamilyIncome,
+                    partnerIncome = partnerIncome,
+                    childIncome = childIncome,
+                    familySize = familySize,
+                    feeThresholds = feeThresholds,
+                    child = child,
+                    placement = null,
+                    serviceNeed = null,
+                    baseCoPayment = baseCoPayment,
+                    siblingDiscount = siblingDiscount,
+                    coPayment = 0,
+                    feeAlterations = listOf(),
+                    finalCoPayment = 0,
+                    baseValue = baseValue,
+                    assistanceNeedCoefficient = BigDecimal.ZERO,
+                    voucherValue = 0,
+                )
             check(decision.isEmpty())
             return decision
         }
@@ -161,7 +160,8 @@ enum class VoucherValueDecisionStatus {
 
     companion object {
         /**
-         *  list of statuses that have an overlap exclusion constraint at the database level and that signal that a decision is in effect
+         * list of statuses that have an overlap exclusion constraint at the database level and that
+         * signal that a decision is in effect
          */
         val effective = arrayOf(SENT, WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING)
     }
@@ -174,38 +174,27 @@ data class VoucherValueDecisionDetailed(
     val status: VoucherValueDecisionStatus,
     val decisionNumber: Long? = null,
     val decisionType: VoucherValueDecisionType,
-    @Nested("head")
-    val headOfFamily: PersonDetailed,
-    @Nested("partner")
-    val partner: PersonDetailed?,
-    @Json
-    val headOfFamilyIncome: DecisionIncome?,
-    @Json
-    val partnerIncome: DecisionIncome?,
-    @Json
-    val childIncome: DecisionIncome?,
+    @Nested("head") val headOfFamily: PersonDetailed,
+    @Nested("partner") val partner: PersonDetailed?,
+    @Json val headOfFamilyIncome: DecisionIncome?,
+    @Json val partnerIncome: DecisionIncome?,
+    @Json val childIncome: DecisionIncome?,
     val familySize: Int,
-    @Json
-    val feeThresholds: FeeDecisionThresholds,
-    @Nested("child")
-    val child: PersonDetailed,
-    @Nested("placement")
-    val placement: VoucherValueDecisionPlacementDetailed,
-    @Nested("service_need")
-    val serviceNeed: VoucherValueDecisionServiceNeed,
+    @Json val feeThresholds: FeeDecisionThresholds,
+    @Nested("child") val child: PersonDetailed,
+    @Nested("placement") val placement: VoucherValueDecisionPlacementDetailed,
+    @Nested("service_need") val serviceNeed: VoucherValueDecisionServiceNeed,
     val baseCoPayment: Int,
     val siblingDiscount: Int,
     val coPayment: Int,
-    @Json
-    val feeAlterations: List<FeeAlterationWithEffect>,
+    @Json val feeAlterations: List<FeeAlterationWithEffect>,
     val finalCoPayment: Int,
     val baseValue: Int,
     val childAge: Int,
     val assistanceNeedCoefficient: BigDecimal,
     val voucherValue: Int,
     val documentKey: String? = null,
-    @Nested("approved_by")
-    val approvedBy: EmployeeWithName? = null,
+    @Nested("approved_by") val approvedBy: EmployeeWithName? = null,
     val approvedAt: HelsinkiDateTime? = null,
     val sentAt: HelsinkiDateTime? = null,
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
@@ -214,29 +203,37 @@ data class VoucherValueDecisionDetailed(
     val partnerIsCodebtor: Boolean? = false
 ) {
     val incomeEffect
-        get() = getTotalIncomeEffect(partner != null, headOfFamilyIncome?.effect, partnerIncome?.effect)
+        get() =
+            getTotalIncomeEffect(partner != null, headOfFamilyIncome?.effect, partnerIncome?.effect)
 
     val totalIncome
-        get() = getTotalIncome(
-            partner != null,
-            headOfFamilyIncome?.effect,
-            headOfFamilyIncome?.total,
-            partnerIncome?.effect,
-            partnerIncome?.total
-        )
+        get() =
+            getTotalIncome(
+                partner != null,
+                headOfFamilyIncome?.effect,
+                headOfFamilyIncome?.total,
+                partnerIncome?.effect,
+                partnerIncome?.total
+            )
 
     val requiresManualSending
         get(): Boolean {
-            if (decisionType !== VoucherValueDecisionType.NORMAL || headOfFamily.forceManualFeeDecisions) {
+            if (
+                decisionType !== VoucherValueDecisionType.NORMAL ||
+                    headOfFamily.forceManualFeeDecisions
+            ) {
                 return true
             }
             return this.headOfFamily.let {
-                listOf(it.ssn, it.streetAddress, it.postalCode, it.postOffice).any { item -> item.isNullOrBlank() }
+                listOf(it.ssn, it.streetAddress, it.postalCode, it.postOffice).any { item ->
+                    item.isNullOrBlank()
+                }
             }
         }
 
     val isRetroactive
-        get() = isRetroactive(this.validFrom, sentAt?.toLocalDate() ?: LocalDate.now(europeHelsinki))
+        get() =
+            isRetroactive(this.validFrom, sentAt?.toLocalDate() ?: LocalDate.now(europeHelsinki))
 }
 
 data class VoucherValueDecisionSummary(
@@ -245,10 +242,8 @@ data class VoucherValueDecisionSummary(
     val validTo: LocalDate?,
     val status: VoucherValueDecisionStatus,
     val decisionNumber: Long? = null,
-    @Nested("head")
-    val headOfFamily: PersonBasic,
-    @Nested("child")
-    val child: PersonBasic,
+    @Nested("head") val headOfFamily: PersonBasic,
+    @Nested("child") val child: PersonBasic,
     val finalCoPayment: Int,
     val voucherValue: Int,
     val approvedAt: HelsinkiDateTime? = null,
@@ -260,20 +255,17 @@ data class VoucherValueDecisionSummary(
 }
 
 data class VoucherValueDecisionPlacement(
-    @PropagateNull
-    val unitId: DaycareId,
+    @PropagateNull val unitId: DaycareId,
     val type: PlacementType
 )
 
 data class VoucherValueDecisionPlacementDetailed(
-    @Nested("unit")
-    val unit: UnitData,
+    @Nested("unit") val unit: UnitData,
     val type: PlacementType
 )
 
 data class VoucherValueDecisionServiceNeed(
-    @PropagateNull
-    val feeCoefficient: BigDecimal,
+    @PropagateNull val feeCoefficient: BigDecimal,
     val voucherValueCoefficient: BigDecimal,
     val feeDescriptionFi: String,
     val feeDescriptionSv: String,
@@ -281,27 +273,37 @@ data class VoucherValueDecisionServiceNeed(
     val voucherValueDescriptionSv: String
 )
 
-fun firstOfMonthAfterThirdBirthday(dateOfBirth: LocalDate): LocalDate = when (dateOfBirth.dayOfMonth) {
-    1 -> dateOfBirth.plusYears(3)
-    else -> dateOfBirth.plusYears(3).plusMonths(1).withDayOfMonth(1)
-}
+fun firstOfMonthAfterThirdBirthday(dateOfBirth: LocalDate): LocalDate =
+    when (dateOfBirth.dayOfMonth) {
+        1 -> dateOfBirth.plusYears(3)
+        else -> dateOfBirth.plusYears(3).plusMonths(1).withDayOfMonth(1)
+    }
 
-data class VoucherValue(
-    val baseValue: Int,
-    val coefficient: BigDecimal,
-    val value: Int
-)
+data class VoucherValue(val baseValue: Int, val coefficient: BigDecimal, val value: Int)
 
-fun getVoucherValues(period: DateRange, dateOfBirth: LocalDate, voucherValues: ServiceNeedOptionVoucherValue): VoucherValue {
+fun getVoucherValues(
+    period: DateRange,
+    dateOfBirth: LocalDate,
+    voucherValues: ServiceNeedOptionVoucherValue
+): VoucherValue {
     val thirdBirthdayPeriodStart = firstOfMonthAfterThirdBirthday(dateOfBirth)
-    val periodStartInMiddleOfTargetPeriod = period.includes(thirdBirthdayPeriodStart) && thirdBirthdayPeriodStart != period.start && thirdBirthdayPeriodStart != period.end
+    val periodStartInMiddleOfTargetPeriod =
+        period.includes(thirdBirthdayPeriodStart) &&
+            thirdBirthdayPeriodStart != period.start &&
+            thirdBirthdayPeriodStart != period.end
 
     check(!periodStartInMiddleOfTargetPeriod) {
         "Third birthday period start ($thirdBirthdayPeriodStart) is in the middle of the period ($period), cannot calculate an unambiguous age coefficient"
     }
 
     return when {
-        period.start < thirdBirthdayPeriodStart -> VoucherValue(voucherValues.baseValueUnder3y, voucherValues.coefficientUnder3y, voucherValues.valueUnder3y)
-        else -> VoucherValue(voucherValues.baseValue, voucherValues.coefficient, voucherValues.value)
+        period.start < thirdBirthdayPeriodStart ->
+            VoucherValue(
+                voucherValues.baseValueUnder3y,
+                voucherValues.coefficientUnder3y,
+                voucherValues.valueUnder3y
+            )
+        else ->
+            VoucherValue(voucherValues.baseValue, voucherValues.coefficient, voucherValues.value)
     }
 }

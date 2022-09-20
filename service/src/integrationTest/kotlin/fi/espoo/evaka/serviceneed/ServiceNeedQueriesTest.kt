@@ -16,15 +16,23 @@ import org.junit.jupiter.api.Test
 class ServiceNeedQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun getServiceNeedOptionPublicInfos() {
-        assertThat(db.read { tx -> tx.getServiceNeedOptionPublicInfos(PlacementType.values().toList()) }).isEmpty()
+        assertThat(
+                db.read { tx ->
+                    tx.getServiceNeedOptionPublicInfos(PlacementType.values().toList())
+                }
+            )
+            .isEmpty()
     }
 
     @Test
     fun getOnlyShownServiceNeedOptionPublicInfos() {
         db.transaction { tx -> tx.insertServiceNeedOptions() }
         db.transaction { tx -> tx.updateShowForCitizen() }
-        val queriedOptions = db.read { tx -> tx.getServiceNeedOptionPublicInfos(PlacementType.values().toList()) }
-        // I couln't get any of the fancy asssertj list assertions to work in Kotlin, so test the stupid way
+        val queriedOptions =
+            db.read { tx -> tx.getServiceNeedOptionPublicInfos(PlacementType.values().toList()) }
+        // I couln't get any of the fancy asssertj list assertions to work in Kotlin, so test the
+        // stupid
+        // way
         queriedOptions.forEach {
             assertThat(it.id).isNotEqualTo(snPreschoolDaycare45.id)
             assertThat(it.id).isNotEqualTo(snPreparatoryDaycare50.id)
@@ -32,6 +40,10 @@ class ServiceNeedQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     fun Database.Transaction.updateShowForCitizen() {
-        execute("UPDATE service_need_option SET show_for_citizen=FALSE WHERE id=? OR id=?", snPreschoolDaycare45.id, snPreparatoryDaycare50.id)
+        execute(
+            "UPDATE service_need_option SET show_for_citizen=FALSE WHERE id=? OR id=?",
+            snPreschoolDaycare45.id,
+            snPreparatoryDaycare50.id
+        )
     }
 }

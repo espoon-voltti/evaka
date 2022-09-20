@@ -23,9 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/citizen")
-class PedagogicalDocumentControllerCitizen(
-    private val accessControl: AccessControl
-) {
+class PedagogicalDocumentControllerCitizen(private val accessControl: AccessControl) {
     @GetMapping("/children/{childId}/pedagogical-documents")
     fun getPedagogicalDocumentsForChild(
         db: Database,
@@ -36,14 +34,16 @@ class PedagogicalDocumentControllerCitizen(
 
         return db.connect { dbc ->
             dbc.read {
-                val documents = it.getPedagogicalDocumentsByChildForGuardian(childId, user.id).filter { pd ->
-                    pd.description.isNotEmpty() || pd.attachments.isNotEmpty()
-                }
+                val documents =
+                    it.getPedagogicalDocumentsByChildForGuardian(childId, user.id).filter { pd ->
+                        pd.description.isNotEmpty() || pd.attachments.isNotEmpty()
+                    }
 
-                if (user.authLevel == CitizenAuthLevel.STRONG)
-                    documents
+                if (user.authLevel == CitizenAuthLevel.STRONG) documents
                 else
-                    documents.map { it.copy(attachments = it.attachments.map { it.copy(name = "") }) }
+                    documents.map {
+                        it.copy(attachments = it.attachments.map { it.copy(name = "") })
+                    }
             }
         }
     }
@@ -56,7 +56,12 @@ class PedagogicalDocumentControllerCitizen(
         @PathVariable documentId: PedagogicalDocumentId
     ) {
         Audit.PedagogicalDocumentUpdate.log(documentId, user.id)
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.PedagogicalDocument.READ, documentId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.PedagogicalDocument.READ,
+            documentId
+        )
         return db.connect { dbc ->
             dbc.transaction { it.markDocumentReadByGuardian(clock, documentId, user.id) }
         }
@@ -68,20 +73,23 @@ class PedagogicalDocumentControllerCitizen(
         user: AuthenticatedUser.Citizen
     ): Map<ChildId, Int> {
         Audit.PedagogicalDocumentCountUnread.log(user.id)
-        return db.connect { dbc ->
-            dbc.transaction { it.countUnreadDocumentsByGuardian(user.id) }
-        }
+        return db.connect { dbc -> dbc.transaction { it.countUnreadDocumentsByGuardian(user.id) } }
     }
 }
 
-private fun Database.Transaction.markDocumentReadByGuardian(clock: EvakaClock, documentId: PedagogicalDocumentId, guardianId: PersonId) =
+private fun Database.Transaction.markDocumentReadByGuardian(
+    clock: EvakaClock,
+    documentId: PedagogicalDocumentId,
+    guardianId: PersonId
+) =
     this.createUpdate(
-        """
+            """
             INSERT INTO pedagogical_document_read (pedagogical_document_id, person_id, read_at)
             VALUES (:documentId, :personId, :now)
             ON CONFLICT(pedagogical_document_id, person_id) DO NOTHING;
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("documentId", documentId)
         .bind("personId", guardianId)
         .bind("now", clock.now())
@@ -89,7 +97,7 @@ private fun Database.Transaction.markDocumentReadByGuardian(clock: EvakaClock, d
 
 private fun Database.Read.countUnreadDocumentsByGuardian(personId: PersonId): Map<ChildId, Int> =
     this.createQuery(
-        """
+            """
             WITH ready_documents AS (
                 SELECT pd.id, pd.child_id
                 FROM pedagogical_document pd
@@ -104,8 +112,9 @@ private fun Database.Read.countUnreadDocumentsByGuardian(personId: PersonId): Ma
                 WHERE pdr.pedagogical_document_id = d.id AND pdr.person_id = :personId
             )
             GROUP BY d.child_id
-        """.trimIndent()
-    )
+        """.trimIndent(
+            )
+        )
         .bind("personId", personId)
         .map { row -> row.mapColumn<ChildId>("child_id") to row.mapColumn<Int>("unread_count") }
         .toMap()

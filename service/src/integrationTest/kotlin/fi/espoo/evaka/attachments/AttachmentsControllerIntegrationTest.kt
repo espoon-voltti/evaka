@@ -19,22 +19,20 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.testAdult_5
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.io.File
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class AttachmentsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val user = AuthenticatedUser.Citizen(testAdult_5.id, CitizenAuthLevel.STRONG)
 
     @BeforeEach
     private fun beforeEach() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
-        }
+        db.transaction { it.insertGeneralTestFixtures() }
     }
 
     @Test
@@ -57,12 +55,13 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEa
     @Test
     fun `Citizen can upload income statement attachments up to a limit`() {
         val maxAttachments = evakaEnv.maxAttachmentsPerUser
-        val incomeStatementId = db.transaction {
-            it.createIncomeStatement(
-                testAdult_5.id,
-                IncomeStatementBody.HighestFee(startDate = LocalDate.now(), endDate = null)
-            )
-        }
+        val incomeStatementId =
+            db.transaction {
+                it.createIncomeStatement(
+                    testAdult_5.id,
+                    IncomeStatementBody.HighestFee(startDate = LocalDate.now(), endDate = null)
+                )
+            }
         for (i in 1..maxAttachments) {
             assertTrue(uploadIncomeStatementAttachment(incomeStatementId))
         }
@@ -78,11 +77,16 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertFalse(uploadUnparentedAttachment())
     }
 
-    private fun uploadAttachment(path: String, parameters: List<Pair<String, Any?>>? = null): Boolean {
-        val (_, res, _) = http.upload(path, parameters = parameters)
-            .add(FileDataPart(File(pngFile.toURI()), name = "file"))
-            .asUser(user)
-            .response()
+    private fun uploadAttachment(
+        path: String,
+        parameters: List<Pair<String, Any?>>? = null
+    ): Boolean {
+        val (_, res, _) =
+            http
+                .upload(path, parameters = parameters)
+                .add(FileDataPart(File(pngFile.toURI()), name = "file"))
+                .asUser(user)
+                .response()
 
         return res.isSuccessful
     }
@@ -91,7 +95,10 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEa
         applicationId: ApplicationId,
         type: AttachmentType = AttachmentType.URGENCY
     ): Boolean {
-        return uploadAttachment("/attachments/citizen/applications/$applicationId", listOf("type" to type))
+        return uploadAttachment(
+            "/attachments/citizen/applications/$applicationId",
+            listOf("type" to type)
+        )
     }
 
     private fun uploadIncomeStatementAttachment(incomeStatementId: IncomeStatementId): Boolean {

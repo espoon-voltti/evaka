@@ -30,8 +30,18 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
-data class UnreadCountByAccount(val accountId: MessageAccountId, val unreadCopyCount: Int, val unreadCount: Int)
-data class UnreadCountByAccountAndGroup(val accountId: MessageAccountId, val unreadCount: Int, val unreadCopyCount: Int, val groupId: GroupId)
+data class UnreadCountByAccount(
+    val accountId: MessageAccountId,
+    val unreadCopyCount: Int,
+    val unreadCount: Int
+)
+
+data class UnreadCountByAccountAndGroup(
+    val accountId: MessageAccountId,
+    val unreadCount: Int,
+    val unreadCopyCount: Int,
+    val groupId: GroupId
+)
 
 data class ReplyToMessageBody(
     val content: String,
@@ -47,10 +57,16 @@ class MessageController(
     private val messageService = MessageService(messageNotificationEmailService)
 
     @GetMapping("/my-accounts")
-    fun getAccountsByUser(db: Database, user: AuthenticatedUser.Employee, clock: EvakaClock): Set<AuthorizedMessageAccount> {
+    fun getAccountsByUser(
+        db: Database,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock
+    ): Set<AuthorizedMessageAccount> {
         Audit.MessagingMyAccountsRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_USER_MESSAGE_ACCOUNTS)
-        return db.connect { dbc -> dbc.read { it.getAuthorizedMessageAccountsForEmployee(user.id) } }
+        return db.connect { dbc ->
+            dbc.read { it.getAuthorizedMessageAccountsForEmployee(user.id) }
+        }
     }
 
     @GetMapping("/mobile/my-accounts/{unitId}")
@@ -63,7 +79,9 @@ class MessageController(
         Audit.MessagingMyAccountsRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_MESSAGING_ACCOUNTS, unitId)
         return if (user.employeeId != null) {
-            db.connect { dbc -> dbc.read { it.getAuthorizedMessageAccountsForEmployee(user.employeeId) } }
+            db.connect { dbc ->
+                dbc.read { it.getAuthorizedMessageAccountsForEmployee(user.employeeId) }
+            }
         } else setOf()
     }
 
@@ -125,11 +143,7 @@ class MessageController(
         accessControl.requirePermissionFor(user, clock, Action.Global.ACCESS_MESSAGING)
         return db.connect { dbc ->
             dbc.read { tx ->
-                tx.getUnreadMessagesCounts(
-                    tx.getEmployeeMessageAccountIds(
-                        getEmployeeId(user)!!
-                    )
-                )
+                tx.getUnreadMessagesCounts(tx.getEmployeeMessageAccountIds(getEmployeeId(user)!!))
             }
         }
     }
@@ -170,22 +184,26 @@ class MessageController(
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { tx ->
                 val messageRecipients =
-                    tx.getMessageAccountsForRecipients(accountId, body.recipients, clock.today()).toSet()
+                    tx.getMessageAccountsForRecipients(accountId, body.recipients, clock.today())
+                        .toSet()
 
                 if (messageRecipients.isEmpty()) return@transaction
 
-                val staffCopyRecipients = if (body.recipients.none { it.type == MessageRecipientType.CHILD }) {
-                    tx.getStaffCopyRecipients(
-                        accountId,
-                        body.recipients.mapNotNull {
-                            if (it.type == MessageRecipientType.UNIT) DaycareId(it.id.raw) else null
-                        },
-                        body.recipients.mapNotNull {
-                            if (it.type == MessageRecipientType.GROUP) GroupId(it.id.raw) else null
-                        },
-                        clock.today()
-                    )
-                } else setOf()
+                val staffCopyRecipients =
+                    if (body.recipients.none { it.type == MessageRecipientType.CHILD }) {
+                        tx.getStaffCopyRecipients(
+                            accountId,
+                            body.recipients.mapNotNull {
+                                if (it.type == MessageRecipientType.UNIT) DaycareId(it.id.raw)
+                                else null
+                            },
+                            body.recipients.mapNotNull {
+                                if (it.type == MessageRecipientType.GROUP) GroupId(it.id.raw)
+                                else null
+                            },
+                            clock.today()
+                        )
+                    } else setOf()
 
                 val groupedRecipients = tx.groupRecipientAccountsByGuardianship(messageRecipients)
                 messageService.createMessageThreadsForRecipientGroups(
@@ -201,7 +219,8 @@ class MessageController(
                     attachmentIds = body.attachmentIds,
                     staffCopyRecipients = staffCopyRecipients
                 )
-                if (body.draftId != null) tx.deleteDraft(accountId = accountId, draftId = body.draftId)
+                if (body.draftId != null)
+                    tx.deleteDraft(accountId = accountId, draftId = body.draftId)
             }
         }
     }
@@ -312,8 +331,15 @@ class MessageController(
         @RequestParam unitId: DaycareId
     ): List<MessageReceiversResponse> {
         Audit.MessagingMessageReceiversRead.log(unitId)
-        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_RECEIVERS_FOR_NEW_MESSAGE, unitId)
-        return db.connect { dbc -> dbc.read { it.getReceiversForNewMessage(EmployeeId(user.rawId()), unitId) } }
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Unit.READ_RECEIVERS_FOR_NEW_MESSAGE,
+            unitId
+        )
+        return db.connect { dbc ->
+            dbc.read { it.getReceiversForNewMessage(EmployeeId(user.rawId()), unitId) }
+        }
     }
 
     private fun requireMessageAccountAccess(
@@ -327,9 +353,10 @@ class MessageController(
             ?: throw Forbidden("Message account not found for user")
     }
 
-    fun getEmployeeId(user: AuthenticatedUser): EmployeeId? = when (user) {
-        is AuthenticatedUser.MobileDevice -> user.employeeId
-        is AuthenticatedUser.Employee -> user.id
-        else -> null
-    }
+    fun getEmployeeId(user: AuthenticatedUser): EmployeeId? =
+        when (user) {
+            is AuthenticatedUser.MobileDevice -> user.employeeId
+            is AuthenticatedUser.Employee -> user.id
+            else -> null
+        }
 }

@@ -32,16 +32,9 @@ data class AssistanceNeedResponse(
     val permittedActions: Set<Action.AssistanceNeed>
 )
 
-data class AssistanceBasisOption(
-    val value: String,
-    val nameFi: String,
-    val descriptionFi: String?
-)
+data class AssistanceBasisOption(val value: String, val nameFi: String, val descriptionFi: String?)
 
-data class AssistanceNeedChildRange(
-    val childId: ChildId,
-    val dateRange: DateRange
-)
+data class AssistanceNeedChildRange(val childId: ChildId, val dateRange: DateRange)
 
 data class AssistanceNeedCapacityFactor(
     val dateRange: DateRange,

@@ -9,14 +9,18 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.testDaycare
 import java.time.Instant
 
-internal fun insertVardaUnit(db: Database.Connection, unitId: DaycareId = testDaycare.id, unitOid: String? = "1.2.3") {
+internal fun insertVardaUnit(
+    db: Database.Connection,
+    unitId: DaycareId = testDaycare.id,
+    unitOid: String? = "1.2.3"
+) {
     db.transaction {
-        it
-            .createUpdate(
+        it.createUpdate(
                 """
 INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, created_at, uploaded_at)
 VALUES (:evakaDaycareId, :vardaUnitId,  :createdAt, :uploadedAt)
-                """.trimIndent()
+                """.trimIndent(
+                )
             )
             .bind("evakaDaycareId", unitId)
             .bind("vardaUnitId", 1L)

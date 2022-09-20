@@ -13,15 +13,17 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.IsCitizen
-import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.Test
 
 class StaticActionRuleTest : AccessControlTest() {
-    private val strongCitizen = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
-    private val weakCitizen = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.WEAK)
+    private val strongCitizen =
+        AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
+    private val weakCitizen =
+        AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.WEAK)
     private val employee = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), emptySet())
 
     private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
@@ -47,8 +49,13 @@ class StaticActionRuleTest : AccessControlTest() {
     fun `HasGlobalRole permits if user has the right global role`() {
         val action = Action.Global.CREATE_UNIT
         rules.add(action, HasGlobalRole(UserRole.REPORT_VIEWER, UserRole.FINANCE_ADMIN))
-        val permittedEmployee = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN))
-        val deniedEmployee = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.DIRECTOR))
+        val permittedEmployee =
+            AuthenticatedUser.Employee(
+                EmployeeId(UUID.randomUUID()),
+                setOf(UserRole.SERVICE_WORKER, UserRole.FINANCE_ADMIN)
+            )
+        val deniedEmployee =
+            AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.DIRECTOR))
 
         assertTrue(accessControl.hasPermissionFor(permittedEmployee, clock, action))
         assertFalse(accessControl.hasPermissionFor(deniedEmployee, clock, action))
