@@ -2,15 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useEffect, useState } from 'react'
-import styled, { useTheme } from 'styled-components'
+import styled from 'styled-components'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
 import { QuestionOption } from 'lib-common/api-types/vasu'
+import { VasuLanguage } from 'lib-common/generated/api-types/vasu'
 import Radio from 'lib-components/atoms/form/Radio'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { fasExclamationTriangle } from 'lib-icons'
+import { VasuTranslations } from 'lib-customizations/employee'
 
 import type { RadioGroupSelectedValue } from './RadioGroupQuestion'
 
@@ -19,21 +18,14 @@ export const OptionContainer = styled.div`
   gap: 8px;
 `
 
-const Warning = styled.span`
-  color: ${(p) => p.theme.colors.accents.a2orangeDark};
-`
-
-const WarningIcon = styled(FontAwesomeIcon)`
-  margin-left: 8px;
-  margin-right: 8px;
-`
-
 interface Props {
   option: QuestionOption
   selectedValue: RadioGroupSelectedValue | null
   onChange: (selected: RadioGroupSelectedValue) => void
   isSelected: boolean
   onSelected: () => void
+  lang: VasuLanguage
+  translations: VasuTranslations
 }
 
 export default React.memo(function RadioGroupQuestionOption({
@@ -41,12 +33,10 @@ export default React.memo(function RadioGroupQuestionOption({
   selectedValue,
   onChange,
   isSelected,
-  onSelected
+  onSelected,
+  lang,
+  translations
 }: Props) {
-  const { i18n } = useTranslation()
-
-  const { colors } = useTheme()
-
   const selectedStartDate =
     (isSelected && selectedValue?.range?.start) || undefined
   const selectedEndDate = (isSelected && selectedValue?.range?.end) || undefined
@@ -54,17 +44,8 @@ export default React.memo(function RadioGroupQuestionOption({
   const [startDate, setStartDate] = useState(selectedStartDate ?? null)
   const [endDate, setEndDate] = useState(selectedEndDate ?? null)
 
-  const rangeIsLinear =
-    startDate && endDate && startDate.isEqualOrBefore(endDate)
-
   useEffect(() => {
-    if (
-      isSelected &&
-      option.dateRange &&
-      startDate &&
-      endDate &&
-      rangeIsLinear
-    ) {
+    if (isSelected && option.dateRange && startDate && endDate) {
       const rangeHasChanged =
         !selectedValue?.range?.start.isEqual(startDate) ||
         !selectedValue?.range?.end.isEqual(endDate)
@@ -85,8 +66,7 @@ export default React.memo(function RadioGroupQuestionOption({
     option.key,
     option.dateRange,
     selectedValue,
-    isSelected,
-    rangeIsLinear
+    isSelected
   ])
 
   return (
@@ -105,33 +85,24 @@ export default React.memo(function RadioGroupQuestionOption({
       {option.dateRange && (
         <div>
           <DatePicker
-            locale="fi"
+            locale={lang === 'SV' ? 'sv' : 'fi'}
             date={isSelected ? startDate : null}
             onChange={setStartDate}
             maxDate={endDate ?? undefined}
             data-qa={`radio-group-date-question-option-${option.key}-range-start`}
-            errorTexts={i18n.validationErrors}
+            errorTexts={translations.validationErrors}
             hideErrorsBeforeTouched
           />
           <span>-</span>
           <DatePicker
-            locale="fi"
+            locale={lang === 'SV' ? 'sv' : 'fi'}
             date={isSelected ? endDate : null}
             onChange={setEndDate}
             minDate={startDate ?? undefined}
             data-qa={`radio-group-date-question-option-${option.key}-range-end`}
-            errorTexts={i18n.validationErrors}
+            errorTexts={translations.validationErrors}
             hideErrorsBeforeTouched
           />
-          {rangeIsLinear === false && (
-            <Warning>
-              <WarningIcon
-                icon={fasExclamationTriangle}
-                color={colors.status.warning}
-              />
-              {i18n.validationErrors.dateRangeNotLinear}
-            </Warning>
-          )}
         </div>
       )}
     </OptionContainer>

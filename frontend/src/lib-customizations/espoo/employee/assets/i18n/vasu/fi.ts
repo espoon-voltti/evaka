@@ -26,5 +26,10 @@ export const fi = {
     DAYCARE: 'Varhaiskasvatuslaki (540/2018) 40§:n 3 mom.',
     PRESCHOOL: 'JulkL 24.1 §:n kohdat 25 ja 30'
   },
-  noRecord: 'Ei merkintää'
+  noRecord: 'Ei merkintää',
+  validationErrors: {
+    validDate: 'Anna muodossa pp.kk.vvvv',
+    dateTooEarly: 'Valitse myöhäisempi päivä',
+    dateTooLate: 'Valitse aikaisempi päivä'
+  }
 }

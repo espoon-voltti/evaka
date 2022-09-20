@@ -29,5 +29,10 @@ export const sv: typeof fi = {
     DAYCARE: '40 § 3 mom. i lagen om småbarnspedagogik (540/2018)',
     PRESCHOOL: 'OffentlighetsL 24.1 §§ punkt 25 och 30'
   },
-  noRecord: 'Ingen markering'
+  noRecord: 'Ingen markering',
+  validationErrors: {
+    validDate: 'Ange i format dd.mm.åååå',
+    dateTooEarly: 'Välj ett senare datum',
+    dateTooLate: 'Välj ett tidigare datum'
+  }
 }

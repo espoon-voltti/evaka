@@ -5,6 +5,7 @@
 import React, { useState } from 'react'
 
 import { RadioGroupQuestion } from 'lib-common/api-types/vasu'
+import { VasuLanguage } from 'lib-common/generated/api-types/vasu'
 import LocalDate from 'lib-common/local-date'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { Bold, Label } from 'lib-components/typography'
@@ -29,6 +30,7 @@ interface Props {
   question: RadioGroupQuestion
   selectedValue: RadioGroupSelectedValue | null
   onChange?: (selected: RadioGroupSelectedValue | null) => void
+  lang: VasuLanguage
   translations: VasuTranslations
 }
 
@@ -37,6 +39,7 @@ export function RadioGroupQuestion({
   question: { name, options, info },
   questionNumber,
   selectedValue,
+  lang,
   translations
 }: Props) {
   const selectedOption = options.find(
@@ -71,6 +74,8 @@ export function RadioGroupQuestion({
               selectedValue={selectedValue}
               isSelected={pendingSelected === ''}
               onSelected={() => setPendingSelected('')}
+              lang={lang}
+              translations={translations}
             />
             {options.map((option) =>
               option.isIntervention ? (
@@ -88,6 +93,8 @@ export function RadioGroupQuestion({
                   selectedValue={selectedValue}
                   isSelected={option.key === pendingSelected}
                   onSelected={() => setPendingSelected(option.key)}
+                  lang={lang}
+                  translations={translations}
                 />
               )
             )}
