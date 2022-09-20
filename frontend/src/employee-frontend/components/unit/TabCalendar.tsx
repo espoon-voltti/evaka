@@ -222,6 +222,7 @@ export default React.memo(function TabCalendar() {
             canEdit={requireRole(
               roles,
               'ADMIN',
+              'DIRECTOR',
               'SERVICE_WORKER',
               'UNIT_SUPERVISOR',
               'FINANCE_ADMIN'
