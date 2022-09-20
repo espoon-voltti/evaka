@@ -615,6 +615,8 @@ export const fi = {
       title: 'Päivittäinen varhaiskasvatusaika',
       info: 'Kirjoita tähän varhaiskasvatussopimuksella ilmoitettu päivittäinen varhaiskasvatusaika, sisältäen esiopetuksen / valmistavan opetuksen / 5-vuotiaiden maksuttoman varhaiskasvatuksen.',
       info2:
+        'Älä päivitä varhaiskasvatusaikaa, jos uudessa sopimuksessa ilmoitettu varhaiskasvatusaika ei ole muuttunut aiemmasta.',
+      info3:
         'Epäsäännölliset ja säännölliset poissaolot merkitään päiväkirjalle.',
       create: 'Luo uusi varhaiskasvatusaika',
       types: {
