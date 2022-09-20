@@ -22,6 +22,7 @@ import fi.espoo.evaka.placement.PlacementCreateRequestBody
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementUpdateRequestBody
 import fi.espoo.evaka.serviceneed.ServiceNeedController
+import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
@@ -31,6 +32,7 @@ import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -69,8 +71,13 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Autowired
     lateinit var voucherValueDecisionService: VoucherValueDecisionService
 
+    @Autowired
+    private lateinit var sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>
+
     @BeforeEach
     fun beforeEach() {
+        MockSfiMessagesClient.clearMessages()
+
         db.transaction {
             it.insertGeneralTestFixtures()
             it.insertTestParentship(
@@ -414,6 +421,10 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val decisionIds = sendAllValueDecisions()
 
         assertEquals(403, getPdfStatus(decisionIds[0], financeWorker))
+
+        // Check that message is still sent via sfi
+        sfiAsyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
+        assertEquals(1, MockSfiMessagesClient.getMessages().size)
     }
 
     @Test

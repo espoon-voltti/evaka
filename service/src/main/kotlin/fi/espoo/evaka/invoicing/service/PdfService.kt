@@ -130,8 +130,8 @@ class PDFService(
                 (decision.partnerIncome != null && decision.partnerIncome.effect != IncomeEffect.INCOME)
 
         val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily) ?: when (lang.name) {
-            "sv" -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.SV)
-            else -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI)
+            "sv" -> messageProvider.getDefaultFinancialDecisionAddress(MessageLanguage.SV)
+            else -> messageProvider.getDefaultFinancialDecisionAddress(MessageLanguage.FI)
         }
 
         val isReliefDecision = decision.decisionType !== VoucherValueDecisionType.NORMAL
@@ -220,8 +220,8 @@ class PDFService(
         val totalIncome = listOfNotNull(decision.headOfFamilyIncome?.total, decision.partnerIncome?.total).sum()
 
         val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily) ?: when (lang) {
-            "sv" -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.SV)
-            else -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI)
+            "sv" -> messageProvider.getDefaultFinancialDecisionAddress(MessageLanguage.SV)
+            else -> messageProvider.getDefaultFinancialDecisionAddress(MessageLanguage.FI)
         }
 
         val hideTotalIncome =

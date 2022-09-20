@@ -204,9 +204,11 @@ class FeeDecisionService(
 
         val recipient = decision.headOfFamily
         val lang = getDecisionLanguage(decision)
+
+        // If address is missing (restricted info enabled), use the financial handling address instead
         val sendAddress = DecisionSendAddress.fromPerson(recipient) ?: when (lang) {
-            "sv" -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.SV)
-            else -> messageProvider.getDefaultFeeDecisionAddress(MessageLanguage.FI)
+            "sv" -> messageProvider.getDefaultFinancialDecisionAddress(MessageLanguage.SV)
+            else -> messageProvider.getDefaultFinancialDecisionAddress(MessageLanguage.FI)
         }
 
         val feeDecisionDisplayName =

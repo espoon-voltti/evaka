@@ -20,11 +20,13 @@ import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.insertPlacement
+import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -33,6 +35,7 @@ import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDaycarePartDay25
@@ -64,6 +67,9 @@ import kotlin.test.assertNotNull
 class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
     lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+
+    @Autowired
+    private lateinit var sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>
 
     private val user = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
     private val adminUser = AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.ADMIN))
@@ -238,6 +244,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     @BeforeEach
     fun beforeEach() {
+        MockSfiMessagesClient.clearMessages()
+
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
         }
@@ -1963,6 +1971,10 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val decision = createAndConfirmFeeDecisionsForFamily(testAdult_7, testAdult_2, listOf(testChild_1, testChild_2))
 
         assertEquals(403, getPdfStatus(decision.id, user))
+
+        // Check that message is still sent via sfi
+        sfiAsyncJobRunner.runPendingJobsSync(MockEvakaClock(HelsinkiDateTime.now()))
+        assertEquals(1, MockSfiMessagesClient.getMessages().size)
     }
 
     @Test
@@ -1982,6 +1994,9 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val decision = createAndConfirmFeeDecisionsForFamily(testAdult_1, testAdult_2, listOf(testChildRestricted, testChild_2))
 
         assertEquals(403, getPdfStatus(decision.id, user))
+
+        sfiAsyncJobRunner.runPendingJobsSync(MockEvakaClock(HelsinkiDateTime.now()))
+        assertEquals(1, MockSfiMessagesClient.getMessages().size)
     }
 
     @Test
