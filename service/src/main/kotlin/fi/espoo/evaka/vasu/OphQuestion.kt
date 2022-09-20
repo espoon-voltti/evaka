@@ -155,7 +155,7 @@ fun getDefaultVasuContent(lang: VasuLanguage) = VasuContent(
                 VasuQuestion.TextQuestion(
                     name = when (lang) {
                         VasuLanguage.FI -> "Tavoitteiden ja toimenpiteiden toteutuminen"
-                        VasuLanguage.SV -> "Beskrivning av hur målen har uppnåtts och åtgärderna har genomförts"
+                        VasuLanguage.SV -> "Beskrivning av hur de tidigare målen har uppnåtts och åtgärderna har genomförts"
                     },
                     info = when (lang) {
                         VasuLanguage.FI -> "Mitkä toiminnalle asetetut tavoitteet ja toimenpiteet ovat toteutuneet? Miten ne ovat toteutuneet? Mikä on edistänyt/estänyt tavoitteiden ja toimenpiteiden toteutumista? Arviointi kohdistuu toiminnan, järjestelyjen, oppimisympäristöjen ja pedagogiikan arviointiin, ei lapsen arviointiin. Arvioinnin yhteydessä henkilöstö sekä huoltaja ja lapsi pohtivat kuinka hyvin lapsen vasuun kirjatut kasvatukselle, opetukselle ja hoidolle asetetut tavoitteet ovat toteutuneet ja ovatko toimenpiteet olleet tarkoituksenmukaisia."
@@ -687,7 +687,7 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
                 VasuQuestion.TextQuestion(
                     name = when (lang) {
                         VasuLanguage.FI -> "Tavoitteiden ja toimenpiteiden toteutuminen"
-                        VasuLanguage.SV -> "Beskrivning av hur målen har uppnåtts och åtgärderna har genomförts"
+                        VasuLanguage.SV -> "Beskrivning av hur de tidigare målen har uppnåtts och åtgärderna har genomförts"
                     },
                     info = when (lang) {
                         VasuLanguage.FI -> "Mitkä toiminnalle asetetut tavoitteet ja toimenpiteet ovat toteutuneet? Miten ne ovat toteutuneet? Mikä on edistänyt/estänyt tavoitteiden ja toimenpiteiden toteutumista? Arviointi kohdistuu toiminnan, järjestelyjen, oppimisympäristöjen ja pedagogiikan arviointiin. Arvioinnin avulla seurataan lapsen oppimista, kasvua ja hyvinvointia ja kuinka pedagogiselle toiminnalle asetetut tavoitteet ovat niitä tukeneet."
