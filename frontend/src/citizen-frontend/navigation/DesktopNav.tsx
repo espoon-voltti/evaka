@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import styled, { css } from 'styled-components'
+import styled from 'styled-components'
 
 import { ChildrenContext } from 'citizen-frontend/children/state'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
@@ -26,11 +26,19 @@ import {
 } from 'lib-icons'
 
 import { AuthContext, User } from '../auth/state'
-import { Lang, langs, useLang, useTranslation } from '../localization'
+import { useTranslation } from '../localization'
 
 import AttentionIndicator from './AttentionIndicator'
 import { getLogoutUri } from './const'
-import { CircledChar, DropDownButton, DropDownLink } from './shared-components'
+import {
+  CircledChar,
+  DropDownButton,
+  DropDownLink,
+  DropDown,
+  DropDownContainer,
+  DropDownIcon,
+  LanguageMenu
+} from './shared-components'
 
 interface Props {
   unreadMessagesCount: number
@@ -46,10 +54,6 @@ export default React.memo(function DesktopNav({
   const t = useTranslation()
   const { user: userResult } = useContext(AuthContext)
   const user = userResult.getOrElse(undefined)
-
-  if (user === undefined) {
-    return null
-  }
 
   return (
     <Container data-qa="desktop-nav">
@@ -293,43 +297,6 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
   )
 })
 
-const LanguageMenu = React.memo(function LanguageMenu() {
-  const t = useTranslation()
-  const [lang, setLang] = useLang()
-  const [open, setOpen] = useState(false)
-  const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
-  const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
-    setOpen(false)
-  )
-
-  return (
-    <DropDownContainer ref={dropDownRef}>
-      <DropDownButton onClick={toggleOpen} data-qa="button-select-language">
-        {t.header.lang[lang]}
-        <DropDownIcon icon={open ? fasChevronUp : fasChevronDown} />
-      </DropDownButton>
-      {open ? (
-        <DropDown $align="right" data-qa="select-lang">
-          {langs.map((l: Lang) => (
-            <DropDownButton
-              key={l}
-              className={classNames({ active: lang === l })}
-              onClick={() => {
-                setLang(l)
-                setOpen(false)
-              }}
-              data-qa={`lang-${l}`}
-              lang={l}
-            >
-              <span>{t.header.lang[l]}</span>
-            </DropDownButton>
-          ))}
-        </DropDown>
-      ) : null}
-    </DropDownContainer>
-  )
-})
-
 const SubNavigationMenu = React.memo(function SubNavigationMenu({
   user,
   unreadDecisions
@@ -421,43 +388,6 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
     </DropDownContainer>
   )
 })
-
-const DropDownContainer = styled.nav`
-  position: relative;
-`
-
-const DropDownIcon = styled(FontAwesomeIcon)`
-  height: 1em !important;
-  width: 0.625em !important;
-`
-
-const DropDown = styled.ul<{ $align: 'left' | 'right' }>`
-  position: absolute;
-  z-index: 30;
-  list-style: none;
-  margin: 0;
-  padding: ${defaultMargins.m};
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  background: ${colors.grayscale.g0};
-  box-shadow: 0 2px 6px 0 ${colors.grayscale.g15};
-  min-width: 240px;
-  max-width: 600px;
-  width: max-content;
-  ${({ $align }) =>
-    $align === 'left'
-      ? css`
-          left: 0;
-          align-items: flex-start;
-          text-align: left;
-        `
-      : css`
-          right: 0;
-          align-items: flex-end;
-          text-align: right;
-        `}
-`
 
 const Separator = styled.div`
   border-top: 1px solid ${colors.grayscale.g15};

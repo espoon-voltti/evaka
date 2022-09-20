@@ -2,12 +2,23 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import classNames from 'classnames'
+import React, { useCallback, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
+import {
+  Lang,
+  langs,
+  useLang,
+  useTranslation
+} from 'citizen-frontend/localization'
 import { fontWeights } from 'lib-components/typography'
+import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { fasChevronDown, fasChevronUp } from 'lib-icons'
 
 export const CircledChar = styled.div.attrs({
   className: 'circled-char'
@@ -58,10 +69,95 @@ const dropDownButtonStyles = css`
   }
 `
 
-export const DropDownButton = styled.button`
+export const DropDownButton = styled.button<{ alignRight?: boolean }>`
   ${dropDownButtonStyles}
+  ${(p) => p.alignRight && 'float: right;'}
 `
 
 export const DropDownLink = styled(NavLink)`
   ${dropDownButtonStyles}
+`
+
+export const LanguageMenu = React.memo(function LanguageMenu({
+  useShortLanguageLabel = false,
+  alignRight = false
+}: {
+  useShortLanguageLabel?: boolean
+  alignRight?: boolean
+}) {
+  const t = useTranslation()
+  const [lang, setLang] = useLang()
+  const [open, setOpen] = useState(false)
+  const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
+  const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
+    setOpen(false)
+  )
+
+  return (
+    <DropDownContainer ref={dropDownRef}>
+      <DropDownButton
+        alignRight={alignRight}
+        onClick={toggleOpen}
+        data-qa="button-select-language"
+      >
+        {useShortLanguageLabel ? lang.toUpperCase() : t.header.lang[lang]}
+        <DropDownIcon icon={open ? fasChevronUp : fasChevronDown} />
+      </DropDownButton>
+      {open ? (
+        <DropDown $align="right" data-qa="select-lang">
+          {langs.map((l: Lang) => (
+            <DropDownButton
+              key={l}
+              className={classNames({ active: lang === l })}
+              onClick={() => {
+                setLang(l)
+                setOpen(false)
+              }}
+              data-qa={`lang-${l}`}
+              lang={l}
+            >
+              <span>{t.header.lang[l]}</span>
+            </DropDownButton>
+          ))}
+        </DropDown>
+      ) : null}
+    </DropDownContainer>
+  )
+})
+
+export const DropDownContainer = styled.nav`
+  position: relative;
+`
+
+export const DropDownIcon = styled(FontAwesomeIcon)`
+  height: 1em !important;
+  width: 0.625em !important;
+`
+
+export const DropDown = styled.ul<{ $align: 'left' | 'right' }>`
+  position: absolute;
+  z-index: 30;
+  list-style: none;
+  margin: 0;
+  padding: ${defaultMargins.m};
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  background: ${colors.grayscale.g0};
+  box-shadow: 0 2px 6px 0 ${colors.grayscale.g15};
+  min-width: 240px;
+  max-width: 600px;
+  width: max-content;
+  ${({ $align }) =>
+    $align === 'left'
+      ? css`
+          left: 0;
+          align-items: flex-start;
+          text-align: left;
+        `
+      : css`
+          right: 0;
+          align-items: flex-end;
+          text-align: right;
+        `}
 `

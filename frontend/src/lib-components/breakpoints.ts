@@ -2,8 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-export const tabletMin = '600px'
+export const tabletMinPx = 600
+export const tabletMin = `${tabletMinPx}px`
 
-export const desktopMin = '1024px'
+export const desktopMinPx = 1024
+export const desktopMin = `${desktopMinPx}px`
 
-export const desktopSmall = '1366px'
+export const desktopSmallPx = 1366
+export const desktopSmall = `${desktopSmallPx}px`

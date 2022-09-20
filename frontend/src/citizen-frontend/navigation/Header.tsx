@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { ApplicationsContext } from 'citizen-frontend/applications/state'
 import { ChildrenContext } from 'citizen-frontend/children/state'
-import { desktopMin } from 'lib-components/breakpoints'
+import { desktopMin, desktopMinPx } from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
 
 import { useUser } from '../auth/state'
@@ -19,6 +19,7 @@ import CityLogo from './CityLogo'
 import DesktopNav from './DesktopNav'
 import EvakaLogo from './EvakaLogo'
 import { headerHeightDesktop, headerHeightMobile } from './const'
+import { LanguageMenu } from './shared-components'
 
 export default React.memo(function Header(props: { ariaHidden: boolean }) {
   const user = useUser()
@@ -50,20 +51,25 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
   }, [refreshUnreadVasuDocumentsCount, refreshUnreadPedagogicalDocumentsCount, refreshUnreadAssistanceNeedDecisionCounts, refreshWaitingConfirmationCount, user])
 
   const location = useLocation()
-  const hideLoginButton = location.pathname === '/login'
+  const isLoginPage = location.pathname === '/login'
 
   return (
     <>
       <HeaderContainer aria-hidden={props.ariaHidden}>
         <CityLogo />
         <EvakaLogo />
+        {isLoginPage && (
+          <MobileOnly>
+            <LanguageMenu useShortLanguageLabel alignRight />
+          </MobileOnly>
+        )}
         <DesktopNav
           unreadMessagesCount={unreadMessagesCount ?? 0}
           unreadDecisions={
             waitingConfirmationCount +
             sumBy(unreadAssistanceNeedDecisionCounts, ({ count }) => count)
           }
-          hideLoginButton={hideLoginButton}
+          hideLoginButton={isLoginPage}
         />
       </HeaderContainer>
     </>
@@ -102,5 +108,14 @@ const HeaderContainer = styled.header`
   @media screen and (min-width: 1408px) {
     max-width: 1344px;
     width: 1344px;
+  }
+`
+
+const MobileOnly = styled.div`
+  display: none;
+
+  @media (max-width: ${desktopMinPx - 1}px) {
+    display: block;
+    padding: 4px;
   }
 `
