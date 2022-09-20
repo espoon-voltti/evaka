@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.db
 
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.identity.ExternalId
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
@@ -149,6 +150,14 @@ val helsinkiDateTimeColumnMapper =
     ColumnMapper { r, columnNumber, _ -> r.getObject(columnNumber, OffsetDateTime::class.java)?.let { HelsinkiDateTime.from(it.toInstant()) } }
 
 val productKeyColumnMapper = ColumnMapper { rs, columnNumber, _ -> ProductKey(rs.getString(columnNumber)) }
+
+val languageColumnMapper = ColumnMapper<Language> { rs, columnNumber, _ ->
+    when (rs.getString(columnNumber)?.lowercase()) {
+        "sv" -> Language.sv
+        "en" -> Language.en
+        else -> Language.fi
+    }
+}
 
 class CustomArgumentFactory<T>(private val clazz: Class<T>, private val sqlType: Int, private inline val f: (T) -> Argument?) : ArgumentFactory.Preparable {
     override fun prepare(type: Type, config: ConfigRegistry): Optional<Function<Any?, Argument>> = Optional.ofNullable(

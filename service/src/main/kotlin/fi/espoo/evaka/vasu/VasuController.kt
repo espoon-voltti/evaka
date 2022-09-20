@@ -270,6 +270,7 @@ class VasuController(
                 validateStateTransition(eventType = body.eventType, currentState = currentState)
 
                 if (events.contains(PUBLISHED)) {
+                    // TODO email
                     tx.publishVasuDocument(clock, id)
                 }
 
