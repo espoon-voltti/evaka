@@ -144,17 +144,18 @@ class ApplicationControllerV2(
 
                 val guardianId =
                     body.guardianId
-                        ?: if (!body.guardianSsn.isNullOrEmpty())
+                        ?: if (!body.guardianSsn.isNullOrEmpty()) {
                             personService.getOrCreatePerson(
                                 tx,
                                 user,
                                 ExternalIdentifier.SSN.getInstance(body.guardianSsn)
                             )?.id
                                 ?: throw BadRequest("Could not find the guardian with ssn ${body.guardianSsn}")
-                        else if (body.guardianToBeCreated != null)
+                        } else if (body.guardianToBeCreated != null) {
                             createPerson(tx, body.guardianToBeCreated)
-                        else
+                        } else {
                             throw BadRequest("Could not find guardian info from paper application request for ${body.childId}")
+                        }
 
                 val guardian = tx.getPersonById(guardianId)
                     ?: throw BadRequest("Could not find the guardian with id $guardianId")
@@ -183,7 +184,8 @@ class ApplicationControllerV2(
             }
         }
         Audit.ApplicationCreate.log(
-            targetId = body.childId, objectId = applicationId,
+            targetId = body.childId,
+            objectId = applicationId,
             mapOf(
                 "guardianId" to guardianId,
                 "applicationType" to body.type
@@ -199,8 +201,9 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @RequestBody body: SearchApplicationRequest
     ): Paged<ApplicationSummary> {
-        if (body.periodStart != null && body.periodEnd != null && body.periodStart > body.periodEnd)
+        if (body.periodStart != null && body.periodEnd != null && body.periodStart > body.periodEnd) {
             throw BadRequest("Date parameter periodEnd ($body.periodEnd) cannot be before periodStart ($body.periodStart)")
+        }
         val maxPageSize = 5000
         if (body.pageSize != null && body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
 
@@ -366,7 +369,7 @@ class ApplicationControllerV2(
                     it,
                     user,
                     clock,
-                    applicationId,
+                    applicationId
                 )
             }
         }
@@ -652,7 +655,7 @@ data class ApplicationResponse(
     val decisions: List<Decision>,
     val guardians: List<PersonJSON>,
     val attachments: List<ApplicationAttachment>,
-    val permittedActions: Set<Action.Application>,
+    val permittedActions: Set<Action.Application>
 )
 
 data class SimpleBatchRequest(

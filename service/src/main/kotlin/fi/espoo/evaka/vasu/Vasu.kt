@@ -381,7 +381,7 @@ sealed class VasuQuestion(
         override val dependsOn: List<String>? = null,
         val trackedInEvents: Boolean,
         val nameInEvents: String = "",
-        val value: LocalDate?,
+        val value: LocalDate?
     ) : VasuQuestion(VasuQuestionType.DATE) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
             return question is DateQuestion && question.copy(value = this.value) == this

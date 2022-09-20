@@ -226,7 +226,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         page = 1,
         pageSize = 50,
         sortBy = PaymentSortParam.AMOUNT,
-        sortDirection = SortDirection.ASC,
+        sortDirection = SortDirection.ASC
     )
 
     private fun createSearchTestData(): List<PaymentId> {

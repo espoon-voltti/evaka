@@ -51,7 +51,8 @@ class VardaResetService(
 
         db.transaction { tx ->
             asyncJobRunner.plan(
-                tx, resetChildIds.map { VardaAsyncJob.ResetVardaChild(it) },
+                tx,
+                resetChildIds.map { VardaAsyncJob.ResetVardaChild(it) },
                 retryCount = 2,
                 retryInterval = Duration.ofMinutes(10),
                 runAt = clock.now()
@@ -85,7 +86,8 @@ class VardaResetService(
             logger.info("VardaUpdate: scheduling ${childrenWithoutId.size} children to be deleted")
             db.transaction { tx ->
                 asyncJobRunner.plan(
-                    tx, childrenWithoutId.map { VardaAsyncJob.DeleteVardaChild(it) },
+                    tx,
+                    childrenWithoutId.map { VardaAsyncJob.DeleteVardaChild(it) },
                     retryCount = 2,
                     retryInterval = Duration.ofMinutes(1),
                     runAt = clock.now()

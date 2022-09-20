@@ -283,7 +283,7 @@ fun Database.Read.searchFeeDecisions(
     endDate: LocalDate?,
     searchByStartDate: Boolean = false,
     financeDecisionHandlerId: EmployeeId?,
-    difference: Set<FeeDecisionDifference>,
+    difference: Set<FeeDecisionDifference>
 ): Paged<FeeDecisionSummary> {
     val sortColumn = when (sortBy) {
         FeeDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
@@ -337,14 +337,17 @@ fun Database.Read.searchFeeDecisions(
         if (numberParamsRaw.isNotEmpty()) numberQuery else null,
         if (searchTextWithoutNumbers.isNotBlank()) freeTextQuery else null,
         if ((startDate != null || endDate != null) && !searchByStartDate) "daterange(:start_date, :end_date, '[]') && valid_during" else null,
-        if ((startDate != null || endDate != null) && searchByStartDate)
-        // valid_during overlaps but does not extend to the left of search range
-        // = start date of valid_during is included in the search range
-            "(valid_during && daterange(:start_date, :end_date, '[]') AND valid_during &> daterange(:start_date, :end_date, '[]'))" else null,
+        if ((startDate != null || endDate != null) && searchByStartDate) {
+            // valid_during overlaps but does not extend to the left of search range
+            // = start date of valid_during is included in the search range
+            "(valid_during && daterange(:start_date, :end_date, '[]') AND valid_during &> daterange(:start_date, :end_date, '[]'))"
+        } else {
+            null
+        },
         if (financeDecisionHandlerId != null) "youngest_child.finance_decision_handler = :finance_decision_handler" else null,
         if (difference.isNotEmpty()) "decision.difference && :difference" else null,
         if (noStartingPlacements) "decisions_with_first_placement_starting_this_month.fee_decision_id IS NULL" else null,
-        if (maxFeeAccepted) "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')" else null,
+        if (maxFeeAccepted) "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')" else null
     )
 
     val youngestChildQuery =
@@ -392,9 +395,13 @@ fun Database.Read.searchFeeDecisions(
             LEFT JOIN daycare AS placement_unit ON placement_unit.id = part.placement_unit_id
             ${if (areas.isNotEmpty() || financeDecisionHandlerId != null) youngestChildJoin else ""}
             ${if (noStartingPlacements) firstPlacementStartingThisMonthChildIdsQueryJoin else ""}
-            ${if (conditions.isNotEmpty()) """
+            ${if (conditions.isNotEmpty()) {
+            """
             WHERE ${conditions.joinToString("\nAND ")}
-        """.trimIndent() else ""}
+            """.trimIndent()
+        } else {
+            ""
+        }}
             GROUP BY decision.id
             -- we take a max here because the sort column is not in group by clause but it should be identical for all grouped rows
             ORDER BY max($sortColumn) ${sortDirection.name}, decision.id
@@ -504,8 +511,11 @@ fun Database.Read.findFeeDecisionsForHeadOfFamily(
     return createQuery(sql)
         .bind("headOfFamilyId", headOfFamilyId)
         .let { query ->
-            if (period != null) query.bind("period", period)
-            else query
+            if (period != null) {
+                query.bind("period", period)
+            } else {
+                query
+            }
         }
         .let { query -> if (status != null) query.bind("status", status.map { it.name }) else query }
         .mapTo<FeeDecision>()

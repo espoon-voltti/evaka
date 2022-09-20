@@ -83,7 +83,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             smallGroup = false,
             groupAssistant = false,
             childAssistant = false,
-            additionalStaff = false,
+            additionalStaff = false
         ),
         structuralMotivationDescription = "Structural motivation description",
         careMotivation = "Care motivation",
@@ -92,7 +92,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             partTimeSpecialEd = false,
             fullTimeSpecialEd = false,
             interpretationAndAssistanceServices = false,
-            specialAides = true,
+            specialAides = true
         ),
         servicesMotivation = "Services Motivation",
         expertResponsibilities = "Expert responsibilities",
@@ -104,7 +104,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 name = "${testAdult_1.lastName} ${testAdult_1.firstName}",
                 isHeard = true,
                 details = "Lots of details"
-            ),
+            )
         ),
         viewOfGuardians = "The view of the guardians",
         otherRepresentativeHeard = false,
@@ -433,7 +433,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 Tuple(testDecisionMaker_1.id, testDecisionMaker_1.lastName, testDecisionMaker_1.firstName),
                 Tuple(testDecisionMaker_2.id, testDecisionMaker_2.lastName, testDecisionMaker_2.firstName),
                 Tuple(testDecisionMaker_3.id, testDecisionMaker_3.lastName, testDecisionMaker_3.firstName),
-                Tuple(unitSupervisorOfTestDaycare.id, unitSupervisorOfTestDaycare.lastName, unitSupervisorOfTestDaycare.firstName),
+                Tuple(unitSupervisorOfTestDaycare.id, unitSupervisorOfTestDaycare.lastName, unitSupervisorOfTestDaycare.firstName)
             ),
             decisionMakers.map { Tuple(it.id, it.lastName, it.firstName) }
         )
@@ -465,7 +465,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     id = EmployeeId(UUID.randomUUID()),
                     firstName = "Fia",
                     lastName = "Finance",
-                    roles = setOf(UserRole.FINANCE_ADMIN),
+                    roles = setOf(UserRole.FINANCE_ADMIN)
                 )
             )
             tx.insertTestEmployee(
@@ -473,7 +473,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     id = EmployeeId(UUID.randomUUID()),
                     firstName = "Dirk",
                     lastName = "Director",
-                    roles = setOf(UserRole.DIRECTOR),
+                    roles = setOf(UserRole.DIRECTOR)
                 )
             )
         }
@@ -494,7 +494,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         assertEquals(
             listOf(
                 Tuple(directorId, "Director", "Dirk"),
-                Tuple(unitSupervisorOfTestDaycare.id, unitSupervisorOfTestDaycare.lastName, unitSupervisorOfTestDaycare.firstName),
+                Tuple(unitSupervisorOfTestDaycare.id, unitSupervisorOfTestDaycare.lastName, unitSupervisorOfTestDaycare.firstName)
             ),
             decisionMakers.map { Tuple(it.id, it.lastName, it.firstName) }
         )
@@ -624,7 +624,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     smallGroup = false,
                     groupAssistant = false,
                     childAssistant = false,
-                    additionalStaff = false,
+                    additionalStaff = false
                 ),
                 structuralMotivationDescription = "Structural motivation description",
                 careMotivation = "Care motivation",
@@ -633,7 +633,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                     partTimeSpecialEd = false,
                     fullTimeSpecialEd = false,
                     interpretationAndAssistanceServices = false,
-                    specialAides = true,
+                    specialAides = true
                 ),
                 servicesMotivation = "Services Motivation",
                 expertResponsibilities = "Expert responsibilities",
@@ -645,7 +645,7 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                         name = "${testAdult_1.lastName} ${testAdult_1.firstName}",
                         isHeard = true,
                         details = "Lots of details"
-                    ),
+                    )
                 ),
                 viewOfGuardians = "The view of the guardians",
                 otherRepresentativeHeard = false,

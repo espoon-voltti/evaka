@@ -287,7 +287,7 @@ class AttachmentsController(
                     name = id.toString(),
                     bytes = file.bytes,
                     contentType = contentType
-                ),
+                )
             )
             if (onSuccess != null) {
                 onSuccess(tx)
@@ -367,7 +367,7 @@ class AttachmentsController(
             ContentTypePattern.MSWORD_DOCX,
             ContentTypePattern.OPEN_DOCUMENT_TEXT,
             ContentTypePattern.TIKA_MSOFFICE,
-            ContentTypePattern.TIKA_OOXML,
+            ContentTypePattern.TIKA_OOXML
         )
 
     private val pedagogicalDocumentAllowedAttachmentContentTypes =

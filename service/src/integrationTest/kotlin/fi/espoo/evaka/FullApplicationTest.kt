@@ -54,6 +54,7 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
 
     @Autowired
     protected lateinit var env: Environment
+
     @Autowired
     protected lateinit var evakaEnv: EvakaEnv
 

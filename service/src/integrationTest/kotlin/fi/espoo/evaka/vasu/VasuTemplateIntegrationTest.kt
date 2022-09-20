@@ -112,7 +112,7 @@ class VasuTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                             textValue = emptyMap()
                         )
                     )
-                ),
+                )
             )
         )
 

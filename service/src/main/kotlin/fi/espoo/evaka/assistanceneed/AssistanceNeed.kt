@@ -24,7 +24,7 @@ data class AssistanceNeedRequest(
     val startDate: LocalDate,
     val endDate: LocalDate,
     val capacityFactor: Double,
-    val bases: Set<String> = emptySet(),
+    val bases: Set<String> = emptySet()
 )
 
 data class AssistanceNeedResponse(
@@ -45,5 +45,5 @@ data class AssistanceNeedChildRange(
 
 data class AssistanceNeedCapacityFactor(
     val dateRange: DateRange,
-    val capacityFactor: BigDecimal,
+    val capacityFactor: BigDecimal
 )

@@ -62,6 +62,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         val time: LocalTime,
         val type: StaffAttendanceType?
     )
+
     @PostMapping("/arrival")
     fun markArrival(
         db: Database,
@@ -109,6 +110,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         val time: LocalTime,
         val type: StaffAttendanceType?
     )
+
     @PostMapping("/departure")
     fun markDeparture(
         db: Database,
@@ -150,6 +152,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         val groupId: GroupId,
         val arrived: LocalTime
     )
+
     @PostMapping("/arrival-external")
     fun markExternalArrival(
         db: Database,
@@ -186,6 +189,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         val attendanceId: StaffAttendanceExternalId,
         val time: LocalTime
     )
+
     @PostMapping("/departure-external")
     fun markExternalDeparture(
         db: Database,
@@ -314,9 +318,11 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             return listOf(
                 ongoingAttendance.copy(
                     departed = departureTime,
-                    type = if (ongoingAttendance.type == StaffAttendanceType.PRESENT)
+                    type = if (ongoingAttendance.type == StaffAttendanceType.PRESENT) {
                         StaffAttendanceType.JUSTIFIED_CHANGE
-                    else ongoingAttendance.type
+                    } else {
+                        ongoingAttendance.type
+                    }
                 )
             )
         }

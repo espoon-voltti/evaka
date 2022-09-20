@@ -49,10 +49,11 @@ class DvvModificationsService(
                                 infoGroup
                             )
                             is CaretakerLimitedDvvInfoGroup -> {
-                                if (infoGroup.huoltaja.henkilotunnus != null)
+                                if (infoGroup.huoltaja.henkilotunnus != null) {
                                     ssnsToUpdateFromVtj.add(infoGroup.huoltaja.henkilotunnus)
-                                else
+                                } else {
                                     logger.info("Dvv modification ignored for caretaker: ssn is null")
+                                }
                             }
                             is DefaultDvvInfoGroup -> ssnsToUpdateFromVtj.add(personModifications.henkilotunnus)
                             else -> {
@@ -90,7 +91,10 @@ class DvvModificationsService(
         if (result.token != result.nextToken) {
             db.transaction {
                 it.storeDvvModificationToken(
-                    result.token, result.nextToken, ssns.size, result.dvvModifications.size
+                    result.token,
+                    result.nextToken,
+                    ssns.size,
+                    result.dvvModifications.size
                 )
             }
         }

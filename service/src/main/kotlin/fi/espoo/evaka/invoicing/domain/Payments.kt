@@ -28,7 +28,7 @@ val logger = KotlinLogging.logger {}
 interface PaymentIntegrationClient {
     data class SendResult(
         val succeeded: List<Payment> = listOf(),
-        val failed: List<Payment> = listOf(),
+        val failed: List<Payment> = listOf()
     )
 
     fun send(payments: List<Payment>): SendResult
@@ -57,7 +57,7 @@ enum class PaymentStatus : DatabaseEnum {
 data class PaymentDraft(
     val unitId: DaycareId,
     val period: DateRange,
-    val amount: Int,
+    val amount: Int
 )
 
 fun createPaymentDrafts(tx: Database.Transaction) {
@@ -88,7 +88,7 @@ data class PaymentUnit(
     val name: String,
     val businessId: String?,
     val iban: String?,
-    val providerId: String?,
+    val providerId: String?
 )
 
 data class Payment(
@@ -103,5 +103,5 @@ data class Payment(
     val paymentDate: LocalDate?,
     val dueDate: LocalDate?,
     val sentAt: HelsinkiDateTime?,
-    val sentBy: EvakaUserId?,
+    val sentBy: EvakaUserId?
 )

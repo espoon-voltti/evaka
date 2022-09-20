@@ -95,7 +95,7 @@ data class VoucherValueDecision(
             child: ChildWithDateOfBirth,
             baseCoPayment: Int,
             siblingDiscount: Int,
-            baseValue: Int,
+            baseValue: Int
         ): VoucherValueDecision {
             val decision = VoucherValueDecision(
                 id = VoucherValueDecisionId(UUID.randomUUID()),
@@ -122,7 +122,7 @@ data class VoucherValueDecision(
                 baseValue = baseValue,
                 assistanceNeedCoefficient = BigDecimal.ZERO,
                 voucherValue = 0,
-                difference = emptySet(),
+                difference = emptySet()
             )
             check(decision.isEmpty())
             return decision
@@ -276,7 +276,7 @@ data class VoucherValueDecisionSummary(
     val approvedAt: HelsinkiDateTime? = null,
     val sentAt: HelsinkiDateTime? = null,
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val difference: Set<VoucherValueDecisionDifference>,
+    val difference: Set<VoucherValueDecisionDifference>
 ) {
     val annullingDecision
         get() = this.voucherValue == 0

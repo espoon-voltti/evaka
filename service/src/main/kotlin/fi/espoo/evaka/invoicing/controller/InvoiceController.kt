@@ -85,7 +85,7 @@ class InvoiceController(
                         body.distinctions ?: emptyList(),
                         body.searchTerms ?: "",
                         body.periodStart,
-                        body.periodEnd,
+                        body.periodEnd
                     )
                     val permittedActions = accessControl.getPermittedActions<InvoiceId, Action.Invoice>(
                         tx,
@@ -96,7 +96,7 @@ class InvoiceController(
                     Paged(
                         data = paged.data.map { InvoiceSummaryResponse(it, permittedActions[it.id] ?: emptySet()) },
                         total = paged.total,
-                        pages = paged.pages,
+                        pages = paged.pages
                     )
                 }
         }.also {
@@ -126,9 +126,11 @@ class InvoiceController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        @RequestParam(required = false) invoiceDate: LocalDate?,
+        @RequestParam(required = false)
+        invoiceDate: LocalDate?,
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        @RequestParam(required = false) dueDate: LocalDate?,
+        @RequestParam(required = false)
+        dueDate: LocalDate?,
         @RequestBody invoiceIds: List<InvoiceId>
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Invoice.SEND, invoiceIds)
@@ -194,7 +196,7 @@ class InvoiceController(
 
     data class InvoiceDetailedResponse(
         val data: InvoiceDetailed,
-        val permittedActions: Set<Action.Invoice>,
+        val permittedActions: Set<Action.Invoice>
     )
 
     @GetMapping("/head-of-family/{uuid}")

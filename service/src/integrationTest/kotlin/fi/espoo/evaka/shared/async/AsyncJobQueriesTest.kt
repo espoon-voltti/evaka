@@ -126,7 +126,7 @@ class AsyncJobQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(
                 TestJobParams(recent, completed = false),
                 TestJobParams(recent, completed = true),
-                TestJobParams(future, completed = false),
+                TestJobParams(future, completed = false)
             ),
             remainingJobs
         )

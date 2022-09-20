@@ -85,7 +85,7 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
                 Tuple(testChild_1.id, LocalDate.of(2022, 9, 1)), // Thu
                 Tuple(testChild_1.id, LocalDate.of(2022, 9, 2)), // Fri
                 Tuple(testChild_1.id, LocalDate.of(2022, 9, 5)), // Mon
-                Tuple(testChild_1.id, LocalDate.of(2022, 9, 6)), // Tue
+                Tuple(testChild_1.id, LocalDate.of(2022, 9, 6)) // Tue
             )
     }
 
@@ -121,7 +121,7 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
         assertThat(result.get())
             .extracting({ it.childId }, { it.reservationDate })
             .containsExactlyInAnyOrder(
-                Tuple(testChild_1.id, LocalDate.of(2022, 9, 2)),
+                Tuple(testChild_1.id, LocalDate.of(2022, 9, 2))
             )
     }
 
@@ -191,7 +191,7 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
                 DevDaycareGroup(
                     daycareId = testDaycare2.id,
                     startDate = date,
-                    endDate = date,
+                    endDate = date
                 )
             )
             tx.insertTestDaycareGroupPlacement(
@@ -249,7 +249,7 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
             .extracting({ it.childId }, { it.reservationDate }, { it.isBackupCare })
             .containsExactlyInAnyOrder(
                 Tuple(testChild_1.id, date, true),
-                Tuple(testChild_2.id, date, false),
+                Tuple(testChild_2.id, date, false)
             )
     }
 
@@ -304,7 +304,7 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
                 Tuple(testChild_5.lastName, testChild_5.firstName, date),
                 Tuple(testChild_6.lastName, testChild_6.firstName, date),
                 Tuple(testChild_7.lastName, testChild_7.firstName, date),
-                Tuple(testChild_8.lastName, testChild_8.firstName, date),
+                Tuple(testChild_8.lastName, testChild_8.firstName, date)
             )
     }
 
@@ -422,7 +422,7 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
             .containsExactlyInAnyOrder(
                 Tuple(group1.id, group1.name, testChild_1.id),
                 Tuple(group1.id, group1.name, testChild_2.id),
-                Tuple(group2.id, group2.name, testChild_3.id),
+                Tuple(group2.id, group2.name, testChild_3.id)
             )
     }
 
@@ -471,7 +471,7 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
         assertThat(result.get())
             .extracting({ it.groupId }, { it.childId })
             .containsExactlyInAnyOrder(
-                Tuple(null, testChild_1.id),
+                Tuple(null, testChild_1.id)
             )
     }
 
@@ -507,7 +507,7 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
         assertThat(result.get())
             .extracting({ it.groupId }, { it.childId })
             .containsExactlyInAnyOrder(
-                Tuple(null, testChild_1.id),
+                Tuple(null, testChild_1.id)
             )
     }
 }

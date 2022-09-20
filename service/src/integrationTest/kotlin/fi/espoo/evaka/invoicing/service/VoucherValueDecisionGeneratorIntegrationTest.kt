@@ -316,8 +316,10 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertPlacement(
-            testChild_2.id, period.copy(start = period.start.plusMonths(1)),
-            PlacementType.DAYCARE_FIVE_YEAR_OLDS, testVoucherDaycare.id
+            testChild_2.id,
+            period.copy(start = period.start.plusMonths(1)),
+            PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+            testVoucherDaycare.id
         )
 
         db.transaction { generator.generateNewDecisionsForAdult(it, RealEvakaClock(), testAdult_1.id, period.start) }
@@ -433,8 +435,10 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id, testChild_2.id), period)
         insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
         insertPlacement(
-            testChild_2.id, period.copy(start = period.start.plusMonths(1)),
-            PlacementType.DAYCARE_FIVE_YEAR_OLDS, testVoucherDaycare.id
+            testChild_2.id,
+            period.copy(start = period.start.plusMonths(1)),
+            PlacementType.DAYCARE_FIVE_YEAR_OLDS,
+            testVoucherDaycare.id
         )
 
         // Adult minimal income
@@ -509,7 +513,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference }, { it.headOfFamilyId })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>(), testAdult_1.id),
-                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.GUARDIANS), testAdult_2.id),
+                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.GUARDIANS), testAdult_2.id)
             )
     }
 
@@ -530,7 +534,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference }, { it.partnerId })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>(), testAdult_2.id),
-                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.GUARDIANS), testAdult_3.id),
+                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.GUARDIANS), testAdult_3.id)
             )
     }
 
@@ -577,7 +581,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                         VoucherValueDecisionDifference.CO_PAYMENT,
                         VoucherValueDecisionDifference.FINAL_CO_PAYMENT
                     )
-                ),
+                )
             )
     }
 
@@ -598,7 +602,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
-                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.INCOME)),
+                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.INCOME))
             )
     }
 
@@ -618,7 +622,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
-                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.INCOME)),
+                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.INCOME))
             )
     }
 
@@ -638,7 +642,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference }, { it.familySize })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>(), 2),
-                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.FAMILY_SIZE), 3),
+                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.FAMILY_SIZE), 3)
             )
     }
 
@@ -658,7 +662,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference }, { it.placement?.unitId })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>(), testVoucherDaycare.id),
-                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.PLACEMENT), testVoucherDaycare2.id),
+                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.PLACEMENT), testVoucherDaycare2.id)
             )
     }
 
@@ -686,7 +690,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                         VoucherValueDecisionDifference.VOUCHER_VALUE
                     ),
                     PlacementType.DAYCARE_PART_TIME
-                ),
+                )
             )
     }
 
@@ -720,7 +724,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     subPeriod2.asDateRange(),
                     setOf(VoucherValueDecisionDifference.SERVICE_NEED),
                     serviceNeedOptionVoucherValueCoefficients[snDaycareFullDay35.id]
-                ),
+                )
             )
     }
 
@@ -747,15 +751,16 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .containsExactlyInAnyOrder(
                 Tuple(testChild_2.dateOfBirth, subPeriod1, emptySet<VoucherValueDecisionDifference>(), 0),
                 Tuple(
-                    testChild_2.dateOfBirth, subPeriod2,
+                    testChild_2.dateOfBirth,
+                    subPeriod2,
                     setOf(
                         VoucherValueDecisionDifference.SIBLING_DISCOUNT,
                         VoucherValueDecisionDifference.CO_PAYMENT,
-                        VoucherValueDecisionDifference.FINAL_CO_PAYMENT,
+                        VoucherValueDecisionDifference.FINAL_CO_PAYMENT
                     ),
                     50
                 ),
-                Tuple(testChild_1.dateOfBirth, subPeriod2, emptySet<VoucherValueDecisionDifference>(), 0),
+                Tuple(testChild_1.dateOfBirth, subPeriod2, emptySet<VoucherValueDecisionDifference>(), 0)
             )
     }
 
@@ -781,7 +786,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                         VoucherValueDecisionDifference.FEE_ALTERATIONS,
                         VoucherValueDecisionDifference.FINAL_CO_PAYMENT
                     )
-                ),
+                )
             )
     }
 
@@ -803,7 +808,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                 Tuple(
                     subPeriod2,
                     setOf(VoucherValueDecisionDifference.BASE_VALUE, VoucherValueDecisionDifference.VOUCHER_VALUE)
-                ),
+                )
             )
     }
 
@@ -843,7 +848,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
                     LocalDate.of(2022, 9, 2),
                     LocalDate.of(2022, 12, 31),
                     setOf(VoucherValueDecisionDifference.INCOME)
-                ),
+                )
             )
     }
 
@@ -867,7 +872,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .extracting({ DateRange(it.validFrom, it.validTo) }, { it.status }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, VoucherValueDecisionStatus.SENT, emptySet<VoucherValueDecisionDifference>()),
-                Tuple(subPeriod2, VoucherValueDecisionStatus.DRAFT, setOf(VoucherValueDecisionDifference.PLACEMENT)),
+                Tuple(subPeriod2, VoucherValueDecisionStatus.DRAFT, setOf(VoucherValueDecisionDifference.PLACEMENT))
             )
     }
 
@@ -894,7 +899,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .containsExactlyInAnyOrder(
                 Tuple(period, VoucherValueDecisionStatus.SENT, emptySet<VoucherValueDecisionDifference>()),
                 Tuple(subPeriod1, VoucherValueDecisionStatus.DRAFT, setOf(VoucherValueDecisionDifference.PLACEMENT)),
-                Tuple(subPeriod2, VoucherValueDecisionStatus.DRAFT, setOf(VoucherValueDecisionDifference.PLACEMENT)),
+                Tuple(subPeriod2, VoucherValueDecisionStatus.DRAFT, setOf(VoucherValueDecisionDifference.PLACEMENT))
             )
     }
 
@@ -914,7 +919,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
-                Tuple(subPeriod2, emptySet<VoucherValueDecisionDifference>()),
+                Tuple(subPeriod2, emptySet<VoucherValueDecisionDifference>())
             )
     }
 
@@ -938,7 +943,7 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
             .extracting({ DateRange(it.validFrom, it.validTo) }, { it.status }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, VoucherValueDecisionStatus.SENT, emptySet<VoucherValueDecisionDifference>()),
-                Tuple(subPeriod2, VoucherValueDecisionStatus.DRAFT, emptySet<VoucherValueDecisionDifference>()),
+                Tuple(subPeriod2, VoucherValueDecisionStatus.DRAFT, emptySet<VoucherValueDecisionDifference>())
             )
     }
 

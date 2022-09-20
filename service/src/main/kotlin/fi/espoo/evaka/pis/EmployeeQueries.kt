@@ -230,16 +230,15 @@ fun getEmployeesPaged(
     pageSize: Int,
     searchTerm: String = ""
 ): Paged<EmployeeWithDaycareRoles> {
-
     val (freeTextQuery, freeTextParams) = freeTextSearchQueryForColumns(listOf("employee"), listOf("first_name", "last_name"), searchTerm)
 
     val params = listOf(
         Binding.of("offset", (page - 1) * pageSize),
-        Binding.of("pageSize", pageSize),
+        Binding.of("pageSize", pageSize)
     )
 
     val conditions = listOfNotNull(
-        if (searchTerm.isNotBlank()) freeTextQuery else null,
+        if (searchTerm.isNotBlank()) freeTextQuery else null
     )
 
     val whereClause = conditions.takeIf { it.isNotEmpty() }?.joinToString(" AND ") ?: "TRUE"

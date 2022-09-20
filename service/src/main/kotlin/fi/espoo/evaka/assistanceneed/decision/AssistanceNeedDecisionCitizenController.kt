@@ -94,7 +94,7 @@ class AssistanceNeedDecisionCitizenController(
     fun getAssistanceNeedDecisionUnreadCount(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock,
+        clock: EvakaClock
     ): List<UnreadAssistanceNeedDecisionItem> {
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT, user.id)
         return db.connect { dbc ->

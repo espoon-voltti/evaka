@@ -52,7 +52,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
         createIncomeStatement(
             IncomeStatementBody.HighestFee(
                 startDate = LocalDate.of(2021, 4, 3),
-                endDate = null,
+                endDate = null
             )
         )
 
@@ -71,7 +71,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                     handled = false, handlerNote = ""
                 )
             ),
-            incomeStatements,
+            incomeStatements
         )
     }
 
@@ -85,7 +85,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                     incomeSource = IncomeSource.INCOMES_REGISTER,
                     estimatedMonthlyIncome = 500,
                     otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
-                    otherIncomeInfo = "Elatusmaksut 100, vuoratulot 150",
+                    otherIncomeInfo = "Elatusmaksut 100, vuoratulot 150"
                 ),
                 entrepreneur = Entrepreneur(
                     fullTime = true,
@@ -98,7 +98,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                         estimatedIncome = EstimatedIncome(
                             estimatedMonthlyIncome = 1000,
                             incomeStartDate = LocalDate.of(2005, 6, 6),
-                            incomeEndDate = LocalDate.of(2021, 7, 7),
+                            incomeEndDate = LocalDate.of(2021, 7, 7)
                         )
                     ),
                     limitedCompany = LimitedCompany(IncomeSource.INCOMES_REGISTER),
@@ -108,13 +108,13 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                         name = "Foo",
                         address = "Bar",
                         phone = "123",
-                        email = "foo.bar@example.com",
+                        email = "foo.bar@example.com"
                     )
                 ),
                 student = false,
                 alimonyPayer = true,
                 otherInfo = "foo bar",
-                attachmentIds = listOf(),
+                attachmentIds = listOf()
             )
         )
 
@@ -132,7 +132,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                         incomeSource = IncomeSource.INCOMES_REGISTER,
                         estimatedMonthlyIncome = 500,
                         otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
-                        otherIncomeInfo = "Elatusmaksut 100, vuoratulot 150",
+                        otherIncomeInfo = "Elatusmaksut 100, vuoratulot 150"
                     ),
                     entrepreneur = Entrepreneur(
                         fullTime = true,
@@ -145,7 +145,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                             estimatedIncome = EstimatedIncome(
                                 estimatedMonthlyIncome = 1000,
                                 incomeStartDate = LocalDate.of(2005, 6, 6),
-                                incomeEndDate = LocalDate.of(2021, 7, 7),
+                                incomeEndDate = LocalDate.of(2021, 7, 7)
                             )
                         ),
                         limitedCompany = LimitedCompany(IncomeSource.INCOMES_REGISTER),
@@ -155,7 +155,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                             name = "Foo",
                             address = "Bar",
                             phone = "123",
-                            email = "foo.bar@example.com",
+                            email = "foo.bar@example.com"
                         )
                     ),
                     student = false,
@@ -165,10 +165,10 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                     updated = incomeStatements[0].updated,
                     handled = false,
                     handlerNote = "",
-                    attachments = listOf(),
+                    attachments = listOf()
                 )
             ),
-            incomeStatements,
+            incomeStatements
         )
     }
 
@@ -215,10 +215,10 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                     updated = incomeStatements[0].updated,
                     handled = false,
                     handlerNote = "",
-                    attachments = listOf(),
+                    attachments = listOf()
                 )
             ),
-            incomeStatements,
+            incomeStatements
         )
     }
 
@@ -247,7 +247,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                     incomeSource = IncomeSource.INCOMES_REGISTER,
                     estimatedMonthlyIncome = 1500,
                     otherIncome = setOf(),
-                    otherIncomeInfo = "",
+                    otherIncomeInfo = ""
                 ),
                 entrepreneur = null,
                 student = false,
@@ -277,7 +277,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                         name = "Foo",
                         address = "Bar",
                         phone = "123",
-                        email = "foo.bar@example.com",
+                        email = "foo.bar@example.com"
                     )
                 ),
                 student = false,
@@ -303,7 +303,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                     partnership = true,
                     lightEntrepreneur = false,
                     // Accountant is required if limitedCompany or partnership is given
-                    accountant = null,
+                    accountant = null
                 ),
                 student = false,
                 alimonyPayer = false,
@@ -332,7 +332,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                         name = "",
                         address = "",
                         phone = "",
-                        email = "",
+                        email = ""
                     )
                 ),
                 student = false,
@@ -356,7 +356,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                     incomeSource = IncomeSource.ATTACHMENTS,
                     estimatedMonthlyIncome = 1500,
                     otherIncome = setOf(),
-                    otherIncomeInfo = "",
+                    otherIncomeInfo = ""
                 ),
                 entrepreneur = null,
                 student = false,
@@ -380,7 +380,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                         incomeSource = IncomeSource.ATTACHMENTS,
                         estimatedMonthlyIncome = 1500,
                         otherIncome = setOf(),
-                        otherIncomeInfo = "",
+                        otherIncomeInfo = ""
                     ),
                     entrepreneur = null,
                     student = false,
@@ -390,10 +390,10 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                     updated = incomeStatements[0].updated,
                     handled = false,
                     handlerNote = "",
-                    attachments = listOf(idToAttachment(attachmentId)),
+                    attachments = listOf(idToAttachment(attachmentId))
                 )
             ),
-            incomeStatements,
+            incomeStatements
         )
     }
 
@@ -427,10 +427,10 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                     updated = incomeStatements[0].updated,
                     handled = false,
                     handlerNote = "",
-                    attachments = listOf(idToAttachment(attachmentId)),
+                    attachments = listOf(idToAttachment(attachmentId))
                 )
             ),
-            incomeStatements,
+            incomeStatements
         )
     }
 
@@ -446,7 +446,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                     incomeSource = IncomeSource.ATTACHMENTS,
                     estimatedMonthlyIncome = 1500,
                     otherIncome = setOf(),
-                    otherIncomeInfo = "",
+                    otherIncomeInfo = ""
                 ),
                 entrepreneur = null,
                 student = false,
@@ -471,7 +471,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                     incomeSource = IncomeSource.ATTACHMENTS,
                     estimatedMonthlyIncome = 1500,
                     otherIncome = setOf(),
-                    otherIncomeInfo = "",
+                    otherIncomeInfo = ""
                 ),
                 entrepreneur = null,
                 student = false,
@@ -497,7 +497,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                     incomeSource = IncomeSource.INCOMES_REGISTER,
                     estimatedMonthlyIncome = 500,
                     otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
-                    otherIncomeInfo = "Elatusmaksut 100, vuokratulot 150",
+                    otherIncomeInfo = "Elatusmaksut 100, vuokratulot 150"
                 ),
                 entrepreneur = Entrepreneur(
                     fullTime = true,
@@ -510,11 +510,11 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                         estimatedIncome = EstimatedIncome(
                             estimatedMonthlyIncome = 1000,
                             incomeStartDate = LocalDate.of(2005, 6, 6),
-                            incomeEndDate = LocalDate.of(2021, 7, 7),
+                            incomeEndDate = LocalDate.of(2021, 7, 7)
                         )
                     ),
                     limitedCompany = LimitedCompany(
-                        incomeSource = IncomeSource.INCOMES_REGISTER,
+                        incomeSource = IncomeSource.INCOMES_REGISTER
                     ),
                     partnership = false,
                     lightEntrepreneur = false,
@@ -522,14 +522,14 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                         name = "Foo",
                         address = "Bar",
                         phone = "123",
-                        email = "foo.bar@example.com",
+                        email = "foo.bar@example.com"
                     )
                 ),
                 student = false,
                 alimonyPayer = true,
                 otherInfo = "foo bar",
                 attachmentIds = listOf(attachment1)
-            ),
+            )
         )
 
         val incomeStatement = getIncomeStatements().data[0]
@@ -554,7 +554,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                         name = "Baz",
                         address = "Quux",
                         phone = "456",
-                        email = "baz.quux@example.com",
+                        email = "baz.quux@example.com"
                     )
                 ),
                 student = true,
@@ -590,7 +590,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                         name = "Baz",
                         address = "Quux",
                         phone = "456",
-                        email = "baz.quux@example.com",
+                        email = "baz.quux@example.com"
                     )
                 ),
                 student = true,
@@ -600,9 +600,9 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                 updated = updated,
                 handled = false,
                 handlerNote = "",
-                attachments = listOf(idToAttachment(attachment2), idToAttachment(attachment3)),
+                attachments = listOf(idToAttachment(attachment2), idToAttachment(attachment3))
             ),
-            getIncomeStatement(incomeStatement.id),
+            getIncomeStatement(incomeStatement.id)
         )
     }
 
@@ -611,7 +611,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
         createIncomeStatement(
             IncomeStatementBody.HighestFee(
                 startDate = LocalDate.of(2021, 4, 3),
-                endDate = null,
+                endDate = null
             )
         )
         val id = getIncomeStatements().data.first().id
@@ -622,7 +622,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
             id,
             IncomeStatementBody.HighestFee(
                 startDate = LocalDate.of(2030, 4, 3),
-                endDate = null,
+                endDate = null
             ),
             403
         )
@@ -633,7 +633,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
         createIncomeStatement(
             IncomeStatementBody.HighestFee(
                 startDate = LocalDate.of(2021, 4, 3),
-                endDate = null,
+                endDate = null
             )
         )
         val incomeStatement = getIncomeStatements().data.first()
@@ -653,13 +653,13 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
         createIncomeStatement(
             IncomeStatementBody.HighestFee(
                 startDate = LocalDate.of(2020, 4, 3),
-                endDate = LocalDate.of(2020, 12, 31),
+                endDate = LocalDate.of(2020, 12, 31)
             )
         )
         createIncomeStatement(
             IncomeStatementBody.HighestFee(
                 startDate = LocalDate.of(2021, 1, 1),
-                endDate = null,
+                endDate = null
             )
         )
 
@@ -681,13 +681,13 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
         createIncomeStatement(
             IncomeStatementBody.HighestFee(
                 startDate = LocalDate.of(2021, 4, 3),
-                endDate = null,
+                endDate = null
             )
         )
         createIncomeStatement(
             IncomeStatementBody.HighestFee(
                 startDate = LocalDate.of(2021, 4, 3),
-                endDate = null,
+                endDate = null
             ),
             400
         )
@@ -722,7 +722,7 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                     incomeSource = IncomeSource.INCOMES_REGISTER,
                     estimatedMonthlyIncome = 500,
                     otherIncome = setOf(OtherIncome.ALIMONY, OtherIncome.RENTAL_INCOME),
-                    otherIncomeInfo = "Elatusmaksut 100, vuokratulot 150",
+                    otherIncomeInfo = "Elatusmaksut 100, vuokratulot 150"
                 ),
                 entrepreneur = Entrepreneur(
                     fullTime = true,
@@ -735,11 +735,11 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                         estimatedIncome = EstimatedIncome(
                             estimatedMonthlyIncome = 1000,
                             incomeStartDate = LocalDate.of(2005, 6, 6),
-                            incomeEndDate = LocalDate.of(2021, 7, 7),
+                            incomeEndDate = LocalDate.of(2021, 7, 7)
                         )
                     ),
                     limitedCompany = LimitedCompany(
-                        incomeSource = IncomeSource.INCOMES_REGISTER,
+                        incomeSource = IncomeSource.INCOMES_REGISTER
                     ),
                     partnership = false,
                     lightEntrepreneur = false,
@@ -747,14 +747,14 @@ class IncomeStatementControllerCitizenIntegrationTest : FullApplicationTest(rese
                         name = "Foo",
                         address = "Bar",
                         phone = "123",
-                        email = "foo.bar@example.com",
+                        email = "foo.bar@example.com"
                     )
                 ),
                 student = false,
                 alimonyPayer = true,
                 otherInfo = "foo bar",
                 attachmentIds = listOf(attachment1)
-            ),
+            )
         )
 
         val incomeStatementId = getIncomeStatements().data[0].id

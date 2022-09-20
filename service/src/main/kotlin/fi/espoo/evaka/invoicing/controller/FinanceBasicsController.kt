@@ -61,14 +61,16 @@ class FinanceBasicsController(
                 val latest = tx.getFeeThresholds().maxByOrNull { it.thresholds.validDuring.start }
 
                 if (latest != null) {
-                    if (latest.thresholds.validDuring.end != null && latest.thresholds.validDuring.overlaps(body.validDuring))
+                    if (latest.thresholds.validDuring.end != null && latest.thresholds.validDuring.overlaps(body.validDuring)) {
                         throwDateOverlapEx()
+                    }
 
-                    if (latest.thresholds.validDuring.end == null)
+                    if (latest.thresholds.validDuring.end == null) {
                         tx.updateFeeThresholdsValidity(
                             latest.id,
                             latest.thresholds.validDuring.copy(end = body.validDuring.start.minusDays(1))
                         )
+                    }
                 }
 
                 val id = mapConstraintExceptions { tx.insertNewFeeThresholds(body) }

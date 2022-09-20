@@ -62,8 +62,10 @@ class EmailClient(private val client: SesClient, private val whitelist: List<Reg
     private fun checkWhitelist(address: String): Boolean {
         val isWhitelisted = whitelist?.any { it.matches(address) } ?: true
 
-        if (!isWhitelisted) logger.info {
-            "Not sending email to $address because it does not match any of the entries in whitelist"
+        if (!isWhitelisted) {
+            logger.info {
+                "Not sending email to $address because it does not match any of the entries in whitelist"
+            }
         }
 
         return isWhitelisted

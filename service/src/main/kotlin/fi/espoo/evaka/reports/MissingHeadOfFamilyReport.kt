@@ -27,8 +27,12 @@ class MissingHeadOfFamilyReportController(private val acl: AccessControlList, pr
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?
+        @RequestParam("from")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        from: LocalDate,
+        @RequestParam("to")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        to: LocalDate?
     ): List<MissingHeadOfFamilyReportRow> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_MISSING_HEAD_OF_FAMILY_REPORT)
         return db.connect { dbc ->

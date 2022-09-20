@@ -159,7 +159,10 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 } else {
                     MessageAccountState.INACTIVE_ACCOUNT
                 }
-            } else if (accounts.isEmpty()) MessageAccountState.NO_ACCOUNT
-            else throw RuntimeException("Employee has more than one account")
+            } else if (accounts.isEmpty()) {
+                MessageAccountState.NO_ACCOUNT
+            } else {
+                throw RuntimeException("Employee has more than one account")
+            }
         }
 }

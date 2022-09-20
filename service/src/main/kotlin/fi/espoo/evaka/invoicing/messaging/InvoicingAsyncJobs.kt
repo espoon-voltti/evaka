@@ -39,8 +39,11 @@ class InvoicingAsyncJobs(
         val decisionId = msg.decisionId
         feeService.sendDecision(tx, clock, decisionId).let { sent ->
             logger.info {
-                if (sent) "Successfully sent fee decision msg to suomi.fi (id: $decisionId)."
-                else "Marked fee decision as requiring manual sending (id: $decisionId)."
+                if (sent) {
+                    "Successfully sent fee decision msg to suomi.fi (id: $decisionId)."
+                } else {
+                    "Marked fee decision as requiring manual sending (id: $decisionId)."
+                }
             }
         }
     }
@@ -56,8 +59,11 @@ class InvoicingAsyncJobs(
         val decisionId = msg.decisionId
         valueDecisionService.sendDecision(tx, clock, decisionId).let { sent ->
             logger.info {
-                if (sent) "Successfully sent voucher value decision msg to suomi.fi (id: $decisionId)."
-                else "Marked voucher value decision as requiring manual sending (id: $decisionId)."
+                if (sent) {
+                    "Successfully sent voucher value decision msg to suomi.fi (id: $decisionId)."
+                } else {
+                    "Marked voucher value decision as requiring manual sending (id: $decisionId)."
+                }
             }
         }
     }

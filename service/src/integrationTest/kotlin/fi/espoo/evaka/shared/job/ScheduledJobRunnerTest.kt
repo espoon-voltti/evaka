@@ -30,7 +30,9 @@ class ScheduledJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
                     enabled = true,
                     schedule = JobSchedule.daily(testTime)
                 )
-            } else null
+            } else {
+                null
+            }
     }
 
     @BeforeEach

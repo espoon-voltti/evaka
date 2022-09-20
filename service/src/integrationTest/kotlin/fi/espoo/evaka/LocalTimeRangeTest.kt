@@ -47,7 +47,7 @@ class LocalTimeRangeTest {
         ).containsExactly(
             LocalTime.of(8, 5),
             LocalTime.of(8, 35),
-            LocalTime.of(9, 5),
+            LocalTime.of(9, 5)
         )
     }
 }

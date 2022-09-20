@@ -139,8 +139,12 @@ class DaycareController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate? = null,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate? = null
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        from: LocalDate? = null,
+        @RequestParam(required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        to: LocalDate? = null
     ): List<DaycareGroup> {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_GROUPS, daycareId)
         return db.connect { dbc -> dbc.read { daycareService.getDaycareGroups(it, daycareId, from, to) } }.also {
@@ -171,6 +175,7 @@ class DaycareController(
         val startDate: LocalDate,
         val endDate: LocalDate?
     )
+
     @PutMapping("/{daycareId}/groups/{groupId}")
     fun updateGroup(
         db: Database,

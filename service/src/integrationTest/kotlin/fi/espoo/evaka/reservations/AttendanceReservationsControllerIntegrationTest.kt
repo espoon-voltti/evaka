@@ -83,19 +83,19 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = mon,
-                endDate = fri,
+                endDate = fri
             )
             it.insertTestDaycareGroupPlacement(
                 daycarePlacementId = child1PlacementId,
                 groupId = testGroup1.id,
                 startDate = mon,
-                endDate = wed,
+                endDate = wed
             )
             it.insertTestDaycareGroupPlacement(
                 daycarePlacementId = child1PlacementId,
                 groupId = testGroup2.id,
                 startDate = thu,
-                endDate = fri,
+                endDate = fri
             )
             it.insertTestReservation(
                 DevReservation(
@@ -103,21 +103,21 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                     date = mon,
                     startTime = LocalTime.of(8, 0),
                     endTime = LocalTime.of(16, 0),
-                    createdBy = EvakaUserId(employeeId.raw),
+                    createdBy = EvakaUserId(employeeId.raw)
                 )
             )
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 arrived = HelsinkiDateTime.of(mon, LocalTime.of(8, 15)),
-                departed = HelsinkiDateTime.of(mon, LocalTime.of(16, 5)),
+                departed = HelsinkiDateTime.of(mon, LocalTime.of(16, 5))
             )
             it.insertTestAbsence(
                 childId = testChild_1.id,
                 date = tue,
                 category = AbsenceCategory.BILLABLE,
                 absenceType = AbsenceType.OTHER_ABSENCE,
-                modifiedBy = EvakaUserId(employeeId.raw),
+                modifiedBy = EvakaUserId(employeeId.raw)
             )
 
             // No group placement -> ungrouped
@@ -126,7 +126,7 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                 childId = testChild_4.id,
                 unitId = testDaycare.id,
                 startDate = wed,
-                endDate = fri,
+                endDate = fri
             )
 
             // Placement in other unit, backup in this unit's group 2
@@ -134,21 +134,21 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                 childId = testChild_5.id,
                 unitId = testDaycare2.id,
                 startDate = mon,
-                endDate = fri,
+                endDate = fri
             )
             it.insertTestBackUpCare(
                 childId = testChild_5.id,
                 unitId = testDaycare.id,
                 groupId = testGroup2.id,
                 startDate = fri,
-                endDate = fri,
+                endDate = fri
             )
             it.insertTestDailyServiceTimes(
                 DevDailyServiceTimes(
                     childId = testChild_5.id,
                     validityPeriod = monFri.asDateRange(),
                     type = DailyServiceTimesType.REGULAR,
-                    regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                    regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
                 )
             )
 
@@ -157,13 +157,13 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                 childId = testChild_6.id,
                 unitId = testDaycare.id,
                 startDate = wed,
-                endDate = fri,
+                endDate = fri
             )
             it.insertTestDaycareGroupPlacement(
                 daycarePlacementId = child6PlacementId,
                 groupId = testGroup1.id,
                 startDate = wed,
-                endDate = fri,
+                endDate = fri
             )
             // ... and has a backup in another group in this unit
             it.insertTestBackUpCare(
@@ -171,14 +171,14 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                 unitId = testDaycare.id,
                 groupId = testGroup2.id,
                 startDate = thu,
-                endDate = thu,
+                endDate = thu
             )
             // ... and has a backup in another unit
             it.insertTestBackUpCare(
                 childId = testChild_6.id,
                 unitId = testDaycare2.id,
                 startDate = fri,
-                endDate = fri,
+                endDate = fri
             )
             // Reservation is shown in the result because the child is in this unit
             it.insertTestReservation(
@@ -187,7 +187,7 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                     date = thu,
                     startTime = LocalTime.of(9, 0),
                     endTime = LocalTime.of(15, 0),
-                    createdBy = EvakaUserId(employeeId.raw),
+                    createdBy = EvakaUserId(employeeId.raw)
                 )
             )
             // Reservation is NOT shown in the result because the child is in another unit
@@ -197,7 +197,7 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                     date = fri,
                     startTime = LocalTime.of(7, 0),
                     endTime = LocalTime.of(17, 0),
-                    createdBy = EvakaUserId(employeeId.raw),
+                    createdBy = EvakaUserId(employeeId.raw)
                 )
             )
         }
@@ -223,22 +223,22 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                                 attendance = UnitAttendanceReservations.AttendanceTimes("08:15", "16:05"),
                                 absence = null,
                                 dailyServiceTimes = null,
-                                inOtherUnit = false,
+                                inOtherUnit = false
                             ),
                             tue to UnitAttendanceReservations.ChildRecordOfDay(
                                 reservation = null,
                                 attendance = null,
                                 absence = UnitAttendanceReservations.Absence(AbsenceType.OTHER_ABSENCE),
                                 dailyServiceTimes = null,
-                                inOtherUnit = false,
+                                inOtherUnit = false
                             ),
                             wed to UnitAttendanceReservations.ChildRecordOfDay(
                                 reservation = null,
                                 attendance = null,
                                 absence = null,
                                 dailyServiceTimes = null,
-                                inOtherUnit = false,
-                            ),
+                                inOtherUnit = false
+                            )
                         )
                     )
                 ),
@@ -256,7 +256,7 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                                 attendance = null,
                                 absence = null,
                                 dailyServiceTimes = null,
-                                inOtherUnit = false,
+                                inOtherUnit = false
                             ),
                             // Backup in group 2 => thu is missing
                             // Backup in another unit
@@ -265,8 +265,8 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                                 attendance = null,
                                 absence = null,
                                 dailyServiceTimes = null,
-                                inOtherUnit = true,
-                            ),
+                                inOtherUnit = true
+                            )
                         )
                     )
                 )
@@ -302,7 +302,7 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                                 absence = null,
                                 dailyServiceTimes = null,
                                 inOtherUnit = false
-                            ),
+                            )
                         )
                     )
                 ),
@@ -325,15 +325,15 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                                     TimeRange(
                                         LocalTime.of(8, 0),
                                         LocalTime.of(16, 0)
-                                    ),
+                                    )
                                 ),
                                 inOtherUnit = false
-                            ),
+                            )
                         )
                     )
-                ),
+                )
             ),
-            group2.children.sortedBy { it.child.lastName },
+            group2.children.sortedBy { it.child.lastName }
         )
 
         // Ungrouped
@@ -347,7 +347,7 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                         testChild_4.dateOfBirth
                     ),
                     listOf(emptyChildRecords(FiniteDateRange(wed, fri)))
-                ),
+                )
             ),
             attendanceReservations.ungrouped.sortedBy { it.child.lastName }
         )
@@ -360,13 +360,13 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = mon,
-                endDate = fri,
+                endDate = fri
             )
             tx.insertTestDaycareGroupPlacement(
                 daycarePlacementId = child1PlacementId,
                 groupId = testGroup1.id,
                 startDate = mon,
-                endDate = fri,
+                endDate = fri
             )
             listOf(
                 DevReservation(
@@ -374,29 +374,29 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                     date = mon,
                     startTime = LocalTime.of(19, 0),
                     endTime = LocalTime.of(23, 59),
-                    createdBy = EvakaUserId(employeeId.raw),
+                    createdBy = EvakaUserId(employeeId.raw)
                 ),
                 DevReservation(
                     childId = testChild_1.id,
                     date = tue,
                     startTime = LocalTime.of(0, 0),
                     endTime = LocalTime.of(8, 0),
-                    createdBy = EvakaUserId(employeeId.raw),
+                    createdBy = EvakaUserId(employeeId.raw)
                 ),
                 DevReservation(
                     childId = testChild_1.id,
                     date = tue,
                     startTime = LocalTime.of(17, 30),
                     endTime = LocalTime.of(23, 59),
-                    createdBy = EvakaUserId(employeeId.raw),
+                    createdBy = EvakaUserId(employeeId.raw)
                 ),
                 DevReservation(
                     childId = testChild_1.id,
                     date = wed,
                     startTime = LocalTime.of(0, 0),
                     endTime = LocalTime.of(9, 30),
-                    createdBy = EvakaUserId(employeeId.raw),
-                ),
+                    createdBy = EvakaUserId(employeeId.raw)
+                )
             ).forEach { tx.insertTestReservation(it) }
 
             listOf(
@@ -410,14 +410,14 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                 ),
                 Pair(
                     HelsinkiDateTime.of(tue, LocalTime.of(17, 0)),
-                    null,
-                ),
+                    null
+                )
             ).forEach {
                 tx.insertTestChildAttendance(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     arrived = it.first,
-                    departed = it.second,
+                    departed = it.second
                 )
             }
         }
@@ -441,22 +441,22 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                                 attendance = UnitAttendanceReservations.AttendanceTimes("19:10", "23:59"),
                                 absence = null,
                                 dailyServiceTimes = null,
-                                inOtherUnit = false,
+                                inOtherUnit = false
                             ),
                             tue to UnitAttendanceReservations.ChildRecordOfDay(
                                 reservation = UnitAttendanceReservations.ReservationTimes("00:00", "08:00"),
                                 attendance = UnitAttendanceReservations.AttendanceTimes("00:00", "10:30"),
                                 absence = null,
                                 dailyServiceTimes = null,
-                                inOtherUnit = false,
+                                inOtherUnit = false
                             ),
                             wed to UnitAttendanceReservations.ChildRecordOfDay(
                                 reservation = UnitAttendanceReservations.ReservationTimes("00:00", "09:30"),
                                 attendance = null,
                                 absence = null,
                                 dailyServiceTimes = null,
-                                inOtherUnit = false,
-                            ),
+                                inOtherUnit = false
+                            )
                         ),
 
                         // Second daily entries go to another map
@@ -466,11 +466,11 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                                 attendance = UnitAttendanceReservations.AttendanceTimes("17:00", null),
                                 absence = null,
                                 dailyServiceTimes = null,
-                                inOtherUnit = false,
-                            ),
+                                inOtherUnit = false
+                            )
                         )
                     )
-                ),
+                )
             ),
             group1.children.sortedBy { it.child.lastName }
         )

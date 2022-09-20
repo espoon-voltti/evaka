@@ -108,7 +108,7 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest(reset
         postNewThread(
             sender = employeeAccount,
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
-            user = employee,
+            user = employee
         )
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
@@ -124,7 +124,7 @@ class MessageNotificationEmailServiceIntegrationTest : FullApplicationTest(reset
     private fun postNewThread(
         sender: MessageAccountId,
         recipients: List<MessageRecipient>,
-        user: AuthenticatedUser.Employee,
+        user: AuthenticatedUser.Employee
     ) {
         val (_, response) = http.post("/messages/$sender")
             .jsonBody(

@@ -32,7 +32,7 @@ class VardaController(
         db: Database,
         clock: EvakaClock,
         @RequestParam(defaultValue = "true") addNewChildren: Boolean,
-        @RequestParam(defaultValue = "1000") limit: Int,
+        @RequestParam(defaultValue = "1000") limit: Int
     ) {
         db.connect { dbc -> vardaResetService.planVardaReset(dbc, clock, addNewChildren = addNewChildren, maxChildren = limit) }
     }
@@ -42,7 +42,7 @@ class VardaController(
         db: Database,
         clock: EvakaClock,
         @PathVariable organizerId: Long,
-        @RequestParam(defaultValue = "1000") limit: Int,
+        @RequestParam(defaultValue = "1000") limit: Int
     ) {
         db.connect { dbc -> vardaResetService.planResetByVardaChildrenErrorReport(dbc, clock, organizerId = organizerId, limit = limit) }
     }
@@ -50,7 +50,7 @@ class VardaController(
     @PostMapping("/mark-child-for-reset/{childId}")
     fun markChildForVardaReset(
         db: Database,
-        @PathVariable childId: ChildId,
+        @PathVariable childId: ChildId
     ) {
         db.connect { dbc -> dbc.transaction { it.resetChildResetTimestamp(childId) } }
     }

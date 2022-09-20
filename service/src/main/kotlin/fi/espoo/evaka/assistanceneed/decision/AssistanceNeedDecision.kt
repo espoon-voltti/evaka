@@ -182,7 +182,7 @@ data class StructuralMotivationOptions(
     val smallGroup: Boolean,
     val groupAssistant: Boolean,
     val childAssistant: Boolean,
-    val additionalStaff: Boolean,
+    val additionalStaff: Boolean
 )
 
 data class ServiceOptions(
@@ -190,7 +190,7 @@ data class ServiceOptions(
     val partTimeSpecialEd: Boolean,
     val fullTimeSpecialEd: Boolean,
     val interpretationAndAssistanceServices: Boolean,
-    val specialAides: Boolean,
+    val specialAides: Boolean
 )
 
 data class AssistanceNeedDecisionGuardian(

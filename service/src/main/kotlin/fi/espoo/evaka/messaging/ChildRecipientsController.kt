@@ -38,6 +38,7 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
     data class EditRecipientRequest(
         val blocklisted: Boolean
     )
+
     @PutMapping("/child/{childId}/recipients/{personId}")
     fun editRecipient(
         db: Database,

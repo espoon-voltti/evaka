@@ -42,7 +42,7 @@ fun replaceImage(
                 name = "$childImagesBucketPrefix$imageId",
                 bytes = file.bytes,
                 contentType = contentType
-            ),
+            )
         )
         imageId
     }

@@ -30,8 +30,12 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
 
     @GetMapping("/reports/attendance-reservation/{unitId}")
     fun getAttendanceReservationReportByUnit(
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        start: LocalDate,
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        end: LocalDate,
         @PathVariable unitId: DaycareId,
         @RequestParam(required = false) groupIds: List<GroupId>?,
         db: Database,
@@ -59,8 +63,12 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
 
     @GetMapping("/reports/attendance-reservation/{unitId}/by-child")
     fun getAttendanceReservationReportByUnitAndChild(
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        start: LocalDate,
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        end: LocalDate,
         @PathVariable unitId: DaycareId,
         @RequestParam(required = false) groupIds: List<GroupId>?,
         db: Database,
@@ -241,5 +249,5 @@ data class AttendanceReservationReportByChildRow(
     val childId: ChildId,
     val childLastName: String,
     val childFirstName: String,
-    val isBackupCare: Boolean,
+    val isBackupCare: Boolean
 )

@@ -124,10 +124,11 @@ class AssistanceNeedDecisionController(
                         sentForDecision = decision.sentForDecision,
                         status = decision.status,
                         validityPeriod =
-                        if (body.decision.assistanceLevels.contains(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME))
+                        if (body.decision.assistanceLevels.contains(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME)) {
                             body.decision.validityPeriod
-                        else
+                        } else {
                             body.decision.validityPeriod.copy(end = null)
+                        }
                     )
                 )
             }
@@ -259,8 +260,11 @@ class AssistanceNeedDecisionController(
                     id,
                     body.status,
                     if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null else clock.today(),
-                    if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) null
-                    else tx.getChildGuardians(decision.child.id)
+                    if (body.status == AssistanceNeedDecisionStatus.NEEDS_WORK) {
+                        null
+                    } else {
+                        tx.getChildGuardians(decision.child.id)
+                    }
                 )
 
                 if (body.status != AssistanceNeedDecisionStatus.NEEDS_WORK) {

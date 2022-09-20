@@ -77,7 +77,7 @@ class VoucherValueDecisionController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestBody body: SearchVoucherValueDecisionRequest,
+        @RequestBody body: SearchVoucherValueDecisionRequest
     ): Paged<VoucherValueDecisionSummary> {
         accessControl.requirePermissionFor(user, clock, Action.Global.SEARCH_VOUCHER_VALUE_DECISIONS)
         val maxPageSize = 5000
@@ -169,8 +169,9 @@ class VoucherValueDecisionController(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val decisions = tx.getValueDecisionsByIds(ids)
-                if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING })
+                if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING }) {
                     throw BadRequest("Voucher value decision cannot be marked sent")
+                }
                 tx.markVoucherValueDecisionsSent(ids, clock.now())
             }
         }
@@ -274,10 +275,12 @@ fun sendVoucherValueDecisions(
         .distinctBy { it.id }
         .filter { !ids.contains(it.id) }
 
-    if (conflicts.any { it.status == WAITING_FOR_MANUAL_SENDING }) throw Conflict(
-        "Some children have overlapping value decisions waiting for manual sending",
-        "WAITING_FOR_MANUAL_SENDING"
-    )
+    if (conflicts.any { it.status == WAITING_FOR_MANUAL_SENDING }) {
+        throw Conflict(
+            "Some children have overlapping value decisions waiting for manual sending",
+            "WAITING_FOR_MANUAL_SENDING"
+        )
+    }
 
     if (conflicts.any { it.status == WAITING_FOR_SENDING }) error("Some children have overlapping value decisions still waiting for sending")
 
@@ -301,7 +304,7 @@ enum class VoucherValueDecisionSortParam {
 @ConstList("voucherValueDecisionDistinctiveParams")
 enum class VoucherValueDecisionDistinctiveParams {
     NO_STARTING_PLACEMENTS,
-    MAX_FEE_ACCEPTED,
+    MAX_FEE_ACCEPTED
 }
 
 data class SearchVoucherValueDecisionRequest(

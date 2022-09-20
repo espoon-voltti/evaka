@@ -438,8 +438,11 @@ fun Database.Read.getVardaChildToEvakaChild(): Map<Long, ChildId?> =
 
 fun Database.Transaction.getVardaChildrenToReset(limit: Int, addNewChildren: Boolean): List<ChildId> {
     // We aim to include children by daycare units, capping each batch with <limit>
-    val updateCount = if (!addNewChildren) 0 else createUpdate(
-        """
+    val updateCount = if (!addNewChildren) {
+        0
+    } else {
+        createUpdate(
+            """
         with varda_daycare as (
             select id, name from daycare
             where upload_children_to_varda = true
@@ -466,10 +469,11 @@ fun Database.Transaction.getVardaChildrenToReset(limit: Int, addNewChildren: Boo
         from child_daycare
         where name not in (select name from last_daycare)
         or 1 in (select count from daycare_count)
-        """.trimIndent()
-    )
-        .bind("limit", limit)
-        .execute()
+            """.trimIndent()
+        )
+            .bind("limit", limit)
+            .execute()
+    }
 
     if (updateCount > 0) logger.info("VardaUpdate: added $updateCount new children to be reset")
 

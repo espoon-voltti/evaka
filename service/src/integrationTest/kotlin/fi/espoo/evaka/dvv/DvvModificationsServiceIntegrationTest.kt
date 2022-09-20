@@ -427,13 +427,17 @@ class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegratio
                 socialSecurityNumber = person.ssn!!,
                 firstNames = person.firstName,
                 lastName = person.lastName,
-                address = if (person.streetAddress.isNullOrBlank()) null else PersonAddress(
-                    streetAddress = person.streetAddress,
-                    postalCode = person.postalCode,
-                    postOffice = person.postOffice,
-                    postOfficeSe = person.postOffice,
-                    streetAddressSe = person.streetAddress
-                ),
+                address = if (person.streetAddress.isNullOrBlank()) {
+                    null
+                } else {
+                    PersonAddress(
+                        streetAddress = person.streetAddress,
+                        postalCode = person.postalCode,
+                        postOffice = person.postOffice,
+                        postOfficeSe = person.postOffice,
+                        streetAddressSe = person.streetAddress
+                    )
+                },
                 residenceCode = person.residenceCode,
                 nativeLanguage = NativeLanguage(languageName = "FI", code = "fi"),
                 restrictedDetails = RestrictedDetails(enabled = person.restrictedDetailsEnabled, endDate = person.restrictedDetailsEndDate),

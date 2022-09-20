@@ -27,8 +27,12 @@ class DecisionsReportController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+        @RequestParam("from")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        from: LocalDate,
+        @RequestParam("to")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        to: LocalDate
     ): List<DecisionsReportRow> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_DECISIONS_REPORT)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")

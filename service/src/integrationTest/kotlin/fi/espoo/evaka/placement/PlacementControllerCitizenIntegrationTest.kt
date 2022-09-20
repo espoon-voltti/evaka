@@ -108,7 +108,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 type = TerminatablePlacementType.DAYCARE,
                 terminationDate = placementTerminationDate,
                 unitId = daycareId,
-                terminateDaycareOnly = false,
+                terminateDaycareOnly = false
             )
         )
 
@@ -143,7 +143,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 // placement in the past unaffected
                 startDate = LocalDate.now().minusYears(3),
                 endDate = LocalDate.now().minusYears(2),
-                type = PlacementType.DAYCARE,
+                type = PlacementType.DAYCARE
             )
             it.insertTestPlacement(
                 childId = childId,
@@ -151,28 +151,28 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 // placement in the past unaffected
                 startDate = LocalDate.now().minusMonths(12),
                 endDate = LocalDate.now().minusMonths(6),
-                type = PlacementType.PRESCHOOL,
+                type = PlacementType.PRESCHOOL
             )
             it.insertTestPlacement(
                 childId = childId,
                 unitId = daycareId,
                 startDate = startPreschool,
                 endDate = endPreschool,
-                type = PlacementType.PRESCHOOL,
+                type = PlacementType.PRESCHOOL
             )
             it.insertTestPlacement(
                 childId = childId,
                 unitId = daycareId,
                 startDate = startDaycare,
                 endDate = endDaycare,
-                type = PlacementType.DAYCARE,
+                type = PlacementType.DAYCARE
             )
             it.insertTestPlacement(
                 childId = childId,
                 unitId = daycareId,
                 startDate = startClub,
                 endDate = endClub,
-                type = PlacementType.CLUB,
+                type = PlacementType.CLUB
             )
         }
 
@@ -182,7 +182,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 type = TerminatablePlacementType.PRESCHOOL,
                 terminationDate = placementTerminationDate,
                 unitId = daycareId,
-                terminateDaycareOnly = false,
+                terminateDaycareOnly = false
             )
         )
 
@@ -221,7 +221,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 unitId = daycareId,
                 startDate = startPreschool,
                 endDate = endPreschool,
-                type = PlacementType.PRESCHOOL_DAYCARE,
+                type = PlacementType.PRESCHOOL_DAYCARE
             )
             it.insertServiceNeed(
                 id,
@@ -259,7 +259,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 type = TerminatablePlacementType.PRESCHOOL,
                 terminationDate = placementTerminationDate,
                 unitId = daycareId,
-                terminateDaycareOnly = true,
+                terminateDaycareOnly = true
             )
         )
 
@@ -289,7 +289,6 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
     @Test
     fun `terminating PRESCHOOL_DAYCARE with daycare only changes the remainder of the preschool to PRESCHOOL and terminates upcoming daycare`() {
-
         // |------------ PRESCHOOL_DAYCARE -------------||--------- DAYCARE --------||--- PRESCHOOL_DAYCARE ---|
         // 1. terminateDaycareOnly = true
         // |--- PRESCHOOL_DAYCARE -------||- PRESCHOOL -|                            |------- PRESCHOOL -------|
@@ -330,7 +329,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 type = TerminatablePlacementType.PRESCHOOL,
                 terminationDate = placementTerminationDate,
                 unitId = daycareId,
-                terminateDaycareOnly = true,
+                terminateDaycareOnly = true
             )
         )
 
@@ -372,7 +371,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 type = TerminatablePlacementType.PRESCHOOL,
                 terminationDate = terminationDate2,
                 unitId = daycareId,
-                terminateDaycareOnly = true,
+                terminateDaycareOnly = true
             )
         )
 
@@ -393,7 +392,6 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
     @Test
     fun `terminating PRESCHOOL_DAYCARE with daycare only does not affect anything before termination date`() {
-
         // |--- PRESCHOOL_DAYCARE ---||--------- DAYCARE --------||--- PRESCHOOL_DAYCARE ---|
         // 1. terminateDaycareOnly = true
         //                                                          terminationDate   x
@@ -426,7 +424,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 type = TerminatablePlacementType.PRESCHOOL,
                 terminationDate = placementTerminationDate,
                 unitId = daycareId,
-                terminateDaycareOnly = true,
+                terminateDaycareOnly = true
             )
         )
 
@@ -444,7 +442,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 Triple(PlacementType.PRESCHOOL_DAYCARE, startPreschool, endPreschool),
                 Triple(PlacementType.DAYCARE, startDaycare, endDaycare),
                 Triple(PlacementType.PRESCHOOL_DAYCARE, startNextPreschoolDaycare, placementTerminationDate),
-                Triple(PlacementType.PRESCHOOL, placementTerminationDate.plusDays(1), endNextPreschoolDaycare),
+                Triple(PlacementType.PRESCHOOL, placementTerminationDate.plusDays(1), endNextPreschoolDaycare)
             ),
             group1
         )
@@ -457,7 +455,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 type = TerminatablePlacementType.PRESCHOOL,
                 terminationDate = terminationDate2,
                 unitId = daycareId,
-                terminateDaycareOnly = true,
+                terminateDaycareOnly = true
             )
         )
 
@@ -472,7 +470,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             listOf(
                 Triple(PlacementType.PRESCHOOL_DAYCARE, startPreschool, endPreschool),
                 Triple(PlacementType.DAYCARE, startDaycare, terminationDate2),
-                Triple(PlacementType.PRESCHOOL, startNextPreschoolDaycare, endNextPreschoolDaycare),
+                Triple(PlacementType.PRESCHOOL, startNextPreschoolDaycare, endNextPreschoolDaycare)
             ),
             group
         )
@@ -507,7 +505,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 unitId = daycareId,
                 startDate = startPreschool,
                 endDate = endPreschool,
-                type = PlacementType.PRESCHOOL_DAYCARE,
+                type = PlacementType.PRESCHOOL_DAYCARE
             ).let { id ->
                 it.insertServiceNeed(
                     id,
@@ -533,14 +531,14 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 unitId = daycareId,
                 startDate = startDaycare,
                 endDate = endDaycare,
-                type = PlacementType.DAYCARE,
+                type = PlacementType.DAYCARE
             )
             it.insertTestPlacement(
                 childId = childId,
                 unitId = daycareId,
                 startDate = startNextPreschoolDaycare,
                 endDate = endNextPreschoolDaycare,
-                type = PlacementType.PRESCHOOL_DAYCARE,
+                type = PlacementType.PRESCHOOL_DAYCARE
             )
         }
     }
@@ -551,7 +549,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
             type = TerminatablePlacementType.DAYCARE,
             terminationDate = today.plusDays(1),
             unitId = daycare2Id,
-            terminateDaycareOnly = false,
+            terminateDaycareOnly = false
         )
         terminatePlacements(child.id, body, 403)
         db.transaction { it.addUnitFeatures(listOf(daycare2Id), listOf(PilotFeature.PLACEMENT_TERMINATION)) }
@@ -590,7 +588,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 type = TerminatablePlacementType.DAYCARE,
                 terminationDate = placementTerminationDate,
                 unitId = daycareId,
-                terminateDaycareOnly = false,
+                terminateDaycareOnly = false
             )
         )
 
@@ -623,7 +621,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 type = TerminatablePlacementType.DAYCARE,
                 terminationDate = placementTerminationDate,
                 unitId = daycareId,
-                terminateDaycareOnly = false,
+                terminateDaycareOnly = false
             )
         )
 
@@ -646,7 +644,7 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 type = TerminatablePlacementType.DAYCARE,
                 terminationDate = placementTerminationDate,
                 unitId = daycareId,
-                terminateDaycareOnly = false,
+                terminateDaycareOnly = false
             )
         )
 

@@ -114,8 +114,9 @@ private fun analyzeClass(clazz: KClass<*>): AnalyzedClass? {
         return null
     }
 
-    if (clazz.qualifiedName?.startsWith("kotlin.") == true || clazz.qualifiedName?.startsWith("java.") == true)
+    if (clazz.qualifiedName?.startsWith("kotlin.") == true || clazz.qualifiedName?.startsWith("java.") == true) {
         error("Kotlin/Java class ${clazz.qualifiedName} not handled, add to tsMapping")
+    }
 
     return when {
         clazz.java.enumConstants?.isNotEmpty() == true -> AnalyzedClass.EnumClass(
@@ -170,12 +171,14 @@ ${properties.joinToString("\n") { "  " + it.toTs() }}
             val doc = """/**
 * Generated from $fullName
 */"""
-            if (constList != null) return doc + """
+            if (constList != null) {
+                return doc + """
 export const $constList = [
 ${values.joinToString(",\n") { "  '$it'" }}
 ] as const
 
 export type $name = typeof $constList[number]"""
+            }
 
             return doc + """
 export type $name =

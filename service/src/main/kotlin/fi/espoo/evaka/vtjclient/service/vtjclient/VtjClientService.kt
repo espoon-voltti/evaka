@@ -38,7 +38,6 @@ class VtjClientService(
     private val logger = KotlinLogging.logger {}
 
     override fun query(query: VTJQuery): Henkilo? {
-
         val request = query.toRequest()
 
         logger.auditVTJ(
@@ -100,7 +99,9 @@ class VtjClientService(
                 if (it.declaredType == T::class.java) {
                     @Suppress("UNCHECKED_CAST")
                     it as JAXBElement<T>
-                } else throw IllegalStateException("Unexpected VTJ response type: ${it.declaredType}")
+                } else {
+                    throw IllegalStateException("Unexpected VTJ response type: ${it.declaredType}")
+                }
             }
 
     fun VTJQuery.toRequest(): JAXBElement<HenkiloTunnusKyselyReqBody> {

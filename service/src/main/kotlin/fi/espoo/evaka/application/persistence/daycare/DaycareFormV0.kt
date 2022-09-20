@@ -242,8 +242,10 @@ data class OtherPerson(
 enum class CareType(val id: Long) {
     @JsonProperty("centre")
     CENTRE(1L),
+
     @JsonProperty("family")
     FAMILY(2L),
+
     @JsonProperty("group_family")
     GROUP_FAMILY(3L)
 }
@@ -251,15 +253,18 @@ enum class CareType(val id: Long) {
 enum class WeeklyHours(val id: Long) {
     @JsonProperty("over_35")
     OVER_35(1L),
+
     @JsonProperty("between_25_and_35")
     BETWEEN_25_AND_35(2L),
+
     @JsonProperty("under_25")
     UNDER_25(3L)
 }
 
 @JsonIgnoreProperties(
     // no longer in the class since commit 90b5a4f4f949bcce4680b2ee133820d6affc0695, but still present in data
-    "assistanceAdditionalDetails", "careFactor"
+    "assistanceAdditionalDetails",
+    "careFactor"
 )
 data class CareDetails(
     val preparatory: Boolean? = null,

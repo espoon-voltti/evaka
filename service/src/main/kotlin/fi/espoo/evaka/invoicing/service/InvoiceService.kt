@@ -41,7 +41,7 @@ data class InvoiceCodes(
 class InvoiceService(
     private val integrationClient: InvoiceIntegrationClient,
     private val productProvider: InvoiceProductProvider,
-    private val featureConfig: FeatureConfig,
+    private val featureConfig: FeatureConfig
 ) {
     fun sendInvoices(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, invoiceIds: List<InvoiceId>, invoiceDate: LocalDate?, dueDate: LocalDate?) {
         val seriesStart = featureConfig.invoiceNumberSeriesStart

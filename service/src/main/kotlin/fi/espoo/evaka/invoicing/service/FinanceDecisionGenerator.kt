@@ -355,7 +355,9 @@ internal fun <Decision : FinanceDecision<Decision>> updateDecisionEndDatesAndMer
                     updatedActives + decision.withValidity(DateRange(decision.validFrom, similarDraft.validTo)),
                     keptDrafts.filterNot { it.id == similarDraft.id }
                 )
-            } else null
+            } else {
+                null
+            }
         } ?: Pair(updatedActives, keptDrafts)
     }
 

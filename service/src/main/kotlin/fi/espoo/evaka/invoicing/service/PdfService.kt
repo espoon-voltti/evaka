@@ -50,17 +50,22 @@ data class VoucherValueDecisionPdfData(
 )
 
 enum class DocumentLang {
-    fi, sv
+    FI,
+    SV
 }
 
 fun BigDecimal.toDecimalString(): String = this.toString().replace('.', ',')
 
 fun formatCents(amountInCents: Int?): String? =
-    if (amountInCents != null) BigDecimal(amountInCents).divide(
-        BigDecimal(100),
-        2,
-        RoundingMode.HALF_UP
-    ).toDecimalString() else null
+    if (amountInCents != null) {
+        BigDecimal(amountInCents).divide(
+            BigDecimal(100),
+            2,
+            RoundingMode.HALF_UP
+        ).toDecimalString()
+    } else {
+        null
+    }
 
 fun dateFmt(date: LocalDate?): String = date?.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) ?: ""
 
@@ -148,8 +153,8 @@ class PDFService(
             "familySize" to decision.familySize,
             "value" to formatCents(decision.voucherValue),
             "voucherValueDescription" to when (lang) {
-                DocumentLang.fi -> decision.serviceNeed.voucherValueDescriptionFi
-                DocumentLang.sv -> decision.serviceNeed.voucherValueDescriptionSv
+                DocumentLang.FI -> decision.serviceNeed.voucherValueDescriptionFi
+                DocumentLang.SV -> decision.serviceNeed.voucherValueDescriptionSv
             },
             "headIncomeTotal" to formatCents(decision.headOfFamilyIncome?.total),
             "headIncomeEffect" to (decision.headOfFamilyIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
@@ -186,7 +191,7 @@ class PDFService(
             "hasChildIncome" to hasChildIncome,
             "childIncomeTotal" to formatCents(decision.childIncome?.total),
             "childFullName" to with(decision.child) { "$firstName $lastName" },
-            "childIncomeEffect" to (decision.childIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
+            "childIncomeEffect" to (decision.childIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name)
 
         )
     }

@@ -31,7 +31,7 @@ data class DailyServiceTimes(
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class DailyServiceTimesValue(
     open val validityPeriod: DateRange,
-    val type: DailyServiceTimesType,
+    val type: DailyServiceTimesType
 ) {
     abstract fun asUpdateRow(): DailyServiceTimeUpdateRow
     abstract fun equalsIgnoringValidity(other: DailyServiceTimesValue): Boolean
@@ -39,7 +39,7 @@ sealed class DailyServiceTimesValue(
     @JsonTypeName("REGULAR")
     data class RegularTimes(
         override val validityPeriod: DateRange,
-        val regularTimes: TimeRange,
+        val regularTimes: TimeRange
     ) : DailyServiceTimesValue(validityPeriod, DailyServiceTimesType.REGULAR) {
         override fun asUpdateRow() = DailyServiceTimeUpdateRow(
             type = DailyServiceTimesType.REGULAR,
@@ -67,7 +67,7 @@ sealed class DailyServiceTimesValue(
         val thursday: TimeRange?,
         val friday: TimeRange?,
         val saturday: TimeRange?,
-        val sunday: TimeRange?,
+        val sunday: TimeRange?
     ) : DailyServiceTimesValue(validityPeriod, DailyServiceTimesType.IRREGULAR) {
         fun timesForDayOfWeek(dayOfWeek: DayOfWeek) = when (dayOfWeek) {
             DayOfWeek.MONDAY -> monday
@@ -229,7 +229,7 @@ fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimes {
     return when (row.type) {
         DailyServiceTimesType.REGULAR -> DailyServiceTimesValue.RegularTimes(
             validityPeriod = row.validityPeriod,
-            regularTimes = row.regularTimes ?: throw IllegalStateException("Regular daily service times must have regular times"),
+            regularTimes = row.regularTimes ?: throw IllegalStateException("Regular daily service times must have regular times")
         ).withId(row.id, row.childId)
         DailyServiceTimesType.IRREGULAR -> DailyServiceTimesValue.IrregularTimes(
             validityPeriod = row.validityPeriod,
@@ -239,7 +239,7 @@ fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimes {
             thursday = row.thursdayTimes,
             friday = row.fridayTimes,
             saturday = row.saturdayTimes,
-            sunday = row.sundayTimes,
+            sunday = row.sundayTimes
         ).withId(row.id, row.childId)
         DailyServiceTimesType.VARIABLE_TIME -> DailyServiceTimesValue.VariableTimes(
             validityPeriod = row.validityPeriod

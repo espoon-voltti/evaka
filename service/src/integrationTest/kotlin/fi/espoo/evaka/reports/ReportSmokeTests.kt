@@ -122,7 +122,7 @@ class ReportSmokeTests : FullApplicationTest(resetDbBeforeEach = false) {
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
                     startDate = LocalDate.of(2022, 1, 1),
-                    endDate = LocalDate.of(2022, 3, 1),
+                    endDate = LocalDate.of(2022, 3, 1)
                 )
             )
         }

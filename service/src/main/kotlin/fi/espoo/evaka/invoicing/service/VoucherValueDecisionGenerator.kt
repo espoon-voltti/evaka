@@ -68,12 +68,13 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     val voucherValues = getVoucherValues(from).groupBy { it.serviceNeedOptionId }
     val adults = families.flatMap { listOfNotNull(it.headOfFamily, it.partner) }
     val incomes = getIncomesFrom(jsonMapper, incomeTypesProvider, adults + child.id, from)
-    val assistanceNeedCoefficients = if (featureConfig.valueDecisionCapacityFactorEnabled)
+    val assistanceNeedCoefficients = if (featureConfig.valueDecisionCapacityFactorEnabled) {
         getCapacityFactorsByChild(child.id).map { AssistanceNeedCoefficient(it.dateRange, it.capacityFactor) }
-    else
+    } else {
         getAssistanceNeedVoucherCoefficientsForChild(child.id).map {
             AssistanceNeedCoefficient(it.validityPeriod.asDateRange(), it.coefficient)
         }
+    }
     val feeAlterations = getFeeAlterationsFrom(listOf(child.id), from) + addECHAFeeAlterations(setOf(child), incomes)
 
     val placements = getPaidPlacements(from, children).toMap()
@@ -211,31 +212,34 @@ private fun generateNewValueDecisions(
                 val baseCoPayment =
                     calculateBaseFee(price, family.getSize(), familyIncomes + listOfNotNull(childIncome))
                 val voucherValue =
-                    if (placement == null || serviceVoucherUnits.none { unit -> unit == placement.unitId }) null
-                    else {
+                    if (placement == null || serviceVoucherUnits.none { unit -> unit == placement.unitId }) {
+                        null
+                    } else {
                         val voucherValue =
                             voucherValues[placement.serviceNeed.optionId]?.find { it.validity.contains(period) }
                                 ?: error("Cannot generate voucher value decision: Missing voucher value for service need option ${placement.serviceNeed.optionId}, period ${period.start} - ${period.end}")
                         getVoucherValues(period, voucherChild.dateOfBirth, voucherValue)
                     }
 
-                if (voucherValue == null || voucherValue.value == 0 || placement == null) return@let period to VoucherValueDecision.empty(
-                    status = VoucherValueDecisionStatus.DRAFT,
-                    decisionType = VoucherValueDecisionType.NORMAL,
-                    headOfFamilyId = family.headOfFamily,
-                    partnerId = family.partner,
-                    headOfFamilyIncome = income,
-                    partnerIncome = partnerIncome,
-                    childIncome = childIncome,
-                    familySize = family.getSize(),
-                    feeThresholds = price.getFeeDecisionThresholds(family.getSize()),
-                    validFrom = period.start,
-                    validTo = period.end,
-                    child = voucherChild,
-                    baseCoPayment = baseCoPayment,
-                    siblingDiscount = price.siblingDiscountPercent(1),
-                    baseValue = 0,
-                )
+                if (voucherValue == null || voucherValue.value == 0 || placement == null) {
+                    return@let period to VoucherValueDecision.empty(
+                        status = VoucherValueDecisionStatus.DRAFT,
+                        decisionType = VoucherValueDecisionType.NORMAL,
+                        headOfFamilyId = family.headOfFamily,
+                        partnerId = family.partner,
+                        headOfFamilyIncome = income,
+                        partnerIncome = partnerIncome,
+                        childIncome = childIncome,
+                        familySize = family.getSize(),
+                        feeThresholds = price.getFeeDecisionThresholds(family.getSize()),
+                        validFrom = period.start,
+                        validTo = period.end,
+                        child = voucherChild,
+                        baseCoPayment = baseCoPayment,
+                        siblingDiscount = price.siblingDiscountPercent(1),
+                        baseValue = 0
+                    )
+                }
 
                 val siblingIndex = validPlacements
                     .sortedByDescending { (child, _) -> child.dateOfBirth }
@@ -290,7 +294,7 @@ private fun generateNewValueDecisions(
                     baseValue = voucherValue.baseValue,
                     assistanceNeedCoefficient = assistanceNeedCoefficient,
                     voucherValue = (BigDecimal(voucherValue.value) * assistanceNeedCoefficient).toInt(),
-                    difference = emptySet(),
+                    difference = emptySet()
                 )
             }
         }

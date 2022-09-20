@@ -43,8 +43,12 @@ class AttendanceReservationController(private val ac: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        from: LocalDate,
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        to: LocalDate
     ): UnitAttendanceReservations {
         ac.requirePermissionFor(user, clock, Action.Unit.READ_ATTENDANCE_RESERVATIONS, unitId)
         if (to < from || from.plusMonths(1) < to) throw BadRequest("Invalid query dates")
@@ -86,11 +90,14 @@ class AttendanceReservationController(private val ac: AccessControl) {
                     unit = unitName,
                     operationalDays = operationalDays,
                     groups = byGroup.entries.mapNotNull { (group, rows) ->
-                        if (group == null) null
-                        else UnitAttendanceReservations.GroupAttendanceReservations(
-                            group = group,
-                            children = toChildDayRows(rows, serviceTimes, childData)
-                        )
+                        if (group == null) {
+                            null
+                        } else {
+                            UnitAttendanceReservations.GroupAttendanceReservations(
+                                group = group,
+                                children = toChildDayRows(rows, serviceTimes, childData)
+                            )
+                        }
                     },
                     ungrouped = byGroup[null]?.let { toChildDayRows(it, serviceTimes, childData) } ?: emptyList()
                 )
@@ -210,7 +217,7 @@ private data class ChildPlacementStatus(
     val date: LocalDate,
     val childId: ChildId,
     val group: UnitAttendanceReservations.ReservationGroup?,
-    val inOtherUnit: Boolean,
+    val inOtherUnit: Boolean
 )
 
 private data class EffectiveGroupPlacementPeriod(
@@ -219,7 +226,7 @@ private data class EffectiveGroupPlacementPeriod(
     @Nested("group")
     val group: UnitAttendanceReservations.ReservationGroup?,
     val isBackup: Boolean,
-    val inOtherUnit: Boolean,
+    val inOtherUnit: Boolean
 )
 
 private fun Database.Read.getEffectiveGroupPlacementsInRange(
@@ -287,7 +294,7 @@ private data class ChildData(
     val child: UnitAttendanceReservations.Child,
     val reservations: Map<LocalDate, List<UnitAttendanceReservations.ReservationTimes>>,
     val attendances: Map<LocalDate, List<UnitAttendanceReservations.AttendanceTimes>>,
-    val absences: Map<LocalDate, UnitAttendanceReservations.Absence>,
+    val absences: Map<LocalDate, UnitAttendanceReservations.Absence>
 )
 
 private data class ReservationTimesForDate(
@@ -357,7 +364,7 @@ WHERE p.id = ANY(:childIds)
                     id = row.mapColumn("id"),
                     firstName = row.mapColumn("first_name"),
                     lastName = row.mapColumn("last_name"),
-                    dateOfBirth = row.mapColumn("date_of_birth"),
+                    dateOfBirth = row.mapColumn("date_of_birth")
                 ),
                 reservations = row.mapJsonColumn<List<ReservationTimesForDate>>("reservations")
                     .groupBy({ it.date }, { it.toReservationTimes() }),
@@ -365,7 +372,7 @@ WHERE p.id = ANY(:childIds)
                     .groupBy({ it.date }, { it.toAttendanceTimes() }),
                 // The SQL query can return multiple absences for the same date, but here we only take one
                 absences = row.mapJsonColumn<List<AbsenceForDate>>("absences")
-                    .associateBy({ it.date }, { it.toAbsence() }),
+                    .associateBy({ it.date }, { it.toAbsence() })
             )
         }
         .associateBy { it.child.id }
@@ -374,7 +381,7 @@ WHERE p.id = ANY(:childIds)
 private fun toChildDayRows(
     rows: List<ChildPlacementStatus>,
     serviceTimes: Map<ChildId, List<DailyServiceTimesValue>>,
-    childData: Map<ChildId, ChildData>,
+    childData: Map<ChildId, ChildData>
 ): List<UnitAttendanceReservations.ChildDailyRecords> {
     return rows
         .groupBy { it.childId }
@@ -399,7 +406,9 @@ private fun toChildDayRows(
                             { it.date },
                             { dailyRecord(it, 1, child, serviceTimes[childId]) }
                         )
-                    } else null
+                    } else {
+                        null
+                    }
                 )
             )
         }

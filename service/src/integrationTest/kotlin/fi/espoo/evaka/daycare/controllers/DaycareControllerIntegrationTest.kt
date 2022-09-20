@@ -59,12 +59,12 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DevEmployee(
                     id = supervisorId,
                     firstName = "Elina",
-                    lastName = "Esimies",
+                    lastName = "Esimies"
                 )
             )
             tx.insertTestEmployee(
                 DevEmployee(
-                    id = staffId,
+                    id = staffId
                 )
             )
             tx.insertDaycareAclRow(daycareId, supervisorId, UserRole.UNIT_SUPERVISOR)
@@ -134,7 +134,7 @@ class DaycareControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                     childId = childId,
                     unitId = daycareId,
                     groupId = group.id,
-                    period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 2, 1)),
+                    period = FiniteDateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 2, 1))
                 )
             )
         }

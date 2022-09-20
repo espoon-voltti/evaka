@@ -222,5 +222,8 @@ class AssistanceNeedDecisionService(
 }
 
 private fun suomiFiDocumentFileName(lang: AssistanceNeedDecisionLanguage) =
-    if (lang == AssistanceNeedDecisionLanguage.SV) "Beslut_om_stödbehov.pdf"
-    else "Päätös_tuen_tarpeesta.pdf"
+    if (lang == AssistanceNeedDecisionLanguage.SV) {
+        "Beslut_om_stödbehov.pdf"
+    } else {
+        "Päätös_tuen_tarpeesta.pdf"
+    }

@@ -23,8 +23,11 @@ fun updateUnits(db: Database.Connection, clock: EvakaClock, client: VardaClient,
     units.forEach { unit ->
         try {
             val response =
-                if (unit.vardaUnitId == null) client.createUnit(unit.toVardaUnitRequest())
-                else client.updateUnit(unit.toVardaUnitRequest())
+                if (unit.vardaUnitId == null) {
+                    client.createUnit(unit.toVardaUnitRequest())
+                } else {
+                    client.updateUnit(unit.toVardaUnitRequest())
+                }
             db.transaction { setUnitUploaded(it, clock, unit.copy(vardaUnitId = response.id, ophUnitOid = response.organisaatio_oid)) }
         } catch (e: Exception) {
             logger.error { "VardaUpdate: failed to update unit ${unit.name}: $e" }
@@ -128,9 +131,9 @@ enum class VardaUnitType(val vardaCode: String) {
 
 //  https://virkailija.opintopolku.fi/koodisto-service/rest/json/kieli/koodi
 enum class VardaLanguage(val vardaCode: String) {
-    fi("FI"),
-    sv("SV"),
-    en("EN")
+    FI("FI"),
+    SV("SV"),
+    EN("EN")
 }
 
 // https://virkailija.opintopolku.fi/koodisto-service/rest/json/vardakasvatusopillinenjarjestelma/koodi

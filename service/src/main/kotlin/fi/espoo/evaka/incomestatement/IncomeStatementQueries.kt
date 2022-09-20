@@ -108,56 +108,75 @@ private fun mapIncomeStatement(row: RowView, includeEmployeeContent: Boolean): I
                 created = created,
                 updated = updated,
                 handled = handled,
-                handlerNote = handlerNote,
+                handlerNote = handlerNote
             )
 
         IncomeStatementType.INCOME -> {
             val grossIncomeSource = row.mapColumn<IncomeSource?>("gross_income_source")
-            val gross = if (grossIncomeSource != null) Gross(
-                incomeSource = grossIncomeSource,
-                estimatedMonthlyIncome = row.mapColumn("gross_estimated_monthly_income"),
-                otherIncome = row.mapColumn("gross_other_income"),
-                otherIncomeInfo = row.mapColumn("gross_other_income_info"),
-            ) else null
+            val gross = if (grossIncomeSource != null) {
+                Gross(
+                    incomeSource = grossIncomeSource,
+                    estimatedMonthlyIncome = row.mapColumn("gross_estimated_monthly_income"),
+                    otherIncome = row.mapColumn("gross_other_income"),
+                    otherIncomeInfo = row.mapColumn("gross_other_income_info")
+                )
+            } else {
+                null
+            }
 
             val selfEmployedAttachments = row.mapColumn<Boolean?>("self_employed_attachments")
             val selfEmployedEstimatedMonthlyIncome = row.mapColumn<Int?>("self_employed_estimated_monthly_income")
-            val selfEmployed = if (selfEmployedAttachments != null)
+            val selfEmployed = if (selfEmployedAttachments != null) {
                 SelfEmployed(
                     attachments = selfEmployedAttachments,
-                    estimatedIncome = if (selfEmployedEstimatedMonthlyIncome != null) EstimatedIncome(
-                        selfEmployedEstimatedMonthlyIncome,
-                        incomeStartDate = row.mapColumn("self_employed_income_start_date"),
-                        incomeEndDate = row.mapColumn("self_employed_income_end_date")
-                    ) else null
-                ) else null
+                    estimatedIncome = if (selfEmployedEstimatedMonthlyIncome != null) {
+                        EstimatedIncome(
+                            selfEmployedEstimatedMonthlyIncome,
+                            incomeStartDate = row.mapColumn("self_employed_income_start_date"),
+                            incomeEndDate = row.mapColumn("self_employed_income_end_date")
+                        )
+                    } else {
+                        null
+                    }
+                )
+            } else {
+                null
+            }
 
             val limitedCompanyIncomeSource = row.mapColumn<IncomeSource?>("limited_company_income_source")
             val limitedCompany =
                 if (limitedCompanyIncomeSource != null) LimitedCompany(limitedCompanyIncomeSource) else null
 
             val accountantName = row.mapColumn<String>("accountant_name")
-            val accountant = if (accountantName != "") Accountant(
-                name = accountantName,
-                address = row.mapColumn("accountant_address"),
-                phone = row.mapColumn("accountant_phone"),
-                email = row.mapColumn("accountant_email"),
-            ) else null
+            val accountant = if (accountantName != "") {
+                Accountant(
+                    name = accountantName,
+                    address = row.mapColumn("accountant_address"),
+                    phone = row.mapColumn("accountant_phone"),
+                    email = row.mapColumn("accountant_email")
+                )
+            } else {
+                null
+            }
 
             // If one of the entrepreneur columns is non-NULL, assume the entrepreneurship info has been filled
             val fullTime = row.mapColumn<Boolean?>("entrepreneur_full_time")
-            val entrepreneur = if (fullTime != null) Entrepreneur(
-                fullTime = fullTime,
-                startOfEntrepreneurship = row.mapColumn("start_of_entrepreneurship"),
-                spouseWorksInCompany = row.mapColumn("spouse_works_in_company"),
-                startupGrant = row.mapColumn("startup_grant"),
-                checkupConsent = row.mapColumn("checkup_consent"),
-                selfEmployed = selfEmployed,
-                limitedCompany = limitedCompany,
-                partnership = row.mapColumn("partnership"),
-                lightEntrepreneur = row.mapColumn("light_entrepreneur"),
-                accountant = accountant
-            ) else null
+            val entrepreneur = if (fullTime != null) {
+                Entrepreneur(
+                    fullTime = fullTime,
+                    startOfEntrepreneurship = row.mapColumn("start_of_entrepreneurship"),
+                    spouseWorksInCompany = row.mapColumn("spouse_works_in_company"),
+                    startupGrant = row.mapColumn("startup_grant"),
+                    checkupConsent = row.mapColumn("checkup_consent"),
+                    selfEmployed = selfEmployed,
+                    limitedCompany = limitedCompany,
+                    partnership = row.mapColumn("partnership"),
+                    lightEntrepreneur = row.mapColumn("light_entrepreneur"),
+                    accountant = accountant
+                )
+            } else {
+                null
+            }
 
             IncomeStatement.Income(
                 id = id,
@@ -527,7 +546,7 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
     page: Int,
     pageSize: Int,
     sortBy: IncomeStatementSortParam,
-    sortDirection: SortDirection,
+    sortDirection: SortDirection
 ): Paged<IncomeStatementAwaitingHandler> {
     val count = createQuery("""SELECT COUNT(*) FROM ($awaitingHandlerQuery) q""")
         .bind("today", today)

@@ -77,7 +77,7 @@ sealed interface Action {
     enum class Global(override vararg val defaultRules: UnscopedActionRule) : UnscopedAction {
         APPLICATIONS_PAGE(
             HasGlobalRole(SERVICE_WORKER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit()
         ),
         EMPLOYEES_PAGE,
         FINANCE_BASICS_PAGE(HasGlobalRole(FINANCE_ADMIN)),
@@ -89,23 +89,23 @@ sealed interface Action {
         ),
         PERSON_SEARCH_PAGE(
             HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
         ),
         REPORTS_PAGE(
             HasGlobalRole(DIRECTOR, REPORT_VIEWER, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
         ),
         SETTINGS_PAGE,
         UNIT_FEATURES_PAGE,
         UNITS_PAGE(
             HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
         ),
         VASU_TEMPLATES_PAGE,
         PERSONAL_MOBILE_DEVICE_PAGE(HasUnitRole(UNIT_SUPERVISOR).inAnyUnit(), IsEmployee.ownerOfAnyMobileDevice()),
         PIN_CODE_PAGE(
             HasGlobalRole(REPORT_VIEWER, DIRECTOR, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit(),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
         ),
 
         CREATE_VASU_TEMPLATE,
@@ -391,7 +391,7 @@ sealed interface Action {
         READ_INCOME_ATTACHMENT(HasGlobalRole(FINANCE_ADMIN)),
         READ_MESSAGE_CONTENT_ATTACHMENT(
             IsEmployee.hasPermissionForAttachmentThroughMessageContent(),
-            IsCitizen(allowWeakLogin = true).hasPermissionForAttachmentThroughMessageContent(),
+            IsCitizen(allowWeakLogin = true).hasPermissionForAttachmentThroughMessageContent()
         ),
         READ_MESSAGE_DRAFT_ATTACHMENT(IsEmployee.hasPermissionForAttachmentThroughMessageDraft()),
         READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT(
@@ -405,7 +405,7 @@ sealed interface Action {
         DELETE_MESSAGE_CONTENT_ATTACHMENT,
         DELETE_MESSAGE_DRAFT_ATTACHMENT(IsEmployee.hasPermissionForAttachmentThroughMessageDraft()),
         DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT(
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment(),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).withUnitFeatures(PilotFeature.VASU_AND_PEDADOC).inPlacementUnitOfChildOfPedagogicalDocumentOfAttachment()
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -626,7 +626,7 @@ sealed interface Action {
         READ(HasGlobalRole(FINANCE_ADMIN)),
         UPDATE(HasGlobalRole(FINANCE_ADMIN)),
         SEND(HasGlobalRole(FINANCE_ADMIN)),
-        DELETE(HasGlobalRole(FINANCE_ADMIN)),
+        DELETE(HasGlobalRole(FINANCE_ADMIN))
         ;
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -671,7 +671,7 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class Payment(override vararg val defaultRules: ScopedActionRule<in PaymentId>) : ScopedAction<PaymentId> {
-        SEND(HasGlobalRole(FINANCE_ADMIN)),
+        SEND(HasGlobalRole(FINANCE_ADMIN))
         ;
 
         override fun toString(): String = "${javaClass.name}.$name"

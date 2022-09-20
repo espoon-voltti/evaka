@@ -35,64 +35,79 @@ data class FeeThresholds(
     val temporaryFeeSiblingPartDay: Int
 ) {
     fun incomeMultiplier(familySize: Int): BigDecimal =
-        if (familySize <= 1) error("Family size must be greater than 1 (was $familySize)")
-        else when (familySize) {
-            2 -> incomeMultiplier2
-            3 -> incomeMultiplier3
-            4 -> incomeMultiplier4
-            5 -> incomeMultiplier5
-            6 -> incomeMultiplier6
-            else -> incomeMultiplier6
+        if (familySize <= 1) {
+            error("Family size must be greater than 1 (was $familySize)")
+        } else {
+            when (familySize) {
+                2 -> incomeMultiplier2
+                3 -> incomeMultiplier3
+                4 -> incomeMultiplier4
+                5 -> incomeMultiplier5
+                6 -> incomeMultiplier6
+                else -> incomeMultiplier6
+            }
         }
 
     fun minIncomeThreshold(familySize: Int): Int =
-        if (familySize <= 1) error("Family size must be greater than 1 (was $familySize)")
-        else when (familySize) {
-            2 -> minIncomeThreshold2
-            3 -> minIncomeThreshold3
-            4 -> minIncomeThreshold4
-            5 -> minIncomeThreshold5
-            6 -> minIncomeThreshold6
-            else -> minIncomeThreshold6 + ((familySize - 6) * incomeThresholdIncrease6Plus)
+        if (familySize <= 1) {
+            error("Family size must be greater than 1 (was $familySize)")
+        } else {
+            when (familySize) {
+                2 -> minIncomeThreshold2
+                3 -> minIncomeThreshold3
+                4 -> minIncomeThreshold4
+                5 -> minIncomeThreshold5
+                6 -> minIncomeThreshold6
+                else -> minIncomeThreshold6 + ((familySize - 6) * incomeThresholdIncrease6Plus)
+            }
         }
 
     fun maxIncomeThreshold(familySize: Int): Int =
-        if (familySize <= 1) error("Family size must be greater than 1 (was $familySize)")
-        else when (familySize) {
-            2 -> maxIncomeThreshold2
-            3 -> maxIncomeThreshold3
-            4 -> maxIncomeThreshold4
-            5 -> maxIncomeThreshold5
-            6 -> maxIncomeThreshold6
-            else -> maxIncomeThreshold6 + ((familySize - 6) * incomeThresholdIncrease6Plus)
+        if (familySize <= 1) {
+            error("Family size must be greater than 1 (was $familySize)")
+        } else {
+            when (familySize) {
+                2 -> maxIncomeThreshold2
+                3 -> maxIncomeThreshold3
+                4 -> maxIncomeThreshold4
+                5 -> maxIncomeThreshold5
+                6 -> maxIncomeThreshold6
+                else -> maxIncomeThreshold6 + ((familySize - 6) * incomeThresholdIncrease6Plus)
+            }
         }
 
     fun siblingDiscountMultiplier(siblingOrdinal: Int): BigDecimal =
-        if (siblingOrdinal <= 0) error("Sibling ordinal must be > 0 (was $siblingOrdinal)")
-        else when (siblingOrdinal) {
-            1 -> BigDecimal(1)
-            2 -> BigDecimal(1) - siblingDiscount2
-            else -> BigDecimal(1) - siblingDiscount2Plus
+        if (siblingOrdinal <= 0) {
+            error("Sibling ordinal must be > 0 (was $siblingOrdinal)")
+        } else {
+            when (siblingOrdinal) {
+                1 -> BigDecimal(1)
+                2 -> BigDecimal(1) - siblingDiscount2
+                else -> BigDecimal(1) - siblingDiscount2Plus
+            }
         }
 
     fun siblingDiscountPercent(siblingOrdinal: Int): Int =
         ((BigDecimal(1) - siblingDiscountMultiplier(siblingOrdinal)) * BigDecimal(100)).toInt()
 
     fun getFeeDecisionThresholds(familySize: Int): FeeDecisionThresholds =
-        if (familySize > 1) FeeDecisionThresholds(
-            minIncomeThreshold = this.minIncomeThreshold(familySize),
-            maxIncomeThreshold = this.maxIncomeThreshold(familySize),
-            incomeMultiplier = this.incomeMultiplier(familySize),
-            maxFee = this.maxFee,
-            minFee = this.minFee
-        )
-        else FeeDecisionThresholds(
-            minIncomeThreshold = 0,
-            maxIncomeThreshold = 0,
-            incomeMultiplier = BigDecimal(0),
-            maxFee = this.maxFee,
-            minFee = this.minFee
-        )
+        if (familySize > 1) {
+            FeeDecisionThresholds(
+                minIncomeThreshold = this.minIncomeThreshold(familySize),
+                maxIncomeThreshold = this.maxIncomeThreshold(familySize),
+                incomeMultiplier = this.incomeMultiplier(familySize),
+                maxFee = this.maxFee,
+                minFee = this.minFee
+            )
+        } else {
+            FeeDecisionThresholds(
+                minIncomeThreshold = 0,
+                maxIncomeThreshold = 0,
+                incomeMultiplier = BigDecimal(0),
+                maxFee = this.maxFee,
+                minFee = this.minFee
+            )
+        }
 
     fun calculatePriceForTemporary(partDay: Boolean, siblingOrdinal: Int): Int {
         return when (siblingOrdinal) {

@@ -43,7 +43,9 @@ fun insertCaretakers(tx: Database.Transaction, groupId: GroupId, startDate: Loca
                     Conflict("Non-unique start date")
                 else -> e
             }
-        } else e
+        } else {
+            e
+        }
     }
 
     try {

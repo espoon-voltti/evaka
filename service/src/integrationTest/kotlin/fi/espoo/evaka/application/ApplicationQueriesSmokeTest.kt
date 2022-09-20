@@ -48,7 +48,7 @@ class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
             ),
             guardian = Adult(),
             apply = Apply(
-                preferredUnits = listOf(daycareId),
+                preferredUnits = listOf(daycareId)
             ),
             preferredStartDate = LocalDate.of(2022, 1, 1),
             serviceNeedOption = ServiceNeedOption(

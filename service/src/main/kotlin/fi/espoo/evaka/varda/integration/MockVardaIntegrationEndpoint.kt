@@ -198,7 +198,6 @@ class MockVardaIntegrationEndpoint {
         @RequestBody body: VardaFeeData,
         @RequestHeader(name = "Authorization") auth: String
     ): ResponseEntity<String> = lock.withLock {
-
         if (shouldFailRequest(VardaCallType.FEE_DATA)) return failRequest()
 
         this.feeDataId = feeDataId.inc()

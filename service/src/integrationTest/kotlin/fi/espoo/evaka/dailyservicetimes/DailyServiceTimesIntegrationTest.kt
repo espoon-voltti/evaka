@@ -96,7 +96,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DevDailyServiceTimes(
                     id = id,
                     childId = testChild_1.id,
-                    validityPeriod = DateRange(now.toLocalDate(), null),
+                    validityPeriod = DateRange(now.toLocalDate(), null)
                 )
             )
         }
@@ -122,30 +122,36 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DevDailyServiceTimes(
                     id = idFuture,
                     childId = testChild_1.id,
-                    validityPeriod = DateRange(now.toLocalDate(), null),
+                    validityPeriod = DateRange(now.toLocalDate(), null)
                 )
             )
             tx.insertTestDailyServiceTimes(
                 DevDailyServiceTimes(
                     id = past,
                     childId = testChild_2.id,
-                    validityPeriod = DateRange(now.toLocalDate().minusDays(1), now.toLocalDate()),
+                    validityPeriod = DateRange(now.toLocalDate().minusDays(1), now.toLocalDate())
                 )
             )
         }
 
         // Set to future
         setDailyServiceTimesEndDate(
-            idFuture, now.toLocalDate().plusDays(1), 200
+            idFuture,
+            now.toLocalDate().plusDays(1),
+            200
         )
         // Set to past -> not allowed
         setDailyServiceTimesEndDate(
-            idFuture, now.toLocalDate(), 400
+            idFuture,
+            now.toLocalDate(),
+            400
         )
 
         // Already in the past -> not allowed
         setDailyServiceTimesEndDate(
-            past, now.toLocalDate().plusDays(1), 400
+            past,
+            now.toLocalDate().plusDays(1),
+            400
         )
     }
 
@@ -201,14 +207,14 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 100L to 120L,
                 90L to 99L,
                 11L to 89L,
-                1L to 10L,
+                1L to 10L
             )
             val dailyServiceTimes = getDailyServiceTimes(testChild_1.id)
             assertEquals(expectedRanges.size, dailyServiceTimes.size)
             expectedRanges.zip(dailyServiceTimes).forEachIndexed { i, (expected, actual) ->
                 val expectedValidity = DateRange(
                     now.toLocalDate().plusDays(expected.first),
-                    now.toLocalDate().plusDays(expected.second),
+                    now.toLocalDate().plusDays(expected.second)
                 )
                 assertEquals(expectedValidity, actual.dailyServiceTimes.times.validityPeriod, "Index $i")
             }
@@ -242,13 +248,13 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DevDailyServiceTimes(
                     id = id,
                     childId = testChild_1.id,
-                    validityPeriod = DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(10)),
+                    validityPeriod = DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(10))
                 )
             )
             tx.insertTestDailyServiceTimes(
                 DevDailyServiceTimes(
                     childId = testChild_1.id,
-                    validityPeriod = DateRange(now.toLocalDate().plusDays(11), null),
+                    validityPeriod = DateRange(now.toLocalDate().plusDays(11), null)
                 )
             )
         }
@@ -313,7 +319,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         this.postReservations(
             listOf(
                 DailyReservationRequest(
-                    testChild_1.id, now.toLocalDate().plusDays(105),
+                    testChild_1.id,
+                    now.toLocalDate().plusDays(105),
                     listOf(
                         fi.espoo.evaka.reservations.TimeRange(
                             LocalTime.of(10, 0),
@@ -402,7 +409,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 thursday = tenToNoonRange,
                 friday = tenToNoonRange,
                 saturday = null,
-                sunday = null,
+                sunday = null
             )
         )
 

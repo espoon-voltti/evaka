@@ -32,13 +32,13 @@ data class Attachment(
 data class IncomeAttachment(
     val id: AttachmentId,
     val name: String,
-    val contentType: String,
+    val contentType: String
 )
 
 data class MessageAttachment(
     val id: AttachmentId,
     val name: String,
-    val contentType: String,
+    val contentType: String
 )
 
 enum class AttachmentType {

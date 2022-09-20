@@ -103,8 +103,9 @@ class DecisionController(
                 val guardian = tx.getPersonById(application.guardianId)
                     ?: error("Cannot find user for guardian id '${application.guardianId}'")
 
-                if ((child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) && !user.isAdmin)
+                if ((child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) && !user.isAdmin) {
                     throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
+                }
 
                 decision
             }

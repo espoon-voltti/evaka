@@ -198,14 +198,19 @@ private fun addServiceNeedDataToVarda(
         val serviceNeedFeeData = db.read { it.getServiceNeedFeeData(evakaServiceNeed.id, FeeDecisionStatus.SENT, VoucherValueDecisionStatus.SENT) }
 
         // Service need should have fee data if unit is invoiced by evaka, and if so, if service need is in effect after evaka started invoicing
-        val shouldHaveFeeData = if (!db.read { it.serviceNeedIsInvoicedByMunicipality(evakaServiceNeed.id) }) false else
+        val shouldHaveFeeData = if (!db.read { it.serviceNeedIsInvoicedByMunicipality(evakaServiceNeed.id) }) {
+            false
+        } else {
             !evakaServiceNeed.endDate.isBefore(feeDecisionMinDate)
+        }
 
         val hasFeeData: Boolean = serviceNeedFeeData.firstOrNull().let { it != null && it.hasFeeData() }
 
-        if (evakaServiceNeed.hoursPerWeek < 1) logger.info("VardaUpdate: refusing to send service need ${evakaServiceNeed.id} because hours per week is ${evakaServiceNeed.hoursPerWeek} ")
-        else if (shouldHaveFeeData && !hasFeeData) logger.info("VardaUpdate: refusing to send service need ${evakaServiceNeed.id} because mandatory fee data is missing")
-        else {
+        if (evakaServiceNeed.hoursPerWeek < 1) {
+            logger.info("VardaUpdate: refusing to send service need ${evakaServiceNeed.id} because hours per week is ${evakaServiceNeed.hoursPerWeek} ")
+        } else if (shouldHaveFeeData && !hasFeeData) {
+            logger.info("VardaUpdate: refusing to send service need ${evakaServiceNeed.id} because mandatory fee data is missing")
+        } else {
             check(!evakaServiceNeed.ophOrganizerOid.isNullOrBlank()) {
                 "VardaUpdate: service need daycare oph_organizer_oid is null or blank"
             }
@@ -271,13 +276,15 @@ private fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection
             if (guardians.none { it.id == decision.headOfFamilyId }) {
                 logger.info("VardaUpdate: refusing to send fee data for fee decision $feeId - head of family is not a guardian of ${evakaServiceNeed.childId}")
                 null
-            } else sendFeeDecisionToVarda(
-                client = vardaClient,
-                decision = decision,
-                vardaChildId = newVardaServiceNeed.vardaChildId!!,
-                evakaServiceNeedInfoForVarda = evakaServiceNeed,
-                guardians = guardiansResponsibleForFeeData(decision.headOfFamilyId, guardians)
-            )
+            } else {
+                sendFeeDecisionToVarda(
+                    client = vardaClient,
+                    decision = decision,
+                    vardaChildId = newVardaServiceNeed.vardaChildId!!,
+                    evakaServiceNeedInfoForVarda = evakaServiceNeed,
+                    guardians = guardiansResponsibleForFeeData(decision.headOfFamilyId, guardians)
+                )
+            }
         } catch (e: Exception) {
             error("VardaUpdate: failed to send fee decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}")
         }
@@ -291,13 +298,15 @@ private fun sendFeeDataToVarda(vardaClient: VardaClient, db: Database.Connection
             if (guardians.none { it.id == decision.headOfFamily.id }) {
                 logger.info("VardaUpdate: refusing to send fee data for voucher decision $feeId - head of family is not a guardian of ${evakaServiceNeed.childId}")
                 null
-            } else sendVoucherDecisionToVarda(
-                client = vardaClient,
-                decision = decision,
-                vardaChildId = newVardaServiceNeed.vardaChildId!!,
-                evakaServiceNeedInfoForVarda = evakaServiceNeed,
-                guardians = guardiansResponsibleForFeeData(decision.headOfFamily.id, guardians)
-            )
+            } else {
+                sendVoucherDecisionToVarda(
+                    client = vardaClient,
+                    decision = decision,
+                    vardaChildId = newVardaServiceNeed.vardaChildId!!,
+                    evakaServiceNeedInfoForVarda = evakaServiceNeed,
+                    guardians = guardiansResponsibleForFeeData(decision.headOfFamily.id, guardians)
+                )
+            }
         } catch (e: Exception) {
             error("VardaUpdate: failed to send voucher decision data for service need ${evakaServiceNeed.id}: ${e.localizedMessage}")
         }
@@ -378,10 +387,11 @@ private fun sendVoucherDecisionToVarda(
 }
 
 private fun vardaFeeBasisByPlacementType(type: PlacementType): String {
-    return if (type == PlacementType.DAYCARE_FIVE_YEAR_OLDS || type == PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS)
+    return if (type == PlacementType.DAYCARE_FIVE_YEAR_OLDS || type == PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS) {
         FeeBasisCode.FIVE_YEAR_OLDS_DAYCARE.code
-    else
+    } else {
         FeeBasisCode.DAYCARE.code
+    }
 }
 
 private fun calculateVardaFeeDataStartDate(fdStartDate: LocalDate, serviceNeedDates: DateRange): LocalDate {

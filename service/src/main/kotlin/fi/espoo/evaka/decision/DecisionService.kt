@@ -53,7 +53,7 @@ class DecisionService(
     private val messageProvider: IMessageProvider,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>,
-    env: BucketEnv,
+    env: BucketEnv
 ) {
     private val decisionBucket = env.decisions
 
@@ -86,7 +86,13 @@ class DecisionService(
         val unitManager = tx.getUnitManager(decision.unit.id)
             ?: throw NotFound("Daycare manager not found with daycare id: ${decision.unit.id}.")
         val guardianDecisionLocation = createAndUploadDecision(
-            settings, decision, application, guardian, child, decisionLanguage, unitManager
+            settings,
+            decision,
+            application,
+            guardian,
+            child,
+            decisionLanguage,
+            unitManager
         )
 
         tx.updateDecisionGuardianDocumentKey(decisionId, guardianDecisionLocation.key)
@@ -98,7 +104,13 @@ class DecisionService(
                 ?: throw NotFound("Other guardian not found with id: ${application.otherGuardianId}")
 
             val otherGuardianDecisionLocation = createAndUploadDecision(
-                settings, decision, application, otherGuardian, child, decisionLanguage, unitManager
+                settings,
+                decision,
+                application,
+                otherGuardian,
+                child,
+                decisionLanguage,
+                unitManager
             )
             tx.updateDecisionOtherGuardianDocumentKey(
                 decisionId,
@@ -153,8 +165,11 @@ class DecisionService(
         decision: Decision,
         tx: Database.Transaction
     ): String {
-        return if (decision.type == DecisionType.CLUB) "fi"
-        else tx.getDecisionLanguage(decision.id)
+        return if (decision.type == DecisionType.CLUB) {
+            "fi"
+        } else {
+            tx.getDecisionLanguage(decision.id)
+        }
     }
 
     private fun constructObjectKey(
@@ -174,7 +189,7 @@ class DecisionService(
     private fun uploadPdfToS3(bucket: String, key: String, document: ByteArray): DocumentLocation =
         documentClient.upload(
             bucket,
-            Document(name = key, bytes = document, contentType = "appliation/pdf"),
+            Document(name = key, bytes = document, contentType = "appliation/pdf")
         ).also {
             logger.debug { "PDF (object name: $key) uploaded to S3 with $it." }
         }
@@ -384,7 +399,6 @@ private fun createTemplate(
                 if (isTransferApplication) {
                     templateProvider.getDaycareTransferDecisionPath()
                 } else {
-
                     templateProvider.getDaycareDecisionPath()
                 }
             }

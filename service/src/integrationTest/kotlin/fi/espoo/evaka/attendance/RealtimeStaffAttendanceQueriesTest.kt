@@ -31,6 +31,7 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
     private val group4 = DevDaycareGroup(daycareId = testDaycare.id, name = "Kookoskalmarit")
 
     private lateinit var employee1Fixture: FixtureBuilder.EmployeeFixture
+
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->

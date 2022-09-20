@@ -57,8 +57,13 @@ fun createPlacements(
         val placement = tx.insertPlacement(type, childId, unitId, period.start, period.end)
         if (serviceNeed != null) {
             tx.insertServiceNeed(
-                placement.id, period.start, period.end,
-                serviceNeed.optionId, serviceNeed.shiftCare, confirmedBy = null, confirmedAt = null
+                placement.id,
+                period.start,
+                period.end,
+                serviceNeed.optionId,
+                serviceNeed.shiftCare,
+                confirmedBy = null,
+                confirmedAt = null
             )
         }
         placement
@@ -72,7 +77,7 @@ fun createPlacement(
     period: FiniteDateRange,
     type: PlacementType,
     serviceNeed: ApplicationServiceNeed? = null,
-    useFiveYearsOldDaycare: Boolean = false,
+    useFiveYearsOldDaycare: Boolean = false
 ): List<Placement> {
     val placementTypePeriods = if (useFiveYearsOldDaycare) {
         resolveFiveYearOldPlacementPeriods(tx, childId, listOf(period to type))
@@ -135,21 +140,25 @@ fun Database.Transaction.checkAndCreateGroupPlacement(
     startDate: LocalDate,
     endDate: LocalDate
 ): GroupPlacementId {
-    if (endDate.isBefore(startDate))
+    if (endDate.isBefore(startDate)) {
         throw BadRequest("Must not end before even starting")
+    }
 
     val daycarePlacement = getDaycarePlacement(daycarePlacementId)
         ?: throw NotFound("Placement $daycarePlacementId does not exist")
 
-    if (startDate.isBefore(daycarePlacement.startDate) || endDate.isAfter(daycarePlacement.endDate))
+    if (startDate.isBefore(daycarePlacement.startDate) || endDate.isAfter(daycarePlacement.endDate)) {
         throw BadRequest("Group placement must be within the daycare placement")
+    }
 
     val group = getDaycareGroup(groupId)
         ?: throw NotFound("Group $groupId does not exist")
-    if (group.daycareId != daycarePlacement.daycare.id)
+    if (group.daycareId != daycarePlacement.daycare.id) {
         throw BadRequest("Group is in wrong unit")
-    if (group.startDate.isAfter(startDate) || (group.endDate != null && group.endDate.isBefore(endDate)))
+    }
+    if (group.startDate.isAfter(startDate) || (group.endDate != null && group.endDate.isBefore(endDate))) {
         throw BadRequest("Group is not active for the full duration")
+    }
 
     val identicalBefore = getIdenticalPrecedingGroupPlacement(daycarePlacementId, groupId, startDate)
     val identicalAfter = getIdenticalPostcedingGroupPlacement(daycarePlacementId, groupId, endDate)
@@ -181,8 +190,9 @@ fun Database.Transaction.transferGroup(groupPlacementId: GroupPlacementId, group
     val groupPlacement = getDaycareGroupPlacement(groupPlacementId)
         ?: throw NotFound("Group placement not found")
 
-    if (getDaycareGroup(groupPlacement.groupId!!)?.daycareId != getDaycareGroup(groupId)?.daycareId)
+    if (getDaycareGroup(groupPlacement.groupId!!)?.daycareId != getDaycareGroup(groupId)?.daycareId) {
         throw BadRequest("Cannot transfer to a group in different unit")
+    }
 
     val placement = getPlacement(groupPlacement.daycarePlacementId)
 

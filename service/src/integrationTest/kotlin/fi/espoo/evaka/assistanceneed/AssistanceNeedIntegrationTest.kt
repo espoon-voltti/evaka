@@ -59,7 +59,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 startDate = testDate(10),
                 endDate = testDate(20),
                 capacityFactor = 1.5,
-                bases = emptySet(),
+                bases = emptySet()
             ),
             assistanceNeed
         )
@@ -74,7 +74,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 startDate = testDate(10),
                 endDate = testDate(20),
                 capacityFactor = 1.5,
-                bases = allBases,
+                bases = allBases
             )
         )
 
@@ -85,7 +85,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 startDate = testDate(10),
                 endDate = testDate(20),
                 capacityFactor = 1.5,
-                bases = allBases,
+                bases = allBases
             ),
             assistanceNeed
         )

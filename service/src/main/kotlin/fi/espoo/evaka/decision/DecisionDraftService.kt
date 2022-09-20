@@ -130,8 +130,11 @@ class DecisionDraftService {
 
     private fun planDaycareDecisionDrafts(plan: PlacementPlan): List<DecisionDraft> {
         val type =
-            if (plan.type == PlacementType.DAYCARE_PART_TIME) DecisionType.DAYCARE_PART_TIME
-            else DecisionType.DAYCARE
+            if (plan.type == PlacementType.DAYCARE_PART_TIME) {
+                DecisionType.DAYCARE_PART_TIME
+            } else {
+                DecisionType.DAYCARE
+            }
 
         return listOf(
             DecisionDraft(

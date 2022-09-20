@@ -537,7 +537,7 @@ val modifications = mapOf<String, String>(
   "bogus": [],
   "bogus": "2021-09-14T12:01:04.568Z"
 }
-    """.trimIndent(),
+    """.trimIndent()
 )
 
 data class ModificationsRequest(

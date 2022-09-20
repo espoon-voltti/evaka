@@ -43,8 +43,12 @@ class OccupancyController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        from: LocalDate,
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        to: LocalDate,
         @RequestParam type: OccupancyType
     ): OccupancyResponse {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_OCCUPANCIES, unitId)
@@ -70,10 +74,18 @@ class OccupancyController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable applicationId: ApplicationId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) preschoolDaycareFrom: LocalDate?,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) preschoolDaycareTo: LocalDate?,
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        from: LocalDate,
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        to: LocalDate,
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        preschoolDaycareFrom: LocalDate?,
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        preschoolDaycareTo: LocalDate?
     ): OccupancyResponseSpeculated {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_OCCUPANCIES, unitId)
         accessControl.requirePermissionFor(user, clock, Action.Application.READ, applicationId)
@@ -105,7 +117,7 @@ class OccupancyController(
                         unitId = it.unitId,
                         type = it.type,
                         familyUnitPlacement = unit.type.contains(CareType.FAMILY) || unit.type.contains(CareType.GROUP_FAMILY),
-                        period = FiniteDateRange(it.startDate, it.endDate),
+                        period = FiniteDateRange(it.startDate, it.endDate)
                     )
                 }
 
@@ -116,13 +128,13 @@ class OccupancyController(
                     unitId,
                     speculatedPlacements,
                     from,
-                    lengthsInMonths = listOf(3, 6),
+                    lengthsInMonths = listOf(3, 6)
                 )
                 OccupancyResponseSpeculated(
                     max3Months = threeMonths.current,
                     max6Months = sixMonths.current,
                     max3MonthsSpeculated = threeMonths.speculated,
-                    max6MonthsSpeculated = sixMonths.speculated,
+                    max6MonthsSpeculated = sixMonths.speculated
                 )
             }
         }.also {
@@ -136,8 +148,12 @@ class OccupancyController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        from: LocalDate,
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        to: LocalDate,
         @RequestParam type: OccupancyType
     ): List<OccupancyResponseGroupLevel> {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_OCCUPANCIES, unitId)
@@ -185,7 +201,7 @@ data class OccupancyResponseSpeculated(
     val max3Months: OccupancyValues?,
     val max6Months: OccupancyValues?,
     val max3MonthsSpeculated: OccupancyValues?,
-    val max6MonthsSpeculated: OccupancyValues?,
+    val max6MonthsSpeculated: OccupancyValues?
 )
 
 /*
@@ -241,7 +257,7 @@ fun Database.Read.calculateOccupancyPeriodsGroupLevel(
 
 private data class SpeculatedMaxOccupancies(
     val current: OccupancyValues?,
-    val speculated: OccupancyValues?,
+    val speculated: OccupancyValues?
 )
 
 private fun calculateSpeculatedMaxOccupancies(
@@ -251,7 +267,7 @@ private fun calculateSpeculatedMaxOccupancies(
     unitId: DaycareId,
     speculatedPlacements: List<Placement>,
     from: LocalDate,
-    lengthsInMonths: List<Long>,
+    lengthsInMonths: List<Long>
 ): List<SpeculatedMaxOccupancies> {
     val longestLength = lengthsInMonths.maxOrNull() ?: throw Error("At least one period length is required")
     val longestPeriod = FiniteDateRange(from, from.plusMonths(longestLength).minusDays(1))

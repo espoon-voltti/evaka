@@ -472,7 +472,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
     private fun Database.Read.applyCorrections(
         invoices: List<Invoice>,
-        month: Month,
+        month: Month
     ): List<Invoice> {
         val period = FiniteDateRange.ofMonth(2020, month)
         return generator.applyCorrections(this, invoices, period.asDateRange(), mapOf(testDaycare.id to testArea.id))
@@ -481,7 +481,7 @@ class InvoiceCorrectionsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true)
 
     private fun createTestInvoice(
         total: Int,
-        month: Month,
+        month: Month
     ): Invoice {
         val period = FiniteDateRange.ofMonth(2020, month)
         return createInvoiceFixture(

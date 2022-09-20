@@ -61,7 +61,7 @@ val fiveYearOldFreeLimit: Duration = Duration.ofHours(4) + Duration.ofMinutes(15
 @RequestMapping("/attendances")
 class ChildAttendanceController(
     private val accessControl: AccessControl,
-    private val featureConfig: FeatureConfig,
+    private val featureConfig: FeatureConfig
 ) {
     @GetMapping("/units/{unitId}")
     fun getAttendances(
@@ -127,7 +127,8 @@ class ChildAttendanceController(
 
     data class ArrivalRequest(
         @ForceCodeGenType(String::class)
-        @DateTimeFormat(pattern = "HH:mm") val arrived: LocalTime
+        @DateTimeFormat(pattern = "HH:mm")
+        val arrived: LocalTime
     )
 
     @PostMapping("/units/{unitId}/children/{childId}/arrival")
@@ -209,7 +210,8 @@ class ChildAttendanceController(
 
     data class DepartureRequest(
         @ForceCodeGenType(String::class)
-        @DateTimeFormat(pattern = "HH:mm") val departed: LocalTime,
+        @DateTimeFormat(pattern = "HH:mm")
+        val departed: LocalTime,
         val absenceType: AbsenceType?
     )
 
@@ -384,8 +386,12 @@ class ChildAttendanceController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable childId: ChildId,
-        @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+        @RequestParam("from")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        from: LocalDate,
+        @RequestParam("to")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        to: LocalDate
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Child.DELETE_ABSENCE_RANGE, childId)
         val deleted = db.connect { dbc ->
@@ -408,7 +414,7 @@ class ChildAttendanceController(
         clock: EvakaClock,
         childId: ChildId,
         unitId: DaycareId,
-        attendance: OngoingAttendance,
+        attendance: OngoingAttendance
     ): List<AbsenceThreshold> {
         if (!featureConfig.partialAbsenceThresholdsEnabled) {
             return emptyList()
@@ -457,7 +463,6 @@ private fun Database.Read.fetchChildPlacementTypeDates(
     startDate: LocalDate,
     endDate: LocalDate
 ): List<PlacementTypeDate> {
-
     // language=sql
     val sql = """
         SELECT DISTINCT d::date AS date, placement_type
@@ -554,17 +559,21 @@ private fun getPartialAbsenceThresholds(
 private fun preschoolAbsenceThreshold(placementType: PlacementType, arrived: LocalTime): AbsenceThreshold? {
     if (placementType in listOf(PRESCHOOL, PRESCHOOL_DAYCARE)) {
         val threshold =
-            if (arrived > preschoolEnd || Duration.between(arrived, preschoolEnd) < preschoolMinimumDuration)
+            if (arrived > preschoolEnd || Duration.between(arrived, preschoolEnd) < preschoolMinimumDuration) {
                 LocalTime.of(23, 59)
-            else minOf(maxOf(arrived, preschoolStart).plus(preschoolMinimumDuration), preschoolEnd)
+            } else {
+                minOf(maxOf(arrived, preschoolStart).plus(preschoolMinimumDuration), preschoolEnd)
+            }
         return AbsenceThreshold(AbsenceCategory.NONBILLABLE, threshold)
     }
 
     if (placementType in listOf(PREPARATORY, PREPARATORY_DAYCARE)) {
         val threshold =
-            if (arrived > preparatoryEnd || Duration.between(arrived, preparatoryEnd) < preparatoryMinimumDuration)
+            if (arrived > preparatoryEnd || Duration.between(arrived, preparatoryEnd) < preparatoryMinimumDuration) {
                 LocalTime.of(23, 59)
-            else minOf(maxOf(arrived, preschoolStart).plus(preparatoryMinimumDuration), preparatoryEnd)
+            } else {
+                minOf(maxOf(arrived, preschoolStart).plus(preparatoryMinimumDuration), preparatoryEnd)
+            }
         return AbsenceThreshold(AbsenceCategory.NONBILLABLE, threshold)
     }
 

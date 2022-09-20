@@ -65,7 +65,9 @@ data class IsMobile(val requirePinLogin: Boolean) {
                         .toSet()
                         .let { ids -> AccessControlFilter.Some(ids) }
                 }
-            } else null
+            } else {
+                null
+            }
             else -> null
         }
     }
@@ -82,7 +84,9 @@ data class IsMobile(val requirePinLogin: Boolean) {
         override fun evaluate(user: AuthenticatedUser): AccessControlDecision =
             if (user is AuthenticatedUser.MobileDevice && isPermittedAuthLevel(user.authLevel)) {
                 AccessControlDecision.Permitted(this)
-            } else AccessControlDecision.None
+            } else {
+                AccessControlDecision.None
+            }
     }
 
     fun inPlacementUnitOfChild() = rule { mobileId, now ->

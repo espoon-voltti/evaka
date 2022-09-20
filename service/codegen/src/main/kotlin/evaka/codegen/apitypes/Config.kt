@@ -18,7 +18,7 @@ private val standardTsMapping: Map<String, String> = mapOf(
     "kotlin.Double" to "number",
     "java.math.BigDecimal" to "number",
     "kotlin.Boolean" to "boolean",
-    "java.time.OffsetDateTime" to "Date",
+    "java.time.OffsetDateTime" to "Date"
 )
 
 private val customClassesMapping: Map<String, TSMapping> = mapOf(
@@ -32,7 +32,7 @@ private val customClassesMapping: Map<String, TSMapping> = mapOf(
     "fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue" to TSMapping("DailyServiceTimesValue", "import { DailyServiceTimesValue } from '../../api-types/child/common'"),
     "fi.espoo.evaka.vasu.VasuQuestion" to TSMapping("VasuQuestion", "import { VasuQuestion } from '../../api-types/vasu'"),
     "fi.espoo.evaka.invoicing.domain.DecisionIncome" to TSMapping("DecisionIncome", "import { DecisionIncome } from '../../api-types/income'"),
-    "fi.espoo.evaka.invoicing.service.ProductKey" to TSMapping("string"),
+    "fi.espoo.evaka.invoicing.service.ProductKey" to TSMapping("string")
 )
 
 private val actionsMapping: Map<String, TSMapping> = Action::class.nestedClasses.associate { action ->
@@ -47,7 +47,11 @@ data class TSMapping(
 )
 
 val kotlinCollectionClasses = listOf(
-    Collection::class, Array::class, IntArray::class, DoubleArray::class, BooleanArray::class
+    Collection::class,
+    Array::class,
+    IntArray::class,
+    DoubleArray::class,
+    BooleanArray::class
 )
 
 val validMapKeyTypes = listOf(String::class, UUID::class, Id::class, LocalDate::class)

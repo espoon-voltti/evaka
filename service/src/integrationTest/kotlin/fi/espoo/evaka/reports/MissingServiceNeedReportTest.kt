@@ -38,7 +38,8 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
     fun `child without service need is reported`() {
         insertPlacement(testChild_1.id, today, today, testDaycare)
         getAndAssert(
-            today, today,
+            today,
+            today,
             listOf(
                 MissingServiceNeedReportRow(
                     careAreaName = testArea.name,
@@ -47,7 +48,7 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
                     unitName = testDaycare.name,
                     daysWithoutServiceNeed = 1,
                     firstName = testChild_1.firstName,
-                    lastName = testChild_1.lastName,
+                    lastName = testChild_1.lastName
                 )
             )
         )
@@ -57,7 +58,8 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
     fun `child without service need in service voucher unit shown on service voucher care area`() {
         insertPlacement(testChild_1.id, today, today, testVoucherDaycare)
         getAndAssert(
-            today, today,
+            today,
+            today,
             listOf(
                 MissingServiceNeedReportRow(
                     careAreaName = "palvelusetelialue",
@@ -66,7 +68,7 @@ class MissingServiceNeedReportTest : FullApplicationTest(resetDbBeforeEach = tru
                     unitName = testVoucherDaycare.name,
                     daysWithoutServiceNeed = 1,
                     firstName = testChild_1.firstName,
-                    lastName = testChild_1.lastName,
+                    lastName = testChild_1.lastName
                 )
             )
         )

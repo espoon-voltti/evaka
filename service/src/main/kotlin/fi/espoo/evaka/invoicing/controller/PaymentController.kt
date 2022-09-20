@@ -46,7 +46,7 @@ class PaymentController(private val accessControl: AccessControl, private val pa
     data class SendPaymentsRequest(
         val paymentDate: LocalDate,
         val dueDate: LocalDate,
-        val paymentIds: List<PaymentId>,
+        val paymentIds: List<PaymentId>
     )
 
     @PostMapping("/send")
@@ -54,7 +54,7 @@ class PaymentController(private val accessControl: AccessControl, private val pa
         db: Database,
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
-        @RequestBody body: SendPaymentsRequest,
+        @RequestBody body: SendPaymentsRequest
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Payment.SEND, body.paymentIds)
         db.connect { dbc ->
@@ -86,7 +86,7 @@ enum class PaymentSortParam {
     PERIOD,
     CREATED,
     NUMBER,
-    AMOUNT,
+    AMOUNT
 }
 
 enum class PaymentDistinctiveParams {

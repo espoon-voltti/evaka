@@ -90,7 +90,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 LocalDate.of(2021, 1, 1),
                 LocalDate.of(2021, 1, 6),
                 LocalDate.of(2021, 12, 6),
-                LocalDate.of(2021, 12, 24),
+                LocalDate.of(2021, 12, 24)
             )
         }
     }
@@ -1787,7 +1787,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         createFeeDecisionAlterationFixture(
                             amount = -50,
                             isAbsolute = false,
-                            effect = -10850,
+                            effect = -10850
                         )
                     )
                 )
@@ -1936,7 +1936,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val decisions = listOf(
             DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 15)) to 15000,
-            DateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)) to 9000,
+            DateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)) to 9000
         ).map { (range, fee) ->
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
@@ -2123,7 +2123,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             DateRange(LocalDate.of(2021, 12, 1), LocalDate.of(2021, 12, 22)) to
                 0,
             DateRange(LocalDate.of(2021, 12, 23), LocalDate.of(2021, 12, 31)) to
-                28900,
+                28900
         ).map { (valid, fee) ->
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
@@ -2154,7 +2154,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 LocalDate.of(2021, 12, 28) to AbsenceType.OTHER_ABSENCE,
                 LocalDate.of(2021, 12, 29) to AbsenceType.OTHER_ABSENCE,
                 LocalDate.of(2021, 12, 30) to AbsenceType.OTHER_ABSENCE,
-                LocalDate.of(2021, 12, 31) to AbsenceType.OTHER_ABSENCE,
+                LocalDate.of(2021, 12, 31) to AbsenceType.OTHER_ABSENCE
             )
         )
 
@@ -2200,7 +2200,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                             type = FeeAlteration.Type.RELIEF,
                             amount = 100,
                             isAbsolute = false,
-                            effect = -28900,
+                            effect = -28900
                         )
                     )
                 )
@@ -2684,7 +2684,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         feeAlterations = listOf()
                     )
                 )
-            ),
+            )
         )
         insertDecisionsAndPlacements(decisions)
 
@@ -3355,7 +3355,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         feeAlterations = listOf()
                     )
                 )
-            ),
+            )
         )
         insertDecisionsAndPlacements(decisions)
 
@@ -3364,7 +3364,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             testChild_1.id,
             listOf(
                 LocalDate.of(2021, 3, 18) to AbsenceType.PLANNED_ABSENCE,
-                LocalDate.of(2021, 3, 19) to AbsenceType.PLANNED_ABSENCE,
+                LocalDate.of(2021, 3, 19) to AbsenceType.PLANNED_ABSENCE
             )
         )
 
@@ -3408,7 +3408,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         feeAlterations = listOf()
                     )
                 )
-            ),
+            )
         )
         insertDecisionsAndPlacements(decisions)
 
@@ -3418,7 +3418,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(
                 LocalDate.of(2021, 3, 16) to AbsenceType.OTHER_ABSENCE,
                 LocalDate.of(2021, 3, 17) to AbsenceType.OTHER_ABSENCE,
-                LocalDate.of(2021, 3, 18) to AbsenceType.OTHER_ABSENCE,
+                LocalDate.of(2021, 3, 18) to AbsenceType.OTHER_ABSENCE
             ) +
                 datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31))
                     .map { date -> date to AbsenceType.PLANNED_ABSENCE }
@@ -3470,7 +3470,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         feeAlterations = listOf()
                     )
                 )
-            ),
+            )
         )
         insertDecisionsAndPlacements(decisions)
 
@@ -3480,7 +3480,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(
                 LocalDate.of(2021, 3, 16) to AbsenceType.SICKLEAVE,
                 LocalDate.of(2021, 3, 17) to AbsenceType.SICKLEAVE,
-                LocalDate.of(2021, 3, 18) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2021, 3, 18) to AbsenceType.SICKLEAVE
             ) +
                 datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31))
                     .map { date -> date to AbsenceType.PLANNED_ABSENCE }
@@ -3534,7 +3534,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         feeAlterations = listOf()
                     )
                 )
-            ),
+            )
         )
         insertDecisionsAndPlacements(decisions)
 
@@ -3544,7 +3544,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(
                 LocalDate.of(2021, 3, 16) to AbsenceType.SICKLEAVE,
                 LocalDate.of(2021, 3, 17) to AbsenceType.SICKLEAVE,
-                LocalDate.of(2021, 3, 18) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2021, 3, 18) to AbsenceType.SICKLEAVE
             ) +
                 datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31))
                     .map { date -> date to AbsenceType.PLANNED_ABSENCE }
@@ -3606,7 +3606,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         feeAlterations = listOf()
                     )
                 )
-            ),
+            )
         )
         insertDecisionsAndPlacements(decisions)
 
@@ -3660,7 +3660,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         feeAlterations = listOf()
                     )
                 )
-            ),
+            )
         )
         insertDecisionsAndPlacements(decisions)
 
@@ -3669,7 +3669,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             testChild_1.id,
             listOf(
                 LocalDate.of(2021, 3, 18) to AbsenceType.PLANNED_ABSENCE,
-                LocalDate.of(2021, 3, 19) to AbsenceType.PLANNED_ABSENCE,
+                LocalDate.of(2021, 3, 19) to AbsenceType.PLANNED_ABSENCE
             )
         )
 
@@ -3721,7 +3721,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         feeAlterations = listOf()
                     )
                 )
-            ),
+            )
         )
         insertDecisionsAndPlacements(decisions)
 
@@ -3731,7 +3731,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(
                 LocalDate.of(2021, 3, 16) to AbsenceType.OTHER_ABSENCE,
                 LocalDate.of(2021, 3, 17) to AbsenceType.OTHER_ABSENCE,
-                LocalDate.of(2021, 3, 18) to AbsenceType.OTHER_ABSENCE,
+                LocalDate.of(2021, 3, 18) to AbsenceType.OTHER_ABSENCE
             ) +
                 datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31))
                     .map { date -> date to AbsenceType.PLANNED_ABSENCE }
@@ -3790,7 +3790,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         feeAlterations = listOf()
                     )
                 )
-            ),
+            )
         )
         insertDecisionsAndPlacements(decisions)
 
@@ -3800,7 +3800,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             listOf(
                 LocalDate.of(2021, 3, 16) to AbsenceType.SICKLEAVE,
                 LocalDate.of(2021, 3, 17) to AbsenceType.SICKLEAVE,
-                LocalDate.of(2021, 3, 18) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2021, 3, 18) to AbsenceType.SICKLEAVE
             ) +
                 datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31))
                     .map { date -> date to AbsenceType.PLANNED_ABSENCE }
@@ -3843,7 +3843,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val decisions = listOf(
             DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 15)) to 22000,
-            DateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)) to 11000,
+            DateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)) to 11000
         ).map { (range, fee) ->
             createFeeDecisionFixture(
                 FeeDecisionStatus.SENT,
@@ -3946,7 +3946,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         feeAlterations = listOf()
                     )
                 )
-            ),
+            )
         )
         insertDecisionsAndPlacements(decisions)
 
@@ -3999,7 +3999,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         feeAlterations = listOf()
                     )
                 )
-            ),
+            )
         )
         insertDecisionsAndPlacements(decisions)
 
@@ -4026,7 +4026,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.execute(
                 "INSERT INTO holiday (date) VALUES (?), (?)",
                 LocalDate.of(2022, 4, 15),
-                LocalDate.of(2022, 4, 18),
+                LocalDate.of(2022, 4, 18)
             )
         }
 
@@ -4065,7 +4065,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.execute(
                 "INSERT INTO holiday (date) VALUES (?), (?)",
                 LocalDate.of(2022, 4, 15),
-                LocalDate.of(2022, 4, 18),
+                LocalDate.of(2022, 4, 18)
             )
         }
 
@@ -4191,7 +4191,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             LocalDate.of(2019, 1, 25),
             LocalDate.of(2019, 1, 28),
             LocalDate.of(2019, 1, 29),
-            LocalDate.of(2019, 1, 30),
+            LocalDate.of(2019, 1, 30)
         )
             .map { it to AbsenceType.PLANNED_ABSENCE }
         // then 1 more operational days
@@ -4240,7 +4240,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             LocalDate.of(2019, 1, 10) to AbsenceType.SICKLEAVE,
             LocalDate.of(2019, 1, 11) to AbsenceType.SICKLEAVE,
             LocalDate.of(2019, 1, 14) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 15) to AbsenceType.SICKLEAVE,
+            LocalDate.of(2019, 1, 15) to AbsenceType.SICKLEAVE
         )
         // then 12 planned absences
         val plannedAbsenceDays = listOf(
@@ -4468,7 +4468,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         createFeeDecisionAlterationFixture(
                             amount = 50,
                             isAbsolute = false,
-                            effect = feeAlterationEffect(21700, FeeAlteration.Type.DISCOUNT, 50, false),
+                            effect = feeAlterationEffect(21700, FeeAlteration.Type.DISCOUNT, 50, false)
                         )
                     )
                 )
@@ -4523,7 +4523,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             LocalDate.of(2019, 1, 25),
             LocalDate.of(2019, 1, 28),
             LocalDate.of(2019, 1, 29),
-            LocalDate.of(2019, 1, 30),
+            LocalDate.of(2019, 1, 30)
         )
             .map { it to AbsenceType.PLANNED_ABSENCE }
         // then 1 more operational day
@@ -4571,7 +4571,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             LocalDate.of(2019, 1, 24),
             LocalDate.of(2019, 1, 25),
             LocalDate.of(2019, 1, 28),
-            LocalDate.of(2019, 1, 29),
+            LocalDate.of(2019, 1, 29)
         )
             .map { it to AbsenceType.PLANNED_ABSENCE }
         // then 2 more operational days
@@ -4786,7 +4786,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                     placementType = PlacementType.DAYCARE,
                     serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                     baseFee = 28900,
-                    fee = 21700,
+                    fee = 21700
                 )
             )
         )
@@ -4850,7 +4850,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
-                        fee = 21700,
+                        fee = 21700
                     )
                 )
             ),
@@ -5187,7 +5187,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         periods: List<DateRange>,
         absenceDays: List<Pair<LocalDate, AbsenceType>>,
         child: DevPerson = testChild_1,
-        serviceNeed: ServiceNeedOption = snDaycareFullDay35,
+        serviceNeed: ServiceNeedOption = snDaycareFullDay35
     ) {
         periods.forEachIndexed { index, period ->
             val decision = createFeeDecisionFixture(
@@ -5248,7 +5248,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         date = date,
                         category = AbsenceCategory.BILLABLE
                     )
-                },
+                }
             )
         }
     }

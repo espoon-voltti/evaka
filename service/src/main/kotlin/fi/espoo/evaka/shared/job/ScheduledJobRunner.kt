@@ -34,10 +34,11 @@ class ScheduledJobRunner(
             ScheduledJob.values()
                 .mapNotNull { job ->
                     val settings = schedule.getSettingsForJob(job)
-                    if (settings?.enabled == true)
+                    if (settings?.enabled == true) {
                         job to settings
-                    else
+                    } else {
                         null
+                    }
                 }
                 .map { (job, settings) ->
                     val logMeta = mapOf("jobName" to job.name)

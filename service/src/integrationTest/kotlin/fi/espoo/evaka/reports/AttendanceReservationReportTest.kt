@@ -434,7 +434,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 DevDaycareGroup(
                     daycareId = testDaycare2.id,
                     startDate = date,
-                    endDate = date,
+                    endDate = date
                 )
             )
             tx.insertTestDaycareGroupPlacement(
@@ -536,7 +536,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 groupName = null,
                 HelsinkiDateTime.of(
                     LocalDate.of(2020, 5, 28),
-                    it,
+                    it
                 ),
                 childCountUnder3 = 1,
                 childCountOver3 = 0,
@@ -586,7 +586,7 @@ internal class AttendanceReservationReportTest : FullApplicationTest(resetDbBefo
                 groupName = null,
                 HelsinkiDateTime.of(
                     LocalDate.of(2020, 5, 28),
-                    it,
+                    it
                 ),
                 childCountUnder3 = 1,
                 childCountOver3 = 0,
@@ -1029,13 +1029,14 @@ private fun createEmptyReport(
     var time = startDateTime
     while (time < endDateTime) {
         if (operationDays.contains(time.dayOfWeek)) {
-            if (groups.isEmpty())
+            if (groups.isEmpty()) {
                 times[RowKey(null, time)] = AttendanceReservationReportRow(null, null, time, 0, 0, 0, 0.0, 0.0)
-            else
+            } else {
                 groups.forEach { group ->
                     times[RowKey(group, time)] =
                         AttendanceReservationReportRow(group.id, group.name, time, 0, 0, 0, 0.0, 0.0)
                 }
+            }
         }
         time = time.plusMinutes(30)
     }

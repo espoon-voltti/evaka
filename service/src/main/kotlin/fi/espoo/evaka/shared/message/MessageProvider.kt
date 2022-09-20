@@ -29,7 +29,7 @@ interface IMessageProvider {
 
 enum class MessageLanguage {
     FI,
-    SV,
+    SV
 }
 
 fun langWithDefault(lang: String): MessageLanguage =

@@ -36,8 +36,12 @@ class CalendarEventController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
-        @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
+        @RequestParam("start")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        start: LocalDate,
+        @RequestParam("end")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        end: LocalDate
     ): List<CalendarEvent> {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_CALENDAR_EVENTS, unitId)
 
@@ -135,8 +139,12 @@ class CalendarEventController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
-        @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
+        @RequestParam("start")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        start: LocalDate,
+        @RequestParam("end")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        end: LocalDate
     ): List<CitizenCalendarEvent> {
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_CALENDAR_EVENTS, user.id)
 

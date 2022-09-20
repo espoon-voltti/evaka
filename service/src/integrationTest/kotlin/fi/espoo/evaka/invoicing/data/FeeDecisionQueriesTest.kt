@@ -267,7 +267,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 listOf(
                     baseDecision(testChild_1).copy(
                         headOfFamilyId = testAdult_1.id,
-                        headOfFamilyIncome = null,
+                        headOfFamilyIncome = null
                     ),
                     baseDecision(testChild_2).copy(
                         headOfFamilyId = testAdult_2.id,
@@ -278,7 +278,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             totalExpenses = 0,
                             total = 0,
                             worksAtECHA = false
-                        ),
+                        )
                     ),
                     baseDecision(testChild_3).copy(
                         headOfFamilyId = testAdult_3.id,
@@ -291,7 +291,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             totalExpenses = 0,
                             total = 0,
                             worksAtECHA = false
-                        ),
+                        )
                     ),
                     baseDecision(testChild_4).copy(
                         headOfFamilyId = testAdult_5.id,
@@ -322,8 +322,8 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                             totalExpenses = 0,
                             total = 0,
                             worksAtECHA = false
-                        ),
-                    ),
+                        )
+                    )
                 )
             )
             val ids = tx.createQuery("SELECT id FROM fee_decision").mapTo<FeeDecisionId>().list()
@@ -336,7 +336,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 Tuple(testAdult_2.lastName, testAdult_2.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
                 Tuple(testAdult_3.lastName, testAdult_3.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
                 Tuple(testAdult_5.lastName, testAdult_5.firstName, IncomeEffect.INCOME),
-                Tuple(testAdult_6.lastName, testAdult_6.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
+                Tuple(testAdult_6.lastName, testAdult_6.firstName, IncomeEffect.MAX_FEE_ACCEPTED)
             )
 
         val result = db.read { tx ->
@@ -353,7 +353,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 startDate = null,
                 endDate = null,
                 financeDecisionHandlerId = null,
-                difference = emptySet(),
+                difference = emptySet()
             )
         }
 
@@ -362,7 +362,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             .containsExactly(
                 Tuple(testAdult_2.lastName, testAdult_2.firstName),
                 Tuple(testAdult_3.lastName, testAdult_3.firstName),
-                Tuple(testAdult_6.lastName, testAdult_6.firstName),
+                Tuple(testAdult_6.lastName, testAdult_6.firstName)
             )
     }
 
@@ -403,7 +403,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     baseDecision(testChild_4).copy(
                         headOfFamilyId = testAdult_4.id,
                         difference = setOf(FeeDecisionDifference.FEE_ALTERATIONS)
-                    ),
+                    )
                 )
             )
         }
@@ -430,7 +430,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName })
             .containsExactly(
                 Tuple(testAdult_2.lastName, testAdult_2.firstName),
-                Tuple(testAdult_3.lastName, testAdult_3.firstName),
+                Tuple(testAdult_3.lastName, testAdult_3.firstName)
             )
     }
 
@@ -450,7 +450,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 startDate = null,
                 endDate = null,
                 financeDecisionHandlerId = null,
-                difference = emptySet(),
+                difference = emptySet()
             )
         }
         assertEquals(1, result.data.size)

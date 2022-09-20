@@ -101,7 +101,9 @@ private fun RequestMappingHandlerMapping.getEndpointMetadata(): List<EndpointMet
             ?.let { kotlinMethod.find(it).type }
         val responseBodyType = if (!method.isVoid && bodySupport.supportsReturnType(method.returnType)) {
             kotlinMethod.returnType
-        } else null
+        } else {
+            null
+        }
         val paths = info.patternValues
         val methods = info.methodsCondition.methods
         paths

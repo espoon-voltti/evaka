@@ -34,7 +34,9 @@ class AssistanceNeedsAndActionsReportController(private val acl: AccessControlLi
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
+        @RequestParam("date")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        date: LocalDate
     ): AssistanceNeedsAndActionsReport {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT)
         return db.connect { dbc ->
@@ -73,7 +75,7 @@ class AssistanceNeedsAndActionsReportController(private val acl: AccessControlLi
         val otherActionCount: Int,
         val noActionCount: Int,
         @Json
-        val measureCounts: Map<AssistanceMeasure, Int>,
+        val measureCounts: Map<AssistanceMeasure, Int>
     )
 }
 

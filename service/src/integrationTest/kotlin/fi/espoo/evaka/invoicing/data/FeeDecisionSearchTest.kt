@@ -74,7 +74,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                     ),
                     decisionFixture(headOfFamily = testAdult_4.id, children = listOf(childFixture(testChild_6))).copy(
                         decisionNumber = 11_111_111L
-                    ),
+                    )
                 )
             )
         }
@@ -82,7 +82,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
             "Vir" to testChild_5,
             "Nope" to null,
             99_999_999L to testChild_5,
-            9_999_999L to null,
+            9_999_999L to null
         )
         for ((term, child) in testCases) {
             val result = search(term.toString())
@@ -115,12 +115,12 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                     decisionFixture(
                         headOfFamily = testAdult_3.id,
                         children = listOf(childFixture(testChild_5)),
-                        status = FeeDecisionStatus.DRAFT,
+                        status = FeeDecisionStatus.DRAFT
                     ),
                     decisionFixture(
                         headOfFamily = testAdult_4.id,
                         children = listOf(childFixture(testChild_6)),
-                        status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
+                        status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING
                     )
                 )
             )
@@ -148,7 +148,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                 listOf(
                     decisionFixture(
                         headOfFamily = testAdult_3.id,
-                        children = listOf(childFixture(testChild_5, testDaycare.id)),
+                        children = listOf(childFixture(testChild_5, testDaycare.id))
                     ),
                     decisionFixture(
                         headOfFamily = testAdult_4.id,
@@ -176,7 +176,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                 listOf(
                     decisionFixture(
                         headOfFamily = testAdult_3.id,
-                        children = listOf(childFixture(testChild_3, testDaycare.id, serviceNeed = null)),
+                        children = listOf(childFixture(testChild_3, testDaycare.id, serviceNeed = null))
                     ),
                     decisionFixture(
                         headOfFamily = testAdult_4.id,
@@ -219,7 +219,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
             (LocalDate.of(2021, 1, 1) to LocalDate.of(2021, 12, 31)) to null,
             (LocalDate.of(2021, 1, 1) to LocalDate.of(2022, 1, 1)) to testChild_3,
             (LocalDate.of(2022, 4, 30) to LocalDate.of(2022, 5, 31)) to testChild_3,
-            (LocalDate.of(2022, 12, 31) to LocalDate.of(2023, 6, 1)) to testChild_4,
+            (LocalDate.of(2022, 12, 31) to LocalDate.of(2023, 6, 1)) to testChild_4
         )
         for ((range, child) in overlapTestCases) {
             val result = search(startDate = range.first, endDate = range.second)
@@ -229,7 +229,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
             (LocalDate.of(2021, 1, 1) to LocalDate.of(2021, 12, 31)) to null,
             (LocalDate.of(2021, 1, 1) to LocalDate.of(2022, 1, 1)) to testChild_3,
             (LocalDate.of(2022, 4, 30) to LocalDate.of(2022, 5, 31)) to null,
-            (LocalDate.of(2022, 12, 31) to LocalDate.of(2023, 6, 1)) to null,
+            (LocalDate.of(2022, 12, 31) to LocalDate.of(2023, 6, 1)) to null
         )
         for ((range, child) in startTestCases) {
             val result = search(startDate = range.first, endDate = range.second, searchByStartDate = true)
@@ -244,11 +244,11 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                 listOf(
                     decisionFixture(
                         headOfFamily = testAdult_3.id,
-                        children = listOf(childFixture(testChild_3, testDaycare2.id)),
+                        children = listOf(childFixture(testChild_3, testDaycare2.id))
                     ),
                     decisionFixture(
                         headOfFamily = testAdult_4.id,
-                        children = listOf(childFixture(testChild_4, testDaycare.id)),
+                        children = listOf(childFixture(testChild_4, testDaycare.id))
                     )
                 )
             )
@@ -288,7 +288,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                     status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING
                 ).copy(
                     decisionNumber = 2_222_222L
-                ),
+                )
             )
             tx.upsertFeeDecisions(decisions)
             val oldTimestamp = HelsinkiDateTime.of(LocalDateTime.of(2020, 1, 1, 12, 0))
@@ -326,7 +326,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
         child: DevPerson,
         placementUnit: DaycareId = testDaycare.id,
         serviceNeed: ServiceNeedOption? = snDaycareFullDay35,
-        fee: Int = 28900,
+        fee: Int = 28900
     ) = createFeeDecisionChildFixture(
         childId = child.id,
         dateOfBirth = child.dateOfBirth,
@@ -364,7 +364,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
         endDate: LocalDate? = null,
         searchByStartDate: Boolean = false,
         financeDecisionHandlerId: EmployeeId? = null,
-        difference: Set<FeeDecisionDifference> = emptySet(),
+        difference: Set<FeeDecisionDifference> = emptySet()
     ) = db.read { tx ->
         tx.searchFeeDecisions(
             clock = clock,
@@ -381,7 +381,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
             endDate = endDate,
             searchByStartDate = searchByStartDate,
             financeDecisionHandlerId = financeDecisionHandlerId,
-            difference = difference,
+            difference = difference
         ).let { result ->
             assertEquals(1, result.pages)
             assertEquals(result.total, result.data.size)

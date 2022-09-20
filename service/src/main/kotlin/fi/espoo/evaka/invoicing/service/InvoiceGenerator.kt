@@ -94,7 +94,9 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         val freeChildren =
             if (range.start.month == Month.JULY && (range.end?.month == Month.JULY && range.start.year == range.end.year)) {
                 tx.getFreeJulyChildren(range.start.year)
-            } else emptyList()
+            } else {
+                emptyList()
+            }
 
         val codebtors = unhandledDecisions.mapValues { (_, decisions) -> getInvoiceCodebtor(tx, decisions, range) }
 
@@ -137,14 +139,17 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
 
         return partners.first().takeIf {
             decisions.all { decision ->
-                if (decision.partnerId == null) false
-                else tx.partnerIsCodebtor(
-                    decision.headOfFamilyId,
-                    decision.partnerId,
-                    decision.children.map { it.child.id },
-                    decision.validDuring.intersection(dateRange)
-                        ?: error("Decision is not valid during invoice period $dateRange")
-                )
+                if (decision.partnerId == null) {
+                    false
+                } else {
+                    tx.partnerIsCodebtor(
+                        decision.headOfFamilyId,
+                        decision.partnerId,
+                        decision.children.map { it.child.id },
+                        decision.validDuring.intersection(dateRange)
+                            ?: error("Decision is not valid during invoice period $dateRange")
+                    )
+                }
             }
         }
     }
@@ -245,8 +250,11 @@ HAVING c.amount * c.unit_price != coalesce(sum(r.amount * r.unit_price) FILTER (
                     invoicedTotals
                         .sortedBy { it.periodStart }
                         .fold(correction) { c, total ->
-                            if (c.amount != total.amount) c.copy(amount = c.amount - total.amount)
-                            else c.copy(unitPrice = c.unitPrice - total.unitPrice)
+                            if (c.amount != total.amount) {
+                                c.copy(amount = c.amount - total.amount)
+                            } else {
+                                c.copy(unitPrice = c.unitPrice - total.unitPrice)
+                            }
                         }
                 }
             }
@@ -492,7 +500,9 @@ ${if (year != 2020) {
   (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 4)}) p04,
   (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 5)}) p05,
 """
-        } else ""}
+        } else {
+            ""
+        }}
   (SELECT child_id FROM invoiced_placement WHERE ${placementOn(year, 6)}) p06
 WHERE
   p09.child_id = p10.child_id AND
@@ -501,11 +511,14 @@ WHERE
   p09.child_id = p01.child_id AND
   p09.child_id = p02.child_id AND
   p09.child_id = p03.child_id AND
-  ${if (year != 2020)
+  ${if (year != 2020) {
             """
         p09.child_id = p04.child_id AND
         p09.child_id = p05.child_id AND
-    """ else ""}
+    """
+        } else {
+            ""
+        }}
   p09.child_id = p06.child_id;
     """
 

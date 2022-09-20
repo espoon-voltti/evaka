@@ -68,6 +68,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     data class EmployeeUpdate(
         val globalRoles: List<UserRole>
     )
+
     @PutMapping("/{id}")
     fun updateEmployee(
         db: Database,
@@ -158,6 +159,7 @@ class EmployeeController(private val accessControl: AccessControl) {
         val preferredFirstName: String?,
         val preferredFirstNameOptions: List<String>
     )
+
     @GetMapping("/preferred-first-name")
     fun getEmployeePreferredFirstName(
         db: Database,
@@ -179,6 +181,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     data class EmployeeSetPreferredFirstNameUpdateRequest(
         val preferredFirstName: String?
     )
+
     @PostMapping("/preferred-first-name")
     fun setEmployeePreferredFirstName(
         db: Database,
@@ -193,7 +196,9 @@ class EmployeeController(private val accessControl: AccessControl) {
                 } else {
                     if (possiblePreferredFirstNames(employee).contains(body.preferredFirstName)) {
                         tx.setEmployeePreferredFirstName(user.id, body.preferredFirstName)
-                    } else throw NotFound("Given preferred first name is not allowed")
+                    } else {
+                        throw NotFound("Given preferred first name is not allowed")
+                    }
                 }
             }
         }
@@ -216,5 +221,5 @@ data class PinCode(val pin: String)
 data class SearchEmployeeRequest(
     val page: Int?,
     val pageSize: Int?,
-    val searchTerm: String?,
+    val searchTerm: String?
 )

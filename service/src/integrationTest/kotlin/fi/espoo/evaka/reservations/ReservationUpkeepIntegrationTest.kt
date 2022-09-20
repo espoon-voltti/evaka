@@ -43,7 +43,7 @@ class ReservationUpkeepIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = LocalDate.of(2019, 1, 1),
-                endDate = LocalDate.of(2019, 12, 31),
+                endDate = LocalDate.of(2019, 12, 31)
             )
             tx.upsertCitizenUser(testAdult_1.id)
 

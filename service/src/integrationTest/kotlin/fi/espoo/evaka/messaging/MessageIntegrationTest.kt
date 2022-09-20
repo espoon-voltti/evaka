@@ -203,7 +203,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             messageType = MessageType.MESSAGE,
             sender = employee1Account,
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
-            user = employee1,
+            user = employee1
         )
 
         // then sender does not see it in received messages
@@ -264,7 +264,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val threadContentWithTwoReplies = listOf(
             Pair(employee1Account, "Juhannus tulee pian"),
             Pair(person1Account, "No niinpä näyttää tulevan"),
-            Pair(person1Account, "person 2 does not see this"),
+            Pair(person1Account, "person 2 does not see this")
         )
         assertEquals(
             threadContentWithTwoReplies,
@@ -298,7 +298,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             listOf(
                 Pair(employee1Account, "Juhannus tulee pian"),
                 Pair(person1Account, "No niinpä näyttää tulevan"),
-                Pair(employee1Account, "person 1 does not see this"),
+                Pair(employee1Account, "person 1 does not see this")
             ),
             getMessageThreads(person2Account, person2)[0].toSenderContentPairs()
         )
@@ -315,7 +315,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 Pair(employee1Account, "Juhannus tulee pian"),
                 Pair(person1Account, "No niinpä näyttää tulevan"),
                 Pair(person1Account, "person 2 does not see this"),
-                Pair(employee1Account, "person 1 does not see this"),
+                Pair(employee1Account, "person 1 does not see this")
             ),
             getMessageThreads(employee1Account, employee1)[0].toSenderContentPairs()
         )
@@ -447,7 +447,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     Pair(employee1Account, content),
                     Pair(person1Account, "Hello")
                 ),
-                listOf(Pair(employee1Account, content)),
+                listOf(Pair(employee1Account, content))
             ),
             getMessageThreads(person2Account, person2).map { it.toSenderContentPairs() }
         )
@@ -462,7 +462,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val (employee1Account, person1Account) = db.read {
             listOf(
                 it.getEmployeeMessageAccountIds(employee1Id).first(),
-                it.getCitizenMessageAccount(person1Id),
+                it.getCitizenMessageAccount(person1Id)
             )
         }
 
@@ -473,7 +473,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             messageType = MessageType.BULLETIN,
             sender = employee1Account,
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
-            user = employee1,
+            user = employee1
         )
 
         // then the recipient can see it
@@ -538,7 +538,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             messageType = MessageType.MESSAGE,
             sender = employee1Account,
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
-            user = employee1,
+            user = employee1
         )
 
         // then
@@ -778,10 +778,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         user: AuthenticatedUser.Citizen,
         messageId: MessageId,
         recipientAccountIds: Set<MessageAccountId>,
-        content: String,
+        content: String
     ) =
         http.post(
-            "/citizen/messages/$messageId/reply",
+            "/citizen/messages/$messageId/reply"
         )
             .jsonBody(
                 jsonMapper.writeValueAsString(
@@ -799,10 +799,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         sender: MessageAccountId,
         messageId: MessageId,
         recipientAccountIds: Set<MessageAccountId>,
-        content: String,
+        content: String
     ) =
         http.post(
-            "/messages/$sender/$messageId/reply",
+            "/messages/$sender/$messageId/reply"
         )
             .jsonBody(
                 jsonMapper.writeValueAsString(

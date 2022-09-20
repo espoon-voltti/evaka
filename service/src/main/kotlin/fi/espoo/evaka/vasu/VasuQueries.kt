@@ -118,7 +118,9 @@ fun Database.Read.getVasuDocumentMaster(id: VasuDocumentId): VasuDocument? {
                         placements = getVasuPlacements(id)
                     )
                 )
-            } else document
+            } else {
+                document
+            }
         }
 }
 
@@ -166,7 +168,9 @@ fun Database.Read.getLatestPublishedVasuDocument(id: VasuDocumentId): VasuDocume
                         placements = getVasuPlacements(id)
                     )
                 )
-            } else document
+            } else {
+                document
+            }
         }
 }
 
@@ -271,11 +275,15 @@ fun Database.Read.getVasuDocumentSummaries(childId: ChildId): List<VasuDocumentS
                 publishedAt = documents[0].publishedAt,
                 guardiansThatHaveGivenPermissionToShare = documents[0].basics.guardians.filter { it.hasGivenPermissionToShare }.map { it.id },
                 events = documents.mapNotNull {
-                    if (it.eventId != null && it.eventCreated != null && it.eventType != null) VasuDocumentEvent(
-                        id = it.eventId,
-                        created = it.eventCreated,
-                        eventType = it.eventType
-                    ) else null
+                    if (it.eventId != null && it.eventCreated != null && it.eventType != null) {
+                        VasuDocumentEvent(
+                            id = it.eventId,
+                            created = it.eventCreated,
+                            eventType = it.eventType
+                        )
+                    } else {
+                        null
+                    }
                 }.sortedBy { it.created },
                 type = documents[0].type
             )
@@ -352,7 +360,9 @@ fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(docId: VasuDoc
         g.id == guardianId
     }
 
-    val guardian = if (guardianFromDocument.size == 1) guardianFromDocument[0] else {
+    val guardian = if (guardianFromDocument.size == 1) {
+        guardianFromDocument[0]
+    } else {
         createQuery(
             """
         SELECT p.id, p.first_name, p.last_name

@@ -73,6 +73,7 @@ class Database(private val jdbi: Jdbi) {
                 lazyHandle.value
             }
         }
+
         /**
          * Enters read mode, runs the given function, and exits read mode regardless of any exceptions the function may have thrown.
          *
@@ -314,7 +315,8 @@ data class Binding<T>(val name: String, val value: T, val type: QualifiedType<T>
  * This is *very dynamic* and has almost no compile-time checks, but the phantom type parameter `Tag` can be used to
  * assign some type to a query fragment for documentation purpose and to prevent mixing different types of query fragments.
  */
-data class QueryFragment<@Suppress("unused") Tag>(
+data class QueryFragment<@Suppress("unused")
+    Tag>(
     @Language("sql")
     val sql: String,
     val bindings: List<Binding<out Any?>> = emptyList()

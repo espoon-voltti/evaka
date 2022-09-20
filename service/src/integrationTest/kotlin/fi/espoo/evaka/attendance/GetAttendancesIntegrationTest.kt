@@ -118,7 +118,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 unitId = testDaycare2.id,
                 groupId = groupId2,
                 startDate = now.toLocalDate(),
-                endDate = now.toLocalDate(),
+                endDate = now.toLocalDate()
             )
         }
         val response = fetchAttendances()
@@ -133,7 +133,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 unitId = testDaycare.id,
                 groupId = groupId,
                 startDate = now.toLocalDate(),
-                endDate = now.toLocalDate(),
+                endDate = now.toLocalDate()
             )
         }
         val child = expectOneChild()

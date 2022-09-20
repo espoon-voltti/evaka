@@ -54,7 +54,7 @@ class VasuControllerCitizen(
 
     data class CitizenGetVasuDocumentSummariesResponse(
         val data: List<VasuDocumentSummary>,
-        val permissionToShareRequired: Boolean,
+        val permissionToShareRequired: Boolean
     )
 
     @GetMapping("/children/unread-count")

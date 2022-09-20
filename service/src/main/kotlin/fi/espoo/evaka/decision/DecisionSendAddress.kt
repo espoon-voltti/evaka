@@ -54,8 +54,12 @@ data class DecisionSendAddress(
             person.let {
                 if (addressUsable(person.streetAddress, person.postalCode, person.postOffice)) {
                     return DecisionSendAddress(
-                        person.streetAddress, person.postalCode, person.postOffice,
-                        person.streetAddress, "${person.postalCode} ${person.postOffice}", ""
+                        person.streetAddress,
+                        person.postalCode,
+                        person.postOffice,
+                        person.streetAddress,
+                        "${person.postalCode} ${person.postOffice}",
+                        ""
                     )
                 }
             }

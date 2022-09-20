@@ -61,11 +61,15 @@ class PlacementController(
         @RequestParam(
             value = "from",
             required = false
-        ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate? = null,
+        )
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        startDate: LocalDate? = null,
         @RequestParam(
             value = "to",
             required = false
-        ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate? = null
+        )
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        endDate: LocalDate? = null
     ): Set<DaycarePlacementWithDetails> {
         when {
             daycareId != null -> accessControl.requirePermissionFor(user, clock, Action.Unit.READ_PLACEMENT, daycareId)
@@ -80,9 +84,11 @@ class PlacementController(
             dbc.read {
                 it.getDetailedDaycarePlacements(daycareId, childId, startDate, endDate).map { placement ->
                     // TODO: is some info only hidden on frontend?
-                    if (auth !is AclAuthorization.All && !authorizedDaycares.contains(placement.daycare.id))
+                    if (auth !is AclAuthorization.All && !authorizedDaycares.contains(placement.daycare.id)) {
                         placement.copy(isRestrictedFromUser = true)
-                    else placement
+                    } else {
+                        placement
+                    }
                 }.toSet()
             }
         }.also {
@@ -102,8 +108,12 @@ class PlacementController(
         @RequestParam(
             value = "from",
             required = false
-        ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
-        @RequestParam(value = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate
+        )
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        startDate: LocalDate,
+        @RequestParam(value = "to", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        endDate: LocalDate
     ): List<PlacementPlanDetails> {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_PLACEMENT_PLAN, daycareId)
 
@@ -185,7 +195,7 @@ class PlacementController(
                             )
                         )
                     ),
-                    runAt = now,
+                    runAt = now
                 )
             }
         }
@@ -214,7 +224,7 @@ class PlacementController(
                                 DateRange(it.startDate, it.endDate)
                             )
                         ),
-                        runAt = now,
+                        runAt = now
                     )
                 }
             }

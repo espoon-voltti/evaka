@@ -33,8 +33,12 @@ class PatuReportingController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+        @RequestParam("from")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        from: LocalDate,
+        @RequestParam("to")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        to: LocalDate
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Global.SEND_PATU_REPORT)
         db.connect { dbc ->

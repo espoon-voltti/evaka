@@ -592,7 +592,8 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             """.trimIndent()
         ).bind("invoiceId", invoiceId).map { row ->
             Pair(
-                row.mapColumn<String>("saved_cost_center"), row.mapColumn<String>("saved_sub_cost_center")
+                row.mapColumn<String>("saved_cost_center"),
+                row.mapColumn<String>("saved_sub_cost_center")
             )
         }.single()
 
@@ -694,7 +695,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             rows = original.rows.map {
                 it.copy(
                     description = "UPDATED",
-                    unitId = testDaycare2.id,
+                    unitId = testDaycare2.id
                 )
             } + createInvoiceRowFixture(testChild_1.id, testDaycare.id).copy(
                 product = ProductKey("PRESCHOOL_WITH_DAYCARE"),

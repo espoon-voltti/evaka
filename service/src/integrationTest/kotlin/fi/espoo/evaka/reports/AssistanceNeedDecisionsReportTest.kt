@@ -59,7 +59,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
             smallGroup = false,
             groupAssistant = false,
             childAssistant = false,
-            additionalStaff = false,
+            additionalStaff = false
         ),
         structuralMotivationDescription = "Structural motivation description",
         careMotivation = "Care motivation",
@@ -68,7 +68,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
             partTimeSpecialEd = false,
             fullTimeSpecialEd = false,
             interpretationAndAssistanceServices = false,
-            specialAides = true,
+            specialAides = true
         ),
         servicesMotivation = "Services Motivation",
         expertResponsibilities = "Expert responsibilities",
@@ -80,7 +80,7 @@ class AssistanceNeedDecisionsReportTest : FullApplicationTest(resetDbBeforeEach 
                 name = "${testAdult_1.lastName} ${testAdult_1.firstName}",
                 isHeard = true,
                 details = "Lots of details"
-            ),
+            )
         ),
         viewOfGuardians = "The view of the guardians",
         otherRepresentativeHeard = false,

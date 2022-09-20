@@ -1259,7 +1259,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL_DAYCARE,
                 child = testChild_2,
-                guardian = testAdult_1, applicationId = applicationId,
+                guardian = testAdult_1,
+                applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
@@ -1364,7 +1365,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL_DAYCARE,
                 child = testChild_2,
-                guardian = testAdult_1, applicationId = applicationId,
+                guardian = testAdult_1,
+                applicationId = applicationId,
                 preferredStartDate = LocalDate.of(2020, 8, 1)
             )
             service.sendApplication(tx, serviceWorker, clock, applicationId)
@@ -2077,14 +2079,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 clock,
                 applicationId,
                 getDecision(tx, DecisionType.PRESCHOOL).id,
-                mainPeriod.start,
+                mainPeriod.start
             )
             service.rejectDecision(
                 tx,
                 user,
                 clock,
                 applicationId,
-                getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id,
+                getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id
             )
 
             // then
@@ -2108,7 +2110,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     clock,
                     applicationId,
                     getDecision(tx, DecisionType.PRESCHOOL).id,
-                    mainPeriod.start,
+                    mainPeriod.start
                 )
             }
         }
@@ -2128,7 +2130,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     user,
                     clock,
                     applicationId,
-                    getDecision(tx, DecisionType.PRESCHOOL).id,
+                    getDecision(tx, DecisionType.PRESCHOOL).id
                 )
             }
         }

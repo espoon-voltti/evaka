@@ -45,24 +45,27 @@ data class KoskiUnitRaw(
     val ophUnitOid: String,
     val ophOrganizerOid: String
 ) {
-    fun haeSuoritus(type: OpiskeluoikeudenTyyppiKoodi) = if (type == OpiskeluoikeudenTyyppiKoodi.PREPARATORY) Suoritus(
-        koulutusmoduuli = Koulutusmoduuli(
-            tunniste = KoulutusmoduulinTunniste(KoulutusmoduulinTunnisteKoodi.PREPARATORY),
-            perusteenDiaarinumero = PerusteenDiaarinumero.PREPARATORY
-        ),
-        toimipiste = Toimipiste(ophUnitOid),
-        suorituskieli = Suorituskieli(daycareLanguage.uppercase()),
-        tyyppi = SuorituksenTyyppi(SuorituksenTyyppiKoodi.PREPARATORY)
-    )
-    else Suoritus(
-        koulutusmoduuli = Koulutusmoduuli(
-            tunniste = KoulutusmoduulinTunniste(KoulutusmoduulinTunnisteKoodi.PRESCHOOL),
-            perusteenDiaarinumero = PerusteenDiaarinumero.PRESCHOOL
-        ),
-        toimipiste = Toimipiste(ophUnitOid),
-        suorituskieli = Suorituskieli(daycareLanguage.uppercase()),
-        tyyppi = SuorituksenTyyppi(SuorituksenTyyppiKoodi.PRESCHOOL)
-    )
+    fun haeSuoritus(type: OpiskeluoikeudenTyyppiKoodi) = if (type == OpiskeluoikeudenTyyppiKoodi.PREPARATORY) {
+        Suoritus(
+            koulutusmoduuli = Koulutusmoduuli(
+                tunniste = KoulutusmoduulinTunniste(KoulutusmoduulinTunnisteKoodi.PREPARATORY),
+                perusteenDiaarinumero = PerusteenDiaarinumero.PREPARATORY
+            ),
+            toimipiste = Toimipiste(ophUnitOid),
+            suorituskieli = Suorituskieli(daycareLanguage.uppercase()),
+            tyyppi = SuorituksenTyyppi(SuorituksenTyyppiKoodi.PREPARATORY)
+        )
+    } else {
+        Suoritus(
+            koulutusmoduuli = Koulutusmoduuli(
+                tunniste = KoulutusmoduulinTunniste(KoulutusmoduulinTunnisteKoodi.PRESCHOOL),
+                perusteenDiaarinumero = PerusteenDiaarinumero.PRESCHOOL
+            ),
+            toimipiste = Toimipiste(ophUnitOid),
+            suorituskieli = Suorituskieli(daycareLanguage.uppercase()),
+            tyyppi = SuorituksenTyyppi(SuorituksenTyyppiKoodi.PRESCHOOL)
+        )
+    }
 
     fun haeJärjestämisMuoto() = when (daycareProviderType) {
         ProviderType.PURCHASED -> Järjestämismuoto(JärjestämismuotoKoodi.PURCHASED)
@@ -134,7 +137,7 @@ data class KoskiActiveDataRaw(
     private val studyRightTimelines = calculateStudyRightTimelines(
         placementRanges = placementRanges.asSequence(),
         holidays = holidays,
-        absences = preparatoryAbsences.asSequence(),
+        absences = preparatoryAbsences.asSequence()
     )
 
     private val approverTitle = "Esiopetusyksikön johtaja"
@@ -158,9 +161,14 @@ data class KoskiActiveDataRaw(
                     canBeQualified && totalAbsences <= 30
                 }
             }
-            if (isQualified) StudyRightTermination.Qualified(placementSpan.end)
-            else StudyRightTermination.Resigned(placementSpan.end)
-        } else null
+            if (isQualified) {
+                StudyRightTermination.Qualified(placementSpan.end)
+            } else {
+                StudyRightTermination.Resigned(placementSpan.end)
+            }
+        } else {
+            null
+        }
 
         return KoskiData(
             oppija = Oppija(
@@ -205,31 +213,35 @@ data class KoskiActiveDataRaw(
             is StudyRightTermination.Qualified -> haeVahvistus(termination.date, ophOrganizationOid, ophMunicipalityCode)
             else -> null
         }
-        if (type == OpiskeluoikeudenTyyppiKoodi.PREPARATORY) it.copy(
-            osasuoritukset = listOf(
-                Osasuoritus(
-                    koulutusmoduuli = OsasuorituksenKoulutusmoduuli(
-                        tunniste = OsasuorituksenTunniste("ai", nimi = LokalisoituTeksti("Suomen kieli")),
-                        laajuus = OsasuorituksenLaajuus(
-                            arvo = 25,
-                            yksikkö = Laajuusyksikkö(koodiarvo = LaajuusyksikköKoodiarvo.VUOSIVIIKKOTUNTI)
-                        )
-                    ),
-                    tyyppi = SuorituksenTyyppi(SuorituksenTyyppiKoodi.PREPARATORY_SUBJECT),
-                    arviointi = listOf(
-                        Arviointi(
-                            arvosana = Arvosana(
-                                koodiarvo = ArvosanaKoodiarvo.OSALLISTUNUT
-                            ),
-                            kuvaus = LokalisoituTeksti(
-                                fi = "Suorittanut perusopetukseen valmistavan opetuksen esiopetuksen yhteydessä"
+        if (type == OpiskeluoikeudenTyyppiKoodi.PREPARATORY) {
+            it.copy(
+                osasuoritukset = listOf(
+                    Osasuoritus(
+                        koulutusmoduuli = OsasuorituksenKoulutusmoduuli(
+                            tunniste = OsasuorituksenTunniste("ai", nimi = LokalisoituTeksti("Suomen kieli")),
+                            laajuus = OsasuorituksenLaajuus(
+                                arvo = 25,
+                                yksikkö = Laajuusyksikkö(koodiarvo = LaajuusyksikköKoodiarvo.VUOSIVIIKKOTUNTI)
+                            )
+                        ),
+                        tyyppi = SuorituksenTyyppi(SuorituksenTyyppiKoodi.PREPARATORY_SUBJECT),
+                        arviointi = listOf(
+                            Arviointi(
+                                arvosana = Arvosana(
+                                    koodiarvo = ArvosanaKoodiarvo.OSALLISTUNUT
+                                ),
+                                kuvaus = LokalisoituTeksti(
+                                    fi = "Suorittanut perusopetukseen valmistavan opetuksen esiopetuksen yhteydessä"
+                                )
                             )
                         )
                     )
-                )
-            ),
-            vahvistus = vahvistus
-        ) else it.copy(vahvistus = vahvistus)
+                ),
+                vahvistus = vahvistus
+            )
+        } else {
+            it.copy(vahvistus = vahvistus)
+        }
     }
 
     fun haeOpiskeluoikeus(sourceSystem: String, ophOrganizationOid: String, ophMunicipalityCode: String, termination: StudyRightTermination?): Opiskeluoikeus {

@@ -558,7 +558,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertGroupPlacement(childId)
         val dailyServiceTimes = DailyServiceTimesValue.RegularTimes(
             validityPeriod = DateRange(placementStart, null),
-            regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+            regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
         )
         insertDailyServiceTimes(childId, dailyServiceTimes)
 
@@ -595,7 +595,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertGroupPlacement(childId)
         val dailyServiceTimes = DailyServiceTimesValue.RegularTimes(
             validityPeriod = DateRange(placementStart, null),
-            regularTimes = TimeRange(LocalTime.of(21, 0), LocalTime.of(9, 0)),
+            regularTimes = TimeRange(LocalTime.of(21, 0), LocalTime.of(9, 0))
         )
         insertDailyServiceTimes(childId, dailyServiceTimes)
 
@@ -615,7 +615,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertReservations(childId, reservations)
         val dailyServiceTimes = DailyServiceTimesValue.RegularTimes(
             validityPeriod = DateRange(placementStart, null),
-            regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(20, 0)),
+            regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(20, 0))
         )
         insertDailyServiceTimes(childId, dailyServiceTimes)
 
@@ -635,7 +635,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertReservations(childId, reservations)
         val dailyServiceTimes = DailyServiceTimesValue.RegularTimes(
             validityPeriod = DateRange(placementStart, null),
-            regularTimes = TimeRange(LocalTime.of(7, 0), LocalTime.of(15, 0)),
+            regularTimes = TimeRange(LocalTime.of(7, 0), LocalTime.of(15, 0))
         )
         insertDailyServiceTimes(childId, dailyServiceTimes)
 
@@ -677,7 +677,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         insertReservations(childId, reservations)
         val dailyServiceTimes = DailyServiceTimesValue.RegularTimes(
             validityPeriod = DateRange(placementStart, null),
-            regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+            regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
         )
         insertDailyServiceTimes(childId, dailyServiceTimes)
 
@@ -701,14 +701,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             childId,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(placementStart, LocalDate.of(2019, 8, 10)),
-                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
             )
         )
         insertDailyServiceTimes(
             childId,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = DateRange(LocalDate.of(2019, 8, 13), LocalDate.of(2019, 8, 20)),
-                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0)),
+                regularTimes = TimeRange(LocalTime.of(8, 0), LocalTime.of(18, 0))
             )
         )
         insertDailyServiceTimes(
@@ -881,8 +881,10 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 )
             )
             it.insertTestDaycareGroupPlacement(
-                daycarePlacementId = daycarePlacementId, groupId = groupId,
-                startDate = placementPeriod.start, endDate = placementPeriod.end
+                daycarePlacementId = daycarePlacementId,
+                groupId = groupId,
+                startDate = placementPeriod.start,
+                endDate = placementPeriod.end
             )
         }
     }
@@ -920,10 +922,14 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         db.transaction { tx ->
             reservations
                 .flatMap { (start, end) ->
-                    if (start.toLocalDate().plusDays(1) == end.toLocalDate()) listOf(
-                        start to HelsinkiDateTime.of(start.toLocalDate(), LocalTime.of(23, 59)),
-                        HelsinkiDateTime.of(end.toLocalDate(), LocalTime.of(0, 0)) to end,
-                    ) else listOf(start to end)
+                    if (start.toLocalDate().plusDays(1) == end.toLocalDate()) {
+                        listOf(
+                            start to HelsinkiDateTime.of(start.toLocalDate(), LocalTime.of(23, 59)),
+                            HelsinkiDateTime.of(end.toLocalDate(), LocalTime.of(0, 0)) to end
+                        )
+                    } else {
+                        listOf(start to end)
+                    }
                 }
                 .forEach { (start, end) ->
                     tx.insertTestReservation(

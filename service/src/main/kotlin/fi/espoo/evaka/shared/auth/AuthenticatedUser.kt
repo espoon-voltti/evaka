@@ -72,7 +72,7 @@ enum class MobileAuthLevel { DEFAULT, PIN_LOGIN }
 /**
  * Low-level AuthenticatedUser type "tag" used in serialized representations (JWT, JSON).
  */
-@Suppress("EnumEntryName")
+@Suppress("EnumEntryName", "ktlint:enum-entry-name-case")
 enum class AuthenticatedUserType {
     citizen, citizen_weak, employee, mobile, system, integration
 }

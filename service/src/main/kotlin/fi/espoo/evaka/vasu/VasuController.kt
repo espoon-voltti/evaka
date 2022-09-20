@@ -103,7 +103,7 @@ class VasuController(
 
     data class VasuDocumentSummaryWithPermittedActions(
         val data: VasuDocumentSummary,
-        val permittedActions: Set<Action.VasuDocument>,
+        val permittedActions: Set<Action.VasuDocument>
     )
 
     data class ChangeDocumentStateRequest(
@@ -199,14 +199,15 @@ class VasuController(
                                     entry.copy(
                                         authorId = storedEntry.authorId,
                                         edited =
-                                        if (authorEditingInGracePeriod || identicalContent)
+                                        if (authorEditingInGracePeriod || identicalContent) {
                                             storedEntry.edited
-                                        else
+                                        } else {
                                             FollowupEntryEditDetails(
                                                 editedAt = clock.today(),
                                                 editorId = EmployeeId(user.rawId()),
                                                 editorName = null
-                                            ),
+                                            )
+                                        },
                                         createdDate = storedEntry.createdDate,
                                         authorName = null
                                     )
@@ -226,14 +227,17 @@ class VasuController(
     }
 
     private fun validateVasuDocumentUpdate(vasu: VasuDocument, body: UpdateDocumentRequest) {
-        if (vasu.documentState == VasuDocumentState.CLOSED)
+        if (vasu.documentState == VasuDocumentState.CLOSED) {
             throw BadRequest("Closed vasu document cannot be edited", "CANNOT_EDIT_CLOSED_DOCUMENT")
+        }
 
-        if (!vasu.content.matchesStructurally(body.content))
+        if (!vasu.content.matchesStructurally(body.content)) {
             throw BadRequest("Vasu document structure does not match template", "DOCUMENT_DOES_NOT_MATCH_TEMPLATE")
+        }
 
-        if (vasu.content.followupEntriesMissing(body.content))
+        if (vasu.content.followupEntriesMissing(body.content)) {
             throw Forbidden("Follow-up entries may not be removed", "CANNOT_REMOVE_FOLLOWUP_COMMENTS")
+        }
     }
 
     data class EditFollowupEntryRequest(
@@ -248,7 +252,6 @@ class VasuController(
         @PathVariable id: VasuDocumentId,
         @RequestBody body: ChangeDocumentStateRequest
     ) {
-
         val events = if (body.eventType in listOf(MOVED_TO_READY, MOVED_TO_REVIEWED)) {
             listOf(PUBLISHED, body.eventType)
         } else {

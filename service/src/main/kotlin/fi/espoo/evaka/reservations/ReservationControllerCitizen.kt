@@ -40,8 +40,12 @@ class ReservationControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        from: LocalDate,
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        to: LocalDate
     ): ReservationsResponse {
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_RESERVATIONS, user.id)
 
@@ -130,11 +134,13 @@ class ReservationControllerCitizen(
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_ABSENCE, body.childIds)
 
-        if (body.dateRange.start.isBefore(clock.today()))
+        if (body.dateRange.start.isBefore(clock.today())) {
             throw BadRequest("Cannot mark absences for past days")
+        }
 
-        if (!listOf(OTHER_ABSENCE, PLANNED_ABSENCE, SICKLEAVE).contains(body.absenceType))
+        if (!listOf(OTHER_ABSENCE, PLANNED_ABSENCE, SICKLEAVE).contains(body.absenceType)) {
             throw BadRequest("Invalid absence type")
+        }
 
         val (deleted, inserted) = db.connect { dbc ->
             dbc.transaction { tx ->

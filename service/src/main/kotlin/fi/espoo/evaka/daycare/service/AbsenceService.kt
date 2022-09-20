@@ -89,7 +89,7 @@ fun getFutureAbsencesOfChild(tx: Database.Read, evakaClock: EvakaClock, childId:
 fun generateAbsencesFromIrregularDailyServiceTimes(
     tx: Database.Transaction,
     now: HelsinkiDateTime,
-    childId: ChildId,
+    childId: ChildId
 ) {
     // Change absences from tomorrow onwards
     val period = DateRange(now.toLocalDate().plusDays(1), null)
@@ -98,7 +98,11 @@ fun generateAbsencesFromIrregularDailyServiceTimes(
         if (it.times.validityPeriod.overlaps(period) &&
             it.times is DailyServiceTimesValue.IrregularTimes &&
             !it.times.isEmpty()
-        ) listOf(it.times) else emptyList()
+        ) {
+            listOf(it.times)
+        } else {
+            emptyList()
+        }
     }
     if (irregularDailyServiceTimes.isNotEmpty()) {
         val attendanceDates = tx.getChildAttendanceStartDatesByRange(childId, period)
@@ -127,7 +131,7 @@ fun generateAbsencesFromIrregularDailyServiceTimes(
                             childId = childId,
                             date = date,
                             absenceType = AbsenceType.OTHER_ABSENCE,
-                            category = category,
+                            category = category
                         )
                     }
                 }
@@ -157,11 +161,14 @@ private fun supplementReservationsWithDailyServiceTimes(
         }
         ?.sortedBy { it.start }
         ?.fold(listOf<HelsinkiDateTimeRange>()) { timeRanges, timeRange ->
-            if (timeRanges.isEmpty()) listOf(timeRange)
-            else {
-                if (timeRange.start.durationSince(timeRanges.last().end).toMinutes() <= 1)
+            if (timeRanges.isEmpty()) {
+                listOf(timeRange)
+            } else {
+                if (timeRange.start.durationSince(timeRanges.last().end).toMinutes() <= 1) {
                     timeRanges.dropLast(1) + HelsinkiDateTimeRange(timeRanges.last().start, timeRange.end)
-                else timeRanges + timeRange
+                } else {
+                    timeRanges + timeRange
+                }
             }
         }
         ?.filterNot { absenceDates.contains(it.start.toLocalDate()) }
@@ -170,35 +177,38 @@ private fun supplementReservationsWithDailyServiceTimes(
     val reservedDates = reservationRanges.map { it.start.toLocalDate() }.toSet()
 
     val dailyServiceTimeRanges =
-        if (dailyServiceTimesList.isNullOrEmpty()) listOf()
-        else placementDateRanges
-            .flatMap { it.dates() }
-            .filterNot { reservedDates.contains(it) }
-            .filterNot { absenceDates.contains(it) }
-            .filter { unitOperationalDays.contains(it) }
-            .mapNotNull { date ->
-                val dailyServiceTimes =
-                    dailyServiceTimesList.find { it.validityPeriod.includes(date) } ?: return@mapNotNull null
+        if (dailyServiceTimesList.isNullOrEmpty()) {
+            listOf()
+        } else {
+            placementDateRanges
+                .flatMap { it.dates() }
+                .filterNot { reservedDates.contains(it) }
+                .filterNot { absenceDates.contains(it) }
+                .filter { unitOperationalDays.contains(it) }
+                .mapNotNull { date ->
+                    val dailyServiceTimes =
+                        dailyServiceTimesList.find { it.validityPeriod.includes(date) } ?: return@mapNotNull null
 
-                val times = when (dailyServiceTimes) {
-                    is DailyServiceTimesValue.RegularTimes ->
-                        dailyServiceTimes.regularTimes.start to dailyServiceTimes.regularTimes.end
+                    val times = when (dailyServiceTimes) {
+                        is DailyServiceTimesValue.RegularTimes ->
+                            dailyServiceTimes.regularTimes.start to dailyServiceTimes.regularTimes.end
 
-                    is DailyServiceTimesValue.IrregularTimes -> {
-                        val times = dailyServiceTimes.timesForDayOfWeek(date.dayOfWeek)
-                        if (times != null) times.start to times.end else null
+                        is DailyServiceTimesValue.IrregularTimes -> {
+                            val times = dailyServiceTimes.timesForDayOfWeek(date.dayOfWeek)
+                            if (times != null) times.start to times.end else null
+                        }
+
+                        is DailyServiceTimesValue.VariableTimes -> null
                     }
 
-                    is DailyServiceTimesValue.VariableTimes -> null
+                    times?.let { (start, end) ->
+                        HelsinkiDateTimeRange(
+                            HelsinkiDateTime.of(date, start),
+                            HelsinkiDateTime.of(if (end < start) date.plusDays(1) else date, end)
+                        )
+                    }
                 }
-
-                times?.let { (start, end) ->
-                    HelsinkiDateTimeRange(
-                        HelsinkiDateTime.of(date, start),
-                        HelsinkiDateTime.of(if (end < start) date.plusDays(1) else date, end)
-                    )
-                }
-            }
+        }
 
     return (reservationRanges + dailyServiceTimeRanges)
         .sortedBy { it.start }
@@ -314,7 +324,7 @@ enum class AbsenceType : DatabaseEnum {
     FREE_ABSENCE,
 
     /** An absence during a holiday season that warrants to charge a fine */
-    UNAUTHORIZED_ABSENCE,
+    UNAUTHORIZED_ABSENCE
     ;
 
     override val sqlType: String = "absence_type"

@@ -204,8 +204,9 @@ class PersonService(
     fun disableSsn(tx: Database.Transaction, personId: PersonId, disabled: Boolean) {
         val person = tx.getPersonById(personId) ?: throw NotFound("Person $personId not found")
 
-        if (person.identity is ExternalIdentifier.SSN)
+        if (person.identity is ExternalIdentifier.SSN) {
             throw BadRequest("Cannot disable a SSN, person $personId already has a SSN")
+        }
 
         tx.updatePersonSsnAddingDisabled(personId, disabled)
     }
@@ -403,18 +404,24 @@ data class PersonDTO(
 
 fun PersonDTO.hideNonPermittedPersonData(includeInvoiceAddress: Boolean, includeOphOid: Boolean) = this
     .let {
-        if (includeInvoiceAddress) it
-        else it.copy(
-            invoiceRecipientName = "",
-            invoicingStreetAddress = "",
-            invoicingPostalCode = "",
-            invoicingPostOffice = "",
-            forceManualFeeDecisions = false
-        )
+        if (includeInvoiceAddress) {
+            it
+        } else {
+            it.copy(
+                invoiceRecipientName = "",
+                invoicingStreetAddress = "",
+                invoicingPostalCode = "",
+                invoicingPostOffice = "",
+                forceManualFeeDecisions = false
+            )
+        }
     }
     .let {
-        if (includeOphOid) it
-        else it.copy(ophPersonOid = "")
+        if (includeOphOid) {
+            it
+        } else {
+            it.copy(ophPersonOid = "")
+        }
     }
 
 data class PersonJSON(
@@ -591,8 +598,9 @@ private fun upsertVtjPerson(tx: Database.Transaction, inputPerson: VtjPersonDTO)
 }
 
 private fun initChildIfNotExists(tx: Database.Transaction, childId: ChildId) {
-    if (tx.getChild(childId) == null)
+    if (tx.getChild(childId) == null) {
         tx.createChild(Child(id = childId, additionalInformation = AdditionalInformation()))
+    }
 }
 
 private fun createOrReplaceGuardianRelationships(tx: Database.Transaction, guardianId: PersonId, childIds: List<ChildId>) {

@@ -61,7 +61,7 @@ class ApplicationAccessControlTest : AccessControlTest() {
                     Adult(),
                     apply = Apply(
                         preferredUnits = listOf(daycareId)
-                    ),
+                    )
                 )
             )
         }

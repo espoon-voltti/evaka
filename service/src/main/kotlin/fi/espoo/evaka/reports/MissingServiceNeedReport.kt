@@ -28,8 +28,12 @@ class MissingServiceNeedReportController(private val acl: AccessControlList, pri
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
-        @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?
+        @RequestParam("from")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        from: LocalDate,
+        @RequestParam("to")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        to: LocalDate?
     ): List<MissingServiceNeedReportRow> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_MISSING_SERVICE_NEED_REPORT)
         if (to != null && to.isBefore(from)) throw BadRequest("Invalid time range")

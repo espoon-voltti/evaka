@@ -46,9 +46,13 @@ private fun HenkiloTunnusKyselyResType.mapResponse(): VTJResponse =
     this.vtjHenkiloVastaussanomaAndFaultCodeAndFaultString
         .fold(VTJResponse()) { result: VTJResponse, field: Any? ->
             when (field) {
-                is JAXBElement<*> -> if (field.name == faultCodeName) result.copy(faultCode = "${field.value}") else result.copy(
-                    faultString = "${field.value}"
-                )
+                is JAXBElement<*> -> if (field.name == faultCodeName) {
+                    result.copy(faultCode = "${field.value}")
+                } else {
+                    result.copy(
+                        faultString = "${field.value}"
+                    )
+                }
                 is VTJHenkiloVastaussanoma -> result.copy(henkiloSanoma = field)
                 else -> throw IllegalStateException("Unexpected error parsing VTJ response")
             }

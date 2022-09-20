@@ -28,7 +28,7 @@ class StaffOccupancyCoefficientController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam unitId: DaycareId,
+        @RequestParam unitId: DaycareId
     ): List<StaffOccupancyCoefficient> {
         ac.requirePermissionFor(user, clock, Action.Unit.READ_STAFF_OCCUPANCY_COEFFICIENTS, unitId)
         return db.connect { dbc -> dbc.read { it.getOccupancyCoefficientsByUnit(unitId) } }.also {
@@ -41,7 +41,7 @@ class StaffOccupancyCoefficientController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestBody body: OccupancyCoefficientUpsert,
+        @RequestBody body: OccupancyCoefficientUpsert
     ) {
         ac.requirePermissionFor(user, clock, Action.Unit.UPSERT_STAFF_OCCUPANCY_COEFFICIENTS, body.unitId)
         val id = db.connect { dbc -> dbc.transaction { it.upsertOccupancyCoefficient(body) } }

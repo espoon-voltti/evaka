@@ -18,7 +18,7 @@ class HolidayPeriodQuestionnaireIntegrationTest : PureJdbiTest(resetDbBeforeEach
     fun `fixed period questionnaires can be saved`() {
         val options = listOf(
             FiniteDateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 7)),
-            FiniteDateRange(LocalDate.of(2021, 7, 8), LocalDate.of(2021, 7, 14)),
+            FiniteDateRange(LocalDate.of(2021, 7, 8), LocalDate.of(2021, 7, 14))
         )
         val active = FiniteDateRange(summerRange.start.minusMonths(2), summerRange.start.minusMonths(1))
         val summerQuestionnaire = createFixedPeriodQuestionnaire(

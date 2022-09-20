@@ -21,16 +21,25 @@ fun freeTextSearchQuery(tables: List<String>, searchText: String): DBQuery {
     val freeTextString = searchText.let(removeSsnParams).let(removeDateParams)
 
     val freeTextQuery =
-        if (freeTextString.isNotBlank()) freeTextComputedColumnQuery(tables, freeTextParamName)
-        else null
+        if (freeTextString.isNotBlank()) {
+            freeTextComputedColumnQuery(tables, freeTextParamName)
+        } else {
+            null
+        }
 
     val ssnQuery =
-        if (ssnParams.isNotEmpty()) ssnQuery(tables, ssnParams)
-        else null
+        if (ssnParams.isNotEmpty()) {
+            ssnQuery(tables, ssnParams)
+        } else {
+            null
+        }
 
     val dateQuery =
-        if (dateParams.isNotEmpty()) dateQuery(tables, dateParams)
-        else null
+        if (dateParams.isNotEmpty()) {
+            dateQuery(tables, dateParams)
+        } else {
+            null
+        }
 
     val wholeQuery = listOfNotNull("true", freeTextQuery, ssnQuery, dateQuery)
         .joinToString(" AND ")

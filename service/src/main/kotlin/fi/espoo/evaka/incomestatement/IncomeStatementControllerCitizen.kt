@@ -105,7 +105,7 @@ class IncomeStatementControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable incomeStatementId: IncomeStatementId,
+        @PathVariable incomeStatementId: IncomeStatementId
     ): IncomeStatement {
         accessControl.requirePermissionFor(user, clock, Action.Citizen.IncomeStatement.READ, incomeStatementId)
 

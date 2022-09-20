@@ -32,14 +32,14 @@ class MobileUnitController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable unitId: DaycareId,
+        @PathVariable unitId: DaycareId
     ): UnitInfo {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_MOBILE_INFO, unitId)
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.fetchUnitInfo(
                     unitId,
-                    clock.today(),
+                    clock.today()
                 )
             }
         }.also {
@@ -59,7 +59,7 @@ class MobileUnitController(private val accessControl: AccessControl) {
             dbc.read { tx ->
                 tx.fetchUnitStats(
                     unitIds,
-                    clock.today(),
+                    clock.today()
                 )
             }
         }.also {
@@ -259,7 +259,7 @@ data class UnitStats(
 
 fun Database.Read.fetchUnitStats(
     unitIds: List<DaycareId>,
-    date: LocalDate,
+    date: LocalDate
 ): List<UnitStats> {
     return createQuery(
         """
