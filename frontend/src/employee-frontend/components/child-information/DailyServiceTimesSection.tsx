@@ -82,6 +82,8 @@ export default React.memo(function DailyServiceTimesSection({
           {i18n.childInformation.dailyServiceTimes.info}
           <br />
           {i18n.childInformation.dailyServiceTimes.info2}
+          <br />
+          {i18n.childInformation.dailyServiceTimes.info3}
         </P>
 
         {permittedActions.has('CREATE_DAILY_SERVICE_TIME') && (
