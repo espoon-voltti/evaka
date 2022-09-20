@@ -187,12 +187,15 @@ data class FeeDecisionDetailed(
 
     val requiresManualSending
         get(): Boolean {
+            if (decisionType !== FeeDecisionType.NORMAL || headOfFamily.forceManualFeeDecisions) {
+                return true
+            }
+
             // Restricted will be sent to allow fast receiving via suomi.fi e-channel.
             if (headOfFamily.restrictedDetailsEnabled) {
                 return false
-            } else if (decisionType !== FeeDecisionType.NORMAL || headOfFamily.forceManualFeeDecisions) {
-                return true
             }
+
             return headOfFamily.let {
                 listOf(
                     it.ssn,
