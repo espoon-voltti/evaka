@@ -8,6 +8,7 @@ import fi.espoo.evaka.invoicing.data.getInvoice
 import fi.espoo.evaka.invoicing.data.getInvoiceIdsByDates
 import fi.espoo.evaka.invoicing.data.getInvoicesByIds
 import fi.espoo.evaka.invoicing.data.getMaxInvoiceNumber
+import fi.espoo.evaka.invoicing.data.lockInvoices
 import fi.espoo.evaka.invoicing.data.saveCostCenterFields
 import fi.espoo.evaka.invoicing.data.setDraftsSent
 import fi.espoo.evaka.invoicing.data.setDraftsWaitingForManualSending
@@ -44,6 +45,7 @@ class InvoiceService(
 ) {
     fun sendInvoices(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, invoiceIds: List<InvoiceId>, invoiceDate: LocalDate?, dueDate: LocalDate?) {
         val seriesStart = featureConfig.invoiceNumberSeriesStart
+        tx.lockInvoices(invoiceIds)
 
         val invoices = tx.getInvoicesByIds(invoiceIds)
         if (invoices.isEmpty()) return
