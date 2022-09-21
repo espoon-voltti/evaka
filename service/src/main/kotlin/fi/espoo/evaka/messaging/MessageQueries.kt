@@ -795,7 +795,11 @@ fun Database.Read.getMessageAccountsForRecipients(
     accountId: MessageAccountId,
     recipients: Set<MessageRecipient>,
     date: LocalDate
-): List<MessageAccountId> {
+): Map<MessageAccountId, ChildId> {
+    data class MessageAccountIdToChildId(
+        val accountId: MessageAccountId,
+        val childId: ChildId
+    )
     val groupedRecipients = recipients.groupBy { it.type }
     return this.createQuery(
         """
@@ -828,7 +832,7 @@ WITH sender AS (
     )
     AND 'MESSAGING' = ANY(d.enabled_pilot_features)
 )
-SELECT DISTINCT acc.id
+SELECT DISTINCT acc.id as account_id, c.child_id
 FROM children c
 JOIN guardian g ON g.child_id = c.child_id
 JOIN message_account acc ON g.guardian_id = acc.person_id
@@ -844,8 +848,8 @@ WHERE NOT EXISTS (
         .bind("unitRecipients", groupedRecipients[MessageRecipientType.UNIT]?.map { it.id } ?: listOf())
         .bind("groupRecipients", groupedRecipients[MessageRecipientType.GROUP]?.map { it.id } ?: listOf())
         .bind("childRecipients", groupedRecipients[MessageRecipientType.CHILD]?.map { it.id } ?: listOf())
-        .mapTo<MessageAccountId>()
-        .toList()
+        .mapTo<MessageAccountIdToChildId>()
+        .associate { it.accountId to it.childId }
 }
 
 fun Database.Transaction.markNotificationAsSent(id: MessageRecipientId, timestamp: HelsinkiDateTime) {

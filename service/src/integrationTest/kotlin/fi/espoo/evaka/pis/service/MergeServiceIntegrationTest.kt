@@ -227,7 +227,8 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 sender = senderDuplicateAccount,
                 recipientGroups = setOf(setOf(receiverAccount)),
                 recipientNames = listOf(),
-                staffCopyRecipients = setOf()
+                staffCopyRecipients = setOf(),
+                accountIdsToChildIds = mapOf()
             )
         }
         assertEquals(
@@ -277,7 +278,8 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 sender = senderAccount,
                 recipientGroups = setOf(setOf(receiverDuplicateAccount)),
                 recipientNames = listOf(),
-                staffCopyRecipients = setOf()
+                staffCopyRecipients = setOf(),
+                accountIdsToChildIds = mapOf()
             )
         }
         assertEquals(

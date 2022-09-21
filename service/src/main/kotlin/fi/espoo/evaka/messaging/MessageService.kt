@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
@@ -28,7 +29,8 @@ class MessageService(
         recipientGroups: Set<Set<MessageAccountId>>,
         recipientNames: List<String>,
         attachmentIds: Set<AttachmentId> = setOf(),
-        staffCopyRecipients: Set<MessageAccountId>
+        staffCopyRecipients: Set<MessageAccountId>,
+        accountIdsToChildIds: Map<MessageAccountId, ChildId>
     ) =
         // for each recipient group, create a thread, message and message_recipients while re-using content
         tx.insertMessageContent(content, sender)
@@ -37,6 +39,8 @@ class MessageService(
                 val now = clock.now()
                 recipientGroups.map {
                     val threadId = tx.insertThread(type, title, urgent, isCopy = false)
+                    val childIds = it.mapNotNull { accId -> accountIdsToChildIds[accId] }.toSet()
+                    tx.insertMessageThreadChildren(childIds, threadId)
                     val messageId =
                         tx.insertMessage(
                             now = now,
