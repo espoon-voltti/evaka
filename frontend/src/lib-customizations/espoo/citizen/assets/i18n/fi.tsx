@@ -2104,6 +2104,10 @@ export default {
         PRESCHOOL: 'Lapsen esiopetuksen oppimissuunnitelman tapahtumat'
       },
       noRecord: 'Ei merkintää',
+      givePermissionToShareInfoVasu:
+        'Tarvittaessa suunnitelman välttämättömät tiedot luovutetaan muille tiedonsaajatahoille. (Varhaiskasvatuslaki 40 § ja 41 §, Perusopetuslaki 41 §)',
+      givePermissionToShareInfoVasuInfoText:
+        'Jos haluat muuttaa suunnitelmassa mainittuja tiedonsaajatahoja, ota yhteyttä lapsesi varhaiskasvatusyksikön henkilökuntaan. Sunnitelma voidaan luovuttaa uudelle varhaiskasvatuksen, esiopetuksen tai perusopetuksen järjestäjälle myös ilman huoltajan lupaa, jos se on välttämätöntä lapsen varhaiskasvatuksen, esi- tai perusopetuksen järjestämiseksi (Varhaiskasvatuslaki 40§ ja 41§, Perusopetuslaki 41§).',
       givePermissionToShareTitleVasu:
         'Vahvistus varhaiskasvatussuunnitelman luovuttamisesta muille tiedonsaajatahoille',
       givePermissionToShareTitleLeops:

@@ -2030,6 +2030,10 @@ const en: Translations = {
         PRESCHOOL: 'Preschool plan events'
       },
       noRecord: 'No record',
+      givePermissionToShareInfoVasu:
+        'If necessary, some information from the plan will be transferred to other recipients (Sections 40 and 41 of the Act on Early Childhood Education and Care, section 41 of the Basic Education Act)',
+      givePermissionToShareInfoVasuInfoText:
+        "Contact the unit for early childhood education if you want to change the recipients mentioned in the plan. The plan may be handed over to a new provider of early childhood education, pre-school education or basic education even without the guardian's permission, if it is necessary for arranging early childhood education, pre-primary or primary education (Section 4 of the Act on Early Childhood Education and Care, Sections 40 and 41 of the Basic Education Act).",
       givePermissionToShareTitleVasu:
         'Confirmation of the transfer of the early childhood education plan to other recipients',
       givePermissionToShareTitleLeops:

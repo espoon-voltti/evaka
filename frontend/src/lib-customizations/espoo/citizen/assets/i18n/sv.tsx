@@ -2136,6 +2136,10 @@ const sv: Translations = {
           'Händelser gällande plan för barnets lärande inom förskoleundervisning'
       },
       noRecord: 'Inga anmärkningar',
+      givePermissionToShareInfoVasu:
+        'Vid behov kommer nödvändiga delar av planen att överföras till övriga mottagare. (Lag om småbarnspedagogik 40 § och 41 §, lag om grundläggande utbildning 41 §)',
+      givePermissionToShareInfoVasuInfoText:
+        'Tag kontakt med enheten för småbarnspedagogik om du vill ändra de i planen nämnda mottagarna. Planen kan överlåtas till en ny anordnare av småbarnspedagogik, förskoleundervisning eller grundläggande utbildning, också utan samtycke av vårdnadshavare, ifall uppgifterna är nödvändiga för att ordna småbarnspedagogik, förskoleundervisning eller grundläggande utbildning för barnet (lag om småbarnspedagogik 41 §, lag om grundläggande utbildning 40 § och 41 §).',
       givePermissionToShareTitleVasu:
         'Bekräftelse att överföra barnets plan för småbarnspedagogik till övriga mottagare',
       givePermissionToShareTitleLeops:

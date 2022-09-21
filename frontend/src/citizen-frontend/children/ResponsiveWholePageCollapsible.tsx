@@ -37,6 +37,10 @@ const BreakingH2 = styled(H2)`
   hyphens: auto;
 `
 
+const NormalFocus = React.memo(function UntrapFocus({ children }) {
+  return <div>{children}</div>
+})
+
 export default React.memo(function ResponsiveWholePageCollapsible({
   open,
   toggleOpen,
@@ -73,7 +77,7 @@ export default React.memo(function ResponsiveWholePageCollapsible({
   }, [])
 
   // 600 = tabletMin
-  const MobileFocusTrap = width < 600 ? FocusTrap : React.Fragment
+  const MobileFocusTrap = width < 600 ? FocusTrap : NormalFocus
 
   const [isFocusable, setIsFocusable] = useState(true)
   const mobileHeaderId = useUniqueId('mobile-header')
