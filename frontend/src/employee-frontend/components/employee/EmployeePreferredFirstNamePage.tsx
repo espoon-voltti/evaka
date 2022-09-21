@@ -26,22 +26,31 @@ export default React.memo(function EmployeePreferredFirstNamePage({
   refreshAuthStatus
 }: Props) {
   const { i18n } = useTranslation()
-  const [preferredFirstName] = useApiState(getEmployeePreferredFirstName, [])
+  const [preferredFirstName, loadPreferredFirstName] = useApiState(
+    getEmployeePreferredFirstName,
+    []
+  )
 
   const [selectedPreferredFirstName, setSelectedPreferredFirstName] = useState<
     string | null
   >(null)
 
   useEffect(() => {
-    if (preferredFirstName.isSuccess) {
-      setSelectedPreferredFirstName(preferredFirstName.value.preferredFirstName)
+    if (
+      preferredFirstName.isSuccess &&
+      preferredFirstName.value.preferredFirstNameOptions.length > 0
+    ) {
+      const initialPreferredFirstName =
+        preferredFirstName.value.preferredFirstName ||
+        preferredFirstName.value.preferredFirstNameOptions[0]
+      setSelectedPreferredFirstName(initialPreferredFirstName)
     }
   }, [preferredFirstName])
 
   const onSave = () => {
     return setEmployeePreferredFirstName({
       preferredFirstName: selectedPreferredFirstName
-    })
+    }).then(loadPreferredFirstName)
   }
 
   const disableConfirm = () => {
