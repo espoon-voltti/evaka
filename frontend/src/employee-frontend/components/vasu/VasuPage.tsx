@@ -56,7 +56,11 @@ export default React.memo(function VasuPage() {
               vasu={vasu}
             />
             <Gap size="s" />
-            <VasuEvents document={vasu} content={content} />
+            <VasuEvents
+              document={vasu}
+              content={content}
+              translations={translations}
+            />
           </>
         )}
       </VasuContainer>

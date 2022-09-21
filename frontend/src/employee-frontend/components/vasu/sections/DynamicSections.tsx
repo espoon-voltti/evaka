@@ -205,6 +205,7 @@ export function DynamicSections({
                               })
                           : undefined
                       }
+                      lang={vasu.language}
                       translations={translations}
                     />
                   ) : isMultiSelectQuestion(question) ? (

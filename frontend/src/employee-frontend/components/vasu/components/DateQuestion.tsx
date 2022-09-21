@@ -28,7 +28,7 @@ export default React.memo(function DateQuestion({
   onChange,
   translations
 }: Props) {
-  const { i18n, lang } = useTranslation()
+  const { lang } = useTranslation()
   return (
     <FixedSpaceColumn spacing="xxs">
       <QuestionInfo info={info}>
@@ -42,7 +42,7 @@ export default React.memo(function DateQuestion({
           onChange={onChange}
           locale={lang}
           data-qa="date-question-picker"
-          errorTexts={i18n.validationErrors}
+          errorTexts={translations.validationErrors}
         />
       ) : (
         <ValueOrNoRecord text={value?.format()} translations={translations} />

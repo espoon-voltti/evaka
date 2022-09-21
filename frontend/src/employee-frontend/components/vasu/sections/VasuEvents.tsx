@@ -12,8 +12,8 @@ import { ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { Dimmed, H2, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
+import { VasuTranslations } from 'lib-customizations/employee'
 
-import { useTranslation } from '../../../state/i18n'
 import { VasuStateChip } from '../../common/VasuStateChip'
 import { isDateQuestion } from '../vasu-content'
 import { getLastPublished } from '../vasu-events'
@@ -31,16 +31,22 @@ const ChipContainer = styled.div`
   display: inline-flex;
 `
 
-function EventRow({ label, date }: { label: string; date: LocalDate | null }) {
-  const { i18n } = useTranslation()
-
+function EventRow({
+  label,
+  date,
+  translations
+}: {
+  label: string
+  date: LocalDate | null
+  translations: VasuTranslations
+}) {
   return (
     <>
       <Label>{label}</Label>
       {date ? (
         <span>{date.format()}</span>
       ) : (
-        <Dimmed>{i18n.vasu.noRecord}</Dimmed>
+        <Dimmed>{translations.noRecord}</Dimmed>
       )}
     </>
   )
@@ -52,13 +58,14 @@ interface Props {
     'documentState' | 'events' | 'modifiedAt' | 'type'
   >
   content: VasuDocument['content']
+  translations: VasuTranslations
 }
 
 export function VasuEvents({
   document: { documentState, events, modifiedAt, type },
-  content
+  content,
+  translations
 }: Props) {
-  const { i18n } = useTranslation()
   const lastPublished = getLastPublished(events)
 
   const trackedDates: [string, LocalDate][] = useMemo(
@@ -78,22 +85,29 @@ export function VasuEvents({
 
   return (
     <Container opaque data-qa="vasu-event-list">
-      <H2>{i18n.vasu.events[type]}</H2>
+      <H2>{translations.events[type]}</H2>
       <ListGrid labelWidth={labelWidth}>
-        <Label>{i18n.vasu.state}</Label>
+        <Label>{translations.state}</Label>
         <ChipContainer>
-          <VasuStateChip state={documentState} labels={i18n.vasu.states} />
+          <VasuStateChip state={documentState} labels={translations.states} />
         </ChipContainer>
         <EventRow
-          label={i18n.vasu.lastModified}
+          label={translations.lastModified}
           date={modifiedAt.toLocalDate()}
+          translations={translations}
         />
         <EventRow
-          label={i18n.vasu.lastPublished}
+          label={translations.lastPublished}
           date={lastPublished?.toLocalDate() ?? null}
+          translations={translations}
         />
         {trackedDates.map(([label, date]) => (
-          <EventRow key={label} label={label} date={date} />
+          <EventRow
+            key={label}
+            label={label}
+            date={date}
+            translations={translations}
+          />
         ))}
       </ListGrid>
       {events.length > 0 && (
@@ -103,8 +117,9 @@ export function VasuEvents({
             {events.map(({ id, eventType, created }) => (
               <EventRow
                 key={id}
-                label={i18n.vasu.eventTypes[eventType]}
+                label={translations.eventTypes[eventType]}
                 date={created.toLocalDate()}
+                translations={translations}
               />
             ))}
           </ListGrid>

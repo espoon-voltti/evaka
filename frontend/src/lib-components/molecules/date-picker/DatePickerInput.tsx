@@ -102,10 +102,17 @@ export default React.memo(function DatePickerInput({
       }
     : {}
 
+  const placeholder =
+    locale === 'en'
+      ? 'dd.mm.yyyy'
+      : locale === 'sv'
+      ? 'dd.mm.åååå'
+      : 'pp.kk.vvvv'
+
   return (
     <>
       <DateInputField
-        placeholder="pp.kk.vvvv"
+        placeholder={placeholder}
         value={useBrowserPicker ? date?.formatIso() ?? '' : rawDate}
         onChangeTarget={changeHandler}
         aria-describedby={ariaId}

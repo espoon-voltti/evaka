@@ -78,7 +78,11 @@ export default React.memo(function VasuEditPage() {
               translations={translations}
               vasu={vasu}
             />
-            <VasuEvents document={vasu} content={content} />
+            <VasuEvents
+              document={vasu}
+              content={content}
+              translations={translations}
+            />
           </>
         )}
       </VasuContainer>
