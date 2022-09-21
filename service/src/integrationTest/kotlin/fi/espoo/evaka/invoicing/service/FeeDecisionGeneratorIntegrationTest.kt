@@ -590,7 +590,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         decisions.first().let { decision ->
             assertEquals(10100 + 11600, decision.totalFee)
             assertEquals(2, decision.children.size)
-            decision.children.first().let { child ->
+            val children = decision.children.sortedBy { it.finalFee }
+            children.first().let { child ->
                 assertEquals(28900, child.baseFee)
                 assertEquals(PRESCHOOL_DAYCARE, child.placement.type)
                 assertEquals(serviceNeed.toFeeDecisionServiceNeed(), child.serviceNeed)
@@ -598,7 +599,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(10100, child.fee)
                 assertEquals(10100, child.finalFee)
             }
-            decision.children.last().let { child ->
+            children.last().let { child ->
                 assertEquals(28900, child.baseFee)
                 assertEquals(PRESCHOOL_DAYCARE, child.placement.type)
                 assertEquals(snDefaultPreschoolDaycare.toFeeDecisionServiceNeed(), child.serviceNeed)
