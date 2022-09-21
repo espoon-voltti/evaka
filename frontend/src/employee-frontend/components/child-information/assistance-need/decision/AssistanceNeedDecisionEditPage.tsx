@@ -179,50 +179,47 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
 
   const fieldInfos = useMemo<FieldInfos>(
     () =>
-      (showFormErrors
-        ? {
-            ...Object.fromEntries(
-              missingFields.map((field) => [
-                field,
-                { text: i18n.validationErrors.required, status: 'warning' }
-              ])
-            ),
-            guardianInfo: !formState?.guardianInfo.every(
-              (guardian) => guardian.isHeard
+      ({
+        ...Object.fromEntries(
+          missingFields.map((field) => [
+            field,
+            { text: i18n.validationErrors.required, status: 'warning' }
+          ])
+        ),
+        guardianInfo: !formState?.guardianInfo.every(
+          (guardian) => guardian.isHeard
+        )
+          ? {
+              text: i18n.childInformation.assistanceNeedDecision
+                .guardiansHeardValidation,
+              status: 'warning'
+            }
+          : undefined,
+        guardianDetails: Object.fromEntries(
+          formState?.guardianInfo
+            .filter(
+              (guardian) =>
+                !guardian.details || guardian.details.trim().length === 0
             )
-              ? {
-                  text: i18n.childInformation.assistanceNeedDecision
-                    .guardiansHeardValidation,
-                  status: 'warning'
-                }
-              : undefined,
-            guardianDetails: Object.fromEntries(
-              formState?.guardianInfo
-                .filter(
-                  (guardian) =>
-                    !guardian.details || guardian.details.trim().length === 0
-                )
-                .map<[string, InputInfo]>((guardian) => [
-                  guardian.id ?? '',
-                  {
-                    text: i18n.validationErrors.required,
-                    status: 'warning'
-                  }
-                ]) ?? []
-            ),
-            otherRepresentative:
-              formState?.otherRepresentativeHeard &&
-              (!formState?.otherRepresentativeDetails ||
-                formState?.otherRepresentativeDetails.trim().length === 0)
-                ? {
-                    text: i18n.validationErrors.required,
-                    status: 'warning'
-                  }
-                : undefined
-          }
-        : {}) as FieldInfos,
+            .map<[string, InputInfo]>((guardian) => [
+              guardian.id ?? '',
+              {
+                text: i18n.validationErrors.required,
+                status: 'warning'
+              }
+            ]) ?? []
+        ),
+        otherRepresentative:
+          formState?.otherRepresentativeHeard &&
+          (!formState?.otherRepresentativeDetails ||
+            formState?.otherRepresentativeDetails.trim().length === 0)
+            ? {
+                text: i18n.validationErrors.required,
+                status: 'warning'
+              }
+            : undefined
+      } as const),
     [
-      showFormErrors,
       missingFields,
       formState?.guardianInfo,
       formState?.otherRepresentativeHeard,
@@ -271,7 +268,7 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
                   child={child}
                   formState={formState}
                   setFormState={setFormState}
-                  fieldInfos={fieldInfos}
+                  fieldInfos={showFormErrors ? fieldInfos : {}}
                   onStartDateMissing={setStartDateMissing}
                 />
               </I18nContext.Provider>
@@ -354,7 +351,11 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
             primary
             text={i18n.childInformation.assistanceNeedDecision.preview}
             onClick={() => {
-              if (missingFields.length === 0) {
+              if (
+                Object.values(fieldInfos).filter(
+                  (value) => value && !isEmpty(value)
+                ).length === 0
+              ) {
                 return forceSave()
               }
 
