@@ -8,7 +8,7 @@ import { Navigate } from 'react-router-dom'
 import { Loading, Result } from 'lib-common/api'
 import {
   InvoiceCodes,
-  InvoiceDetailed,
+  InvoiceDetailedResponse,
   InvoiceRowDetailed
 } from 'lib-common/generated/api-types/invoicing'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -30,7 +30,9 @@ import Sum from './Sum'
 export default React.memo(function InvoiceDetailsPage() {
   const { id } = useNonNullableParams<{ id: string }>()
   const { i18n } = useTranslation()
-  const [invoice, setInvoice] = useState<Result<InvoiceDetailed>>(Loading.of())
+  const [invoice, setInvoice] = useState<Result<InvoiceDetailedResponse>>(
+    Loading.of()
+  )
   const [invoiceCodes, setInvoiceCodes] = useState<Result<InvoiceCodes>>(
     Loading.of()
   )
@@ -42,19 +44,21 @@ export default React.memo(function InvoiceDetailsPage() {
 
   useEffect(() => {
     if (invoice.isSuccess) {
-      const name = `${invoice.value.headOfFamily.firstName} ${invoice.value.headOfFamily.lastName}`
-      invoice.value.status === 'DRAFT'
+      const name = `${invoice.value.data.headOfFamily.firstName} ${invoice.value.data.headOfFamily.lastName}`
+      invoice.value.data.status === 'DRAFT'
         ? setTitle(`${name} | ${i18n.titles.invoiceDraft}`)
         : setTitle(`${name} | ${i18n.titles.invoice}`)
     }
   }, [invoice]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const editable = invoice.map((inv) => inv.status === 'DRAFT').getOrElse(false)
+  const editable = invoice
+    .map((inv) => inv.data.status === 'DRAFT')
+    .getOrElse(false)
 
   const updateRows = useCallback(
     (rows: InvoiceRowDetailed[]) =>
-      setInvoice((previous: Result<InvoiceDetailed>) =>
-        previous.map((inv) => ({ ...inv, rows }))
+      setInvoice((previous: Result<InvoiceDetailedResponse>) =>
+        previous.map((inv) => ({ ...inv, data: { ...inv.data, rows } }))
       ),
     []
   )
@@ -69,14 +73,17 @@ export default React.memo(function InvoiceDetailsPage() {
         <ReturnButton label={i18n.common.goBack} data-qa="navigate-back" />
         {invoice?.isSuccess ? (
           <ContentArea opaque>
-            <Title size={1}>{i18n.invoice.title[invoice.value.status]}</Title>
+            <Title size={1}>
+              {i18n.invoice.title[invoice.value.data.status]}
+            </Title>
             <InvoiceHeadOfFamilySection
-              headOfFamily={invoice.value.headOfFamily}
-              codebtor={invoice.value.codebtor}
+              headOfFamily={invoice.value.data.headOfFamily}
+              codebtor={invoice.value.data.codebtor}
             />
-            <InvoiceDetailsSection invoice={invoice.value} />
+            <InvoiceDetailsSection invoice={invoice.value.data} />
             <InvoiceRowsSection
-              rows={invoice.value.rows}
+              rows={invoice.value.data.rows}
+              permittedActions={invoice.value.permittedActions}
               updateRows={updateRows}
               invoiceCodes={invoiceCodes}
               editable={editable}
@@ -85,14 +92,16 @@ export default React.memo(function InvoiceDetailsPage() {
               title="familyTotal"
               sum={
                 editable
-                  ? totalPrice(invoice.value.rows)
-                  : invoice.value.totalPrice
+                  ? totalPrice(invoice.value.data.rows)
+                  : invoice.value.data.totalPrice
               }
             />
             <Actions
-              invoice={invoice.value}
+              invoice={invoice.value.data}
               loadInvoice={loadInvoice}
-              editable={editable}
+              editable={
+                editable && invoice.value.permittedActions.includes('UPDATE')
+              }
             />
           </ContentArea>
         ) : null}

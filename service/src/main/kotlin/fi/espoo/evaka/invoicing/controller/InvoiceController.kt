@@ -67,7 +67,7 @@ class InvoiceController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestBody body: SearchInvoicesRequest
-    ): Paged<InvoiceSummary> {
+    ): Paged<InvoiceSummaryResponse> {
         Audit.InvoicesSearch.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.SEARCH_INVOICES)
         val maxPageSize = 5000
@@ -75,7 +75,7 @@ class InvoiceController(
         return db.connect { dbc ->
             dbc
                 .read { tx ->
-                    tx.paginatedSearch(
+                    val paged = tx.paginatedSearch(
                         body.page,
                         body.pageSize,
                         body.sortBy ?: InvoiceSortParam.STATUS,
@@ -88,9 +88,22 @@ class InvoiceController(
                         body.periodStart,
                         body.periodEnd,
                     )
+                    val permittedActions = accessControl.getPermittedActions<InvoiceId, Action.Invoice>(
+                        tx,
+                        user,
+                        clock,
+                        paged.data.map { it.id }
+                    )
+                    Paged(
+                        data = paged.data.map { InvoiceSummaryResponse(it, permittedActions[it.id] ?: emptySet()) },
+                        total = paged.total,
+                        pages = paged.pages,
+                    )
                 }
         }
     }
+
+    data class InvoiceSummaryResponse(val data: InvoiceSummary, val permittedActions: Set<Action.Invoice>)
 
     @PostMapping("/create-drafts")
     fun createDraftInvoices(db: Database, user: AuthenticatedUser, clock: EvakaClock) {
@@ -151,13 +164,29 @@ class InvoiceController(
     }
 
     @GetMapping("/{id}")
-    fun getInvoice(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable id: InvoiceId): Wrapper<InvoiceDetailed> {
+    fun getInvoice(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable id: InvoiceId
+    ): Wrapper<InvoiceDetailedResponse> {
         Audit.InvoicesRead.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Invoice.READ, id)
-        val res = db.connect { dbc -> dbc.read { it.getDetailedInvoice(id) } }
-            ?: throw NotFound("No invoice found with given ID ($id)")
+        val res = db.connect { dbc ->
+            dbc.read { tx ->
+                val invoice = tx.getDetailedInvoice(id) ?: throw NotFound("No invoice found with given ID ($id)")
+                val permittedActions =
+                    accessControl.getPermittedActions<InvoiceId, Action.Invoice>(tx, user, clock, invoice.id)
+                InvoiceDetailedResponse(invoice, permittedActions)
+            }
+        }
         return Wrapper(res)
     }
+
+    data class InvoiceDetailedResponse(
+        val data: InvoiceDetailed,
+        val permittedActions: Set<Action.Invoice>,
+    )
 
     @GetMapping("/head-of-family/{uuid}")
     fun getHeadOfFamilyInvoices(

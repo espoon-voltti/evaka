@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
+import { Action } from 'lib-common/generated/action'
 import {
   PersonDetailed,
   InvoiceCodes,
@@ -71,6 +72,7 @@ const emptyInvoiceRow = (
 
 interface Props {
   rows: InvoiceRowDetailed[]
+  permittedActions: Action.Invoice[]
   updateRows: (rows: InvoiceRowDetailed[]) => void
   invoiceCodes: Result<InvoiceCodes>
   editable: boolean
@@ -106,6 +108,7 @@ const TotalPriceTh = styled(Th)`
 
 export default React.memo(function InvoiceRowsSection({
   rows,
+  permittedActions,
   updateRows,
   invoiceCodes,
   editable
@@ -228,7 +231,8 @@ export default React.memo(function InvoiceRowsSection({
                       products={products}
                       unitIds={unitIds}
                       unitDetails={unitDetails}
-                      editable={editable}
+                      editable={editable && permittedActions.includes('UPDATE')}
+                      deletable={permittedActions.includes('DELETE')}
                     />
                     {otherRows.map((row, index) => (
                       <InvoiceRowsSectionRow
@@ -246,17 +250,22 @@ export default React.memo(function InvoiceRowsSection({
                         products={products}
                         unitIds={unitIds}
                         unitDetails={unitDetails}
-                        editable={editable}
+                        editable={
+                          editable && permittedActions.includes('UPDATE')
+                        }
+                        deletable={permittedActions.includes('DELETE')}
                       />
                     ))}
                   </Tbody>
                 </InvoiceRowsTable>
-                <InlineButton
-                  disabled={!editable}
-                  onClick={getAddInvoiceRow(firstRow)}
-                  data-qa="invoice-button-add-row"
-                  text={i18n.invoice.form.rows.addRow}
-                />
+                {permittedActions.includes('UPDATE') && (
+                  <InlineButton
+                    disabled={!editable}
+                    onClick={getAddInvoiceRow(firstRow)}
+                    data-qa="invoice-button-add-row"
+                    text={i18n.invoice.form.rows.addRow}
+                  />
+                )}
                 <Sum title="rowSubTotal" sum={totalPrice(childRows)} />
               </div>
             )

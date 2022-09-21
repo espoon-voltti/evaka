@@ -8,6 +8,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.controller.InvoiceController
 import fi.espoo.evaka.invoicing.controller.InvoiceSortParam
 import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.invoicing.data.getInvoice
@@ -69,8 +70,15 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
     }
 
-    private fun deserializeListResult(json: String) = jsonMapper.readValue<Paged<InvoiceSummary>>(json)
-    private fun deserializeResult(json: String) = jsonMapper.readValue<Wrapper<InvoiceSummary>>(json)
+    private fun assertDetailedEqualEnough(expected: List<InvoiceDetailed>, actual: List<InvoiceDetailed>) {
+        assertEquals(
+            expected.map { it.copy(sentAt = null, headOfFamily = it.headOfFamily.copy(email = null)) }.toSet(),
+            actual.map { it.copy(sentAt = null) }.toSet()
+        )
+    }
+
+    private fun deserializeListResult(json: String) = jsonMapper.readValue<Paged<InvoiceController.InvoiceSummaryResponse>>(json)
+    private fun deserializeResult(json: String) = jsonMapper.readValue<Wrapper<InvoiceController.InvoiceDetailedResponse>>(json)
 
     private val testInvoices = listOf(
         createInvoiceFixture(
@@ -164,7 +172,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             drafts.map(::toSummary),
-            deserializeListResult(result.get()).data
+            deserializeListResult(result.get()).data.map { it.data }
         )
     }
 
@@ -181,7 +189,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             sent.map(::toSummary),
-            deserializeListResult(result.get()).data
+            deserializeListResult(result.get()).data.map { it.data }
         )
     }
 
@@ -198,7 +206,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             canceled.map(::toSummary),
-            deserializeListResult(result.get()).data
+            deserializeListResult(result.get()).data.map { it.data }
         )
     }
 
@@ -216,7 +224,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             sentAndCanceled.map(::toSummary),
-            deserializeListResult(result.get()).data
+            deserializeListResult(result.get()).data.map { it.data }
         )
     }
 
@@ -235,7 +243,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             invoices.map(::toSummary),
-            deserializeListResult(result.get()).data
+            deserializeListResult(result.get()).data.map { it.data }
         )
     }
 
@@ -252,7 +260,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             invoices.map(::toSummary),
-            deserializeListResult(result.get()).data
+            deserializeListResult(result.get()).data.map { it.data }
         )
     }
 
@@ -271,7 +279,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             invoices.filter {
                 it.status == InvoiceStatus.DRAFT && it.areaId == testArea.id
             }.map(::toSummary),
-            deserializeListResult(result.get()).data
+            deserializeListResult(result.get()).data.map { it.data }
         )
     }
 
@@ -287,7 +295,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             listOf(),
-            deserializeListResult(result.get()).data
+            deserializeListResult(result.get()).data.map { it.data }
         )
     }
 
@@ -306,7 +314,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             testInvoices.map(::toSummary),
-            deserializeListResult(result.get()).data
+            deserializeListResult(result.get()).data.map { it.data }
         )
     }
 
@@ -322,7 +330,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             testInvoices.take(2).map(::toSummary),
-            deserializeListResult(result.get()).data
+            deserializeListResult(result.get()).data.map { it.data }
         )
     }
 
@@ -338,7 +346,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             listOf(),
-            deserializeListResult(result.get()).data
+            deserializeListResult(result.get()).data.map { it.data }
         )
     }
 
@@ -354,7 +362,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             testInvoices.takeLast(1).map(::toSummary),
-            deserializeListResult(result.get()).data
+            deserializeListResult(result.get()).data.map { it.data }
         )
     }
 
@@ -373,7 +381,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             testInvoices.take(2).map(::toSummary),
-            deserializeListResult(result.get()).data
+            deserializeListResult(result.get()).data.map { it.data }
         )
     }
 
@@ -389,7 +397,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             testInvoices.take(2).map(::toSummary),
-            deserializeListResult(result.get()).data
+            deserializeListResult(result.get()).data.map { it.data }
         )
     }
 
@@ -406,7 +414,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             sent.map(::toSummary),
-            deserializeListResult(result.get()).data
+            deserializeListResult(result.get()).data.map { it.data }
         )
     }
 
@@ -423,7 +431,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             sent.map(::toSummary),
-            deserializeListResult(result.get()).data
+            deserializeListResult(result.get()).data.map { it.data }
         )
     }
 
@@ -440,7 +448,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         assertEqualEnough(
             sent.map(::toSummary),
-            deserializeListResult(result.get()).data
+            deserializeListResult(result.get()).data.map { it.data }
         )
     }
 
@@ -461,7 +469,7 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(2, deserializeListResult(result.get()).total)
         assertEqualEnough(
             sent.map(::toSummary).take(2),
-            deserializeListResult(result.get()).data
+            deserializeListResult(result.get()).data.map { it.data }
         )
     }
 
@@ -475,9 +483,9 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             .responseString()
         assertEquals(200, response.statusCode)
 
-        assertEqualEnough(
-            listOf(invoice.let(::toSummary)),
-            listOf(deserializeResult(result.get()).data)
+        assertDetailedEqualEnough(
+            listOf(invoice.let(::toDetailed)),
+            listOf(deserializeResult(result.get()).data.data)
         )
     }
 
@@ -520,15 +528,15 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val updated = draft.copy(status = InvoiceStatus.SENT, number = 5000000002L, sentBy = EvakaUserId(testDecisionMaker_1.id.raw))
 
-        assertEqualEnough(
-            listOf(updated.let(::toSummary)),
-            listOf(deserializeResult(result.get()).data)
+        assertDetailedEqualEnough(
+            listOf(updated.let(::toDetailed)),
+            listOf(deserializeResult(result.get()).data.data)
         )
 
-        jsonMapper.readValue<Wrapper<InvoiceDetailed>>(result.get()).let {
-            assertEquals(InvoiceStatus.SENT, it.data.status)
-            assertEquals(testDecisionMaker_1.id.raw, it.data.sentBy?.raw)
-            assertNotNull(it.data.sentAt)
+        jsonMapper.readValue<Wrapper<InvoiceController.InvoiceDetailedResponse>>(result.get()).let {
+            assertEquals(InvoiceStatus.SENT, it.data.data.status)
+            assertEquals(testDecisionMaker_1.id.raw, it.data.data.sentBy?.raw)
+            assertNotNull(it.data.data.sentAt)
         }
     }
 
@@ -601,7 +609,10 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `mark as sent updates invoice status and sent fields`() {
         val invoice = testInvoices.first().copy(status = InvoiceStatus.WAITING_FOR_SENDING)
-        db.transaction { tx -> tx.upsertInvoices(listOf(invoice)) }
+        db.transaction { tx ->
+            tx.upsertInvoices(listOf(invoice))
+            tx.createUpdate("UPDATE invoice_row SET saved_cost_center = '31500'").execute()
+        }
 
         val (_, response, _) = http.post("/invoices/mark-sent")
             .jsonBody(jsonMapper.writeValueAsString(listOf(invoice.id)))
@@ -615,15 +626,15 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         val updated = invoice.copy(status = InvoiceStatus.SENT, sentBy = EvakaUserId(testDecisionMaker_1.id.raw))
 
-        assertEqualEnough(
-            listOf(updated.let(::toSummary)),
-            listOf(deserializeResult(result.get()).data)
+        assertDetailedEqualEnough(
+            listOf(updated.let(::toDetailed)),
+            listOf(deserializeResult(result.get()).data.data)
         )
 
-        jsonMapper.readValue<Wrapper<InvoiceDetailed>>(result.get()).let {
-            assertEquals(InvoiceStatus.SENT, it.data.status)
-            assertEquals(testDecisionMaker_1.id.raw, it.data.sentBy?.raw)
-            assertNotNull(it.data.sentAt)
+        jsonMapper.readValue<Wrapper<InvoiceController.InvoiceDetailedResponse>>(result.get()).let {
+            assertEquals(InvoiceStatus.SENT, it.data.data.status)
+            assertEquals(testDecisionMaker_1.id.raw, it.data.data.sentBy?.raw)
+            assertNotNull(it.data.data.sentAt)
         }
     }
 
@@ -702,9 +713,9 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             .asUser(testUser)
             .responseString()
 
-        assertEqualEnough(
-            listOf(updated.let(::toSummary)),
-            listOf(deserializeResult(result.get()).data)
+        assertDetailedEqualEnough(
+            listOf(updated.let(::toDetailed)),
+            listOf(deserializeResult(result.get()).data.data)
         )
     }
 
@@ -736,9 +747,9 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             false
         )
 
-        assertEqualEnough(
-            listOf(original.let(::toSummary)),
-            listOf(deserializeResult(result.get()).data)
+        assertDetailedEqualEnough(
+            listOf(original.let(::toDetailed)),
+            listOf(deserializeResult(result.get()).data.data)
         )
     }
 

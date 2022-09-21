@@ -3,10 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import { UserContext } from 'employee-frontend/state/user'
+import { Result, Success } from 'lib-common/api'
+import { InvoiceSummaryResponse } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDeprecated'
@@ -23,6 +25,7 @@ import Invoices from './Invoices'
 import { InvoicesActions, useInvoicesState } from './invoices-state'
 
 export default React.memo(function InvoicesPage() {
+  const { user } = useContext(UserContext)
   const {
     actions,
     state: {
@@ -42,6 +45,13 @@ export default React.memo(function InvoicesPage() {
     onSendSuccess
   } = useInvoicesState()
 
+  const canSend = (invoices[page] ?? Success.of<InvoiceSummaryResponse[]>([]))
+    .map((a) => a.some((b) => b.permittedActions.includes('SEND')))
+    .getOrElse(false)
+  const canDelete = (invoices[page] ?? Success.of<InvoiceSummaryResponse[]>([]))
+    .map((a) => a.some((b) => b.permittedActions.includes('DELETE')))
+    .getOrElse(false)
+
   return (
     <Container data-qa="invoices-page">
       <ContentArea opaque>
@@ -50,6 +60,7 @@ export default React.memo(function InvoicesPage() {
       <Gap size="XL" />
       <ContentArea opaque>
         <Invoices
+          user={user}
           actions={actions}
           invoices={invoices[page]}
           refreshInvoices={refreshInvoices}
@@ -59,8 +70,9 @@ export default React.memo(function InvoicesPage() {
           sortBy={sortBy}
           sortDirection={sortDirection}
           showCheckboxes={
-            searchFilters.status === 'DRAFT' ||
-            searchFilters.status === 'WAITING_FOR_SENDING'
+            (searchFilters.status === 'DRAFT' ||
+              searchFilters.status === 'WAITING_FOR_SENDING') &&
+            (canSend || canDelete)
           }
           checked={checkedInvoices}
           allInvoicesToggle={allInvoicesToggle}
@@ -71,6 +83,8 @@ export default React.memo(function InvoicesPage() {
         actions={actions}
         reloadInvoices={reloadInvoices}
         status={searchFilters.status}
+        canSend={canSend}
+        canDelete={canDelete}
         checkedInvoices={checkedInvoices}
         checkedAreas={searchFilters.area}
         allInvoicesToggle={allInvoicesToggle}

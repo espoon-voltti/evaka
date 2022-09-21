@@ -250,6 +250,16 @@ export type Income =
   | 'UPDATE'
   | 'UPLOAD_ATTACHMENT'
 
+export type Invoice =
+  | 'DELETE'
+  | 'READ'
+  | 'SEND'
+  | 'UPDATE'
+
+export type InvoiceCorrection =
+  | 'DELETE'
+  | 'UPDATE_NOTE'
+
 export type MobileDevice =
   | 'DELETE'
   | 'UPDATE_NAME'

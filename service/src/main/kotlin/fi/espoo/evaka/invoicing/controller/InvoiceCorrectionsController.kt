@@ -39,12 +39,12 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock,
         @PathVariable personId: PersonId
-    ): List<InvoiceCorrection> {
+    ): List<InvoiceCorrectionWithPermittedActions> {
         Audit.InvoiceCorrectionsRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_INVOICE_CORRECTIONS, personId)
         return db.connect { dbc ->
             dbc.read { tx ->
-                tx.createQuery(
+                val invoiceCorrections = tx.createQuery(
                     """
 SELECT c.id, c.head_of_family_id, c.child_id, c.unit_id, c.product, c.period, c.amount, c.unit_price, c.description, c.note,
     i.id AS invoice_id,
@@ -64,9 +64,13 @@ WHERE c.head_of_family_id = :personId AND NOT applied_completely
                     .bind("personId", personId)
                     .mapTo<InvoiceCorrection>()
                     .toList()
+                val permittedActions = accessControl.getPermittedActions<InvoiceCorrectionId, Action.InvoiceCorrection>(tx, user, clock, invoiceCorrections.map { it.id })
+                invoiceCorrections.map { InvoiceCorrectionWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
             }
         }
     }
+
+    data class InvoiceCorrectionWithPermittedActions(val data: InvoiceCorrection, val permittedActions: Set<Action.InvoiceCorrection>)
 
     @PostMapping
     fun createInvoiceCorrection(

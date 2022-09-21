@@ -11,8 +11,9 @@ import { formatPersonName } from 'employee-frontend/utils'
 import { combine, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { UpdateStateFn } from 'lib-common/form-state'
+import { Action } from 'lib-common/generated/action'
 import {
-  InvoiceCorrection,
+  InvoiceCorrectionWithPermittedActions,
   InvoiceDaycare,
   ProductWithName
 } from 'lib-common/generated/api-types/invoicing'
@@ -58,7 +59,7 @@ export default React.memo(function PersonInvoiceCorrections({
   open
 }: Props) {
   const { i18n } = useTranslation()
-  const { fridgeChildren } = useContext(PersonContext)
+  const { fridgeChildren, permittedActions } = useContext(PersonContext)
   const [invoiceCodes] = useApiState(getInvoiceCodes, [])
   const [corrections, reloadCorrections] = useApiState(
     () => getPersonInvoiceCorrections(id),
@@ -84,10 +85,13 @@ export default React.memo(function PersonInvoiceCorrections({
   const groupedCorrections = useMemo(
     () =>
       combine(children, corrections).map(([children, corrections]) => {
-        const pairs: [string, InvoiceCorrection[]][] = children.map((child) => [
-          child.id,
-          corrections.filter((correction) => correction.childId === child.id)
-        ])
+        const pairs: [string, InvoiceCorrectionWithPermittedActions[]][] =
+          children.map((child) => [
+            child.id,
+            corrections.filter(
+              ({ data: correction }) => correction.childId === child.id
+            )
+          ])
         return Object.fromEntries(pairs)
       }),
     [children, corrections]
@@ -175,6 +179,7 @@ export default React.memo(function PersonInvoiceCorrections({
               children.map((child) => (
                 <ChildSection
                   key={child.id}
+                  permittedActions={permittedActions}
                   i18n={i18n}
                   child={child}
                   corrections={groupedCorrections[child.id] ?? []}
@@ -221,6 +226,7 @@ export default React.memo(function PersonInvoiceCorrections({
 })
 
 const ChildSection = React.memo(function ChildSection({
+  permittedActions,
   i18n,
   child,
   corrections,
@@ -236,9 +242,10 @@ const ChildSection = React.memo(function ChildSection({
   deleteCorrection,
   editNote
 }: {
+  permittedActions: Set<Action.Person>
   i18n: Translations
   child: PersonJSON
-  corrections: InvoiceCorrection[]
+  corrections: InvoiceCorrectionWithPermittedActions[]
   products: ProductWithName[]
   unitIds: UUID[]
   unitDetails: Record<UUID, InvoiceDaycare>
@@ -271,7 +278,7 @@ const ChildSection = React.memo(function ChildSection({
           </Tr>
         </Thead>
         <Tbody>
-          {corrections.map((correction) => (
+          {corrections.map(({ data: correction, permittedActions }) => (
             <InvoiceRowSectionRow
               key={correction.id}
               row={{
@@ -285,6 +292,7 @@ const ChildSection = React.memo(function ChildSection({
               unitIds={unitIds}
               unitDetails={unitDetails}
               editable={false}
+              deletable={permittedActions.includes('DELETE')}
               update={() => undefined}
               remove={
                 correction.invoiceStatus && correction.invoiceStatus !== 'DRAFT'
@@ -316,6 +324,7 @@ const ChildSection = React.memo(function ChildSection({
               unitIds={unitIds}
               unitDetails={unitDetails}
               editable={true}
+              deletable={false}
               update={updateState}
               remove={undefined}
               addNote={() => editNote(editState.id, editState.note)}
@@ -325,11 +334,13 @@ const ChildSection = React.memo(function ChildSection({
         </Tbody>
       </Table>
       <FlexRow justifyContent="space-between">
-        <AddButton
-          onClick={() => addNewRow(child.id)}
-          text={i18n.invoiceCorrections.addRow}
-          disabled={!!editState}
-        />
+        {permittedActions.has('CREATE_INVOICE_CORRECTION') && (
+          <AddButton
+            onClick={() => addNewRow(child.id)}
+            text={i18n.invoiceCorrections.addRow}
+            disabled={!!editState}
+          />
+        )}
         {editState?.childId === child.id && (
           <FixedSpaceRow spacing="L">
             <InlineButton text={i18n.common.cancel} onClick={cancelEditing} />

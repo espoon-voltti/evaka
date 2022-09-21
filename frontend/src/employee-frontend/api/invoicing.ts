@@ -15,12 +15,13 @@ import {
   FeeDecisionSummary,
   Invoice,
   InvoiceCodes,
-  InvoiceCorrection,
+  InvoiceCorrectionWithPermittedActions,
   InvoiceDetailed,
+  InvoiceDetailedResponse,
   InvoiceDistinctiveParams,
   InvoiceSortParam,
   InvoiceStatus,
-  InvoiceSummary,
+  InvoiceSummaryResponse,
   NewInvoiceCorrection,
   Payment,
   PersonBasic,
@@ -365,25 +366,38 @@ export async function getPersonInvoices(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getInvoice(id: string): Promise<Result<InvoiceDetailed>> {
+export async function getInvoice(
+  id: string
+): Promise<Result<InvoiceDetailedResponse>> {
   return client
-    .get<JsonOf<Response<InvoiceDetailed>>>(`/invoices/${id}`)
-    .then(({ data: { data: json } }) => ({
-      ...json,
-      periodStart: LocalDate.parseIso(json.periodStart),
-      periodEnd: LocalDate.parseIso(json.periodEnd),
-      dueDate: LocalDate.parseIso(json.dueDate),
-      invoiceDate: LocalDate.parseIso(json.invoiceDate),
-      headOfFamily: deserializePersonDetailed(json.headOfFamily),
-      codebtor: json.codebtor ? deserializePersonDetailed(json.codebtor) : null,
-      rows: json.rows.map((rowJson) => ({
-        ...rowJson,
-        periodStart: LocalDate.parseIso(rowJson.periodStart),
-        periodEnd: LocalDate.parseIso(rowJson.periodEnd),
-        child: deserializePersonDetailed(rowJson.child)
-      })),
-      sentAt: json.sentAt ? HelsinkiDateTime.parseIso(json.sentAt) : null
-    }))
+    .get<JsonOf<Response<InvoiceDetailedResponse>>>(`/invoices/${id}`)
+    .then(
+      ({
+        data: {
+          data: { data: json, ...rest }
+        }
+      }) => ({
+        data: {
+          ...json,
+          periodStart: LocalDate.parseIso(json.periodStart),
+          periodEnd: LocalDate.parseIso(json.periodEnd),
+          dueDate: LocalDate.parseIso(json.dueDate),
+          invoiceDate: LocalDate.parseIso(json.invoiceDate),
+          headOfFamily: deserializePersonDetailed(json.headOfFamily),
+          codebtor: json.codebtor
+            ? deserializePersonDetailed(json.codebtor)
+            : null,
+          rows: json.rows.map((rowJson) => ({
+            ...rowJson,
+            periodStart: LocalDate.parseIso(rowJson.periodStart),
+            periodEnd: LocalDate.parseIso(rowJson.periodEnd),
+            child: deserializePersonDetailed(rowJson.child)
+          })),
+          sentAt: json.sentAt ? HelsinkiDateTime.parseIso(json.sentAt) : null
+        },
+        ...rest
+      })
+    )
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }
@@ -394,9 +408,9 @@ export async function getInvoices(
   sortBy: InvoiceSortParam,
   sortDirection: SortDirection,
   params: InvoiceSearchParams
-): Promise<Result<Paged<InvoiceSummary>>> {
+): Promise<Result<Paged<InvoiceSummaryResponse>>> {
   return client
-    .post<JsonOf<Paged<InvoiceSummary>>>('/invoices/search', {
+    .post<JsonOf<Paged<InvoiceSummaryResponse>>>('/invoices/search', {
       page,
       pageSize,
       sortBy,
@@ -405,22 +419,25 @@ export async function getInvoices(
     })
     .then(({ data }) => ({
       ...data,
-      data: data.data.map((json) => ({
-        ...json,
-        periodStart: LocalDate.parseIso(json.periodStart),
-        periodEnd: LocalDate.parseIso(json.periodEnd),
-        headOfFamily: deserializePersonDetailed(json.headOfFamily),
-        codebtor: json.codebtor
-          ? deserializePersonDetailed(json.codebtor)
-          : null,
-        createdAt: json.createdAt
-          ? HelsinkiDateTime.parseIso(json.createdAt)
-          : null,
-        sentAt: json.sentAt ? HelsinkiDateTime.parseIso(json.sentAt) : null,
-        rows: json.rows.map((rowJson) => ({
-          ...rowJson,
-          child: deserializePersonBasic(rowJson.child)
-        }))
+      data: data.data.map(({ data: json, permittedActions }) => ({
+        data: {
+          ...json,
+          periodStart: LocalDate.parseIso(json.periodStart),
+          periodEnd: LocalDate.parseIso(json.periodEnd),
+          headOfFamily: deserializePersonDetailed(json.headOfFamily),
+          codebtor: json.codebtor
+            ? deserializePersonDetailed(json.codebtor)
+            : null,
+          createdAt: json.createdAt
+            ? HelsinkiDateTime.parseIso(json.createdAt)
+            : null,
+          sentAt: json.sentAt ? HelsinkiDateTime.parseIso(json.sentAt) : null,
+          rows: json.rows.map((rowJson) => ({
+            ...rowJson,
+            child: deserializePersonBasic(rowJson.child)
+          }))
+        },
+        permittedActions
       }))
     }))
     .then((v) => Success.of(v))
@@ -550,13 +567,18 @@ export async function createRetroactiveValueDecisions(
 
 export async function getPersonInvoiceCorrections(
   personId: UUID
-): Promise<Result<InvoiceCorrection[]>> {
+): Promise<Result<InvoiceCorrectionWithPermittedActions[]>> {
   return client
-    .get<JsonOf<InvoiceCorrection[]>>(`/invoice-corrections/${personId}`)
+    .get<JsonOf<InvoiceCorrectionWithPermittedActions[]>>(
+      `/invoice-corrections/${personId}`
+    )
     .then(({ data }) =>
-      data.map((json) => ({
-        ...json,
-        period: FiniteDateRange.parseJson(json.period)
+      data.map(({ data: json, permittedActions }) => ({
+        data: {
+          ...json,
+          period: FiniteDateRange.parseJson(json.period)
+        },
+        permittedActions
       }))
     )
     .then((res) => Success.of(res))

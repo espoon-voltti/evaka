@@ -372,6 +372,14 @@ export interface InvoiceCorrection {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.controller.InvoiceCorrectionsController.InvoiceCorrectionWithPermittedActions
+*/
+export interface InvoiceCorrectionWithPermittedActions {
+  data: InvoiceCorrection
+  permittedActions: Action.InvoiceCorrection[]
+}
+
+/**
 * Generated from fi.espoo.evaka.invoicing.service.InvoiceDaycare
 */
 export interface InvoiceDaycare {
@@ -400,6 +408,14 @@ export interface InvoiceDetailed {
   sentBy: UUID | null
   status: InvoiceStatus
   totalPrice: number
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.InvoiceDetailedResponse
+*/
+export interface InvoiceDetailedResponse {
+  data: InvoiceDetailed
+  permittedActions: Action.Invoice[]
 }
 
 /**
@@ -506,6 +522,14 @@ export interface InvoiceSummary {
   sentBy: UUID | null
   status: InvoiceStatus
   totalPrice: number
+}
+
+/**
+* Generated from fi.espoo.evaka.invoicing.controller.InvoiceController.InvoiceSummaryResponse
+*/
+export interface InvoiceSummaryResponse {
+  data: InvoiceSummary
+  permittedActions: Action.Invoice[]
 }
 
 /**

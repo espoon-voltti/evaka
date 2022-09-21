@@ -58,6 +58,7 @@ interface Props {
   unitIds: UUID[]
   unitDetails: Record<UUID, InvoiceDaycare>
   editable: boolean
+  deletable: boolean
   addNote?: () => void
   status?: ReactNode
 }
@@ -78,6 +79,7 @@ function InvoiceRowSectionRow({
   update,
   remove,
   editable,
+  deletable,
   products,
   unitIds,
   unitDetails,
@@ -191,7 +193,7 @@ function InvoiceRowSectionRow({
           {note !== null || addNote ? (
             <Tooltip tooltip={note}>
               <IconButtonWrapper margin={editable}>
-                {addNote ? (
+                {addNote && editable ? (
                   <IconButton
                     icon={note ? fasCommentAltLines : faCommentAlt}
                     onClick={addNote}
@@ -206,7 +208,7 @@ function InvoiceRowSectionRow({
               </IconButtonWrapper>
             </Tooltip>
           ) : null}
-          {remove ? (
+          {remove && deletable ? (
             <IconButtonWrapper margin={editable}>
               <IconButton
                 icon={faTrash}
