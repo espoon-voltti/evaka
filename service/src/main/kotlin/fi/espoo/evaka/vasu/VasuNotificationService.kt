@@ -13,7 +13,11 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import mu.KotlinLogging
 import org.springframework.stereotype.Service
+
+private val logger = KotlinLogging.logger {}
 
 @Service
 class VasuNotificationService(
@@ -32,12 +36,22 @@ class VasuNotificationService(
     val senderNameFi: String = emailEnv.senderNameFi
     val senderNameSv: String = emailEnv.senderNameSv
 
-    fun getFromAddress(language: Language) = when (language) {
+    fun scheduleEmailNotification(tx: Database.Transaction, id: VasuDocumentId) {
+        logger.info { "Scheduling sending of vasu/leops notification emails (id: $id)" }
+        asyncJobRunner.plan(
+            tx,
+            payloads = getVasuNotifications(tx, id),
+            runAt = HelsinkiDateTime.now(),
+            retryCount = 10
+        )
+    }
+
+    private fun getFromAddress(language: Language) = when (language) {
         Language.sv -> "$senderNameSv <$senderAddress>"
         else -> "$senderNameFi <$senderAddress>"
     }
 
-    fun getVasuNotifications(
+    private fun getVasuNotifications(
         tx: Database.Read,
         vasuDocumentId: VasuDocumentId
     ): List<AsyncJob.SendVasuNotificationEmail> {
@@ -51,6 +65,8 @@ FROM curriculum_document doc
     JOIN person child ON doc.child_id = child.id
     JOIN guardian g ON doc.child_id = g.child_id
     JOIN person parent ON g.guardian_id = parent.id
+WHERE
+    doc.id = :id
             """.trimIndent()
         )
             .bind("id", vasuDocumentId)
@@ -59,6 +75,8 @@ FROM curriculum_document doc
     }
 
     fun sendVasuNotificationEmail(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.SendVasuNotificationEmail) {
+        logger.info("Sending vasu/leops notification email for document ${msg.vasuDocumentId} to ${msg.recipientEmail}")
+
         emailClient.sendEmail(
             traceId = msg.vasuDocumentId.toString(),
             toAddress = msg.recipientEmail,
