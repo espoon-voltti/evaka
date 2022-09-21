@@ -142,41 +142,43 @@ export default React.memo(function MessageEditor({
             </label>
 
             <Gap size="s" />
-            <label>
-              <Bold>{i18n.messages.messageEditor.children}</Bold>
-              {renderResult(children, (children) => (
-                <FixedSpaceFlexWrap horizontalSpacing="xs">
-                  {childIds &&
-                    childIds.length > 1 &&
-                    children
-                      .filter((child) => childIds.includes(child.id))
-                      .map((child) => (
-                        <SelectionChip
-                          key={child.id}
-                          text={formatPreferredName(child)}
-                          selected={message.children.includes(child.id)}
-                          onChange={(selected) => {
-                            if (selected) {
-                              setMessage((message) => ({
-                                ...message,
-                                children: [...message.children, child.id]
-                              }))
-                            } else {
-                              setMessage((message) => ({
-                                ...message,
-                                children: message.children.filter(
-                                  (id) => id !== child.id
-                                )
-                              }))
-                            }
-                          }}
-                          data-qa={`child-${child.id}`}
-                        />
-                      ))}
-                </FixedSpaceFlexWrap>
-              ))}
-            </label>
-            <Gap size="s" />
+            {childIds && childIds.length > 1 && (
+              <>
+                <label>
+                  <Bold>{i18n.messages.messageEditor.children}</Bold>
+                  {renderResult(children, (children) => (
+                    <FixedSpaceFlexWrap horizontalSpacing="xs">
+                      {children
+                        .filter((child) => childIds.includes(child.id))
+                        .map((child) => (
+                          <SelectionChip
+                            key={child.id}
+                            text={formatPreferredName(child)}
+                            selected={message.children.includes(child.id)}
+                            onChange={(selected) => {
+                              if (selected) {
+                                setMessage((message) => ({
+                                  ...message,
+                                  children: [...message.children, child.id]
+                                }))
+                              } else {
+                                setMessage((message) => ({
+                                  ...message,
+                                  children: message.children.filter(
+                                    (id) => id !== child.id
+                                  )
+                                }))
+                              }
+                            }}
+                            data-qa={`child-${child.id}`}
+                          />
+                        ))}
+                    </FixedSpaceFlexWrap>
+                  ))}
+                </label>
+                <Gap size="s" />
+              </>
+            )}
 
             <label>
               <Bold>{i18n.messages.messageEditor.subject}</Bold>
