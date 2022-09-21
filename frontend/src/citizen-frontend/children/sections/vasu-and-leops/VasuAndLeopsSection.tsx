@@ -22,7 +22,11 @@ import {
   Desktop,
   MobileAndTablet
 } from 'lib-components/layout/responsive-layout'
-import { Dimmed } from 'lib-components/typography'
+import {
+  ExpandingInfoBox,
+  InfoButton
+} from 'lib-components/molecules/ExpandingInfo'
+import { Dimmed, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faExclamation } from 'lib-icons'
 
@@ -141,6 +145,10 @@ const PaddingBox = styled.div`
   }
 `
 
+const ParagraphInfoButton = styled(InfoButton)`
+  margin-left: ${defaultMargins.xs};
+`
+
 export default React.memo(function VasuAndLeopsSection({
   childId
 }: {
@@ -151,6 +159,7 @@ export default React.memo(function VasuAndLeopsSection({
   const i18n = useTranslation()
 
   const [open, setOpen] = useState(false)
+  const [infoOpen, setInfoOpen] = useState(false)
 
   const user = useUser()
 
@@ -166,6 +175,24 @@ export default React.memo(function VasuAndLeopsSection({
       data-qa="collapsible-vasu"
       contentPadding="zero"
     >
+      <PaddingBox>
+        <P>
+          {i18n.children.vasu.givePermissionToShareInfoVasu}
+          <ParagraphInfoButton
+            aria-label={i18n.common.openExpandingInfo}
+            onClick={() => setInfoOpen(!infoOpen)}
+            open={infoOpen}
+          />
+        </P>
+        {infoOpen && (
+          <ExpandingInfoBox
+            close={() => setInfoOpen(false)}
+            info={i18n.children.vasu.givePermissionToShareInfoVasuInfoText}
+            width="full"
+            closeLabel=""
+          />
+        )}
+      </PaddingBox>
       {renderResult(vasus, ({ data: items, permissionToShareRequired }) =>
         items.length === 0 ? (
           <PaddingBox>
