@@ -530,7 +530,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
                     FiniteDateRange(placementStart, placementStart.plusDays(9)),
                     FiniteDateRange(placementStart.plusDays(21), placementStart.plusDays(30))
                 ),
-                attendee.periods
+                attendee.periods.sortedBy { it.start }
             )
         }
 
