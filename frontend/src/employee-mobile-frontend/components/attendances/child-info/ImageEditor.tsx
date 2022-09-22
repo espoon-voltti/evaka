@@ -10,6 +10,7 @@ import styled from 'styled-components'
 import { Failure, Result } from 'lib-common/api'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
+import StickyFooter from 'lib-components/layout/StickyFooter'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { InformationText } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -141,55 +142,63 @@ export default React.memo(function ImageEditor({
   }, [imageElem, completedCrop])
 
   return (
-    <Container>
-      <CropWrapper>
-        <ReactCrop
-          src={image}
-          crop={crop}
-          onImageLoaded={setImageElem}
-          onChange={(c) => setCrop(c)}
-          onComplete={setCompletedCrop}
-          circularCrop
-        />
-        <canvas
-          ref={previewCanvasRef}
-          style={{
-            width: 256,
-            height: 256,
-            display: 'none'
-          }}
-        />
-      </CropWrapper>
-
+    <div>
+      <CropContainer>
+        <CropWrapper>
+          <ReactCrop
+            src={image}
+            crop={crop}
+            onImageLoaded={setImageElem}
+            onChange={(c) => setCrop(c)}
+            onComplete={setCompletedCrop}
+            circularCrop
+          />
+          <canvas
+            ref={previewCanvasRef}
+            style={{
+              width: 256,
+              height: 256,
+              display: 'none'
+            }}
+          />
+        </CropWrapper>
+      </CropContainer>
       <Gap />
+      <StickyFooter>
+        <FooterContainer>
+          <InformationText centered>
+            {i18n.childInfo.image.modalMenu.disclaimer}
+          </InformationText>
 
-      <InformationText centered>
-        {i18n.childInfo.image.modalMenu.disclaimer}
-      </InformationText>
-
-      <ButtonRow>
-        <Button
-          text={i18n.common.cancel}
-          onClick={onReturn}
-          disabled={submitting}
-        />
-        <AsyncButton
-          text={i18n.common.save}
-          primary
-          disabled={!completedCrop}
-          onClick={onSave}
-          onSuccess={onSuccess}
-        />
-      </ButtonRow>
-    </Container>
+          <ButtonRow>
+            <Button
+              text={i18n.common.cancel}
+              onClick={onReturn}
+              disabled={submitting}
+            />
+            <AsyncButton
+              text={i18n.common.save}
+              primary
+              disabled={!completedCrop}
+              onClick={onSave}
+              onSuccess={onSuccess}
+            />
+          </ButtonRow>
+        </FooterContainer>
+      </StickyFooter>
+    </div>
   )
 })
 
-const Container = styled.div`
+const CropContainer = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: stretch;
+  margin: ${defaultMargins.m};
+`
+
+const FooterContainer = styled.div`
   margin: ${defaultMargins.m};
 `
 
