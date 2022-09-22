@@ -13,7 +13,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
       gpg=2.2.* \
       gpg-agent=2.2.* \
  && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
- && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
+ && curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | tee /etc/apt/trusted.gpg.d/yarn.asc \
  && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
  && apt-get update \
  && apt-get -y --no-install-recommends install \
