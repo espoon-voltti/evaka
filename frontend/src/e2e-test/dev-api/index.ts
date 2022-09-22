@@ -33,7 +33,6 @@ import config from '../config'
 
 import {
   Application,
-  ApplicationEmail,
   AssistanceNeed,
   AssistanceNeedDecision,
   BackupCare,
@@ -67,6 +66,7 @@ import {
   FamilyContact,
   FridgeChild,
   FridgePartner,
+  MockEmail,
   PedagogicalDocument,
   PersonDetail,
   PersonDetailWithDependantsAndGuardians,
@@ -715,11 +715,9 @@ export function personToVtjPerson(
   }
 }
 
-export async function getSentEmails(): Promise<ApplicationEmail> {
+export async function getSentEmails(): Promise<MockEmail[]> {
   try {
-    const { data } = await devClient.get<ApplicationEmail>(
-      `/application-emails/`
-    )
+    const { data } = await devClient.get<MockEmail[]>(`/emails/`)
     return data
   } catch (e) {
     throw new DevApiError(e)
