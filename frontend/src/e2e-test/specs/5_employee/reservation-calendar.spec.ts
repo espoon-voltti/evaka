@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -156,6 +157,36 @@ describe('Unit group calendar', () => {
       child1Fixture.id
     )
     await reservationModal.addReservation(mockedToday)
+  })
+
+  test('Employee can change between calendar modes', async () => {
+    attendancesSection = await loadUnitAttendancesSection()
+    await calendarPage.selectMode('week')
+    await calendarPage.assertMode('week')
+    await calendarPage.waitForWeekLoaded()
+
+    await calendarPage.selectMode('month')
+    await calendarPage.assertMode('month')
+    await attendancesSection.waitUntilLoaded()
+  })
+
+  test('Employee can see the correct date range based on mode', async () => {
+    attendancesSection = await loadUnitAttendancesSection()
+    await calendarPage.selectMode('week')
+    await calendarPage.assertDateRange(
+      new FiniteDateRange(
+        mockedToday.startOfWeek(),
+        mockedToday.startOfWeek().addDays(6)
+      )
+    )
+
+    await calendarPage.selectMode('month')
+    await calendarPage.assertDateRange(
+      new FiniteDateRange(
+        mockedToday.startOfMonth(),
+        mockedToday.lastDayOfMonth()
+      )
+    )
   })
 })
 

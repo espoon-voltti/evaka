@@ -7,7 +7,7 @@ import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import { waitUntilEqual } from '../../../utils'
+import { waitUntilEqual, waitUntilTrue } from '../../../utils'
 import {
   AsyncButton,
   DatePickerDeprecated,
@@ -32,16 +32,23 @@ export class UnitCalendarPage {
   }
 
   async selectMode(mode: 'week' | 'month') {
-    const foo = new SelectionChip(
+    const selectionChip = new SelectionChip(
       this.page.find(`[data-qa="choose-calendar-mode-${mode}"]`)
     )
-    await foo.click()
+    await selectionChip.click()
   }
 
-  private async getWeekDateRange() {
+  async assertMode(expected: 'week' | 'month') {
+    const selectionChip = new SelectionChip(
+      this.page.find(`[data-qa="choose-calendar-mode-${expected}"]`)
+    )
+    await waitUntilTrue(() => selectionChip.checked)
+  }
+
+  private async getSelectedDateRange() {
     const rawRange = await this.page
-      .find('[data-qa-week-range]')
-      .getAttribute('data-qa-week-range')
+      .find('[data-qa-date-range]')
+      .getAttribute('data-qa-date-range')
 
     if (!rawRange) throw Error('Week range cannot be found')
 
@@ -57,7 +64,7 @@ export class UnitCalendarPage {
 
   async changeWeekToDate(date: LocalDate) {
     for (let i = 0; i < 50; i++) {
-      const currentRange = await this.getWeekDateRange()
+      const currentRange = await this.getSelectedDateRange()
       if (currentRange.includes(date)) return
 
       await this.page
@@ -70,7 +77,7 @@ export class UnitCalendarPage {
     throw Error(`Unable to seek to date ${date.formatIso()}`)
   }
 
-  private async waitForWeekLoaded() {
+  async waitForWeekLoaded() {
     await waitUntilEqual(
       () =>
         this.page
@@ -78,6 +85,10 @@ export class UnitCalendarPage {
           .getAttribute('data-qa-value'),
       'success'
     )
+  }
+
+  async assertDateRange(expectedRange: FiniteDateRange) {
+    await waitUntilEqual(() => this.getSelectedDateRange(), expectedRange)
   }
 }
 
