@@ -2,7 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import styled from 'styled-components'
 
 import { UserContext } from 'employee-frontend/state/user'
@@ -279,7 +286,6 @@ export default React.memo(function TabCalendar() {
           )}
 
         <StickyTopBar>
-          <div data-qa-week-range={week.dateRange.toString()} />
           <FixedSpaceRow spacing="s" alignItems="center">
             <GroupSelectorWrapper>
               <GroupSelector
@@ -291,28 +297,11 @@ export default React.memo(function TabCalendar() {
               />
             </GroupSelectorWrapper>
 
-            <ColoredH3 noMargin>
-              {week.dateRange.start.format('dd.MM.')}–
-              {week.dateRange.end.format('dd.MM.yyyy')}
-            </ColoredH3>
-            <FixedSpaceRow spacing="xxs">
-              <IconButton
-                icon={faChevronLeft}
-                onClick={() => setSelectedDate(selectedDate.subDays(7))}
-                data-qa="previous-week"
-                aria-label={i18n.unit.calendar.previousWeek}
-              />
-              <IconButton
-                icon={faChevronRight}
-                onClick={() => setSelectedDate(selectedDate.addDays(7))}
-                data-qa="next-week"
-                aria-label={i18n.unit.calendar.nextWeek}
-              />
-            </FixedSpaceRow>
-            <InlineButton
-              icon={faCalendarAlt}
-              text={i18n.common.today}
-              onClick={() => setSelectedDate(LocalDate.todayInSystemTz())}
+            <ActiveDateRangeSelector
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+              mode={mode}
+              weekRange={week.dateRange}
             />
           </FixedSpaceRow>
         </StickyTopBar>
@@ -405,4 +394,63 @@ const Caretakers = React.memo(function Caretakers({
       )
     })
     .getOrElse(null)
+})
+
+type ActiveDateRangeSelectorProps = {
+  selectedDate: LocalDate
+  setSelectedDate: React.Dispatch<React.SetStateAction<LocalDate>>
+  mode: CalendarMode
+  weekRange: FiniteDateRange
+}
+
+const ActiveDateRangeSelector = React.memo(function ActiveDateRangeSelector({
+  selectedDate,
+  setSelectedDate,
+  mode,
+  weekRange
+}: ActiveDateRangeSelectorProps) {
+  const { i18n } = useTranslation()
+
+  const startDate =
+    mode === 'week' ? weekRange.start : selectedDate.startOfMonth()
+  const endDate = mode === 'week' ? weekRange.end : startDate.lastDayOfMonth()
+
+  const addUnitOfTime = useCallback(
+    (date: LocalDate) =>
+      mode === 'week' ? date.addDays(7) : date.addMonths(1),
+    [mode]
+  )
+  const subUnitOfTime = useCallback(
+    (date: LocalDate) =>
+      mode === 'week' ? date.subDays(7) : date.subMonths(1),
+    [mode]
+  )
+
+  return (
+    <>
+      <div data-qa-date-range={new FiniteDateRange(startDate, endDate)} />
+      <ColoredH3 noMargin>
+        {startDate.format('dd.MM.')}–{endDate.format('dd.MM.yyyy')}
+      </ColoredH3>
+      <FixedSpaceRow spacing="xxs">
+        <IconButton
+          icon={faChevronLeft}
+          onClick={() => setSelectedDate(subUnitOfTime(selectedDate))}
+          data-qa="previous-week"
+          aria-label={i18n.unit.calendar.previousWeek}
+        />
+        <IconButton
+          icon={faChevronRight}
+          onClick={() => setSelectedDate(addUnitOfTime(selectedDate))}
+          data-qa="next-week"
+          aria-label={i18n.unit.calendar.nextWeek}
+        />
+      </FixedSpaceRow>
+      <InlineButton
+        icon={faCalendarAlt}
+        text={i18n.common.today}
+        onClick={() => setSelectedDate(LocalDate.todayInSystemTz())}
+      />
+    </>
+  )
 })
