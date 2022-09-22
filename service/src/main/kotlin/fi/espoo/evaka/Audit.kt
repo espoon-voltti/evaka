@@ -226,6 +226,7 @@ enum class Audit(
     MessagingDeleteDraft("messaging.messages.drafts.delete"),
     MessagingReplyToMessageWrite("messaging.messages.reply-to-message.write"),
     MessagingCitizenFetchReceiversForAccount("messaging.messages.fetch-receivers-for-citizen-account"),
+    MessagingCitizenGetChildGroupAccountId("messaging.messages.get-child-group-account-id"),
     MessagingCitizenSendMessage("messaging.messages.citizen-send-message"),
     MissingHeadOfFamilyReportRead("evaka.missing-head-of-family-report.read"),
     MissingServiceNeedReportRead("evaka.missing-service-need-report.read"),

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 
 data class CitizenMessageBody(
     val recipients: Set<MessageAccount>,
+    val children: Set<ChildId>,
     val content: String,
     val title: String
 )
@@ -100,16 +102,25 @@ class MessageControllerCitizen(
         }
     }
 
+    data class GetReceiversResponse(
+        val messageAccounts: Set<MessageAccount>,
+        val messageAccountsToChildren: Map<MessageAccountId, List<ChildId>>
+    )
+
     @GetMapping("/receivers")
     fun getReceivers(
         db: Database,
         user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
-    ): List<MessageAccount> {
+    ): GetReceiversResponse {
         Audit.MessagingCitizenFetchReceiversForAccount.log()
         return db.connect { dbc ->
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
-            dbc.read { it.getCitizenReceivers(evakaClock.today(), accountId) }
+            val accountsToChildIds = (dbc.read { it.getCitizenReceivers(evakaClock.today(), accountId) })
+            GetReceiversResponse(
+                messageAccounts = accountsToChildIds.keys,
+                messageAccountsToChildren = accountsToChildIds.mapKeys { it.key.id }
+            )
         }
     }
 
@@ -146,8 +157,9 @@ class MessageControllerCitizen(
         Audit.MessagingCitizenSendMessage.log()
         return db.connect { dbc ->
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
-            val validReceivers = dbc.read { it.getCitizenReceivers(clock.today(), accountId) }
-            val allReceiversValid = body.recipients.all { validReceivers.map { receiver -> receiver.id }.contains(it.id) }
+            val validReceivers = dbc.read { it.getCitizenReceivers(clock.today(), accountId).keys }
+            val allReceiversValid =
+                body.recipients.all { validReceivers.map { receiver -> receiver.id }.contains(it.id) }
             if (allReceiversValid) {
                 dbc.transaction { tx ->
                     val contentId = tx.insertMessageContent(body.content, accountId)
@@ -160,8 +172,9 @@ class MessageControllerCitizen(
                             sender = accountId,
                             recipientNames = body.recipients.map { it.name }
                         )
+                    tx.insertMessageThreadChildren(body.children, threadId)
+                    tx.insertRecipients(body.recipients.map { it.id }.toSet(), messageId)
                     body.recipients.map {
-                        tx.insertRecipients(setOf(it.id), messageId)
                         threadId
                     }
                 }

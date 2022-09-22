@@ -65,11 +65,19 @@ export default class MessagesPage {
     await waitUntilEqual(
       () =>
         this.page
-          .findAll('[data-qa="sent-message-row"]')
+          .findAllByDataQa('sent-message-row')
           .nth(nth)
-          .find('[data-qa="participants"]').textContent,
+          .findByDataQa('participants').textContent,
       participants
     )
+  }
+
+  async assertReceivedMessageParticipantsContains(nth: number, str: string) {
+    await this.page
+      .findAllByDataQa('received-message-row')
+      .nth(nth)
+      .find('[data-qa="participants"]', { hasText: str })
+      .waitUntilVisible()
   }
 
   async openInbox(index: number) {

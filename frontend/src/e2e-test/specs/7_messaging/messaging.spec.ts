@@ -333,6 +333,75 @@ describe('Sending and receiving messages', () => {
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 0)
       })
 
+      test('Unit supervisor sees the name of the child in a message sent by citizen', async () => {
+        const receivers = ['Esimies Essi']
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        await citizenMessagesPage.sendNewMessage(
+          defaultTitle,
+          defaultContent,
+          receivers
+        )
+
+        await employeeLogin(unitSupervisorPage, unitSupervisor)
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(unitSupervisorPage)
+        await messagesPage.openInbox(0)
+        await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+        await messagesPage.assertReceivedMessageParticipantsContains(
+          0,
+          '(Karhula Jari)'
+        )
+      })
+
+      test('The citizen can select the child that the message is in regards to', async () => {
+        const daycarePlacementFixture = await Fixture.placement()
+          .with({
+            childId: enduserChildFixtureKaarina.id,
+            unitId: fixtures.daycareFixture.id,
+            startDate: LocalDate.todayInSystemTz().formatIso(),
+            endDate: LocalDate.todayInSystemTz().formatIso()
+          })
+          .save()
+        await Fixture.groupPlacement()
+          .with({
+            daycarePlacementId: daycarePlacementFixture.data.id,
+            daycareGroupId: daycareGroupFixture.id
+          })
+          .save()
+        await insertGuardianFixtures([
+          {
+            childId: enduserChildFixtureKaarina.id,
+            guardianId: fixtures.enduserGuardianFixture.id
+          }
+        ])
+
+        const recipients = ['Esimies Essi']
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        await citizenMessagesPage.clickNewMessage()
+        await citizenMessagesPage.selectNewMessageRecipients(recipients)
+        await citizenMessagesPage.assertChildrenSelectable([
+          fixtures.enduserChildFixtureJari.id,
+          enduserChildFixtureKaarina.id
+        ])
+        await citizenMessagesPage.selectMessageChildren([
+          enduserChildFixtureKaarina.id
+        ])
+        await citizenMessagesPage.typeMessage(defaultTitle, defaultContent)
+        await citizenMessagesPage.clickSendMessage()
+
+        await employeeLogin(unitSupervisorPage, unitSupervisor)
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(unitSupervisorPage)
+        await messagesPage.openInbox(0)
+        await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+        await messagesPage.assertReceivedMessageParticipantsContains(
+          0,
+          '(Karhula Kaarina)'
+        )
+      })
+
       test('Citizen sends message to the unit supervisor and the group', async () => {
         const receivers = ['Esimies Essi', 'Kosmiset vakiot (Henkilökunta)']
         await citizenPage.goto(config.enduserMessagesUrl)

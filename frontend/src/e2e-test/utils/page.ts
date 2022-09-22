@@ -154,8 +154,8 @@ export class Element {
     }
   }
 
-  find(selector: string): Element {
-    return new Element(this.locator.locator(selector))
+  find(selector: string, options?: { hasText?: string | RegExp }): Element {
+    return new Element(this.locator.locator(selector, options))
   }
 
   findByDataQa(dataQa: string): Element {

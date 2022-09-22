@@ -163,14 +163,15 @@ class MessageController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
-        @RequestBody body: PostMessageBody,
+        @RequestBody body: PostMessageBody
     ) {
         Audit.MessagingNewMessageWrite.log(accountId)
         db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { tx ->
-                val messageRecipients =
-                    tx.getMessageAccountsForRecipients(accountId, body.recipients, clock.today()).toSet()
+                val messageAccountIdsToChildIds =
+                    tx.getMessageAccountsForRecipients(accountId, body.recipients, clock.today())
+                val messageRecipients = messageAccountIdsToChildIds.keys
 
                 if (messageRecipients.isEmpty()) return@transaction
 
@@ -199,7 +200,8 @@ class MessageController(
                     recipientNames = body.recipientNames,
                     recipientGroups = groupedRecipients,
                     attachmentIds = body.attachmentIds,
-                    staffCopyRecipients = staffCopyRecipients
+                    staffCopyRecipients = staffCopyRecipients,
+                    accountIdsToChildIds = messageAccountIdsToChildIds
                 )
                 if (body.draftId != null) tx.deleteDraft(accountId = accountId, draftId = body.draftId)
             }

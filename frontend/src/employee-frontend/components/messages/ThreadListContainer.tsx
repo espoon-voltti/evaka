@@ -11,6 +11,7 @@ import {
   MessageThread
 } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { formatPreferredName } from 'lib-common/names'
 import Pagination from 'lib-components/Pagination'
 import EmptyMessageFolder from 'lib-components/employee/messages/EmptyMessageFolder'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -29,16 +30,21 @@ const MessagesContainer = styled(ContentArea)`
   flex: 1;
 `
 
-const getUniqueParticipants: (t: MessageThread) => string[] = (
-  t: MessageThread
-) =>
-  Object.values(
+const getUniqueParticipants = (t: MessageThread): string[] => {
+  const childStr =
+    t.children.length > 0
+      ? ` (${t.children
+          .map((ch) => `${ch.lastName} ${formatPreferredName(ch)}`)
+          .join(', ')})`
+      : ''
+  return Object.values(
     t.messages.reduce((acc, msg) => {
-      acc[msg.sender.id] = msg.sender.name
+      acc[msg.sender.id] = msg.sender.name + childStr
       msg.recipients.forEach((rec) => (acc[rec.id] = rec.name))
       return acc
     }, {} as Record<string, string>)
   )
+}
 
 export interface Props {
   account: MessageAccount
@@ -125,6 +131,7 @@ export default React.memo(function ThreadListContainer({
         title: message.threadTitle,
         urgent: message.urgent,
         participants: message.recipientNames,
+        children: [],
         messages: [
           {
             id: message.contentId,
@@ -146,6 +153,7 @@ export default React.memo(function ThreadListContainer({
         ...message,
         id: message.threadId,
         participants: [message.recipientName],
+        children: [],
         messages: [
           {
             id: message.messageId,

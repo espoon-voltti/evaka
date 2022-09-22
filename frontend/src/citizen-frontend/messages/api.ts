@@ -10,7 +10,7 @@ import {
 } from 'lib-common/api-types/messaging/message'
 import {
   CitizenMessageBody,
-  MessageAccount,
+  GetReceiversResponse,
   MessageThread,
   ReplyToMessageBody,
   ThreadReply,
@@ -43,13 +43,16 @@ export async function getReceivedMessages(
 
 export async function getReceivers(
   staffAnnotation: string
-): Promise<Result<MessageAccount[]>> {
+): Promise<Result<GetReceiversResponse>> {
   return client
-    .get<MessageAccount[]>(`/citizen/messages/receivers`)
+    .get<GetReceiversResponse>(`/citizen/messages/receivers`)
     .then((res) =>
-      Success.of(
-        res.data.map((d) => deserializeMessageAccount(d, staffAnnotation))
-      )
+      Success.of({
+        ...res.data,
+        messageAccounts: res.data.messageAccounts.map((d) =>
+          deserializeMessageAccount(d, staffAnnotation)
+        )
+      })
     )
     .catch((e) => Failure.fromError(e))
 }

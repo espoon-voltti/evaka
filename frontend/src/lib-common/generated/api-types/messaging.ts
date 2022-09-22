@@ -30,6 +30,7 @@ export interface AuthorizedMessageAccount {
 * Generated from fi.espoo.evaka.messaging.CitizenMessageBody
 */
 export interface CitizenMessageBody {
+  children: UUID[]
   content: string
   recipients: MessageAccount[]
   title: string
@@ -55,6 +56,14 @@ export interface DraftContent {
 */
 export interface EditRecipientRequest {
   blocklisted: boolean
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.GetReceiversResponse
+*/
+export interface GetReceiversResponse {
+  messageAccounts: MessageAccount[]
+  messageAccountsToChildren: Record<string, UUID[]>
 }
 
 /**
@@ -88,6 +97,16 @@ export interface MessageAccount {
   id: UUID
   name: string
   type: AccountType
+}
+
+/**
+* Generated from fi.espoo.evaka.messaging.MessageChild
+*/
+export interface MessageChild {
+  childId: UUID
+  firstName: string
+  lastName: string
+  preferredName: string
 }
 
 /**
@@ -151,6 +170,7 @@ export type MessageRecipientType =
 * Generated from fi.espoo.evaka.messaging.MessageThread
 */
 export interface MessageThread {
+  children: MessageChild[]
   id: UUID
   messages: Message[]
   title: string

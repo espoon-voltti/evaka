@@ -35,10 +35,10 @@ data class MessageThread(
     val type: MessageType,
     val title: String,
     val urgent: Boolean,
+    val children: List<MessageChild>,
     @Json
     val messages: List<Message>,
 )
-
 data class SentMessage(
     val contentId: MessageContentId,
     val content: String,
@@ -50,7 +50,7 @@ data class SentMessage(
     val recipients: Set<MessageAccount>,
     val recipientNames: List<String>,
     @Json
-    val attachments: List<MessageAttachment>,
+    val attachments: List<MessageAttachment>
 )
 
 enum class MessageType {
@@ -105,3 +105,10 @@ enum class MessageRecipientType {
 }
 
 data class MessageRecipient(val type: MessageRecipientType, val id: Id<*>)
+
+data class MessageChild(
+    val childId: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val preferredName: String
+)
