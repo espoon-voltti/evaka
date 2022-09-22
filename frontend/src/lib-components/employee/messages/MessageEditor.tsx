@@ -685,7 +685,7 @@ const FullScreenContainer = styled.div`
   top: ${defaultMargins.s};
   bottom: ${defaultMargins.s};
   right: ${defaultMargins.s};
-  z-index: 9999;
+  z-index: 39;
 
   &.fullscreen {
     top: 0;
