@@ -172,7 +172,7 @@ export default React.memo(function ReservationModal({
 
   return (
     <ModalAccessibilityWrapper>
-      <PlainModal mobileFullScreen margin="auto">
+      <PlainModal mobileFullScreen margin="auto" data-qa="reservation-modal">
         <CalendarModalBackground>
           <BottomFooterContainer>
             <div>

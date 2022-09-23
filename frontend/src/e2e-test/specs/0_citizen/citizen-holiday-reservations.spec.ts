@@ -150,6 +150,9 @@ describe('Holiday periods', () => {
       expect(await calendar.getHolidayCtaContent()).toEqual(
         'Ilmoita lomat ja tee varaukset 18.12.2035-08.01.2036 välille viimeistään 06.12.2035.'
       )
+
+      await calendar.clickHolidayCta()
+      await calendar.reservationModal.waitUntilVisible()
     })
   })
 
