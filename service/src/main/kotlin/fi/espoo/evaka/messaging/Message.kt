@@ -21,11 +21,14 @@ import java.time.LocalDate
 
 data class Message(
     val id: MessageId,
+    @Json
     val sender: MessageAccount,
+    @Json
     val recipients: Set<MessageAccount>,
     val sentAt: HelsinkiDateTime,
     val content: String,
     val readAt: HelsinkiDateTime? = null,
+    @Json
     val attachments: List<MessageAttachment>,
     val recipientNames: Set<String>? = null
 )

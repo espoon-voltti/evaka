@@ -85,7 +85,7 @@ class MessageControllerCitizen(
     ): Paged<MessageThread> {
         return db.connect { dbc ->
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
-            dbc.read { it.getMessagesReceivedByAccount(accountId, pageSize, page, true) }
+            dbc.read { it.getThreads(accountId, pageSize, page) }
         }.also {
             Audit.MessagingReceivedMessagesRead.log()
         }

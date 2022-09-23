@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageId
+import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
@@ -120,8 +121,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         createThread("Lone Thread", "Alone", employee2Account, listOf(employee2Account))
 
         // employee is not a recipient in any threads
-        assertEquals(0, db.read { it.getMessagesReceivedByAccount(employee1Account, 10, 1) }.data.size)
-        val personResult = db.read { it.getMessagesReceivedByAccount(person1Account, 10, 1, true) }
+        assertEquals(0, db.read { it.getReceivedThreads(employee1Account, 10, 1) }.data.size)
+        val personResult = db.read { it.getThreads(person1Account, 10, 1) }
         assertEquals(2, personResult.data.size)
 
         val thread = personResult.data.first()
@@ -133,7 +134,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // then the message has correct readAt
         val person1Threads = db.read {
-            it.getMessagesReceivedByAccount(person1Account, 10, 1, true)
+            it.getThreads(person1Account, 10, 1)
         }
         assertEquals(2, person1Threads.data.size)
         val readMessages = person1Threads.data.flatMap { it.messages.mapNotNull { m -> m.readAt } }
@@ -144,37 +145,36 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             0,
             db.read {
-                it.getMessagesReceivedByAccount(
-                    person2Account,
-                    10,
-                    1, true
-                )
+                it.getThreads(person2Account, 10, 1)
             }.data.flatMap { it.messages.mapNotNull { m -> m.readAt } }.size
         )
 
         // when employee gets a reply
         db.transaction {
-            val recipients = listOf(employee1Account)
+            // TODO: Replying to a thread should be MessageService's job
+            val now = RealEvakaClock().now()
+            val recipients = setOf(employee1Account)
             val contentId = it.insertMessageContent(content = "Just replying here", sender = person1Account)
             val messageId = it.insertMessage(
-                RealEvakaClock().now(),
+                now = now,
                 contentId = contentId,
                 threadId = thread2Id,
                 sender = person1Account,
                 repliesToMessageId = thread.messages.last().id,
                 recipientNames = listOf()
             )
-            it.insertRecipients(recipientAccountIds = recipients.toSet(), messageId = messageId)
+            it.insertRecipients(recipientAccountIds = recipients, messageId = messageId)
+            it.upsertThreadParticipants(thread2Id, person1Account, recipients, now)
         }
 
         // then employee sees the thread
-        val employeeResult = db.read { it.getMessagesReceivedByAccount(employee1Account, 10, 1) }
+        val employeeResult = db.read { it.getReceivedThreads(employee1Account, 10, 1) }
         assertEquals(1, employeeResult.data.size)
         assertEquals("Newest thread", employeeResult.data[0].title)
         assertEquals(2, employeeResult.data[0].messages.size)
 
         // person 1 is recipient in both threads
-        val person1Result = db.read { it.getMessagesReceivedByAccount(person1Account, 10, 1, true) }
+        val person1Result = db.read { it.getThreads(person1Account, 10, 1) }
         assertEquals(2, person1Result.data.size)
 
         val newestThread = person1Result.data[0]
@@ -192,13 +192,13 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertNull(oldestThread.messages.find { it.content == "Just replying here" }?.readAt)
 
         // person 2 is recipient in the oldest thread only
-        val person2Result = db.read { it.getMessagesReceivedByAccount(person2Account, 10, 1, true) }
+        val person2Result = db.read { it.getThreads(person2Account, 10, 1) }
         assertEquals(1, person2Result.data.size)
         assertEquals(oldestThread.id, person2Result.data[0].id)
         assertEquals(0, person2Result.data.flatMap { it.messages }.mapNotNull { it.readAt }.size)
 
         // employee 2 is participating with himself
-        val employee2Result = db.read { it.getMessagesReceivedByAccount(employee2Account, 10, 1) }
+        val employee2Result = db.read { it.getReceivedThreads(employee2Account, 10, 1) }
         assertEquals(1, employee2Result.data.size)
         assertEquals(1, employee2Result.data[0].messages.size)
         assertEquals(employee2Account, employee2Result.data[0].messages[0].sender.id)
@@ -217,7 +217,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         createThread("t1", "c1", employee1Account, listOf(person1Account))
         createThread("t2", "c2", employee1Account, listOf(person1Account))
 
-        val messages = db.read { it.getMessagesReceivedByAccount(person1Account, 10, 1, true) }
+        val messages = db.read { it.getThreads(person1Account, 10, 1) }
         assertEquals(2, messages.total)
         assertEquals(2, messages.data.size)
         assertEquals("t2", messages.data[0].title)
@@ -225,8 +225,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val (page1, page2) = db.read {
             listOf(
-                it.getMessagesReceivedByAccount(person1Account, 1, 1, true),
-                it.getMessagesReceivedByAccount(person1Account, 1, 2, true)
+                it.getThreads(person1Account, 1, 1),
+                it.getThreads(person1Account, 1, 2)
             )
         }
         assertEquals(2, page1.total)
@@ -499,15 +499,18 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(1, db.read { it.getUnreadMessagesCounts(setOf(person2Account)).first().unreadCount })
     }
 
+    // TODO: Remove this function, creating threads should be MessageService's job
     private fun createThread(
         title: String,
         content: String,
         sender: MessageAccountId,
         recipientAccounts: List<MessageAccountId>
-    ) =
-        db.transaction { tx ->
+    ): MessageThreadId {
+        val now = RealEvakaClock().now()
+        return db.transaction { tx ->
             val contentId = tx.insertMessageContent(content, sender)
-            val threadId = tx.insertThread(MessageType.MESSAGE, title, urgent = false, isCopy = false)
+            val threadId =
+                tx.insertThread(MessageType.MESSAGE, title, urgent = false, isCopy = false)
             val messageId =
                 tx.insertMessage(
                     RealEvakaClock().now(),
@@ -517,6 +520,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     recipientNames = tx.getAccountNames(recipientAccounts.toSet())
                 )
             tx.insertRecipients(recipientAccounts.toSet(), messageId)
+            tx.upsertThreadParticipants(threadId, sender, recipientAccounts.toSet(), now)
             threadId
         }
+    }
 }
