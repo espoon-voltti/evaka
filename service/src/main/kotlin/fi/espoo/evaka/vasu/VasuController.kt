@@ -38,7 +38,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class VasuController(
     private val featureConfig: FeatureConfig,
-    private val accessControl: AccessControl
+    private val accessControl: AccessControl,
+    private val vasuNotificationService: VasuNotificationService
 ) {
 
     data class CreateDocumentRequest(
@@ -271,6 +272,7 @@ class VasuController(
 
                 if (events.contains(PUBLISHED)) {
                     tx.publishVasuDocument(clock, id)
+                    vasuNotificationService.scheduleEmailNotification(tx, id)
                 }
 
                 if (events.contains(MOVED_TO_CLOSED)) {

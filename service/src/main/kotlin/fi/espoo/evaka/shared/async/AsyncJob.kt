@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.domain.DateRange
@@ -161,6 +162,10 @@ sealed interface AsyncJob : AsyncJobPayload {
     }
 
     data class SendPedagogicalDocumentNotificationEmail(val pedagogicalDocumentId: PedagogicalDocumentId, val recipientEmail: String, val language: Language) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class SendVasuNotificationEmail(val vasuDocumentId: VasuDocumentId, val childId: ChildId, val recipientEmail: String, val language: Language) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 

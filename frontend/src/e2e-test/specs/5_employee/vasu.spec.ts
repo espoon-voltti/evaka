@@ -2,17 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import assert from 'assert'
+
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
+  getSentEmails,
   insertDaycareGroupFixtures,
   insertDaycarePlacementFixtures,
   insertGuardianFixtures,
   insertVasuDocument,
   insertVasuTemplateFixture,
-  resetDatabase
+  resetDatabase,
+  runPendingAsyncJobs
 } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
@@ -543,6 +547,20 @@ describe('Vasu document page', () => {
       await waitUntilEqual(
         () => vasuPage.publishedDate(),
         LocalDate.todayInSystemTz().format()
+      )
+
+      await runPendingAsyncJobs()
+      const emails = await getSentEmails()
+
+      // eslint-disable-next-line
+      const guardianEmails = child.guardians!.map((guardian) => guardian.email)
+      assert(emails.every((email) => guardianEmails.includes(email.toAddress)))
+      assert(
+        guardianEmails.every((guardianEmailAddress) =>
+          emails.some(
+            (sentEmail) => sentEmail.toAddress === guardianEmailAddress
+          )
+        )
       )
     })
 

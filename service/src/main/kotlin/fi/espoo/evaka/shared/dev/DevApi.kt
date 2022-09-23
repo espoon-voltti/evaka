@@ -724,7 +724,7 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
             ?: throw NotFound("vtj person $ssn was not found")
     }
 
-    @GetMapping("/application-emails")
+    @GetMapping("/emails")
     fun getApplicationEmails(): List<MockEmail> {
         return MockEmailClient.emails
     }

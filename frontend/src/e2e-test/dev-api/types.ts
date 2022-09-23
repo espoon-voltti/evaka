@@ -376,10 +376,14 @@ export function deserializeDecision(json: JsonOf<Decision>): Decision {
   }
 }
 
-export interface ApplicationEmail {
-  personId: string
-  toAddress: string | null
+export interface MockEmail {
+  traceId: string
+  toAddress: string
+  fromAddress: string
+  subject: string
+  htmlBody: string
   language: string
+  textBody: string
 }
 
 export interface FamilyContact {
