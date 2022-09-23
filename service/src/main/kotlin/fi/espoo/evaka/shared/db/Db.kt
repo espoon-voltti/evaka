@@ -103,7 +103,6 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     }
     jdbi.register(helsinkiDateTimeColumnMapper)
     jdbi.register(productKeyColumnMapper)
-    jdbi.register(languageColumnMapper)
     jdbi.registerArrayType(UUID::class.java, "uuid")
     jdbi.registerArrayType(FiniteDateRange::class.java, "daterange") {
         PGobject().apply {

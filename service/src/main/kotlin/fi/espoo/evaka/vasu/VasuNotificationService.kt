@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import mu.KotlinLogging
@@ -52,6 +53,14 @@ class VasuNotificationService(
         else -> "$senderNameFi <$senderAddress>"
     }
 
+    private fun getLanguage(languageStr: String?): Language {
+        return when (languageStr?.lowercase()) {
+            "sv" -> Language.sv
+            "en" -> Language.en
+            else -> Language.fi
+        }
+    }
+
     private fun getVasuNotifications(
         tx: Database.Read,
         vasuDocumentId: VasuDocumentId
@@ -72,7 +81,14 @@ WHERE
             """.trimIndent()
         )
             .bind("id", vasuDocumentId)
-            .mapTo<AsyncJob.SendVasuNotificationEmail>()
+            .map { row ->
+                AsyncJob.SendVasuNotificationEmail(
+                    vasuDocumentId = vasuDocumentId,
+                    childId = row.mapColumn("child_id"),
+                    recipientEmail = row.mapColumn("recipient_email"),
+                    language = getLanguage(row.mapColumn("language"))
+                )
+            }
             .toList()
     }
 
