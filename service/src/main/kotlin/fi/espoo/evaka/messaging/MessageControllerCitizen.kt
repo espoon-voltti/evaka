@@ -91,21 +91,6 @@ class MessageControllerCitizen(
         }
     }
 
-    @GetMapping("/sent")
-    fun getSentMessages(
-        db: Database,
-        user: AuthenticatedUser.Citizen,
-        @RequestParam pageSize: Int,
-        @RequestParam page: Int,
-    ): Paged<SentMessage> {
-        return db.connect { dbc ->
-            val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
-            dbc.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
-        }.also {
-            Audit.MessagingSentMessagesRead.log()
-        }
-    }
-
     data class GetReceiversResponse(
         val messageAccounts: Set<MessageAccount>,
         val messageAccountsToChildren: Map<MessageAccountId, List<ChildId>>
