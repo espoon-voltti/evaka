@@ -56,7 +56,8 @@ interface Props {
   onReload: () => void
   availableChildren: ReservationChild[]
   reservableDays: Record<string, FiniteDateRange[]>
-  firstReservableDate: LocalDate
+  initialStart: LocalDate
+  initialEnd: LocalDate | null
   existingReservations: DailyReservationData[]
 }
 
@@ -65,7 +66,8 @@ export default React.memo(function ReservationModal({
   onReload,
   availableChildren,
   reservableDays,
-  firstReservableDate,
+  initialStart,
+  initialEnd,
   existingReservations
 }: Props) {
   const i18n = useTranslation()
@@ -73,8 +75,8 @@ export default React.memo(function ReservationModal({
 
   const [formData, setFormData] = useState<ReservationFormDataForValidation>({
     selectedChildren: availableChildren.map((child) => child.id),
-    startDate: firstReservableDate,
-    endDate: null,
+    startDate: initialStart,
+    endDate: initialEnd,
     repetition: 'DAILY',
     dailyTimes: [
       {

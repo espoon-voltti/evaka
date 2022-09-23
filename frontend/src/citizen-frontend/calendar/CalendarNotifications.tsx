@@ -108,7 +108,7 @@ export const CalendarNotificationsProvider = React.memo(
                   openHolidayModal()
                   return 'close'
                 case 'holiday':
-                  openReservationModal()
+                  openReservationModal(cta.period)
                   return 'close'
               }
             },
