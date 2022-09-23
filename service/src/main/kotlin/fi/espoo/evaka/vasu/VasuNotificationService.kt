@@ -8,6 +8,7 @@ import fi.espoo.evaka.EmailEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -59,6 +60,7 @@ class VasuNotificationService(
             """
 SELECT 
     doc.id AS vasu_document_id,
+    child.id AS child_id,
     parent.email AS recipient_email,
     parent.language AS language
 FROM curriculum_document doc
@@ -82,8 +84,8 @@ WHERE
             toAddress = msg.recipientEmail,
             fromAddress = getFromAddress(msg.language),
             subject = getSubject(),
-            htmlBody = getHtml(msg.language),
-            textBody = getText(msg.language)
+            htmlBody = getHtml(msg.childId, msg.language),
+            textBody = getText(msg.childId, msg.language)
         )
     }
 
@@ -92,16 +94,16 @@ WHERE
         return "Uusi dokumentti eVakassa / Nytt dokument i eVaka / New document in eVaka$postfix"
     }
 
-    private fun getDocumentsUrl(lang: Language): String {
+    private fun getDocumentsUrl(childId: ChildId, lang: Language): String {
         val base = when (lang) {
             Language.sv -> baseUrlSv
             else -> baseUrl
         }
-        return "$base/vasu"
+        return "$base/children/$childId"
     }
 
-    private fun getHtml(language: Language): String {
-        val documentsUrl = getDocumentsUrl(language)
+    private fun getHtml(childId: ChildId, language: Language): String {
+        val documentsUrl = getDocumentsUrl(childId, language)
         return """
                 <p>Sinulle on saapunut uusi dokumentti eVakaan. Lue dokumentti täältä: <a href="$documentsUrl">$documentsUrl</a></p>
                 <p>Tämä on eVaka-järjestelmän automaattisesti lähettämä ilmoitus. Älä vastaa tähän viestiin.</p>
@@ -118,8 +120,8 @@ WHERE
         """.trimIndent()
     }
 
-    private fun getText(language: Language): String {
-        val documentsUrl = getDocumentsUrl(language)
+    private fun getText(childId: ChildId, language: Language): String {
+        val documentsUrl = getDocumentsUrl(childId, language)
         return """
                 Sinulle on saapunut uusi dokumentti eVakaan. Lue dokumentti täältä: $documentsUrl
                 

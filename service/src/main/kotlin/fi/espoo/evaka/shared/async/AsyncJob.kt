@@ -165,7 +165,7 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendVasuNotificationEmail(val vasuDocumentId: VasuDocumentId, val recipientEmail: String, val language: Language) : AsyncJob {
+    data class SendVasuNotificationEmail(val vasuDocumentId: VasuDocumentId, val childId: ChildId, val recipientEmail: String, val language: Language) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
