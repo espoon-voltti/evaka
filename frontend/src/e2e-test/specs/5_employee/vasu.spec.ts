@@ -4,6 +4,7 @@
 
 import assert from 'assert'
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -104,6 +105,48 @@ describe('Child Information - Vasu documents section', () => {
 
   test('Can add a new vasu document', async () => {
     await section.addNew()
+  })
+})
+
+describe('Child Information - Vasu language', () => {
+  let section: VasuAndLeopsSection
+  beforeEach(async () => {
+    const child = await Fixture.person().save()
+    await Fixture.child(child.data.id).save()
+    const swedishUnit = await Fixture.daycare()
+      .careArea(await Fixture.careArea().save())
+      .with({ language: 'sv', enabledPilotFeatures: ['VASU_AND_PEDADOC'] })
+      .save()
+    const placementDateRange = new FiniteDateRange(
+      LocalDate.todayInSystemTz().subMonths(1),
+      LocalDate.todayInSystemTz().addMonths(5)
+    )
+    await Fixture.placement()
+      .daycare(swedishUnit)
+      .with({
+        childId: child.data.id,
+        startDate: placementDateRange.start.formatIso(),
+        endDate: placementDateRange.end.formatIso()
+      })
+      .save()
+    await insertVasuTemplateFixture({
+      language: 'SV',
+      valid: placementDateRange
+    })
+
+    page = await Page.open()
+    await employeeLogin(page, admin)
+    await page.goto(`${config.employeeUrl}/child-information/${child.data.id}`)
+    childInformationPage = new ChildInformationPage(page)
+    section = await childInformationPage.openCollapsible('vasuAndLeops')
+  })
+
+  test('Child placed in a Swedish unit can only use Swedish templates', async () => {
+    await section.addNew()
+    await waitUntilEqual(
+      () => page.findAllByDataQa('vasu-state-chip').nth(1).textContent,
+      'Utkast'
+    )
   })
 })
 

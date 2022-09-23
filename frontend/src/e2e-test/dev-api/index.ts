@@ -13,6 +13,7 @@ import {
   deserializeApplicationDetails
 } from 'lib-common/api-types/application/ApplicationDetails'
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   FeeDecision,
   FeeThresholds,
@@ -25,6 +26,10 @@ import {
 } from 'lib-common/generated/api-types/note'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+import {
+  CurriculumType,
+  VasuLanguage
+} from 'lib-common/generated/api-types/vasu'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -987,9 +992,16 @@ export async function insertGuardianFixtures(
   }
 }
 
-export async function insertVasuTemplateFixture(): Promise<UUID> {
+export async function insertVasuTemplateFixture(
+  body: Partial<{
+    name: string
+    valid: FiniteDateRange
+    type: CurriculumType
+    language: VasuLanguage
+  }> = {}
+): Promise<UUID> {
   try {
-    const { data } = await devClient.post<UUID>('/vasu/template')
+    const { data } = await devClient.post<UUID>('/vasu/template', body)
     return data
   } catch (e) {
     throw new DevApiError(e)

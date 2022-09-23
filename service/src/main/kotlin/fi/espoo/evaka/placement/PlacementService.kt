@@ -5,6 +5,7 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
@@ -606,5 +607,6 @@ data class DaycareBasics(
     val name: String,
     val area: String,
     val providerType: ProviderType,
-    val enabledPilotFeatures: List<PilotFeature>
+    val enabledPilotFeatures: List<PilotFeature>,
+    val language: Language
 )

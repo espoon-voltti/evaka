@@ -1035,16 +1035,23 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         }.key
     }
 
+    data class CreateVasuTemplateBody(
+        val name: String = "testipohja",
+        val valid: FiniteDateRange = FiniteDateRange(LocalDate.ofYearDay(2020, 1), LocalDate.ofYearDay(2200, 1)),
+        val type: CurriculumType = CurriculumType.DAYCARE,
+        val language: VasuLanguage = VasuLanguage.FI
+    )
+
     @PostMapping("/vasu/template")
-    fun createVasuTemplate(db: Database): VasuTemplateId {
+    fun createVasuTemplate(db: Database, @RequestBody body: CreateVasuTemplateBody): VasuTemplateId {
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.insertVasuTemplate(
-                    name = "testipohja",
-                    valid = FiniteDateRange(LocalDate.ofYearDay(2020, 1), LocalDate.ofYearDay(2200, 1)),
-                    type = CurriculumType.DAYCARE,
-                    language = VasuLanguage.FI,
-                    content = getDefaultTemplateContent(CurriculumType.DAYCARE, VasuLanguage.FI)
+                    name = body.name,
+                    valid = body.valid,
+                    type = body.type,
+                    language = body.language,
+                    content = getDefaultTemplateContent(body.type, body.language)
                 )
             }
         }

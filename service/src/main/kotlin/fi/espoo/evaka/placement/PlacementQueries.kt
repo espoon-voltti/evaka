@@ -360,6 +360,7 @@ fun Database.Read.getDaycarePlacements(
             d.name AS daycare_name,
             d.provider_type AS daycare_provider_type,
             d.enabled_pilot_features AS daycare_enabled_pilot_features,
+            d.language AS daycare_language,
             a.name AS daycare_area,
             ch.first_name as child_first_name,
             ch.last_name as child_last_name,
@@ -411,6 +412,7 @@ fun Database.Read.getDaycarePlacement(id: PlacementId): DaycarePlacement? {
             u.name AS unit_name,
             u.provider_type,
             u.enabled_pilot_features,
+            u.language,
             a.name AS area_name
         FROM placement p
         JOIN daycare u ON p.unit_id = u.id
@@ -752,7 +754,8 @@ private val toDaycarePlacement: (RowView) -> DaycarePlacement = { row ->
             name = row.mapColumn("unit_name"),
             area = row.mapColumn("area_name"),
             providerType = row.mapColumn("provider_type"),
-            enabledPilotFeatures = row.mapColumn("enabled_pilot_features")
+            enabledPilotFeatures = row.mapColumn("enabled_pilot_features"),
+            language = row.mapColumn("language")
         ),
         startDate = row.mapColumn("placement_start"),
         endDate = row.mapColumn("placement_end"),
