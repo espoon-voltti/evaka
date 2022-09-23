@@ -72,7 +72,7 @@ export const CalendarNotificationsProvider = React.memo(
       [i18n]
     )
 
-    const { openHolidayModal } = useCalendarModalState()
+    const { openHolidayModal, openReservationModal } = useCalendarModalState()
     const { holidayCta } = useHolidayPeriods()
 
     const addNotification = useCallback(
@@ -103,12 +103,14 @@ export const CalendarNotificationsProvider = React.memo(
             icon: faTreePalm,
             iconColor: colors.status.warning,
             onClick() {
-              if (cta.type === 'questionnaire') {
-                openHolidayModal()
-                return 'close'
+              switch (cta.type) {
+                case 'questionnaire':
+                  openHolidayModal()
+                  return 'close'
+                case 'holiday':
+                  openReservationModal()
+                  return 'close'
               }
-
-              return undefined
             },
             children: getHolidayCtaText(cta),
             dataQa: 'holiday-period-cta'
@@ -122,6 +124,7 @@ export const CalendarNotificationsProvider = React.memo(
       holidayCta,
       i18n.ctaToast,
       openHolidayModal,
+      openReservationModal,
       removeNotification
     ])
 
