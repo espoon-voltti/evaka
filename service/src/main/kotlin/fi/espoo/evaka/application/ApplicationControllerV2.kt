@@ -137,7 +137,7 @@ class ApplicationControllerV2(
     ): ApplicationId {
         accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_PAPER_APPLICATION)
 
-        return db.connect { dbc ->
+        val (guardianId, applicationId) = db.connect { dbc ->
             dbc.transaction { tx ->
                 val child = tx.getPersonById(body.childId)
                     ?: throw BadRequest("Could not find the child with id ${body.childId}")
@@ -179,11 +179,17 @@ class ApplicationControllerV2(
                     guardian,
                     child
                 )
-                id
+                Pair(guardianId, id)
             }
-        }.also {
-            Audit.ApplicationCreate.log(targetId = body.guardianId, objectId = body.childId)
         }
+        Audit.ApplicationCreate.log(
+            targetId = body.childId, objectId = applicationId,
+            mapOf(
+                "guardianId" to guardianId,
+                "applicationType" to body.type
+            )
+        )
+        return applicationId
     }
 
     @PostMapping("/search")

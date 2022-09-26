@@ -93,7 +93,7 @@ class ApplicationControllerCitizen(
                 fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(user, tx, personService, applicationId)
             }
         }
-        Audit.ApplicationRead.log(targetId = user.id, objectId = applicationId)
+        Audit.ApplicationRead.log(targetId = applicationId)
 
         return if (application?.guardianId == user.id && !application.hideFromGuardian)
             application
@@ -134,8 +134,12 @@ class ApplicationControllerCitizen(
                     applicationStateService.initializeApplicationForm(tx, user, clock.today(), it, body.type, guardian, child)
                 }
             }
-        }.also {
-            Audit.ApplicationCreate.log(targetId = user.id, objectId = body)
+        }.also { applicationId ->
+            Audit.ApplicationCreate.log(
+                targetId = body.childId,
+                objectId = applicationId,
+                mapOf("guardianId" to user.id, "applicationType" to body.type)
+            )
         }
     }
 
@@ -182,7 +186,7 @@ class ApplicationControllerCitizen(
                     .toMap()
             }
         }.also {
-            Audit.ApplicationReadActivePlacementsByType.log(targetId = user.id, objectId = childId)
+            Audit.ApplicationReadActivePlacementsByType.log(targetId = childId)
         }
     }
 
