@@ -24,6 +24,7 @@ import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.Invoice
+import fi.espoo.evaka.invoicing.domain.feeAlterationEffect
 import fi.espoo.evaka.invoicing.domain.roundToEuros
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
@@ -3844,8 +3845,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
                         baseFee = fee,
-                        fee = fee,
-                        feeAlterations = listOf()
+                        fee = roundToEuros(BigDecimal(fee) * snDaycareContractDays15.feeCoefficient).toInt()
                     )
                 )
             )
@@ -3876,25 +3876,25 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(1, result.size)
 
         result.first().let { invoice ->
-            assertEquals(17466, invoice.totalPrice)
+            assertEquals(13130, invoice.totalPrice)
             assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(10, invoiceRow.amount)
-                assertEquals(1000, invoiceRow.unitPrice) // 22000 / 23
-                assertEquals(10000, invoiceRow.price)
+                assertEquals(750, invoiceRow.unitPrice) // 16500 / 22
+                assertEquals(7500, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
                 assertEquals(12, invoiceRow.amount)
-                assertEquals(500, invoiceRow.unitPrice) // 11000 / 23
-                assertEquals(6000, invoiceRow.price)
+                assertEquals(377, invoiceRow.unitPrice) // 8300 / 22
+                assertEquals(4524, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
                 assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
                 assertEquals(2, invoiceRow.amount)
-                assertEquals(733, invoiceRow.unitPrice) // 11000 / 15
-                assertEquals(1466, invoiceRow.price)
+                assertEquals(553, invoiceRow.unitPrice) // 8300 / 15
+                assertEquals(1106, invoiceRow.price)
             }
         }
     }
@@ -4383,6 +4383,55 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `invoice generation with 15 contract days and 7 surplus days with a sibling discount results in a monthly maximum invoice`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            period,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionChildFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                    baseFee = 28900,
+                    siblingDiscount = 50,
+                    fee = 10900,
+                    feeAlterations = listOf()
+                )
+            )
+        )
+        insertDecisionsAndPlacements(listOf(decision))
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(14500, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(10900, invoiceRow.unitPrice)
+                assertEquals(10900, invoiceRow.price)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(3600, invoiceRow.unitPrice) // 14500 - 10900
+                assertEquals(3600, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
     fun `invoice generation with 15 contract days and 7 surplus days with a fee alteration results in a monthly maximum invoice`() {
         // 22 operational days
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
@@ -4406,7 +4455,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         createFeeDecisionAlterationFixture(
                             amount = 50,
                             isAbsolute = false,
-                            effect = -10850,
+                            effect = feeAlterationEffect(21700, FeeAlteration.Type.DISCOUNT, 50, false),
                         )
                     )
                 )
@@ -4541,6 +4590,309 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(7200, invoiceRow.unitPrice) // 28900 - 21700
                 assertEquals(7200, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation with part month fee decisions and surplus days results in a part month maximum invoice`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+
+        // 20 operational days and no planned absences
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 29)),
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionChildFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                    baseFee = 28900,
+                    fee = 21700,
+                    feeAlterations = listOf()
+                )
+            )
+        )
+        insertDecisionsAndPlacements(listOf(decision))
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(28900, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(21700, invoiceRow.unitPrice)
+                assertEquals(21700, invoiceRow.price)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(7200, invoiceRow.unitPrice) // 28900 - 21700
+                assertEquals(7200, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation with part month fee decision ending early and surplus days results in a part month maximum invoice with (useContractDaysAsDailyFeeDivisor = false, maxContractDaySurplusThreshold = 16)`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+
+        // 18 operational days and no planned absences
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 25)),
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionChildFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                    baseFee = 28900,
+                    fee = 21700,
+                    feeAlterations = listOf()
+                )
+            )
+        )
+        insertDecisionsAndPlacements(listOf(decision))
+
+        // Override useContractDaysAsDailyFeeDivisor and maxContractDaySurplusThreshold feature configs
+        val generator = InvoiceGenerator(
+            DraftInvoiceGenerator(
+                productProvider,
+                featureConfig.copy(useContractDaysAsDailyFeeDivisor = false, maxContractDaySurplusThreshold = 16),
+                DefaultInvoiceGenerationLogic
+            )
+        )
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(23645, invoice.totalPrice) // 28900 * (18 / 22)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(18, invoiceRow.amount)
+                assertEquals(986, invoiceRow.unitPrice) // 21700 / 22
+                assertEquals(17748, invoiceRow.price)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(5897, invoiceRow.unitPrice) // 23465 - 17748
+                assertEquals(5897, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation with part month fee decision starting late and surplus days results in a part month maximum invoice with (useContractDaysAsDailyFeeDivisor = false, maxContractDaySurplusThreshold = 16)`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+
+        // 18 operational days and no planned absences
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            DateRange(LocalDate.of(2019, 1, 8), LocalDate.of(2019, 1, 31)),
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionChildFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                    baseFee = 28900,
+                    fee = 21700,
+                    feeAlterations = listOf()
+                )
+            )
+        )
+        insertDecisionsAndPlacements(listOf(decision))
+
+        // Override useContractDaysAsDailyFeeDivisor and maxContractDaySurplusThreshold feature configs
+        val generator = InvoiceGenerator(
+            DraftInvoiceGenerator(
+                productProvider,
+                featureConfig.copy(useContractDaysAsDailyFeeDivisor = false, maxContractDaySurplusThreshold = 16),
+                DefaultInvoiceGenerationLogic
+            )
+        )
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(23645, invoice.totalPrice) // 28900 * (18 / 22)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(18, invoiceRow.amount)
+                assertEquals(986, invoiceRow.unitPrice) // 21700 / 22
+                assertEquals(17748, invoiceRow.price)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(5897, invoiceRow.unitPrice) // 23465 - 17748
+                assertEquals(5897, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation from two fee decisions with contract surplus days  (useContractDaysAsDailyFeeDivisor = false, maxContractDaySurplusThreshold = 16)`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            period,
+            testAdult_1.id,
+            listOf(
+                createFeeDecisionChildFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                    baseFee = 28900,
+                    fee = 21700,
+                )
+            )
+        )
+        insertDecisionsAndPlacements(
+            listOf(
+                decision.copy(validDuring = period.copy(end = LocalDate.of(2019, 1, 15))),
+                decision.copy(
+                    id = FeeDecisionId(UUID.randomUUID()),
+                    validDuring = period.copy(start = LocalDate.of(2019, 1, 16))
+                )
+            )
+        )
+
+        // Override useContractDaysAsDailyFeeDivisor and maxContractDaySurplusThreshold feature configs
+        val generator = InvoiceGenerator(
+            DraftInvoiceGenerator(
+                productProvider,
+                featureConfig.copy(useContractDaysAsDailyFeeDivisor = false, maxContractDaySurplusThreshold = 16),
+                DefaultInvoiceGenerationLogic
+            )
+        )
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(28900, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(21700, invoiceRow.unitPrice)
+                assertEquals(21700, invoiceRow.price)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(7200, invoiceRow.unitPrice) // 28900 - 21700
+                assertEquals(7200, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation from two fee decisions with changing fees with contract surplus days (useContractDaysAsDailyFeeDivisor = false, maxContractDaySurplusThreshold = 16)`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+
+        val decisions = listOf(
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period.copy(end = LocalDate.of(2019, 1, 15)),
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 21700,
+                    )
+                )
+            ),
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period.copy(start = LocalDate.of(2019, 1, 16)),
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        siblingDiscount = 50,
+                        fee = 10900
+                    )
+                )
+            )
+        )
+        insertDecisionsAndPlacements(decisions)
+
+        // Override useContractDaysAsDailyFeeDivisor and maxContractDaySurplusThreshold feature configs
+        val generator = InvoiceGenerator(
+            DraftInvoiceGenerator(
+                productProvider,
+                featureConfig.copy(useContractDaysAsDailyFeeDivisor = false, maxContractDaySurplusThreshold = 16),
+                DefaultInvoiceGenerationLogic
+            )
+        )
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(21045, invoice.totalPrice)
+            assertEquals(3, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(10, invoiceRow.amount)
+                assertEquals(986, invoiceRow.unitPrice) // 21700 / 22
+                assertEquals(9860, invoiceRow.price)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(12, invoiceRow.amount)
+                assertEquals(495, invoiceRow.unitPrice) // 10900 / 22
+                assertEquals(5940, invoiceRow.price)
+            }
+            invoice.rows[2].let { invoiceRow ->
+                assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(5245, invoiceRow.unitPrice) // (10 * 28900 + 12 * 14500) (= 21045) / 22 - 9860 - 5940
+                assertEquals(5245, invoiceRow.price)
             }
         }
     }
