@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine, isLoading, Result } from 'lib-common/api'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import {
   DailyReservationData,
@@ -79,6 +80,10 @@ const CalendarPage = React.memo(function CalendarPage() {
     openDayModal,
     closeModal
   } = useCalendarModalState()
+
+  const openReservationModalWithoutInitialRange = useCallback(() => {
+    openReservationModal(undefined)
+  }, [openReservationModal])
 
   const refreshOnQuestionnaireAnswer = useCallback(() => {
     refreshQuestionnaires()
@@ -157,7 +162,9 @@ const CalendarPage = React.memo(function CalendarPage() {
             <CalendarGridView
               childData={response.children}
               dailyData={response.dailyData}
-              onCreateReservationClicked={openReservationModal}
+              onCreateReservationClicked={
+                openReservationModalWithoutInitialRange
+              }
               onCreateAbsencesClicked={openAbsenceModal}
               onReportHolidaysClicked={openHolidayModal}
               selectedDate={
@@ -183,7 +190,7 @@ const CalendarPage = React.memo(function CalendarPage() {
           {modalState?.type === 'pickAction' && (
             <ActionPickerModal
               close={closeModal}
-              openReservations={openReservationModal}
+              openReservations={openReservationModalWithoutInitialRange}
               openAbsences={openAbsenceModal}
               openHolidays={openHolidayModal}
             />
@@ -194,7 +201,10 @@ const CalendarPage = React.memo(function CalendarPage() {
               availableChildren={response.children}
               onReload={loadDefaultRange}
               reservableDays={response.reservableDays}
-              firstReservableDate={firstReservableDate}
+              initialStart={
+                modalState.initialRange?.start ?? firstReservableDate
+              }
+              initialEnd={modalState.initialRange?.end ?? null}
               existingReservations={response.dailyData}
             />
           )}
@@ -234,7 +244,7 @@ const CalendarPage = React.memo(function CalendarPage() {
 type URLModalState =
   | { type: 'day'; date: LocalDate }
   | { type: 'absences'; initialDate: LocalDate | undefined }
-  | { type: 'reservations' }
+  | { type: 'reservations'; initialRange: FiniteDateRange | undefined }
   | { type: 'holidays' }
 
 // All possible modal states
@@ -244,7 +254,7 @@ interface UseModalStateResult {
   modalState: ModalState | undefined
   openDayModal: (date: LocalDate) => void
   openPickActionModal: () => void
-  openReservationModal: () => void
+  openReservationModal: (initialRange: FiniteDateRange | undefined) => void
   openAbsenceModal: (initialDate: LocalDate | undefined) => void
   openHolidayModal: () => void
   closeModal: () => void
@@ -278,7 +288,8 @@ export function useCalendarModalState(): UseModalStateResult {
   )
   const openPickActionModal = useCallback(() => setPickActionOpen(true), [])
   const openReservationModal = useCallback(
-    () => openModal({ type: 'reservations' }),
+    (initialRange: FiniteDateRange | undefined) =>
+      openModal({ type: 'reservations', initialRange }),
     [openModal]
   )
   const openAbsenceModal = useCallback(
@@ -306,10 +317,20 @@ function parseQueryString(qs: string): URLModalState | undefined {
   const searchParams = new URLSearchParams(qs)
   const dateParam = searchParams.get('day')
   const modalParam = searchParams.get('modal')
+  const startDateParam = searchParams.get('startDate')
+  const endDateParam = searchParams.get('endDate')
 
   const date = dateParam ? LocalDate.tryParseIso(dateParam) : undefined
+  const startDate = startDateParam
+    ? LocalDate.tryParseIso(startDateParam)
+    : undefined
+  const endDate = endDateParam ? LocalDate.tryParseIso(endDateParam) : undefined
+  const range =
+    startDate && endDate
+      ? FiniteDateRange.tryCreate(startDate, endDate)
+      : undefined
   return modalParam === 'reservations'
-    ? { type: 'reservations' }
+    ? { type: 'reservations', initialRange: range }
     : modalParam === 'holidays'
     ? { type: 'holidays' }
     : modalParam === 'absences'
@@ -324,7 +345,11 @@ function buildQueryString(modal: URLModalState): string {
     case 'holidays':
       return 'modal=holidays'
     case 'reservations':
-      return 'modal=reservations'
+      return `modal=reservations${
+        modal.initialRange
+          ? `&startDate=${modal.initialRange.start.formatIso()}&endDate=${modal.initialRange.end.formatIso()}`
+          : ''
+      }`
     case 'absences':
       return `modal=absences${
         modal.initialDate ? '&day=' + modal.initialDate.toString() : ''

@@ -32,6 +32,13 @@ export default class FiniteDateRange {
     }
   }
 
+  static tryCreate(
+    start: LocalDate,
+    end: LocalDate
+  ): FiniteDateRange | undefined {
+    return end.isBefore(start) ? undefined : new FiniteDateRange(start, end)
+  }
+
   static from(objectWithRange: DeprecatedRange) {
     return new FiniteDateRange(
       objectWithRange.startDate,
