@@ -68,8 +68,12 @@ class AttachmentsController(
             handleFileUpload(dbc, user, AttachmentParent.Application(applicationId), file, defaultAllowedAttachmentContentTypes, type).also {
                 dbc.transaction { tx -> stateService.reCalculateDueDate(tx, clock.today(), applicationId) }
             }
-        }.also {
-            Audit.AttachmentsUploadForApplication.log(applicationId)
+        }.also { attachmentId ->
+            Audit.AttachmentsUploadForApplication.log(
+                targetId = applicationId,
+                objectId = attachmentId,
+                mapOf("type" to type.name, "size" to file.size)
+            )
         }
     }
 
@@ -82,8 +86,14 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         accessControl.requirePermissionFor(user, clock, Action.IncomeStatement.UPLOAD_ATTACHMENT, incomeStatementId)
-        return db.connect { dbc -> handleFileUpload(dbc, user, AttachmentParent.IncomeStatement(incomeStatementId), file, defaultAllowedAttachmentContentTypes) }.also {
-            Audit.AttachmentsUploadForIncomeStatement.log(incomeStatementId)
+        return db.connect { dbc ->
+            handleFileUpload(dbc, user, AttachmentParent.IncomeStatement(incomeStatementId), file, defaultAllowedAttachmentContentTypes)
+        }.also { attachmentId ->
+            Audit.AttachmentsUploadForIncomeStatement.log(
+                targetId = incomeStatementId,
+                objectId = attachmentId,
+                mapOf("size" to file.size)
+            )
         }
     }
 
@@ -101,8 +111,14 @@ class AttachmentsController(
         val attachTo =
             if (incomeId != null) AttachmentParent.Income(incomeId) else AttachmentParent.None
 
-        return db.connect { dbc -> handleFileUpload(dbc, user, attachTo, file, defaultAllowedAttachmentContentTypes) }.also {
-            Audit.AttachmentsUploadForIncomeStatement.log(incomeId)
+        return db.connect { dbc ->
+            handleFileUpload(dbc, user, attachTo, file, defaultAllowedAttachmentContentTypes)
+        }.also { attachmentId ->
+            Audit.AttachmentsUploadForIncome.log(
+                targetId = incomeId,
+                objectId = attachmentId,
+                mapOf("size" to file.size)
+            )
         }
     }
 
@@ -115,8 +131,14 @@ class AttachmentsController(
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
         accessControl.requirePermissionFor(user, clock, Action.MessageDraft.UPLOAD_ATTACHMENT, draftId)
-        return db.connect { dbc -> handleFileUpload(dbc, user, AttachmentParent.MessageDraft(draftId), file, defaultAllowedAttachmentContentTypes) }.also {
-            Audit.AttachmentsUploadForMessageDraft.log(draftId)
+        return db.connect { dbc ->
+            handleFileUpload(dbc, user, AttachmentParent.MessageDraft(draftId), file, defaultAllowedAttachmentContentTypes)
+        }.also { attachmentId ->
+            Audit.AttachmentsUploadForMessageDraft.log(
+                targetId = draftId,
+                objectId = attachmentId,
+                mapOf("size" to file.size)
+            )
         }
     }
 
@@ -134,8 +156,12 @@ class AttachmentsController(
             handleFileUpload(dbc, user, AttachmentParent.PedagogicalDocument(documentId), file, pedagogicalDocumentAllowedAttachmentContentTypes) { tx ->
                 pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(tx, documentId)
             }
-        }.also {
-            Audit.AttachmentsUploadForPedagogicalDocument.log(documentId)
+        }.also { attachmentId ->
+            Audit.AttachmentsUploadForPedagogicalDocument.log(
+                targetId = documentId,
+                objectId = attachmentId,
+                mapOf("size" to file.size)
+            )
         }
     }
 
@@ -157,8 +183,12 @@ class AttachmentsController(
             handleFileUpload(dbc, user, attachTo, file, defaultAllowedAttachmentContentTypes, type) { tx ->
                 stateService.reCalculateDueDate(tx, clock.today(), applicationId)
             }
-        }.also {
-            Audit.AttachmentsUploadForApplication.log(applicationId)
+        }.also { attachmentId ->
+            Audit.AttachmentsUploadForApplication.log(
+                targetId = applicationId,
+                objectId = attachmentId,
+                mapOf("type" to type.name, "size" to file.size)
+            )
         }
     }
 
@@ -183,8 +213,12 @@ class AttachmentsController(
         return db.connect { dbc ->
             checkAttachmentCount(dbc, attachTo, user)
             handleFileUpload(dbc, user, attachTo, file, defaultAllowedAttachmentContentTypes)
-        }.also {
-            Audit.AttachmentsUploadForIncomeStatement.log(incomeStatementId)
+        }.also { attachmentId ->
+            Audit.AttachmentsUploadForIncomeStatement.log(
+                targetId = incomeStatementId,
+                objectId = attachmentId,
+                mapOf("size" to file.size)
+            )
         }
     }
 
