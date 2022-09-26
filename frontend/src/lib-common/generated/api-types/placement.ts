@@ -8,6 +8,7 @@
 import FiniteDateRange from '../../finite-date-range'
 import LocalDate from '../../local-date'
 import { EvakaUser } from './user'
+import { Language } from './daycare'
 import { PilotFeature } from './shared'
 import { ProviderType } from './daycare'
 import { ServiceNeed } from './serviceneed'
@@ -54,6 +55,7 @@ export interface DaycareBasics {
   area: string
   enabledPilotFeatures: PilotFeature[]
   id: UUID
+  language: Language
   name: string
   providerType: ProviderType
 }

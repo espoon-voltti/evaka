@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine, Result } from 'lib-common/api'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   DaycarePlacementWithDetails,
   PlacementType
@@ -127,17 +128,29 @@ function VasuInitialization({
     () =>
       templates
         ? combine(placements, templates).map(([placements, templates]) => {
-            const placementsNotInFuture = placements.filter(
-              ({ startDate }) => !startDate.isAfter(LocalDate.todayInSystemTz())
+            const currentPlacement = placements.find(({ startDate, endDate }) =>
+              new FiniteDateRange(startDate, endDate).includes(
+                LocalDate.todayInHelsinkiTz()
+              )
             )
 
-            const useableType = placementsNotInFuture.some(({ type }) =>
-              preschoolPlacementTypes.includes(type)
+            if (!currentPlacement) {
+              return []
+            }
+
+            const useableType = preschoolPlacementTypes.includes(
+              currentPlacement.type
             )
               ? 'PRESCHOOL'
               : 'DAYCARE'
 
-            return templates.filter(({ type }) => type === useableType)
+            return templates
+              .filter(({ type }) => type === useableType)
+              .filter(({ language }) =>
+                currentPlacement.daycare.language === 'sv'
+                  ? language === 'SV'
+                  : language === 'FI'
+              )
           })
         : undefined,
     [placements, templates]

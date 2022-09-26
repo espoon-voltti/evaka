@@ -5,6 +5,7 @@
 package fi.espoo.evaka.placement
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.EvakaUserId
@@ -744,7 +745,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         testDaycare2.name,
                         testArea2.name,
                         ProviderType.MUNICIPAL,
-                        listOf(PilotFeature.MESSAGING)
+                        listOf(PilotFeature.MESSAGING),
+                        Language.fi
                     ),
                     startDate = daycarePlacementStartDate,
                     endDate = daycarePlacementEndDate,
@@ -828,7 +830,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         testDaycare2.name,
                         testArea2.name,
                         ProviderType.MUNICIPAL,
-                        listOf(PilotFeature.MESSAGING)
+                        listOf(PilotFeature.MESSAGING),
+                        Language.fi
                     ),
                     startDate = daycarePlacementStartDate,
                     endDate = daycarePlacementEndDate,
