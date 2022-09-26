@@ -357,15 +357,16 @@ enum class Audit(
 
     private val eventCode = name
 
-    fun log(targetId: Any? = null, objectId: Any? = null) {
+    fun log(targetId: Any? = null, objectId: Any? = null, args: Map<String, Any?> = emptyMap()) {
         logger.audit(
-            mapOf(
-                "eventCode" to eventCode,
-                "targetId" to targetId,
-                "objectId" to objectId,
-                "securityLevel" to securityLevel,
-                "securityEvent" to securityEvent
-            )
+            args +
+                mapOf(
+                    "eventCode" to eventCode,
+                    "targetId" to targetId,
+                    "objectId" to objectId,
+                    "securityLevel" to securityLevel,
+                    "securityEvent" to securityEvent
+                )
         ) { eventCode }
     }
 }
