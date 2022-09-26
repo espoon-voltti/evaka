@@ -35,7 +35,7 @@ class ServiceNeedReport(private val acl: AccessControlList, private val accessCo
                 it.getServiceNeedRows(date, acl.getAuthorizedUnits(user))
             }
         }.also {
-            Audit.ServiceNeedReportRead.log()
+            Audit.ServiceNeedReportRead.log(args = mapOf("date" to date))
         }
     }
 }

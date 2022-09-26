@@ -35,7 +35,7 @@ class StartingPlacementsReportController(private val accessControl: AccessContro
                 it.getStartingPlacementsRows(year, month)
             }
         }.also {
-            Audit.StartingPlacementsReportRead.log()
+            Audit.StartingPlacementsReportRead.log(args = mapOf("year" to year, "month" to month))
         }
     }
 }

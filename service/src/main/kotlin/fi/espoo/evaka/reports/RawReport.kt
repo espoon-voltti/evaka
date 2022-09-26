@@ -44,7 +44,7 @@ class RawReportController(private val accessControl: AccessControl) {
                 it.getRawRows(from, to)
             }
         }.also {
-            Audit.RawReportRead.log()
+            Audit.RawReportRead.log(args = mapOf("from" to from, "to" to to))
         }
     }
 }

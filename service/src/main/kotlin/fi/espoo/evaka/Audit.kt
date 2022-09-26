@@ -233,6 +233,7 @@ enum class Audit(
     NoteRead,
     NoteUpdate,
     NotesByGroupRead,
+    OccupancyGroupReportRead,
     OccupancyRead,
     OccupancyReportRead,
     OccupancySpeculatedRead,

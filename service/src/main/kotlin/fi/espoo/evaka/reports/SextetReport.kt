@@ -39,7 +39,7 @@ class SextetReportController(private val accessControl: AccessControl) {
                 )
             }
         }.also {
-            Audit.SextetReportRead.log()
+            Audit.SextetReportRead.log(args = mapOf("year" to year, "placementType" to placementType))
         }
     }
 }

@@ -36,7 +36,7 @@ class EndedPlacementsReportController(private val accessControl: AccessControl) 
                 it.getEndedPlacementsRows(from, to)
             }
         }.also {
-            Audit.EndedPlacementsReportRead.log()
+            Audit.EndedPlacementsReportRead.log(args = mapOf("year" to year, "month" to month))
         }
     }
 }

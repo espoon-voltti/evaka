@@ -40,7 +40,7 @@ class MissingServiceNeedReportController(private val acl: AccessControlList, pri
                 it.getMissingServiceNeedRows(from, to, acl.getAuthorizedUnits(user))
             }
         }.also {
-            Audit.MissingServiceNeedReportRead.log()
+            Audit.MissingServiceNeedReportRead.log(args = mapOf("from" to from, "to" to to))
         }
     }
 }

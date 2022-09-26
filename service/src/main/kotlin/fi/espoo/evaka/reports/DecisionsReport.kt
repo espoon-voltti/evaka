@@ -39,7 +39,7 @@ class DecisionsReportController(private val accessControl: AccessControl) {
                 it.getDecisionsRows(FiniteDateRange(from, to))
             }
         }.also {
-            Audit.DecisionsReportRead.log()
+            Audit.DecisionsReportRead.log(args = mapOf("from" to from, "to" to to))
         }
     }
 }

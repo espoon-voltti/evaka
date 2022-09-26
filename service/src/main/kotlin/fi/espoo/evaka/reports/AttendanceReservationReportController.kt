@@ -45,7 +45,14 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
                 tx.getAttendanceReservationReport(start, end, unitId, groupIds?.ifEmpty { null })
             }
         }.also {
-            Audit.AttendanceReservationReportRead.log(targetId = unitId)
+            Audit.AttendanceReservationReportRead.log(
+                targetId = unitId,
+                args = mapOf(
+                    "groupIds" to groupIds,
+                    "start" to start,
+                    "end" to end
+                )
+            )
         }
     }
 
@@ -66,7 +73,14 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
                 tx.getAttendanceReservationReportByChild(start, end, unitId, groupIds?.ifEmpty { null })
             }
         }.also {
-            Audit.AttendanceReservationReportRead.log(targetId = unitId)
+            Audit.AttendanceReservationReportRead.log(
+                targetId = unitId,
+                args = mapOf(
+                    "groupIds" to groupIds,
+                    "start" to start,
+                    "end" to end
+                )
+            )
         }
     }
 }

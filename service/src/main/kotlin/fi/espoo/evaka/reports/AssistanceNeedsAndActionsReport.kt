@@ -47,7 +47,7 @@ class AssistanceNeedsAndActionsReportController(private val acl: AccessControlLi
                 )
             }
         }.also {
-            Audit.AssistanceNeedsReportRead.log()
+            Audit.AssistanceNeedsReportRead.log(args = mapOf("date" to date))
         }
     }
 

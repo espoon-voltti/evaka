@@ -36,7 +36,12 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
                 it.getPlacementSketchingReportRows(placementStartDate, earliestPreferredStartDate)
             }
         }.also {
-            Audit.PlacementSketchingReportRead.log()
+            Audit.PlacementSketchingReportRead.log(
+                args = mapOf(
+                    "placementStartDate" to placementStartDate,
+                    "earliestPreferredStartDate" to earliestPreferredStartDate
+                )
+            )
         }
     }
 }

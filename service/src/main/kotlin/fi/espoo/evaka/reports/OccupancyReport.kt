@@ -60,7 +60,15 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
                 )
             }
         }.also {
-            Audit.OccupancyReportRead.log(targetId = careAreaId)
+            Audit.OccupancyReportRead.log(
+                args = mapOf(
+                    "careAreaId" to careAreaId,
+                    "providerType" to providerType,
+                    "unitTypes" to unitTypes,
+                    "year" to year,
+                    "month" to month
+                )
+            )
         }
     }
 
@@ -93,7 +101,15 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
                 )
             }
         }.also {
-            Audit.OccupancyReportRead.log(targetId = careAreaId)
+            Audit.OccupancyGroupReportRead.log(
+                args = mapOf(
+                    "careAreaId" to careAreaId,
+                    "providerType" to providerType,
+                    "unitTypes" to unitTypes,
+                    "year" to year,
+                    "month" to month
+                )
+            )
         }
     }
 }

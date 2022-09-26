@@ -49,6 +49,6 @@ class PatuReportingController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
                 )
             }
         }
-        Audit.PatuReportSend.log()
+        Audit.PatuReportSend.log(args = mapOf("from" to from, "to" to to))
     }
 }
