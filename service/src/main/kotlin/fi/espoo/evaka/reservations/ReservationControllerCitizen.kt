@@ -118,14 +118,14 @@ class ReservationControllerCitizen(
         if (!listOf(OTHER_ABSENCE, PLANNED_ABSENCE, SICKLEAVE).contains(body.absenceType))
             throw BadRequest("Invalid absence type")
 
-        db.connect { dbc ->
+        val (deleted, inserted) = db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.clearOldCitizenEditableAbsences(
+                val deleted = tx.clearOldCitizenEditableAbsences(
                     body.childIds.flatMap { childId ->
                         body.dateRange.dates().map { childId to it }
                     }
                 )
-                tx.insertAbsences(
+                val inserted = tx.insertAbsences(
                     user.id,
                     body.childIds.flatMap { childId ->
                         body.dateRange.dates().map { date ->
@@ -133,9 +133,14 @@ class ReservationControllerCitizen(
                         }
                     }
                 )
+                Pair(deleted, inserted)
             }
         }
-        Audit.AbsenceCitizenCreate.log(targetId = body.childIds.toSet().joinToString())
+        Audit.AbsenceCitizenCreate.log(
+            targetId = body.childIds,
+            objectId = inserted,
+            mapOf("deleted" to deleted)
+        )
     }
 }
 

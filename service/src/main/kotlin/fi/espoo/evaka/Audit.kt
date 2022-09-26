@@ -15,7 +15,7 @@ enum class Audit(
     AbsenceRead,
     AbsenceDelete,
     AbsenceDeleteRange,
-    AbsenceUpdate,
+    AbsenceUpsert,
     ApplicationAdminDetailsUpdate,
     ApplicationCancel,
     ApplicationCreate,

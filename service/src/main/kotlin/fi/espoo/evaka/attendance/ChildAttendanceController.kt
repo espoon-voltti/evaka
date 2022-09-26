@@ -382,9 +382,16 @@ class ChildAttendanceController(
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Child.DELETE_ABSENCE_RANGE, childId)
-        return db.connect { dbc -> dbc.transaction { tx -> tx.deleteAbsencesByFiniteDateRange(childId, FiniteDateRange(from, to)) } }.also {
-            Audit.AbsenceDeleteRange.log(targetId = childId)
+        val deleted = db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.deleteAbsencesByFiniteDateRange(childId, FiniteDateRange(from, to))
+            }
         }
+        Audit.AbsenceDeleteRange.log(
+            targetId = childId,
+            objectId = deleted,
+            mapOf("from" to from, "to" to to)
+        )
     }
 }
 

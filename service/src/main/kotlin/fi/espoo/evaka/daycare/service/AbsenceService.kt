@@ -273,14 +273,15 @@ data class AbsenceUpsert(
 )
 
 // database functions
-fun Database.Transaction.upsertAbsences(clock: EvakaClock, absences: List<AbsenceUpsert>, modifiedBy: EvakaUserId) {
+fun Database.Transaction.upsertAbsences(clock: EvakaClock, absences: List<AbsenceUpsert>, modifiedBy: EvakaUserId): List<AbsenceId> {
     //language=SQL
     val sql =
         """
         INSERT INTO absence (child_id, date, category, absence_type, modified_by)
         VALUES (:childId, :date, :category, :absenceType, :modifiedBy)
         ON CONFLICT (child_id, date, category)
-            DO UPDATE SET absence_type = :absenceType, modified_by = :modifiedBy, modified_at = :now
+        DO UPDATE SET absence_type = :absenceType, modified_by = :modifiedBy, modified_at = :now
+        RETURNING id
         """.trimIndent()
 
     val batch = prepareBatch(sql)
@@ -292,7 +293,9 @@ fun Database.Transaction.upsertAbsences(clock: EvakaClock, absences: List<Absenc
             .add()
     }
 
-    batch.execute()
+    return batch.executeAndReturn()
+        .mapTo<AbsenceId>()
+        .toList()
 }
 
 data class AbsenceDelete(
@@ -301,27 +304,31 @@ data class AbsenceDelete(
     val category: AbsenceCategory
 )
 
-fun Database.Transaction.batchDeleteAbsences(deletions: List<AbsenceDelete>) {
+fun Database.Transaction.batchDeleteAbsences(deletions: List<AbsenceDelete>): List<AbsenceId> {
     //language=SQL
     val sql =
         """
         DELETE FROM absence
         WHERE category = :category AND date = :date AND child_id = :childId
+        RETURNING id
         """.trimIndent()
 
     val batch = prepareBatch(sql)
     deletions.forEach {
         batch.bindKotlin(it).add()
     }
-    batch.execute()
+    return batch.executeAndReturn()
+        .mapTo<AbsenceId>()
+        .toList()
 }
 
-fun Database.Transaction.deleteChildAbsences(childId: ChildId, date: LocalDate) {
-    createUpdate("DELETE FROM absence WHERE child_id = :childId AND date = :date")
+fun Database.Transaction.deleteChildAbsences(childId: ChildId, date: LocalDate): List<AbsenceId> =
+    createUpdate("DELETE FROM absence WHERE child_id = :childId AND date = :date RETURNING id")
         .bind("childId", childId)
         .bind("date", date)
-        .execute()
-}
+        .executeAndReturnGeneratedKeys()
+        .mapTo<AbsenceId>()
+        .toList()
 
 fun Database.Read.getGroupName(groupId: GroupId): String? {
     //language=SQL
