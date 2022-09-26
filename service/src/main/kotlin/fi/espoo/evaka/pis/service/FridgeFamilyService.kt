@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.pis.service
 
+import fi.espoo.evaka.pis.personIsHeadOfFamily
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
@@ -28,7 +29,7 @@ class FridgeFamilyService(
 
     fun updatePersonAndFamilyFromVtj(db: Database.Connection, user: AuthenticatedUser, clock: EvakaClock, personId: PersonId) {
         logger.info("Refreshing $personId from VTJ")
-        val head = db.transaction {
+        val targetPerson = db.transaction {
             personService.getPersonWithChildren(
                 it,
                 user = user,
@@ -36,8 +37,8 @@ class FridgeFamilyService(
                 forceRefresh = true
             )
         }
-        if (head != null) {
-            logger.info("Person to refresh has ${head.children.size} children")
+        if (targetPerson != null) {
+            logger.info("Person to refresh has ${targetPerson.children.size} children")
 
             val partner = db.read { getPartnerId(it, clock, personId) }
                 ?.also { logger.info("Person has fridge partner $it") }
@@ -51,13 +52,16 @@ class FridgeFamilyService(
                         )
                     }
                 }
-                ?.takeIf { livesInSameAddress(it.address, head.address) }
+                ?.takeIf { livesInSameAddress(it.address, targetPerson.address) }
+
+            val head = if (partner != null && db.read { it.personIsHeadOfFamily(partner.id) }) partner else targetPerson
+
             if (partner != null) logger.info("Partner lives in the same address and has ${partner.children.size} children")
 
-            val children = head.children + (partner?.children ?: emptyList())
+            val children = targetPerson.children + (partner?.children ?: emptyList())
 
-            val currentFridgeChildren = db.read { getCurrentFridgeChildren(it, clock, personId) }
-            logger.info("Currently person has ${currentFridgeChildren.size} fridge children in evaka")
+            val currentFridgeChildren = db.read { getCurrentFridgeChildren(it, clock, head.id) }
+            logger.info("Currently head of family has ${currentFridgeChildren.size} fridge children in evaka")
 
             val newChildrenInSameAddress = children
                 .asSequence()
@@ -80,7 +84,7 @@ class FridgeFamilyService(
                             tx,
                             clock,
                             childId = child.id,
-                            headOfChildId = personId,
+                            headOfChildId = head.id,
                             startDate = startDate,
                             endDate = child.dateOfBirth.plusYears(18).minusDays(1)
                         )
