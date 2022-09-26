@@ -79,7 +79,10 @@ class AttendanceReservationController(private val ac: AccessControl) {
                     }
             }
         }.also {
-            Audit.UnitAttendanceReservationsRead.log(targetId = unitId, objectId = from)
+            Audit.UnitAttendanceReservationsRead.log(
+                targetId = unitId,
+                args = mapOf("from" to from, "to" to to)
+            )
         }
     }
 
@@ -90,11 +93,19 @@ class AttendanceReservationController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: List<DailyReservationRequest>
     ) {
-        val distinctChildIds = body.map { it.childId }.toSet()
-        ac.requirePermissionFor(user, clock, Action.Child.CREATE_ATTENDANCE_RESERVATION, distinctChildIds)
+        val children = body.map { it.childId }.toSet()
+        ac.requirePermissionFor(user, clock, Action.Child.CREATE_ATTENDANCE_RESERVATION, children)
 
-        db.connect { dbc -> dbc.transaction { createReservations(it, user.evakaUserId, body.validate()) } }
-        Audit.AttendanceReservationEmployeeCreate.log(targetId = distinctChildIds.joinToString())
+        val result = db.connect { dbc -> dbc.transaction { createReservations(it, user.evakaUserId, body.validate()) } }
+        Audit.AttendanceReservationEmployeeCreate.log(
+            targetId = children,
+            mapOf(
+                "deletedAbsences" to result.deletedAbsences,
+                "deletedReservations" to result.deletedReservations,
+                "upsertedAbsences" to result.upsertedAbsences,
+                "upsertedReservations" to result.upsertedReservations
+            )
+        )
     }
 }
 

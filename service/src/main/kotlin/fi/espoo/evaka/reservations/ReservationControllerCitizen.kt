@@ -79,7 +79,13 @@ class ReservationControllerCitizen(
                 )
             }
         }.also {
-            Audit.AttendanceReservationCitizenRead.log(targetId = user.id)
+            Audit.AttendanceReservationCitizenRead.log(
+                targetId = user.id,
+                args = mapOf(
+                    "from" to from,
+                    "to" to to
+                )
+            )
         }
     }
 
@@ -90,9 +96,10 @@ class ReservationControllerCitizen(
         clock: EvakaClock,
         @RequestBody body: List<DailyReservationRequest>
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_RESERVATION, body.map { it.childId })
+        val children = body.map { it.childId }.toSet()
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_RESERVATION, children)
 
-        db.connect { dbc ->
+        val result = db.connect { dbc ->
             dbc.transaction { tx ->
                 val deadlines = tx.getHolidayPeriodDeadlines()
                 val reservableDays =
@@ -100,7 +107,15 @@ class ReservationControllerCitizen(
                 createReservations(tx, user.evakaUserId, body.validate(reservableDays), user.id)
             }
         }
-        Audit.AttendanceReservationCitizenCreate.log(targetId = body.map { it.childId }.toSet().joinToString())
+        Audit.AttendanceReservationCitizenCreate.log(
+            targetId = children,
+            mapOf(
+                "deletedAbsences" to result.deletedAbsences,
+                "deletedReservations" to result.deletedReservations,
+                "upsertedAbsences" to result.upsertedAbsences,
+                "upsertedReservations" to result.upsertedReservations
+            )
+        )
     }
 
     @PostMapping("/citizen/absences")
