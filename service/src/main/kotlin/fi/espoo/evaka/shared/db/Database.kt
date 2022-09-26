@@ -274,6 +274,8 @@ class Database(private val jdbi: Jdbi) {
             return this
         }
         fun execute(): IntArray = raw.execute()
+
+        fun executeAndReturn(): UpdateResult = UpdateResult(raw.executePreparedBatch())
     }
 
     @JvmInline
