@@ -9,13 +9,11 @@ import { Failure, Success } from 'lib-common/api'
 import { Child } from 'lib-common/generated/api-types/children'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Main from 'lib-components/atoms/Main'
-import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 
 import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
-import { useTranslation } from '../localization'
 
 import ChildHeader from './ChildHeader'
 import ChildConsentsSection from './sections/consents/ChildConsentsSection'
@@ -25,7 +23,6 @@ import VasuAndLeopsSection from './sections/vasu-and-leops/VasuAndLeopsSection'
 import { ChildrenContext } from './state'
 
 export default React.memo(function ChildPage() {
-  const t = useTranslation()
   const { childId } = useNonNullableParams<{ childId: string }>()
   const { children } = useContext(ChildrenContext)
   const child = children.chain<Child>((children) => {
@@ -39,8 +36,6 @@ export default React.memo(function ChildPage() {
     <>
       <Main>
         <Container>
-          <Gap size="s" />
-          <ReturnButton label={t.common.return} />
           <Gap size="s" />
           {renderResult(child, (child) => (
             <>

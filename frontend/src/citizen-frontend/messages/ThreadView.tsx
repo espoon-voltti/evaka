@@ -85,7 +85,7 @@ const MessageContent = styled.div`
 `
 
 const ReplyToThreadButton = styled(InlineButton)`
-  padding-left: 28px;
+  margin-left: 28px;
 `
 
 const SingleMessage = React.memo(function SingleMessage({
