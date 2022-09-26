@@ -56,13 +56,16 @@ class FridgeFamilyService(
 
             val head = if (partner != null && db.read { it.personIsHeadOfFamily(partner.id) }) partner else targetPerson
 
-            if (partner != null) logger.info("Partner lives in the same address and has ${partner.children.size} children")
+            if (partner != null) {
+                logger.info("Partner lives in the same address and has ${partner.children.size} children")
+                if (head === partner) {
+                    logger.info("Parter has a fridge family, so adding the new children to that family")
+                }
+            }
 
             val children = targetPerson.children + (partner?.children ?: emptyList())
 
             val currentFridgeChildren = db.read { getCurrentFridgeChildren(it, clock, head.id) }
-            logger.info("Currently head of family has ${currentFridgeChildren.size} fridge children in evaka")
-
             val newChildrenInSameAddress = children
                 .asSequence()
                 .distinct()
@@ -71,7 +74,6 @@ class FridgeFamilyService(
                 .filter { livesInSameAddress(it.address, head.address) }
                 .filter { !currentFridgeChildren.contains(it.id) }
                 .toList()
-            logger.info("New fridge children to add: ${newChildrenInSameAddress.size}")
 
             newChildrenInSameAddress.forEach { child ->
                 try {
@@ -89,12 +91,11 @@ class FridgeFamilyService(
                             endDate = child.dateOfBirth.plusYears(18).minusDays(1)
                         )
                     }
-                    logger.info("Child ${child.id} added")
+                    logger.info("Child ${child.id} added to head of child ${head.id}")
                 } catch (e: Exception) {
-                    logger.debug("Ignored the following:", e)
+                    logger.warn("Problem while adding a child to fridge family:", e)
                 }
             }
-            logger.info("Completed refreshing person $personId")
         }
     }
 
