@@ -421,62 +421,92 @@ const CreateEventModal = React.memo(function CreateEventModal({
   useEffect(() => {
     combine(unitData, unitInformation).map(
       ([{ groups, placements, backupCares }, { daycare }]) => {
-        updateForm('attendees', [
-          {
-            text: daycare.name,
-            key: daycare.id,
-            checked: true,
-            children: groups.map((group) => {
-              const groupChildren = uniqBy(
-                placements
-                  .filter((placement) =>
-                    placement.groupPlacements.some(
-                      (groupPlacement) =>
-                        groupPlacement.groupId === group.id &&
-                        groupPlacement.endDate.isEqualOrAfter(
-                          form.period.start
-                        ) &&
-                        groupPlacement.startDate.isEqualOrBefore(
-                          form.period.end
-                        )
-                    )
-                  )
-                  .map(({ child: { firstName, lastName, id } }) => ({
-                    firstName,
-                    lastName,
-                    id
-                  }))
-                  .concat(
-                    backupCares
-                      .filter(
-                        (bc) =>
-                          bc.group?.id === group.id &&
-                          bc.period.overlaps(form.period)
-                      )
-                      .map(({ child: { firstName, lastName, id } }) => ({
-                        firstName,
-                        lastName,
-                        id
-                      }))
-                  ),
-                (child) => child.id
-              ).map<TreeNode>((child) => ({
-                text: `${child.firstName ?? ''} ${child.lastName ?? ''}`,
-                key: child.id,
-                checked:
-                  selectedGroupId === group.id || selectedGroupId === 'all'
-              }))
+        setForm(({ attendees, ...rest }) => {
+          const useDefault = attendees.length === 0
 
-              return {
-                text: group.name,
-                key: group.id,
-                checked:
-                  selectedGroupId === group.id || selectedGroupId === 'all',
-                children: groupChildren.length === 0 ? undefined : groupChildren
+          const selectedChildrenByGroup = Object.fromEntries(
+            attendees.flatMap(
+              (unit) =>
+                unit.children?.map((group) => {
+                  const groupChildren = group.children ?? []
+                  const selectedChildren = groupChildren
+                    .filter(({ checked }) => checked)
+                    .map(({ key, checked }) => [key, checked] as const)
+
+                  return [
+                    group.key,
+                    {
+                      allChildrenAreSelected:
+                        groupChildren.length > 0 &&
+                        groupChildren.length === selectedChildren.length,
+                      selectedChildren: Object.fromEntries(selectedChildren)
+                    }
+                  ]
+                }) ?? []
+            )
+          )
+
+          const attendeeGroups = groups.map((group) => {
+            const groupChildren = uniqBy(
+              placements
+                .filter((placement) =>
+                  placement.groupPlacements.some(
+                    (groupPlacement) =>
+                      groupPlacement.groupId === group.id &&
+                      groupPlacement.endDate.isEqualOrAfter(
+                        form.period.start
+                      ) &&
+                      groupPlacement.startDate.isEqualOrBefore(form.period.end)
+                  )
+                )
+                .map(({ child: { firstName, lastName, id } }) => ({
+                  firstName,
+                  lastName,
+                  id
+                }))
+                .concat(
+                  backupCares
+                    .filter(
+                      (bc) =>
+                        bc.group?.id === group.id &&
+                        bc.period.overlaps(form.period)
+                    )
+                    .map(({ child: { firstName, lastName, id } }) => ({
+                      firstName,
+                      lastName,
+                      id
+                    }))
+                ),
+              (child) => child.id
+            ).map<TreeNode>((child) => ({
+              text: `${child.firstName ?? ''} ${child.lastName ?? ''}`,
+              key: child.id,
+              checked: useDefault
+                ? selectedGroupId === group.id || selectedGroupId === 'all'
+                : selectedChildrenByGroup[group.id].allChildrenAreSelected ||
+                  selectedChildrenByGroup[group.id].selectedChildren[child.id]
+            }))
+
+            return {
+              text: group.name,
+              key: group.id,
+              checked: groupChildren.some(({ checked }) => checked),
+              children: groupChildren.length === 0 ? undefined : groupChildren
+            }
+          })
+
+          return {
+            ...rest,
+            attendees: [
+              {
+                text: daycare.name,
+                key: daycare.id,
+                checked: attendeeGroups.some(({ checked }) => checked),
+                children: attendeeGroups
               }
-            })
+            ]
           }
-        ])
+        })
       }
     )
   }, [form.period, selectedGroupId, unitData, unitInformation, updateForm])
