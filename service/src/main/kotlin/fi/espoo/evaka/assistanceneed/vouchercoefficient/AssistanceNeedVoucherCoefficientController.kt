@@ -34,7 +34,6 @@ class AssistanceNeedVoucherCoefficientController(
         @PathVariable childId: ChildId,
         @RequestBody body: AssistanceNeedVoucherCoefficientRequest
     ): AssistanceNeedVoucherCoefficient {
-        Audit.ChildAssistanceNeedVoucherCoefficientCreate.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_ASSISTANCE_NEED_VOUCHER_COEFFICIENT, childId)
 
         return db.connect { dbc ->
@@ -42,6 +41,8 @@ class AssistanceNeedVoucherCoefficientController(
                 adjustExistingCoefficients(tx, childId, body.validityPeriod, null)
                 tx.insertAssistanceNeedVoucherCoefficient(childId, body)
             }
+        }.also {
+            Audit.ChildAssistanceNeedVoucherCoefficientCreate.log(targetId = childId)
         }
     }
 
@@ -52,7 +53,6 @@ class AssistanceNeedVoucherCoefficientController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<AssistanceNeedVoucherCoefficientResponse> {
-        Audit.ChildAssistanceNeedVoucherCoefficientRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS, childId)
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -63,6 +63,8 @@ class AssistanceNeedVoucherCoefficientController(
                     )
                 }
             }
+        }.also {
+            Audit.ChildAssistanceNeedVoucherCoefficientRead.log(targetId = childId)
         }
     }
 
@@ -74,7 +76,6 @@ class AssistanceNeedVoucherCoefficientController(
         @PathVariable("id") assistanceNeedVoucherCoefficientId: AssistanceNeedVoucherCoefficientId,
         @RequestBody body: AssistanceNeedVoucherCoefficientRequest
     ): AssistanceNeedVoucherCoefficient {
-        Audit.ChildAssistanceNeedVoucherCoefficientUpdate.log(targetId = assistanceNeedVoucherCoefficientId)
         accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedVoucherCoefficient.UPDATE, assistanceNeedVoucherCoefficientId)
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -89,6 +90,8 @@ class AssistanceNeedVoucherCoefficientController(
                     data = body
                 )
             }
+        }.also {
+            Audit.ChildAssistanceNeedVoucherCoefficientUpdate.log(targetId = assistanceNeedVoucherCoefficientId)
         }
     }
 
@@ -99,7 +102,6 @@ class AssistanceNeedVoucherCoefficientController(
         clock: EvakaClock,
         @PathVariable("id") assistanceNeedVoucherCoefficientId: AssistanceNeedVoucherCoefficientId
     ) {
-        Audit.ChildAssistanceNeedVoucherCoefficientDelete.log(targetId = assistanceNeedVoucherCoefficientId)
         accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedVoucherCoefficient.DELETE, assistanceNeedVoucherCoefficientId)
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -111,6 +113,7 @@ class AssistanceNeedVoucherCoefficientController(
                 }
             }
         }
+        Audit.ChildAssistanceNeedVoucherCoefficientDelete.log(targetId = assistanceNeedVoucherCoefficientId)
     }
 
     private fun adjustExistingCoefficients(tx: Database.Transaction, childId: ChildId, range: FiniteDateRange, ignoreCoefficientId: AssistanceNeedVoucherCoefficientId?) {

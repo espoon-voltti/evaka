@@ -198,7 +198,6 @@ class ApplicationStateService(
         clock: EvakaClock,
         applicationId: ApplicationId
     ) {
-        Audit.ApplicationSend.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Application.SEND, applicationId)
 
         val currentDate = clock.today()
@@ -248,10 +247,10 @@ class ApplicationStateService(
         }
 
         tx.updateApplicationStatus(application.id, SENT)
+        Audit.ApplicationSend.log(targetId = applicationId)
     }
 
     fun moveToWaitingPlacement(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, applicationId: ApplicationId) {
-        Audit.ApplicationVerify.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Application.MOVE_TO_WAITING_PLACEMENT, applicationId)
 
         val application = getApplication(tx, applicationId)
@@ -271,42 +270,43 @@ class ApplicationStateService(
 
         asyncJobRunner.plan(tx, listOf(AsyncJob.InitializeFamilyFromApplication(application.id, user)), runAt = clock.now())
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT)
+        Audit.ApplicationVerify.log(targetId = applicationId)
     }
 
     fun returnToSent(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, applicationId: ApplicationId) {
-        Audit.ApplicationReturnToSent.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Application.RETURN_TO_SENT, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
         tx.updateApplicationStatus(application.id, SENT)
+        Audit.ApplicationReturnToSent.log(targetId = applicationId)
     }
 
     fun cancelApplication(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, applicationId: ApplicationId) {
-        Audit.ApplicationCancel.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Application.CANCEL, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(SENT, WAITING_PLACEMENT))
         tx.updateApplicationStatus(application.id, CANCELLED)
+        Audit.ApplicationCancel.log(targetId = applicationId)
     }
 
     fun setVerified(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, applicationId: ApplicationId) {
-        Audit.ApplicationAdminDetailsUpdate.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Application.VERIFY, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
         tx.setApplicationVerified(applicationId, true)
+        Audit.ApplicationAdminDetailsUpdate.log(targetId = applicationId)
     }
 
     fun setUnverified(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, applicationId: ApplicationId) {
-        Audit.ApplicationAdminDetailsUpdate.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Application.VERIFY, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
         tx.setApplicationVerified(applicationId, false)
+        Audit.ApplicationAdminDetailsUpdate.log(targetId = applicationId)
     }
 
     fun createPlacementPlan(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId, placementPlan: DaycarePlacementPlan) {
@@ -329,7 +329,6 @@ class ApplicationStateService(
     }
 
     fun cancelPlacementPlan(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, applicationId: ApplicationId) {
-        Audit.ApplicationReturnToWaitingPlacement.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Application.CANCEL_PLACEMENT_PLAN, applicationId)
 
         val application = getApplication(tx, applicationId)
@@ -337,33 +336,34 @@ class ApplicationStateService(
         tx.deletePlacementPlans(listOf(application.id))
         tx.clearDecisionDrafts(listOf(application.id))
         tx.updateApplicationStatus(application.id, WAITING_PLACEMENT)
+        Audit.ApplicationReturnToWaitingPlacement.log(targetId = applicationId)
     }
 
     fun sendDecisionsWithoutProposal(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, applicationId: ApplicationId) {
-        Audit.DecisionCreate.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Application.SEND_DECISIONS_WITHOUT_PROPOSAL, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
         finalizeDecisions(tx, user, clock, application)
+        Audit.DecisionCreate.log(targetId = applicationId)
     }
 
     fun sendPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, applicationId: ApplicationId) {
-        Audit.PlacementProposalCreate.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Application.SEND_PLACEMENT_PROPOSAL, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
         tx.updateApplicationStatus(application.id, WAITING_UNIT_CONFIRMATION)
+        Audit.PlacementProposalCreate.log(targetId = applicationId)
     }
 
     fun withdrawPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, applicationId: ApplicationId) {
-        Audit.ApplicationReturnToWaitingDecision.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Application.WITHDRAW_PLACEMENT_PROPOSAL, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_UNIT_CONFIRMATION)
         tx.updateApplicationStatus(application.id, WAITING_DECISION)
+        Audit.ApplicationReturnToWaitingDecision.log(targetId = applicationId)
     }
 
     fun respondToPlacementProposal(
@@ -375,7 +375,6 @@ class ApplicationStateService(
         rejectReason: PlacementPlanRejectReason? = null,
         rejectOtherReason: String? = null
     ) {
-        Audit.PlacementPlanRespond.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Application.RESPOND_TO_PLACEMENT_PROPOSAL, applicationId)
 
         val application = getApplication(tx, applicationId)
@@ -391,10 +390,10 @@ class ApplicationStateService(
         } else {
             tx.updatePlacementPlanUnitConfirmation(applicationId, status, null, null)
         }
+        Audit.PlacementPlanRespond.log(targetId = applicationId)
     }
 
     fun confirmPlacementProposalChanges(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, unitId: DaycareId) {
-        Audit.PlacementProposalAccept.log(targetId = unitId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.ACCEPT_PLACEMENT_PROPOSAL, unitId)
 
         // language=sql
@@ -429,19 +428,19 @@ class ApplicationStateService(
             .toList()
 
         validIds.map { getApplication(tx, it) }.forEach { finalizeDecisions(tx, user, clock, it) }
+        Audit.PlacementProposalAccept.log(targetId = unitId)
     }
 
     fun confirmDecisionMailed(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, applicationId: ApplicationId) {
-        Audit.DecisionConfirmMailed.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Application.CONFIRM_DECISIONS_MAILED, applicationId)
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_MAILING)
         tx.updateApplicationStatus(application.id, WAITING_CONFIRMATION)
+        Audit.DecisionConfirmMailed.log(targetId = applicationId)
     }
 
     fun acceptDecision(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, applicationId: ApplicationId, decisionId: DecisionId, requestedStartDate: LocalDate) {
-        Audit.DecisionAccept.log(targetId = decisionId)
         accessControl.requirePermissionFor(user, clock, Action.Application.ACCEPT_DECISION, applicationId)
 
         val application = getApplication(tx, applicationId)
@@ -504,10 +503,10 @@ class ApplicationStateService(
             if (application.form.maxFeeAccepted) setHighestFeeForUser(tx, clock, application, requestedStartDate)
             tx.updateApplicationStatus(application.id, ACTIVE)
         }
+        Audit.DecisionAccept.log(targetId = decisionId)
     }
 
     fun rejectDecision(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, applicationId: ApplicationId, decisionId: DecisionId) {
-        Audit.DecisionReject.log(targetId = decisionId)
         accessControl.requirePermissionFor(user, clock, Action.Application.REJECT_DECISION, applicationId)
 
         val application = getApplication(tx, applicationId)
@@ -533,6 +532,7 @@ class ApplicationStateService(
         if (application.status == WAITING_CONFIRMATION) {
             tx.updateApplicationStatus(application.id, REJECTED)
         }
+        Audit.DecisionReject.log(targetId = decisionId)
     }
 
     // CONTENT UPDATE

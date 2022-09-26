@@ -42,9 +42,10 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         @RequestParam month: Int,
         @PathVariable groupId: GroupId
     ): AbsenceGroup {
-        Audit.AbsenceRead.log(targetId = groupId)
         accessControl.requirePermissionFor(user, clock, Action.Group.READ_ABSENCES, groupId)
-        return db.connect { dbc -> dbc.read { absenceService.getAbsencesByMonth(it, groupId, year, month) } }
+        return db.connect { dbc -> dbc.read { absenceService.getAbsencesByMonth(it, groupId, year, month) } }.also {
+            Audit.AbsenceRead.log(targetId = groupId)
+        }
     }
 
     @PostMapping("/{groupId}")
@@ -55,11 +56,11 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         @RequestBody absences: List<AbsenceUpsert>,
         @PathVariable groupId: GroupId
     ) {
-        Audit.AbsenceUpdate.log(targetId = groupId)
         accessControl.requirePermissionFor(user, clock, Action.Group.CREATE_ABSENCES, groupId)
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_ABSENCE, absences.map { it.childId })
 
         db.connect { dbc -> dbc.transaction { it.upsertAbsences(clock, absences, user.evakaUserId) } }
+        Audit.AbsenceUpdate.log(targetId = groupId)
     }
 
     @PostMapping("/{groupId}/delete")
@@ -70,11 +71,11 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         @RequestBody deletions: List<AbsenceDelete>,
         @PathVariable groupId: GroupId
     ) {
-        Audit.AbsenceUpdate.log(targetId = groupId)
         accessControl.requirePermissionFor(user, clock, Action.Group.DELETE_ABSENCES, groupId)
         accessControl.requirePermissionFor(user, clock, Action.Child.DELETE_ABSENCE, deletions.map { it.childId })
 
         db.connect { dbc -> dbc.transaction { it.batchDeleteAbsences(deletions) } }
+        Audit.AbsenceUpdate.log(targetId = groupId)
     }
 
     data class DeleteChildAbsenceBody(val date: LocalDate)
@@ -87,9 +88,9 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         @PathVariable childId: ChildId,
         @RequestBody body: DeleteChildAbsenceBody
     ) {
-        Audit.AbsenceDelete.log(targetId = childId, objectId = body.date)
         accessControl.requirePermissionFor(user, clock, Action.Child.DELETE_ABSENCE, childId)
         db.connect { dbc -> dbc.transaction { it.deleteChildAbsences(childId, body.date) } }
+        Audit.AbsenceDelete.log(targetId = childId, objectId = body.date)
     }
 
     @GetMapping("/by-child/{childId}")
@@ -101,9 +102,10 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         @RequestParam year: Int,
         @RequestParam month: Int
     ): List<Absence> {
-        Audit.AbsenceRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_ABSENCES, childId)
-        return db.connect { dbc -> dbc.read { absenceService.getAbsencesByChild(it, childId, year, month) } }
+        return db.connect { dbc -> dbc.read { absenceService.getAbsencesByChild(it, childId, year, month) } }.also {
+            Audit.AbsenceRead.log(targetId = childId)
+        }
     }
 
     @GetMapping("/by-child/{childId}/future")
@@ -113,8 +115,9 @@ class AbsenceController(private val absenceService: AbsenceService, private val 
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<Absence> {
-        Audit.AbsenceRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_FUTURE_ABSENCES, childId)
-        return db.connect { dbc -> dbc.read { absenceService.getFutureAbsencesByChild(it, clock, childId) } }
+        return db.connect { dbc -> dbc.read { absenceService.getFutureAbsencesByChild(it, clock, childId) } }.also {
+            Audit.AbsenceRead.log(targetId = childId)
+        }
     }
 }

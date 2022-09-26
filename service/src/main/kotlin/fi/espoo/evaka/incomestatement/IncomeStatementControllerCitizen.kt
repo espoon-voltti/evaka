@@ -43,13 +43,14 @@ class IncomeStatementControllerCitizen(
         @RequestParam page: Int,
         @RequestParam pageSize: Int
     ): Paged<IncomeStatement> {
-        Audit.IncomeStatementsOfPerson.log(user.id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_INCOME_STATEMENTS, user.id)
 
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.readIncomeStatementsForPerson(user.id, includeEmployeeContent = false, page = page, pageSize = pageSize)
             }
+        }.also {
+            Audit.IncomeStatementsOfPerson.log(user.id)
         }
     }
 
@@ -62,13 +63,14 @@ class IncomeStatementControllerCitizen(
         @RequestParam page: Int,
         @RequestParam pageSize: Int
     ): Paged<IncomeStatement> {
-        Audit.IncomeStatementsOfChild.log(user.id, childId)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_INCOME_STATEMENTS, childId)
 
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.readIncomeStatementsForPerson(PersonId(childId.raw), includeEmployeeContent = false, page = page, pageSize = pageSize)
             }
+        }.also {
+            Audit.IncomeStatementsOfChild.log(user.id, childId)
         }
     }
 
@@ -79,10 +81,11 @@ class IncomeStatementControllerCitizen(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<LocalDate> {
-        Audit.IncomeStatementStartDatesOfChild.log(user.id, childId)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_INCOME_STATEMENTS, childId)
 
-        return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(PersonId(childId.raw)) } }
+        return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(PersonId(childId.raw)) } }.also {
+            Audit.IncomeStatementStartDatesOfChild.log(user.id, childId)
+        }
     }
 
     @GetMapping("/start-dates/")
@@ -91,9 +94,10 @@ class IncomeStatementControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): List<LocalDate> {
-        Audit.IncomeStatementStartDates.log()
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_INCOME_STATEMENTS, user.id)
-        return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(user.id) } }
+        return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(user.id) } }.also {
+            Audit.IncomeStatementStartDates.log()
+        }
     }
 
     @GetMapping("/{incomeStatementId}")
@@ -103,7 +107,6 @@ class IncomeStatementControllerCitizen(
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId,
     ): IncomeStatement {
-        Audit.IncomeStatementReadOfPerson.log(incomeStatementId, user.id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.IncomeStatement.READ, incomeStatementId)
 
         return db.connect { dbc ->
@@ -111,6 +114,8 @@ class IncomeStatementControllerCitizen(
                 tx.readIncomeStatementForPerson(user.id, incomeStatementId, includeEmployeeContent = false)
                     ?: throw NotFound("No such income statement")
             }
+        }.also {
+            Audit.IncomeStatementReadOfPerson.log(incomeStatementId, user.id)
         }
     }
 
@@ -122,7 +127,6 @@ class IncomeStatementControllerCitizen(
         @PathVariable childId: ChildId,
         @PathVariable incomeStatementId: IncomeStatementId
     ): IncomeStatement {
-        Audit.IncomeStatementReadOfChild.log(incomeStatementId, user.id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.IncomeStatement.READ, incomeStatementId)
 
         return db.connect { dbc ->
@@ -130,6 +134,8 @@ class IncomeStatementControllerCitizen(
                 tx.readIncomeStatementForPerson(PersonId(childId.raw), incomeStatementId, includeEmployeeContent = false)
                     ?: throw NotFound("No such child income statement")
             }
+        }.also {
+            Audit.IncomeStatementReadOfChild.log(incomeStatementId, user.id)
         }
     }
 
@@ -140,9 +146,9 @@ class IncomeStatementControllerCitizen(
         clock: EvakaClock,
         @RequestBody body: IncomeStatementBody
     ) {
-        Audit.IncomeStatementCreate.log(user.id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.CREATE_INCOME_STATEMENT, user.id)
         db.connect { createIncomeStatement(it, user.id, user.id, body) }
+        Audit.IncomeStatementCreate.log(user.id)
     }
 
     @PostMapping("/child/{childId}")
@@ -153,9 +159,9 @@ class IncomeStatementControllerCitizen(
         @PathVariable childId: ChildId,
         @RequestBody body: IncomeStatementBody
     ) {
-        Audit.IncomeStatementCreateForChild.log(user.id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_INCOME_STATEMENT, childId)
         db.connect { createIncomeStatement(it, PersonId(childId.raw), user.id, body) }
+        Audit.IncomeStatementCreateForChild.log(user.id)
     }
 
     @PutMapping("/{incomeStatementId}")
@@ -166,11 +172,10 @@ class IncomeStatementControllerCitizen(
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: IncomeStatementBody
     ) {
-        Audit.IncomeStatementUpdate.log(incomeStatementId)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.IncomeStatement.UPDATE, incomeStatementId)
 
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement body")
-        return db.connect { dbc ->
+        db.connect { dbc ->
             dbc.transaction { tx ->
                 verifyIncomeStatementModificationsAllowed(tx, user.id, incomeStatementId)
                 tx.updateIncomeStatement(incomeStatementId, body).also { success ->
@@ -184,8 +189,9 @@ class IncomeStatementControllerCitizen(
                         }
                     }
                 }
-            }
-        }.let { success -> if (!success) throw NotFound("Income statement not found") }
+            }.let { success -> if (!success) throw NotFound("Income statement not found") }
+        }
+        Audit.IncomeStatementUpdate.log(incomeStatementId)
     }
 
     @PutMapping("/child/{childId}/{incomeStatementId}")
@@ -197,12 +203,11 @@ class IncomeStatementControllerCitizen(
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: IncomeStatementBody
     ) {
-        Audit.IncomeStatementUpdateForChild.log(user.id, incomeStatementId)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.IncomeStatement.UPDATE, incomeStatementId)
 
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid child income statement body")
 
-        return db.connect { dbc ->
+        db.connect { dbc ->
             dbc.transaction { tx ->
                 verifyIncomeStatementModificationsAllowed(tx, PersonId(childId.raw), incomeStatementId)
                 tx.updateIncomeStatement(incomeStatementId, body).also { success ->
@@ -216,8 +221,9 @@ class IncomeStatementControllerCitizen(
                         }
                     }
                 }
-            }
-        }.let { success -> if (!success) throw NotFound("Income statement not found") }
+            }.let { success -> if (!success) throw NotFound("Income statement not found") }
+        }
+        Audit.IncomeStatementUpdateForChild.log(user.id, incomeStatementId)
     }
 
     @DeleteMapping("/{id}")
@@ -227,14 +233,14 @@ class IncomeStatementControllerCitizen(
         clock: EvakaClock,
         @PathVariable id: IncomeStatementId
     ) {
-        Audit.IncomeStatementDelete.log(id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.IncomeStatement.DELETE, id)
-        return db.connect { dbc ->
+        db.connect { dbc ->
             dbc.transaction { tx ->
                 verifyIncomeStatementModificationsAllowed(tx, user.id, id)
                 tx.removeIncomeStatement(id)
             }
         }
+        Audit.IncomeStatementDelete.log(id)
     }
 
     @DeleteMapping("/child/{childId}/{id}")
@@ -245,23 +251,24 @@ class IncomeStatementControllerCitizen(
         @PathVariable childId: ChildId,
         @PathVariable id: IncomeStatementId
     ) {
-        Audit.IncomeStatementDeleteOfChild.log(user.id, id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.IncomeStatement.DELETE, id)
 
-        return db.connect { dbc ->
+        db.connect { dbc ->
             dbc.transaction { tx ->
                 verifyIncomeStatementModificationsAllowed(tx, PersonId(childId.raw), id)
                 tx.removeIncomeStatement(id)
             }
         }
+        Audit.IncomeStatementDeleteOfChild.log(user.id, id)
     }
 
     @GetMapping("/children")
     fun getIncomeStatementChildren(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock): List<ChildBasicInfo> {
-        Audit.CitizenChildrenRead.log()
         val personId = user.id
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_CHILDREN, personId)
-        return db.connect { dbc -> dbc.read { it.getIncomeStatementChildrenByGuardian(personId) } }
+        return db.connect { dbc -> dbc.read { it.getIncomeStatementChildrenByGuardian(personId) } }.also {
+            Audit.CitizenChildrenRead.log()
+        }
     }
 
     private fun verifyIncomeStatementModificationsAllowed(

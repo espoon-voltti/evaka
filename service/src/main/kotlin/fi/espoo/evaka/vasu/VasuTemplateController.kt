@@ -43,7 +43,6 @@ class VasuTemplateController(
         clock: EvakaClock,
         @RequestBody body: CreateTemplateRequest
     ): VasuTemplateId {
-        Audit.VasuTemplateCreate.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_VASU_TEMPLATE)
 
         return db.connect { dbc ->
@@ -56,6 +55,8 @@ class VasuTemplateController(
                     content = getDefaultTemplateContent(body.type, body.language)
                 )
             }
+        }.also {
+            Audit.VasuTemplateCreate.log()
         }
     }
 
@@ -67,7 +68,6 @@ class VasuTemplateController(
         @PathVariable id: VasuTemplateId,
         @RequestBody body: VasuTemplateUpdate
     ) {
-        Audit.VasuTemplateEdit.log()
         accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.UPDATE, id)
 
         db.connect { dbc ->
@@ -77,6 +77,7 @@ class VasuTemplateController(
                 tx.updateVasuTemplate(id, body)
             }
         }
+        Audit.VasuTemplateEdit.log()
     }
 
     data class CopyTemplateRequest(
@@ -92,7 +93,6 @@ class VasuTemplateController(
         @PathVariable id: VasuTemplateId,
         @RequestBody body: CopyTemplateRequest
     ): VasuTemplateId {
-        Audit.VasuTemplateCopy.log(id)
         accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.COPY, id)
 
         return db.connect { dbc ->
@@ -106,6 +106,8 @@ class VasuTemplateController(
                     content = copyTemplateContentWithCurrentlyValidOphSections(template)
                 )
             }
+        }.also {
+            Audit.VasuTemplateCopy.log(id)
         }
     }
 
@@ -116,10 +118,11 @@ class VasuTemplateController(
         clock: EvakaClock,
         @RequestParam(required = false) validOnly: Boolean = false
     ): List<VasuTemplateSummary> {
-        Audit.VasuTemplateRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_VASU_TEMPLATE)
 
-        return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplates(clock, validOnly) } }
+        return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplates(clock, validOnly) } }.also {
+            Audit.VasuTemplateRead.log()
+        }
     }
 
     @GetMapping("/{id}")
@@ -129,10 +132,11 @@ class VasuTemplateController(
         clock: EvakaClock,
         @PathVariable id: VasuTemplateId
     ): VasuTemplate {
-        Audit.VasuTemplateRead.log(id)
         accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.READ, id)
 
-        return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplate(id) } } ?: throw NotFound("template $id not found")
+        return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplate(id) } ?: throw NotFound("template $id not found") }.also {
+            Audit.VasuTemplateRead.log(id)
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -142,10 +146,10 @@ class VasuTemplateController(
         clock: EvakaClock,
         @PathVariable id: VasuTemplateId
     ) {
-        Audit.VasuTemplateDelete.log(id)
         accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.DELETE, id)
 
         db.connect { dbc -> dbc.transaction { it.deleteUnusedVasuTemplate(id) } }
+        Audit.VasuTemplateDelete.log(id)
     }
 
     @PutMapping("/{id}/content")
@@ -156,7 +160,6 @@ class VasuTemplateController(
         @PathVariable id: VasuTemplateId,
         @RequestBody content: VasuContent
     ) {
-        Audit.VasuTemplateUpdate.log(id)
         accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.UPDATE, id)
 
         db.connect { dbc ->
@@ -166,5 +169,6 @@ class VasuTemplateController(
                 tx.updateVasuTemplateContent(id, content)
             }
         }
+        Audit.VasuTemplateUpdate.log(id)
     }
 }

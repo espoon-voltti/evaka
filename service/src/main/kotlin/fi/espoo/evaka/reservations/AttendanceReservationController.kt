@@ -47,7 +47,6 @@ class AttendanceReservationController(private val ac: AccessControl) {
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): UnitAttendanceReservations {
-        Audit.UnitAttendanceReservationsRead.log(targetId = unitId, objectId = from)
         ac.requirePermissionFor(user, clock, Action.Unit.READ_ATTENDANCE_RESERVATIONS, unitId)
         if (to < from || from.plusMonths(1) < to) throw BadRequest("Invalid query dates")
         val dateRange = FiniteDateRange(from, to)
@@ -79,6 +78,8 @@ class AttendanceReservationController(private val ac: AccessControl) {
                         )
                     }
             }
+        }.also {
+            Audit.UnitAttendanceReservationsRead.log(targetId = unitId, objectId = from)
         }
     }
 
@@ -90,10 +91,10 @@ class AttendanceReservationController(private val ac: AccessControl) {
         @RequestBody body: List<DailyReservationRequest>
     ) {
         val distinctChildIds = body.map { it.childId }.toSet()
-        Audit.AttendanceReservationEmployeeCreate.log(targetId = distinctChildIds.joinToString())
         ac.requirePermissionFor(user, clock, Action.Child.CREATE_ATTENDANCE_RESERVATION, distinctChildIds)
 
         db.connect { dbc -> dbc.transaction { createReservations(it, user.evakaUserId, body.validate()) } }
+        Audit.AttendanceReservationEmployeeCreate.log(targetId = distinctChildIds.joinToString())
     }
 }
 

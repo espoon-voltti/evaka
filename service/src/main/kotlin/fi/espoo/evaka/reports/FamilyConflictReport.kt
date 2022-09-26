@@ -21,13 +21,14 @@ import org.springframework.web.bind.annotation.RestController
 class FamilyConflictReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
     @GetMapping("/reports/family-conflicts")
     fun getFamilyConflictsReport(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<FamilyConflictReportRow> {
-        Audit.FamilyConflictReportRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_FAMILY_CONFLICT_REPORT)
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 it.getFamilyConflicts(acl.getAuthorizedUnits(user))
             }
+        }.also {
+            Audit.FamilyConflictReportRead.log()
         }
     }
 }

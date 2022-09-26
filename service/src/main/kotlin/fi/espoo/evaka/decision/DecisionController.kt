@@ -41,9 +41,9 @@ class DecisionController(
         clock: EvakaClock,
         @RequestParam("id") guardianId: PersonId
     ): DecisionListResponse {
-        Audit.DecisionRead.log(targetId = guardianId)
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_DECISIONS, guardianId)
         val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByGuardian(guardianId, acl.getAuthorizedUnits(user)) } }
+        Audit.DecisionRead.log(targetId = guardianId)
         return DecisionListResponse(decisions)
     }
 
@@ -54,9 +54,9 @@ class DecisionController(
         clock: EvakaClock,
         @RequestParam("id") childId: ChildId
     ): DecisionListResponse {
-        Audit.DecisionRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_DECISIONS, childId)
         val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByChild(childId, acl.getAuthorizedUnits(user)) } }
+        Audit.DecisionRead.log(targetId = childId)
         return DecisionListResponse(decisions)
     }
 
@@ -67,18 +67,19 @@ class DecisionController(
         clock: EvakaClock,
         @RequestParam("id") applicationId: ApplicationId
     ): DecisionListResponse {
-        Audit.DecisionRead.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Application.READ_DECISIONS, applicationId)
         val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user)) } }
+        Audit.DecisionRead.log(targetId = applicationId)
 
         return DecisionListResponse(decisions)
     }
 
     @GetMapping("/units")
     fun getDecisionUnits(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<DecisionUnit> {
-        Audit.UnitRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_DECISION_UNITS)
-        return db.connect { dbc -> dbc.read { decisionDraftService.getDecisionUnits(it) } }
+        return db.connect { dbc -> dbc.read { decisionDraftService.getDecisionUnits(it) } }.also {
+            Audit.UnitRead.log()
+        }
     }
 
     @GetMapping("/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
@@ -88,7 +89,6 @@ class DecisionController(
         clock: EvakaClock,
         @PathVariable("id") decisionId: DecisionId
     ): ResponseEntity<Any> {
-        Audit.DecisionDownloadPdf.log(targetId = decisionId)
         accessControl.requirePermissionFor(user, clock, Action.Decision.DOWNLOAD_PDF, decisionId)
 
         return db.connect { dbc ->
@@ -109,6 +109,8 @@ class DecisionController(
                 decision
             }
             decisionService.getDecisionPdf(dbc, decision)
+        }.also {
+            Audit.DecisionDownloadPdf.log(targetId = decisionId)
         }
     }
 }

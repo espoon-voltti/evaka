@@ -27,8 +27,6 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl, pr
         user: AuthenticatedUser,
         clock: EvakaClock,
     ): List<AssistanceNeedDecisionsReportRow> {
-        Audit.AssistanceNeedDecisionsReportRead.log()
-
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
@@ -40,6 +38,8 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl, pr
                 )
                 it.getDecisionRows(user.evakaUserId, AclAuthorization.from(filter))
             }
+        }.also {
+            Audit.AssistanceNeedDecisionsReportRead.log()
         }
     }
 
@@ -49,13 +49,14 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl, pr
         user: AuthenticatedUser,
         clock: EvakaClock,
     ): Int {
-        Audit.AssistanceNeedDecisionsReportUnreadCount.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_ASSISTANCE_NEED_DECISIONS_REPORT)
 
         return db.connect { dbc ->
             dbc.read {
                 it.getDecisionMakerUnreadCount(user.evakaUserId)
             }
+        }.also {
+            Audit.AssistanceNeedDecisionsReportUnreadCount.log()
         }
     }
 }

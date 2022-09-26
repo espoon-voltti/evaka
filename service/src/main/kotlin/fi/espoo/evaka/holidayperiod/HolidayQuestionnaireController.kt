@@ -31,9 +31,10 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock
     ): List<FixedPeriodQuestionnaire> {
-        Audit.HolidayQuestionnairesList.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_QUESTIONNAIRES)
-        return db.connect { dbc -> dbc.read { it.getHolidayQuestionnaires() } }
+        return db.connect { dbc -> dbc.read { it.getHolidayQuestionnaires() } }.also {
+            Audit.HolidayQuestionnairesList.log()
+        }
     }
 
     @GetMapping("/{id}")
@@ -43,9 +44,10 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: HolidayQuestionnaireId
     ): FixedPeriodQuestionnaire {
-        Audit.HolidayQuestionnaireRead.log(id)
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_QUESTIONNAIRE)
-        return db.connect { dbc -> dbc.read { it.getFixedPeriodQuestionnaire(id) ?: throw NotFound() } }
+        return db.connect { dbc -> dbc.read { it.getFixedPeriodQuestionnaire(id) ?: throw NotFound() } }.also {
+            Audit.HolidayQuestionnaireRead.log(id)
+        }
     }
 
     @PostMapping
@@ -55,9 +57,8 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: FixedPeriodQuestionnaireBody
     ) {
-        Audit.HolidayQuestionnaireCreate.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_HOLIDAY_QUESTIONNAIRE)
-        return db.connect { dbc ->
+        db.connect { dbc ->
             dbc.transaction {
                 try {
                     it.createFixedPeriodQuestionnaire(body)
@@ -66,6 +67,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                 }
             }
         }
+        Audit.HolidayQuestionnaireCreate.log()
     }
 
     @PutMapping("/{id}")
@@ -76,9 +78,8 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         @PathVariable id: HolidayQuestionnaireId,
         @RequestBody body: FixedPeriodQuestionnaireBody
     ) {
-        Audit.HolidayQuestionnaireUpdate.log(id)
         accessControl.requirePermissionFor(user, clock, Action.Global.UPDATE_HOLIDAY_QUESTIONNAIRE)
-        return db.connect { dbc ->
+        db.connect { dbc ->
             dbc.transaction {
                 try {
                     it.updateFixedPeriodQuestionnaire(id, body)
@@ -87,6 +88,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                 }
             }
         }
+        Audit.HolidayQuestionnaireUpdate.log(id)
     }
 
     @DeleteMapping("/{id}")
@@ -96,8 +98,8 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: HolidayQuestionnaireId
     ) {
-        Audit.HolidayQuestionnaireDelete.log(id)
         accessControl.requirePermissionFor(user, clock, Action.Global.DELETE_HOLIDAY_QUESTIONNAIRE)
         db.connect { dbc -> dbc.transaction { it.deleteHolidayQuestionnaire(id) } }
+        Audit.HolidayQuestionnaireDelete.log(id)
     }
 }

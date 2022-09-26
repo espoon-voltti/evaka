@@ -30,7 +30,6 @@ class DecisionsReportController(private val accessControl: AccessControl) {
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): List<DecisionsReportRow> {
-        Audit.DecisionsReportRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_DECISIONS_REPORT)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
@@ -39,6 +38,8 @@ class DecisionsReportController(private val accessControl: AccessControl) {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 it.getDecisionsRows(FiniteDateRange(from, to))
             }
+        }.also {
+            Audit.DecisionsReportRead.log()
         }
     }
 }

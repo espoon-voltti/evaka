@@ -37,7 +37,6 @@ import java.util.UUID
 class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>, private val accessControl: AccessControl) {
     @GetMapping
     fun getFeeAlterations(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestParam personId: PersonId): List<FeeAlterationWithPermittedActions> {
-        Audit.ChildFeeAlterationsRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_FEE_ALTERATIONS, personId)
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -49,6 +48,8 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
                     )
                 feeAlterations.map { FeeAlterationWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
             }
+        }.also {
+            Audit.ChildFeeAlterationsRead.log(targetId = personId)
         }
     }
 
@@ -59,7 +60,6 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
 
     @PostMapping
     fun createFeeAlteration(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody feeAlteration: FeeAlteration) {
-        Audit.ChildFeeAlterationsCreate.log(targetId = feeAlteration.personId)
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_FEE_ALTERATION, feeAlteration.personId)
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -76,11 +76,11 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
                 )
             }
         }
+        Audit.ChildFeeAlterationsCreate.log(targetId = feeAlteration.personId)
     }
 
     @PutMapping("/{feeAlterationId}")
     fun updateFeeAlteration(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable feeAlterationId: FeeAlterationId, @RequestBody feeAlteration: FeeAlteration) {
-        Audit.ChildFeeAlterationsUpdate.log(targetId = feeAlterationId)
         accessControl.requirePermissionFor(user, clock, Action.FeeAlteration.UPDATE, feeAlterationId)
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -94,11 +94,11 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
                 asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(feeAlteration.personId, expandedPeriod)), runAt = clock.now())
             }
         }
+        Audit.ChildFeeAlterationsUpdate.log(targetId = feeAlterationId)
     }
 
     @DeleteMapping("/{feeAlterationId}")
     fun deleteFeeAlteration(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable feeAlterationId: FeeAlterationId) {
-        Audit.ChildFeeAlterationsDelete.log(targetId = feeAlterationId)
         accessControl.requirePermissionFor(user, clock, Action.FeeAlteration.DELETE, feeAlterationId)
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -119,5 +119,6 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
                 }
             }
         }
+        Audit.ChildFeeAlterationsDelete.log(targetId = feeAlterationId)
     }
 }

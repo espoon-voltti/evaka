@@ -31,7 +31,6 @@ class ChildConsentController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<ChildConsent> {
-        Audit.ChildConsentsRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_CHILD_CONSENTS, childId)
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -41,6 +40,8 @@ class ChildConsentController(
                         ?: ChildConsent(type, null, null, null, null)
                 }
             }
+        }.also {
+            Audit.ChildConsentsRead.log(targetId = childId)
         }
     }
 
@@ -50,7 +51,6 @@ class ChildConsentController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): Map<ChildId, List<CitizenChildConsent>> {
-        Audit.ChildConsentsReadCitizen.log(targetId = user.id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_CHILD_CONSENTS, user.id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -60,6 +60,8 @@ class ChildConsentController(
                     }
                 }
             }
+        }.also {
+            Audit.ChildConsentsReadCitizen.log(targetId = user.id)
         }
     }
 
@@ -71,7 +73,6 @@ class ChildConsentController(
         @PathVariable childId: ChildId,
         @RequestBody body: List<UpdateChildConsentRequest>
     ) {
-        Audit.ChildConsentsReadCitizen.log()
         accessControl.requirePermissionFor(user, clock, Action.Child.UPSERT_CHILD_CONSENT, childId)
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -83,6 +84,8 @@ class ChildConsentController(
                     }
                 }
             }
+        }.also {
+            Audit.ChildConsentsReadCitizen.log()
         }
     }
 
@@ -94,7 +97,6 @@ class ChildConsentController(
         @PathVariable childId: ChildId,
         @RequestBody body: List<CitizenChildConsent>
     ) {
-        Audit.ChildConsentsInsertCitizen.log()
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.INSERT_CHILD_CONSENTS, childId)
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -104,6 +106,8 @@ class ChildConsentController(
                     }
                 }
             }
+        }.also {
+            Audit.ChildConsentsInsertCitizen.log()
         }
     }
 
@@ -113,7 +117,6 @@ class ChildConsentController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): Map<ChildId, Int> {
-        Audit.ChildConsentsReadNotificationsCitizen.log(targetId = user.id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_CHILD_CONSENT_NOTIFICATIONS, user.id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -121,6 +124,8 @@ class ChildConsentController(
                     child to featureConfig.enabledChildConsentTypes.filterNot { knownConsentTypes.contains(it) }.size
                 }.toMap()
             }
+        }.also {
+            Audit.ChildConsentsReadNotificationsCitizen.log(targetId = user.id)
         }
     }
 

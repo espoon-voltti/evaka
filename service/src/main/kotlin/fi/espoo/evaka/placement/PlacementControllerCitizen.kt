@@ -45,7 +45,6 @@ class PlacementControllerCitizen(
         clock: EvakaClock,
         @PathVariable childId: ChildId,
     ): ChildPlacementResponse {
-        Audit.PlacementSearch.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_PLACEMENT, childId)
 
         return db.connect { dbc ->
@@ -60,6 +59,8 @@ class PlacementControllerCitizen(
                     clock.today()
                 )
             )
+        }.also {
+            Audit.PlacementSearch.log(targetId = childId)
         }
     }
 
@@ -78,8 +79,6 @@ class PlacementControllerCitizen(
         @PathVariable childId: ChildId,
         @RequestBody body: PlacementTerminationRequestBody
     ) {
-        Audit.PlacementTerminate.log(body.unitId, body.type)
-
         val terminationDate = body.terminationDate.also { if (it.isBefore(clock.today())) throw BadRequest("Invalid terminationDate") }
         db.connect { dbc ->
             if (dbc.read { it.getUnitFeatures(body.unitId) }?.features?.contains(PilotFeature.PLACEMENT_TERMINATION) != true) {
@@ -116,5 +115,6 @@ class PlacementControllerCitizen(
                 asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(childId, DateRange(terminationDate, null))), runAt = clock.now())
             }
         }
+        Audit.PlacementTerminate.log(body.unitId, body.type)
     }
 }

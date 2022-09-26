@@ -135,7 +135,6 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @RequestBody body: PaperApplicationCreateRequest
     ): ApplicationId {
-        Audit.ApplicationCreate.log(targetId = body.guardianId, objectId = body.childId)
         accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_PAPER_APPLICATION)
 
         return db.connect { dbc ->
@@ -182,6 +181,8 @@ class ApplicationControllerV2(
                 )
                 id
             }
+        }.also {
+            Audit.ApplicationCreate.log(targetId = body.guardianId, objectId = body.childId)
         }
     }
 
@@ -192,7 +193,6 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @RequestBody body: SearchApplicationRequest
     ): Paged<ApplicationSummary> {
-        Audit.ApplicationSearch.log()
         if (body.periodStart != null && body.periodEnd != null && body.periodStart > body.periodEnd)
             throw BadRequest("Date parameter periodEnd ($body.periodEnd) cannot be before periodStart ($body.periodStart)")
         val maxPageSize = 5000
@@ -243,6 +243,8 @@ class ApplicationControllerV2(
                     canReadServiceWorkerNotes = canReadServiceWorkerNotes
                 )
             }
+        }.also {
+            Audit.ApplicationSearch.log()
         }
     }
 
@@ -253,10 +255,11 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @PathVariable(value = "guardianId") guardianId: PersonId
     ): List<PersonApplicationSummary> {
-        Audit.ApplicationRead.log(targetId = guardianId)
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_PERSON_APPLICATION)
 
-        return db.connect { dbc -> dbc.read { it.fetchApplicationSummariesForGuardian(guardianId) } }
+        return db.connect { dbc -> dbc.read { it.fetchApplicationSummariesForGuardian(guardianId) } }.also {
+            Audit.ApplicationRead.log(targetId = guardianId)
+        }
     }
 
     @GetMapping("/by-child/{childId}")
@@ -266,10 +269,11 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @PathVariable(value = "childId") childId: ChildId
     ): List<PersonApplicationSummary> {
-        Audit.ApplicationRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_APPLICATION, childId)
 
-        return db.connect { dbc -> dbc.read { it.fetchApplicationSummariesForChild(childId) } }
+        return db.connect { dbc -> dbc.read { it.fetchApplicationSummariesForChild(childId) } }.also {
+            Audit.ApplicationRead.log(targetId = childId)
+        }
     }
 
     @GetMapping("/{applicationId}")
@@ -279,9 +283,6 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): ApplicationResponse {
-        Audit.ApplicationRead.log(targetId = applicationId)
-        Audit.DecisionRead.log(targetId = applicationId)
-
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 val application = tx.fetchApplicationDetails(applicationId)
@@ -315,6 +316,9 @@ class ApplicationControllerV2(
                     permittedActions = permittedActions
                 )
             }
+        }.also {
+            Audit.ApplicationRead.log(targetId = applicationId)
+            Audit.DecisionRead.log(targetId = applicationId)
         }
     }
 
@@ -326,7 +330,6 @@ class ApplicationControllerV2(
         @PathVariable applicationId: ApplicationId,
         @RequestBody application: ApplicationUpdate
     ) {
-        Audit.ApplicationUpdate.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Application.UPDATE, applicationId)
 
         db.connect { dbc ->
@@ -341,6 +344,7 @@ class ApplicationControllerV2(
                 )
             }
         }
+        Audit.ApplicationUpdate.log(targetId = applicationId)
     }
 
     @PostMapping("/{applicationId}/actions/send-application")
@@ -369,9 +373,10 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): PlacementPlanDraft {
-        Audit.PlacementPlanDraftRead.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Application.READ_PLACEMENT_PLAN_DRAFT, applicationId)
-        return db.connect { dbc -> dbc.read { placementPlanService.getPlacementPlanDraft(it, applicationId) } }
+        return db.connect { dbc -> dbc.read { placementPlanService.getPlacementPlanDraft(it, applicationId) } }.also {
+            Audit.PlacementPlanDraftRead.log(targetId = applicationId)
+        }
     }
 
     @GetMapping("/{applicationId}/decision-drafts")
@@ -381,7 +386,6 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): DecisionDraftJSON {
-        Audit.DecisionDraftRead.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Application.READ_DECISION_DRAFT, applicationId)
 
         return db.connect { dbc ->
@@ -433,6 +437,8 @@ class ApplicationControllerV2(
                     }
                 )
             }
+        }.also {
+            Audit.DecisionDraftRead.log(targetId = applicationId)
         }
     }
 
@@ -444,10 +450,10 @@ class ApplicationControllerV2(
         @PathVariable(value = "applicationId") applicationId: ApplicationId,
         @RequestBody body: List<DecisionDraftService.DecisionDraftUpdate>
     ) {
-        Audit.DecisionDraftUpdate.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Application.UPDATE_DECISION_DRAFT, applicationId)
 
         db.connect { dbc -> dbc.transaction { decisionDraftService.updateDecisionDrafts(it, applicationId, body) } }
+        Audit.DecisionDraftUpdate.log(targetId = applicationId)
     }
 
     @PostMapping("/placement-proposals/{unitId}/accept")
@@ -503,7 +509,6 @@ class ApplicationControllerV2(
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: DaycarePlacementPlan
     ) {
-        Audit.PlacementPlanCreate.log(targetId = applicationId, objectId = body.unitId)
         accessControl.requirePermissionFor(user, clock, Action.Application.CREATE_PLACEMENT_PLAN, applicationId)
 
         db.connect { dbc ->
@@ -516,6 +521,7 @@ class ApplicationControllerV2(
                 )
             }
         }
+        Audit.PlacementPlanCreate.log(targetId = applicationId, objectId = body.unitId)
     }
 
     @PostMapping("/{applicationId}/actions/respond-to-placement-proposal")

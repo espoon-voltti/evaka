@@ -42,7 +42,6 @@ class VtjController(
         clock: EvakaClock,
         @PathVariable(value = "personId") personId: PersonId
     ): UserDetailsResponse {
-        Audit.VtjRequest.log(targetId = personId)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_VTJ_DETAILS, personId)
         val notFound = { throw NotFound("Person not found") }
         if (user.id != personId) {
@@ -77,6 +76,8 @@ class VtjController(
                     UserDetailsResponse.Weak(userDetails)
                 }
             }
+        }.also {
+            Audit.VtjRequest.log(targetId = personId)
         }
     }
 

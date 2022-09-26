@@ -36,7 +36,6 @@ class AssistanceNeedsAndActionsReportController(private val acl: AccessControlLi
         clock: EvakaClock,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): AssistanceNeedsAndActionsReport {
-        Audit.AssistanceNeedsReportRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT)
         return db.connect { dbc ->
             dbc.read {
@@ -47,6 +46,8 @@ class AssistanceNeedsAndActionsReportController(private val acl: AccessControlLi
                     rows = it.getReportRows(date, acl.getAuthorizedUnits(user))
                 )
             }
+        }.also {
+            Audit.AssistanceNeedsReportRead.log()
         }
     }
 

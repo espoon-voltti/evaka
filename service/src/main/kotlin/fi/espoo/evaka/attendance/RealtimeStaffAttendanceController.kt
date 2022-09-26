@@ -48,7 +48,6 @@ class RealtimeStaffAttendanceController(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
     ): StaffAttendanceResponse {
-        Audit.StaffAttendanceRead.log(targetId = unitId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_STAFF_ATTENDANCES, unitId)
 
         return db.connect { dbc ->
@@ -98,6 +97,8 @@ class RealtimeStaffAttendanceController(
                     extraAttendances = it.getExternalStaffAttendancesByDateRange(unitId, range)
                 )
             }
+        }.also {
+            Audit.StaffAttendanceRead.log(targetId = unitId)
         }
     }
 
@@ -135,7 +136,6 @@ class RealtimeStaffAttendanceController(
         @PathVariable unitId: DaycareId,
         @RequestBody body: UpsertStaffAndExternalAttendanceRequest
     ) {
-        Audit.StaffAttendanceUpdate.log(targetId = unitId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)
 
         if (!body.isArrivedBeforeDeparted()) {
@@ -178,6 +178,7 @@ class RealtimeStaffAttendanceController(
                 }
             }
         }
+        Audit.StaffAttendanceUpdate.log(targetId = unitId)
     }
 
     data class SingleDayStaffAttendanceUpsert(
@@ -198,7 +199,6 @@ class RealtimeStaffAttendanceController(
         @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
         @RequestBody body: List<SingleDayStaffAttendanceUpsert>
     ) {
-        Audit.StaffAttendanceUpdate.log(targetId = unitId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)
 
         db.connect { dbc ->
@@ -224,6 +224,7 @@ class RealtimeStaffAttendanceController(
                 }
             }
         }
+        Audit.StaffAttendanceUpdate.log(targetId = unitId)
     }
 
     @DeleteMapping("/{unitId}/{attendanceId}")
@@ -234,7 +235,6 @@ class RealtimeStaffAttendanceController(
         @PathVariable unitId: DaycareId,
         @PathVariable attendanceId: StaffAttendanceId
     ) {
-        Audit.StaffAttendanceDelete.log(targetId = attendanceId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.DELETE_STAFF_ATTENDANCES, unitId)
 
         db.connect { dbc ->
@@ -242,6 +242,7 @@ class RealtimeStaffAttendanceController(
                 tx.deleteStaffAttendance(attendanceId)
             }
         }
+        Audit.StaffAttendanceDelete.log(targetId = attendanceId)
     }
 
     @DeleteMapping("/{unitId}/external/{attendanceId}")
@@ -252,7 +253,6 @@ class RealtimeStaffAttendanceController(
         @PathVariable unitId: DaycareId,
         @PathVariable attendanceId: StaffAttendanceExternalId
     ) {
-        Audit.StaffAttendanceExternalDelete.log(targetId = attendanceId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.DELETE_STAFF_ATTENDANCES, unitId)
 
         db.connect { dbc ->
@@ -260,5 +260,6 @@ class RealtimeStaffAttendanceController(
                 tx.deleteExternalStaffAttendance(attendanceId)
             }
         }
+        Audit.StaffAttendanceExternalDelete.log(targetId = attendanceId)
     }
 }

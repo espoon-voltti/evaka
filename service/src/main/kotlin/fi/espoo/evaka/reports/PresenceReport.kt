@@ -30,7 +30,6 @@ class PresenceReportController(private val accessControl: AccessControl) {
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): List<PresenceReportRow> {
-        Audit.PresenceReportRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_PRESENCE_REPORT)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
         if (to.isAfter(from.plusDays(MAX_NUMBER_OF_DAYS.toLong()))) throw BadRequest("Period is too long. Use maximum of $MAX_NUMBER_OF_DAYS days")
@@ -40,6 +39,8 @@ class PresenceReportController(private val accessControl: AccessControl) {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 it.getPresenceRows(from, to)
             }
+        }.also {
+            Audit.PresenceReportRead.log()
         }
     }
 }

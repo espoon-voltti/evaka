@@ -28,10 +28,11 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<Recipient> {
-        Audit.MessagingBlocklistRead.log(childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_CHILD_RECIPIENTS, childId)
 
-        return db.connect { dbc -> dbc.read { it.fetchRecipients(childId) } }
+        return db.connect { dbc -> dbc.read { it.fetchRecipients(childId) } }.also {
+            Audit.MessagingBlocklistRead.log(childId)
+        }
     }
 
     data class EditRecipientRequest(
@@ -46,7 +47,6 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
         @PathVariable personId: PersonId,
         @RequestBody body: EditRecipientRequest
     ) {
-        Audit.MessagingBlocklistEdit.log(childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.UPDATE_CHILD_RECIPIENT, childId)
 
         db.connect { dbc ->
@@ -58,5 +58,6 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
                 }
             }
         }
+        Audit.MessagingBlocklistEdit.log(childId)
     }
 }

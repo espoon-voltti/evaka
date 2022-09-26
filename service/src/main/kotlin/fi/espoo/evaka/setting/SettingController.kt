@@ -22,15 +22,16 @@ class SettingController(private val accessControl: AccessControl) {
 
     @GetMapping
     fun getSettings(db: Database, user: AuthenticatedUser, clock: EvakaClock): Map<SettingType, String> {
-        Audit.SettingsRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.UPDATE_SETTINGS)
-        return db.connect { dbc -> dbc.read { tx -> tx.getSettings() } }
+        return db.connect { dbc -> dbc.read { tx -> tx.getSettings() } }.also {
+            Audit.SettingsRead.log()
+        }
     }
 
     @PutMapping
     fun setSettings(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody settings: Map<SettingType, String>) {
-        Audit.SettingsUpdate.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.UPDATE_SETTINGS)
-        return db.connect { dbc -> dbc.transaction { tx -> tx.setSettings(settings) } }
+        db.connect { dbc -> dbc.transaction { tx -> tx.setSettings(settings) } }
+        Audit.SettingsUpdate.log()
     }
 }

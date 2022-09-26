@@ -49,7 +49,6 @@ class ServiceNeedController(
         clock: EvakaClock,
         @RequestBody body: ServiceNeedCreateRequest
     ) {
-        Audit.PlacementServiceNeedCreate.log(targetId = body.placementId)
         accessControl.requirePermissionFor(user, clock, Action.Placement.CREATE_SERVICE_NEED, body.placementId)
 
         db.connect { dbc ->
@@ -68,6 +67,7 @@ class ServiceNeedController(
                     .let { notifyServiceNeedUpdated(tx, clock, asyncJobRunner, it) }
             }
         }
+        Audit.PlacementServiceNeedCreate.log(targetId = body.placementId)
     }
 
     data class ServiceNeedUpdateRequest(
@@ -85,7 +85,6 @@ class ServiceNeedController(
         @PathVariable id: ServiceNeedId,
         @RequestBody body: ServiceNeedUpdateRequest
     ) {
-        Audit.PlacementServiceNeedUpdate.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.ServiceNeed.UPDATE, id)
 
         db.connect { dbc ->
@@ -115,6 +114,7 @@ class ServiceNeedController(
                 )
             }
         }
+        Audit.PlacementServiceNeedUpdate.log(targetId = id)
     }
 
     @DeleteMapping("/service-needs/{id}")
@@ -124,7 +124,6 @@ class ServiceNeedController(
         clock: EvakaClock,
         @PathVariable id: ServiceNeedId
     ) {
-        Audit.PlacementServiceNeedDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.ServiceNeed.DELETE, id)
 
         db.connect { dbc ->
@@ -134,6 +133,7 @@ class ServiceNeedController(
                 notifyServiceNeedUpdated(tx, clock, asyncJobRunner, childRange)
             }
         }
+        Audit.PlacementServiceNeedDelete.log(targetId = id)
     }
 
     @GetMapping("/service-needs/options")
@@ -142,10 +142,11 @@ class ServiceNeedController(
         user: AuthenticatedUser,
         clock: EvakaClock
     ): List<ServiceNeedOption> {
-        Audit.ServiceNeedOptionsRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_SERVICE_NEED_OPTIONS)
 
-        return db.connect { dbc -> dbc.read { it.getServiceNeedOptions() } }
+        return db.connect { dbc -> dbc.read { it.getServiceNeedOptions() } }.also {
+            Audit.ServiceNeedOptionsRead.log()
+        }
     }
 
     @GetMapping("/public/service-needs/options")

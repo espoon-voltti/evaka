@@ -50,7 +50,6 @@ class PairingsController(
         clock: EvakaClock,
         @RequestBody body: PostPairingReq
     ): Pairing {
-        Audit.PairingInit.log(targetId = body.id)
         when (body) {
             is PostPairingReq.Unit ->
                 accessControl.requirePermissionFor(user, clock, Action.Unit.CREATE_MOBILE_DEVICE_PAIRING, body.unitId)
@@ -73,6 +72,8 @@ class PairingsController(
                     )
                 }
             }
+        }.also {
+            Audit.PairingInit.log(targetId = body.id)
         }
     }
 
@@ -93,8 +94,9 @@ class PairingsController(
         clock: EvakaClock,
         @RequestBody body: PostPairingChallengeReq
     ): Pairing {
-        Audit.PairingChallenge.log(targetId = body.challengeKey)
-        return db.connect { dbc -> dbc.transaction { it.challengePairing(clock, body.challengeKey) } }
+        return db.connect { dbc -> dbc.transaction { it.challengePairing(clock, body.challengeKey) } }.also {
+            Audit.PairingChallenge.log(targetId = body.challengeKey)
+        }
     }
 
     /**
@@ -116,7 +118,6 @@ class PairingsController(
         @PathVariable id: PairingId,
         @RequestBody body: PostPairingResponseReq
     ): Pairing {
-        Audit.PairingResponse.log(targetId = id)
         return db.connect { dbc ->
             val (unitId, employeeId) = dbc.read { it.fetchPairingReferenceIds(id) }
             try {
@@ -134,6 +135,8 @@ class PairingsController(
             dbc.transaction {
                 it.respondPairingChallengeCreateDevice(id, body.challengeKey, body.responseKey)
             }
+        }.also {
+            Audit.PairingResponse.log(targetId = id)
         }
     }
 
@@ -154,7 +157,6 @@ class PairingsController(
         @PathVariable id: PairingId,
         @RequestBody body: PostPairingValidationReq
     ): MobileDeviceIdentity {
-        Audit.PairingValidation.log(targetId = id)
         return db.connect { dbc ->
             dbc.transaction { it.incrementAttempts(id, body.challengeKey) }
             dbc.transaction { tx ->
@@ -162,6 +164,8 @@ class PairingsController(
                     tx.upsertMobileDeviceUser(it.id)
                 }
             }
+        }.also {
+            Audit.PairingValidation.log(targetId = id)
         }
     }
 
@@ -179,7 +183,10 @@ class PairingsController(
         db: Database,
         @PathVariable id: PairingId
     ): PairingStatusRes {
-        Audit.PairingStatusRead.log(targetId = id)
-        return PairingStatusRes(db.connect { dbc -> dbc.read { it.fetchPairingStatus(id) } })
+        return PairingStatusRes(
+            db.connect { dbc -> dbc.read { it.fetchPairingStatus(id) } }.also {
+                Audit.PairingStatusRead.log(targetId = id)
+            }
+        )
     }
 }

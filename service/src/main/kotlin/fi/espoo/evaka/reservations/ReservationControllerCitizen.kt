@@ -43,7 +43,6 @@ class ReservationControllerCitizen(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ): ReservationsResponse {
-        Audit.AttendanceReservationCitizenRead.log(targetId = user.id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_RESERVATIONS, user.id)
 
         val range = try {
@@ -79,6 +78,8 @@ class ReservationControllerCitizen(
                     includesWeekends = includeWeekends
                 )
             }
+        }.also {
+            Audit.AttendanceReservationCitizenRead.log(targetId = user.id)
         }
     }
 
@@ -89,7 +90,6 @@ class ReservationControllerCitizen(
         clock: EvakaClock,
         @RequestBody body: List<DailyReservationRequest>
     ) {
-        Audit.AttendanceReservationCitizenCreate.log(targetId = body.map { it.childId }.toSet().joinToString())
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_RESERVATION, body.map { it.childId })
 
         db.connect { dbc ->
@@ -100,6 +100,7 @@ class ReservationControllerCitizen(
                 createReservations(tx, user.evakaUserId, body.validate(reservableDays), user.id)
             }
         }
+        Audit.AttendanceReservationCitizenCreate.log(targetId = body.map { it.childId }.toSet().joinToString())
     }
 
     @PostMapping("/citizen/absences")
@@ -109,7 +110,6 @@ class ReservationControllerCitizen(
         clock: EvakaClock,
         @RequestBody body: AbsenceRequest
     ) {
-        Audit.AbsenceCitizenCreate.log(targetId = body.childIds.toSet().joinToString())
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_ABSENCE, body.childIds)
 
         if (body.dateRange.start.isBefore(clock.today()))
@@ -135,6 +135,7 @@ class ReservationControllerCitizen(
                 )
             }
         }
+        Audit.AbsenceCitizenCreate.log(targetId = body.childIds.toSet().joinToString())
     }
 }
 

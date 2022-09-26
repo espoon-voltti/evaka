@@ -44,7 +44,6 @@ class FamilyController(
         clock: EvakaClock,
         @PathVariable(value = "id") id: PersonId
     ): FamilyOverview {
-        Audit.PisFamilyRead.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_FAMILY_OVERVIEW, id)
         val includeIncome = accessControl.hasPermissionFor(user, clock, Action.Person.READ_INCOME, id)
 
@@ -57,8 +56,10 @@ class FamilyController(
                     partner = overview.partner?.copy(income = null),
                     totalIncome = null
                 )
-            }
-        } ?: throw NotFound("No family overview found for person $id")
+            } ?: throw NotFound("No family overview found for person $id")
+        }.also {
+            Audit.PisFamilyRead.log(targetId = id)
+        }
     }
 
     @GetMapping("/contacts")
@@ -68,9 +69,10 @@ class FamilyController(
         clock: EvakaClock,
         @RequestParam(value = "childId", required = true) childId: ChildId
     ): List<FamilyContact> {
-        Audit.FamilyContactsRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_FAMILY_CONTACTS, childId)
-        return db.connect { dbc -> dbc.read { it.fetchFamilyContacts(clock, childId) } }
+        return db.connect { dbc -> dbc.read { it.fetchFamilyContacts(clock, childId) } }.also {
+            Audit.FamilyContactsRead.log(targetId = childId)
+        }
     }
 
     @PostMapping("/contacts")
@@ -80,7 +82,6 @@ class FamilyController(
         clock: EvakaClock,
         @RequestBody body: FamilyContactUpdate
     ) {
-        Audit.FamilyContactsUpdate.log(targetId = body.childId, objectId = body.contactPersonId)
         accessControl.requirePermissionFor(user, clock, Action.Child.UPDATE_FAMILY_CONTACT_DETAILS, body.childId)
         db.connect { dbc ->
             dbc.transaction {
@@ -97,6 +98,7 @@ class FamilyController(
                 )
             }
         }
+        Audit.FamilyContactsUpdate.log(targetId = body.childId, objectId = body.contactPersonId)
     }
 
     @PostMapping("/contacts/priority")
@@ -106,7 +108,6 @@ class FamilyController(
         clock: EvakaClock,
         @RequestBody body: FamilyContactPriorityUpdate
     ) {
-        Audit.FamilyContactsUpdate.log(targetId = body.childId, objectId = body.contactPersonId)
         accessControl.requirePermissionFor(user, clock, Action.Child.UPDATE_FAMILY_CONTACT_PRIORITY, body.childId)
         db.connect { dbc ->
             dbc.transaction {
@@ -120,6 +121,7 @@ class FamilyController(
                 )
             }
         }
+        Audit.FamilyContactsUpdate.log(targetId = body.childId, objectId = body.contactPersonId)
     }
 }
 

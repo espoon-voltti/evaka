@@ -28,10 +28,10 @@ class ChildSensitiveInfoController(
         clock: EvakaClock,
         @PathVariable childId: ChildId,
     ): ChildSensitiveInformation {
-        Audit.ChildSensitiveInfoRead.log(targetId = childId)
-
         ac.requirePermissionFor(user, clock, Action.Child.READ_SENSITIVE_INFO, childId)
 
-        return db.connect { dbc -> dbc.read { it.getChildSensitiveInfo(clock, childId) ?: throw NotFound("Child not found") } }
+        return db.connect { dbc -> dbc.read { it.getChildSensitiveInfo(clock, childId) ?: throw NotFound("Child not found") } }.also {
+            Audit.ChildSensitiveInfoRead.log(targetId = childId)
+        }
     }
 }

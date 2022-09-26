@@ -68,7 +68,6 @@ class InvoiceController(
         clock: EvakaClock,
         @RequestBody body: SearchInvoicesRequest
     ): Paged<InvoiceSummaryResponse> {
-        Audit.InvoicesSearch.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.SEARCH_INVOICES)
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
@@ -100,6 +99,8 @@ class InvoiceController(
                         pages = paged.pages,
                     )
                 }
+        }.also {
+            Audit.InvoicesSearch.log()
         }
     }
 
@@ -107,16 +108,16 @@ class InvoiceController(
 
     @PostMapping("/create-drafts")
     fun createDraftInvoices(db: Database, user: AuthenticatedUser, clock: EvakaClock) {
-        Audit.InvoicesCreate.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_DRAFT_INVOICES)
         db.connect { dbc -> dbc.transaction { generator.createAndStoreAllDraftInvoices(it) } }
+        Audit.InvoicesCreate.log()
     }
 
     @PostMapping("/delete-drafts")
     fun deleteDraftInvoices(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody invoiceIds: List<InvoiceId>) {
-        Audit.InvoicesDeleteDrafts.log(targetId = invoiceIds)
         accessControl.requirePermissionFor(user, clock, Action.Invoice.DELETE, invoiceIds)
         db.connect { dbc -> dbc.transaction { it.deleteDraftInvoices(invoiceIds) } }
+        Audit.InvoicesDeleteDrafts.log(targetId = invoiceIds)
     }
 
     @PostMapping("/send")
@@ -130,13 +131,13 @@ class InvoiceController(
         @RequestParam(required = false) dueDate: LocalDate?,
         @RequestBody invoiceIds: List<InvoiceId>
     ) {
-        Audit.InvoicesSend.log(targetId = invoiceIds)
         accessControl.requirePermissionFor(user, clock, Action.Invoice.SEND, invoiceIds)
         db.connect { dbc ->
             dbc.transaction {
                 service.sendInvoices(it, user, clock, invoiceIds, invoiceDate, dueDate)
             }
         }
+        Audit.InvoicesSend.log(targetId = invoiceIds)
     }
 
     @PostMapping("/send/by-date")
@@ -146,7 +147,6 @@ class InvoiceController(
         clock: EvakaClock,
         @RequestBody payload: InvoicePayload
     ) {
-        Audit.InvoicesSendByDate.log()
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val invoiceIds = service.getInvoiceIds(tx, payload.from, payload.to, payload.areas)
@@ -154,13 +154,14 @@ class InvoiceController(
                 service.sendInvoices(tx, user, clock, invoiceIds, payload.invoiceDate, payload.dueDate)
             }
         }
+        Audit.InvoicesSendByDate.log()
     }
 
     @PostMapping("/mark-sent")
     fun markInvoicesSent(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody invoiceIds: List<InvoiceId>) {
-        Audit.InvoicesMarkSent.log(targetId = invoiceIds)
         accessControl.requirePermissionFor(user, clock, Action.Invoice.UPDATE, invoiceIds)
         db.connect { dbc -> dbc.transaction { it.markManuallySent(user, clock.now(), invoiceIds) } }
+        Audit.InvoicesMarkSent.log(targetId = invoiceIds)
     }
 
     @GetMapping("/{id}")
@@ -170,7 +171,6 @@ class InvoiceController(
         clock: EvakaClock,
         @PathVariable id: InvoiceId
     ): Wrapper<InvoiceDetailedResponse> {
-        Audit.InvoicesRead.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Invoice.READ, id)
         val res = db.connect { dbc ->
             dbc.read { tx ->
@@ -180,6 +180,7 @@ class InvoiceController(
                 InvoiceDetailedResponse(invoice, permittedActions)
             }
         }
+        Audit.InvoicesRead.log(targetId = id)
         return Wrapper(res)
     }
 
@@ -195,9 +196,12 @@ class InvoiceController(
         clock: EvakaClock,
         @PathVariable uuid: PersonId
     ): Wrapper<List<Invoice>> {
-        Audit.InvoicesRead.log(targetId = uuid)
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_INVOICES, uuid)
-        return Wrapper(db.connect { dbc -> dbc.read { it.getHeadOfFamilyInvoices(uuid) } })
+        return Wrapper(
+            db.connect { dbc -> dbc.read { it.getHeadOfFamilyInvoices(uuid) } }.also {
+                Audit.InvoicesRead.log(targetId = uuid)
+            }
+        )
     }
 
     @PutMapping("/{id}")
@@ -208,9 +212,9 @@ class InvoiceController(
         @PathVariable id: InvoiceId,
         @RequestBody invoice: Invoice
     ) {
-        Audit.InvoicesUpdate.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Invoice.UPDATE, id)
         db.connect { dbc -> dbc.transaction { service.updateInvoice(it, id, invoice) } }
+        Audit.InvoicesUpdate.log(targetId = id)
     }
 
     @GetMapping("/codes")

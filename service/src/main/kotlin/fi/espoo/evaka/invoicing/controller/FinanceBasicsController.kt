@@ -39,10 +39,11 @@ class FinanceBasicsController(
 ) {
     @GetMapping("/fee-thresholds")
     fun getFeeThresholds(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<FeeThresholdsWithId> {
-        Audit.FinanceBasicsFeeThresholdsRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_FEE_THRESHOLDS)
 
-        return db.connect { dbc -> dbc.read { tx -> tx.getFeeThresholds().sortedByDescending { it.thresholds.validDuring.start } } }
+        return db.connect { dbc -> dbc.read { tx -> tx.getFeeThresholds().sortedByDescending { it.thresholds.validDuring.start } } }.also {
+            Audit.FinanceBasicsFeeThresholdsRead.log()
+        }
     }
 
     @PostMapping("/fee-thresholds")
@@ -52,7 +53,6 @@ class FinanceBasicsController(
         clock: EvakaClock,
         @RequestBody body: FeeThresholds
     ) {
-        Audit.FinanceBasicsFeeThresholdsCreate.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_FEE_THRESHOLDS)
 
         validateFeeThresholds(body)
@@ -75,6 +75,7 @@ class FinanceBasicsController(
                 asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(body.validDuring)), runAt = clock.now())
             }
         }
+        Audit.FinanceBasicsFeeThresholdsCreate.log()
     }
 
     @PutMapping("/fee-thresholds/{id}")
@@ -85,7 +86,6 @@ class FinanceBasicsController(
         @PathVariable id: FeeThresholdsId,
         @RequestBody thresholds: FeeThresholds
     ) {
-        Audit.FinanceBasicsFeeThresholdsUpdate.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.FeeThresholds.UPDATE, id)
 
         validateFeeThresholds(thresholds)
@@ -95,6 +95,7 @@ class FinanceBasicsController(
                 asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(thresholds.validDuring)), runAt = clock.now())
             }
         }
+        Audit.FinanceBasicsFeeThresholdsUpdate.log(targetId = id)
     }
 }
 

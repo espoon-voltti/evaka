@@ -47,7 +47,6 @@ class OccupancyController(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
         @RequestParam type: OccupancyType
     ): OccupancyResponse {
-        Audit.OccupancyRead.log(targetId = unitId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_OCCUPANCIES, unitId)
 
         val occupancies = db.connect { dbc ->
@@ -55,6 +54,7 @@ class OccupancyController(
                 it.calculateOccupancyPeriods(clock.today(), unitId, FiniteDateRange(from, to), type, acl.getAuthorizedUnits(user))
             }
         }
+        Audit.OccupancyRead.log(targetId = unitId)
 
         return OccupancyResponse(
             occupancies = occupancies,
@@ -75,7 +75,6 @@ class OccupancyController(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) preschoolDaycareFrom: LocalDate?,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) preschoolDaycareTo: LocalDate?,
     ): OccupancyResponseSpeculated {
-        Audit.OccupancySpeculatedRead.log(targetId = Pair(unitId, applicationId))
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_OCCUPANCIES, unitId)
         accessControl.requirePermissionFor(user, clock, Action.Application.READ, applicationId)
 
@@ -126,6 +125,8 @@ class OccupancyController(
                     max6MonthsSpeculated = sixMonths.speculated,
                 )
             }
+        }.also {
+            Audit.OccupancySpeculatedRead.log(targetId = Pair(unitId, applicationId))
         }
     }
 
@@ -139,7 +140,6 @@ class OccupancyController(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
         @RequestParam type: OccupancyType
     ): List<OccupancyResponseGroupLevel> {
-        Audit.OccupancyRead.log(targetId = unitId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_OCCUPANCIES, unitId)
 
         val occupancies = db.connect { dbc ->
@@ -153,6 +153,7 @@ class OccupancyController(
                 )
             }
         }
+        Audit.OccupancyRead.log(targetId = unitId)
 
         return occupancies.groupBy({ it.groupId }) {
             OccupancyPeriod(it.period, it.sum, it.headcount, it.caretakers, it.percentage)

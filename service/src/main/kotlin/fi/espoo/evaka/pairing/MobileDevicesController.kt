@@ -36,9 +36,10 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestParam unitId: DaycareId
     ): List<MobileDevice> {
-        Audit.MobileDevicesList.log(targetId = unitId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_MOBILE_DEVICES, unitId)
-        return db.connect { dbc -> dbc.read { it.listSharedDevices(unitId) } }
+        return db.connect { dbc -> dbc.read { it.listSharedDevices(unitId) } }.also {
+            Audit.MobileDevicesList.log(targetId = unitId)
+        }
     }
 
     @GetMapping("/mobile-devices/personal")
@@ -47,9 +48,10 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
     ): List<MobileDevice> {
-        Audit.MobileDevicesList.log(targetId = user.id)
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_PERSONAL_MOBILE_DEVICES)
-        return db.connect { dbc -> dbc.read { it.listPersonalDevices(user.id) } }
+        return db.connect { dbc -> dbc.read { it.listPersonalDevices(user.id) } }.also {
+            Audit.MobileDevicesList.log(targetId = user.id)
+        }
     }
 
     @GetMapping("/system/mobile-devices/{id}")
@@ -58,9 +60,10 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.SystemInternalUser,
         @PathVariable id: MobileDeviceId
     ): MobileDeviceDetails {
-        Audit.MobileDevicesRead.log(targetId = id)
         // TODO access control
-        return db.connect { dbc -> dbc.read { it.getDevice(id) } }
+        return db.connect { dbc -> dbc.read { it.getDevice(id) } }.also {
+            Audit.MobileDevicesRead.log(targetId = id)
+        }
     }
 
     data class RenameRequest(
@@ -74,9 +77,9 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         @PathVariable id: MobileDeviceId,
         @RequestBody body: RenameRequest
     ) {
-        Audit.MobileDevicesRename.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.MobileDevice.UPDATE_NAME, id)
         db.connect { dbc -> dbc.transaction { it.renameDevice(id, body.name) } }
+        Audit.MobileDevicesRename.log(targetId = id)
     }
 
     @DeleteMapping("/mobile-devices/{id}")
@@ -86,9 +89,9 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: MobileDeviceId
     ) {
-        Audit.MobileDevicesDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.MobileDevice.DELETE, id)
         db.connect { dbc -> dbc.transaction { it.deleteDevice(id) } }
+        Audit.MobileDevicesDelete.log(targetId = id)
     }
 
     @PostMapping("/mobile-devices/pin-login")
@@ -98,7 +101,6 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody params: PinLoginRequest
     ): PinLoginResponse {
-        Audit.PinLogin.log(targetId = params.employeeId)
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 if (tx.employeePinIsCorrect(params.employeeId, params.pin)) {
@@ -115,6 +117,8 @@ class MobileDevicesController(private val accessControl: AccessControl) {
                     }
                 }
             }
+        }.also {
+            Audit.PinLogin.log(targetId = params.employeeId)
         }
     }
 }
