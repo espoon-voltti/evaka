@@ -64,7 +64,6 @@ class IncomeController(
         clock: EvakaClock,
         @RequestParam personId: PersonId
     ): Wrapper<List<IncomeWithPermittedActions>> {
-        Audit.PersonIncomeRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_INCOME, personId)
 
         val incomes = db.connect { dbc ->
@@ -79,6 +78,7 @@ class IncomeController(
                 incomes.map { IncomeWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
             }
         }
+        Audit.PersonIncomeRead.log(targetId = personId)
         return Wrapper(incomes)
     }
 
@@ -87,7 +87,6 @@ class IncomeController(
 
     @PostMapping
     fun createIncome(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody income: Income): IncomeId {
-        Audit.PersonIncomeCreate.log(targetId = income.personId)
         accessControl.requirePermissionFor(user, clock, Action.Person.CREATE_INCOME, income.personId)
         val period = try {
             DateRange(income.validFrom, income.validTo)
@@ -109,6 +108,8 @@ class IncomeController(
                 asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(validIncome.personId, period)), runAt = clock.now())
                 id
             }
+        }.also {
+            Audit.PersonIncomeCreate.log(targetId = income.personId)
         }
     }
 
@@ -120,7 +121,6 @@ class IncomeController(
         @PathVariable incomeId: IncomeId,
         @RequestBody income: Income
     ) {
-        Audit.PersonIncomeUpdate.log(targetId = incomeId)
         accessControl.requirePermissionFor(user, clock, Action.Income.UPDATE, incomeId)
 
         db.connect { dbc ->
@@ -138,11 +138,11 @@ class IncomeController(
                 asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(validIncome.personId, expandedPeriod)), runAt = clock.now())
             }
         }
+        Audit.PersonIncomeUpdate.log(targetId = incomeId)
     }
 
     @DeleteMapping("/{incomeId}")
     fun deleteIncome(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable incomeId: IncomeId) {
-        Audit.PersonIncomeDelete.log(targetId = incomeId)
         accessControl.requirePermissionFor(user, clock, Action.Income.DELETE, incomeId)
 
         db.connect { dbc ->
@@ -161,6 +161,7 @@ class IncomeController(
                 asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(existing.personId, period)), runAt = clock.now())
             }
         }
+        Audit.PersonIncomeDelete.log(targetId = incomeId)
     }
 
     @GetMapping("/types")

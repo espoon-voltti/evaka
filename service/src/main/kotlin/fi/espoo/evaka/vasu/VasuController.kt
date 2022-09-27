@@ -54,7 +54,6 @@ class VasuController(
         @PathVariable childId: ChildId,
         @RequestBody body: CreateDocumentRequest
     ): VasuDocumentId {
-        Audit.VasuDocumentCreate.log(childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_VASU_DOCUMENT, childId)
 
         return db.connect { dbc ->
@@ -72,6 +71,8 @@ class VasuController(
 
                 tx.insertVasuDocument(clock, childId, template)
             }
+        }.also {
+            Audit.VasuDocumentCreate.log(childId)
         }
     }
 
@@ -82,7 +83,6 @@ class VasuController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<VasuDocumentSummaryWithPermittedActions> {
-        Audit.ChildVasuDocumentsRead.log(childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_VASU_DOCUMENT, childId)
 
         return db.connect { dbc ->
@@ -96,6 +96,8 @@ class VasuController(
                 )
                 summaries.map { VasuDocumentSummaryWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
             }
+        }.also {
+            Audit.ChildVasuDocumentsRead.log(childId)
         }
     }
 
@@ -115,7 +117,6 @@ class VasuController(
         clock: EvakaClock,
         @PathVariable id: VasuDocumentId
     ): VasuDocumentWithPermittedActions {
-        Audit.VasuDocumentRead.log(id)
         accessControl.requirePermissionFor(user, clock, Action.VasuDocument.READ, id)
 
         return db.connect { dbc ->
@@ -148,6 +149,8 @@ class VasuController(
                     permittedActions = accessControl.getPermittedActions(tx, user, clock, doc.id)
                 )
             }
+        }.also {
+            Audit.VasuDocumentRead.log(id)
         }
     }
 
@@ -163,7 +166,6 @@ class VasuController(
         @PathVariable id: VasuDocumentId,
         @RequestBody body: UpdateDocumentRequest
     ) {
-        Audit.VasuDocumentUpdate.log(id)
         accessControl.requirePermissionFor(user, clock, Action.VasuDocument.UPDATE, id)
 
         db.connect { dbc ->
@@ -220,6 +222,7 @@ class VasuController(
                 tx.revokeVasuGuardianHasGivenPermissionToShare(id)
             }
         }
+        Audit.VasuDocumentUpdate.log(id)
     }
 
     private fun validateVasuDocumentUpdate(vasu: VasuDocument, body: UpdateDocumentRequest) {
@@ -245,7 +248,6 @@ class VasuController(
         @PathVariable id: VasuDocumentId,
         @RequestBody body: ChangeDocumentStateRequest
     ) {
-        Audit.VasuDocumentEventCreate.log(id)
 
         val events = if (body.eventType in listOf(MOVED_TO_READY, MOVED_TO_REVIEWED)) {
             listOf(PUBLISHED, body.eventType)
@@ -288,6 +290,7 @@ class VasuController(
                 }
             }
         }
+        Audit.VasuDocumentEventCreate.log(id)
     }
 
     private fun validateStateTransition(eventType: VasuDocumentEventType, currentState: VasuDocumentState) {

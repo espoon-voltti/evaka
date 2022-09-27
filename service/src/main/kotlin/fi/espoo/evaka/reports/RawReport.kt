@@ -34,7 +34,6 @@ class RawReportController(private val accessControl: AccessControl) {
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): List<RawReportRow> {
-        Audit.RawReportRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_RAW_REPORT)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
         if (to.isAfter(from.plusDays(7))) throw BadRequest("Time range too long")
@@ -44,6 +43,8 @@ class RawReportController(private val accessControl: AccessControl) {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 it.getRawRows(from, to)
             }
+        }.also {
+            Audit.RawReportRead.log(args = mapOf("from" to from, "to" to to))
         }
     }
 }

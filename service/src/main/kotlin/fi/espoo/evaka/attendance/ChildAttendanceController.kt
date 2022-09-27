@@ -68,10 +68,11 @@ class ChildAttendanceController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId
     ): AttendanceResponse {
-        Audit.ChildAttendancesRead.log(targetId = unitId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_CHILD_ATTENDANCES, unitId)
 
-        return db.connect { dbc -> dbc.read { it.getAttendancesResponse(unitId, clock.now()) } }
+        return db.connect { dbc -> dbc.read { it.getAttendancesResponse(unitId, clock.now()) } }.also {
+            Audit.ChildAttendancesRead.log(targetId = unitId)
+        }
     }
 
     data class AttendancesRequest(
@@ -95,7 +96,6 @@ class ChildAttendanceController(
         @PathVariable childId: ChildId,
         @RequestBody body: AttendancesRequest
     ) {
-        Audit.ChildAttendancesUpsert.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE_CHILD_ATTENDANCES, unitId)
 
         db.connect { dbc ->
@@ -117,6 +117,7 @@ class ChildAttendanceController(
                 }
             }
         }
+        Audit.ChildAttendancesUpsert.log(targetId = childId)
     }
 
     data class ArrivalRequest(
@@ -133,7 +134,6 @@ class ChildAttendanceController(
         @PathVariable childId: ChildId,
         @RequestBody body: ArrivalRequest
     ) {
-        Audit.ChildAttendancesArrivalCreate.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE_CHILD_ATTENDANCES, unitId)
 
         db.connect { dbc ->
@@ -153,6 +153,7 @@ class ChildAttendanceController(
                 }
             }
         }
+        Audit.ChildAttendancesArrivalCreate.log(targetId = childId)
     }
 
     @PostMapping("/units/{unitId}/children/{childId}/return-to-coming")
@@ -163,7 +164,6 @@ class ChildAttendanceController(
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId
     ) {
-        Audit.ChildAttendancesReturnToComing.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE_CHILD_ATTENDANCES, unitId)
 
         db.connect { dbc ->
@@ -175,6 +175,7 @@ class ChildAttendanceController(
                 if (attendance != null) tx.deleteAttendance(attendance.id)
             }
         }
+        Audit.ChildAttendancesReturnToComing.log(targetId = childId)
     }
 
     @GetMapping("/units/{unitId}/children/{childId}/departure")
@@ -185,7 +186,6 @@ class ChildAttendanceController(
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId
     ): List<AbsenceThreshold> {
-        Audit.ChildAttendancesDepartureRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_CHILD_ATTENDANCES, unitId)
 
         return db.connect { dbc ->
@@ -196,6 +196,8 @@ class ChildAttendanceController(
                 val childHasPaidServiceNeedToday = tx.childHasPaidServiceNeedToday(childId, clock.today())
                 getPartialAbsenceThresholds(placementBasics, attendance.startTime, childHasPaidServiceNeedToday)
             }
+        }.also {
+            Audit.ChildAttendancesDepartureRead.log(targetId = childId)
         }
     }
 
@@ -214,7 +216,6 @@ class ChildAttendanceController(
         @PathVariable childId: ChildId,
         @RequestBody body: DepartureRequest
     ) {
-        Audit.ChildAttendancesDepartureCreate.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE_CHILD_ATTENDANCES, unitId)
 
         db.connect { dbc ->
@@ -272,6 +273,7 @@ class ChildAttendanceController(
                 }
             }
         }
+        Audit.ChildAttendancesDepartureCreate.log(targetId = childId)
     }
 
     @PostMapping("/units/{unitId}/children/{childId}/return-to-present")
@@ -282,7 +284,6 @@ class ChildAttendanceController(
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId
     ) {
-        Audit.ChildAttendancesReturnToPresent.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE_CHILD_ATTENDANCES, unitId)
 
         db.connect { dbc ->
@@ -295,6 +296,7 @@ class ChildAttendanceController(
                 }
             }
         }
+        Audit.ChildAttendancesReturnToPresent.log(targetId = childId)
     }
 
     data class FullDayAbsenceRequest(
@@ -310,7 +312,6 @@ class ChildAttendanceController(
         @PathVariable childId: ChildId,
         @RequestBody body: FullDayAbsenceRequest
     ) {
-        Audit.ChildAttendancesFullDayAbsenceCreate.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE_CHILD_ATTENDANCES, unitId)
 
         db.connect { dbc ->
@@ -332,6 +333,7 @@ class ChildAttendanceController(
                 }
             }
         }
+        Audit.ChildAttendancesFullDayAbsenceCreate.log(targetId = childId)
     }
 
     data class AbsenceRangeRequest(
@@ -349,7 +351,6 @@ class ChildAttendanceController(
         @PathVariable childId: ChildId,
         @RequestBody body: AbsenceRangeRequest
     ) {
-        Audit.ChildAttendancesAbsenceRangeCreate.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE_CHILD_ATTENDANCES, unitId)
 
         db.connect { dbc ->
@@ -368,6 +369,7 @@ class ChildAttendanceController(
                 }
             }
         }
+        Audit.ChildAttendancesAbsenceRangeCreate.log(targetId = childId)
     }
 
     @DeleteMapping("/units/{unitId}/children/{childId}/absence-range")
@@ -379,9 +381,17 @@ class ChildAttendanceController(
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ) {
-        Audit.AbsenceDeleteRange.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.DELETE_ABSENCE_RANGE, childId)
-        return db.connect { dbc -> dbc.transaction { tx -> tx.deleteAbsencesByFiniteDateRange(childId, FiniteDateRange(from, to)) } }
+        val deleted = db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.deleteAbsencesByFiniteDateRange(childId, FiniteDateRange(from, to))
+            }
+        }
+        Audit.AbsenceDeleteRange.log(
+            targetId = childId,
+            objectId = deleted,
+            mapOf("from" to from, "to" to to)
+        )
     }
 }
 

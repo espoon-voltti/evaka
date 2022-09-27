@@ -42,7 +42,6 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
         @RequestParam year: Int,
         @RequestParam month: Int
     ): List<OccupancyUnitReportResultRow> {
-        Audit.OccupancyReportRead.log(targetId = careAreaId)
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_OCCUPANCY_REPORT)
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
@@ -60,6 +59,16 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
                     acl.getAuthorizedUnits(user)
                 )
             }
+        }.also {
+            Audit.OccupancyReportRead.log(
+                args = mapOf(
+                    "careAreaId" to careAreaId,
+                    "providerType" to providerType,
+                    "unitTypes" to unitTypes,
+                    "year" to year,
+                    "month" to month
+                )
+            )
         }
     }
 
@@ -75,7 +84,6 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
         @RequestParam year: Int,
         @RequestParam month: Int
     ): List<OccupancyGroupReportResultRow> {
-        Audit.OccupancyReportRead.log(targetId = careAreaId)
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_OCCUPANCY_REPORT)
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
@@ -92,6 +100,16 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
                     acl.getAuthorizedUnits(user)
                 )
             }
+        }.also {
+            Audit.OccupancyGroupReportRead.log(
+                args = mapOf(
+                    "careAreaId" to careAreaId,
+                    "providerType" to providerType,
+                    "unitTypes" to unitTypes,
+                    "year" to year,
+                    "month" to month
+                )
+            )
         }
     }
 }

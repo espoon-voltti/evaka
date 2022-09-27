@@ -37,7 +37,6 @@ class NotesController(
         clock: EvakaClock,
         @PathVariable groupId: GroupId
     ): NotesByGroupResponse {
-        Audit.NotesByGroupRead.log(groupId)
         ac.requirePermissionFor(user, clock, Action.Group.READ_NOTES, groupId)
 
         return db.connect { dbc ->
@@ -48,6 +47,8 @@ class NotesController(
                     groupNotes = it.getGroupNotesForGroup(groupId)
                 )
             }
+        }.also {
+            Audit.NotesByGroupRead.log(groupId)
         }
     }
 }

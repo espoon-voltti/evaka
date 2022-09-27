@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RestController
 class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
     @PutMapping
     fun updatePersonalData(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock, @RequestBody body: PersonalDataUpdate) {
-        Audit.PersonalDataUpdate.log(targetId = user.id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.UPDATE_PERSONAL_DATA, user.id)
 
         db.connect { dbc ->
@@ -48,6 +47,7 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
                     .execute()
             }
         }
+        Audit.PersonalDataUpdate.log(targetId = user.id)
     }
 }
 

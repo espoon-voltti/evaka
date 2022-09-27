@@ -42,9 +42,10 @@ class MessageControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen
     ): MessageAccountId {
-        Audit.MessagingMyAccountsRead.log()
         return db.connect { dbc ->
             dbc.read { it.getCitizenMessageAccount(user.id) }
+        }.also {
+            Audit.MessagingMyAccountsRead.log()
         }
     }
 
@@ -53,10 +54,11 @@ class MessageControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen
     ): Set<UnreadCountByAccount> {
-        Audit.MessagingUnreadMessagesRead.log()
         return db.connect { dbc ->
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
             dbc.read { it.getUnreadMessagesCounts(setOf(accountId)) }
+        }.also {
+            Audit.MessagingUnreadMessagesRead.log()
         }
     }
 
@@ -67,11 +69,11 @@ class MessageControllerCitizen(
         clock: EvakaClock,
         @PathVariable("threadId") threadId: MessageThreadId
     ) {
-        Audit.MessagingMarkMessagesReadWrite.log(targetId = threadId)
-        return db.connect { dbc ->
+        db.connect { dbc ->
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
             dbc.transaction { it.markThreadRead(clock, accountId, threadId) }
         }
+        Audit.MessagingMarkMessagesReadWrite.log(targetId = threadId)
     }
 
     @GetMapping("/received")
@@ -81,10 +83,11 @@ class MessageControllerCitizen(
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<MessageThread> {
-        Audit.MessagingReceivedMessagesRead.log()
         return db.connect { dbc ->
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
             dbc.read { it.getMessagesReceivedByAccount(accountId, pageSize, page, true) }
+        }.also {
+            Audit.MessagingReceivedMessagesRead.log()
         }
     }
 
@@ -95,10 +98,11 @@ class MessageControllerCitizen(
         @RequestParam pageSize: Int,
         @RequestParam page: Int,
     ): Paged<SentMessage> {
-        Audit.MessagingSentMessagesRead.log()
         return db.connect { dbc ->
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
             dbc.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
+        }.also {
+            Audit.MessagingSentMessagesRead.log()
         }
     }
 
@@ -113,7 +117,6 @@ class MessageControllerCitizen(
         user: AuthenticatedUser.Citizen,
         evakaClock: EvakaClock,
     ): GetReceiversResponse {
-        Audit.MessagingCitizenFetchReceiversForAccount.log()
         return db.connect { dbc ->
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
             val accountsToChildIds = (dbc.read { it.getCitizenReceivers(evakaClock.today(), accountId) })
@@ -121,6 +124,8 @@ class MessageControllerCitizen(
                 messageAccounts = accountsToChildIds.keys,
                 messageAccountsToChildren = accountsToChildIds.mapKeys { it.key.id }
             )
+        }.also {
+            Audit.MessagingCitizenFetchReceiversForAccount.log()
         }
     }
 
@@ -132,7 +137,6 @@ class MessageControllerCitizen(
         @PathVariable messageId: MessageId,
         @RequestBody body: ReplyToMessageBody,
     ): MessageService.ThreadReply {
-        Audit.MessagingReplyToMessageWrite.log(targetId = messageId)
         return db.connect { dbc ->
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
 
@@ -144,6 +148,8 @@ class MessageControllerCitizen(
                 recipientAccountIds = body.recipientAccountIds,
                 content = body.content
             )
+        }.also {
+            Audit.MessagingReplyToMessageWrite.log(targetId = messageId)
         }
     }
 
@@ -154,7 +160,6 @@ class MessageControllerCitizen(
         clock: EvakaClock,
         @RequestBody body: CitizenMessageBody,
     ): List<MessageThreadId> {
-        Audit.MessagingCitizenSendMessage.log()
         return db.connect { dbc ->
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
             val validReceivers = dbc.read { it.getCitizenReceivers(clock.today(), accountId).keys }
@@ -181,6 +186,8 @@ class MessageControllerCitizen(
             } else {
                 throw Forbidden("Permission denied.")
             }
+        }.also {
+            Audit.MessagingCitizenSendMessage.log()
         }
     }
 }

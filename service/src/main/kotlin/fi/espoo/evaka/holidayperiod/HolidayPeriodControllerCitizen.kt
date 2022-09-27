@@ -42,9 +42,10 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
     ): List<HolidayPeriod> {
-        Audit.HolidayPeriodsList.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_PERIODS)
-        return db.connect { dbc -> dbc.read { it.getHolidayPeriods() } }
+        return db.connect { dbc -> dbc.read { it.getHolidayPeriods() } }.also {
+            Audit.HolidayPeriodsList.log()
+        }
     }
 
     @GetMapping("/questionnaire")
@@ -53,7 +54,6 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
     ): List<ActiveQuestionnaire> {
-        Audit.HolidayPeriodsList.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_ACTIVE_HOLIDAY_QUESTIONNAIRES)
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -80,6 +80,8 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                     )
                 }
             }
+        }.also {
+            Audit.HolidayPeriodsList.log()
         }
     }
 
@@ -92,7 +94,6 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
         @RequestBody body: FixedPeriodsBody
     ) {
         val childIds = body.fixedPeriods.keys
-        Audit.HolidayAbsenceCreate.log(id, childIds.toSet().joinToString())
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_HOLIDAY_ABSENCE, childIds)
 
         db.connect { dbc ->
@@ -142,6 +143,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                 )
             }
         }
+        Audit.HolidayAbsenceCreate.log(id, childIds.toSet().joinToString())
     }
 }
 

@@ -40,7 +40,6 @@ class BackupCareController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable("childId") childId: ChildId
     ): ChildBackupCaresResponse {
-        Audit.ChildBackupCareRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_BACKUP_CARE, childId)
         return ChildBackupCaresResponse(
             db.connect { dbc ->
@@ -50,6 +49,8 @@ class BackupCareController(private val accessControl: AccessControl) {
                     val permittedActions = accessControl.getPermittedActions<BackupCareId, Action.BackupCare>(tx, user, clock, backupCareIds)
                     backupCares.map { bc -> ChildBackupCareResponse(bc, permittedActions[bc.id] ?: emptySet()) }
                 }
+            }.also {
+                Audit.ChildBackupCareRead.log(targetId = childId)
             }
         )
     }
@@ -62,7 +63,6 @@ class BackupCareController(private val accessControl: AccessControl) {
         @PathVariable("childId") childId: ChildId,
         @RequestBody body: NewBackupCare
     ): BackupCareCreateResponse {
-        Audit.ChildBackupCareCreate.log(targetId = childId, objectId = body.unitId)
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_BACKUP_CARE, childId)
         try {
             val id = db.connect {
@@ -77,6 +77,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                     tx.createBackupCare(childId, body)
                 }
             }
+            Audit.ChildBackupCareCreate.log(targetId = childId, objectId = body.unitId)
             return BackupCareCreateResponse(id)
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
@@ -91,7 +92,6 @@ class BackupCareController(private val accessControl: AccessControl) {
         @PathVariable("id") backupCareId: BackupCareId,
         @RequestBody body: BackupCareUpdateRequest
     ) {
-        Audit.BackupCareUpdate.log(targetId = backupCareId, objectId = body.groupId)
         accessControl.requirePermissionFor(user, clock, Action.BackupCare.UPDATE, backupCareId)
         try {
             db.connect { dbc ->
@@ -147,6 +147,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                     tx.updateBackupCare(backupCareId, body.period, body.groupId)
                 }
             }
+            Audit.BackupCareUpdate.log(targetId = backupCareId, objectId = body.groupId)
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
         }
@@ -159,7 +160,6 @@ class BackupCareController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable("id") backupCareId: BackupCareId
     ) {
-        Audit.BackupCareDelete.log(targetId = backupCareId)
         accessControl.requirePermissionFor(user, clock, Action.BackupCare.DELETE, backupCareId)
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -170,6 +170,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                 tx.deleteBackupCare(backupCareId)
             }
         }
+        Audit.BackupCareDelete.log(targetId = backupCareId)
     }
 
     @GetMapping("/daycares/{daycareId}/backup-cares")
@@ -181,9 +182,9 @@ class BackupCareController(private val accessControl: AccessControl) {
         @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
         @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate
     ): UnitBackupCaresResponse {
-        Audit.DaycareBackupCareRead.log(targetId = daycareId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_BACKUP_CARE, daycareId)
         val backupCares = db.connect { dbc -> dbc.read { it.getBackupCaresForDaycare(daycareId, FiniteDateRange(startDate, endDate)) } }
+        Audit.DaycareBackupCareRead.log(targetId = daycareId)
         return UnitBackupCaresResponse(backupCares)
     }
 }

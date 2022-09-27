@@ -43,7 +43,6 @@ class ReservationControllerCitizen(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
     ): ReservationsResponse {
-        Audit.AttendanceReservationCitizenRead.log(targetId = user.id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_RESERVATIONS, user.id)
 
         val range = try {
@@ -79,6 +78,14 @@ class ReservationControllerCitizen(
                     includesWeekends = includeWeekends
                 )
             }
+        }.also {
+            Audit.AttendanceReservationCitizenRead.log(
+                targetId = user.id,
+                args = mapOf(
+                    "from" to from,
+                    "to" to to
+                )
+            )
         }
     }
 
@@ -89,10 +96,10 @@ class ReservationControllerCitizen(
         clock: EvakaClock,
         @RequestBody body: List<DailyReservationRequest>
     ) {
-        Audit.AttendanceReservationCitizenCreate.log(targetId = body.map { it.childId }.toSet().joinToString())
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_RESERVATION, body.map { it.childId })
+        val children = body.map { it.childId }.toSet()
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_RESERVATION, children)
 
-        db.connect { dbc ->
+        val result = db.connect { dbc ->
             dbc.transaction { tx ->
                 val deadlines = tx.getHolidayPeriodDeadlines()
                 val reservableDays =
@@ -100,6 +107,15 @@ class ReservationControllerCitizen(
                 createReservations(tx, user.evakaUserId, body.validate(reservableDays), user.id)
             }
         }
+        Audit.AttendanceReservationCitizenCreate.log(
+            targetId = children,
+            mapOf(
+                "deletedAbsences" to result.deletedAbsences,
+                "deletedReservations" to result.deletedReservations,
+                "upsertedAbsences" to result.upsertedAbsences,
+                "upsertedReservations" to result.upsertedReservations
+            )
+        )
     }
 
     @PostMapping("/citizen/absences")
@@ -109,7 +125,6 @@ class ReservationControllerCitizen(
         clock: EvakaClock,
         @RequestBody body: AbsenceRequest
     ) {
-        Audit.AbsenceCitizenCreate.log(targetId = body.childIds.toSet().joinToString())
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_ABSENCE, body.childIds)
 
         if (body.dateRange.start.isBefore(clock.today()))
@@ -118,14 +133,14 @@ class ReservationControllerCitizen(
         if (!listOf(OTHER_ABSENCE, PLANNED_ABSENCE, SICKLEAVE).contains(body.absenceType))
             throw BadRequest("Invalid absence type")
 
-        db.connect { dbc ->
+        val (deleted, inserted) = db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.clearOldCitizenEditableAbsences(
+                val deleted = tx.clearOldCitizenEditableAbsences(
                     body.childIds.flatMap { childId ->
                         body.dateRange.dates().map { childId to it }
                     }
                 )
-                tx.insertAbsences(
+                val inserted = tx.insertAbsences(
                     user.id,
                     body.childIds.flatMap { childId ->
                         body.dateRange.dates().map { date ->
@@ -133,8 +148,14 @@ class ReservationControllerCitizen(
                         }
                     }
                 )
+                Pair(deleted, inserted)
             }
         }
+        Audit.AbsenceCitizenCreate.log(
+            targetId = body.childIds,
+            objectId = inserted,
+            mapOf("deleted" to deleted)
+        )
     }
 }
 

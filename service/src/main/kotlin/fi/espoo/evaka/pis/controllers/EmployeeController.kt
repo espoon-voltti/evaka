@@ -43,23 +43,26 @@ class EmployeeController(private val accessControl: AccessControl) {
 
     @GetMapping
     fun getEmployees(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<Employee> {
-        Audit.EmployeesRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_EMPLOYEES)
-        return db.connect { dbc -> dbc.read { it.getEmployees() } }.sortedBy { it.email }
+        return db.connect { dbc -> dbc.read { it.getEmployees() } }.sortedBy { it.email }.also {
+            Audit.EmployeesRead.log()
+        }
     }
 
     @GetMapping("/finance-decision-handler")
     fun getFinanceDecisionHandlers(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<Employee> {
-        Audit.EmployeesRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_FINANCE_DECISION_HANDLERS)
-        return db.connect { dbc -> dbc.read { it.getFinanceDecisionHandlers() } }.sortedBy { it.email }
+        return db.connect { dbc -> dbc.read { it.getFinanceDecisionHandlers() } }.sortedBy { it.email }.also {
+            Audit.EmployeesRead.log()
+        }
     }
 
     @GetMapping("/{id}")
     fun getEmployee(db: Database, user: AuthenticatedUser.Employee, clock: EvakaClock, @PathVariable(value = "id") id: EmployeeId): Employee {
-        Audit.EmployeeRead.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Employee.READ, id)
-        return db.connect { dbc -> dbc.read { it.getEmployee(id) } } ?: throw NotFound()
+        return db.connect { dbc -> dbc.read { it.getEmployee(id) } ?: throw NotFound() }.also {
+            Audit.EmployeeRead.log(targetId = id)
+        }
     }
 
     data class EmployeeUpdate(
@@ -73,17 +76,14 @@ class EmployeeController(private val accessControl: AccessControl) {
         @PathVariable(value = "id") id: EmployeeId,
         @RequestBody body: EmployeeUpdate
     ) {
-        Audit.EmployeeUpdate.log(targetId = id, objectId = body.globalRoles)
         accessControl.requirePermissionFor(user, clock, Action.Employee.UPDATE, id)
 
         db.connect { dbc ->
             dbc.transaction {
-                it.updateEmployee(
-                    id = id,
-                    globalRoles = body.globalRoles
-                )
+                it.updateEmployee(id = id, globalRoles = body.globalRoles)
             }
         }
+        Audit.EmployeeUpdate.log(targetId = id, objectId = body.globalRoles)
     }
 
     @GetMapping("/{id}/details")
@@ -93,25 +93,28 @@ class EmployeeController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable(value = "id") id: EmployeeId
     ): EmployeeWithDaycareRoles {
-        Audit.EmployeeRead.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Employee.READ_DETAILS, id)
 
-        return db.connect { dbc -> dbc.read { it.getEmployeeWithRoles(id) } }
-            ?: throw NotFound("employee $id not found")
+        return db.connect { dbc ->
+            dbc.read { it.getEmployeeWithRoles(id) } ?: throw NotFound("employee $id not found")
+        }.also {
+            Audit.EmployeeRead.log(targetId = id)
+        }
     }
 
     @PostMapping("")
     fun createEmployee(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody employee: NewEmployee): Employee {
-        Audit.EmployeeCreate.log(targetId = employee.externalId)
         accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_EMPLOYEE)
-        return db.connect { dbc -> dbc.transaction { it.createEmployee(employee) } }
+        return db.connect { dbc -> dbc.transaction { it.createEmployee(employee) } }.also {
+            Audit.EmployeeCreate.log(targetId = employee.externalId)
+        }
     }
 
     @DeleteMapping("/{id}")
     fun deleteEmployee(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable(value = "id") id: EmployeeId) {
-        Audit.EmployeeDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Employee.DELETE, id)
         db.connect { dbc -> dbc.transaction { it.deleteEmployee(id) } }
+        Audit.EmployeeDelete.log(targetId = id)
     }
 
     @PostMapping("/pin-code")
@@ -120,8 +123,8 @@ class EmployeeController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         @RequestBody body: PinCode
     ) {
-        Audit.PinCodeUpdate.log(targetId = user.id)
         db.connect { dbc -> dbc.transaction { tx -> tx.upsertPinCode(user.id, body) } }
+        Audit.PinCodeUpdate.log(targetId = user.id)
     }
 
     @GetMapping("/pin-code/is-pin-locked")
@@ -129,8 +132,9 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Employee
     ): Boolean {
-        Audit.PinCodeLockedRead.log(targetId = user.id)
-        return db.connect { dbc -> dbc.read { tx -> tx.isPinLocked(user.id) } }
+        return db.connect { dbc -> dbc.read { tx -> tx.isPinLocked(user.id) } }.also {
+            Audit.PinCodeLockedRead.log(targetId = user.id)
+        }
     }
 
     @PostMapping("/search")
@@ -140,12 +144,13 @@ class EmployeeController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: SearchEmployeeRequest
     ): Paged<EmployeeWithDaycareRoles> {
-        Audit.EmployeesRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.SEARCH_EMPLOYEES)
         return db.connect { dbc ->
             dbc.read { tx ->
                 getEmployeesPaged(tx, body.page ?: 1, (body.pageSize ?: 50).coerceAtMost(100), body.searchTerm ?: "")
             }
+        }.also {
+            Audit.EmployeesRead.log()
         }
     }
 
@@ -158,7 +163,6 @@ class EmployeeController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser
     ): EmployeePreferredFirstName {
-        Audit.EmployeePreferredFirstNameRead.log()
         return db.connect { dbc ->
             dbc.read { tx ->
                 val employee = tx.getEmployee(EmployeeId(user.rawId())) ?: throw NotFound()
@@ -167,6 +171,8 @@ class EmployeeController(private val accessControl: AccessControl) {
                     preferredFirstNameOptions = possiblePreferredFirstNames(employee)
                 )
             }
+        }.also {
+            Audit.EmployeePreferredFirstNameRead.log()
         }
     }
 
@@ -179,7 +185,6 @@ class EmployeeController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         @RequestBody body: EmployeeSetPreferredFirstNameUpdateRequest
     ) {
-        Audit.EmployePreferredFirstNameUpdate.log()
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val employee = tx.getEmployee(EmployeeId(user.rawId())) ?: throw NotFound()
@@ -192,6 +197,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                 }
             }
         }
+        Audit.EmployePreferredFirstNameUpdate.log()
     }
 
     private fun possiblePreferredFirstNames(employee: Employee): List<String> {

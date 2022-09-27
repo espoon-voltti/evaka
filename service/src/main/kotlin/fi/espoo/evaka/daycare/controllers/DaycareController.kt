@@ -58,12 +58,13 @@ class DaycareController(
 ) {
     @GetMapping
     fun getDaycares(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<Daycare> {
-        Audit.UnitSearch.log()
         return db.connect { dbc ->
             dbc.read { tx ->
                 val filter = accessControl.requireAuthorizationFilter(tx, user, clock, Action.Unit.READ)
                 tx.getDaycares(AclAuthorization.from(filter))
             }
+        }.also {
+            Audit.UnitSearch.log()
         }
     }
 
@@ -73,9 +74,10 @@ class DaycareController(
         user: AuthenticatedUser,
         clock: EvakaClock
     ): List<UnitFeatures> {
-        Audit.UnitFeaturesRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_UNIT_FEATURES)
-        return db.connect { dbc -> dbc.read { it.getUnitFeatures() } }
+        return db.connect { dbc -> dbc.read { it.getUnitFeatures() } }.also {
+            Audit.UnitFeaturesRead.log()
+        }
     }
 
     @PostMapping("/unit-features")
@@ -85,7 +87,6 @@ class DaycareController(
         clock: EvakaClock,
         @RequestBody request: UpdateFeaturesRequest
     ) {
-        Audit.UnitFeaturesUpdate.log(targetId = request.unitIds)
         accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE_FEATURES, request.unitIds)
 
         db.connect { dbc ->
@@ -97,6 +98,7 @@ class DaycareController(
                 }
             }
         }
+        Audit.UnitFeaturesUpdate.log(targetId = request.unitIds)
     }
 
     @GetMapping("/{daycareId}")
@@ -106,7 +108,6 @@ class DaycareController(
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId
     ): DaycareResponse {
-        Audit.UnitRead.log(targetId = daycareId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ, daycareId)
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -126,8 +127,10 @@ class DaycareController(
                         accessControl.getPermittedActions(tx, user, clock, daycareId)
                     )
                 }
-            }
-        } ?: throw NotFound("daycare $daycareId not found")
+            } ?: throw NotFound("daycare $daycareId not found")
+        }.also {
+            Audit.UnitRead.log(targetId = daycareId)
+        }
     }
 
     @GetMapping("/{daycareId}/groups")
@@ -139,9 +142,10 @@ class DaycareController(
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate? = null,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate? = null
     ): List<DaycareGroup> {
-        Audit.UnitGroupsSearch.log(targetId = daycareId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_GROUPS, daycareId)
-        return db.connect { dbc -> dbc.read { daycareService.getDaycareGroups(it, daycareId, from, to) } }
+        return db.connect { dbc -> dbc.read { daycareService.getDaycareGroups(it, daycareId, from, to) } }.also {
+            Audit.UnitGroupsSearch.log(targetId = daycareId)
+        }
     }
 
     @PostMapping("/{daycareId}/groups")
@@ -152,10 +156,11 @@ class DaycareController(
         @PathVariable daycareId: DaycareId,
         @RequestBody body: CreateGroupRequest
     ): DaycareGroup {
-        Audit.UnitGroupsCreate.log(targetId = daycareId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.CREATE_GROUP, daycareId)
 
-        return db.connect { dbc -> dbc.transaction { daycareService.createGroup(it, daycareId, body.name, body.startDate, body.initialCaretakers) } }
+        return db.connect { dbc -> dbc.transaction { daycareService.createGroup(it, daycareId, body.name, body.startDate, body.initialCaretakers) } }.also {
+            Audit.UnitGroupsCreate.log(targetId = daycareId)
+        }
     }
 
     data class GroupUpdateRequest(
@@ -172,10 +177,10 @@ class DaycareController(
         @PathVariable groupId: GroupId,
         @RequestBody body: GroupUpdateRequest
     ) {
-        Audit.UnitGroupsUpdate.log(targetId = groupId)
         accessControl.requirePermissionFor(user, clock, Action.Group.UPDATE, groupId)
 
         db.connect { dbc -> dbc.transaction { it.updateGroup(groupId, body.name, body.startDate, body.endDate) } }
+        Audit.UnitGroupsUpdate.log(targetId = groupId)
     }
 
     @DeleteMapping("/{daycareId}/groups/{groupId}")
@@ -186,10 +191,10 @@ class DaycareController(
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId
     ) {
-        Audit.UnitGroupsDelete.log(targetId = groupId)
         accessControl.requirePermissionFor(user, clock, Action.Group.DELETE, groupId)
 
         db.connect { dbc -> dbc.transaction { daycareService.deleteGroup(it, groupId) } }
+        Audit.UnitGroupsDelete.log(targetId = groupId)
     }
 
     @GetMapping("/{daycareId}/groups/{groupId}/caretakers")
@@ -200,7 +205,6 @@ class DaycareController(
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId
     ): CaretakersResponse {
-        Audit.UnitGroupsCaretakersRead.log(targetId = groupId)
         accessControl.requirePermissionFor(user, clock, Action.Group.READ_CARETAKERS, groupId)
 
         return db.connect { dbc ->
@@ -211,6 +215,8 @@ class DaycareController(
                     groupName = it.getDaycareGroup(groupId)?.name ?: ""
                 )
             }
+        }.also {
+            Audit.UnitGroupsCaretakersRead.log(targetId = groupId)
         }
     }
 
@@ -223,7 +229,6 @@ class DaycareController(
         @PathVariable groupId: GroupId,
         @RequestBody body: CaretakerRequest
     ) {
-        Audit.UnitGroupsCaretakersCreate.log(targetId = groupId)
         accessControl.requirePermissionFor(user, clock, Action.Group.CREATE_CARETAKERS, groupId)
 
         db.connect { dbc ->
@@ -237,6 +242,7 @@ class DaycareController(
                 )
             }
         }
+        Audit.UnitGroupsCaretakersCreate.log(targetId = groupId)
     }
 
     @PutMapping("/{daycareId}/groups/{groupId}/caretakers/{id}")
@@ -249,7 +255,6 @@ class DaycareController(
         @PathVariable id: DaycareCaretakerId,
         @RequestBody body: CaretakerRequest
     ) {
-        Audit.UnitGroupsCaretakersUpdate.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Group.UPDATE_CARETAKERS, groupId)
 
         db.connect { dbc ->
@@ -264,6 +269,7 @@ class DaycareController(
                 )
             }
         }
+        Audit.UnitGroupsCaretakersUpdate.log(targetId = id)
     }
 
     @DeleteMapping("/{daycareId}/groups/{groupId}/caretakers/{id}")
@@ -275,18 +281,14 @@ class DaycareController(
         @PathVariable groupId: GroupId,
         @PathVariable id: DaycareCaretakerId
     ) {
-        Audit.UnitGroupsCaretakersDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Group.DELETE_CARETAKERS, groupId)
 
         db.connect { dbc ->
             dbc.transaction {
-                deleteCaretakers(
-                    it,
-                    groupId = groupId,
-                    id = id
-                )
+                deleteCaretakers(it, groupId = groupId, id = id)
             }
         }
+        Audit.UnitGroupsCaretakersDelete.log(targetId = id)
     }
 
     @PutMapping("/{daycareId}")
@@ -297,7 +299,6 @@ class DaycareController(
         @PathVariable daycareId: DaycareId,
         @RequestBody fields: DaycareFields
     ): Daycare {
-        Audit.UnitUpdate.log(targetId = daycareId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE, daycareId)
         fields.validate()
         return db.connect { dbc ->
@@ -306,6 +307,8 @@ class DaycareController(
                 it.updateDaycare(daycareId, fields)
                 it.getDaycare(daycareId)!!
             }
+        }.also {
+            Audit.UnitUpdate.log(targetId = daycareId)
         }
     }
 
@@ -316,7 +319,6 @@ class DaycareController(
         clock: EvakaClock,
         @RequestBody fields: DaycareFields
     ): CreateDaycareResponse {
-        Audit.UnitCreate.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_UNIT)
         fields.validate()
         return CreateDaycareResponse(
@@ -327,6 +329,8 @@ class DaycareController(
                     it.updateDaycare(id, fields)
                     id
                 }
+            }.also {
+                Audit.UnitCreate.log()
             }
         )
     }

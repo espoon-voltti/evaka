@@ -5,6 +5,8 @@
 package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.shared.AbsenceId
+import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
@@ -40,7 +42,7 @@ val notDayOffCheck = """
     ) IS NOT TRUE
 """.trimIndent()
 
-fun Database.Transaction.insertAbsences(userId: PersonId, absenceInserts: List<AbsenceInsert>) {
+fun Database.Transaction.insertAbsences(userId: PersonId, absenceInserts: List<AbsenceInsert>): List<AbsenceId> {
     val batch = prepareBatch(
         """
         INSERT INTO absence (child_id, date, category, absence_type, modified_by, questionnaire_id)
@@ -58,6 +60,7 @@ fun Database.Transaction.insertAbsences(userId: PersonId, absenceInserts: List<A
         ) care_type
         WHERE $notDayOffCheck
         ON CONFLICT DO NOTHING
+        RETURNING id
         """.trimIndent()
     )
 
@@ -71,7 +74,7 @@ fun Database.Transaction.insertAbsences(userId: PersonId, absenceInserts: List<A
             .add()
     }
 
-    batch.execute()
+    return batch.executeAndReturn().mapTo<AbsenceId>().toList()
 }
 
 fun Database.Transaction.deleteAbsencesCreatedFromQuestionnaire(questionnaireId: HolidayQuestionnaireId, childIds: Set<ChildId>) {
@@ -88,7 +91,7 @@ fun Database.Transaction.deleteAbsencesCreatedFromQuestionnaire(questionnaireId:
  * - absences added by a citizen
  * - other than FREE_ABSENCE
  */
-fun Database.Transaction.clearOldCitizenEditableAbsences(childDatePairs: List<Pair<ChildId, LocalDate>>) {
+fun Database.Transaction.clearOldCitizenEditableAbsences(childDatePairs: List<Pair<ChildId, LocalDate>>): List<AbsenceId> {
     val batch = prepareBatch(
         """
 DELETE FROM absence 
@@ -96,6 +99,7 @@ WHERE child_id = :childId
 AND date = :date
 AND absence_type <> 'FREE_ABSENCE'::absence_type
 AND (SELECT evaka_user.type = 'CITIZEN' FROM evaka_user WHERE evaka_user.id = absence.modified_by)
+RETURNING id
 """
     )
 
@@ -103,11 +107,11 @@ AND (SELECT evaka_user.type = 'CITIZEN' FROM evaka_user WHERE evaka_user.id = ab
         batch.bind("childId", childId).bind("date", date).add()
     }
 
-    batch.execute()
+    return batch.executeAndReturn().mapTo<AbsenceId>().toList()
 }
 
-fun Database.Transaction.clearOldReservations(reservations: List<Pair<ChildId, LocalDate>>) {
-    val batch = prepareBatch("DELETE FROM attendance_reservation WHERE child_id = :childId AND date = :date")
+fun Database.Transaction.clearOldReservations(reservations: List<Pair<ChildId, LocalDate>>): List<AttendanceReservationId> {
+    val batch = prepareBatch("DELETE FROM attendance_reservation WHERE child_id = :childId AND date = :date RETURNING id")
 
     reservations.forEach { (childId, date) ->
         batch
@@ -116,7 +120,9 @@ fun Database.Transaction.clearOldReservations(reservations: List<Pair<ChildId, L
             .add()
     }
 
-    batch.execute()
+    return batch.executeAndReturn()
+        .mapTo<AttendanceReservationId>()
+        .toList()
 }
 
 fun Database.Transaction.clearReservationsForRange(childId: ChildId, range: DateRange): Int {
@@ -126,7 +132,7 @@ fun Database.Transaction.clearReservationsForRange(childId: ChildId, range: Date
         .execute()
 }
 
-fun Database.Transaction.insertValidReservations(userId: EvakaUserId, requests: List<DailyReservationRequest>) {
+fun Database.Transaction.insertValidReservations(userId: EvakaUserId, requests: List<DailyReservationRequest>): List<AttendanceReservationId> {
     val batch = prepareBatch(
         """
         INSERT INTO attendance_reservation (child_id, date, start_time, end_time, created_by)
@@ -140,6 +146,7 @@ fun Database.Transaction.insertValidReservations(userId: EvakaUserId, requests: 
             NOT EXISTS(SELECT 1 FROM absence ab WHERE ab.child_id = :childId AND ab.date = :date) AND
             $notDayOffCheck
         ON CONFLICT DO NOTHING
+        RETURNING id
         """.trimIndent()
     )
 
@@ -156,5 +163,7 @@ fun Database.Transaction.insertValidReservations(userId: EvakaUserId, requests: 
         }
     }
 
-    batch.execute()
+    return batch.executeAndReturn()
+        .mapTo<AttendanceReservationId>()
+        .toList()
 }

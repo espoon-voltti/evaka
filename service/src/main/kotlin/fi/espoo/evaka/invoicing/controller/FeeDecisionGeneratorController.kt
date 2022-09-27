@@ -35,7 +35,6 @@ class FeeDecisionGeneratorController(
 ) {
     @PostMapping("/generate")
     fun generateDecisions(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody data: GenerateDecisionsBody) {
-        Audit.FeeDecisionGenerate.log(targetId = data.targetHeads)
         accessControl.requirePermissionFor(user, clock, Action.Global.GENERATE_FEE_DECISIONS)
         db.connect { dbc ->
             generateAllStartingFrom(
@@ -45,6 +44,7 @@ class FeeDecisionGeneratorController(
                 data.targetHeads.filterNotNull().distinct()
             )
         }
+        Audit.FeeDecisionGenerate.log(targetId = data.targetHeads)
     }
 
     private fun generateAllStartingFrom(db: Database.Connection, clock: EvakaClock, starting: LocalDate, targetHeads: List<PersonId>) {

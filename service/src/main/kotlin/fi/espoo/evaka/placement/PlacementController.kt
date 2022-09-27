@@ -66,7 +66,6 @@ class PlacementController(
             required = false
         ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate? = null
     ): Set<DaycarePlacementWithDetails> {
-        Audit.PlacementSearch.log(targetId = daycareId ?: childId)
         when {
             daycareId != null -> accessControl.requirePermissionFor(user, clock, Action.Unit.READ_PLACEMENT, daycareId)
             childId != null -> accessControl.requirePermissionFor(user, clock, Action.Child.READ_PLACEMENT, childId)
@@ -85,6 +84,8 @@ class PlacementController(
                     else placement
                 }.toSet()
             }
+        }.also {
+            Audit.PlacementSearch.log(targetId = daycareId ?: childId)
         }
     }
 
@@ -100,10 +101,11 @@ class PlacementController(
         ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
         @RequestParam(value = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate
     ): List<PlacementPlanDetails> {
-        Audit.PlacementPlanSearch.log(targetId = daycareId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_PLACEMENT_PLAN, daycareId)
 
-        return db.connect { dbc -> dbc.read { it.getPlacementPlans(HelsinkiDateTime.now().toLocalDate(), daycareId, startDate, endDate) } }
+        return db.connect { dbc -> dbc.read { it.getPlacementPlans(HelsinkiDateTime.now().toLocalDate(), daycareId, startDate, endDate) } }.also {
+            Audit.PlacementPlanSearch.log(targetId = daycareId)
+        }
     }
 
     @PostMapping("/placements")
@@ -113,7 +115,6 @@ class PlacementController(
         clock: EvakaClock,
         @RequestBody body: PlacementCreateRequestBody
     ) {
-        Audit.PlacementCreate.log(targetId = body.childId, objectId = body.unitId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.CREATE_PLACEMENT, body.unitId)
 
         if (body.startDate > body.endDate) throw BadRequest("Placement start date cannot be after the end date")
@@ -145,6 +146,7 @@ class PlacementController(
                 )
             }
         }
+        Audit.PlacementCreate.log(targetId = body.childId, objectId = body.unitId)
     }
 
     @PutMapping("/placements/{placementId}")
@@ -155,7 +157,6 @@ class PlacementController(
         @PathVariable("placementId") placementId: PlacementId,
         @RequestBody body: PlacementUpdateRequestBody
     ) {
-        Audit.PlacementUpdate.log(targetId = placementId)
         accessControl.requirePermissionFor(user, clock, Action.Placement.UPDATE, placementId)
 
         val aclAuth = acl.getAuthorizedUnits(user)
@@ -177,6 +178,7 @@ class PlacementController(
                 )
             }
         }
+        Audit.PlacementUpdate.log(targetId = placementId)
     }
 
     @DeleteMapping("/placements/{placementId}")
@@ -216,7 +218,6 @@ class PlacementController(
         @PathVariable("placementId") placementId: PlacementId,
         @RequestBody body: GroupPlacementRequestBody
     ): GroupPlacementId {
-        Audit.DaycareGroupPlacementCreate.log(targetId = placementId, objectId = body.groupId)
         accessControl.requirePermissionFor(user, clock, Action.Placement.CREATE_GROUP_PLACEMENT, placementId)
 
         return db.connect { dbc ->
@@ -228,6 +229,8 @@ class PlacementController(
                     endDate = body.endDate
                 )
             }
+        }.also {
+            Audit.DaycareGroupPlacementCreate.log(targetId = placementId, objectId = body.groupId)
         }
     }
 
@@ -238,10 +241,10 @@ class PlacementController(
         clock: EvakaClock,
         @PathVariable("groupPlacementId") groupPlacementId: GroupPlacementId
     ) {
-        Audit.DaycareGroupPlacementDelete.log(targetId = groupPlacementId)
         accessControl.requirePermissionFor(user, clock, Action.GroupPlacement.DELETE, groupPlacementId)
 
         db.connect { dbc -> dbc.transaction { it.deleteGroupPlacement(groupPlacementId) } }
+        Audit.DaycareGroupPlacementDelete.log(targetId = groupPlacementId)
     }
 
     @PostMapping("/group-placements/{groupPlacementId}/transfer")
@@ -252,7 +255,6 @@ class PlacementController(
         @PathVariable("groupPlacementId") groupPlacementId: GroupPlacementId,
         @RequestBody body: GroupTransferRequestBody
     ) {
-        Audit.DaycareGroupPlacementTransfer.log(targetId = groupPlacementId)
         accessControl.requirePermissionFor(user, clock, Action.GroupPlacement.UPDATE, groupPlacementId)
 
         db.connect { dbc ->
@@ -260,6 +262,7 @@ class PlacementController(
                 it.transferGroup(groupPlacementId, body.groupId, body.startDate)
             }
         }
+        Audit.DaycareGroupPlacementTransfer.log(targetId = groupPlacementId)
     }
 
     @GetMapping("/placements/child-placement-periods/{adultId}")
@@ -269,7 +272,6 @@ class PlacementController(
         clock: EvakaClock,
         @PathVariable adultId: PersonId
     ): List<FiniteDateRange> {
-        Audit.PlacementChildPlacementPeriodsRead.log(targetId = adultId)
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_CHILD_PLACEMENT_PERIODS, adultId)
 
         return db.connect { dbc ->
@@ -296,6 +298,8 @@ JOIN all_fridge_children fc ON fc.child_id = p.child_id AND daterange(p.start_da
                     .map { rv -> FiniteDateRange(rv.mapColumn("start"), rv.mapColumn("end")) }
                     .toList()
             }
+        }.also {
+            Audit.PlacementChildPlacementPeriodsRead.log(targetId = adultId)
         }
     }
 }

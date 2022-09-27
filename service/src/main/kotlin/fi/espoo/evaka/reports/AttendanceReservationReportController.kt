@@ -38,13 +38,21 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
         user: AuthenticatedUser,
         clock: EvakaClock
     ): List<AttendanceReservationReportRow> {
-        Audit.AttendanceReservationReportRead.log(targetId = unitId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_ATTENDANCE_RESERVATION_REPORT, unitId)
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 tx.getAttendanceReservationReport(start, end, unitId, groupIds?.ifEmpty { null })
             }
+        }.also {
+            Audit.AttendanceReservationReportRead.log(
+                targetId = unitId,
+                args = mapOf(
+                    "groupIds" to groupIds,
+                    "start" to start,
+                    "end" to end
+                )
+            )
         }
     }
 
@@ -58,13 +66,21 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
         clock: EvakaClock,
         user: AuthenticatedUser
     ): List<AttendanceReservationReportByChildRow> {
-        Audit.AttendanceReservationReportRead.log(targetId = unitId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_ATTENDANCE_RESERVATION_REPORT, unitId)
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 tx.getAttendanceReservationReportByChild(start, end, unitId, groupIds?.ifEmpty { null })
             }
+        }.also {
+            Audit.AttendanceReservationReportRead.log(
+                targetId = unitId,
+                args = mapOf(
+                    "groupIds" to groupIds,
+                    "start" to start,
+                    "end" to end
+                )
+            )
         }
     }
 }

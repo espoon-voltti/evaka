@@ -40,7 +40,6 @@ class DailyServiceTimesController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<DailyServiceTimesResponse> {
-        Audit.ChildDailyServiceTimesRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_DAILY_SERVICE_TIMES, childId)
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -53,6 +52,8 @@ class DailyServiceTimesController(
                     )
                 }
             }
+        }.also {
+            Audit.ChildDailyServiceTimesRead.log(targetId = childId)
         }
     }
 
@@ -64,7 +65,6 @@ class DailyServiceTimesController(
         @PathVariable childId: ChildId,
         @RequestBody body: DailyServiceTimes
     ) {
-        Audit.ChildDailyServiceTimesEdit.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_DAILY_SERVICE_TIME, childId)
 
         if (body.validityPeriod.start.isBefore(clock.today())) {
@@ -77,6 +77,7 @@ class DailyServiceTimesController(
                 this.deleteCollidingReservationsAndNotify(tx, tx.createChildDailyServiceTimes(childId, body), clock)
             }
         }
+        Audit.ChildDailyServiceTimesEdit.log(targetId = childId)
     }
 
     @PutMapping("/daily-service-times/{id}")
@@ -87,7 +88,6 @@ class DailyServiceTimesController(
         @PathVariable id: DailyServiceTimesId,
         @RequestBody body: DailyServiceTimes
     ) {
-        Audit.ChildDailyServiceTimesEdit.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.DailyServiceTime.UPDATE, id)
 
         db.connect { dbc ->
@@ -96,6 +96,7 @@ class DailyServiceTimesController(
                 this.deleteCollidingReservationsAndNotify(tx, id, clock)
             }
         }
+        Audit.ChildDailyServiceTimesEdit.log(targetId = id)
     }
 
     @DeleteMapping("/daily-service-times/{id}")
@@ -105,10 +106,10 @@ class DailyServiceTimesController(
         clock: EvakaClock,
         @PathVariable id: DailyServiceTimesId
     ) {
-        Audit.ChildDailyServiceTimesDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.DailyServiceTime.DELETE, id)
 
         db.connect { dbc -> dbc.transaction { it.deleteChildDailyServiceTimes(id) } }
+        Audit.ChildDailyServiceTimesDelete.log(targetId = id)
     }
 
     private fun checkOverlappingDailyServiceTimes(

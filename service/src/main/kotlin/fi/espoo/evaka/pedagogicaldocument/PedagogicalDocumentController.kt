@@ -37,7 +37,6 @@ class PedagogicalDocumentController(
         clock: EvakaClock,
         @RequestBody body: PedagogicalDocumentPostBody
     ): PedagogicalDocument {
-        Audit.PedagogicalDocumentUpdate.log(body.childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_PEDAGOGICAL_DOCUMENT, body.childId)
         return db.connect {
             it.transaction { tx ->
@@ -45,6 +44,8 @@ class PedagogicalDocumentController(
                     pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(tx, it.id)
                 }
             }
+        }.also {
+            Audit.PedagogicalDocumentUpdate.log(body.childId)
         }
     }
 
@@ -56,7 +57,6 @@ class PedagogicalDocumentController(
         @PathVariable documentId: PedagogicalDocumentId,
         @RequestBody body: PedagogicalDocumentPostBody
     ): PedagogicalDocument {
-        Audit.PedagogicalDocumentUpdate.log(documentId)
         accessControl.requirePermissionFor(user, clock, Action.PedagogicalDocument.UPDATE, documentId)
         return db.connect {
             it.transaction { tx ->
@@ -64,6 +64,8 @@ class PedagogicalDocumentController(
                     pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(tx, it.id)
                 }
             }
+        }.also {
+            Audit.PedagogicalDocumentUpdate.log(documentId)
         }
     }
 
@@ -74,12 +76,13 @@ class PedagogicalDocumentController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<PedagogicalDocument> {
-        Audit.PedagogicalDocumentRead.log(childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_PEDAGOGICAL_DOCUMENTS, childId)
         return db.connect { dbc ->
             dbc.read {
                 it.findPedagogicalDocumentsByChild(childId)
             }
+        }.also {
+            Audit.PedagogicalDocumentRead.log(childId)
         }
     }
 
@@ -90,13 +93,13 @@ class PedagogicalDocumentController(
         clock: EvakaClock,
         @PathVariable documentId: PedagogicalDocumentId
     ) {
-        Audit.PedagogicalDocumentUpdate.log(documentId)
         accessControl.requirePermissionFor(user, clock, Action.PedagogicalDocument.DELETE, documentId)
-        return db.connect { dbc ->
+        db.connect { dbc ->
             dbc.transaction {
                 it.deleteDocument(documentId)
             }
         }
+        Audit.PedagogicalDocumentUpdate.log(documentId)
     }
 }
 

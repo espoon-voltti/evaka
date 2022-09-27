@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.shared.AbsenceId
+import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
@@ -83,25 +85,33 @@ class OpenTimeRangeSerializer : JsonSerializer<OpenTimeRange>() {
     }
 }
 
+data class CreateReservationsResult(
+    val deletedAbsences: List<AbsenceId>,
+    val deletedReservations: List<AttendanceReservationId>,
+    val upsertedAbsences: List<AbsenceId>,
+    val upsertedReservations: List<AttendanceReservationId>,
+)
+
 fun createReservations(
     tx: Database.Transaction,
     userId: EvakaUserId,
     reservations: List<DailyReservationRequest>,
     personId: PersonId? = null
-) {
-    tx.clearOldCitizenEditableAbsences(
+): CreateReservationsResult {
+    val deletedAbsences = tx.clearOldCitizenEditableAbsences(
         reservations.filter {
             it.reservations != null || it.absent
         }.map { it.childId to it.date }
     )
-    tx.clearOldReservations(reservations.map { it.childId to it.date })
-    tx.insertValidReservations(userId, reservations.filterNot { it.absent })
+    val deletedReservations = tx.clearOldReservations(reservations.map { it.childId to it.date })
+    val upsertedReservations = tx.insertValidReservations(userId, reservations.filterNot { it.absent })
 
-    if (personId != null) {
+    val upsertedAbsences = if (personId != null) {
         tx.insertAbsences(
             personId,
             reservations.filter { it.absent }
                 .map { AbsenceInsert(it.childId, it.date, AbsenceType.OTHER_ABSENCE) }
         )
-    }
+    } else emptyList()
+    return CreateReservationsResult(deletedAbsences, deletedReservations, upsertedAbsences, upsertedReservations)
 }

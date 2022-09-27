@@ -30,10 +30,11 @@ class AssistanceNeedDecisionCitizenController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): List<AssistanceNeedDecisionCitizenListItem> {
-        Audit.AssistanceNeedDecisionsListCitizen.log(targetId = user.id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_ASSISTANCE_NEED_DECISIONS, user.id)
 
-        return db.connect { dbc -> dbc.transaction { tx -> tx.getAssistanceNeedDecisionsForCitizen(user.id) } }
+        return db.connect { dbc -> dbc.transaction { tx -> tx.getAssistanceNeedDecisionsForCitizen(user.id) } }.also {
+            Audit.AssistanceNeedDecisionsListCitizen.log(targetId = user.id)
+        }
     }
 
     @GetMapping("/children/assistance-need-decision/{id}")
@@ -43,7 +44,6 @@ class AssistanceNeedDecisionCitizenController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ): AssistanceNeedDecision {
-        Audit.ChildAssistanceNeedDecisionReadCitizen.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.AssistanceNeedDecision.READ, id)
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -55,6 +55,8 @@ class AssistanceNeedDecisionCitizenController(
 
                 decision
             }
+        }.also {
+            Audit.ChildAssistanceNeedDecisionReadCitizen.log(targetId = id)
         }
     }
 
@@ -65,9 +67,10 @@ class AssistanceNeedDecisionCitizenController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ): ResponseEntity<Any> {
-        Audit.ChildAssistanceNeedDecisionDownloadCitizen.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.AssistanceNeedDecision.DOWNLOAD, id)
-        return db.connect { assistanceNeedDecisionService.getDecisionPdfResponse(it, id) }
+        return db.connect { assistanceNeedDecisionService.getDecisionPdfResponse(it, id) }.also {
+            Audit.ChildAssistanceNeedDecisionDownloadCitizen.log(targetId = id)
+        }
     }
 
     @PostMapping("/children/assistance-need-decision/{id}/read")
@@ -77,12 +80,13 @@ class AssistanceNeedDecisionCitizenController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ) {
-        Audit.ChildAssistanceNeedDecisionMarkReadCitizen.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.AssistanceNeedDecision.MARK_AS_READ, id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.markAssistanceNeedDecisionAsReadByGuardian(id, user.id)
             }
+        }.also {
+            Audit.ChildAssistanceNeedDecisionMarkReadCitizen.log(targetId = id)
         }
     }
 
@@ -92,12 +96,13 @@ class AssistanceNeedDecisionCitizenController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
     ): List<UnreadAssistanceNeedDecisionItem> {
-        Audit.ChildAssistanceNeedDecisionGetUnreadCountCitizen.log(targetId = user.id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT, user.id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.getAssistanceNeedDecisionsUnreadCountsForCitizen(user.id)
             }
+        }.also {
+            Audit.ChildAssistanceNeedDecisionGetUnreadCountCitizen.log(targetId = user.id)
         }
     }
 }

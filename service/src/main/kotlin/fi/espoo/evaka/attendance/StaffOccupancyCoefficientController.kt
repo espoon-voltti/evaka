@@ -30,9 +30,10 @@ class StaffOccupancyCoefficientController(
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
     ): List<StaffOccupancyCoefficient> {
-        Audit.StaffOccupancyCoefficientRead.log(unitId)
         ac.requirePermissionFor(user, clock, Action.Unit.READ_STAFF_OCCUPANCY_COEFFICIENTS, unitId)
-        return db.connect { dbc -> dbc.read { it.getOccupancyCoefficientsByUnit(unitId) } }
+        return db.connect { dbc -> dbc.read { it.getOccupancyCoefficientsByUnit(unitId) } }.also {
+            Audit.StaffOccupancyCoefficientRead.log(unitId)
+        }
     }
 
     @PostMapping
@@ -42,8 +43,8 @@ class StaffOccupancyCoefficientController(
         clock: EvakaClock,
         @RequestBody body: OccupancyCoefficientUpsert,
     ) {
-        Audit.StaffOccupancyCoefficientUpsert.log(body.unitId, body.employeeId)
         ac.requirePermissionFor(user, clock, Action.Unit.UPSERT_STAFF_OCCUPANCY_COEFFICIENTS, body.unitId)
         db.connect { dbc -> dbc.transaction { it.upsertOccupancyCoefficient(body) } }
+        Audit.StaffOccupancyCoefficientUpsert.log(body.unitId, body.employeeId)
     }
 }

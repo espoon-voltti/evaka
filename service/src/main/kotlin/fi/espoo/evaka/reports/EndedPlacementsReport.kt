@@ -26,7 +26,6 @@ class EndedPlacementsReportController(private val accessControl: AccessControl) 
         @RequestParam year: Int,
         @RequestParam month: Int
     ): List<EndedPlacementsReportRow> {
-        Audit.EndedPlacementsReportRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_ENDED_PLACEMENTS_REPORT)
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
@@ -36,6 +35,8 @@ class EndedPlacementsReportController(private val accessControl: AccessControl) 
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 it.getEndedPlacementsRows(from, to)
             }
+        }.also {
+            Audit.EndedPlacementsReportRead.log(args = mapOf("year" to year, "month" to month))
         }
     }
 }

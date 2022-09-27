@@ -47,7 +47,6 @@ class ChildImageController(
         @PathVariable childId: ChildId,
         @RequestPart("file") file: MultipartFile
     ) {
-        Audit.ChildImageUpload.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.UPLOAD_IMAGE, childId)
 
         val contentType = checkFileContentType(file.inputStream, allowedContentTypes)
@@ -59,6 +58,7 @@ class ChildImageController(
         }
 
         db.connect { dbc -> replaceImage(dbc, documentClient, bucket, childId, file, contentType) }
+        Audit.ChildImageUpload.log(targetId = childId)
     }
 
     @DeleteMapping("/children/{childId}/image")
@@ -68,10 +68,10 @@ class ChildImageController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ) {
-        Audit.ChildImageDelete.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.DELETE_IMAGE, childId)
 
         db.connect { dbc -> removeImage(dbc, documentClient, bucket, childId) }
+        Audit.ChildImageDelete.log(targetId = childId)
     }
 
     @GetMapping(value = ["/child-images/{imageId}", "/citizen/child-images/{imageId}"])
@@ -81,10 +81,11 @@ class ChildImageController(
         clock: EvakaClock,
         @PathVariable imageId: ChildImageId
     ): ResponseEntity<Any> {
-        Audit.ChildImageDownload.log(targetId = imageId)
         accessControl.requirePermissionFor(user, clock, Action.ChildImage.DOWNLOAD, imageId)
 
         val key = "$childImagesBucketPrefix$imageId"
-        return documentClient.responseInline(bucket, key, null)
+        return documentClient.responseInline(bucket, key, null).also {
+            Audit.ChildImageDownload.log(targetId = imageId)
+        }
     }
 }

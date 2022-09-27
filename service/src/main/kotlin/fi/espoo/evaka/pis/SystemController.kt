@@ -96,7 +96,6 @@ class SystemController(private val personService: PersonService, private val acc
         @PathVariable
         id: EmployeeId
     ): EmployeeUserResponse? {
-        Audit.EmployeeGetOrCreate.log(targetId = id)
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.getEmployeeUser(id)?.let { employeeUser ->
@@ -111,6 +110,8 @@ class SystemController(private val personService: PersonService, private val acc
                     )
                 }
             }
+        }.also {
+            Audit.EmployeeGetOrCreate.log(targetId = id)
         }
     }
 
@@ -121,13 +122,14 @@ class SystemController(private val personService: PersonService, private val acc
         @PathVariable
         token: UUID
     ): MobileDeviceIdentity {
-        Audit.MobileDevicesRead.log(targetId = token)
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 val device = tx.getDeviceByToken(token)
                 tx.upsertMobileDeviceUser(device.id)
                 device
             }
+        }.also {
+            Audit.MobileDevicesRead.log(targetId = token)
         }
     }
 

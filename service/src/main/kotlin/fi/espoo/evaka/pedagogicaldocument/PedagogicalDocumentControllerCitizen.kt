@@ -32,8 +32,6 @@ class PedagogicalDocumentControllerCitizen(
         user: AuthenticatedUser.Citizen,
         @PathVariable childId: ChildId
     ): List<PedagogicalDocumentCitizen> {
-        Audit.PedagogicalDocumentReadByGuardian.log(targetId = childId)
-
         return db.connect { dbc ->
             dbc.read {
                 val documents = it.getPedagogicalDocumentsByChildForGuardian(childId, user.id).filter { pd ->
@@ -45,6 +43,8 @@ class PedagogicalDocumentControllerCitizen(
                 else
                     documents.map { it.copy(attachments = it.attachments.map { it.copy(name = "") }) }
             }
+        }.also {
+            Audit.PedagogicalDocumentReadByGuardian.log(targetId = childId)
         }
     }
 
@@ -55,11 +55,11 @@ class PedagogicalDocumentControllerCitizen(
         clock: EvakaClock,
         @PathVariable documentId: PedagogicalDocumentId
     ) {
-        Audit.PedagogicalDocumentUpdate.log(documentId, user.id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.PedagogicalDocument.READ, documentId)
-        return db.connect { dbc ->
+        db.connect { dbc ->
             dbc.transaction { it.markDocumentReadByGuardian(clock, documentId, user.id) }
         }
+        Audit.PedagogicalDocumentUpdate.log(documentId, user.id)
     }
 
     @GetMapping("/pedagogical-documents/unread-count")
@@ -67,9 +67,10 @@ class PedagogicalDocumentControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen
     ): Map<ChildId, Int> {
-        Audit.PedagogicalDocumentCountUnread.log(user.id)
         return db.connect { dbc ->
             dbc.transaction { it.countUnreadDocumentsByGuardian(user.id) }
+        }.also {
+            Audit.PedagogicalDocumentCountUnread.log(user.id)
         }
     }
 }

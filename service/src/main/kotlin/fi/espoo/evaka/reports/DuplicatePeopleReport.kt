@@ -21,13 +21,14 @@ import java.time.LocalDate
 class DuplicatePeopleReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/duplicate-people")
     fun getDuplicatePeopleReport(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<DuplicatePeopleReportRow> {
-        Audit.DuplicatePeopleReportRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_DUPLICATE_PEOPLE_REPORT)
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 it.getDuplicatePeople()
             }
+        }.also {
+            Audit.DuplicatePeopleReportRead.log()
         }
     }
 }

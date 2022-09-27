@@ -39,7 +39,6 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         clock: EvakaClock,
         @RequestBody body: ParentshipRequest
     ) {
-        Audit.ParentShipsCreate.log(targetId = body.headOfChildId, objectId = body.childId)
         accessControl.requirePermissionFor(user, clock, Action.Person.CREATE_PARENTSHIP, body.headOfChildId)
 
         db.connect { dbc ->
@@ -54,6 +53,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
                 )
             }
         }
+        Audit.ParentShipsCreate.log(targetId = body.headOfChildId, objectId = body.childId)
     }
 
     @GetMapping
@@ -64,8 +64,6 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         @RequestParam(value = "headOfChildId", required = false) headOfChildId: PersonId? = null,
         @RequestParam(value = "childId", required = false) childId: PersonId? = null
     ): List<ParentshipWithPermittedActions> {
-        Audit.ParentShipsRead.log(targetId = listOf(headOfChildId, childId))
-
         if ((childId != null) == (headOfChildId != null)) {
             throw BadRequest("One and only one of parameters headOfChildId and childId is required")
         }
@@ -85,6 +83,8 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
                 val permittedActions = accessControl.getPermittedActions<ParentshipId, Action.Parentship>(tx, user, clock, parentships.map { it.id })
                 parentships.map { ParentshipWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
             }
+        }.also {
+            Audit.ParentShipsRead.log(targetId = listOf(headOfChildId, childId))
         }
     }
 
@@ -95,11 +95,11 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         clock: EvakaClock,
         @PathVariable(value = "id") id: ParentshipId
     ): Parentship {
-        Audit.ParentShipsRead.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Parentship.READ, id)
 
-        return db.connect { dbc -> dbc.read { it.getParentship(id) } }
-            ?: throw NotFound()
+        return db.connect { dbc -> dbc.read { it.getParentship(id) } ?: throw NotFound() }.also {
+            Audit.ParentShipsRead.log(targetId = id)
+        }
     }
 
     @PutMapping("/{id}")
@@ -110,14 +110,14 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         @PathVariable(value = "id") id: ParentshipId,
         @RequestBody body: ParentshipUpdateRequest
     ) {
-        Audit.ParentShipsUpdate.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Parentship.UPDATE, id)
 
-        return db.connect { dbc ->
+        db.connect { dbc ->
             dbc.transaction {
                 parentshipService.updateParentshipDuration(it, clock, id, body.startDate, body.endDate)
             }
         }
+        Audit.ParentShipsUpdate.log(targetId = id)
     }
 
     @PutMapping("/{id}/retry")
@@ -127,10 +127,10 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         clock: EvakaClock,
         @PathVariable(value = "id") parentshipId: ParentshipId
     ) {
-        Audit.ParentShipsRetry.log(targetId = parentshipId)
         accessControl.requirePermissionFor(user, clock, Action.Parentship.RETRY, parentshipId)
 
         db.connect { dbc -> dbc.transaction { parentshipService.retryParentship(it, clock, parentshipId) } }
+        Audit.ParentShipsRetry.log(targetId = parentshipId)
     }
 
     @DeleteMapping("/{id}")
@@ -140,8 +140,6 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
         clock: EvakaClock,
         @PathVariable(value = "id") id: ParentshipId
     ) {
-        Audit.ParentShipsDelete.log(targetId = id)
-
         db.connect { dbc ->
             val parentship = dbc.transaction { it.getParentship(id) }
 
@@ -153,6 +151,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
 
             dbc.transaction { parentshipService.deleteParentship(it, clock, id) }
         }
+        Audit.ParentShipsDelete.log(targetId = id)
     }
 
     data class ParentshipRequest(

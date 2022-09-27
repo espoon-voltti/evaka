@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RestController
 class ChildController(private val accessControl: AccessControl, private val featureConfig: FeatureConfig) {
     @GetMapping("/children/{childId}")
     fun getChild(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable childId: ChildId): ChildResponse {
-        Audit.PersonDetailsRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ, childId)
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -53,14 +52,17 @@ class ChildController(private val accessControl: AccessControl, private val feat
                     assistanceNeedVoucherCoefficientsEnabled = !featureConfig.valueDecisionCapacityFactorEnabled
                 )
             }
+        }.also {
+            Audit.PersonDetailsRead.log(targetId = childId)
         }
     }
 
     @GetMapping("/children/{childId}/additional-information")
     fun getAdditionalInfo(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable childId: ChildId): AdditionalInformation {
-        Audit.ChildAdditionalInformationRead.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_ADDITIONAL_INFO, childId)
-        return db.connect { dbc -> dbc.read { it.getAdditionalInformation(childId) } }
+        return db.connect { dbc -> dbc.read { it.getAdditionalInformation(childId) } }.also {
+            Audit.ChildAdditionalInformationRead.log(targetId = childId)
+        }
     }
 
     @PutMapping("/children/{childId}/additional-information")
@@ -71,9 +73,9 @@ class ChildController(private val accessControl: AccessControl, private val feat
         @PathVariable childId: ChildId,
         @RequestBody data: AdditionalInformation
     ) {
-        Audit.ChildAdditionalInformationUpdate.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.UPDATE_ADDITIONAL_INFO, childId)
         db.connect { dbc -> dbc.transaction { it.upsertAdditionalInformation(childId, data) } }
+        Audit.ChildAdditionalInformationUpdate.log(targetId = childId)
     }
 
     data class ChildResponse(

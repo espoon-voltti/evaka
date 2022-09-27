@@ -34,12 +34,13 @@ class ChildStickyNoteController(
         @PathVariable childId: ChildId,
         @RequestBody body: ChildStickyNoteBody
     ): ChildStickyNoteId {
-        Audit.ChildStickyNoteCreate.log(childId)
         ac.requirePermissionFor(user, clock, Action.Child.CREATE_STICKY_NOTE, childId)
 
         validateExpiration(clock, body.expires)
 
-        return db.connect { dbc -> dbc.transaction { it.createChildStickyNote(childId, body) } }
+        return db.connect { dbc -> dbc.transaction { it.createChildStickyNote(childId, body) } }.also {
+            Audit.ChildStickyNoteCreate.log(childId)
+        }
     }
 
     @PutMapping("/child-sticky-notes/{noteId}")
@@ -50,12 +51,13 @@ class ChildStickyNoteController(
         @PathVariable noteId: ChildStickyNoteId,
         @RequestBody body: ChildStickyNoteBody
     ): ChildStickyNote {
-        Audit.ChildStickyNoteUpdate.log(noteId, noteId)
         ac.requirePermissionFor(user, clock, Action.ChildStickyNote.UPDATE, noteId)
 
         validateExpiration(clock, body.expires)
 
-        return db.connect { dbc -> dbc.transaction { it.updateChildStickyNote(clock, noteId, body) } }
+        return db.connect { dbc -> dbc.transaction { it.updateChildStickyNote(clock, noteId, body) } }.also {
+            Audit.ChildStickyNoteUpdate.log(noteId, noteId)
+        }
     }
 
     @DeleteMapping("/child-sticky-notes/{noteId}")
@@ -65,10 +67,11 @@ class ChildStickyNoteController(
         clock: EvakaClock,
         @PathVariable noteId: ChildStickyNoteId
     ) {
-        Audit.ChildStickyNoteDelete.log(noteId)
         ac.requirePermissionFor(user, clock, Action.ChildStickyNote.DELETE, noteId)
 
-        return db.connect { dbc -> dbc.transaction { it.deleteChildStickyNote(noteId) } }
+        return db.connect { dbc -> dbc.transaction { it.deleteChildStickyNote(noteId) } }.also {
+            Audit.ChildStickyNoteDelete.log(noteId)
+        }
     }
 
     private fun validateExpiration(evakaClock: EvakaClock, expires: LocalDate) {

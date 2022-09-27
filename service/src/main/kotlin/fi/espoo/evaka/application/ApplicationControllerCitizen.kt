@@ -55,7 +55,6 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): List<ApplicationsOfChild> {
-        Audit.ApplicationRead.log(targetId = user.id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_APPLICATIONS, user.id)
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -75,6 +74,8 @@ class ApplicationControllerCitizen(
                     )
                 }
             }
+        }.also {
+            Audit.ApplicationRead.log(targetId = user.id)
         }
     }
 
@@ -85,7 +86,6 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ): ApplicationDetails {
-        Audit.ApplicationRead.log(targetId = user.id, objectId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Application.READ, applicationId)
 
         val application = db.connect { dbc ->
@@ -93,6 +93,7 @@ class ApplicationControllerCitizen(
                 fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(user, tx, personService, applicationId)
             }
         }
+        Audit.ApplicationRead.log(targetId = applicationId)
 
         return if (application?.guardianId == user.id && !application.hideFromGuardian)
             application
@@ -107,7 +108,6 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @RequestBody body: CreateApplicationBody
     ): ApplicationId {
-        Audit.ApplicationCreate.log(targetId = user.id, objectId = body)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_APPLICATION, body.childId)
 
         return db.connect { dbc ->
@@ -134,6 +134,12 @@ class ApplicationControllerCitizen(
                     applicationStateService.initializeApplicationForm(tx, user, clock.today(), it, body.type, guardian, child)
                 }
             }
+        }.also { applicationId ->
+            Audit.ApplicationCreate.log(
+                targetId = body.childId,
+                objectId = applicationId,
+                mapOf("guardianId" to user.id, "applicationType" to body.type)
+            )
         }
     }
 
@@ -144,7 +150,6 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): Map<ApplicationType, Boolean> {
-        Audit.ApplicationReadDuplicates.log(targetId = user.id, objectId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_DUPLICATE_APPLICATIONS, childId)
 
         return db.connect { dbc ->
@@ -158,6 +163,8 @@ class ApplicationControllerCitizen(
                     }
                     .toMap()
             }
+        }.also {
+            Audit.ApplicationReadDuplicates.log(targetId = user.id, objectId = childId)
         }
     }
 
@@ -168,7 +175,6 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): Map<ApplicationType, Boolean> {
-        Audit.ApplicationReadActivePlacementsByType.log(targetId = user.id, objectId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_PLACEMENT_STATUS_BY_APPLICATION_TYPE, childId)
 
         return db.connect { dbc ->
@@ -179,6 +185,8 @@ class ApplicationControllerCitizen(
                     }
                     .toMap()
             }
+        }.also {
+            Audit.ApplicationReadActivePlacementsByType.log(targetId = childId)
         }
     }
 
@@ -190,7 +198,6 @@ class ApplicationControllerCitizen(
         @PathVariable applicationId: ApplicationId,
         @RequestBody applicationForm: ApplicationFormUpdate
     ) {
-        Audit.ApplicationUpdate.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Application.UPDATE, applicationId)
 
         db.connect { dbc ->
@@ -204,6 +211,7 @@ class ApplicationControllerCitizen(
                 )
             }
         }
+        Audit.ApplicationUpdate.log(targetId = applicationId)
     }
 
     @PutMapping("/applications/{applicationId}/draft")
@@ -214,7 +222,6 @@ class ApplicationControllerCitizen(
         @PathVariable applicationId: ApplicationId,
         @RequestBody applicationForm: ApplicationFormUpdate
     ) {
-        Audit.ApplicationUpdate.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Application.UPDATE, applicationId)
 
         db.connect { dbc ->
@@ -229,6 +236,7 @@ class ApplicationControllerCitizen(
                 )
             }
         }
+        Audit.ApplicationUpdate.log(targetId = applicationId)
     }
 
     @DeleteMapping("/applications/{applicationId}")
@@ -238,7 +246,6 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ) {
-        Audit.ApplicationDelete.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Application.DELETE, applicationId)
 
         db.connect { dbc ->
@@ -252,6 +259,7 @@ class ApplicationControllerCitizen(
                 tx.deleteApplication(applicationId)
             }
         }
+        Audit.ApplicationDelete.log(targetId = applicationId)
     }
 
     @PostMapping("/applications/{applicationId}/actions/send-application")
@@ -266,9 +274,10 @@ class ApplicationControllerCitizen(
 
     @GetMapping("/decisions")
     fun getDecisions(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock): List<ApplicationDecisions> {
-        Audit.DecisionRead.log(targetId = user.id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_DECISIONS, user.id)
-        return db.connect { dbc -> dbc.read { it.getOwnDecisions(user.id) } }
+        return db.connect { dbc -> dbc.read { it.getOwnDecisions(user.id) } }.also {
+            Audit.DecisionRead.log(targetId = user.id)
+        }
     }
 
     data class DecisionWithValidStartDatePeriod(
@@ -283,7 +292,6 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ): List<DecisionWithValidStartDatePeriod> {
-        Audit.DecisionReadByApplication.log(targetId = applicationId)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Application.READ_DECISIONS, applicationId)
 
         return db.connect { dbc ->
@@ -293,6 +301,8 @@ class ApplicationControllerCitizen(
                     DecisionWithValidStartDatePeriod(it, it.validRequestedStartDatePeriod(featureConfig))
                 }
             }
+        }.also {
+            Audit.DecisionReadByApplication.log(targetId = applicationId)
         }
     }
 
@@ -342,12 +352,13 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable id: DecisionId
     ): ResponseEntity<Any> {
-        Audit.DecisionDownloadPdf.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Decision.DOWNLOAD_PDF, id)
 
         return db.connect { dbc ->
             val decision = dbc.transaction { tx -> tx.getDecision(id) } ?: throw NotFound("Decision $id does not exist")
             decisionService.getDecisionPdf(dbc, decision)
+        }.also {
+            Audit.DecisionDownloadPdf.log(targetId = id)
         }
     }
 
@@ -357,12 +368,13 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): Int {
-        Audit.ApplicationReadNotifications.log(targetId = user.id)
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_APPLICATION_NOTIFICATIONS, user.id)
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.fetchApplicationNotificationCountForCitizen(user.id)
             }
+        }.also {
+            Audit.ApplicationReadNotifications.log(targetId = user.id)
         }
     }
 }

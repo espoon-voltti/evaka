@@ -45,7 +45,6 @@ class PartnershipsController(
         clock: EvakaClock,
         @RequestBody body: PartnershipRequest
     ) {
-        Audit.PartnerShipsCreate.log(targetId = body.person1Id)
         accessControl.requirePermissionFor(user, clock, Action.Person.CREATE_PARTNERSHIP, body.person1Id)
 
         db.connect { dbc ->
@@ -70,6 +69,7 @@ class PartnershipsController(
                     )
                 }
         }
+        Audit.PartnerShipsCreate.log(targetId = body.person1Id)
     }
 
     @GetMapping
@@ -79,10 +79,11 @@ class PartnershipsController(
         clock: EvakaClock,
         @RequestParam personId: PersonId
     ): List<Partnership> {
-        Audit.PartnerShipsRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_PARTNERSHIPS, personId)
 
-        return db.connect { dbc -> dbc.read { it.getPartnershipsForPerson(personId, includeConflicts = true) } }
+        return db.connect { dbc -> dbc.read { it.getPartnershipsForPerson(personId, includeConflicts = true) } }.also {
+            Audit.PartnerShipsRead.log(targetId = personId)
+        }
     }
 
     @GetMapping("/{partnershipId}")
@@ -92,11 +93,11 @@ class PartnershipsController(
         clock: EvakaClock,
         @PathVariable partnershipId: PartnershipId
     ): Partnership {
-        Audit.PartnerShipsRead.log(targetId = partnershipId)
         accessControl.requirePermissionFor(user, clock, Action.Partnership.READ, partnershipId)
 
-        return db.connect { dbc -> dbc.read { it.getPartnership(partnershipId) } }
-            ?: throw NotFound()
+        return db.connect { dbc -> dbc.read { it.getPartnership(partnershipId) } ?: throw NotFound() }.also {
+            Audit.PartnerShipsRead.log(targetId = partnershipId)
+        }
     }
 
     @PutMapping("/{partnershipId}")
@@ -107,26 +108,25 @@ class PartnershipsController(
         @PathVariable partnershipId: PartnershipId,
         @RequestBody body: PartnershipUpdateRequest
     ) {
-        Audit.PartnerShipsUpdate.log(targetId = partnershipId)
         accessControl.requirePermissionFor(user, clock, Action.Partnership.UPDATE, partnershipId)
 
-        return db.connect { dbc ->
-            dbc
-                .transaction { tx ->
-                    val partnership =
-                        partnershipService.updatePartnershipDuration(tx, partnershipId, body.startDate, body.endDate)
-                    asyncJobRunner.plan(
-                        tx,
-                        listOf(
-                            AsyncJob.GenerateFinanceDecisions.forAdult(
-                                partnership.partners.first().id,
-                                DateRange(partnership.startDate, partnership.endDate)
-                            )
-                        ),
-                        runAt = clock.now()
-                    )
-                }
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val partnership =
+                    partnershipService.updatePartnershipDuration(tx, partnershipId, body.startDate, body.endDate)
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(
+                        AsyncJob.GenerateFinanceDecisions.forAdult(
+                            partnership.partners.first().id,
+                            DateRange(partnership.startDate, partnership.endDate)
+                        )
+                    ),
+                    runAt = clock.now()
+                )
+            }
         }
+        Audit.PartnerShipsUpdate.log(targetId = partnershipId)
     }
 
     @PutMapping("/{partnershipId}/retry")
@@ -136,7 +136,6 @@ class PartnershipsController(
         clock: EvakaClock,
         @PathVariable partnershipId: PartnershipId
     ) {
-        Audit.PartnerShipsRetry.log(targetId = partnershipId)
         accessControl.requirePermissionFor(user, clock, Action.Partnership.RETRY, partnershipId)
 
         db.connect { dbc ->
@@ -155,6 +154,7 @@ class PartnershipsController(
                 }
             }
         }
+        Audit.PartnerShipsRetry.log(targetId = partnershipId)
     }
 
     @DeleteMapping("/{partnershipId}")
@@ -164,7 +164,6 @@ class PartnershipsController(
         clock: EvakaClock,
         @PathVariable partnershipId: PartnershipId
     ) {
-        Audit.PartnerShipsDelete.log(targetId = partnershipId)
         accessControl.requirePermissionFor(user, clock, Action.Partnership.DELETE, partnershipId)
 
         db.connect { dbc ->
@@ -183,6 +182,7 @@ class PartnershipsController(
                 }
             }
         }
+        Audit.PartnerShipsDelete.log(targetId = partnershipId)
     }
 
     data class PartnershipRequest(

@@ -30,13 +30,14 @@ class MissingHeadOfFamilyReportController(private val acl: AccessControlList, pr
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?
     ): List<MissingHeadOfFamilyReportRow> {
-        Audit.MissingHeadOfFamilyReportRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_MISSING_HEAD_OF_FAMILY_REPORT)
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 it.getMissingHeadOfFamilyRows(from, to, acl.getAuthorizedUnits(user))
             }
+        }.also {
+            Audit.MissingHeadOfFamilyReportRead.log(args = mapOf("from" to from, "to" to to))
         }
     }
 }

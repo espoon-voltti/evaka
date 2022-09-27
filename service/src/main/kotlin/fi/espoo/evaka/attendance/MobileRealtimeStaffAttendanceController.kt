@@ -38,7 +38,6 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestParam unitId: DaycareId
     ): CurrentDayStaffAttendanceResponse {
-        Audit.UnitStaffAttendanceRead.log(targetId = unitId)
         ac.requirePermissionFor(user, clock, Action.Unit.READ_REALTIME_STAFF_ATTENDANCES, unitId)
 
         return db.connect { dbc ->
@@ -48,6 +47,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     extraAttendances = it.getExternalStaffAttendances(unitId, clock.now())
                 )
             }
+        }.also {
+            Audit.UnitStaffAttendanceRead.log(targetId = unitId)
         }
     }
 
@@ -65,8 +66,6 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: StaffArrivalRequest
     ) {
-        Audit.StaffAttendanceArrivalCreate.log(targetId = body.groupId, objectId = body.employeeId)
-
         ac.requirePermissionFor(user, clock, Action.Group.MARK_ARRIVAL, body.groupId)
         ac.verifyPinCode(body.employeeId, body.pinCode)
         // todo: check that employee has access to a unit related to the group?
@@ -91,6 +90,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     }
                 }
             }
+            Audit.StaffAttendanceArrivalCreate.log(targetId = body.groupId, objectId = body.employeeId)
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
         }
@@ -110,8 +110,6 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: StaffDepartureRequest
     ) {
-        Audit.StaffAttendanceDepartureCreate.log()
-
         ac.requirePermissionFor(user, clock, Action.Group.MARK_DEPARTURE, body.groupId)
         ac.verifyPinCode(body.employeeId, body.pinCode)
 
@@ -135,6 +133,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 }
             }
         }
+        Audit.StaffAttendanceDepartureCreate.log()
     }
 
     data class ExternalStaffArrivalRequest(
@@ -149,7 +148,6 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: ExternalStaffArrivalRequest
     ): StaffAttendanceExternalId {
-        Audit.StaffAttendanceArrivalExternalCreate.log(targetId = body.groupId)
         ac.requirePermissionFor(user, clock, Action.Group.MARK_EXTERNAL_ARRIVAL, body.groupId)
 
         val arrivedTimeHDT = clock.now().withTime(body.arrived)
@@ -167,6 +165,8 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     )
                 )
             }
+        }.also {
+            Audit.StaffAttendanceArrivalExternalCreate.log(targetId = body.groupId)
         }
     }
 
@@ -181,8 +181,6 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: ExternalStaffDepartureRequest
     ) {
-        Audit.StaffAttendanceDepartureExternalCreate.log(body.attendanceId)
-
         db.connect { dbc ->
             // todo: convert to action auth
             val attendance = dbc.read { it.getExternalStaffAttendance(body.attendanceId, clock.now()) }
@@ -202,6 +200,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 )
             }
         }
+        Audit.StaffAttendanceDepartureExternalCreate.log(body.attendanceId)
     }
 
     fun createAttendancesFromArrival(

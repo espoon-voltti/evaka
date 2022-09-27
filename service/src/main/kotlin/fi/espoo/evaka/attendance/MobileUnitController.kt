@@ -34,7 +34,6 @@ class MobileUnitController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
     ): UnitInfo {
-        Audit.UnitRead.log(targetId = unitId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_MOBILE_INFO, unitId)
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -43,6 +42,8 @@ class MobileUnitController(private val accessControl: AccessControl) {
                     clock.today(),
                 )
             }
+        }.also {
+            Audit.UnitRead.log(targetId = unitId)
         }
     }
 
@@ -53,7 +54,6 @@ class MobileUnitController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestParam unitIds: List<DaycareId>
     ): List<UnitStats> {
-        Audit.UnitRead.log(targetId = unitIds)
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_MOBILE_STATS, unitIds)
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -62,6 +62,8 @@ class MobileUnitController(private val accessControl: AccessControl) {
                     clock.today(),
                 )
             }
+        }.also {
+            Audit.UnitRead.log(targetId = unitIds)
         }
     }
 }

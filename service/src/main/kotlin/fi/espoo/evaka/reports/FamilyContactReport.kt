@@ -29,13 +29,14 @@ class FamilyContactReportController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestParam unitId: DaycareId
     ): List<FamilyContactReportRow> {
-        Audit.FamilyContactReportRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_FAMILY_CONTACT_REPORT, unitId)
         return db.connect { dbc ->
             dbc.read {
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 it.getFamilyContacts(clock.today(), unitId)
             }
+        }.also {
+            Audit.FamilyContactReportRead.log()
         }
     }
 }

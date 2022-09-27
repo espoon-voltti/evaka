@@ -40,7 +40,6 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable personId: PersonId
     ): List<InvoiceCorrectionWithPermittedActions> {
-        Audit.InvoiceCorrectionsRead.log(targetId = personId)
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_INVOICE_CORRECTIONS, personId)
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -67,6 +66,8 @@ WHERE c.head_of_family_id = :personId AND NOT applied_completely
                 val permittedActions = accessControl.getPermittedActions<InvoiceCorrectionId, Action.InvoiceCorrection>(tx, user, clock, invoiceCorrections.map { it.id })
                 invoiceCorrections.map { InvoiceCorrectionWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
             }
+        }.also {
+            Audit.InvoiceCorrectionsRead.log(targetId = personId)
         }
     }
 
@@ -79,7 +80,6 @@ WHERE c.head_of_family_id = :personId AND NOT applied_completely
         clock: EvakaClock,
         @RequestBody body: NewInvoiceCorrection
     ) {
-        Audit.InvoiceCorrectionsCreate.log(targetId = body.headOfFamilyId, objectId = body.childId)
         accessControl.requirePermissionFor(user, clock, Action.Person.CREATE_INVOICE_CORRECTION, body.headOfFamilyId)
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -93,6 +93,7 @@ VALUES (:headOfFamilyId, :childId, :unitId, :product, :period, :amount, :unitPri
                     .execute()
             }
         }
+        Audit.InvoiceCorrectionsCreate.log(targetId = body.headOfFamilyId, objectId = body.childId)
     }
 
     @DeleteMapping("/{id}")
@@ -102,7 +103,6 @@ VALUES (:headOfFamilyId, :childId, :unitId, :product, :period, :amount, :unitPri
         clock: EvakaClock,
         @PathVariable id: InvoiceCorrectionId
     ) {
-        Audit.InvoiceCorrectionsDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.InvoiceCorrection.DELETE, id)
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -125,6 +125,7 @@ DELETE FROM invoice_correction WHERE id = :id RETURNING id
                 }
             }
         }
+        Audit.InvoiceCorrectionsDelete.log(targetId = id)
     }
 
     data class NoteUpdateBody(val note: String)
@@ -136,7 +137,6 @@ DELETE FROM invoice_correction WHERE id = :id RETURNING id
         @PathVariable id: InvoiceCorrectionId,
         @RequestBody body: NoteUpdateBody
     ) {
-        Audit.InvoiceCorrectionsNoteUpdate.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.InvoiceCorrection.UPDATE_NOTE, id)
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -146,6 +146,7 @@ DELETE FROM invoice_correction WHERE id = :id RETURNING id
                     .execute()
             }
         }
+        Audit.InvoiceCorrectionsNoteUpdate.log(targetId = id)
     }
 }
 

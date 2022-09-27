@@ -31,7 +31,6 @@ class ApplicationsReportController(private val accessControl: AccessControl, pri
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): List<ApplicationsReportRow> {
-        Audit.ApplicationsReportRead.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_APPLICATIONS_REPORT)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
@@ -40,6 +39,8 @@ class ApplicationsReportController(private val accessControl: AccessControl, pri
                 it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                 it.getApplicationsRows(from, to, acl.getAuthorizedUnits(user))
             }
+        }.also {
+            Audit.ApplicationsReportRead.log(args = mapOf("from" to from, "to" to to))
         }
     }
 }

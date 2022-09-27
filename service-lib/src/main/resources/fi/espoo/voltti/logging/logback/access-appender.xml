@@ -10,6 +10,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     <appender name="VOLTTI_ACCESS_APPENDER" class="ch.qos.logback.core.ConsoleAppender">
         <filter class="fi.espoo.voltti.logging.filter.AccessLoggingFilter"/>
         <encoder class="net.logstash.logback.encoder.AccessEventCompositeJsonEncoder">
+            <jsonFactoryDecorator class="fi.espoo.voltti.logging.JsonLoggingConfig"/>
             <providers>
                 <contentLength><fieldName>contentLength</fieldName></contentLength>
                 <elapsedTime><fieldName>responseTime</fieldName></elapsedTime>

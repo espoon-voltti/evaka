@@ -75,7 +75,6 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
             required = false
         ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): UnitDataResponse {
-        Audit.UnitView.log(targetId = unitId)
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_BASIC, unitId)
 
         val period = FiniteDateRange(from, to)
@@ -179,6 +178,8 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
                     basicData
                 }
             }
+        }.also {
+            Audit.UnitView.log(targetId = unitId)
         }
     }
 }

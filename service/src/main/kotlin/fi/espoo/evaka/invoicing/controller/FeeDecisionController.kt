@@ -80,7 +80,6 @@ class FeeDecisionController(
         clock: EvakaClock,
         @RequestBody body: SearchFeeDecisionRequest
     ): Paged<FeeDecisionSummary> {
-        Audit.FeeDecisionSearch.log()
         accessControl.requirePermissionFor(user, clock, Action.Global.SEARCH_FEE_DECISIONS)
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
@@ -105,6 +104,8 @@ class FeeDecisionController(
                     body.financeDecisionHandlerId
                 )
             }
+        }.also {
+            Audit.FeeDecisionSearch.log()
         }
     }
 
@@ -115,7 +116,6 @@ class FeeDecisionController(
         clock: EvakaClock,
         @RequestBody feeDecisionIds: List<FeeDecisionId>
     ) {
-        Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
         accessControl.requirePermissionFor(user, clock, Action.FeeDecision.UPDATE, feeDecisionIds)
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -129,18 +129,18 @@ class FeeDecisionController(
                 asyncJobRunner.plan(tx, confirmedDecisions.map { AsyncJob.NotifyFeeDecisionApproved(it) }, runAt = clock.now())
             }
         }
+        Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
     }
 
     @PostMapping("/mark-sent")
     fun setSent(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody feeDecisionIds: List<FeeDecisionId>) {
-        Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)
         accessControl.requirePermissionFor(user, clock, Action.FeeDecision.UPDATE, feeDecisionIds)
         db.connect { dbc -> dbc.transaction { service.setSent(it, clock, feeDecisionIds) } }
+        Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)
     }
 
     @GetMapping("/pdf/{decisionId}")
     fun getDecisionPdf(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable decisionId: FeeDecisionId): ResponseEntity<Any> {
-        Audit.FeeDecisionPdfRead.log(targetId = decisionId)
         accessControl.requirePermissionFor(user, clock, Action.FeeDecision.READ, decisionId)
 
         return db.connect { dbc ->
@@ -160,15 +160,17 @@ class FeeDecisionController(
                 }
             }
             service.getFeeDecisionPdfResponse(dbc, decisionId)
+        }.also {
+            Audit.FeeDecisionPdfRead.log(targetId = decisionId)
         }
     }
 
     @GetMapping("/{uuid}")
     fun getDecision(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable uuid: FeeDecisionId): Wrapper<FeeDecisionDetailed> {
-        Audit.FeeDecisionRead.log(targetId = uuid)
         accessControl.requirePermissionFor(user, clock, Action.FeeDecision.READ, uuid)
         val res = db.connect { dbc -> dbc.read { it.getFeeDecision(uuid) } }
             ?: throw NotFound("No fee decision found with given ID ($uuid)")
+        Audit.FeeDecisionRead.log(targetId = uuid)
         return Wrapper(res)
     }
 
@@ -179,13 +181,14 @@ class FeeDecisionController(
         clock: EvakaClock,
         @PathVariable id: PersonId
     ): Wrapper<List<FeeDecision>> {
-        Audit.FeeDecisionHeadOfFamilyRead.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_FEE_DECISIONS, id)
         return Wrapper(
             db.connect { dbc ->
                 dbc.read {
                     it.findFeeDecisionsForHeadOfFamily(id, null, null)
                 }
+            }.also {
+                Audit.FeeDecisionHeadOfFamilyRead.log(targetId = id)
             }
         )
     }
@@ -198,9 +201,9 @@ class FeeDecisionController(
         @PathVariable id: PersonId,
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
     ) {
-        Audit.FeeDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.Person.GENERATE_RETROACTIVE_FEE_DECISIONS, id)
         db.connect { dbc -> dbc.transaction { generator.createRetroactiveFeeDecisions(it, id, body.from) } }
+        Audit.FeeDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
     }
 
     @PostMapping("/set-type/{uuid}")
@@ -211,9 +214,9 @@ class FeeDecisionController(
         @PathVariable uuid: FeeDecisionId,
         @RequestBody request: FeeDecisionTypeRequest
     ) {
-        Audit.FeeDecisionSetType.log(targetId = uuid)
         accessControl.requirePermissionFor(user, clock, Action.FeeDecision.UPDATE, uuid)
         db.connect { dbc -> dbc.transaction { service.setType(it, uuid, request.type) } }
+        Audit.FeeDecisionSetType.log(targetId = uuid)
     }
 }
 

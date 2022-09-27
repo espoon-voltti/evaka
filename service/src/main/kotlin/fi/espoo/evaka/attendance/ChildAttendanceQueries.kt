@@ -11,6 +11,7 @@ import fi.espoo.evaka.daycare.service.Absence
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -314,18 +315,21 @@ fun Database.Transaction.deleteAttendancesByDate(childId: ChildId, date: LocalDa
         .execute()
 }
 
-fun Database.Transaction.deleteAbsencesByFiniteDateRange(childId: ChildId, dateRange: FiniteDateRange) {
+fun Database.Transaction.deleteAbsencesByFiniteDateRange(childId: ChildId, dateRange: FiniteDateRange): List<AbsenceId> {
     // language=sql
     val sql =
         """
         DELETE FROM absence
         WHERE child_id = :childId AND between_start_and_end(:dateRange, date)
+        RETURNING id
         """.trimIndent()
 
-    createUpdate(sql)
+    return createUpdate(sql)
         .bind("childId", childId)
         .bind("dateRange", dateRange)
-        .execute()
+        .executeAndReturnGeneratedKeys()
+        .mapTo<AbsenceId>()
+        .toList()
 }
 
 fun Database.Read.fetchAttendanceReservations(

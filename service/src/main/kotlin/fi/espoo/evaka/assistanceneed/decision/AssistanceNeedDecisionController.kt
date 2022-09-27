@@ -47,7 +47,6 @@ class AssistanceNeedDecisionController(
         @PathVariable childId: ChildId,
         @RequestBody body: AssistanceNeedDecisionRequest
     ): AssistanceNeedDecision {
-        Audit.ChildAssistanceNeedDecisionCreate.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_ASSISTANCE_NEED_DECISION, childId)
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -72,6 +71,8 @@ class AssistanceNeedDecisionController(
 
                 tx.insertAssistanceNeedDecision(childId, decision)
             }
+        }.also {
+            Audit.ChildAssistanceNeedDecisionCreate.log(targetId = childId)
         }
     }
 
@@ -82,7 +83,6 @@ class AssistanceNeedDecisionController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ): AssistanceNeedDecisionResponse {
-        Audit.ChildAssistanceNeedDecisionRead.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.READ, id)
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -94,6 +94,8 @@ class AssistanceNeedDecisionController(
                     hasMissingFields = hasMissingFields(decision)
                 )
             }
+        }.also {
+            Audit.ChildAssistanceNeedDecisionRead.log(targetId = id)
         }
     }
 
@@ -105,7 +107,6 @@ class AssistanceNeedDecisionController(
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: AssistanceNeedDecisionRequest
     ) {
-        Audit.ChildAssistanceNeedDecisionUpdate.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.UPDATE, id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -130,6 +131,8 @@ class AssistanceNeedDecisionController(
                     )
                 )
             }
+        }.also {
+            Audit.ChildAssistanceNeedDecisionUpdate.log(targetId = id)
         }
     }
 
@@ -140,7 +143,6 @@ class AssistanceNeedDecisionController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ) {
-        Audit.ChildAssistanceNeedDecisionSend.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.SEND, id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -169,6 +171,8 @@ class AssistanceNeedDecisionController(
                     false
                 )
             }
+        }.also {
+            Audit.ChildAssistanceNeedDecisionSend.log(targetId = id)
         }
     }
 
@@ -179,7 +183,6 @@ class AssistanceNeedDecisionController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<AssistanceNeedDecisionBasicsResponse> {
-        Audit.ChildAssistanceNeedDecisionsList.log(targetId = childId)
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_ASSISTANCE_NEED_DECISIONS, childId)
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -194,6 +197,8 @@ class AssistanceNeedDecisionController(
                     AssistanceNeedDecisionBasicsResponse(decision = it, permittedActions = permittedActions[it.id]!!)
                 }
             }
+        }.also {
+            Audit.ChildAssistanceNeedDecisionsList.log(targetId = childId)
         }
     }
 
@@ -204,7 +209,6 @@ class AssistanceNeedDecisionController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ) {
-        Audit.ChildAssistanceNeedDecisionDelete.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.DELETE, id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
@@ -212,6 +216,8 @@ class AssistanceNeedDecisionController(
                     throw NotFound("Assistance need decision $id cannot found or cannot be deleted", "DECISION_NOT_FOUND")
                 }
             }
+        }.also {
+            Audit.ChildAssistanceNeedDecisionDelete.log(targetId = id)
         }
     }
 
@@ -223,7 +229,6 @@ class AssistanceNeedDecisionController(
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: DecideAssistanceNeedDecisionRequest
     ) {
-        Audit.ChildAssistanceNeedDecisionDecide.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.DECIDE, id)
 
         if (body.status == AssistanceNeedDecisionStatus.DRAFT) {
@@ -270,6 +275,8 @@ class AssistanceNeedDecisionController(
                     )
                 }
             }
+        }.also {
+            Audit.ChildAssistanceNeedDecisionDecide.log(targetId = id)
         }
     }
 
@@ -280,13 +287,14 @@ class AssistanceNeedDecisionController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ) {
-        Audit.ChildAssistanceNeedDecisionOpened.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.MARK_AS_OPENED, id)
 
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.markAssistanceNeedDecisionAsOpened(id)
             }
+        }.also {
+            Audit.ChildAssistanceNeedDecisionOpened.log(targetId = id)
         }
     }
 
@@ -298,7 +306,6 @@ class AssistanceNeedDecisionController(
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: UpdateDecisionMakerForAssistanceNeedDecisionRequest
     ) {
-        Audit.ChildAssistanceNeedDecisionUpdateDecisionMaker.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.UPDATE_DECISION_MAKER, id)
 
         return db.connect { dbc ->
@@ -323,6 +330,8 @@ class AssistanceNeedDecisionController(
                     true
                 )
             }
+        }.also {
+            Audit.ChildAssistanceNeedDecisionUpdateDecisionMaker.log(targetId = id)
         }
     }
 
@@ -333,7 +342,6 @@ class AssistanceNeedDecisionController(
         user: AuthenticatedUser,
         db: Database
     ): List<Employee> {
-        Audit.ChildAssistanceNeedDecisionReadDecisionMakerOptions.log(targetId = id)
         accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.READ_DECISION_MAKER_OPTIONS, id)
         return db.connect { dbc ->
             dbc.read { tx ->
@@ -343,6 +351,8 @@ class AssistanceNeedDecisionController(
                     featureConfig.assistanceDecisionMakerRoles
                 )
             }
+        }.also {
+            Audit.ChildAssistanceNeedDecisionReadDecisionMakerOptions.log(targetId = id)
         }
     }
 

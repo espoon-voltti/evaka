@@ -31,10 +31,11 @@ class GroupNoteController(
         @PathVariable groupId: GroupId,
         @RequestBody body: GroupNoteBody
     ): GroupNoteId {
-        Audit.GroupNoteCreate.log(groupId)
         ac.requirePermissionFor(user, clock, Action.Group.CREATE_NOTE, groupId)
 
-        return db.connect { dbc -> dbc.transaction { it.createGroupNote(groupId, body) } }
+        return db.connect { dbc -> dbc.transaction { it.createGroupNote(groupId, body) } }.also {
+            Audit.GroupNoteCreate.log(groupId)
+        }
     }
 
     @PutMapping("/group-notes/{noteId}")
@@ -45,10 +46,11 @@ class GroupNoteController(
         @PathVariable noteId: GroupNoteId,
         @RequestBody body: GroupNoteBody
     ): GroupNote {
-        Audit.GroupNoteUpdate.log(noteId, noteId)
         ac.requirePermissionFor(user, clock, Action.GroupNote.UPDATE, noteId)
 
-        return db.connect { dbc -> dbc.transaction { it.updateGroupNote(clock, noteId, body) } }
+        return db.connect { dbc -> dbc.transaction { it.updateGroupNote(clock, noteId, body) } }.also {
+            Audit.GroupNoteUpdate.log(noteId, noteId)
+        }
     }
 
     @DeleteMapping("/group-notes/{noteId}")
@@ -58,9 +60,10 @@ class GroupNoteController(
         clock: EvakaClock,
         @PathVariable noteId: GroupNoteId
     ) {
-        Audit.GroupNoteDelete.log(noteId)
         ac.requirePermissionFor(user, clock, Action.GroupNote.DELETE, noteId)
 
-        return db.connect { dbc -> dbc.transaction { it.deleteGroupNote(noteId) } }
+        return db.connect { dbc -> dbc.transaction { it.deleteGroupNote(noteId) } }.also {
+            Audit.GroupNoteDelete.log(noteId)
+        }
     }
 }
