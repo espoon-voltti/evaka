@@ -22,6 +22,7 @@ import fi.espoo.evaka.invoicing.data.upsertIncome
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
+import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.placement.PlacementPlan
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
@@ -1285,7 +1286,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.confirmPlacementProposalChanges(tx, serviceWorker, clock, testDaycare.id)
         }
         asyncJobRunner.runPendingJobsSync(clock)
-        asyncJobRunner.runPendingJobsSync(clock)
         sfiAsyncJobRunner.runPendingJobsSync(clock)
         db.read { tx ->
             // then
@@ -1306,6 +1306,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
             val placements = tx.getPlacementsForChild(testChild_2.id)
             assertEquals(0, placements.size)
+
+            assertEquals(1, tx.getParentships(testAdult_1.id, testChild_2.id).size)
         }
     }
 
