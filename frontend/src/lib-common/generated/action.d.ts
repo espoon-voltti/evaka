@@ -306,6 +306,7 @@ export type Person =
   | 'UPDATE_FROM_VTJ'
   | 'UPDATE_INVOICE_ADDRESS'
   | 'UPDATE_OPH_OID'
+  | 'UPDATE_PERSONAL_DETAILS'
 
 export type Placement =
   | 'CREATE_GROUP_PLACEMENT'

@@ -699,6 +699,7 @@ sealed interface Action {
         UPDATE(HasGlobalRole(FINANCE_ADMIN, SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChildOfPerson()),
         UPDATE_INVOICE_ADDRESS(HasGlobalRole(FINANCE_ADMIN)),
         UPDATE_OPH_OID,
+        UPDATE_PERSONAL_DETAILS(HasGlobalRole(SERVICE_WORKER)),
         UPDATE_FROM_VTJ(HasGlobalRole(SERVICE_WORKER));
 
         override fun toString(): String = "${javaClass.name}.$name"
