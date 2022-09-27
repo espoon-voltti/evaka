@@ -101,7 +101,7 @@ class VoucherValueDecisionController(
                 )
             }
         }.also {
-            Audit.VoucherValueDecisionSearch.log()
+            Audit.VoucherValueDecisionSearch.log(args = mapOf("total" to it.total))
         }
     }
 
@@ -203,7 +203,7 @@ class VoucherValueDecisionController(
 
             valueDecisionService.getDecisionPdfResponse(dbc, decisionId)
         }.also {
-            Audit.FeeDecisionPdfRead.log(targetId = decisionId)
+            Audit.VoucherValueDecisionPdfRead.log(targetId = decisionId)
         }
     }
 

@@ -58,7 +58,7 @@ class NoteController(private val accessControl: AccessControl) {
                 }
             }
         }.also {
-            Audit.NoteRead.log(targetId = applicationId)
+            Audit.NoteRead.log(targetId = applicationId, args = mapOf("count" to it.size))
         }
     }
 
@@ -77,7 +77,7 @@ class NoteController(private val accessControl: AccessControl) {
                 it.createApplicationNote(applicationId, note.text, user.evakaUserId)
             }
         }.also {
-            Audit.NoteCreate.log(targetId = applicationId)
+            Audit.NoteCreate.log(targetId = applicationId, objectId = it.id)
         }
     }
 

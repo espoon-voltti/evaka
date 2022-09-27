@@ -50,7 +50,7 @@ class MessageController(
     fun getAccountsByUser(db: Database, user: AuthenticatedUser.Employee, clock: EvakaClock): Set<AuthorizedMessageAccount> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_USER_MESSAGE_ACCOUNTS)
         return db.connect { dbc -> dbc.read { it.getAuthorizedMessageAccountsForEmployee(user.id) } }.also {
-            Audit.MessagingMyAccountsRead.log()
+            Audit.MessagingMyAccountsRead.log(args = mapOf("count" to it.size))
         }
     }
 
@@ -65,7 +65,7 @@ class MessageController(
         val result = if (user.employeeId != null) {
             db.connect { dbc -> dbc.read { it.getAuthorizedMessageAccountsForEmployee(user.employeeId) } }
         } else setOf()
-        Audit.MessagingMyAccountsRead.log()
+        Audit.MessagingMyAccountsRead.log(targetId = unitId, args = mapOf("count" to result.size))
         return result
     }
 
@@ -82,7 +82,7 @@ class MessageController(
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.read { it.getReceivedThreads(accountId, pageSize, page) }
         }.also {
-            Audit.MessagingReceivedMessagesRead.log(accountId)
+            Audit.MessagingReceivedMessagesRead.log(targetId = accountId, args = mapOf("total" to it.total))
         }
     }
 
@@ -99,7 +99,7 @@ class MessageController(
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.read { it.getMessageCopiesByAccount(accountId, pageSize, page) }
         }.also {
-            Audit.MessagingReceivedMessagesRead.log(accountId)
+            Audit.MessagingReceivedMessagesRead.log(targetId = accountId, args = mapOf("total" to it.total))
         }
     }
 
@@ -116,7 +116,7 @@ class MessageController(
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.read { it.getMessagesSentByAccount(accountId, pageSize, page) }
         }.also {
-            Audit.MessagingSentMessagesRead.log(accountId)
+            Audit.MessagingSentMessagesRead.log(targetId = accountId, args = mapOf("total" to it.total))
         }
     }
 
@@ -136,7 +136,7 @@ class MessageController(
                 )
             }
         }.also {
-            Audit.MessagingUnreadMessagesRead.log()
+            Audit.MessagingUnreadMessagesRead.log(args = mapOf("count" to it.size))
         }
     }
 
@@ -149,7 +149,7 @@ class MessageController(
     ): Set<UnreadCountByAccountAndGroup> {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_UNREAD_MESSAGES, unitId)
         return db.connect { dbc -> dbc.read { tx -> tx.getUnreadMessagesCountsByDaycare(unitId) } }.also {
-            Audit.MessagingUnreadMessagesRead.log()
+            Audit.MessagingUnreadMessagesRead.log(targetId = unitId, args = mapOf("count" to it.size))
         }
     }
 
@@ -212,7 +212,7 @@ class MessageController(
                 if (body.draftId != null) tx.deleteDraft(accountId = accountId, draftId = body.draftId)
             }
         }
-        Audit.MessagingNewMessageWrite.log(accountId)
+        Audit.MessagingNewMessageWrite.log(targetId = accountId)
     }
 
     @GetMapping("/{accountId}/drafts")
@@ -226,7 +226,7 @@ class MessageController(
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { it.getDrafts(accountId) }
         }.also {
-            Audit.MessagingDraftsRead.log(accountId)
+            Audit.MessagingDraftsRead.log(targetId = accountId, args = mapOf("count" to it.size))
         }
     }
 
@@ -240,8 +240,8 @@ class MessageController(
         return db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { it.initDraft(accountId) }
-        }.also {
-            Audit.MessagingCreateDraft.log(accountId)
+        }.also { messageDraftId ->
+            Audit.MessagingCreateDraft.log(targetId = accountId, objectId = messageDraftId)
         }
     }
 
@@ -258,7 +258,7 @@ class MessageController(
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { it.updateDraft(accountId, draftId, content) }
         }.also {
-            Audit.MessagingUpdateDraft.log(accountId, draftId)
+            Audit.MessagingUpdateDraft.log(targetId = accountId, objectId = draftId)
         }
     }
 
@@ -274,7 +274,7 @@ class MessageController(
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { tx -> tx.deleteDraft(accountId, draftId) }
         }.also {
-            Audit.MessagingDeleteDraft.log(accountId, draftId)
+            Audit.MessagingDeleteDraft.log(targetId = accountId, objectId = draftId)
         }
     }
 
@@ -299,7 +299,7 @@ class MessageController(
                 content = body.content
             )
         }.also {
-            Audit.MessagingReplyToMessageWrite.log(accountId, messageId)
+            Audit.MessagingReplyToMessageWrite.log(targetId = accountId, objectId = messageId)
         }
     }
 
@@ -315,7 +315,7 @@ class MessageController(
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { it.markThreadRead(clock, accountId, threadId) }
         }
-        Audit.MessagingMarkMessagesReadWrite.log(accountId, threadId)
+        Audit.MessagingMarkMessagesReadWrite.log(targetId = accountId, objectId = threadId)
     }
 
     @GetMapping("/receivers")
@@ -327,7 +327,7 @@ class MessageController(
     ): List<MessageReceiversResponse> {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_RECEIVERS_FOR_NEW_MESSAGE, unitId)
         return db.connect { dbc -> dbc.read { it.getReceiversForNewMessage(EmployeeId(user.rawId()), unitId) } }.also {
-            Audit.MessagingMessageReceiversRead.log(unitId)
+            Audit.MessagingMessageReceiversRead.log(targetId = unitId, args = mapOf("count" to it.size))
         }
     }
 

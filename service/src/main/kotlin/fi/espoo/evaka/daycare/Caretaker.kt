@@ -31,7 +31,7 @@ fun getCaretakers(tx: Database.Read, groupId: GroupId): List<CaretakerAmount> {
         .toList()
 }
 
-fun insertCaretakers(tx: Database.Transaction, groupId: GroupId, startDate: LocalDate, endDate: LocalDate?, amount: Double) {
+fun insertCaretakers(tx: Database.Transaction, groupId: GroupId, startDate: LocalDate, endDate: LocalDate?, amount: Double): DaycareCaretakerId {
     if (endDate != null && endDate.isBefore(startDate)) throw BadRequest("End date cannot be before start")
 
     try {
@@ -47,17 +47,20 @@ fun insertCaretakers(tx: Database.Transaction, groupId: GroupId, startDate: Loca
     }
 
     try {
-        tx.createUpdate(
+        return tx.createUpdate(
             """
             INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) 
             VALUES (:groupId, :start, :end, :amount)
+            RETURNING id
             """
         )
             .bind("groupId", groupId)
             .bind("start", startDate)
             .bind("end", endDate)
             .bind("amount", amount)
-            .execute()
+            .executeAndReturnGeneratedKeys()
+            .mapTo<DaycareCaretakerId>()
+            .single()
     } catch (e: Exception) {
         throw mapPSQLException(e)
     }

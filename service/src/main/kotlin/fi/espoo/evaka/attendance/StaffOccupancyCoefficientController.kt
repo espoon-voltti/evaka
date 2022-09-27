@@ -32,7 +32,7 @@ class StaffOccupancyCoefficientController(
     ): List<StaffOccupancyCoefficient> {
         ac.requirePermissionFor(user, clock, Action.Unit.READ_STAFF_OCCUPANCY_COEFFICIENTS, unitId)
         return db.connect { dbc -> dbc.read { it.getOccupancyCoefficientsByUnit(unitId) } }.also {
-            Audit.StaffOccupancyCoefficientRead.log(unitId)
+            Audit.StaffOccupancyCoefficientRead.log(targetId = unitId, args = mapOf("count" to it.size))
         }
     }
 
@@ -44,7 +44,7 @@ class StaffOccupancyCoefficientController(
         @RequestBody body: OccupancyCoefficientUpsert,
     ) {
         ac.requirePermissionFor(user, clock, Action.Unit.UPSERT_STAFF_OCCUPANCY_COEFFICIENTS, body.unitId)
-        db.connect { dbc -> dbc.transaction { it.upsertOccupancyCoefficient(body) } }
-        Audit.StaffOccupancyCoefficientUpsert.log(body.unitId, body.employeeId)
+        val id = db.connect { dbc -> dbc.transaction { it.upsertOccupancyCoefficient(body) } }
+        Audit.StaffOccupancyCoefficientUpsert.log(targetId = listOf(body.unitId, body.employeeId), objectId = id)
     }
 }

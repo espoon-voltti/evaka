@@ -66,6 +66,7 @@ import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.IncomeId
+import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AclAuthorization
@@ -309,7 +310,7 @@ class ApplicationStateService(
         Audit.ApplicationAdminDetailsUpdate.log(targetId = applicationId)
     }
 
-    fun createPlacementPlan(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId, placementPlan: DaycarePlacementPlan) {
+    fun createPlacementPlan(tx: Database.Transaction, user: AuthenticatedUser, applicationId: ApplicationId, placementPlan: DaycarePlacementPlan): PlacementPlanId {
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
 
@@ -322,10 +323,11 @@ class ApplicationStateService(
             }?.id
 
         tx.updateApplicationOtherGuardian(applicationId, secondDecisionTo)
-        placementPlanService.createPlacementPlan(tx, application, placementPlan)
+        val placementPlanId = placementPlanService.createPlacementPlan(tx, application, placementPlan)
         decisionDraftService.createDecisionDrafts(tx, user, application)
 
         tx.updateApplicationStatus(application.id, WAITING_DECISION)
+        return placementPlanId
     }
 
     fun cancelPlacementPlan(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, applicationId: ApplicationId) {
@@ -344,8 +346,8 @@ class ApplicationStateService(
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_DECISION)
-        finalizeDecisions(tx, user, clock, application)
-        Audit.DecisionCreate.log(targetId = applicationId)
+        val decisionIds = finalizeDecisions(tx, user, clock, application)
+        Audit.ApplicationSendDecisionsWithoutProposal.log(targetId = applicationId, objectId = decisionIds)
     }
 
     fun sendPlacementProposal(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, applicationId: ApplicationId) {
@@ -390,7 +392,7 @@ class ApplicationStateService(
         } else {
             tx.updatePlacementPlanUnitConfirmation(applicationId, status, null, null)
         }
-        Audit.PlacementPlanRespond.log(targetId = applicationId)
+        Audit.PlacementPlanRespond.log(targetId = applicationId, args = mapOf("status" to status))
     }
 
     fun confirmPlacementProposalChanges(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, unitId: DaycareId) {
@@ -428,7 +430,7 @@ class ApplicationStateService(
             .toList()
 
         validIds.map { getApplication(tx, it) }.forEach { finalizeDecisions(tx, user, clock, it) }
-        Audit.PlacementProposalAccept.log(targetId = unitId)
+        Audit.PlacementProposalAccept.log(targetId = unitId, objectId = validIds)
     }
 
     fun confirmDecisionMailed(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, applicationId: ApplicationId) {
@@ -437,7 +439,7 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_MAILING)
         tx.updateApplicationStatus(application.id, WAITING_CONFIRMATION)
-        Audit.DecisionConfirmMailed.log(targetId = applicationId)
+        Audit.ApplicationConfirmDecisionsMailed.log(targetId = applicationId)
     }
 
     fun acceptDecision(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, applicationId: ApplicationId, decisionId: DecisionId, requestedStartDate: LocalDate) {
@@ -503,7 +505,10 @@ class ApplicationStateService(
             if (application.form.maxFeeAccepted) setHighestFeeForUser(tx, clock, application, requestedStartDate)
             tx.updateApplicationStatus(application.id, ACTIVE)
         }
-        Audit.DecisionAccept.log(targetId = decisionId)
+        Audit.DecisionAccept.log(
+            targetId = decisionId,
+            mapOf("applicationId" to applicationId, "requestedStartDate" to requestedStartDate)
+        )
     }
 
     fun rejectDecision(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, applicationId: ApplicationId, decisionId: DecisionId) {
@@ -746,12 +751,15 @@ class ApplicationStateService(
         }
     }
 
-    private fun finalizeDecisions(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, application: ApplicationDetails) {
+    private fun finalizeDecisions(tx: Database.Transaction, user: AuthenticatedUser, clock: EvakaClock, application: ApplicationDetails): List<DecisionId> {
         val sendBySfi = canSendDecisionsBySfi(tx, user, application)
         val decisionDrafts = tx.fetchDecisionDrafts(application.id)
         if (decisionDrafts.any { it.planned }) {
-            decisionService.finalizeDecisions(tx, user, clock, application.id, sendBySfi)
+            val decisionIds = decisionService.finalizeDecisions(tx, user, clock, application.id, sendBySfi)
             tx.updateApplicationStatus(application.id, if (sendBySfi) WAITING_CONFIRMATION else WAITING_MAILING)
+            return decisionIds
+        } else {
+            return emptyList()
         }
     }
 

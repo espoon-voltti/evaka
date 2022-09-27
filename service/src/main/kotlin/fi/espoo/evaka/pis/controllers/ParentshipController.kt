@@ -41,7 +41,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Person.CREATE_PARENTSHIP, body.headOfChildId)
 
-        db.connect { dbc ->
+        val parentship = db.connect { dbc ->
             dbc.transaction {
                 parentshipService.createParentship(
                     it,
@@ -53,7 +53,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
                 )
             }
         }
-        Audit.ParentShipsCreate.log(targetId = body.headOfChildId, objectId = body.childId)
+        Audit.ParentShipsCreate.log(targetId = listOf(body.headOfChildId, body.childId), objectId = parentship.id)
     }
 
     @GetMapping
@@ -84,7 +84,7 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
                 parentships.map { ParentshipWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
             }
         }.also {
-            Audit.ParentShipsRead.log(targetId = listOf(headOfChildId, childId))
+            Audit.ParentShipsRead.log(targetId = listOf(headOfChildId, childId), args = mapOf("count" to it.size))
         }
     }
 
@@ -117,7 +117,10 @@ class ParentshipController(private val parentshipService: ParentshipService, pri
                 parentshipService.updateParentshipDuration(it, clock, id, body.startDate, body.endDate)
             }
         }
-        Audit.ParentShipsUpdate.log(targetId = id)
+        Audit.ParentShipsUpdate.log(
+            targetId = id,
+            args = mapOf("startDate" to body.startDate, "endDate" to body.endDate)
+        )
     }
 
     @PutMapping("/{id}/retry")

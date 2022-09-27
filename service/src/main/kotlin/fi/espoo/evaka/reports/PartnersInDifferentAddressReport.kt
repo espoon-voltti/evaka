@@ -35,7 +35,7 @@ class PartnersInDifferentAddressReportController(
                 it.getPartnersInDifferentAddressRows(acl.getAuthorizedUnits(user), clock)
             }
         }.also {
-            Audit.PartnersInDifferentAddressReportRead.log()
+            Audit.PartnersInDifferentAddressReportRead.log(args = mapOf("count" to it.size))
         }
     }
 }

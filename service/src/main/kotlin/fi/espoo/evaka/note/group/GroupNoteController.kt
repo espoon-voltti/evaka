@@ -33,8 +33,8 @@ class GroupNoteController(
     ): GroupNoteId {
         ac.requirePermissionFor(user, clock, Action.Group.CREATE_NOTE, groupId)
 
-        return db.connect { dbc -> dbc.transaction { it.createGroupNote(groupId, body) } }.also {
-            Audit.GroupNoteCreate.log(groupId)
+        return db.connect { dbc -> dbc.transaction { it.createGroupNote(groupId, body) } }.also { noteId ->
+            Audit.GroupNoteCreate.log(targetId = groupId, objectId = noteId)
         }
     }
 
@@ -49,7 +49,7 @@ class GroupNoteController(
         ac.requirePermissionFor(user, clock, Action.GroupNote.UPDATE, noteId)
 
         return db.connect { dbc -> dbc.transaction { it.updateGroupNote(clock, noteId, body) } }.also {
-            Audit.GroupNoteUpdate.log(noteId, noteId)
+            Audit.GroupNoteUpdate.log(targetId = noteId)
         }
     }
 
@@ -63,7 +63,7 @@ class GroupNoteController(
         ac.requirePermissionFor(user, clock, Action.GroupNote.DELETE, noteId)
 
         return db.connect { dbc -> dbc.transaction { it.deleteGroupNote(noteId) } }.also {
-            Audit.GroupNoteDelete.log(noteId)
+            Audit.GroupNoteDelete.log(targetId = noteId)
         }
     }
 }

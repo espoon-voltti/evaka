@@ -37,7 +37,7 @@ class MissingHeadOfFamilyReportController(private val acl: AccessControlList, pr
                 it.getMissingHeadOfFamilyRows(from, to, acl.getAuthorizedUnits(user))
             }
         }.also {
-            Audit.MissingHeadOfFamilyReportRead.log(args = mapOf("from" to from, "to" to to))
+            Audit.MissingHeadOfFamilyReportRead.log(args = mapOf("from" to from, "to" to to, "count" to it.size))
         }
     }
 }

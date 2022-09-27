@@ -71,7 +71,10 @@ class ChildAttendanceController(
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_CHILD_ATTENDANCES, unitId)
 
         return db.connect { dbc -> dbc.read { it.getAttendancesResponse(unitId, clock.now()) } }.also {
-            Audit.ChildAttendancesRead.log(targetId = unitId)
+            Audit.ChildAttendancesRead.log(
+                targetId = unitId,
+                args = mapOf("childCount" to it.children.size, "groupNoteCount" to it.groupNotes.size)
+            )
         }
     }
 
@@ -117,7 +120,7 @@ class ChildAttendanceController(
                 }
             }
         }
-        Audit.ChildAttendancesUpsert.log(targetId = childId)
+        Audit.ChildAttendancesUpsert.log(targetId = childId, objectId = unitId)
     }
 
     data class ArrivalRequest(
@@ -153,7 +156,7 @@ class ChildAttendanceController(
                 }
             }
         }
-        Audit.ChildAttendancesArrivalCreate.log(targetId = childId)
+        Audit.ChildAttendancesArrivalCreate.log(targetId = childId, objectId = unitId)
     }
 
     @PostMapping("/units/{unitId}/children/{childId}/return-to-coming")
@@ -175,7 +178,7 @@ class ChildAttendanceController(
                 if (attendance != null) tx.deleteAttendance(attendance.id)
             }
         }
-        Audit.ChildAttendancesReturnToComing.log(targetId = childId)
+        Audit.ChildAttendancesReturnToComing.log(targetId = childId, objectId = unitId)
     }
 
     @GetMapping("/units/{unitId}/children/{childId}/departure")
@@ -194,7 +197,11 @@ class ChildAttendanceController(
                 getPartialAbsenceThresholds(tx, clock, childId, unitId, attendance)
             }
         }.also {
-            Audit.ChildAttendancesDepartureRead.log(targetId = childId)
+            Audit.ChildAttendancesDepartureRead.log(
+                targetId = childId,
+                objectId = unitId,
+                args = mapOf("count" to it.size)
+            )
         }
     }
 
@@ -265,7 +272,7 @@ class ChildAttendanceController(
                 }
             }
         }
-        Audit.ChildAttendancesDepartureCreate.log(targetId = childId)
+        Audit.ChildAttendancesDepartureCreate.log(targetId = childId, objectId = unitId)
     }
 
     @PostMapping("/units/{unitId}/children/{childId}/return-to-present")
@@ -288,7 +295,7 @@ class ChildAttendanceController(
                 }
             }
         }
-        Audit.ChildAttendancesReturnToPresent.log(targetId = childId)
+        Audit.ChildAttendancesReturnToPresent.log(targetId = childId, objectId = unitId)
     }
 
     data class FullDayAbsenceRequest(
@@ -325,7 +332,7 @@ class ChildAttendanceController(
                 }
             }
         }
-        Audit.ChildAttendancesFullDayAbsenceCreate.log(targetId = childId)
+        Audit.ChildAttendancesFullDayAbsenceCreate.log(targetId = childId, objectId = unitId)
     }
 
     data class AbsenceRangeRequest(
@@ -361,7 +368,7 @@ class ChildAttendanceController(
                 }
             }
         }
-        Audit.ChildAttendancesAbsenceRangeCreate.log(targetId = childId)
+        Audit.ChildAttendancesAbsenceRangeCreate.log(targetId = childId, objectId = unitId)
     }
 
     @DeleteMapping("/units/{unitId}/children/{childId}/absence-range")

@@ -33,7 +33,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
     ): List<FixedPeriodQuestionnaire> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_QUESTIONNAIRES)
         return db.connect { dbc -> dbc.read { it.getHolidayQuestionnaires() } }.also {
-            Audit.HolidayQuestionnairesList.log()
+            Audit.HolidayQuestionnairesList.log(args = mapOf("count" to it.size))
         }
     }
 
@@ -46,7 +46,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
     ): FixedPeriodQuestionnaire {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_QUESTIONNAIRE)
         return db.connect { dbc -> dbc.read { it.getFixedPeriodQuestionnaire(id) ?: throw NotFound() } }.also {
-            Audit.HolidayQuestionnaireRead.log(id)
+            Audit.HolidayQuestionnaireRead.log(targetId = id)
         }
     }
 
@@ -58,7 +58,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         @RequestBody body: FixedPeriodQuestionnaireBody
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_HOLIDAY_QUESTIONNAIRE)
-        db.connect { dbc ->
+        val id = db.connect { dbc ->
             dbc.transaction {
                 try {
                     it.createFixedPeriodQuestionnaire(body)
@@ -67,7 +67,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                 }
             }
         }
-        Audit.HolidayQuestionnaireCreate.log()
+        Audit.HolidayQuestionnaireCreate.log(targetId = id)
     }
 
     @PutMapping("/{id}")
@@ -88,7 +88,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                 }
             }
         }
-        Audit.HolidayQuestionnaireUpdate.log(id)
+        Audit.HolidayQuestionnaireUpdate.log(targetId = id)
     }
 
     @DeleteMapping("/{id}")
@@ -100,6 +100,6 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Global.DELETE_HOLIDAY_QUESTIONNAIRE)
         db.connect { dbc -> dbc.transaction { it.deleteHolidayQuestionnaire(id) } }
-        Audit.HolidayQuestionnaireDelete.log(id)
+        Audit.HolidayQuestionnaireDelete.log(targetId = id)
     }
 }

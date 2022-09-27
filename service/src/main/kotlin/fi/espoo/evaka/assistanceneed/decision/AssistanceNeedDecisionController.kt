@@ -71,8 +71,8 @@ class AssistanceNeedDecisionController(
 
                 tx.insertAssistanceNeedDecision(childId, decision)
             }
-        }.also {
-            Audit.ChildAssistanceNeedDecisionCreate.log(targetId = childId)
+        }.also { assistanceNeedDecision ->
+            Audit.ChildAssistanceNeedDecisionCreate.log(targetId = childId, objectId = assistanceNeedDecision.id)
         }
     }
 
@@ -198,7 +198,7 @@ class AssistanceNeedDecisionController(
                 }
             }
         }.also {
-            Audit.ChildAssistanceNeedDecisionsList.log(targetId = childId)
+            Audit.ChildAssistanceNeedDecisionsList.log(targetId = childId, args = mapOf("count" to it.size))
         }
     }
 
@@ -276,7 +276,12 @@ class AssistanceNeedDecisionController(
                 }
             }
         }.also {
-            Audit.ChildAssistanceNeedDecisionDecide.log(targetId = id)
+            Audit.ChildAssistanceNeedDecisionDecide.log(
+                targetId = id,
+                args = mapOf(
+                    "status" to body.status
+                )
+            )
         }
     }
 
@@ -352,7 +357,10 @@ class AssistanceNeedDecisionController(
                 )
             }
         }.also {
-            Audit.ChildAssistanceNeedDecisionReadDecisionMakerOptions.log(targetId = id)
+            Audit.ChildAssistanceNeedDecisionReadDecisionMakerOptions.log(
+                targetId = id,
+                args = mapOf("count" to it.size)
+            )
         }
     }
 

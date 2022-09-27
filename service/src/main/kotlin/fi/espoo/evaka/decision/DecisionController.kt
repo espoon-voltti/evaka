@@ -43,7 +43,7 @@ class DecisionController(
     ): DecisionListResponse {
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_DECISIONS, guardianId)
         val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByGuardian(guardianId, acl.getAuthorizedUnits(user)) } }
-        Audit.DecisionRead.log(targetId = guardianId)
+        Audit.DecisionRead.log(targetId = guardianId, args = mapOf("count" to decisions.size))
         return DecisionListResponse(decisions)
     }
 
@@ -56,7 +56,7 @@ class DecisionController(
     ): DecisionListResponse {
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_DECISIONS, childId)
         val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByChild(childId, acl.getAuthorizedUnits(user)) } }
-        Audit.DecisionRead.log(targetId = childId)
+        Audit.DecisionRead.log(targetId = childId, args = mapOf("count" to decisions.size))
         return DecisionListResponse(decisions)
     }
 
@@ -69,7 +69,7 @@ class DecisionController(
     ): DecisionListResponse {
         accessControl.requirePermissionFor(user, clock, Action.Application.READ_DECISIONS, applicationId)
         val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user)) } }
-        Audit.DecisionRead.log(targetId = applicationId)
+        Audit.DecisionReadByApplication.log(targetId = applicationId)
 
         return DecisionListResponse(decisions)
     }
@@ -78,7 +78,7 @@ class DecisionController(
     fun getDecisionUnits(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<DecisionUnit> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_DECISION_UNITS)
         return db.connect { dbc -> dbc.read { decisionDraftService.getDecisionUnits(it) } }.also {
-            Audit.UnitRead.log()
+            Audit.UnitRead.log(args = mapOf("count" to it.size))
         }
     }
 

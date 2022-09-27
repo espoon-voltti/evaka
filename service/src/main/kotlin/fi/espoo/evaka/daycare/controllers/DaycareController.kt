@@ -64,7 +64,7 @@ class DaycareController(
                 tx.getDaycares(AclAuthorization.from(filter))
             }
         }.also {
-            Audit.UnitSearch.log()
+            Audit.UnitSearch.log(args = mapOf("count" to it.size))
         }
     }
 
@@ -76,7 +76,7 @@ class DaycareController(
     ): List<UnitFeatures> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_UNIT_FEATURES)
         return db.connect { dbc -> dbc.read { it.getUnitFeatures() } }.also {
-            Audit.UnitFeaturesRead.log()
+            Audit.UnitFeaturesRead.log(args = mapOf("count" to it.size))
         }
     }
 
@@ -144,7 +144,10 @@ class DaycareController(
     ): List<DaycareGroup> {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_GROUPS, daycareId)
         return db.connect { dbc -> dbc.read { daycareService.getDaycareGroups(it, daycareId, from, to) } }.also {
-            Audit.UnitGroupsSearch.log(targetId = daycareId)
+            Audit.UnitGroupsSearch.log(
+                targetId = daycareId,
+                args = mapOf("from" to from, "to" to to, "count" to it.size)
+            )
         }
     }
 
@@ -158,8 +161,8 @@ class DaycareController(
     ): DaycareGroup {
         accessControl.requirePermissionFor(user, clock, Action.Unit.CREATE_GROUP, daycareId)
 
-        return db.connect { dbc -> dbc.transaction { daycareService.createGroup(it, daycareId, body.name, body.startDate, body.initialCaretakers) } }.also {
-            Audit.UnitGroupsCreate.log(targetId = daycareId)
+        return db.connect { dbc -> dbc.transaction { daycareService.createGroup(it, daycareId, body.name, body.startDate, body.initialCaretakers) } }.also { group ->
+            Audit.UnitGroupsCreate.log(targetId = daycareId, objectId = group.id)
         }
     }
 
@@ -216,7 +219,7 @@ class DaycareController(
                 )
             }
         }.also {
-            Audit.UnitGroupsCaretakersRead.log(targetId = groupId)
+            Audit.UnitGroupsCaretakersRead.log(targetId = groupId, args = mapOf("count" to it.caretakers.size))
         }
     }
 
@@ -231,7 +234,7 @@ class DaycareController(
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Group.CREATE_CARETAKERS, groupId)
 
-        db.connect { dbc ->
+        val daycareCaretakerId = db.connect { dbc ->
             dbc.transaction {
                 insertCaretakers(
                     it,
@@ -242,7 +245,7 @@ class DaycareController(
                 )
             }
         }
-        Audit.UnitGroupsCaretakersCreate.log(targetId = groupId)
+        Audit.UnitGroupsCaretakersCreate.log(targetId = groupId, objectId = daycareCaretakerId)
     }
 
     @PutMapping("/{daycareId}/groups/{groupId}/caretakers/{id}")
@@ -329,8 +332,8 @@ class DaycareController(
                     it.updateDaycare(id, fields)
                     id
                 }
-            }.also {
-                Audit.UnitCreate.log()
+            }.also { unitId ->
+                Audit.UnitCreate.log(targetId = unitId)
             }
         )
     }

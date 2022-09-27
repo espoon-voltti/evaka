@@ -50,7 +50,7 @@ class BackupCareController(private val accessControl: AccessControl) {
                     backupCares.map { bc -> ChildBackupCareResponse(bc, permittedActions[bc.id] ?: emptySet()) }
                 }
             }.also {
-                Audit.ChildBackupCareRead.log(targetId = childId)
+                Audit.ChildBackupCareRead.log(targetId = childId, args = mapOf("count" to it.size))
             }
         )
     }
@@ -184,7 +184,10 @@ class BackupCareController(private val accessControl: AccessControl) {
     ): UnitBackupCaresResponse {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_BACKUP_CARE, daycareId)
         val backupCares = db.connect { dbc -> dbc.read { it.getBackupCaresForDaycare(daycareId, FiniteDateRange(startDate, endDate)) } }
-        Audit.DaycareBackupCareRead.log(targetId = daycareId)
+        Audit.DaycareBackupCareRead.log(
+            targetId = daycareId,
+            mapOf("startDate" to startDate, "endDate" to endDate, "count" to backupCares.size)
+        )
         return UnitBackupCaresResponse(backupCares)
     }
 }

@@ -36,7 +36,7 @@ class ChildAgeLanguageReportController(private val acl: AccessControlList, priva
                 it.getChildAgeLanguageRows(date, acl.getAuthorizedUnits(user))
             }
         }.also {
-            Audit.ChildAgeLanguageReportRead.log(args = mapOf("date" to date))
+            Audit.ChildAgeLanguageReportRead.log(args = mapOf("date" to date, "count" to it.size))
         }
     }
 }

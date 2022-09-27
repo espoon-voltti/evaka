@@ -37,14 +37,9 @@ class AssistanceActionController(
     ): AssistanceAction {
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_ASSISTANCE_ACTION, childId)
         return db.connect { dbc ->
-            assistanceActionService.createAssistanceAction(
-                dbc,
-                user = user,
-                childId = childId,
-                data = body
-            )
-        }.also {
-            Audit.ChildAssistanceActionCreate.log(targetId = childId)
+            assistanceActionService.createAssistanceAction(dbc, user = user, childId = childId, data = body)
+        }.also { assistanceAction ->
+            Audit.ChildAssistanceActionCreate.log(targetId = childId, objectId = assistanceAction.id)
         }
     }
 
@@ -78,7 +73,7 @@ class AssistanceActionController(
             }
             assistanceActions.map { AssistanceActionResponse(it, permittedActions[it.id] ?: emptySet()) }
         }.also {
-            Audit.ChildAssistanceActionRead.log(targetId = childId)
+            Audit.ChildAssistanceActionRead.log(targetId = childId, args = mapOf("count" to it.size))
         }
     }
 

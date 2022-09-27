@@ -32,8 +32,12 @@ class BackupPickupController(private val accessControl: AccessControl) {
     ): ChildBackupPickupCreateResponse {
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_BACKUP_PICKUP, childId)
         return ChildBackupPickupCreateResponse(
-            db.connect { dbc -> dbc.transaction { tx -> tx.createBackupPickup(childId, body) } }.also {
-                Audit.ChildBackupPickupCreate.log(targetId = childId)
+            db.connect { dbc ->
+                dbc.transaction { tx ->
+                    tx.createBackupPickup(childId, body)
+                }
+            }.also { backupPickupId ->
+                Audit.ChildBackupPickupCreate.log(targetId = childId, objectId = backupPickupId)
             }
         )
     }
@@ -47,7 +51,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
     ): List<ChildBackupPickup> {
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_BACKUP_PICKUP, childId)
         return db.connect { dbc -> dbc.transaction { tx -> tx.getBackupPickupsForChild(childId) } }.also {
-            Audit.ChildBackupPickupRead.log(targetId = childId)
+            Audit.ChildBackupPickupRead.log(targetId = childId, args = mapOf("count" to it.size))
         }
     }
 

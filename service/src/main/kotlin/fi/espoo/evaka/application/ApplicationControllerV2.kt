@@ -250,7 +250,7 @@ class ApplicationControllerV2(
                 )
             }
         }.also {
-            Audit.ApplicationSearch.log()
+            Audit.ApplicationSearch.log(args = mapOf("total" to it.total))
         }
     }
 
@@ -324,7 +324,7 @@ class ApplicationControllerV2(
             }
         }.also {
             Audit.ApplicationRead.log(targetId = applicationId)
-            Audit.DecisionRead.log(targetId = applicationId)
+            Audit.DecisionReadByApplication.log(targetId = applicationId, args = mapOf("count" to it.decisions.size))
         }
     }
 
@@ -444,7 +444,7 @@ class ApplicationControllerV2(
                 )
             }
         }.also {
-            Audit.DecisionDraftRead.log(targetId = applicationId)
+            Audit.DecisionDraftRead.log(targetId = applicationId, args = mapOf("count" to it.decisions.size))
         }
     }
 
@@ -459,7 +459,7 @@ class ApplicationControllerV2(
         accessControl.requirePermissionFor(user, clock, Action.Application.UPDATE_DECISION_DRAFT, applicationId)
 
         db.connect { dbc -> dbc.transaction { decisionDraftService.updateDecisionDrafts(it, applicationId, body) } }
-        Audit.DecisionDraftUpdate.log(targetId = applicationId)
+        Audit.DecisionDraftUpdate.log(targetId = applicationId, objectId = body.map { it.id })
     }
 
     @PostMapping("/placement-proposals/{unitId}/accept")
@@ -517,7 +517,7 @@ class ApplicationControllerV2(
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Application.CREATE_PLACEMENT_PLAN, applicationId)
 
-        db.connect { dbc ->
+        val placementPlanId = db.connect { dbc ->
             dbc.transaction {
                 applicationStateService.createPlacementPlan(
                     it,
@@ -527,7 +527,7 @@ class ApplicationControllerV2(
                 )
             }
         }
-        Audit.PlacementPlanCreate.log(targetId = applicationId, objectId = body.unitId)
+        Audit.PlacementPlanCreate.log(targetId = listOf(applicationId, body.unitId), objectId = placementPlanId)
     }
 
     @PostMapping("/{applicationId}/actions/respond-to-placement-proposal")

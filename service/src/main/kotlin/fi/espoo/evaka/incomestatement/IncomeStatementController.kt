@@ -51,7 +51,7 @@ class IncomeStatementController(
                 )
             }
         }.also {
-            Audit.IncomeStatementsOfPerson.log(personId)
+            Audit.IncomeStatementsOfPerson.log(targetId = personId, args = mapOf("total" to it.total))
         }
     }
 
@@ -71,7 +71,7 @@ class IncomeStatementController(
                 tx.readIncomeStatementsForPerson(PersonId(childId.raw), includeEmployeeContent = true, page = page, pageSize = pageSize)
             }
         }.also {
-            Audit.IncomeStatementsOfChild.log(user.id, childId)
+            Audit.IncomeStatementsOfChild.log(targetId = childId, args = mapOf("total" to it.total))
         }
     }
 
@@ -93,7 +93,7 @@ class IncomeStatementController(
                 )
             } ?: throw NotFound("No such income statement")
         }.also {
-            Audit.IncomeStatementReadOfPerson.log(incomeStatementId, personId)
+            Audit.IncomeStatementReadOfPerson.log(targetId = incomeStatementId)
         }
     }
 
@@ -117,7 +117,7 @@ class IncomeStatementController(
                 )
             }
         }
-        Audit.IncomeStatementUpdateHandled.log(incomeStatementId)
+        Audit.IncomeStatementUpdateHandled.log(targetId = incomeStatementId)
     }
 
     @PostMapping("/awaiting-handler")
@@ -141,7 +141,7 @@ class IncomeStatementController(
                 )
             }
         }.also {
-            Audit.IncomeStatementsAwaitingHandler.log()
+            Audit.IncomeStatementsAwaitingHandler.log(args = mapOf("total" to it.total))
         }
     }
 
@@ -158,7 +158,7 @@ class IncomeStatementController(
                 it.getIncomeStatementChildrenByGuardian(guardianId)
             }
         }.also {
-            Audit.IncomeStatementsOfChild.log()
+            Audit.GuardianChildrenRead.log(targetId = guardianId, mapOf("count" to it.size))
         }
     }
 }

@@ -44,7 +44,7 @@ class PedagogicalDocumentControllerCitizen(
                     documents.map { it.copy(attachments = it.attachments.map { it.copy(name = "") }) }
             }
         }.also {
-            Audit.PedagogicalDocumentReadByGuardian.log(targetId = childId)
+            Audit.PedagogicalDocumentReadByGuardian.log(targetId = childId, args = mapOf("count" to it.size))
         }
     }
 
@@ -59,7 +59,7 @@ class PedagogicalDocumentControllerCitizen(
         db.connect { dbc ->
             dbc.transaction { it.markDocumentReadByGuardian(clock, documentId, user.id) }
         }
-        Audit.PedagogicalDocumentUpdate.log(documentId, user.id)
+        Audit.PedagogicalDocumentUpdate.log(targetId = documentId)
     }
 
     @GetMapping("/pedagogical-documents/unread-count")

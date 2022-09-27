@@ -44,7 +44,7 @@ class InvoiceReportController(private val accessControl: AccessControl) {
                 it.getInvoiceReportWithRows(getMonthPeriod(date))
             }
         }.also {
-            Audit.InvoicesReportRead.log(args = mapOf("date" to date))
+            Audit.InvoicesReportRead.log(args = mapOf("date" to date, "count" to it.reportRows.size))
         }
     }
 }

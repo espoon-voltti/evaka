@@ -7,6 +7,7 @@ package fi.espoo.evaka.attendance
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.StaffOccupancyCoefficientId
 import fi.espoo.evaka.shared.db.Database
 import java.math.BigDecimal
 
@@ -37,13 +38,16 @@ WHERE soc.daycare_id = :unitId
         .mapTo<StaffOccupancyCoefficient>()
         .list()
 
-fun Database.Transaction.upsertOccupancyCoefficient(params: OccupancyCoefficientUpsert) =
+fun Database.Transaction.upsertOccupancyCoefficient(params: OccupancyCoefficientUpsert): StaffOccupancyCoefficientId =
     createUpdate(
         """
 INSERT INTO staff_occupancy_coefficient (daycare_id, employee_id, coefficient)
 VALUES (:unitId, :employeeId, :coefficient)
 ON CONFLICT (daycare_id, employee_id) DO UPDATE SET coefficient = EXCLUDED.coefficient
+RETURNING id
         """.trimIndent()
     )
         .bindKotlin(params)
-        .execute()
+        .executeAndReturnGeneratedKeys()
+        .mapTo<StaffOccupancyCoefficientId>()
+        .single()

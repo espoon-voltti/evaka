@@ -30,9 +30,9 @@ fun replaceImage(
     childId: ChildId,
     file: MultipartFile,
     contentType: String
-) {
+): ChildImageId {
     var deletedId: ChildImageId? = null
-    db.transaction { tx ->
+    val imageId = db.transaction { tx ->
         deletedId = tx.deleteChildImage(childId)
         val imageId = tx.insertChildImage(childId)
 
@@ -44,10 +44,12 @@ fun replaceImage(
                 contentType = contentType
             ),
         )
+        imageId
     }
     if (deletedId != null) {
         documentClient.delete(bucket, "$childImagesBucketPrefix$deletedId")
     }
+    return imageId
 }
 
 fun removeImage(
@@ -55,9 +57,8 @@ fun removeImage(
     documentClient: DocumentService,
     bucket: String,
     childId: ChildId
-) {
-    db.transaction { tx ->
-        tx.deleteChildImage(childId)
-            ?.let { imageId -> documentClient.delete(bucket, "$childImagesBucketPrefix$imageId") }
+): ChildImageId? = db.transaction { tx ->
+    tx.deleteChildImage(childId)?.also { imageId ->
+        documentClient.delete(bucket, "$childImagesBucketPrefix$imageId")
     }
 }

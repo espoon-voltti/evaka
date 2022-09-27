@@ -53,7 +53,7 @@ class DailyServiceTimesController(
                 }
             }
         }.also {
-            Audit.ChildDailyServiceTimesRead.log(targetId = childId)
+            Audit.ChildDailyServiceTimesRead.log(targetId = childId, args = mapOf("count" to it.size))
         }
     }
 
@@ -71,13 +71,15 @@ class DailyServiceTimesController(
             throw BadRequest("New daily service times cannot be added in the past")
         }
 
-        db.connect { dbc ->
+        val id = db.connect { dbc ->
             dbc.transaction { tx ->
                 this.checkOverlappingDailyServiceTimes(tx, childId, body.validityPeriod)
-                this.deleteCollidingReservationsAndNotify(tx, tx.createChildDailyServiceTimes(childId, body), clock)
+                val id = tx.createChildDailyServiceTimes(childId, body)
+                this.deleteCollidingReservationsAndNotify(tx, id, clock)
+                id
             }
         }
-        Audit.ChildDailyServiceTimesEdit.log(targetId = childId)
+        Audit.ChildDailyServiceTimesEdit.log(targetId = childId, objectId = id)
     }
 
     @PutMapping("/daily-service-times/{id}")

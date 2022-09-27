@@ -60,7 +60,7 @@ class PlacementControllerCitizen(
                 )
             )
         }.also {
-            Audit.PlacementSearch.log(targetId = childId)
+            Audit.PlacementSearch.log(targetId = childId, args = mapOf("count" to it.placements.size))
         }
     }
 

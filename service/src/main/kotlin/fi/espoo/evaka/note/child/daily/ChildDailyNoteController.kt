@@ -39,8 +39,12 @@ class ChildDailyNoteController(
         ac.requirePermissionFor(user, clock, Action.Child.CREATE_DAILY_NOTE, childId)
 
         try {
-            return db.connect { dbc -> dbc.transaction { it.createChildDailyNote(childId, body) } }.also {
-                Audit.ChildDailyNoteCreate.log(childId)
+            return db.connect { dbc ->
+                dbc.transaction {
+                    it.createChildDailyNote(childId, body)
+                }
+            }.also { noteId ->
+                Audit.ChildDailyNoteCreate.log(targetId = childId, objectId = noteId)
             }
         } catch (e: Exception) {
             val error = mapPSQLException(e)
@@ -61,7 +65,7 @@ class ChildDailyNoteController(
         ac.requirePermissionFor(user, clock, Action.ChildDailyNote.UPDATE, noteId)
 
         return db.connect { dbc -> dbc.transaction { it.updateChildDailyNote(clock, noteId, body) } }.also {
-            Audit.ChildDailyNoteUpdate.log(noteId, noteId)
+            Audit.ChildDailyNoteUpdate.log(targetId = noteId)
         }
     }
 
@@ -75,6 +79,6 @@ class ChildDailyNoteController(
         ac.requirePermissionFor(user, clock, Action.ChildDailyNote.DELETE, noteId)
 
         db.connect { dbc -> dbc.transaction { it.deleteChildDailyNote(noteId) } }
-        Audit.ChildDailyNoteDelete.log(noteId)
+        Audit.ChildDailyNoteDelete.log(targetId = noteId)
     }
 }

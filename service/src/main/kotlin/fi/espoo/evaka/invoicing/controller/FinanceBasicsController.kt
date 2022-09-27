@@ -42,7 +42,7 @@ class FinanceBasicsController(
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_FEE_THRESHOLDS)
 
         return db.connect { dbc -> dbc.read { tx -> tx.getFeeThresholds().sortedByDescending { it.thresholds.validDuring.start } } }.also {
-            Audit.FinanceBasicsFeeThresholdsRead.log()
+            Audit.FinanceBasicsFeeThresholdsRead.log(args = mapOf("count" to it.size))
         }
     }
 
@@ -56,7 +56,7 @@ class FinanceBasicsController(
         accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_FEE_THRESHOLDS)
 
         validateFeeThresholds(body)
-        db.connect { dbc ->
+        val id = db.connect { dbc ->
             dbc.transaction { tx ->
                 val latest = tx.getFeeThresholds().maxByOrNull { it.thresholds.validDuring.start }
 
@@ -71,11 +71,12 @@ class FinanceBasicsController(
                         )
                 }
 
-                mapConstraintExceptions { tx.insertNewFeeThresholds(body) }
+                val id = mapConstraintExceptions { tx.insertNewFeeThresholds(body) }
                 asyncJobRunner.plan(tx, listOf(AsyncJob.NotifyFeeThresholdsUpdated(body.validDuring)), runAt = clock.now())
+                id
             }
         }
-        Audit.FinanceBasicsFeeThresholdsCreate.log()
+        Audit.FinanceBasicsFeeThresholdsCreate.log(targetId = id)
     }
 
     @PutMapping("/fee-thresholds/{id}")
@@ -177,7 +178,7 @@ FROM fee_thresholds
         .mapTo<FeeThresholdsWithId>()
         .toList()
 
-fun Database.Transaction.insertNewFeeThresholds(thresholds: FeeThresholds) =
+fun Database.Transaction.insertNewFeeThresholds(thresholds: FeeThresholds): FeeThresholdsId =
     createUpdate(
         """
 INSERT INTO fee_thresholds (
@@ -235,11 +236,14 @@ INSERT INTO fee_thresholds (
     :temporaryFeeSibling,
     :temporaryFeeSiblingPartDay
 )
+RETURNING id
 """
     )
         .bindKotlin(thresholds)
         .bind("id", UUID.randomUUID())
-        .execute()
+        .executeAndReturnGeneratedKeys()
+        .mapTo<FeeThresholdsId>()
+        .single()
 
 fun Database.Transaction.updateFeeThresholdsValidity(id: FeeThresholdsId, newValidity: DateRange) =
     createUpdate("UPDATE fee_thresholds SET valid_during = :validDuring WHERE id = :id")

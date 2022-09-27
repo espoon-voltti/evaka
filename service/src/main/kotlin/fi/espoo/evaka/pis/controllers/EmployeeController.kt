@@ -83,7 +83,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                 it.updateEmployee(id = id, globalRoles = body.globalRoles)
             }
         }
-        Audit.EmployeeUpdate.log(targetId = id, objectId = body.globalRoles)
+        Audit.EmployeeUpdate.log(targetId = id, args = mapOf("globalRoles" to body.globalRoles))
     }
 
     @GetMapping("/{id}/details")
@@ -106,7 +106,7 @@ class EmployeeController(private val accessControl: AccessControl) {
     fun createEmployee(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody employee: NewEmployee): Employee {
         accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_EMPLOYEE)
         return db.connect { dbc -> dbc.transaction { it.createEmployee(employee) } }.also {
-            Audit.EmployeeCreate.log(targetId = employee.externalId)
+            Audit.EmployeeCreate.log(targetId = it.id)
         }
     }
 
@@ -161,18 +161,18 @@ class EmployeeController(private val accessControl: AccessControl) {
     @GetMapping("/preferred-first-name")
     fun getEmployeePreferredFirstName(
         db: Database,
-        user: AuthenticatedUser
+        user: AuthenticatedUser.Employee
     ): EmployeePreferredFirstName {
         return db.connect { dbc ->
             dbc.read { tx ->
-                val employee = tx.getEmployee(EmployeeId(user.rawId())) ?: throw NotFound()
+                val employee = tx.getEmployee(user.id) ?: throw NotFound()
                 EmployeePreferredFirstName(
                     preferredFirstName = employee.preferredFirstName,
                     preferredFirstNameOptions = possiblePreferredFirstNames(employee)
                 )
             }
         }.also {
-            Audit.EmployeePreferredFirstNameRead.log()
+            Audit.EmployeePreferredFirstNameRead.log(targetId = user.id)
         }
     }
 
@@ -182,22 +182,22 @@ class EmployeeController(private val accessControl: AccessControl) {
     @PostMapping("/preferred-first-name")
     fun setEmployeePreferredFirstName(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         @RequestBody body: EmployeeSetPreferredFirstNameUpdateRequest
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val employee = tx.getEmployee(EmployeeId(user.rawId())) ?: throw NotFound()
+                val employee = tx.getEmployee(user.id) ?: throw NotFound()
                 if (body.preferredFirstName == null) {
-                    tx.setEmployeePreferredFirstName(EmployeeId(user.rawId()), null)
+                    tx.setEmployeePreferredFirstName(user.id, null)
                 } else {
                     if (possiblePreferredFirstNames(employee).contains(body.preferredFirstName)) {
-                        tx.setEmployeePreferredFirstName(EmployeeId(user.rawId()), body.preferredFirstName)
+                        tx.setEmployeePreferredFirstName(user.id, body.preferredFirstName)
                     } else throw NotFound("Given preferred first name is not allowed")
                 }
             }
         }
-        Audit.EmployePreferredFirstNameUpdate.log()
+        Audit.EmployeePreferredFirstNameUpdate.log(targetId = user.id)
     }
 
     private fun possiblePreferredFirstNames(employee: Employee): List<String> {

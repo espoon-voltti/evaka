@@ -36,7 +36,7 @@ class FamilyContactReportController(private val accessControl: AccessControl) {
                 it.getFamilyContacts(clock.today(), unitId)
             }
         }.also {
-            Audit.FamilyContactReportRead.log()
+            Audit.FamilyContactReportRead.log(args = mapOf("count" to it.size))
         }
     }
 }

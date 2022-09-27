@@ -48,7 +48,10 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 )
             }
         }.also {
-            Audit.UnitStaffAttendanceRead.log(targetId = unitId)
+            Audit.UnitStaffAttendanceRead.log(
+                targetId = unitId,
+                args = mapOf("staffCount" to it.staff.size, "externalStaffCount" to it.extraAttendances.size)
+            )
         }
     }
 
@@ -70,14 +73,14 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         ac.verifyPinCode(body.employeeId, body.pinCode)
         // todo: check that employee has access to a unit related to the group?
 
-        try {
+        val staffAttendanceIds = try {
             db.connect { dbc ->
                 dbc.transaction { tx ->
                     val plannedAttendances = tx.getPlannedStaffAttendances(body.employeeId, clock.now())
                     val ongoingAttendance = tx.getOngoingAttendance(body.employeeId)
                     val attendances = createAttendancesFromArrival(clock.now(), plannedAttendances, ongoingAttendance, body)
                     val occupancyCoefficient = tx.getOccupancyCoefficientForEmployee(body.employeeId, body.groupId) ?: BigDecimal.ZERO
-                    attendances.forEach { attendance ->
+                    attendances.map { attendance ->
                         tx.upsertStaffAttendance(
                             attendance.id,
                             attendance.employeeId,
@@ -90,10 +93,13 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     }
                 }
             }
-            Audit.StaffAttendanceArrivalCreate.log(targetId = body.groupId, objectId = body.employeeId)
         } catch (e: JdbiException) {
             throw mapPSQLException(e)
         }
+        Audit.StaffAttendanceArrivalCreate.log(
+            targetId = listOf(body.groupId, body.employeeId),
+            objectId = staffAttendanceIds
+        )
     }
 
     data class StaffDepartureRequest(
@@ -113,14 +119,14 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         ac.requirePermissionFor(user, clock, Action.Group.MARK_DEPARTURE, body.groupId)
         ac.verifyPinCode(body.employeeId, body.pinCode)
 
-        db.connect { dbc ->
+        val staffAttendanceIds = db.connect { dbc ->
             dbc.transaction { tx ->
                 val plannedAttendances = tx.getPlannedStaffAttendances(body.employeeId, clock.now())
                 val ongoingAttendance = tx.getOngoingAttendance(body.employeeId)
                     ?: throw BadRequest("No ongoing staff attendance found")
                 val attendances = createAttendancesFromDeparture(clock.now(), plannedAttendances, ongoingAttendance, body)
                 val occupancyCoefficient = tx.getOccupancyCoefficientForEmployee(body.employeeId, body.groupId) ?: BigDecimal.ZERO
-                attendances.forEach { attendance ->
+                attendances.map { attendance ->
                     tx.upsertStaffAttendance(
                         attendance.id,
                         attendance.employeeId,
@@ -133,7 +139,10 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 }
             }
         }
-        Audit.StaffAttendanceDepartureCreate.log()
+        Audit.StaffAttendanceDepartureCreate.log(
+            targetId = listOf(body.groupId, body.employeeId),
+            objectId = staffAttendanceIds
+        )
     }
 
     data class ExternalStaffArrivalRequest(
@@ -165,8 +174,11 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     )
                 )
             }
-        }.also {
-            Audit.StaffAttendanceArrivalExternalCreate.log(targetId = body.groupId)
+        }.also { staffAttendanceExternalId ->
+            Audit.StaffAttendanceArrivalExternalCreate.log(
+                targetId = body.groupId,
+                objectId = staffAttendanceExternalId
+            )
         }
     }
 

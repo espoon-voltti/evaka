@@ -33,7 +33,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
     ): List<HolidayPeriod> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_PERIODS)
         return db.connect { dbc -> dbc.read { it.getHolidayPeriods() } }.also {
-            Audit.HolidayPeriodsList.log()
+            Audit.HolidayPeriodsList.log(args = mapOf("count" to it.size))
         }
     }
 
@@ -46,7 +46,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
     ): HolidayPeriod {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_PERIOD)
         return db.connect { dbc -> dbc.read { it.getHolidayPeriod(id) } ?: throw NotFound() }.also {
-            Audit.HolidayPeriodRead.log(id)
+            Audit.HolidayPeriodRead.log(targetId = id)
         }
     }
 
@@ -66,8 +66,8 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                     throw mapPSQLException(e)
                 }
             }
-        }.also {
-            Audit.HolidayPeriodCreate.log()
+        }.also { holidayPeriod ->
+            Audit.HolidayPeriodCreate.log(targetId = holidayPeriod.id)
         }
     }
 
@@ -89,7 +89,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                 }
             }
         }
-        Audit.HolidayPeriodUpdate.log(id)
+        Audit.HolidayPeriodUpdate.log(targetId = id)
     }
 
     @DeleteMapping("/{id}")
@@ -101,6 +101,6 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Global.DELETE_HOLIDAY_PERIOD)
         db.connect { dbc -> dbc.transaction { it.deleteHolidayPeriod(id) } }
-        Audit.HolidayPeriodDelete.log(id)
+        Audit.HolidayPeriodDelete.log(targetId = id)
     }
 }

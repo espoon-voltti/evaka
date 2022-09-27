@@ -54,7 +54,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
         return db.connect { dbc ->
             dbc.transaction { tx -> tx.getCalendarEventsByUnit(unitId, range) }
         }.also {
-            Audit.UnitCalendarEventsRead.log(targetId = unitId)
+            Audit.UnitCalendarEventsRead.log(
+                targetId = unitId,
+                args = mapOf("start" to start, "end" to end, "count" to it.size)
+            )
         }
     }
 
@@ -65,7 +68,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: CalendarEventForm
     ) {
-        return db.connect { dbc ->
+        val eventId = db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(user, clock, Action.Unit.CREATE_CALENDAR_EVENT, body.unitId)
 
@@ -92,9 +95,8 @@ class CalendarEventController(private val accessControl: AccessControl) {
 
                 tx.createCalendarEvent(body)
             }
-        }.also {
-            Audit.CalendarEventCreate.log(targetId = body.unitId)
         }
+        Audit.CalendarEventCreate.log(targetId = body.unitId, objectId = eventId)
     }
 
     @DeleteMapping("/calendar-event/{id}")
@@ -169,7 +171,10 @@ class CalendarEventController(private val accessControl: AccessControl) {
                 }
             }
         }.also {
-            Audit.UnitCalendarEventsRead.log(targetId = user.id)
+            Audit.UnitCalendarEventsRead.log(
+                targetId = user.id,
+                args = mapOf("start" to start, "end" to end, "count" to it.size)
+            )
         }
     }
 }

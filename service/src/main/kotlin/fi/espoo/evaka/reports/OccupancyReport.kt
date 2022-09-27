@@ -66,7 +66,8 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
                     "providerType" to providerType,
                     "unitTypes" to unitTypes,
                     "year" to year,
-                    "month" to month
+                    "month" to month,
+                    "count" to it.size
                 )
             )
         }
@@ -107,7 +108,8 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
                     "providerType" to providerType,
                     "unitTypes" to unitTypes,
                     "year" to year,
-                    "month" to month
+                    "month" to month,
+                    "count" to it.size
                 )
             )
         }

@@ -38,8 +38,8 @@ class ChildStickyNoteController(
 
         validateExpiration(clock, body.expires)
 
-        return db.connect { dbc -> dbc.transaction { it.createChildStickyNote(childId, body) } }.also {
-            Audit.ChildStickyNoteCreate.log(childId)
+        return db.connect { dbc -> dbc.transaction { it.createChildStickyNote(childId, body) } }.also { noteId ->
+            Audit.ChildStickyNoteCreate.log(targetId = childId, objectId = noteId)
         }
     }
 
@@ -56,7 +56,7 @@ class ChildStickyNoteController(
         validateExpiration(clock, body.expires)
 
         return db.connect { dbc -> dbc.transaction { it.updateChildStickyNote(clock, noteId, body) } }.also {
-            Audit.ChildStickyNoteUpdate.log(noteId, noteId)
+            Audit.ChildStickyNoteUpdate.log(targetId = noteId)
         }
     }
 
@@ -70,7 +70,7 @@ class ChildStickyNoteController(
         ac.requirePermissionFor(user, clock, Action.ChildStickyNote.DELETE, noteId)
 
         return db.connect { dbc -> dbc.transaction { it.deleteChildStickyNote(noteId) } }.also {
-            Audit.ChildStickyNoteDelete.log(noteId)
+            Audit.ChildStickyNoteDelete.log(targetId = noteId)
         }
     }
 

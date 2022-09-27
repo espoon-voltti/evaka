@@ -54,7 +54,7 @@ class OccupancyController(
                 it.calculateOccupancyPeriods(clock.today(), unitId, FiniteDateRange(from, to), type, acl.getAuthorizedUnits(user))
             }
         }
-        Audit.OccupancyRead.log(targetId = unitId)
+        Audit.OccupancyRead.log(targetId = unitId, args = mapOf("count" to occupancies.size))
 
         return OccupancyResponse(
             occupancies = occupancies,
@@ -126,7 +126,7 @@ class OccupancyController(
                 )
             }
         }.also {
-            Audit.OccupancySpeculatedRead.log(targetId = Pair(unitId, applicationId))
+            Audit.OccupancySpeculatedRead.log(targetId = listOf(unitId, applicationId))
         }
     }
 
@@ -153,7 +153,7 @@ class OccupancyController(
                 )
             }
         }
-        Audit.OccupancyRead.log(targetId = unitId)
+        Audit.OccupancyRead.log(targetId = unitId, args = mapOf("count" to occupancies.size))
 
         return occupancies.groupBy({ it.groupId }) {
             OccupancyPeriod(it.period, it.sum, it.headcount, it.caretakers, it.percentage)
