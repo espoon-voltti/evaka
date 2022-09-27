@@ -161,6 +161,17 @@ class PersonController(
 
         val userEditablePersonData = data
             .let {
+                if (accessControl.hasPermissionFor(user, clock, Action.Person.UPDATE_PERSONAL_DETAILS, personId)) it
+                else it.copy(
+                    firstName = null,
+                    lastName = null,
+                    dateOfBirth = null,
+                    streetAddress = null,
+                    postalCode = null,
+                    postOffice = null
+                )
+            }
+            .let {
                 if (accessControl.hasPermissionFor(user, clock, Action.Person.UPDATE_INVOICE_ADDRESS, personId)) it
                 else it.copy(
                     invoiceRecipientName = null,

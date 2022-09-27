@@ -670,7 +670,7 @@ sealed interface Action {
         override fun toString(): String = "${javaClass.name}.$name"
     }
     enum class Person(override vararg val defaultRules: ScopedActionRule<in PersonId>) : ScopedAction<PersonId> {
-        ADD_SSN(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN)),
+        ADD_SSN(HasGlobalRole(SERVICE_WORKER)),
         CREATE_INCOME(HasGlobalRole(FINANCE_ADMIN)),
         CREATE_INVOICE_CORRECTION(HasGlobalRole(FINANCE_ADMIN)),
         CREATE_PARENTSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
@@ -699,6 +699,7 @@ sealed interface Action {
         UPDATE(HasGlobalRole(FINANCE_ADMIN, SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChildOfPerson()),
         UPDATE_INVOICE_ADDRESS(HasGlobalRole(FINANCE_ADMIN)),
         UPDATE_OPH_OID,
+        UPDATE_PERSONAL_DETAILS(HasGlobalRole(SERVICE_WORKER)),
         UPDATE_FROM_VTJ(HasGlobalRole(SERVICE_WORKER));
 
         override fun toString(): String = "${javaClass.name}.$name"

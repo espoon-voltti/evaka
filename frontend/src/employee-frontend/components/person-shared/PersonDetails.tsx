@@ -196,38 +196,42 @@ export default React.memo(function PersonDetails({
     })
   }
 
+  const canEditPersonalDetails = permittedActions.has('UPDATE_PERSONAL_DETAILS')
+
   return (
     <>
       {uiMode === 'add-ssn-modal' && (
         <AddSsnModal personId={person.id} onUpdateComplete={onUpdateComplete} />
       )}
-      {(!isChild || person.socialSecurityNumber === null) && (
-        <RightAlignedRow>
-          {permittedActions.has('UPDATE_FROM_VTJ') &&
-          uiMode != 'person-details-editing' ? (
-            <ButtonSpacer>
-              {vtjUpdateOngoing ? (
-                <SpinnerSegment margin="xxs" />
-              ) : (
-                <InlineButton
-                  icon={faSync}
-                  onClick={onVtjUpdate}
-                  data-qa="update-from-vtj-button"
-                  text={i18n.personProfile.updateFromVtj}
-                />
-              )}
-            </ButtonSpacer>
-          ) : null}
-          {permittedActions.has('UPDATE') ? (
-            <InlineButton
-              icon={faPen}
-              onClick={() => toggleUiMode('person-details-editing')}
-              data-qa="edit-person-settings-button"
-              text={i18n.common.edit}
-            />
-          ) : null}
-        </RightAlignedRow>
-      )}
+      <RightAlignedRow>
+        {permittedActions.has('UPDATE_FROM_VTJ') &&
+        uiMode !== 'person-details-editing' ? (
+          <ButtonSpacer>
+            {vtjUpdateOngoing ? (
+              <SpinnerSegment margin="xxs" />
+            ) : (
+              <InlineButton
+                icon={faSync}
+                onClick={onVtjUpdate}
+                data-qa="update-from-vtj-button"
+                text={i18n.personProfile.updateFromVtj}
+              />
+            )}
+          </ButtonSpacer>
+        ) : null}
+        {(!isChild && permittedActions.has('UPDATE')) ||
+        (person.socialSecurityNumber === null && canEditPersonalDetails) ||
+        permittedActions.has('UPDATE_INVOICE_ADDRESS') ||
+        permittedActions.has('UPDATE_OPH_OID') ? (
+          <InlineButton
+            icon={faPen}
+            onClick={() => toggleUiMode('person-details-editing')}
+            disabled={uiMode === 'person-details-editing'}
+            data-qa="edit-person-settings-button"
+            text={i18n.common.edit}
+          />
+        ) : null}
+      </RightAlignedRow>
       <LabelValueList
         spacing="small"
         contents={[
@@ -235,46 +239,49 @@ export default React.memo(function PersonDetails({
             label: i18n.common.form.lastName,
             dataQa: 'person-last-name',
             valueWidth: '100%',
-            value: powerEditing ? (
-              <InputField
-                width="L"
-                value={form.lastName}
-                onChange={(value) => updateForm({ lastName: value })}
-                data-qa="input-last-name"
-              />
-            ) : (
-              person.lastName
-            )
+            value:
+              powerEditing && canEditPersonalDetails ? (
+                <InputField
+                  width="L"
+                  value={form.lastName}
+                  onChange={(value) => updateForm({ lastName: value })}
+                  data-qa="input-last-name"
+                />
+              ) : (
+                person.lastName
+              )
           },
           {
             label: i18n.common.form.firstNames,
             dataQa: 'person-first-names',
             valueWidth: '100%',
-            value: powerEditing ? (
-              <InputField
-                width="L"
-                value={form.firstName}
-                onChange={(value) => updateForm({ firstName: value })}
-                data-qa="input-first-name"
-              />
-            ) : (
-              person.firstName
-            )
+            value:
+              powerEditing && canEditPersonalDetails ? (
+                <InputField
+                  width="L"
+                  value={form.firstName}
+                  onChange={(value) => updateForm({ firstName: value })}
+                  data-qa="input-first-name"
+                />
+              ) : (
+                person.firstName
+              )
           },
           {
             label: i18n.common.form.birthday,
             dataQa: 'person-birthday',
-            value: powerEditing ? (
-              <DatePickerDeprecated
-                type="full-width"
-                date={form.dateOfBirth}
-                onChange={(dateOfBirth) => updateForm({ dateOfBirth })}
-                maxDate={LocalDate.todayInSystemTz()}
-                data-qa="input-birthday"
-              />
-            ) : (
-              person.dateOfBirth.format()
-            )
+            value:
+              powerEditing && canEditPersonalDetails ? (
+                <DatePickerDeprecated
+                  type="full-width"
+                  date={form.dateOfBirth}
+                  onChange={(dateOfBirth) => updateForm({ dateOfBirth })}
+                  maxDate={LocalDate.todayInSystemTz()}
+                  data-qa="input-birthday"
+                />
+              ) : (
+                person.dateOfBirth.format()
+              )
           },
           {
             label: i18n.childInformation.personDetails.language,
@@ -355,42 +362,43 @@ export default React.memo(function PersonDetails({
             label: i18n.common.form.address,
             dataQa: 'person-address',
             valueWidth: '100%',
-            value: powerEditing ? (
-              <>
-                <InputField
-                  width="L"
-                  value={form.streetAddress}
-                  placeholder={i18n.common.form.streetAddress}
-                  onChange={(value) =>
-                    updateForm({
-                      streetAddress: value
-                    })
-                  }
-                />
-                <PostalCodeAndOffice>
+            value:
+              powerEditing && canEditPersonalDetails ? (
+                <>
                   <InputField
-                    id="postal-code"
-                    value={form.postalCode}
-                    placeholder={i18n.common.form.postalCode}
-                    onChange={(value) => updateForm({ postalCode: value })}
+                    width="L"
+                    value={form.streetAddress}
+                    placeholder={i18n.common.form.streetAddress}
+                    onChange={(value) =>
+                      updateForm({
+                        streetAddress: value
+                      })
+                    }
                   />
-                  <InputField
-                    id="post-office"
-                    value={form.postOffice}
-                    placeholder={i18n.common.form.postOffice}
-                    onChange={(value) => updateForm({ postOffice: value })}
-                  />
-                </PostalCodeAndOffice>
-              </>
-            ) : (
-              <span data-qa="person-details-street-address">
-                {person.restrictedDetailsEnabled
-                  ? i18n.common.form.addressRestricted
-                  : `${person.streetAddress ?? ''}, ${
-                      person.postalCode ?? ''
-                    } ${person.postOffice ?? ''}`}
-              </span>
-            )
+                  <PostalCodeAndOffice>
+                    <InputField
+                      id="postal-code"
+                      value={form.postalCode}
+                      placeholder={i18n.common.form.postalCode}
+                      onChange={(value) => updateForm({ postalCode: value })}
+                    />
+                    <InputField
+                      id="post-office"
+                      value={form.postOffice}
+                      placeholder={i18n.common.form.postOffice}
+                      onChange={(value) => updateForm({ postOffice: value })}
+                    />
+                  </PostalCodeAndOffice>
+                </>
+              ) : (
+                <span data-qa="person-details-street-address">
+                  {person.restrictedDetailsEnabled
+                    ? i18n.common.form.addressRestricted
+                    : `${person.streetAddress ?? ''}, ${
+                        person.postalCode ?? ''
+                      } ${person.postOffice ?? ''}`}
+                </span>
+              )
           },
           {
             label: i18n.common.form.updatedFromVtj,
@@ -405,8 +413,7 @@ export default React.memo(function PersonDetails({
                   dataQa: 'person-oph-person-oid',
                   valueWidth: '100%',
                   value:
-                    (powerEditing || editing) &&
-                    permittedActions.has('UPDATE_OPH_OID') ? (
+                    editing && permittedActions.has('UPDATE_OPH_OID') ? (
                       <>
                         <InputField
                           width="L"
@@ -430,7 +437,7 @@ export default React.memo(function PersonDetails({
                 {
                   label: i18n.common.form.invoicingAddress,
                   value:
-                    (powerEditing || editing) &&
+                    editing &&
                     permittedActions.has('UPDATE_INVOICE_ADDRESS') ? (
                       <>
                         <InputField
