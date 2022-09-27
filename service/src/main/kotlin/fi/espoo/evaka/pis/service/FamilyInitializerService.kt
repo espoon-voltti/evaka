@@ -12,6 +12,7 @@ import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.pis.personIsHeadOfFamily
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -34,7 +35,7 @@ class FamilyInitializerService(
     init {
         asyncJobRunner.registerHandler(::handleInitializeFamilyFromApplication)
     }
-
+// TODO
     fun handleInitializeFamilyFromApplication(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.InitializeFamilyFromApplication) {
         val user = msg.user
         val application = db.read { it.fetchApplicationDetails(msg.applicationId) }
@@ -44,15 +45,19 @@ class FamilyInitializerService(
         db.transaction { initFamilyFromApplication(it, clock, members) }
     }
 
-    private fun initFamilyFromApplication(tx: Database.Transaction, evakaClock: EvakaClock, members: FridgeFamilyMembers) {
-        tx.subTransaction { createParentship(tx, evakaClock, child = members.fridgeChild, headOfChildId = members.headOfFamily.id) }
+    private fun initFamilyFromApplication(tx: Database.Transaction, evakaClock: EvakaClock, familyFromApplication: FridgeFamilyMembers) {
+        val headOfFamily = if (familyFromApplication.fridgePartner != null && tx.personIsHeadOfFamily(familyFromApplication.fridgePartner.id))
+            familyFromApplication.fridgePartner
+        else familyFromApplication.headOfFamily
 
-        if (members.fridgePartner != null) {
-            tx.subTransaction { createPartnership(tx, evakaClock, members.headOfFamily.id, members.fridgePartner.id) }
+        tx.subTransaction { createParentship(tx, evakaClock, child = familyFromApplication.fridgeChild, headOfChildId = headOfFamily.id) }
+
+        if (familyFromApplication.fridgePartner != null) {
+            tx.subTransaction { createPartnership(tx, evakaClock, familyFromApplication.headOfFamily.id, familyFromApplication.fridgePartner.id) }
         }
 
-        members.fridgeSiblings.forEach { sibling ->
-            tx.subTransaction { createParentship(tx, evakaClock, child = sibling, headOfChildId = members.headOfFamily.id) }
+        familyFromApplication.fridgeSiblings.forEach { sibling ->
+            tx.subTransaction { createParentship(tx, evakaClock, child = sibling, headOfChildId = headOfFamily.id) }
         }
     }
 
