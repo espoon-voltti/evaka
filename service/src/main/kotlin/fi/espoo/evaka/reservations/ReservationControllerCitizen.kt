@@ -104,7 +104,7 @@ class ReservationControllerCitizen(
                 val deadlines = tx.getHolidayPeriodDeadlines()
                 val reservableDays =
                     getReservableDays(clock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
-                createReservations(tx, user.evakaUserId, body.validate(reservableDays), user.id)
+                createReservations(tx, user.evakaUserId, body.validate(reservableDays), user.evakaUserId)
             }
         }
         Audit.AttendanceReservationCitizenCreate.log(
@@ -141,7 +141,7 @@ class ReservationControllerCitizen(
                     }
                 )
                 val inserted = tx.insertAbsences(
-                    user.id,
+                    user.evakaUserId,
                     body.childIds.flatMap { childId ->
                         body.dateRange.dates().map { date ->
                             AbsenceInsert(childId, date, body.absenceType)

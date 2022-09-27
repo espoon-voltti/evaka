@@ -7,16 +7,12 @@ package fi.espoo.evaka.attendance
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimeRow
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesWithId
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
-import fi.espoo.evaka.daycare.service.Absence
-import fi.espoo.evaka.daycare.service.AbsenceCategory
-import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -50,31 +46,6 @@ fun Database.Transaction.insertAttendance(
         .executeAndReturnGeneratedKeys()
         .mapTo<AttendanceId>()
         .single()
-}
-
-fun Database.Transaction.insertAbsence(
-    user: AuthenticatedUser,
-    childId: ChildId,
-    date: LocalDate,
-    category: AbsenceCategory,
-    absenceType: AbsenceType
-): Absence {
-    // language=sql
-    val sql =
-        """
-        INSERT INTO absence (child_id, date, category, absence_type, modified_by)
-        VALUES (:childId, :date, :category, :absenceType, :userId)
-        RETURNING *
-        """.trimIndent()
-
-    return createQuery(sql)
-        .bind("childId", childId)
-        .bind("date", date)
-        .bind("category", category)
-        .bind("absenceType", absenceType)
-        .bind("userId", user.evakaUserId)
-        .mapTo<Absence>()
-        .first()
 }
 
 fun Database.Read.getChildAttendance(childId: ChildId, unitId: DaycareId, now: HelsinkiDateTime): ChildAttendance? {

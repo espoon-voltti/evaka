@@ -17,8 +17,8 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.DateRange
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import java.time.LocalDate
 import java.time.LocalTime
@@ -30,13 +30,34 @@ data class AbsenceUpsert(
     val absenceType: AbsenceType
 )
 
-fun Database.Transaction.upsertAbsences(clock: EvakaClock, absences: List<AbsenceUpsert>, modifiedBy: EvakaUserId): List<AbsenceId> {
+/** Fails if any of the absences already exists **/
+fun Database.Transaction.insertAbsences(now: HelsinkiDateTime, userId: EvakaUserId, absences: List<AbsenceUpsert>) {
     val sql =
         """
-        INSERT INTO absence (child_id, date, category, absence_type, modified_by)
-        VALUES (:childId, :date, :category, :absenceType, :modifiedBy)
+        INSERT INTO absence (child_id, date, category, absence_type, modified_by, modified_at)
+        VALUES (:childId, :date, :category, :absenceType, :userId, :now)
+        """
+
+    val batch = prepareBatch(sql)
+    for (absence in absences) {
+        batch
+            .bindKotlin(absence)
+            .bind("userId", userId)
+            .bind("now", now)
+            .add()
+    }
+
+    batch.execute()
+}
+
+/** Updates the details if an absence already exists */
+fun Database.Transaction.upsertAbsences(now: HelsinkiDateTime, userId: EvakaUserId, absences: List<AbsenceUpsert>): List<AbsenceId> {
+    val sql =
+        """
+        INSERT INTO absence (child_id, date, category, absence_type, modified_by, modified_at)
+        VALUES (:childId, :date, :category, :absenceType, :userId, :now)
         ON CONFLICT (child_id, date, category)
-        DO UPDATE SET absence_type = :absenceType, modified_by = :modifiedBy, modified_at = :now
+        DO UPDATE SET absence_type = :absenceType, modified_by = :userId, modified_at = :now
         RETURNING id
         """.trimIndent()
 
@@ -44,8 +65,8 @@ fun Database.Transaction.upsertAbsences(clock: EvakaClock, absences: List<Absenc
     for (absence in absences) {
         batch
             .bindKotlin(absence)
-            .bind("now", clock.now())
-            .bind("modifiedBy", modifiedBy)
+            .bind("userId", userId)
+            .bind("now", now)
             .add()
     }
 

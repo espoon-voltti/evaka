@@ -9,7 +9,7 @@ import fi.espoo.evaka.TestInvoiceProductProvider
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.daycare.service.AbsenceUpsert
-import fi.espoo.evaka.daycare.service.upsertAbsences
+import fi.espoo.evaka.daycare.service.insertAbsences
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.createFeeDecisionAlterationFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
@@ -46,7 +46,7 @@ import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay35
@@ -5188,54 +5188,59 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         absenceDays: List<Pair<LocalDate, AbsenceType>>,
         child: DevPerson = testChild_1,
         serviceNeed: ServiceNeedOption = snDaycareFullDay35,
-    ) = periods.forEachIndexed { index, period ->
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = child.id,
-                    dateOfBirth = child.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = serviceNeed.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = roundToEuros(serviceNeed.feeCoefficient * BigDecimal(28900)).toInt(),
-                    feeAlterations = if (index > 0) {
-                        listOf(
-                            createFeeDecisionAlterationFixture(
-                                amount = -100,
-                                isAbsolute = true,
-                                effect = -10000
+    ) {
+        periods.forEachIndexed { index, period ->
+            val decision = createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = child.id,
+                        dateOfBirth = child.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = serviceNeed.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = roundToEuros(serviceNeed.feeCoefficient * BigDecimal(28900)).toInt(),
+                        feeAlterations = if (index > 0) {
+                            listOf(
+                                createFeeDecisionAlterationFixture(
+                                    amount = -100,
+                                    isAbsolute = true,
+                                    effect = -10000
+                                )
                             )
-                        )
-                    } else listOf()
+                        } else {
+                            listOf()
+                        }
+                    )
                 )
             )
-        )
 
-        db.transaction(insertChildParentRelation(testAdult_1.id, child.id, period))
-        db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
+            db.transaction(insertChildParentRelation(testAdult_1.id, child.id, period))
+            db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
 
-        val placementId = db.transaction(insertPlacement(child.id, period))
-        val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id)) }
-        db.transaction { tx ->
-            tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = placementId,
-                groupId = groupId,
-                startDate = period.start,
-                endDate = period.end!!
-            )
+            val placementId = db.transaction(insertPlacement(child.id, period))
+            val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id)) }
+            db.transaction { tx ->
+                tx.insertTestDaycareGroupPlacement(
+                    daycarePlacementId = placementId,
+                    groupId = groupId,
+                    startDate = period.start,
+                    endDate = period.end!!
+                )
+            }
         }
         insertAbsences(child.id, absenceDays)
     }
 
     private fun insertAbsences(childId: ChildId, absenceDays: List<Pair<LocalDate, AbsenceType>>) {
         db.transaction { tx ->
-            tx.upsertAbsences(
-                RealEvakaClock(),
+            tx.insertAbsences(
+                HelsinkiDateTime.now(),
+                EvakaUserId(testDecisionMaker_1.id.raw),
                 absenceDays.map { (date, type) ->
                     AbsenceUpsert(
                         absenceType = type,
@@ -5244,7 +5249,6 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                         category = AbsenceCategory.BILLABLE
                     )
                 },
-                EvakaUserId(testDecisionMaker_1.id.raw)
             )
         }
     }

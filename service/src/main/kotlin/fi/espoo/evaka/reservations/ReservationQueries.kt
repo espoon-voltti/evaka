@@ -10,7 +10,6 @@ import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.HolidayQuestionnaireId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import java.time.LocalDate
@@ -42,7 +41,7 @@ val notDayOffCheck = """
     ) IS NOT TRUE
 """.trimIndent()
 
-fun Database.Transaction.insertAbsences(userId: PersonId, absenceInserts: List<AbsenceInsert>): List<AbsenceId> {
+fun Database.Transaction.insertAbsences(userId: EvakaUserId, absenceInserts: List<AbsenceInsert>): List<AbsenceId> {
     val batch = prepareBatch(
         """
         INSERT INTO absence (child_id, date, category, absence_type, modified_by, questionnaire_id)

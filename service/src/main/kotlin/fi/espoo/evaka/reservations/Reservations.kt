@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -96,7 +95,7 @@ fun createReservations(
     tx: Database.Transaction,
     userId: EvakaUserId,
     reservations: List<DailyReservationRequest>,
-    personId: PersonId? = null
+    personId: EvakaUserId? = null
 ): CreateReservationsResult {
     val deletedAbsences = tx.clearOldCitizenEditableAbsences(
         reservations.filter {

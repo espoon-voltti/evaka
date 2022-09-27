@@ -65,7 +65,7 @@ class AbsenceController(private val accessControl: AccessControl) {
         accessControl.requirePermissionFor(user, clock, Action.Group.CREATE_ABSENCES, groupId)
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_ABSENCE, children)
 
-        val upserted = db.connect { dbc -> dbc.transaction { it.upsertAbsences(clock, absences, user.evakaUserId) } }
+        val upserted = db.connect { dbc -> dbc.transaction { it.upsertAbsences(clock.now(), user.evakaUserId, absences) } }
         Audit.AbsenceUpsert.log(
             targetId = groupId,
             objectId = upserted,
