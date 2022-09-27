@@ -45,6 +45,7 @@ sealed interface DatabaseTable {
     sealed class FeeAlteration : DatabaseTable
     sealed class FeeDecision : DatabaseTable
     sealed class FeeThresholds : DatabaseTable
+    sealed class FosterParent : DatabaseTable
     sealed class Group : DatabaseTable
     sealed class GroupPlacement : DatabaseTable
     sealed class HolidayPeriod : DatabaseTable
@@ -119,6 +120,7 @@ typealias EvakaUserId = Id<DatabaseTable.EvakaUser>
 typealias FeeAlterationId = Id<DatabaseTable.FeeAlteration>
 typealias FeeDecisionId = Id<DatabaseTable.FeeDecision>
 typealias FeeThresholdsId = Id<DatabaseTable.FeeThresholds>
+typealias FosterParentId = Id<DatabaseTable.FosterParent>
 typealias GroupId = Id<DatabaseTable.Group>
 typealias GroupPlacementId = Id<DatabaseTable.GroupPlacement>
 typealias HolidayPeriodId = Id<DatabaseTable.HolidayPeriod>

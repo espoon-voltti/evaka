@@ -29,6 +29,7 @@ import { PersonContext, PersonContextProvider } from '../state/person'
 import { UserContext } from '../state/user'
 
 import { getLayout, Layouts } from './layouts'
+import FosterChildren from './person-profile/FosterChildren'
 import FamilyOverview from './person-profile/PersonFamilyOverview'
 import PersonInvoiceCorrections from './person-profile/PersonInvoiceCorrections'
 import PersonVoucherValueDecisions from './person-profile/PersonVoucherValueDecisions'
@@ -73,6 +74,7 @@ const components = {
   partners: PersonFridgePartner,
   'fridge-children': PersonFridgeChild,
   dependants: PersonDependants,
+  fosterChildren: FosterChildren,
   applications: PersonApplications,
   decisions: PersonDecisions
 }
@@ -83,6 +85,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'partners', open: false },
     { component: 'fridge-children', open: false },
     { component: 'dependants', open: false },
+    { component: 'fosterChildren', open: false },
     { component: 'applications', open: false },
     { component: 'decisions', open: false },
     { component: 'income', open: false },
@@ -96,6 +99,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'partners', open: false },
     { component: 'fridge-children', open: false },
     { component: 'dependants', open: false },
+    { component: 'fosterChildren', open: false },
     { component: 'applications', open: false },
     { component: 'decisions', open: false },
     { component: 'income', open: false },
@@ -113,12 +117,14 @@ const layouts: Layouts<typeof components> = {
     { component: 'voucherValueDecisions', open: false },
     { component: 'partners', open: false },
     { component: 'fridge-children', open: false },
-    { component: 'dependants', open: false }
+    { component: 'dependants', open: false },
+    { component: 'fosterChildren', open: false }
   ],
   ['SERVICE_WORKER']: [
     { component: 'partners', open: false },
     { component: 'fridge-children', open: false },
     { component: 'dependants', open: false },
+    { component: 'fosterChildren', open: false },
     { component: 'applications', open: false },
     { component: 'decisions', open: false }
   ],
@@ -127,6 +133,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'partners', open: false },
     { component: 'fridge-children', open: false },
     { component: 'dependants', open: false },
+    { component: 'fosterChildren', open: false },
     { component: 'decisions', open: false }
   ],
   ['EARLY_CHILDHOOD_EDUCATION_SECRETARY']: [
@@ -134,6 +141,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'partners', open: false },
     { component: 'fridge-children', open: false },
     { component: 'dependants', open: false },
+    { component: 'fosterChildren', open: false },
     { component: 'decisions', open: false }
   ]
 }

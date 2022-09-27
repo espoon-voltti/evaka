@@ -27,6 +27,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.FeeThresholdsId
+import fi.espoo.evaka.shared.FosterParentId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
@@ -556,6 +557,12 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
+    enum class FosterParent(override vararg val defaultRules: ScopedActionRule<in FosterParentId>) : ScopedAction<FosterParentId> {
+        DELETE(HasGlobalRole(SERVICE_WORKER)),
+        UPDATE(HasGlobalRole(SERVICE_WORKER));
+
+        override fun toString(): String = "${javaClass.name}.$name"
+    }
     enum class Group(override vararg val defaultRules: ScopedActionRule<in GroupId>) : ScopedAction<GroupId> {
         UPDATE(HasUnitRole(UNIT_SUPERVISOR).inUnitOfGroup()),
         DELETE(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inUnitOfGroup()),
@@ -672,6 +679,7 @@ sealed interface Action {
     }
     enum class Person(override vararg val defaultRules: ScopedActionRule<in PersonId>) : ScopedAction<PersonId> {
         ADD_SSN(HasGlobalRole(SERVICE_WORKER)),
+        CREATE_FOSTER_PARENT_RELATIONSHIP(HasGlobalRole(SERVICE_WORKER)),
         CREATE_INCOME(HasGlobalRole(FINANCE_ADMIN)),
         CREATE_INVOICE_CORRECTION(HasGlobalRole(FINANCE_ADMIN)),
         CREATE_PARENTSHIP(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfPerson()),
@@ -686,6 +694,8 @@ sealed interface Action {
         READ_DECISIONS(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()),
         READ_FAMILY_OVERVIEW(HasGlobalRole(FINANCE_ADMIN), HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inPlacementUnitOfChildOfPerson()),
         READ_FEE_DECISIONS(HasGlobalRole(FINANCE_ADMIN)),
+        READ_FOSTER_CHILDREN(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChild()),
+        READ_FOSTER_PARENTS(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR, STAFF).inPlacementUnitOfChild()),
         READ_INCOME(HasGlobalRole(FINANCE_ADMIN)),
         READ_INCOME_STATEMENTS(HasGlobalRole(FINANCE_ADMIN)),
         READ_INVOICES(HasGlobalRole(FINANCE_ADMIN)),

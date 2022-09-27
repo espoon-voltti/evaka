@@ -1302,6 +1302,19 @@ export const fi = {
     forceManualFeeDecisionsUnchecked: 'Automaattisesti, jos mahdollista',
     fridgeChildOfHead: 'Päämiehen alaiset alle 18v lapset',
     fridgeChildAdd: 'Lisää lapsi',
+    fosterChildren: {
+      sectionTitle: 'Sijaislapset',
+      addFosterChildTitle: 'Lisää uusi sijaislapsi',
+      addFosterChildParagraph:
+        'Sijaisvanhempi näkee lapsesta samat tiedot eVakassa kuin huoltaja. Sijaislapsen saa lisätä vain sosiaalityöntekijän luvalla.',
+      updateFosterChildTitle: 'Päivitä suhteen voimassaoloaikaa',
+      childLabel: 'Hetu tai nimi',
+      validDuringLabel: 'Voimassa',
+      createError: 'Sijaislapsen lisäys epäonnistui',
+      deleteFosterChildTitle: 'Sijaislapsen poisto',
+      deleteFosterChildParagraph:
+        'Haluatko varmasti poistaa sijaislapsen? Sijaisvanhemmuuden päättyessä merkitse suhteelle loppumisaika.'
+    },
     applications: 'Hakemukset',
     feeDecisions: {
       title: 'Päämiehen maksupäätökset',
@@ -2864,6 +2877,8 @@ export const fi = {
         'fridge_child.child_id': 'Päämiehiä',
         'fridge_child.head_of_child': 'Jääkaappi- lapsia',
         'fridge_partner.person_id': 'Jääkaappi- puolisoja',
+        'foster_parent.child_id': 'Sijais- lapsia',
+        'foster_parent.parent_id': 'Sijais- vanhempia',
         'holiday_questionnaire_answer.child_id': 'Kyselyvastauksia',
         'income.person_id': 'Tulo- tietoja',
         'income_statement.person_id': 'Tulo -ilmoituksia',

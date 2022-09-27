@@ -5,6 +5,7 @@
 // GENERATED FILE: no manual modifications
 /* eslint-disable import/order, prettier/prettier */
 
+import DateRange from '../../date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { Action } from '../action'
@@ -28,6 +29,15 @@ export interface AddSsnRequest {
 */
 export interface CitizenUser {
   id: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.CreateFosterParentRelationshipBody
+*/
+export interface CreateFosterParentRelationshipBody {
+  childId: UUID
+  parentId: UUID
+  validDuring: DateRange
 }
 
 /**
@@ -213,6 +223,16 @@ export interface FamilyOverviewPerson {
   postalCode: string
   restrictedDetailsEnabled: boolean
   streetAddress: string
+}
+
+/**
+* Generated from fi.espoo.evaka.pis.controllers.FosterParentRelationship
+*/
+export interface FosterParentRelationship {
+  child: PersonSummary
+  parent: PersonSummary
+  relationshipId: UUID
+  validDuring: DateRange
 }
 
 /**
