@@ -137,7 +137,7 @@ fun Database.Read.personIsHeadOfFamily(personId: PersonId): Boolean {
     return createQuery(
         """
 SELECT EXISTS(
-    SELECT * FROM fridge_child WHERE head_of_child = :personId
+    SELECT * FROM fridge_child WHERE head_of_child = :personId AND NOT conflict
 )
         """.trimIndent()
     )
