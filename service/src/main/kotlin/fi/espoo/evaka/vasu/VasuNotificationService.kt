@@ -78,6 +78,7 @@ FROM curriculum_document doc
     JOIN person parent ON g.guardian_id = parent.id
 WHERE
     doc.id = :id
+    AND parent.email IS NOT NULL AND parent.email != ''
             """.trimIndent()
         )
             .bind("id", vasuDocumentId)
