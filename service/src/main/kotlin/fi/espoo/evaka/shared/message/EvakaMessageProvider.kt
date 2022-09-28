@@ -121,7 +121,7 @@ Klientavgiften för småbarnspedagogik gäller tills vidare och familjen är sky
 
     override fun getDefaultFinancialDecisionAddress(lang: MessageLanguage): DecisionSendAddress = when (lang) {
         MessageLanguage.FI -> DecisionSendAddress(
-            "",
+            "Espoon Kaupunki, Talousyksikkö, Varhaiskasvatuksen laskutus, PL 30",
             "02700",
             "Espoon kaupunki",
             "PL 30",
@@ -129,7 +129,7 @@ Klientavgiften för småbarnspedagogik gäller tills vidare och familjen är sky
             ""
         )
         MessageLanguage.SV -> DecisionSendAddress(
-            "",
+            "Esbo stad, ekonomieheten/småbarnspedagogik, PB 30",
             "02700",
             "Esbo",
             "PB 30",
