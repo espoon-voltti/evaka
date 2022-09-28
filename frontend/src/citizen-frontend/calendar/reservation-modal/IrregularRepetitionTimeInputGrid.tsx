@@ -48,7 +48,14 @@ export default React.memo(function IrregularRepetitionTimeInputGrid({
         [...selectedRange.dates()].map<
           [
             string,
-            TimeRanges | 'absent' | 'day-off' | 'not-editable' | undefined
+            (
+              | TimeRanges
+              | 'absent'
+              | 'day-off'
+              | 'not-editable'
+              | 'holiday'
+              | undefined
+            )
           ]
         >((rangeDate) => {
           const existingTimes = reservations.find(({ date }) =>
@@ -57,6 +64,10 @@ export default React.memo(function IrregularRepetitionTimeInputGrid({
 
           if (!existingTimes) {
             return [rangeDate.formatIso(), emptyTimeRange]
+          }
+
+          if (existingTimes.isHoliday) {
+            return [rangeDate.formatIso(), 'holiday']
           }
 
           if (

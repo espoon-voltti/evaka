@@ -131,6 +131,7 @@ export default React.memo(function WeeklyRepetitionTimeInputGrid({
             }
             times={times}
             updateTimes={(times) =>
+              times !== 'holiday' &&
               updateForm({
                 weeklyTimes: [
                   ...formData.weeklyTimes.slice(0, index),

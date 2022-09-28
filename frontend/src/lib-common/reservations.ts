@@ -25,7 +25,7 @@ export interface ReservationFormData {
   >
   irregularTimes: Record<
     string,
-    TimeRanges | 'absent' | 'day-off' | 'not-editable' | undefined
+    TimeRanges | 'absent' | 'day-off' | 'not-editable' | 'holiday' | undefined
   >
 }
 
@@ -118,7 +118,8 @@ export function validateForm(
         times &&
         times !== 'absent' &&
         times !== 'day-off' &&
-        times !== 'not-editable'
+        times !== 'not-editable' &&
+        times !== 'holiday'
           ? times.map((timeRange) => validateTimeRange(timeRange))
           : undefined
       ])
@@ -177,9 +178,20 @@ export function validateForm(
 }
 
 function filterReservations(
-  times: TimeRanges | 'absent' | 'day-off' | 'not-editable' | undefined
+  times:
+    | TimeRanges
+    | 'absent'
+    | 'day-off'
+    | 'not-editable'
+    | 'holiday'
+    | undefined
 ) {
-  if (times === 'absent' || times === 'day-off' || times === 'not-editable') {
+  if (
+    times === 'absent' ||
+    times === 'day-off' ||
+    times === 'not-editable' ||
+    times === 'holiday'
+  ) {
     return null
   }
 
