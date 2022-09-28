@@ -114,7 +114,15 @@ class AttendanceReservationController(private val ac: AccessControl) {
         val children = body.map { it.childId }.toSet()
         ac.requirePermissionFor(user, clock, Action.Child.CREATE_ATTENDANCE_RESERVATION, children)
 
-        val result = db.connect { dbc -> dbc.transaction { createReservations(it, user.evakaUserId, body.validate()) } }
+        if (body.any { it.absent }) {
+            throw BadRequest("Absences are not allowed", "ABSENCES_NOT_ALLOWED")
+        }
+
+        val result = db.connect { dbc ->
+            dbc.transaction {
+                createReservationsAndAbsences(it, user.evakaUserId, body)
+            }
+        }
         Audit.AttendanceReservationEmployeeCreate.log(
             targetId = children,
             mapOf(
