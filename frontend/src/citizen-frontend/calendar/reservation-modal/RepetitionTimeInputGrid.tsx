@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
-import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { DailyReservationData } from 'lib-common/generated/api-types/reservations'
@@ -12,7 +11,7 @@ import {
   ReservationFormDataForValidation,
   ValidationResult
 } from 'lib-common/reservations'
-import { defaultMargins } from 'lib-components/white-space'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 import DailyRepetitionTimeInputGrid from './DailyRepetitionTimeInputGrid'
 import IrregularRepetitionTimeInputGrid from './IrregularRepetitionTimeInputGrid'
@@ -36,30 +35,21 @@ export default React.memo(function RepetitionTimeInputGrid({
   switch (repetition) {
     case 'DAILY':
       return (
-        <TimeInputGrid>
+        <FixedSpaceColumn>
           <DailyRepetitionTimeInputGrid {...props} />
-        </TimeInputGrid>
+        </FixedSpaceColumn>
       )
     case 'WEEKLY':
       return (
-        <TimeInputGrid>
+        <FixedSpaceColumn>
           <WeeklyRepetitionTimeInputGrid {...props} />
-        </TimeInputGrid>
+        </FixedSpaceColumn>
       )
     case 'IRREGULAR':
       return (
-        <TimeInputGrid>
+        <FixedSpaceColumn>
           <IrregularRepetitionTimeInputGrid {...props} />
-        </TimeInputGrid>
+        </FixedSpaceColumn>
       )
   }
 })
-
-const TimeInputGrid = styled.div`
-  display: grid;
-  grid-template-columns: max-content max-content auto;
-  grid-column-gap: ${defaultMargins.X3L};
-  grid-row-gap: ${defaultMargins.s};
-  align-items: center;
-  grid-auto-rows: 1fr;
-`

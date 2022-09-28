@@ -51,20 +51,22 @@ export default React.memo(function TimeInputs(props: TimeInputProps) {
 
   if (!props.times) {
     return (
-      <>
-        <div>{props.label}</div>
-        <div />
-        <div />
-      </>
+      <FixedSpaceRow fullWidth>
+        <LeftCell>{props.label}</LeftCell>
+        <MiddleCell />
+        <RightCell />
+      </FixedSpaceRow>
     )
   }
 
   if (props.times === 'absent') {
     return (
-      <>
-        <div>{props.label}</div>
-        <div>{i18n.calendar.reservationModal.absent}</div>
-        <div>
+      <FixedSpaceRow fullWidth>
+        <LeftCell>{props.label}</LeftCell>
+        <MiddleCell textOnly>
+          {i18n.calendar.reservationModal.absent}
+        </MiddleCell>
+        <RightCell>
           <IconButton
             data-qa={
               props.dataQaPrefix
@@ -75,25 +77,29 @@ export default React.memo(function TimeInputs(props: TimeInputProps) {
             onClick={() => props.updateTimes(emptyTimeRange)}
             aria-label={i18n.calendar.absentDisable}
           />
-        </div>
-      </>
+        </RightCell>
+      </FixedSpaceRow>
     )
   }
 
   if (props.times === 'not-editable') {
     return (
       <>
-        <div>{props.label}</div>
-        <div>{i18n.calendar.reservationModal.absent}</div>
-        <div>
-          <InfoButton
-            onClick={onInfoClick}
-            aria-label={i18n.common.openExpandingInfo}
-            data-qa="not-editable-info-button"
-          />
-        </div>
+        <FixedSpaceRow fullWidth>
+          <LeftCell>{props.label}</LeftCell>
+          <MiddleCell textOnly>
+            {i18n.calendar.reservationModal.absent}
+          </MiddleCell>
+          <RightCell>
+            <InfoButton
+              onClick={onInfoClick}
+              aria-label={i18n.common.openExpandingInfo}
+              data-qa="not-editable-info-button"
+            />
+          </RightCell>
+        </FixedSpaceRow>
         {infoOpen && (
-          <SpanRow>
+          <FixedSpaceRow fullWidth>
             <ExpandingInfoBox
               data-qa={
                 props.dataQaPrefix
@@ -106,7 +112,7 @@ export default React.memo(function TimeInputs(props: TimeInputProps) {
               closeLabel={i18n.common.close}
               width="full"
             />
-          </SpanRow>
+          </FixedSpaceRow>
         )}
       </>
     )
@@ -114,19 +120,21 @@ export default React.memo(function TimeInputs(props: TimeInputProps) {
 
   if (props.times === 'day-off') {
     return (
-      <>
-        <div>{props.label}</div>
-        <div>{i18n.calendar.reservationModal.dayOff}</div>
-        <div />
-      </>
+      <FixedSpaceRow fullWidth>
+        <LeftCell>{props.label}</LeftCell>
+        <MiddleCell textOnly>
+          {i18n.calendar.reservationModal.dayOff}
+        </MiddleCell>
+        <RightCell />
+      </FixedSpaceRow>
     )
   }
 
   const [timeRange, extraTimeRange] = props.times
   return (
-    <>
-      <div>{props.label}</div>
-      <FixedSpaceRow alignItems="center">
+    <FixedSpaceRow fullWidth>
+      <LeftCell>{props.label}</LeftCell>
+      <MiddleCell>
         <TimeInput
           value={timeRange.startTime ?? ''}
           onChange={(value) => {
@@ -176,42 +184,44 @@ export default React.memo(function TimeInputs(props: TimeInputProps) {
           }
           onFocus={props.onFocus}
         />
-      </FixedSpaceRow>
-      <FixedSpaceRow>
-        {props.showAbsences && (
-          <IconButton
-            data-qa={
-              props.dataQaPrefix
-                ? `${props.dataQaPrefix}-absent-button`
-                : undefined
-            }
-            icon={faUserMinus}
-            onClick={() => props.updateTimes('absent')}
-            aria-label={i18n.calendar.absentEnable}
-          />
-        )}
-        {!extraTimeRange && props.allowExtraTimeRange ? (
-          <IconButton
-            icon={faPlus}
-            onClick={() =>
-              props.updateTimes([
-                timeRange,
-                {
-                  startTime: '',
-                  endTime: ''
-                }
-              ])
-            }
-            aria-label={i18n.common.add}
-          />
-        ) : (
-          <div />
-        )}
-      </FixedSpaceRow>
+      </MiddleCell>
+      <RightCell>
+        <FixedSpaceRow>
+          {props.showAbsences && (
+            <IconButton
+              data-qa={
+                props.dataQaPrefix
+                  ? `${props.dataQaPrefix}-absent-button`
+                  : undefined
+              }
+              icon={faUserMinus}
+              onClick={() => props.updateTimes('absent')}
+              aria-label={i18n.calendar.absentEnable}
+            />
+          )}
+          {!extraTimeRange && props.allowExtraTimeRange ? (
+            <IconButton
+              icon={faPlus}
+              onClick={() =>
+                props.updateTimes([
+                  timeRange,
+                  {
+                    startTime: '',
+                    endTime: ''
+                  }
+                ])
+              }
+              aria-label={i18n.common.add}
+            />
+          ) : (
+            <div />
+          )}
+        </FixedSpaceRow>
+      </RightCell>
       {extraTimeRange ? (
-        <>
-          <div />
-          <FixedSpaceRow alignItems="center">
+        <FixedSpaceRow fullWidth>
+          <LeftCell />
+          <MiddleCell>
             <TimeInput
               value={extraTimeRange.startTime ?? ''}
               onChange={(value) =>
@@ -261,22 +271,30 @@ export default React.memo(function TimeInputs(props: TimeInputProps) {
               }
               onFocus={props.onFocus}
             />
-          </FixedSpaceRow>
-          <div>
+          </MiddleCell>
+          <RightCell>
             <IconButton
               icon={faTrash}
               onClick={() => props.updateTimes([timeRange])}
               aria-label={i18n.common.delete}
             />
-          </div>
-        </>
+          </RightCell>
+        </FixedSpaceRow>
       ) : null}
-    </>
+    </FixedSpaceRow>
   )
 })
 
-const SpanRow = styled.div`
-  max-width: 380px;
-  grid-column: 1/-1;
-  grid-row: span 3;
+const LeftCell = styled.div`
+  flex: 0.25;
+  padding-top: 8px;
+`
+const MiddleCell = styled.div<{ textOnly?: boolean }>`
+  flex: 0.7;
+  ${(p) => p.textOnly && 'padding-top: 8px;'}
+`
+const RightCell = styled.div`
+  flex: 0.15;
+  padding-top: 8px;
+  align-self: center;
 `
