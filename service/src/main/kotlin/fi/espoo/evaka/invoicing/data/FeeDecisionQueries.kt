@@ -317,6 +317,8 @@ fun Database.Read.searchFeeDecisions(
 
     val noStartingPlacements = distinctiveParams.contains(DistinctiveParams.NO_STARTING_PLACEMENTS)
 
+    val maxFeeAccepted = distinctiveParams.contains(DistinctiveParams.MAX_FEE_ACCEPTED)
+
     val (numberQuery, numberParams) = disjointNumberQuery("decision", "decision_number", numberParamsRaw)
 
     val conditions = listOfNotNull(
@@ -334,7 +336,8 @@ fun Database.Read.searchFeeDecisions(
         // = start date of valid_during is included in the search range
             "(valid_during && daterange(:start_date, :end_date, '[]') AND valid_during &> daterange(:start_date, :end_date, '[]'))" else null,
         if (financeDecisionHandlerId != null) "youngest_child.finance_decision_handler = :finance_decision_handler" else null,
-        if (noStartingPlacements) "decisions_with_first_placement_starting_this_month.fee_decision_id IS NULL" else null
+        if (noStartingPlacements) "decisions_with_first_placement_starting_this_month.fee_decision_id IS NULL" else null,
+        if (maxFeeAccepted) "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')" else null,
     )
 
     val youngestChildQuery =

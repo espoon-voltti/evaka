@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.invoicing.data.findFeeDecisionsForHeadOfFamily
 import fi.espoo.evaka.invoicing.data.getFeeDecision
 import fi.espoo.evaka.invoicing.data.searchFeeDecisions
@@ -57,11 +58,13 @@ enum class SortDirection {
     DESC
 }
 
+@ConstList("feeDecisionDistinctiveParams")
 enum class DistinctiveParams {
     UNCONFIRMED_HOURS,
     EXTERNAL_CHILD,
     RETROACTIVE,
-    NO_STARTING_PLACEMENTS
+    NO_STARTING_PLACEMENTS,
+    MAX_FEE_ACCEPTED,
 }
 
 @RestController
