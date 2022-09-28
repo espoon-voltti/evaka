@@ -14,14 +14,14 @@ import { formatCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import { Label } from 'lib-components/typography'
+import { H2, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import { faChild, faPlus } from 'lib-icons'
+import { faPlus } from 'lib-icons'
 
 import {
   createRetroactiveFeeDecisions,
@@ -37,10 +37,14 @@ interface Props {
   open: boolean
 }
 
-export default React.memo(function PersonFeeDecisions({ id, open }: Props) {
+export default React.memo(function PersonFeeDecisions({
+  id,
+  open: startOpen
+}: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
   const { permittedActions } = useContext(PersonContext)
+  const [open, setOpen] = useState(startOpen)
   const [feeDecisions, reloadFeeDecisions] = useApiState(
     () => getPersonFeeDecisions(id),
     [id]
@@ -52,12 +56,13 @@ export default React.memo(function PersonFeeDecisions({ id, open }: Props) {
   )
 
   return (
-    <CollapsibleSection
-      icon={faChild}
-      title={i18n.personProfile.feeDecisions.title}
+    <CollapsibleContentArea
+      title={<H2>{i18n.personProfile.feeDecisions.title}</H2>}
+      open={open}
+      toggleOpen={() => setOpen(!open)}
+      opaque
+      paddingVertical="L"
       data-qa="person-fee-decisions-collapsible"
-      startCollapsed={!open}
-      fitted
     >
       {uiMode === 'create-retroactive-fee-decision' ? (
         <Modal
@@ -110,7 +115,7 @@ export default React.memo(function PersonFeeDecisions({ id, open }: Props) {
           </Tbody>
         </Table>
       ))}
-    </CollapsibleSection>
+    </CollapsibleContentArea>
   )
 })
 

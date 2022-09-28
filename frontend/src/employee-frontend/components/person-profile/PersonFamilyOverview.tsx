@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -10,9 +10,9 @@ import { isLoading } from 'lib-common/api'
 import { IncomeEffect } from 'lib-common/api-types/income'
 import { formatCents } from 'lib-common/money'
 import { getAge } from 'lib-common/utils/local-date'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { faHome } from 'lib-icons'
+import { H2 } from 'lib-components/typography'
 
 import LabelValueList from '../../components/common/LabelValueList'
 import { Translations, useTranslation } from '../../state/i18n'
@@ -78,9 +78,10 @@ function getAdults(family: FamilyOverview): FamilyOverviewPerson[] {
   return partner ? [headOfFamily, partner] : [headOfFamily]
 }
 
-export default React.memo(function FamilyOverview({ open }: Props) {
+export default React.memo(function FamilyOverview({ open: startOpen }: Props) {
   const { i18n } = useTranslation()
   const { family } = useContext(PersonContext)
+  const [open, setOpen] = useState(startOpen)
 
   function getIncomeString(
     incomeTotal: number | undefined,
@@ -106,12 +107,13 @@ export default React.memo(function FamilyOverview({ open }: Props) {
 
   return (
     <div data-qa="family-overview-section" data-isloading={isLoading(family)}>
-      <CollapsibleSection
-        icon={faHome}
-        title={i18n.personProfile.familyOverview.title}
+      <CollapsibleContentArea
+        title={<H2>{i18n.personProfile.familyOverview.title}</H2>}
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        opaque
+        paddingVertical="L"
         data-qa="family-overview-collapsible"
-        startCollapsed={!open}
-        fitted
       >
         {renderResult(family, (family) => (
           <>
@@ -198,7 +200,7 @@ export default React.memo(function FamilyOverview({ open }: Props) {
             </div>
           </>
         ))}
-      </CollapsibleSection>
+      </CollapsibleContentArea>
     </div>
   )
 })

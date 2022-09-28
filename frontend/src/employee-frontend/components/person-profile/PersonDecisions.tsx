@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Decision } from 'lib-common/generated/api-types/decision'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { faChild } from 'lib-icons'
+import { H2 } from 'lib-components/typography'
 
 import { getGuardianDecisions } from '../../api/person'
 import { useTranslation } from '../../state/i18n'
@@ -25,19 +25,21 @@ interface Props {
 
 const PersonDecisions = React.memo(function PersonDecisions({
   id,
-  open
+  open: startOpen
 }: Props) {
   const { i18n } = useTranslation()
+  const [open, setOpen] = useState(startOpen)
   const [decisions] = useApiState(() => getGuardianDecisions(id), [id])
 
   return (
     <div>
-      <CollapsibleSection
-        icon={faChild}
-        title={i18n.personProfile.decision.decisions}
-        startCollapsed={!open}
+      <CollapsibleContentArea
+        title={<H2>{i18n.personProfile.decision.decisions}</H2>}
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        opaque
+        paddingVertical="L"
         data-qa="person-decisions-collapsible"
-        fitted
       >
         {renderResult(decisions, (decisions) => (
           <Table data-qa="table-of-decisions">
@@ -87,7 +89,7 @@ const PersonDecisions = React.memo(function PersonDecisions({
             </Tbody>
           </Table>
         ))}
-      </CollapsibleSection>
+      </CollapsibleContentArea>
     </div>
   )
 })

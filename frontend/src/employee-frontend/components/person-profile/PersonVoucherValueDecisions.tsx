@@ -12,14 +12,14 @@ import LocalDate from 'lib-common/local-date'
 import { formatCents } from 'lib-common/money'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import { Label } from 'lib-components/typography'
+import { H2, Label } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import { faChild, faPlus } from 'lib-icons'
+import { faPlus } from 'lib-icons'
 
 import {
   createRetroactiveValueDecisions,
@@ -36,11 +36,12 @@ interface Props {
 
 export default React.memo(function PersonVoucherValueDecisions({
   id,
-  open
+  open: startOpen
 }: Props) {
   const { i18n } = useTranslation()
   const { uiMode, toggleUiMode, clearUiMode } = useContext(UIContext)
   const { permittedActions } = useContext(PersonContext)
+  const [open, setOpen] = useState(startOpen)
   const [voucherValueDecisions, reloadDecisions] = useApiState(
     () => getPersonVoucherValueDecisions(id),
     [id]
@@ -52,12 +53,13 @@ export default React.memo(function PersonVoucherValueDecisions({
   )
 
   return (
-    <CollapsibleSection
-      icon={faChild}
-      title={i18n.personProfile.voucherValueDecisions.title}
+    <CollapsibleContentArea
+      title={<H2>{i18n.personProfile.voucherValueDecisions.title}</H2>}
+      open={open}
+      toggleOpen={() => setOpen(!open)}
+      opaque
+      paddingVertical="L"
       data-qa="person-voucher-value-decisions-collapsible"
-      startCollapsed={!open}
-      fitted
     >
       {uiMode === 'create-retroactive-value-decisions' ? (
         <Modal
@@ -130,7 +132,7 @@ export default React.memo(function PersonVoucherValueDecisions({
           </Tbody>
         </Table>
       ))}
-    </CollapsibleSection>
+    </CollapsibleContentArea>
   )
 })
 

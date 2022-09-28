@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import {
@@ -13,8 +13,9 @@ import {
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
+import { H2 } from 'lib-components/typography'
 import { faFileAlt } from 'lib-icons'
 
 import { getGuardianApplicationSummaries } from '../../api/person'
@@ -27,8 +28,12 @@ interface Props {
   open: boolean
 }
 
-export default React.memo(function PersonApplications({ id, open }: Props) {
+export default React.memo(function PersonApplications({
+  id,
+  open: startOpen
+}: Props) {
   const { i18n } = useTranslation()
+  const [open, setOpen] = useState(startOpen)
   const [applications] = useApiState(
     () => getGuardianApplicationSummaries(id),
     [id]
@@ -36,12 +41,13 @@ export default React.memo(function PersonApplications({ id, open }: Props) {
 
   return (
     <div>
-      <CollapsibleSection
-        icon={faFileAlt}
-        title={i18n.personProfile.applications}
-        startCollapsed={!open}
+      <CollapsibleContentArea
+        title={<H2>{i18n.personProfile.applications}</H2>}
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        opaque
+        paddingVertical="L"
         data-qa="person-applications-collapsible"
-        fitted
       >
         {renderResult(applications, (applications) => (
           <Table data-qa="table-of-applications">
@@ -110,7 +116,7 @@ export default React.memo(function PersonApplications({ id, open }: Props) {
             </Tbody>
           </Table>
         ))}
-      </CollapsibleSection>
+      </CollapsibleContentArea>
     </div>
   )
 })
