@@ -215,6 +215,7 @@ fun createFeeDecisionFixture(
     partnerId: PersonId? = null,
     feeThresholds: FeeDecisionThresholds = testFeeThresholds.getFeeDecisionThresholds(children.size + 1),
     headOfFamilyIncome: DecisionIncome? = null,
+    partnerIncome: DecisionIncome? = null,
     familySize: Int = children.size + 1
 ) = FeeDecision(
     id = FeeDecisionId(UUID.randomUUID()),
@@ -224,7 +225,7 @@ fun createFeeDecisionFixture(
     headOfFamilyId = headOfFamilyId,
     partnerId = partnerId,
     headOfFamilyIncome = headOfFamilyIncome,
-    partnerIncome = null,
+    partnerIncome = partnerIncome,
     familySize = familySize,
     feeThresholds = feeThresholds,
     children = children,
