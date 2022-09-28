@@ -168,7 +168,7 @@ SELECT ce.id, cp.child_id, ce.period * daterange(dgp.start_date, dgp.end_date, '
          ELSE 'unit' END
 ) type, dg.id group_id, dg.name group_name, unit.id unit_id, unit.name unit_name
 FROM child_placement cp
-LEFT JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = cp.id
+LEFT JOIN daycare_group_placement dgp ON cp.backup_group_id IS NULL AND dgp.daycare_placement_id = cp.id
 LEFT JOIN calendar_event_attendee cea
     ON cea.unit_id = cp.unit_id
     AND (cea.child_id IS NULL OR cea.child_id = cp.child_id)
@@ -178,8 +178,8 @@ LEFT JOIN daycare_group dg ON dg.id = cea.group_id
 LEFT JOIN daycare unit ON unit.id = cea.unit_id
 WHERE cp.period && ce.period
   AND ce.period && :range
-  -- dgp start date can be null when the child is in backup care; this is accounted in ce.period
-  AND (dgp.start_date IS NULL OR daterange(dgp.start_date, dgp.end_date, '[]') && ce.period)
+  AND daterange(dgp.start_date, dgp.end_date, '[]') && ce.period
+  AND daterange(dgp.start_date, dgp.end_date, '[]') && cp.period
         """.trimIndent()
     )
         .bind("guardianId", guardianId)

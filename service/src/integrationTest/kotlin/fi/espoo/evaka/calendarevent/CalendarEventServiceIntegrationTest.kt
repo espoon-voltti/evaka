@@ -35,6 +35,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -484,6 +485,37 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `citizen sees backup care and main unit events`() {
+        val backupCareStart = placementStart.plusDays(10)
+        val backupCareEnd = placementStart.plusDays(20)
+        db.transaction { tx ->
+            tx.insertGuardian(testAdult_3.id, testChild_3.id)
+            val placementId = tx.insertTestPlacement(
+                childId = testChild_3.id,
+                unitId = testDaycare.id,
+                startDate = placementStart,
+                endDate = placementEnd
+            )
+            tx.insertTestDaycareGroupPlacement(
+                daycarePlacementId = placementId,
+                groupId = groupId,
+                startDate = placementStart,
+                endDate = backupCareStart.minusDays(1)
+            )
+            tx.insertTestDaycareGroupPlacement(
+                daycarePlacementId = placementId,
+                groupId = groupId,
+                startDate = backupCareEnd.plusDays(1),
+                endDate = placementEnd
+            )
+        }
+        this.backupCareController.createForChild(
+            dbInstance(),
+            admin,
+            clock,
+            testChild_3.id,
+            NewBackupCare(testDaycare2.id, null, FiniteDateRange(backupCareStart, backupCareEnd))
+        )
+
         val form = CalendarEventForm(
             unitId = testDaycare.id,
             tree = mapOf(groupId to null),
@@ -502,16 +534,8 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form2)
 
-        this.backupCareController.createForChild(
-            dbInstance(),
-            admin,
-            clock,
-            testChild_1.id,
-            NewBackupCare(testDaycare2.id, null, FiniteDateRange(placementStart.plusDays(10), placementStart.plusDays(20)))
-        )
-
         val guardianEvents = this.calendarEventController.getCitizenCalendarEvents(
-            dbInstance(), guardian, clock,
+            dbInstance(), AuthenticatedUser.Citizen(testAdult_3.id, CitizenAuthLevel.STRONG), clock,
             placementStart, placementStart.plusDays(50)
         )
 
@@ -521,7 +545,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(form.description, mainUnitEvent.description)
         assertEquals(1, mainUnitEvent.attendingChildren.size)
 
-        mainUnitEvent.attendingChildren[testChild_1.id]?.first().let { attendee ->
+        mainUnitEvent.attendingChildren[testChild_3.id]?.first().let { attendee ->
             assertNotNull(attendee)
             assertEquals("TestGroup1", attendee.groupName)
             assertEquals("group", attendee.type)
@@ -540,7 +564,7 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(form2.description, backupCareEvent.description)
         assertEquals(1, backupCareEvent.attendingChildren.size)
 
-        backupCareEvent.attendingChildren[testChild_1.id]?.first().let { attendee ->
+        backupCareEvent.attendingChildren[testChild_3.id]?.first().let { attendee ->
             assertNotNull(attendee)
             assertNull(attendee.groupName)
             assertEquals(testDaycare2.name, attendee.unitName)
