@@ -54,7 +54,7 @@ class FridgeFamilyService(
                 }
                 ?.takeIf { livesInSameAddress(it.address, targetPerson.address) }
 
-            val head = if (partner != null && db.read { it.personIsHeadOfFamily(partner.id) }) partner else targetPerson
+            val head = if (partner != null && db.read { it.personIsHeadOfFamily(partner.id, clock.today()) }) partner else targetPerson
 
             if (partner != null) {
                 logger.info("Partner lives in the same address and has ${partner.children.size} children")

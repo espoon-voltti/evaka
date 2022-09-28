@@ -46,7 +46,7 @@ class FamilyInitializerService(
     }
 
     private fun initFamilyFromApplication(tx: Database.Transaction, evakaClock: EvakaClock, familyFromApplication: FridgeFamilyMembers) {
-        val headOfFamily = if (familyFromApplication.fridgePartner != null && tx.personIsHeadOfFamily(familyFromApplication.fridgePartner.id))
+        val headOfFamily = if (familyFromApplication.fridgePartner != null && tx.personIsHeadOfFamily(familyFromApplication.fridgePartner.id, evakaClock.today()))
             familyFromApplication.fridgePartner
         else familyFromApplication.headOfFamily
 
