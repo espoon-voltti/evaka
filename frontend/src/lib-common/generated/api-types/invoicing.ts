@@ -843,8 +843,12 @@ export interface VoucherValueDecisionDetailed {
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionDistinctiveParams
 */
-export type VoucherValueDecisionDistinctiveParams =
-  | 'NO_STARTING_PLACEMENTS'
+export const voucherValueDecisionDistinctiveParams = [
+  'NO_STARTING_PLACEMENTS',
+  'MAX_FEE_ACCEPTED'
+] as const
+
+export type VoucherValueDecisionDistinctiveParams = typeof voucherValueDecisionDistinctiveParams[number]
 
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement

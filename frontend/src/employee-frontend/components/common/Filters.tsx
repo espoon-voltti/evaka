@@ -20,6 +20,7 @@ import {
   FeeDecisionStatus,
   InvoiceDistinctiveParams,
   InvoiceStatus,
+  voucherValueDecisionDistinctiveParams,
   VoucherValueDecisionDistinctiveParams,
   VoucherValueDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
@@ -586,16 +587,12 @@ export function VoucherValueDecisionDistinctionsFilter({
 }: VoucherValueDecisionDistinctionsFilterProps) {
   const { i18n } = useTranslation()
 
-  const distinctiveDetails: VoucherValueDecisionDistinctiveParams[] = [
-    'NO_STARTING_PLACEMENTS'
-  ]
-
   return (
     <>
       <Label>{i18n.filters.distinctiveDetails}</Label>
       <Gap size="xs" />
       <FixedSpaceColumn spacing="xs">
-        {distinctiveDetails.map((id) => (
+        {voucherValueDecisionDistinctiveParams.map((id) => (
           <Checkbox
             key={id}
             label={i18n.feeDecision.distinctiveDetails[id]}
