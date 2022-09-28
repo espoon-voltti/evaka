@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useCallback, useState } from 'react'
+import styled from 'styled-components'
 
 import { errorToInputInfo } from 'citizen-frontend/input-info-helper'
 import { useTranslation } from 'citizen-frontend/localization'
@@ -10,6 +11,10 @@ import { TimeRangeErrors, TimeRanges } from 'lib-common/reservations'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  ExpandingInfoBox,
+  InfoButton
+} from 'lib-components/molecules/ExpandingInfo'
 import { faPlus, fasUserMinus, faTrash, faUserMinus } from 'lib-icons'
 
 import { emptyTimeRange } from './utils'
@@ -24,8 +29,10 @@ interface BaseTimeInputProps {
 }
 
 interface TimeInputWithAbsencesProps extends BaseTimeInputProps {
-  times: TimeRanges | 'absent' | 'day-off' | undefined
-  updateTimes: (v: TimeRanges | 'absent' | 'day-off' | undefined) => void
+  times: TimeRanges | 'absent' | 'day-off' | 'not-editable' | undefined
+  updateTimes: (
+    v: TimeRanges | 'absent' | 'day-off' | 'not-editable' | undefined
+  ) => void
   showAbsences: true
 }
 
@@ -39,6 +46,8 @@ type TimeInputProps = TimeInputWithAbsencesProps | TimeInputWithoutAbsencesProps
 
 export default React.memo(function TimeInputs(props: TimeInputProps) {
   const i18n = useTranslation()
+  const [infoOpen, setInfoOpen] = useState(false)
+  const onInfoClick = useCallback(() => setInfoOpen((prev) => !prev), [])
 
   if (!props.times) {
     return (
@@ -67,6 +76,38 @@ export default React.memo(function TimeInputs(props: TimeInputProps) {
             aria-label={i18n.calendar.absentDisable}
           />
         </div>
+      </>
+    )
+  }
+
+  if (props.times === 'not-editable') {
+    return (
+      <>
+        <div>{props.label}</div>
+        <div>{i18n.calendar.reservationModal.absent}</div>
+        <div>
+          <InfoButton
+            onClick={onInfoClick}
+            aria-label={i18n.common.openExpandingInfo}
+            data-qa="not-editable-info-button"
+          />
+        </div>
+        {infoOpen && (
+          <SpanRow>
+            <ExpandingInfoBox
+              data-qa={
+                props.dataQaPrefix
+                  ? `${props.dataQaPrefix}-absence-by-employee-info-box`
+                  : undefined
+              }
+              close={onInfoClick}
+              aria-label={i18n.calendar.absenceMarkedByEmployee}
+              info={i18n.calendar.contactStaffToEditAbsence}
+              closeLabel={i18n.common.close}
+              width="full"
+            />
+          </SpanRow>
+        )}
       </>
     )
   }
@@ -233,3 +274,9 @@ export default React.memo(function TimeInputs(props: TimeInputProps) {
     </>
   )
 })
+
+const SpanRow = styled.div`
+  max-width: 380px;
+  grid-column: 1/-1;
+  grid-row: span 3;
+`

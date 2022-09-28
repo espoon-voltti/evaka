@@ -41,6 +41,19 @@ export const allChildrenAreAbsent = (
     )
   )
 
+export const allChildrenAreAbsentMarkedByEmployee = (
+  dayData: DailyReservationData[],
+  childIds: string[]
+) =>
+  dayData.every((reservations) =>
+    childIds.every((childId) =>
+      reservations.children.some(
+        (child) =>
+          child.childId === childId && !!child.absence && child.markedByEmployee
+      )
+    )
+  )
+
 export const allChildrenHaveDayOff = (
   dayData: DailyReservationData[],
   childIds: string[]

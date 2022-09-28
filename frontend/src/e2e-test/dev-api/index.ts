@@ -14,6 +14,10 @@ import {
 } from 'lib-common/api-types/application/ApplicationDetails'
 import { ScopedRole } from 'lib-common/api-types/employee-auth'
 import {
+  AbsenceCategory,
+  AbsenceType
+} from 'lib-common/generated/api-types/daycare'
+import {
   FeeDecision,
   FeeThresholds,
   Invoice,
@@ -1136,6 +1140,26 @@ export async function insertCalendarEventAttendee(
       body
     )
     return data
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertAbsence(
+  childId: UUID,
+  absenceType: AbsenceType,
+  date: LocalDate,
+  absenceCategory: AbsenceCategory,
+  modifiedBy: UUID
+): Promise<void> {
+  try {
+    await devClient.post<void>('/absence', {
+      childId,
+      absenceType,
+      date,
+      absenceCategory,
+      modifiedBy
+    })
   } catch (e) {
     throw new DevApiError(e)
   }

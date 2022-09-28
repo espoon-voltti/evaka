@@ -58,7 +58,7 @@ export default React.memo(function RepetitionTimeInputGrid({
 const TimeInputGrid = styled.div`
   display: grid;
   grid-template-columns: max-content max-content auto;
-  grid-column-gap: ${defaultMargins.s};
+  grid-column-gap: ${defaultMargins.X3L};
   grid-row-gap: ${defaultMargins.s};
   align-items: center;
   grid-auto-rows: 1fr;

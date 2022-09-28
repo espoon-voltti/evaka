@@ -5,9 +5,21 @@
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 
-import { insertDaycarePlacementFixtures, resetDatabase } from '../../dev-api'
-import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { createDaycarePlacementFixture, uuidv4 } from '../../dev-api/fixtures'
+import {
+  insertAbsence,
+  insertDaycarePlacementFixtures,
+  insertDefaultServiceNeedOptions,
+  resetDatabase
+} from '../../dev-api'
+import {
+  AreaAndPersonFixtures,
+  initializeAreaAndPersonData
+} from '../../dev-api/data-init'
+import {
+  createDaycarePlacementFixture,
+  Fixture,
+  uuidv4
+} from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
 import CitizenCalendarPage, {
   AbsenceReservation,
@@ -30,26 +42,55 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   let header: CitizenHeader
   let calendarPage: CitizenCalendarPage
   let children: PersonDetail[]
+  let fixtures: AreaAndPersonFixtures
   const today = LocalDate.of(2022, 1, 5)
 
   beforeEach(async () => {
     await resetDatabase()
-    const fixtures = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
     children = [
       fixtures.enduserChildFixtureJari,
       fixtures.enduserChildFixtureKaarina,
       fixtures.enduserChildFixturePorriHatterRestricted
     ]
-    await insertDaycarePlacementFixtures(
-      children.map((child) =>
-        createDaycarePlacementFixture(
-          uuidv4(),
-          child.id,
-          fixtures.daycareFixture.id,
-          today.formatIso(),
-          today.addYears(1).formatIso()
-        )
+    const placementFixtures = children.map((child) =>
+      createDaycarePlacementFixture(
+        uuidv4(),
+        child.id,
+        fixtures.daycareFixture.id,
+        today.formatIso(),
+        today.addYears(1).formatIso()
       )
+    )
+    await insertDaycarePlacementFixtures(placementFixtures)
+    await insertDefaultServiceNeedOptions()
+
+    const group = await Fixture.daycareGroup()
+      .with({ daycareId: fixtures.daycareFixture.id })
+      .save()
+
+    await Promise.all(
+      placementFixtures.map((placement) =>
+        Fixture.groupPlacement()
+          .withGroup(group)
+          .with({
+            daycarePlacementId: placement.id,
+            startDate: placement.startDate,
+            endDate: placement.endDate
+          })
+          .save()
+      )
+    )
+
+    const employee = await Fixture.employeeStaff(fixtures.daycareFixture.id)
+      .save()
+      .then((e) => e.data)
+    await insertAbsence(
+      fixtures.enduserChildFixturePorriHatterRestricted.id,
+      'UNKNOWN_ABSENCE',
+      today.addDays(35),
+      'BILLABLE',
+      employee.id
     )
 
     const viewport =
@@ -111,6 +152,23 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
         [reservations[index]]
       )
     }, Promise.resolve())
+  })
+
+  test('Citizen cannot create reservation on day where staff has marked an absence', async () => {
+    // This should be a monday
+    const firstReservationDay = today
+      .addDays(35)
+      .subDays(today.getIsoDayOfWeek() - 1)
+
+    const reservationsModal = await calendarPage.openReservationsModal()
+    await reservationsModal.deselectAllChildren()
+    await reservationsModal.selectChild(
+      fixtures.enduserChildFixturePorriHatterRestricted.id
+    )
+    await reservationsModal.assertUnmodifiableDayExists(
+      new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
+      'WEEKLY'
+    )
   })
 
   test('Citizen creates a repeating reservation and then marks an absence for one child', async () => {
