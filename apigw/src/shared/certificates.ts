@@ -11,6 +11,7 @@ const names = [
   'idp.test.espoon-voltti.fi.pem',
   'saml-signing.idp.tunnistautuminen.suomi.fi.pem',
   'saml-signing-testi.apro.tunnistus.fi.pem',
+  'saml-signing-testi.apro.tunnistus.fi.old.pem',
   'tamperead-internal-staging.pem',
   'tamperead-internal-migration.pem',
   'tamperead-internal-prod.pem'
