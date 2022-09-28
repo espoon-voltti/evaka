@@ -483,8 +483,8 @@ const CreateEventModal = React.memo(function CreateEventModal({
               key: child.id,
               checked: useDefault
                 ? selectedGroupId === group.id || selectedGroupId === 'all'
-                : selectedChildrenByGroup[group.id].allChildrenAreSelected ||
-                  selectedChildrenByGroup[group.id].selectedChildren[child.id]
+                : selectedChildrenByGroup[group.id]?.allChildrenAreSelected ||
+                  selectedChildrenByGroup[group.id]?.selectedChildren[child.id]
             }))
 
             return {
