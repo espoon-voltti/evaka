@@ -15,6 +15,7 @@ import { RepetitionTimeInputGridProps } from './RepetitionTimeInputGrid'
 import TimeInputs from './TimeInputs'
 import {
   allChildrenAreAbsent,
+  allChildrenAreAbsentMarkedByEmployee,
   allChildrenHaveDayOff,
   bindUnboundedTimeRanges,
   emptyTimeRange,
@@ -45,7 +46,17 @@ export default React.memo(function IrregularRepetitionTimeInputGrid({
     updateForm({
       irregularTimes: Object.fromEntries(
         [...selectedRange.dates()].map<
-          [string, TimeRanges | 'absent' | 'day-off' | undefined]
+          [
+            string,
+            (
+              | TimeRanges
+              | 'absent'
+              | 'day-off'
+              | 'not-editable'
+              | 'holiday'
+              | undefined
+            )
+          ]
         >((rangeDate) => {
           const existingTimes = reservations.find(({ date }) =>
             rangeDate.isEqual(date)
@@ -55,10 +66,23 @@ export default React.memo(function IrregularRepetitionTimeInputGrid({
             return [rangeDate.formatIso(), emptyTimeRange]
           }
 
+          if (existingTimes.isHoliday) {
+            return [rangeDate.formatIso(), 'holiday']
+          }
+
           if (
             allChildrenHaveDayOff([existingTimes], formData.selectedChildren)
           ) {
             return [rangeDate.formatIso(), 'day-off']
+          }
+
+          if (
+            allChildrenAreAbsentMarkedByEmployee(
+              [existingTimes],
+              formData.selectedChildren
+            )
+          ) {
+            return [rangeDate.formatIso(), 'not-editable']
           }
 
           if (

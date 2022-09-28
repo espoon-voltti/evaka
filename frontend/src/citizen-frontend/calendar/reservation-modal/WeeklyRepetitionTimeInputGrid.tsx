@@ -14,6 +14,7 @@ import { RepetitionTimeInputGridProps } from './RepetitionTimeInputGrid'
 import TimeInputs from './TimeInputs'
 import {
   allChildrenAreAbsent,
+  allChildrenAreAbsentMarkedByEmployee,
   allChildrenHaveDayOff,
   bindUnboundedTimeRanges,
   emptyTimeRange,
@@ -69,6 +70,15 @@ export default React.memo(function WeeklyRepetitionTimeInputGrid({
           }
 
           if (
+            allChildrenAreAbsentMarkedByEmployee(
+              relevantReservations,
+              formData.selectedChildren
+            )
+          ) {
+            return 'not-editable'
+          }
+
+          if (
             allChildrenAreAbsent(
               relevantReservations,
               formData.selectedChildren
@@ -121,6 +131,7 @@ export default React.memo(function WeeklyRepetitionTimeInputGrid({
             }
             times={times}
             updateTimes={(times) =>
+              times !== 'holiday' &&
               updateForm({
                 weeklyTimes: [
                   ...formData.weeklyTimes.slice(0, index),

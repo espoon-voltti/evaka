@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useCallback, useState } from 'react'
+import styled from 'styled-components'
 
 import { errorToInputInfo } from 'citizen-frontend/input-info-helper'
 import { useTranslation } from 'citizen-frontend/localization'
@@ -10,6 +11,10 @@ import { TimeRangeErrors, TimeRanges } from 'lib-common/reservations'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import {
+  ExpandingInfoBox,
+  InfoButton
+} from 'lib-components/molecules/ExpandingInfo'
 import { faPlus, fasUserMinus, faTrash, faUserMinus } from 'lib-icons'
 
 import { emptyTimeRange } from './utils'
@@ -24,8 +29,22 @@ interface BaseTimeInputProps {
 }
 
 interface TimeInputWithAbsencesProps extends BaseTimeInputProps {
-  times: TimeRanges | 'absent' | 'day-off' | undefined
-  updateTimes: (v: TimeRanges | 'absent' | 'day-off' | undefined) => void
+  times:
+    | TimeRanges
+    | 'absent'
+    | 'day-off'
+    | 'not-editable'
+    | 'holiday'
+    | undefined
+  updateTimes: (
+    v:
+      | TimeRanges
+      | 'absent'
+      | 'day-off'
+      | 'not-editable'
+      | 'holiday'
+      | undefined
+  ) => void
   showAbsences: true
 }
 
@@ -39,23 +58,27 @@ type TimeInputProps = TimeInputWithAbsencesProps | TimeInputWithoutAbsencesProps
 
 export default React.memo(function TimeInputs(props: TimeInputProps) {
   const i18n = useTranslation()
+  const [infoOpen, setInfoOpen] = useState(false)
+  const onInfoClick = useCallback(() => setInfoOpen((prev) => !prev), [])
 
   if (!props.times) {
     return (
-      <>
-        <div>{props.label}</div>
-        <div />
-        <div />
-      </>
+      <FixedSpaceRow fullWidth>
+        <LeftCell>{props.label}</LeftCell>
+        <MiddleCell />
+        <RightCell />
+      </FixedSpaceRow>
     )
   }
 
   if (props.times === 'absent') {
     return (
-      <>
-        <div>{props.label}</div>
-        <div>{i18n.calendar.reservationModal.absent}</div>
-        <div>
+      <FixedSpaceRow fullWidth>
+        <LeftCell>{props.label}</LeftCell>
+        <MiddleCell textOnly>
+          {i18n.calendar.reservationModal.absent}
+        </MiddleCell>
+        <RightCell>
           <IconButton
             data-qa={
               props.dataQaPrefix
@@ -66,26 +89,74 @@ export default React.memo(function TimeInputs(props: TimeInputProps) {
             onClick={() => props.updateTimes(emptyTimeRange)}
             aria-label={i18n.calendar.absentDisable}
           />
-        </div>
+        </RightCell>
+      </FixedSpaceRow>
+    )
+  }
+
+  if (props.times === 'not-editable') {
+    return (
+      <>
+        <FixedSpaceRow fullWidth>
+          <LeftCell>{props.label}</LeftCell>
+          <MiddleCell textOnly>
+            {i18n.calendar.reservationModal.absent}
+          </MiddleCell>
+          <RightCell>
+            <InfoButton
+              onClick={onInfoClick}
+              aria-label={i18n.common.openExpandingInfo}
+              data-qa="not-editable-info-button"
+            />
+          </RightCell>
+        </FixedSpaceRow>
+        {infoOpen && (
+          <FixedSpaceRow fullWidth>
+            <ExpandingInfoBox
+              data-qa={
+                props.dataQaPrefix
+                  ? `${props.dataQaPrefix}-absence-by-employee-info-box`
+                  : undefined
+              }
+              close={onInfoClick}
+              aria-label={i18n.calendar.absenceMarkedByEmployee}
+              info={i18n.calendar.contactStaffToEditAbsence}
+              closeLabel={i18n.common.close}
+              width="full"
+            />
+          </FixedSpaceRow>
+        )}
       </>
     )
   }
 
   if (props.times === 'day-off') {
     return (
-      <>
-        <div>{props.label}</div>
-        <div>{i18n.calendar.reservationModal.dayOff}</div>
-        <div />
-      </>
+      <FixedSpaceRow fullWidth>
+        <LeftCell>{props.label}</LeftCell>
+        <MiddleCell textOnly>
+          {i18n.calendar.reservationModal.dayOff}
+        </MiddleCell>
+        <RightCell />
+      </FixedSpaceRow>
+    )
+  }
+
+  if (props.times === 'holiday') {
+    return (
+      <FixedSpaceRow fullWidth>
+        <LeftCell>{props.label}</LeftCell>
+        <MiddleCell textOnly>{i18n.calendar.holiday}</MiddleCell>
+        <RightCell />
+      </FixedSpaceRow>
     )
   }
 
   const [timeRange, extraTimeRange] = props.times
   return (
-    <>
-      <div>{props.label}</div>
-      <FixedSpaceRow alignItems="center">
+    <FixedSpaceRow fullWidth>
+      <LeftCell>{props.label}</LeftCell>
+      <MiddleCell>
         <TimeInput
           value={timeRange.startTime ?? ''}
           onChange={(value) => {
@@ -135,42 +206,44 @@ export default React.memo(function TimeInputs(props: TimeInputProps) {
           }
           onFocus={props.onFocus}
         />
-      </FixedSpaceRow>
-      <FixedSpaceRow>
-        {props.showAbsences && (
-          <IconButton
-            data-qa={
-              props.dataQaPrefix
-                ? `${props.dataQaPrefix}-absent-button`
-                : undefined
-            }
-            icon={faUserMinus}
-            onClick={() => props.updateTimes('absent')}
-            aria-label={i18n.calendar.absentEnable}
-          />
-        )}
-        {!extraTimeRange && props.allowExtraTimeRange ? (
-          <IconButton
-            icon={faPlus}
-            onClick={() =>
-              props.updateTimes([
-                timeRange,
-                {
-                  startTime: '',
-                  endTime: ''
-                }
-              ])
-            }
-            aria-label={i18n.common.add}
-          />
-        ) : (
-          <div />
-        )}
-      </FixedSpaceRow>
+      </MiddleCell>
+      <RightCell>
+        <FixedSpaceRow>
+          {props.showAbsences && (
+            <IconButton
+              data-qa={
+                props.dataQaPrefix
+                  ? `${props.dataQaPrefix}-absent-button`
+                  : undefined
+              }
+              icon={faUserMinus}
+              onClick={() => props.updateTimes('absent')}
+              aria-label={i18n.calendar.absentEnable}
+            />
+          )}
+          {!extraTimeRange && props.allowExtraTimeRange ? (
+            <IconButton
+              icon={faPlus}
+              onClick={() =>
+                props.updateTimes([
+                  timeRange,
+                  {
+                    startTime: '',
+                    endTime: ''
+                  }
+                ])
+              }
+              aria-label={i18n.common.add}
+            />
+          ) : (
+            <div />
+          )}
+        </FixedSpaceRow>
+      </RightCell>
       {extraTimeRange ? (
-        <>
-          <div />
-          <FixedSpaceRow alignItems="center">
+        <FixedSpaceRow fullWidth>
+          <LeftCell />
+          <MiddleCell>
             <TimeInput
               value={extraTimeRange.startTime ?? ''}
               onChange={(value) =>
@@ -220,16 +293,30 @@ export default React.memo(function TimeInputs(props: TimeInputProps) {
               }
               onFocus={props.onFocus}
             />
-          </FixedSpaceRow>
-          <div>
+          </MiddleCell>
+          <RightCell>
             <IconButton
               icon={faTrash}
               onClick={() => props.updateTimes([timeRange])}
               aria-label={i18n.common.delete}
             />
-          </div>
-        </>
+          </RightCell>
+        </FixedSpaceRow>
       ) : null}
-    </>
+    </FixedSpaceRow>
   )
 })
+
+const LeftCell = styled.div`
+  flex: 0.25;
+  padding-top: 8px;
+`
+const MiddleCell = styled.div<{ textOnly?: boolean }>`
+  flex: 0.7;
+  ${(p) => p.textOnly && 'padding-top: 8px;'}
+`
+const RightCell = styled.div`
+  flex: 0.15;
+  padding-top: 8px;
+  align-self: center;
+`

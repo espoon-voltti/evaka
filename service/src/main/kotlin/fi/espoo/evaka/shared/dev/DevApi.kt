@@ -35,6 +35,8 @@ import fi.espoo.evaka.daycare.UnitManager
 import fi.espoo.evaka.daycare.VisitingAddress
 import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.daycare.service.AbsenceCategory
+import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionType
@@ -1306,6 +1308,20 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
     fun addPayment(db: Database, @RequestBody body: DevCalendarEventAttendee) = db.connect { dbc ->
         dbc.transaction { it.insertCalendarEventAttendee(body) }
     }
+
+    @PostMapping("/absence")
+    fun addAbsence(db: Database, @RequestBody body: DevAbsenceBody) = db.connect { dbc ->
+        dbc.transaction {
+            it.createUpdate(
+                """
+            INSERT INTO absence (child_id, date, absence_type, modified_by, category)
+            VALUES (:childId, :date, :absenceType, :modifiedBy, :absenceCategory)
+            """
+            )
+                .bindKotlin(body)
+                .execute()
+        }
+    }
 }
 
 // https://www.postgresql.org/docs/14/errcodes-appendix.html
@@ -1833,4 +1849,12 @@ data class DevCalendarEventAttendee(
     val unitId: DaycareId,
     val groupId: GroupId?,
     val childId: ChildId?
+)
+
+data class DevAbsenceBody(
+    val childId: ChildId,
+    val date: LocalDate,
+    val absenceType: AbsenceType,
+    val absenceCategory: AbsenceCategory,
+    val modifiedBy: PersonId
 )

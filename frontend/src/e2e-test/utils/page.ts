@@ -4,6 +4,7 @@
 
 import {
   BrowserContextOptions,
+  ElementHandle,
   Keyboard,
   Locator,
   Page as PlaywrightPage
@@ -113,6 +114,10 @@ export class ElementCollection {
 
   async allInnerTexts(): Promise<string[]> {
     return this.locator.allInnerTexts()
+  }
+
+  async elementHandles(): Promise<Array<ElementHandle<Node>>> {
+    return this.locator.elementHandles()
   }
 
   async evaluateAll<R>(

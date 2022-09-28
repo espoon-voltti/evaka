@@ -249,6 +249,19 @@ class ReservationsModal {
     }
   }
 
+  async deselectAllChildren() {
+    const pills = this.page
+      .findByDataQa('modal')
+      .findAll('div[data-qa*="child"]')
+    for (const el of await pills.elementHandles()) {
+      await el.click()
+    }
+  }
+
+  async selectChild(childId: string) {
+    await this.page.findByDataQa(`child-${childId}`).click()
+  }
+
   async createRepeatingWeeklyReservation(
     dateRange: FiniteDateRange,
     weeklyTimes: ({ startTime: string; endTime: string } | { absence: true })[]
@@ -268,6 +281,16 @@ class ReservationsModal {
     }, Promise.resolve())
 
     await this.#modalSendButton.click()
+  }
+
+  async assertUnmodifiableDayExists(
+    dateRange: FiniteDateRange,
+    repetitionMode: string
+  ) {
+    await this.#startDateInput.fill(dateRange.start.format())
+    await this.#endDateInput.fill(dateRange.end.format())
+    await this.#repetitionSelect.selectOption({ value: repetitionMode })
+    await this.page.findByDataQa('not-editable-info-button').waitUntilVisible()
   }
 }
 
