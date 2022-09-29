@@ -328,18 +328,6 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             ),
             getSentMessages(employee1Account, employee1).map { it.toContentRecipientsPair() }
         )
-
-        // then person one can see all sent messages
-        assertEquals(
-            listOf(
-                Pair("person 2 does not see this", setOf(employee1Account)),
-                Pair("No niinpä näyttää tulevan", setOf(employee1Account, person2Account))
-            ),
-            getSentMessages(person1Account, person1).map { it.toContentRecipientsPair() }
-        )
-
-        // then person two does not see any sent messages as she has not sent anything
-        assertEquals(0, getSentMessages(person2Account, person2).size)
     }
 
     @Test
@@ -845,8 +833,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         .asUser(user)
         .responseObject<Paged<MessageThread>>(jsonMapper).third.get().data
 
-    private fun getSentMessages(accountId: MessageAccountId, user: AuthenticatedUser): List<SentMessage> = http.get(
-        if (user is AuthenticatedUser.Citizen) "/citizen/messages/sent" else "/messages/$accountId/sent",
+    private fun getSentMessages(accountId: MessageAccountId, user: AuthenticatedUser.Employee): List<SentMessage> = http.get(
+        "/messages/$accountId/sent",
         listOf("page" to 1, "pageSize" to 100)
     )
         .asUser(user)

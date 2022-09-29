@@ -10,8 +10,8 @@ import fi.espoo.evaka.messaging.MessageNotificationEmailService
 import fi.espoo.evaka.messaging.MessageService
 import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.messaging.createPersonMessageAccount
-import fi.espoo.evaka.messaging.getMessagesReceivedByAccount
 import fi.espoo.evaka.messaging.getMessagesSentByAccount
+import fi.espoo.evaka.messaging.getReceivedThreads
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
@@ -284,7 +284,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
         assertEquals(
             listOf(0, 1),
-            receivedMessageCounts(listOf(receiverAccount, receiverDuplicateAccount), false)
+            receivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
         )
 
         db.transaction {
@@ -294,12 +294,12 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertEquals(
             listOf(1, 0),
-            receivedMessageCounts(listOf(receiverAccount, receiverDuplicateAccount), false)
+            receivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
         )
     }
 
-    private fun receivedMessageCounts(accountIds: List<MessageAccountId>, isEmployee: Boolean): List<Int> = db.read { tx ->
-        accountIds.map { tx.getMessagesReceivedByAccount(it, 10, 1, isEmployee).total }
+    private fun receivedThreadCounts(accountIds: List<MessageAccountId>): List<Int> = db.read { tx ->
+        accountIds.map { tx.getReceivedThreads(it, 10, 1).total }
     }
 
     @Test

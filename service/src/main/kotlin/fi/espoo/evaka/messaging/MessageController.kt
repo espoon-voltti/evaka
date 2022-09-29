@@ -80,7 +80,7 @@ class MessageController(
     ): Paged<MessageThread> {
         return db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)
-            dbc.read { it.getMessagesReceivedByAccount(accountId, pageSize, page) }
+            dbc.read { it.getReceivedThreads(accountId, pageSize, page) }
         }.also {
             Audit.MessagingReceivedMessagesRead.log(accountId)
         }
@@ -292,7 +292,7 @@ class MessageController(
 
             messageService.replyToThread(
                 db = dbc,
-                clock = clock,
+                now = clock.now(),
                 replyToMessageId = messageId,
                 senderAccount = accountId,
                 recipientAccountIds = body.recipientAccountIds,

@@ -16,13 +16,16 @@ import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageRecipientId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
-import fi.espoo.evaka.shared.WithCount
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
+import mu.KotlinLogging
+import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
+
+val logger = KotlinLogging.logger {}
 
 fun Database.Read.getUnreadMessagesCounts(accountIds: Set<MessageAccountId>): Set<UnreadCountByAccount> {
     // language=SQL
@@ -151,6 +154,41 @@ fun Database.Transaction.insertMessageThreadChildren(
     batch.execute()
 }
 
+fun Database.Transaction.upsertThreadParticipants(
+    threadId: MessageThreadId,
+    senderId: MessageAccountId,
+    receiverIds: Set<MessageAccountId>,
+    now: HelsinkiDateTime,
+) {
+    this.createUpdate(
+        """
+        INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_sent_timestamp)
+        VALUES (:threadId, :accountId, :now, :now)
+        ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = :now, last_sent_timestamp = :now
+    """
+    )
+        .bind("threadId", threadId)
+        .bind("accountId", senderId)
+        .bind("now", now)
+        .execute()
+
+    val batch = this.prepareBatch(
+        """
+        INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_received_timestamp)
+        VALUES (:threadId, :accountId, :now, :now)
+        ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = :now, last_received_timestamp = :now
+    """
+    )
+    receiverIds.forEach {
+        batch
+            .bind("threadId", threadId)
+            .bind("accountId", it)
+            .bind("now", now)
+            .add()
+    }
+    batch.execute()
+}
+
 fun Database.Transaction.insertThread(
     type: MessageType,
     title: String,
@@ -206,133 +244,161 @@ data class ReceivedMessageResultItem(
     val attachments: List<MessageAttachment>
 )
 
-fun Database.Read.getMessagesReceivedByAccount(accountId: MessageAccountId, pageSize: Int, page: Int, isCitizen: Boolean = false): Paged<MessageThread> {
-    // language=SQL
-    val sql = """
-WITH
-participated_messages AS (
-    SELECT 
-        rec.message_id,
-        m.thread_id,
-        m.sent_at, 
-        m.sender_name,
-        m.sender_id,
-        sender_acc.type AS sender_account_type,
-        m.content_id,
-        c.content,
-        rec.read_at,
-        rec.recipient_id,
-        acc.account_name recipient_name,
-        recipient_acc.type AS recipient_account_type
-    FROM message_recipients rec
-    JOIN message m ON rec.message_id = m.id
-    JOIN message_content c ON m.content_id = c.id
-    JOIN message_account_name_view acc ON rec.recipient_id = acc.id
-    JOIN message_account sender_acc ON sender_acc.id = m.sender_id
-    JOIN message_account recipient_acc ON recipient_acc.id = rec.recipient_id
-    WHERE m.sender_id = :accountId OR EXISTS (
-        SELECT 1
-            FROM message_recipients rec2
-            WHERE rec2.message_id = m.id AND rec2.recipient_id = :accountId
-    )
-),
-threads AS (
-    SELECT id, message_type AS type, title, urgent, last_message, COUNT(*) OVER () AS count
-    FROM message_thread t
-    JOIN LATERAL (
-        SELECT MAX(sent_at) last_message FROM message WHERE thread_id = t.id
-    ) last_msg ON true
-    WHERE EXISTS(
-            SELECT 1
-            FROM participated_messages rec
-            WHERE rec.thread_id = t.id
-            AND (rec.recipient_id = :accountId OR ${if (isCitizen) "rec.sender_id = :accountId" else "false"}))
-    AND NOT t.is_copy
-    GROUP BY id, message_type, title, last_message
-    ORDER BY last_message DESC
-    LIMIT :pageSize OFFSET :offset
+private data class ReceivedThread(
+    val id: MessageThreadId,
+    val title: String,
+    val type: MessageType,
+    val urgent: Boolean,
+    @Json
+    val children: List<MessageChild>,
 )
 
+private data class ThreadMessage(
+    val threadId: MessageThreadId,
+    @Nested
+    val message: Message
+)
+
+/** Return all threads that are visible to the account through sent and received messages **/
+fun Database.Read.getThreads(accountId: MessageAccountId, pageSize: Int, page: Int): Paged<MessageThread> {
+    val threads = createQuery(
+        """
 SELECT
-    t.count,
+    COUNT(*) OVER () AS count,
     t.id,
     t.title,
-    t.type,
+    t.message_type AS type,
     t.urgent,
-    msg.message_id,
-    msg.sent_at,
-    msg.content,
-    msg.sender_name,
-    msg.sender_id,
-    msg.sender_account_type,
-    msg.read_at,
-    msg.recipient_id,
-    msg.recipient_name,
-    msg.recipient_account_type,
-    (
-        SELECT coalesce(jsonb_agg(json_build_object(
-             'childId', ch.child_id,
-             'firstName', p.first_name,
-             'lastName', p.last_name,
-             'preferredName', p.preferred_name
-            )), '[]'::jsonb)
-        FROM message_thread_children ch
-        JOIN person p ON p.id = ch.child_id
-        WHERE ch.thread_id = t.id
-    ) AS children,
-    (
-        SELECT coalesce(jsonb_agg(json_build_object(
-           'id', att.id,
-           'name', att.name,
-           'contentType', att.content_type
-        )), '[]'::jsonb) 
-        FROM attachment att WHERE att.message_content_id = msg.content_id
-    ) AS attachments
-    FROM threads t
-    JOIN participated_messages msg ON msg.thread_id = t.id
-    ORDER BY t.last_message DESC, msg.sent_at ASC
-    """.trimIndent()
-
-    return createQuery(sql)
+    coalesce((
+        SELECT jsonb_agg(jsonb_build_object(
+            'childId', mtc.child_id,
+            'firstName', p.first_name,
+            'lastName', p.last_name,
+            'preferredName', p.preferred_name
+        ))
+        FROM message_thread_children mtc
+        JOIN person p ON p.id = mtc.child_id
+        WHERE mtc.thread_id = t.id
+    ), '[]'::jsonb) AS children
+FROM message_thread_participant tp
+JOIN message_thread t on t.id = tp.thread_id
+WHERE tp.participant_id = :accountId
+ORDER BY tp.last_message_timestamp DESC
+LIMIT :pageSize OFFSET :offset
+        """
+    )
         .bind("accountId", accountId)
-        .bind("offset", (page - 1) * pageSize)
         .bind("pageSize", pageSize)
-        .mapTo<ReceivedMessageResultItem>()
-        .groupBy { it.id }
-        .map { (threadId, threads) ->
-            WithCount(
-                threads[0].count,
+        .bind("offset", (page - 1) * pageSize)
+        .mapToPaged<ReceivedThread>(pageSize)
+
+    val messagesByThread = getThreadMessages(accountId, threads.data.map { it.id })
+    return combineThreadsAndMessages(accountId, threads, messagesByThread)
+}
+
+/** Return all threads in which the account has received messages **/
+fun Database.Read.getReceivedThreads(accountId: MessageAccountId, pageSize: Int, page: Int): Paged<MessageThread> {
+    val threads = createQuery(
+        """
+SELECT
+    COUNT(*) OVER () AS count,
+    t.id,
+    t.title,
+    t.message_type AS type,
+    t.urgent,
+    coalesce((
+        SELECT jsonb_agg(jsonb_build_object(
+            'childId', mtc.child_id,
+            'firstName', p.first_name,
+            'lastName', p.last_name,
+            'preferredName', p.preferred_name
+        ))
+        FROM message_thread_children mtc
+        JOIN person p ON p.id = mtc.child_id
+        WHERE mtc.thread_id = t.id
+    ), '[]'::jsonb) AS children
+FROM message_thread_participant tp
+JOIN message_thread t on t.id = tp.thread_id
+WHERE
+    tp.participant_id = :accountId AND
+    tp.last_received_timestamp IS NOT NULL
+ORDER BY tp.last_received_timestamp DESC
+LIMIT :pageSize OFFSET :offset
+        """
+    )
+        .bind("accountId", accountId)
+        .bind("pageSize", pageSize)
+        .bind("offset", (page - 1) * pageSize)
+        .mapToPaged<ReceivedThread>(pageSize)
+
+    val messagesByThread = getThreadMessages(accountId, threads.data.map { it.id })
+    return combineThreadsAndMessages(accountId, threads, messagesByThread)
+}
+
+private fun Database.Read.getThreadMessages(accountId: MessageAccountId, threadIds: List<MessageThreadId>): Map<MessageThreadId, List<ThreadMessage>> {
+    if (threadIds.isEmpty()) return mapOf()
+    return createQuery(
+        """
+SELECT
+    m.id,
+    m.thread_id,
+    m.sent_at,
+    mc.content,
+    mr_self.read_at,
+    (
+        SELECT jsonb_build_object('id', mav.id, 'name', mav.name, 'type', mav.type)
+        FROM message_account_view mav
+        WHERE mav.id = m.sender_id
+    ) AS sender,
+    (
+        SELECT jsonb_agg(jsonb_build_object('id', mav.id, 'name', mav.name, 'type', mav.type))
+        FROM message_recipients mr
+        JOIN message_account_view mav ON mav.id = mr.recipient_id
+        WHERE mr.message_id = m.id
+    ) AS recipients,
+    COALESCE((
+        SELECT jsonb_agg(jsonb_build_object('id', a.id, 'name', a.name, 'contentType', a.content_type))
+        FROM attachment a
+        WHERE a.message_content_id = mc.id
+    ), '[]'::jsonb) AS attachments
+FROM message m
+JOIN message_content mc ON mc.id = m.content_id
+LEFT JOIN message_recipients mr_self ON mr_self.message_id = m.id AND mr_self.recipient_id = :accountId
+WHERE
+    m.thread_id = ANY(:threadIds) AND
+    (m.sender_id = :accountId OR EXISTS (
+        SELECT 1
+        FROM message_recipients mr
+        WHERE mr.message_id = m.id AND mr.recipient_id = :accountId
+    ))
+ORDER BY m.sent_at
+            """
+    )
+        .bind("accountId", accountId)
+        .bind("threadIds", threadIds)
+        .mapTo<ThreadMessage>()
+        .groupBy { it.threadId }
+}
+
+private fun combineThreadsAndMessages(accountId: MessageAccountId, threads: Paged<ReceivedThread>, messagesByThread: Map<MessageThreadId, List<ThreadMessage>>): Paged<MessageThread> {
+    return threads.flatMap { thread ->
+        val messages = messagesByThread[thread.id]?.map { it.message }
+        if (messages == null) {
+            logger.warn("Thread ${thread.id} has no messages for account $accountId")
+            listOf()
+        } else {
+            listOf(
                 MessageThread(
-                    id = threadId,
-                    type = threads[0].type,
-                    title = threads[0].title,
-                    urgent = threads[0].urgent,
-                    children = threads[0].children,
-                    messages = threads
-                        .groupBy { it.messageId }
-                        .map { (messageId, messages) ->
-                            Message(
-                                id = messageId,
-                                content = messages[0].content,
-                                sender = MessageAccount(
-                                    id = messages[0].senderId,
-                                    name = messages[0].senderName,
-                                    type = messages[0].senderAccountType
-                                ),
-                                sentAt = messages[0].sentAt,
-                                readAt = messages.find { it.recipientId == accountId }?.readAt,
-                                recipients = messages
-                                    .groupBy { it.recipientId }
-                                    .map { (recipientId, recipients) ->
-                                        MessageAccount(recipientId, recipients[0].recipientName, recipients[0].recipientAccountType)
-                                    }.toSet(),
-                                attachments = messages[0].attachments
-                            )
-                        }
+                    id = thread.id,
+                    type = thread.type,
+                    title = thread.title,
+                    urgent = thread.urgent,
+                    children = thread.children,
+                    messages = messages,
                 )
             )
         }
-        .mapToPaged(pageSize)
+    }
 }
 
 data class MessageCopy(
@@ -377,7 +443,7 @@ SELECT
     recipient_acc.type AS recipient_account_type,
     m.recipient_names,
     (
-        SELECT coalesce(jsonb_agg(json_build_object(
+        SELECT coalesce(jsonb_agg(jsonb_build_object(
            'id', att.id,
            'name', att.name,
            'contentType', att.content_type
@@ -419,7 +485,7 @@ data class MessageResultItem(
 
 fun Database.Read.getMessage(id: MessageId): Message {
     val sql = """
-        SELECT 
+        SELECT
             m.id,
             m.sender_id,
             m.sender_name,
@@ -430,11 +496,11 @@ fun Database.Read.getMessage(id: MessageId): Message {
             recipient_acc_name.account_name recipient_name,
             recipient_acc.type AS recipient_account_type,
             (
-                SELECT coalesce(jsonb_agg(json_build_object(
+                SELECT coalesce(jsonb_agg(jsonb_build_object(
                    'id', att.id,
                    'name', att.name,
                    'contentType', att.content_type
-                )), '[]'::jsonb) 
+                )), '[]'::jsonb)
                 FROM attachment att WHERE att.message_content_id = m.content_id
             ) AS attachments
         FROM message m
@@ -547,14 +613,14 @@ WITH backup_care_placements AS (
     AND EXISTS (
         SELECT 1 FROM daycare u
         WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
-    )    
+    )
 ),
 relevant_placements AS (
     SELECT p.id, p.unit_id, p.child_id
     FROM placements p
-    
-    UNION 
-    
+
+    UNION
+
     SELECT bc.id, bc.unit_id, bc.child_id
     FROM backup_care_placements bc
 ),
@@ -572,7 +638,7 @@ group_accounts AS (
     JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = p.id AND :today BETWEEN dgp.start_date AND dgp.end_date
     JOIN daycare_group g ON g.id = dgp.daycare_group_id
     JOIN message_account acc on g.id = acc.daycare_group_id
-    
+
     UNION ALL
 
     SELECT acc.id, g.name, 'GROUP' AS type, p.child_id
@@ -636,16 +702,16 @@ SELECT
     msg.message_type AS type,
     msg.urgent,
     mc.content,
-    (SELECT jsonb_agg(json_build_object(
+    (SELECT jsonb_agg(jsonb_build_object(
            'id', rec.recipient_id,
            'name', rec.account_name,
            'type', rec.account_type
        ))) AS recipients,
-    (SELECT coalesce(jsonb_agg(json_build_object(
+    (SELECT coalesce(jsonb_agg(jsonb_build_object(
            'id', att.id,
            'name', att.name,
            'contentType', att.content_type
-        )), '[]'::jsonb) 
+        )), '[]'::jsonb)
         FROM attachment att WHERE att.message_content_id = msg.content_id
         ) AS attachments
 FROM pageable_messages msg
@@ -680,7 +746,7 @@ fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticip
             (SELECT array_agg(rec.recipient_id)) as recipients
             FROM message m
             JOIN message_thread t ON m.thread_id = t.id
-            JOIN message m2 ON m2.thread_id = t.id 
+            JOIN message m2 ON m2.thread_id = t.id
             JOIN message_recipients rec ON rec.message_id = m2.id
             WHERE m.id = :messageId
             GROUP BY t.id, t.message_type
@@ -718,18 +784,18 @@ fun Database.Read.getReceiversForNewMessage(
                 JOIN mobile_device_daycare_acl_view USING (daycare_id)
                 WHERE mobile_device_id = :employeeOrMobileId
                 AND child_id = pl.child_id
-                
+
                 UNION ALL
-                
+
                 SELECT 1
                 FROM employee_child_daycare_acl(:date)
                 WHERE employee_id = :employeeOrMobileId
                 AND child_id = pl.child_id
             )
             AND 'MESSAGING' = ANY(d.enabled_pilot_features)
-            
-            UNION ALL 
-            
+
+            UNION ALL
+
             SELECT bc.child_id, dg.id group_id, dg.name group_name
             FROM daycare_group dg
             JOIN backup_care bc ON dg.id = bc.group_id AND daterange(bc.start_date, bc.end_date, '[]') @> :date
@@ -740,9 +806,9 @@ fun Database.Read.getReceiversForNewMessage(
                 JOIN mobile_device_daycare_acl_view USING (daycare_id)
                 WHERE mobile_device_id = :employeeOrMobileId
                 AND child_id = bc.child_id
-                
+
                 UNION ALL
-                
+
                 SELECT 1
                 FROM employee_child_daycare_acl(:date)
                 WHERE employee_id = :employeeOrMobileId

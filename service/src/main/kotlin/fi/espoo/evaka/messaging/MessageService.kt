@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 
 class MessageService(
@@ -37,10 +38,11 @@ class MessageService(
             .also { contentId -> tx.reAssociateMessageAttachments(attachmentIds, contentId) }
             .let { contentId ->
                 val now = clock.now()
-                recipientGroups.map {
+                recipientGroups.map { recipientIds ->
                     val threadId = tx.insertThread(type, title, urgent, isCopy = false)
-                    val childIds = it.mapNotNull { accId -> accountIdsToChildIds[accId] }.toSet()
+                    val childIds = recipientIds.mapNotNull { accId -> accountIdsToChildIds[accId] }.toSet()
                     tx.insertMessageThreadChildren(childIds, threadId)
+                    tx.upsertThreadParticipants(threadId, sender, recipientIds, now)
                     val messageId =
                         tx.insertMessage(
                             now = now,
@@ -49,7 +51,7 @@ class MessageService(
                             sender = sender,
                             recipientNames = recipientNames
                         )
-                    tx.insertRecipients(it, messageId)
+                    tx.insertRecipients(recipientIds, messageId)
                     notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)
                     threadId
                 }
@@ -57,6 +59,7 @@ class MessageService(
                 if (staffCopyRecipients.isNotEmpty()) {
                     // a separate copy for staff
                     val threadId = tx.insertThread(type, title, urgent, isCopy = true)
+                    tx.upsertThreadParticipants(threadId, sender, staffCopyRecipients, now)
                     val messageId =
                         tx.insertMessage(
                             now = now,
@@ -73,7 +76,7 @@ class MessageService(
 
     fun replyToThread(
         db: Database.Connection,
-        clock: EvakaClock,
+        now: HelsinkiDateTime,
         replyToMessageId: MessageId,
         senderAccount: MessageAccountId,
         recipientAccountIds: Set<MessageAccountId>,
@@ -90,9 +93,10 @@ class MessageService(
         if (!previousParticipants.containsAll(recipientAccountIds)) throw Forbidden("Not authorized to widen the audience")
 
         val message = db.transaction { tx ->
+            tx.upsertThreadParticipants(threadId, senderAccount, recipientAccountIds, now)
             val recipientNames = tx.getAccountNames(recipientAccountIds)
             val contentId = tx.insertMessageContent(content, senderAccount)
-            val messageId = tx.insertMessage(clock.now(), contentId, threadId, senderAccount, repliesToMessageId = replyToMessageId, recipientNames = recipientNames)
+            val messageId = tx.insertMessage(now, contentId, threadId, senderAccount, repliesToMessageId = replyToMessageId, recipientNames = recipientNames)
             tx.insertRecipients(recipientAccountIds, messageId)
             notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)
             tx.getMessage(messageId)

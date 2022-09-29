@@ -19,6 +19,9 @@ data class Paged<T>(val data: List<T>, val total: Int, val pages: Int) {
                 if (total % pageSize == 0) total / pageSize else total / pageSize + 1
             )
     }
+
+    fun <U> map(mapper: (T) -> U): Paged<U> = Paged(data.map(mapper), total, pages)
+    fun <U> flatMap(mapper: (T) -> List<U>): Paged<U> = Paged(data.flatMap(mapper), total, pages)
 }
 
 fun <T> List<WithCount<T>>.mapToPaged(pageSize: Int): Paged<T> =

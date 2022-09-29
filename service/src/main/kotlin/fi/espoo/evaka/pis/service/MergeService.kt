@@ -76,6 +76,15 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
             UPDATE message_content SET author_id = (SELECT id FROM message_account WHERE person_id = :id_master) WHERE author_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
             UPDATE message_recipients SET recipient_id = (SELECT id FROM message_account WHERE person_id = :id_master) WHERE recipient_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
             UPDATE message_draft SET account_id = (SELECT id FROM message_account WHERE person_id = :id_master) WHERE account_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
+
+            INSERT INTO message_thread_participant AS mtp_new (thread_id, participant_id, last_message_timestamp, last_received_timestamp, last_sent_timestamp)
+            SELECT thread_id, (SELECT id FROM message_account WHERE person_id = :id_master), last_message_timestamp, last_received_timestamp, last_sent_timestamp
+            FROM message_thread_participant mtp_old
+            WHERE mtp_old.participant_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate)
+            ON CONFLICT (thread_id, participant_id) DO UPDATE SET
+                last_message_timestamp = greatest(EXCLUDED.last_message_timestamp, mtp_new.last_message_timestamp),
+                last_received_timestamp = greatest(EXCLUDED.last_received_timestamp, mtp_new.last_received_timestamp),
+                last_sent_timestamp = greatest(EXCLUDED.last_sent_timestamp, mtp_new.last_sent_timestamp);
             """.trimIndent()
 
         try {
