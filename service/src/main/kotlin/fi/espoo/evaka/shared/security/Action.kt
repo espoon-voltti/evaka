@@ -241,6 +241,8 @@ sealed interface Action {
 
             CREATE_APPLICATION(IsCitizen(allowWeakLogin = false).guardianOfChild()),
 
+            READ_PEDAGOGICAL_DOCUMENTS(IsCitizen(allowWeakLogin = true).guardianOfChild(), IsCitizen(allowWeakLogin = true).fosterParentOfChild()),
+
             INSERT_CHILD_CONSENTS(IsCitizen(allowWeakLogin = false).guardianOfChild());
 
             override fun toString(): String = "${javaClass.name}.$name"
@@ -261,7 +263,7 @@ sealed interface Action {
             override fun toString(): String = "${javaClass.name}.$name"
         }
         enum class PedagogicalDocument(override vararg val defaultRules: ScopedActionRule<in PedagogicalDocumentId>) : ScopedAction<PedagogicalDocumentId> {
-            READ(IsCitizen(allowWeakLogin = false).guardianOfChildOfPedagogicalDocument());
+            READ(IsCitizen(allowWeakLogin = false).guardianOfChildOfPedagogicalDocument(), IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPedagogicalDocument());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
@@ -277,6 +279,7 @@ sealed interface Action {
             READ_DAILY_SERVICE_TIME_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self()),
             READ_DECISIONS(IsCitizen(allowWeakLogin = false).self()),
             READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).self()),
+            READ_PEDAGOGICAL_DOCUMENT_UNREAD_COUNTS(IsCitizen(allowWeakLogin = true).self()),
             READ_RESERVATIONS(IsCitizen(allowWeakLogin = true).self()),
             READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT(IsCitizen(allowWeakLogin = true).self()),
             READ_VTJ_DETAILS(IsCitizen(allowWeakLogin = true).self()),
