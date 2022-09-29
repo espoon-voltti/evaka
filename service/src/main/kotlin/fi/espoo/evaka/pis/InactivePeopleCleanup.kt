@@ -109,6 +109,12 @@ AND NOT EXISTS (
     SELECT family_contact.child_id FROM family_contact
     WHERE contact_person_id = p.id AND NOT family_contact.child_id IN (SELECT id FROM people_with_no_archive_data)
 )
+-- foster parent or child
+AND NOT EXISTS (
+    SELECT child_id FROM foster_parent WHERE parent_id = p.id AND NOT child_id IN (SELECT id FROM people_with_no_archive_data)
+    UNION ALL
+    SELECT parent_id FROM foster_parent WHERE child_id = p.id AND NOT parent_id IN (SELECT id FROM people_with_no_archive_data)
+)
 RETURNING id
 """
     )
