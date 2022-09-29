@@ -270,7 +270,7 @@ SELECT
     t.message_type AS type,
     t.urgent,
     coalesce((
-        SELECT json_agg(json_build_object(
+        SELECT jsonb_agg(jsonb_build_object(
             'childId', mtc.child_id,
             'firstName', p.first_name,
             'lastName', p.last_name,
@@ -279,7 +279,7 @@ SELECT
         FROM message_thread_children mtc
         JOIN person p ON p.id = mtc.child_id
         WHERE mtc.thread_id = t.id
-    ), '[]'::json) AS children
+    ), '[]'::jsonb) AS children
 FROM message_thread_participant tp
 JOIN message_thread t on t.id = tp.thread_id
 WHERE tp.participant_id = :accountId
@@ -307,7 +307,7 @@ SELECT
     t.message_type AS type,
     t.urgent,
     coalesce((
-        SELECT json_agg(json_build_object(
+        SELECT jsonb_agg(jsonb_build_object(
             'childId', mtc.child_id,
             'firstName', p.first_name,
             'lastName', p.last_name,
@@ -316,7 +316,7 @@ SELECT
         FROM message_thread_children mtc
         JOIN person p ON p.id = mtc.child_id
         WHERE mtc.thread_id = t.id
-    ), '[]'::json) AS children
+    ), '[]'::jsonb) AS children
 FROM message_thread_participant tp
 JOIN message_thread t on t.id = tp.thread_id
 WHERE
@@ -346,21 +346,21 @@ SELECT
     mc.content,
     mr_self.read_at,
     (
-        SELECT json_build_object('id', mav.id, 'name', mav.name, 'type', mav.type)
+        SELECT jsonb_build_object('id', mav.id, 'name', mav.name, 'type', mav.type)
         FROM message_account_view mav
         WHERE mav.id = m.sender_id
     ) AS sender,
     (
-        SELECT json_agg(json_build_object('id', mav.id, 'name', mav.name, 'type', mav.type))
+        SELECT jsonb_agg(jsonb_build_object('id', mav.id, 'name', mav.name, 'type', mav.type))
         FROM message_recipients mr
         JOIN message_account_view mav ON mav.id = mr.recipient_id
         WHERE mr.message_id = m.id
     ) AS recipients,
     COALESCE((
-        SELECT json_agg(json_build_object('id', a.id, 'name', a.name, 'contentType', a.content_type))
+        SELECT jsonb_agg(jsonb_build_object('id', a.id, 'name', a.name, 'contentType', a.content_type))
         FROM attachment a
         WHERE a.message_content_id = mc.id
-    ), '[]'::json) AS attachments
+    ), '[]'::jsonb) AS attachments
 FROM message m
 JOIN message_content mc ON mc.id = m.content_id
 LEFT JOIN message_recipients mr_self ON mr_self.message_id = m.id AND mr_self.recipient_id = :accountId
@@ -443,7 +443,7 @@ SELECT
     recipient_acc.type AS recipient_account_type,
     m.recipient_names,
     (
-        SELECT coalesce(jsonb_agg(json_build_object(
+        SELECT coalesce(jsonb_agg(jsonb_build_object(
            'id', att.id,
            'name', att.name,
            'contentType', att.content_type
@@ -496,7 +496,7 @@ fun Database.Read.getMessage(id: MessageId): Message {
             recipient_acc_name.account_name recipient_name,
             recipient_acc.type AS recipient_account_type,
             (
-                SELECT coalesce(jsonb_agg(json_build_object(
+                SELECT coalesce(jsonb_agg(jsonb_build_object(
                    'id', att.id,
                    'name', att.name,
                    'contentType', att.content_type
@@ -702,12 +702,12 @@ SELECT
     msg.message_type AS type,
     msg.urgent,
     mc.content,
-    (SELECT jsonb_agg(json_build_object(
+    (SELECT jsonb_agg(jsonb_build_object(
            'id', rec.recipient_id,
            'name', rec.account_name,
            'type', rec.account_type
        ))) AS recipients,
-    (SELECT coalesce(jsonb_agg(json_build_object(
+    (SELECT coalesce(jsonb_agg(jsonb_build_object(
            'id', att.id,
            'name', att.name,
            'contentType', att.content_type
