@@ -32,25 +32,46 @@ fun Database.Read.getActiveFixedPeriodQuestionnaire(date: LocalDate): FixedPerio
         .mapTo<FixedPeriodQuestionnaire>()
         .firstOrNull()
 
-fun Database.Read.getChildrenWithContinuousPlacement(guardianId: PersonId, period: FiniteDateRange): List<ChildId> {
+fun Database.Read.getChildrenWithContinuousPlacement(today: LocalDate, userId: PersonId, period: FiniteDateRange): List<ChildId> {
     return createQuery(
         """
-SELECT g.child_id
-FROM guardian g, generate_series(:periodStart::date, :periodEnd::date, '1 day') d
-WHERE g.guardian_id = :guardianId
-GROUP BY g.child_id
+WITH children AS (
+    SELECT child_id FROM guardian WHERE guardian_id = :userId
+    UNION ALL
+    SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+)
+SELECT c.child_id
+FROM children c, generate_series(:periodStart::date, :periodEnd::date, '1 day') d
+GROUP BY c.child_id
 HAVING bool_and(d::date <@ ANY (
     SELECT daterange(p.start_date, p.end_date, '[]')
     FROM placement p
-    WHERE p.child_id = g.child_id
+    WHERE p.child_id = c.child_id
 ))
 """
     )
-        .bind("guardianId", guardianId)
+        .bind("today", today)
+        .bind("userId", userId)
         .bind("periodStart", period.start)
         .bind("periodEnd", period.end)
         .mapTo<ChildId>()
         .toList()
+}
+
+fun Database.Read.getUserChildIds(today: LocalDate, userId: PersonId): List<ChildId> {
+    //language=sql
+    val sql =
+        """
+SELECT child_id FROM guardian WHERE guardian_id = :userId
+UNION
+SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+"""
+
+    return createQuery(sql)
+        .bind("today", today)
+        .bind("userId", userId)
+        .mapTo<ChildId>()
+        .list()
 }
 
 fun Database.Read.getFixedPeriodQuestionnaire(id: HolidayQuestionnaireId): FixedPeriodQuestionnaire? =

@@ -5,7 +5,6 @@
 package fi.espoo.evaka.holidayperiod
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.pis.service.getGuardianChildIds
 import fi.espoo.evaka.reservations.AbsenceInsert
 import fi.espoo.evaka.reservations.clearOldCitizenEditableAbsences
 import fi.espoo.evaka.reservations.clearOldReservations
@@ -62,11 +61,12 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                 val continuousPlacementPeriod = activeQuestionnaire.conditions.continuousPlacement
                 val eligibleChildren = if (continuousPlacementPeriod != null) {
                     tx.getChildrenWithContinuousPlacement(
+                        clock.today(),
                         user.id,
                         continuousPlacementPeriod,
                     )
                 } else {
-                    tx.getGuardianChildIds(user.id)
+                    tx.getUserChildIds(clock.today(), user.id)
                 }
                 if (eligibleChildren.isEmpty()) {
                     listOf()
@@ -103,6 +103,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                     ?: throw BadRequest("Questionnaire not found")
                 if (questionnaire.conditions.continuousPlacement != null) {
                     val eligibleChildren = tx.getChildrenWithContinuousPlacement(
+                        clock.today(),
                         user.id,
                         questionnaire.conditions.continuousPlacement
                     )
