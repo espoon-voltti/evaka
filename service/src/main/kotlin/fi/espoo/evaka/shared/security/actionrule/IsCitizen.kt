@@ -133,6 +133,18 @@ WHERE guardian_id = :guardianId
             .bind("guardianId", guardianId)
     }
 
+    fun fosterParentOfChild() = rule { userId, now ->
+        QueryFragment<ChildId>(
+            """
+SELECT child_id AS id
+FROM foster_parent
+WHERE parent_id = :userId AND valid_during @> :today
+            """.trimIndent()
+        )
+            .bind("today", now.toLocalDate())
+            .bind("userId", userId)
+    }
+
     fun guardianOfChildOfChildImage() = rule { guardianId, _ ->
         QueryFragment<ChildImageId>(
             """
@@ -216,6 +228,18 @@ WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = :userId AND g.child_
             """.trimIndent()
         )
             .bind("userId", citizenId)
+    }
+
+    fun fosterParentOfChildOfAssistanceNeedDecision() = rule { citizenId, now ->
+        QueryFragment<AssistanceNeedDecisionId>(
+            """
+SELECT id
+FROM assistance_need_decision ad
+WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = :userId AND fp.child_id = ad.child_id AND fp.valid_during @> :today)
+            """.trimIndent()
+        )
+            .bind("userId", citizenId)
+            .bind("today", now.toLocalDate())
     }
 
     fun hasPermissionForAttachmentThroughMessageContent() = rule { personId, _ ->

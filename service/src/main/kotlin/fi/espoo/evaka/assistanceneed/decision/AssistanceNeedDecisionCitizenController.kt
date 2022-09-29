@@ -32,9 +32,9 @@ class AssistanceNeedDecisionCitizenController(
     ): List<AssistanceNeedDecisionCitizenListItem> {
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_ASSISTANCE_NEED_DECISIONS, user.id)
 
-        return db.connect { dbc -> dbc.transaction { tx -> tx.getAssistanceNeedDecisionsForCitizen(user.id) } }.also {
-            Audit.AssistanceNeedDecisionsListCitizen.log(targetId = user.id)
-        }
+        return db.connect { dbc ->
+            dbc.transaction { tx -> tx.getAssistanceNeedDecisionsForCitizen(clock.today(), user.id) }
+        }.also { Audit.AssistanceNeedDecisionsListCitizen.log(targetId = user.id) }
     }
 
     @GetMapping("/children/assistance-need-decision/{id}")
@@ -99,7 +99,7 @@ class AssistanceNeedDecisionCitizenController(
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT, user.id)
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.getAssistanceNeedDecisionsUnreadCountsForCitizen(user.id)
+                tx.getAssistanceNeedDecisionsUnreadCountsForCitizen(clock.today(), user.id)
             }
         }.also {
             Audit.ChildAssistanceNeedDecisionGetUnreadCountCitizen.log(targetId = user.id)
