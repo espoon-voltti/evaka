@@ -117,7 +117,7 @@ export default React.memo(function DatePickerInput({
         onChangeTarget={changeHandler}
         aria-describedby={ariaId}
         info={
-          !datePickerVisible && !parsedDate
+          !datePickerVisible && !parsedDate && rawDate !== ''
             ? {
                 status: 'warning',
                 text: errorTexts.validDate
