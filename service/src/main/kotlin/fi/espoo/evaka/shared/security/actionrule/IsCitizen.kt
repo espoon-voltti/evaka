@@ -232,6 +232,19 @@ WHERE guardian_id = :guardianId
             .bind("guardianId", guardianId)
     }
 
+    fun fosterParentOfChildOfPlacement() = rule { userId, now ->
+        QueryFragment<PlacementId>(
+            """
+SELECT placement.id
+FROM placement
+JOIN foster_parent ON placement.child_id = foster_parent.child_id
+WHERE parent_id = :userId
+            """.trimIndent()
+        )
+            .bind("userId", userId)
+            .bind("today", now.toLocalDate())
+    }
+
     fun guardianOfChildOfAssistanceNeedDecision() = rule { citizenId, _ ->
         QueryFragment<AssistanceNeedDecisionId>(
             """

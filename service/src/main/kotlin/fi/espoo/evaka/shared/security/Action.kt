@@ -234,7 +234,7 @@ sealed interface Action {
             CREATE_HOLIDAY_ABSENCE(IsCitizen(allowWeakLogin = true).guardianOfChild(), IsCitizen(allowWeakLogin = true).fosterParentOfChild()),
             CREATE_RESERVATION(IsCitizen(allowWeakLogin = true).guardianOfChild()),
 
-            READ_PLACEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+            READ_PLACEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild(), IsCitizen(allowWeakLogin = false).fosterParentOfChild()),
 
             CREATE_INCOME_STATEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild()),
             READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).guardianOfChild()),
@@ -288,7 +288,7 @@ sealed interface Action {
             override fun toString(): String = "${javaClass.name}.$name"
         }
         enum class Placement(override vararg val defaultRules: ScopedActionRule<in PlacementId>) : ScopedAction<PlacementId> {
-            TERMINATE(IsCitizen(allowWeakLogin = false).guardianOfChildOfPlacement());
+            TERMINATE(IsCitizen(allowWeakLogin = false).guardianOfChildOfPlacement(), IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPlacement());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
