@@ -25,6 +25,17 @@ export async function getFosterChildren(
     .catch((e) => Failure.fromError(e))
 }
 
+export async function getFosterParents(
+  id: UUID
+): Promise<Result<FosterParentRelationship[]>> {
+  return client
+    .get<JsonOf<FosterParentRelationship[]>>(`/foster-parent/by-child/${id}`)
+    .then((res) =>
+      Success.of(res.data.map(deserializeFosterParentRelationship))
+    )
+    .catch((e) => Failure.fromError(e))
+}
+
 const deserializeFosterParentRelationship = (
   json: JsonOf<FosterParentRelationship>
 ): FosterParentRelationship => ({

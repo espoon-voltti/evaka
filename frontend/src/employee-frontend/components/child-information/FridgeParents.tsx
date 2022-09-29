@@ -14,6 +14,7 @@ import StatusLabel from '../../components/common/StatusLabel'
 import { ChildContext, ChildState } from '../../state/child'
 import { useTranslation } from '../../state/i18n'
 import { getStatusLabelByDateRange } from '../../utils/date'
+import { NameTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
 
 const FridgeParents = React.memo(function FridgeParents() {
@@ -38,12 +39,12 @@ const FridgeParents = React.memo(function FridgeParents() {
             {orderBy(data, ['startDate'], ['desc']).map(
               ({ data: parentship }: ParentshipWithPermittedActions) => (
                 <Tr key={parentship.id}>
-                  <Td>
+                  <NameTd>
                     <Link to={`/profile/${parentship.headOfChildId}`}>
                       {parentship.headOfChild.lastName}{' '}
                       {parentship.headOfChild.firstName}
                     </Link>
-                  </Td>
+                  </NameTd>
                   <Td>{parentship.headOfChild.socialSecurityNumber}</Td>
                   <Td>{parentship.startDate.format()}</Td>
                   <Td>{parentship.endDate?.format()}</Td>

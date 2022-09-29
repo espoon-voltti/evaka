@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 
 import { isLoading } from 'lib-common/api'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
+import { UUID } from 'lib-common/types'
 import { getAge } from 'lib-common/utils/local-date'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
@@ -20,15 +21,17 @@ import { formatName } from '../../utils'
 import { NameTd } from '../PersonProfile'
 import { renderResult } from '../async-rendering'
 
+import FosterParents from './FosterParents'
 import FridgeParents from './FridgeParents'
 
 interface Props {
+  id: UUID
   startOpen: boolean
 }
 
-export default React.memo(function Guardians({ startOpen }: Props) {
+export default React.memo(function Guardians({ id, startOpen }: Props) {
   const { i18n } = useTranslation()
-  const { guardians } = useContext(ChildContext)
+  const { guardians, permittedActions } = useContext(ChildContext)
 
   const [open, setOpen] = useState(startOpen)
 
@@ -93,6 +96,12 @@ export default React.memo(function Guardians({ startOpen }: Props) {
         ))}
         <Gap size="XL" />
         <FridgeParents />
+        {permittedActions.has('READ_FOSTER_PARENTS') && (
+          <>
+            <Gap size="XL" />
+            <FosterParents id={id} />
+          </>
+        )}
       </CollapsibleContentArea>
     </div>
   )

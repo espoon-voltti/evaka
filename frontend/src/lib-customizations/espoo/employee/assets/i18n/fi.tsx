@@ -1119,6 +1119,14 @@ export const fi = {
       endDate: 'Päättyen',
       status: 'Tila'
     },
+    fosterParents: {
+      title: 'Sijaisvanhemmat',
+      name: 'Nimi',
+      ssn: 'Hetu',
+      startDate: 'Alkaen',
+      endDate: 'Päättyen',
+      status: 'Tila'
+    },
     messaging: {
       title: 'Lapseen liittyvä viestintä (vastaanottajat)',
       info: 'Lapseen liittyvät viestit lähetetään merkityille huoltajille. Esimies tai palveluohjaus voi perustelluista syistä estää viestin lähettämisen valitulle huoltajalle, poistamalla ruksin kyseisen henkilön kohdalta. Viestejä ei lähetetä päämiehille.',
@@ -1315,6 +1323,7 @@ export const fi = {
       deleteFosterChildParagraph:
         'Haluatko varmasti poistaa sijaislapsen? Sijaisvanhemmuuden päättyessä merkitse suhteelle loppumisaika.'
     },
+    fosterParents: 'Sijaisvanhemmat',
     applications: 'Hakemukset',
     feeDecisions: {
       title: 'Päämiehen maksupäätökset',
