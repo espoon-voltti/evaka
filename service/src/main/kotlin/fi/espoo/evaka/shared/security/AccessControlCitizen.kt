@@ -69,20 +69,25 @@ SELECT EXISTS (
         return createQuery(sql).bind("today", clock.today()).bind("personId", personId).mapTo<Boolean>().first()
     }
 
-    private fun Database.Read.citizenHasAccessToReservations(clock: EvakaClock, personId: PersonId, calendarOpenBeforePlacementDays: Int = 0): Boolean {
+    private fun Database.Read.citizenHasAccessToReservations(clock: EvakaClock, userId: PersonId, calendarOpenBeforePlacementDays: Int = 0): Boolean {
         // language=sql
         val sql = """
+WITH children AS (
+    SELECT child_id, guardian_id AS parent_id FROM guardian WHERE guardian_id = :userId
+    UNION ALL
+    SELECT child_id, parent_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+)
 SELECT EXISTS (
     SELECT 1
-    FROM guardian g
-    JOIN placement pl ON g.child_id = pl.child_id AND Daterange((pl.start_date - :calendarOpenBeforePlacementDays), pl.end_date, '[]') @> :today
+    FROM children c
+    JOIN placement pl ON c.child_id = pl.child_id AND daterange((pl.start_date - :calendarOpenBeforePlacementDays), pl.end_date, '[]') @> :today
     JOIN daycare ON pl.unit_id = daycare.id
-    WHERE guardian_id = :personId AND 'RESERVATIONS' = ANY(enabled_pilot_features)
+    WHERE 'RESERVATIONS' = ANY(enabled_pilot_features)
 )
-        """.trimIndent()
+"""
         return createQuery(sql)
             .bind("today", clock.today())
-            .bind("personId", personId)
+            .bind("userId", userId)
             .bind("calendarOpenBeforePlacementDays", calendarOpenBeforePlacementDays)
             .mapTo<Boolean>()
             .first()

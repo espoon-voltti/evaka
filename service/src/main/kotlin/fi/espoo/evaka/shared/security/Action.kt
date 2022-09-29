@@ -229,10 +229,10 @@ sealed interface Action {
             READ_PLACEMENT_STATUS_BY_APPLICATION_TYPE(IsCitizen(allowWeakLogin = false).guardianOfChild()),
             READ_DUPLICATE_APPLICATIONS(IsCitizen(allowWeakLogin = false).guardianOfChild()),
             READ_VASU_DOCUMENT_SUMMARIES(IsCitizen(allowWeakLogin = false).guardianOfChild()),
-            CREATE_ABSENCE(IsCitizen(allowWeakLogin = true).guardianOfChild()),
+            CREATE_ABSENCE(IsCitizen(allowWeakLogin = true).guardianOfChild(), IsCitizen(allowWeakLogin = true).fosterParentOfChild()),
 
             CREATE_HOLIDAY_ABSENCE(IsCitizen(allowWeakLogin = true).guardianOfChild(), IsCitizen(allowWeakLogin = true).fosterParentOfChild()),
-            CREATE_RESERVATION(IsCitizen(allowWeakLogin = true).guardianOfChild()),
+            CREATE_RESERVATION(IsCitizen(allowWeakLogin = true).guardianOfChild(), IsCitizen(allowWeakLogin = true).fosterParentOfChild()),
 
             READ_PLACEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild(), IsCitizen(allowWeakLogin = false).fosterParentOfChild()),
 
