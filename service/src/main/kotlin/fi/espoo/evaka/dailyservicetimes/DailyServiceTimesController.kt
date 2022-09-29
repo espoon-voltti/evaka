@@ -158,6 +158,12 @@ class DailyServiceTimesController(
 
         val deletedReservationCount = tx.clearReservationsForRange(dst.childId, actionableRange)
 
-        tx.addDailyServiceTimesNotification(id, dst.childId, actionableRange.start, deletedReservationCount > 0)
+        tx.addDailyServiceTimesNotification(
+            evakaClock.today(),
+            id,
+            dst.childId,
+            actionableRange.start,
+            deletedReservationCount > 0
+        )
     }
 }

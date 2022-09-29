@@ -55,12 +55,12 @@ data class DailyServiceTimeNotification(
     val hasDeletedReservations: Boolean
 )
 
-fun Database.Read.getDailyServiceTimesNotifications(guardianId: PersonId): List<DailyServiceTimeNotification> = createQuery(
+fun Database.Read.getDailyServiceTimesNotifications(userId: PersonId): List<DailyServiceTimeNotification> = createQuery(
     """
-SELECT id, date_from, has_deleted_reservations FROM daily_service_time_notification WHERE guardian_id = :guardianId
+SELECT id, date_from, has_deleted_reservations FROM daily_service_time_notification WHERE guardian_id = :userId
     """.trimIndent()
 )
-    .bind("guardianId", guardianId)
+    .bind("userId", userId)
     .mapTo<DailyServiceTimeNotification>()
     .list()
 

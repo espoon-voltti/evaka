@@ -248,7 +248,7 @@ sealed interface Action {
             override fun toString(): String = "${javaClass.name}.$name"
         }
         enum class DailyServiceTimeNotification(override vararg val defaultRules: ScopedActionRule<in DailyServiceTimeNotificationId>) : ScopedAction<DailyServiceTimeNotificationId> {
-            DISMISS(IsCitizen(allowWeakLogin = true).guardianOfDailyServiceTimeNotification());
+            DISMISS(IsCitizen(allowWeakLogin = true).recipientOfDailyServiceTimeNotification());
         }
         enum class Decision(override vararg val defaultRules: ScopedActionRule<in DecisionId>) : ScopedAction<DecisionId> {
             DOWNLOAD_PDF(IsCitizen(allowWeakLogin = false).ownerOfApplicationOfSentDecision());

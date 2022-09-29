@@ -305,14 +305,14 @@ WHERE person_id = :userId
             .bind("userId", citizenId)
     }
 
-    fun guardianOfDailyServiceTimeNotification() = rule { guardianId, _ ->
+    fun recipientOfDailyServiceTimeNotification() = rule { citizenId, _ ->
         QueryFragment<DailyServiceTimeNotificationId>(
             """
 SELECT id
 FROM daily_service_time_notification
-WHERE guardian_id = :guardianId
+WHERE guardian_id = :citizenId
             """.trimIndent()
         )
-            .bind("guardianId", guardianId)
+            .bind("citizenId", citizenId)
     }
 }

@@ -229,17 +229,24 @@ fun Database.Transaction.updateChildDailyServiceTimes(id: DailyServiceTimesId, t
 }
 
 fun Database.Transaction.addDailyServiceTimesNotification(
+    today: LocalDate,
     id: DailyServiceTimesId,
     childId: ChildId,
     dateFrom: LocalDate,
     hasDeletedReservations: Boolean
 ) {
     val sql = """
-        INSERT INTO daily_service_time_notification (guardian_id, daily_service_time_id, date_from, has_deleted_reservations)
-        SELECT guardian_id, :id, :dateFrom, :hasDeletedReservations FROM guardian WHERE child_id = :childId
+WITH recipient AS (
+    SELECT guardian_id AS id FROM guardian WHERE child_id = :childId
+    UNION
+    SELECT parent_id AS id FROM foster_parent WHERE child_id = :childId AND valid_during @> :today
+)
+INSERT INTO daily_service_time_notification (guardian_id, daily_service_time_id, date_from, has_deleted_reservations)
+SELECT recipient.id, :id, :dateFrom, :hasDeletedReservations FROM recipient
     """.trimIndent()
 
     this.createUpdate(sql)
+        .bind("today", today)
         .bind("id", id)
         .bind("childId", childId)
         .bind("dateFrom", dateFrom)
