@@ -4,7 +4,7 @@
 
 import classNames from 'classnames'
 import sortBy from 'lodash/sortBy'
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
 import {
@@ -43,6 +43,13 @@ interface Props {
 }
 
 export default React.memo(function ChildReservationsTable(props: Props) {
+  const { selectedDate } = props
+
+  // Reset edit state when the selected date changes
+  return <ChildReservations key={selectedDate.formatIso()} {...props} />
+})
+
+const ChildReservations = React.memo(function ChildReservations(props: Props) {
   const { operationalDays, onMakeReservationForChild, selectedDate } = props
   const { i18n } = useTranslation()
   const { editState, stopEditing, startEditing, ...editCallbacks } =
@@ -51,8 +58,6 @@ export default React.memo(function ChildReservationsTable(props: Props) {
       props.reloadReservations,
       props.unitId
     )
-
-  useEffect(stopEditing, [stopEditing, selectedDate])
 
   const allDayRows = useMemo(
     () =>
