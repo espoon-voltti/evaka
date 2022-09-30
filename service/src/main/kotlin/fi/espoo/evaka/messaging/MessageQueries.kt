@@ -497,24 +497,6 @@ WITH backup_care_placements AS (
         SELECT 1 FROM daycare u
         WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
     )
-
-    UNION
-
-    SELECT p.id, p.unit_id, p.child_id, p.group_id
-    FROM fridge_child fg
-    JOIN backup_care p ON fg.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
-    WHERE daterange(fg.start_date, fg.end_date, '[]') @> :today
-    AND fg.head_of_child = (SELECT person_id AS id FROM message_account WHERE id = :accountId)
-    AND fg.conflict = false
-    AND NOT EXISTS (
-        SELECT 1 FROM messaging_blocklist b
-        WHERE b.child_id = p.child_id
-        AND b.blocked_recipient = fg.head_of_child
-    )
-    AND EXISTS (
-        SELECT 1 FROM daycare u
-        WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
-    )
 ), placements AS (
     SELECT p.id, p.unit_id, p.child_id
     FROM guardian g
@@ -524,28 +506,6 @@ WITH backup_care_placements AS (
         SELECT 1 FROM messaging_blocklist b
         WHERE b.child_id = p.child_id
         AND b.blocked_recipient = g.guardian_id
-    )
-    AND NOT EXISTS (
-        SELECT 1 FROM backup_care_placements bc
-        WHERE bc.child_id = p.child_id
-    )
-    AND EXISTS (
-        SELECT 1 FROM daycare u
-        WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
-    )
-
-    UNION
-
-    SELECT p.id, p.unit_id, p.child_id
-    FROM fridge_child fg
-    JOIN placement p ON fg.child_id = p.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
-    WHERE daterange(fg.start_date, fg.end_date, '[]') @> :today
-    AND fg.head_of_child = (SELECT person_id AS id FROM message_account WHERE id = :accountId)
-    AND fg.conflict = false
-    AND NOT EXISTS (
-        SELECT 1 FROM messaging_blocklist b
-        WHERE b.child_id = p.child_id
-        AND b.blocked_recipient = fg.head_of_child
     )
     AND NOT EXISTS (
         SELECT 1 FROM backup_care_placements bc
