@@ -101,7 +101,7 @@ TABLE (
                 WHERE 'SPECIAL_ASSISTANCE_DECISION' = ANY(measures) AND 'SPECIAL_GROUP' = ANY(actions)
             ) AS special_assistance_decision_with_group,
             array_agg(date_interval) FILTER (
-                WHERE 'SPECIAL_ASSISTANCE_DECISION' = ANY(measures) AND 'SPECIAL_GROUP' != ANY(actions)
+                WHERE 'SPECIAL_ASSISTANCE_DECISION' = ANY(measures) AND 'SPECIAL_GROUP' != ALL(actions)
             ) AS special_assistance_decision_without_group
         FROM (
             SELECT

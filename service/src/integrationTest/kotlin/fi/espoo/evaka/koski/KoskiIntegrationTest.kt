@@ -415,6 +415,10 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 testPeriod(4L to 5L),
                 AssistanceMeasure.SPECIAL_ASSISTANCE_DECISION,
                 "SPECIAL_GROUP"
+            ),
+            TestCase(
+                testPeriod(6L to 7L),
+                AssistanceMeasure.SPECIAL_ASSISTANCE_DECISION,
             )
         )
         db.transaction { tx ->
@@ -453,6 +457,12 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         alku = testCases[2].period.start,
                         loppu = testCases[2].period.end,
                         erityisryhmässä = true,
+                        opiskeleeToimintaAlueittain = false
+                    ),
+                    ErityisenTuenPäätös(
+                        alku = testCases[3].period.start,
+                        loppu = testCases[3].period.end,
+                        erityisryhmässä = false,
                         opiskeleeToimintaAlueittain = false
                     )
                 )
