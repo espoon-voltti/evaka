@@ -227,6 +227,7 @@ sealed interface Action {
             READ(IsCitizen(allowWeakLogin = false).guardianOfChild()),
             READ_PLACEMENT_STATUS_BY_APPLICATION_TYPE(IsCitizen(allowWeakLogin = false).guardianOfChild()),
             READ_DUPLICATE_APPLICATIONS(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+            READ_VASU_DOCUMENT_SUMMARIES(IsCitizen(allowWeakLogin = false).guardianOfChild()),
             CREATE_ABSENCE(IsCitizen(allowWeakLogin = true).guardianOfChild()),
 
             CREATE_HOLIDAY_ABSENCE(IsCitizen(allowWeakLogin = true).guardianOfChild()),
