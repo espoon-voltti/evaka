@@ -337,6 +337,16 @@ export interface CitizenApplicationSummary {
 }
 
 /**
+* Generated from fi.espoo.evaka.application.CitizenChildren
+*/
+export interface CitizenChildren {
+  firstName: string
+  id: UUID
+  lastName: string
+  socialSecurityNumber: string
+}
+
+/**
 * Generated from fi.espoo.evaka.application.ClubDetails
 */
 export interface ClubDetails {

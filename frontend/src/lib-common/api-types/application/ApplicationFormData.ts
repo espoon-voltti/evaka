@@ -10,6 +10,7 @@ import {
 import { ApplicationAddress } from 'lib-common/api-types/application/ApplicationDetails'
 import { throwIfNull } from 'lib-common/form-validation'
 import {
+  CitizenChildren,
   OtherGuardianAgreementStatus,
   ServiceNeedOption
 } from 'lib-common/generated/api-types/application'
@@ -108,32 +109,20 @@ export type ApplicationFormData = {
   additionalDetails: AdditionalDetailsFormData
 }
 
-type PersonWithChildren = {
-  children: Array<{
-    firstName: string
-    lastName: string
-    socialSecurityNumber: string
-  }>
-}
-
 export function apiDataToFormData(
   application: ApplicationDetails,
-  user: PersonWithChildren | undefined
+  children: CitizenChildren[]
 ): ApplicationFormData {
-  const vtjSiblings: VtjSibling[] = user
-    ? user.children
-        .filter(
-          (vtjChild) =>
-            vtjChild.socialSecurityNumber !==
-            application.form.child.person.socialSecurityNumber
-        )
-        .map((vtjChild) => ({
-          firstName: vtjChild.firstName,
-          lastName: vtjChild.lastName,
-          socialSecurityNumber: vtjChild.socialSecurityNumber,
-          selected: false
-        }))
-    : []
+  const vtjSiblings: VtjSibling[] = children
+    .filter(
+      (vtjChild) =>
+        vtjChild.socialSecurityNumber !==
+        application.form.child.person.socialSecurityNumber
+    )
+    .map((child) => ({
+      ...child,
+      selected: false
+    }))
 
   const vtjSiblingsSiblingBasis = vtjSiblings.map((sibling) => ({
     ...sibling,

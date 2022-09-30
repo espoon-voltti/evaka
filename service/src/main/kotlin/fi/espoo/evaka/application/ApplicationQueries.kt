@@ -522,19 +522,26 @@ fun Database.Read.fetchApplicationSummariesForCitizen(citizenId: PersonId): List
         .toList()
 }
 
-data class CitizenChildren(val childId: ChildId, val childName: String)
+data class CitizenChildren(val id: ChildId, val firstName: String, val lastName: String, val socialSecurityNumber: String)
 
-fun Database.Read.getCitizenChildren(citizenId: PersonId): List<CitizenChildren> {
+fun Database.Read.getCitizenChildren(today: LocalDate, citizenId: PersonId): List<CitizenChildren> {
     //language=sql
     val sql =
         """
-        SELECT child_id, first_name || ' ' || last_name AS childName
+        SELECT child.id, first_name, last_name, social_security_number
         FROM guardian LEFT JOIN person child ON guardian.child_id = child.id
-        WHERE guardian_id = :guardianId
+        WHERE guardian_id = :citizenId
+
+        UNION
+
+        SELECT child.id, first_name, last_name, social_security_number
+        FROM foster_parent JOIN person child ON foster_parent.child_id = child.id
+        WHERE parent_id = :citizenId AND valid_during @> :today
         """.trimIndent()
 
     return createQuery(sql)
-        .bind("guardianId", citizenId)
+        .bind("citizenId", citizenId)
+        .bind("today", today)
         .mapTo<CitizenChildren>()
         .list()
 }

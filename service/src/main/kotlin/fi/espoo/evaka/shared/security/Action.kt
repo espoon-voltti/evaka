@@ -226,8 +226,8 @@ sealed interface Action {
         }
         enum class Child(override vararg val defaultRules: ScopedActionRule<in ChildId>) : ScopedAction<ChildId> {
             READ(IsCitizen(allowWeakLogin = false).guardianOfChild()),
-            READ_PLACEMENT_STATUS_BY_APPLICATION_TYPE(IsCitizen(allowWeakLogin = false).guardianOfChild()),
-            READ_DUPLICATE_APPLICATIONS(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+            READ_PLACEMENT_STATUS_BY_APPLICATION_TYPE(IsCitizen(allowWeakLogin = false).guardianOfChild(), IsCitizen(allowWeakLogin = false).fosterParentOfChild()),
+            READ_DUPLICATE_APPLICATIONS(IsCitizen(allowWeakLogin = false).guardianOfChild(), IsCitizen(allowWeakLogin = false).fosterParentOfChild()),
             READ_VASU_DOCUMENT_SUMMARIES(IsCitizen(allowWeakLogin = false).guardianOfChild()),
             CREATE_ABSENCE(IsCitizen(allowWeakLogin = true).guardianOfChild(), IsCitizen(allowWeakLogin = true).fosterParentOfChild()),
 
@@ -239,7 +239,7 @@ sealed interface Action {
             CREATE_INCOME_STATEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild()),
             READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).guardianOfChild()),
 
-            CREATE_APPLICATION(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+            CREATE_APPLICATION(IsCitizen(allowWeakLogin = false).guardianOfChild(), IsCitizen(allowWeakLogin = false).fosterParentOfChild()),
 
             READ_PEDAGOGICAL_DOCUMENTS(IsCitizen(allowWeakLogin = true).guardianOfChild(), IsCitizen(allowWeakLogin = true).fosterParentOfChild()),
 
@@ -270,6 +270,7 @@ sealed interface Action {
         enum class Person(override vararg val defaultRules: ScopedActionRule<in PersonId>) : ScopedAction<PersonId> {
             CREATE_INCOME_STATEMENT(IsCitizen(allowWeakLogin = false).self()),
             READ_APPLICATIONS(IsCitizen(allowWeakLogin = false).self()),
+            READ_APPLICATION_CHILDREN(IsCitizen(allowWeakLogin = false).self()),
             READ_APPLICATION_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self()),
             READ_ASSISTANCE_NEED_DECISIONS(IsCitizen(allowWeakLogin = false).self()),
             READ_CALENDAR_EVENTS(IsCitizen(allowWeakLogin = true).self()),

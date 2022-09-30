@@ -63,13 +63,13 @@ class ApplicationControllerCitizen(
                     .map { ApplicationsOfChild(it.key, it.value.first().childName ?: "", it.value) }
 
                 // Some children might not have applications, so add 0 application children
-                tx.getCitizenChildren(user.id).map { citizenChild ->
+                tx.getCitizenChildren(clock.today(), user.id).map { citizenChild ->
                     val childApplications =
-                        existingApplicationsByChild.findLast { it.childId == citizenChild.childId }?.applicationSummaries
+                        existingApplicationsByChild.findLast { it.childId == citizenChild.id }?.applicationSummaries
                             ?: emptyList()
                     ApplicationsOfChild(
-                        childId = citizenChild.childId,
-                        childName = citizenChild.childName,
+                        childId = citizenChild.id,
+                        childName = "${citizenChild.firstName} ${citizenChild.lastName}",
                         applicationSummaries = childApplications
                     )
                 }
@@ -77,6 +77,17 @@ class ApplicationControllerCitizen(
         }.also {
             Audit.ApplicationRead.log(targetId = user.id)
         }
+    }
+
+    @GetMapping("/applications/children")
+    fun getApplicationChildren(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock
+    ): List<CitizenChildren> {
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_APPLICATION_CHILDREN, user.id)
+        return db.connect { dbc -> dbc.read { tx -> tx.getCitizenChildren(clock.today(), user.id) } }
+            .also { Audit.ApplicationRead.log(targetId = user.id) }
     }
 
     @GetMapping("/applications/{applicationId}")

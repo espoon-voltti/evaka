@@ -151,18 +151,20 @@ class ApplicationStateService(
         child: PersonDTO,
         form: ApplicationForm
     ): ApplicationForm {
-        val vtjOtherChildren = personService.getPersonWithChildren(tx, user, guardian.id)?.children
-            ?.filter { it.id != child.id }
-            ?.filter { personService.personsLiveInTheSameAddress(guardian, it.toPersonDTO()) }
-            ?.map {
+        val vtjChildren = personService.getPersonWithChildren(tx, user, guardian.id)?.children ?: listOf()
+        // if the applicant is not the child's guardian (ie. they are a foster parent) do not include other children
+        val vtjOtherChildren = if (vtjChildren.none { it.id == child.id }) listOf()
+        else vtjChildren
+            .filter { it.id != child.id }
+            .filter { personService.personsLiveInTheSameAddress(guardian, it.toPersonDTO()) }
+            .map {
                 PersonBasics(
                     firstName = it.firstName,
                     lastName = it.lastName,
                     socialSecurityNumber = it.socialSecurityNumber
                 )
             }
-
-        return form.copy(otherChildren = vtjOtherChildren ?: listOf())
+        return form.copy(otherChildren = vtjOtherChildren)
     }
 
     private fun withDefaultServiceNeedOption(

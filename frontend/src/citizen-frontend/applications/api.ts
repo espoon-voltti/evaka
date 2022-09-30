@@ -15,7 +15,8 @@ import {
 } from 'lib-common/api-types/units/terms'
 import {
   ApplicationsOfChild,
-  ApplicationType
+  ApplicationType,
+  CitizenChildren
 } from 'lib-common/generated/api-types/application'
 import {
   ClubTerm,
@@ -138,6 +139,12 @@ const deserializeApplicationsOfChild = (
     modifiedDate: HelsinkiDateTime.parseIso(json2.modifiedDate)
   }))
 })
+
+export const getApplicationChildren = (): Promise<Result<CitizenChildren[]>> =>
+  client
+    .get<JsonOf<CitizenChildren[]>>('/citizen/applications/children')
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 
 export async function createApplication(
   childId: string,

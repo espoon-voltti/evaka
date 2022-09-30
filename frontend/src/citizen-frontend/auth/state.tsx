@@ -12,7 +12,6 @@ import React, {
 
 import { Loading, Result } from 'lib-common/api'
 import {
-  Child,
   CitizenUserDetails,
   UserDetailsResponse
 } from 'lib-common/api-types/vtjclient'
@@ -29,7 +28,6 @@ export interface User extends CitizenUserDetails {
 
 export interface StrongUser extends User {
   socialSecurityNumber: string
-  children: Child[]
 }
 
 type AuthState = {
@@ -97,7 +95,6 @@ export const useStrongUser = (): StrongUser | undefined => {
       user?.authLevel === 'STRONG'
         ? {
             ...user.details,
-            children: user.children,
             socialSecurityNumber: user.socialSecurityNumber,
             authLevel: 'STRONG'
           }
