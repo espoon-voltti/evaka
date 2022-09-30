@@ -137,6 +137,18 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
     }
 
     @Test
+    fun `calculateEvakaVsVardaServiceNeedChangesByChild does not find a new evaka service need with voucher value decision when varda has none, but the service need ended before 01-01-2019`() {
+        val since = HelsinkiDateTime.now()
+        val option = snDefaultDaycare.copy(updated = since)
+        val snStartDate = LocalDate.of(2018, 1, 1)
+        val snEndDate = LocalDate.of(2018, 11, 30)
+        createServiceNeed(db, since, option, child = testChild_1, fromDays = snStartDate, toDays = snEndDate)
+        createVoucherDecision(db, snStartDate, snEndDate, testDaycare.id, 100, 100, testAdult_1.id, testChild_1, since.toInstant(), VoucherValueDecisionStatus.SENT)
+        val diffs = calculateEvakaVsVardaServiceNeedChangesByChild(db, RealEvakaClock(), evakaEnv.feeDecisionMinDate)
+        assertEquals(0, diffs.keys.size)
+    }
+
+    @Test
     fun `calculateEvakaVsVardaServiceNeedChangesByChild excludes if hours per week is 0`() {
         val since = HelsinkiDateTime.now()
         val option = snDefaultPreschool.copy(updated = since)
