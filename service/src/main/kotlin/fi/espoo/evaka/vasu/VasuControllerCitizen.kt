@@ -37,9 +37,11 @@ class VasuControllerCitizen(
     @GetMapping("/children/{childId}/vasu-summaries")
     fun getChildVasuSummaries(
         db: Database,
-        user: AuthenticatedUser,
+        clock: EvakaClock,
+        user: AuthenticatedUser.Citizen,
         @PathVariable childId: ChildId
     ): CitizenGetVasuDocumentSummariesResponse {
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_VASU_DOCUMENT_SUMMARIES, childId)
         return db.connect { dbc ->
             dbc.read { tx ->
                 CitizenGetVasuDocumentSummariesResponse(
