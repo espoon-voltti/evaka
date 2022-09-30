@@ -220,6 +220,19 @@ WHERE g.guardian_id = :userId
             .bind("userId", citizenId)
     }
 
+    fun fosterParentOfChildOfVasu() = rule { citizenId, now ->
+        QueryFragment<VasuDocumentId>(
+            """
+SELECT cd.id
+FROM curriculum_document cd
+JOIN foster_parent fp ON cd.child_id = fp.child_id
+WHERE fp.parent_id = :userId AND fp.valid_during @> :today
+"""
+        )
+            .bind("userId", citizenId)
+            .bind("today", now.toLocalDate())
+    }
+
     fun guardianOfChildOfPlacement() = rule { guardianId, _ ->
         QueryFragment<PlacementId>(
             """

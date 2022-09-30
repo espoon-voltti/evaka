@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import org.jdbi.v3.json.Json
+import java.time.LocalDate
 import java.util.UUID
 
 fun Database.Transaction.insertVasuDocument(clock: EvakaClock, childId: ChildId, template: VasuTemplate): VasuDocumentId {
@@ -22,21 +23,29 @@ fun Database.Transaction.insertVasuDocument(clock: EvakaClock, childId: ChildId,
         .mapTo<VasuChild>(qualifiers = emptyArray())
         .one()
 
-    val guardians = createQuery(
+    val guardiansAndFosterParents = createQuery(
         """
         SELECT p.id, p.first_name, p.last_name
         FROM guardian g
         JOIN person p on p.id = g.guardian_id
         WHERE g.child_id = :id
+
+        UNION
+
+        SELECT p.id, p.first_name, p.last_name
+        FROM foster_parent fp
+        JOIN person p on p.id = fp.parent_id
+        WHERE fp.child_id = :id AND fp.valid_during @> :today
         """.trimIndent()
     )
         .bind("id", childId)
+        .bind("today", clock.today())
         .mapTo<VasuGuardian>(qualifiers = emptyArray())
         .list()
 
     val basics = VasuBasics(
         child = child,
-        guardians = guardians,
+        guardians = guardiansAndFosterParents,
         placements = null,
         childLanguage = when (template.type) {
             CurriculumType.DAYCARE -> null
@@ -395,3 +404,16 @@ WHERE id = :id
         )
         .execute()
 }
+
+fun Database.Read.getCitizenVasuChildren(today: LocalDate, userId: PersonId): List<ChildId> =
+    createQuery(
+        """
+SELECT child_id FROM guardian WHERE guardian_id = :userId
+UNION ALL
+SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+"""
+    )
+        .bind("today", today)
+        .bind("userId", userId)
+        .mapTo<ChildId>()
+        .toList()
