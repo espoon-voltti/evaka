@@ -301,6 +301,8 @@ fun Database.Read.searchValueDecisions(
 
     val noStartingPlacements = distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.NO_STARTING_PLACEMENTS)
 
+    val maxFeeAccepted = distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.MAX_FEE_ACCEPTED)
+
     val noStartingPlacementsQuery =
         """
 NOT EXISTS (            
@@ -320,7 +322,8 @@ NOT EXISTS (
         if ((startDate != null || endDate != null) && !searchByStartDate) "daterange(:start_date, :end_date, '[]') && daterange(valid_from, valid_to, '[]')" else null,
         if ((startDate != null || endDate != null) && searchByStartDate) "daterange(:start_date, :end_date, '[]') @> valid_from" else null,
         if (financeDecisionHandlerId != null) "placement_unit.finance_decision_handler = :financeDecisionHandlerId" else null,
-        if (noStartingPlacements) noStartingPlacementsQuery else null
+        if (noStartingPlacements) noStartingPlacementsQuery else null,
+        if (maxFeeAccepted) "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')" else null,
     )
     val sql =
         // language=sql

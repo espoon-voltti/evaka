@@ -33,11 +33,15 @@ export interface CreateRetroactiveFeeDecisionsBody {
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.DistinctiveParams
 */
-export type DistinctiveParams =
-  | 'UNCONFIRMED_HOURS'
-  | 'EXTERNAL_CHILD'
-  | 'RETROACTIVE'
-  | 'NO_STARTING_PLACEMENTS'
+export const feeDecisionDistinctiveParams = [
+  'UNCONFIRMED_HOURS',
+  'EXTERNAL_CHILD',
+  'RETROACTIVE',
+  'NO_STARTING_PLACEMENTS',
+  'MAX_FEE_ACCEPTED'
+] as const
+
+export type DistinctiveParams = typeof feeDecisionDistinctiveParams[number]
 
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.EmployeeWithName
@@ -839,8 +843,12 @@ export interface VoucherValueDecisionDetailed {
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionDistinctiveParams
 */
-export type VoucherValueDecisionDistinctiveParams =
-  | 'NO_STARTING_PLACEMENTS'
+export const voucherValueDecisionDistinctiveParams = [
+  'NO_STARTING_PLACEMENTS',
+  'MAX_FEE_ACCEPTED'
+] as const
+
+export type VoucherValueDecisionDistinctiveParams = typeof voucherValueDecisionDistinctiveParams[number]
 
 /**
 * Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement

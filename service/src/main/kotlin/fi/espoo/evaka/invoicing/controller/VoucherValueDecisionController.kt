@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.controller
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.invoicing.data.annulVoucherValueDecisions
 import fi.espoo.evaka.invoicing.data.approveValueDecisionDraftsForSending
@@ -295,8 +296,10 @@ enum class VoucherValueDecisionSortParam {
     STATUS
 }
 
+@ConstList("voucherValueDecisionDistinctiveParams")
 enum class VoucherValueDecisionDistinctiveParams {
-    NO_STARTING_PLACEMENTS
+    NO_STARTING_PLACEMENTS,
+    MAX_FEE_ACCEPTED,
 }
 
 data class SearchVoucherValueDecisionRequest(

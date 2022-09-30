@@ -16,9 +16,11 @@ import {
 } from 'lib-common/generated/api-types/daycare'
 import {
   DistinctiveParams,
+  feeDecisionDistinctiveParams,
   FeeDecisionStatus,
   InvoiceDistinctiveParams,
   InvoiceStatus,
+  voucherValueDecisionDistinctiveParams,
   VoucherValueDecisionDistinctiveParams,
   VoucherValueDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
@@ -390,19 +392,12 @@ export function FeeDecisionDistinctionsFilter({
 }: FeeDecisionDistinctionsFilterProps) {
   const { i18n } = useTranslation()
 
-  const distinctiveDetails: DistinctiveParams[] = [
-    'UNCONFIRMED_HOURS',
-    'EXTERNAL_CHILD',
-    'RETROACTIVE',
-    'NO_STARTING_PLACEMENTS'
-  ]
-
   return (
     <>
       <Label>{i18n.filters.distinctiveDetails}</Label>
       <Gap size="xs" />
       <FixedSpaceColumn spacing="xs">
-        {distinctiveDetails.map((id) => (
+        {feeDecisionDistinctiveParams.map((id) => (
           <Checkbox
             key={id}
             label={i18n.feeDecision.distinctiveDetails[id]}
@@ -592,16 +587,12 @@ export function VoucherValueDecisionDistinctionsFilter({
 }: VoucherValueDecisionDistinctionsFilterProps) {
   const { i18n } = useTranslation()
 
-  const distinctiveDetails: VoucherValueDecisionDistinctiveParams[] = [
-    'NO_STARTING_PLACEMENTS'
-  ]
-
   return (
     <>
       <Label>{i18n.filters.distinctiveDetails}</Label>
       <Gap size="xs" />
       <FixedSpaceColumn spacing="xs">
-        {distinctiveDetails.map((id) => (
+        {voucherValueDecisionDistinctiveParams.map((id) => (
           <Checkbox
             key={id}
             label={i18n.feeDecision.distinctiveDetails[id]}
