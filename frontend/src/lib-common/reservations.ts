@@ -132,12 +132,15 @@ export function validateForm(
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const dateRange = new FiniteDateRange(startDate!, endDate!)
-  const dates = [...dateRange.dates()]
 
   return {
     errors: undefined,
     requestPayload: formData.selectedChildren
       .flatMap((childId) => {
+        const childReservableDays = reservableDays[childId] ?? []
+        const dates = [...dateRange.dates()].filter((date) =>
+          childReservableDays.some((range) => range.includes(date))
+        )
         switch (formData.repetition) {
           case 'DAILY':
             return dates.map((date) => ({
