@@ -12,12 +12,14 @@ import fi.espoo.evaka.pis.createPartnership
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPartnershipsForPerson
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.pis.personIsHeadOfFamily
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import mu.KotlinLogging
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
@@ -40,19 +42,32 @@ class FamilyInitializerService(
         val application = db.read { it.fetchApplicationDetails(msg.applicationId) }
             ?: error("Could not initialize family, application ${msg.applicationId} not found")
 
-        val members = db.transaction { parseFridgeFamilyMembersFromApplication(it, user, application) }
+        val members = db.transaction { parseFridgeFamilyMembersFromApplication(it, clock, user, application) }
         db.transaction { initFamilyFromApplication(it, clock, members) }
     }
 
-    private fun initFamilyFromApplication(tx: Database.Transaction, evakaClock: EvakaClock, members: FridgeFamilyMembers) {
-        tx.subTransaction { createParentship(tx, evakaClock, child = members.fridgeChild, headOfChildId = members.headOfFamily.id) }
+    private fun initFamilyFromApplication(tx: Database.Transaction, evakaClock: EvakaClock, familyFromApplication: FridgeFamilyMembers) {
+        // If head of family already has a family today, use it OR
+        // if application has other partner in same address, and she has a family, use it OR
+        // if child has other guardian living in same address and she has a family, use her
+        val headOfFamily = if (
+            !tx.personIsHeadOfFamily(familyFromApplication.headOfFamily.id, evakaClock.today()) &&
+            familyFromApplication.fridgePartner != null &&
+            tx.personIsHeadOfFamily(familyFromApplication.fridgePartner.id, evakaClock.today()) &&
+            personService.personsLiveInTheSameAddress(tx, familyFromApplication.fridgePartner.id, familyFromApplication.headOfFamily.id)
+        )
+            familyFromApplication.fridgePartner
+        else
+            familyFromApplication.headOfFamily
 
-        if (members.fridgePartner != null) {
-            tx.subTransaction { createPartnership(tx, evakaClock, members.headOfFamily.id, members.fridgePartner.id) }
+        tx.subTransaction { createParentship(tx, evakaClock, child = familyFromApplication.fridgeChild, headOfChildId = headOfFamily.id) }
+
+        if (familyFromApplication.fridgePartner != null) {
+            tx.subTransaction { createPartnership(tx, evakaClock, familyFromApplication.headOfFamily.id, familyFromApplication.fridgePartner.id) }
         }
 
-        members.fridgeSiblings.forEach { sibling ->
-            tx.subTransaction { createParentship(tx, evakaClock, child = sibling, headOfChildId = members.headOfFamily.id) }
+        familyFromApplication.fridgeSiblings.forEach { sibling ->
+            tx.subTransaction { createParentship(tx, evakaClock, child = sibling, headOfChildId = headOfFamily.id) }
         }
     }
 
@@ -65,6 +80,7 @@ class FamilyInitializerService(
 
     private fun parseFridgeFamilyMembersFromApplication(
         tx: Database.Transaction,
+        clock: EvakaClock,
         user: AuthenticatedUser,
         application: ApplicationDetails
     ): FridgeFamilyMembers {
@@ -80,7 +96,17 @@ class FamilyInitializerService(
         val fridgePartnerSSN = application.form.otherPartner?.socialSecurityNumber
             ?: (otherGuardian?.identity as? SSN)?.ssn
 
-        val fridgePartner = fridgePartnerSSN
+        val existingFridgePartnerInSameAddressAsGuardianSSN = if (otherGuardian != null || fridgePartnerSSN != null) null
+        else {
+            tx.getPartnershipsForPerson(application.guardianId, false).filter {
+                DateRange(it.startDate, it.endDate).includes(clock.today()) &&
+                    it.partners.any { partner -> partner.id != application.guardianId && personService.personsLiveInTheSameAddress(tx, partner.id, application.guardianId) }
+            }.map {
+                it.partners.first { partner -> partner.id != application.guardianId && personService.personsLiveInTheSameAddress(tx, partner.id, application.guardianId) }.socialSecurityNumber
+            }.firstOrNull()
+        }
+
+        val fridgePartner = (fridgePartnerSSN ?: existingFridgePartnerInSameAddressAsGuardianSSN)
             ?.let { stringToSSN(it) }
             ?.let { personService.getOrCreatePerson(tx, user, it) }
 

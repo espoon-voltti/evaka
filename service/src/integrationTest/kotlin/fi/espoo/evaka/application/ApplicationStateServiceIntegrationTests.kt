@@ -22,7 +22,9 @@ import fi.espoo.evaka.invoicing.data.upsertIncome
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
+import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPersonById
+import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementPlan
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
 import fi.espoo.evaka.placement.PlacementType
@@ -34,6 +36,8 @@ import fi.espoo.evaka.sficlient.MockSfiMessagesClient
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.IncomeId
+import fi.espoo.evaka.shared.ParentshipId
+import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -43,8 +47,12 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.dev.DevFridgePartner
+import fi.espoo.evaka.shared.dev.DevParentship
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insertFridgePartner
+import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -53,6 +61,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.testAdult_1
+import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testAdult_5
 import fi.espoo.evaka.testAdult_6
@@ -1285,7 +1294,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.confirmPlacementProposalChanges(tx, serviceWorker, clock, testDaycare.id)
         }
         asyncJobRunner.runPendingJobsSync(clock)
-        asyncJobRunner.runPendingJobsSync(clock)
         sfiAsyncJobRunner.runPendingJobsSync(clock)
         db.read { tx ->
             // then
@@ -1306,6 +1314,65 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
 
             val placements = tx.getPlacementsForChild(testChild_2.id)
             assertEquals(0, placements.size)
+
+            assertEquals(1, tx.getParentships(testAdult_1.id, testChild_2.id).size)
+            assertEquals(0, tx.getParentships(testAdult_2.id, testChild_2.id).size)
+        }
+    }
+
+    @Test
+    fun `acceptPlacementProposal - if partner already has a fridge family, child is added to that`() {
+        val partnershipId = PartnershipId(UUID.randomUUID())
+        val parentshipId = ParentshipId(UUID.randomUUID())
+        val startDate = clock.today()
+
+        db.transaction { tx ->
+            tx.insertFridgePartner(
+                DevFridgePartner(
+                    partnershipId = partnershipId,
+                    indx = 1,
+                    otherIndx = 2,
+                    personId = testAdult_1.id,
+                    startDate = startDate
+                )
+            )
+            tx.insertFridgePartner(
+                DevFridgePartner(
+                    partnershipId = partnershipId,
+                    indx = 2,
+                    otherIndx = 1,
+                    personId = testAdult_2.id,
+                    startDate = startDate
+                )
+            )
+
+            tx.insertGuardian(testAdult_2.id, testChild_1.id)
+
+            tx.insertTestParentship(
+                DevParentship(
+                    parentshipId,
+                    testChild_1.id,
+                    testAdult_2.id,
+                    startDate,
+                    startDate.plusMonths(12)
+                )
+            )
+
+            tx.insertApplication(
+                appliedType = PlacementType.PRESCHOOL_DAYCARE,
+                child = testChild_2,
+                guardian = testAdult_1, applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1)
+            )
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
+        }
+
+        asyncJobRunner.runPendingJobsSync(clock)
+
+        db.read { tx ->
+            assertEquals(1, tx.getParentships(testAdult_2.id, testChild_2.id).size)
+            assertEquals(0, tx.getParentships(testAdult_1.id, testChild_2.id).size)
         }
     }
 

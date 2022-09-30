@@ -133,6 +133,20 @@ fun Database.Transaction.deleteParentship(id: ParentshipId): Boolean {
         .firstOrNull() != null
 }
 
+fun Database.Read.personIsHeadOfFamily(personId: PersonId, date: LocalDate): Boolean {
+    return createQuery(
+        """
+SELECT EXISTS(
+    SELECT * FROM fridge_child WHERE head_of_child = :personId AND daterange(start_date, end_date, '[]') @> :date AND NOT conflict
+)
+        """.trimIndent()
+    )
+        .bind("personId", personId)
+        .bind("date", date)
+        .mapTo<Boolean>()
+        .first()
+}
+
 internal val aliasedPersonColumns: (String) -> String = { table ->
     personColumns.joinToString(", ") { column -> "$table.$column AS ${table}_$column" }
 }
