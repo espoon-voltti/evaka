@@ -125,6 +125,7 @@ WITH potential_missing_varda_service_needs AS (
     WHERE
         p.type = ANY(:vardaPlacementTypes::placement_type[])
         AND d.upload_children_to_varda = true
+        AND (sn.end_date IS NULL OR sn.end_date >= '2019-01-01')
         AND sno.daycare_hours_per_week >= 1
         AND (vsn.evaka_service_need_updated IS NULL OR sn.updated > vsn.evaka_service_need_updated)
         AND sn.start_date <= :today
@@ -164,7 +165,8 @@ WITH potential_missing_varda_service_needs AS (
             LEFT JOIN service_need_fee_decision fd ON fd.service_need_id = vsn.evaka_service_need_id
             LEFT JOIN service_need_voucher_decision vd ON vd.service_need_id = vsn.evaka_service_need_id
         WHERE
-            vsn.updated < fd.updated OR vsn.updated < vd.updated
+            (vsn.updated < fd.updated OR vsn.updated < vd.updated)
+            AND (sn.end_date IS NULL OR sn.end_date >= '2019-01-01')
      )  
 SELECT DISTINCT
     a.child_id AS evaka_child_id,
@@ -387,6 +389,7 @@ fun Database.Read.getServiceNeedsForVardaByChild(
         AND d.upload_children_to_varda = true
         AND sno.daycare_hours_per_week >= 1
         AND sn.start_date <= :today
+        AND (sn.end_date IS NULL OR sn.end_date >= '2019-01-01')
         """.trimIndent()
 
     return createQuery(sql)
@@ -486,6 +489,7 @@ WHERE
   AND d.upload_children_to_varda = true
   AND sno.daycare_hours_per_week >= 1
   AND sn.start_date <= :today
+  AND (sn.end_date IS NULL OR sn.end_date >= '2019-01-01')
 )
 GROUP BY evaka_child_id
         """.trimIndent()
