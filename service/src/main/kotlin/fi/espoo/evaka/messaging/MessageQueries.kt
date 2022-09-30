@@ -483,31 +483,33 @@ fun Database.Read.getCitizenReceivers(today: LocalDate, accountId: MessageAccoun
     )
     // language=SQL
     val sql = """
-WITH backup_care_placements AS (
+WITH user_account AS (
+    SELECT * FROM message_account WHERE id = :accountId
+), children AS (
+    SELECT g.child_id, g.guardian_id AS parent_id
+    FROM user_account acc
+    JOIN guardian g ON acc.person_id = g.guardian_id
+    WHERE NOT EXISTS (SELECT 1 FROM messaging_blocklist b WHERE b.child_id = g.child_id AND b.blocked_recipient = g.guardian_id)
+
+    UNION ALL
+
+    SELECT fp.child_id, fp.parent_id
+    FROM user_account acc
+    JOIN foster_parent fp ON acc.person_id = fp.parent_id AND valid_during @> :today
+    WHERE NOT EXISTS (SELECT 1 FROM messaging_blocklist b WHERE b.child_id = fp.child_id AND b.blocked_recipient = fp.parent_id)
+), backup_care_placements AS (
     SELECT p.id, p.unit_id, p.child_id, p.group_id
-    FROM guardian g
-    JOIN backup_care p ON p.child_id = g.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
-    WHERE guardian_id = (SELECT person_id AS id FROM message_account WHERE id = :accountId)
-    AND NOT EXISTS (
-        SELECT 1 FROM messaging_blocklist b
-        WHERE b.child_id = p.child_id
-        AND b.blocked_recipient = g.guardian_id
-    )
-    AND EXISTS (
+    FROM children c
+    JOIN backup_care p ON p.child_id = c.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
+    WHERE EXISTS (
         SELECT 1 FROM daycare u
         WHERE p.unit_id = u.id AND 'MESSAGING' = ANY(u.enabled_pilot_features)
     )
 ), placements AS (
     SELECT p.id, p.unit_id, p.child_id
-    FROM guardian g
-    JOIN placement p ON p.child_id = g.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
-    WHERE guardian_id = (SELECT person_id AS id FROM message_account WHERE id = :accountId)
-    AND NOT EXISTS (
-        SELECT 1 FROM messaging_blocklist b
-        WHERE b.child_id = p.child_id
-        AND b.blocked_recipient = g.guardian_id
-    )
-    AND NOT EXISTS (
+    FROM children c
+    JOIN placement p ON p.child_id = c.child_id AND daterange(p.start_date, p.end_date, '[]') @> :today
+    WHERE NOT EXISTS (
         SELECT 1 FROM backup_care_placements bc
         WHERE bc.child_id = p.child_id
     )
@@ -731,6 +733,13 @@ fun Database.Read.getReceiversForNewMessage(
             FROM guardian g
             LEFT JOIN messaging_blocklist bl ON g.guardian_id = bl.blocked_recipient AND c.child_id = bl.child_id
             WHERE g.child_id = c.child_id AND bl.id IS NULL
+
+            UNION ALL
+
+            SELECT 1
+            FROM foster_parent fp
+            LEFT JOIN messaging_blocklist bl ON fp.parent_id = bl.blocked_recipient AND fp.child_id = bl.child_id
+            WHERE fp.child_id = c.child_id AND fp.valid_during @> :date AND bl.id IS NULL
         )
     """.trimIndent()
 
@@ -807,6 +816,18 @@ WHERE NOT EXISTS (
     SELECT 1 FROM messaging_blocklist bl
     WHERE bl.child_id = c.child_id
     AND bl.blocked_recipient = g.guardian_id
+)
+
+UNION
+
+SELECT DISTINCT acc.id as account_id, c.child_id
+FROM children c
+JOIN foster_parent fp ON fp.child_id = c.child_id AND fp.valid_during @> :date
+JOIN message_account acc ON fp.parent_id = acc.person_id
+WHERE NOT EXISTS (
+    SELECT 1 FROM messaging_blocklist bl
+    WHERE bl.child_id = c.child_id
+    AND bl.blocked_recipient = fp.parent_id
 )
 """
     )
