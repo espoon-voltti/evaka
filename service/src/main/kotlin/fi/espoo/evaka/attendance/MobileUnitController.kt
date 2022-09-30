@@ -169,12 +169,16 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
             WHERE g.daycare_id = :unitId AND daterange(g.start_date, g.end_date, '[]') @> :date
             GROUP BY sa.group_id
         )
-        SELECT g.id, g.name, s.capacity AS staff_capacity, c.capacity AS child_capacity,
-               CASE
-                   WHEN c.capacity IS NULL OR c.capacity = 0 THEN 0.0
-                   WHEN s.capacity IS NULL OR s.capacity = 0 THEN 'Infinity'::REAL
-                   ELSE round(c.capacity / s.capacity * 100, 1)
-               END AS utilization
+        SELECT
+            g.id,
+            g.name,
+            coalesce(s.capacity, 0) AS staff_capacity,
+            coalesce(c.capacity, 0) AS child_capacity,
+            CASE
+                WHEN c.capacity IS NULL OR c.capacity = 0 THEN 0.0
+                WHEN s.capacity IS NULL OR s.capacity = 0 THEN 'Infinity'::REAL
+                ELSE round(c.capacity / s.capacity * 100, 1)
+            END AS utilization
         FROM daycare u
             JOIN daycare_group g ON u.id = g.daycare_id AND daterange(g.start_date, g.end_date, '[]') @> :date
             LEFT JOIN child c ON c.group_id = g.id

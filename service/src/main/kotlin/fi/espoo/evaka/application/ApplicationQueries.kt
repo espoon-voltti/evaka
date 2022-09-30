@@ -447,8 +447,8 @@ fun Database.Read.fetchApplicationSummariesForGuardian(guardianId: PersonId): Li
             a.preferredStartDate, a.sentDate, a.type,
             a.childId, a.childName, a.childSsn,
             a.guardianId, concat(p.last_name, ' ', p.first_name) as guardianName,
-            a.connecteddaycare,
-            a.preparatoryeducation,
+            coalesce(a.connecteddaycare, false) AS connectedDaycare,
+            coalesce(a.preparatoryeducation, false) AS preparatoryEducation,
             d.name AS preferredUnitName,
             a.status
         FROM application_view a
