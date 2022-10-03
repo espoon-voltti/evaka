@@ -70,13 +70,24 @@ class AccessControl(
         return decision ?: AccessControlDecision.None
     }
 
-    fun getPermittedGlobalActions(tx: Database.Read, user: AuthenticatedUser, clock: EvakaClock): Set<Action.Global> {
-        val allActions = EnumSet.allOf(Action.Global::class.java)
+    inline fun <reified A> getPermittedActions(
+        tx: Database.Read,
+        user: AuthenticatedUser,
+        clock: EvakaClock
+    ) where A : Action.UnscopedAction, A : Enum<A> = getPermittedActions(tx, user, clock, A::class.java)
+
+    fun <A> getPermittedActions(
+        tx: Database.Read,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        actionClass: Class<A>
+    ): Set<A> where A : Action.UnscopedAction, A : Enum<A> {
+        val allActions = EnumSet.allOf(actionClass)
         if (user.isAdmin) {
-            return EnumSet.allOf(Action.Global::class.java)
+            return allActions
         }
 
-        val permittedActions = EnumSet.noneOf(Action.Global::class.java)
+        val permittedActions = EnumSet.noneOf(actionClass)
         val queryCache = UnscopedEvaluator(DatabaseActionRule.QueryContext(tx, user, clock.now()))
         fun isPermitted(rule: UnscopedActionRule): Boolean = when (rule) {
             is StaticActionRule -> rule.evaluate(user).isPermitted()

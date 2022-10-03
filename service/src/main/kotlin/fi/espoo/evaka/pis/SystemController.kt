@@ -107,7 +107,7 @@ class SystemController(private val personService: PersonService, private val acc
                         globalRoles = employeeUser.globalRoles,
                         allScopedRoles = employeeUser.allScopedRoles,
                         accessibleFeatures = accessControl.getPermittedFeatures(tx, AuthenticatedUser.Employee(employeeUser), clock),
-                        permittedGlobalActions = accessControl.getPermittedGlobalActions(tx, AuthenticatedUser.Employee(employeeUser), clock)
+                        permittedGlobalActions = accessControl.getPermittedActions(tx, AuthenticatedUser.Employee(employeeUser), clock)
                     )
                 }
             }
