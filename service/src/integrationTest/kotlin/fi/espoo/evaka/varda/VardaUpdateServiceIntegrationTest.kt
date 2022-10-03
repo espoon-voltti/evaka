@@ -271,6 +271,18 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
     }
 
     @Test
+    fun `getServiceNeedFeeData does not pick fee decision before cutoff date 2019-09-01`() {
+        val since = HelsinkiDateTime.now()
+
+        val lastFeedecisionCutoffDate = LocalDate.of(2019, 8, 31)
+        val snId = createServiceNeed(db, since, snDefaultDaycare, testChild_1, lastFeedecisionCutoffDate)
+        createFeeDecision(db, testChild_1, testAdult_1.id, DateRange(lastFeedecisionCutoffDate, lastFeedecisionCutoffDate), since.toInstant())
+
+        val snFeeDiff = db.read { it.getServiceNeedFeeData(snId) }
+        assertEquals(0, snFeeDiff.size)
+    }
+
+    @Test
     fun `getServiceNeedFeeData matches voucher value decisions correctly to service needs`() {
         val since = HelsinkiDateTime.now()
         val startDate = since.minusDays(100).toLocalDate()
@@ -290,6 +302,18 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
         val sn2FeeDiff = db.read { it.getServiceNeedFeeData(snId2) }
         assertEquals(1, sn2FeeDiff.size)
         assertEquals(vd2.id, sn2FeeDiff.find { it.serviceNeedId == snId2 }?.voucherValueDecisionIds?.get(0))
+    }
+
+    @Test
+    fun `getServiceNeedFeeData does not pick service need voucher before cutoff date 2019-09-01`() {
+        val since = HelsinkiDateTime.now()
+        val lastVoucherCutoffDate = LocalDate.of(2019, 8, 31)
+
+        val snId1 = createServiceNeed(db, since, snDefaultDaycare, testChild_1, lastVoucherCutoffDate, lastVoucherCutoffDate)
+        createVoucherDecision(db, lastVoucherCutoffDate, lastVoucherCutoffDate, testDaycare.id, 100, 100, testAdult_1.id, testChild_1, since.toInstant(), VoucherValueDecisionStatus.SENT)
+
+        val sn1FeeDiff = db.read { it.getServiceNeedFeeData(snId1) }
+        assertEquals(0, sn1FeeDiff.size)
     }
 
     internal fun Database.Transaction.insertVardaChild(id: ChildId, organizerOid: String = defaultMunicipalOrganizerOid) =

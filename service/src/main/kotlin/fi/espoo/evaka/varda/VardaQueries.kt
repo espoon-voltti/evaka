@@ -141,6 +141,7 @@ WITH potential_missing_varda_service_needs AS (
         JOIN fee_decision fd ON fdc.fee_decision_id = fd.id
     WHERE daterange(sn.start_date, sn.end_date, '[]') && fd.valid_during
         AND fd.status = 'SENT'
+        AND daterange('2019-09-01', null) && fd.valid_during
     ),
     service_need_voucher_decision AS (
         SELECT
@@ -152,6 +153,7 @@ WITH potential_missing_varda_service_needs AS (
             JOIN voucher_value_decision vvd ON vvd.child_id = pl.child_id
         WHERE daterange(sn.start_date, sn.end_date, '[]') && daterange(vvd.valid_from, vvd.valid_to, '[]')
             AND vvd.status = 'SENT'
+            AND daterange(vvd.valid_from, vvd.valid_to, '[]') && daterange('2019-09-01', NULL)
      ),
     existing_varda_service_needs_with_changed_fee_data AS (
         SELECT
@@ -254,6 +256,7 @@ WITH child_fees AS (
     FROM fee_decision fd
         JOIN fee_decision_child fdc ON fd.id = fdc.fee_decision_id
     WHERE fd.status = :feeDecisionStatus
+        AND daterange('2019-09-01', null) && fd.valid_during
 ), service_need_fees AS (
     SELECT
         sn.id AS service_need_id,
@@ -276,6 +279,7 @@ WITH child_fees AS (
         JOIN daycare d ON d.id = p.unit_id  
         JOIN voucher_value_decision vvd ON p.child_id = vvd.child_id
             AND daterange(vvd.valid_from, vvd.valid_to, '[]') && daterange(sn.start_date, sn.end_date, '[]')
+            AND daterange('2019-09-01', null) && daterange(vvd.valid_from, vvd.valid_to, '[]')
     WHERE d.upload_children_to_varda = true
         AND vvd.status = :voucherValueDecisionStatus
     GROUP BY service_need_id, p.child_id
