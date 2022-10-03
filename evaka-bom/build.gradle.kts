@@ -36,7 +36,6 @@ dependencies {
         api("javax.annotation:javax.annotation-api:1.3.2")
         api("javax.jws:javax.jws-api:1.1")
         api("javax.xml.ws:jaxws-api:2.3.1")
-        api("net.bytebuddy:byte-buddy:1.12.12")
         api("net.logstash.logback:logstash-logback-encoder:7.2")
         api("org.apache.cxf:cxf-tools-wsdlto-databinding-jaxb:${Version.cxf}") // not included in cxf-bom
         api("org.apache.commons:commons-pool2:2.11.1")
