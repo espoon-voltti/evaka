@@ -22,6 +22,7 @@ interface Props {
   onSelect: (val: GroupSelectId) => void
   'data-qa'?: string
   realtimeStaffAttendanceEnabled: boolean
+  onlyRealGroups?: boolean
 }
 
 export default React.memo(function GroupSelector({
@@ -29,7 +30,8 @@ export default React.memo(function GroupSelector({
   selected,
   onSelect,
   'data-qa': dataQa,
-  realtimeStaffAttendanceEnabled
+  realtimeStaffAttendanceEnabled,
+  onlyRealGroups
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -48,11 +50,11 @@ export default React.memo(function GroupSelector({
             .map(({ id }) => id)
         )
         .getOrElse([]),
-      'no-group',
-      'all',
-      ...(realtimeStaffAttendanceEnabled ? ['staff'] : [])
+      ...(onlyRealGroups ? [] : ['no-group']),
+      ...(onlyRealGroups ? [] : ['all']),
+      ...(!onlyRealGroups && realtimeStaffAttendanceEnabled ? ['staff'] : [])
     ],
-    [groups, selected, realtimeStaffAttendanceEnabled]
+    [groups, selected, onlyRealGroups, realtimeStaffAttendanceEnabled]
   )
 
   const getItemLabel = useCallback(

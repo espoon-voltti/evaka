@@ -24,7 +24,7 @@ import {
   UnitAttendancesSection,
   UnitCalendarPage
 } from '../../pages/employee/units/unit-attendances-page'
-import { waitUntilEqual } from '../../utils'
+import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -692,6 +692,39 @@ describe('Realtime staff attendances', () => {
       await waitUntilEqual(() => attendancesSection.personCountSum(1), '– hlö')
       await waitUntilEqual(() => attendancesSection.personCountSum(2), '– hlö')
       await waitUntilEqual(() => attendancesSection.personCountSum(3), '– hlö')
+    })
+  })
+
+  describe('External (temporary) staff members', () => {
+    beforeEach(async () => {
+      attendancesSection = await openAttendancesSection()
+    })
+
+    test('It is possible to add a new external staff member', async () => {
+      const addPersonModal = await attendancesSection.clickAddPersonButton()
+      await addPersonModal.setArrivalDate(mockedToday.format())
+      await addPersonModal.setArrivalTime('11:00')
+      await addPersonModal.typeName('Sijainen Saija')
+      await addPersonModal.selectGroup(groupId)
+      await addPersonModal.save()
+
+      await waitUntilTrue(() =>
+        attendancesSection
+          .staffInAttendanceTable()
+          .then((res) => res.includes('Sijainen Saija'))
+      )
+    })
+
+    test('Saving invalid information is not possible', async () => {
+      const addPersonModal = await attendancesSection.clickAddPersonButton()
+      await addPersonModal.setArrivalDate(mockedToday.format())
+      await addPersonModal.setArrivalTime('9:99')
+      await addPersonModal.typeName('S')
+      await addPersonModal.selectGroup(groupId)
+      await addPersonModal.save()
+
+      await addPersonModal.timeErrorVisible()
+      await addPersonModal.nameErrorVisible()
     })
   })
 })
