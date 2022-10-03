@@ -39,7 +39,7 @@ dependencies {
         api("net.logstash.logback:logstash-logback-encoder:7.2")
         api("org.apache.cxf:cxf-tools-wsdlto-databinding-jaxb:${Version.cxf}") // not included in cxf-bom
         api("org.apache.commons:commons-pool2:2.11.1")
-        api("org.apache.commons:commons-text:1.9")
+        api("org.apache.commons:commons-text:1.10.0")
         api("org.apache.commons:commons-imaging:1.0-alpha3")
         api("org.apache.santuario:xmlsec:2.2.3")
         api("org.apache.tika:tika-core:2.4.1")
