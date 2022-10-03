@@ -150,6 +150,10 @@ const BottomBar = styled.nav`
   @media (min-width: ${desktopMin}) {
     display: none;
   }
+
+  @media print {
+    display: none;
+  }
 `
 
 const BottomBarLink = React.memo(function BottomBarLink({
