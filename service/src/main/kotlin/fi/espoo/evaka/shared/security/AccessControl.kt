@@ -26,26 +26,6 @@ class AccessControl(
     private val actionRuleMapping: ActionRuleMapping,
     private val jdbi: Jdbi
 ) {
-    fun getPermittedFeatures(tx: Database.Read, user: AuthenticatedUser.Employee, clock: EvakaClock): EmployeeFeatures {
-        return EmployeeFeatures(
-            applications = checkPermissionFor(tx, user, clock, Action.Global.APPLICATIONS_PAGE).isPermitted(),
-            employees = checkPermissionFor(tx, user, clock, Action.Global.EMPLOYEES_PAGE).isPermitted(),
-            financeBasics = checkPermissionFor(tx, user, clock, Action.Global.FINANCE_BASICS_PAGE).isPermitted(),
-            finance = checkPermissionFor(tx, user, clock, Action.Global.FINANCE_PAGE).isPermitted(),
-            holidayPeriods = checkPermissionFor(tx, user, clock, Action.Global.HOLIDAY_PERIODS_PAGE).isPermitted(),
-            messages = checkPermissionFor(tx, user, clock, Action.Global.MESSAGES_PAGE, allowedToAdmin = false).isPermitted(),
-            personSearch = checkPermissionFor(tx, user, clock, Action.Global.PERSON_SEARCH_PAGE).isPermitted(),
-            reports = checkPermissionFor(tx, user, clock, Action.Global.REPORTS_PAGE).isPermitted(),
-            settings = checkPermissionFor(tx, user, clock, Action.Global.SETTINGS_PAGE).isPermitted(),
-            unitFeatures = checkPermissionFor(tx, user, clock, Action.Global.UNIT_FEATURES_PAGE).isPermitted(),
-            units = checkPermissionFor(tx, user, clock, Action.Global.UNITS_PAGE).isPermitted(),
-            createUnits = checkPermissionFor(tx, user, clock, Action.Global.CREATE_UNIT).isPermitted(),
-            vasuTemplates = checkPermissionFor(tx, user, clock, Action.Global.VASU_TEMPLATES_PAGE).isPermitted(),
-            personalMobileDevice = checkPermissionFor(tx, user, clock, Action.Global.PERSONAL_MOBILE_DEVICE_PAGE).isPermitted(),
-            pinCode = checkPermissionFor(tx, user, clock, Action.Global.PIN_CODE_PAGE).isPermitted()
-        )
-    }
-
     fun requirePermissionFor(user: AuthenticatedUser, clock: EvakaClock, action: Action.UnscopedAction) = Database(jdbi).connect { dbc ->
         dbc.read { tx -> checkPermissionFor(tx, user, clock, action) }.assert()
     }
