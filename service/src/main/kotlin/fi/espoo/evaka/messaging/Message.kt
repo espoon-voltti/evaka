@@ -21,6 +21,7 @@ import java.time.LocalDate
 
 data class Message(
     val id: MessageId,
+    val threadId: MessageThreadId,
     @Json
     val sender: MessageAccount,
     @Json

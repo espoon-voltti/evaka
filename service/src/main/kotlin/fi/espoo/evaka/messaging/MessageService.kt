@@ -99,7 +99,7 @@ class MessageService(
             val messageId = tx.insertMessage(now, contentId, threadId, senderAccount, repliesToMessageId = replyToMessageId, recipientNames = recipientNames)
             tx.insertRecipients(recipientAccountIds, messageId)
             notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)
-            tx.getMessage(messageId)
+            tx.getSentMessage(senderAccount, messageId)
         }
         return ThreadReply(threadId, message)
     }
