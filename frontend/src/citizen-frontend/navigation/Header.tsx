@@ -109,6 +109,9 @@ const HeaderContainer = styled.header`
     max-width: 1344px;
     width: 1344px;
   }
+  @media print {
+    display: none;
+  }
 `
 
 const MobileOnly = styled.div`
