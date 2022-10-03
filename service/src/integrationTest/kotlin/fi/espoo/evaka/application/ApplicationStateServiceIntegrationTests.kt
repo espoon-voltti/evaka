@@ -121,7 +121,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     private val clock = MockEvakaClock(now)
 
     @BeforeEach
-    private fun beforeEach() {
+    fun beforeEach() {
         MockSfiMessagesClient.clearMessages()
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()

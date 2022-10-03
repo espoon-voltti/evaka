@@ -103,7 +103,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @BeforeEach
-    internal fun setUp() {
+    fun setUp() {
         db.transaction { tx ->
             tx.insertTestCareArea(testArea)
             tx.insertTestDaycare(

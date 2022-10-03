@@ -39,7 +39,7 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
     private lateinit var unitId: DaycareId
 
     @BeforeEach
-    protected fun beforeEach() {
+    fun beforeEach() {
         areaId = db.transaction { it.insertTestCareArea(DevCareArea()) }
         unitId = db.transaction { it.insertTestDaycare(DevDaycare(areaId = areaId)) }
     }

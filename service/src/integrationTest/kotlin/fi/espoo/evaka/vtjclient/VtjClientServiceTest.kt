@@ -67,7 +67,7 @@ class VtjClientServiceTest : FullApplicationTest(resetDbBeforeEach = false) {
     var mockServer: MockWebServiceServer? = null
 
     @BeforeEach
-    private fun beforeEach() {
+    fun beforeEach() {
         if (!env.lookup<Boolean>("evaka.integration.vtj.test.use_actual_vtj", "fi.espoo.voltti.vtj.test.use_actual_vtj")) {
             mockServer = MockWebServiceServer.createServer(wsTemplate)
         }

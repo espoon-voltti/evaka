@@ -62,7 +62,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     private val applicationId = ApplicationId(UUID.randomUUID())
 
     @BeforeEach
-    private fun beforeEach() {
+    fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
         }

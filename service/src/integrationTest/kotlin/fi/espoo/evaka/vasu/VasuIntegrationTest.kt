@@ -41,7 +41,7 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     lateinit var preschoolTemplate: VasuTemplate
 
     @BeforeEach
-    private fun beforeEach() {
+    fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
         }

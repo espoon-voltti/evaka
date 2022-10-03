@@ -86,7 +86,7 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     )
 
     @BeforeEach
-    private fun beforeEach() {
+    fun beforeEach() {
         db.transaction { tx ->
             tx.insertTestCareArea(testArea)
             tx.insertTestDaycare(DevDaycare(id = testDaycare.id, areaId = testArea.id, name = testDaycare.name))

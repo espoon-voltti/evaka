@@ -45,7 +45,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
-    private fun beforeEach() {
+    fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
         }

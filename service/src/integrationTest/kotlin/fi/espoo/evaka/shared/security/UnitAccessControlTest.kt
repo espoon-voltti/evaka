@@ -40,7 +40,7 @@ class UnitAccessControlTest : AccessControlTest() {
     private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 1, 1), LocalTime.of(12, 0)))
 
     @BeforeEach
-    private fun beforeEach() {
+    fun beforeEach() {
         db.transaction { tx ->
             areaId = tx.insertTestCareArea(DevCareArea())
             daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))

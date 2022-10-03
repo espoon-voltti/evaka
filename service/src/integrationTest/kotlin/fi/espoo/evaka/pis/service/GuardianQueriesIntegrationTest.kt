@@ -18,7 +18,7 @@ import kotlin.test.assertTrue
 
 class GuardianQueriesIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
-    private fun beforeEach() {
+    fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
         }

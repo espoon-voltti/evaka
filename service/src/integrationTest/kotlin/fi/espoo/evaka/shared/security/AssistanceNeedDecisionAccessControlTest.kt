@@ -42,7 +42,7 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
     private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
 
     @BeforeEach
-    private fun beforeEach() {
+    fun beforeEach() {
         assistanceNeedDecisionId = db.transaction { tx ->
             childId = tx.insertTestPerson(DevPerson()).also { tx.insertTestChild(DevChild(id = it)) }
             tx.insertTestAssistanceNeedDecision(

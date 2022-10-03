@@ -38,7 +38,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     lateinit var placementId: PlacementId
 
     @BeforeEach
-    private fun beforeEach() {
+    fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             placementId = tx.insertTestPlacement(

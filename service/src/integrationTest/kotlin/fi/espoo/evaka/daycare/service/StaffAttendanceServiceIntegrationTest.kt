@@ -36,7 +36,7 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
     val groupName2 = "Koekaniinit"
 
     @BeforeEach
-    protected fun insertDaycareGroup() {
+    fun insertDaycareGroup() {
         db.transaction { tx ->
             tx.insertTestCareArea(DevCareArea(id = areaId))
             tx.insertTestDaycare(DevDaycare(areaId = areaId, id = daycareId))

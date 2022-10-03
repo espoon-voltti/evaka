@@ -44,7 +44,7 @@ class ApplicationAccessControlTest : AccessControlTest() {
     private val clock = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
 
     @BeforeEach
-    private fun beforeEach() {
+    fun beforeEach() {
         creatorCitizen = createTestCitizen(CitizenAuthLevel.STRONG)
         db.transaction { tx ->
             childId = tx.insertTestPerson(DevPerson())

@@ -59,7 +59,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val messageService: MessageService = MessageService(messageNotificationEmailService)
 
     @BeforeEach
-    internal fun setUp() {
+    fun setUp() {
         asyncJobRunnerMock = mock { }
         mergeService = MergeService(asyncJobRunnerMock)
         db.transaction { tx ->

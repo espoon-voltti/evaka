@@ -33,7 +33,7 @@ class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
     private lateinit var form: DaycareFormV0
 
     @BeforeAll
-    private fun beforeAll() {
+    fun beforeAll() {
         db.transaction { tx ->
             val areaId = tx.insertTestCareArea(DevCareArea())
             val childId = tx.insertTestPerson(DevPerson())

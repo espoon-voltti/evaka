@@ -55,7 +55,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     private val tenToNoonRange = TimeRange(LocalTime.of(10, 0), LocalTime.of(12, 0))
 
     @BeforeEach
-    private fun beforeEach() {
+    fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insertGuardian(testAdult_1.id, testChild_1.id)

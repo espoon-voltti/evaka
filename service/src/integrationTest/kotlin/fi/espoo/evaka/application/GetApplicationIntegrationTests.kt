@@ -60,7 +60,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
     private val validDaycareForm = DaycareFormV0.fromApplication2(validDaycareApplication)
 
     @BeforeEach
-    private fun beforeEach() {
+    fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
         }

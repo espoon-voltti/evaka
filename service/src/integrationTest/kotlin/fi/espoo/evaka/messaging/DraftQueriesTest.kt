@@ -19,7 +19,7 @@ class DraftQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val accountId: MessageAccountId = MessageAccountId(UUID.randomUUID())
 
     @BeforeEach
-    internal fun setUp() {
+    fun setUp() {
         db.transaction { tx ->
             val employeeId = tx.insertTestEmployee(DevEmployee(firstName = "Firstname", lastName = "Employee"))
             tx.createUpdate("INSERT INTO message_account (id, employee_id) VALUES (:id, :employeeId)")

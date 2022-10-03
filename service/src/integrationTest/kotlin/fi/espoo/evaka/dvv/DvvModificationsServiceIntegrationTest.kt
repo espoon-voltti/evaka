@@ -31,7 +31,7 @@ import kotlin.test.assertTrue
 
 class DvvModificationsServiceIntegrationTest : DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach = true) {
     @BeforeEach
-    private fun beforeEach() {
+    fun beforeEach() {
         db.transaction { tx ->
             tx.storeDvvModificationToken("100", "101", 0, 0)
         }

@@ -17,7 +17,7 @@ import kotlin.test.assertNull
 class ClubTermQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @BeforeEach
-    internal fun setUp() {
+    fun setUp() {
         db.transaction {
             it.execute(
                 """INSERT INTO club_term (term, application_period) VALUES
