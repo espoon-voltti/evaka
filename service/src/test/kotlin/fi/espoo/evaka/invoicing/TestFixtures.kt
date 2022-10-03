@@ -272,7 +272,8 @@ fun createVoucherValueDecisionFixture(
     siblingDiscount = siblingDiscount,
     coPayment = coPayment,
     feeAlterations = feeAlterations,
-    finalCoPayment = coPayment + feeAlterations.sumOf { it.effect }
+    finalCoPayment = coPayment + feeAlterations.sumOf { it.effect },
+    difference = emptySet(),
 )
 
 fun createInvoiceRowFixture(childId: ChildId, unitId: DaycareId, amount: Int = 1, unitPrice: Int = 28900) = InvoiceRow(

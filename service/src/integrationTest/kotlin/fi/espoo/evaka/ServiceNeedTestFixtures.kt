@@ -32,8 +32,8 @@ val snDefaultDaycare = ServiceNeedOption(
     partWeek = false,
     feeDescriptionFi = "",
     feeDescriptionSv = "",
-    voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = "",
+    voucherValueDescriptionFi = "Kokopäiväinen",
+    voucherValueDescriptionSv = "Kokopäiväinen",
     active = true
 )
 
@@ -263,8 +263,8 @@ val snDaycareFullDay35 = ServiceNeedOption(
     partWeek = false,
     feeDescriptionFi = "",
     feeDescriptionSv = "",
-    voucherValueDescriptionFi = "",
-    voucherValueDescriptionSv = "",
+    voucherValueDescriptionFi = "Kokopäiväinen, vähintään 35h",
+    voucherValueDescriptionSv = "Kokopäiväinen, vähintään 35h",
     active = true
 )
 

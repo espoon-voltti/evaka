@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.europeHelsinki
@@ -52,6 +53,7 @@ data class VoucherValueDecision(
     val baseValue: Int,
     val assistanceNeedCoefficient: BigDecimal,
     val voucherValue: Int,
+    val difference: Set<VoucherValueDecisionDifference>,
     val documentKey: String? = null,
     val approvedById: EmployeeId? = null,
     val approvedAt: HelsinkiDateTime? = null,
@@ -61,27 +63,8 @@ data class VoucherValueDecision(
 ) : FinanceDecision<VoucherValueDecision> {
     override fun withRandomId() = this.copy(id = VoucherValueDecisionId(UUID.randomUUID()))
     override fun withValidity(period: DateRange) = this.copy(validFrom = period.start, validTo = period.end)
-    override fun contentEquals(decision: VoucherValueDecision): Boolean {
-        if (this.isEmpty() && decision.isEmpty()) {
-            return setOf(this.headOfFamilyId, this.partnerId) == setOf(decision.headOfFamilyId, decision.partnerId)
-        }
-
-        return setOf(this.headOfFamilyId to this.headOfFamilyIncome, this.partnerId to this.partnerIncome) == setOf(
-            decision.headOfFamilyId to decision.headOfFamilyIncome,
-            decision.partnerId to decision.partnerIncome
-        ) && this.familySize == decision.familySize &&
-            this.child == decision.child &&
-            this.placement == decision.placement &&
-            this.serviceNeed == decision.serviceNeed &&
-            this.baseCoPayment == decision.baseCoPayment &&
-            this.siblingDiscount == decision.siblingDiscount &&
-            this.coPayment == decision.coPayment &&
-            this.feeAlterations == decision.feeAlterations &&
-            this.finalCoPayment == decision.finalCoPayment &&
-            this.baseValue == decision.baseValue &&
-            this.voucherValue == decision.voucherValue &&
-            this.childIncome == decision.childIncome
-    }
+    override fun contentEquals(decision: VoucherValueDecision): Boolean =
+        VoucherValueDecisionDifference.getDifference(this, decision).isEmpty()
 
     override fun overlapsWith(other: VoucherValueDecision): Boolean {
         return this.child.id == other.child.id && DateRange(
@@ -138,6 +121,7 @@ data class VoucherValueDecision(
                 baseValue = baseValue,
                 assistanceNeedCoefficient = BigDecimal.ZERO,
                 voucherValue = 0,
+                difference = emptySet(),
             )
             check(decision.isEmpty())
             return decision
@@ -164,6 +148,31 @@ enum class VoucherValueDecisionStatus {
          *  list of statuses that have an overlap exclusion constraint at the database level and that signal that a decision is in effect
          */
         val effective = arrayOf(SENT, WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING)
+    }
+}
+
+enum class VoucherValueDecisionDifference(val contentEquals: (d1: VoucherValueDecision, d2: VoucherValueDecision) -> Boolean) : DatabaseEnum {
+    GUARDIANS({ d1, d2 -> d1.headOfFamilyId == d2.headOfFamilyId && d1.partnerId == d2.partnerId }),
+    INCOME({ d1, d2 -> d1.headOfFamilyIncome == d2.headOfFamilyIncome && d1.partnerIncome == d2.partnerIncome && d1.childIncome == d2.childIncome }),
+    FAMILY_SIZE({ d1, d2 -> d1.familySize == d2.familySize }),
+    PLACEMENT({ d1, d2 -> d1.placement == d2.placement }),
+    SERVICE_NEED({ d1, d2 -> d1.serviceNeed == d2.serviceNeed }),
+    SIBLING_DISCOUNT({ d1, d2 -> d1.siblingDiscount == d2.siblingDiscount }),
+    CO_PAYMENT({ d1, d2 -> d1.coPayment == d2.coPayment }),
+    FEE_ALTERATIONS({ d1, d2 -> d1.feeAlterations == d2.feeAlterations }),
+    FINAL_CO_PAYMENT({ d1, d2 -> d1.finalCoPayment == d2.finalCoPayment }),
+    BASE_VALUE({ d1, d2 -> d1.baseValue == d2.baseValue }),
+    VOUCHER_VALUE({ d1, d2 -> d1.voucherValue == d2.voucherValue });
+
+    override val sqlType: String = "voucher_value_decision_difference"
+
+    companion object {
+        fun getDifference(d1: VoucherValueDecision, d2: VoucherValueDecision): Set<VoucherValueDecisionDifference> {
+            if (d1.isEmpty() && d2.isEmpty()) {
+                return if (GUARDIANS.contentEquals(d1, d2)) emptySet() else setOf(GUARDIANS)
+            }
+            return values().filterNot { it.contentEquals(d1, d2) }.toSet()
+        }
     }
 }
 

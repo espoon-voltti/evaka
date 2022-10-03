@@ -15,8 +15,10 @@ import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceNeedOptionVoucherValueCoefficients
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -35,8 +37,11 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareFiveYearOldsFullDayPartWeek25
+import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDaycareFullDayPartWeek25
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.snDefaultFiveYearOldsDaycare
@@ -44,17 +49,22 @@ import fi.espoo.evaka.snDefaultFiveYearOldsPartDayDaycare
 import fi.espoo.evaka.snDefaultPreparatory
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
+import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testVoucherDaycare
+import fi.espoo.evaka.testVoucherDaycare2
 import fi.espoo.evaka.toValueDecisionServiceNeed
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -481,6 +491,435 @@ class VoucherValueDecisionGeneratorIntegrationTest : FullApplicationTest(resetDb
 
         db.transaction { generator.generateNewDecisionsForChild(it, RealEvakaClock(), testChild_2.id, period.start) }
         assertEquals(1, getAllVoucherValueDecisions().size)
+    }
+
+    @Test
+    fun `head of family difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), subPeriod1)
+        insertFamilyRelations(testAdult_2.id, listOf(testChild_1.id), subPeriod2)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
+
+        db.transaction { tx -> generator.generateNewDecisionsForChild(tx, clock, testChild_1.id, period.start) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference }, { it.headOfFamilyId })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>(), testAdult_1.id),
+                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.GUARDIANS), testAdult_2.id),
+            )
+    }
+
+    @Test
+    fun `partner difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod1)
+        insertPartnership(testAdult_1.id, testAdult_3.id, subPeriod2)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference }, { it.partnerId })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>(), testAdult_2.id),
+                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.GUARDIANS), testAdult_3.id),
+            )
+    }
+
+    @Test
+    fun `head of family income difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertIncome(testAdult_1.id, 10000, subPeriod2)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
+                Tuple(
+                    subPeriod2,
+                    setOf(
+                        VoucherValueDecisionDifference.INCOME,
+                        VoucherValueDecisionDifference.CO_PAYMENT,
+                        VoucherValueDecisionDifference.FINAL_CO_PAYMENT
+                    )
+                ),
+            )
+    }
+
+    @Test
+    fun `partner income difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+        insertIncome(testAdult_2.id, 10000, subPeriod2)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
+                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.INCOME)),
+            )
+    }
+
+    @Test
+    fun `child income difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertIncome(testChild_1.id, 10000, subPeriod2)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
+                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.INCOME)),
+            )
+    }
+
+    @Test
+    fun `family size difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), subPeriod2)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference }, { it.familySize })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>(), 2),
+                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.FAMILY_SIZE), 3),
+            )
+    }
+
+    @Test
+    fun `placement unit difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertPlacement(testChild_1.id, subPeriod2, PlacementType.DAYCARE, testVoucherDaycare2.id)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference }, { it.placement?.unitId })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>(), testVoucherDaycare.id),
+                Tuple(subPeriod2, setOf(VoucherValueDecisionDifference.PLACEMENT), testVoucherDaycare2.id),
+            )
+    }
+
+    @Test
+    fun `placement type difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertPlacement(testChild_1.id, subPeriod2, PlacementType.DAYCARE_PART_TIME, testVoucherDaycare.id)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference }, { it.placement?.type })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>(), PlacementType.DAYCARE),
+                Tuple(
+                    subPeriod2,
+                    setOf(
+                        VoucherValueDecisionDifference.PLACEMENT,
+                        VoucherValueDecisionDifference.SERVICE_NEED,
+                        VoucherValueDecisionDifference.VOUCHER_VALUE
+                    ),
+                    PlacementType.DAYCARE_PART_TIME
+                ),
+            )
+    }
+
+    @Test
+    fun `service need difference`() {
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period.asDateRange())
+        val placementId =
+            insertPlacement(testChild_1.id, period.asDateRange(), PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertServiceNeed(placementId, subPeriod1, snDefaultDaycare.id)
+        insertServiceNeed(placementId, subPeriod2, snDaycareFullDay35.id)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting(
+                { DateRange(it.validFrom, it.validTo) },
+                { it.difference },
+                { it.serviceNeed?.voucherValueCoefficient }
+            )
+            .containsExactlyInAnyOrder(
+                Tuple(
+                    subPeriod1.asDateRange(),
+                    emptySet<VoucherValueDecisionDifference>(),
+                    serviceNeedOptionVoucherValueCoefficients[snDefaultDaycare.id]
+                ),
+                Tuple(
+                    subPeriod2.asDateRange(),
+                    setOf(VoucherValueDecisionDifference.SERVICE_NEED),
+                    serviceNeedOptionVoucherValueCoefficients[snDaycareFullDay35.id]
+                ),
+            )
+    }
+
+    @Test
+    fun `sibling discount difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
+        insertPlacement(testChild_2.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, subPeriod2, PlacementType.DAYCARE, testVoucherDaycare.id)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting(
+                { it.child.dateOfBirth },
+                { DateRange(it.validFrom, it.validTo) },
+                { it.difference },
+                { it.siblingDiscount }
+            )
+            .containsExactlyInAnyOrder(
+                Tuple(testChild_2.dateOfBirth, subPeriod1, emptySet<VoucherValueDecisionDifference>(), 0),
+                Tuple(
+                    testChild_2.dateOfBirth, subPeriod2,
+                    setOf(
+                        VoucherValueDecisionDifference.SIBLING_DISCOUNT,
+                        VoucherValueDecisionDifference.CO_PAYMENT,
+                        VoucherValueDecisionDifference.FINAL_CO_PAYMENT,
+                    ),
+                    50
+                ),
+                Tuple(testChild_1.dateOfBirth, subPeriod2, emptySet<VoucherValueDecisionDifference>(), 0),
+            )
+    }
+
+    @Test
+    fun `fee alterations difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertFeeAlteration(testChild_1.id, 50.0, subPeriod2)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
+                Tuple(
+                    subPeriod2,
+                    setOf(
+                        VoucherValueDecisionDifference.FEE_ALTERATIONS,
+                        VoucherValueDecisionDifference.FINAL_CO_PAYMENT
+                    )
+                ),
+            )
+    }
+
+    @Test
+    fun `base value difference`() {
+        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2020, 5, 31))
+        val subPeriod2 = period.copy(start = LocalDate.of(2020, 6, 1)) // 3rd birthday
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
+                Tuple(
+                    subPeriod2,
+                    setOf(VoucherValueDecisionDifference.BASE_VALUE, VoucherValueDecisionDifference.VOUCHER_VALUE)
+                ),
+            )
+    }
+
+    @Test
+    fun `difference with overlapping drafts`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 6, 30))
+        val subPeriod2 = DateRange(LocalDate.of(2022, 7, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod3 = DateRange(LocalDate.of(2022, 4, 1), LocalDate.of(2022, 9, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertPlacement(testChild_1.id, subPeriod2, PlacementType.DAYCARE, testVoucherDaycare2.id)
+        insertIncome(testChild_1.id, 10000, subPeriod3)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting({ it.validFrom }, { it.validTo }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(
+                    LocalDate.of(2022, 1, 1),
+                    LocalDate.of(2022, 3, 31),
+                    emptySet<VoucherValueDecisionDifference>()
+                ),
+                Tuple(
+                    LocalDate.of(2022, 4, 1),
+                    LocalDate.of(2022, 6, 30),
+                    setOf(VoucherValueDecisionDifference.INCOME)
+                ),
+                Tuple(
+                    LocalDate.of(2022, 7, 1),
+                    LocalDate.of(2022, 9, 1),
+                    setOf(VoucherValueDecisionDifference.PLACEMENT)
+                ),
+                Tuple(
+                    LocalDate.of(2022, 9, 2),
+                    LocalDate.of(2022, 12, 31),
+                    setOf(VoucherValueDecisionDifference.INCOME)
+                ),
+            )
+    }
+
+    @Test
+    fun `difference between sent and draft`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare.id)
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start)
+            tx.createUpdate("UPDATE voucher_value_decision SET status = 'SENT'").execute()
+        }
+        insertPlacement(testChild_1.id, subPeriod2, PlacementType.DAYCARE, testVoucherDaycare2.id)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.status }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, VoucherValueDecisionStatus.SENT, emptySet<VoucherValueDecisionDifference>()),
+                Tuple(subPeriod2, VoucherValueDecisionStatus.DRAFT, setOf(VoucherValueDecisionDifference.PLACEMENT)),
+            )
+    }
+
+    @Test
+    fun `difference when drafts replaces sent`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, PlacementType.DAYCARE, testVoucherDaycare.id)
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start)
+            tx.createUpdate("UPDATE voucher_value_decision SET status = 'SENT'").execute()
+            tx.createUpdate("DELETE FROM placement").execute()
+        }
+        insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare2.id)
+        insertPlacement(testChild_1.id, subPeriod2, PlacementType.DAYCARE, testVoucherDaycare.id)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.status }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(period, VoucherValueDecisionStatus.SENT, emptySet<VoucherValueDecisionDifference>()),
+                Tuple(subPeriod1, VoucherValueDecisionStatus.DRAFT, setOf(VoucherValueDecisionDifference.PLACEMENT)),
+                Tuple(subPeriod2, VoucherValueDecisionStatus.DRAFT, setOf(VoucherValueDecisionDifference.PLACEMENT)),
+            )
+    }
+
+    @Test
+    fun `difference when gap between two drafts`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 2))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare.id)
+        insertPlacement(testChild_1.id, subPeriod2, PlacementType.DAYCARE, testVoucherDaycare2.id)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<VoucherValueDecisionDifference>()),
+                Tuple(subPeriod2, emptySet<VoucherValueDecisionDifference>()),
+            )
+    }
+
+    @Test
+    fun `difference when gap between sent and draft`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 2))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, subPeriod1, PlacementType.DAYCARE, testVoucherDaycare.id)
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start)
+            tx.createUpdate("UPDATE voucher_value_decision SET status = 'SENT'").execute()
+        }
+        insertPlacement(testChild_1.id, subPeriod2, PlacementType.DAYCARE, testVoucherDaycare2.id)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllVoucherValueDecisions())
+            .extracting({ DateRange(it.validFrom, it.validTo) }, { it.status }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, VoucherValueDecisionStatus.SENT, emptySet<VoucherValueDecisionDifference>()),
+                Tuple(subPeriod2, VoucherValueDecisionStatus.DRAFT, emptySet<VoucherValueDecisionDifference>()),
+            )
     }
 
     private fun insertPlacement(childId: ChildId, period: DateRange, type: PlacementType, daycareId: DaycareId): PlacementId {

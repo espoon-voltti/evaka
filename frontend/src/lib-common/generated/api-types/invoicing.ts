@@ -777,6 +777,7 @@ export interface VoucherValueDecision {
   decisionHandler: UUID | null
   decisionNumber: number | null
   decisionType: VoucherValueDecisionType
+  difference: VoucherValueDecisionDifference[]
   documentKey: string | null
   familySize: number
   feeAlterations: FeeAlterationWithEffect[]
@@ -839,6 +840,22 @@ export interface VoucherValueDecisionDetailed {
   validTo: LocalDate | null
   voucherValue: number
 }
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
+*/
+export type VoucherValueDecisionDifference =
+  | 'GUARDIANS'
+  | 'INCOME'
+  | 'FAMILY_SIZE'
+  | 'PLACEMENT'
+  | 'SERVICE_NEED'
+  | 'SIBLING_DISCOUNT'
+  | 'CO_PAYMENT'
+  | 'FEE_ALTERATIONS'
+  | 'FINAL_CO_PAYMENT'
+  | 'BASE_VALUE'
+  | 'VOUCHER_VALUE'
 
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionDistinctiveParams

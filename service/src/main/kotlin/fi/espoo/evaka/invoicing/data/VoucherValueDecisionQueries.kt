@@ -62,7 +62,8 @@ INSERT INTO voucher_value_decision (
     final_co_payment,
     base_value,
     assistance_need_coefficient,
-    voucher_value
+    voucher_value,
+    difference
 ) VALUES (
     :id,
     :status::voucher_value_decision_status,
@@ -94,7 +95,8 @@ INSERT INTO voucher_value_decision (
     :finalCoPayment,
     :baseValue,
     :assistanceNeedCoefficient,
-    :voucherValue
+    :voucherValue,
+    :difference
 ) ON CONFLICT (id) DO UPDATE SET
     status = :status::voucher_value_decision_status,
     decision_number = :decisionNumber,
@@ -124,7 +126,8 @@ INSERT INTO voucher_value_decision (
     final_co_payment = :finalCoPayment,
     base_value = :baseValue,
     assistance_need_coefficient = :assistanceNeedCoefficient,
-    voucher_value = :voucherValue
+    voucher_value = :voucherValue,
+    difference = :difference
 """
 
     decisions.forEach { decision ->
@@ -183,6 +186,7 @@ SELECT
     base_value,
     assistance_need_coefficient,
     voucher_value,
+    difference,
     document_key,
     approved_at,
     approved_by,
@@ -237,6 +241,7 @@ SELECT
     base_value,
     assistance_need_coefficient,
     voucher_value,
+    difference,
     document_key,
     approved_at,
     approved_by,
