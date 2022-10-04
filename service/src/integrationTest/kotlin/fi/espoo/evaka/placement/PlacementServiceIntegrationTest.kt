@@ -51,7 +51,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     lateinit var groupPlacementId: GroupPlacementId
 
     @BeforeEach
-    internal fun setUp() {
+    fun setUp() {
         db.transaction {
             it.insertGeneralTestFixtures()
         }

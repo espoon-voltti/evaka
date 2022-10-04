@@ -36,7 +36,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val employee2Id = EmployeeId(UUID.randomUUID())
 
     @BeforeEach
-    internal fun setUp() {
+    fun setUp() {
         db.transaction {
             it.insertTestPerson(DevPerson(id = personId, firstName = "Firstname", lastName = "Person"))
             it.createPersonMessageAccount(personId)

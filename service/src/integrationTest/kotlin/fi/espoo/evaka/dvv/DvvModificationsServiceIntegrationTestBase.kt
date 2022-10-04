@@ -28,7 +28,7 @@ class DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach: Boolean) : F
     protected lateinit var requestCustomizerMock: DvvModificationRequestCustomizer
 
     @BeforeEach
-    protected fun initDvvModificationService() {
+    fun initDvvModificationService() {
         assert(httpPort > 0)
         val mockDvvBaseUrl = "http://localhost:$httpPort/mock-integration/dvv/api/v1"
         requestCustomizerMock = mock()

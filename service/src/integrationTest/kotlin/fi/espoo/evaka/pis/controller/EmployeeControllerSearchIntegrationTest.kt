@@ -30,7 +30,7 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
     lateinit var controller: EmployeeController
 
     @BeforeEach
-    internal fun setUp() {
+    fun setUp() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
         }

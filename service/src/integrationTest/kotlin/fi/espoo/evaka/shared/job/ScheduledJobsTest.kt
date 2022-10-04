@@ -63,7 +63,7 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val serviceWorker = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
-    private fun beforeEach() {
+    fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
         }

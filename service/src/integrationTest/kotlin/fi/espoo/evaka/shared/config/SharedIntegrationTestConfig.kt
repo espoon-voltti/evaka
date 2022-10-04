@@ -36,6 +36,7 @@ import fi.espoo.voltti.auth.JwtKeys
 import fi.espoo.voltti.auth.loadPublicKeys
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig
 import org.flywaydb.core.Flyway
+import org.flywaydb.core.internal.database.postgresql.PostgreSQLConfigurationExtension
 import org.jdbi.v3.core.Jdbi
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
@@ -64,6 +65,9 @@ fun getTestDataSource(): TestDataSource = synchronized(globalLock) {
             }
         ).also {
             Flyway.configure()
+                .apply {
+                    pluginRegister.getPlugin(PostgreSQLConfigurationExtension::class.java).isTransactionalLock = false
+                }
                 .dataSource(it)
                 .placeholders(mapOf("application_user" to "evaka_it"))
                 .load()

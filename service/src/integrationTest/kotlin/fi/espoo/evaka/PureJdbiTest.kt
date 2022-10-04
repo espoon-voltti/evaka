@@ -20,7 +20,7 @@ abstract class PureJdbiTest(private val resetDbBeforeEach: Boolean) {
     protected lateinit var db: Database.Connection
 
     @BeforeAll
-    protected fun initializeJdbi() {
+    fun initializeJdbi() {
         jdbi = configureJdbi(Jdbi.create(getTestDataSource()))
         db = Database(jdbi).connectWithManualLifecycle()
         if (!resetDbBeforeEach) {
@@ -29,12 +29,12 @@ abstract class PureJdbiTest(private val resetDbBeforeEach: Boolean) {
     }
 
     @AfterAll
-    protected fun closeJdbi() {
+    fun closeJdbi() {
         db.close()
     }
 
     @BeforeEach
-    protected fun resetBeforeTest() {
+    fun resetBeforeTest() {
         if (resetDbBeforeEach) {
             db.transaction { it.resetDatabase() }
         }

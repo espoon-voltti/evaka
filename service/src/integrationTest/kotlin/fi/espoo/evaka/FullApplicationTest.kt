@@ -64,7 +64,7 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     protected val pngFile = this::class.java.getResource("/attachments-fixtures/evaka-logo.png") as URL
 
     @BeforeAll
-    protected fun beforeAll() {
+    fun beforeAll() {
         assert(httpPort > 0)
         http.forceMethods = true // use actual PATCH requests
         http.basePath = "http://localhost:$httpPort/"
@@ -76,14 +76,14 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
     }
 
     @BeforeEach
-    protected fun resetBeforeTest() {
+    fun resetBeforeTest() {
         if (resetDbBeforeEach) {
             db.transaction { it.resetDatabase() }
         }
     }
 
     @AfterAll
-    protected fun afterAll() {
+    fun afterAll() {
         db.close()
     }
 

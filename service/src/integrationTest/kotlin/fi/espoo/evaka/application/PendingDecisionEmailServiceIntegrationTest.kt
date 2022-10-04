@@ -52,7 +52,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
     private val endDate = startDate.plusYears(1)
 
     @BeforeEach
-    internal fun setUp() {
+    fun setUp() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
 

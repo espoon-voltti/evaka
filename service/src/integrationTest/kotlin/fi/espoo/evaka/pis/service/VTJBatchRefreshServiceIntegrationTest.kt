@@ -49,7 +49,7 @@ class VTJBatchRefreshServiceIntegrationTest : FullApplicationTest(resetDbBeforeE
     private val user = AuthenticatedUser.SystemInternalUser
 
     @BeforeEach
-    internal fun setUp() {
+    fun setUp() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
         }

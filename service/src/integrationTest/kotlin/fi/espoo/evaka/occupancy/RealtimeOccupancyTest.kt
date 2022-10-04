@@ -37,7 +37,7 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
     val groupId = GroupId(UUID.randomUUID())
 
     @BeforeEach
-    internal fun setUp() {
+    fun setUp() {
         db.transaction {
             it.insertGeneralTestFixtures()
             it.insertTestDaycareGroup(DevDaycareGroup(groupId, testDaycare.id))

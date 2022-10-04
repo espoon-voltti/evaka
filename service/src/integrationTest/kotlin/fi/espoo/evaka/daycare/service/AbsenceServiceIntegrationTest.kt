@@ -65,7 +65,7 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     val placementEnd = LocalDate.of(2019, 12, 31)
 
     @BeforeEach
-    private fun prepare() {
+    fun prepare() {
         db.transaction {
             it.insertGeneralTestFixtures()
             it.insertTestEmployee(DevEmployee(id = testUserId))

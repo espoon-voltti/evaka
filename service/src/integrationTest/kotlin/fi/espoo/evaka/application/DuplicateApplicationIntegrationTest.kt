@@ -26,7 +26,7 @@ class DuplicateApplicationIntegrationTest : FullApplicationTest(resetDbBeforeEac
     val unitId = testDaycare.id
 
     @BeforeEach
-    internal fun setUp() {
+    fun setUp() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
         }

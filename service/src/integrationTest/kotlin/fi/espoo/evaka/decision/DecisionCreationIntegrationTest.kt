@@ -65,7 +65,7 @@ class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     private val decisionId = DecisionId(UUID.randomUUID())
 
     @BeforeEach
-    private fun beforeEach() {
+    fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.createUpdate(

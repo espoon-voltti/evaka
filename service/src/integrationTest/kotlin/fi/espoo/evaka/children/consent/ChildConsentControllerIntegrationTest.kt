@@ -42,7 +42,7 @@ class ChildConsentControllerIntegrationTest : FullApplicationTest(resetDbBeforeE
     private val now = HelsinkiDateTime.of(today, LocalTime.of(14, 5, 1))
 
     @BeforeEach
-    protected fun beforeEach() {
+    fun beforeEach() {
         db.transaction {
             it.insertGeneralTestFixtures()
             it.insertTestEmployee(DevEmployee(adminId, roles = setOf(UserRole.ADMIN)))

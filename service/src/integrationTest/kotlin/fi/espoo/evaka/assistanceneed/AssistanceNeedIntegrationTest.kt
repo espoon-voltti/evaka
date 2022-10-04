@@ -36,7 +36,7 @@ class AssistanceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     private val testDaycareId = testDaycare.id
 
     @BeforeEach
-    private fun beforeEach() {
+    fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
         }

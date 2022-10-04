@@ -70,7 +70,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val febLast = LocalDate.of(2020, 2, 28)
 
     @BeforeEach
-    private fun beforeEach() {
+    fun beforeEach() {
         db.transaction {
             it.insertGeneralTestFixtures()
         }

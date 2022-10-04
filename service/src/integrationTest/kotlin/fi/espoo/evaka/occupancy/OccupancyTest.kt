@@ -72,7 +72,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
     val employeeId2 = EmployeeId(UUID.randomUUID())
 
     @BeforeEach
-    internal fun setUp() {
+    fun setUp() {
         db.transaction {
             it.insertServiceNeedOptions()
             it.insertTestEmployee(

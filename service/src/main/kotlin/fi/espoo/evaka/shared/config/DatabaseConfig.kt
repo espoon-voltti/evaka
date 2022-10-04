@@ -9,6 +9,7 @@ import com.zaxxer.hikari.HikariDataSource
 import fi.espoo.evaka.DatabaseEnv
 import fi.espoo.evaka.shared.db.configureJdbi
 import org.flywaydb.core.Flyway
+import org.flywaydb.core.internal.database.postgresql.PostgreSQLConfigurationExtension
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.statement.Slf4JSqlLogger
 import org.slf4j.LoggerFactory
@@ -29,6 +30,9 @@ class DatabaseConfig {
     @Bean
     fun dataSource(env: DatabaseEnv): DataSource {
         Flyway.configure()
+            .apply {
+                pluginRegister.getPlugin(PostgreSQLConfigurationExtension::class.java).isTransactionalLock = false
+            }
             .dataSource(env.url, env.flywayUsername, env.flywayPassword.value)
             .placeholders(
                 mapOf(

@@ -33,7 +33,7 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val admin = AuthenticatedUser.Employee(adminId, setOf(UserRole.ADMIN))
 
     @BeforeEach
-    protected fun beforeEach() {
+    fun beforeEach() {
         db.transaction {
             it.insertGeneralTestFixtures()
             it.insertTestEmployee(DevEmployee(adminId, roles = setOf(UserRole.ADMIN)))

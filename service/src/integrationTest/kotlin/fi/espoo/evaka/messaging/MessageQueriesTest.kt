@@ -57,7 +57,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val employee2Id = EmployeeId(UUID.randomUUID())
 
     @BeforeEach
-    internal fun setUp() {
+    fun setUp() {
         db.transaction { tx ->
             tx.insertTestPerson(DevPerson(id = person1Id, firstName = "Firstname", lastName = "Person"))
             tx.insertTestPerson(DevPerson(id = person2Id, firstName = "Firstname", lastName = "Person Two"))

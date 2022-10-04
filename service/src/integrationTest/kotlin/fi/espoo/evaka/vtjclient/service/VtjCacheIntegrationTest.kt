@@ -21,7 +21,7 @@ class VtjCacheIntegrationTest : FullApplicationTest(resetDbBeforeEach = false) {
     lateinit var redisPool: JedisPool
 
     @BeforeEach
-    protected fun beforeEach() {
+    fun beforeEach() {
         redisPool.resource.use {
             it.flushDB()
         }

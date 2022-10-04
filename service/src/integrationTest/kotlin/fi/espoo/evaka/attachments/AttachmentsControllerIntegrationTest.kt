@@ -31,7 +31,7 @@ class AttachmentsControllerIntegrationTest : FullApplicationTest(resetDbBeforeEa
     private val user = AuthenticatedUser.Citizen(testAdult_5.id, CitizenAuthLevel.STRONG)
 
     @BeforeEach
-    private fun beforeEach() {
+    fun beforeEach() {
         db.transaction {
             it.insertGeneralTestFixtures()
         }

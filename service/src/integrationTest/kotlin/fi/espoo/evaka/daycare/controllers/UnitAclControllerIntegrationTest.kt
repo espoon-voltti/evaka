@@ -38,7 +38,7 @@ class UnitAclControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     private lateinit var admin: AuthenticatedUser
 
     @BeforeEach
-    protected fun beforeEach() {
+    fun beforeEach() {
         db.transaction { tx ->
             admin = AuthenticatedUser.Employee(
                 tx.insertTestEmployee(DevEmployee(roles = setOf(UserRole.ADMIN))),

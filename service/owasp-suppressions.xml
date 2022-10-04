@@ -47,8 +47,9 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     </suppress>
     <suppress>
         <notes><![CDATA[
-        Misidentification
+        Only applies to configuration we don't use
         ]]></notes>
-        <cve>CVE-2021-42550</cve>
+        <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
+        <cve>CVE-2022-42003</cve>
     </suppress>
 </suppressions>
