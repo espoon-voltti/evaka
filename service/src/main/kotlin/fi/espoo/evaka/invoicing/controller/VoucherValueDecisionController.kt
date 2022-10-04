@@ -20,6 +20,7 @@ import fi.espoo.evaka.invoicing.data.markVoucherValueDecisionsSent
 import fi.espoo.evaka.invoicing.data.searchValueDecisions
 import fi.espoo.evaka.invoicing.data.updateVoucherValueDecisionEndDates
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus.ANNULLED
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus.DRAFT
@@ -97,6 +98,7 @@ class VoucherValueDecisionController(
                     body.endDate,
                     body.searchByStartDate,
                     body.financeDecisionHandlerId,
+                    body.difference ?: emptySet(),
                     body.distinctions ?: emptyList()
                 )
             }
@@ -313,6 +315,7 @@ data class SearchVoucherValueDecisionRequest(
     val distinctions: List<VoucherValueDecisionDistinctiveParams>?,
     val searchTerms: String?,
     val financeDecisionHandlerId: EmployeeId?,
+    val difference: Set<VoucherValueDecisionDifference>?,
     val startDate: LocalDate?,
     val endDate: LocalDate?,
     val searchByStartDate: Boolean = false

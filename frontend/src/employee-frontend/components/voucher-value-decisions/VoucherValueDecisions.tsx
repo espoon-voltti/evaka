@@ -31,6 +31,8 @@ import { renderResult } from '../async-rendering'
 import ChildrenCell from '../common/ChildrenCell'
 import NameWithSsn from '../common/NameWithSsn'
 
+import { VoucherValueDecisionDifferenceIcon } from './VoucherValueDecisionDifferenceIcon'
+
 const TitleRowContainer = styled.div`
   display: flex;
   justify-content: space-between;
@@ -126,6 +128,14 @@ export default React.memo(function VoucherValueDecisions({
             <Td>{item.decisionNumber}</Td>
             <Td>{item.created.toLocalDate().format()}</Td>
             <Td>{item.sentAt?.toLocalDate().format() ?? ''}</Td>
+            <Td>
+              {item.difference.map((difference) => (
+                <VoucherValueDecisionDifferenceIcon
+                  key={difference}
+                  value={difference}
+                />
+              ))}
+            </Td>
             <Td>{i18n.valueDecision.status[item.status]}</Td>
             {showCheckboxes ? (
               <Td onClick={(e) => e.stopPropagation()}>
@@ -175,6 +185,7 @@ export default React.memo(function VoucherValueDecisions({
             <Th>{i18n.valueDecisions.table.number}</Th>
             <Th>{i18n.valueDecisions.table.createdAt}</Th>
             <Th>{i18n.valueDecisions.table.sentAt}</Th>
+            <Th>{i18n.valueDecisions.table.difference.title}</Th>
             <SortableTh
               sorted={isSorted('STATUS')}
               onClick={toggleSort('STATUS')}

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing.domain
 
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -151,6 +152,7 @@ enum class VoucherValueDecisionStatus {
     }
 }
 
+@ConstList("voucherValueDecisionDifferences")
 enum class VoucherValueDecisionDifference(val contentEquals: (d1: VoucherValueDecision, d2: VoucherValueDecision) -> Boolean) : DatabaseEnum {
     GUARDIANS({ d1, d2 -> d1.headOfFamilyId == d2.headOfFamilyId && d1.partnerId == d2.partnerId }),
     INCOME({ d1, d2 -> d1.headOfFamilyIncome == d2.headOfFamilyIncome && d1.partnerIncome == d2.partnerIncome && d1.childIncome == d2.childIncome }),
@@ -269,6 +271,7 @@ data class VoucherValueDecisionSummary(
     val approvedAt: HelsinkiDateTime? = null,
     val sentAt: HelsinkiDateTime? = null,
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val difference: Set<VoucherValueDecisionDifference>,
 ) {
     val annullingDecision
         get() = this.voucherValue == 0

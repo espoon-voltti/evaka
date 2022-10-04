@@ -12,6 +12,7 @@ import fi.espoo.evaka.invoicing.controller.VoucherValueDecisionSortParam
 import fi.espoo.evaka.invoicing.createVoucherValueDecisionFixture
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.PersonId
@@ -159,6 +160,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 startDate = null,
                 endDate = null,
                 financeDecisionHandlerId = null,
+                difference = emptySet(),
                 distinctiveParams = listOf(VoucherValueDecisionDistinctiveParams.MAX_FEE_ACCEPTED),
             )
         }
@@ -169,6 +171,114 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 Tuple(testAdult_2.lastName, testAdult_2.firstName),
                 Tuple(testAdult_3.lastName, testAdult_3.firstName),
                 Tuple(testAdult_6.lastName, testAdult_6.firstName),
+            )
+    }
+
+    @Test
+    fun `search with difference`() {
+        db.transaction { tx ->
+            val baseDecision = { child: DevPerson ->
+                createVoucherValueDecisionFixture(
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    validFrom = testPeriod.start,
+                    validTo = testPeriod.end,
+                    headOfFamilyId = PersonId(UUID.randomUUID()),
+                    childId = child.id,
+                    dateOfBirth = child.dateOfBirth,
+                    unitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
+                )
+            }
+            tx.upsertValueDecisions(
+                listOf(
+                    baseDecision(testChild_1).copy(
+                        headOfFamilyId = testAdult_1.id,
+                        difference = emptySet()
+                    ),
+                    baseDecision(testChild_2).copy(
+                        headOfFamilyId = testAdult_2.id,
+                        difference = setOf(VoucherValueDecisionDifference.INCOME)
+                    ),
+                    baseDecision(testChild_3).copy(
+                        headOfFamilyId = testAdult_3.id,
+                        difference = setOf(
+                            VoucherValueDecisionDifference.INCOME,
+                            VoucherValueDecisionDifference.FAMILY_SIZE
+                        )
+                    ),
+                    baseDecision(testChild_4).copy(
+                        headOfFamilyId = testAdult_4.id,
+                        difference = setOf(VoucherValueDecisionDifference.PLACEMENT)
+                    ),
+                )
+            )
+        }
+
+        val result = db.read { tx ->
+            tx.searchValueDecisions(
+                evakaClock = MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
+                page = 0,
+                pageSize = 100,
+                sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                sortDirection = SortDirection.ASC,
+                status = VoucherValueDecisionStatus.DRAFT,
+                areas = emptyList(),
+                unit = null,
+                startDate = null,
+                endDate = null,
+                financeDecisionHandlerId = null,
+                difference = setOf(VoucherValueDecisionDifference.INCOME),
+                distinctiveParams = emptyList(),
+            )
+        }
+
+        assertThat(result.data)
+            .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName }, { it.difference })
+            .containsExactly(
+                Tuple(testAdult_2.lastName, testAdult_2.firstName, setOf(VoucherValueDecisionDifference.INCOME)),
+                Tuple(
+                    testAdult_3.lastName, testAdult_3.firstName,
+                    setOf(
+                        VoucherValueDecisionDifference.INCOME,
+                        VoucherValueDecisionDifference.FAMILY_SIZE
+                    )
+                ),
+            )
+    }
+
+    @Test
+    fun `getHeadOfFamilyVoucherValueDecisions`() {
+        db.transaction { tx ->
+            val baseDecision = { child: DevPerson ->
+                createVoucherValueDecisionFixture(
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    validFrom = testPeriod.start,
+                    validTo = testPeriod.end,
+                    headOfFamilyId = PersonId(UUID.randomUUID()),
+                    childId = child.id,
+                    dateOfBirth = child.dateOfBirth,
+                    unitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed(),
+                )
+            }
+            tx.upsertValueDecisions(
+                listOf(
+                    baseDecision(testChild_1).copy(headOfFamilyId = testAdult_1.id),
+                    baseDecision(testChild_2).copy(headOfFamilyId = testAdult_1.id),
+                    baseDecision(testChild_3).copy(headOfFamilyId = testAdult_2.id),
+                )
+            )
+        }
+
+        val decisions = db.read { tx -> tx.getHeadOfFamilyVoucherValueDecisions(testAdult_1.id) }
+
+        assertThat(decisions)
+            .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName }, { it.child.dateOfBirth })
+            .containsExactlyInAnyOrder(
+                Tuple(testAdult_1.lastName, testAdult_1.firstName, testChild_1.dateOfBirth),
+                Tuple(testAdult_1.lastName, testAdult_1.firstName, testChild_2.dateOfBirth),
             )
     }
 }

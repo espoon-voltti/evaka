@@ -9,6 +9,7 @@ import fi.espoo.evaka.invoicing.controller.VoucherValueDecisionDistinctiveParams
 import fi.espoo.evaka.invoicing.controller.VoucherValueDecisionSortParam
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDetailed
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
@@ -283,6 +284,7 @@ fun Database.Read.searchValueDecisions(
     endDate: LocalDate?,
     searchByStartDate: Boolean = false,
     financeDecisionHandlerId: EmployeeId?,
+    difference: Set<VoucherValueDecisionDifference>,
     distinctiveParams: List<VoucherValueDecisionDistinctiveParams>
 ): Paged<VoucherValueDecisionSummary> {
     val sortColumn = when (sortBy) {
@@ -299,6 +301,7 @@ fun Database.Read.searchValueDecisions(
         Binding.of("start_date", startDate),
         Binding.of("end_date", endDate),
         Binding.of("financeDecisionHandlerId", financeDecisionHandlerId),
+        Binding.of("difference", difference),
         Binding.of("firstPlacementStartDate", evakaClock.now().toLocalDate().withDayOfMonth(1)),
     )
 
@@ -327,6 +330,7 @@ NOT EXISTS (
         if ((startDate != null || endDate != null) && !searchByStartDate) "daterange(:start_date, :end_date, '[]') && daterange(valid_from, valid_to, '[]')" else null,
         if ((startDate != null || endDate != null) && searchByStartDate) "daterange(:start_date, :end_date, '[]') @> valid_from" else null,
         if (financeDecisionHandlerId != null) "placement_unit.finance_decision_handler = :financeDecisionHandlerId" else null,
+        if (difference.isNotEmpty()) "decision.difference && :difference" else null,
         if (noStartingPlacements) noStartingPlacementsQuery else null,
         if (maxFeeAccepted) "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')" else null,
     )
@@ -348,6 +352,7 @@ SELECT
     decision.approved_at,
     decision.sent_at,
     decision.created,
+    decision.difference,
     head.date_of_birth AS head_date_of_birth,
     head.first_name AS head_first_name,
     head.last_name AS head_last_name,
@@ -461,6 +466,7 @@ SELECT
     decision.approved_at,
     decision.sent_at,
     decision.created,
+    decision.difference,
     head.date_of_birth AS head_date_of_birth,
     head.first_name AS head_first_name,
     head.last_name AS head_last_name,

@@ -2238,6 +2238,35 @@ export const fi = {
       status: 'Tila',
       createdAt: 'Luotu',
       sentAt: 'Lähetetty',
+      difference: {
+        title: 'Muutos',
+        value: {
+          GUARDIANS: 'Huoltajat',
+          INCOME: 'Tulot',
+          FAMILY_SIZE: 'Perhekoko',
+          PLACEMENT: 'Sijoitus',
+          SERVICE_NEED: 'Palveluntarve',
+          SIBLING_DISCOUNT: 'Sisaralennus',
+          CO_PAYMENT: 'Omavastuuosuus ennen maksumuutoksia',
+          FEE_ALTERATIONS: 'Maksumuutokset',
+          FINAL_CO_PAYMENT: 'Omavastuuosuus',
+          BASE_VALUE: 'Perusarvo',
+          VOUCHER_VALUE: 'Palvelusetelin arvo'
+        },
+        valueShort: {
+          GUARDIANS: 'H',
+          INCOME: 'T',
+          FAMILY_SIZE: 'P',
+          PLACEMENT: 'S',
+          SERVICE_NEED: 'PT',
+          SIBLING_DISCOUNT: 'SA',
+          CO_PAYMENT: 'OM',
+          FEE_ALTERATIONS: 'M',
+          FINAL_CO_PAYMENT: 'O',
+          BASE_VALUE: 'PA',
+          VOUCHER_VALUE: 'PS'
+        }
+      },
       annullingDecision: 'Mitätöi tai päättää päätökset ajalta'
     },
     buttons: {
@@ -2428,6 +2457,7 @@ export const fi = {
     unitPlaceholder: 'Valitse toimipaikka',
     financeDecisionHandlerPlaceholder: 'Valitse työntekijä',
     distinctiveDetails: 'Muuta huomioitavaa',
+    difference: 'Muutos',
     providerType: 'Järjestämismuoto',
     status: 'Tila',
     clear: 'Tyhjennä valinnat',

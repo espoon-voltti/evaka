@@ -6,6 +6,7 @@ import React, { Fragment, useCallback, useContext, useEffect } from 'react'
 import { useMemo } from 'react'
 
 import {
+  VoucherValueDecisionDifference,
   VoucherValueDecisionDistinctiveParams,
   VoucherValueDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
@@ -23,7 +24,8 @@ import {
   UnitFilter,
   FinanceDecisionHandlerFilter,
   ValueDecisionDateFilter,
-  VoucherValueDecisionDistinctionsFilter
+  VoucherValueDecisionDistinctionsFilter,
+  VoucherValueDecisionDifferenceFilter
 } from '../common/Filters'
 
 export default React.memo(function VoucherValueDecisionFilters() {
@@ -105,6 +107,19 @@ export default React.memo(function VoucherValueDecisionFilters() {
       setSearchFilters((filters) => ({ ...filters, financeDecisionHandlerId })),
     [setSearchFilters]
   )
+
+  const toggleDifference =
+    (difference: VoucherValueDecisionDifference) => () => {
+      searchFilters.difference.includes(difference)
+        ? setSearchFilters({
+            ...searchFilters,
+            difference: searchFilters.difference.filter((v) => v !== difference)
+          })
+        : setSearchFilters({
+            ...searchFilters,
+            difference: [...searchFilters.difference, difference]
+          })
+    }
 
   const toggleStatus = useCallback(
     (status: VoucherValueDecisionStatus) => () => {
@@ -192,6 +207,11 @@ export default React.memo(function VoucherValueDecisionFilters() {
           <VoucherValueDecisionDistinctionsFilter
             toggled={searchFilters.distinctiveDetails}
             toggle={toggleDistinctiveParams}
+          />
+          <Gap size="L" />
+          <VoucherValueDecisionDifferenceFilter
+            toggled={searchFilters.difference}
+            toggle={toggleDifference}
           />
         </Fragment>
       }
