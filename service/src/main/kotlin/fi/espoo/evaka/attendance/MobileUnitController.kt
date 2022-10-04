@@ -37,9 +37,12 @@ class MobileUnitController(private val accessControl: AccessControl) {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_MOBILE_INFO, unitId)
         return db.connect { dbc ->
             dbc.read { tx ->
-                tx.fetchUnitInfo(
+                val unsorted = tx.fetchUnitInfo(
                     unitId,
                     clock.today(),
+                )
+                unsorted.copy(
+                    groups = unsorted.groups.sortedBy { it.name }
                 )
             }
         }.also {
