@@ -49,15 +49,18 @@ export default React.memo(function FosterParents({ id }: Props) {
               ],
               ['asc']
             ).map(({ relationshipId, parent, validDuring }) => (
-              <Tr key={`${relationshipId}`}>
+              <Tr
+                key={`${relationshipId}`}
+                data-qa={`foster-parent-row-${parent.id}`}
+              >
                 <NameTd>
                   <Link to={`/profile/${parent.id}`}>
                     {parent.lastName} {parent.firstName}
                   </Link>
                 </NameTd>
                 <Td>{parent.socialSecurityNumber}</Td>
-                <Td>{validDuring.start.format()}</Td>
-                <Td>{validDuring.end?.format() ?? ''}</Td>
+                <Td data-qa="start">{validDuring.start.format()}</Td>
+                <Td data-qa="end">{validDuring.end?.format() ?? ''}</Td>
                 <Td>
                   <StatusLabel
                     status={getStatusLabelByDateRange({

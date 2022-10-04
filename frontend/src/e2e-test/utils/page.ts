@@ -267,7 +267,7 @@ export class DatePicker extends Element {
 
   async fill(text: string) {
     await this.#input.fill(text)
-    await this.#input.press('Enter')
+    await this.#input.press('Escape')
   }
 }
 

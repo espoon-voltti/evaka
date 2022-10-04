@@ -82,7 +82,7 @@ const SpinnerOverlayRoot = styled.div`
 export const SpinnerOverlay = React.memo(function SpinnerOverlay() {
   return (
     <SpinnerOverlayRoot>
-      <Spinner />
+      <Spinner data-qa="spinner" />
     </SpinnerOverlayRoot>
   )
 })

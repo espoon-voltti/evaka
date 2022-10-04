@@ -142,8 +142,11 @@ export default React.memo(function FosterChildren({
                 [({ child }) => child.lastName, ({ child }) => child.firstName],
                 ['asc', 'asc']
               ).map(({ relationshipId, child, validDuring }) => (
-                <Tr key={relationshipId}>
-                  <NameTd>
+                <Tr
+                  key={relationshipId}
+                  data-qa={`foster-child-row-${child.id}`}
+                >
+                  <NameTd data-qa="name">
                     <Link to={`/child-information/${child.id}`}>
                       {child.firstName} {child.lastName}
                     </Link>
@@ -154,8 +157,8 @@ export default React.memo(function FosterChildren({
                       child.dateOfBirth
                     )}
                   </Td>
-                  <Td>{validDuring.start.format()}</Td>
-                  <Td>{validDuring.end?.format() ?? ''}</Td>
+                  <Td data-qa="start">{validDuring.start.format()}</Td>
+                  <Td data-qa="end">{validDuring.end?.format() ?? ''}</Td>
                   <Td>
                     <Toolbar
                       disableAll={!!uiMode}
@@ -165,6 +168,8 @@ export default React.memo(function FosterChildren({
                         startDate: validDuring.start,
                         endDate: validDuring.end
                       }}
+                      dataQaEdit="edit"
+                      dataQaDelete="delete"
                     />
                   </Td>
                 </Tr>
@@ -219,13 +224,14 @@ const FosterChildCreationModal = React.memo(function FosterChildCreationModal({
       rejectAction={close}
       rejectLabel={i18n.common.cancel}
       resolveDisabled={form.childId === null}
+      data-qa="add-foster-child-modal"
     >
       <P>{i18n.personProfile.fosterChildren.addFosterChildParagraph}</P>
       <Label>{i18n.personProfile.fosterChildren.childLabel}</Label>
       <DbPersonSearch
         onResult={(person) => setForm({ ...form, childId: person?.id ?? null })}
         onlyChildren
-        data-qa="foster-child-person-search"
+        data-qa="person-search"
       />
       <Label>{i18n.personProfile.fosterChildren.validDuringLabel}</Label>
       <DateRangePicker
@@ -272,6 +278,7 @@ const FosterChildEditingModal = React.memo(function FosterChildEditingModal({
       onSuccess={onSuccess}
       rejectAction={close}
       rejectLabel={i18n.common.cancel}
+      data-qa="edit-foster-child-modal"
     >
       <Label>{i18n.personProfile.fosterChildren.validDuringLabel}</Label>
       <DateRangePicker

@@ -189,6 +189,79 @@ class DependantsSection extends Section {
   }
 }
 
+class FosterChildrenSection extends Section {
+  async addFosterChild(
+    childName: string,
+    startDate: LocalDate,
+    endDate: LocalDate | null
+  ) {
+    await this.findByDataQa('add-foster-child-button').click()
+    const modal = new Modal(this.page.findByDataQa('add-foster-child-modal'))
+    await new Combobox(modal.findByDataQa('person-search')).fillAndSelectFirst(
+      childName
+    )
+    await new DatePicker(modal.findByDataQa('start-date')).fill(
+      startDate.format()
+    )
+    if (endDate !== null) {
+      await new DatePicker(modal.findByDataQa('end-date')).fill(
+        endDate?.format() ?? ''
+      )
+    }
+    await modal.submit()
+  }
+
+  async editFosterChild(
+    childId: string,
+    startDate: LocalDate,
+    endDate: LocalDate | null
+  ) {
+    await this.findByDataQa(`foster-child-row-${childId}`)
+      .findByDataQa('edit')
+      .click()
+    const modal = new Modal(this.page.findByDataQa('edit-foster-child-modal'))
+    await new DatePicker(modal.findByDataQa('start-date')).fill(
+      startDate.format()
+    )
+    await new DatePicker(modal.findByDataQa('end-date')).fill(
+      endDate?.format() ?? ''
+    )
+    await modal.submit()
+    await modal.waitUntilHidden()
+    await this.findByDataQa('spinner').waitUntilHidden()
+  }
+
+  async deleteFosterChild(childId: string) {
+    await this.findByDataQa(`foster-child-row-${childId}`)
+      .findByDataQa('delete')
+      .click()
+    const modal = new Modal(this.page.findByDataQa('delete-foster-child-modal'))
+    await modal.submit()
+    await modal.waitUntilHidden()
+    await this.findByDataQa('spinner').waitUntilHidden()
+  }
+
+  async assertRowExists(
+    childId: string,
+    start: LocalDate,
+    end: LocalDate | null
+  ) {
+    const row = this.findByDataQa(`foster-child-row-${childId}`)
+    await waitUntilEqual(
+      () => row.findByDataQa('start').textContent,
+      start.format()
+    )
+    await waitUntilEqual(
+      () => row.findByDataQa('end').textContent,
+      end?.format() ?? ''
+    )
+  }
+
+  async assertRowDoesNotExist(childId: string) {
+    await this.findByDataQa(`foster-child-row-${childId}`).waitUntilHidden()
+  }
+}
+
 class ApplicationsSection extends Section {
   #applicationRows = this.findAll('[data-qa="table-application-row"]')
 
@@ -520,6 +593,10 @@ const collapsibles = {
   dependants: {
     selector: '[data-qa="person-dependants-collapsible"]',
     section: DependantsSection
+  },
+  fosterChildren: {
+    selector: '[data-qa="person-foster-children-collapsible"]',
+    section: FosterChildrenSection
   },
   applications: {
     selector: '[data-qa="person-applications-collapsible"]',

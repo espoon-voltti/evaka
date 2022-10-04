@@ -564,6 +564,22 @@ export class GuardiansSection extends Section {
       .find(`[data-qa="guardian-ssn"] >> text=${ssn}`)
       .waitUntilVisible()
   }
+
+  async assertFosterParentExists(
+    parentId: string,
+    start: LocalDate,
+    end: LocalDate | null
+  ) {
+    const row = this.findByDataQa(`foster-parent-row-${parentId}`)
+    await waitUntilEqual(
+      () => row.findByDataQa('start').textContent,
+      start.format()
+    )
+    await waitUntilEqual(
+      () => row.findByDataQa('end').textContent,
+      end?.format() ?? ''
+    )
+  }
 }
 
 export class PlacementsSection extends Section {
