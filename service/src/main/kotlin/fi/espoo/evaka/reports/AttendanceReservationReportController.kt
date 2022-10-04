@@ -132,8 +132,8 @@ private fun Database.Read.getAttendanceReservationReport(
           count(*) FILTER (WHERE r.age < 3) AS child_count_under_3,
           count(*) FILTER (WHERE r.age >= 3) AS child_count_over_3,
           count(*) FILTER (WHERE r.age IS NOT NULL) AS child_count,
-          sum(r.service_need_factor * r.assistance_need_factor) AS capacity_factor,
-          round(sum(r.service_need_factor * r.assistance_need_factor) / 7, 1) AS staff_count_required
+          coalesce(sum(r.service_need_factor * r.assistance_need_factor), 0) AS capacity_factor,
+          coalesce(round(sum(r.service_need_factor * r.assistance_need_factor) / 7, 1), 0) AS staff_count_required
         FROM generate_series(:start, :end + interval '1 day' - interval '1 second', interval '30 minutes') dateTime
         CROSS JOIN groups g
         LEFT JOIN reservations r ON

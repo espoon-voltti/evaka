@@ -20,6 +20,7 @@ import org.jdbi.v3.core.generic.GenericTypes
 import org.jdbi.v3.core.kotlin.KotlinPlugin
 import org.jdbi.v3.core.mapper.ColumnMapper
 import org.jdbi.v3.core.mapper.ColumnMapperFactory
+import org.jdbi.v3.core.mapper.ColumnMappers
 import org.jdbi.v3.core.mapper.RowMapperFactory
 import org.jdbi.v3.core.mapper.SingleColumnMapper
 import org.jdbi.v3.core.result.RowView
@@ -79,6 +80,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
         .installPlugin(PostgresPlugin())
         .installPlugin(Jackson2Plugin())
     jdbi.getConfig(Jackson2Config::class.java).mapper = jsonMapper
+    jdbi.getConfig(ColumnMappers::class.java).coalesceNullPrimitivesToDefaults = false
     jdbi.registerArgument(finiteDateRangeArgumentFactory)
     jdbi.registerArgument(dateRangeArgumentFactory)
     jdbi.registerArgument(timeRangeArgumentFactory)
