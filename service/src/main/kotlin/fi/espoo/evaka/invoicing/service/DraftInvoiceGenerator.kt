@@ -61,7 +61,8 @@ class DraftInvoiceGenerator(
     fun generateDraftInvoices(
         tx: Database.Read,
         decisions: Map<PersonId, List<FeeDecision>>,
-        placements: Map<PersonId, List<Placements>>,
+        permanentPlacements: Map<ChildId, List<Pair<DateRange, PlacementStub>>>,
+        temporaryPlacements: Map<PersonId, List<Pair<DateRange, PlacementStub>>>,
         period: DateRange,
         daycareCodes: Map<DaycareId, AreaId>,
         operationalDays: OperationalDays,
@@ -72,12 +73,18 @@ class DraftInvoiceGenerator(
         codebtors: Map<PersonId, PersonId?>
     ): List<Invoice> {
         val absencesByChild = absences.groupBy { absence -> absence.childId }
-        return placements.keys.mapNotNull { headOfFamilyId ->
+        val headsOfFamily = decisions.keys + temporaryPlacements.keys
+        return headsOfFamily.mapNotNull { headOfFamilyId ->
             try {
+                val headOfFamilyDecisions = decisions[headOfFamilyId] ?: listOf()
+                val feeDecisionPlacements = headOfFamilyDecisions.flatMap { decision ->
+                    decision.children.flatMap { child -> permanentPlacements[child.child.id] ?: listOf() }
+                }
                 generateDraftInvoice(
                     tx,
-                    decisions[headOfFamilyId] ?: listOf(),
-                    placements[headOfFamilyId] ?: listOf(),
+                    headOfFamilyId,
+                    headOfFamilyDecisions,
+                    feeDecisionPlacements + (temporaryPlacements[headOfFamilyId] ?: listOf()),
                     period,
                     daycareCodes,
                     operationalDays,
@@ -111,8 +118,9 @@ class DraftInvoiceGenerator(
 
     private fun generateDraftInvoice(
         tx: Database.Read,
+        headOfFamily: PersonId,
         decisions: List<FeeDecision>,
-        placements: List<Placements>,
+        placements: List<Pair<DateRange, PlacementStub>>,
         invoicePeriod: DateRange,
         areaIds: Map<DaycareId, AreaId>,
         operationalDays: OperationalDays,
@@ -122,7 +130,6 @@ class DraftInvoiceGenerator(
         freeChildren: List<ChildId>,
         codebtors: Map<PersonId, PersonId?>
     ): Invoice? {
-        val headOfFamily = placements.first().headOfFamily
         val childrenPartialMonth = getPartialMonthChildren(placements, decisions, operationalDays)
         val childrenFullMonthAbsences =
             getFullMonthAbsences(placements, decisions, operationalDays, absences, plannedAbsences)
@@ -163,16 +170,18 @@ class DraftInvoiceGenerator(
             }
         }
 
-        val rowStubs = placements.flatMap { (placementsPeriod, _, childPlacementPairs) ->
-            val relevantPeriod = DateRange(
-                maxOf(invoicePeriod.start, placementsPeriod.start),
-                minOf(orMax(invoicePeriod.end), orMax(placementsPeriod.end))
-            )
-            val periodDecisions = decisions.filter { placementsPeriod.overlaps(DateRange(it.validFrom, it.validTo)) }
+        val rowStubs = placements
+            .groupBy { it.second.child }
+            .asSequence()
+            .sortedByDescending { (child) -> child.dateOfBirth }
+            .flatMapIndexed { index, (child, placements) ->
+                placements.flatMap { (placementDateRange, placement) ->
+                    val relevantPeriod = DateRange(
+                        maxOf(invoicePeriod.start, placementDateRange.start),
+                        minOf(orMax(invoicePeriod.end), orMax(placementDateRange.end))
+                    )
+                    val periodDecisions = decisions.filter { placementDateRange.overlaps(DateRange(it.validFrom, it.validTo)) }
 
-            childPlacementPairs
-                .sortedByDescending { (child) -> child.dateOfBirth }
-                .mapIndexed { index, (child, placement) ->
                     when (placement.type) {
                         PlacementType.TEMPORARY_DAYCARE,
                         PlacementType.TEMPORARY_DAYCARE_PART_DAY -> {
@@ -202,7 +211,7 @@ class DraftInvoiceGenerator(
                                         minOf(orMax(relevantPeriod.end), orMax(decisionPeriod.end))
                                     ) to InvoiceRowStub(
                                         ChildWithDateOfBirth(part.child.id, part.child.dateOfBirth),
-                                        PlacementStub(part.placement.unitId, part.placement.type),
+                                        PlacementStub(part.child, part.placement.unitId, part.placement.type),
                                         part.fee,
                                         part.feeAlterations.map { feeAlteration ->
                                             Pair(feeAlteration.type, feeAlteration.effect)
@@ -213,8 +222,7 @@ class DraftInvoiceGenerator(
                                 }
                     }
                 }
-                .flatten()
-        }
+            }
 
         val rows = rowStubs
             .groupBy { (_, stub) -> stub.child }
@@ -298,7 +306,7 @@ class DraftInvoiceGenerator(
     }
 
     private fun getPartialMonthChildren(
-        placementsList: List<Placements>,
+        placementsList: List<Pair<DateRange, PlacementStub>>,
         decisions: List<FeeDecision>,
         operationalDays: OperationalDays,
     ): Set<ChildId> {
@@ -312,7 +320,7 @@ class DraftInvoiceGenerator(
     }
 
     private fun getFullMonthAbsences(
-        placementsList: List<Placements>,
+        placements: List<Pair<DateRange, PlacementStub>>,
         decisions: List<FeeDecision>,
         operationalDays: OperationalDays,
         absences: Map<ChildId, List<AbsenceStub>>,
@@ -331,7 +339,7 @@ class DraftInvoiceGenerator(
                 ?: false
         }
 
-        return getOperationalDaysForChildsUnits(placementsList, operationalDays)
+        return getOperationalDaysForChildsUnits(placements, operationalDays)
             .mapValues { (childId, allOperationalDays) ->
                 allOperationalDays.filter { date -> childHasFeeDecision(decisions, childId, date) }
             }
@@ -366,15 +374,14 @@ class DraftInvoiceGenerator(
     }
 
     private fun getOperationalDaysForChildsUnits(
-        placementsList: List<Placements>,
+        placements: List<Pair<DateRange, PlacementStub>>,
         operationalDays: OperationalDays,
     ): Map<ChildId, Set<LocalDate>> {
-        return placementsList.flatMap { p ->
-            p.placements.map { (child, placement) ->
-                val unitOperationalDays = operationalDays.forUnit(placement.unit)
-                child.id to unitOperationalDays
+        return placements
+            .map { placement ->
+                val unitOperationalDays = operationalDays.forUnit(placement.second.unit)
+                placement.second.child.id to unitOperationalDays
             }
-        }
             .groupBy { (childId, _) -> childId }
             .mapValues { (_, operationalDaysList) ->
                 operationalDaysList.flatMap { (_, operationalDays) -> operationalDays }.toSet()

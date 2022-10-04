@@ -38,6 +38,7 @@ import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.operationalDays
+import org.jdbi.v3.core.mapper.Nested
 import org.springframework.stereotype.Component
 import java.time.Duration
 import java.time.LocalDate
@@ -56,7 +57,8 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
         val invoices = draftInvoiceGenerator.generateDraftInvoices(
             tx,
             invoiceCalculationData.decisions,
-            invoiceCalculationData.placements,
+            invoiceCalculationData.permanentPlacements,
+            invoiceCalculationData.temporaryPlacements,
             invoiceCalculationData.period,
             invoiceCalculationData.areaIds,
             invoiceCalculationData.operationalDays,
@@ -76,11 +78,11 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
             ?: error("Missing prices for period ${range.start} - ${range.end}, cannot generate invoices")
 
         val effectiveDecisions = tx.getInvoiceableFeeDecisions(range).groupBy { it.headOfFamilyId }
-        val placements = tx.getInvoiceablePlacements(range).groupBy { it.headOfFamily }
+        val permanentPlacements = tx.getInvoiceablePlacements(range, PlacementType.invoiced)
+        val temporaryPlacements = tx.getInvoiceableTemporaryPlacements(range)
         val invoicedHeadsOfFamily = tx.getInvoicedHeadsOfFamily(range)
 
         val unhandledDecisions = effectiveDecisions.filterNot { invoicedHeadsOfFamily.contains(it.key) }
-        val unhandledPlacements = placements.filterNot { invoicedHeadsOfFamily.contains(it.key) }
         val areaIds = tx.getAreaIds()
         val operationalDays = tx.operationalDays(range.start.year, range.start.month)
 
@@ -98,7 +100,8 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
 
         return InvoiceCalculationData(
             decisions = unhandledDecisions,
-            placements = unhandledPlacements,
+            permanentPlacements = permanentPlacements,
+            temporaryPlacements = temporaryPlacements,
             period = range,
             areaIds = areaIds,
             operationalDays = operationalDays,
@@ -112,7 +115,8 @@ class InvoiceGenerator(private val draftInvoiceGenerator: DraftInvoiceGenerator)
 
     data class InvoiceCalculationData(
         val decisions: Map<PersonId, List<FeeDecision>>,
-        val placements: Map<PersonId, List<Placements>>,
+        val permanentPlacements: Map<ChildId, List<Pair<DateRange, PlacementStub>>>,
+        val temporaryPlacements: Map<PersonId, List<Pair<DateRange, PlacementStub>>>,
         val period: DateRange,
         val areaIds: Map<DaycareId, AreaId>,
         val operationalDays: OperationalDays,
@@ -330,33 +334,38 @@ fun Database.Read.getAbsenceStubs(spanningRange: DateRange, categories: Collecti
         .toList()
 }
 
-data class PlacementStub(val unit: DaycareId, val type: PlacementType)
-
-data class Placements(
-    val period: DateRange,
-    val headOfFamily: PersonId,
-    val placements: List<Pair<ChildWithDateOfBirth, PlacementStub>>
+data class PlacementStub(
+    @Nested("child")
+    val child: ChildWithDateOfBirth,
+    val unit: DaycareId,
+    val type: PlacementType
 )
 
-internal fun Database.Read.getInvoiceablePlacements(
-    spanningPeriod: DateRange
-): List<Placements> {
-    data class PlacementRow(val dateRange: DateRange, val unitId: DaycareId, val type: PlacementType)
-
-    val placements = createQuery(
+private fun Database.Read.getInvoiceablePlacements(
+    spanningPeriod: DateRange,
+    placementTypes: List<PlacementType>
+): Map<ChildId, List<Pair<DateRange, PlacementStub>>> {
+    return createQuery(
         // language=sql
         """
-            SELECT p.child_id, daterange(p.start_date, p.end_date, '[]') AS date_range, p.unit_id, p.type FROM placement p
-            JOIN daycare u ON p.unit_id = u.id AND u.invoiced_by_municipality
-            WHERE daterange(start_date, end_date, '[]') && :period
-            AND p.type = ANY(:invoicedTypes::placement_type[])
-        """.trimIndent()
+SELECT p.child_id, c.date_of_birth AS child_date_of_birth, u.id AS unit, daterange(p.start_date, p.end_date, '[]') AS date_range, p.unit_id, p.type
+FROM placement p
+JOIN person c ON p.child_id = c.id
+JOIN daycare u ON p.unit_id = u.id AND u.invoiced_by_municipality
+WHERE daterange(start_date, end_date, '[]') && :period
+AND p.type = ANY(:invoicedTypes::placement_type[])
+"""
     )
         .bind("period", spanningPeriod)
-        .bind("invoicedTypes", PlacementType.invoiced())
-        .map { row -> row.mapColumn<ChildId>("child_id") to row.mapRow<PlacementRow>() }
-        .groupBy { (childId) -> childId }
-        .mapValues { it.value.map { (_, placements) -> placements } }
+        .bind("invoicedTypes", placementTypes)
+        .map { rv -> rv.mapColumn<DateRange>("date_range") to rv.mapRow<PlacementStub>() }
+        .groupBy { it.second.child.id }
+}
+
+private fun Database.Read.getInvoiceableTemporaryPlacements(
+    spanningPeriod: DateRange
+): Map<PersonId, List<Pair<DateRange, PlacementStub>>> {
+    val placements = getInvoiceablePlacements(spanningPeriod, PlacementType.temporary)
 
     val familyCompositions = toFamilyCompositions(
         getChildrenWithHeadOfFamilies(placements.keys, spanningPeriod),
@@ -367,16 +376,12 @@ internal fun Database.Read.getInvoiceablePlacements(
         .map { (headOfFamily, families) ->
             val relevantPlacements = families.flatMap { (period, children) ->
                 children.flatMap { child ->
-                    (placements[child.id] ?: listOf())
-                        .filter { it.dateRange.overlaps(period) }
-                        .map { (placementPeriod, placementUnit, placementType) ->
-                            Triple(placementPeriod, child, PlacementStub(placementUnit, placementType))
-                        }
+                    (placements[child.id] ?: listOf()).filter { it.first.overlaps(period) }
                 }
             }
 
             val allPeriods = families.map { (period, _) -> period } +
-                relevantPlacements.map { (period) -> period }
+                relevantPlacements.map { it.first }
 
             val familyPlacementsSeries = asDistinctPeriods(allPeriods, spanningPeriod).mapNotNull { period ->
                 val family = families.find { it.first.contains(period) }
@@ -385,23 +390,19 @@ internal fun Database.Read.getInvoiceablePlacements(
                     period to children
                         .sortedByDescending { it.dateOfBirth }
                         .mapNotNull { child ->
-                            relevantPlacements.filter { it.first.contains(period) }.find { child.id == it.second.id }
-                                ?.let { it.second to it.third }
+                            relevantPlacements
+                                .filter { it.first.contains(period) }
+                                .find { child.id == it.second.child.id }
                         }
+                        .map { it.second }
                 }
             }
 
-            headOfFamily to mergePeriods(familyPlacementsSeries)
-        }
-        .flatMap { (headOfFamily, allPlacements) ->
-            allPlacements.map { (period, placements) ->
-                Placements(
-                    period,
-                    headOfFamily,
-                    placements
-                )
+            headOfFamily to mergePeriods(familyPlacementsSeries).flatMap { (period, placements) ->
+                placements.map { period to it }
             }
         }
+        .toMap()
 }
 
 internal fun toFamilyCompositions(
@@ -509,7 +510,7 @@ WHERE
     """
 
     return createQuery(sql)
-        .bind("invoicedTypes", PlacementType.invoiced())
+        .bind("invoicedTypes", PlacementType.invoiced)
         .mapTo<ChildId>()
         .list()
 }

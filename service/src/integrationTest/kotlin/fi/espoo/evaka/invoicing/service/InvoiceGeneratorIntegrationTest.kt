@@ -1085,7 +1085,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `when two people have active fee decisions for the same child only one of them is invoiced`() {
+    fun `when two people have active fee decisions for the same child both are invoiced`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val decision = createFeeDecisionFixture(
@@ -1122,9 +1122,19 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val result = db.read(getAllInvoices)
 
-        assertEquals(1, result.size)
-        result.first().let { invoice ->
-            assertEquals(testAdult_1.id, invoice.headOfFamily)
+        assertEquals(2, result.size)
+        result.find { it.headOfFamily == testAdult_1.id }!!.let { invoice ->
+            assertEquals(28900, invoice.totalPrice)
+            assertEquals(1, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+        }
+        result.find { it.headOfFamily == testAdult_2.id }!!.let { invoice ->
             assertEquals(28900, invoice.totalPrice)
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
@@ -1168,7 +1178,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 endDate = placementPeriod.end!!
             )
             tx.upsertFeeDecisions(
-                listOf(decision, decision.copy(id = FeeDecisionId(UUID.randomUUID()), headOfFamilyId = testAdult_2.id))
+                listOf(
+                    decision.copy(validDuring = period.copy(end = period.start.plusDays(14))),
+                    decision.copy(id = FeeDecisionId(UUID.randomUUID()), headOfFamilyId = testAdult_2.id, validDuring = period.copy(start = period.start.plusDays(15)))
+                )
             )
         }
 
@@ -5028,6 +5041,67 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
+    }
+
+    @Test
+    fun `family with children split between two fridge parents is invoiced as one`() {
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction(insertChildParentRelation(testAdult_2.id, testChild_2.id, period))
+        val decision = createFeeDecisionFixture(
+            FeeDecisionStatus.SENT,
+            FeeDecisionType.NORMAL,
+            period,
+            headOfFamilyId = testAdult_1.id,
+            partnerId = testAdult_2.id,
+            children = listOf(
+                createFeeDecisionChildFixture(
+                    childId = testChild_1.id,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                    baseFee = 28900,
+                    fee = 28900
+                ),
+                createFeeDecisionChildFixture(
+                    childId = testChild_2.id,
+                    dateOfBirth = testChild_2.dateOfBirth,
+                    placementUnitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                    baseFee = 28900,
+                    siblingDiscount = 50,
+                    fee = 14500
+                )
+            )
+        )
+        insertDecisionsAndPlacements(listOf(decision))
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+
+        assertEquals(1, result.size)
+        result.first().let { invoice ->
+            assertEquals(testAdult_1.id, invoice.headOfFamily)
+            assertEquals(43400, invoice.totalPrice)
+            assertEquals(2, invoice.rows.size)
+            invoice.rows.first().let { invoiceRow ->
+                assertEquals(testChild_1.id, invoiceRow.child)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(28900, invoiceRow.unitPrice)
+                assertEquals(28900, invoiceRow.price)
+            }
+            invoice.rows.last().let { invoiceRow ->
+                assertEquals(testChild_2.id, invoiceRow.child)
+                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(14500, invoiceRow.unitPrice)
+                assertEquals(14500, invoiceRow.price)
+            }
+        }
     }
 
     private fun initByPeriodAndPlacementType(
