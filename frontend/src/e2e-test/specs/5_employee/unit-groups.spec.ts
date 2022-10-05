@@ -7,12 +7,17 @@ import { UUID } from 'lib-common/types'
 
 import config from '../../config'
 import {
+  insertBackupCareFixtures,
   insertDefaultServiceNeedOptions,
   resetDatabase,
   terminatePlacement
 } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
-import { Fixture, uuidv4 } from '../../dev-api/fixtures'
+import {
+  createBackupCareFixture,
+  Fixture,
+  uuidv4
+} from '../../dev-api/fixtures'
 import { Child, Daycare, EmployeeDetail } from '../../dev-api/types'
 import ChildInformationPage, {
   AssistanceNeedSection
@@ -29,10 +34,12 @@ let assistanceNeeds: AssistanceNeedSection
 const groupId: UUID = uuidv4()
 let child1Fixture: Child
 let child2Fixture: Child
+let child3Fixture: Child
 let child1DaycarePlacementId: UUID
 let child2DaycarePlacementId: UUID
 
 let daycare: Daycare
+let daycare2: Daycare
 let unitSupervisor: EmployeeDetail
 const placementStartDate = LocalDate.todayInSystemTz().subWeeks(4)
 const placementEndDate = LocalDate.todayInSystemTz().addWeeks(4)
@@ -79,6 +86,9 @@ beforeEach(async () => {
       endDate: placementEndDate.formatIso()
     })
     .save()
+
+  child3Fixture = fixtures.enduserChildFixtureKaarina
+  daycare2 = fixtures.daycareFixturePrivateVoucher
 })
 
 const loadUnitGroupsPage = async (): Promise<UnitGroupsPage> => {
@@ -213,6 +223,47 @@ describe('Unit groups - unit supervisor', () => {
     await groupsPage.openGroupCollapsible(groupId)
     await groupsPage.childCapacityFactorColumnHeading.waitUntilVisible()
     await groupsPage.assertChildCapacityFactor(child1Fixture.id, '1.50')
+  })
+
+  test('Supervisor sees backup care numeric child occupancy factor when not equal to 1', async () => {
+    const child3DaycarePlacementId = uuidv4()
+    await Fixture.placement()
+      .with({
+        id: child3DaycarePlacementId,
+        childId: child3Fixture.id,
+        unitId: daycare2.id,
+        startDate: placementStartDate.formatIso(),
+        endDate: placementEndDate.formatIso()
+      })
+      .save()
+    const backupCareFixture = createBackupCareFixture(
+      child3Fixture.id,
+      daycare.id,
+      groupId,
+      {
+        start: placementStartDate.formatIso(),
+        end: placementEndDate.formatIso()
+      }
+    )
+    await insertBackupCareFixtures([backupCareFixture])
+
+    await page.goto(
+      config.employeeUrl + '/child-information/' + child3Fixture.id
+    )
+    childInformationPage = new ChildInformationPage(page)
+    assistanceNeeds = await childInformationPage.openCollapsible(
+      'assistanceNeed'
+    )
+    await assistanceNeeds.createNewAssistanceNeed()
+    await assistanceNeeds.setAssistanceNeedMultiplier('1,5')
+    await assistanceNeeds.confirmAssistanceNeed()
+
+    const groupsPage = await loadUnitGroupsPage()
+    await groupsPage.missingPlacementsSection.assertRowCount(2)
+
+    await groupsPage.openGroupCollapsible(groupId)
+    await groupsPage.childCapacityFactorColumnHeading.waitUntilVisible()
+    await groupsPage.assertChildCapacityFactor(child3Fixture.id, '1.50')
   })
 
   test('Supervisor sees uncommon age factor when set', async () => {
