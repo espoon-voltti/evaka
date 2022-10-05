@@ -253,7 +253,7 @@ function employeeMobile(flags) {
       fingerprints: !flags.isDevelopment,
       ios: true,
       name: 'eVaka',
-      display: 'fullscreen',
+      display: 'standalone',
       start_url: '/employee/mobile',
       background_color: '#ffffff',
       theme_color: '#3273c9',
