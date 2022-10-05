@@ -2002,6 +2002,7 @@ export const fi = {
       saveChanges: 'Tallenna muutokset',
       noGroup: 'Ei ryhmää',
       staffName: 'Työntekijän nimi',
+      addPerson: 'Lisää henkilö',
       types: {
         PRESENT: 'Läsnä',
         OTHER_WORK: 'Työasia',
@@ -2018,7 +2019,15 @@ export const fi = {
       personCountAbbr: 'hlö',
       unlinkOvernight: 'Erota yön yli menevä läsnäolo',
       previousDay: 'Edellinen päivä',
-      nextDay: 'Seuraava päivä'
+      nextDay: 'Seuraava päivä',
+      addPersonModal: {
+        description:
+          'Lisää väliaikaisesti läsnäoleva henkilö, joka lasketaan mukaan käyttöasteeseen.',
+        arrival: 'Saapumisaika',
+        name: 'Nimi',
+        namePlaceholder: 'Sukunimi Etunimi',
+        group: 'Ryhmä'
+      }
     },
     error: {
       placement: {

@@ -46,6 +46,7 @@ import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
+import AddButton from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import { SpinnerSegment } from 'lib-components/atoms/state/Spinner'
 import { Table, Tbody } from 'lib-components/layout/Table'
@@ -66,6 +67,7 @@ import { useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
 import EllipsisMenu from '../../common/EllipsisMenu'
 
+import { AddPersonModal } from './StaffAttendanceAddPersonModal'
 import StaffAttendanceDetailsModal from './StaffAttendanceDetailsModal'
 import {
   AttendanceTableHeader,
@@ -114,7 +116,13 @@ export default React.memo(function StaffAttendanceTable({
     employeeId: string
     date: LocalDate
   }>()
-  const closeModal = useCallback(() => setDetailsModal(undefined), [])
+  const closeDetailsModal = useCallback(() => setDetailsModal(undefined), [])
+
+  const [showAddPersonModal, setShowAddPersonModal] = useState<boolean>(false)
+  const toggleAddPersonModal = useCallback(
+    () => setShowAddPersonModal((prev) => !prev),
+    []
+  )
 
   const staffRows = useMemo(
     () =>
@@ -348,6 +356,12 @@ export default React.memo(function StaffAttendanceTable({
           </BottomSumTr>
         </tfoot>
       </Table>
+      <AddButton
+        text={i18n.unit.staffAttendance.addPerson}
+        aria-label={i18n.unit.staffAttendance.addPerson}
+        data-qa="add-person-button"
+        onClick={toggleAddPersonModal}
+      />
       {detailsModal && (
         <StaffAttendanceDetailsModal
           unitId={unitId}
@@ -356,7 +370,7 @@ export default React.memo(function StaffAttendanceTable({
           attendances={staffAttendances.concat(
             modalStaffAttendance.getOrElse(undefined)?.staff ?? []
           )}
-          close={closeModal}
+          close={closeDetailsModal}
           reloadStaffAttendances={() => {
             void reloadStaffAttendances()
 
@@ -385,6 +399,18 @@ export default React.memo(function StaffAttendanceTable({
               detailsModal.date.startOfWeek().addWeeks(1)
             )
           }
+        />
+      )}
+      {showAddPersonModal && (
+        <AddPersonModal
+          onClose={toggleAddPersonModal}
+          onSave={async () => {
+            await reloadStaffAttendances()
+            toggleAddPersonModal()
+          }}
+          unitId={unitId}
+          groups={groups}
+          defaultGroupId={selectedGroup}
         />
       )}
     </>

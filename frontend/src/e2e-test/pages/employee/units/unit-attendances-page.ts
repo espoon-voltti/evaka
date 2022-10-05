@@ -10,6 +10,7 @@ import { UUID } from 'lib-common/types'
 import { waitUntilEqual, waitUntilTrue } from '../../../utils'
 import {
   AsyncButton,
+  DatePicker,
   DatePickerDeprecated,
   Element,
   Modal,
@@ -445,6 +446,14 @@ export class UnitAttendancesSection {
   personCountSum(nth: number) {
     return this.page.findAllByDataQa('person-count-sum').nth(nth).innerText
   }
+
+  async clickAddPersonButton(): Promise<StaffAttendanceAddPersonModal> {
+    await this.page.findByDataQa('add-person-button').click()
+
+    return new StaffAttendanceAddPersonModal(
+      this.page.findByDataQa('staff-attendance-add-person-modal')
+    )
+  }
 }
 
 export class ReservationModal extends Modal {
@@ -602,5 +611,47 @@ export class StaffAttendanceDetailsModal extends Element {
 
   gapWarning(index: number) {
     return this.findByDataQa(`attendance-gap-warning-${index}`).innerText
+  }
+}
+
+export class StaffAttendanceAddPersonModal extends Element {
+  async selectGroup(groupId: UUID) {
+    await new Select(this.findByDataQa('add-person-group-select')).selectOption(
+      groupId
+    )
+  }
+
+  async setArrivalTime(time: string) {
+    await new TextInput(
+      this.findByDataQa('add-person-arrival-time-input')
+    ).fill(time)
+  }
+
+  async setArrivalDate(date: string) {
+    await new DatePicker(
+      this.findByDataQa('add-person-arrival-date-picker')
+    ).fill(date)
+  }
+
+  async typeName(name: string) {
+    await new TextInput(this.findByDataQa('add-person-name-input')).fill(name)
+  }
+
+  async save() {
+    await this.findByDataQa('add-person-save-btn').click()
+  }
+
+  async cancel() {
+    await this.findByDataQa('add-person-cancel-btn').click()
+  }
+
+  async timeErrorVisible() {
+    await this.findByDataQa(
+      'add-person-arrival-time-input-info'
+    ).waitUntilVisible()
+  }
+
+  async nameErrorVisible() {
+    await this.findByDataQa('add-person-name-input-info').waitUntilVisible()
   }
 }
