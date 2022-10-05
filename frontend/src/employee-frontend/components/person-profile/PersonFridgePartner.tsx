@@ -11,10 +11,11 @@ import { Partnership, PersonJSON } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { faQuestion, faUser } from 'lib-icons'
+import { H2 } from 'lib-components/typography'
+import { faQuestion } from 'lib-icons'
 
 import {
   getPartnerships,
@@ -43,12 +44,13 @@ interface Props {
 
 const PersonFridgePartner = React.memo(function PersonFridgePartner({
   id,
-  open
+  open: startOpen
 }: Props) {
   const { i18n } = useTranslation()
   const { reloadFamily, permittedActions } = useContext(PersonContext)
   const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
     useContext(UIContext)
+  const [open, setOpen] = useState(startOpen)
   const [partnerships, loadData] = useApiState(() => getPartnerships(id), [id])
   const [selectedPartnershipId, setSelectedPartnershipId] = useState('')
 
@@ -102,12 +104,13 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
           }}
         />
       ) : null}
-      <CollapsibleSection
-        icon={faUser}
-        title={i18n.personProfile.partner}
-        startCollapsed={!open}
+      <CollapsibleContentArea
+        title={<H2>{i18n.personProfile.partner}</H2>}
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        opaque
+        paddingVertical="L"
         data-qa="person-partners-collapsible"
-        fitted
       >
         <TopBar>
           <span className="subtitle">({i18n.personProfile.partnerInfo})</span>
@@ -195,7 +198,7 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
             </Tbody>
           </Table>
         ))}
-      </CollapsibleSection>
+      </CollapsibleContentArea>
     </div>
   )
 })

@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 import { isLoading } from 'lib-common/api'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { faUser } from 'lib-icons'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { H2 } from 'lib-components/typography'
 
 import PersonDetails from '../../components/person-shared/PersonDetails'
 import { useTranslation } from '../../state/i18n'
@@ -19,6 +19,7 @@ export default React.memo(function PersonFridgeHead() {
   const { person, setPerson, permittedActions } =
     useContext<PersonState>(PersonContext)
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
+  const [open, setOpen] = useState(true)
 
   useEffect(() => {
     if (person.isSuccess) {
@@ -32,11 +33,13 @@ export default React.memo(function PersonFridgeHead() {
 
   return (
     <div data-qa="person-info-section" data-isloading={isLoading(person)}>
-      <CollapsibleSection
-        icon={faUser}
-        title={i18n.personProfile.personDetails}
+      <CollapsibleContentArea
+        title={<H2>{i18n.personProfile.personDetails}</H2>}
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        opaque
+        paddingVertical="L"
         data-qa="person-info-collapsible"
-        fitted
       >
         {renderResult(person, (person) => (
           <PersonDetails
@@ -46,7 +49,7 @@ export default React.memo(function PersonFridgeHead() {
             permittedActions={permittedActions}
           />
         ))}
-      </CollapsibleSection>
+      </CollapsibleContentArea>
     </div>
   )
 })

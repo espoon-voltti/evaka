@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useContext, useMemo } from 'react'
+import React, { useContext, useMemo } from 'react'
 import styled from 'styled-components'
 
 import { UUID } from 'lib-common/types'
@@ -10,6 +10,7 @@ import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Title from 'lib-components/atoms/Title'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Td } from 'lib-components/layout/Table'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import CircularLabel from '../components/common/CircularLabel'
@@ -28,6 +29,7 @@ import { PersonContext, PersonContextProvider } from '../state/person'
 import { UserContext } from '../state/user'
 
 import { getLayout, Layouts } from './layouts'
+import FosterChildren from './person-profile/FosterChildren'
 import FamilyOverview from './person-profile/PersonFamilyOverview'
 import PersonInvoiceCorrections from './person-profile/PersonInvoiceCorrections'
 import PersonVoucherValueDecisions from './person-profile/PersonVoucherValueDecisions'
@@ -72,6 +74,7 @@ const components = {
   partners: PersonFridgePartner,
   'fridge-children': PersonFridgeChild,
   dependants: PersonDependants,
+  fosterChildren: FosterChildren,
   applications: PersonApplications,
   decisions: PersonDecisions
 }
@@ -82,6 +85,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'partners', open: false },
     { component: 'fridge-children', open: false },
     { component: 'dependants', open: false },
+    { component: 'fosterChildren', open: false },
     { component: 'applications', open: false },
     { component: 'decisions', open: false },
     { component: 'income', open: false },
@@ -95,6 +99,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'partners', open: false },
     { component: 'fridge-children', open: false },
     { component: 'dependants', open: false },
+    { component: 'fosterChildren', open: false },
     { component: 'applications', open: false },
     { component: 'decisions', open: false },
     { component: 'income', open: false },
@@ -112,12 +117,14 @@ const layouts: Layouts<typeof components> = {
     { component: 'voucherValueDecisions', open: false },
     { component: 'partners', open: false },
     { component: 'fridge-children', open: false },
-    { component: 'dependants', open: false }
+    { component: 'dependants', open: false },
+    { component: 'fosterChildren', open: false }
   ],
   ['SERVICE_WORKER']: [
     { component: 'partners', open: false },
     { component: 'fridge-children', open: false },
     { component: 'dependants', open: false },
+    { component: 'fosterChildren', open: false },
     { component: 'applications', open: false },
     { component: 'decisions', open: false }
   ],
@@ -126,6 +133,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'partners', open: false },
     { component: 'fridge-children', open: false },
     { component: 'dependants', open: false },
+    { component: 'fosterChildren', open: false },
     { component: 'decisions', open: false }
   ],
   ['EARLY_CHILDHOOD_EDUCATION_SECRETARY']: [
@@ -133,6 +141,7 @@ const layouts: Layouts<typeof components> = {
     { component: 'partners', open: false },
     { component: 'fridge-children', open: false },
     { component: 'dependants', open: false },
+    { component: 'fosterChildren', open: false },
     { component: 'decisions', open: false }
   ]
 }
@@ -174,20 +183,14 @@ const PersonProfile = React.memo(function PersonProfile({ id }: { id: UUID }) {
           </HeaderRow>
         </ContentArea>
         <Gap size="s" />
-        <ContentArea opaque>
-          <PersonFridgeHead />
-        </ContentArea>
-        {layout.map(({ component, open }) => {
-          const Component = components[component]
-          return (
-            <Fragment key={component}>
-              <Gap size="s" />
-              <ContentArea opaque>
-                <Component id={id} open={open} />
-              </ContentArea>
-            </Fragment>
-          )
-        })}
+        <PersonFridgeHead />
+        <Gap size="s" />
+        <FixedSpaceColumn spacing="s">
+          {layout.map(({ component, open }) => {
+            const Component = components[component]
+            return <Component key={component} id={id} open={open} />
+          })}
+        </FixedSpaceColumn>
       </div>
     </Container>
   )

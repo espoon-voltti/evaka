@@ -35,7 +35,8 @@ const features: Features = {
       voucherUnitPayments: true,
       assistanceNeedDecisions: true,
       assistanceNeedDecisionsLanguageSelect: true,
-      staffAttendanceTypes: true
+      staffAttendanceTypes: true,
+      fosterParents: true
     }
   },
   staging: {
@@ -59,7 +60,8 @@ const features: Features = {
       citizenVasu: true,
       assistanceNeedDecisions: true,
       assistanceNeedDecisionsLanguageSelect: true,
-      staffAttendanceTypes: true
+      staffAttendanceTypes: true,
+      fosterParents: true
     }
   },
   prod: {
@@ -83,7 +85,8 @@ const features: Features = {
       citizenVasu: true,
       assistanceNeedDecisions: true,
       assistanceNeedDecisionsLanguageSelect: true,
-      staffAttendanceTypes: false
+      staffAttendanceTypes: false,
+      fosterParents: false
     }
   }
 }

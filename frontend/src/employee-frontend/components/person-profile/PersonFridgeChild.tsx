@@ -10,10 +10,11 @@ import { ParentshipWithPermittedActions } from 'lib-common/generated/api-types/p
 import { UUID } from 'lib-common/types'
 import { getAge } from 'lib-common/utils/local-date'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
-import { faChild, faQuestion } from 'lib-icons'
+import { H2 } from 'lib-components/typography'
+import { faQuestion } from 'lib-icons'
 
 import { removeParentship, retryParentship } from '../../api/parentships'
 import Toolbar from '../../components/common/Toolbar'
@@ -30,12 +31,16 @@ interface Props {
   open: boolean
 }
 
-export default React.memo(function PersonFridgeChild({ id, open }: Props) {
+export default React.memo(function PersonFridgeChild({
+  id,
+  open: startOpen
+}: Props) {
   const { i18n } = useTranslation()
   const { fridgeChildren, reloadFridgeChildren, permittedActions } =
     useContext(PersonContext)
   const { uiMode, toggleUiMode, clearUiMode, setErrorMessage } =
     useContext(UIContext)
+  const [open, setOpen] = useState(startOpen)
   const [selectedParentshipId, setSelectedParentshipId] = useState('')
 
   const getFridgeChildById = (id: UUID) => {
@@ -80,12 +85,13 @@ export default React.memo(function PersonFridgeChild({ id, open }: Props) {
           }}
         />
       ) : null}
-      <CollapsibleSection
-        icon={faChild}
-        title={i18n.personProfile.fridgeChildOfHead}
-        startCollapsed={!open}
+      <CollapsibleContentArea
+        title={<H2>{i18n.personProfile.fridgeChildOfHead}</H2>}
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        opaque
+        paddingVertical="L"
         data-qa="person-children-collapsible"
-        fitted
       >
         <AddButtonRow
           text={i18n.personProfile.fridgeChildAdd}
@@ -180,7 +186,7 @@ export default React.memo(function PersonFridgeChild({ id, open }: Props) {
             </Tbody>
           </Table>
         ))}
-      </CollapsibleSection>
+      </CollapsibleContentArea>
     </div>
   )
 })

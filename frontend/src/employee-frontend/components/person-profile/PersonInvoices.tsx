@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Invoice } from 'lib-common/generated/api-types/invoicing'
 import { formatCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { faChild } from 'lib-icons'
+import { H2 } from 'lib-components/typography'
 
 import { getPersonInvoices } from '../../api/invoicing'
 import { useTranslation } from '../../state/i18n'
@@ -24,18 +24,23 @@ interface Props {
   open: boolean
 }
 
-export default React.memo(function PersonInvoices({ id, open }: Props) {
+export default React.memo(function PersonInvoices({
+  id,
+  open: startOpen
+}: Props) {
   const { i18n } = useTranslation()
+  const [open, setOpen] = useState(startOpen)
   const [invoices] = useApiState(() => getPersonInvoices(id), [id])
 
   return (
     <div>
-      <CollapsibleSection
-        icon={faChild}
-        title={i18n.personProfile.invoices}
+      <CollapsibleContentArea
+        title={<H2>{i18n.personProfile.invoices}</H2>}
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        opaque
+        paddingVertical="L"
         data-qa="person-invoices-collapsible"
-        startCollapsed={!open}
-        fitted
       >
         {renderResult(invoices, (invoices) => (
           <Table data-qa="table-of-invoices">
@@ -66,7 +71,7 @@ export default React.memo(function PersonInvoices({ id, open }: Props) {
             </Tbody>
           </Table>
         ))}
-      </CollapsibleSection>
+      </CollapsibleContentArea>
     </div>
   )
 })

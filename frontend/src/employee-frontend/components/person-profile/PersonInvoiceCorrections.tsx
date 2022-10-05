@@ -25,16 +25,15 @@ import AddButton from 'lib-components/atoms/buttons/AddButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import TextArea from 'lib-components/atoms/form/TextArea'
 import { InlineAsyncButton } from 'lib-components/employee/notes/InlineAsyncButton'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
-import { H4, P } from 'lib-components/typography'
+import { H2, H4, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { faChild } from 'lib-icons'
 
 import {
   createInvoiceCorrection,
@@ -56,10 +55,11 @@ interface Props {
 
 export default React.memo(function PersonInvoiceCorrections({
   id,
-  open
+  open: startOpen
 }: Props) {
   const { i18n } = useTranslation()
   const { fridgeChildren, permittedActions } = useContext(PersonContext)
+  const [open, setOpen] = useState(startOpen)
   const [invoiceCodes] = useApiState(getInvoiceCodes, [])
   const [corrections, reloadCorrections] = useApiState(
     () => getPersonInvoiceCorrections(id),
@@ -162,12 +162,13 @@ export default React.memo(function PersonInvoiceCorrections({
   }, [noteModalState, reloadCorrections])
 
   return (
-    <CollapsibleSection
-      icon={faChild}
-      title={i18n.personProfile.invoiceCorrections.title}
+    <CollapsibleContentArea
+      title={<H2>{i18n.personProfile.invoiceCorrections.title}</H2>}
+      open={open}
+      toggleOpen={() => setOpen(!open)}
+      opaque
+      paddingVertical="L"
       data-qa="person-invoice-corrections-collapsible"
-      startCollapsed={!open}
-      fitted
     >
       {renderResult(
         combine(children, groupedCorrections, products, unitIds, unitDetails),
@@ -221,7 +222,7 @@ export default React.memo(function PersonInvoiceCorrections({
           />
         </AsyncFormModal>
       ) : null}
-    </CollapsibleSection>
+    </CollapsibleContentArea>
   )
 })
 

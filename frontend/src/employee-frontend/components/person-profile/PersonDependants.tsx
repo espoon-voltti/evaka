@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import orderBy from 'lodash/orderBy'
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { PersonWithChildrenDTO } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { getAge } from 'lib-common/utils/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { faChild } from 'lib-icons'
+import { H2 } from 'lib-components/typography'
 
 import { getPersonDependants } from '../../api/person'
 import { useTranslation } from '../../state/i18n'
@@ -25,18 +25,23 @@ interface Props {
   open: boolean
 }
 
-export default React.memo(function PersonDependants({ id, open }: Props) {
+export default React.memo(function PersonDependants({
+  id,
+  open: startOpen
+}: Props) {
   const { i18n } = useTranslation()
+  const [open, setOpen] = useState(startOpen)
   const [dependants] = useApiState(() => getPersonDependants(id), [id])
 
   return (
     <div>
-      <CollapsibleSection
-        icon={faChild}
-        title={i18n.personProfile.dependants}
-        startCollapsed={!open}
+      <CollapsibleContentArea
+        title={<H2>{i18n.personProfile.dependants}</H2>}
+        open={open}
+        toggleOpen={() => setOpen(!open)}
+        opaque
+        paddingVertical="L"
         data-qa="person-dependants-collapsible"
-        fitted
       >
         {renderResult(dependants, (dependants) => (
           <Table data-qa="table-of-dependants">
@@ -79,7 +84,7 @@ export default React.memo(function PersonDependants({ id, open }: Props) {
             </Tbody>
           </Table>
         ))}
-      </CollapsibleSection>
+      </CollapsibleContentArea>
     </div>
   )
 })

@@ -271,3 +271,4 @@ V270__fee_decision_sum_cache.sql
 V271__message_thread_children.sql
 V272__message_thread_participant.sql
 V273__message_thread_participant_data.sql
+V274__foster_parent_table.sql

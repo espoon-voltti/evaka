@@ -11,11 +11,10 @@ import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
-import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
-import { H3, H4 } from 'lib-components/typography'
+import { CollapsibleContentArea } from 'lib-components/layout/Container'
+import { H2, H3, H4 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
-import { faEuroSign } from 'lib-icons'
 
 import { getChildPlacementPeriods } from '../../api/child/placements'
 import {
@@ -44,9 +43,13 @@ interface Props {
   open: boolean
 }
 
-export default React.memo(function PersonIncome({ id, open }: Props) {
+export default React.memo(function PersonIncome({
+  id,
+  open: startOpen
+}: Props) {
   const { i18n } = useTranslation()
   const { permittedActions } = useContext(PersonContext)
+  const [open, setOpen] = useState(startOpen)
 
   const [children] = useApiState(
     () => getGuardianIncomeStatementChildren(id),
@@ -54,12 +57,13 @@ export default React.memo(function PersonIncome({ id, open }: Props) {
   )
 
   return (
-    <CollapsibleSection
-      icon={faEuroSign}
-      title={i18n.personProfile.income.title}
+    <CollapsibleContentArea
+      title={<H2>{i18n.personProfile.income.title}</H2>}
+      open={open}
+      toggleOpen={() => setOpen(!open)}
+      opaque
+      paddingVertical="L"
       data-qa="person-income-collapsible"
-      startCollapsed={!open}
-      fitted
     >
       <H4>{i18n.personProfile.incomeStatement.title}</H4>
       <IncomeStatements personId={id} />
@@ -79,7 +83,7 @@ export default React.memo(function PersonIncome({ id, open }: Props) {
       <Gap size="L" />
       <H3>{i18n.personProfile.income.title}</H3>
       <Incomes personId={id} permittedActions={permittedActions} />
-    </CollapsibleSection>
+    </CollapsibleContentArea>
   )
 })
 
