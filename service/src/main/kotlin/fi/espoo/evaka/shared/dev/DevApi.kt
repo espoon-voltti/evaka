@@ -979,6 +979,11 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         db.connect { dbc -> dbc.transaction { fridgePartners.forEach { partner -> it.insertFridgePartner(partner) } } }
     }
 
+    @PostMapping("/foster-parent")
+    fun createFosterParent(db: Database, @RequestBody fosterParents: List<DevFosterParent>) {
+        db.connect { dbc -> dbc.transaction { tx -> fosterParents.forEach { tx.insertFosterParent(it) } } }
+    }
+
     @PostMapping("/employee-pin")
     fun createEmployeePins(db: Database, @RequestBody employeePins: List<DevEmployeePin>) {
         db.connect { dbc ->

@@ -45,6 +45,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeAlterationId
 import fi.espoo.evaka.shared.FeeThresholdsId
+import fi.espoo.evaka.shared.FosterParentId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.IncomeId
@@ -65,6 +66,7 @@ import fi.espoo.evaka.shared.StaffAttendancePlanId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.europeHelsinki
@@ -1126,6 +1128,22 @@ data class DevEmployeePin(
     val employeeExternalId: String? = null,
     val pin: String,
     val locked: Boolean? = false
+)
+
+data class DevFosterParent(
+    val id: FosterParentId = FosterParentId(UUID.randomUUID()),
+    val childId: ChildId,
+    val parentId: PersonId,
+    val validDuring: DateRange
+)
+
+fun Database.Transaction.insertFosterParent(fixture: DevFosterParent) = insertTestDataRow(
+    fixture,
+    """
+INSERT INTO foster_parent (id, child_id, parent_id, valid_during)
+VALUES (:id, :childId, :parentId, :validDuring)
+RETURNING id
+"""
 )
 
 fun Database.Transaction.insertEmployeePin(employeePin: DevEmployeePin) = insertTestDataRow(
