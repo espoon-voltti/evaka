@@ -57,7 +57,7 @@ data class DaycareFields(
     val roundTheClock: Boolean,
     val businessId: String,
     val iban: String,
-    val providerId: String,
+    val providerId: String
 ) {
     fun validate() {
         if (name.isBlank()) {
@@ -72,7 +72,48 @@ private fun Database.Read.getDaycaresQuery() = createQuery(
     // language=SQL
     """
 SELECT
-  daycare.*,
+  daycare.id,
+  daycare.name,
+  daycare.opening_date,
+  daycare.closing_date,
+  daycare.type,
+  daycare.daycare_apply_period,
+  daycare.preschool_apply_period,
+  daycare.club_apply_period,
+  daycare.provider_type,
+  daycare.capacity,
+  daycare.language,
+  coalesce(daycare.ghost_unit, false) as ghost_unit,
+  daycare.upload_to_varda,
+  daycare.upload_children_to_varda,
+  daycare.upload_to_koski,
+  daycare.invoiced_by_municipality,
+  daycare.cost_center,
+  daycare.additional_info,
+  daycare.phone,
+  daycare.email,
+  daycare.url,
+  daycare.street_address,
+  daycare.postal_code,
+  daycare.post_office,
+  daycare.location,
+  daycare.mailing_street_address,
+  daycare.mailing_po_box,
+  daycare.mailing_postal_code,
+  daycare.mailing_post_office,
+  daycare.decision_daycare_name,
+  daycare.decision_preschool_name,
+  daycare.decision_handler,
+  daycare.decision_handler_address,
+  daycare.oph_unit_oid,
+  daycare.oph_organizer_oid,
+  daycare.operation_days,
+  daycare.round_the_clock,
+  daycare.enabled_pilot_features,
+  daycare.business_id,
+  daycare.iban,
+  daycare.provider_id,
+  daycare.care_area_id, 
   finance_decision_handler.id AS finance_decision_handler_id,
   coalesce(finance_decision_handler.preferred_first_name, finance_decision_handler.first_name) AS finance_decision_handler_first_name,
   finance_decision_handler.last_name AS finance_decision_handler_last_name,
@@ -80,9 +121,9 @@ SELECT
   um.name AS unit_manager_name, um.email AS unit_manager_email, um.phone AS unit_manager_phone,
   ca.name AS care_area_name, ca.short_name AS care_area_short_name
 FROM daycare
-LEFT JOIN unit_manager um ON unit_manager_id = um.id
-LEFT JOIN employee finance_decision_handler ON finance_decision_handler.id = finance_decision_handler
-JOIN care_area ca ON care_area_id = ca.id
+LEFT JOIN unit_manager um ON daycare.unit_manager_id = um.id
+LEFT JOIN employee finance_decision_handler ON finance_decision_handler.id = daycare.finance_decision_handler
+JOIN care_area ca ON daycare.care_area_id = ca.id
 WHERE :idFilter::uuid[] IS NULL OR daycare.id = ANY(:idFilter)
 """
 )
