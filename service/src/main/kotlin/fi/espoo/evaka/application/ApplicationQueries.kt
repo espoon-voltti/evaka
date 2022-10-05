@@ -475,7 +475,7 @@ fun Database.Read.fetchApplicationSummariesForChild(childId: ChildId): List<Pers
             a.preferredStartDate, a.sentDate, a.type,
             a.childId, a.childName, a.childSsn,
             a.guardianId, concat(p.last_name, ' ', p.first_name) as guardianName,
-            a.connecteddaycare,
+            coalesce(a.connecteddaycare, false) as connecteddaycare,
             a.preparatoryeducation,
             d.name AS preferredUnitName,
             a.status
