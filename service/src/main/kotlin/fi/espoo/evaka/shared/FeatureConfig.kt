@@ -95,5 +95,8 @@ data class FeatureConfig(
     val assistanceDecisionMakerRoles: Set<UserRole>?,
 
     /** The number of days citizens can move daycare start forward */
-    val requestedStartUpperLimit: Int
+    val requestedStartUpperLimit: Int,
+
+    /** Control whether to use partial absence thresholds in child attendance departure **/
+    val partialAbsenceThresholdsEnabled: Boolean,
 )

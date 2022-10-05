@@ -20,7 +20,7 @@ import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.auth.AccessControlList
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
@@ -59,7 +59,7 @@ val fiveYearOldFreeLimit: Duration = Duration.ofHours(4) + Duration.ofMinutes(15
 @RequestMapping("/attendances")
 class ChildAttendanceController(
     private val accessControl: AccessControl,
-    private val acl: AccessControlList
+    private val featureConfig: FeatureConfig,
 ) {
     @GetMapping("/units/{unitId}")
     fun getAttendances(
@@ -190,11 +190,8 @@ class ChildAttendanceController(
 
         return db.connect { dbc ->
             dbc.read { tx ->
-                val placementBasics = tx.fetchChildPlacementBasics(childId, unitId, clock.today())
-                val attendance = tx.getChildOngoingAttendance(childId, unitId)
-                    ?: throw Conflict("Cannot depart, has not yet arrived")
-                val childHasPaidServiceNeedToday = tx.childHasPaidServiceNeedToday(childId, clock.today())
-                getPartialAbsenceThresholds(placementBasics, attendance.startTime, childHasPaidServiceNeedToday)
+                val attendance = getChildOngoingAttendance(tx, childId, unitId)
+                getPartialAbsenceThresholds(tx, clock, childId, unitId, attendance)
             }
         }.also {
             Audit.ChildAttendancesDepartureRead.log(targetId = childId)
@@ -221,14 +218,9 @@ class ChildAttendanceController(
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val today = clock.today()
-                val placementBasics = tx.fetchChildPlacementBasics(childId, unitId, today)
 
-                val attendance = tx.getChildOngoingAttendance(childId, unitId)
-                    ?: throw Conflict("Cannot depart, has not yet arrived")
-
-                val childHasPaidServiceNeedToday = tx.childHasPaidServiceNeedToday(childId, today)
-
-                val absentFrom = getPartialAbsenceThresholds(placementBasics, attendance.startTime, childHasPaidServiceNeedToday)
+                val attendance = getChildOngoingAttendance(tx, childId, unitId)
+                val absentFrom = getPartialAbsenceThresholds(tx, clock, childId, unitId, attendance)
                     .filter { body.departed <= it.time }
                 tx.deleteAbsencesByDate(childId, today)
                 if (absentFrom.isNotEmpty()) {
@@ -392,6 +384,25 @@ class ChildAttendanceController(
             objectId = deleted,
             mapOf("from" to from, "to" to to)
         )
+    }
+
+    private fun getChildOngoingAttendance(tx: Database.Read, childId: ChildId, unitId: DaycareId) =
+        tx.getChildOngoingAttendance(childId, unitId) ?: throw Conflict("Cannot depart, has not yet arrived")
+
+    private fun getPartialAbsenceThresholds(
+        tx: Database.Read,
+        clock: EvakaClock,
+        childId: ChildId,
+        unitId: DaycareId,
+        attendance: OngoingAttendance,
+    ): List<AbsenceThreshold> {
+        if (!featureConfig.partialAbsenceThresholdsEnabled) {
+            return emptyList()
+        }
+        val today = clock.today()
+        val placementBasics = tx.fetchChildPlacementBasics(childId, unitId, today)
+        val childHasPaidServiceNeedToday = tx.childHasPaidServiceNeedToday(childId, today)
+        return getPartialAbsenceThresholds(placementBasics, attendance.startTime, childHasPaidServiceNeedToday)
     }
 }
 

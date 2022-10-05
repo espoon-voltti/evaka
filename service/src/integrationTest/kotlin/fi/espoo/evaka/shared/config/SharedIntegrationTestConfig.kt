@@ -205,4 +205,5 @@ val testFeatureConfig = FeatureConfig(
     curriculumDocumentPermissionToShareRequired = true,
     assistanceDecisionMakerRoles = null,
     requestedStartUpperLimit = 14,
+    partialAbsenceThresholdsEnabled = true,
 )
