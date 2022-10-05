@@ -37,12 +37,9 @@ class MobileUnitController(private val accessControl: AccessControl) {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_MOBILE_INFO, unitId)
         return db.connect { dbc ->
             dbc.read { tx ->
-                val unsorted = tx.fetchUnitInfo(
+                tx.fetchUnitInfo(
                     unitId,
                     clock.today(),
-                )
-                unsorted.copy(
-                    groups = unsorted.groups.sortedBy { it.name }
                 )
             }
         }.also {
@@ -211,7 +208,7 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
         } else {
             Double.POSITIVE_INFINITY
         }
-    val groups = tmpGroups.map { GroupInfo(it.id, it.name, it.utilization) }
+    val groups = tmpGroups.map { GroupInfo(it.id, it.name, it.utilization) }.sortedBy { it.name }
 
     val staff = createQuery(
         """

@@ -153,7 +153,10 @@ export default React.memo(function VoucherServiceProviders() {
           sum: formatCents(monthlyPaymentSum, true)
         }))
         .sort((l, r) =>
-          `${l.areaName}-${l.unitName}` > `${r.areaName}-${r.unitName}` ? 1 : -1
+          `${l.areaName}-${l.unitName}`.localeCompare(
+            `${r.areaName}-${r.unitName}`,
+            'fi'
+          )
         )
     )
     .getOrElse(undefined)
