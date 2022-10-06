@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.mapToPaged
 import mu.KotlinLogging
-import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 import java.time.LocalDate
 
@@ -222,28 +221,6 @@ WHERE
         .execute()
 }
 
-data class ReceivedMessageResultItem(
-    val count: Int,
-    val id: MessageThreadId,
-    val title: String,
-    val type: MessageType,
-    val urgent: Boolean,
-    val messageId: MessageId,
-    val sentAt: HelsinkiDateTime,
-    val content: String,
-    val senderId: MessageAccountId,
-    val senderName: String,
-    val senderAccountType: AccountType,
-    val readAt: HelsinkiDateTime? = null,
-    val recipientId: MessageAccountId,
-    val recipientName: String,
-    val recipientAccountType: AccountType,
-    @Json
-    val children: List<MessageChild>,
-    @Json
-    val attachments: List<MessageAttachment>
-)
-
 private data class ReceivedThread(
     val id: MessageThreadId,
     val title: String,
@@ -251,12 +228,6 @@ private data class ReceivedThread(
     val urgent: Boolean,
     @Json
     val children: List<MessageChild>,
-)
-
-private data class ThreadMessage(
-    val threadId: MessageThreadId,
-    @Nested
-    val message: Message
 )
 
 /** Return all threads that are visible to the account through sent and received messages **/
@@ -335,7 +306,7 @@ LIMIT :pageSize OFFSET :offset
     return combineThreadsAndMessages(accountId, threads, messagesByThread)
 }
 
-private fun Database.Read.getThreadMessages(accountId: MessageAccountId, threadIds: List<MessageThreadId>): Map<MessageThreadId, List<ThreadMessage>> {
+private fun Database.Read.getThreadMessages(accountId: MessageAccountId, threadIds: List<MessageThreadId>): Map<MessageThreadId, List<Message>> {
     if (threadIds.isEmpty()) return mapOf()
     return createQuery(
         """
@@ -356,7 +327,7 @@ SELECT
         JOIN message_account_view mav ON mav.id = mr.recipient_id
         WHERE mr.message_id = m.id
     ) AS recipients,
-    COALESCE((
+    coalesce((
         SELECT jsonb_agg(jsonb_build_object('id', a.id, 'name', a.name, 'contentType', a.content_type))
         FROM attachment a
         WHERE a.message_content_id = mc.id
@@ -376,13 +347,13 @@ ORDER BY m.sent_at
     )
         .bind("accountId", accountId)
         .bind("threadIds", threadIds)
-        .mapTo<ThreadMessage>()
+        .mapTo<Message>()
         .groupBy { it.threadId }
 }
 
-private fun combineThreadsAndMessages(accountId: MessageAccountId, threads: Paged<ReceivedThread>, messagesByThread: Map<MessageThreadId, List<ThreadMessage>>): Paged<MessageThread> {
+private fun combineThreadsAndMessages(accountId: MessageAccountId, threads: Paged<ReceivedThread>, messagesByThread: Map<MessageThreadId, List<Message>>): Paged<MessageThread> {
     return threads.flatMap { thread ->
-        val messages = messagesByThread[thread.id]?.map { it.message }
+        val messages = messagesByThread[thread.id]
         if (messages == null) {
             logger.warn("Thread ${thread.id} has no messages for account $accountId")
             listOf()
@@ -469,68 +440,38 @@ LIMIT :pageSize OFFSET :offset
         .mapToPaged(pageSize)
 }
 
-data class MessageResultItem(
-    val id: MessageId,
-    val senderId: MessageAccountId,
-    val senderName: String,
-    val senderAccountType: AccountType,
-    val recipientId: MessageAccountId,
-    val recipientName: String,
-    val recipientAccountType: AccountType,
-    val sentAt: HelsinkiDateTime,
-    val content: String,
-    @Json
-    val attachments: List<MessageAttachment>
-)
-
-fun Database.Read.getMessage(id: MessageId): Message {
+fun Database.Read.getSentMessage(senderId: MessageAccountId, messageId: MessageId): Message {
     val sql = """
-        SELECT
-            m.id,
-            m.sender_id,
-            m.sender_name,
-            sender_acc.type as sender_account_type,
-            m.sent_at,
-            c.content,
-            rec.recipient_id,
-            recipient_acc_name.account_name recipient_name,
-            recipient_acc.type AS recipient_account_type,
-            (
-                SELECT coalesce(jsonb_agg(jsonb_build_object(
-                   'id', att.id,
-                   'name', att.name,
-                   'contentType', att.content_type
-                )), '[]'::jsonb)
-                FROM attachment att WHERE att.message_content_id = m.content_id
-            ) AS attachments
-        FROM message m
-        JOIN message_content c ON m.content_id = c.id
-        JOIN message_recipients rec ON m.id = rec.message_id
-        JOIN message_account recipient_acc ON recipient_acc.id = rec.recipient_id
-        JOIN message_account sender_acc ON m.sender_id = sender_acc.id
-        JOIN message_account_name_view recipient_acc_name ON rec.recipient_id = recipient_acc_name.id
-        WHERE m.id = :id
-    """.trimIndent()
-
+SELECT
+    m.id,
+    m.thread_id,
+    m.sent_at,
+    mc.content,
+    (
+        SELECT jsonb_build_object('id', mav.id, 'name', mav.name, 'type', mav.type)
+        FROM message_account_view mav
+        WHERE mav.id = m.sender_id
+    ) AS sender,
+    (
+        SELECT jsonb_agg(jsonb_build_object('id', mav.id, 'name', mav.name, 'type', mav.type))
+        FROM message_recipients mr
+        JOIN message_account_view mav ON mav.id = mr.recipient_id
+        WHERE mr.message_id = m.id
+    ) AS recipients,
+    coalesce((
+        SELECT jsonb_agg(jsonb_build_object('id', a.id, 'name', a.name, 'contentType', a.content_type))
+        FROM attachment a
+        WHERE a.message_content_id = mc.id
+    ), '[]'::jsonb) AS attachments
+FROM message m
+JOIN message_content mc ON mc.id = m.content_id
+WHERE m.id = :messageId AND m.sender_id = :senderId
+"""
     return this.createQuery(sql)
-        .bind("id", id)
-        .mapTo<MessageResultItem>()
-        .groupBy { it.id }
-        .map { (id, messages) ->
-            Message(
-                id = id,
-                content = messages[0].content,
-                sentAt = messages[0].sentAt,
-                sender = MessageAccount(
-                    id = messages[0].senderId,
-                    name = messages[0].senderName,
-                    type = messages[0].senderAccountType
-                ),
-                recipients = messages.map { MessageAccount(it.recipientId, it.recipientName, it.recipientAccountType) }.toSet(),
-                attachments = messages[0].attachments
-            )
-        }
-        .single()
+        .bind("messageId", messageId)
+        .bind("senderId", senderId)
+        .mapTo<Message>()
+        .first()
 }
 
 fun Database.Read.getCitizenReceivers(today: LocalDate, accountId: MessageAccountId): Map<MessageAccount, List<ChildId>> {

@@ -135,6 +135,7 @@ export default React.memo(function ThreadListContainer({
         messages: [
           {
             id: message.contentId,
+            threadId: message.contentId,
             sender: { ...account },
             sentAt: message.sentAt,
             recipients: message.recipients,
@@ -157,6 +158,7 @@ export default React.memo(function ThreadListContainer({
         messages: [
           {
             id: message.messageId,
+            threadId: message.threadId,
             sender: {
               id: message.senderId,
               name: message.senderName,

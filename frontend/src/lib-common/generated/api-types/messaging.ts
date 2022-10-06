@@ -88,6 +88,7 @@ export interface Message {
   recipients: MessageAccount[]
   sender: MessageAccount
   sentAt: HelsinkiDateTime
+  threadId: UUID
 }
 
 /**
