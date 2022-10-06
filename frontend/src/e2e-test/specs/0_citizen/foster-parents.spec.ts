@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import DateRange from 'lib-common/date-range'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
@@ -24,6 +25,7 @@ import {
 import { Fixture } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
+import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
 import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenHeader from '../../pages/citizen/citizen-header'
@@ -289,4 +291,33 @@ test('Foster parent can terminate a daycare placement', async () => {
       }, viimeinen läsnäolopäivä: ${mockedDate.format()}`
     ]
   )
+})
+
+test('Foster parent can create a repeating reservation', async () => {
+  await Fixture.placement()
+    .with({
+      childId: fosterChild.id,
+      unitId: fixtures.daycareFixture.id,
+      startDate: mockedDate.formatIso(),
+      endDate: mockedDate.addYears(1).formatIso()
+    })
+    .save()
+  await citizenPage.reload()
+  const firstReservationDay = mockedDate.addDays(14)
+  const reservation = {
+    startTime: '08:00',
+    endTime: '16:00',
+    childIds: [fosterChild.id]
+  }
+
+  await header.selectTab('calendar')
+  const calendarPage = new CitizenCalendarPage(citizenPage, 'desktop')
+  const reservationsModal = await calendarPage.openReservationsModal()
+  await reservationsModal.createRepeatingDailyReservation(
+    new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
+    reservation.startTime,
+    reservation.endTime
+  )
+
+  await calendarPage.assertReservations(firstReservationDay, [reservation])
 })
