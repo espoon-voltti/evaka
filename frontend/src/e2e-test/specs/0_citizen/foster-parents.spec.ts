@@ -151,3 +151,33 @@ test('Foster parent can receive and reply to messages', async () => {
   await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
   await messagesPage.assertMessageContent(1, reply)
 })
+
+test('Foster parent can read an accepted assistance decision', async () => {
+  const citizenDecisionsPage = new CitizenDecisionsPage(citizenPage)
+  const decision = await Fixture.preFilledAssistanceNeedDecision()
+    .withChild(fosterChild.id)
+    .with({
+      selectedUnit: { id: fixtures.daycareFixture.id },
+      status: 'ACCEPTED',
+      assistanceLevels: ['ASSISTANCE_SERVICES_FOR_TIME', 'ENHANCED_ASSISTANCE'],
+      validityPeriod: new DateRange(mockedDate, mockedDate.addYears(1)),
+      decisionMade: mockedDate
+    })
+    .save()
+  await header.selectTab('decisions')
+
+  await citizenDecisionsPage.assertAssistanceDecision(
+    fosterChild.id,
+    decision.data.id ?? '',
+    {
+      assistanceLevel:
+        'Tukipalvelut päätöksen voimassaolon aikana, tehostettu tuki',
+      selectedUnit: fixtures.daycareFixture.name,
+      validityPeriod: `${mockedDate.format()} - ${mockedDate
+        .addYears(1)
+        .format()}`,
+      decisionMade: mockedDate.format(),
+      status: 'Hyväksytty'
+    }
+  )
+})
