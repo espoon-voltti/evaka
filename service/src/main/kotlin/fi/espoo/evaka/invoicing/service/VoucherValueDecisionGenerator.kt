@@ -94,7 +94,7 @@ internal fun Database.Transaction.handleValueDecisionChanges(
         child.id,
         from.minusDays(1).let { date -> DateRange(date, date) },
         listOf(VoucherValueDecisionStatus.DRAFT)
-    ).also { list -> list.size.let { size -> assert(size == 0 || size == 1) } }
+    )
 
     val newDraftsWithoutDifference =
         generateNewValueDecisions(
