@@ -21,9 +21,11 @@ import {
 import { Fixture } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
+import { CitizenChildPage } from '../../pages/citizen/citizen-children'
 import CitizenDecisionsPage from '../../pages/citizen/citizen-decisions'
 import CitizenHeader from '../../pages/citizen/citizen-header'
 import CitizenMessagesPage from '../../pages/citizen/citizen-messages'
+import CitizenPedagogicalDocumentsPage from '../../pages/citizen/citizen-pedagogical-documents'
 import MessagesPage from '../../pages/employee/messages/messages-page'
 import { waitUntilEqual } from '../../utils'
 import { minimalDaycareForm } from '../../utils/application-forms'
@@ -179,5 +181,35 @@ test('Foster parent can read an accepted assistance decision', async () => {
       decisionMade: mockedDate.format(),
       status: 'Hyväksytty'
     }
+  )
+})
+
+test('Foster parent can read a pedagogical document', async () => {
+  await Fixture.placement()
+    .with({
+      childId: fosterChild.id,
+      unitId: fixtures.daycareFixture.id,
+      startDate: mockedDate.formatIso(),
+      endDate: mockedDate.addYears(1).formatIso()
+    })
+    .save()
+  const document = await Fixture.pedagogicalDocument()
+    .with({
+      childId: fosterChild.id,
+      description: 'e2e test description'
+    })
+    .save()
+  await citizenPage.reload()
+
+  await header.openChildPage(fosterChild.id)
+  const childPage = new CitizenChildPage(citizenPage)
+  await childPage.openCollapsible('pedagogical-documents')
+  const pedagogicalDocumentsPage = new CitizenPedagogicalDocumentsPage(
+    citizenPage
+  )
+  await pedagogicalDocumentsPage.assertPedagogicalDocumentExists(
+    document.data.id,
+    LocalDate.todayInSystemTz().format(),
+    document.data.description
   )
 })
