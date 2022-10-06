@@ -154,8 +154,13 @@ enum class VoucherValueDecisionStatus {
 
 @ConstList("voucherValueDecisionDifferences")
 enum class VoucherValueDecisionDifference(val contentEquals: (d1: VoucherValueDecision, d2: VoucherValueDecision) -> Boolean) : DatabaseEnum {
-    GUARDIANS({ d1, d2 -> d1.headOfFamilyId == d2.headOfFamilyId && d1.partnerId == d2.partnerId }),
-    INCOME({ d1, d2 -> d1.headOfFamilyIncome == d2.headOfFamilyIncome && d1.partnerIncome == d2.partnerIncome && d1.childIncome == d2.childIncome }),
+    GUARDIANS({ d1, d2 -> setOf(d1.headOfFamilyId, d1.partnerId) == setOf(d2.headOfFamilyId, d2.partnerId) }),
+    INCOME({ d1, d2 ->
+        setOf(d1.headOfFamilyIncome, d1.partnerIncome) == setOf(
+            d2.headOfFamilyIncome,
+            d2.partnerIncome
+        ) && d1.childIncome == d2.childIncome
+    }),
     FAMILY_SIZE({ d1, d2 -> d1.familySize == d2.familySize }),
     PLACEMENT({ d1, d2 -> d1.placement == d2.placement }),
     SERVICE_NEED({ d1, d2 -> d1.serviceNeed == d2.serviceNeed }),
