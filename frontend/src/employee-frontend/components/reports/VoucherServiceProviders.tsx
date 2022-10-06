@@ -152,6 +152,12 @@ export default React.memo(function VoucherServiceProviders() {
           childCount: childCount,
           sum: formatCents(monthlyPaymentSum, true)
         }))
+        .sort((l, r) =>
+          `${l.areaName}-${l.unitName}`.localeCompare(
+            `${r.areaName}-${r.unitName}`,
+            'fi'
+          )
+        )
     )
     .getOrElse(undefined)
 
