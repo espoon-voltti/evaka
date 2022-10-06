@@ -28,7 +28,7 @@ class FamilyConflictReportController(private val acl: AccessControlList, private
                 it.getFamilyConflicts(acl.getAuthorizedUnits(user))
             }
         }.also {
-            Audit.FamilyConflictReportRead.log()
+            Audit.FamilyConflictReportRead.log(args = mapOf("count" to it.size))
         }
     }
 }

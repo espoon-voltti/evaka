@@ -71,8 +71,8 @@ class VasuController(
 
                 tx.insertVasuDocument(clock, childId, template)
             }
-        }.also {
-            Audit.VasuDocumentCreate.log(childId)
+        }.also { documentId ->
+            Audit.VasuDocumentCreate.log(targetId = childId, objectId = documentId)
         }
     }
 
@@ -97,7 +97,7 @@ class VasuController(
                 summaries.map { VasuDocumentSummaryWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
             }
         }.also {
-            Audit.ChildVasuDocumentsRead.log(childId)
+            Audit.ChildVasuDocumentsRead.log(targetId = childId, args = mapOf("count" to it.size))
         }
     }
 
@@ -150,7 +150,7 @@ class VasuController(
                 )
             }
         }.also {
-            Audit.VasuDocumentRead.log(id)
+            Audit.VasuDocumentRead.log(targetId = id)
         }
     }
 
@@ -222,7 +222,7 @@ class VasuController(
                 tx.revokeVasuGuardianHasGivenPermissionToShare(id)
             }
         }
-        Audit.VasuDocumentUpdate.log(id)
+        Audit.VasuDocumentUpdate.log(targetId = id)
     }
 
     private fun validateVasuDocumentUpdate(vasu: VasuDocument, body: UpdateDocumentRequest) {
@@ -290,7 +290,7 @@ class VasuController(
                 }
             }
         }
-        Audit.VasuDocumentEventCreate.log(id)
+        Audit.VasuDocumentEventCreate.log(targetId = id)
     }
 
     private fun validateStateTransition(eventType: VasuDocumentEventType, currentState: VasuDocumentState) {

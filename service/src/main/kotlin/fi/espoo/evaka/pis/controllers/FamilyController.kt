@@ -71,7 +71,7 @@ class FamilyController(
     ): List<FamilyContact> {
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_FAMILY_CONTACTS, childId)
         return db.connect { dbc -> dbc.read { it.fetchFamilyContacts(clock, childId) } }.also {
-            Audit.FamilyContactsRead.log(targetId = childId)
+            Audit.FamilyContactsRead.log(targetId = childId, args = mapOf("count" to it.size))
         }
     }
 

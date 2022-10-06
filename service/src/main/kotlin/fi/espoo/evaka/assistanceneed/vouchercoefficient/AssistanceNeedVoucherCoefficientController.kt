@@ -41,8 +41,8 @@ class AssistanceNeedVoucherCoefficientController(
                 adjustExistingCoefficients(tx, childId, body.validityPeriod, null)
                 tx.insertAssistanceNeedVoucherCoefficient(childId, body)
             }
-        }.also {
-            Audit.ChildAssistanceNeedVoucherCoefficientCreate.log(targetId = childId)
+        }.also { coefficient ->
+            Audit.ChildAssistanceNeedVoucherCoefficientCreate.log(targetId = childId, objectId = coefficient.id)
         }
     }
 
@@ -64,7 +64,7 @@ class AssistanceNeedVoucherCoefficientController(
                 }
             }
         }.also {
-            Audit.ChildAssistanceNeedVoucherCoefficientRead.log(targetId = childId)
+            Audit.ChildAssistanceNeedVoucherCoefficientRead.log(targetId = childId, args = mapOf("count" to it.size))
         }
     }
 

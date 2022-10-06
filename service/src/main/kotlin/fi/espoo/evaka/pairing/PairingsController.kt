@@ -73,7 +73,7 @@ class PairingsController(
                 }
             }
         }.also {
-            Audit.PairingInit.log(targetId = body.id)
+            Audit.PairingInit.log(targetId = body.id, objectId = it.id)
         }
     }
 
@@ -95,7 +95,7 @@ class PairingsController(
         @RequestBody body: PostPairingChallengeReq
     ): Pairing {
         return db.connect { dbc -> dbc.transaction { it.challengePairing(clock, body.challengeKey) } }.also {
-            Audit.PairingChallenge.log(targetId = body.challengeKey)
+            Audit.PairingChallenge.log(targetId = it.id, args = mapOf("challengeKey" to body.challengeKey))
         }
     }
 
@@ -136,7 +136,10 @@ class PairingsController(
                 it.respondPairingChallengeCreateDevice(id, body.challengeKey, body.responseKey)
             }
         }.also {
-            Audit.PairingResponse.log(targetId = id)
+            Audit.PairingResponse.log(
+                targetId = id,
+                args = mapOf("challengeKey" to body.challengeKey, "responseKey" to body.responseKey)
+            )
         }
     }
 
@@ -165,7 +168,10 @@ class PairingsController(
                 }
             }
         }.also {
-            Audit.PairingValidation.log(targetId = id)
+            Audit.PairingValidation.log(
+                targetId = id,
+                args = mapOf("challengeKey" to body.challengeKey, "responseKey" to body.responseKey)
+            )
         }
     }
 
@@ -185,7 +191,7 @@ class PairingsController(
     ): PairingStatusRes {
         return PairingStatusRes(
             db.connect { dbc -> dbc.read { it.fetchPairingStatus(id) } }.also {
-                Audit.PairingStatusRead.log(targetId = id)
+                Audit.PairingStatusRead.log(targetId = id, args = mapOf("status" to it))
             }
         )
     }

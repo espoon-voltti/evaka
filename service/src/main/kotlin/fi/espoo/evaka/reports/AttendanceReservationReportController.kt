@@ -50,7 +50,8 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
                 args = mapOf(
                     "groupIds" to groupIds,
                     "start" to start,
-                    "end" to end
+                    "end" to end,
+                    "count" to it.size
                 )
             )
         }
@@ -78,7 +79,8 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
                 args = mapOf(
                     "groupIds" to groupIds,
                     "start" to start,
-                    "end" to end
+                    "end" to end,
+                    "count" to it.size
                 )
             )
         }

@@ -40,7 +40,7 @@ class ApplicationsReportController(private val accessControl: AccessControl, pri
                 it.getApplicationsRows(from, to, acl.getAuthorizedUnits(user))
             }
         }.also {
-            Audit.ApplicationsReportRead.log(args = mapOf("from" to from, "to" to to))
+            Audit.ApplicationsReportRead.log(args = mapOf("from" to from, "to" to to, "count" to it.size))
         }
     }
 }

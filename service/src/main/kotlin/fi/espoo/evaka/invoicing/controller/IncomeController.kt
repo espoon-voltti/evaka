@@ -78,7 +78,7 @@ class IncomeController(
                 incomes.map { IncomeWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
             }
         }
-        Audit.PersonIncomeRead.log(targetId = personId)
+        Audit.PersonIncomeRead.log(targetId = personId, args = mapOf("count" to incomes.size))
         return Wrapper(incomes)
     }
 
@@ -108,8 +108,8 @@ class IncomeController(
                 asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(validIncome.personId, period)), runAt = clock.now())
                 id
             }
-        }.also {
-            Audit.PersonIncomeCreate.log(targetId = income.personId)
+        }.also { incomeId ->
+            Audit.PersonIncomeCreate.log(targetId = income.personId, objectId = incomeId)
         }
     }
 

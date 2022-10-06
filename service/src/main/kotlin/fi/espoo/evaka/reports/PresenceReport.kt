@@ -40,7 +40,7 @@ class PresenceReportController(private val accessControl: AccessControl) {
                 it.getPresenceRows(from, to)
             }
         }.also {
-            Audit.PresenceReportRead.log(args = mapOf("from" to from, "to" to to))
+            Audit.PresenceReportRead.log(args = mapOf("from" to from, "to" to to, "count" to it.size))
         }
     }
 }

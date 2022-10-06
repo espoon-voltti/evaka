@@ -28,7 +28,7 @@ class DuplicatePeopleReportController(private val accessControl: AccessControl) 
                 it.getDuplicatePeople()
             }
         }.also {
-            Audit.DuplicatePeopleReportRead.log()
+            Audit.DuplicatePeopleReportRead.log(args = mapOf("count" to it.size))
         }
     }
 }

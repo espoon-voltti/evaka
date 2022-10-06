@@ -39,7 +39,7 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl, pr
                 it.getDecisionRows(user.evakaUserId, AclAuthorization.from(filter))
             }
         }.also {
-            Audit.AssistanceNeedDecisionsReportRead.log()
+            Audit.AssistanceNeedDecisionsReportRead.log(args = mapOf("count" to it.size))
         }
     }
 

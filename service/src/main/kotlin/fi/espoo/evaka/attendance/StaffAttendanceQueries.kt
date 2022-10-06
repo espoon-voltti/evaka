@@ -148,36 +148,46 @@ data class StaffAttendance(
     val type: StaffAttendanceType
 )
 
-fun Database.Transaction.upsertStaffAttendance(attendanceId: StaffAttendanceId?, employeeId: EmployeeId?, groupId: GroupId?, arrivalTime: HelsinkiDateTime, departureTime: HelsinkiDateTime?, occupancyCoefficient: BigDecimal?, type: StaffAttendanceType) {
-    if (attendanceId === null) {
-        createUpdate(
-            """
+fun Database.Transaction.upsertStaffAttendance(
+    attendanceId: StaffAttendanceId?,
+    employeeId: EmployeeId?,
+    groupId: GroupId?,
+    arrivalTime: HelsinkiDateTime,
+    departureTime: HelsinkiDateTime?,
+    occupancyCoefficient: BigDecimal?,
+    type: StaffAttendanceType
+): StaffAttendanceId = if (attendanceId === null) {
+    createUpdate(
+        """
             INSERT INTO staff_attendance_realtime (employee_id, group_id, arrived, departed, occupancy_coefficient, type)
             VALUES (:employeeId, :groupId, :arrived, :departed, :occupancyCoefficient, :type)
-            """.trimIndent()
-        )
-            .bind("employeeId", employeeId)
-            .bind("groupId", groupId)
-            .bind("arrived", arrivalTime)
-            .bind("departed", departureTime)
-            .bind("occupancyCoefficient", occupancyCoefficient)
-            .bind("type", type)
-            .execute()
-    } else {
-        createUpdate(
-            """
+            RETURNING id
+        """.trimIndent()
+    )
+        .bind("employeeId", employeeId)
+        .bind("groupId", groupId)
+        .bind("arrived", arrivalTime)
+        .bind("departed", departureTime)
+        .bind("occupancyCoefficient", occupancyCoefficient)
+        .bind("type", type)
+        .executeAndReturnGeneratedKeys()
+        .mapTo<StaffAttendanceId>()
+        .single()
+} else {
+    createUpdate(
+        """
             UPDATE staff_attendance_realtime
             SET group_id = :groupId, arrived = :arrived, departed = :departed, type = :type
             WHERE id = :id
-            """.trimIndent()
-        )
-            .bind("id", attendanceId)
-            .bind("groupId", groupId)
-            .bind("arrived", arrivalTime)
-            .bind("departed", departureTime)
-            .bind("type", type)
-            .updateExactlyOne()
-    }
+        """.trimIndent()
+    )
+        .bind("id", attendanceId)
+        .bind("groupId", groupId)
+        .bind("arrived", arrivalTime)
+        .bind("departed", departureTime)
+        .bind("type", type)
+        .updateExactlyOne()
+        .let { attendanceId }
 }
 
 fun Database.Transaction.deleteStaffAttendance(attendanceId: StaffAttendanceId) {
@@ -234,12 +244,20 @@ fun Database.Transaction.markExternalStaffDeparture(params: ExternalStaffDepartu
     .bindKotlin(params)
     .updateExactlyOne()
 
-fun Database.Transaction.upsertExternalStaffAttendance(attendanceId: StaffAttendanceExternalId?, name: String?, groupId: GroupId?, arrivalTime: HelsinkiDateTime, departureTime: HelsinkiDateTime?, occupancyCoefficient: BigDecimal?) {
+fun Database.Transaction.upsertExternalStaffAttendance(
+    attendanceId: StaffAttendanceExternalId?,
+    name: String?,
+    groupId: GroupId?,
+    arrivalTime: HelsinkiDateTime,
+    departureTime: HelsinkiDateTime?,
+    occupancyCoefficient: BigDecimal?
+): StaffAttendanceExternalId {
     if (attendanceId === null) {
         return createUpdate(
             """
             INSERT INTO staff_attendance_external (name, group_id, arrived, departed, occupancy_coefficient)
             VALUES (:name, :groupId, :arrived, :departed, :occupancyCoefficient)
+            RETURNING id
             """.trimIndent()
         )
             .bind("name", name)
@@ -247,9 +265,11 @@ fun Database.Transaction.upsertExternalStaffAttendance(attendanceId: StaffAttend
             .bind("arrived", arrivalTime)
             .bind("departed", departureTime)
             .bind("occupancyCoefficient", occupancyCoefficient)
-            .updateExactlyOne()
+            .executeAndReturnGeneratedKeys()
+            .mapTo<StaffAttendanceExternalId>()
+            .single()
     } else {
-        createUpdate(
+        return createUpdate(
             """
             UPDATE staff_attendance_external
             SET name = :name, arrived = :arrived, departed = :departed
@@ -261,6 +281,7 @@ fun Database.Transaction.upsertExternalStaffAttendance(attendanceId: StaffAttend
             .bind("arrived", arrivalTime)
             .bind("departed", departureTime)
             .updateExactlyOne()
+            .let { attendanceId }
     }
 }
 

@@ -21,7 +21,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
     fun getChildren(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock): List<Child> {
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_CHILDREN, user.id)
         return db.connect { dbc -> dbc.read { it.getChildrenByGuardian(user.id, clock.today()) } }.also {
-            Audit.CitizenChildrenRead.log()
+            Audit.CitizenChildrenRead.log(targetId = user.id, args = mapOf("count" to it.size))
         }
     }
 }

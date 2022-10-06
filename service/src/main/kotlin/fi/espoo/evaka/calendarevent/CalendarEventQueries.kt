@@ -51,7 +51,7 @@ GROUP BY ce.id, cea.unit_id
         .mapTo<CalendarEvent>()
         .list()
 
-fun Database.Transaction.createCalendarEvent(event: CalendarEventForm) {
+fun Database.Transaction.createCalendarEvent(event: CalendarEventForm): CalendarEventId {
     val eventId = this.createUpdate(
         """
 INSERT INTO calendar_event (title, description, period)
@@ -76,6 +76,7 @@ RETURNING id
     } else {
         createCalendarEventAttendee(eventId, event.unitId, null, null)
     }
+    return eventId
 }
 
 fun Database.Transaction.deleteCalendarEvent(eventId: CalendarEventId) =

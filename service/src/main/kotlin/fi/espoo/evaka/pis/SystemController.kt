@@ -129,7 +129,7 @@ class SystemController(private val personService: PersonService, private val acc
                 device
             }
         }.also {
-            Audit.MobileDevicesRead.log(targetId = token)
+            Audit.MobileDevicesRead.log(targetId = token, objectId = it.id)
         }
     }
 

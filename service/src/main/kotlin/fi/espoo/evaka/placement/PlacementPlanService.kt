@@ -131,8 +131,7 @@ class PlacementPlanService(
         tx: Database.Transaction,
         application: ApplicationDetails,
         placementPlan: DaycarePlacementPlan
-    ) =
-        tx.createPlacementPlan(application.id, application.derivePlacementType(), placementPlan)
+    ) = tx.createPlacementPlan(application.id, application.derivePlacementType(), placementPlan)
 
     fun getPlacementTypePeriods(
         tx: Database.Read,

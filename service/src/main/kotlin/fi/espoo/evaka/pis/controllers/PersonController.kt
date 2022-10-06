@@ -54,7 +54,7 @@ class PersonController(
         return db.connect { dbc -> dbc.transaction { createEmptyPerson(it, clock) } }
             .let { PersonIdentityResponseJSON.from(it) }
             .also {
-                Audit.PersonCreate.log()
+                Audit.PersonCreate.log(targetId = it.id)
             }
     }
 
@@ -113,7 +113,7 @@ class PersonController(
     ): List<PersonWithChildrenDTO> {
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_DEPENDANTS, personId)
         return db.connect { dbc -> dbc.transaction { personService.getPersonWithChildren(it, user, personId) }?.children ?: throw NotFound() }.also {
-            Audit.PersonDependantRead.log(targetId = personId)
+            Audit.PersonDependantRead.log(targetId = personId, args = mapOf("count" to it.size))
         }
     }
 
@@ -128,7 +128,7 @@ class PersonController(
         return db.connect { dbc -> dbc.transaction { personService.getGuardians(it, user, childId) } }
             .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
             .also {
-                Audit.PersonGuardianRead.log(targetId = childId)
+                Audit.PersonGuardianRead.log(targetId = childId, args = mapOf("count" to it.size))
             }
     }
 
@@ -151,7 +151,7 @@ class PersonController(
                 )
             }
         }.also {
-            Audit.PersonDetailsSearch.log()
+            Audit.PersonDetailsSearch.log(args = mapOf("count" to it.size))
         }
     }
 
@@ -281,7 +281,7 @@ class PersonController(
         }
             .let { PersonJSON.from(it) }
             .also {
-                Audit.PersonDetailsRead.log()
+                Audit.PersonDetailsRead.log(targetId = it.id)
             }
     }
 
@@ -309,8 +309,8 @@ class PersonController(
         @RequestBody body: CreatePersonBody
     ): PersonId {
         accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_PERSON)
-        return db.connect { dbc -> dbc.transaction { createPerson(it, body) } }.also {
-            Audit.PersonCreate.log()
+        return db.connect { dbc -> dbc.transaction { createPerson(it, body) } }.also { personId ->
+            Audit.PersonCreate.log(targetId = personId)
         }
     }
 

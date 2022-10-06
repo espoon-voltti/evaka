@@ -98,7 +98,10 @@ class RealtimeStaffAttendanceController(
                 )
             }
         }.also {
-            Audit.StaffAttendanceRead.log(targetId = unitId)
+            Audit.StaffAttendanceRead.log(
+                targetId = unitId,
+                args = mapOf("staffCount" to it.staff.size, "externalStaffCount" to it.extraAttendances.size)
+            )
         }
     }
 
@@ -142,7 +145,7 @@ class RealtimeStaffAttendanceController(
             throw BadRequest("Arrival time must be before departure time for all entries")
         }
 
-        db.connect { dbc ->
+        val objectId = db.connect { dbc ->
             dbc.transaction { tx ->
                 try {
                     val occupancyCoefficients = body.staffAttendances.associate {
@@ -151,7 +154,7 @@ class RealtimeStaffAttendanceController(
                             tx.getOccupancyCoefficientForEmployee(it.employeeId, it.groupId) ?: BigDecimal.ZERO
                         )
                     }
-                    body.staffAttendances.forEach {
+                    val staffAttendanceIds = body.staffAttendances.map {
                         tx.upsertStaffAttendance(
                             it.attendanceId,
                             it.employeeId,
@@ -163,7 +166,7 @@ class RealtimeStaffAttendanceController(
                         )
                     }
 
-                    body.externalAttendances.forEach {
+                    val externalStaffAttendanceIds = body.externalAttendances.map {
                         tx.upsertExternalStaffAttendance(
                             it.attendanceId,
                             it.name,
@@ -173,12 +176,13 @@ class RealtimeStaffAttendanceController(
                             occupancyCoefficientSeven
                         )
                     }
+                    listOf(staffAttendanceIds, externalStaffAttendanceIds)
                 } catch (e: JdbiException) {
                     throw mapPSQLException(e)
                 }
             }
         }
-        Audit.StaffAttendanceUpdate.log(targetId = unitId)
+        Audit.StaffAttendanceUpdate.log(targetId = unitId, objectId = objectId)
     }
 
     data class SingleDayStaffAttendanceUpsert(
@@ -201,7 +205,7 @@ class RealtimeStaffAttendanceController(
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)
 
-        db.connect { dbc ->
+        val staffAttendanceIds = db.connect { dbc ->
             dbc.transaction { tx ->
                 val occupancyCoefficients = body.map { it.groupId }.distinct().associateWith {
                     tx.getOccupancyCoefficientForEmployee(employeeId, it) ?: BigDecimal.ZERO
@@ -211,7 +215,7 @@ class RealtimeStaffAttendanceController(
                     HelsinkiDateTime.of(date.plusDays(1), LocalTime.of(0, 0))
                 )
                 tx.deleteStaffAttendanceWithoutIds(employeeId, wholeDay, body.mapNotNull { it.attendanceId })
-                body.forEach {
+                body.map {
                     tx.upsertStaffAttendance(
                         it.attendanceId,
                         employeeId,
@@ -224,7 +228,7 @@ class RealtimeStaffAttendanceController(
                 }
             }
         }
-        Audit.StaffAttendanceUpdate.log(targetId = unitId)
+        Audit.StaffAttendanceUpdate.log(targetId = unitId, objectId = staffAttendanceIds, args = mapOf("date" to date))
     }
 
     @DeleteMapping("/{unitId}/{attendanceId}")

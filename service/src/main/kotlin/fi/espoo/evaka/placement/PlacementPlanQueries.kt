@@ -43,10 +43,9 @@ fun Database.Transaction.createPlacementPlan(
     applicationId: ApplicationId,
     type: PlacementType,
     plan: DaycarePlacementPlan
-) {
-    createUpdate(
-        // language=SQL
-        """
+): PlacementPlanId = createUpdate(
+    // language=SQL
+    """
 INSERT INTO placement_plan (type, unit_id, application_id, start_date, end_date, preschool_daycare_start_date, preschool_daycare_end_date)
 VALUES (
     :type,
@@ -56,17 +55,19 @@ VALUES (
     :endDate,
     :preschoolDaycareStartDate,
     :preschoolDaycareEndDate
-)"""
-    )
-        .bind("type", type)
-        .bind("unitId", plan.unitId)
-        .bind("applicationId", applicationId)
-        .bind("startDate", plan.period.start)
-        .bind("endDate", plan.period.end)
-        .bind("preschoolDaycareStartDate", plan.preschoolDaycarePeriod?.start)
-        .bind("preschoolDaycareEndDate", plan.preschoolDaycarePeriod?.end)
-        .execute()
-}
+)
+RETURNING id"""
+)
+    .bind("type", type)
+    .bind("unitId", plan.unitId)
+    .bind("applicationId", applicationId)
+    .bind("startDate", plan.period.start)
+    .bind("endDate", plan.period.end)
+    .bind("preschoolDaycareStartDate", plan.preschoolDaycarePeriod?.start)
+    .bind("preschoolDaycareEndDate", plan.preschoolDaycarePeriod?.end)
+    .executeAndReturnGeneratedKeys()
+    .mapTo<PlacementPlanId>()
+    .single()
 
 fun Database.Read.getPlacementPlan(applicationId: ApplicationId): PlacementPlan? {
     data class QueryResult(

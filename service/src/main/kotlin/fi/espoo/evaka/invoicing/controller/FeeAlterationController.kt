@@ -49,7 +49,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
                 feeAlterations.map { FeeAlterationWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
             }
         }.also {
-            Audit.ChildFeeAlterationsRead.log(targetId = personId)
+            Audit.ChildFeeAlterationsRead.log(targetId = personId, args = mapOf("count" to it.size))
         }
     }
 
@@ -61,9 +61,10 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
     @PostMapping
     fun createFeeAlteration(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody feeAlteration: FeeAlteration) {
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_FEE_ALTERATION, feeAlteration.personId)
+        val id = FeeAlterationId(UUID.randomUUID())
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.upsertFeeAlteration(clock, feeAlteration.copy(id = FeeAlterationId(UUID.randomUUID()), updatedBy = user.evakaUserId))
+                tx.upsertFeeAlteration(clock, feeAlteration.copy(id = id, updatedBy = user.evakaUserId))
                 asyncJobRunner.plan(
                     tx,
                     listOf(
@@ -76,7 +77,7 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
                 )
             }
         }
-        Audit.ChildFeeAlterationsCreate.log(targetId = feeAlteration.personId)
+        Audit.ChildFeeAlterationsCreate.log(targetId = feeAlteration.personId, objectId = id)
     }
 
     @PutMapping("/{feeAlterationId}")

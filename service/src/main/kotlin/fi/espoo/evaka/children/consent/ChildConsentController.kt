@@ -41,7 +41,7 @@ class ChildConsentController(
                 }
             }
         }.also {
-            Audit.ChildConsentsRead.log(targetId = childId)
+            Audit.ChildConsentsRead.log(targetId = childId, args = mapOf("count" to it.size))
         }
     }
 
@@ -61,7 +61,10 @@ class ChildConsentController(
                 }
             }
         }.also {
-            Audit.ChildConsentsReadCitizen.log(targetId = user.id)
+            Audit.ChildConsentsReadCitizen.log(
+                targetId = user.id,
+                args = mapOf("count" to it.values.asSequence().map { consents -> consents.size }.sum())
+            )
         }
     }
 
@@ -85,7 +88,7 @@ class ChildConsentController(
                 }
             }
         }.also {
-            Audit.ChildConsentsReadCitizen.log()
+            Audit.ChildConsentsUpdate.log(targetId = childId)
         }
     }
 
@@ -107,7 +110,7 @@ class ChildConsentController(
                 }
             }
         }.also {
-            Audit.ChildConsentsInsertCitizen.log()
+            Audit.ChildConsentsInsertCitizen.log(targetId = childId)
         }
     }
 

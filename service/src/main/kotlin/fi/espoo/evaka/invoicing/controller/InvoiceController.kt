@@ -100,7 +100,7 @@ class InvoiceController(
                     )
                 }
         }.also {
-            Audit.InvoicesSearch.log()
+            Audit.InvoicesSearch.log(args = mapOf("total" to it.total))
         }
     }
 
@@ -137,7 +137,7 @@ class InvoiceController(
                 service.sendInvoices(it, user, clock, invoiceIds, invoiceDate, dueDate)
             }
         }
-        Audit.InvoicesSend.log(targetId = invoiceIds)
+        Audit.InvoicesSend.log(targetId = invoiceIds, args = mapOf("invoiceDate" to invoiceDate, "dueDate" to dueDate))
     }
 
     @PostMapping("/send/by-date")
@@ -154,7 +154,15 @@ class InvoiceController(
                 service.sendInvoices(tx, user, clock, invoiceIds, payload.invoiceDate, payload.dueDate)
             }
         }
-        Audit.InvoicesSendByDate.log()
+        Audit.InvoicesSendByDate.log(
+            args = mapOf(
+                "from" to payload.from,
+                "to" to payload.to,
+                "areas" to payload.areas,
+                "invoiceDate" to payload.invoiceDate,
+                "dueDate" to payload.dueDate
+            )
+        )
     }
 
     @PostMapping("/mark-sent")
@@ -199,7 +207,7 @@ class InvoiceController(
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_INVOICES, uuid)
         return Wrapper(
             db.connect { dbc -> dbc.read { it.getHeadOfFamilyInvoices(uuid) } }.also {
-                Audit.InvoicesRead.log(targetId = uuid)
+                Audit.InvoicesRead.log(targetId = uuid, args = mapOf("count" to it.size))
             }
         )
     }

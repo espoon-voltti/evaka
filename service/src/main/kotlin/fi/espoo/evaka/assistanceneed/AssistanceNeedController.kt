@@ -37,15 +37,9 @@ class AssistanceNeedController(
     ): AssistanceNeed {
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_ASSISTANCE_NEED, childId)
         return db.connect { dbc ->
-            assistanceNeedService.createAssistanceNeed(
-                dbc,
-                user,
-                clock,
-                childId = childId,
-                data = body
-            )
-        }.also {
-            Audit.ChildAssistanceNeedCreate.log(targetId = childId)
+            assistanceNeedService.createAssistanceNeed(dbc, user, clock, childId = childId, data = body)
+        }.also { assistanceNeed ->
+            Audit.ChildAssistanceNeedCreate.log(targetId = childId, objectId = assistanceNeed.id)
         }
     }
 
@@ -79,7 +73,7 @@ class AssistanceNeedController(
             }
             assistanceNeeds.map { AssistanceNeedResponse(it, permittedActions[it.id] ?: emptySet()) }
         }.also {
-            Audit.ChildAssistanceNeedRead.log(targetId = childId)
+            Audit.ChildAssistanceNeedRead.log(targetId = childId, args = mapOf("count" to it.size))
         }
     }
 

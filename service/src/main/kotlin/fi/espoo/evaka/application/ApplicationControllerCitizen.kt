@@ -276,7 +276,7 @@ class ApplicationControllerCitizen(
     fun getDecisions(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock): List<ApplicationDecisions> {
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_DECISIONS, user.id)
         return db.connect { dbc -> dbc.read { it.getOwnDecisions(user.id) } }.also {
-            Audit.DecisionRead.log(targetId = user.id)
+            Audit.DecisionRead.log(targetId = user.id, args = mapOf("count" to it.size))
         }
     }
 
@@ -302,7 +302,7 @@ class ApplicationControllerCitizen(
                 }
             }
         }.also {
-            Audit.DecisionReadByApplication.log(targetId = applicationId)
+            Audit.DecisionReadByApplication.log(targetId = applicationId, args = mapOf("count" to it.size))
         }
     }
 

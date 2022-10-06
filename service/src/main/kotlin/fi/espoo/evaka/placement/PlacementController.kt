@@ -85,7 +85,10 @@ class PlacementController(
                 }.toSet()
             }
         }.also {
-            Audit.PlacementSearch.log(targetId = daycareId ?: childId)
+            Audit.PlacementSearch.log(
+                targetId = daycareId ?: childId,
+                args = mapOf("startDate" to startDate, "endDate" to endDate, "count" to it.size)
+            )
         }
     }
 
@@ -104,7 +107,10 @@ class PlacementController(
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_PLACEMENT_PLAN, daycareId)
 
         return db.connect { dbc -> dbc.read { it.getPlacementPlans(HelsinkiDateTime.now().toLocalDate(), daycareId, startDate, endDate) } }.also {
-            Audit.PlacementPlanSearch.log(targetId = daycareId)
+            Audit.PlacementPlanSearch.log(
+                targetId = daycareId,
+                args = mapOf("startDate" to startDate, "endDate" to endDate, "count" to it.size)
+            )
         }
     }
 
@@ -119,7 +125,7 @@ class PlacementController(
 
         if (body.startDate > body.endDate) throw BadRequest("Placement start date cannot be after the end date")
 
-        db.connect { dbc ->
+        val placements = db.connect { dbc ->
             dbc.transaction { tx ->
                 if (tx.getChild(body.childId) == null) {
                     tx.createChild(
@@ -137,16 +143,16 @@ class PlacementController(
                     period = FiniteDateRange(body.startDate, body.endDate),
                     type = body.type,
                     useFiveYearsOldDaycare = useFiveYearsOldDaycare
-                )
-
-                asyncJobRunner.plan(
-                    tx,
-                    listOf(AsyncJob.GenerateFinanceDecisions.forChild(body.childId, DateRange(body.startDate, body.endDate))),
-                    runAt = clock.now()
-                )
+                ).also {
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(AsyncJob.GenerateFinanceDecisions.forChild(body.childId, DateRange(body.startDate, body.endDate))),
+                        runAt = clock.now()
+                    )
+                }
             }
         }
-        Audit.PlacementCreate.log(targetId = body.childId, objectId = body.unitId)
+        Audit.PlacementCreate.log(targetId = listOf(body.childId, body.unitId), objectId = placements.map { it.id })
     }
 
     @PutMapping("/placements/{placementId}")
@@ -206,7 +212,7 @@ class PlacementController(
                 }
             }
         }.also {
-            Audit.PlacementCancel.log(targetId = placementId, objectId = "${it.childId} ${it.unitId}")
+            Audit.PlacementCancel.log(targetId = placementId, objectId = listOf(it.childId, it.unitId))
         }
     }
 
@@ -229,8 +235,12 @@ class PlacementController(
                     endDate = body.endDate
                 )
             }
-        }.also {
-            Audit.DaycareGroupPlacementCreate.log(targetId = placementId, objectId = body.groupId)
+        }.also { groupPlacementId ->
+            Audit.DaycareGroupPlacementCreate.log(
+                targetId = placementId,
+                objectId = groupPlacementId,
+                mapOf("groupId" to body.groupId)
+            )
         }
     }
 
@@ -262,7 +272,7 @@ class PlacementController(
                 it.transferGroup(groupPlacementId, body.groupId, body.startDate)
             }
         }
-        Audit.DaycareGroupPlacementTransfer.log(targetId = groupPlacementId)
+        Audit.DaycareGroupPlacementTransfer.log(targetId = groupPlacementId, objectId = body.groupId)
     }
 
     @GetMapping("/placements/child-placement-periods/{adultId}")
@@ -299,7 +309,7 @@ JOIN all_fridge_children fc ON fc.child_id = p.child_id AND daterange(p.start_da
                     .toList()
             }
         }.also {
-            Audit.PlacementChildPlacementPeriodsRead.log(targetId = adultId)
+            Audit.PlacementChildPlacementPeriodsRead.log(targetId = adultId, args = mapOf("count" to it.size))
         }
     }
 }

@@ -108,7 +108,7 @@ class FeeDecisionController(
                 )
             }
         }.also {
-            Audit.FeeDecisionSearch.log()
+            Audit.FeeDecisionSearch.log(args = mapOf("total" to it.total))
         }
     }
 
@@ -191,7 +191,7 @@ class FeeDecisionController(
                     it.findFeeDecisionsForHeadOfFamily(id, null, null)
                 }
             }.also {
-                Audit.FeeDecisionHeadOfFamilyRead.log(targetId = id)
+                Audit.FeeDecisionHeadOfFamilyRead.log(targetId = id, args = mapOf("count" to it.size))
             }
         )
     }
@@ -219,7 +219,7 @@ class FeeDecisionController(
     ) {
         accessControl.requirePermissionFor(user, clock, Action.FeeDecision.UPDATE, uuid)
         db.connect { dbc -> dbc.transaction { service.setType(it, uuid, request.type) } }
-        Audit.FeeDecisionSetType.log(targetId = uuid)
+        Audit.FeeDecisionSetType.log(targetId = uuid, args = mapOf("type" to request.type))
     }
 }
 

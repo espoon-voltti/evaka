@@ -31,7 +31,7 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_DAILY_SERVICE_TIME_NOTIFICATIONS, user.id)
 
         return db.connect { dbc -> dbc.transaction { tx -> tx.getDailyServiceTimesNotifications(user.id) } }.also {
-            Audit.ChildDailyServiceTimeNotificationsRead.log(targetId = user.id)
+            Audit.ChildDailyServiceTimeNotificationsRead.log(targetId = user.id, args = mapOf("count" to it.size))
         }
     }
 

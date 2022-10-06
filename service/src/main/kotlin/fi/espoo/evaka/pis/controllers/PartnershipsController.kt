@@ -47,16 +47,15 @@ class PartnershipsController(
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Person.CREATE_PARTNERSHIP, body.person1Id)
 
-        db.connect { dbc ->
-            dbc
-                .transaction { tx ->
-                    partnershipService.createPartnership(
-                        tx,
-                        body.person1Id,
-                        body.person2Id,
-                        body.startDate,
-                        body.endDate
-                    )
+        val partnership = db.connect { dbc ->
+            dbc.transaction { tx ->
+                partnershipService.createPartnership(
+                    tx,
+                    body.person1Id,
+                    body.person2Id,
+                    body.startDate,
+                    body.endDate
+                ).also {
                     asyncJobRunner.plan(
                         tx,
                         listOf(
@@ -68,8 +67,9 @@ class PartnershipsController(
                         runAt = clock.now()
                     )
                 }
+            }
         }
-        Audit.PartnerShipsCreate.log(targetId = body.person1Id)
+        Audit.PartnerShipsCreate.log(targetId = listOf(body.person1Id, body.person2Id), objectId = partnership.id)
     }
 
     @GetMapping
@@ -82,7 +82,7 @@ class PartnershipsController(
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_PARTNERSHIPS, personId)
 
         return db.connect { dbc -> dbc.read { it.getPartnershipsForPerson(personId, includeConflicts = true) } }.also {
-            Audit.PartnerShipsRead.log(targetId = personId)
+            Audit.PartnerShipsRead.log(targetId = personId, args = mapOf("count" to it.size))
         }
     }
 
@@ -126,7 +126,10 @@ class PartnershipsController(
                 )
             }
         }
-        Audit.PartnerShipsUpdate.log(targetId = partnershipId)
+        Audit.PartnerShipsUpdate.log(
+            targetId = partnershipId,
+            args = mapOf("startDate" to body.startDate, "endDate" to body.endDate)
+        )
     }
 
     @PutMapping("/{partnershipId}/retry")

@@ -31,7 +31,7 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_CHILD_RECIPIENTS, childId)
 
         return db.connect { dbc -> dbc.read { it.fetchRecipients(childId) } }.also {
-            Audit.MessagingBlocklistRead.log(childId)
+            Audit.MessagingBlocklistRead.log(targetId = childId, args = mapOf("count" to it.size))
         }
     }
 
@@ -58,6 +58,6 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
                 }
             }
         }
-        Audit.MessagingBlocklistEdit.log(childId)
+        Audit.MessagingBlocklistEdit.log(targetId = childId, objectId = personId)
     }
 }

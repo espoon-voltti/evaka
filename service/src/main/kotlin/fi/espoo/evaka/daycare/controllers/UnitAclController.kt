@@ -44,7 +44,7 @@ class UnitAclController(private val accessControl: AccessControl) {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_ACL, daycareId)
         return DaycareAclResponse(
             db.connect { dbc -> getDaycareAclRows(dbc, daycareId) }.also {
-                Audit.UnitAclRead.log()
+                Audit.UnitAclRead.log(targetId = daycareId, args = mapOf("count" to it.size))
             }
         )
     }

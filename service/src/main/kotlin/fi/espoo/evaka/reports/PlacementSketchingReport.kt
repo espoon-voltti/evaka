@@ -39,7 +39,8 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
             Audit.PlacementSketchingReportRead.log(
                 args = mapOf(
                     "placementStartDate" to placementStartDate,
-                    "earliestPreferredStartDate" to earliestPreferredStartDate
+                    "earliestPreferredStartDate" to earliestPreferredStartDate,
+                    "count" to it.size
                 )
             )
         }

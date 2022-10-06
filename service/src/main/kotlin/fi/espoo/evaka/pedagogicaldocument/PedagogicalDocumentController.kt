@@ -45,7 +45,7 @@ class PedagogicalDocumentController(
                 }
             }
         }.also {
-            Audit.PedagogicalDocumentUpdate.log(body.childId)
+            Audit.PedagogicalDocumentCreate.log(targetId = body.childId, objectId = it.id)
         }
     }
 
@@ -65,7 +65,7 @@ class PedagogicalDocumentController(
                 }
             }
         }.also {
-            Audit.PedagogicalDocumentUpdate.log(documentId)
+            Audit.PedagogicalDocumentUpdate.log(targetId = documentId)
         }
     }
 
@@ -82,7 +82,7 @@ class PedagogicalDocumentController(
                 it.findPedagogicalDocumentsByChild(childId)
             }
         }.also {
-            Audit.PedagogicalDocumentRead.log(childId)
+            Audit.PedagogicalDocumentRead.log(targetId = childId, args = mapOf("count" to it.size))
         }
     }
 
@@ -99,7 +99,7 @@ class PedagogicalDocumentController(
                 it.deleteDocument(documentId)
             }
         }
-        Audit.PedagogicalDocumentUpdate.log(documentId)
+        Audit.PedagogicalDocumentUpdate.log(targetId = documentId)
     }
 }
 

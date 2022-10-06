@@ -48,7 +48,14 @@ class NotesController(
                 )
             }
         }.also {
-            Audit.NotesByGroupRead.log(groupId)
+            Audit.NotesByGroupRead.log(
+                targetId = groupId,
+                args = mapOf(
+                    "childDailyNoteCount" to it.childDailyNotes.size,
+                    "childStickyNoteCount" to it.childStickyNotes.size,
+                    "groupNoteCount" to it.groupNotes.size
+                )
+            )
         }
     }
 }

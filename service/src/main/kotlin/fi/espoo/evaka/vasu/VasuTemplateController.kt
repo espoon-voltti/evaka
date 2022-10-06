@@ -55,8 +55,8 @@ class VasuTemplateController(
                     content = getDefaultTemplateContent(body.type, body.language)
                 )
             }
-        }.also {
-            Audit.VasuTemplateCreate.log()
+        }.also { vasuTemplateId ->
+            Audit.VasuTemplateCreate.log(targetId = vasuTemplateId)
         }
     }
 
@@ -77,7 +77,7 @@ class VasuTemplateController(
                 tx.updateVasuTemplate(id, body)
             }
         }
-        Audit.VasuTemplateEdit.log()
+        Audit.VasuTemplateEdit.log(targetId = id)
     }
 
     data class CopyTemplateRequest(
@@ -107,7 +107,7 @@ class VasuTemplateController(
                 )
             }
         }.also {
-            Audit.VasuTemplateCopy.log(id)
+            Audit.VasuTemplateCopy.log(targetId = id)
         }
     }
 
@@ -121,7 +121,7 @@ class VasuTemplateController(
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_VASU_TEMPLATE)
 
         return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplates(clock, validOnly) } }.also {
-            Audit.VasuTemplateRead.log()
+            Audit.VasuTemplateRead.log(args = mapOf("count" to it.size))
         }
     }
 
@@ -135,7 +135,7 @@ class VasuTemplateController(
         accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.READ, id)
 
         return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplate(id) } ?: throw NotFound("template $id not found") }.also {
-            Audit.VasuTemplateRead.log(id)
+            Audit.VasuTemplateRead.log(targetId = id)
         }
     }
 
@@ -149,7 +149,7 @@ class VasuTemplateController(
         accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.DELETE, id)
 
         db.connect { dbc -> dbc.transaction { it.deleteUnusedVasuTemplate(id) } }
-        Audit.VasuTemplateDelete.log(id)
+        Audit.VasuTemplateDelete.log(targetId = id)
     }
 
     @PutMapping("/{id}/content")
@@ -169,6 +169,6 @@ class VasuTemplateController(
                 tx.updateVasuTemplateContent(id, content)
             }
         }
-        Audit.VasuTemplateUpdate.log(id)
+        Audit.VasuTemplateUpdate.log(targetId = id)
     }
 }

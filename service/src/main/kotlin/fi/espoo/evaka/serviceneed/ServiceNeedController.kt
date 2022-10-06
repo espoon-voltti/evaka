@@ -51,7 +51,7 @@ class ServiceNeedController(
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Placement.CREATE_SERVICE_NEED, body.placementId)
 
-        db.connect { dbc ->
+        val serviceNeedId = db.connect { dbc ->
             dbc.transaction { tx ->
                 createServiceNeed(
                     tx = tx,
@@ -63,11 +63,13 @@ class ServiceNeedController(
                     shiftCare = body.shiftCare,
                     confirmedAt = HelsinkiDateTime.now()
                 )
-                    .let { id -> tx.getServiceNeedChildRange(id) }
-                    .let { notifyServiceNeedUpdated(tx, clock, asyncJobRunner, it) }
+                    .also { id ->
+                        val range = tx.getServiceNeedChildRange(id)
+                        notifyServiceNeedUpdated(tx, clock, asyncJobRunner, range)
+                    }
             }
         }
-        Audit.PlacementServiceNeedCreate.log(targetId = body.placementId)
+        Audit.PlacementServiceNeedCreate.log(targetId = body.placementId, objectId = serviceNeedId)
     }
 
     data class ServiceNeedUpdateRequest(
@@ -145,7 +147,7 @@ class ServiceNeedController(
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_SERVICE_NEED_OPTIONS)
 
         return db.connect { dbc -> dbc.read { it.getServiceNeedOptions() } }.also {
-            Audit.ServiceNeedOptionsRead.log()
+            Audit.ServiceNeedOptionsRead.log(args = mapOf("count" to it.size))
         }
     }
 

@@ -44,7 +44,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
     ): List<HolidayPeriod> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_PERIODS)
         return db.connect { dbc -> dbc.read { it.getHolidayPeriods() } }.also {
-            Audit.HolidayPeriodsList.log()
+            Audit.HolidayPeriodsList.log(args = mapOf("count" to it.size))
         }
     }
 
@@ -81,7 +81,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                 }
             }
         }.also {
-            Audit.HolidayPeriodsList.log()
+            Audit.HolidayQuestionnairesList.log(args = mapOf("count" to it.size))
         }
     }
 
@@ -143,7 +143,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                 )
             }
         }
-        Audit.HolidayAbsenceCreate.log(id, childIds.toSet().joinToString())
+        Audit.HolidayAbsenceCreate.log(targetId = id, objectId = childIds.toSet())
     }
 }
 

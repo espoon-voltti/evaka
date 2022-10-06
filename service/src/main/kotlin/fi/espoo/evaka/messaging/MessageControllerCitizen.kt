@@ -45,7 +45,7 @@ class MessageControllerCitizen(
         return db.connect { dbc ->
             dbc.read { it.getCitizenMessageAccount(user.id) }
         }.also {
-            Audit.MessagingMyAccountsRead.log()
+            Audit.MessagingMyAccountsRead.log(targetId = user.id, objectId = it)
         }
     }
 
@@ -58,7 +58,7 @@ class MessageControllerCitizen(
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
             dbc.read { it.getUnreadMessagesCounts(setOf(accountId)) }
         }.also {
-            Audit.MessagingUnreadMessagesRead.log()
+            Audit.MessagingUnreadMessagesRead.log(targetId = user.id, args = mapOf("count" to it.size))
         }
     }
 
@@ -87,7 +87,7 @@ class MessageControllerCitizen(
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
             dbc.read { it.getThreads(accountId, pageSize, page) }
         }.also {
-            Audit.MessagingReceivedMessagesRead.log()
+            Audit.MessagingReceivedMessagesRead.log(args = mapOf("total" to it.total))
         }
     }
 
@@ -110,7 +110,7 @@ class MessageControllerCitizen(
                 messageAccountsToChildren = accountsToChildIds.mapKeys { it.key.id }
             )
         }.also {
-            Audit.MessagingCitizenFetchReceiversForAccount.log()
+            Audit.MessagingCitizenFetchReceiversForAccount.log(args = mapOf("count" to it.messageAccounts))
         }
     }
 
@@ -174,8 +174,8 @@ class MessageControllerCitizen(
             } else {
                 throw Forbidden("Permission denied.")
             }
-        }.also {
-            Audit.MessagingCitizenSendMessage.log()
+        }.also { messageThreadId ->
+            Audit.MessagingCitizenSendMessage.log(targetId = messageThreadId)
         }
     }
 }

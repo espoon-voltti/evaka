@@ -67,7 +67,7 @@ WHERE c.head_of_family_id = :personId AND NOT applied_completely
                 invoiceCorrections.map { InvoiceCorrectionWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
             }
         }.also {
-            Audit.InvoiceCorrectionsRead.log(targetId = personId)
+            Audit.InvoiceCorrectionsRead.log(targetId = personId, args = mapOf("count" to it.size))
         }
     }
 
@@ -81,19 +81,22 @@ WHERE c.head_of_family_id = :personId AND NOT applied_completely
         @RequestBody body: NewInvoiceCorrection
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Person.CREATE_INVOICE_CORRECTION, body.headOfFamilyId)
-        db.connect { dbc ->
+        val invoiceCorrectionId = db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.createUpdate(
                     """
 INSERT INTO invoice_correction (head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note)
 VALUES (:headOfFamilyId, :childId, :unitId, :product, :period, :amount, :unitPrice, :description, :note)
+RETURNING id
 """
                 )
                     .bindKotlin(body)
-                    .execute()
+                    .executeAndReturnGeneratedKeys()
+                    .mapTo<InvoiceCorrectionId>()
+                    .single()
             }
         }
-        Audit.InvoiceCorrectionsCreate.log(targetId = body.headOfFamilyId, objectId = body.childId)
+        Audit.InvoiceCorrectionsCreate.log(targetId = listOf(body.headOfFamilyId, body.childId), objectId = invoiceCorrectionId)
     }
 
     @DeleteMapping("/{id}")

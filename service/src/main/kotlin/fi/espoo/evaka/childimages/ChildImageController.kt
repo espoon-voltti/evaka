@@ -57,8 +57,12 @@ class ChildImageController(
             throw BadRequest("Image size must not exceed $maxImageSize pixels")
         }
 
-        db.connect { dbc -> replaceImage(dbc, documentClient, bucket, childId, file, contentType) }
-        Audit.ChildImageUpload.log(targetId = childId)
+        val imageId = db.connect { dbc -> replaceImage(dbc, documentClient, bucket, childId, file, contentType) }
+        Audit.ChildImageUpload.log(
+            targetId = childId,
+            objectId = imageId,
+            mapOf("size" to file.size, "contentType" to contentType)
+        )
     }
 
     @DeleteMapping("/children/{childId}/image")
@@ -70,8 +74,8 @@ class ChildImageController(
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Child.DELETE_IMAGE, childId)
 
-        db.connect { dbc -> removeImage(dbc, documentClient, bucket, childId) }
-        Audit.ChildImageDelete.log(targetId = childId)
+        val imageId = db.connect { dbc -> removeImage(dbc, documentClient, bucket, childId) }
+        Audit.ChildImageDelete.log(targetId = childId, objectId = imageId)
     }
 
     @GetMapping(value = ["/child-images/{imageId}", "/citizen/child-images/{imageId}"])

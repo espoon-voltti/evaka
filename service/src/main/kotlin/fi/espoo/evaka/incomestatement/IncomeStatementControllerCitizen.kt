@@ -50,7 +50,7 @@ class IncomeStatementControllerCitizen(
                 tx.readIncomeStatementsForPerson(user.id, includeEmployeeContent = false, page = page, pageSize = pageSize)
             }
         }.also {
-            Audit.IncomeStatementsOfPerson.log(user.id)
+            Audit.IncomeStatementsOfPerson.log(targetId = user.id, args = mapOf("total" to it.total))
         }
     }
 
@@ -67,10 +67,10 @@ class IncomeStatementControllerCitizen(
 
         return db.connect { dbc ->
             dbc.read { tx ->
-                tx.readIncomeStatementsForPerson(PersonId(childId.raw), includeEmployeeContent = false, page = page, pageSize = pageSize)
+                tx.readIncomeStatementsForPerson(childId, includeEmployeeContent = false, page = page, pageSize = pageSize)
             }
         }.also {
-            Audit.IncomeStatementsOfChild.log(user.id, childId)
+            Audit.IncomeStatementsOfChild.log(targetId = childId, args = mapOf("total" to it.total))
         }
     }
 
@@ -83,8 +83,8 @@ class IncomeStatementControllerCitizen(
     ): List<LocalDate> {
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_INCOME_STATEMENTS, childId)
 
-        return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(PersonId(childId.raw)) } }.also {
-            Audit.IncomeStatementStartDatesOfChild.log(user.id, childId)
+        return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(childId) } }.also {
+            Audit.IncomeStatementStartDatesOfChild.log(targetId = childId, args = mapOf("count" to it.size))
         }
     }
 
@@ -96,7 +96,7 @@ class IncomeStatementControllerCitizen(
     ): List<LocalDate> {
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_INCOME_STATEMENTS, user.id)
         return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(user.id) } }.also {
-            Audit.IncomeStatementStartDates.log()
+            Audit.IncomeStatementStartDates.log(targetId = user.id, args = mapOf("count" to it.size))
         }
     }
 
@@ -115,7 +115,7 @@ class IncomeStatementControllerCitizen(
                     ?: throw NotFound("No such income statement")
             }
         }.also {
-            Audit.IncomeStatementReadOfPerson.log(incomeStatementId, user.id)
+            Audit.IncomeStatementReadOfPerson.log(targetId = incomeStatementId)
         }
     }
 
@@ -135,7 +135,7 @@ class IncomeStatementControllerCitizen(
                     ?: throw NotFound("No such child income statement")
             }
         }.also {
-            Audit.IncomeStatementReadOfChild.log(incomeStatementId, user.id)
+            Audit.IncomeStatementReadOfChild.log(targetId = incomeStatementId)
         }
     }
 
@@ -147,8 +147,8 @@ class IncomeStatementControllerCitizen(
         @RequestBody body: IncomeStatementBody
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.CREATE_INCOME_STATEMENT, user.id)
-        db.connect { createIncomeStatement(it, user.id, user.id, body) }
-        Audit.IncomeStatementCreate.log(user.id)
+        val id = db.connect { createIncomeStatement(it, user.id, user.id, body) }
+        Audit.IncomeStatementCreate.log(targetId = user.id, objectId = id)
     }
 
     @PostMapping("/child/{childId}")
@@ -160,8 +160,8 @@ class IncomeStatementControllerCitizen(
         @RequestBody body: IncomeStatementBody
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_INCOME_STATEMENT, childId)
-        db.connect { createIncomeStatement(it, PersonId(childId.raw), user.id, body) }
-        Audit.IncomeStatementCreateForChild.log(user.id)
+        val id = db.connect { createIncomeStatement(it, childId, user.id, body) }
+        Audit.IncomeStatementCreateForChild.log(user.id, objectId = id)
     }
 
     @PutMapping("/{incomeStatementId}")
@@ -191,7 +191,7 @@ class IncomeStatementControllerCitizen(
                 }
             }.let { success -> if (!success) throw NotFound("Income statement not found") }
         }
-        Audit.IncomeStatementUpdate.log(incomeStatementId)
+        Audit.IncomeStatementUpdate.log(targetId = incomeStatementId)
     }
 
     @PutMapping("/child/{childId}/{incomeStatementId}")
@@ -223,7 +223,7 @@ class IncomeStatementControllerCitizen(
                 }
             }.let { success -> if (!success) throw NotFound("Income statement not found") }
         }
-        Audit.IncomeStatementUpdateForChild.log(user.id, incomeStatementId)
+        Audit.IncomeStatementUpdateForChild.log(targetId = incomeStatementId)
     }
 
     @DeleteMapping("/{id}")
@@ -240,7 +240,7 @@ class IncomeStatementControllerCitizen(
                 tx.removeIncomeStatement(id)
             }
         }
-        Audit.IncomeStatementDelete.log(id)
+        Audit.IncomeStatementDelete.log(targetId = id)
     }
 
     @DeleteMapping("/child/{childId}/{id}")
@@ -255,11 +255,11 @@ class IncomeStatementControllerCitizen(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                verifyIncomeStatementModificationsAllowed(tx, PersonId(childId.raw), id)
+                verifyIncomeStatementModificationsAllowed(tx, childId, id)
                 tx.removeIncomeStatement(id)
             }
         }
-        Audit.IncomeStatementDeleteOfChild.log(user.id, id)
+        Audit.IncomeStatementDeleteOfChild.log(targetId = id)
     }
 
     @GetMapping("/children")
@@ -267,7 +267,7 @@ class IncomeStatementControllerCitizen(
         val personId = user.id
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_CHILDREN, personId)
         return db.connect { dbc -> dbc.read { it.getIncomeStatementChildrenByGuardian(personId) } }.also {
-            Audit.CitizenChildrenRead.log()
+            Audit.CitizenChildrenRead.log(targetId = personId, args = mapOf("count" to it.size))
         }
     }
 

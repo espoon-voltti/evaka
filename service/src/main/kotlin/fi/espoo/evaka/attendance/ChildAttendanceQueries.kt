@@ -32,21 +32,24 @@ fun Database.Transaction.insertAttendance(
     date: LocalDate,
     startTime: LocalTime,
     endTime: LocalTime? = null
-) {
+): AttendanceId {
     // language=sql
     val sql =
         """
         INSERT INTO child_attendance (child_id, unit_id, date, start_time, end_time)
         VALUES (:childId, :unitId, :date, :startTime, :endTime)
+        RETURNING id
         """.trimIndent()
 
-    createUpdate(sql)
+    return createUpdate(sql)
         .bind("childId", childId)
         .bind("unitId", unitId)
         .bind("date", date)
         .bind("startTime", startTime.withSecond(0).withNano(0))
         .bind("endTime", endTime?.withSecond(0)?.withNano(0))
-        .execute()
+        .executeAndReturnGeneratedKeys()
+        .mapTo<AttendanceId>()
+        .single()
 }
 
 fun Database.Transaction.insertAbsence(
@@ -294,26 +297,30 @@ fun Database.Transaction.deleteAttendance(id: AttendanceId) {
         .execute()
 }
 
-fun Database.Transaction.deleteAbsencesByDate(childId: ChildId, date: LocalDate) {
+fun Database.Transaction.deleteAbsencesByDate(childId: ChildId, date: LocalDate): List<AbsenceId> {
     // language=sql
     val sql =
         """
         DELETE FROM absence
         WHERE child_id = :childId AND date = :date
+        RETURNING id
         """.trimIndent()
 
-    createUpdate(sql)
+    return createUpdate(sql)
         .bind("childId", childId)
         .bind("date", date)
-        .execute()
+        .executeAndReturnGeneratedKeys()
+        .mapTo<AbsenceId>()
+        .toList()
 }
 
-fun Database.Transaction.deleteAttendancesByDate(childId: ChildId, date: LocalDate) {
-    createUpdate("DELETE FROM child_attendance WHERE child_id = :childId AND date = :date")
+fun Database.Transaction.deleteAttendancesByDate(childId: ChildId, date: LocalDate): List<AttendanceId> =
+    createUpdate("DELETE FROM child_attendance WHERE child_id = :childId AND date = :date RETURNING id")
         .bind("childId", childId)
         .bind("date", date)
-        .execute()
-}
+        .executeAndReturnGeneratedKeys()
+        .mapTo<AttendanceId>()
+        .toList()
 
 fun Database.Transaction.deleteAbsencesByFiniteDateRange(childId: ChildId, dateRange: FiniteDateRange): List<AbsenceId> {
     // language=sql

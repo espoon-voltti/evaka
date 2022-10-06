@@ -36,7 +36,7 @@ class ChildrenInDifferentAddressReportController(
                 it.getChildrenInDifferentAddressRows(acl.getAuthorizedUnits(user), clock)
             }
         }.also {
-            Audit.ChildrenInDifferentAddressReportRead.log()
+            Audit.ChildrenInDifferentAddressReportRead.log(args = mapOf("count" to it.size))
         }
     }
 }

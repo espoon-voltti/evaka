@@ -154,13 +154,13 @@ fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean {
     }
 }
 
-fun createIncomeStatement(dbc: Database.Connection, incomeStatementPersonId: PersonId, attachmentUploadedByPersonId: PersonId, body: IncomeStatementBody) {
+fun createIncomeStatement(dbc: Database.Connection, incomeStatementPersonId: PersonId, attachmentUploadedByPersonId: PersonId, body: IncomeStatementBody): IncomeStatementId {
     if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement")
 
     if (dbc.read { tx -> tx.incomeStatementExistsForStartDate(incomeStatementPersonId, body.startDate) })
         throw BadRequest("An income statement for this start date already exists")
 
-    dbc.transaction { tx ->
+    return dbc.transaction { tx ->
         val incomeStatementId = tx.createIncomeStatement(incomeStatementPersonId, body)
         when (body) {
             is IncomeStatementBody.Income ->
@@ -168,9 +168,9 @@ fun createIncomeStatement(dbc: Database.Connection, incomeStatementPersonId: Per
             is IncomeStatementBody.ChildIncome -> {
                 tx.associateAttachments(attachmentUploadedByPersonId, incomeStatementId, body.attachmentIds)
             }
-            else ->
-                Unit
+            else -> {}
         }
+        incomeStatementId
     }
 }
 
