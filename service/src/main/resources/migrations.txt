@@ -272,3 +272,4 @@ V271__message_thread_children.sql
 V272__message_thread_participant.sql
 V273__message_thread_participant_data.sql
 V274__foster_parent_table.sql
+V275__voucher_value_decision_difference.sql

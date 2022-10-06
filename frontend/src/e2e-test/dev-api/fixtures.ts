@@ -915,6 +915,7 @@ export const voucherValueDecisionsFixture = (
   baseValue: 87000,
   assistanceNeedCoefficient: 1.0,
   voucherValue: 87000,
+  difference: [],
   sentAt,
   approvedAt: null,
   approvedById: null,

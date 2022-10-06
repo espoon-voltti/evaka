@@ -24,6 +24,7 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.PlacementWithServiceNeed
 import fi.espoo.evaka.invoicing.domain.ServiceNeedOptionVoucherValue
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecision
+import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
@@ -43,6 +44,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
+import fi.espoo.evaka.shared.domain.periodsCanMerge
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
@@ -77,7 +79,24 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     val placements = getPaidPlacements(from, children).toMap()
     val serviceVoucherUnits = getServiceVoucherUnits()
 
-    val newDrafts =
+    lockValueDecisionsForChild(child.id)
+
+    val activeDecisions = findValueDecisionsForChild(
+        child.id,
+        null,
+        listOf(
+            VoucherValueDecisionStatus.WAITING_FOR_SENDING,
+            VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING,
+            VoucherValueDecisionStatus.SENT
+        )
+    )
+    val previousDrafts = findValueDecisionsForChild(
+        child.id,
+        from.minusDays(1).let { date -> DateRange(date, date) },
+        listOf(VoucherValueDecisionStatus.DRAFT)
+    )
+
+    val newDraftsWithoutDifference =
         generateNewValueDecisions(
             from,
             child,
@@ -90,20 +109,24 @@ internal fun Database.Transaction.handleValueDecisionChanges(
             feeAlterations,
             serviceVoucherUnits
         )
-
-    lockValueDecisionsForChild(child.id)
+    val newDrafts = newDraftsWithoutDifference.map { draft ->
+        if (draft.isEmpty()) {
+            return@map draft
+        }
+        val draftDifferences = (newDraftsWithoutDifference + previousDrafts)
+            .filter { other -> !other.isEmpty() && decisionsCanMerge(other, draft) }
+            .flatMap { other -> VoucherValueDecisionDifference.getDifference(other, draft) }
+        if (draftDifferences.isNotEmpty()) {
+            return@map draft.copy(difference = draftDifferences.toSet())
+        }
+        val activeDifferences = activeDecisions
+            .filter { active -> decisionsCanMerge(active, draft) }
+            .flatMap { active -> VoucherValueDecisionDifference.getDifference(active, draft) }
+        draft.copy(difference = activeDifferences.toSet())
+    }
 
     val existingDrafts =
         findValueDecisionsForChild(child.id, null, listOf(VoucherValueDecisionStatus.DRAFT))
-    val activeDecisions = findValueDecisionsForChild(
-        child.id,
-        null,
-        listOf(
-            VoucherValueDecisionStatus.WAITING_FOR_SENDING,
-            VoucherValueDecisionStatus.WAITING_FOR_MANUAL_SENDING,
-            VoucherValueDecisionStatus.SENT
-        )
-    )
 
     val updatedDecisions = updateExistingDecisions(from, newDrafts, existingDrafts, activeDecisions)
     deleteValueDecisions(existingDrafts.map { it.id })
@@ -266,13 +289,17 @@ private fun generateNewValueDecisions(
                     finalCoPayment = finalCoPayment,
                     baseValue = voucherValue.baseValue,
                     assistanceNeedCoefficient = assistanceNeedCoefficient,
-                    voucherValue = (BigDecimal(voucherValue.value) * assistanceNeedCoefficient).toInt()
+                    voucherValue = (BigDecimal(voucherValue.value) * assistanceNeedCoefficient).toInt(),
+                    difference = emptySet(),
                 )
             }
         }
         .let { mergePeriods(it, ::decisionContentsAreEqual) }
         .map { (period, decision) -> decision.withValidity(period) }
 }
+
+private fun decisionsCanMerge(d1: VoucherValueDecision, d2: VoucherValueDecision): Boolean =
+    periodsCanMerge(DateRange(d1.validFrom, d1.validTo), DateRange(d2.validFrom, d2.validTo))
 
 private fun Database.Read.getServiceVoucherUnits(): List<DaycareId> {
     return createQuery("SELECT id FROM daycare WHERE provider_type = 'PRIVATE_SERVICE_VOUCHER' AND NOT invoiced_by_municipality")

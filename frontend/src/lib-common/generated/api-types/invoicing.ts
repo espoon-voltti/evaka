@@ -712,6 +712,7 @@ export interface SearchPaymentsRequest {
 */
 export interface SearchVoucherValueDecisionRequest {
   area: string[] | null
+  difference: VoucherValueDecisionDifference[] | null
   distinctions: VoucherValueDecisionDistinctiveParams[] | null
   endDate: LocalDate | null
   financeDecisionHandlerId: UUID | null
@@ -777,6 +778,7 @@ export interface VoucherValueDecision {
   decisionHandler: UUID | null
   decisionNumber: number | null
   decisionType: VoucherValueDecisionType
+  difference: VoucherValueDecisionDifference[]
   documentKey: string | null
   familySize: number
   feeAlterations: FeeAlterationWithEffect[]
@@ -839,6 +841,25 @@ export interface VoucherValueDecisionDetailed {
   validTo: LocalDate | null
   voucherValue: number
 }
+
+/**
+* Generated from fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
+*/
+export const voucherValueDecisionDifferences = [
+  'GUARDIANS',
+  'INCOME',
+  'FAMILY_SIZE',
+  'PLACEMENT',
+  'SERVICE_NEED',
+  'SIBLING_DISCOUNT',
+  'CO_PAYMENT',
+  'FEE_ALTERATIONS',
+  'FINAL_CO_PAYMENT',
+  'BASE_VALUE',
+  'VOUCHER_VALUE'
+] as const
+
+export type VoucherValueDecisionDifference = typeof voucherValueDecisionDifferences[number]
 
 /**
 * Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionDistinctiveParams
@@ -904,6 +925,7 @@ export interface VoucherValueDecisionSummary {
   child: PersonBasic
   created: HelsinkiDateTime
   decisionNumber: number | null
+  difference: VoucherValueDecisionDifference[]
   finalCoPayment: number
   headOfFamily: PersonBasic
   id: UUID

@@ -157,7 +157,7 @@ data class DateRange(val start: LocalDate, val end: LocalDate?) {
     }
 }
 
-private fun periodsCanMerge(first: DateRange, second: DateRange): Boolean =
+fun periodsCanMerge(first: DateRange, second: DateRange): Boolean =
     first.overlaps(second) || first.end?.let { first.end.plusDays(1) == second.start } ?: false
 
 private fun minimalCover(first: DateRange, second: DateRange): DateRange = DateRange(

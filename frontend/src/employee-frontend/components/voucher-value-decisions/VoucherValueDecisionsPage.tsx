@@ -74,6 +74,7 @@ export default React.memo(function VoucherValueDecisionsPage() {
       financeDecisionHandlerId: searchFilters.financeDecisionHandlerId
         ? searchFilters.financeDecisionHandlerId
         : undefined,
+      difference: searchFilters.difference,
       startDate: searchFilters.startDate,
       endDate: searchFilters.endDate,
       searchByStartDate: searchFilters.searchByStartDate
