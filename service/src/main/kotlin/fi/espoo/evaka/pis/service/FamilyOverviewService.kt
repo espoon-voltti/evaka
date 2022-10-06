@@ -12,6 +12,8 @@ import fi.espoo.evaka.invoicing.domain.getTotalIncome
 import fi.espoo.evaka.invoicing.domain.getTotalIncomeEffect
 import fi.espoo.evaka.invoicing.domain.incomeTotal
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
+import fi.espoo.evaka.pis.HasDateOfBirth
+import fi.espoo.evaka.pis.determineHeadOfFamily
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
@@ -93,9 +95,12 @@ ORDER BY date_of_birth ASC
             throw NotFound("No adult found")
         }
 
-        val headOfFamily = adults.find { adult -> children.any { it.headOfChild == adult.personId } } ?: adults.first()
-
-        val partner = adults.find { it.personId != headOfFamily.personId }
+        val supposedHead = adults.first()
+        val supposedPartner = adults.getOrNull(1)
+        val (headOfFamily, partner) = determineHeadOfFamily(
+            Pair(supposedHead, children.filter { it.headOfChild == supposedHead.personId }),
+            Pair(supposedPartner, children.filter { it.headOfChild == supposedPartner?.personId })
+        )
 
         return FamilyOverview(
             headOfFamily = headOfFamily,
@@ -127,7 +132,7 @@ data class FamilyOverviewPerson(
     val personId: PersonId,
     val firstName: String,
     val lastName: String,
-    val dateOfBirth: LocalDate,
+    override val dateOfBirth: LocalDate,
     val restrictedDetailsEnabled: Boolean,
     val streetAddress: String,
     val postalCode: String,
@@ -135,7 +140,7 @@ data class FamilyOverviewPerson(
     @JsonInclude(JsonInclude.Include.NON_NULL)
     val headOfChild: PersonId?,
     val income: FamilyOverviewIncome?
-)
+) : HasDateOfBirth
 
 data class FamilyOverviewIncome(
     @JsonInclude(JsonInclude.Include.NON_NULL)
