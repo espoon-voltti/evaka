@@ -1259,3 +1259,13 @@ VALUES (:id, :calendarEventId, :unitId, :groupId, :childId)
 RETURNING id
 """
 )
+
+fun Database.Transaction.insertTestDailyServiceTimes(dailyServiceTimes: DevDailyServiceTimes) =
+    createUpdate(
+        """
+INSERT INTO daily_service_time (id, child_id, type, validity_period, regular_times, monday_times, tuesday_times, wednesday_times, thursday_times, friday_times, saturday_times, sunday_times)
+VALUES (:id, :childId, :type, :validityPeriod, :regularTimes, :mondayTimes, :tuesdayTimes, :wednesdayTimes, :thursdayTimes, :fridayTimes, :saturdayTimes, :sundayTimes)
+"""
+    )
+        .bindKotlin(dailyServiceTimes)
+        .execute()
