@@ -13,6 +13,7 @@ import fi.espoo.evaka.invoicing.domain.FridgeFamily
 import fi.espoo.evaka.invoicing.domain.Income
 import fi.espoo.evaka.invoicing.domain.decisionContentsAreEqual
 import fi.espoo.evaka.invoicing.domain.getECHAIncrease
+import fi.espoo.evaka.pis.determineHeadOfFamily
 import fi.espoo.evaka.pis.getParentships
 import fi.espoo.evaka.pis.getPartnersForPerson
 import fi.espoo.evaka.pis.service.Parentship
@@ -212,23 +213,10 @@ private fun generateFamilyCompositions(
 
     return mergePeriods(familyPeriods).map { (period, familyData) ->
         val children = familyData.third + familyData.fourth
-        val (head, partner) = run {
-            val firstParentsYoungestChild = familyData.third.minByOrNull { it.dateOfBirth }
-            val secondParentsYoungestChild = familyData.fourth.minByOrNull { it.dateOfBirth }
-            when {
-                familyData.second == null -> familyData.first to familyData.second
-                firstParentsYoungestChild == null -> familyData.second to familyData.first
-                secondParentsYoungestChild == null -> familyData.first to familyData.second
-                // First parent has more fridge children
-                familyData.third.size > familyData.fourth.size -> familyData.first to familyData.second
-                // Second parent has more fridge children
-                familyData.third.size < familyData.fourth.size -> familyData.second to familyData.first
-                // First parent has the youngest fridge child
-                firstParentsYoungestChild.dateOfBirth.isAfter(secondParentsYoungestChild.dateOfBirth) ->
-                    familyData.first to familyData.second
-                else -> familyData.second to familyData.first
-            }
-        }
+        val (head, partner) = determineHeadOfFamily(
+            Pair(familyData.first, familyData.third),
+            Pair(familyData.second, familyData.fourth)
+        )
         FridgeFamily(
             headOfFamily = head,
             partner = partner,

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.invoicing.domain
 
+import fi.espoo.evaka.pis.HasDateOfBirth
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
@@ -13,8 +14,8 @@ import java.time.LocalDate
 
 data class ChildWithDateOfBirth(
     @PropagateNull val id: ChildId,
-    val dateOfBirth: LocalDate
-)
+    override val dateOfBirth: LocalDate
+) : HasDateOfBirth
 
 data class EmployeeWithName(
     @PropagateNull val id: EmployeeId,
