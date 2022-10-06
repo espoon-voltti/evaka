@@ -180,6 +180,7 @@ import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
@@ -1250,17 +1251,10 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         }
 
     @PostMapping("/daily-service-time")
-    fun addDailyServiceTime(db: Database, @RequestBody body: DevDailyServiceTime) =
+    fun addDailyServiceTime(db: Database, @RequestBody body: DevDailyServiceTimes) =
         db.connect { dbc ->
             dbc.transaction {
-                it.createUpdate(
-                    """
-                    INSERT INTO daily_service_time (id, child_id, type, validity_period, regular_times, monday_times, tuesday_times, wednesday_times, thursday_times, friday_times, saturday_times, sunday_times)
-                    VALUES (:id, :childId, :type, :validityPeriod, :regularTimes, :mondayTimes, :tuesdayTimes, :wednesdayTimes, :thursdayTimes, :fridayTimes, :saturdayTimes, :sundayTimes)
-                    """.trimIndent()
-                )
-                    .bindKotlin(body)
-                    .execute()
+                it.insertTestDailyServiceTimes(body)
             }
         }
 
@@ -1789,19 +1783,19 @@ data class DevStaffAttendance(
     val occupancyCoefficient: BigDecimal,
     val type: StaffAttendanceType
 )
-data class DevDailyServiceTime(
-    val id: DailyServiceTimesId,
+data class DevDailyServiceTimes(
+    val id: DailyServiceTimesId = DailyServiceTimesId(UUID.randomUUID()),
     val childId: ChildId,
-    val type: DailyServiceTimesType,
+    val type: DailyServiceTimesType = DailyServiceTimesType.REGULAR,
     val validityPeriod: DateRange,
-    val regularTimes: TimeRange?,
-    val mondayTimes: TimeRange?,
-    val tuesdayTimes: TimeRange?,
-    val wednesdayTimes: TimeRange?,
-    val thursdayTimes: TimeRange?,
-    val fridayTimes: TimeRange?,
-    val saturdayTimes: TimeRange?,
-    val sundayTimes: TimeRange?
+    val regularTimes: TimeRange = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
+    val mondayTimes: TimeRange? = null,
+    val tuesdayTimes: TimeRange? = null,
+    val wednesdayTimes: TimeRange? = null,
+    val thursdayTimes: TimeRange? = null,
+    val fridayTimes: TimeRange? = null,
+    val saturdayTimes: TimeRange? = null,
+    val sundayTimes: TimeRange? = null,
 )
 
 data class DevDailyServiceTimeNotification(
