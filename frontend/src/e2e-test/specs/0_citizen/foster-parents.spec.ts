@@ -252,3 +252,41 @@ test('Foster parent can read a daycare curriculum and give permission to share i
   await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
   await header.assertUnreadChildrenCount(0)
 })
+
+test('Foster parent can terminate a daycare placement', async () => {
+  const endDate = mockedDate.addYears(1)
+  await Fixture.placement()
+    .with({
+      childId: fosterChild.id,
+      unitId: fixtures.daycareFixture.id,
+      startDate: mockedDate.formatIso(),
+      endDate: endDate.formatIso()
+    })
+    .save()
+  await citizenPage.reload()
+
+  await header.openChildPage(fosterChild.id)
+  const childPage = new CitizenChildPage(citizenPage)
+  await childPage.openCollapsible('termination')
+
+  await childPage.assertTerminatedPlacementCount(0)
+  await childPage.assertTerminatablePlacementCount(1)
+  await childPage.togglePlacement(
+    `Varhaiskasvatus, ${
+      fixtures.daycareFixture.name
+    }, voimassa ${endDate.format()}`
+  )
+  await childPage.fillTerminationDate(mockedDate)
+  await childPage.submitTermination()
+  await childPage.assertTerminatablePlacementCount(0)
+
+  await childPage.assertTerminatedPlacementCount(1)
+  await waitUntilEqual(
+    () => childPage.getTerminatedPlacements(),
+    [
+      `Varhaiskasvatus, ${
+        fixtures.daycareFixture.name
+      }, viimeinen läsnäolopäivä: ${mockedDate.format()}`
+    ]
+  )
+})
