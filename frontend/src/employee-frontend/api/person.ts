@@ -219,6 +219,15 @@ export async function getPersonGuardians(
     .catch((e) => Failure.fromError(e))
 }
 
+export async function getPersonBlockedGuardians(
+  personId: UUID
+): Promise<Result<PersonJSON[]>> {
+  return client
+    .get<JsonOf<PersonJSON[]>>(`/person/blocked-guardians/${personId}`)
+    .then((res) => Success.of(res.data.map(deserializePersonJSON)))
+    .catch((e) => Failure.fromError(e))
+}
+
 interface DecisionsResponse {
   decisions: Decision[]
 }
@@ -296,5 +305,16 @@ export async function updatePersonAndFamilyFromVtj(
   return client
     .post(`/person/${personId}/vtj-update`)
     .then(() => getPerson(personId))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function updateEvakaRights(
+  childId: UUID,
+  guardianId: UUID,
+  denied: boolean
+): Promise<Result<void>> {
+  return client
+    .post(`/person/${childId}/evaka-rights`, { guardianId, denied })
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

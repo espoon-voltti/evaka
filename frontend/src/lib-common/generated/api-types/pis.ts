@@ -146,6 +146,14 @@ export interface EmployeeWithDaycareRoles {
 }
 
 /**
+* Generated from fi.espoo.evaka.pis.controllers.PersonController.EvakaRightsRequest
+*/
+export interface EvakaRightsRequest {
+  denied: boolean
+  guardianId: UUID
+}
+
+/**
 * Generated from fi.espoo.evaka.pis.FamilyContact
 */
 export interface FamilyContact {

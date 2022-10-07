@@ -19,6 +19,10 @@ import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.pis.service.PersonPatch
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.pis.service.PersonWithChildrenDTO
+import fi.espoo.evaka.pis.service.addToGuardianBlocklist
+import fi.espoo.evaka.pis.service.deleteFromGuardianBlocklist
+import fi.espoo.evaka.pis.service.deleteGuardianRelationship
+import fi.espoo.evaka.pis.service.getBlockedGuardians
 import fi.espoo.evaka.pis.service.hideNonPermittedPersonData
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
@@ -130,6 +134,23 @@ class PersonController(
             .also {
                 Audit.PersonGuardianRead.log(targetId = childId, args = mapOf("count" to it.size))
             }
+    }
+
+    @GetMapping("/blocked-guardians/{personId}")
+    fun getPersonBlockedGuardians(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable(value = "personId") childId: ChildId
+    ): List<PersonJSON> {
+        accessControl.requirePermissionFor(user, clock, Action.Child.READ_BLOCKED_GUARDIANS, childId)
+        return db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.getBlockedGuardians(childId).mapNotNull { tx.getPersonById(it) }
+            }
+        }
+            .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
+            .also { Audit.PersonBlockedGuardiansRead.log(targetId = childId, args = mapOf("count" to it.size)) }
     }
 
     @PostMapping("/search")
@@ -325,6 +346,31 @@ class PersonController(
         return db.connect { dbc -> fridgeFamilyService.updatePersonAndFamilyFromVtj(dbc, user, clock, personId) }.also {
             Audit.PersonVtjFamilyUpdate.log(targetId = personId)
         }
+    }
+
+    data class EvakaRightsRequest(val guardianId: PersonId, val denied: Boolean)
+
+    @PostMapping("/{childId}/evaka-rights")
+    fun updateGuardianEvakaRights(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable childId: ChildId,
+        @RequestBody body: EvakaRightsRequest
+    ) {
+        accessControl.requirePermissionFor(user, clock, Action.Person.UPDATE_EVAKA_RIGHTS, childId)
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                if (body.denied) {
+                    tx.addToGuardianBlocklist(childId, body.guardianId)
+                    tx.deleteGuardianRelationship(childId, body.guardianId)
+                } else {
+                    tx.deleteFromGuardianBlocklist(childId, body.guardianId)
+                    personService.getGuardians(tx, user, childId, forceRefresh = true)
+                }
+            }
+        }
+        Audit.PersonUpdateEvakaRights.log(targetId = childId, objectId = body.guardianId, mapOf("denied" to body.denied))
     }
 
     data class PersonResponse(
