@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.PilotFeature
+import java.time.DayOfWeek
 import java.time.LocalDate
 
 data class DaycareFields(
@@ -430,3 +431,20 @@ fun Database.Read.getUnitFeatures(id: DaycareId): UnitFeatures? = createQuery(
     .bind("id", id)
     .mapTo<UnitFeatures>()
     .first()
+
+private data class UnitOperationDays(
+    val id: DaycareId,
+    val operationDays: List<Int>,
+)
+
+fun Database.Read.getUnitOperationDays(): Map<DaycareId, Set<DayOfWeek>> = createQuery(
+    """
+    SELECT id, operation_days
+    FROM daycare
+    """
+)
+    .mapTo<UnitOperationDays>()
+    .fold(mutableMapOf()) { acc, row ->
+        acc[row.id] = row.operationDays.map { DayOfWeek.of(it) }.toSet()
+        acc
+    }

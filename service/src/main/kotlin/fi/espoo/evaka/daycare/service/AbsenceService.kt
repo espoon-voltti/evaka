@@ -4,8 +4,13 @@
 
 package fi.espoo.evaka.daycare.service
 
+import fi.espoo.evaka.attendance.getChildAttendanceReservationStartDatesByRange
+import fi.espoo.evaka.attendance.getChildAttendanceStartDatesByRange
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
+import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
 import fi.espoo.evaka.daycare.getDaycare
+import fi.espoo.evaka.daycare.getUnitOperationDays
+import fi.espoo.evaka.placement.getChildPlacementTypesByRange
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupId
@@ -79,6 +84,58 @@ fun getAbsencesOfChildByMonth(tx: Database.Read, childId: ChildId, year: Int, mo
 fun getFutureAbsencesOfChild(tx: Database.Read, evakaClock: EvakaClock, childId: ChildId): List<Absence> {
     val period = DateRange(evakaClock.today().plusDays(1), null)
     return tx.getAbsencesOfChildByRange(childId, period)
+}
+
+fun generateAbsencesFromIrregularDailyServiceTimes(
+    tx: Database.Transaction,
+    now: HelsinkiDateTime,
+    childId: ChildId,
+) {
+    // Change absences from tomorrow onwards
+    val period = DateRange(now.toLocalDate().plusDays(1), null)
+
+    val irregularDailyServiceTimes = tx.getChildDailyServiceTimes(childId).flatMap {
+        if (it.times.validityPeriod.overlaps(period) &&
+            it.times is DailyServiceTimesValue.IrregularTimes &&
+            !it.times.isEmpty()
+        ) listOf(it.times) else emptyList()
+    }
+    if (irregularDailyServiceTimes.isNotEmpty()) {
+        val attendanceDates = tx.getChildAttendanceStartDatesByRange(childId, period)
+        val reservationDates = tx.getChildAttendanceReservationStartDatesByRange(childId, period)
+        val placementTypes = tx.getChildPlacementTypesByRange(childId, period)
+        val unitOperationDays = tx.getUnitOperationDays()
+
+        val absencesToAdd = irregularDailyServiceTimes.flatMap dst@{ dailyServiceTimes ->
+            val validityPeriod = period.intersection(dailyServiceTimes.validityPeriod) ?: return@dst listOf()
+            placementTypes.flatMap pt@{ placementType ->
+                val effectivePeriod = placementType.period.intersection(validityPeriod) ?: return@pt listOf()
+                val operationDays = unitOperationDays[placementType.unitId] ?: setOf()
+                effectivePeriod.dates().toList().flatMap date@{ date ->
+                    val dayOfWeek = date.dayOfWeek
+                    if (!operationDays.contains(dayOfWeek)) return@date listOf()
+
+                    val isIrregularAbsenceDay = dailyServiceTimes.timesForDayOfWeek(date.dayOfWeek) == null
+                    if (!isIrregularAbsenceDay) return@date listOf()
+
+                    val hasAttendance = attendanceDates.any { it == date }
+                    val hasReservation = reservationDates.any { it == date }
+                    if (hasAttendance || hasReservation) return@date listOf()
+
+                    placementType.placementType.absenceCategories().map { category ->
+                        AbsenceUpsert(
+                            childId = childId,
+                            date = date,
+                            absenceType = AbsenceType.OTHER_ABSENCE,
+                            category = category,
+                        )
+                    }
+                }
+            }
+        }
+        tx.upsertGeneratedAbsences(now, absencesToAdd)
+    }
+    tx.deleteOldGeneratedAbsencesInRange(now, childId, period)
 }
 
 private fun supplementReservationsWithDailyServiceTimes(

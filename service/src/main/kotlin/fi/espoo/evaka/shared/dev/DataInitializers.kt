@@ -898,13 +898,14 @@ fun Database.Transaction.insertTestAbsence(
     date: LocalDate,
     category: AbsenceCategory,
     absenceType: AbsenceType = AbsenceType.SICKLEAVE,
-    modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId
+    modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
+    modifiedAt: HelsinkiDateTime? = null,
 ) {
     //language=sql
     val sql =
         """
-        INSERT INTO absence (id, child_id, date, category, absence_type, modified_by)
-        VALUES (:id, :childId, :date, :category, :absenceType, :modifiedBy)
+        INSERT INTO absence (id, child_id, date, category, absence_type, modified_by, modified_at)
+        VALUES (:id, :childId, :date, :category, :absenceType, :modifiedBy, coalesce(:modifiedAt, now()))
         """.trimIndent()
     createUpdate(sql)
         .bind("id", id)
@@ -913,6 +914,7 @@ fun Database.Transaction.insertTestAbsence(
         .bind("category", category)
         .bind("absenceType", absenceType)
         .bind("modifiedBy", modifiedBy)
+        .bind("modifiedAt", modifiedAt)
         .execute()
 }
 

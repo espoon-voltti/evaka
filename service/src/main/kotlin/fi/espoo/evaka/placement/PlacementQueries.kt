@@ -115,6 +115,32 @@ AND daterange(p.start_date, p.end_date, '[]') @> :today
         .firstOrNull()
 }
 
+data class ChildPlacementType(
+    val childId: ChildId,
+    val unitId: DaycareId,
+    val period: FiniteDateRange,
+    val placementType: PlacementType
+)
+
+fun Database.Read.getChildPlacementTypesByRange(childId: ChildId, period: DateRange): List<ChildPlacementType> {
+    return createQuery(
+        """
+SELECT
+    child_id,
+    unit_id,
+    daterange(start_date, end_date, '[]') AS period,
+    type AS placement_type
+FROM placement
+WHERE child_id = :childId
+AND daterange(start_date, end_date, '[]') && :period
+"""
+    )
+        .bind("childId", childId)
+        .bind("period", period)
+        .mapTo<ChildPlacementType>()
+        .list()
+}
+
 fun Database.Transaction.insertPlacement(
     type: PlacementType,
     childId: ChildId,

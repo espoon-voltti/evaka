@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
@@ -242,24 +243,20 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTi
         .list()
 }
 
-private data class ChildDate(
-    val childId: ChildId,
-    val date: LocalDate,
-)
-
-fun Database.Read.getChildrenAttendancesByPeriod(childIds: Set<ChildId>, period: FiniteDateRange): Map<ChildId, List<LocalDate>> {
+fun Database.Read.getChildAttendanceStartDatesByRange(childId: ChildId, period: DateRange): List<LocalDate> {
     return createQuery(
         """
-        SELECT child_id, date
+        SELECT date
         FROM child_attendance
         WHERE between_start_and_end(:period, date)
-        AND child_id = ANY(:childIds)
+        AND child_id = :childId
+        AND start_time != '00:00'::time  -- filter out overnight stays
     """
     )
         .bind("period", period)
-        .bind("childIds", childIds)
-        .mapTo<ChildDate>()
-        .groupBy({ it.childId }, { it.date })
+        .bind("childId", childId)
+        .mapTo<LocalDate>()
+        .list()
 }
 
 fun Database.Transaction.unsetAttendanceEndTime(attendanceId: AttendanceId) {
@@ -364,3 +361,19 @@ fun Database.Read.fetchAttendanceReservations(
     }
     .groupBy { (childId, _) -> childId }
     .mapValues { it.value.map { (_, reservation) -> reservation } }
+
+fun Database.Read.getChildAttendanceReservationStartDatesByRange(childId: ChildId, period: DateRange): List<LocalDate> {
+    return createQuery(
+        """
+        SELECT date
+        FROM attendance_reservation
+        WHERE between_start_and_end(:period, date)
+        AND child_id = :childId
+        AND start_time != '00:00'::time  -- filter out overnight reservations
+        """
+    )
+        .bind("period", period)
+        .bind("childId", childId)
+        .mapTo<LocalDate>()
+        .list()
+}

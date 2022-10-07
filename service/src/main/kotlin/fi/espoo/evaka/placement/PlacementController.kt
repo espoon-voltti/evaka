@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.controllers.AdditionalInformation
 import fi.espoo.evaka.daycare.controllers.Child
 import fi.espoo.evaka.daycare.createChild
 import fi.espoo.evaka.daycare.getChild
+import fi.espoo.evaka.daycare.service.generateAbsencesFromIrregularDailyServiceTimes
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -124,6 +125,7 @@ class PlacementController(
         accessControl.requirePermissionFor(user, clock, Action.Unit.CREATE_PLACEMENT, body.unitId)
 
         if (body.startDate > body.endDate) throw BadRequest("Placement start date cannot be after the end date")
+        val now = clock.now()
 
         val placements = db.connect { dbc ->
             dbc.transaction { tx ->
@@ -144,10 +146,11 @@ class PlacementController(
                     type = body.type,
                     useFiveYearsOldDaycare = useFiveYearsOldDaycare
                 ).also {
+                    generateAbsencesFromIrregularDailyServiceTimes(tx, now, body.childId)
                     asyncJobRunner.plan(
                         tx,
                         listOf(AsyncJob.GenerateFinanceDecisions.forChild(body.childId, DateRange(body.startDate, body.endDate))),
-                        runAt = clock.now()
+                        runAt = now
                     )
                 }
             }
@@ -165,10 +168,12 @@ class PlacementController(
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Placement.UPDATE, placementId)
 
+        val now = clock.now()
         val aclAuth = acl.getAuthorizedUnits(user)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val oldPlacement = tx.updatePlacement(placementId, body.startDate, body.endDate, aclAuth, useFiveYearsOldDaycare)
+                generateAbsencesFromIrregularDailyServiceTimes(tx, now, oldPlacement.childId)
                 asyncJobRunner.plan(
                     tx,
                     listOf(
@@ -180,7 +185,7 @@ class PlacementController(
                             )
                         )
                     ),
-                    runAt = clock.now()
+                    runAt = now,
                 )
             }
         }
@@ -196,9 +201,11 @@ class PlacementController(
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Placement.DELETE, placementId)
 
+        val now = clock.now()
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.cancelPlacement(placementId).also {
+                    generateAbsencesFromIrregularDailyServiceTimes(tx, now, it.childId)
                     asyncJobRunner.plan(
                         tx,
                         listOf(
@@ -207,7 +214,7 @@ class PlacementController(
                                 DateRange(it.startDate, it.endDate)
                             )
                         ),
-                        runAt = clock.now()
+                        runAt = now,
                     )
                 }
             }

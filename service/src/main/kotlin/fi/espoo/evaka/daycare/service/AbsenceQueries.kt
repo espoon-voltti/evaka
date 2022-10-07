@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -74,6 +75,31 @@ fun Database.Transaction.upsertAbsences(now: HelsinkiDateTime, userId: EvakaUser
         .toList()
 }
 
+/** If the absence already exists, updates only if was generated */
+fun Database.Transaction.upsertGeneratedAbsences(now: HelsinkiDateTime, absences: List<AbsenceUpsert>): List<AbsenceId> {
+    val sql =
+        """
+        INSERT INTO absence AS a (child_id, date, category, absence_type, modified_by, modified_at)
+        VALUES (:childId, :date, :category, :absenceType, :userId, :now)
+        ON CONFLICT (child_id, date, category)
+        DO UPDATE SET absence_type = :absenceType, modified_at = :now WHERE a.modified_by = :userId
+        RETURNING id
+        """.trimIndent()
+
+    val batch = prepareBatch(sql)
+    for (absence in absences) {
+        batch
+            .bindKotlin(absence)
+            .bind("userId", AuthenticatedUser.SystemInternalUser.evakaUserId)
+            .bind("now", now)
+            .add()
+    }
+
+    return batch.executeAndReturn()
+        .mapTo<AbsenceId>()
+        .toList()
+}
+
 data class AbsenceDelete(
     val childId: ChildId,
     val date: LocalDate,
@@ -102,6 +128,25 @@ fun Database.Transaction.deleteChildAbsences(childId: ChildId, date: LocalDate):
         .bind("childId", childId)
         .bind("date", date)
         .executeAndReturnGeneratedKeys()
+        .mapTo<AbsenceId>()
+        .toList()
+
+fun Database.Transaction.deleteOldGeneratedAbsencesInRange(now: HelsinkiDateTime, childId: ChildId, range: DateRange): List<AbsenceId> =
+    createQuery(
+        """
+DELETE FROM absence
+WHERE
+    child_id = :childId AND
+    between_start_and_end(:range, date) AND
+    modified_by = :systemUserId AND
+    modified_at < :now
+RETURNING id
+"""
+    )
+        .bind("childId", childId)
+        .bind("range", range)
+        .bind("systemUserId", AuthenticatedUser.SystemInternalUser.evakaUserId)
+        .bind("now", now)
         .mapTo<AbsenceId>()
         .toList()
 

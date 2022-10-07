@@ -5,6 +5,7 @@
 package fi.espoo.evaka.dailyservicetimes
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.service.generateAbsencesFromIrregularDailyServiceTimes
 import fi.espoo.evaka.reservations.clearReservationsForRange
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DailyServiceTimesId
@@ -24,9 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class DailyServiceTimesController(
-    private val accessControl: AccessControl
-) {
+class DailyServiceTimesController(private val accessControl: AccessControl) {
 
     data class DailyServiceTimesResponse(
         val dailyServiceTimes: DailyServiceTimes,
@@ -76,6 +75,7 @@ class DailyServiceTimesController(
                 this.checkOverlappingDailyServiceTimes(tx, childId, body.validityPeriod)
                 val id = tx.createChildDailyServiceTimes(childId, body)
                 this.deleteCollidingReservationsAndNotify(tx, id, clock)
+                generateAbsencesFromIrregularDailyServiceTimes(tx, clock.now(), childId)
                 id
             }
         }
@@ -94,8 +94,9 @@ class DailyServiceTimesController(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.updateChildDailyServiceTimes(id, body)
-                this.deleteCollidingReservationsAndNotify(tx, id, clock)
+                val childId = tx.updateChildDailyServiceTimes(id, body)
+                deleteCollidingReservationsAndNotify(tx, id, clock)
+                generateAbsencesFromIrregularDailyServiceTimes(tx, clock.now(), childId)
             }
         }
         Audit.ChildDailyServiceTimesEdit.log(targetId = id)
@@ -110,7 +111,13 @@ class DailyServiceTimesController(
     ) {
         accessControl.requirePermissionFor(user, clock, Action.DailyServiceTime.DELETE, id)
 
-        db.connect { dbc -> dbc.transaction { it.deleteChildDailyServiceTimes(id) } }
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val childId = tx.deleteChildDailyServiceTimes(id)
+                generateAbsencesFromIrregularDailyServiceTimes(tx, clock.now(), childId)
+            }
+        }
+
         Audit.ChildDailyServiceTimesDelete.log(targetId = id)
     }
 

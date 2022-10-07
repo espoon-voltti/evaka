@@ -88,6 +88,15 @@ sealed class DailyServiceTimesValue(
             sundayTimes = sunday,
             validityPeriod = validityPeriod
         )
+
+        fun isEmpty() =
+            monday == null &&
+                tuesday == null &&
+                wednesday == null &&
+                thursday == null &&
+                friday == null &&
+                saturday == null &&
+                sunday == null
     }
 
     @JsonTypeName("VARIABLE_TIME")
@@ -236,7 +245,7 @@ data class DailyServiceTimeUpdateRow(
     val validityPeriod: DateRange
 )
 
-fun Database.Transaction.updateChildDailyServiceTimes(id: DailyServiceTimesId, times: DailyServiceTimesValue) {
+fun Database.Transaction.updateChildDailyServiceTimes(id: DailyServiceTimesId, times: DailyServiceTimesValue): ChildId {
     val sql = """
         UPDATE daily_service_time
         SET 
@@ -250,12 +259,14 @@ fun Database.Transaction.updateChildDailyServiceTimes(id: DailyServiceTimesId, t
             saturday_times = :saturdayTimes,
             sunday_times = :sundayTimes
         WHERE id = :id
+        RETURNING child_id
     """.trimIndent()
 
-    this.createUpdate(sql)
+    return this.createQuery(sql)
         .bindKotlin(times.asUpdateRow())
         .bind("id", id)
-        .execute()
+        .mapTo<ChildId>()
+        .one()
 }
 
 fun Database.Transaction.addDailyServiceTimesNotification(
@@ -284,14 +295,15 @@ SELECT recipient.id, :id, :dateFrom, :hasDeletedReservations FROM recipient
         .execute()
 }
 
-fun Database.Transaction.deleteChildDailyServiceTimes(id: DailyServiceTimesId) {
+fun Database.Transaction.deleteChildDailyServiceTimes(id: DailyServiceTimesId): ChildId {
     // language=sql
     val sql = """
         DELETE FROM daily_service_time
         WHERE id = :id
+        RETURNING child_id
     """.trimIndent()
 
-    this.createUpdate(sql).bind("id", id).execute()
+    return this.createQuery(sql).bind("id", id).mapTo<ChildId>().one()
 }
 
 fun Database.Transaction.createChildDailyServiceTimes(childId: ChildId, times: DailyServiceTimesValue): DailyServiceTimesId {
