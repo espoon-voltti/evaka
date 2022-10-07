@@ -13,11 +13,11 @@ import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.db.QueryFragment
+import fi.espoo.evaka.shared.db.QueryBuilder
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 
-private typealias FilterByEmployee<T> = (user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryFragment<T>
+private typealias FilterByEmployee<T> = QueryBuilder<T>.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryBuilder.Sql
 
 object IsEmployee {
     private fun <T : Id<*>> rule(filter: FilterByEmployee<T>): DatabaseActionRule.Scoped<T, IsEmployee> =
@@ -27,22 +27,20 @@ object IsEmployee {
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<IsEmployee>> = when (ctx.user) {
-            is AuthenticatedUser.Employee -> filter(ctx.user, ctx.now).let { subquery ->
-                ctx.tx.createQuery(
-                    QueryFragment<Any>(
-                        """
+            is AuthenticatedUser.Employee -> ctx.tx.createQuery {
+                sql(
+                    """
                     SELECT id
-                    FROM (${subquery.sql}) fragment
-                    WHERE id = ANY(:ids)
-                        """.trimIndent(),
-                        subquery.bindings
-                    )
-                ).bind("ids", targets.map { it.raw })
-                    .mapTo<Id<DatabaseTable>>()
-                    .toSet()
-            }.let { matched ->
-                targets.filter { matched.contains(it) }.associateWith { Permitted }
+                    FROM (${subquery { filter(ctx.user, ctx.now) } }) fragment
+                    WHERE id = ANY(${bind(targets.map { it.raw })})
+                    """.trimIndent()
+                )
             }
+                .mapTo<Id<DatabaseTable>>()
+                .toSet()
+                .let { matched ->
+                    targets.filter { matched.contains(it) }.associateWith { Permitted }
+                }
             else -> emptyMap()
         }
 
@@ -50,12 +48,10 @@ object IsEmployee {
             ctx: DatabaseActionRule.QueryContext,
             params: IsEmployee
         ): AccessControlFilter<T>? = when (ctx.user) {
-            is AuthenticatedUser.Employee -> filter(ctx.user, ctx.now).let { subquery ->
-                ctx.tx.createQuery(subquery)
-                    .mapTo<Id<DatabaseTable>>()
-                    .toSet()
-                    .let { ids -> AccessControlFilter.Some(ids) }
-            }
+            is AuthenticatedUser.Employee -> ctx.tx.createQuery { filter(ctx.user, ctx.now) }
+                .mapTo<Id<DatabaseTable>>()
+                .toSet()
+                .let { ids -> AccessControlFilter.Some(ids) }
             else -> null
         }
     }
@@ -101,16 +97,17 @@ object IsEmployee {
             object : DatabaseActionRule.Unscoped.Query<IsEmployee> {
                 override fun execute(ctx: DatabaseActionRule.QueryContext): DatabaseActionRule.Deferred<IsEmployee>? =
                     when (ctx.user) {
-                        is AuthenticatedUser.Employee -> ctx.tx.createQuery(
-                            """
+                        is AuthenticatedUser.Employee -> ctx.tx.createQuery {
+                            sql(
+                                """
 SELECT EXISTS (
     SELECT 1
     FROM mobile_device
-    WHERE employee_id = :userId
+    WHERE employee_id = ${bind(ctx.user.id)}
 )
-                            """.trimIndent()
-                        )
-                            .bind("userId", ctx.user.id)
+                                """.trimIndent()
+                            )
+                        }
                             .mapTo<Boolean>()
                             .single()
                             .let { isPermitted -> if (isPermitted) Permitted else null }
@@ -122,53 +119,49 @@ SELECT EXISTS (
             }
         )
 
-    fun ownerOfMobileDevice() = rule { user, _ ->
-        QueryFragment<MobileDeviceId>(
+    fun ownerOfMobileDevice() = rule<MobileDeviceId> { user, _ ->
+        sql(
             """
 SELECT id
 FROM mobile_device
-WHERE employee_id = :userId
+WHERE employee_id = ${bind(user.id)}
             """.trimIndent()
         )
-            .bind("userId", user.id)
     }
 
-    fun ownerOfPairing() = rule { user, _ ->
-        QueryFragment<PairingId>(
+    fun ownerOfPairing() = rule<PairingId> { user, _ ->
+        sql(
             """
 SELECT id
 FROM pairing
-WHERE employee_id = :userId
+WHERE employee_id = ${bind(user.id)}
             """.trimIndent()
         )
-            .bind("userId", user.id)
     }
 
-    fun authorOfApplicationNote() = rule { user, _ ->
-        QueryFragment<ApplicationNoteId>(
+    fun authorOfApplicationNote() = rule<ApplicationNoteId> { user, _ ->
+        sql(
             """
 SELECT id
 FROM application_note
-WHERE created_by = :userId
+WHERE created_by = ${bind(user.id)}
             """.trimIndent()
         )
-            .bind("userId", user.id)
     }
 
-    fun hasPermissionForMessageDraft() = rule { user, _ ->
-        QueryFragment<MessageDraftId>(
+    fun hasPermissionForMessageDraft() = rule<MessageDraftId> { user, _ ->
+        sql(
             """
 SELECT draft.id
 FROM message_draft draft
 JOIN message_account_access_view access ON access.account_id = draft.account_id
-WHERE access.employee_id = :employeeId
+WHERE access.employee_id = ${bind(user.id)}
             """.trimIndent()
         )
-            .bind("employeeId", user.id)
     }
 
-    fun hasPermissionForAttachmentThroughMessageContent() = rule { user, _ ->
-        QueryFragment<AttachmentId>(
+    fun hasPermissionForAttachmentThroughMessageContent() = rule<AttachmentId> { user, _ ->
+        sql(
             """
 SELECT att.id
 FROM attachment att
@@ -176,22 +169,20 @@ JOIN message_content content ON att.message_content_id = content.id
 JOIN message msg ON content.id = msg.content_id
 JOIN message_recipients rec ON msg.id = rec.message_id
 JOIN message_account_access_view access ON access.account_id = msg.sender_id OR access.account_id = rec.recipient_id
-WHERE access.employee_id = :employeeId
+WHERE access.employee_id = ${bind(user.id)}
             """.trimIndent()
         )
-            .bind("employeeId", user.id)
     }
 
-    fun hasPermissionForAttachmentThroughMessageDraft() = rule { user, _ ->
-        QueryFragment<AttachmentId>(
+    fun hasPermissionForAttachmentThroughMessageDraft() = rule<AttachmentId> { user, _ ->
+        sql(
             """
 SELECT att.id
 FROM attachment att
 JOIN message_draft draft ON att.message_draft_id = draft.id
 JOIN message_account_access_view access ON access.account_id = draft.account_id
-WHERE access.employee_id = :employeeId
+WHERE access.employee_id = ${bind(user.id)}
             """.trimIndent()
         )
-            .bind("employeeId", user.id)
     }
 }

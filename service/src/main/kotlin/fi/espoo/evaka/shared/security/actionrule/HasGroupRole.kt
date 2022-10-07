@@ -10,16 +10,15 @@ import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.QueryFragment
+import fi.espoo.evaka.shared.db.QueryBuilder
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.utils.emptyEnumSet
 import fi.espoo.evaka.shared.utils.toEnumSet
 import java.util.EnumSet
-import java.util.UUID
 
-private typealias GetGroupRoles = (user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryFragment<IdRoleFeatures>
+private typealias GetGroupRoles = QueryBuilder<IdRoleFeatures>.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryBuilder.Sql
 
 data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<PilotFeature>) {
     init {
@@ -36,19 +35,16 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<HasGroupRole>> = when (ctx.user) {
-            is AuthenticatedUser.Employee -> getGroupRoles(ctx.user, ctx.now).let { subquery ->
-                ctx.tx.createQuery(
-                    QueryFragment<Any>(
-                        """
+            is AuthenticatedUser.Employee -> ctx.tx.createQuery {
+                sql(
+                    """
                     SELECT id, role, unit_features
-                    FROM (${subquery.sql}) fragment
-                    WHERE id = ANY(:ids)
-                        """.trimIndent(),
-                        subquery.bindings
-                    )
-                ).bind("ids", targets.map { it.raw })
-                    .mapTo<IdRoleFeatures>()
+                    FROM (${subquery { getGroupRoles(ctx.user, ctx.now) } }) fragment
+                    WHERE id = ANY(${bind(targets.map { it.raw })})
+                    """.trimIndent()
+                )
             }
+                .mapTo<IdRoleFeatures>()
                 .fold(targets.associateTo(linkedMapOf()) { (it to mutableSetOf<RoleAndFeatures>()) }) { acc, (target, result) ->
                     acc[target]?.plusAssign(result)
                     acc
@@ -60,25 +56,19 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
             ctx: DatabaseActionRule.QueryContext,
             params: HasGroupRole
         ): AccessControlFilter<T>? = when (ctx.user) {
-            is AuthenticatedUser.Employee -> getGroupRoles(ctx.user, ctx.now).let { subquery ->
-                ctx.tx.createQuery(
-                    QueryFragment<Any>(
-                        """
+            is AuthenticatedUser.Employee -> ctx.tx.createQuery {
+                sql(
+                    """
                     SELECT id
-                    FROM (${subquery.sql}) fragment
-                    WHERE role = ANY(:roles)
-                    AND unit_features @> :features
-                        """.trimIndent(),
-                        subquery.bindings
-                    )
+                    FROM (${subquery { getGroupRoles(ctx.user, ctx.now) } }) fragment
+                    WHERE role = ANY(${params.oneOf.toSet()})
+                    AND unit_features @> ${params.unitFeatures.toSet()}
+                    """.trimIndent()
                 )
-                    .bind("roles", params.oneOf.toSet())
-                    .bind("features", params.unitFeatures.toSet())
-                    .mapTo<UUID>()
-                    .map { Id<DatabaseTable>(it) }
-                    .toSet()
-                    .let { ids -> AccessControlFilter.Some(ids) }
             }
+                .mapTo<Id<DatabaseTable>>()
+                .toSet()
+                .let { ids -> AccessControlFilter.Some(ids) }
             else -> null
         }
     }
@@ -92,29 +82,25 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
     }
 
     fun inPlacementGroupOfChild() = rule<ChildId> { user, now ->
-        QueryFragment<IdRoleFeatures>(
+        sql(
             """
 SELECT child_id AS id, role, enabled_pilot_features AS unit_features
-FROM employee_child_group_acl(:today) acl
+FROM employee_child_group_acl(${bind(now.toLocalDate())}) acl
 JOIN daycare ON acl.daycare_id = daycare.id
-WHERE employee_id = :userId
+WHERE employee_id = ${bind(user.id)}
             """.trimIndent()
         )
-            .bind("today", now.toLocalDate())
-            .bind("userId", user.id)
     }
 
     fun inPlacementGroupOfChildOfVasuDocument() = rule<VasuDocumentId> { user, now ->
-        QueryFragment<IdRoleFeatures>(
+        sql(
             """
 SELECT curriculum_document.id AS id, role, enabled_pilot_features AS unit_features
 FROM curriculum_document
-JOIN employee_child_group_acl(:today) acl USING (child_id)
+JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
-WHERE employee_id = :userId
+WHERE employee_id = ${bind(user.id)}
             """.trimIndent()
         )
-            .bind("today", now.toLocalDate())
-            .bind("userId", user.id)
     }
 }

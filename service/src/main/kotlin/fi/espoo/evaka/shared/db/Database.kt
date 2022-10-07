@@ -126,8 +126,13 @@ class Database(private val jdbi: Jdbi) {
      */
     open class Read internal constructor(val handle: Handle) {
         fun createQuery(@Language("sql") sql: String): Query = Query(handle.createQuery(sql))
-        fun createQuery(fragment: QueryFragment<*>): Query = Query(handle.createQuery(fragment.sql)).apply {
-            addBindings(fragment.bindings)
+        fun createQuery(f: QueryBuilder<Any>.() -> QueryBuilder.Sql): Query {
+            val (sql, bindings) = QueryBuilder<Any>().apply { f(this) }.build()
+            val raw = handle.createQuery(sql)
+            for ((idx, binding) in bindings.withIndex()) {
+                raw.bindByType(idx, binding.value, binding.type)
+            }
+            return Query(raw)
         }
 
         fun setLockTimeout(duration: Duration) = handle.execute("SET LOCAL lock_timeout = '${duration.toMillis()}ms'")
@@ -309,20 +314,65 @@ data class Binding<T>(val name: String, val value: T, val type: QualifiedType<T>
     }
 }
 
+data class ValueBinding<T>(val value: T, val type: QualifiedType<T>) {
+    companion object {
+        inline fun <reified T> of(value: T, qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()) =
+            ValueBinding(value, createQualifiedType(*qualifiers))
+    }
+}
+
 /**
- * Some fragment of SQL, including bound parameter values.
+ * A builder for SQL, including bound parameter values.
  *
  * This is *very dynamic* and has almost no compile-time checks, but the phantom type parameter `Tag` can be used to
- * assign some type to a query fragment for documentation purpose and to prevent mixing different types of query fragments.
+ * assign some type to a query for documentation purpose and to prevent mixing different types of queries.
  */
-data class QueryFragment<@Suppress("unused")
-    Tag>(
-    @Language("sql")
-    val sql: String,
-    val bindings: List<Binding<out Any?>> = emptyList()
-) {
-    inline fun <reified T> bind(name: String, value: T, qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()): QueryFragment<Tag> =
-        bind(Binding.of(name, value, qualifiers))
+class QueryBuilder<in Tag> {
+    private var sql: String? = null
+    private var bindings: MutableList<ValueBinding<out Any?>> = mutableListOf()
 
-    fun <T> bind(binding: Binding<T>): QueryFragment<Tag> = copy(bindings = bindings + binding)
+    inline fun <reified T> bind(value: T, qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()): Binding =
+        bind(ValueBinding.of(value, qualifiers))
+
+    fun <T> bind(binding: ValueBinding<T>): Binding {
+        this.bindings += binding
+        return Binding
+    }
+
+    fun sql(@Language("sql") sql: String): Sql {
+        check(this.sql == null) { "SQL for builder has been already set" }
+        this.sql = sql
+        return Sql
+    }
+
+    fun <Sub> subquery(f: QueryBuilder<Sub>.() -> Sql): Subquery {
+        val (sql, bindings) = QueryBuilder<Sub>().apply { f(this) }.build()
+        this.bindings += bindings
+        return Subquery(sql)
+    }
+
+    fun build(): Pair<String, List<ValueBinding<out Any?>>> = Pair(
+        checkNotNull(sql) { "SQL was not set for builder (missing call to the sql function?)" },
+        bindings.toList()
+    )
+
+    /**
+     * A marker type used for subqueries that can be used in a template string
+     */
+    @JvmInline
+    value class Subquery(private val sql: String) {
+        override fun toString(): String = sql
+    }
+
+    /**
+     * A marker type used for bound parameters that can be used in a template string
+     */
+    object Binding {
+        override fun toString(): String = "?"
+    }
+
+    /**
+     * A marker type used to get a compile-time error when the sql function is not called correctly
+     */
+    object Sql
 }

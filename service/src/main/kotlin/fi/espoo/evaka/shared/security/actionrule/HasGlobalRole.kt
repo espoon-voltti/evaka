@@ -11,13 +11,13 @@ import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.QueryFragment
+import fi.espoo.evaka.shared.db.QueryBuilder
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.utils.toEnumSet
 import java.util.EnumSet
 
-private typealias Filter<T> = (user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryFragment<T>
+private typealias Filter<T> = QueryBuilder<T>.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryBuilder.Sql
 
 data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule {
     init {
@@ -39,23 +39,20 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule {
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<HasGlobalRole>> = when (ctx.user) {
-            is AuthenticatedUser.Employee -> filter(ctx.user, ctx.now).let { subquery ->
-                ctx.tx.createQuery(
-                    QueryFragment<Any>(
-                        """
+            is AuthenticatedUser.Employee -> ctx.tx.createQuery {
+                sql(
+                    """
                     SELECT id
-                    FROM (${subquery.sql}) fragment
-                    WHERE id = ANY(:ids)
-                        """.trimIndent(),
-                        subquery.bindings
-                    )
+                    FROM (${subquery { filter(ctx.user, ctx.now) }}) fragment
+                    WHERE id = ANY(${bind(targets.map {it.raw })})
+                    """.trimIndent()
                 )
-                    .bind("ids", targets.map { it.raw })
-                    .mapTo<Id<DatabaseTable>>()
-                    .toSet()
-            }.let { matched ->
-                targets.filter { matched.contains(it) }.associateWith { Deferred(ctx.user.globalRoles) }
             }
+                .mapTo<Id<DatabaseTable>>()
+                .toSet()
+                .let { matched ->
+                    targets.filter { matched.contains(it) }.associateWith { Deferred(ctx.user.globalRoles) }
+                }
             else -> emptyMap()
         }
 
@@ -64,12 +61,10 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule {
             params: HasGlobalRole
         ): AccessControlFilter<T>? = when (ctx.user) {
             is AuthenticatedUser.Employee -> if (ctx.user.globalRoles.any { params.oneOf.contains(it) }) {
-                filter(ctx.user, ctx.now).let { subquery ->
-                    ctx.tx.createQuery(subquery)
-                        .mapTo<Id<DatabaseTable>>()
-                        .toSet()
-                        .let { ids -> AccessControlFilter.Some(ids) }
-                }
+                ctx.tx.createQuery { filter(ctx.user, ctx.now) }
+                    .mapTo<Id<DatabaseTable>>()
+                    .toSet()
+                    .let { ids -> AccessControlFilter.Some(ids) }
             } else {
                 null
             }
@@ -84,8 +79,8 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule {
         }
     }
 
-    fun andAttachmentWasUploadedByAnyEmployee() = rule { _, _ ->
-        QueryFragment<AttachmentId>(
+    fun andAttachmentWasUploadedByAnyEmployee() = rule<AttachmentId> { _, _ ->
+        sql(
             """
 SELECT attachment.id
 FROM attachment
@@ -95,20 +90,19 @@ WHERE evaka_user.type = 'EMPLOYEE'
         )
     }
 
-    fun andIsDecisionMakerForAssistanceNeedDecision() = rule { employee, _ ->
-        QueryFragment<AssistanceNeedDecisionId>(
+    fun andIsDecisionMakerForAssistanceNeedDecision() = rule<AssistanceNeedDecisionId> { employee, _ ->
+        sql(
             """
 SELECT id
 FROM assistance_need_decision
-WHERE decision_maker_employee_id = :employeeId
+WHERE decision_maker_employee_id = ${bind(employee.id)}
 AND sent_for_decision IS NOT NULL
             """.trimIndent()
         )
-            .bind("employeeId", employee.id)
     }
 
-    fun andAssistanceNeedDecisionHasBeenSent() = rule { _, _ ->
-        QueryFragment<AssistanceNeedDecisionId>(
+    fun andAssistanceNeedDecisionHasBeenSent() = rule<AssistanceNeedDecisionId> { _, _ ->
+        sql(
             """
 SELECT id
 FROM assistance_need_decision
@@ -117,8 +111,8 @@ WHERE sent_for_decision IS NOT NULL
         )
     }
 
-    fun andChildHasServiceVoucherPlacement() = rule { _, _ ->
-        QueryFragment<ChildId>(
+    fun andChildHasServiceVoucherPlacement() = rule<ChildId> { _, _ ->
+        sql(
             """
 SELECT p.child_id AS id
 FROM placement p

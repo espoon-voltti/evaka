@@ -16,11 +16,11 @@ import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.MobileAuthLevel
-import fi.espoo.evaka.shared.db.QueryFragment
+import fi.espoo.evaka.shared.db.QueryBuilder
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 
-private typealias FilterByMobile<T> = (mobileId: MobileDeviceId, now: HelsinkiDateTime) -> QueryFragment<T>
+private typealias FilterByMobile<T> = QueryBuilder<T>.(mobileId: MobileDeviceId, now: HelsinkiDateTime) -> QueryBuilder.Sql
 
 data class IsMobile(val requirePinLogin: Boolean) {
     fun isPermittedAuthLevel(authLevel: MobileAuthLevel) = when (authLevel) {
@@ -35,23 +35,20 @@ data class IsMobile(val requirePinLogin: Boolean) {
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<IsMobile>> = when (ctx.user) {
-            is AuthenticatedUser.MobileDevice -> filter(ctx.user.id, ctx.now).let { subquery ->
-                ctx.tx.createQuery(
-                    QueryFragment<Any>(
-                        """
+            is AuthenticatedUser.MobileDevice -> ctx.tx.createQuery {
+                sql(
+                    """
                     SELECT id
-                    FROM (${subquery.sql}) fragment
-                    WHERE id = ANY(:ids)
-                        """.trimIndent(),
-                        subquery.bindings
-                    )
+                    FROM (${subquery { filter(ctx.user.id, ctx.now) } }) fragment
+                    WHERE id = ANY(${bind(targets.map { it.raw })})
+                    """.trimIndent()
                 )
-                    .bind("ids", targets.map { it.raw })
-                    .mapTo<Id<DatabaseTable>>()
-                    .toSet()
-            }.let { matched ->
-                targets.filter { matched.contains(it) }.associateWith { Deferred(ctx.user.authLevel) }
             }
+                .mapTo<Id<DatabaseTable>>()
+                .toSet()
+                .let { matched ->
+                    targets.filter { matched.contains(it) }.associateWith { Deferred(ctx.user.authLevel) }
+                }
             else -> emptyMap()
         }
         override fun executeWithParams(
@@ -59,12 +56,10 @@ data class IsMobile(val requirePinLogin: Boolean) {
             params: IsMobile
         ): AccessControlFilter<T>? = when (ctx.user) {
             is AuthenticatedUser.MobileDevice -> if (params.isPermittedAuthLevel(ctx.user.authLevel)) {
-                filter(ctx.user.id, ctx.now).let { subquery ->
-                    ctx.tx.createQuery(subquery)
-                        .mapTo<Id<DatabaseTable>>()
-                        .toSet()
-                        .let { ids -> AccessControlFilter.Some(ids) }
-                }
+                ctx.tx.createQuery { filter(ctx.user.id, ctx.now) }
+                    .mapTo<Id<DatabaseTable>>()
+                    .toSet()
+                    .let { ids -> AccessControlFilter.Some(ids) }
             } else {
                 null
             }
@@ -89,94 +84,83 @@ data class IsMobile(val requirePinLogin: Boolean) {
             }
     }
 
-    fun inPlacementUnitOfChild() = rule { mobileId, now ->
-        QueryFragment<ChildId>(
+    fun inPlacementUnitOfChild() = rule<ChildId> { mobileId, now ->
+        sql(
             """
 SELECT child_id AS id
-FROM child_daycare_acl(:today)
+FROM child_daycare_acl(${bind(now.toLocalDate())})
 JOIN mobile_device_daycare_acl_view USING (daycare_id)
-WHERE mobile_device_id = :userId
+WHERE mobile_device_id = ${bind(mobileId)}
             """.trimIndent()
         )
-            .bind("today", now.toLocalDate())
-            .bind("userId", mobileId)
     }
 
-    fun inPlacementUnitOfChildOfChildDailyNote() = rule { mobileId, now ->
-        QueryFragment<ChildDailyNoteId>(
+    fun inPlacementUnitOfChildOfChildDailyNote() = rule<ChildDailyNoteId> { mobileId, now ->
+        sql(
             """
 SELECT cdn.id
 FROM child_daily_note cdn
-JOIN child_daycare_acl(:today) USING (child_id)
+JOIN child_daycare_acl(${bind(now.toLocalDate())}) USING (child_id)
 JOIN mobile_device_daycare_acl_view USING (daycare_id)
-WHERE mobile_device_id = :userId
+WHERE mobile_device_id = ${bind(mobileId)}
             """.trimIndent()
         )
-            .bind("today", now.toLocalDate())
-            .bind("userId", mobileId)
     }
 
-    fun inPlacementUnitOfChildOfChildStickyNote() = rule { mobileId, now ->
-        QueryFragment<ChildStickyNoteId>(
+    fun inPlacementUnitOfChildOfChildStickyNote() = rule<ChildStickyNoteId> { mobileId, now ->
+        sql(
             """
 SELECT csn.id
 FROM child_sticky_note csn
-JOIN child_daycare_acl(:today) USING (child_id)
+JOIN child_daycare_acl(${bind(now.toLocalDate())}) USING (child_id)
 JOIN mobile_device_daycare_acl_view USING (daycare_id)
-WHERE mobile_device_id = :userId
+WHERE mobile_device_id = ${bind(mobileId)}
             """.trimIndent()
         )
-            .bind("today", now.toLocalDate())
-            .bind("userId", mobileId)
     }
 
-    fun inPlacementUnitOfChildOfChildImage() = rule { mobileId, now ->
-        QueryFragment<ChildImageId>(
+    fun inPlacementUnitOfChildOfChildImage() = rule<ChildImageId> { mobileId, now ->
+        sql(
             """
 SELECT img.id
 FROM child_images img
-JOIN child_daycare_acl(:today) USING (child_id)
+JOIN child_daycare_acl(${bind(now.toLocalDate())}) USING (child_id)
 JOIN mobile_device_daycare_acl_view USING (daycare_id)
-WHERE mobile_device_id = :userId
+WHERE mobile_device_id = ${bind(mobileId)}
             """.trimIndent()
         )
-            .bind("today", now.toLocalDate())
-            .bind("userId", mobileId)
     }
 
-    fun inUnitOfGroup() = rule { mobileId, _ ->
-        QueryFragment<GroupId>(
+    fun inUnitOfGroup() = rule<GroupId> { mobileId, _ ->
+        sql(
             """
 SELECT g.id
 FROM daycare_group g
 JOIN mobile_device_daycare_acl_view acl USING (daycare_id)
-WHERE acl.mobile_device_id = :userId
+WHERE acl.mobile_device_id = ${bind(mobileId)}
             """.trimIndent()
         )
-            .bind("userId", mobileId)
     }
 
-    fun inUnitOfGroupNote() = rule { mobileId, _ ->
-        QueryFragment<GroupNoteId>(
+    fun inUnitOfGroupNote() = rule<GroupNoteId> { mobileId, _ ->
+        sql(
             """
 SELECT gn.id
 FROM group_note gn
 JOIN daycare_group g ON gn.group_id = g.id
 JOIN mobile_device_daycare_acl_view acl USING (daycare_id)
-WHERE acl.mobile_device_id = :userId
+WHERE acl.mobile_device_id = ${bind(mobileId)}
             """.trimIndent()
         )
-            .bind("userId", mobileId)
     }
 
-    fun inUnit() = rule { mobileId, _ ->
-        QueryFragment<DaycareId>(
+    fun inUnit() = rule<DaycareId> { mobileId, _ ->
+        sql(
             """
 SELECT daycare_id AS id
 FROM mobile_device_daycare_acl_view
-WHERE mobile_device_id = :userId
+WHERE mobile_device_id = ${bind(mobileId)}
             """.trimIndent()
         )
-            .bind("userId", mobileId)
     }
 }
