@@ -80,7 +80,9 @@ describe('Employee - Guardian Information', () => {
 
     const expectedChildName = `${enduserChildFixtureJari.lastName} ${enduserChildFixtureJari.firstName}`
     const dependantsSection = await guardianPage.openCollapsible('dependants')
-    await dependantsSection.assertContainsDependantChild(expectedChildName)
+    await dependantsSection.assertContainsDependantChild(
+      enduserChildFixtureJari.id
+    )
 
     const applicationsSection = await guardianPage.openCollapsible(
       'applications'

@@ -99,7 +99,10 @@ export default React.memo(function Guardians() {
           </Thead>
           <Tbody>
             {guardians.map((guardian) => (
-              <Tr key={`${guardian.id}`} data-qa="table-guardian-row">
+              <Tr
+                key={`${guardian.id}`}
+                data-qa={`table-guardian-row-${guardian.id}`}
+              >
                 <NameTd data-qa="guardian-name">
                   <Link to={`/profile/${guardian.id}`}>
                     {formatName(
@@ -124,6 +127,7 @@ export default React.memo(function Guardians() {
                             ? colors.status.danger
                             : colors.accents.a3emerald
                         }
+                        data-qa="evaka-rights-status"
                       >
                         {guardian.evakaRightsDenied
                           ? i18n.personProfile.evakaRights.statusDenied
@@ -134,6 +138,7 @@ export default React.memo(function Guardians() {
                         aria-label={i18n.common.edit}
                         onClick={() => setEditingEvakaRights(guardian.id)}
                         disabled={!!editingEvakaRights}
+                        data-qa="edit-guardian-evaka-rights"
                       />
                     </Toolbar>
                   </Td>
@@ -217,12 +222,14 @@ const EditEvakaRightsModal = React.memo(function EditEvakaRightsModal({
                     setEditState((s) => ({ ...s, confirmed }))
                   }
                   disabled={editState.denied}
+                  data-qa="confirmation"
                 />
                 <Checkbox
                   label={i18n.personProfile.evakaRights.deniedLabel}
                   checked={editState.denied}
                   onChange={(denied) => setEditState((s) => ({ ...s, denied }))}
                   disabled={!editState.confirmed}
+                  data-qa="denied"
                 />
               </FixedSpaceColumn>
             )
@@ -239,6 +246,7 @@ const EditEvakaRightsModal = React.memo(function EditEvakaRightsModal({
       onSuccess={content.onSuccess}
       rejectAction={stopEditing}
       rejectLabel={i18n.common.cancel}
+      data-qa="evaka-rights-modal"
     >
       {content.children}
     </AsyncFormModal>

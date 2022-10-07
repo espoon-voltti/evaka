@@ -182,10 +182,14 @@ class ChildrenSection extends Section {
 }
 
 class DependantsSection extends Section {
-  #dependantChildren = this.find('[data-qa="table-of-dependants"]')
+  #childRow = (id: UUID) => this.page.findByDataQa(`table-dependant-row-${id}`)
 
-  async assertContainsDependantChild(childName: string) {
-    await this.#dependantChildren.findText(childName).waitUntilVisible()
+  async assertContainsDependantChild(id: UUID) {
+    await this.#childRow(id).waitUntilVisible()
+  }
+
+  async assertDoesNotContainDependantChild(id: UUID) {
+    await this.#childRow(id).waitUntilHidden()
   }
 }
 
