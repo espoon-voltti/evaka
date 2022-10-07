@@ -188,6 +188,10 @@ sealed interface AsyncJob : AsyncJobPayload {
     data class UpdateFromVtj(val ssn: String) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
+
+    data class UpdateIrregularAbsences(val childId: ChildId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
 }
 
 data class JobParams<T : AsyncJobPayload>(
