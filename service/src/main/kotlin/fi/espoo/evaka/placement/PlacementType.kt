@@ -49,6 +49,7 @@ enum class PlacementType : DatabaseEnum {
     override val sqlType: String = "placement_type"
 
     companion object {
-        fun invoiced() = values().filter { it.isInvoiced() }
+        val temporary = listOf(TEMPORARY_DAYCARE, TEMPORARY_DAYCARE_PART_DAY)
+        val invoiced = values().filter { it.isInvoiced() }.filterNot { temporary.contains(it) }
     }
 }

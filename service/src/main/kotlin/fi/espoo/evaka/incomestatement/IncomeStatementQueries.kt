@@ -587,6 +587,6 @@ ORDER BY p.date_of_birth, p.last_name, p.first_name, p.id
     )
         .bind("today", HelsinkiDateTime.now().toLocalDate())
         .bind("guardianId", guardianId)
-        .bind("invoicedPlacementTypes", PlacementType.invoiced())
+        .bind("invoicedPlacementTypes", PlacementType.invoiced)
         .mapTo<ChildBasicInfo>()
         .list()
