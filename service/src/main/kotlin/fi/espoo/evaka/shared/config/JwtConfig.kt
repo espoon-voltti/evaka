@@ -32,5 +32,7 @@ class JwtConfig {
     }
 
     @Bean
-    fun jwtVerifier(algorithm: Algorithm): JWTVerifier = JWT.require(algorithm).build()
+    fun jwtVerifier(algorithm: Algorithm): JWTVerifier = JWT.require(algorithm)
+        .acceptLeeway(1)
+        .build()
 }
