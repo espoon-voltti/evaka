@@ -75,7 +75,7 @@ const PersonDecisions = React.memo(function PersonDecisions({
                       {decision.startDate.format()}
                     </DateTd>
                     <DateTd data-qa="decision-sent-date">
-                      {decision.sentDate.format()}
+                      {decision.sentDate?.format() ?? ''}
                     </DateTd>
                     <Td data-qa="decision-type">
                       {i18n.personProfile.application.types[decision.type]}

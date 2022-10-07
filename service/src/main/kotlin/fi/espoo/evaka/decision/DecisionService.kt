@@ -216,6 +216,7 @@ class DecisionService(
                 logger.warn("Skipping sending decision $decisionId to application other guardian ${application.otherGuardianId} - not a current VTJ guardian")
             }
         }
+        tx.markDecisionSent(decisionId, clock.today())
     }
 
     fun deliverDecisionToGuardian(

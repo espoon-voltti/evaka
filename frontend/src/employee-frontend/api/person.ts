@@ -233,7 +233,7 @@ export async function getGuardianDecisions(
         ...data,
         startDate: LocalDate.parseIso(data.startDate),
         endDate: LocalDate.parseIso(data.endDate),
-        sentDate: LocalDate.parseIso(data.sentDate),
+        sentDate: LocalDate.parseNullableIso(data.sentDate),
         requestedStartDate: LocalDate.parseNullableIso(data.requestedStartDate),
         resolved: LocalDate.parseNullableIso(data.resolved)
       }))

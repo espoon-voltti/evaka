@@ -154,7 +154,7 @@ export default React.memo(function DecisionResponse({
           {startDate.format()} - {endDate.format()}
         </span>
         <Label>{t.decisions.applicationDecisions.sentDate}</Label>
-        <span data-qa="decision-sent-date">{sentDate.format()}</span>
+        <span data-qa="decision-sent-date">{sentDate?.format() ?? ''}</span>
         <Label>{t.decisions.applicationDecisions.statusLabel}</Label>
         <Status data-qa="decision-status">
           <RoundIcon

@@ -26,7 +26,7 @@ data class Decision(
     val documentKey: String?,
     val otherGuardianDocumentKey: String?,
     val decisionNumber: Long,
-    val sentDate: LocalDate,
+    val sentDate: LocalDate?,
     val status: DecisionStatus,
     val requestedStartDate: LocalDate?,
     val resolved: LocalDate?
