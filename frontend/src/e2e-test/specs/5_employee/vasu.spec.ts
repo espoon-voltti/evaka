@@ -36,7 +36,7 @@ import ChildInformationPage, {
   VasuAndLeopsSection
 } from '../../pages/employee/child-information'
 import { VasuEditPage, VasuPage } from '../../pages/employee/vasu/vasu'
-import { waitUntilEqual } from '../../utils'
+import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -204,14 +204,20 @@ describe('Vasu document page', () => {
         ).format()}`
       )
       const [firstGuardian, secondGuardian] = child.guardians ?? []
-      await waitUntilEqual(
-        () => basicInfo.guardian(0),
-        `${firstGuardian.firstName} ${firstGuardian.lastName}`
-      )
-      await waitUntilEqual(
-        () => basicInfo.guardian(1),
-        `${secondGuardian.firstName} ${secondGuardian.lastName}`
-      )
+      await waitUntilTrue(async () => {
+        const guardian1 = await basicInfo.guardian(0)
+        const guardian2 = await basicInfo.guardian(1)
+        return (
+          (guardian1 ===
+            `${firstGuardian.firstName} ${firstGuardian.lastName}` &&
+            guardian2 ===
+              `${secondGuardian.firstName} ${secondGuardian.lastName}`) ||
+          (guardian1 ===
+            `${secondGuardian.firstName} ${secondGuardian.lastName}` &&
+            guardian2 ===
+              `${firstGuardian.firstName} ${firstGuardian.lastName}`)
+        )
+      })
       await basicInfo.additionalContactInfoInput.fill(
         'Only contact during 8-12'
       )
