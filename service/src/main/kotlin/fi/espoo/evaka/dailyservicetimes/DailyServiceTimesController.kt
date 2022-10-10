@@ -12,8 +12,11 @@ import fi.espoo.evaka.shared.DailyServiceTimesId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 @RestController
 class DailyServiceTimesController(private val accessControl: AccessControl) {
@@ -65,17 +69,19 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         @RequestBody body: DailyServiceTimesValue
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_DAILY_SERVICE_TIME, childId)
+        val now = clock.now()
+        val today = now.toLocalDate()
 
-        if (body.validityPeriod.start.isBefore(clock.today())) {
-            throw BadRequest("New daily service times cannot be added in the past")
+        if (body.validityPeriod.start <= today) {
+            throw BadRequest("New daily service times cannot be added if their validity starts on or before today")
         }
 
         val id = db.connect { dbc ->
             dbc.transaction { tx ->
-                this.checkOverlappingDailyServiceTimes(tx, childId, body.validityPeriod)
+                updateOverlappingDailyServiceTimes(tx, childId, body.validityPeriod)
                 val id = tx.createChildDailyServiceTimes(childId, body)
-                this.deleteCollidingReservationsAndNotify(tx, id, clock)
-                generateAbsencesFromIrregularDailyServiceTimes(tx, clock.now(), childId)
+                deleteCollidingReservationsAndNotify(tx, now, id, childId, body.validityPeriod)
+                generateAbsencesFromIrregularDailyServiceTimes(tx, now, childId)
                 id
             }
         }
@@ -91,12 +97,67 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         @RequestBody body: DailyServiceTimesValue
     ) {
         accessControl.requirePermissionFor(user, clock, Action.DailyServiceTime.UPDATE, id)
+        val now = clock.now()
+        val today = now.toLocalDate()
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val childId = tx.updateChildDailyServiceTimes(id, body)
-                deleteCollidingReservationsAndNotify(tx, id, clock)
-                generateAbsencesFromIrregularDailyServiceTimes(tx, clock.now(), childId)
+                val old = tx.getDailyServiceTimesValidity(id) ?: throw NotFound()
+                if (old.validityPeriod.start <= today) {
+                    throw BadRequest("Daily service times end cannot be updated if their validity has started")
+                }
+                if (body.validityPeriod.start <= today) {
+                    throw BadRequest("Daily service times start cannot be updated to start on or before today")
+                }
+                val overlapping = tx.getOverlappingChildDailyServiceTimes(old.childId, body.validityPeriod).filter { it.id != id }
+                if (overlapping.isNotEmpty()) {
+                    throw BadRequest("Daily service times cannot be updated because they overlap with other daily service times")
+                }
+
+                tx.updateChildDailyServiceTimes(id, body)
+                deleteCollidingReservationsAndNotify(tx, now, id, old.childId, body.validityPeriod)
+                generateAbsencesFromIrregularDailyServiceTimes(tx, now, old.childId)
+            }
+        }
+        Audit.ChildDailyServiceTimesEdit.log(targetId = id)
+    }
+
+    data class DailyServiceTimesEndDate(
+        val endDate: LocalDate?
+    )
+
+    @PutMapping("/daily-service-times/{id}/end")
+    fun putDailyServiceTimesEnd(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable id: DailyServiceTimesId,
+        @RequestBody body: DailyServiceTimesEndDate
+    ) {
+        accessControl.requirePermissionFor(user, clock, Action.DailyServiceTime.UPDATE, id)
+        val now = clock.now()
+        val today = now.toLocalDate()
+
+        if (body.endDate != null && body.endDate <= today) {
+            throw BadRequest("Daily service times end cannot be changed to end on or before today")
+        }
+
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                val old = tx.getDailyServiceTimesValidity(id) ?: throw NotFound()
+                if ((old.validityPeriod.end ?: LocalDate.MAX) <= today) {
+                    throw BadRequest("Daily service times end cannot be updated if their validity has ended")
+                }
+                val newValidity = old.validityPeriod.copy(end = body.endDate)
+
+                val overlapping = tx.getOverlappingChildDailyServiceTimes(old.childId, newValidity).filter { it.id != id }
+                if (overlapping.isNotEmpty()) {
+                    throw BadRequest("Daily service times cannot be updated because they overlap with other daily service times")
+                }
+
+                tx.updateChildDailyServiceTimesValidity(id, newValidity)
+                deleteCollidingReservationsAndNotify(tx, now, id, old.childId, newValidity)
+                generateAbsencesFromIrregularDailyServiceTimes(tx, now, old.childId)
             }
         }
         Audit.ChildDailyServiceTimesEdit.log(targetId = id)
@@ -110,67 +171,98 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         @PathVariable id: DailyServiceTimesId
     ) {
         accessControl.requirePermissionFor(user, clock, Action.DailyServiceTime.DELETE, id)
+        val now = clock.now()
+        val today = now.toLocalDate()
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val childId = tx.deleteChildDailyServiceTimes(id)
-                generateAbsencesFromIrregularDailyServiceTimes(tx, clock.now(), childId)
+                val old = tx.getDailyServiceTimesValidity(id) ?: throw NotFound()
+                if (old.validityPeriod.start <= today) {
+                    throw BadRequest("Daily service times end cannot be deleted if their validity has started")
+                }
+                tx.deleteChildDailyServiceTimes(id)
+                generateAbsencesFromIrregularDailyServiceTimes(tx, clock.now(), old.childId)
             }
         }
 
         Audit.ChildDailyServiceTimesDelete.log(targetId = id)
     }
 
-    private fun checkOverlappingDailyServiceTimes(
+    private fun updateOverlappingDailyServiceTimes(
         tx: Database.Transaction,
         childId: ChildId,
-        range: DateRange
+        new: DateRange
     ) {
-        val overlapping = tx.getOverlappingChildDailyServiceTimes(childId, range)
+        val overlapping = tx.getOverlappingChildDailyServiceTimes(childId, new)
+        overlapping.forEach { (oldId, old) ->
+            if (new.contains(old)) {
+                tx.deleteChildDailyServiceTimes(oldId)
+            } else {
+                val updatedRange = when {
+                    // old is finite and old contains new in the middle
+                    //
+                    // old OOOOOO
+                    // new   NNN
+                    // --> error
+                    old.contains(new) && old.end != null && old.start != new.start && old.end != new.end ->
+                        throw Conflict("Unsupported overlap")
 
-        if (overlapping.isNotEmpty()) {
-            overlapping.forEach {
-                if (range.start <= it.validityPeriod.start && (range.end == null || (it.validityPeriod.end != null && range.end >= it.validityPeriod.end))) {
-                    tx.deleteChildDailyServiceTimes(it.id)
-                } else {
-                    tx.updateChildDailyServiceTimesValidity(
-                        id = it.id,
-                        if (it.validityPeriod.end == null || it.validityPeriod.end >= range.start)
-                            DateRange(it.validityPeriod.start, range.start.minusDays(1))
-                        else if (range.end != null && it.validityPeriod.start <= range.end)
-                            DateRange(range.end.plusDays(1), it.validityPeriod.end)
-                        else
-                            throw IllegalStateException("Unsupported overlap")
-                    )
+                    // old contains new in the start
+                    //
+                    // old OOOOOO
+                    // new NNN
+                    // --> NNNOOO
+                    new.end != null && old.start == new.start ->
+                        DateRange(new.end.plusDays(1), old.end)
+
+                    // old overlaps with the end of new
+                    //
+                    // old   OOOO
+                    // new NNN
+                    // --> NNNOOO
+                    new.end != null && old.end != null && old.includes(new.end) ->
+                        DateRange(new.end.plusDays(1), old.end)
+
+                    // old contains new in the end
+                    //
+                    // old OOOOOO
+                    // new    NNN
+                    // --> OOONNN
+                    old.end == null || old.end == new.end ->
+                        DateRange(old.start, new.start.minusDays(1))
+
+                    // old overlaps with the beginning of new
+                    //
+                    // old OOOO
+                    // new    NNN
+                    // --> OOONNN
+                    old.includes(new.start) ->
+                        DateRange(old.start, new.start.minusDays(1))
+
+                    else ->
+                        throw Conflict("Unsupported overlap")
                 }
+                tx.updateChildDailyServiceTimesValidity(oldId, updatedRange)
             }
         }
     }
 
     private fun deleteCollidingReservationsAndNotify(
         tx: Database.Transaction,
+        now: HelsinkiDateTime,
         id: DailyServiceTimesId,
-        evakaClock: EvakaClock
+        childId: ChildId,
+        validityPeriod: DateRange,
     ) {
-        val dst = tx.getChildDailyServiceTimeValidity(id) ?: return
-
-        if (dst.validityPeriod.end?.isBefore(evakaClock.today()) == true) {
-            return
-        }
+        val today = now.toLocalDate()
+        if ((validityPeriod.end ?: LocalDate.MAX) <= today) return
 
         val actionableRange = DateRange(
-            dst.validityPeriod.start.takeIf { it.isAfter(evakaClock.today()) } ?: evakaClock.today(),
-            dst.validityPeriod.end
+            validityPeriod.start.takeIf { it > today } ?: today.plusDays(1),
+            validityPeriod.end
         )
 
-        val deletedReservationCount = tx.clearReservationsForRange(dst.childId, actionableRange)
-
-        tx.addDailyServiceTimesNotification(
-            evakaClock.today(),
-            id,
-            dst.childId,
-            actionableRange.start,
-            deletedReservationCount > 0
-        )
+        val deletedReservationCount = tx.clearReservationsForRange(childId, actionableRange)
+        tx.addDailyServiceTimesNotification(today, id, childId, actionableRange.start, deletedReservationCount > 0)
     }
 }

@@ -7,6 +7,7 @@ package fi.espoo.evaka.dailyservicetimes
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.daycare.service.getAbsencesOfChildByRange
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
@@ -20,7 +21,9 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
+import fi.espoo.evaka.shared.dev.insertTestDailyServiceTimes
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestPlacement
@@ -30,6 +33,7 @@ import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.withMockedTime
@@ -79,8 +83,197 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
     }
 
     @Test
+    fun `cannot create, update or delete if validity has started`() {
+        createDailyServiceTimes(
+            testChild_1.id,
+            DailyServiceTimesValue.RegularTimes(DateRange(now.toLocalDate(), null), tenToNoonRange),
+            400
+        )
+
+        val id = DailyServiceTimesId(UUID.randomUUID())
+        db.transaction { tx ->
+            tx.insertTestDailyServiceTimes(
+                DevDailyServiceTimes(
+                    id = id,
+                    childId = testChild_1.id,
+                    validityPeriod = DateRange(now.toLocalDate(), null),
+                )
+            )
+        }
+
+        updateDailyServiceTimes(
+            id,
+            DailyServiceTimesValue.RegularTimes(
+                validityPeriod = DateRange(now.toLocalDate().minusDays(1), null),
+                regularTimes = TimeRange(LocalTime.of(19, 0), LocalTime.of(22, 0))
+            ),
+            400
+        )
+
+        deleteDailyServiceTimes(id, 400)
+    }
+
+    @Test
+    fun `can set end time only if it is in the future`() {
+        val idFuture = DailyServiceTimesId(UUID.randomUUID())
+        val past = DailyServiceTimesId(UUID.randomUUID())
+        db.transaction { tx ->
+            tx.insertTestDailyServiceTimes(
+                DevDailyServiceTimes(
+                    id = idFuture,
+                    childId = testChild_1.id,
+                    validityPeriod = DateRange(now.toLocalDate(), null),
+                )
+            )
+            tx.insertTestDailyServiceTimes(
+                DevDailyServiceTimes(
+                    id = past,
+                    childId = testChild_2.id,
+                    validityPeriod = DateRange(now.toLocalDate().minusDays(1), now.toLocalDate()),
+                )
+            )
+        }
+
+        // Set to future
+        setDailyServiceTimesEndDate(
+            idFuture, now.toLocalDate().plusDays(1), 200
+        )
+        // Set to past -> not allowed
+        setDailyServiceTimesEndDate(
+            idFuture, now.toLocalDate(), 400
+        )
+
+        // Already in the past -> not allowed
+        setDailyServiceTimesEndDate(
+            past, now.toLocalDate().plusDays(1), 400
+        )
+    }
+
+    @Test
+    fun `creating daily service times adjusts overlapping entries`() {
+        createDailyServiceTimes(
+            testChild_1.id,
+            DailyServiceTimesValue.RegularTimes(
+                validityPeriod = DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(100)),
+                regularTimes = tenToNoonRange
+            )
+        )
+
+        // Add overlapping entry to the start
+        createDailyServiceTimes(
+            testChild_1.id,
+            DailyServiceTimesValue.RegularTimes(
+                validityPeriod = DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(10)),
+                regularTimes = tenToNoonRange
+            )
+        )
+
+        // Add overlapping entry in the middle -> not allowed
+        createDailyServiceTimes(
+            testChild_1.id,
+            DailyServiceTimesValue.RegularTimes(
+                validityPeriod = DateRange(now.toLocalDate().plusDays(30), now.toLocalDate().plusDays(50)),
+                regularTimes = tenToNoonRange
+            ),
+            409
+        )
+
+        // Add overlapping entry to the end
+        createDailyServiceTimes(
+            testChild_1.id,
+            DailyServiceTimesValue.RegularTimes(
+                validityPeriod = DateRange(now.toLocalDate().plusDays(90), null),
+                regularTimes = tenToNoonRange
+            )
+        )
+
+        // Add a finite entry to the end when the current is infinite
+        createDailyServiceTimes(
+            testChild_1.id,
+            DailyServiceTimesValue.RegularTimes(
+                validityPeriod = DateRange(now.toLocalDate().plusDays(100), now.toLocalDate().plusDays(120)),
+                regularTimes = tenToNoonRange
+            )
+        )
+
+        run {
+            val expectedRanges = listOf(
+                100L to 120L,
+                90L to 99L,
+                11L to 89L,
+                1L to 10L,
+            )
+            val dailyServiceTimes = getDailyServiceTimes(testChild_1.id)
+            assertEquals(expectedRanges.size, dailyServiceTimes.size)
+            expectedRanges.zip(dailyServiceTimes).forEachIndexed { i, (expected, actual) ->
+                val expectedValidity = DateRange(
+                    now.toLocalDate().plusDays(expected.first),
+                    now.toLocalDate().plusDays(expected.second),
+                )
+                assertEquals(expectedValidity, actual.dailyServiceTimes.times.validityPeriod, "Index $i")
+            }
+        }
+
+        // Add overlapping that covers the whole range -> all others are deleted
+        createDailyServiceTimes(
+            testChild_1.id,
+            DailyServiceTimesValue.RegularTimes(
+                validityPeriod = DateRange(now.toLocalDate().plusDays(1), null),
+                regularTimes = tenToNoonRange
+            ),
+            200
+        )
+
+        run {
+            val dailyServiceTimes = getDailyServiceTimes(testChild_1.id)
+            assertEquals(1, dailyServiceTimes.size)
+            assertEquals(
+                dailyServiceTimes[0].dailyServiceTimes.times.validityPeriod,
+                DateRange(now.toLocalDate().plusDays(1), null)
+            )
+        }
+    }
+
+    @Test
+    fun `disallow updating so that the new validity overlaps with another entry`() {
+        val id = DailyServiceTimesId(UUID.randomUUID())
+        db.transaction { tx ->
+            tx.insertTestDailyServiceTimes(
+                DevDailyServiceTimes(
+                    id = id,
+                    childId = testChild_1.id,
+                    validityPeriod = DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(10)),
+                )
+            )
+            tx.insertTestDailyServiceTimes(
+                DevDailyServiceTimes(
+                    childId = testChild_1.id,
+                    validityPeriod = DateRange(now.toLocalDate().plusDays(11), null),
+                )
+            )
+        }
+
+        // Attempt updating the first entry so that it overlaps with the second -> not allowed
+
+        updateDailyServiceTimes(
+            id,
+            DailyServiceTimesValue.RegularTimes(
+                validityPeriod = DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(11)),
+                regularTimes = tenToNoonRange
+            ),
+            400
+        )
+
+        setDailyServiceTimesEndDate(
+            id,
+            now.toLocalDate().plusDays(11),
+            400
+        )
+    }
+
+    @Test
     fun `adding a new daily service time creates a notification for both guardians`() {
-        createDailyServiceTime(
+        createDailyServiceTimes(
             testChild_1.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = in100Days,
@@ -99,7 +292,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     @Test
     fun `one guardian dismissing their daily service time update notification does not affect other's`() {
-        createDailyServiceTime(
+        createDailyServiceTimes(
             testChild_1.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = in100Days,
@@ -131,7 +324,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 )
             )
         )
-        createDailyServiceTime(
+        createDailyServiceTimes(
             testChild_1.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = in100Days,
@@ -146,7 +339,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     @Test
     fun `updating a daily service time creates a new notification`() {
-        createDailyServiceTime(
+        createDailyServiceTimes(
             testChild_1.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = in100Days,
@@ -159,7 +352,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         val times = this.getDailyServiceTimes(testChild_1.id)
         assertEquals(1, times.size)
-        updateDailyServiceTime(
+        updateDailyServiceTimes(
             times[0].dailyServiceTimes.id,
             DailyServiceTimesValue.RegularTimes(
                 validityPeriod = in100Days,
@@ -172,24 +365,102 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(false, newGuardian1Notifications[0].hasDeletedReservations)
     }
 
-    private fun createDailyServiceTime(childId: ChildId, dailyServiceTime: DailyServiceTimesValue) {
+    @Test
+    fun `updating a daily service times validity end creates a new notification`() {
+        createDailyServiceTimes(
+            testChild_1.id,
+            DailyServiceTimesValue.RegularTimes(
+                validityPeriod = in100Days,
+                regularTimes = tenToNoonRange
+            )
+        )
+
+        val guardian1Notifications = this.getDailyServiceTimeNotifications(guardian1)
+        this.dismissDailyServiceTimeNotification(guardian1, guardian1Notifications[0].id)
+
+        val times = this.getDailyServiceTimes(testChild_1.id)
+        assertEquals(1, times.size)
+        setDailyServiceTimesEndDate(
+            times[0].dailyServiceTimes.id,
+            LocalDate.now().plusDays(102)
+        )
+
+        val newGuardian1Notifications = this.getDailyServiceTimeNotifications(guardian1)
+        assertEquals(1, newGuardian1Notifications.size)
+        assertEquals(false, newGuardian1Notifications[0].hasDeletedReservations)
+    }
+
+    @Test
+    fun `creating irregular daily service times automatically adds absences`() {
+        createDailyServiceTimes(
+            testChild_1.id,
+            DailyServiceTimesValue.IrregularTimes(
+                validityPeriod = in100Days,
+                monday = tenToNoonRange,
+                tuesday = tenToNoonRange,
+                wednesday = null,
+                thursday = tenToNoonRange,
+                friday = tenToNoonRange,
+                saturday = null,
+                sunday = null,
+            )
+        )
+
+        val absences = db.transaction { tx ->
+            tx.getAbsencesOfChildByRange(testChild_1.id, DateRange(now.toLocalDate(), null))
+        }
+        assert(absences.isNotEmpty())
+    }
+
+    private fun createDailyServiceTimes(
+        childId: ChildId,
+        dailyServiceTime: DailyServiceTimesValue,
+        expectedStatus: Int = 200
+    ) {
         val (_, res, _) = http.post("/children/$childId/daily-service-times")
             .jsonBody(jsonMapper.writeValueAsString(dailyServiceTime))
             .asUser(admin)
             .withMockedTime(now)
             .response()
 
-        assertEquals(200, res.statusCode)
+        assertEquals(expectedStatus, res.statusCode)
     }
 
-    private fun updateDailyServiceTime(id: DailyServiceTimesId, dailyServiceTime: DailyServiceTimesValue) {
+    private fun updateDailyServiceTimes(
+        id: DailyServiceTimesId,
+        dailyServiceTime: DailyServiceTimesValue,
+        expectedStatus: Int = 200
+    ) {
         val (_, res, _) = http.put("/daily-service-times/$id")
             .jsonBody(jsonMapper.writeValueAsString(dailyServiceTime))
             .asUser(admin)
             .withMockedTime(now)
             .response()
 
-        assertEquals(200, res.statusCode)
+        assertEquals(expectedStatus, res.statusCode)
+    }
+
+    private fun setDailyServiceTimesEndDate(
+        id: DailyServiceTimesId,
+        endDate: LocalDate,
+        expectedStatus: Int = 200
+    ) {
+        val (_, res, _) = http.put("/daily-service-times/$id/end")
+            .jsonBody(jsonMapper.writeValueAsString(DailyServiceTimesController.DailyServiceTimesEndDate(endDate)))
+            .asUser(admin)
+            .withMockedTime(now)
+            .response()
+
+        assertEquals(expectedStatus, res.statusCode)
+    }
+
+    private fun deleteDailyServiceTimes(id: DailyServiceTimesId, expectedStatus: Int = 200) {
+        val (_, res, _) = http.delete("/daily-service-times/$id")
+            .asUser(admin)
+            .withMockedTime(now)
+            .response()
+
+        assertEquals(expectedStatus, res.statusCode)
     }
 
     private fun getDailyServiceTimes(childId: ChildId): List<DailyServiceTimesController.DailyServiceTimesResponse> {
@@ -214,7 +485,10 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         return result.get()
     }
 
-    private fun dismissDailyServiceTimeNotification(user: AuthenticatedUser.Citizen, notificationId: DailyServiceTimeNotificationId) {
+    private fun dismissDailyServiceTimeNotification(
+        user: AuthenticatedUser.Citizen,
+        notificationId: DailyServiceTimeNotificationId
+    ) {
         val (_, res, _) = http.post("/citizen/daily-service-time-notifications/dismiss")
             .jsonBody(jsonMapper.writeValueAsString(listOf(notificationId)))
             .asUser(user)
