@@ -38,8 +38,8 @@ import { minimalDaycareForm } from '../../utils/application-forms'
 import { Page } from '../../utils/page'
 import { employeeLogin, enduserLogin } from '../../utils/user'
 
-let citizenPage: Page
-let header: CitizenHeader
+let activeRelationshipPage: Page
+let activeRelationshipHeader: CitizenHeader
 let fixtures: AreaAndPersonFixtures
 let fosterParent: PersonDetail
 let fosterChild: PersonDetail
@@ -57,19 +57,30 @@ beforeEach(async () => {
     {
       childId: fosterChild.id,
       parentId: fosterParent.id,
-      validDuring: new DateRange(mockedDate, null)
+      validDuring: new DateRange(mockedDate, mockedDate)
     }
   ])
 
-  citizenPage = await Page.open({ mockedTime: mockedDate.toSystemTzDate() })
-  await enduserLogin(citizenPage)
-  header = new CitizenHeader(citizenPage)
+  activeRelationshipPage = await Page.open({
+    mockedTime: mockedDate.toSystemTzDate()
+  })
+  await enduserLogin(activeRelationshipPage)
+  activeRelationshipHeader = new CitizenHeader(activeRelationshipPage)
 })
 
-test('Foster parent can create a daycare application and accept a daycare decision', async () => {
-  const applicationsPage = new CitizenApplicationsPage(citizenPage)
+async function openEndedRelationshipPage() {
+  const endedRelationshipPage = await Page.open({
+    mockedTime: mockedDate.addDays(1).toSystemTzDate()
+  })
+  await enduserLogin(endedRelationshipPage)
+  const endedRelationshipHeader = new CitizenHeader(endedRelationshipPage)
+  return { endedRelationshipPage, endedRelationshipHeader }
+}
 
-  await header.selectTab('applications')
+test('Foster parent can create a daycare application and accept a daycare decision', async () => {
+  const applicationsPage = new CitizenApplicationsPage(activeRelationshipPage)
+
+  await activeRelationshipHeader.selectTab('applications')
   const editorPage = await applicationsPage.createApplication(
     fosterChild.id,
     'DAYCARE'
@@ -100,10 +111,10 @@ test('Foster parent can create a daycare application and accept a daycare decisi
   ])
   await runPendingAsyncJobs()
 
-  const citizenDecisionsPage = new CitizenDecisionsPage(citizenPage)
+  const citizenDecisionsPage = new CitizenDecisionsPage(activeRelationshipPage)
   const decisions = await getDecisionsByApplication(applicationId)
   const decisionId = decisions[0].id
-  await header.selectTab('decisions')
+  await activeRelationshipHeader.selectTab('decisions')
   const responsePage = await citizenDecisionsPage.navigateToDecisionResponse(
     applicationId
   )
@@ -111,6 +122,20 @@ test('Foster parent can create a daycare application and accept a daycare decisi
   await responsePage.acceptDecision(decisionId)
   await responsePage.assertDecisionStatus(decisionId, 'Hyväksytty')
   await responsePage.assertUnresolvedDecisionsCount(0)
+
+  const { endedRelationshipPage, endedRelationshipHeader } =
+    await openEndedRelationshipPage()
+  await endedRelationshipHeader.selectTab('applications')
+  await waitUntilEqual(
+    () =>
+      endedRelationshipPage
+        .findByDataQa('applications-list')
+        .getAttribute('data-isloading'),
+    'false'
+  )
+  await endedRelationshipPage
+    .findByDataQa(`child-${fosterChild.id}`)
+    .waitUntilHidden()
 })
 
 test('Foster parent can receive and reply to messages', async () => {
@@ -148,8 +173,8 @@ test('Foster parent can receive and reply to messages', async () => {
   }
   await messagesPage.sendNewMessage(message)
 
-  await citizenPage.goto(config.enduserMessagesUrl)
-  const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+  await activeRelationshipPage.goto(config.enduserMessagesUrl)
+  const citizenMessagesPage = new CitizenMessagesPage(activeRelationshipPage)
   await citizenMessagesPage.assertThreadContent(message)
   const reply = 'Message reply'
   await citizenMessagesPage.replyToFirstThread(reply)
@@ -158,10 +183,13 @@ test('Foster parent can receive and reply to messages', async () => {
   await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
   await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
   await messagesPage.assertMessageContent(1, reply)
+
+  const { endedRelationshipHeader } = await openEndedRelationshipPage()
+  await endedRelationshipHeader.assertNoTab('messages')
 })
 
 test('Foster parent can read an accepted assistance decision', async () => {
-  const citizenDecisionsPage = new CitizenDecisionsPage(citizenPage)
+  const citizenDecisionsPage = new CitizenDecisionsPage(activeRelationshipPage)
   const decision = await Fixture.preFilledAssistanceNeedDecision()
     .withChild(fosterChild.id)
     .with({
@@ -172,7 +200,7 @@ test('Foster parent can read an accepted assistance decision', async () => {
       decisionMade: mockedDate
     })
     .save()
-  await header.selectTab('decisions')
+  await activeRelationshipHeader.selectTab('decisions')
 
   await citizenDecisionsPage.assertAssistanceDecision(
     fosterChild.id,
@@ -187,6 +215,14 @@ test('Foster parent can read an accepted assistance decision', async () => {
       decisionMade: mockedDate.format(),
       status: 'Hyväksytty'
     }
+  )
+
+  const { endedRelationshipPage, endedRelationshipHeader } =
+    await openEndedRelationshipPage()
+  await endedRelationshipHeader.selectTab('decisions')
+  await activeRelationshipPage.goto(config.enduserMessagesUrl)
+  await new CitizenDecisionsPage(endedRelationshipPage).assertNoChildDecisions(
+    fosterChild.id
   )
 })
 
@@ -205,19 +241,22 @@ test('Foster parent can read a pedagogical document', async () => {
       description: 'e2e test description'
     })
     .save()
-  await citizenPage.reload()
+  await activeRelationshipPage.reload()
 
-  await header.openChildPage(fosterChild.id)
-  const childPage = new CitizenChildPage(citizenPage)
+  await activeRelationshipHeader.openChildPage(fosterChild.id)
+  const childPage = new CitizenChildPage(activeRelationshipPage)
   await childPage.openCollapsible('pedagogical-documents')
   const pedagogicalDocumentsPage = new CitizenPedagogicalDocumentsPage(
-    citizenPage
+    activeRelationshipPage
   )
   await pedagogicalDocumentsPage.assertPedagogicalDocumentExists(
     document.data.id,
     LocalDate.todayInSystemTz().format(),
     document.data.description
   )
+
+  const { endedRelationshipHeader } = await openEndedRelationshipPage()
+  await endedRelationshipHeader.assertNoChildrenTab()
 })
 
 test('Foster parent can read a daycare curriculum and give permission to share it', async () => {
@@ -234,10 +273,10 @@ test('Foster parent can read a daycare curriculum and give permission to share i
     await insertVasuTemplateFixture()
   )
   await publishVasuDocument(vasuDocId)
-  await citizenPage.reload()
+  await activeRelationshipPage.reload()
 
-  await header.openChildPage(fosterChild.id)
-  const childPage = new CitizenChildPage(citizenPage)
+  await activeRelationshipHeader.openChildPage(fosterChild.id)
+  const childPage = new CitizenChildPage(activeRelationshipPage)
   await childPage.openCollapsible('vasu')
   await childPage.assertVasuRow(
     vasuDocId,
@@ -245,14 +284,17 @@ test('Foster parent can read a daycare curriculum and give permission to share i
     LocalDate.todayInSystemTz().format('dd.MM.yyyy')
   )
   await childPage.openVasu(vasuDocId)
-  const vasuPage = new VasuPreviewPage(citizenPage)
-  await header.assertUnreadChildrenCount(1)
+  const vasuPage = new VasuPreviewPage(activeRelationshipPage)
+  await activeRelationshipHeader.assertUnreadChildrenCount(1)
   await vasuPage.assertTitleChildName(
     `${fosterChild.firstName} ${fosterChild.lastName}`
   )
   await vasuPage.givePermissionToShare()
   await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
-  await header.assertUnreadChildrenCount(0)
+  await activeRelationshipHeader.assertUnreadChildrenCount(0)
+
+  const { endedRelationshipHeader } = await openEndedRelationshipPage()
+  await endedRelationshipHeader.assertNoChildrenTab()
 })
 
 test('Foster parent can terminate a daycare placement', async () => {
@@ -265,10 +307,10 @@ test('Foster parent can terminate a daycare placement', async () => {
       endDate: endDate.formatIso()
     })
     .save()
-  await citizenPage.reload()
+  await activeRelationshipPage.reload()
 
-  await header.openChildPage(fosterChild.id)
-  const childPage = new CitizenChildPage(citizenPage)
+  await activeRelationshipHeader.openChildPage(fosterChild.id)
+  const childPage = new CitizenChildPage(activeRelationshipPage)
   await childPage.openCollapsible('termination')
 
   await childPage.assertTerminatedPlacementCount(0)
@@ -291,6 +333,9 @@ test('Foster parent can terminate a daycare placement', async () => {
       }, viimeinen läsnäolopäivä: ${mockedDate.format()}`
     ]
   )
+
+  const { endedRelationshipHeader } = await openEndedRelationshipPage()
+  await endedRelationshipHeader.assertNoChildrenTab()
 })
 
 test('Foster parent can create a repeating reservation', async () => {
@@ -302,7 +347,7 @@ test('Foster parent can create a repeating reservation', async () => {
       endDate: mockedDate.addYears(1).formatIso()
     })
     .save()
-  await citizenPage.reload()
+  await activeRelationshipPage.reload()
   const firstReservationDay = mockedDate.addDays(14)
   const reservation = {
     startTime: '08:00',
@@ -310,8 +355,11 @@ test('Foster parent can create a repeating reservation', async () => {
     childIds: [fosterChild.id]
   }
 
-  await header.selectTab('calendar')
-  const calendarPage = new CitizenCalendarPage(citizenPage, 'desktop')
+  await activeRelationshipHeader.selectTab('calendar')
+  const calendarPage = new CitizenCalendarPage(
+    activeRelationshipPage,
+    'desktop'
+  )
   const reservationsModal = await calendarPage.openReservationsModal()
   await reservationsModal.createRepeatingDailyReservation(
     new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
@@ -320,4 +368,7 @@ test('Foster parent can create a repeating reservation', async () => {
   )
 
   await calendarPage.assertReservations(firstReservationDay, [reservation])
+
+  const { endedRelationshipHeader } = await openEndedRelationshipPage()
+  await endedRelationshipHeader.assertNoTab('calendar')
 })
