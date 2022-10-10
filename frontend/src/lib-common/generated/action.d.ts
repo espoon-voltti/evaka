@@ -144,6 +144,7 @@ export type AssistanceNeedDecision =
   | 'MARK_AS_OPENED'
   | 'READ'
   | 'READ_DECISION_MAKER_OPTIONS'
+  | 'READ_IN_REPORT'
   | 'SEND'
   | 'UPDATE'
   | 'UPDATE_DECISION_MAKER'

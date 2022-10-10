@@ -9,12 +9,12 @@ import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AccessControlList
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
@@ -34,9 +34,9 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl, pr
                     it,
                     user,
                     clock,
-                    Action.Unit.READ_ASSISTANCE_NEED_DECISIONS_REPORT
+                    Action.AssistanceNeedDecision.READ_IN_REPORT
                 )
-                it.getDecisionRows(user.evakaUserId, AclAuthorization.from(filter))
+                it.getDecisionRows(user.evakaUserId, filter)
             }
         }.also {
             Audit.AssistanceNeedDecisionsReportRead.log(args = mapOf("count" to it.size))
@@ -63,27 +63,27 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl, pr
 
 private fun Database.Read.getDecisionRows(
     userId: EvakaUserId,
-    authorizedUnits: AclAuthorization
-): List<AssistanceNeedDecisionsReportRow> {
-    // language=sql
-    val sql =
+    idFilter: AccessControlFilter<AssistanceNeedDecisionId>
+): List<AssistanceNeedDecisionsReportRow> = createQuery {
+    sql(
         """
-        SELECT ad.id, sent_for_decision, concat(child.last_name, ' ', child.first_name) child_name,
-            care_area.name care_area_name, daycare.name unit_name, decision_made, status,
-            (CASE WHEN decision_maker_employee_id = :employeeId THEN decision_maker_has_opened ELSE NULL END) is_opened
-        FROM assistance_need_decision ad
-        JOIN person child ON child.id = ad.child_id
-        JOIN daycare ON daycare.id = ad.selected_unit
-        JOIN care_area ON care_area.id = daycare.care_area_id
-        WHERE sent_for_decision IS NOT NULL
-          AND (:authorizedUnits::uuid[] IS NULL OR ad.selected_unit = ANY(:authorizedUnits))
+SELECT ad.id, sent_for_decision, concat(child.last_name, ' ', child.first_name) child_name,
+    care_area.name care_area_name, daycare.name unit_name, decision_made, status,
+    (CASE WHEN decision_maker_employee_id = ${bind(userId)} THEN decision_maker_has_opened ELSE NULL END) is_opened
+FROM assistance_need_decision ad
+JOIN person child ON child.id = ad.child_id
+JOIN daycare ON daycare.id = ad.selected_unit
+JOIN care_area ON care_area.id = daycare.care_area_id
+WHERE sent_for_decision IS NOT NULL
+${when (idFilter) {
+            AccessControlFilter.PermitAll -> ""
+            is AccessControlFilter.Some -> "AND ad.id IN (${subquery(idFilter.filter)})"
+        }}
         """.trimIndent()
-    return createQuery(sql)
-        .bind("employeeId", userId)
-        .bind("authorizedUnits", authorizedUnits.ids)
-        .mapTo<AssistanceNeedDecisionsReportRow>()
-        .toList()
+    )
 }
+    .mapTo<AssistanceNeedDecisionsReportRow>()
+    .toList()
 
 data class AssistanceNeedDecisionsReportRow(
     val id: AssistanceNeedDecisionId,

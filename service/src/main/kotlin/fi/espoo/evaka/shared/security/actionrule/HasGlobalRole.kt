@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.QueryBuilder
+import fi.espoo.evaka.shared.db.QueryFunction
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.utils.toEnumSet
@@ -56,15 +57,12 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule {
             else -> emptyMap()
         }
 
-        override fun executeWithParams(
+        override fun filterForParams(
             ctx: DatabaseActionRule.QueryContext,
             params: HasGlobalRole
-        ): AccessControlFilter<T>? = when (ctx.user) {
+        ): QueryFunction<T>? = when (ctx.user) {
             is AuthenticatedUser.Employee -> if (ctx.user.globalRoles.any { params.oneOf.contains(it) }) {
-                ctx.tx.createQuery { filter(ctx.user, ctx.now) }
-                    .mapTo<Id<DatabaseTable>>()
-                    .toSet()
-                    .let { ids -> AccessControlFilter.Some(ids) }
+                { filter(ctx.user, ctx.now) }
             } else {
                 null
             }

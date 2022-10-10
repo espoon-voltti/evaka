@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.MobileAuthLevel
 import fi.espoo.evaka.shared.db.QueryBuilder
+import fi.espoo.evaka.shared.db.QueryFunction
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 
@@ -51,15 +52,13 @@ data class IsMobile(val requirePinLogin: Boolean) {
                 }
             else -> emptyMap()
         }
-        override fun executeWithParams(
+
+        override fun filterForParams(
             ctx: DatabaseActionRule.QueryContext,
             params: IsMobile
-        ): AccessControlFilter<T>? = when (ctx.user) {
+        ): QueryFunction<T>? = when (ctx.user) {
             is AuthenticatedUser.MobileDevice -> if (params.isPermittedAuthLevel(ctx.user.authLevel)) {
-                ctx.tx.createQuery { filter(ctx.user.id, ctx.now) }
-                    .mapTo<Id<DatabaseTable>>()
-                    .toSet()
-                    .let { ids -> AccessControlFilter.Some(ids) }
+                { filter(ctx.user.id, ctx.now) }
             } else {
                 null
             }

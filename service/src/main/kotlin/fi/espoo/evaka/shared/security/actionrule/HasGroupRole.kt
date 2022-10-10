@@ -5,12 +5,12 @@
 package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.shared.ChildId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.QueryBuilder
+import fi.espoo.evaka.shared.db.QueryFunction
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -52,23 +52,22 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
                 .mapValues { (_, queryResult) -> Deferred(queryResult) }
             else -> emptyMap()
         }
-        override fun executeWithParams(
+        override fun filterForParams(
             ctx: DatabaseActionRule.QueryContext,
             params: HasGroupRole
-        ): AccessControlFilter<T>? = when (ctx.user) {
-            is AuthenticatedUser.Employee -> ctx.tx.createQuery {
-                sql(
-                    """
+        ): QueryFunction<T>? = when (ctx.user) {
+            is AuthenticatedUser.Employee -> (
+                {
+                    sql(
+                        """
                     SELECT id
                     FROM (${subquery { getGroupRoles(ctx.user, ctx.now) } }) fragment
-                    WHERE role = ANY(${params.oneOf.toSet()})
-                    AND unit_features @> ${params.unitFeatures.toSet()}
-                    """.trimIndent()
+                    WHERE role = ANY(${bind(params.oneOf.toSet())})
+                    AND unit_features @> ${bind(params.unitFeatures.toSet())}
+                        """.trimIndent()
+                    )
+                }
                 )
-            }
-                .mapTo<Id<DatabaseTable>>()
-                .toSet()
-                .let { ids -> AccessControlFilter.Some(ids) }
             else -> null
         }
     }

@@ -6,7 +6,6 @@ package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import org.jdbi.v3.core.Jdbi
 
 sealed class AclAuthorization {
@@ -24,13 +23,6 @@ sealed class AclAuthorization {
 
     fun isEmpty(): Boolean {
         return this is Subset && this.ids.isEmpty()
-    }
-
-    companion object {
-        fun from(filter: AccessControlFilter<DaycareId>) = when (filter) {
-            AccessControlFilter.PermitAll -> All
-            is AccessControlFilter.Some -> Subset(filter.filter)
-        }
     }
 }
 

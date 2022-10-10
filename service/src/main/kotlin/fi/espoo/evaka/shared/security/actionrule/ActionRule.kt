@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.QueryFunction
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -77,7 +78,7 @@ object DatabaseActionRule {
 
         interface Query<T, P> {
             fun executeWithTargets(ctx: QueryContext, targets: Set<T>): Map<T, Deferred<P>>
-            fun executeWithParams(ctx: QueryContext, params: P): AccessControlFilter<T>?
+            fun filterForParams(ctx: QueryContext, params: P): QueryFunction<T>?
             override fun hashCode(): Int
             override fun equals(other: Any?): Boolean
         }
@@ -95,7 +96,7 @@ object DatabaseActionRule {
 internal data class IdRoleFeatures(val id: Id<*>, @Nested val roleFeatures: RoleAndFeatures)
 internal data class RoleAndFeatures(val role: UserRole, val unitFeatures: Set<PilotFeature>)
 
-sealed interface AccessControlFilter<in T> {
-    object PermitAll : AccessControlFilter<Any>
-    data class Some<T>(val filter: Set<T>) : AccessControlFilter<T>
+sealed interface AccessControlFilter<out T> {
+    object PermitAll : AccessControlFilter<Nothing>
+    data class Some<T>(val filter: QueryFunction<T>) : AccessControlFilter<T>
 }

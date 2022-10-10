@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.shared.ApplicationNoteId
+import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EmployeeId
@@ -14,6 +15,7 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.QueryBuilder
+import fi.espoo.evaka.shared.db.QueryFunction
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 
@@ -44,14 +46,11 @@ object IsEmployee {
             else -> emptyMap()
         }
 
-        override fun executeWithParams(
+        override fun filterForParams(
             ctx: DatabaseActionRule.QueryContext,
             params: IsEmployee
-        ): AccessControlFilter<T>? = when (ctx.user) {
-            is AuthenticatedUser.Employee -> ctx.tx.createQuery { filter(ctx.user, ctx.now) }
-                .mapTo<Id<DatabaseTable>>()
-                .toSet()
-                .let { ids -> AccessControlFilter.Some(ids) }
+        ): QueryFunction<T>? = when (ctx.user) {
+            is AuthenticatedUser.Employee -> ({ filter(ctx.user, ctx.now) })
             else -> null
         }
     }
@@ -78,11 +77,11 @@ object IsEmployee {
                 else -> emptyMap()
             }
 
-            override fun executeWithParams(
+            override fun filterForParams(
                 ctx: DatabaseActionRule.QueryContext,
                 params: IsEmployee
-            ): AccessControlFilter<EmployeeId>? = when (ctx.user) {
-                is AuthenticatedUser.Employee -> AccessControlFilter.Some(setOf(ctx.user.id))
+            ): QueryFunction<EmployeeId>? = when (ctx.user) {
+                is AuthenticatedUser.Employee -> ({ sql("SELECT ${bind(ctx.user.id)} AS id") })
                 else -> null
             }
 
@@ -182,6 +181,17 @@ FROM attachment att
 JOIN message_draft draft ON att.message_draft_id = draft.id
 JOIN message_account_access_view access ON access.account_id = draft.account_id
 WHERE access.employee_id = ${bind(user.id)}
+            """.trimIndent()
+        )
+    }
+
+    fun andIsDecisionMakerForAssistanceNeedDecision() = rule<AssistanceNeedDecisionId> { employee, _ ->
+        sql(
+            """
+SELECT id
+FROM assistance_need_decision
+WHERE decision_maker_employee_id = ${bind(employee.id)}
+AND sent_for_decision IS NOT NULL
             """.trimIndent()
         )
     }

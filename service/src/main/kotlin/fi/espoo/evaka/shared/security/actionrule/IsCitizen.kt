@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.db.QueryBuilder
+import fi.espoo.evaka.shared.db.QueryFunction
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 
@@ -53,15 +54,12 @@ data class IsCitizen(val allowWeakLogin: Boolean) {
             else -> emptyMap()
         }
 
-        override fun executeWithParams(
+        override fun filterForParams(
             ctx: DatabaseActionRule.QueryContext,
             params: IsCitizen
-        ): AccessControlFilter<T>? = when (ctx.user) {
+        ): QueryFunction<T>? = when (ctx.user) {
             is AuthenticatedUser.Citizen -> if (params.isPermittedAuthLevel(ctx.user.authLevel)) {
-                ctx.tx.createQuery { filter(ctx.user.id, ctx.now) }
-                    .mapTo<Id<DatabaseTable>>()
-                    .toSet()
-                    .let { ids -> AccessControlFilter.Some(ids) }
+                { filter(ctx.user.id, ctx.now) }
             } else {
                 null
             }
@@ -97,11 +95,11 @@ data class IsCitizen(val allowWeakLogin: Boolean) {
                 else -> emptyMap()
             }
 
-            override fun executeWithParams(
+            override fun filterForParams(
                 ctx: DatabaseActionRule.QueryContext,
                 params: IsCitizen
-            ): AccessControlFilter<PersonId>? = when (ctx.user) {
-                is AuthenticatedUser.Citizen -> AccessControlFilter.Some(setOf(ctx.user.id))
+            ): QueryFunction<PersonId>? = when (ctx.user) {
+                is AuthenticatedUser.Citizen -> ({ sql("SELECT ${bind(ctx.user.id)} AS id") })
                 else -> null
             }
 

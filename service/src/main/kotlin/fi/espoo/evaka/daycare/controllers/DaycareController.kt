@@ -30,7 +30,6 @@ import fi.espoo.evaka.daycare.updateGroup
 import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -61,7 +60,7 @@ class DaycareController(
         return db.connect { dbc ->
             dbc.read { tx ->
                 val filter = accessControl.requireAuthorizationFilter(tx, user, clock, Action.Unit.READ)
-                tx.getDaycares(AclAuthorization.from(filter))
+                tx.getDaycares(filter)
             }
         }.also {
             Audit.UnitSearch.log(args = mapOf("count" to it.size))

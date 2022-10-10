@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.ChildImageId
 import fi.espoo.evaka.shared.ChildStickyNoteId
 import fi.espoo.evaka.shared.DailyServiceTimesId
-import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.GroupId
@@ -37,6 +36,7 @@ import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.QueryBuilder
+import fi.espoo.evaka.shared.db.QueryFunction
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -80,23 +80,22 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<P
             else -> emptyMap()
         }
 
-        override fun executeWithParams(
+        override fun filterForParams(
             ctx: DatabaseActionRule.QueryContext,
             params: HasUnitRole
-        ): AccessControlFilter<T>? = when (ctx.user) {
-            is AuthenticatedUser.Employee -> ctx.tx.createQuery {
-                sql(
-                    """
+        ): QueryFunction<T>? = when (ctx.user) {
+            is AuthenticatedUser.Employee -> (
+                {
+                    sql(
+                        """
                     SELECT id
                     FROM (${subquery { getUnitRoles(ctx.user, ctx.now) } }) fragment
                     WHERE role = ANY(${bind(params.oneOf.toSet())})
                     AND unit_features @> ${bind(params.unitFeatures.toSet())}
-                    """.trimIndent()
+                        """.trimIndent()
+                    )
+                }
                 )
-            }
-                .mapTo<Id<DatabaseTable>>()
-                .toSet()
-                .let { ids -> AccessControlFilter.Some(ids) }
             else -> null
         }
     }

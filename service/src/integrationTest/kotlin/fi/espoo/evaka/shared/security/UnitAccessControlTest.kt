@@ -98,6 +98,16 @@ class UnitAccessControlTest : AccessControlTest() {
     fun `unit-level action and getAuthorizationFilter`() {
         val action = Action.Unit.READ
         fun getFilter(user: AuthenticatedUser) = db.read { accessControl.getAuthorizationFilter(it, user, clock, action) }
+        fun execute(filter: AccessControlFilter.Some<DaycareId>) = db.read {
+            it.createQuery {
+                sql(
+                    """
+                    SELECT id FROM daycare
+                    WHERE id IN (${subquery(filter.filter)})
+                    """.trimIndent()
+                )
+            }.mapTo<DaycareId>().toSet()
+        }
 
         rules.add(action, HasGlobalRole(UserRole.SERVICE_WORKER))
         rules.add(action, HasUnitRole(UserRole.UNIT_SUPERVISOR).inUnit())
@@ -105,8 +115,10 @@ class UnitAccessControlTest : AccessControlTest() {
         val otherEmployee = createTestEmployee(globalRoles = emptySet(), unitRoles = mapOf(daycareId to UserRole.STAFF, featureDaycareId to UserRole.STAFF))
         val serviceWorker = createTestEmployee(globalRoles = setOf(UserRole.SERVICE_WORKER))
 
-        assertEquals(AccessControlFilter.Some(setOf(daycareId, featureDaycareId)), getFilter(unitSupervisor))
-        assertEquals(AccessControlFilter.Some(emptySet()), getFilter(otherEmployee))
+        getFilter(unitSupervisor)
+
+        assertEquals(setOf(daycareId, featureDaycareId), execute(getFilter(unitSupervisor) as AccessControlFilter.Some))
+        assertEquals(emptySet(), execute(getFilter(otherEmployee) as AccessControlFilter.Some))
         assertEquals(AccessControlFilter.PermitAll, getFilter(serviceWorker))
         assertNull(getFilter(AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)))
     }
