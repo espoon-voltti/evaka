@@ -314,14 +314,14 @@ fun Database.Read.getUnitChildrenCapacities(
                 WHEN extract(YEARS FROM age(:date, ch.date_of_birth)) < 3 THEN coalesce(sno.occupancy_coefficient_under_3y, default_sno.occupancy_coefficient_under_3y)
                 ELSE coalesce(sno.occupancy_coefficient, default_sno.occupancy_coefficient, 1)
             END) AS service_need_factor
-        FROM placement pl
+        FROM realized_placement_one(:date) pl
         JOIN daycare u ON u.id = pl.unit_id
         JOIN person ch ON ch.id = pl.child_id
-        LEFT JOIN service_need sn on sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> :date
+        LEFT JOIN service_need sn on sn.placement_id = pl.placement_id AND daterange(sn.start_date, sn.end_date, '[]') @> :date
         LEFT JOIN service_need_option sno on sn.option_id = sno.id
-        LEFT JOIN service_need_option default_sno on pl.type = default_sno.valid_placement_type AND default_sno.default_option
+        LEFT JOIN service_need_option default_sno on pl.placement_type = default_sno.valid_placement_type AND default_sno.default_option
         LEFT JOIN assistance_need an ON an.child_id = ch.id AND daterange(an.start_date, an.end_date, '[]') @> :date
-        WHERE pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') @> :date
+        WHERE pl.unit_id = :unitId
         GROUP BY ch.id
     """
     )
