@@ -41,7 +41,11 @@ import {
   headerHeightMobile,
   mobileBottomNavHeight
 } from './const'
-import { CircledChar, DropDownLink } from './shared-components'
+import {
+  CircledChar,
+  DropDownLink,
+  DropDownLocalLink
+} from './shared-components'
 
 export default React.memo(function MobileNav() {
   const t = useTranslation()
@@ -390,14 +394,10 @@ const Menu = React.memo(function Menu({
             </CircledChar>
           )}
         </DropDownLink>
-        <DropDownLink
-          key="sub-nav-menu-logout"
-          to={getLogoutUri(user)}
-          onClick={() => (location.href = getLogoutUri(user))}
-        >
+        <DropDownLocalLink key="sub-nav-menu-logout" href={getLogoutUri(user)}>
           {t.header.logout}
           <FontAwesomeIcon icon={farSignOut} />
-        </DropDownLink>
+        </DropDownLocalLink>
       </MenuContainer>
     </ModalAccessibilityWrapper>
   )
