@@ -4,6 +4,7 @@
 
 import React from 'react'
 
+import { combine } from 'lib-common/api'
 import { apiDataToFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -13,19 +14,18 @@ import Container from 'lib-components/layout/Container'
 import Footer from '../../Footer'
 import ApplicationReadViewContents from '../../applications/read-view/ApplicationReadViewContents'
 import { renderResult } from '../../async-rendering'
-import { useStrongUser } from '../../auth/state'
 import { useTranslation } from '../../localization'
 import useTitle from '../../useTitle'
-import { getApplication } from '../api'
+import { getApplication, getApplicationChildren } from '../api'
 
 export default React.memo(function ApplicationReadView() {
   const { applicationId } = useNonNullableParams<{ applicationId: UUID }>()
   const t = useTranslation()
-  const user = useStrongUser()
   const [apiData] = useApiState(
     () => getApplication(applicationId),
     [applicationId]
   )
+  const [children] = useApiState(getApplicationChildren, [])
 
   useTitle(
     t,
@@ -37,10 +37,10 @@ export default React.memo(function ApplicationReadView() {
   return (
     <>
       <Container>
-        {renderResult(apiData, (value) => (
+        {renderResult(combine(apiData, children), ([apiData, children]) => (
           <ApplicationReadViewContents
-            application={value}
-            formData={apiDataToFormData(value, user)}
+            application={apiData}
+            formData={apiDataToFormData(apiData, children)}
           />
         ))}
       </Container>

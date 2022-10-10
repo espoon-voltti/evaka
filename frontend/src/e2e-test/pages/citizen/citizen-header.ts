@@ -52,6 +52,29 @@ export default class CitizenHeader {
     }
   }
 
+  async assertNoTab(
+    tab:
+      | 'applications'
+      | 'decisions'
+      | 'income'
+      | 'calendar'
+      | 'messages'
+      | 'personal-details'
+  ) {
+    const isContainedInSubnav = [
+      'applications',
+      'decisions',
+      'income',
+      'personal-details'
+    ].includes(tab)
+    if (isContainedInSubnav) {
+      await this.#subNavMenu.click()
+      await this.page.findByDataQa(`sub-nav-menu-${tab}`).waitUntilHidden()
+    } else {
+      await this.page.findByDataQa(`nav-${tab}-${this.type}`).waitUntilHidden()
+    }
+  }
+
   async openChildPage(childId: string) {
     await this.#childrenNav.waitUntilVisible()
     if (await this.#childrenNav.findByDataQa('drop-down-icon').visible) {
@@ -128,5 +151,9 @@ export default class CitizenHeader {
     } else {
       await this.assertUnreadChildrenCount(expectedCount)
     }
+  }
+
+  async assertNoChildrenTab() {
+    await this.#childrenNav.waitUntilHidden()
   }
 }

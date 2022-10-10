@@ -9,6 +9,7 @@ import styled from 'styled-components'
 import { Loading, Result } from 'lib-common/api'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import Main from 'lib-components/atoms/Main'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -25,13 +26,13 @@ import { Gap, defaultMargins } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import Footer from '../Footer'
-import { useStrongUser } from '../auth/state'
 import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
 
 import {
   createApplication,
   getActivePlacementsByApplicationType,
+  getApplicationChildren,
   getDuplicateApplications
 } from './api'
 
@@ -39,11 +40,18 @@ export default React.memo(function ApplicationCreation() {
   const navigate = useNavigate()
   const { childId } = useNonNullableParams<{ childId: string }>()
   const t = useTranslation()
-  const user = useStrongUser()
   useTitle(t, t.applications.creation.title)
-  const child = useMemo(
-    () => user?.children.find(({ id }) => childId === id),
-    [childId, user]
+  const [children] = useApiState(getApplicationChildren, [])
+  const childName = useMemo(
+    () =>
+      children.map((children) => {
+        const child = children.find(({ id }) => id === childId)
+        if (child === undefined) {
+          return undefined
+        }
+        return `${child.firstName} ${child.lastName}`
+      }),
+    [childId, children]
   )
   const [selectedType, setSelectedType] = useState<ApplicationType>()
 
@@ -73,7 +81,7 @@ export default React.memo(function ApplicationCreation() {
       .map((ts) => ts[selectedType] === true)
       .getOrElse(false)
 
-  if (child === undefined) {
+  if (!childName.isLoading && childName.getOrElse(undefined) === undefined) {
     return <Navigate replace to="/applications" />
   }
 
@@ -89,9 +97,7 @@ export default React.memo(function ApplicationCreation() {
           >
             <H1 noMargin>{t.applications.creation.title}</H1>
             <Gap size="m" />
-            <H2 noMargin>
-              {child.firstName} {child.lastName}
-            </H2>
+            <H2 noMargin>{childName.getOrElse('')}</H2>
             <Gap size="XL" />
             <ExpandingInfo
               data-qa="daycare-expanding-info"

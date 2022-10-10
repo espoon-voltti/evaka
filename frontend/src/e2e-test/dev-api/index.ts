@@ -73,6 +73,7 @@ import {
   EmployeeDetail,
   EmployeePin,
   FamilyContact,
+  FosterParent,
   FridgeChild,
   FridgePartner,
   MockEmail,
@@ -938,6 +939,14 @@ export async function insertFridgePartners(
 ): Promise<void> {
   try {
     await devClient.post(`/fridge-partner`, fixture)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
+export async function insertFosterParents(fixtures: FosterParent[]) {
+  try {
+    await devClient.post(`/foster-parent`, fixtures)
   } catch (e) {
     throw new DevApiError(e)
   }

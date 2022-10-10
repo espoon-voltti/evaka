@@ -5,7 +5,6 @@
 package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.pis.getGuardianDependants
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.VasuDocumentId
@@ -61,16 +60,19 @@ class VasuControllerCitizen(
     @GetMapping("/children/unread-count")
     fun getGuardianUnreadVasuCount(
         db: Database,
-        user: AuthenticatedUser.Citizen
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock
     ): Map<ChildId, Int> {
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_VASU_UNREAD_COUNT, user.id)
+
         return db.connect { dbc ->
             dbc.read { tx ->
-                val children = tx.getGuardianDependants(user.id)
+                val children = tx.getCitizenVasuChildren(clock.today(), user.id)
                 if (!featureConfig.curriculumDocumentPermissionToShareRequired) {
-                    return@read children.associate { child -> child.id to 0 }
+                    return@read children.associateWith { 0 }
                 }
-                children.associate { child ->
-                    child.id to tx.getVasuDocumentSummaries(child.id)
+                children.associateWith { childId ->
+                    tx.getVasuDocumentSummaries(childId)
                         .filter { it.publishedAt != null }
                         .filterNot { doc -> doc.guardiansThatHaveGivenPermissionToShare.contains(user.id) }
                         .size

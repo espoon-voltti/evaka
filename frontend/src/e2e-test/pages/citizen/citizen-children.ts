@@ -125,6 +125,13 @@ export class CitizenChildPage {
     )
   }
 
+  async openVasu(vasuId: string) {
+    await this.page
+      .findByDataQa(`vasu-${vasuId}`)
+      .findByDataQa('vasu-link')
+      .click()
+  }
+
   async assertVasuChildCount(expectedCount: number) {
     await waitUntilEqual(() => this.#vasuChildContainer.count(), expectedCount)
   }

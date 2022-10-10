@@ -53,11 +53,11 @@ class ReservationControllerCitizen(
 
         return db.connect { dbc ->
             dbc.read { tx ->
-                val children = tx.getReservationChildren(user.id, range)
+                val children = tx.getReservationChildren(clock.today(), user.id, range)
                 val includeWeekends = children.any {
                     it.maxOperationalDays.contains(6) || it.maxOperationalDays.contains(7)
                 }
-                val reservations = tx.getReservationsCitizen(user.id, range, includeWeekends)
+                val reservations = tx.getReservationsCitizen(clock.today(), user.id, range, includeWeekends)
                 val deadlines = tx.getHolidayPeriodDeadlines()
                 val reservableDayRanges =
                     getReservableDays(clock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
@@ -201,7 +201,8 @@ data class AbsenceRequest(
 )
 
 fun Database.Read.getReservationsCitizen(
-    guardianId: PersonId,
+    today: LocalDate,
+    userId: PersonId,
     range: FiniteDateRange,
     includeWeekends: Boolean
 ): List<DailyReservationData> {
@@ -209,13 +210,18 @@ fun Database.Read.getReservationsCitizen(
 
     return createQuery(
         """
+WITH children AS (
+    SELECT child_id FROM guardian WHERE guardian_id = :userId
+    UNION ALL
+    SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+)
 SELECT
     t::date AS date,
     EXISTS(SELECT 1 FROM holiday h WHERE h.date = t::date) AS is_holiday,
     coalesce(
         jsonb_agg(
             jsonb_build_object(
-                'childId', g.child_id,
+                'childId', c.child_id,
                 'markedByEmployee', a.modified_by_type <> 'CITIZEN',
                 'absence', a.absence_type,
                 'reservations', coalesce(ar.reservations, '[]'),
@@ -227,13 +233,12 @@ SELECT
               AND EXISTS(
                 SELECT 1 FROM placement p
                 JOIN daycare d ON p.unit_id = d.id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
-                WHERE g.child_id = p.child_id AND p.start_date <= t::date AND p.end_date >= t::date
+                WHERE c.child_id = p.child_id AND p.start_date <= t::date AND p.end_date >= t::date
               )
         ),
         '[]'
     ) AS children
-FROM generate_series(:start, :end, '1 day') t
-JOIN guardian g ON g.guardian_id = :guardianId
+FROM generate_series(:start, :end, '1 day') t, children c
 LEFT JOIN LATERAL (
     SELECT
         jsonb_agg(
@@ -242,7 +247,7 @@ LEFT JOIN LATERAL (
                 'endTime', to_char(ar.end_time, 'HH24:MI')
             ) ORDER BY ar.start_time ASC
         ) AS reservations
-    FROM attendance_reservation ar WHERE ar.child_id = g.child_id AND ar.date = t::date
+    FROM attendance_reservation ar WHERE ar.child_id = c.child_id AND ar.date = t::date
 ) ar ON true
 LEFT JOIN LATERAL (
     SELECT
@@ -252,12 +257,12 @@ LEFT JOIN LATERAL (
                 'endTime', to_char(ca.end_time, 'HH24:MI')
             ) ORDER BY ca.start_time ASC
         ) AS attendances
-    FROM child_attendance ca WHERE ca.child_id = g.child_id AND ca.date = t::date
+    FROM child_attendance ca WHERE ca.child_id = c.child_id AND ca.date = t::date
 ) ca ON true
 LEFT JOIN LATERAL (
     SELECT a.absence_type, eu.type AS modified_by_type
     FROM absence a JOIN evaka_user eu ON eu.id = a.modified_by
-    WHERE a.child_id = g.child_id AND a.date = t::date
+    WHERE a.child_id = c.child_id AND a.date = t::date
     LIMIT 1
 ) a ON true
 LEFT JOIN LATERAL (
@@ -273,14 +278,15 @@ LEFT JOIN LATERAL (
     	END
 	) AS day_off
     FROM daily_service_time dst
-    WHERE dst.child_id = g.child_id AND dst.validity_period @> t::date AND dst.type = 'IRREGULAR'
+    WHERE dst.child_id = c.child_id AND dst.validity_period @> t::date AND dst.type = 'IRREGULAR'
     LIMIT 1
 ) ds ON true
 WHERE (:includeWeekends OR date_part('isodow', t) = ANY('{1, 2, 3, 4, 5}'))
 GROUP BY date, is_holiday
         """.trimIndent()
     )
-        .bind("guardianId", guardianId)
+        .bind("today", today)
+        .bind("userId", userId)
         .bind("start", range.start)
         .bind("end", range.end)
         .bind("includeWeekends", includeWeekends)
@@ -288,9 +294,18 @@ GROUP BY date, is_holiday
         .toList()
 }
 
-private fun Database.Read.getReservationChildren(guardianId: PersonId, range: FiniteDateRange): List<ReservationChild> {
+private fun Database.Read.getReservationChildren(
+    today: LocalDate,
+    userId: PersonId,
+    range: FiniteDateRange
+): List<ReservationChild> {
     return createQuery(
         """
+WITH children AS (
+    SELECT child_id FROM guardian WHERE guardian_id = :userId
+    UNION ALL
+    SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+)
 SELECT
     ch.id,
     ch.first_name,
@@ -301,7 +316,7 @@ SELECT
     p.max_operational_days,
     p.in_shift_care_unit
 FROM person ch
-JOIN guardian g ON ch.id = g.child_id AND g.guardian_id = :guardianId
+JOIN children c ON ch.id = c.child_id
 LEFT JOIN child_images ci ON ci.child_id = ch.id
 LEFT JOIN (
     SELECT
@@ -319,16 +334,17 @@ LEFT JOIN (
 
              SELECT bc.start_date, bc.end_date, unnest(u.operation_days) AS operation_days, u.round_the_clock, bc.child_id
              FROM backup_care bc
-                      JOIN daycare u ON bc.unit_id = u.id
+             JOIN daycare u ON bc.unit_id = u.id
              WHERE daterange(bc.start_date, bc.end_date, '[]') && :range AND 'RESERVATIONS' = ANY(u.enabled_pilot_features)
     ) p
     GROUP BY p.child_id
-) p ON p.child_id = g.child_id
+) p ON p.child_id = c.child_id
 WHERE p.placements IS NOT NULL
 ORDER BY ch.date_of_birth
         """.trimIndent()
     )
-        .bind("guardianId", guardianId)
+        .bind("today", today)
+        .bind("userId", userId)
         .bind("range", range)
         .mapTo<ReservationChild>()
         .list()

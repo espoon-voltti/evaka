@@ -40,7 +40,11 @@ export type UserRole =
   | 'UNIT_SUPERVISOR'
   | 'MOBILE'
 
-export type ServiceRequestHeader = 'Authorization' | 'X-Request-ID'
+export type ServiceRequestHeader =
+  | 'Authorization'
+  | 'X-Request-ID'
+  | 'EvakaMockedTime'
+
 export type ServiceRequestHeaders = { [H in ServiceRequestHeader]?: string }
 
 export function createServiceRequestHeaders(
@@ -56,6 +60,10 @@ export function createServiceRequestHeaders(
   }
   if (req?.traceId) {
     headers['X-Request-ID'] = req.traceId
+  }
+  const mockedTime = req?.get('EvakaMockedTime')
+  if (mockedTime) {
+    headers['EvakaMockedTime'] = mockedTime
   }
   return headers
 }

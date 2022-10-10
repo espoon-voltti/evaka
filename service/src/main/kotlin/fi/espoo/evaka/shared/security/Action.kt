@@ -218,37 +218,37 @@ sealed interface Action {
             override fun toString(): String = "${javaClass.name}.$name"
         }
         enum class AssistanceNeedDecision(override vararg val defaultRules: ScopedActionRule<in AssistanceNeedDecisionId>) : ScopedAction<AssistanceNeedDecisionId> {
-            READ(IsCitizen(allowWeakLogin = false).guardianOfChildOfAssistanceNeedDecision()),
-            DOWNLOAD(IsCitizen(allowWeakLogin = false).guardianOfChildOfAssistanceNeedDecision()),
-            MARK_AS_READ(IsCitizen(allowWeakLogin = false).guardianOfChildOfAssistanceNeedDecision());
+            READ(IsCitizen(allowWeakLogin = false).guardianOfChildOfAssistanceNeedDecision(), IsCitizen(allowWeakLogin = false).fosterParentOfChildOfAssistanceNeedDecision()),
+            DOWNLOAD(IsCitizen(allowWeakLogin = false).guardianOfChildOfAssistanceNeedDecision(), IsCitizen(allowWeakLogin = false).fosterParentOfChildOfAssistanceNeedDecision()),
+            MARK_AS_READ(IsCitizen(allowWeakLogin = false).guardianOfChildOfAssistanceNeedDecision(), IsCitizen(allowWeakLogin = false).fosterParentOfChildOfAssistanceNeedDecision());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
         enum class Child(override vararg val defaultRules: ScopedActionRule<in ChildId>) : ScopedAction<ChildId> {
             READ(IsCitizen(allowWeakLogin = false).guardianOfChild()),
-            READ_PLACEMENT_STATUS_BY_APPLICATION_TYPE(IsCitizen(allowWeakLogin = false).guardianOfChild()),
-            READ_DUPLICATE_APPLICATIONS(IsCitizen(allowWeakLogin = false).guardianOfChild()),
-            READ_VASU_DOCUMENT_SUMMARIES(IsCitizen(allowWeakLogin = false).guardianOfChild()),
-            CREATE_ABSENCE(IsCitizen(allowWeakLogin = true).guardianOfChild()),
+            READ_PLACEMENT_STATUS_BY_APPLICATION_TYPE(IsCitizen(allowWeakLogin = false).guardianOfChild(), IsCitizen(allowWeakLogin = false).fosterParentOfChild()),
+            READ_DUPLICATE_APPLICATIONS(IsCitizen(allowWeakLogin = false).guardianOfChild(), IsCitizen(allowWeakLogin = false).fosterParentOfChild()),
+            READ_VASU_DOCUMENT_SUMMARIES(IsCitizen(allowWeakLogin = false).guardianOfChild(), IsCitizen(allowWeakLogin = false).fosterParentOfChild()),
+            CREATE_ABSENCE(IsCitizen(allowWeakLogin = true).guardianOfChild(), IsCitizen(allowWeakLogin = true).fosterParentOfChild()),
 
-            CREATE_HOLIDAY_ABSENCE(IsCitizen(allowWeakLogin = true).guardianOfChild()),
-            CREATE_RESERVATION(IsCitizen(allowWeakLogin = true).guardianOfChild()),
+            CREATE_HOLIDAY_ABSENCE(IsCitizen(allowWeakLogin = true).guardianOfChild(), IsCitizen(allowWeakLogin = true).fosterParentOfChild()),
+            CREATE_RESERVATION(IsCitizen(allowWeakLogin = true).guardianOfChild(), IsCitizen(allowWeakLogin = true).fosterParentOfChild()),
 
-            READ_PLACEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+            READ_PLACEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild(), IsCitizen(allowWeakLogin = false).fosterParentOfChild()),
 
             CREATE_INCOME_STATEMENT(IsCitizen(allowWeakLogin = false).guardianOfChild()),
             READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).guardianOfChild()),
 
-            CREATE_APPLICATION(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+            CREATE_APPLICATION(IsCitizen(allowWeakLogin = false).guardianOfChild(), IsCitizen(allowWeakLogin = false).fosterParentOfChild()),
 
-            READ_ASSISTANCE_NEED_DECISIONS(IsCitizen(allowWeakLogin = false).guardianOfChild()),
+            READ_PEDAGOGICAL_DOCUMENTS(IsCitizen(allowWeakLogin = true).guardianOfChild(), IsCitizen(allowWeakLogin = true).fosterParentOfChild()),
 
             INSERT_CHILD_CONSENTS(IsCitizen(allowWeakLogin = false).guardianOfChild());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
         enum class DailyServiceTimeNotification(override vararg val defaultRules: ScopedActionRule<in DailyServiceTimeNotificationId>) : ScopedAction<DailyServiceTimeNotificationId> {
-            DISMISS(IsCitizen(allowWeakLogin = true).guardianOfDailyServiceTimeNotification());
+            DISMISS(IsCitizen(allowWeakLogin = true).recipientOfDailyServiceTimeNotification());
         }
         enum class Decision(override vararg val defaultRules: ScopedActionRule<in DecisionId>) : ScopedAction<DecisionId> {
             DOWNLOAD_PDF(IsCitizen(allowWeakLogin = false).ownerOfApplicationOfSentDecision());
@@ -263,37 +263,41 @@ sealed interface Action {
             override fun toString(): String = "${javaClass.name}.$name"
         }
         enum class PedagogicalDocument(override vararg val defaultRules: ScopedActionRule<in PedagogicalDocumentId>) : ScopedAction<PedagogicalDocumentId> {
-            READ(IsCitizen(allowWeakLogin = false).guardianOfChildOfPedagogicalDocument());
+            READ(IsCitizen(allowWeakLogin = false).guardianOfChildOfPedagogicalDocument(), IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPedagogicalDocument());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
         enum class Person(override vararg val defaultRules: ScopedActionRule<in PersonId>) : ScopedAction<PersonId> {
             CREATE_INCOME_STATEMENT(IsCitizen(allowWeakLogin = false).self()),
             READ_APPLICATIONS(IsCitizen(allowWeakLogin = false).self()),
-            READ_ASSISTANCE_NEED_DECISIONS(IsCitizen(allowWeakLogin = false).self()),
-            READ_CHILDREN(IsCitizen(allowWeakLogin = true).self()),
-            READ_DECISIONS(IsCitizen(allowWeakLogin = false).self()),
-            READ_RESERVATIONS(IsCitizen(allowWeakLogin = true).self()),
-            READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).self()),
-            READ_VTJ_DETAILS(IsCitizen(allowWeakLogin = true).self()),
-            UPDATE_PERSONAL_DATA(IsCitizen(allowWeakLogin = false).self()),
-            READ_DAILY_SERVICE_TIME_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self()),
-            READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT(IsCitizen(allowWeakLogin = true).self()),
-            READ_CHILD_CONSENTS(IsCitizen(allowWeakLogin = false).self()),
+            READ_APPLICATION_CHILDREN(IsCitizen(allowWeakLogin = false).self()),
             READ_APPLICATION_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self()),
+            READ_ASSISTANCE_NEED_DECISIONS(IsCitizen(allowWeakLogin = false).self()),
+            READ_CALENDAR_EVENTS(IsCitizen(allowWeakLogin = true).self()),
+            READ_CHILDREN(IsCitizen(allowWeakLogin = true).self()),
+            READ_CHILD_CONSENTS(IsCitizen(allowWeakLogin = false).self()),
             READ_CHILD_CONSENT_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self()),
-            READ_CALENDAR_EVENTS(IsCitizen(allowWeakLogin = true).self());
+            READ_DAILY_SERVICE_TIME_NOTIFICATIONS(IsCitizen(allowWeakLogin = true).self()),
+            READ_DECISIONS(IsCitizen(allowWeakLogin = false).self()),
+            READ_INCOME_STATEMENTS(IsCitizen(allowWeakLogin = false).self()),
+            READ_PEDAGOGICAL_DOCUMENT_UNREAD_COUNTS(IsCitizen(allowWeakLogin = true).self()),
+            READ_RESERVATIONS(IsCitizen(allowWeakLogin = true).self()),
+            READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT(IsCitizen(allowWeakLogin = true).self()),
+            READ_VASU_SUMMARIES(IsCitizen(allowWeakLogin = false).self()),
+            READ_VASU_UNREAD_COUNT(IsCitizen(allowWeakLogin = true).self()),
+            READ_VTJ_DETAILS(IsCitizen(allowWeakLogin = true).self()),
+            UPDATE_PERSONAL_DATA(IsCitizen(allowWeakLogin = false).self());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
         enum class Placement(override vararg val defaultRules: ScopedActionRule<in PlacementId>) : ScopedAction<PlacementId> {
-            TERMINATE(IsCitizen(allowWeakLogin = false).guardianOfChildOfPlacement());
+            TERMINATE(IsCitizen(allowWeakLogin = false).guardianOfChildOfPlacement(), IsCitizen(allowWeakLogin = false).fosterParentOfChildOfPlacement());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
         enum class VasuDocument(override vararg val defaultRules: ScopedActionRule<in VasuDocumentId>) : ScopedAction<VasuDocumentId> {
-            READ(IsCitizen(allowWeakLogin = false).guardianOfChildOfVasu()),
-            GIVE_PERMISSION_TO_SHARE(IsCitizen(allowWeakLogin = false).guardianOfChildOfVasu());
+            READ(IsCitizen(allowWeakLogin = false).guardianOfChildOfVasu(), IsCitizen(allowWeakLogin = false).fosterParentOfChildOfVasu()),
+            GIVE_PERMISSION_TO_SHARE(IsCitizen(allowWeakLogin = false).guardianOfChildOfVasu(), IsCitizen(allowWeakLogin = false).fosterParentOfChildOfVasu());
 
             override fun toString(): String = "${javaClass.name}.$name"
         }

@@ -43,7 +43,6 @@ export interface WeakUserDetailsResponse extends BaseUserDetailsResponse {
 export interface StrongUserDetailsResponse extends BaseUserDetailsResponse {
   authLevel: 'STRONG'
   socialSecurityNumber: string
-  children: Child[]
 }
 
 export type UserDetailsResponse =

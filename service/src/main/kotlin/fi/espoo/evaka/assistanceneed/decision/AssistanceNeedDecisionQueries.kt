@@ -331,21 +331,28 @@ fun Database.Read.getAssistanceNeedDecisionsByChildIdForCitizen(
 }
 
 fun Database.Read.getAssistanceNeedDecisionsForCitizen(
-    guardianId: PersonId
+    today: LocalDate,
+    userId: PersonId
 ): List<AssistanceNeedDecisionCitizenListItem> {
     //language=sql
     val sql =
         """
+        WITH children AS (
+            SELECT child_id FROM guardian WHERE guardian_id = :userId
+            UNION ALL
+            SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+        )
         SELECT ad.id, ad.child_id, validity_period, status, decision_made, assistance_levels,
             selected_unit AS selected_unit_id, unit.name AS selected_unit_name,
-            coalesce(:guardianId = ANY(unread_guardian_ids), false) AS is_unread
-        FROM guardian g
-        JOIN assistance_need_decision ad ON ad.child_id = g.child_id
+            coalesce(:userId = ANY(unread_guardian_ids), false) AS is_unread
+        FROM children c
+        JOIN assistance_need_decision ad ON ad.child_id = c.child_id
         LEFT JOIN daycare unit ON unit.id = selected_unit
-        WHERE g.guardian_id = :guardianId AND status IN ('REJECTED', 'ACCEPTED') AND decision_made IS NOT NULL
+        WHERE status IN ('REJECTED', 'ACCEPTED') AND decision_made IS NOT NULL
         """.trimIndent()
     return createQuery(sql)
-        .bind("guardianId", guardianId)
+        .bind("today", today)
+        .bind("userId", userId)
         .mapTo<AssistanceNeedDecisionCitizenListItem>()
         .list()
 }
@@ -398,19 +405,26 @@ fun Database.Transaction.markAssistanceNeedDecisionAsReadByGuardian(
 }
 
 fun Database.Read.getAssistanceNeedDecisionsUnreadCountsForCitizen(
-    guardianId: PersonId
+    today: LocalDate,
+    userId: PersonId
 ): List<UnreadAssistanceNeedDecisionItem> {
     //language=sql
     val sql =
         """
+        WITH children AS (
+            SELECT child_id FROM guardian WHERE guardian_id = :userId
+            UNION ALL
+            SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+        )
         SELECT ad.child_id, COUNT(ad.child_id) as count
         FROM assistance_need_decision ad
-        JOIN guardian g ON g.child_id = ad.child_id AND g.guardian_id = :guardianId
-        WHERE (:guardianId = ANY(ad.unread_guardian_ids)) AND status IN ('REJECTED', 'ACCEPTED')
+        JOIN children c ON c.child_id = ad.child_id
+        WHERE (:userId = ANY(ad.unread_guardian_ids)) AND status IN ('REJECTED', 'ACCEPTED')
         GROUP BY ad.child_id
         """.trimIndent()
     return createQuery(sql)
-        .bind("guardianId", guardianId)
+        .bind("today", today)
+        .bind("userId", userId)
         .mapTo<UnreadAssistanceNeedDecisionItem>()
         .list()
 }

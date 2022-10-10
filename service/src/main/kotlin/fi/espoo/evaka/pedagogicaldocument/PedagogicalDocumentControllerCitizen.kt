@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 @RestController
 @RequestMapping("/citizen")
@@ -30,11 +31,13 @@ class PedagogicalDocumentControllerCitizen(
     fun getPedagogicalDocumentsForChild(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<PedagogicalDocumentCitizen> {
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_PEDAGOGICAL_DOCUMENTS, childId)
         return db.connect { dbc ->
             dbc.read {
-                val documents = it.getPedagogicalDocumentsByChildForGuardian(childId, user.id).filter { pd ->
+                val documents = it.getChildPedagogicalDocuments(childId, user.id).filter { pd ->
                     pd.description.isNotEmpty() || pd.attachments.isNotEmpty()
                 }
 
@@ -65,10 +68,12 @@ class PedagogicalDocumentControllerCitizen(
     @GetMapping("/pedagogical-documents/unread-count")
     fun getUnreadPedagogicalDocumentCount(
         db: Database,
-        user: AuthenticatedUser.Citizen
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock
     ): Map<ChildId, Int> {
+        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_PEDAGOGICAL_DOCUMENT_UNREAD_COUNTS, user.id)
         return db.connect { dbc ->
-            dbc.transaction { it.countUnreadDocumentsByGuardian(user.id) }
+            dbc.transaction { it.countUnreadDocumentsByUser(clock.today(), user.id) }
         }.also {
             Audit.PedagogicalDocumentCountUnread.log(user.id)
         }
@@ -88,25 +93,29 @@ private fun Database.Transaction.markDocumentReadByGuardian(clock: EvakaClock, d
         .bind("now", clock.now())
         .execute()
 
-private fun Database.Read.countUnreadDocumentsByGuardian(personId: PersonId): Map<ChildId, Int> =
+private fun Database.Read.countUnreadDocumentsByUser(today: LocalDate, userId: PersonId): Map<ChildId, Int> =
     this.createQuery(
         """
-            WITH ready_documents AS (
-                SELECT pd.id, pd.child_id
-                FROM pedagogical_document pd
-                LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
-                WHERE LENGTH(pd.description) > 0 OR a.id IS NOT NULL
-            )
-            SELECT d.child_id, count(*) as unread_count
-            FROM ready_documents d
-            JOIN guardian g ON d.child_id = g.child_id AND g.guardian_id = :personId
-            WHERE NOT EXISTS (
-                SELECT 1 FROM pedagogical_document_read pdr
-                WHERE pdr.pedagogical_document_id = d.id AND pdr.person_id = :personId
-            )
-            GROUP BY d.child_id
-        """.trimIndent()
+WITH children AS (
+    SELECT child_id FROM guardian WHERE guardian_id = :userId
+    UNION ALL
+    SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
+), ready_documents AS (
+    SELECT pd.id, pd.child_id
+    FROM pedagogical_document pd
+    LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
+    WHERE pd.child_id IN (SELECT child_id FROM children) AND LENGTH(pd.description) > 0 OR a.id IS NOT NULL
+)
+SELECT d.child_id, count(*) as unread_count
+FROM ready_documents d
+WHERE NOT EXISTS (
+    SELECT 1 FROM pedagogical_document_read pdr
+    WHERE pdr.pedagogical_document_id = d.id AND pdr.person_id = :userId
+)
+GROUP BY d.child_id
+"""
     )
-        .bind("personId", personId)
+        .bind("today", today)
+        .bind("userId", userId)
         .map { row -> row.mapColumn<ChildId>("child_id") to row.mapColumn<Int>("unread_count") }
         .toMap()

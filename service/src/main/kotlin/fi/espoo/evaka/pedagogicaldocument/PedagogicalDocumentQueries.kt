@@ -40,7 +40,7 @@ data class PedagogicalDocumentCitizen(
     val isRead: Boolean
 )
 
-fun Database.Read.getPedagogicalDocumentsByChildForGuardian(childId: ChildId, guardianId: PersonId): List<PedagogicalDocumentCitizen> {
+fun Database.Read.getChildPedagogicalDocuments(childId: ChildId, userId: PersonId): List<PedagogicalDocumentCitizen> {
     return this.createQuery(
         """
             SELECT 
@@ -61,14 +61,13 @@ fun Database.Read.getPedagogicalDocumentsByChildForGuardian(childId: ChildId, gu
                     WHERE a.pedagogical_document_id = pd.id
                 ) AS attachments
             FROM pedagogical_document pd
-            JOIN guardian g ON pd.child_id = g.child_id
-            LEFT JOIN pedagogical_document_read pdr ON pd.id = pdr.pedagogical_document_id AND pdr.person_id = g.guardian_id
-            WHERE pd.child_id = :childId AND g.guardian_id = :guardianId
+            LEFT JOIN pedagogical_document_read pdr ON pd.id = pdr.pedagogical_document_id AND pdr.person_id = :userId
+            WHERE pd.child_id = :childId
             ORDER BY pd.created DESC
         """.trimIndent()
     )
         .bind("childId", childId)
-        .bind("guardianId", guardianId)
+        .bind("userId", userId)
         .mapTo<PedagogicalDocumentCitizen>()
         .list()
 }

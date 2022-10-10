@@ -5,6 +5,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { combine } from 'lib-common/api'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import {
   apiDataToFormData,
@@ -12,6 +13,7 @@ import {
   formDataToApiData
 } from 'lib-common/api-types/application/ApplicationFormData'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { CitizenChildren } from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import useBetterParams from 'lib-common/useNonNullableParams'
@@ -36,12 +38,12 @@ import ApplicationFormDaycare from '../../applications/editor/ApplicationFormDay
 import ApplicationFormPreschool from '../../applications/editor/ApplicationFormPreschool'
 import ApplicationVerificationView from '../../applications/editor/verification/ApplicationVerificationView'
 import { renderResult } from '../../async-rendering'
-import { useStrongUser } from '../../auth/state'
 import { useTranslation } from '../../localization'
 import { OverlayContext } from '../../overlay/state'
 import useTitle from '../../useTitle'
 import {
   getApplication,
+  getApplicationChildren,
   getClubTerms,
   getPreschoolTerms,
   saveApplicationDraft,
@@ -57,6 +59,7 @@ import {
 
 type ApplicationEditorContentProps = {
   apiData: ApplicationDetails
+  citizenChildren: CitizenChildren[]
 }
 
 export type ApplicationFormProps = {
@@ -71,11 +74,11 @@ export type ApplicationFormProps = {
 }
 
 const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
-  apiData
+  apiData,
+  citizenChildren
 }: ApplicationEditorContentProps) {
   const t = useTranslation()
   const navigate = useNavigate()
-  const user = useStrongUser()
 
   const { setErrorMessage, setInfoMessage, clearInfoMessage } =
     useContext(OverlayContext)
@@ -113,7 +116,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   }, [apiData.type, setTerms])
 
   const [formData, setFormData] = useState<ApplicationFormData>(
-    apiDataToFormData(apiData, user)
+    apiDataToFormData(apiData, citizenChildren)
   )
   const [verificationRequested, setVerificationRequested] =
     useState<boolean>(false)
@@ -420,6 +423,7 @@ export default React.memo(function ApplicationEditor() {
     () => getApplication(applicationId),
     [applicationId]
   )
+  const [children] = useApiState(getApplicationChildren, [])
 
   useTitle(
     t,
@@ -431,8 +435,11 @@ export default React.memo(function ApplicationEditor() {
   return (
     <>
       <Container>
-        {renderResult(apiData, (value) => (
-          <ApplicationEditorContent apiData={value} />
+        {renderResult(combine(apiData, children), ([apiData, children]) => (
+          <ApplicationEditorContent
+            apiData={apiData}
+            citizenChildren={children}
+          />
         ))}
       </Container>
       <Footer />

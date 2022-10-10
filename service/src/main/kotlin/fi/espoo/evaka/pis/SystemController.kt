@@ -52,6 +52,7 @@ class SystemController(private val personService: PersonService, private val acc
                     ?: error("No person found with ssn")
                 tx.markPersonLastLogin(clock, citizen.id)
                 tx.upsertCitizenUser(citizen.id)
+                personService.getPersonWithChildren(tx, user, citizen.id)
                 citizen
             }
         }.also {

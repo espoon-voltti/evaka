@@ -133,6 +133,18 @@ WHERE guardian_id = :guardianId
             .bind("guardianId", guardianId)
     }
 
+    fun fosterParentOfChild() = rule { userId, now ->
+        QueryFragment<ChildId>(
+            """
+SELECT child_id AS id
+FROM foster_parent
+WHERE parent_id = :userId AND valid_during @> :today
+            """.trimIndent()
+        )
+            .bind("today", now.toLocalDate())
+            .bind("userId", userId)
+    }
+
     fun guardianOfChildOfChildImage() = rule { guardianId, _ ->
         QueryFragment<ChildImageId>(
             """
@@ -170,6 +182,19 @@ WHERE g.guardian_id = :guardianId
             .bind("guardianId", guardianId)
     }
 
+    fun fosterParentOfChildOfPedagogicalDocument() = rule { userId, now ->
+        QueryFragment<PedagogicalDocumentId>(
+            """
+SELECT pd.id
+FROM pedagogical_document pd
+JOIN foster_parent fp ON pd.child_id = fp.child_id
+WHERE fp.parent_id = :userId AND fp.valid_during @> :today
+            """.trimIndent()
+        )
+            .bind("today", now.toLocalDate())
+            .bind("userId", userId)
+    }
+
     fun guardianOfChildOfPedagogicalDocumentOfAttachment() = rule { guardianId, _ ->
         QueryFragment<AttachmentId>(
             """
@@ -195,6 +220,19 @@ WHERE g.guardian_id = :userId
             .bind("userId", citizenId)
     }
 
+    fun fosterParentOfChildOfVasu() = rule { citizenId, now ->
+        QueryFragment<VasuDocumentId>(
+            """
+SELECT cd.id
+FROM curriculum_document cd
+JOIN foster_parent fp ON cd.child_id = fp.child_id
+WHERE fp.parent_id = :userId AND fp.valid_during @> :today
+"""
+        )
+            .bind("userId", citizenId)
+            .bind("today", now.toLocalDate())
+    }
+
     fun guardianOfChildOfPlacement() = rule { guardianId, _ ->
         QueryFragment<PlacementId>(
             """
@@ -207,6 +245,19 @@ WHERE guardian_id = :guardianId
             .bind("guardianId", guardianId)
     }
 
+    fun fosterParentOfChildOfPlacement() = rule { userId, now ->
+        QueryFragment<PlacementId>(
+            """
+SELECT placement.id
+FROM placement
+JOIN foster_parent ON placement.child_id = foster_parent.child_id
+WHERE parent_id = :userId
+            """.trimIndent()
+        )
+            .bind("userId", userId)
+            .bind("today", now.toLocalDate())
+    }
+
     fun guardianOfChildOfAssistanceNeedDecision() = rule { citizenId, _ ->
         QueryFragment<AssistanceNeedDecisionId>(
             """
@@ -216,6 +267,18 @@ WHERE EXISTS(SELECT 1 FROM guardian g WHERE g.guardian_id = :userId AND g.child_
             """.trimIndent()
         )
             .bind("userId", citizenId)
+    }
+
+    fun fosterParentOfChildOfAssistanceNeedDecision() = rule { citizenId, now ->
+        QueryFragment<AssistanceNeedDecisionId>(
+            """
+SELECT id
+FROM assistance_need_decision ad
+WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = :userId AND fp.child_id = ad.child_id AND fp.valid_during @> :today)
+            """.trimIndent()
+        )
+            .bind("userId", citizenId)
+            .bind("today", now.toLocalDate())
     }
 
     fun hasPermissionForAttachmentThroughMessageContent() = rule { personId, _ ->
@@ -268,14 +331,14 @@ WHERE person_id = :userId
             .bind("userId", citizenId)
     }
 
-    fun guardianOfDailyServiceTimeNotification() = rule { guardianId, _ ->
+    fun recipientOfDailyServiceTimeNotification() = rule { citizenId, _ ->
         QueryFragment<DailyServiceTimeNotificationId>(
             """
 SELECT id
 FROM daily_service_time_notification
-WHERE guardian_id = :guardianId
+WHERE guardian_id = :citizenId
             """.trimIndent()
         )
-            .bind("guardianId", guardianId)
+            .bind("citizenId", citizenId)
     }
 }

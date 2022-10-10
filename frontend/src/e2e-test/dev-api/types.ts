@@ -417,6 +417,12 @@ export interface FridgePartner {
   endDate: LocalDate
 }
 
+export interface FosterParent {
+  childId: string
+  parentId: string
+  validDuring: DateRange
+}
+
 export interface EmployeePin {
   id: string
   employeeExternalId?: string
