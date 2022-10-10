@@ -410,6 +410,7 @@ class FixtureBuilder(
         private var firstName: String = "First"
         private var lastName: String = "Last"
         private var pinCode: String? = null
+        private var lastLogin: HelsinkiDateTime? = HelsinkiDateTime.now()
 
         fun withGlobalRoles(roles: Set<UserRole>) = this.apply {
             this.globalRoles = roles
@@ -432,6 +433,10 @@ class FixtureBuilder(
             this.pinCode = pinCode
         }
 
+        fun withLastLogin(lastLogin: HelsinkiDateTime) = this.apply {
+            this.lastLogin = lastLogin
+        }
+
         fun save(): FixtureBuilder {
             doInsert()
             return fixtureBuilder
@@ -446,7 +451,7 @@ class FixtureBuilder(
         }
 
         private fun doInsert(): EmployeeId {
-            val employee = DevEmployee(roles = globalRoles, firstName = firstName, lastName = lastName)
+            val employee = DevEmployee(roles = globalRoles, firstName = firstName, lastName = lastName, lastLogin = lastLogin)
             val employeeId = tx.insertTestEmployee(employee)
             unitRoles.forEach { (role, unitId) -> tx.insertDaycareAclRow(unitId, employeeId, role) }
             groups.forEach { (unitId, groupId) -> tx.insertDaycareGroupAcl(unitId, employeeId, listOf(groupId)) }

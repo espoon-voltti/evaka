@@ -5,6 +5,8 @@
 package fi.espoo.evaka.shared.security
 
 import fi.espoo.evaka.pis.employeePinIsCorrect
+import fi.espoo.evaka.pis.markEmployeeLastLogin
+import fi.espoo.evaka.pis.resetEmployeePinFailureCount
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
@@ -40,7 +42,7 @@ class AccessControl(
             createUnits = checkPermissionFor(tx, user, clock, Action.Global.CREATE_UNIT).isPermitted(),
             vasuTemplates = checkPermissionFor(tx, user, clock, Action.Global.VASU_TEMPLATES_PAGE).isPermitted(),
             personalMobileDevice = checkPermissionFor(tx, user, clock, Action.Global.PERSONAL_MOBILE_DEVICE_PAGE).isPermitted(),
-            pinCode = checkPermissionFor(tx, user, clock, Action.Global.PIN_CODE_PAGE).isPermitted(),
+            pinCode = checkPermissionFor(tx, user, clock, Action.Global.PIN_CODE_PAGE).isPermitted()
         )
     }
 
@@ -270,20 +272,28 @@ class AccessControl(
 
     fun verifyPinCode(
         employeeId: EmployeeId,
-        pinCode: String
-    ) {
-        val errorCode = Database(jdbi).connect {
+        pinCode: String,
+        clock: EvakaClock
+    ): PinError? {
+        return Database(jdbi).connect {
             it.transaction { tx ->
                 if (tx.employeePinIsCorrect(employeeId, pinCode)) {
+                    tx.markEmployeeLastLogin(clock, employeeId)
+                    tx.resetEmployeePinFailureCount(employeeId)
                     null
                 } else {
-                    val locked = tx.updateEmployeePinFailureCountAndCheckIfLocked(employeeId)
-                    if (locked) PinError.PIN_LOCKED else PinError.WRONG_PIN
+                    if (tx.updateEmployeePinFailureCountAndCheckIfLocked(employeeId)) {
+                        PinError.PIN_LOCKED
+                    } else {
+                        PinError.WRONG_PIN
+                    }
                 }
             }
         }
+    }
 
-        // throw must be outside transaction to not rollback failure count increase
+    fun verifyPinCodeAndThrow(employeeId: EmployeeId, pinCode: String, clock: EvakaClock) {
+        val errorCode = verifyPinCode(employeeId, pinCode, clock)
         if (errorCode != null) throw Forbidden("Invalid pin code", errorCode.name)
     }
 }

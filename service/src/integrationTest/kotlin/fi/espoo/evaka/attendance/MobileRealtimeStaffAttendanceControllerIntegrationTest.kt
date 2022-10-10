@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
@@ -29,6 +30,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -301,6 +303,32 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest : FullApplicationTe
         val arrivalTime = plannedStart.minusMinutes(20)
         markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
             .let { assertEquals(400, it) }
+    }
+
+    @Test
+    fun `last_login should update when Employee is marked as arrived`() {
+        val pinCode = "1212"
+        val initialLastLogin = HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0, 0))
+        lateinit var employeeId: EmployeeId
+        db.transaction { tx ->
+            FixtureBuilder(tx)
+                .addEmployee()
+                .withName("Pekka", "in both units")
+                .withLastLogin(initialLastLogin)
+                .withGroupAccess(testDaycare.id, groupId)
+                .withScopedRole(UserRole.STAFF, testDaycare.id)
+                .withPinCode(pinCode)
+                .saveAnd { employeeId = this.employeeId }
+        }
+
+        val lastLoginBeforeArrival = db.read { db -> db.getEmployeeLastLogin(employeeId) }
+        assertEquals(initialLastLogin, lastLoginBeforeArrival)
+
+        val arrivalTime = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
+        markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+
+        val lastLogin = db.read { db -> db.getEmployeeLastLogin(employeeId) }
+        assertEquals(now, lastLogin)
     }
 
     @ParameterizedTest(name = "Employee arriving 20 minutes before planned time can be marked arrived with {0}")
@@ -831,3 +859,9 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest : FullApplicationTe
         return res.statusCode
     }
 }
+
+private fun Database.Read.getEmployeeLastLogin(id: EmployeeId) =
+    createQuery("SELECT last_login FROM employee WHERE id = :id")
+        .bind("id", id)
+        .mapTo<HelsinkiDateTime>()
+        .firstOrNull()

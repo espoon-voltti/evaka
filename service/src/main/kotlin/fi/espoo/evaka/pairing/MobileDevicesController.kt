@@ -5,11 +5,7 @@
 package fi.espoo.evaka.pairing
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.pis.employeePinIsCorrect
 import fi.espoo.evaka.pis.getEmployeeUser
-import fi.espoo.evaka.pis.markEmployeeLastLogin
-import fi.espoo.evaka.pis.resetEmployeePinFailureCount
-import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.MobileDeviceId
@@ -69,6 +65,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
     data class RenameRequest(
         val name: String
     )
+
     @PutMapping("/mobile-devices/{id}/name")
     fun putMobileDeviceName(
         db: Database,
@@ -100,27 +97,24 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.MobileDevice,
         clock: EvakaClock,
         @RequestBody params: PinLoginRequest
-    ): PinLoginResponse {
-        return db.connect { dbc ->
-            dbc.transaction { tx ->
-                if (tx.employeePinIsCorrect(params.employeeId, params.pin)) {
-                    tx.markEmployeeLastLogin(clock, params.employeeId)
-                    tx.resetEmployeePinFailureCount(params.employeeId)
-                    tx.getEmployeeUser(params.employeeId)
-                        ?.let { PinLoginResponse(PinLoginStatus.SUCCESS, Employee(it.preferredFirstName ?: it.firstName, it.lastName)) }
-                        ?: PinLoginResponse(PinLoginStatus.WRONG_PIN)
-                } else {
-                    if (tx.updateEmployeePinFailureCountAndCheckIfLocked(params.employeeId)) {
-                        PinLoginResponse(PinLoginStatus.PIN_LOCKED)
-                    } else {
-                        PinLoginResponse(PinLoginStatus.WRONG_PIN)
-                    }
+    ): PinLoginResponse =
+        when (accessControl.verifyPinCode(params.employeeId, params.pin, clock)) {
+            AccessControl.PinError.PIN_LOCKED -> PinLoginResponse(PinLoginStatus.PIN_LOCKED)
+            AccessControl.PinError.WRONG_PIN -> PinLoginResponse(PinLoginStatus.WRONG_PIN)
+            null -> db.connect { dbc ->
+                dbc.transaction { tx ->
+                    val employee = tx.getEmployeeUser(params.employeeId)
+                    employee?.let {
+                        PinLoginResponse(
+                            PinLoginStatus.SUCCESS,
+                            Employee(it.preferredFirstName ?: it.firstName, it.lastName)
+                        )
+                    } ?: PinLoginResponse(PinLoginStatus.WRONG_PIN)
                 }
             }
         }.also {
             Audit.PinLogin.log(targetId = params.employeeId, args = mapOf("status" to it.status))
         }
-    }
 }
 
 data class PinLoginRequest(
