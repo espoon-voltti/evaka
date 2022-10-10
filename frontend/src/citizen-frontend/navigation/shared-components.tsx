@@ -78,6 +78,10 @@ export const DropDownLink = styled(NavLink)`
   ${dropDownButtonStyles}
 `
 
+export const DropDownLocalLink = styled.a`
+  ${dropDownButtonStyles}
+`
+
 export const LanguageMenu = React.memo(function LanguageMenu({
   useShortLanguageLabel = false,
   alignRight = false

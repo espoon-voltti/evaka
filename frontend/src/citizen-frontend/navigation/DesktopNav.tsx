@@ -37,7 +37,8 @@ import {
   DropDown,
   DropDownContainer,
   DropDownIcon,
-  LanguageMenu
+  LanguageMenu,
+  DropDownLocalLink
 } from './shared-components'
 
 interface Props {
@@ -375,14 +376,13 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
               </CircledChar>
             )}
           </DropDownLink>
-          <DropDownLink
+          <DropDownLocalLink
             key="sub-nav-menu-logout"
-            to={getLogoutUri(user)}
-            onClick={() => (location.href = getLogoutUri(user))}
+            href={getLogoutUri(user)}
           >
             {t.header.logout}
             <FontAwesomeIcon icon={farSignOut} />
-          </DropDownLink>
+          </DropDownLocalLink>
         </DropDown>
       ) : null}
     </DropDownContainer>
