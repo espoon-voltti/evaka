@@ -267,6 +267,7 @@ WITH child_fees AS (
         JOIN daycare d ON d.id = p.unit_id
         JOIN child_fees ON p.child_id = child_fees.child_id
             AND child_fees.valid_during && daterange(sn.start_date, sn.end_date, '[]')
+            AND sn.end_date >= '2019-09-01'
     WHERE d.upload_children_to_varda = true
         AND d.invoiced_by_municipality = true
     GROUP BY service_need_id, p.child_id
@@ -280,6 +281,7 @@ WITH child_fees AS (
         JOIN voucher_value_decision vvd ON p.child_id = vvd.child_id
             AND daterange(vvd.valid_from, vvd.valid_to, '[]') && daterange(sn.start_date, sn.end_date, '[]')
             AND daterange('2019-09-01', null) && daterange(vvd.valid_from, vvd.valid_to, '[]')
+            AND sn.end_date >= '2019-09-01'
     WHERE d.upload_children_to_varda = true
         AND vvd.status = :voucherValueDecisionStatus
     GROUP BY service_need_id, p.child_id
