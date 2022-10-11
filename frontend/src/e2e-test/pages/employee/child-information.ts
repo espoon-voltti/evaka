@@ -604,7 +604,16 @@ export class GuardiansSection extends Section {
     await modal.submit()
   }
 
+  async waitUntilNotLoading() {
+    await waitUntilEqual(
+      () =>
+        this.findByDataQa('table-of-guardians').getAttribute('data-loading'),
+      'false'
+    )
+  }
+
   async assertGuardianStatusAllowed(id: UUID) {
+    await this.waitUntilNotLoading()
     await waitUntilEqual(
       () =>
         this.guardianRow(id).findByDataQa('evaka-rights-status').textContent,
@@ -613,6 +622,7 @@ export class GuardiansSection extends Section {
   }
 
   async assertGuardianStatusDenied(id: UUID) {
+    await this.waitUntilNotLoading()
     await waitUntilEqual(
       () =>
         this.guardianRow(id).findByDataQa('evaka-rights-status').textContent,
