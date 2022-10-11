@@ -173,6 +173,7 @@ export type MessageRecipientType =
 export interface MessageThread {
   children: MessageChild[]
   id: UUID
+  isCopy: boolean
   messages: Message[]
   title: string
   type: MessageType
