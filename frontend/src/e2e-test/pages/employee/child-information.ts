@@ -557,12 +557,11 @@ export class FamilyContactsSection extends Section {
 }
 
 export class GuardiansSection extends Section {
-  #guardianRows = this.find('[data-qa="table-guardian-row"]')
+  private guardianRow = (id: UUID) =>
+    this.findByDataQa(`table-guardian-row-${id}`)
 
-  async assertGuardianExists(ssn: string) {
-    await this.#guardianRows
-      .find(`[data-qa="guardian-ssn"] >> text=${ssn}`)
-      .waitUntilVisible()
+  async assertGuardianExists(id: UUID) {
+    await this.guardianRow(id).waitUntilVisible()
   }
 
   async assertFosterParentExists(
@@ -578,6 +577,46 @@ export class GuardiansSection extends Section {
     await waitUntilEqual(
       () => row.findByDataQa('end').textContent,
       end?.format() ?? ''
+    )
+  }
+
+  async removeGuardianEvakaRights(id: UUID) {
+    await this.guardianRow(id)
+      .findByDataQa('edit-guardian-evaka-rights')
+      .click()
+
+    const modal = new Modal(this.page.findByDataQa('evaka-rights-modal'))
+    await modal.submit()
+    await modal.findByDataQa('confirmation').click()
+    await modal.findByDataQa('denied').click()
+    await modal.submit()
+  }
+
+  async restoreGuardianEvakaRights(id: UUID) {
+    await this.guardianRow(id)
+      .findByDataQa('edit-guardian-evaka-rights')
+      .click()
+
+    const modal = new Modal(this.page.findByDataQa('evaka-rights-modal'))
+    await modal.submit()
+    await modal.findByDataQa('denied').click()
+    await modal.findByDataQa('confirmation').click()
+    await modal.submit()
+  }
+
+  async assertGuardianStatusAllowed(id: UUID) {
+    await waitUntilEqual(
+      () =>
+        this.guardianRow(id).findByDataQa('evaka-rights-status').textContent,
+      'Sallittu'
+    )
+  }
+
+  async assertGuardianStatusDenied(id: UUID) {
+    await waitUntilEqual(
+      () =>
+        this.guardianRow(id).findByDataQa('evaka-rights-status').textContent,
+      'Kielletty'
     )
   }
 }

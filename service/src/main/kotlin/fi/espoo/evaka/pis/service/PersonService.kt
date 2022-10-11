@@ -109,13 +109,18 @@ class PersonService(
     }
 
     // Does a request to VTJ if SSN is present
-    fun getGuardians(tx: Database.Transaction, user: AuthenticatedUser, id: ChildId): List<PersonDTO> {
+    fun getGuardians(
+        tx: Database.Transaction,
+        user: AuthenticatedUser,
+        id: ChildId,
+        forceRefresh: Boolean = false
+    ): List<PersonDTO> {
         val child = tx.getPersonById(id) ?: return emptyList()
 
         return when (child.identity) {
             is ExternalIdentifier.NoID -> emptyList()
             is ExternalIdentifier.SSN -> {
-                if (child.vtjGuardiansQueried == null) {
+                if (forceRefresh || child.vtjGuardiansQueried == null) {
                     getPersonWithGuardians(user, child.identity)
                         .let { upsertVtjGuardians(tx, it) }
                         .guardians.map(::toPersonDTO)

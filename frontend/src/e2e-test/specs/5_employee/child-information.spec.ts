@@ -426,7 +426,7 @@ describe('Child information - guardian information', () => {
 
   test('guardian information is shown', async () => {
     await section.assertGuardianExists(
-      fixtures.familyWithTwoGuardians.guardian.ssn
+      fixtures.familyWithTwoGuardians.guardian.id
     )
   })
 })

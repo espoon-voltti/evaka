@@ -30,6 +30,7 @@ import { getParentshipsByChild } from '../api/parentships'
 import { getChildDetails, getPersonGuardians } from '../api/person'
 
 export interface ChildState {
+  childId: UUID | undefined
   person: Result<PersonJSON>
   setPerson: (value: PersonJSON) => void
   permittedActions: Set<Action.Child | Action.Person>
@@ -39,6 +40,7 @@ export interface ChildState {
   backupCares: Result<ChildBackupCareResponse[]>
   loadBackupCares: () => Promise<Result<unknown>>
   guardians: Result<PersonJSON[]>
+  reloadGuardians: () => Promise<Result<unknown>>
   reloadPermittedActions: () => void
   assistanceNeedVoucherCoefficientsEnabled: Result<boolean>
   consecutivePlacementRanges: FiniteDateRange[]
@@ -47,6 +49,7 @@ export interface ChildState {
 const emptyPermittedActions = new Set<Action.Child | Action.Person>()
 
 const defaultState: ChildState = {
+  childId: undefined,
   person: Loading.of(),
   setPerson: () => undefined,
   permittedActions: emptyPermittedActions,
@@ -56,6 +59,7 @@ const defaultState: ChildState = {
   backupCares: Loading.of(),
   loadBackupCares: () => Promise.resolve(Loading.of()),
   guardians: Loading.of(),
+  reloadGuardians: () => Promise.resolve(Loading.of()),
   reloadPermittedActions: () => undefined,
   assistanceNeedVoucherCoefficientsEnabled: Loading.of(),
   consecutivePlacementRanges: []
@@ -146,7 +150,10 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     [id]
   )
 
-  const [guardians] = useApiState(() => getPersonGuardians(id), [id])
+  const [guardians, reloadGuardians] = useApiState(
+    () => getPersonGuardians(id),
+    [id]
+  )
 
   const consecutivePlacementRanges = useMemo(
     () =>
@@ -184,6 +191,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
 
   const value = useMemo(
     (): ChildState => ({
+      childId: id,
       person,
       setPerson,
       permittedActions,
@@ -193,11 +201,13 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       backupCares,
       loadBackupCares,
       guardians,
+      reloadGuardians,
       reloadPermittedActions,
       assistanceNeedVoucherCoefficientsEnabled,
       consecutivePlacementRanges
     }),
     [
+      id,
       person,
       setPerson,
       permittedActions,
@@ -206,6 +216,7 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
       parentships,
       backupCares,
       guardians,
+      reloadGuardians,
       reloadPermittedActions,
       assistanceNeedVoucherCoefficientsEnabled,
       consecutivePlacementRanges,

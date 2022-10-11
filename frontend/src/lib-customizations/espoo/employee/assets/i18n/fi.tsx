@@ -66,6 +66,7 @@ export const fi = {
     saving: 'Tallennetaan',
     saved: 'Tallennettu',
     all: 'Kaikki',
+    continue: 'Jatka',
     statuses: {
       active: 'Aktiivinen',
       coming: 'Tulossa',
@@ -1353,6 +1354,28 @@ export const fi = {
     ssn: 'Hetu',
     streetAddress: 'Katuosoite',
     age: 'Ikä',
+    evakaRights: {
+      tableHeader: 'eVaka-oikeudet',
+      statusAllowed: 'Sallittu',
+      statusDenied: 'Kielletty',
+      editModalTitle: 'Huoltajan eVaka-oikeudet',
+      modalInfoParagraph: (
+        <>
+          EVaka-oikeuksilla määritetään, näkeekö huoltaja huostaanotettuun
+          lapseensa liittyvät tiedot eVakassa. Oikeudet voi kieltää vain{' '}
+          <strong>
+            perustelluissa lastensuojelutilanteissa sosiaalityöntekijän
+            kirjallisella ilmoituksella
+          </strong>
+          . Oikeudet tulee palauttaa, mikäli huostaanotto päättyy.
+        </>
+      ),
+      modalUpdateSubtitle:
+        'Huoltajan eVaka-oikeuksien kieltäminen, kun lapsi on huostaanotettu',
+      confirmedLabel:
+        'Vahvistan, että huoltajan tiedonsaannin rajoittamiseen on sosiaalityöntekijän kirjallinen lupa',
+      deniedLabel: 'Kiellän huostaanotetun lapsen huoltajalta eVaka-oikeudet'
+    },
     familyOverview: {
       title: 'Perheen tietojen kooste',
       colName: 'Nimi',

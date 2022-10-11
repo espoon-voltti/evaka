@@ -35,6 +35,34 @@ SELECT EXISTS (
         .mapTo<Boolean>()
         .one()
 
+fun Database.Read.getBlockedGuardians(childId: ChildId): List<PersonId> {
+    return createQuery("SELECT guardian_id FROM guardian_blocklist WHERE child_id = :childId")
+        .bind("childId", childId)
+        .mapTo<PersonId>()
+        .toList()
+}
+
+fun Database.Transaction.addToGuardianBlocklist(childId: ChildId, guardianId: PersonId) {
+    createUpdate("INSERT INTO guardian_blocklist (child_id, guardian_id) VALUES (:childId, :guardianId)")
+        .bind("childId", childId)
+        .bind("guardianId", guardianId)
+        .execute()
+}
+
+fun Database.Transaction.deleteFromGuardianBlocklist(childId: ChildId, guardianId: PersonId) {
+    createUpdate("DELETE FROM guardian_blocklist WHERE child_id = :childId AND guardian_id = :guardianId")
+        .bind("childId", childId)
+        .bind("guardianId", guardianId)
+        .execute()
+}
+
+fun Database.Transaction.deleteGuardianRelationship(childId: ChildId, guardianId: PersonId) {
+    createUpdate("DELETE FROM guardian WHERE child_id = :childId AND guardian_id = :guardianId")
+        .bind("childId", childId)
+        .bind("guardianId", guardianId)
+        .execute()
+}
+
 private fun Database.Transaction.insertGuardians(guardianIdChildIdPairs: List<GuardianChildPair>) {
     val batch = prepareBatch("INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId)")
     guardianIdChildIdPairs.forEach {
