@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.HasUnitRole
 import fi.espoo.evaka.shared.security.actionrule.IsMobile
+import fi.espoo.evaka.shared.security.actionrule.toPredicate
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -103,7 +104,7 @@ class UnitAccessControlTest : AccessControlTest() {
                 sql(
                     """
                     SELECT id FROM daycare
-                    WHERE id IN (${subquery(filter.filter)})
+                    WHERE ${tablePredicate("daycare", filter.toPredicate())}
                     """.trimIndent()
                 )
             }.mapTo<DaycareId>().toSet()

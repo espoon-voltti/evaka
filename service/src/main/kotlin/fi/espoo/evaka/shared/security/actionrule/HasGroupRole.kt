@@ -35,7 +35,7 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<HasGroupRole>> = when (ctx.user) {
-            is AuthenticatedUser.Employee -> ctx.tx.createQuery {
+            is AuthenticatedUser.Employee -> ctx.tx.createQuery<T> {
                 sql(
                     """
                     SELECT id, role, unit_features

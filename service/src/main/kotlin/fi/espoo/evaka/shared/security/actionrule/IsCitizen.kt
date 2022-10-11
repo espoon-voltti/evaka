@@ -37,7 +37,7 @@ data class IsCitizen(val allowWeakLogin: Boolean) {
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<IsCitizen>> = when (ctx.user) {
-            is AuthenticatedUser.Citizen -> ctx.tx.createQuery {
+            is AuthenticatedUser.Citizen -> ctx.tx.createQuery<T> {
                 sql(
                     """
                         SELECT id

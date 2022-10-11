@@ -36,7 +36,7 @@ data class IsMobile(val requirePinLogin: Boolean) {
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<IsMobile>> = when (ctx.user) {
-            is AuthenticatedUser.MobileDevice -> ctx.tx.createQuery {
+            is AuthenticatedUser.MobileDevice -> ctx.tx.createQuery<T> {
                 sql(
                     """
                     SELECT id

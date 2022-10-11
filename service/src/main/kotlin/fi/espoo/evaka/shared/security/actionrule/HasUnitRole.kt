@@ -62,7 +62,7 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<P
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<HasUnitRole>> = when (ctx.user) {
-            is AuthenticatedUser.Employee -> ctx.tx.createQuery {
+            is AuthenticatedUser.Employee -> ctx.tx.createQuery<T> {
                 sql(
                     """
                     SELECT id, role, unit_features
@@ -115,7 +115,7 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<P
             override fun execute(ctx: DatabaseActionRule.QueryContext): DatabaseActionRule.Deferred<HasUnitRole>? =
                 when (ctx.user) {
                     is AuthenticatedUser.Employee -> Deferred(
-                        ctx.tx.createQuery {
+                        ctx.tx.createQuery<RoleAndFeatures> {
                             sql(
                                 """
 SELECT role, enabled_pilot_features AS unit_features

@@ -4,11 +4,14 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.QueryFunction
+import fi.espoo.evaka.shared.db.predicate
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -99,4 +102,11 @@ internal data class RoleAndFeatures(val role: UserRole, val unitFeatures: Set<Pi
 sealed interface AccessControlFilter<out T> {
     object PermitAll : AccessControlFilter<Nothing>
     data class Some<T>(val filter: QueryFunction<T>) : AccessControlFilter<T>
+}
+
+fun <T : DatabaseTable> AccessControlFilter<Id<T>>.toPredicate(): Predicate<T> = when (this) {
+    AccessControlFilter.PermitAll -> Predicate.alwaysTrue()
+    is AccessControlFilter.Some<Id<T>> -> predicate { prefix ->
+        sql("($prefix.id IN (${subquery(filter)}))")
+    }
 }

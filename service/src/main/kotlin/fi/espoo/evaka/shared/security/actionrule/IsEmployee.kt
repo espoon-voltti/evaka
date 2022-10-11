@@ -29,7 +29,7 @@ object IsEmployee {
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<IsEmployee>> = when (ctx.user) {
-            is AuthenticatedUser.Employee -> ctx.tx.createQuery {
+            is AuthenticatedUser.Employee -> ctx.tx.createQuery<T> {
                 sql(
                     """
                     SELECT id
@@ -96,7 +96,7 @@ object IsEmployee {
             object : DatabaseActionRule.Unscoped.Query<IsEmployee> {
                 override fun execute(ctx: DatabaseActionRule.QueryContext): DatabaseActionRule.Deferred<IsEmployee>? =
                     when (ctx.user) {
-                        is AuthenticatedUser.Employee -> ctx.tx.createQuery {
+                        is AuthenticatedUser.Employee -> ctx.tx.createQuery<Boolean> {
                             sql(
                                 """
 SELECT EXISTS (

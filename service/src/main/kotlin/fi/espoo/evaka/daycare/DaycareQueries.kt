@@ -16,6 +16,8 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
+import fi.espoo.evaka.shared.db.predicate
 import fi.espoo.evaka.shared.db.query
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
@@ -23,6 +25,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.toPredicate
 import java.time.DayOfWeek
 import java.time.LocalDate
 
@@ -71,7 +74,7 @@ data class DaycareFields(
 
 data class DaycareGroupSummary(val id: GroupId, val name: String, val endDate: LocalDate?)
 
-fun daycaresQuery() = query<DatabaseTable.Daycare> {
+fun daycaresQuery(predicate: Predicate<DatabaseTable.Daycare>) = query {
     sql(
         """
 SELECT
@@ -127,19 +130,14 @@ FROM daycare
 LEFT JOIN unit_manager um ON daycare.unit_manager_id = um.id
 LEFT JOIN employee finance_decision_handler ON finance_decision_handler.id = daycare.finance_decision_handler
 JOIN care_area ca ON daycare.care_area_id = ca.id
+WHERE (${tablePredicate("daycare", predicate)})
         """.trimIndent()
     )
 }
-fun Database.Read.getDaycares(filter: AccessControlFilter<DaycareId>): List<Daycare> = createQuery {
-    sql(
-        """
-${subquery(daycaresQuery())}
-${(filter as? AccessControlFilter.Some)?.let { "WHERE daycare.id IN ${subquery(filter.filter)}" } ?: ""}
-        """.trimIndent()
-    )
-}
-    .mapTo<Daycare>()
-    .toList()
+fun Database.Read.getDaycares(filter: AccessControlFilter<DaycareId>): List<Daycare> =
+    createQuery(daycaresQuery(filter.toPredicate()))
+        .mapTo<Daycare>()
+        .toList()
 
 data class UnitApplyPeriods(
     val id: DaycareId,
@@ -159,16 +157,16 @@ WHERE id = ANY(:ids)
     .mapTo<UnitApplyPeriods>()
     .toList()
 
-fun Database.Read.getDaycare(id: DaycareId): Daycare? = createQuery {
-    sql(
-        """
-${subquery(daycaresQuery())}
-WHERE daycare.id = ${bind(id)}
-        """.trimIndent()
+fun Database.Read.getDaycare(id: DaycareId): Daycare? =
+    createQuery(
+        daycaresQuery(
+            predicate { prefix ->
+                sql("$prefix.id = ${bind(id)}")
+            }
+        )
     )
-}
-    .mapTo<Daycare>()
-    .firstOrNull()
+        .mapTo<Daycare>()
+        .firstOrNull()
 
 fun Database.Read.isValidDaycareId(id: DaycareId): Boolean = createQuery(
     // language=SQL

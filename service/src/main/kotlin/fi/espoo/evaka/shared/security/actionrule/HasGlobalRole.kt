@@ -40,7 +40,7 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule {
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
         ): Map<T, DatabaseActionRule.Deferred<HasGlobalRole>> = when (ctx.user) {
-            is AuthenticatedUser.Employee -> ctx.tx.createQuery {
+            is AuthenticatedUser.Employee -> ctx.tx.createQuery<T> {
                 sql(
                     """
                     SELECT id

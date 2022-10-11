@@ -8,19 +8,19 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.EvakaUserId
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.toPredicate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
 
 @RestController
-class AssistanceNeedDecisionsReport(private val accessControl: AccessControl, private val acl: AccessControlList) {
+class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
     @GetMapping("/reports/assistance-need-decisions")
     fun getAssistanceNeedDecisions(
         db: Database,
@@ -75,10 +75,7 @@ JOIN person child ON child.id = ad.child_id
 JOIN daycare ON daycare.id = ad.selected_unit
 JOIN care_area ON care_area.id = daycare.care_area_id
 WHERE sent_for_decision IS NOT NULL
-${when (idFilter) {
-            AccessControlFilter.PermitAll -> ""
-            is AccessControlFilter.Some -> "AND ad.id IN (${subquery(idFilter.filter)})"
-        }}
+AND (${tablePredicate("ad", idFilter.toPredicate())})
         """.trimIndent()
     )
 }
