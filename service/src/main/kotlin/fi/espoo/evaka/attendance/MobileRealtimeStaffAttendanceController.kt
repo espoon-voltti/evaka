@@ -70,7 +70,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         @RequestBody body: StaffArrivalRequest
     ) {
         ac.requirePermissionFor(user, clock, Action.Group.MARK_ARRIVAL, body.groupId)
-        ac.verifyPinCode(body.employeeId, body.pinCode)
+        ac.verifyPinCodeAndThrow(body.employeeId, body.pinCode, clock)
         // todo: check that employee has access to a unit related to the group?
 
         val staffAttendanceIds = try {
@@ -117,7 +117,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         @RequestBody body: StaffDepartureRequest
     ) {
         ac.requirePermissionFor(user, clock, Action.Group.MARK_DEPARTURE, body.groupId)
-        ac.verifyPinCode(body.employeeId, body.pinCode)
+        ac.verifyPinCodeAndThrow(body.employeeId, body.pinCode, clock)
 
         val staffAttendanceIds = db.connect { dbc ->
             dbc.transaction { tx ->
