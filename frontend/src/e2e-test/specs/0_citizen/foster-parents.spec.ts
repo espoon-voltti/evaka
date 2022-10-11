@@ -138,6 +138,78 @@ test('Foster parent can create a daycare application and accept a daycare decisi
     .waitUntilHidden()
 })
 
+test('Foster parent can create a daycare application and accept a daycare decision for a child without a SSN', async () => {
+  const fosterChild = (await Fixture.person().with({ ssn: undefined }).save())
+    .data
+  await Fixture.child(fosterChild.id).save()
+  await insertFosterParents([
+    {
+      childId: fosterChild.id,
+      parentId: fosterParent.id,
+      validDuring: new DateRange(mockedDate, mockedDate)
+    }
+  ])
+  await activeRelationshipPage.reload()
+  const applicationsPage = new CitizenApplicationsPage(activeRelationshipPage)
+
+  await activeRelationshipHeader.selectTab('applications')
+  const editorPage = await applicationsPage.createApplication(
+    fosterChild.id,
+    'DAYCARE'
+  )
+  const applicationId = editorPage.getNewApplicationId()
+
+  await editorPage.fillData(minimalDaycareForm.form)
+  await editorPage.assertChildAddress(
+    `${fosterChild.streetAddress ?? ''}, ${fosterChild.postalCode ?? ''} ${
+      fosterChild.postOffice ?? ''
+    }`
+  )
+  await editorPage.verifyAndSend()
+
+  await applicationsPage.assertApplicationIsListed(
+    applicationId,
+    'Varhaiskasvatushakemus',
+    minimalDaycareForm.form.unitPreference?.preferredUnits?.[0].name ?? '',
+    minimalDaycareForm.form.serviceNeed?.preferredStartDate ?? '',
+    'Lähetetty'
+  )
+
+  await execSimpleApplicationActions(applicationId, [
+    'move-to-waiting-placement',
+    'create-default-placement-plan',
+    'send-decisions-without-proposal',
+    'confirm-decision-mailed'
+  ])
+  await runPendingAsyncJobs()
+
+  const citizenDecisionsPage = new CitizenDecisionsPage(activeRelationshipPage)
+  const decisions = await getDecisionsByApplication(applicationId)
+  const decisionId = decisions[0].id
+  await activeRelationshipHeader.selectTab('decisions')
+  const responsePage = await citizenDecisionsPage.navigateToDecisionResponse(
+    applicationId
+  )
+  await responsePage.assertUnresolvedDecisionsCount(1)
+  await responsePage.acceptDecision(decisionId)
+  await responsePage.assertDecisionStatus(decisionId, 'Hyväksytty')
+  await responsePage.assertUnresolvedDecisionsCount(0)
+
+  const { endedRelationshipPage, endedRelationshipHeader } =
+    await openEndedRelationshipPage()
+  await endedRelationshipHeader.selectTab('applications')
+  await waitUntilEqual(
+    () =>
+      endedRelationshipPage
+        .findByDataQa('applications-list')
+        .getAttribute('data-isloading'),
+    'false'
+  )
+  await endedRelationshipPage
+    .findByDataQa(`child-${fosterChild.id}`)
+    .waitUntilHidden()
+})
+
 test('Foster parent can receive and reply to messages', async () => {
   const unitId = fixtures.daycareFixture.id
   const group = await Fixture.daycareGroup().with({ daycareId: unitId }).save()

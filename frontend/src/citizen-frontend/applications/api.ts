@@ -143,7 +143,13 @@ const deserializeApplicationsOfChild = (
 export const getApplicationChildren = (): Promise<Result<CitizenChildren[]>> =>
   client
     .get<JsonOf<CitizenChildren[]>>('/citizen/applications/children')
-    .then((res) => Success.of(res.data))
+    .then(({ data }) =>
+      data.map((child) => ({
+        ...child,
+        dateOfBirth: LocalDate.parseIso(child.dateOfBirth)
+      }))
+    )
+    .then((data) => Success.of(data))
     .catch((e) => Failure.fromError(e))
 
 export async function createApplication(
