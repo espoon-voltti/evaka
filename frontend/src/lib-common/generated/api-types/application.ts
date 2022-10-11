@@ -340,10 +340,11 @@ export interface CitizenApplicationSummary {
 * Generated from fi.espoo.evaka.application.CitizenChildren
 */
 export interface CitizenChildren {
+  dateOfBirth: LocalDate
   firstName: string
   id: UUID
   lastName: string
-  socialSecurityNumber: string
+  socialSecurityNumber: string | null
 }
 
 /**

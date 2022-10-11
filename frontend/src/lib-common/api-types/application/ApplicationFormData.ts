@@ -114,15 +114,23 @@ export function apiDataToFormData(
   children: CitizenChildren[]
 ): ApplicationFormData {
   const vtjSiblings: VtjSibling[] = children
-    .filter(
-      (vtjChild) =>
-        vtjChild.socialSecurityNumber !==
-        application.form.child.person.socialSecurityNumber
+    .map(
+      ({ firstName, lastName, socialSecurityNumber }): VtjSibling | undefined =>
+        socialSecurityNumber
+          ? {
+              firstName,
+              lastName,
+              socialSecurityNumber,
+              selected: false
+            }
+          : undefined
     )
-    .map((child) => ({
-      ...child,
-      selected: false
-    }))
+    .filter(
+      (vtjChild): vtjChild is VtjSibling =>
+        !!vtjChild &&
+        vtjChild.socialSecurityNumber !==
+          application.form.child.person.socialSecurityNumber
+    )
 
   const vtjSiblingsSiblingBasis = vtjSiblings.map((sibling) => ({
     ...sibling,
