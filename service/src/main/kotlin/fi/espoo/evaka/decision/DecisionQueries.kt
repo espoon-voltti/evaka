@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.result.RowView
 import java.time.LocalDate
-import java.time.ZoneId
 
 // language=SQL
 private val decisionSelector =
@@ -75,6 +74,11 @@ private fun decisionFromResultSet(row: RowView): Decision = Decision(
 )
 
 fun Database.Read.getDecision(decisionId: DecisionId): Decision? {
+    return createQuery("$decisionSelector WHERE d.id = :id").bind("id", decisionId)
+        .map(::decisionFromResultSet).first()
+}
+
+fun Database.Read.getSentDecision(decisionId: DecisionId): Decision? {
     return createQuery("$decisionSelector WHERE d.id = :id AND d.sent_date IS NOT NULL").bind("id", decisionId)
         .map(::decisionFromResultSet).first()
 }
@@ -88,6 +92,16 @@ fun Database.Read.getDecisionsByChild(childId: ChildId, authorizedUnits: AclAuth
 }
 
 fun Database.Read.getDecisionsByApplication(applicationId: ApplicationId, authorizedUnits: AclAuthorization): List<Decision> {
+    val units = authorizedUnits.ids
+    val sql =
+        "$decisionSelector WHERE d.application_id = :id ${units?.let { " AND d.unit_id = ANY(:units)" } ?: ""}"
+    val query = createQuery(sql).bind("id", applicationId)
+    units?.let { query.bind("units", units) }
+
+    return query.map(::decisionFromResultSet).list()
+}
+
+fun Database.Read.getSentDecisionsByApplication(applicationId: ApplicationId, authorizedUnits: AclAuthorization): List<Decision> {
     val units = authorizedUnits.ids
     val sql =
         "$decisionSelector WHERE d.application_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id = ANY(:units)" } ?: ""}"
@@ -163,28 +177,39 @@ fun Database.Transaction.finalizeDecisions(
     applicationId: ApplicationId
 ): List<DecisionId> {
     // discard unplanned drafts
-    createUpdate(
-        //language=SQL
-        """
-            DELETE FROM decision WHERE sent_date IS NULL AND application_id = :applicationId AND planned = false
-        """.trimIndent()
-    )
+    createUpdate("DELETE FROM decision WHERE sent_date IS NULL AND application_id = :applicationId AND planned = false")
         .bind("applicationId", applicationId)
         .execute()
 
     // confirm planned drafts
-    return createQuery(
-        //language=SQL
-        """
-            UPDATE decision SET sent_date = :sentDate 
-            WHERE sent_date IS NULL AND application_id = :applicationId AND planned = true
-            RETURNING id
-        """.trimIndent()
-    )
+    return createQuery("SELECT id FROM decision WHERE application_id = :applicationId")
         .bind("applicationId", applicationId)
-        .bind("sentDate", LocalDate.now(ZoneId.of("Europe/Helsinki")))
         .mapTo<DecisionId>()
         .list()
+}
+
+fun Database.Transaction.markApplicationDecisionsSent(applicationId: ApplicationId, sentDate: LocalDate) {
+    createUpdate(
+        """
+UPDATE decision SET sent_date = :sentDate
+WHERE sent_date IS NULL AND application_id = :applicationId AND planned = true
+"""
+    )
+        .bind("applicationId", applicationId)
+        .bind("sentDate", sentDate)
+        .execute()
+}
+
+fun Database.Transaction.markDecisionSent(decisionId: DecisionId, sentDate: LocalDate) {
+    createUpdate(
+        """
+UPDATE decision SET sent_date = :sentDate
+WHERE sent_date IS NULL AND id = :decisionId AND planned = true
+"""
+    )
+        .bind("decisionId", decisionId)
+        .bind("sentDate", sentDate)
+        .execute()
 }
 
 fun Database.Transaction.insertDecision(

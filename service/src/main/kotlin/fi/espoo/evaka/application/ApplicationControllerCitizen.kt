@@ -9,9 +9,9 @@ import fi.espoo.evaka.decision.Decision
 import fi.espoo.evaka.decision.DecisionService
 import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
-import fi.espoo.evaka.decision.getDecision
-import fi.espoo.evaka.decision.getDecisionsByApplication
 import fi.espoo.evaka.decision.getOwnDecisions
+import fi.espoo.evaka.decision.getSentDecision
+import fi.espoo.evaka.decision.getSentDecisionsByApplication
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.shared.ApplicationId
@@ -308,7 +308,7 @@ class ApplicationControllerCitizen(
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.fetchApplicationDetails(applicationId) ?: throw NotFound("Application not found")
-                tx.getDecisionsByApplication(applicationId, AclAuthorization.All).map {
+                tx.getSentDecisionsByApplication(applicationId, AclAuthorization.All).map {
                     DecisionWithValidStartDatePeriod(it, it.validRequestedStartDatePeriod(featureConfig))
                 }
             }
@@ -366,7 +366,7 @@ class ApplicationControllerCitizen(
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Decision.DOWNLOAD_PDF, id)
 
         return db.connect { dbc ->
-            val decision = dbc.transaction { tx -> tx.getDecision(id) } ?: throw NotFound("Decision $id does not exist")
+            val decision = dbc.transaction { tx -> tx.getSentDecision(id) } ?: throw NotFound("Decision $id does not exist")
             decisionService.getDecisionPdf(dbc, decision)
         }.also {
             Audit.DecisionDownloadPdf.log(targetId = id)

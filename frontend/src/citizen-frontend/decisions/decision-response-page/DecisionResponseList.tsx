@@ -151,7 +151,7 @@ const sortDecisions = (
 ): DecisionWithValidStartDatePeriod[] =>
   orderBy(
     decisions,
-    ({ decision: { sentDate } }) => sentDate.toSystemTzDate(),
+    ({ decision: { sentDate } }) => sentDate?.toSystemTzDate(),
     'desc'
   )
 

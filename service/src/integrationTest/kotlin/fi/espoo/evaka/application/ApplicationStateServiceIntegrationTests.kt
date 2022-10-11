@@ -15,6 +15,7 @@ import fi.espoo.evaka.decision.DecisionStatus
 import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.fetchDecisionDrafts
 import fi.espoo.evaka.decision.getDecisionsByApplication
+import fi.espoo.evaka.decision.getSentDecisionsByApplication
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.data.getIncomesForPerson
@@ -1097,7 +1098,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val decisionsByApplication = it.getDecisionsByApplication(applicationId, AclAuthorization.All)
             assertEquals(1, decisionsByApplication.size)
             val decision = decisionsByApplication.first()
-            assertNotNull(decision.sentDate)
+            if (!manualMailing) {
+                assertNotNull(decision.sentDate)
+            }
             assertNotNull(decision.documentKey)
 
             if (secondDecisionTo == null) {
@@ -1150,7 +1153,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
 
-            val decisions = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
+            val decisions = tx.getSentDecisionsByApplication(applicationId, AclAuthorization.All)
             assertEquals(0, decisions.size)
         }
     }
@@ -1187,7 +1190,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
-            val decisions = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
+            val decisions = tx.getSentDecisionsByApplication(applicationId, AclAuthorization.All)
             assertEquals(0, decisions.size)
         }
     }
@@ -1303,7 +1306,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
             assertEquals(2, decisionDrafts.size)
 
-            val decisionsByApplication = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
+            val decisionsByApplication = tx.getSentDecisionsByApplication(applicationId, AclAuthorization.All)
             assertEquals(0, decisionsByApplication.size)
 
             val messages = MockSfiMessagesClient.getMessages()

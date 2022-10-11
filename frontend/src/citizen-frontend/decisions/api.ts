@@ -50,7 +50,7 @@ export async function getApplicationDecisions(
           ...decision,
           startDate: LocalDate.parseIso(decision.startDate),
           endDate: LocalDate.parseIso(decision.endDate),
-          sentDate: LocalDate.parseIso(decision.sentDate),
+          sentDate: LocalDate.parseNullableIso(decision.sentDate),
           requestedStartDate: LocalDate.parseNullableIso(
             decision.requestedStartDate
           ),

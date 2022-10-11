@@ -35,6 +35,7 @@ import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.clearDecisionDrafts
 import fi.espoo.evaka.decision.fetchDecisionDrafts
 import fi.espoo.evaka.decision.getDecisionsByApplication
+import fi.espoo.evaka.decision.markApplicationDecisionsSent
 import fi.espoo.evaka.decision.markDecisionAccepted
 import fi.espoo.evaka.decision.markDecisionRejected
 import fi.espoo.evaka.identity.ExternalIdentifier
@@ -441,6 +442,7 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_MAILING)
         tx.updateApplicationStatus(application.id, WAITING_CONFIRMATION)
+        tx.markApplicationDecisionsSent(application.id, clock.today())
         Audit.ApplicationConfirmDecisionsMailed.log(targetId = applicationId)
     }
 
