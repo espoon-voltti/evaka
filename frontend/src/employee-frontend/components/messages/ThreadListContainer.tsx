@@ -130,6 +130,7 @@ export default React.memo(function ThreadListContainer({
         type: message.type,
         title: message.threadTitle,
         urgent: message.urgent,
+        isCopy: false,
         participants: message.recipientNames,
         children: [],
         messages: [
@@ -153,6 +154,7 @@ export default React.memo(function ThreadListContainer({
       value.map((message) => ({
         ...message,
         id: message.threadId,
+        isCopy: true,
         participants: [message.recipientName],
         children: [],
         messages: [

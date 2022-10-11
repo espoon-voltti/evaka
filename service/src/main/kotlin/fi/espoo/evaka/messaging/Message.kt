@@ -39,6 +39,7 @@ data class MessageThread(
     val type: MessageType,
     val title: String,
     val urgent: Boolean,
+    val isCopy: Boolean,
     val children: List<MessageChild>,
     @Json
     val messages: List<Message>,

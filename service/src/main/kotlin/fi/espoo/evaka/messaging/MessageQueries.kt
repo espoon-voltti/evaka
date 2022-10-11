@@ -226,6 +226,7 @@ private data class ReceivedThread(
     val title: String,
     val type: MessageType,
     val urgent: Boolean,
+    val isCopy: Boolean,
     @Json
     val children: List<MessageChild>,
 )
@@ -240,6 +241,7 @@ SELECT
     t.title,
     t.message_type AS type,
     t.urgent,
+    t.is_copy,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object(
             'childId', mtc.child_id,
@@ -277,6 +279,7 @@ SELECT
     t.title,
     t.message_type AS type,
     t.urgent,
+    t.is_copy,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object(
             'childId', mtc.child_id,
@@ -364,6 +367,7 @@ private fun combineThreadsAndMessages(accountId: MessageAccountId, threads: Page
                     type = thread.type,
                     title = thread.title,
                     urgent = thread.urgent,
+                    isCopy = thread.isCopy,
                     children = thread.children,
                     messages = messages,
                 )
