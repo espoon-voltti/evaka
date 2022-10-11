@@ -38,7 +38,7 @@ import { faPlus } from 'lib-icons'
 import GroupSelector from '../tab-calendar/GroupSelector'
 
 type PersonArrivalData = {
-  arrivalDate: LocalDate
+  arrivalDate: LocalDate | null
   arrivalTime: string
   name: string
   groupId: UUID | null
@@ -78,7 +78,8 @@ const validateForm = (
           attendanceId: null,
           departed: null,
           arrived: HelsinkiDateTime.fromLocal(
-            formData.arrivalDate,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            formData.arrivalDate!,
             LocalTime.parse(formData.arrivalTime, 'HH:mm')
           ),
           name: formData.name,
@@ -145,7 +146,7 @@ export const AddPersonModal = React.memo(function AddPersonModal({
               onChange={(date) =>
                 setFormData((prev) => ({
                   ...prev,
-                  arrivalDate: date || prev.arrivalDate
+                  arrivalDate: date
                 }))
               }
               data-qa="add-person-arrival-date-picker"
