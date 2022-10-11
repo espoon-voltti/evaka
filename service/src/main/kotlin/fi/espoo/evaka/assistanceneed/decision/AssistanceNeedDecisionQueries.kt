@@ -339,7 +339,7 @@ fun Database.Read.getAssistanceNeedDecisionsForCitizen(
         """
         WITH children AS (
             SELECT child_id FROM guardian WHERE guardian_id = :userId
-            UNION ALL
+            UNION
             SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
         )
         SELECT ad.id, ad.child_id, validity_period, status, decision_made, assistance_levels,
@@ -413,7 +413,7 @@ fun Database.Read.getAssistanceNeedDecisionsUnreadCountsForCitizen(
         """
         WITH children AS (
             SELECT child_id FROM guardian WHERE guardian_id = :userId
-            UNION ALL
+            UNION
             SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
         )
         SELECT ad.child_id, COUNT(ad.child_id) as count

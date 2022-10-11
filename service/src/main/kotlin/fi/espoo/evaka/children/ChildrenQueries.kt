@@ -13,7 +13,7 @@ fun Database.Read.getChildrenByParent(id: PersonId, today: LocalDate): List<Chil
         """
 WITH children AS (
     SELECT child_id FROM guardian WHERE guardian_id = :userId
-    UNION ALL
+    UNION
     SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
 )
 SELECT

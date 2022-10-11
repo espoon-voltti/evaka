@@ -98,13 +98,14 @@ private fun Database.Read.countUnreadDocumentsByUser(today: LocalDate, userId: P
         """
 WITH children AS (
     SELECT child_id FROM guardian WHERE guardian_id = :userId
-    UNION ALL
+    UNION
     SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
 ), ready_documents AS (
     SELECT pd.id, pd.child_id
-    FROM pedagogical_document pd
+    FROM children c
+    JOIN pedagogical_document pd ON c.child_id = pd.child_id
     LEFT JOIN attachment a ON a.pedagogical_document_id = pd.id
-    WHERE pd.child_id IN (SELECT child_id FROM children) AND LENGTH(pd.description) > 0 OR a.id IS NOT NULL
+    WHERE (LENGTH(pd.description) > 0 OR a.id IS NOT NULL)
 )
 SELECT d.child_id, count(*) as unread_count
 FROM ready_documents d
