@@ -19,7 +19,7 @@ import { Gap } from 'lib-components/white-space'
 
 import { TimeBasedStatusChip } from '../TimeBasedStatusChip'
 
-import { DailyServiceTimesModificationForm } from './DailyServiceTimesForms'
+import { DailyServiceTimesEditForm } from './DailyServiceTimesForms'
 
 export default React.memo(function DailyServiceTimesRow({
   times,
@@ -46,6 +46,10 @@ export default React.memo(function DailyServiceTimesRow({
 
   const toggleOpen = useCallback(() => setIsOpen(!isOpen), [isOpen])
 
+  const today = LocalDate.todayInHelsinkiTz()
+  const hasStarted = !times.validityPeriod.start.isAfter(today)
+  const hasEnded = times.validityPeriod.end?.isBefore(today)
+
   return (
     <>
       <ClickableTr onClick={toggleOpen} data-qa="daily-service-times-row">
@@ -63,7 +67,7 @@ export default React.memo(function DailyServiceTimesRow({
         </Td>
         <Td minimalWidth topBorder borderStyle="dashed" verticalAlign="middle">
           <FixedSpaceRow alignItems="center" spacing="s">
-            {permittedActions.includes('UPDATE') && (
+            {!hasEnded && !isEditing && permittedActions.includes('UPDATE') ? (
               <IconButton
                 icon={faPen}
                 data-qa="daily-service-times-row-edit"
@@ -73,8 +77,10 @@ export default React.memo(function DailyServiceTimesRow({
                 }}
                 aria-label={i18n.common.edit}
               />
-            )}
-            {permittedActions.includes('DELETE') && (
+            ) : null}
+            {!hasStarted &&
+            !isEditing &&
+            permittedActions.includes('DELETE') ? (
               <IconButton
                 icon={faTrash}
                 data-qa="daily-service-times-row-delete"
@@ -84,7 +90,7 @@ export default React.memo(function DailyServiceTimesRow({
                 }}
                 aria-label={i18n.common.remove}
               />
-            )}
+            ) : null}
           </FixedSpaceRow>
         </Td>
         <Td minimalWidth topBorder borderStyle="dashed" verticalAlign="middle">
@@ -140,7 +146,7 @@ export default React.memo(function DailyServiceTimesRow({
             horizontalPadding="zero"
             verticalPadding="zero"
           >
-            <DailyServiceTimesModificationForm
+            <DailyServiceTimesEditForm
               id={id}
               onClose={(shouldRefresh) => {
                 onEdit(false)
@@ -169,7 +175,7 @@ const weekdays = [
   'sunday'
 ] as const
 
-const DailyServiceTimesReadOnly = React.memo(
+export const DailyServiceTimesReadOnly = React.memo(
   function DailyServiceTimesReadOnly({
     times
   }: {

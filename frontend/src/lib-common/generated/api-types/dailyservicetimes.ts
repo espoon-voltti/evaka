@@ -29,6 +29,13 @@ export interface DailyServiceTimes {
 }
 
 /**
+* Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController.DailyServiceTimesEndDate
+*/
+export interface DailyServiceTimesEndDate {
+  endDate: LocalDate | null
+}
+
+/**
 * Generated from fi.espoo.evaka.dailyservicetimes.DailyServiceTimesController.DailyServiceTimesResponse
 */
 export interface DailyServiceTimesResponse {

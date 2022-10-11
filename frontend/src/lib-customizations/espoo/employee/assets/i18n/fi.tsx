@@ -638,7 +638,9 @@ export const fi = {
         required: 'Pakollinen tieto'
       },
       dailyServiceTime: 'Päivittäinen varhaiskasvatusaika',
+      validityPeriod: 'Päivittäinen varhaiskasvatusaika voimassa',
       validFrom: 'Päivittäinen varhaiskasvatusaika voimassa alkaen',
+      validUntil: 'Päivittäisen varhaiskasvatusajan voimassaolo päättyy',
       createNewTimes: 'Luo uusi päivittäinen varhaiskasvatusaika',
       deleteModal: {
         title: 'Poistetaanko varhaiskasvatusaika?',

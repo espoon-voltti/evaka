@@ -8,7 +8,8 @@ import React, { useCallback, useMemo, useState } from 'react'
 
 import {
   createChildDailyServiceTimes,
-  putChildDailyServiceTimes
+  setChildDailyServiceTimesEndDate,
+  updateChildDailyServiceTimes
 } from 'employee-frontend/api/child/daily-service-times'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { Failure } from 'lib-common/api'
@@ -20,7 +21,7 @@ import DateRange from 'lib-common/date-range'
 import { ErrorKey, required, time, validate } from 'lib-common/form-validation'
 import { DailyServiceTimesType } from 'lib-common/generated/enums'
 import LocalDate from 'lib-common/local-date'
-import { OmitInUnion, UUID } from 'lib-common/types'
+import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -32,10 +33,14 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { Label } from 'lib-components/typography'
+import { Label, LabelLike } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
-interface IntervalFormData {
+import { DailyServiceTimesReadOnly } from './DailyServiceTimesRow'
+
+interface FormState {
+  startDate: LocalDate | null
+  endDate: LocalDate | null
   type?: DailyServiceTimesType
   regularTimes: TimeRange
   monday: TimeRange
@@ -47,20 +52,27 @@ interface IntervalFormData {
   sunday: TimeRange
 }
 
-interface CreationFormData extends IntervalFormData {
+type ValidationResult =
+  | { type: 'valid'; data: ValidFormData }
+  | { type: 'error'; errors: ValidationErrors }
+
+interface ValidFormData {
   validityPeriod: DateRange
+  type: DailyServiceTimesType
+  regularTimes: TimeRange
+  monday: TimeRange
+  tuesday: TimeRange
+  wednesday: TimeRange
+  thursday: TimeRange
+  friday: TimeRange
+  saturday: TimeRange
+  sunday: TimeRange
 }
 
-type ModificationFormData = IntervalFormData
-
-interface RangeValidationResult {
-  start?: ErrorKey
-  end?: ErrorKey
-}
-
-interface ValidationResult {
+interface ValidationErrors {
   type?: ErrorKey
-  validityPeriod?: ErrorKey
+  startDate?: ErrorKey
+  endDate?: ErrorKey
   regularTimes?: RangeValidationResult
   monday?: RangeValidationResult
   tuesday?: RangeValidationResult
@@ -69,6 +81,71 @@ interface ValidationResult {
   friday?: RangeValidationResult
   saturday?: RangeValidationResult
   sunday?: RangeValidationResult
+}
+
+interface RangeValidationResult {
+  start?: ErrorKey
+  end?: ErrorKey
+}
+
+function validateFormData(formData: FormState): ValidationResult {
+  const commonFieldsResult = {
+    type: validate(formData.type, required),
+    startDate: validate(formData.startDate, required)
+  }
+
+  let validationErrors: ValidationErrors
+  if (formData.type === 'REGULAR') {
+    validationErrors = {
+      ...commonFieldsResult,
+      regularTimes: validateTimeRange(formData.regularTimes, true)
+    }
+  } else if (formData.type === 'IRREGULAR') {
+    validationErrors = {
+      ...commonFieldsResult,
+      monday: validateTimeRange(formData.monday),
+      tuesday: validateTimeRange(formData.tuesday),
+      wednesday: validateTimeRange(formData.wednesday),
+      thursday: validateTimeRange(formData.thursday),
+      friday: validateTimeRange(formData.friday),
+      saturday: validateTimeRange(formData.saturday),
+      sunday: validateTimeRange(formData.sunday)
+    }
+  } else {
+    validationErrors = commonFieldsResult
+  }
+
+  const hasValidationErrors = Object.values(validationErrors).some(
+    (value: ErrorKey | RangeValidationResult | undefined) =>
+      typeof value !== 'undefined' &&
+      (typeof value === 'string' ||
+        typeof value.end !== 'undefined' ||
+        typeof value.start !== 'undefined')
+  )
+
+  if (
+    !hasValidationErrors &&
+    formData.startDate !== null &&
+    formData.type !== undefined
+  ) {
+    return {
+      type: 'valid',
+      data: {
+        validityPeriod: new DateRange(formData.startDate, formData.endDate),
+        type: formData.type,
+        regularTimes: formData.regularTimes,
+        monday: formData.monday,
+        tuesday: formData.tuesday,
+        wednesday: formData.wednesday,
+        thursday: formData.thursday,
+        friday: formData.friday,
+        saturday: formData.saturday,
+        sunday: formData.sunday
+      }
+    }
+  } else {
+    return { type: 'error', errors: validationErrors }
+  }
 }
 
 function validateTimeRange(
@@ -108,27 +185,18 @@ const emptyTimeRange = {
   end: ''
 }
 
-function requireOrThrow<T>(value: T | undefined): T {
-  if (typeof value === 'undefined') {
-    throw Error('Value is undefined')
-  }
-
-  return value
-}
-
-function formDataToRequest(
-  formData: IntervalFormData
-): OmitInUnion<DailyServiceTimesValue, 'validityPeriod'> {
-  const type = requireOrThrow(formData.type)
-
-  switch (type) {
+function formDataToRequest(formData: ValidFormData): DailyServiceTimesValue {
+  const validityPeriod = formData.validityPeriod
+  switch (formData.type) {
     case 'REGULAR':
       return {
+        validityPeriod,
         type: 'REGULAR',
         regularTimes: formData.regularTimes
       }
     case 'IRREGULAR':
       return {
+        validityPeriod,
         type: 'IRREGULAR',
         ...mapValues(pick(formData, weekdays), (tr) =>
           !tr.start || !tr.end ? null : tr
@@ -136,23 +204,24 @@ function formDataToRequest(
       }
     case 'VARIABLE_TIME':
       return {
+        validityPeriod,
         type: 'VARIABLE_TIME'
       }
   }
 }
 
+export interface CreateProps {
+  onClose: (shouldRefresh: boolean) => void
+  childId: UUID
+}
+
 export const DailyServiceTimesCreationForm = React.memo(
-  function DailyServiceTimesCreationForm({
-    onClose,
-    childId
-  }: {
-    onClose: (shouldRefresh: boolean) => void
-    childId: UUID
-  }) {
+  function DailyServiceTimesCreationForm({ onClose, childId }: CreateProps) {
     const { i18n, lang } = useTranslation()
 
-    const [formData, setFormData] = useState<CreationFormData>({
-      validityPeriod: new DateRange(LocalDate.todayInHelsinkiTz(), null),
+    const [formData, setFormData] = useState<FormState>({
+      startDate: LocalDate.todayInHelsinkiTz().addDays(1),
+      endDate: null,
       regularTimes: emptyTimeRange,
       monday: emptyTimeRange,
       tuesday: emptyTimeRange,
@@ -164,9 +233,9 @@ export const DailyServiceTimesCreationForm = React.memo(
     })
 
     const updateField = useCallback(
-      <K extends keyof CreationFormData>(
+      <K extends keyof FormState>(
         fieldName: K,
-        value: CreationFormData[K] | undefined
+        value: FormState[K] | undefined
       ) =>
         setFormData({
           ...formData,
@@ -175,48 +244,13 @@ export const DailyServiceTimesCreationForm = React.memo(
       [formData]
     )
 
-    const validationResult = useMemo<ValidationResult>(() => {
-      const commonFieldsResult = {
-        type: validate(formData.type, required),
-        validityPeriod: validate(formData.validityPeriod, required)
-      }
-
-      switch (formData.type) {
-        case 'REGULAR':
-          return {
-            ...commonFieldsResult,
-            regularTimes: validateTimeRange(formData.regularTimes, true)
-          }
-        case 'IRREGULAR':
-          return {
-            ...commonFieldsResult,
-            monday: validateTimeRange(formData.monday),
-            tuesday: validateTimeRange(formData.tuesday),
-            wednesday: validateTimeRange(formData.wednesday),
-            thursday: validateTimeRange(formData.thursday),
-            friday: validateTimeRange(formData.friday),
-            saturday: validateTimeRange(formData.saturday),
-            sunday: validateTimeRange(formData.sunday)
-          }
-      }
-
-      return commonFieldsResult
-    }, [formData])
-
-    const noValidationErrors = useMemo(
-      () =>
-        Object.values(validationResult).every(
-          (value: ErrorKey | RangeValidationResult | undefined) =>
-            typeof value === 'undefined' ||
-            (typeof value !== 'string' &&
-              typeof value.end === 'undefined' &&
-              typeof value.start === 'undefined')
-        ),
-      [validationResult]
+    const validationResult = useMemo(
+      () => validateFormData(formData),
+      [formData]
     )
 
     const sendCreationRequest = useCallback(() => {
-      if (!noValidationErrors) {
+      if (validationResult.type !== 'valid') {
         return Promise.resolve(
           Failure.of({
             message: 'Invalid form data'
@@ -224,11 +258,11 @@ export const DailyServiceTimesCreationForm = React.memo(
         )
       }
 
-      return createChildDailyServiceTimes(childId, {
-        ...formDataToRequest(formData),
-        validityPeriod: formData.validityPeriod
-      })
-    }, [formData, noValidationErrors, childId])
+      return createChildDailyServiceTimes(
+        childId,
+        formDataToRequest(validationResult.data)
+      )
+    }, [childId, validationResult])
 
     return (
       <form>
@@ -237,18 +271,11 @@ export const DailyServiceTimesCreationForm = React.memo(
         </div>
         <div>
           <DatePicker
-            date={formData.validityPeriod?.start ?? null}
-            onChange={(periodStart) =>
-              periodStart
-                ? updateField(
-                    'validityPeriod',
-                    new DateRange(periodStart, null)
-                  )
-                : updateField('validityPeriod', undefined)
-            }
+            date={formData.startDate}
+            onChange={(startDate) => updateField('startDate', startDate)}
             errorTexts={i18n.validationErrors}
             locale={lang}
-            minDate={LocalDate.todayInHelsinkiTz()}
+            minDate={LocalDate.todayInHelsinkiTz().addDays(1)}
             hideErrorsBeforeTouched
             data-qa="daily-service-times-validity-period-start"
           />
@@ -282,19 +309,48 @@ export const DailyServiceTimesCreationForm = React.memo(
   }
 )
 
-export const DailyServiceTimesModificationForm = React.memo(
-  function DailyServiceTimesModificationForm({
+export interface EditProps {
+  onClose: (shouldRefresh: boolean) => void
+  id: UUID
+  initialData: DailyServiceTimesValue
+}
+
+export const DailyServiceTimesEditForm = React.memo(
+  function DailyServiceTimesEditForm({ onClose, id, initialData }: EditProps) {
+    const hasStarted = !initialData.validityPeriod.start.isAfter(
+      LocalDate.todayInHelsinkiTz()
+    )
+    if (hasStarted) {
+      return (
+        <DailyServiceTimesEditEndForm
+          onClose={onClose}
+          id={id}
+          initialData={initialData}
+        />
+      )
+    } else {
+      return (
+        <DailyServiceTimesEditFullForm
+          onClose={onClose}
+          id={id}
+          initialData={initialData}
+        />
+      )
+    }
+  }
+)
+
+const DailyServiceTimesEditFullForm = React.memo(
+  function DailyServiceTimesEditFullForm({
     onClose,
     id,
     initialData
-  }: {
-    onClose: (shouldRefresh: boolean) => void
-    id: UUID
-    initialData: DailyServiceTimesValue
-  }) {
-    const { i18n } = useTranslation()
+  }: EditProps) {
+    const { i18n, lang } = useTranslation()
 
-    const [formData, setFormData] = useState<ModificationFormData>({
+    const [formData, setFormData] = useState<FormState>({
+      startDate: initialData.validityPeriod.start,
+      endDate: initialData.validityPeriod.end,
       type: initialData.type,
       regularTimes: emptyTimeRange,
       monday: emptyTimeRange,
@@ -320,47 +376,25 @@ export const DailyServiceTimesModificationForm = React.memo(
         : {})
     })
 
-    const validationResult = useMemo<ValidationResult>(() => {
-      const commonFieldsResult = {
-        type: validate(formData.type, required)
-      }
+    const validationResult = useMemo(
+      () => validateFormData(formData),
+      [formData]
+    )
 
-      switch (formData.type) {
-        case 'REGULAR':
-          return {
-            ...commonFieldsResult,
-            regularTimes: validateTimeRange(formData.regularTimes, true)
-          }
-        case 'IRREGULAR':
-          return {
-            ...commonFieldsResult,
-            monday: validateTimeRange(formData.monday),
-            tuesday: validateTimeRange(formData.tuesday),
-            wednesday: validateTimeRange(formData.wednesday),
-            thursday: validateTimeRange(formData.thursday),
-            friday: validateTimeRange(formData.friday),
-            saturday: validateTimeRange(formData.saturday),
-            sunday: validateTimeRange(formData.sunday)
-          }
-      }
-
-      return commonFieldsResult
-    }, [formData])
-
-    const noValidationErrors = useMemo(
-      () =>
-        Object.values(validationResult).every(
-          (value: ErrorKey | RangeValidationResult | undefined) =>
-            typeof value === 'undefined' ||
-            (typeof value !== 'string' &&
-              typeof value.end === 'undefined' &&
-              typeof value.start === 'undefined')
-        ),
-      [validationResult]
+    const updateField = useCallback(
+      <K extends keyof FormState>(
+        fieldName: K,
+        value: FormState[K] | undefined
+      ) =>
+        setFormData({
+          ...formData,
+          [fieldName]: value
+        }),
+      [formData]
     )
 
     const sendModificationRequest = useCallback(() => {
-      if (!noValidationErrors) {
+      if (validationResult.type !== 'valid') {
         return Promise.resolve(
           Failure.of({
             message: 'Invalid form data'
@@ -368,14 +402,42 @@ export const DailyServiceTimesModificationForm = React.memo(
         )
       }
 
-      return putChildDailyServiceTimes(id, {
-        ...formDataToRequest(formData),
-        validityPeriod: initialData.validityPeriod
-      })
-    }, [noValidationErrors, id, formData, initialData.validityPeriod])
+      return updateChildDailyServiceTimes(
+        id,
+        formDataToRequest(validationResult.data)
+      )
+    }, [id, validationResult])
 
     return (
       <form>
+        <div>
+          <Label>
+            {i18n.childInformation.dailyServiceTimes.validityPeriod}
+          </Label>
+        </div>
+        <div>
+          <DatePicker
+            date={formData.startDate}
+            onChange={(startDate) => updateField('startDate', startDate)}
+            errorTexts={i18n.validationErrors}
+            locale={lang}
+            minDate={LocalDate.todayInHelsinkiTz().addDays(1)}
+            maxDate={formData.endDate ?? undefined}
+            hideErrorsBeforeTouched
+            data-qa="daily-service-times-validity-period-start"
+          />
+          {' - '}
+          <DatePicker
+            date={formData.endDate}
+            onChange={(endDate) => updateField('endDate', endDate)}
+            errorTexts={i18n.validationErrors}
+            locale={lang}
+            minDate={formData.startDate ?? undefined}
+            hideErrorsBeforeTouched
+            data-qa="daily-service-times-validity-period-end"
+          />
+        </div>
+        <Gap size="m" />
         <div>
           <Label>
             {i18n.childInformation.dailyServiceTimes.dailyServiceTime}
@@ -408,6 +470,61 @@ export const DailyServiceTimesModificationForm = React.memo(
               text={i18n.common.confirm}
               primary
               onClick={sendModificationRequest}
+              onSuccess={() => onClose(true)}
+              data-qa="modify-times-btn"
+            />
+          </FixedSpaceRow>
+        </FixedSpaceRow>
+      </form>
+    )
+  }
+)
+
+const DailyServiceTimesEditEndForm = React.memo(
+  function DailyServiceTimesEditEndForm({
+    id,
+    onClose,
+    initialData
+  }: EditProps) {
+    const { i18n, lang } = useTranslation()
+
+    const [endDate, setEndDate] = useState<LocalDate | null>(
+      initialData.validityPeriod.end
+    )
+
+    const save = useCallback(
+      async () => setChildDailyServiceTimesEndDate(id, { endDate }),
+      [id, endDate]
+    )
+
+    return (
+      <form>
+        <div>
+          <Label>{i18n.childInformation.dailyServiceTimes.validUntil}</Label>
+        </div>
+        <div>
+          <DatePicker
+            date={endDate}
+            onChange={setEndDate}
+            errorTexts={i18n.validationErrors}
+            locale={lang}
+            minDate={LocalDate.todayInHelsinkiTz().addDays(1)}
+            hideErrorsBeforeTouched
+            data-qa="daily-service-times-validity-period-end"
+          />
+        </div>
+        <Gap size="m" />
+        <LabelLike>
+          {i18n.childInformation.dailyServiceTimes.types[initialData.type]}
+        </LabelLike>
+        <DailyServiceTimesReadOnly times={initialData} />
+        <FixedSpaceRow justifyContent="flex-end">
+          <FixedSpaceRow spacing="s">
+            <Button text={i18n.common.cancel} onClick={() => onClose(false)} />
+            <AsyncButton
+              text={i18n.common.confirm}
+              primary
+              onClick={save}
               onSuccess={() => onClose(true)}
               data-qa="modify-times-btn"
             />
@@ -485,11 +602,19 @@ const DailyServiceTimesPicker = React.memo(function DailyServiceTimesPicker({
   onChange,
   validationResult
 }: {
-  formData: IntervalFormData
-  onChange: (value: Partial<IntervalFormData>) => void
+  formData: FormState
+  onChange: (value: Partial<FormState>) => void
   validationResult: ValidationResult
 }) {
   const { i18n } = useTranslation()
+
+  const fieldError = useCallback(
+    <K extends keyof ValidationErrors>(key: K): ValidationErrors[K] =>
+      validationResult.type === 'error'
+        ? validationResult.errors[key]
+        : undefined,
+    [validationResult]
+  )
 
   return (
     <FixedSpaceColumn>
@@ -510,7 +635,7 @@ const DailyServiceTimesPicker = React.memo(function DailyServiceTimesPicker({
             <TimeRangeInput
               value={formData.regularTimes}
               onChange={(range) => onChange({ regularTimes: range })}
-              error={validationResult.regularTimes}
+              error={fieldError('regularTimes')}
               dataQaPrefix="regular"
             />
           </FixedSpaceRow>
@@ -550,7 +675,7 @@ const DailyServiceTimesPicker = React.memo(function DailyServiceTimesPicker({
                           [wd]: value
                         })
                       }
-                      error={validationResult[wd]}
+                      error={fieldError(wd)}
                       dataQaPrefix={wd}
                     />
                   </Td>
