@@ -70,7 +70,7 @@ export const sv = {
         enhancedAssistance: 'Intensifierat stöd',
         specialAssistance: 'Särskilt stöd'
       },
-      startDate: 'Beslutet angående är i kraft',
+      startDate: 'Stödet är i kraft fr.o.m.',
       startDateIndefiniteInfo:
         'Beslutet träder i kraft från angivet startdatum.',
       startDateInfo:

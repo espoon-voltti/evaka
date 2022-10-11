@@ -793,7 +793,7 @@ export const fi = {
         enhancedAssistance: 'Tehostettu tuki',
         specialAssistance: 'Erityinen tuki'
       },
-      startDate: 'Päätös voimassa alkaen',
+      startDate: 'Tuki voimassa alkaen',
       startDateIndefiniteInfo:
         'Päätös on voimassa toistaiseksi alkamispäivästä alkaen.',
       startDateInfo:
