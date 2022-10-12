@@ -7,10 +7,20 @@ import { Link } from 'react-router-dom'
 
 import { IncomeStatementAwaitingHandler } from 'lib-common/api-types/incomeStatement'
 import { formatDate } from 'lib-common/date'
+import { IncomeStatementSortParam } from 'lib-common/generated/api-types/incomestatement'
+import { SortDirection } from 'lib-common/generated/api-types/invoicing'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Pagination from 'lib-components/Pagination'
 import { Container, ContentArea } from 'lib-components/layout/Container'
-import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
+import {
+  SortableTh,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr
+} from 'lib-components/layout/Table'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H1 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -22,12 +32,34 @@ import { renderResult } from '../async-rendering'
 
 import IncomeStatementFilters from './IncomeStatementFilters'
 
+const pageSize = 50
+
 function IncomeStatementsList({
-  data
+  data,
+  sortBy,
+  setSortBy,
+  sortDirection,
+  setSortDirection
 }: {
   data: IncomeStatementAwaitingHandler[]
+  sortBy: IncomeStatementSortParam
+  setSortBy: (sortBy: IncomeStatementSortParam) => void
+  sortDirection: SortDirection
+  setSortDirection: (sortDirection: SortDirection) => void
 }) {
   const { i18n } = useTranslation()
+
+  const isSorted = (column: IncomeStatementSortParam) =>
+    sortBy === column ? sortDirection : undefined
+
+  const toggleSort = (column: IncomeStatementSortParam) => () => {
+    if (sortBy === column) {
+      setSortDirection(sortDirection === 'ASC' ? 'DESC' : 'ASC')
+    } else {
+      setSortBy(column)
+      setSortDirection('ASC')
+    }
+  }
 
   return (
     <Table>
@@ -35,8 +67,18 @@ function IncomeStatementsList({
         <Tr>
           <Th>{i18n.incomeStatement.table.customer}</Th>
           <Th>{i18n.incomeStatement.table.area}</Th>
-          <Th>{i18n.incomeStatement.table.created}</Th>
-          <Th>{i18n.incomeStatement.table.startDate}</Th>
+          <SortableTh
+            sorted={isSorted('CREATED')}
+            onClick={toggleSort('CREATED')}
+          >
+            {i18n.incomeStatement.table.created}
+          </SortableTh>
+          <SortableTh
+            sorted={isSorted('START_DATE')}
+            onClick={toggleSort('START_DATE')}
+          >
+            {i18n.incomeStatement.table.startDate}
+          </SortableTh>
           <Th>{i18n.incomeStatement.table.type}</Th>
         </Tr>
       </Thead>
@@ -71,15 +113,23 @@ export default React.memo(function IncomeStatementsPage() {
   const { i18n } = useTranslation()
 
   const [page, setPage] = useState(1)
-  const pageSize = 50
+  const [sortBy, setSortBy] = useState<IncomeStatementSortParam>('CREATED')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
 
   const {
     incomeStatements: { searchFilters }
   } = useContext(InvoicingUiContext)
 
   const [incomeStatements] = useApiState(
-    () => getIncomeStatementsAwaitingHandler(page, pageSize, searchFilters),
-    [page, searchFilters]
+    () =>
+      getIncomeStatementsAwaitingHandler(
+        page,
+        pageSize,
+        sortBy,
+        sortDirection,
+        searchFilters
+      ),
+    [page, sortBy, sortDirection, searchFilters]
   )
 
   return (
@@ -94,7 +144,13 @@ export default React.memo(function IncomeStatementsPage() {
           <FixedSpaceRow justifyContent="flex-end">
             {i18n.common.resultCount(total)}
           </FixedSpaceRow>
-          <IncomeStatementsList data={data} />
+          <IncomeStatementsList
+            data={data}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            sortDirection={sortDirection}
+            setSortDirection={setSortDirection}
+          />
           <Gap size="s" />
           {pages > 1 && (
             <Pagination

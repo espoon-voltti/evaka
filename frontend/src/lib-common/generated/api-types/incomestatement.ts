@@ -8,6 +8,7 @@
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { ProviderType } from './daycare'
+import { SortDirection } from './invoicing'
 import { UUID } from '../../types'
 
 /**
@@ -33,6 +34,13 @@ export interface IncomeStatementAwaitingHandler {
 }
 
 /**
+* Generated from fi.espoo.evaka.incomestatement.IncomeStatementSortParam
+*/
+export type IncomeStatementSortParam =
+  | 'CREATED'
+  | 'START_DATE'
+
+/**
 * Generated from fi.espoo.evaka.incomestatement.IncomeStatementType
 */
 export type IncomeStatementType =
@@ -50,6 +58,8 @@ export interface SearchIncomeStatementsRequest {
   providerTypes: ProviderType[] | null
   sentEndDate: LocalDate | null
   sentStartDate: LocalDate | null
+  sortBy: IncomeStatementSortParam | null
+  sortDirection: SortDirection | null
 }
 
 /**
