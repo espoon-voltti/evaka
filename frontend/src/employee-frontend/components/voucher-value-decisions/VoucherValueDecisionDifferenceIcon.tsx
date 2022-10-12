@@ -58,7 +58,7 @@ export const VoucherValueDecisionDifferenceIcon = (props: IconProps) => {
         content={props.item.labelShort}
         color={theme.colors.main.m1}
         size="L"
-        onClick={(_) =>
+        onClick={() =>
           props.toggle !== undefined
             ? props.toggle(props.item.value)
             : undefined
