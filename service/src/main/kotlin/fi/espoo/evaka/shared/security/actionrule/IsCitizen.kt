@@ -208,6 +208,20 @@ WHERE g.guardian_id = :guardianId
             .bind("guardianId", guardianId)
     }
 
+    fun fosterParentOfChildOfPedagogicalDocumentOfAttachment() = rule { userId, now ->
+        QueryFragment<AttachmentId>(
+            """
+SELECT a.id
+FROM attachment a
+JOIN pedagogical_document pd ON a.pedagogical_document_id = pd.id
+JOIN foster_parent fp ON pd.child_id = fp.child_id
+WHERE fp.parent_id = :userId AND fp.valid_during @> :today
+            """.trimIndent()
+        )
+            .bind("today", now.toLocalDate())
+            .bind("userId", userId)
+    }
+
     fun guardianOfChildOfVasu() = rule { citizenId, _ ->
         QueryFragment<VasuDocumentId>(
             """
