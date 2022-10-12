@@ -1340,7 +1340,7 @@ const sv: Translations = {
           enhancedAssistance: 'Intensifierat stöd',
           specialAssistance: 'Särskilt stöd'
         },
-        startDate: 'Beslutet angående är i kraft',
+        startDate: 'Stödet är i kraft fr.o.m.',
         endDate: 'Beslutet i kraft till',
         endDateServices: 'Beslutet angående stödtjänster i kraft till',
         selectedUnit: 'Enheten där stödet ges',

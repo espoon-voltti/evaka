@@ -1327,7 +1327,7 @@ export default {
           enhancedAssistance: 'Tehostettu tuki',
           specialAssistance: 'Erityinen tuki'
         },
-        startDate: 'Päätös voimassa alkaen',
+        startDate: 'Tuki voimassa alkaen',
         endDate: 'Päätös voimassa saakka',
         endDateServices: 'Päätös voimassa tukipalveluiden osalta saakka',
         selectedUnit: 'Päätökselle valittu varhaiskasvatusyksikkö',
