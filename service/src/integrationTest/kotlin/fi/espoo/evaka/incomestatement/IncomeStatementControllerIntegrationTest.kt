@@ -11,6 +11,7 @@ import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AttachmentId
@@ -192,12 +193,12 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         )
     }
 
-    private fun createTestIncomeStatement(personId: PersonId): IncomeStatement {
+    private fun createTestIncomeStatement(personId: PersonId, startDate: LocalDate? = null): IncomeStatement {
         val id = db.transaction { tx ->
             tx.createIncomeStatement(
                 personId,
                 IncomeStatementBody.HighestFee(
-                    startDate = LocalDate.now(),
+                    startDate = startDate ?: LocalDate.now(),
                     endDate = null,
                 )
             )
@@ -558,6 +559,83 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         )
     }
 
+    @Test
+    fun `list income statements awaiting handler - sent date sort`() {
+        val placementId1 = PlacementId(UUID.randomUUID())
+        val placementId2 = PlacementId(UUID.randomUUID())
+        val placementStart = LocalDate.now().minusDays(30)
+        val placementEnd = LocalDate.now().plusDays(30)
+        db.transaction { tx ->
+            tx.insertTestParentship(citizenId, testChild_1.id, startDate = placementStart, endDate = placementEnd)
+            tx.insertTestPlacement(
+                id = placementId1,
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = placementStart,
+                endDate = placementEnd,
+                type = PlacementType.PRESCHOOL_DAYCARE
+            )
+
+            tx.insertTestParentship(testAdult_2.id, testChild_2.id, startDate = placementStart, endDate = placementEnd)
+            tx.insertTestPlacement(
+                id = placementId2,
+                childId = testChild_2.id,
+                unitId = testDaycare.id,
+                startDate = placementStart,
+                endDate = placementEnd,
+                type = PlacementType.PRESCHOOL_DAYCARE
+            )
+        }
+
+        val incomeStatement1 = createTestIncomeStatement(citizenId, startDate = LocalDate.of(2022, 10, 12))
+        val incomeStatement2 = createTestIncomeStatement(testAdult_2.id, startDate = LocalDate.of(2022, 10, 13))
+
+        val newCreated = HelsinkiDateTime.now().minusDays(2)
+
+        db.transaction {
+            it.createUpdate("UPDATE income_statement SET created = :newCreated")
+                .bind("newCreated", newCreated)
+                .execute()
+        }
+
+        val expected1 = IncomeStatementAwaitingHandler(
+            id = incomeStatement1.id,
+            created = newCreated,
+            startDate = incomeStatement1.startDate,
+            type = IncomeStatementType.HIGHEST_FEE,
+            personId = citizenId,
+            personName = "Doe John",
+            primaryCareArea = "Test Area"
+        )
+        val expected2 = IncomeStatementAwaitingHandler(
+            id = incomeStatement2.id,
+            created = newCreated,
+            startDate = incomeStatement2.startDate,
+            type = IncomeStatementType.HIGHEST_FEE,
+            personId = testAdult_2.id,
+            personName = "Doe Joan",
+            primaryCareArea = "Test Area"
+        )
+        assertEquals(
+            Paged(listOf(expected1, expected2), 2, 1),
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(
+                    sortBy = IncomeStatementSortParam.START_DATE,
+                    sortDirection = SortDirection.ASC,
+                )
+            )
+        )
+        assertEquals(
+            Paged(listOf(expected2, expected1), 2, 1),
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(
+                    sortBy = IncomeStatementSortParam.START_DATE,
+                    sortDirection = SortDirection.DESC,
+                )
+            )
+        )
+    }
+
     private fun getIncomeStatement(id: IncomeStatementId): IncomeStatement =
         http.get("/income-statements/person/$citizenId/$id")
             .asUser(employee)
@@ -584,7 +662,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     }
 
     private fun getIncomeStatementsAwaitingHandler(
-        body: SearchIncomeStatementsRequest = SearchIncomeStatementsRequest(1, 50, emptyList(), emptyList(), null, null)
+        body: SearchIncomeStatementsRequest = SearchIncomeStatementsRequest(1, 50, null, null, emptyList(), emptyList(), null, null)
     ): Paged<IncomeStatementAwaitingHandler> =
         http.post("/income-statements/awaiting-handler")
             .asUser(employee)

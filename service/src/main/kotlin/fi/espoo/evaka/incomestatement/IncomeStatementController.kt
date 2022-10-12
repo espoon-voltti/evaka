@@ -6,6 +6,7 @@ package fi.espoo.evaka.incomestatement
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.Paged
@@ -137,7 +138,9 @@ class IncomeStatementController(
                     body.sentStartDate,
                     body.sentEndDate,
                     body.page,
-                    body.pageSize
+                    body.pageSize,
+                    body.sortBy ?: IncomeStatementSortParam.CREATED,
+                    body.sortDirection ?: SortDirection.ASC,
                 )
             }
         }.also {
@@ -166,8 +169,15 @@ class IncomeStatementController(
 data class SearchIncomeStatementsRequest(
     val page: Int = 1,
     val pageSize: Int = 50,
+    val sortBy: IncomeStatementSortParam? = null,
+    val sortDirection: SortDirection? = null,
     val areas: List<String>? = emptyList(),
     val providerTypes: List<ProviderType>? = emptyList(),
     val sentStartDate: LocalDate? = null,
     val sentEndDate: LocalDate? = null,
 )
+
+enum class IncomeStatementSortParam {
+    CREATED,
+    START_DATE,
+}

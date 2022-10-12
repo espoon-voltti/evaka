@@ -11,8 +11,10 @@ import {
 } from 'lib-common/api-types/incomeStatement'
 import {
   ChildBasicInfo,
+  IncomeStatementSortParam,
   SetIncomeStatementHandledBody
 } from 'lib-common/generated/api-types/incomestatement'
+import { SortDirection } from 'lib-common/generated/api-types/invoicing'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
@@ -43,6 +45,8 @@ export async function getIncomeStatements(
 export async function getIncomeStatementsAwaitingHandler(
   page: number,
   pageSize: number,
+  sortBy: IncomeStatementSortParam,
+  sortDirection: SortDirection,
   searchFilters: IncomeStatementSearchFilters
 ): Promise<Result<Paged<IncomeStatementAwaitingHandler>>> {
   return client
@@ -57,7 +61,9 @@ export async function getIncomeStatementsAwaitingHandler(
         sentStartDate: searchFilters.sentStartDate?.formatIso(),
         sentEndDate: searchFilters.sentEndDate?.formatIso(),
         page: page,
-        pageSize
+        pageSize,
+        sortBy,
+        sortDirection
       }
     )
     .then((res) => res.data)
