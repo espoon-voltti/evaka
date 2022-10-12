@@ -11,14 +11,13 @@ import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.QueryBuilder
-import fi.espoo.evaka.shared.db.QueryFunction
+import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.utils.toEnumSet
 import java.util.EnumSet
 
-private typealias Filter<T> = QueryBuilder<T>.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryBuilder.Sql
+private typealias Filter<T> = QuerySql.Builder<T>.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql<T>
 
 data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule {
     init {
@@ -44,7 +43,7 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule {
                 sql(
                     """
                     SELECT id
-                    FROM (${subquery { filter(ctx.user, ctx.now) }}) fragment
+                    FROM (${subquery { filter(ctx.user, ctx.now) } }) fragment
                     WHERE id = ANY(${bind(targets.map {it.raw })})
                     """.trimIndent()
                 )
@@ -57,12 +56,12 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule {
             else -> emptyMap()
         }
 
-        override fun filterForParams(
+        override fun queryWithParams(
             ctx: DatabaseActionRule.QueryContext,
             params: HasGlobalRole
-        ): QueryFunction<T>? = when (ctx.user) {
+        ): QuerySql<T>? = when (ctx.user) {
             is AuthenticatedUser.Employee -> if (ctx.user.globalRoles.any { params.oneOf.contains(it) }) {
-                { filter(ctx.user, ctx.now) }
+                QuerySql.of { filter(ctx.user, ctx.now) }
             } else {
                 null
             }

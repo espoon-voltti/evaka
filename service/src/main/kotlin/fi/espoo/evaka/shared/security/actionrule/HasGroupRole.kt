@@ -9,8 +9,7 @@ import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.QueryBuilder
-import fi.espoo.evaka.shared.db.QueryFunction
+import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -18,7 +17,7 @@ import fi.espoo.evaka.shared.utils.emptyEnumSet
 import fi.espoo.evaka.shared.utils.toEnumSet
 import java.util.EnumSet
 
-private typealias GetGroupRoles = QueryBuilder<IdRoleFeatures>.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryBuilder.Sql
+private typealias GetGroupRoles = QuerySql.Builder<IdRoleFeatures>.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql<IdRoleFeatures>
 
 data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<PilotFeature>) {
     init {
@@ -52,12 +51,12 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
                 .mapValues { (_, queryResult) -> Deferred(queryResult) }
             else -> emptyMap()
         }
-        override fun filterForParams(
+        override fun queryWithParams(
             ctx: DatabaseActionRule.QueryContext,
             params: HasGroupRole
-        ): QueryFunction<T>? = when (ctx.user) {
-            is AuthenticatedUser.Employee -> (
-                {
+        ): QuerySql<T>? = when (ctx.user) {
+            is AuthenticatedUser.Employee ->
+                QuerySql.of {
                     sql(
                         """
                     SELECT id
@@ -67,7 +66,6 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
                         """.trimIndent()
                     )
                 }
-                )
             else -> null
         }
     }

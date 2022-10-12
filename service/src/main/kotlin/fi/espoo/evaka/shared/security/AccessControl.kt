@@ -11,7 +11,7 @@ import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
-import fi.espoo.evaka.shared.db.QueryFunction
+import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
@@ -152,7 +152,7 @@ class AccessControl(
         val queryCtx = DatabaseActionRule.QueryContext(tx, user, clock.now())
         val unscopedEvaluator = UnscopedEvaluator(queryCtx)
         val scopedEvaluator = ScopedEvaluator<T>(queryCtx)
-        val filters: MutableList<QueryFunction<T>> = mutableListOf()
+        val filters: MutableList<QuerySql<T>> = mutableListOf()
         val rules = actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }
         for (rule in rules) {
             when (rule) {
@@ -165,7 +165,7 @@ class AccessControl(
                     is AccessControlDecision.Permitted -> return AccessControlFilter.PermitAll
                     AccessControlDecision.PermittedToAdmin -> return AccessControlFilter.PermitAll
                 }
-                is DatabaseActionRule.Scoped<in T, *> -> scopedEvaluator.filterForParams(rule)?.let { filter ->
+                is DatabaseActionRule.Scoped<in T, *> -> scopedEvaluator.queryWithParams(rule)?.let { filter ->
                     filters += filter
                 }
             }
@@ -173,9 +173,11 @@ class AccessControl(
         return if (filters.isEmpty()) {
             null
         } else {
-            AccessControlFilter.Some {
-                sql(filters.joinToString(separator = "UNION ALL") { "(${subquery { it() }})" })
-            }
+            AccessControlFilter.Some(
+                QuerySql.of {
+                    sql(filters.joinToString(separator = " UNION ALL ") { "(${subquery(it)})" })
+                }
+            )
         }
     }
 
@@ -251,11 +253,10 @@ class AccessControl(
             val deferreds = cache.getOrPut(query) { query.executeWithTargets(queryCtx, targets) }
             return targets.asSequence().map { target -> target to (deferreds[target]?.evaluate(rule.params) ?: AccessControlDecision.None) }
         }
-        fun filterForParams(rule: DatabaseActionRule.Scoped<in T, *>): QueryFunction<T>? {
+        fun queryWithParams(rule: DatabaseActionRule.Scoped<in T, *>): QuerySql<T>? {
             @Suppress("UNCHECKED_CAST")
             val query = rule.query as DatabaseActionRule.Scoped.Query<in T, Any>
-            @Suppress("UNCHECKED_CAST")
-            return query.filterForParams(queryCtx, rule.params) as QueryFunction<T>?
+            return query.queryWithParams(queryCtx, rule.params)
         }
     }
     enum class PinError {

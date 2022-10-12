@@ -126,10 +126,10 @@ class Database(private val jdbi: Jdbi) {
      */
     open class Read internal constructor(val handle: Handle) {
         fun createQuery(@Language("sql") sql: String): Query = Query(handle.createQuery(sql))
-        fun <Tag> createQuery(f: QueryBuilder<Tag>.() -> QueryBuilder.Sql): Query =
-            createQuery(QueryBuilder<Tag>().apply { f(this) }.build())
-        fun createQuery(fragment: QueryBuilder.Fragment<*>): Query {
-            val raw = handle.createQuery(fragment.sql)
+        fun <Tag> createQuery(f: QuerySql.Builder<Tag>.() -> QuerySql<Tag>): Query =
+            createQuery(QuerySql.Builder<Tag>().run { f(this) })
+        fun createQuery(fragment: QuerySql<*>): Query {
+            val raw = handle.createQuery(fragment.sql.toString())
             for ((idx, binding) in fragment.bindings.withIndex()) {
                 raw.bindByType(idx, binding.value, binding.type)
             }
@@ -322,19 +322,18 @@ data class ValueBinding<T>(val value: T, val type: QualifiedType<T>) {
     }
 }
 
-typealias QueryFunction<Tag> = QueryBuilder<Tag>.() -> QueryBuilder.Sql
+@JvmInline
+value class QuerySqlString(@Language("sql") private val sql: String) {
+    override fun toString(): String = sql
+}
 
-fun <Tag> query(f: QueryBuilder<Tag>.() -> QueryBuilder.Sql): QueryBuilder.Fragment<Tag> =
-    QueryBuilder<Tag>().apply { f(this) }.build()
+@JvmInline
+value class PredicateSqlString(@Language("sql", prefix = "WHERE ") private val sql: String) {
+    override fun toString(): String = sql
+}
 
-/**
- * A builder for SQL, including bound parameter values.
- *
- * This is *very dynamic* and has almost no compile-time checks, but the phantom type parameter `Tag` can be used to
- * assign some type to a query for documentation purpose and to prevent mixing different types of queries.
- */
 open class SqlBuilder {
-    protected var bindings: MutableList<ValueBinding<out Any?>> = mutableListOf()
+    protected var bindings: List<ValueBinding<out Any?>> = listOf()
 
     inline fun <reified T> bind(value: T, qualifiers: Array<out KClass<out Annotation>> = defaultQualifiers<T>()): Binding =
         bind(ValueBinding.of(value, qualifiers))
@@ -344,12 +343,11 @@ open class SqlBuilder {
         return Binding
     }
 
-    fun <Sub> subquery(f: QueryBuilder<Sub>.() -> QueryBuilder.Sql): SubquerySql =
-        subquery(QueryBuilder<Sub>().apply { f(this) }.build())
+    fun <Sub> subquery(f: QuerySql.Builder<Sub>.() -> QuerySql<Sub>): QuerySqlString = subquery(QuerySql.of { f() })
 
-    fun <Sub> subquery(fragment: QueryBuilder.Fragment<Sub>): SubquerySql {
+    fun <Sub> subquery(fragment: QuerySql<Sub>): QuerySqlString {
         this.bindings += fragment.bindings
-        return SubquerySql(fragment.sql)
+        return fragment.sql
     }
 
     /**
@@ -357,19 +355,6 @@ open class SqlBuilder {
      */
     object Binding {
         override fun toString(): String = "?"
-    }
-
-    /**
-     * A marker type used for subqueries that can be used in a template string
-     */
-    @JvmInline
-    value class SubquerySql(@Language("sql") private val sql: String) {
-        override fun toString(): String = sql
-    }
-
-    @JvmInline
-    value class PredicateSql(@Language("sql", prefix = "WHERE ") private val sql: String) {
-        override fun toString(): String = sql
     }
 }
 
@@ -379,76 +364,43 @@ open class SqlBuilder {
  * This is *very dynamic* and has almost no compile-time checks, but the phantom type parameter `Tag` can be used to
  * assign some type to a query for documentation purpose and to prevent mixing different types of queries.
  */
-class QueryBuilder<Tag> : SqlBuilder() {
-    @Language("sql")
-    private var sql: String? = null
-
-    fun sql(@Language("sql") sql: String): Sql {
-        check(this.sql == null) { "SQL for builder has been already set" }
-        this.sql = sql
-        return Sql
-    }
-
-    fun sql(fragment: Fragment<*>): Sql {
-        this.sql(fragment.sql)
-        this.bindings.addAll(fragment.bindings)
-        return Sql
-    }
-
-    fun build(): Fragment<Tag> = Fragment(
-        checkNotNull(sql) { "SQL was not set for builder (missing call to the sql function?)" },
-        bindings.toList()
-    )
-
-    fun tablePredicate(tablePrefix: String, predicate: Predicate<Tag>): PredicateSql {
-        val fragment = PredicateBuilder<Tag>().apply { (predicate.f)(tablePrefix) }.build()
-        bindings += fragment.bindings
-        return PredicateSql(fragment.sql)
-    }
-
-    class Fragment<@Suppress("unused")
-        in Tag>(
-        @Language("sql") val sql: String,
-        val bindings: List<ValueBinding<out Any?>>
-    )
-
-    /**
-     * A marker type used to get a compile-time error when the sql function is not called correctly
-     */
-    object Sql
-}
-
-fun <Tag> predicate(f: PredicateBuilder<Tag>.(tablePrefix: String) -> PredicateBuilder.Sql) = Predicate(f)
-
-class Predicate<Tag>(val f: PredicateBuilder<Tag>.(tablePrefix: String) -> PredicateBuilder.Sql) {
+class QuerySql<@Suppress("unused")
+    in Tag>(val sql: QuerySqlString, val bindings: List<ValueBinding<out Any?>>) {
     companion object {
-        fun <Tag> alwaysTrue(): Predicate<Tag> = predicate { sql("TRUE") }
+        fun <Tag> of(f: Builder<Tag>.() -> QuerySql<Tag>): QuerySql<Tag> = Builder<Tag>().run { f(this) }
+    }
+
+    class Builder<Tag> : SqlBuilder() {
+        private var used: Boolean = false
+        fun sql(@Language("sql") sql: String): QuerySql<Tag> {
+            check(!used) { "builder has already been used" }
+            this.used = true
+            return QuerySql(QuerySqlString(sql), bindings)
+        }
+
+        fun tablePredicate(tablePrefix: String, predicate: Predicate<Tag>): PredicateSqlString {
+            val fragment = PredicateSql.Builder<Tag>().run { (predicate.f)(tablePrefix) }
+            this.bindings += fragment.bindings
+            return fragment.sql
+        }
     }
 }
 
-class PredicateBuilder<Tag> : SqlBuilder() {
-    @Language("sql", prefix = "WHERE ")
-    private var sql: String? = null
-
-    fun sql(@Language("sql", prefix = "WHERE ") sql: String): Sql {
-        check(this.sql == null) { "SQL for builder has been already set" }
-        this.sql = sql
-        return Sql
+class Predicate<Tag>(val f: PredicateSql.Builder<Tag>.(tablePrefix: String) -> PredicateSql<Tag>) {
+    companion object {
+        fun <Tag> alwaysTrue(): Predicate<Tag> = of { sql("TRUE") }
+        fun <Tag> of(f: PredicateSql.Builder<Tag>.(tablePrefix: String) -> PredicateSql<Tag>) = Predicate(f)
     }
+}
 
-    fun build(): Fragment<Tag> = Fragment(
-        checkNotNull(sql) { "SQL was not set for builder (missing call to the sql function?)" },
-        bindings.toList()
-    )
-
-    class Fragment<@Suppress("unused")
-        in Tag>(
-        @Language("sql", prefix = "WHERE ") val sql: String,
-        val bindings: List<ValueBinding<out Any?>>
-    )
-
-    /**
-     * A marker type used to get a compile-time error when the sql function is not called correctly
-     */
-    object Sql
+class PredicateSql<@Suppress("unused")
+    in Tag>(val sql: PredicateSqlString, val bindings: List<ValueBinding<out Any?>>) {
+    class Builder<Tag> : SqlBuilder() {
+        private var used: Boolean = false
+        fun sql(@Language("sql", prefix = "WHERE ") sql: String): PredicateSql<Tag> {
+            check(!used) { "builder has already been used" }
+            this.used = true
+            return PredicateSql(PredicateSqlString(sql), bindings)
+        }
+    }
 }

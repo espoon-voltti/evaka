@@ -17,8 +17,7 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
-import fi.espoo.evaka.shared.db.predicate
-import fi.espoo.evaka.shared.db.query
+import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
@@ -74,7 +73,7 @@ data class DaycareFields(
 
 data class DaycareGroupSummary(val id: GroupId, val name: String, val endDate: LocalDate?)
 
-fun daycaresQuery(predicate: Predicate<DatabaseTable.Daycare>) = query {
+fun daycaresQuery(predicate: Predicate<DatabaseTable.Daycare>) = QuerySql.of {
     sql(
         """
 SELECT
@@ -158,13 +157,7 @@ WHERE id = ANY(:ids)
     .toList()
 
 fun Database.Read.getDaycare(id: DaycareId): Daycare? =
-    createQuery(
-        daycaresQuery(
-            predicate { prefix ->
-                sql("$prefix.id = ${bind(id)}")
-            }
-        )
-    )
+    createQuery(daycaresQuery(Predicate.of { prefix -> sql("$prefix.id = ${bind(id)}") }))
         .mapTo<Daycare>()
         .firstOrNull()
 

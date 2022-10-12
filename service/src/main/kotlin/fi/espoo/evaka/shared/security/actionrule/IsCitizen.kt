@@ -20,12 +20,11 @@ import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
-import fi.espoo.evaka.shared.db.QueryBuilder
-import fi.espoo.evaka.shared.db.QueryFunction
+import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 
-private typealias FilterByCitizen<T> = QueryBuilder<T>.(personId: PersonId, now: HelsinkiDateTime) -> QueryBuilder.Sql
+private typealias FilterByCitizen<T> = QuerySql.Builder<T>.(personId: PersonId, now: HelsinkiDateTime) -> QuerySql<T>
 
 data class IsCitizen(val allowWeakLogin: Boolean) {
     fun isPermittedAuthLevel(authLevel: CitizenAuthLevel) = authLevel == CitizenAuthLevel.STRONG || allowWeakLogin
@@ -54,12 +53,12 @@ data class IsCitizen(val allowWeakLogin: Boolean) {
             else -> emptyMap()
         }
 
-        override fun filterForParams(
+        override fun queryWithParams(
             ctx: DatabaseActionRule.QueryContext,
             params: IsCitizen
-        ): QueryFunction<T>? = when (ctx.user) {
+        ): QuerySql<T>? = when (ctx.user) {
             is AuthenticatedUser.Citizen -> if (params.isPermittedAuthLevel(ctx.user.authLevel)) {
-                { filter(ctx.user.id, ctx.now) }
+                QuerySql.of { filter(ctx.user.id, ctx.now) }
             } else {
                 null
             }
@@ -95,11 +94,11 @@ data class IsCitizen(val allowWeakLogin: Boolean) {
                 else -> emptyMap()
             }
 
-            override fun filterForParams(
+            override fun queryWithParams(
                 ctx: DatabaseActionRule.QueryContext,
                 params: IsCitizen
-            ): QueryFunction<PersonId>? = when (ctx.user) {
-                is AuthenticatedUser.Citizen -> ({ sql("SELECT ${bind(ctx.user.id)} AS id") })
+            ): QuerySql<PersonId>? = when (ctx.user) {
+                is AuthenticatedUser.Citizen -> QuerySql.of { sql("SELECT ${bind(ctx.user.id)} AS id") }
                 else -> null
             }
 

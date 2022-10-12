@@ -16,12 +16,11 @@ import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.MobileAuthLevel
-import fi.espoo.evaka.shared.db.QueryBuilder
-import fi.espoo.evaka.shared.db.QueryFunction
+import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 
-private typealias FilterByMobile<T> = QueryBuilder<T>.(mobileId: MobileDeviceId, now: HelsinkiDateTime) -> QueryBuilder.Sql
+private typealias FilterByMobile<T> = QuerySql.Builder<T>.(mobileId: MobileDeviceId, now: HelsinkiDateTime) -> QuerySql<T>
 
 data class IsMobile(val requirePinLogin: Boolean) {
     fun isPermittedAuthLevel(authLevel: MobileAuthLevel) = when (authLevel) {
@@ -53,12 +52,12 @@ data class IsMobile(val requirePinLogin: Boolean) {
             else -> emptyMap()
         }
 
-        override fun filterForParams(
+        override fun queryWithParams(
             ctx: DatabaseActionRule.QueryContext,
             params: IsMobile
-        ): QueryFunction<T>? = when (ctx.user) {
+        ): QuerySql<T>? = when (ctx.user) {
             is AuthenticatedUser.MobileDevice -> if (params.isPermittedAuthLevel(ctx.user.authLevel)) {
-                { filter(ctx.user.id, ctx.now) }
+                QuerySql.of { filter(ctx.user.id, ctx.now) }
             } else {
                 null
             }

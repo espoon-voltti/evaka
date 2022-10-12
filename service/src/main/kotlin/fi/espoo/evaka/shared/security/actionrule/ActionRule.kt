@@ -10,8 +10,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
-import fi.espoo.evaka.shared.db.QueryFunction
-import fi.espoo.evaka.shared.db.predicate
+import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -81,7 +80,7 @@ object DatabaseActionRule {
 
         interface Query<T, P> {
             fun executeWithTargets(ctx: QueryContext, targets: Set<T>): Map<T, Deferred<P>>
-            fun filterForParams(ctx: QueryContext, params: P): QueryFunction<T>?
+            fun queryWithParams(ctx: QueryContext, params: P): QuerySql<T>?
             override fun hashCode(): Int
             override fun equals(other: Any?): Boolean
         }
@@ -101,12 +100,12 @@ internal data class RoleAndFeatures(val role: UserRole, val unitFeatures: Set<Pi
 
 sealed interface AccessControlFilter<out T> {
     object PermitAll : AccessControlFilter<Nothing>
-    data class Some<T>(val filter: QueryFunction<T>) : AccessControlFilter<T>
+    data class Some<T>(val filter: QuerySql<T>) : AccessControlFilter<T>
 }
 
 fun <T : DatabaseTable> AccessControlFilter<Id<T>>.toPredicate(): Predicate<T> = when (this) {
     AccessControlFilter.PermitAll -> Predicate.alwaysTrue()
-    is AccessControlFilter.Some<Id<T>> -> predicate { prefix ->
+    is AccessControlFilter.Some<Id<T>> -> Predicate.of { prefix ->
         sql("($prefix.id IN (${subquery(filter)}))")
     }
 }

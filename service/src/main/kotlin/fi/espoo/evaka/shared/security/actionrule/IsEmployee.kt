@@ -14,12 +14,11 @@ import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.db.QueryBuilder
-import fi.espoo.evaka.shared.db.QueryFunction
+import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 
-private typealias FilterByEmployee<T> = QueryBuilder<T>.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QueryBuilder.Sql
+private typealias FilterByEmployee<T> = QuerySql.Builder<T>.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql<T>
 
 object IsEmployee {
     private fun <T : Id<*>> rule(filter: FilterByEmployee<T>): DatabaseActionRule.Scoped<T, IsEmployee> =
@@ -46,11 +45,11 @@ object IsEmployee {
             else -> emptyMap()
         }
 
-        override fun filterForParams(
+        override fun queryWithParams(
             ctx: DatabaseActionRule.QueryContext,
             params: IsEmployee
-        ): QueryFunction<T>? = when (ctx.user) {
-            is AuthenticatedUser.Employee -> ({ filter(ctx.user, ctx.now) })
+        ): QuerySql<T>? = when (ctx.user) {
+            is AuthenticatedUser.Employee -> QuerySql.of { filter(ctx.user, ctx.now) }
             else -> null
         }
     }
@@ -77,11 +76,11 @@ object IsEmployee {
                 else -> emptyMap()
             }
 
-            override fun filterForParams(
+            override fun queryWithParams(
                 ctx: DatabaseActionRule.QueryContext,
                 params: IsEmployee
-            ): QueryFunction<EmployeeId>? = when (ctx.user) {
-                is AuthenticatedUser.Employee -> ({ sql("SELECT ${bind(ctx.user.id)} AS id") })
+            ): QuerySql<EmployeeId>? = when (ctx.user) {
+                is AuthenticatedUser.Employee -> QuerySql.of { sql("SELECT ${bind(ctx.user.id)} AS id") }
                 else -> null
             }
 
