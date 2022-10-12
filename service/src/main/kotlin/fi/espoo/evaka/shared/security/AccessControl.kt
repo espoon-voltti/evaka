@@ -26,26 +26,6 @@ class AccessControl(
     private val actionRuleMapping: ActionRuleMapping,
     private val jdbi: Jdbi
 ) {
-    fun getPermittedFeatures(tx: Database.Read, user: AuthenticatedUser.Employee, clock: EvakaClock): EmployeeFeatures {
-        return EmployeeFeatures(
-            applications = checkPermissionFor(tx, user, clock, Action.Global.APPLICATIONS_PAGE).isPermitted(),
-            employees = checkPermissionFor(tx, user, clock, Action.Global.EMPLOYEES_PAGE).isPermitted(),
-            financeBasics = checkPermissionFor(tx, user, clock, Action.Global.FINANCE_BASICS_PAGE).isPermitted(),
-            finance = checkPermissionFor(tx, user, clock, Action.Global.FINANCE_PAGE).isPermitted(),
-            holidayPeriods = checkPermissionFor(tx, user, clock, Action.Global.HOLIDAY_PERIODS_PAGE).isPermitted(),
-            messages = checkPermissionFor(tx, user, clock, Action.Global.MESSAGES_PAGE, allowedToAdmin = false).isPermitted(),
-            personSearch = checkPermissionFor(tx, user, clock, Action.Global.PERSON_SEARCH_PAGE).isPermitted(),
-            reports = checkPermissionFor(tx, user, clock, Action.Global.REPORTS_PAGE).isPermitted(),
-            settings = checkPermissionFor(tx, user, clock, Action.Global.SETTINGS_PAGE).isPermitted(),
-            unitFeatures = checkPermissionFor(tx, user, clock, Action.Global.UNIT_FEATURES_PAGE).isPermitted(),
-            units = checkPermissionFor(tx, user, clock, Action.Global.UNITS_PAGE).isPermitted(),
-            createUnits = checkPermissionFor(tx, user, clock, Action.Global.CREATE_UNIT).isPermitted(),
-            vasuTemplates = checkPermissionFor(tx, user, clock, Action.Global.VASU_TEMPLATES_PAGE).isPermitted(),
-            personalMobileDevice = checkPermissionFor(tx, user, clock, Action.Global.PERSONAL_MOBILE_DEVICE_PAGE).isPermitted(),
-            pinCode = checkPermissionFor(tx, user, clock, Action.Global.PIN_CODE_PAGE).isPermitted()
-        )
-    }
-
     fun requirePermissionFor(user: AuthenticatedUser, clock: EvakaClock, action: Action.UnscopedAction) = Database(jdbi).connect { dbc ->
         dbc.read { tx -> checkPermissionFor(tx, user, clock, action) }.assert()
     }
@@ -70,13 +50,24 @@ class AccessControl(
         return decision ?: AccessControlDecision.None
     }
 
-    fun getPermittedGlobalActions(tx: Database.Read, user: AuthenticatedUser, clock: EvakaClock): Set<Action.Global> {
-        val allActions = EnumSet.allOf(Action.Global::class.java)
+    inline fun <reified A> getPermittedActions(
+        tx: Database.Read,
+        user: AuthenticatedUser,
+        clock: EvakaClock
+    ) where A : Action.UnscopedAction, A : Enum<A> = getPermittedActions(tx, user, clock, A::class.java)
+
+    fun <A> getPermittedActions(
+        tx: Database.Read,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        actionClass: Class<A>
+    ): Set<A> where A : Action.UnscopedAction, A : Enum<A> {
+        val allActions = EnumSet.allOf(actionClass)
         if (user.isAdmin) {
-            return EnumSet.allOf(Action.Global::class.java)
+            return allActions
         }
 
-        val permittedActions = EnumSet.noneOf(Action.Global::class.java)
+        val permittedActions = EnumSet.noneOf(actionClass)
         val queryCache = UnscopedEvaluator(DatabaseActionRule.QueryContext(tx, user, clock.now()))
         fun isPermitted(rule: UnscopedActionRule): Boolean = when (rule) {
             is StaticActionRule -> rule.evaluate(user).isPermitted()
@@ -241,12 +232,12 @@ class AccessControl(
     }
 
     private class UnscopedEvaluator(private val queryCtx: DatabaseActionRule.QueryContext) {
-        private val cache = mutableMapOf<DatabaseActionRule.Unscoped.Query<out Any?>, DatabaseActionRule.Deferred<out Any>>()
+        private val cache = mutableMapOf<DatabaseActionRule.Unscoped.Query<out Any?>, DatabaseActionRule.Deferred<out Any>?>()
 
         fun <P : Any> evaluate(rule: DatabaseActionRule.Unscoped<P>): AccessControlDecision {
             @Suppress("UNCHECKED_CAST")
-            val deferred = cache.getOrPut(rule.query) { rule.query.execute(queryCtx) } as DatabaseActionRule.Deferred<P>
-            return deferred.evaluate(rule.params)
+            val deferred = cache.getOrPut(rule.query) { rule.query.execute(queryCtx) } as DatabaseActionRule.Deferred<P>?
+            return deferred?.evaluate(rule.params) ?: AccessControlDecision.None
         }
     }
     private class ScopedEvaluator<T>(private val queryCtx: DatabaseActionRule.QueryContext) {

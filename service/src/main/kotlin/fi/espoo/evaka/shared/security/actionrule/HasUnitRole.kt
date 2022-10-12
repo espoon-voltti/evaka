@@ -124,11 +124,9 @@ data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<P
     fun inAnyUnit() = DatabaseActionRule.Unscoped(
         this,
         object : DatabaseActionRule.Unscoped.Query<HasUnitRole> {
-            override fun execute(
-                ctx: DatabaseActionRule.QueryContext,
-            ): DatabaseActionRule.Deferred<HasUnitRole> = Deferred(
+            override fun execute(ctx: DatabaseActionRule.QueryContext): DatabaseActionRule.Deferred<HasUnitRole>? =
                 when (ctx.user) {
-                    is AuthenticatedUser.Employee ->
+                    is AuthenticatedUser.Employee -> Deferred(
                         ctx.tx.createQuery(
                             """
 SELECT role, enabled_pilot_features AS unit_features
@@ -140,9 +138,9 @@ WHERE employee_id = :userId
                             .bind("userId", ctx.user.id)
                             .mapTo<RoleAndFeatures>()
                             .toSet()
-                    else -> emptySet()
+                    )
+                    else -> null
                 }
-            )
             override fun equals(other: Any?): Boolean = other?.javaClass == this.javaClass
             override fun hashCode(): Int = this.javaClass.hashCode()
         }

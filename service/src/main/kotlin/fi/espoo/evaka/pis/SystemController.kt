@@ -92,7 +92,7 @@ class SystemController(private val personService: PersonService, private val acc
     @GetMapping("/system/employee/{id}")
     fun employeeUser(
         db: Database,
-        user: AuthenticatedUser.SystemInternalUser,
+        systemUser: AuthenticatedUser.SystemInternalUser,
         clock: EvakaClock,
         @PathVariable
         id: EmployeeId
@@ -100,14 +100,34 @@ class SystemController(private val personService: PersonService, private val acc
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.getEmployeeUser(id)?.let { employeeUser ->
+                    val user = AuthenticatedUser.Employee(employeeUser)
+                    val permittedGlobalActions = accessControl.getPermittedActions<Action.Global>(tx, user, clock)
+                    val accessibleFeatures = EmployeeFeatures(
+                        applications = permittedGlobalActions.contains(Action.Global.APPLICATIONS_PAGE),
+                        employees = permittedGlobalActions.contains(Action.Global.EMPLOYEES_PAGE),
+                        financeBasics = permittedGlobalActions.contains(Action.Global.FINANCE_BASICS_PAGE),
+                        finance = permittedGlobalActions.contains(Action.Global.FINANCE_PAGE),
+                        holidayPeriods = permittedGlobalActions.contains(Action.Global.HOLIDAY_PERIODS_PAGE),
+                        messages = accessControl.checkPermissionFor(tx, user, clock, Action.Global.MESSAGES_PAGE, allowedToAdmin = false).isPermitted(),
+                        personSearch = permittedGlobalActions.contains(Action.Global.PERSON_SEARCH_PAGE),
+                        reports = permittedGlobalActions.contains(Action.Global.REPORTS_PAGE),
+                        settings = permittedGlobalActions.contains(Action.Global.SETTINGS_PAGE),
+                        unitFeatures = permittedGlobalActions.contains(Action.Global.UNIT_FEATURES_PAGE),
+                        units = permittedGlobalActions.contains(Action.Global.UNITS_PAGE),
+                        createUnits = permittedGlobalActions.contains(Action.Global.CREATE_UNIT),
+                        vasuTemplates = permittedGlobalActions.contains(Action.Global.VASU_TEMPLATES_PAGE),
+                        personalMobileDevice = permittedGlobalActions.contains(Action.Global.PERSONAL_MOBILE_DEVICE_PAGE),
+                        pinCode = permittedGlobalActions.contains(Action.Global.PIN_CODE_PAGE),
+                    )
+
                     EmployeeUserResponse(
                         id = employeeUser.id,
                         firstName = employeeUser.preferredFirstName ?: employeeUser.firstName,
                         lastName = employeeUser.lastName,
                         globalRoles = employeeUser.globalRoles,
                         allScopedRoles = employeeUser.allScopedRoles,
-                        accessibleFeatures = accessControl.getPermittedFeatures(tx, AuthenticatedUser.Employee(employeeUser), clock),
-                        permittedGlobalActions = accessControl.getPermittedGlobalActions(tx, AuthenticatedUser.Employee(employeeUser), clock)
+                        accessibleFeatures = accessibleFeatures,
+                        permittedGlobalActions = permittedGlobalActions
                     )
                 }
             }

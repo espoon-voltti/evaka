@@ -41,7 +41,7 @@ object IsEmployee {
                     .mapTo<Id<DatabaseTable>>()
                     .toSet()
             }.let { matched ->
-                targets.filter { matched.contains(it) }.associateWith { Deferred }
+                targets.filter { matched.contains(it) }.associateWith { Permitted }
             }
             else -> emptyMap()
         }
@@ -59,8 +59,15 @@ object IsEmployee {
             else -> null
         }
     }
-    private object Deferred : DatabaseActionRule.Deferred<IsEmployee> {
+    private object Permitted : DatabaseActionRule.Deferred<IsEmployee> {
         override fun evaluate(params: IsEmployee): AccessControlDecision = AccessControlDecision.Permitted(params)
+    }
+
+    fun any() = object : StaticActionRule {
+        override fun evaluate(user: AuthenticatedUser): AccessControlDecision = when (user) {
+            is AuthenticatedUser.Employee -> AccessControlDecision.Permitted(this)
+            else -> AccessControlDecision.None
+        }
     }
 
     fun self() = object : DatabaseActionRule.Scoped<EmployeeId, IsEmployee> {
@@ -70,7 +77,8 @@ object IsEmployee {
                 ctx: DatabaseActionRule.QueryContext,
                 targets: Set<EmployeeId>
             ): Map<EmployeeId, DatabaseActionRule.Deferred<IsEmployee>> = when (ctx.user) {
-                is AuthenticatedUser.Employee -> targets.filter { it == ctx.user.id }.associateWith { Deferred }
+                is AuthenticatedUser.Employee -> targets.filter { it == ctx.user.id }
+                    .associateWith { Permitted }
                 else -> emptyMap()
             }
 
@@ -86,6 +94,33 @@ object IsEmployee {
             override fun hashCode(): Int = this.javaClass.hashCode()
         }
     }
+
+    fun ownerOfAnyMobileDevice() =
+        DatabaseActionRule.Unscoped(
+            this,
+            object : DatabaseActionRule.Unscoped.Query<IsEmployee> {
+                override fun execute(ctx: DatabaseActionRule.QueryContext): DatabaseActionRule.Deferred<IsEmployee>? =
+                    when (ctx.user) {
+                        is AuthenticatedUser.Employee -> ctx.tx.createQuery(
+                            """
+SELECT EXISTS (
+    SELECT 1
+    FROM mobile_device
+    WHERE employee_id = :userId
+)
+                            """.trimIndent()
+                        )
+                            .bind("userId", ctx.user.id)
+                            .mapTo<Boolean>()
+                            .single()
+                            .let { isPermitted -> if (isPermitted) Permitted else null }
+                        else -> null
+                    }
+
+                override fun hashCode(): Int = this.javaClass.hashCode()
+                override fun equals(other: Any?): Boolean = other?.javaClass == this.javaClass
+            }
+        )
 
     fun ownerOfMobileDevice() = rule { user, _ ->
         QueryFragment<MobileDeviceId>(
