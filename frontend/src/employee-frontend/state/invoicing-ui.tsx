@@ -25,7 +25,8 @@ import {
   PaymentDistinctiveParams,
   PaymentStatus,
   VoucherValueDecisionDistinctiveParams,
-  VoucherValueDecisionDifference
+  VoucherValueDecisionDifference,
+  FeeDecisionDifference
 } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -46,6 +47,7 @@ interface FeeDecisionSearchFilters {
   endDate: LocalDate | undefined
   searchByStartDate: boolean
   financeDecisionHandlerId: UUID | undefined
+  difference: FeeDecisionDifference[]
 }
 
 interface FeeDecisionSearchFilterState {
@@ -162,7 +164,8 @@ const defaultState: UiState = {
       startDate: undefined,
       endDate: LocalDate.todayInSystemTz(),
       searchByStartDate: false,
-      financeDecisionHandlerId: undefined
+      financeDecisionHandlerId: undefined,
+      difference: []
     },
     setSearchFilters: () => undefined,
     searchTerms: '',

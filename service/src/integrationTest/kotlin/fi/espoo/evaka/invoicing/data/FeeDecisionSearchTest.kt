@@ -13,6 +13,7 @@ import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionFixture
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionChild
+import fi.espoo.evaka.invoicing.domain.FeeDecisionDifference
 import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
@@ -362,7 +363,8 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
         startDate: LocalDate? = null,
         endDate: LocalDate? = null,
         searchByStartDate: Boolean = false,
-        financeDecisionHandlerId: EmployeeId? = null
+        financeDecisionHandlerId: EmployeeId? = null,
+        difference: Set<FeeDecisionDifference> = emptySet(),
     ) = db.read { tx ->
         tx.searchFeeDecisions(
             clock = clock,
@@ -378,7 +380,8 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
             startDate = startDate,
             endDate = endDate,
             searchByStartDate = searchByStartDate,
-            financeDecisionHandlerId = financeDecisionHandlerId
+            financeDecisionHandlerId = financeDecisionHandlerId,
+            difference = difference,
         ).let { result ->
             assertEquals(1, result.pages)
             assertEquals(result.total, result.data.size)

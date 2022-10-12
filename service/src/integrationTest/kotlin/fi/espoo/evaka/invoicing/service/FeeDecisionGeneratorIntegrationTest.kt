@@ -13,8 +13,10 @@ import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeDecision
+import fi.espoo.evaka.invoicing.domain.FeeDecisionDifference
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
+import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeCoefficient
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
@@ -44,6 +46,7 @@ import fi.espoo.evaka.shared.dev.DevFeeAlteration
 import fi.espoo.evaka.shared.dev.DevIncome
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
+import fi.espoo.evaka.shared.dev.insertTestFeeThresholds
 import fi.espoo.evaka.shared.dev.insertTestIncome
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
@@ -53,9 +56,11 @@ import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay25to35
+import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDaycareFullDayPartWeek25
 import fi.espoo.evaka.snDaycarePartDay25
 import fi.espoo.evaka.snDefaultDaycare
@@ -78,14 +83,18 @@ import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testChild_8
 import fi.espoo.evaka.testClub
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDaycareNotInvoiced
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toFeeDecisionServiceNeed
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -882,6 +891,444 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val decisions = getAllFeeDecisions()
         assertEquals(1, decisions.size)
         assertEquals(0, decisions.filter { it.status == FeeDecisionStatus.DRAFT }.size)
+    }
+
+    @Test
+    fun `head of family difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), subPeriod1)
+        insertFamilyRelations(testAdult_2.id, listOf(testChild_1.id), subPeriod2)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+
+        db.transaction { tx -> generator.generateNewDecisionsForChild(tx, clock, testChild_1.id, period.start) }
+
+        assertThat(getAllFeeDecisions())
+            .extracting({ it.validDuring }, { it.difference }, { it.headOfFamilyId })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), testAdult_1.id),
+                Tuple(subPeriod2, emptySet<FeeDecisionDifference>(), testAdult_2.id),
+            )
+    }
+
+    @Test
+    fun `partner difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertPartnership(testAdult_1.id, testAdult_2.id, subPeriod1)
+        insertPartnership(testAdult_1.id, testAdult_3.id, subPeriod2)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllFeeDecisions())
+            .extracting({ it.validDuring }, { it.difference }, { it.partnerId })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), testAdult_2.id),
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.GUARDIANS), testAdult_3.id),
+            )
+    }
+
+    @Test
+    fun `head of family & partner switch difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), subPeriod1)
+        insertFamilyRelations(testAdult_2.id, listOf(testChild_1.id), subPeriod2)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+        insertIncome(testAdult_1.id, 10000, period)
+        insertIncome(testAdult_2.id, 20000, period)
+
+        db.transaction { tx -> generator.generateNewDecisionsForChild(tx, clock, testChild_1.id, period.start) }
+
+        assertThat(getAllFeeDecisions())
+            .extracting({ it.validDuring }, { it.difference }, { it.headOfFamilyId })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), testAdult_1.id),
+                Tuple(subPeriod2, emptySet<FeeDecisionDifference>(), testAdult_2.id),
+            )
+    }
+
+    @Test
+    fun `head of family income difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertIncome(testAdult_1.id, 10000, subPeriod2)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllFeeDecisions())
+            .extracting({ it.validDuring }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<FeeDecisionDifference>()),
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.INCOME)),
+            )
+    }
+
+    @Test
+    fun `partner income difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+        insertIncome(testAdult_2.id, 10000, subPeriod2)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllFeeDecisions())
+            .extracting({ it.validDuring }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<FeeDecisionDifference>()),
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.INCOME)),
+            )
+    }
+
+    @Test
+    fun `child income difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertIncome(testChild_1.id, 10000, subPeriod2)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllFeeDecisions())
+            .extracting({ it.validDuring }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<FeeDecisionDifference>()),
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.INCOME)),
+            )
+    }
+
+    @Test
+    fun `family size difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), subPeriod2)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllFeeDecisions())
+            .extracting({ it.validDuring }, { it.difference }, { it.familySize })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), 2),
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.FAMILY_SIZE, FeeDecisionDifference.FEE_THRESHOLDS), 3),
+            )
+    }
+
+    @Test
+    fun `placement unit difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllFeeDecisions())
+            .extracting({ it.validDuring }, { it.difference }, { it.children.map { child -> child.placement.unitId } })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), listOf(testDaycare.id)),
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.PLACEMENT), listOf(testDaycare2.id)),
+            )
+    }
+
+    @Test
+    fun `placement type difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_1.id, subPeriod2, DAYCARE_PART_TIME, testDaycare.id)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllFeeDecisions())
+            .extracting({ it.validDuring }, { it.difference }, { it.children.map { child -> child.placement.type } })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), listOf(DAYCARE)),
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.PLACEMENT), listOf(DAYCARE_PART_TIME)),
+            )
+    }
+
+    @Test
+    fun `service need difference`() {
+        val period = FiniteDateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period.asDateRange())
+        val placementId = insertPlacement(testChild_1.id, period.asDateRange(), DAYCARE, testDaycare.id)
+        insertServiceNeed(placementId, subPeriod1, snDaycareFullDay35.id)
+        insertServiceNeed(placementId, subPeriod2, snDaycareFullDayPartWeek25.id)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllFeeDecisions())
+            .extracting({ it.validDuring }, { it.difference }, { it.children.map { child -> child.serviceNeed } })
+            .containsExactlyInAnyOrder(
+                Tuple(
+                    subPeriod1.asDateRange(),
+                    emptySet<FeeDecisionDifference>(),
+                    listOf(snDaycareFullDay35.toFeeDecisionServiceNeed()),
+                ),
+                Tuple(
+                    subPeriod2.asDateRange(),
+                    setOf(FeeDecisionDifference.SERVICE_NEED),
+                    listOf(snDaycareFullDayPartWeek25.toFeeDecisionServiceNeed()),
+                ),
+            )
+    }
+
+    @Test
+    fun `sibling discount difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_2.id), period)
+        insertPlacement(testChild_2.id, period, DAYCARE, testDaycare.id)
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare.id)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllFeeDecisions())
+            .extracting(
+                { it.validDuring },
+                { it.difference },
+                {
+                    it.children.map { child -> Pair(child.child.dateOfBirth, child.siblingDiscount) }
+                        .sortedBy { pair -> pair.first }
+                }
+            )
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), listOf(Pair(testChild_2.dateOfBirth, 0))),
+                Tuple(
+                    subPeriod2,
+                    setOf(FeeDecisionDifference.CHILDREN, FeeDecisionDifference.SIBLING_DISCOUNT),
+                    listOf(Pair(testChild_2.dateOfBirth, 50), Pair(testChild_1.dateOfBirth, 0)),
+                ),
+            )
+    }
+
+    @Test
+    fun `fee alterations difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertFeeAlteration(testChild_1.id, 50.0, subPeriod2)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllFeeDecisions())
+            .extracting({ it.validDuring }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<FeeDecisionDifference>()),
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.FEE_ALTERATIONS)),
+            )
+    }
+
+    @Test
+    fun `fee thresholds difference`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        db.transaction { tx ->
+            tx.createUpdate("UPDATE fee_thresholds SET valid_during = daterange(lower(valid_during), :endDate, '[]')")
+                .bind("endDate", subPeriod1.end)
+                .updateExactlyOne()
+            tx.insertTestFeeThresholds(
+                FeeThresholds(
+                    validDuring = subPeriod2.copy(end = null),
+                    minIncomeThreshold2 = 213600,
+                    minIncomeThreshold3 = 275600,
+                    minIncomeThreshold4 = 312900,
+                    minIncomeThreshold5 = 350200,
+                    minIncomeThreshold6 = 387400,
+                    maxIncomeThreshold2 = 482300,
+                    maxIncomeThreshold3 = 544300,
+                    maxIncomeThreshold4 = 581600,
+                    maxIncomeThreshold5 = 618900,
+                    maxIncomeThreshold6 = 656100,
+                    incomeMultiplier2 = BigDecimal("0.1070"),
+                    incomeMultiplier3 = BigDecimal("0.1070"),
+                    incomeMultiplier4 = BigDecimal("0.1070"),
+                    incomeMultiplier5 = BigDecimal("0.1070"),
+                    incomeMultiplier6 = BigDecimal("0.1070"),
+                    incomeThresholdIncrease6Plus = 14200,
+                    siblingDiscount2 = BigDecimal("0.5"),
+                    siblingDiscount2Plus = BigDecimal("0.8"),
+                    maxFee = 28800,
+                    minFee = 2700,
+                    temporaryFee = 2900,
+                    temporaryFeePartDay = 1500,
+                    temporaryFeeSibling = 1500,
+                    temporaryFeeSiblingPartDay = 800
+                )
+            )
+        }
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllFeeDecisions())
+            .extracting({ it.validDuring }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<FeeDecisionDifference>()),
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.FEE_THRESHOLDS)),
+            )
+    }
+
+    @Test
+    fun `difference with overlapping drafts`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 6, 30))
+        val subPeriod2 = DateRange(LocalDate.of(2022, 7, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod3 = DateRange(LocalDate.of(2022, 4, 1), LocalDate.of(2022, 9, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
+        insertIncome(testChild_1.id, 10000, subPeriod3)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllFeeDecisions())
+            .extracting({ it.validFrom }, { it.validTo }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 3, 31), emptySet<FeeDecisionDifference>()),
+                Tuple(LocalDate.of(2022, 4, 1), LocalDate.of(2022, 6, 30), setOf(FeeDecisionDifference.INCOME)),
+                Tuple(LocalDate.of(2022, 7, 1), LocalDate.of(2022, 9, 1), setOf(FeeDecisionDifference.PLACEMENT)),
+                Tuple(LocalDate.of(2022, 9, 2), LocalDate.of(2022, 12, 31), setOf(FeeDecisionDifference.INCOME)),
+            )
+    }
+
+    @Test
+    fun `difference between sent and draft`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare.id)
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start)
+            tx.createUpdate("UPDATE fee_decision SET status = 'SENT'").execute()
+        }
+        insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllFeeDecisions())
+            .extracting({ it.validDuring }, { it.status }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, FeeDecisionStatus.SENT, emptySet<FeeDecisionDifference>()),
+                Tuple(subPeriod2, FeeDecisionStatus.DRAFT, setOf(FeeDecisionDifference.PLACEMENT)),
+            )
+    }
+
+    @Test
+    fun `difference when drafts replaces sent`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 1))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start)
+            tx.createUpdate("UPDATE fee_decision SET status = 'SENT'").execute()
+            tx.createUpdate("DELETE FROM placement").execute()
+        }
+        insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare2.id)
+        insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare.id)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllFeeDecisions())
+            .extracting({ it.validDuring }, { it.status }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(period, FeeDecisionStatus.SENT, emptySet<FeeDecisionDifference>()),
+                Tuple(subPeriod1, FeeDecisionStatus.DRAFT, setOf(FeeDecisionDifference.PLACEMENT)),
+                Tuple(subPeriod2, FeeDecisionStatus.DRAFT, setOf(FeeDecisionDifference.PLACEMENT)),
+            )
+    }
+
+    @Test
+    fun `difference when gap between two drafts`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 2))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllFeeDecisions())
+            .extracting({ it.validDuring }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, emptySet<FeeDecisionDifference>()),
+                Tuple(subPeriod2, emptySet<FeeDecisionDifference>()),
+            )
+    }
+
+    @Test
+    fun `difference when gap between sent and draft`() {
+        val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
+        val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
+        val subPeriod2 = period.copy(start = LocalDate.of(2022, 7, 2))
+        val clock = MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.MIN))
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertPlacement(testChild_1.id, subPeriod1, DAYCARE, testDaycare.id)
+        db.transaction { tx ->
+            generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start)
+            tx.createUpdate("UPDATE fee_decision SET status = 'SENT'").execute()
+        }
+        insertPlacement(testChild_1.id, subPeriod2, DAYCARE, testDaycare2.id)
+
+        db.transaction { tx -> generator.generateNewDecisionsForAdult(tx, clock, testAdult_1.id, period.start) }
+
+        assertThat(getAllFeeDecisions())
+            .extracting({ it.validDuring }, { it.status }, { it.difference })
+            .containsExactlyInAnyOrder(
+                Tuple(subPeriod1, FeeDecisionStatus.SENT, emptySet<FeeDecisionDifference>()),
+                Tuple(subPeriod2, FeeDecisionStatus.DRAFT, emptySet<FeeDecisionDifference>()),
+            )
     }
 
     @Test

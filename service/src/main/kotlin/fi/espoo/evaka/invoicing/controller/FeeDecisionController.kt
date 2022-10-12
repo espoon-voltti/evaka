@@ -11,6 +11,7 @@ import fi.espoo.evaka.invoicing.data.getFeeDecision
 import fi.espoo.evaka.invoicing.data.searchFeeDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
+import fi.espoo.evaka.invoicing.domain.FeeDecisionDifference
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
@@ -104,7 +105,8 @@ class FeeDecisionController(
                     body.startDate,
                     body.endDate,
                     body.searchByStartDate,
-                    body.financeDecisionHandlerId
+                    body.financeDecisionHandlerId,
+                    body.difference ?: emptySet(),
                 )
             }
         }.also {
@@ -239,6 +241,7 @@ data class SearchFeeDecisionRequest(
     val endDate: LocalDate?,
     val searchByStartDate: Boolean = false,
     val financeDecisionHandlerId: EmployeeId?,
+    val difference: Set<FeeDecisionDifference>?,
 
 )
 

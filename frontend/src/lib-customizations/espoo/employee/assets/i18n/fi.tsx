@@ -2233,6 +2233,31 @@ export const fi = {
       status: 'Tila',
       createdAt: 'Luotu',
       sentAt: 'Lähetetty',
+      difference: {
+        title: 'Muutos',
+        value: {
+          GUARDIANS: 'Huoltajat',
+          CHILDREN: 'Lapset',
+          INCOME: 'Tulot',
+          PLACEMENT: 'Sijoitus',
+          SERVICE_NEED: 'Palveluntarve',
+          SIBLING_DISCOUNT: 'Sisaralennus',
+          FEE_ALTERATIONS: 'Maksumuutos',
+          FAMILY_SIZE: 'Perhekoko',
+          FEE_THRESHOLDS: 'Maksuasetukset'
+        },
+        valueShort: {
+          GUARDIANS: 'H',
+          CHILDREN: 'L',
+          INCOME: 'T',
+          PLACEMENT: 'S',
+          SERVICE_NEED: 'PT',
+          SIBLING_DISCOUNT: 'SA',
+          FEE_ALTERATIONS: 'M',
+          FAMILY_SIZE: 'P',
+          FEE_THRESHOLDS: 'MA'
+        }
+      },
       annullingDecision: 'Mitätöi tai päättää päätökset ajalta'
     },
     buttons: {

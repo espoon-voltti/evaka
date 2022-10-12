@@ -154,7 +154,8 @@ val testDecision1 = FeeDecision(
     familySize = 3,
     feeThresholds = testFeeThresholds.getFeeDecisionThresholds(3),
     children = listOf(testDecisionChild1, testDecisionChild2.copy(siblingDiscount = 50, fee = 14500, finalFee = 14500)),
-    created = HelsinkiDateTime.now()
+    created = HelsinkiDateTime.now(),
+    difference = emptySet(),
 )
 
 val testIncome = Income(
@@ -216,7 +217,7 @@ fun createFeeDecisionFixture(
     feeThresholds: FeeDecisionThresholds = testFeeThresholds.getFeeDecisionThresholds(children.size + 1),
     headOfFamilyIncome: DecisionIncome? = null,
     partnerIncome: DecisionIncome? = null,
-    familySize: Int = children.size + 1
+    familySize: Int = children.size + 1 + if (partnerId != null) 1 else 0
 ) = FeeDecision(
     id = FeeDecisionId(UUID.randomUUID()),
     status = status,
@@ -229,6 +230,7 @@ fun createFeeDecisionFixture(
     familySize = familySize,
     feeThresholds = feeThresholds,
     children = children,
+    difference = emptySet(),
 )
 
 fun createVoucherValueDecisionFixture(

@@ -16,6 +16,7 @@ import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionChild
+import fi.espoo.evaka.invoicing.domain.FeeDecisionDifference
 import fi.espoo.evaka.invoicing.domain.FeeDecisionPlacement
 import fi.espoo.evaka.invoicing.domain.FeeDecisionServiceNeed
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
@@ -42,6 +43,7 @@ import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
+import fi.espoo.evaka.shared.domain.periodsCanMerge
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
@@ -70,7 +72,24 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
     val placements = getPaidPlacements(from, children).toMap()
     val invoicedUnits = getUnitsThatAreInvoiced()
 
-    val newDrafts = generateFeeDecisions(
+    lockFeeDecisionsForHeadOfFamily(headOfFamily)
+
+    val activeDecisions = findFeeDecisionsForHeadOfFamily(
+        headOfFamily,
+        null,
+        listOf(
+            FeeDecisionStatus.WAITING_FOR_SENDING,
+            FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
+            FeeDecisionStatus.SENT
+        )
+    )
+    val previousDrafts = findFeeDecisionsForHeadOfFamily(
+        headOfFamily,
+        from.minusDays(1).let { date -> DateRange(date, date) },
+        listOf(FeeDecisionStatus.DRAFT)
+    )
+
+    val newDraftsWithoutDifference = generateFeeDecisions(
         from,
         headOfFamily,
         families,
@@ -81,20 +100,24 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
         feeAlterations,
         invoicedUnits
     )
-
-    lockFeeDecisionsForHeadOfFamily(headOfFamily)
+    val newDrafts = newDraftsWithoutDifference.map { draft ->
+        if (draft.isEmpty()) {
+            return@map draft
+        }
+        val draftDifferences = (newDraftsWithoutDifference + previousDrafts)
+            .filter { other -> !other.isEmpty() && periodsCanMerge(other.validDuring, draft.validDuring) }
+            .flatMap { other -> FeeDecisionDifference.getDifference(other, draft) }
+        if (draftDifferences.isNotEmpty()) {
+            return@map draft.copy(difference = draftDifferences.toSet())
+        }
+        val activeDifferences = activeDecisions
+            .filter { active -> periodsCanMerge(active.validDuring, draft.validDuring) }
+            .flatMap { active -> FeeDecisionDifference.getDifference(active, draft) }
+        draft.copy(difference = activeDifferences.toSet())
+    }
 
     val existingDrafts =
         findFeeDecisionsForHeadOfFamily(headOfFamily, null, listOf(FeeDecisionStatus.DRAFT))
-    val activeDecisions = findFeeDecisionsForHeadOfFamily(
-        headOfFamily,
-        null,
-        listOf(
-            FeeDecisionStatus.WAITING_FOR_SENDING,
-            FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
-            FeeDecisionStatus.SENT
-        )
-    )
     val partnerDecisions = activeDecisions.mapNotNull { it.partnerId }.flatMap { partnerId ->
         findFeeDecisionsForHeadOfFamily(
             partnerId,
@@ -259,7 +282,8 @@ private fun generateFeeDecisions(
                 partnerIncome = partnerIncome,
                 familySize = family.getSize(),
                 feeThresholds = price.getFeeDecisionThresholds(family.getSize()),
-                children = children.sortedBy { it.siblingDiscount }
+                children = children.sortedBy { it.siblingDiscount },
+                difference = emptySet()
             )
         }
         .let { mergePeriods(it, ::decisionContentsAreEqual) }

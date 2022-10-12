@@ -72,7 +72,8 @@ fun toSummary(feeDecision: FeeDecision): FeeDecisionSummary = FeeDecisionSummary
     },
     approvedAt = feeDecision.approvedAt,
     finalPrice = feeDecision.children.fold(0) { sum, child -> sum + child.finalFee },
-    created = feeDecision.created
+    created = feeDecision.created,
+    difference = feeDecision.difference,
 )
 
 fun toDetailed(invoice: Invoice): InvoiceDetailed = InvoiceDetailed(

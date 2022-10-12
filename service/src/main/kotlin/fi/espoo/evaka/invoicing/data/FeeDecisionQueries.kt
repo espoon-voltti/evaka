@@ -10,6 +10,7 @@ import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionChild
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
+import fi.espoo.evaka.invoicing.domain.FeeDecisionDifference
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionSummary
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
@@ -141,6 +142,7 @@ private fun Database.Transaction.upsertDecisions(decisions: List<FeeDecision>) {
             partner_income,
             family_size,
             fee_thresholds,
+            difference,
             total_fee
         ) VALUES (
             :id,
@@ -154,6 +156,7 @@ private fun Database.Transaction.upsertDecisions(decisions: List<FeeDecision>) {
             :partnerIncome,
             :familySize,
             :feeThresholds,
+            :difference,
             :totalFee
         ) ON CONFLICT (id) DO UPDATE SET
             status = :status::fee_decision_status,
@@ -166,6 +169,7 @@ private fun Database.Transaction.upsertDecisions(decisions: List<FeeDecision>) {
             partner_income = :partnerIncome,
             family_size = :familySize,
             fee_thresholds = :feeThresholds,
+            difference = :difference,
             total_fee = :totalFee
     """
 
@@ -278,7 +282,8 @@ fun Database.Read.searchFeeDecisions(
     startDate: LocalDate?,
     endDate: LocalDate?,
     searchByStartDate: Boolean = false,
-    financeDecisionHandlerId: EmployeeId?
+    financeDecisionHandlerId: EmployeeId?,
+    difference: Set<FeeDecisionDifference>,
 ): Paged<FeeDecisionSummary> {
     val sortColumn = when (sortBy) {
         FeeDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
@@ -302,6 +307,7 @@ fun Database.Read.searchFeeDecisions(
         Binding.of("start_date", startDate),
         Binding.of("end_date", endDate),
         Binding.of("finance_decision_handler", financeDecisionHandlerId),
+        Binding.of("difference", difference),
         Binding.of("firstPlacementStartDate", clock.today().withDayOfMonth(1)),
         if (retroactiveOnly) Binding.of("now", clock.now()) else null
     )
@@ -336,6 +342,7 @@ fun Database.Read.searchFeeDecisions(
         // = start date of valid_during is included in the search range
             "(valid_during && daterange(:start_date, :end_date, '[]') AND valid_during &> daterange(:start_date, :end_date, '[]'))" else null,
         if (financeDecisionHandlerId != null) "youngest_child.finance_decision_handler = :finance_decision_handler" else null,
+        if (difference.isNotEmpty()) "decision.difference && :difference" else null,
         if (noStartingPlacements) "decisions_with_first_placement_starting_this_month.fee_decision_id IS NULL" else null,
         if (maxFeeAccepted) "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')" else null,
     )
