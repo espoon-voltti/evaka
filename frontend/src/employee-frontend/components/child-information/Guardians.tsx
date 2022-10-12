@@ -84,8 +84,8 @@ export default React.memo(function Guardians() {
         />
       )}
       <H3 noMargin>{i18n.personProfile.guardians}</H3>
-      {renderResult(allGuardians, (guardians) => (
-        <Table data-qa="table-of-guardians">
+      {renderResult(allGuardians, (guardians, isReloading) => (
+        <Table data-qa="table-of-guardians" data-loading={isReloading}>
           <Thead>
             <Tr>
               <Th>{i18n.personProfile.name}</Th>
