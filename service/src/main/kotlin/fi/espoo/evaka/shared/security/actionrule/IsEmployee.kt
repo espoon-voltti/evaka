@@ -194,4 +194,33 @@ AND sent_for_decision IS NOT NULL
             """.trimIndent()
         )
     }
+
+    fun andIsDecisionMakerForAnyAssistanceNeedDecision() = DatabaseActionRule.Unscoped(
+        this,
+        object :
+            DatabaseActionRule.Unscoped.Query<IsEmployee> {
+            override fun execute(ctx: DatabaseActionRule.QueryContext): DatabaseActionRule.Deferred<IsEmployee>? =
+                when (ctx.user) {
+                    is AuthenticatedUser.Employee ->
+                        ctx.tx.createQuery<Boolean> {
+                            sql(
+                                """
+SELECT EXISTS (
+    SELECT 1
+    FROM assistance_need_decision
+    WHERE decision_maker_employee_id = ${bind(ctx.user.id)}
+    AND sent_for_decision IS NOT NULL
+)
+                                """.trimIndent()
+                            )
+                        }.mapTo<Boolean>()
+                            .single()
+                            .let { isPermitted -> if (isPermitted) Permitted else null }
+                    else -> null
+                }
+
+            override fun equals(other: Any?): Boolean = other?.javaClass == this.javaClass
+            override fun hashCode(): Int = this.javaClass.hashCode()
+        }
+    )
 }
