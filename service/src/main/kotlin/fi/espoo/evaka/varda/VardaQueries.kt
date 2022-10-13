@@ -18,6 +18,9 @@ import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
+private val VARDA_SERVICE_NEED_CUTOFF_DATE: String = "2019-01-01"
+private val VARDA_FINANCIAL_DECICION_CUTOFF_DATE: String = "2019-09-01"
+
 fun Database.Transaction.resetChildResetTimestamp(evakaChildId: ChildId) = this.createUpdate("UPDATE varda_reset_child SET reset_timestamp = null WHERE evaka_child_id = :id")
     .bind("id", evakaChildId)
     .execute()
@@ -125,7 +128,7 @@ WITH potential_missing_varda_service_needs AS (
     WHERE
         p.type = ANY(:vardaPlacementTypes::placement_type[])
         AND d.upload_children_to_varda = true
-        AND (sn.end_date IS NULL OR sn.end_date >= '2019-01-01')
+        AND (sn.end_date IS NULL OR sn.end_date >= '$VARDA_SERVICE_NEED_CUTOFF_DATE')
         AND sno.daycare_hours_per_week >= 1
         AND (vsn.evaka_service_need_updated IS NULL OR sn.updated > vsn.evaka_service_need_updated)
         AND sn.start_date <= :today
@@ -141,7 +144,7 @@ WITH potential_missing_varda_service_needs AS (
         JOIN fee_decision fd ON fdc.fee_decision_id = fd.id
     WHERE daterange(sn.start_date, sn.end_date, '[]') && fd.valid_during
         AND fd.status = 'SENT'
-        AND daterange('2019-09-01', null) && fd.valid_during
+        AND daterange('$VARDA_FINANCIAL_DECICION_CUTOFF_DATE', null) && fd.valid_during
     ),
     service_need_voucher_decision AS (
         SELECT
@@ -153,7 +156,7 @@ WITH potential_missing_varda_service_needs AS (
             JOIN voucher_value_decision vvd ON vvd.child_id = pl.child_id
         WHERE daterange(sn.start_date, sn.end_date, '[]') && daterange(vvd.valid_from, vvd.valid_to, '[]')
             AND vvd.status = 'SENT'
-            AND daterange(vvd.valid_from, vvd.valid_to, '[]') && daterange('2019-09-01', NULL)
+            AND daterange(vvd.valid_from, vvd.valid_to, '[]') && daterange('$VARDA_FINANCIAL_DECICION_CUTOFF_DATE', NULL)
      ),
     existing_varda_service_needs_with_changed_fee_data AS (
         SELECT
@@ -168,7 +171,7 @@ WITH potential_missing_varda_service_needs AS (
             LEFT JOIN service_need_voucher_decision vd ON vd.service_need_id = vsn.evaka_service_need_id
         WHERE
             (vsn.updated < fd.updated OR vsn.updated < vd.updated)
-            AND (sn.end_date IS NULL OR sn.end_date >= '2019-01-01')
+            AND (sn.end_date IS NULL OR sn.end_date >= '$VARDA_SERVICE_NEED_CUTOFF_DATE')
      )  
 SELECT DISTINCT
     a.child_id AS evaka_child_id,
@@ -256,7 +259,7 @@ WITH child_fees AS (
     FROM fee_decision fd
         JOIN fee_decision_child fdc ON fd.id = fdc.fee_decision_id
     WHERE fd.status = :feeDecisionStatus
-        AND daterange('2019-09-01', null) && fd.valid_during
+        AND daterange('$VARDA_FINANCIAL_DECICION_CUTOFF_DATE', null) && fd.valid_during
 ), service_need_fees AS (
     SELECT
         sn.id AS service_need_id,
@@ -267,6 +270,7 @@ WITH child_fees AS (
         JOIN daycare d ON d.id = p.unit_id
         JOIN child_fees ON p.child_id = child_fees.child_id
             AND child_fees.valid_during && daterange(sn.start_date, sn.end_date, '[]')
+            AND sn.end_date >= '$VARDA_FINANCIAL_DECICION_CUTOFF_DATE'
     WHERE d.upload_children_to_varda = true
         AND d.invoiced_by_municipality = true
     GROUP BY service_need_id, p.child_id
@@ -279,7 +283,8 @@ WITH child_fees AS (
         JOIN daycare d ON d.id = p.unit_id  
         JOIN voucher_value_decision vvd ON p.child_id = vvd.child_id
             AND daterange(vvd.valid_from, vvd.valid_to, '[]') && daterange(sn.start_date, sn.end_date, '[]')
-            AND daterange('2019-09-01', null) && daterange(vvd.valid_from, vvd.valid_to, '[]')
+            AND daterange('$VARDA_FINANCIAL_DECICION_CUTOFF_DATE', null) && daterange(vvd.valid_from, vvd.valid_to, '[]')
+            AND sn.end_date >= '$VARDA_FINANCIAL_DECICION_CUTOFF_DATE'
     WHERE d.upload_children_to_varda = true
         AND vvd.status = :voucherValueDecisionStatus
     GROUP BY service_need_id, p.child_id
@@ -393,7 +398,7 @@ fun Database.Read.getServiceNeedsForVardaByChild(
         AND d.upload_children_to_varda = true
         AND sno.daycare_hours_per_week >= 1
         AND sn.start_date <= :today
-        AND (sn.end_date IS NULL OR sn.end_date >= '2019-01-01')
+        AND (sn.end_date IS NULL OR sn.end_date >= '$VARDA_SERVICE_NEED_CUTOFF_DATE')
         """.trimIndent()
 
     return createQuery(sql)
@@ -493,7 +498,7 @@ WHERE
   AND d.upload_children_to_varda = true
   AND sno.daycare_hours_per_week >= 1
   AND sn.start_date <= :today
-  AND (sn.end_date IS NULL OR sn.end_date >= '2019-01-01')
+  AND (sn.end_date IS NULL OR sn.end_date >= '$VARDA_SERVICE_NEED_CUTOFF_DATE')
 )
 GROUP BY evaka_child_id
         """.trimIndent()
