@@ -108,18 +108,17 @@ export default React.memo(function VoucherValueDecisionFilters() {
     [setSearchFilters]
   )
 
-  const toggleDifference =
-    (difference: VoucherValueDecisionDifference) => () => {
-      searchFilters.difference.includes(difference)
-        ? setSearchFilters({
-            ...searchFilters,
-            difference: searchFilters.difference.filter((v) => v !== difference)
-          })
-        : setSearchFilters({
-            ...searchFilters,
-            difference: [...searchFilters.difference, difference]
-          })
-    }
+  const toggleDifference = (difference: VoucherValueDecisionDifference) => {
+    searchFilters.difference.includes(difference)
+      ? setSearchFilters({
+          ...searchFilters,
+          difference: searchFilters.difference.filter((v) => v !== difference)
+        })
+      : setSearchFilters({
+          ...searchFilters,
+          difference: [...searchFilters.difference, difference]
+        })
+  }
 
   const toggleStatus = useCallback(
     (status: VoucherValueDecisionStatus) => () => {

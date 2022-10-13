@@ -57,7 +57,7 @@ import {
 import { useTranslation } from '../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
 import { ApplicationSummaryStatus } from '../../types/application'
-import { VoucherValueDecisionDifferenceIcon } from '../voucher-value-decisions/VoucherValueDecisionDifferenceIcon'
+import { VoucherValueDecisionDifferenceIcons } from '../voucher-value-decisions/VoucherValueDecisionDifferenceIcon'
 
 import { FlexRow } from './styled/containers'
 
@@ -347,7 +347,7 @@ export const FinanceDecisionHandlerFilter = React.memo(
 
 interface VoucherValueDecisionDifferenceFilterProps {
   toggled: VoucherValueDecisionDifference[]
-  toggle: (difference: VoucherValueDecisionDifference) => () => void
+  toggle: (difference: VoucherValueDecisionDifference) => void
 }
 
 export function VoucherValueDecisionDifferenceFilter({
@@ -361,14 +361,11 @@ export function VoucherValueDecisionDifferenceFilter({
       <Label>{i18n.filters.difference}</Label>
       <Gap size="xs" />
       <FixedSpaceRow spacing="xxs" flexWrap="wrap">
-        {voucherValueDecisionDifferences.map((difference) => (
-          <VoucherValueDecisionDifferenceIcon
-            key={difference}
-            value={difference}
-            toggle={toggle}
-            selected={toggled.includes(difference)}
-          />
-        ))}
+        <VoucherValueDecisionDifferenceIcons
+          difference={voucherValueDecisionDifferences}
+          toggle={toggle}
+          toggled={toggled}
+        />
       </FixedSpaceRow>
     </>
   )
