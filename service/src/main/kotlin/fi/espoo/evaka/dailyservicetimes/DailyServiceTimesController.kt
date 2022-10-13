@@ -199,46 +199,12 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                 tx.deleteChildDailyServiceTimes(oldId)
             } else {
                 val updatedRange = when {
-                    // old is finite and old contains new in the middle
-                    //
-                    // old OOOOOO
-                    // new   NNN
-                    // --> error
-                    old.contains(new) && old.end != null && old.start != new.start && old.end != new.end ->
+                    old.contains(new) && new.start != old.start && old.end != null && new.end != old.end ->
                         throw Conflict("Unsupported overlap")
-
-                    // old contains new in the start
-                    //
-                    // old OOOOOO
-                    // new NNN
-                    // --> NNNOOO
-                    new.end != null && old.start == new.start ->
-                        DateRange(new.end.plusDays(1), old.end)
-
-                    // old overlaps with the end of new
-                    //
-                    // old   OOOO
-                    // new NNN
-                    // --> NNNOOO
-                    new.end != null && old.end != null && old.includes(new.end) ->
-                        DateRange(new.end.plusDays(1), old.end)
-
-                    // old contains new in the end
-                    //
-                    // old OOOOOO
-                    // new    NNN
-                    // --> OOONNN
-                    old.end == null || old.end == new.end ->
+                    new.start <= old.start ->
+                        DateRange(new.end!!.plusDays(1), old.end)
+                    old.start < new.start ->
                         DateRange(old.start, new.start.minusDays(1))
-
-                    // old overlaps with the beginning of new
-                    //
-                    // old OOOO
-                    // new    NNN
-                    // --> OOONNN
-                    old.includes(new.start) ->
-                        DateRange(old.start, new.start.minusDays(1))
-
                     else ->
                         throw Conflict("Unsupported overlap")
                 }
@@ -255,7 +221,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         validityPeriod: DateRange,
     ) {
         val today = now.toLocalDate()
-        if ((validityPeriod.end ?: LocalDate.MAX) <= today) return
+        if ((validityPeriod.end ?: LocalDate.MAX) <= today) throw Error("Unexpected validity period")
 
         val actionableRange = DateRange(
             validityPeriod.start.takeIf { it > today } ?: today.plusDays(1),
