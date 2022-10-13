@@ -85,10 +85,10 @@ fun createReservationsAndAbsences(
     userId: EvakaUserId,
     reservationRequests: List<DailyReservationRequest>,
 ): CreateReservationsResult {
-    reservationRequests.forEach { it.reservations?.forEach(::validateReservationTimeRange) }
     val reservations = reservationRequests.map {
         it.copy(reservations = it.reservations?.map(::convertMidnightEndTime))
     }
+    reservations.forEach { it.reservations?.forEach(::validateReservationTimeRange) }
 
     val deletedAbsences = tx.clearOldCitizenEditableAbsences(
         reservations.filter {
