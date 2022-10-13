@@ -1556,7 +1556,7 @@ export default {
       <>
         <P>
           Tällä sivulla voit lähettää selvitykset varhaiskasvatusmaksuun
-          vaikuttavista omista ja lastesi tuloistasi. Voit myös tarkastella
+          vaikuttavista omista ja lastesi tuloista. Voit myös tarkastella
           palauttamiasi tuloselvityksiä ja muokata tai poistaa niitä, kunnes
           viranomainen on käsitellyt tiedot. Lomakkeen käsittelyn jälkeen voit
           päivittää tulotietojasi toimittamalla uuden lomakkeen.
