@@ -10,7 +10,7 @@ import React, {
   useState
 } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, Success } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -65,8 +65,12 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
   )
 
   const [daycareAclRows, reloadDaycareAclRows] = useApiState(
-    () => getDaycareAclRows(id),
-    [id]
+    () =>
+      unitInformation.isSuccess &&
+      unitInformation.value.permittedActions.has('READ_ACL')
+        ? getDaycareAclRows(id)
+        : Promise.resolve(Success.of([])),
+    [id, unitInformation]
   )
 
   const value = useMemo(
