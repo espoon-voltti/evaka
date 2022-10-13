@@ -16,6 +16,7 @@ import { UnitContext } from '../../state/unit'
 import { renderResult } from '../async-rendering'
 
 import { StaffOccupancyCoefficients } from './tab-unit-information/StaffOccupancyCoefficients'
+import UnitMobileDevices from './tab-unit-information/UnitMobileDevices'
 
 export default React.memo(function TabUnitInformation() {
   const { unitInformation } = useContext(UnitContext)
@@ -48,9 +49,15 @@ export default React.memo(function TabUnitInformation() {
         <UnitAccessControl
           permittedActions={permittedActions}
           groups={groups}
-          mobileEnabled={daycare.enabledPilotFeatures.includes('MOBILE')}
         />
       )}
+
+      {daycare.enabledPilotFeatures.includes('MOBILE') &&
+        permittedActions.has('READ_MOBILE_DEVICES') && (
+          <UnitMobileDevices
+            canAddNew={permittedActions.has('CREATE_MOBILE_DEVICE_PAIRING')}
+          />
+        )}
 
       {daycare.enabledPilotFeatures.includes('REALTIME_STAFF_ATTENDANCE') &&
         permittedActions.has('READ_STAFF_OCCUPANCY_COEFFICIENTS') && (
