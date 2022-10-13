@@ -10,6 +10,7 @@ import {
   DistinctiveParams,
   FeeDecision,
   FeeDecisionDetailed,
+  FeeDecisionDifference,
   FeeDecisionSortParam,
   FeeDecisionStatus,
   FeeDecisionSummary,
@@ -55,6 +56,7 @@ export interface FeeDecisionSearchParams extends SearchParams {
   endDate?: LocalDate
   searchByStartDate: boolean
   financeDecisionHandlerId?: UUID
+  difference: FeeDecisionDifference[]
 }
 
 export interface VoucherValueDecisionSearchParams extends SearchParams {

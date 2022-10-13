@@ -13,6 +13,7 @@ import fi.espoo.evaka.invoicing.createFeeDecisionChildFixture
 import fi.espoo.evaka.invoicing.createFeeDecisionFixture
 import fi.espoo.evaka.invoicing.domain.DecisionIncome
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
+import fi.espoo.evaka.invoicing.domain.FeeDecisionDifference
 import fi.espoo.evaka.invoicing.domain.FeeDecisionStatus
 import fi.espoo.evaka.invoicing.domain.FeeDecisionType
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
@@ -352,6 +353,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 startDate = null,
                 endDate = null,
                 financeDecisionHandlerId = null,
+                difference = emptySet(),
             )
         }
 
@@ -361,6 +363,74 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 Tuple(testAdult_2.lastName, testAdult_2.firstName),
                 Tuple(testAdult_3.lastName, testAdult_3.firstName),
                 Tuple(testAdult_6.lastName, testAdult_6.firstName),
+            )
+    }
+
+    @Test
+    fun `search with difference`() {
+        db.transaction { tx ->
+            val baseDecision = { child: DevPerson ->
+                createFeeDecisionFixture(
+                    status = FeeDecisionStatus.DRAFT,
+                    decisionType = FeeDecisionType.NORMAL,
+                    period = testPeriod,
+                    headOfFamilyId = PersonId(UUID.randomUUID()),
+                    children = listOf(
+                        createFeeDecisionChildFixture(
+                            childId = child.id,
+                            dateOfBirth = child.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
+                        )
+                    )
+                )
+            }
+            tx.upsertFeeDecisions(
+                listOf(
+                    baseDecision(testChild_1).copy(
+                        headOfFamilyId = testAdult_1.id,
+                        difference = emptySet()
+                    ),
+                    baseDecision(testChild_2).copy(
+                        headOfFamilyId = testAdult_2.id,
+                        difference = setOf(FeeDecisionDifference.INCOME)
+                    ),
+                    baseDecision(testChild_3).copy(
+                        headOfFamilyId = testAdult_3.id,
+                        difference = setOf(FeeDecisionDifference.INCOME, FeeDecisionDifference.FAMILY_SIZE)
+                    ),
+                    baseDecision(testChild_4).copy(
+                        headOfFamilyId = testAdult_4.id,
+                        difference = setOf(FeeDecisionDifference.FEE_ALTERATIONS)
+                    ),
+                )
+            )
+        }
+
+        val result = db.read { tx ->
+            tx.searchFeeDecisions(
+                clock = MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(17, 16))),
+                page = 0,
+                pageSize = 100,
+                sortBy = FeeDecisionSortParam.HEAD_OF_FAMILY,
+                sortDirection = SortDirection.ASC,
+                statuses = emptyList(),
+                areas = emptyList(),
+                unit = null,
+                distinctiveParams = emptyList(),
+                startDate = null,
+                endDate = null,
+                financeDecisionHandlerId = null,
+                difference = setOf(FeeDecisionDifference.INCOME)
+            )
+        }
+
+        assertThat(result.data)
+            .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName })
+            .containsExactly(
+                Tuple(testAdult_2.lastName, testAdult_2.firstName),
+                Tuple(testAdult_3.lastName, testAdult_3.firstName),
             )
     }
 
@@ -379,7 +449,8 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 unit = null,
                 startDate = null,
                 endDate = null,
-                financeDecisionHandlerId = null
+                financeDecisionHandlerId = null,
+                difference = emptySet(),
             )
         }
         assertEquals(1, result.data.size)

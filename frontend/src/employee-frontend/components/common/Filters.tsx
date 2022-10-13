@@ -17,6 +17,8 @@ import {
 import {
   DistinctiveParams,
   feeDecisionDistinctiveParams,
+  FeeDecisionDifference,
+  feeDecisionDifferences,
   FeeDecisionStatus,
   InvoiceDistinctiveParams,
   InvoiceStatus,
@@ -57,6 +59,7 @@ import {
 import { useTranslation } from '../../state/i18n'
 import { FinanceDecisionHandlerOption } from '../../state/invoicing-ui'
 import { ApplicationSummaryStatus } from '../../types/application'
+import { FeeDecisionDifferenceIcons } from '../fee-decisions/FeeDecisionDifferenceIcon'
 import { VoucherValueDecisionDifferenceIcons } from '../voucher-value-decisions/VoucherValueDecisionDifferenceIcon'
 
 import { FlexRow } from './styled/containers'
@@ -344,6 +347,32 @@ export const FinanceDecisionHandlerFilter = React.memo(
     )
   }
 )
+
+interface FeeDecisionDifferenceFilterProps {
+  toggled: FeeDecisionDifference[]
+  toggle: (difference: FeeDecisionDifference) => void
+}
+
+export function FeeDecisionDifferenceFilter({
+  toggled,
+  toggle
+}: FeeDecisionDifferenceFilterProps) {
+  const { i18n } = useTranslation()
+
+  return (
+    <>
+      <Label>{i18n.filters.difference}</Label>
+      <Gap size="xs" />
+      <FixedSpaceRow spacing="xxs" flexWrap="wrap">
+        <FeeDecisionDifferenceIcons
+          difference={feeDecisionDifferences}
+          toggle={toggle}
+          toggled={toggled}
+        />
+      </FixedSpaceRow>
+    </>
+  )
+}
 
 interface VoucherValueDecisionDifferenceFilterProps {
   toggled: VoucherValueDecisionDifference[]

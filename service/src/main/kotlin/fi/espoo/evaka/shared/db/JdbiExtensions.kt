@@ -230,6 +230,7 @@ val feeDecisionRowMapper = RowViewMapper { rv ->
                 )
             )
         } ?: emptyList(),
+        difference = rv.mapColumn("difference"),
         documentKey = rv.mapColumn("document_key"),
         approvedById = rv.mapColumn("approved_by_id"),
         approvedAt = rv.mapColumn("approved_at"),
@@ -356,6 +357,7 @@ val feeDecisionSummaryRowMapper = RowViewMapper { rv ->
         approvedAt = rv.mapColumn("approved_at"),
         created = rv.mapColumn("created"),
         sentAt = rv.mapColumn("sent_at"),
-        finalPrice = rv.mapColumn("total_fee")
+        finalPrice = rv.mapColumn("total_fee"),
+        difference = rv.mapColumn("difference"),
     )
 }

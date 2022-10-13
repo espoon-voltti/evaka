@@ -97,6 +97,7 @@ export interface FeeDecision {
   decisionHandlerId: UUID | null
   decisionNumber: number | null
   decisionType: FeeDecisionType
+  difference: FeeDecisionDifference[]
   documentKey: string | null
   familySize: number
   feeThresholds: FeeDecisionThresholds
@@ -179,6 +180,23 @@ export interface FeeDecisionDetailed {
 }
 
 /**
+* Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionDifference
+*/
+export const feeDecisionDifferences = [
+  'GUARDIANS',
+  'CHILDREN',
+  'INCOME',
+  'PLACEMENT',
+  'SERVICE_NEED',
+  'SIBLING_DISCOUNT',
+  'FEE_ALTERATIONS',
+  'FAMILY_SIZE',
+  'FEE_THRESHOLDS'
+] as const
+
+export type FeeDecisionDifference = typeof feeDecisionDifferences[number]
+
+/**
 * Generated from fi.espoo.evaka.invoicing.domain.FeeDecisionPlacement
 */
 export interface FeeDecisionPlacement {
@@ -228,6 +246,7 @@ export interface FeeDecisionSummary {
   children: PersonBasic[]
   created: HelsinkiDateTime
   decisionNumber: number | null
+  difference: FeeDecisionDifference[]
   finalPrice: number
   headOfFamily: PersonBasic
   id: UUID
@@ -659,6 +678,7 @@ export interface ProductWithName {
 */
 export interface SearchFeeDecisionRequest {
   area: string[] | null
+  difference: FeeDecisionDifference[] | null
   distinctions: DistinctiveParams[] | null
   endDate: LocalDate | null
   financeDecisionHandlerId: UUID | null

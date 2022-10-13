@@ -31,6 +31,8 @@ import { useTranslation } from '../../state/i18n'
 import ChildrenCell from '../common/ChildrenCell'
 import NameWithSsn from '../common/NameWithSsn'
 
+import { FeeDecisionDifferenceIcons } from './FeeDecisionDifferenceIcon'
+
 const TitleRowContainer = styled.div`
   display: flex;
   justify-content: space-between;
@@ -129,6 +131,9 @@ const FeeDecisions = React.memo(function FeeDecisions({
             <Td>{item.decisionNumber}</Td>
             <Td>{item.created.toLocalDate().format()}</Td>
             <Td>{item.sentAt?.toLocalDate().format() ?? ''}</Td>
+            <Td>
+              <FeeDecisionDifferenceIcons difference={item.difference} />
+            </Td>
             <Td>{i18n.feeDecision.status[item.status]}</Td>
             {showCheckboxes ? (
               <Td onClick={(e) => e.stopPropagation()}>
@@ -199,6 +204,7 @@ const FeeDecisions = React.memo(function FeeDecisions({
             <SortableTh sorted={isSorted('SENT')} onClick={toggleSort('SENT')}>
               {i18n.feeDecisions.table.sentAt}
             </SortableTh>
+            <Th>{i18n.feeDecisions.table.difference.title}</Th>
             <SortableTh
               sorted={isSorted('STATUS')}
               onClick={toggleSort('STATUS')}

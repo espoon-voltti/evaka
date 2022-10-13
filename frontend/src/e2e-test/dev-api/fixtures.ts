@@ -836,6 +836,7 @@ export const feeDecisionsFixture = (
   partnerIncome: null,
   familySize: 2,
   feeThresholds: feeThresholds,
+  difference: [],
   children: [
     {
       child: {

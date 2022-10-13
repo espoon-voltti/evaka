@@ -5,6 +5,7 @@
 package fi.espoo.evaka.invoicing.domain
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import fi.espoo.evaka.ConstList
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -40,6 +41,7 @@ data class FeeDecision(
     val familySize: Int,
     @Json
     val feeThresholds: FeeDecisionThresholds,
+    val difference: Set<FeeDecisionDifference>,
     val documentKey: String? = null,
     val approvedById: EmployeeId? = null,
     val approvedAt: HelsinkiDateTime? = null,
@@ -54,18 +56,8 @@ data class FeeDecision(
     override val validTo: LocalDate? = validDuring.end
     override fun withRandomId() = this.copy(id = FeeDecisionId(UUID.randomUUID()))
     override fun withValidity(period: DateRange) = this.copy(validDuring = period)
-    override fun contentEquals(decision: FeeDecision): Boolean {
-        if (this.isEmpty() && decision.isEmpty()) {
-            return setOf(this.headOfFamilyId, this.partnerId) == setOf(decision.headOfFamilyId, decision.partnerId)
-        }
-
-        return setOf(this.headOfFamilyId to this.headOfFamilyIncome, this.partnerId to this.partnerIncome) == setOf(
-            decision.headOfFamilyId to decision.headOfFamilyIncome,
-            decision.partnerId to decision.partnerIncome
-        ) && this.children.toSet() == decision.children.toSet() &&
-            this.familySize == decision.familySize &&
-            this.feeThresholds == decision.feeThresholds
-    }
+    override fun contentEquals(decision: FeeDecision): Boolean =
+        FeeDecisionDifference.getDifference(this, decision).isEmpty()
 
     override fun overlapsWith(other: FeeDecision): Boolean {
         return DateRange(this.validFrom, this.validTo).overlaps(DateRange(other.validFrom, other.validTo)) && (
@@ -146,6 +138,42 @@ enum class FeeDecisionType {
     RELIEF_REJECTED,
     RELIEF_PARTLY_ACCEPTED,
     RELIEF_ACCEPTED
+}
+
+@ConstList("feeDecisionDifferences")
+enum class FeeDecisionDifference(val contentEquals: (d1: FeeDecision, d2: FeeDecision) -> Boolean) : DatabaseEnum {
+    GUARDIANS({ d1, d2 -> setOf(d1.headOfFamilyId, d1.partnerId) == setOf(d2.headOfFamilyId, d2.partnerId) }),
+    CHILDREN({ d1, d2 -> d1.children.map { it.child.id }.toSet() == d2.children.map { it.child.id }.toSet() }),
+    INCOME({ d1, d2 ->
+        setOf(d1.headOfFamilyIncome, d1.partnerIncome) == setOf(
+            d2.headOfFamilyIncome,
+            d2.partnerIncome
+        ) && childrenEquals(d1, d2) { it.childIncome }
+    }),
+    PLACEMENT({ d1, d2 -> childrenEquals(d1, d2) { it.placement } }),
+    SERVICE_NEED({ d1, d2 -> childrenEquals(d1, d2) { it.serviceNeed } }),
+    SIBLING_DISCOUNT({ d1, d2 -> childrenEquals(d1, d2) { it.siblingDiscount } }),
+    FEE_ALTERATIONS({ d1, d2 -> childrenEquals(d1, d2) { it.feeAlterations } }),
+    FAMILY_SIZE({ d1, d2 -> d1.familySize == d2.familySize }),
+    FEE_THRESHOLDS({ d1, d2 -> d1.feeThresholds == d2.feeThresholds });
+
+    override val sqlType: String = "fee_decision_difference"
+
+    companion object {
+        fun getDifference(d1: FeeDecision, d2: FeeDecision): Set<FeeDecisionDifference> {
+            if (d1.isEmpty() && d2.isEmpty()) {
+                return if (GUARDIANS.contentEquals(d1, d2)) emptySet() else setOf(GUARDIANS)
+            }
+            return values().filterNot { it.contentEquals(d1, d2) }.toSet()
+        }
+
+        private fun <T> childrenEquals(d1: FeeDecision, d2: FeeDecision, fn: (child: FeeDecisionChild) -> T): Boolean {
+            val map1 = d1.children.associateBy({ it.child.id }, fn)
+            val map2 = d2.children.associateBy({ it.child.id }, fn)
+            // equals only with matching keys
+            return map1.all { (key, value) -> map2.getOrDefault(key, value) == value }
+        }
+    }
 }
 
 data class FeeDecisionDetailed(
@@ -243,7 +271,8 @@ data class FeeDecisionSummary(
     val approvedAt: HelsinkiDateTime? = null,
     val sentAt: HelsinkiDateTime? = null,
     val finalPrice: Int,
-    val created: HelsinkiDateTime = HelsinkiDateTime.now()
+    val created: HelsinkiDateTime = HelsinkiDateTime.now(),
+    val difference: Set<FeeDecisionDifference>,
 ) : Mergeable<PersonBasic, FeeDecisionSummary> {
     override fun withChildren(children: List<PersonBasic>) = this.copy(children = children)
 

@@ -67,7 +67,8 @@ export default React.memo(function FeeDecisionsPage() {
       startDate: searchFilters.startDate,
       endDate: searchFilters.endDate,
       searchByStartDate: searchFilters.searchByStartDate,
-      financeDecisionHandlerId: searchFilters.financeDecisionHandlerId
+      financeDecisionHandlerId: searchFilters.financeDecisionHandlerId,
+      difference: searchFilters.difference
     }
     void reloadDecisions(page, pageSize, sortBy, sortDirection, params)
   }, [

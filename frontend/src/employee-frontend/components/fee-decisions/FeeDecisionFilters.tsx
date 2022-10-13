@@ -7,6 +7,7 @@ import { useMemo } from 'react'
 
 import {
   DistinctiveParams,
+  FeeDecisionDifference,
   FeeDecisionStatus
 } from 'lib-common/generated/api-types/invoicing'
 import LocalDate from 'lib-common/local-date'
@@ -18,12 +19,13 @@ import { useTranslation } from '../../state/i18n'
 import { InvoicingUiContext } from '../../state/invoicing-ui'
 import {
   AreaFilter,
-  Filters,
-  FeeDecisionStatusFilter,
-  FeeDecisionDistinctionsFilter,
-  UnitFilter,
+  FeeDecisionDifferenceFilter,
   FeeDecisionDateFilter,
-  FinanceDecisionHandlerFilter
+  FeeDecisionDistinctionsFilter,
+  FeeDecisionStatusFilter,
+  Filters,
+  FinanceDecisionHandlerFilter,
+  UnitFilter
 } from '../common/Filters'
 
 function FeeDecisionFilters() {
@@ -100,6 +102,18 @@ function FeeDecisionFilters() {
       ...filters,
       financeDecisionHandlerId: id
     }))
+
+  const toggleDifference = (difference: FeeDecisionDifference) => {
+    searchFilters.difference.includes(difference)
+      ? setSearchFilters({
+          ...searchFilters,
+          difference: searchFilters.difference.filter((v) => v !== difference)
+        })
+      : setSearchFilters({
+          ...searchFilters,
+          difference: [...searchFilters.difference, difference]
+        })
+  }
 
   const toggleStatus = (id: FeeDecisionStatus) => () => {
     setSearchFilters({
@@ -184,6 +198,11 @@ function FeeDecisionFilters() {
           <FeeDecisionDistinctionsFilter
             toggled={searchFilters.distinctiveDetails}
             toggle={toggleServiceNeed}
+          />
+          <Gap size="L" />
+          <FeeDecisionDifferenceFilter
+            toggled={searchFilters.difference}
+            toggle={toggleDifference}
           />
         </Fragment>
       }
