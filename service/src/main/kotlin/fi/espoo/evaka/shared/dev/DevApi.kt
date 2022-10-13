@@ -86,7 +86,7 @@ import fi.espoo.evaka.pis.updatePersonFromVtj
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.reservations.DailyReservationRequest
-import fi.espoo.evaka.reservations.createReservations
+import fi.espoo.evaka.reservations.createReservationsAndAbsences
 import fi.espoo.evaka.s3.Document
 import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
@@ -899,7 +899,7 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.ensureFakeAdminExists()
-                createReservations(tx, fakeAdmin.evakaUserId, body)
+                createReservationsAndAbsences(tx, fakeAdmin.evakaUserId, body)
             }
         }
     }

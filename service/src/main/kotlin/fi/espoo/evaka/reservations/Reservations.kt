@@ -14,10 +14,8 @@ import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EvakaUserId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -38,16 +36,6 @@ data class DailyReservationRequest(
     val reservations: List<TimeRange>?,
     val absent: Boolean
 )
-
-fun List<DailyReservationRequest>.validate(reservableDates: List<FiniteDateRange>? = null): List<DailyReservationRequest> {
-    if (reservableDates != null && this.any { request -> !reservableDates.any { it.includes(request.date) } }) {
-        throw BadRequest("Some days are not reservable", "NON_RESERVABLE_DAYS")
-    }
-
-    return this.map {
-        it.copy(reservations = it.reservations?.map(::convertMidnightEndTime)?.onEach(::validateReservationTimeRange))
-    }
-}
 
 @JsonSerialize(using = TimeRangeSerializer::class)
 data class TimeRange(
@@ -92,12 +80,16 @@ data class CreateReservationsResult(
     val upsertedReservations: List<AttendanceReservationId>,
 )
 
-fun createReservations(
+fun createReservationsAndAbsences(
     tx: Database.Transaction,
     userId: EvakaUserId,
-    reservations: List<DailyReservationRequest>,
-    personId: PersonId? = null
+    reservationRequests: List<DailyReservationRequest>,
 ): CreateReservationsResult {
+    val reservations = reservationRequests.map {
+        it.copy(reservations = it.reservations?.map(::convertMidnightEndTime))
+    }
+    reservations.forEach { it.reservations?.forEach(::validateReservationTimeRange) }
+
     val deletedAbsences = tx.clearOldCitizenEditableAbsences(
         reservations.filter {
             it.reservations != null || it.absent
@@ -106,12 +98,12 @@ fun createReservations(
     val deletedReservations = tx.clearOldReservations(reservations.map { it.childId to it.date })
     val upsertedReservations = tx.insertValidReservations(userId, reservations.filterNot { it.absent })
 
-    val upsertedAbsences = if (personId != null) {
-        tx.insertAbsences(
-            personId,
-            reservations.filter { it.absent }
-                .map { AbsenceInsert(it.childId, it.date, AbsenceType.OTHER_ABSENCE) }
-        )
+    val absences = reservations
+        .filter { it.absent }
+        .map { AbsenceInsert(it.childId, it.date, AbsenceType.OTHER_ABSENCE) }
+    val upsertedAbsences = if (absences.isNotEmpty()) {
+        tx.insertAbsences(userId, absences)
     } else emptyList()
+
     return CreateReservationsResult(deletedAbsences, deletedReservations, upsertedAbsences, upsertedReservations)
 }

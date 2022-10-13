@@ -3,9 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { DailyServiceTimes } from 'lib-common/api-types/child/common'
+import { DailyServiceTimesValue } from 'lib-common/api-types/child/common'
 import DateRange from 'lib-common/date-range'
-import { DailyServiceTimesResponse } from 'lib-common/generated/api-types/dailyservicetimes'
+import {
+  DailyServiceTimesEndDate,
+  DailyServiceTimesResponse
+} from 'lib-common/generated/api-types/dailyservicetimes'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
@@ -39,7 +42,7 @@ export async function getChildDailyServiceTimes(
 
 export async function createChildDailyServiceTimes(
   childId: UUID,
-  data: DailyServiceTimes
+  data: DailyServiceTimesValue
 ): Promise<Result<void>> {
   return client
     .post(`/children/${childId}/daily-service-times`, data)
@@ -47,12 +50,22 @@ export async function createChildDailyServiceTimes(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function putChildDailyServiceTimes(
+export async function updateChildDailyServiceTimes(
   id: UUID,
-  data: DailyServiceTimes
+  data: DailyServiceTimesValue
 ): Promise<Result<void>> {
   return client
     .put(`/daily-service-times/${id}`, data)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function setChildDailyServiceTimesEndDate(
+  id: UUID,
+  data: DailyServiceTimesEndDate
+): Promise<Result<void>> {
+  return client
+    .put(`/daily-service-times/${id}/end`, data)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

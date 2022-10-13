@@ -135,7 +135,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                     tx.clearOldCitizenEditableAbsences(it)
                 }
                 tx.deleteAbsencesCreatedFromQuestionnaire(questionnaire.id, childIds)
-                tx.insertAbsences(user.id, absences)
+                tx.insertAbsences(user.evakaUserId, absences)
                 tx.insertQuestionnaireAnswers(
                     user.id,
                     body.fixedPeriods.entries.map { (childId, period) ->

@@ -8,6 +8,8 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ForceCodeGenType
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.AbsenceUpsert
+import fi.espoo.evaka.daycare.service.insertAbsences
 import fi.espoo.evaka.note.child.daily.getChildDailyNotesInUnit
 import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForUnit
 import fi.espoo.evaka.note.group.getGroupNotesForUnit
@@ -224,6 +226,7 @@ class ChildAttendanceController(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
+                val now = clock.now()
                 val today = clock.today()
 
                 val attendance = getChildOngoingAttendance(tx, childId, unitId)
@@ -234,10 +237,8 @@ class ChildAttendanceController(
                     if (body.absenceType == null) {
                         throw BadRequest("Request had no absenceType but child was absent from ${absentFrom.joinToString(", ")}.")
                     }
-
-                    absentFrom.forEach { (careType, _) ->
-                        tx.insertAbsence(user, childId, today, careType, body.absenceType)
-                    }
+                    val absences = absentFrom.map { (careType, _) -> AbsenceUpsert(childId, today, careType, body.absenceType) }
+                    tx.insertAbsences(now, user.evakaUserId, absences)
                 } else if (body.absenceType != null) {
                     throw BadRequest("Request defines absenceType but child was not absent.")
                 }
@@ -313,6 +314,9 @@ class ChildAttendanceController(
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE_CHILD_ATTENDANCES, unitId)
 
+        val now = clock.now()
+        val today = now.toLocalDate()
+
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val placementBasics = tx.fetchChildPlacementBasics(childId, unitId, clock.today())
@@ -323,10 +327,11 @@ class ChildAttendanceController(
                 }
 
                 try {
-                    tx.deleteAbsencesByDate(childId, clock.today())
-                    placementBasics.placementType.absenceCategories().forEach { category ->
-                        tx.insertAbsence(user, childId, clock.today(), category, body.absenceType)
+                    tx.deleteAbsencesByDate(childId, today)
+                    val absences = placementBasics.placementType.absenceCategories().map { category ->
+                        AbsenceUpsert(childId, today, category, body.absenceType)
                     }
+                    tx.insertAbsences(now, user.evakaUserId, absences)
                 } catch (e: Exception) {
                     throw mapPSQLException(e)
                 }
@@ -352,6 +357,7 @@ class ChildAttendanceController(
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE_CHILD_ATTENDANCES, unitId)
 
+        val now = clock.now()
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val typeOnDates = tx.fetchChildPlacementTypeDates(childId, unitId, body.startDate, body.endDate)
@@ -359,9 +365,10 @@ class ChildAttendanceController(
                 try {
                     for ((date, placementType) in typeOnDates) {
                         tx.deleteAbsencesByDate(childId, date)
-                        placementType.absenceCategories().forEach { category ->
-                            tx.insertAbsence(user, childId, date, category, body.absenceType)
+                        val absences = placementType.absenceCategories().map { category ->
+                            AbsenceUpsert(childId, date, category, body.absenceType)
                         }
+                        tx.insertAbsences(now, user.evakaUserId, absences)
                     }
                 } catch (e: Exception) {
                     throw mapPSQLException(e)

@@ -124,14 +124,14 @@ describe('Child Information - daily service times', () => {
     section = await childInformationPage.openCollapsible('dailyServiceTimes')
   })
 
-  const today = mockedDate.format()
+  const tomorrowDate = mockedDate.addDays(1)
+  const tomorrow = tomorrowDate.format()
   const in10Days = mockedDate.addDays(10).format()
   const in40Days = mockedDate.addDays(40).format()
 
   test('can create regular daily service times', async () => {
     const form = await section.create()
-    await form.validityPeriodStartInput.clear()
-    await form.validityPeriodStartInput.fill(in10Days)
+    await form.validityPeriodStart.fill(in10Days)
     await form.checkType('REGULAR')
     await form.fillRegularTimeRange('08:00', '14:00')
     await form.submit()
@@ -145,8 +145,7 @@ describe('Child Information - daily service times', () => {
 
   test('can create irregular daily service times', async () => {
     const form = await section.create()
-    await form.validityPeriodStartInput.clear()
-    await form.validityPeriodStartInput.fill(in40Days)
+    await form.validityPeriodStart.fill(in40Days)
     await form.checkType('IRREGULAR')
     await form.fillIrregularTimeRange('monday', '09:00', '10:00')
     await form.fillIrregularTimeRange('wednesday', '04:00', '10:00')
@@ -162,8 +161,7 @@ describe('Child Information - daily service times', () => {
 
   test('can create variable daily service times', async () => {
     const form = await section.create()
-    await form.validityPeriodStartInput.clear()
-    await form.validityPeriodStartInput.fill(in40Days)
+    await form.validityPeriodStart.fill(in40Days)
     await form.checkType('VARIABLE_TIME')
     await form.submit()
 
@@ -174,32 +172,47 @@ describe('Child Information - daily service times', () => {
     )
   })
 
-  test('can create regular daily service times starting today', async () => {
+  test('can create regular daily service times starting tomorrow', async () => {
     const form = await section.create()
-    await form.validityPeriodStartInput.clear()
-    await form.validityPeriodStartInput.fill(today)
+    await form.validityPeriodStart.fill(tomorrow)
     await form.checkType('REGULAR')
     await form.fillRegularTimeRange('08:00', '15:00')
     await form.submit()
 
     await section.assertTableRow(
       0,
-      `Päivittäinen varhaiskasvatusaika ${today} –`,
+      `Päivittäinen varhaiskasvatusaika ${tomorrow} –`,
+      'UPCOMING'
+    )
+
+    // Status changes to active tomorrow
+    const pageTomorrow = await Page.open({
+      mockedTime: tomorrowDate.toSystemTzDate()
+    })
+    await employeeLogin(pageTomorrow, admin)
+    await pageTomorrow.goto(
+      config.employeeUrl + '/child-information/' + childId
+    )
+
+    childInformationPage = new ChildInformationPage(pageTomorrow)
+    await childInformationPage.waitUntilLoaded()
+    section = await childInformationPage.openCollapsible('dailyServiceTimes')
+    await section.assertTableRow(
+      0,
+      `Päivittäinen varhaiskasvatusaika ${tomorrow} –`,
       'ACTIVE'
     )
   })
 
   test('can create multiple daily service times', async () => {
     const form = await section.create()
-    await form.validityPeriodStartInput.clear()
-    await form.validityPeriodStartInput.fill(today)
+    await form.validityPeriodStart.fill(tomorrow)
     await form.checkType('REGULAR')
     await form.fillRegularTimeRange('08:00', '15:00')
     await form.submit()
 
     const form2 = await section.create()
-    await form2.validityPeriodStartInput.clear()
-    await form2.validityPeriodStartInput.fill(in10Days)
+    await form2.validityPeriodStart.fill(in10Days)
     await form2.checkType('REGULAR')
     await form2.fillRegularTimeRange('08:00', '19:00')
     await form2.submit()
@@ -211,24 +224,22 @@ describe('Child Information - daily service times', () => {
     )
     await section.assertTableRow(
       1,
-      `Päivittäinen varhaiskasvatusaika ${today} – ${mockedDate
+      `Päivittäinen varhaiskasvatusaika ${tomorrow} – ${mockedDate
         .addDays(9)
         .format()}`,
-      'ACTIVE'
+      'UPCOMING'
     )
   })
 
   test('the currently active daily service times is open by default, and others can be opened', async () => {
     const form = await section.create()
-    await form.validityPeriodStartInput.clear()
-    await form.validityPeriodStartInput.fill(today)
+    await form.validityPeriodStart.fill(tomorrow)
     await form.checkType('REGULAR')
     await form.fillRegularTimeRange('08:00', '15:00')
     await form.submit()
 
     const form2 = await section.create()
-    await form2.validityPeriodStartInput.clear()
-    await form2.validityPeriodStartInput.fill(in40Days)
+    await form2.validityPeriodStart.fill(in40Days)
     await form2.checkType('IRREGULAR')
     await form2.fillIrregularTimeRange('wednesday', '12:00', '14:00')
     await form2.fillIrregularTimeRange('friday', '12:00', '18:00')
@@ -241,11 +252,12 @@ describe('Child Information - daily service times', () => {
     )
     await section.assertTableRow(
       1,
-      `Päivittäinen varhaiskasvatusaika ${today} – ${mockedDate
+      `Päivittäinen varhaiskasvatusaika ${tomorrow} – ${mockedDate
         .addDays(39)
         .format()}`,
-      'ACTIVE'
+      'UPCOMING'
     )
+    await section.toggleTableRowCollapsible(1)
     await section.assertTableRowCollapsible(
       1,
       'Säännöllinen varhaiskasvatusaika\nmaanantai–perjantai 08:00–15:00'
@@ -259,8 +271,7 @@ describe('Child Information - daily service times', () => {
 
   test('can modify daily service times', async () => {
     const form = await section.create()
-    await form.validityPeriodStartInput.clear()
-    await form.validityPeriodStartInput.fill(in10Days)
+    await form.validityPeriodStart.fill(in10Days)
     await form.checkType('REGULAR')
     await form.fillRegularTimeRange('08:00', '14:00')
     await form.submit()
@@ -287,8 +298,7 @@ describe('Child Information - daily service times', () => {
 
   test('can delete daily service times', async () => {
     const form = await section.create()
-    await form.validityPeriodStartInput.clear()
-    await form.validityPeriodStartInput.fill(in10Days)
+    await form.validityPeriodStart.fill(in10Days)
     await form.checkType('VARIABLE_TIME')
     await form.submit()
 

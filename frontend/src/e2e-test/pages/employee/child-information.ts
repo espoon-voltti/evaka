@@ -11,6 +11,7 @@ import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import {
   Checkbox,
   Combobox,
+  DatePicker,
   DatePickerDeprecated,
   Element,
   FileInput,
@@ -151,7 +152,7 @@ class DailyServiceTimeSectionBaseForm extends Section {
 }
 
 class DailyServiceTimeSectionCreationForm extends DailyServiceTimeSectionBaseForm {
-  readonly validityPeriodStartInput = new TextInput(
+  readonly validityPeriodStart = new DatePicker(
     this.findByDataQa('daily-service-times-validity-period-start')
   )
 

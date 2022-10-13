@@ -12,7 +12,7 @@ import { AbsenceCategory } from './daycare'
 import { AbsenceType } from './daycare'
 import { ChildDailyNote } from './note'
 import { ChildStickyNote } from './note'
-import { DailyServiceTimes } from '../../api-types/child/common'
+import { DailyServiceTimesValue } from '../../api-types/child/common'
 import { GroupNote } from './note'
 import { HelsinkiDateTimeRange } from './shared'
 import { PilotFeature } from './shared'
@@ -112,7 +112,7 @@ export interface Child {
   attendance: AttendanceTimes | null
   backup: boolean
   dailyNote: ChildDailyNote | null
-  dailyServiceTimes: DailyServiceTimes | null
+  dailyServiceTimes: DailyServiceTimesValue | null
   firstName: string
   groupId: UUID | null
   id: UUID

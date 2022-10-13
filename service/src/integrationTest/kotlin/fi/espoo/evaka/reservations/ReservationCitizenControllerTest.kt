@@ -7,7 +7,7 @@ package fi.espoo.evaka.reservations
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.createChildDailyServiceTimes
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
@@ -345,7 +345,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_3.id)
         }
 
-        val dailyServiceTimes = DailyServiceTimes.IrregularTimes(
+        val dailyServiceTimes = DailyServiceTimesValue.IrregularTimes(
             monday = null,
             tuesday = null,
             wednesday = DSTTimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0)),
@@ -439,7 +439,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(expected, actual)
     }
 
-    private fun insertDailyServiceTimes(childId: ChildId, dailyServiceTimes: DailyServiceTimes) {
+    private fun insertDailyServiceTimes(childId: ChildId, dailyServiceTimes: DailyServiceTimesValue) {
         db.transaction { tx -> tx.createChildDailyServiceTimes(childId, dailyServiceTimes) }
     }
 }

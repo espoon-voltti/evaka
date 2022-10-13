@@ -22,21 +22,25 @@ enum class DailyServiceTimesType {
     VARIABLE_TIME
 }
 
-data class DailyServiceTimesWithId(val id: DailyServiceTimesId, val times: DailyServiceTimes)
+data class DailyServiceTimes(
+    val id: DailyServiceTimesId,
+    val childId: ChildId,
+    val times: DailyServiceTimesValue
+)
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-sealed class DailyServiceTimes(
+sealed class DailyServiceTimesValue(
+    open val validityPeriod: DateRange,
     val type: DailyServiceTimesType,
 ) {
-    abstract val validityPeriod: DateRange
-
     abstract fun asUpdateRow(): DailyServiceTimeUpdateRow
+    abstract fun equalsIgnoringValidity(other: DailyServiceTimesValue): Boolean
 
     @JsonTypeName("REGULAR")
     data class RegularTimes(
+        override val validityPeriod: DateRange,
         val regularTimes: TimeRange,
-        override val validityPeriod: DateRange
-    ) : DailyServiceTimes(DailyServiceTimesType.REGULAR) {
+    ) : DailyServiceTimesValue(validityPeriod, DailyServiceTimesType.REGULAR) {
         override fun asUpdateRow() = DailyServiceTimeUpdateRow(
             type = DailyServiceTimesType.REGULAR,
             regularTimes = regularTimes,
@@ -49,10 +53,14 @@ sealed class DailyServiceTimes(
             sundayTimes = null,
             validityPeriod = validityPeriod
         )
+
+        override fun equalsIgnoringValidity(other: DailyServiceTimesValue): Boolean =
+            other is RegularTimes && regularTimes == other.regularTimes
     }
 
     @JsonTypeName("IRREGULAR")
     data class IrregularTimes(
+        override val validityPeriod: DateRange,
         val monday: TimeRange?,
         val tuesday: TimeRange?,
         val wednesday: TimeRange?,
@@ -60,8 +68,7 @@ sealed class DailyServiceTimes(
         val friday: TimeRange?,
         val saturday: TimeRange?,
         val sunday: TimeRange?,
-        override val validityPeriod: DateRange
-    ) : DailyServiceTimes(DailyServiceTimesType.IRREGULAR) {
+    ) : DailyServiceTimesValue(validityPeriod, DailyServiceTimesType.IRREGULAR) {
         fun timesForDayOfWeek(dayOfWeek: DayOfWeek) = when (dayOfWeek) {
             DayOfWeek.MONDAY -> monday
             DayOfWeek.TUESDAY -> tuesday
@@ -84,12 +91,31 @@ sealed class DailyServiceTimes(
             sundayTimes = sunday,
             validityPeriod = validityPeriod
         )
+
+        override fun equalsIgnoringValidity(other: DailyServiceTimesValue): Boolean =
+            other is IrregularTimes &&
+                monday == other.monday &&
+                tuesday == other.tuesday &&
+                wednesday == other.wednesday &&
+                thursday == other.thursday &&
+                friday == other.friday &&
+                saturday == other.saturday &&
+                sunday == other.sunday
+
+        fun isEmpty() =
+            monday == null &&
+                tuesday == null &&
+                wednesday == null &&
+                thursday == null &&
+                friday == null &&
+                saturday == null &&
+                sunday == null
     }
 
     @JsonTypeName("VARIABLE_TIME")
     data class VariableTimes(
         override val validityPeriod: DateRange
-    ) : DailyServiceTimes(DailyServiceTimesType.VARIABLE_TIME) {
+    ) : DailyServiceTimesValue(validityPeriod, DailyServiceTimesType.VARIABLE_TIME) {
         override fun asUpdateRow() = DailyServiceTimeUpdateRow(
             type = DailyServiceTimesType.VARIABLE_TIME,
             regularTimes = null,
@@ -102,14 +128,18 @@ sealed class DailyServiceTimes(
             sundayTimes = null,
             validityPeriod = validityPeriod
         )
+
+        override fun equalsIgnoringValidity(other: DailyServiceTimesValue): Boolean =
+            other is VariableTimes
     }
 
-    fun withId(id: DailyServiceTimesId) = DailyServiceTimesWithId(id, this)
+    fun withId(id: DailyServiceTimesId, childId: ChildId) = DailyServiceTimes(id, childId, this)
 }
 
 data class DailyServiceTimeRow(
     @PropagateNull
     val id: DailyServiceTimesId,
+    val childId: ChildId,
     val type: DailyServiceTimesType,
 
     val regularTimes: TimeRange?,
@@ -125,11 +155,13 @@ data class DailyServiceTimeRow(
     val validityPeriod: DateRange
 )
 
-fun Database.Read.getChildDailyServiceTimes(childId: ChildId): List<DailyServiceTimesWithId> {
+fun Database.Read.getChildDailyServiceTimes(childId: ChildId): List<DailyServiceTimes> {
     return this.createQuery(
         """
 SELECT
     id,
+    child_id,
+    validity_period,
     type,
     regular_times,
     monday_times,
@@ -138,10 +170,10 @@ SELECT
     thursday_times,
     friday_times,
     saturday_times,
-    sunday_times,
-    validity_period
+    sunday_times
 FROM daily_service_time
 WHERE child_id = :childId
+ORDER BY lower(validity_period) DESC
         """.trimIndent()
     )
         .bind("childId", childId)
@@ -150,12 +182,37 @@ WHERE child_id = :childId
         .toList()
 }
 
-data class ValidDailyServiceTimeRow(
+fun Database.Read.getDailyServiceTimesForChildren(childIds: Set<ChildId>): Map<ChildId, List<DailyServiceTimesValue>> =
+    createQuery(
+        """
+SELECT
+    id,
+    child_id,
+    validity_period,
+    type,
+    regular_times,
+    monday_times,
+    tuesday_times,
+    wednesday_times,
+    thursday_times,
+    friday_times,
+    saturday_times,
+    sunday_times
+FROM daily_service_time
+WHERE child_id = ANY(:childIds)
+        """.trimIndent()
+    )
+        .bind("childIds", childIds)
+        .mapTo<DailyServiceTimeRow>()
+        .map { toDailyServiceTimes(it) }
+        .groupBy({ it.childId }, { it.times })
+
+data class DailyServiceTimesValidity(
     val childId: ChildId,
     val validityPeriod: DateRange
 )
 
-fun Database.Read.getChildDailyServiceTimeValidity(id: DailyServiceTimesId): ValidDailyServiceTimeRow? {
+fun Database.Read.getDailyServiceTimesValidity(id: DailyServiceTimesId): DailyServiceTimesValidity? {
     return this.createQuery(
         """
 SELECT child_id, validity_period
@@ -164,17 +221,18 @@ WHERE id = :id
         """.trimIndent()
     )
         .bind("id", id)
-        .mapTo<ValidDailyServiceTimeRow>()
+        .mapTo<DailyServiceTimesValidity>()
         .firstOrNull()
 }
 
-fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimesWithId {
+fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimes {
     return when (row.type) {
-        DailyServiceTimesType.REGULAR -> DailyServiceTimes.RegularTimes(
+        DailyServiceTimesType.REGULAR -> DailyServiceTimesValue.RegularTimes(
+            validityPeriod = row.validityPeriod,
             regularTimes = row.regularTimes ?: throw IllegalStateException("Regular daily service times must have regular times"),
-            validityPeriod = row.validityPeriod
-        ).withId(row.id)
-        DailyServiceTimesType.IRREGULAR -> DailyServiceTimes.IrregularTimes(
+        ).withId(row.id, row.childId)
+        DailyServiceTimesType.IRREGULAR -> DailyServiceTimesValue.IrregularTimes(
+            validityPeriod = row.validityPeriod,
             monday = row.mondayTimes,
             tuesday = row.tuesdayTimes,
             wednesday = row.wednesdayTimes,
@@ -182,11 +240,10 @@ fun toDailyServiceTimes(row: DailyServiceTimeRow): DailyServiceTimesWithId {
             friday = row.fridayTimes,
             saturday = row.saturdayTimes,
             sunday = row.sundayTimes,
+        ).withId(row.id, row.childId)
+        DailyServiceTimesType.VARIABLE_TIME -> DailyServiceTimesValue.VariableTimes(
             validityPeriod = row.validityPeriod
-        ).withId(row.id)
-        DailyServiceTimesType.VARIABLE_TIME -> DailyServiceTimes.VariableTimes(
-            validityPeriod = row.validityPeriod
-        ).withId(row.id)
+        ).withId(row.id, row.childId)
     }.exhaust()
 }
 
@@ -206,10 +263,11 @@ data class DailyServiceTimeUpdateRow(
     val validityPeriod: DateRange
 )
 
-fun Database.Transaction.updateChildDailyServiceTimes(id: DailyServiceTimesId, times: DailyServiceTimes) {
+fun Database.Transaction.updateChildDailyServiceTimes(id: DailyServiceTimesId, times: DailyServiceTimesValue) {
     val sql = """
         UPDATE daily_service_time
         SET 
+            validity_period = :validityPeriod,
             type = :type,
             regular_times = :regularTimes,
             monday_times = :mondayTimes,
@@ -225,6 +283,19 @@ fun Database.Transaction.updateChildDailyServiceTimes(id: DailyServiceTimesId, t
     this.createUpdate(sql)
         .bindKotlin(times.asUpdateRow())
         .bind("id", id)
+        .execute()
+}
+
+fun Database.Transaction.setDailyServiceTimesEndDate(id: DailyServiceTimesId, endDate: LocalDate) {
+    val sql = """
+        UPDATE daily_service_time
+        SET validity_period = daterange(lower(validity_period), :endDate, '[]')
+        WHERE id = :id
+    """.trimIndent()
+
+    this.createUpdate(sql)
+        .bind("id", id)
+        .bind("endDate", endDate)
         .execute()
 }
 
@@ -264,7 +335,7 @@ fun Database.Transaction.deleteChildDailyServiceTimes(id: DailyServiceTimesId) {
     this.createUpdate(sql).bind("id", id).execute()
 }
 
-fun Database.Transaction.createChildDailyServiceTimes(childId: ChildId, times: DailyServiceTimes): DailyServiceTimesId {
+fun Database.Transaction.createChildDailyServiceTimes(childId: ChildId, times: DailyServiceTimesValue): DailyServiceTimesId {
     val sql = """
         INSERT INTO daily_service_time (
             child_id, type, 

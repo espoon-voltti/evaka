@@ -5,20 +5,17 @@
 package fi.espoo.evaka.attendance
 
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimeRow
-import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesWithId
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
-import fi.espoo.evaka.daycare.service.Absence
-import fi.espoo.evaka.daycare.service.AbsenceCategory
-import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
@@ -50,31 +47,6 @@ fun Database.Transaction.insertAttendance(
         .executeAndReturnGeneratedKeys()
         .mapTo<AttendanceId>()
         .single()
-}
-
-fun Database.Transaction.insertAbsence(
-    user: AuthenticatedUser,
-    childId: ChildId,
-    date: LocalDate,
-    category: AbsenceCategory,
-    absenceType: AbsenceType
-): Absence {
-    // language=sql
-    val sql =
-        """
-        INSERT INTO absence (child_id, date, category, absence_type, modified_by)
-        VALUES (:childId, :date, :category, :absenceType, :userId)
-        RETURNING *
-        """.trimIndent()
-
-    return createQuery(sql)
-        .bind("childId", childId)
-        .bind("date", date)
-        .bind("category", category)
-        .bind("absenceType", absenceType)
-        .bind("userId", user.evakaUserId)
-        .mapTo<Absence>()
-        .first()
 }
 
 fun Database.Read.getChildAttendance(childId: ChildId, unitId: DaycareId, now: HelsinkiDateTime): ChildAttendance? {
@@ -113,7 +85,7 @@ data class ChildBasics(
     val lastName: String,
     val preferredName: String?,
     val dateOfBirth: LocalDate,
-    val dailyServiceTimes: DailyServiceTimesWithId?,
+    val dailyServiceTimes: DailyServiceTimes?,
     val placementType: PlacementType,
     val groupId: GroupId?,
     val backup: Boolean,
@@ -271,6 +243,22 @@ fun Database.Read.fetchChildrenBasics(unitId: DaycareId, instant: HelsinkiDateTi
         .list()
 }
 
+fun Database.Read.getChildAttendanceStartDatesByRange(childId: ChildId, period: DateRange): List<LocalDate> {
+    return createQuery(
+        """
+        SELECT date
+        FROM child_attendance
+        WHERE between_start_and_end(:period, date)
+        AND child_id = :childId
+        AND start_time != '00:00'::time  -- filter out overnight stays
+    """
+    )
+        .bind("period", period)
+        .bind("childId", childId)
+        .mapTo<LocalDate>()
+        .list()
+}
+
 fun Database.Transaction.unsetAttendanceEndTime(attendanceId: AttendanceId) {
     createUpdate("UPDATE child_attendance SET end_time = NULL WHERE id = :id")
         .bind("id", attendanceId)
@@ -373,3 +361,19 @@ fun Database.Read.fetchAttendanceReservations(
     }
     .groupBy { (childId, _) -> childId }
     .mapValues { it.value.map { (_, reservation) -> reservation } }
+
+fun Database.Read.getChildAttendanceReservationStartDatesByRange(childId: ChildId, period: DateRange): List<LocalDate> {
+    return createQuery(
+        """
+        SELECT date
+        FROM attendance_reservation
+        WHERE between_start_and_end(:period, date)
+        AND child_id = :childId
+        AND start_time != '00:00'::time  -- filter out overnight reservations
+        """
+    )
+        .bind("period", period)
+        .bind("childId", childId)
+        .mapTo<LocalDate>()
+        .list()
+}

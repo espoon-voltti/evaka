@@ -1,0 +1,415 @@
+// SPDX-FileCopyrightText: 2017-2021 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+package fi.espoo.evaka.daycare.service
+
+import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
+import fi.espoo.evaka.dailyservicetimes.deleteChildDailyServiceTimes
+import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.AbsenceId
+import fi.espoo.evaka.shared.DailyServiceTimesId
+import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.DevReservation
+import fi.espoo.evaka.shared.dev.insertTestAbsence
+import fi.espoo.evaka.shared.dev.insertTestChildAttendance
+import fi.espoo.evaka.shared.dev.insertTestDailyServiceTimes
+import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insertTestReservation
+import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.testChild_1
+import fi.espoo.evaka.testChild_2
+import fi.espoo.evaka.testChild_3
+import fi.espoo.evaka.testChild_4
+import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.unitSupervisorOfTestDaycare
+import fi.espoo.evaka.user.EvakaUserType
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import java.time.LocalDate
+import java.time.LocalTime
+import java.util.UUID
+import kotlin.test.assertEquals
+
+class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
+    private val placementPeriod = FiniteDateRange(LocalDate.of(2020, 11, 1), LocalDate.of(2020, 11, 30))
+
+    private val today = placementPeriod.start
+    private val now = HelsinkiDateTime.of(today, LocalTime.of(0, 0))
+
+    private val mondays = listOf(2, 9, 16, 23, 30).map { today.withDayOfMonth(it) }
+    private val tuesdays = listOf(3, 10, 17, 24).map { today.withDayOfMonth(it) }
+    private val wednesdays = listOf(4, 11, 18, 25).map { today.withDayOfMonth(it) }
+
+    private val present = TimeRange(LocalTime.of(8, 0), LocalTime.of(16, 0))
+
+    @BeforeEach
+    fun beforeEach() {
+        db.transaction { tx ->
+            tx.insertGeneralTestFixtures()
+        }
+    }
+
+    @Test
+    fun `does not generate absences without placement or without irregular daily service times`() {
+        db.transaction { tx ->
+            // No daily service times at all
+            tx.insertTestPlacement(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = placementPeriod.start,
+                    endDate = placementPeriod.end,
+                )
+            )
+
+            // Regular daily service times
+            tx.insertTestPlacement(
+                DevPlacement(
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    startDate = placementPeriod.start,
+                    endDate = placementPeriod.end,
+                )
+            )
+            tx.insertTestDailyServiceTimes(
+                DevDailyServiceTimes(
+                    childId = testChild_2.id,
+                    validityPeriod = DateRange(today, null),
+                    type = DailyServiceTimesType.REGULAR,
+                    regularTimes = present,
+                )
+            )
+
+            // Irregular daily service times, no time for any day
+            tx.insertTestPlacement(
+                DevPlacement(
+                    childId = testChild_3.id,
+                    unitId = testDaycare.id,
+                    startDate = placementPeriod.start,
+                    endDate = placementPeriod.end,
+                )
+            )
+            tx.insertTestDailyServiceTimes(
+                DevDailyServiceTimes(
+                    childId = testChild_3.id,
+                    validityPeriod = DateRange(today, null),
+                    type = DailyServiceTimesType.IRREGULAR,
+                )
+            )
+
+            // Irregular daily service times but no placement
+            tx.insertTestDailyServiceTimes(
+                DevDailyServiceTimes(
+                    childId = testChild_4.id,
+                    validityPeriod = DateRange(today, null),
+                    type = DailyServiceTimesType.IRREGULAR,
+                    mondayTimes = null,
+                    tuesdayTimes = present,
+                    wednesdayTimes = present,
+                    thursdayTimes = present,
+                    fridayTimes = present,
+                )
+            )
+        }
+
+        db.transaction { tx ->
+            listOf(testChild_1.id, testChild_2.id).forEach {
+                generateAbsencesFromIrregularDailyServiceTimes(tx, now, it)
+            }
+        }
+
+        assertEquals(emptyList(), getAllAbsences())
+    }
+
+    @Test
+    fun `generates correct absence categories`() {
+        db.transaction { tx ->
+            // Absent on mondays
+            listOf(
+                testChild_1.id,
+                testChild_2.id,
+                testChild_3.id,
+            ).forEach {
+                tx.insertTestDailyServiceTimes(
+                    DevDailyServiceTimes(
+                        childId = it,
+                        validityPeriod = DateRange(today, null),
+                        type = DailyServiceTimesType.IRREGULAR,
+                        mondayTimes = null,
+                        tuesdayTimes = present,
+                        wednesdayTimes = present,
+                        thursdayTimes = present,
+                        fridayTimes = present,
+                    )
+                )
+            }
+
+            // Daycare placement -> BILLABLE absences are generated
+            tx.insertTestPlacement(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = placementPeriod.start,
+                    endDate = placementPeriod.end,
+                )
+            )
+
+            // Preschool+daycare placement -> BILLABLE and NONBILLABLE absences are generated
+            tx.insertTestPlacement(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL_DAYCARE,
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    startDate = placementPeriod.start,
+                    endDate = placementPeriod.end,
+                )
+            )
+
+            // Preschool placement -> NONBILLABLE absences are generated
+            tx.insertTestPlacement(
+                DevPlacement(
+                    type = PlacementType.PRESCHOOL,
+                    childId = testChild_3.id,
+                    unitId = testDaycare.id,
+                    startDate = placementPeriod.start,
+                    endDate = placementPeriod.end,
+                )
+            )
+        }
+
+        db.transaction { tx ->
+            listOf(testChild_1.id, testChild_2.id, testChild_3.id).forEach {
+                generateAbsencesFromIrregularDailyServiceTimes(tx, now, it)
+            }
+        }
+
+        val absences = getAllAbsences().groupBy { it.childId }
+        absences[testChild_1.id]!!.let { child1Absences ->
+            child1Absences.forEach {
+                assertEquals(AbsenceCategory.BILLABLE, it.category)
+                assertEquals(AbsenceType.OTHER_ABSENCE, it.absenceType)
+                assertEquals(EvakaUserType.SYSTEM, it.modifiedByType)
+                assertEquals(now, it.modifiedAt)
+            }
+            assertEquals(mondays, child1Absences.map { it.date })
+        }
+        absences[testChild_2.id]!!.let { child2Absences ->
+            val byDate = child2Absences.groupBy { it.date }
+            assertEquals(mondays, byDate.keys.sorted())
+            byDate.values.forEach { dateAbsences ->
+                assertEquals(2, dateAbsences.size)
+                assertEquals(AbsenceCategory.BILLABLE, dateAbsences[0].category)
+                assertEquals(AbsenceCategory.NONBILLABLE, dateAbsences[1].category)
+
+                dateAbsences.forEach {
+                    assertEquals(EvakaUserType.SYSTEM, it.modifiedByType)
+                    assertEquals(now, it.modifiedAt)
+                    assertEquals(AbsenceType.OTHER_ABSENCE, it.absenceType)
+                }
+            }
+        }
+        absences[testChild_3.id]!!.let { child3Absences ->
+            child3Absences.forEach {
+                assertEquals(AbsenceCategory.NONBILLABLE, it.category)
+                assertEquals(AbsenceType.OTHER_ABSENCE, it.absenceType)
+                assertEquals(EvakaUserType.SYSTEM, it.modifiedByType)
+                assertEquals(now, it.modifiedAt)
+            }
+            assertEquals(mondays, child3Absences.map { it.date })
+        }
+    }
+
+    @Test
+    fun `does not override attendances, reservations or existing absences`() {
+        val existingAbsenceId = AbsenceId(UUID.randomUUID())
+        db.transaction { tx ->
+            tx.insertTestPlacement(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = placementPeriod.start,
+                    endDate = placementPeriod.end,
+                )
+            )
+            tx.insertTestDailyServiceTimes(
+                DevDailyServiceTimes(
+                    childId = testChild_1.id,
+                    validityPeriod = DateRange(today, null),
+                    type = DailyServiceTimesType.IRREGULAR,
+                    mondayTimes = null,
+                    tuesdayTimes = present,
+                    wednesdayTimes = present,
+                    thursdayTimes = present,
+                    fridayTimes = present,
+                )
+            )
+
+            tx.insertTestChildAttendance(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                arrived = HelsinkiDateTime.of(mondays[0], LocalTime.of(8, 0)),
+                departed = HelsinkiDateTime.of(mondays[0], LocalTime.of(12, 0)),
+            )
+            tx.insertTestReservation(
+                DevReservation(
+                    childId = testChild_1.id,
+                    date = mondays[1],
+                    startTime = LocalTime.of(8, 0),
+                    endTime = LocalTime.of(12, 0),
+                    createdBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw),
+                )
+            )
+            tx.insertTestAbsence(
+                id = existingAbsenceId,
+                childId = testChild_1.id,
+                date = mondays[2],
+                category = AbsenceCategory.BILLABLE,
+                absenceType = AbsenceType.SICKLEAVE,
+                modifiedBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw),
+            )
+        }
+
+        db.transaction { tx ->
+            generateAbsencesFromIrregularDailyServiceTimes(tx, now, testChild_1.id)
+        }
+
+        // The absence created above is not overridden, and absences are created for "empty" mondays only
+        val absences = getAllAbsences()
+        assertEquals(3, absences.size)
+        assertEquals(mondays.slice(2..4), absences.map { it.date })
+        assertEquals(existingAbsenceId, absences[0].id)
+    }
+
+    @Test
+    fun `deletes old generated absences`() {
+        val existingAbsenceId = AbsenceId(UUID.randomUUID())
+        val dailyServiceTimesId = DailyServiceTimesId(UUID.randomUUID())
+        db.transaction { tx ->
+            tx.insertTestPlacement(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = placementPeriod.start,
+                    endDate = placementPeriod.end,
+                )
+            )
+
+            // Absent on mondays and tuesdays
+            tx.insertTestDailyServiceTimes(
+                DevDailyServiceTimes(
+                    id = dailyServiceTimesId,
+                    childId = testChild_1.id,
+                    validityPeriod = DateRange(today, null),
+                    type = DailyServiceTimesType.IRREGULAR,
+                    mondayTimes = null,
+                    tuesdayTimes = null,
+                    wednesdayTimes = present,
+                    thursdayTimes = present,
+                    fridayTimes = present,
+                )
+            )
+
+            tx.insertTestAbsence(
+                id = existingAbsenceId,
+                childId = testChild_1.id,
+                date = wednesdays[0],
+                category = AbsenceCategory.BILLABLE,
+                absenceType = AbsenceType.SICKLEAVE,
+                modifiedBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw),
+                modifiedAt = now.minusDays(1),
+            )
+        }
+
+        db.transaction { tx ->
+            generateAbsencesFromIrregularDailyServiceTimes(tx, now, testChild_1.id)
+        }
+
+        run {
+            val absences = getAllAbsences()
+            val (generated, existing) = absences.partition { it.id != existingAbsenceId }
+
+            assertEquals(mondays.size + tuesdays.size, generated.size)
+            assertEquals((mondays + tuesdays).sorted(), generated.map { it.date })
+            generated.forEach {
+                assertEquals(EvakaUserType.SYSTEM, it.modifiedByType)
+                assertEquals(now, it.modifiedAt)
+            }
+
+            assertEquals(1, existing.size)
+            existing.first().let {
+                assertEquals(wednesdays[0], it.date)
+                assertEquals(AbsenceCategory.BILLABLE, it.category)
+                assertEquals(AbsenceType.SICKLEAVE, it.absenceType)
+                assertEquals(EvakaUserType.EMPLOYEE, it.modifiedByType)
+                assertEquals(now.minusDays(1), it.modifiedAt)
+            }
+        }
+
+        db.transaction { tx ->
+            tx.deleteChildDailyServiceTimes(dailyServiceTimesId)
+
+            // Absent on mondays and wednesdays
+            tx.insertTestDailyServiceTimes(
+                DevDailyServiceTimes(
+                    childId = testChild_1.id,
+                    validityPeriod = DateRange(today, null),
+                    type = DailyServiceTimesType.IRREGULAR,
+                    mondayTimes = null,
+                    tuesdayTimes = present,
+                    wednesdayTimes = null,
+                    thursdayTimes = present,
+                    fridayTimes = present,
+                )
+            )
+        }
+
+        db.transaction { tx ->
+            generateAbsencesFromIrregularDailyServiceTimes(tx, now.plusHours(1), testChild_1.id)
+        }
+
+        run {
+            val absences = getAllAbsences()
+            val (generated, existing) = absences.partition { it.id != existingAbsenceId }
+
+            assertEquals(mondays.size + wednesdays.size - 1, generated.size)
+            assertEquals((mondays + wednesdays.takeLast(wednesdays.size - 1)).sorted(), generated.map { it.date })
+            generated.forEach {
+                assertEquals(EvakaUserType.SYSTEM, it.modifiedByType)
+                assertEquals(now.plusHours(1), it.modifiedAt)
+            }
+
+            // Didn't touch the existing absence
+            assertEquals(1, existing.size)
+            existing.first().let {
+                assertEquals(wednesdays[0], it.date)
+                assertEquals(AbsenceCategory.BILLABLE, it.category)
+                assertEquals(AbsenceType.SICKLEAVE, it.absenceType)
+                assertEquals(EvakaUserType.EMPLOYEE, it.modifiedByType)
+                assertEquals(now.minusDays(1), it.modifiedAt)
+            }
+        }
+    }
+
+    private fun getAllAbsences(): List<AbsenceWithModifierInfo> {
+        return db.read {
+            it.createQuery(
+                """
+SELECT a.id, a.child_id, a.date, a.category, a.absence_type, eu.type AS modified_by_type, a.modified_at AS modified_at
+FROM absence a
+LEFT JOIN evaka_user eu ON eu.id = a.modified_by
+ORDER BY a.date, a.category
+"""
+            )
+                .mapTo<AbsenceWithModifierInfo>()
+                .list()
+        }
+    }
+}

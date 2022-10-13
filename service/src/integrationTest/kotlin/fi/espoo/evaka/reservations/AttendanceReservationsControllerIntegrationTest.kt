@@ -6,8 +6,8 @@ package fi.espoo.evaka.reservations
 
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
@@ -320,12 +320,12 @@ class AttendanceReservationsControllerIntegrationTest : FullApplicationTest(rese
                                 reservation = null,
                                 attendance = null,
                                 absence = null,
-                                dailyServiceTimes = DailyServiceTimes.RegularTimes(
+                                dailyServiceTimes = DailyServiceTimesValue.RegularTimes(
+                                    monFri.asDateRange(),
                                     TimeRange(
                                         LocalTime.of(8, 0),
                                         LocalTime.of(16, 0)
                                     ),
-                                    monFri.asDateRange(),
                                 ),
                                 inOtherUnit = false
                             ),

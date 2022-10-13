@@ -102,9 +102,12 @@ class ReservationControllerCitizen(
         val result = db.connect { dbc ->
             dbc.transaction { tx ->
                 val deadlines = tx.getHolidayPeriodDeadlines()
-                val reservableDays =
+                val reservableRanges =
                     getReservableDays(clock.now(), featureConfig.citizenReservationThresholdHours, deadlines)
-                createReservations(tx, user.evakaUserId, body.validate(reservableDays), user.id)
+                if (!body.all { request -> reservableRanges.any { it.includes(request.date) } }) {
+                    throw BadRequest("Some days are not reservable", "NON_RESERVABLE_DAYS")
+                }
+                createReservationsAndAbsences(tx, user.evakaUserId, body)
             }
         }
         Audit.AttendanceReservationCitizenCreate.log(
@@ -141,7 +144,7 @@ class ReservationControllerCitizen(
                     }
                 )
                 val inserted = tx.insertAbsences(
-                    user.id,
+                    user.evakaUserId,
                     body.childIds.flatMap { childId ->
                         body.dateRange.dates().map { date ->
                             AbsenceInsert(childId, date, body.absenceType)

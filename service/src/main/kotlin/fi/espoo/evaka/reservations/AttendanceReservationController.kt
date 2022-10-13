@@ -6,8 +6,8 @@ package fi.espoo.evaka.reservations
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.ExcludeCodeGen
-import fi.espoo.evaka.dailyservicetimes.DailyServiceTimes
-import fi.espoo.evaka.dailyservicetimes.toDailyServiceTimes
+import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
+import fi.espoo.evaka.dailyservicetimes.getDailyServiceTimesForChildren
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.shared.ChildId
@@ -17,7 +17,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
-import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
@@ -78,7 +77,7 @@ class AttendanceReservationController(private val ac: AccessControl) {
                 }.toList()
 
                 val childIds = flatData.map { it.childId }.toSet()
-                val serviceTimes = tx.getDailyServiceTimes(childIds)
+                val serviceTimes = tx.getDailyServiceTimesForChildren(childIds)
                 val childData = tx.getChildData(childIds, period)
 
                 val byGroup = flatData.groupBy { it.group }
@@ -114,7 +113,15 @@ class AttendanceReservationController(private val ac: AccessControl) {
         val children = body.map { it.childId }.toSet()
         ac.requirePermissionFor(user, clock, Action.Child.CREATE_ATTENDANCE_RESERVATION, children)
 
-        val result = db.connect { dbc -> dbc.transaction { createReservations(it, user.evakaUserId, body.validate()) } }
+        if (body.any { it.absent }) {
+            throw BadRequest("Absences are not allowed", "ABSENCES_NOT_ALLOWED")
+        }
+
+        val result = db.connect { dbc ->
+            dbc.transaction {
+                createReservationsAndAbsences(it, user.evakaUserId, body)
+            }
+        }
         Audit.AttendanceReservationEmployeeCreate.log(
             targetId = children,
             mapOf(
@@ -159,7 +166,7 @@ data class UnitAttendanceReservations(
         val reservation: ReservationTimes?,
         val attendance: AttendanceTimes?,
         val absence: Absence?,
-        val dailyServiceTimes: DailyServiceTimes?,
+        val dailyServiceTimes: DailyServiceTimesValue?,
         val inOtherUnit: Boolean
     )
 
@@ -276,31 +283,6 @@ WHERE
         .toList()
 }
 
-private fun Database.Read.getDailyServiceTimes(childIds: Set<ChildId>): Map<ChildId, List<DailyServiceTimes>> =
-    createQuery(
-        """
-SELECT
-    id,
-    child_id,
-    type,
-    regular_times,
-    monday_times,
-    tuesday_times,
-    wednesday_times,
-    thursday_times,
-    friday_times,
-    saturday_times,
-    sunday_times,
-    validity_period
-FROM daily_service_time
-WHERE child_id = ANY(:childIds)
-        """.trimIndent()
-    )
-        .bind("childIds", childIds)
-        .map { row -> row.mapColumn<ChildId>("child_id") to toDailyServiceTimes(row.mapRow()).times }
-        .toList()
-        .groupBy({ it.first }, { it.second })
-
 private data class ChildData(
     val child: UnitAttendanceReservations.Child,
     val reservations: Map<LocalDate, List<UnitAttendanceReservations.ReservationTimes>>,
@@ -391,7 +373,7 @@ WHERE p.id = ANY(:childIds)
 
 private fun toChildDayRows(
     rows: List<ChildPlacementStatus>,
-    serviceTimes: Map<ChildId, List<DailyServiceTimes>>,
+    serviceTimes: Map<ChildId, List<DailyServiceTimesValue>>,
     childData: Map<ChildId, ChildData>,
 ): List<UnitAttendanceReservations.ChildDailyRecords> {
     return rows
@@ -427,7 +409,7 @@ private fun dailyRecord(
     placementStatus: ChildPlacementStatus,
     rowIndex: Int,
     childData: ChildData,
-    serviceTimes: List<DailyServiceTimes>?
+    serviceTimes: List<DailyServiceTimesValue>?
 ): UnitAttendanceReservations.ChildRecordOfDay {
     val date = placementStatus.date
     val inOtherUnit = placementStatus.inOtherUnit
