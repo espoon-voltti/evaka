@@ -10,6 +10,7 @@ const names = [
   'espooad-internal-staging.pem',
   'idp.test.espoon-voltti.fi.pem',
   'saml-signing.idp.tunnistautuminen.suomi.fi.pem',
+  'saml-signing.idp.tunnistautuminen.suomi.fi.2022.pem',
   'saml-signing-testi.apro.tunnistus.fi.pem',
   'saml-signing-testi.apro.tunnistus.fi.old.pem',
   'tamperead-internal-staging.pem',
