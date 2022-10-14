@@ -899,9 +899,8 @@ export default function UnitEditor(props: Props): JSX.Element {
         {props.editable ? (
           <FixedSpaceColumn>
             {unitProviderTypes.map((value) => (
-              <>
+              <div key={value}>
                 <Radio
-                  key={value}
                   label={i18n.common.providerType[value]}
                   checked={form.providerType === value}
                   onChange={() => updateForm({ providerType: value })}
@@ -950,7 +949,7 @@ export default function UnitEditor(props: Props): JSX.Element {
                       </div>
                     </IndentedTable>
                   )}
-              </>
+              </div>
             ))}
           </FixedSpaceColumn>
         ) : (
