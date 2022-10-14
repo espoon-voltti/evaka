@@ -122,8 +122,8 @@ const Graph = React.memo(function Graph({
         return
       }
 
-      const children = datasets[0].data[tooltip.dataPoints[0].dataIndex].y ?? 0
-      const staff = datasets[1].data[tooltip.dataPoints[0].dataIndex].y
+      const children = datasets[0].data[tooltip.dataPoints[0].dataIndex]?.y ?? 0
+      const staff = datasets[1].data[tooltip.dataPoints[0].dataIndex]?.y
       const utilization =
         children === 0 ? 0 : ceil((children / (staff ?? 1)) * 100)
       const staffRequired = ceil(children / 7)
