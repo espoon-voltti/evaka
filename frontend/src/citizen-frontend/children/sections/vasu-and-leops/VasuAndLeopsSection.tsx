@@ -175,24 +175,6 @@ export default React.memo(function VasuAndLeopsSection({
       data-qa="collapsible-vasu"
       contentPadding="zero"
     >
-      <PaddingBox>
-        <P>
-          {i18n.children.vasu.givePermissionToShareInfoVasu}
-          <ParagraphInfoButton
-            aria-label={i18n.common.openExpandingInfo}
-            onClick={() => setInfoOpen(!infoOpen)}
-            open={infoOpen}
-          />
-        </P>
-        {infoOpen && (
-          <ExpandingInfoBox
-            close={() => setInfoOpen(false)}
-            info={i18n.children.vasu.givePermissionToShareInfoVasuInfoText}
-            width="full"
-            closeLabel=""
-          />
-        )}
-      </PaddingBox>
       {renderResult(vasus, ({ data: items, permissionToShareRequired }) =>
         items.length === 0 ? (
           <PaddingBox>
@@ -201,6 +183,26 @@ export default React.memo(function VasuAndLeopsSection({
           </PaddingBox>
         ) : (
           <>
+            <PaddingBox>
+              <P>
+                {i18n.children.vasu.givePermissionToShareInfoVasu}
+                <ParagraphInfoButton
+                  aria-label={i18n.common.openExpandingInfo}
+                  onClick={() => setInfoOpen(!infoOpen)}
+                  open={infoOpen}
+                />
+              </P>
+              {infoOpen && (
+                <ExpandingInfoBox
+                  close={() => setInfoOpen(false)}
+                  info={
+                    i18n.children.vasu.givePermissionToShareInfoVasuInfoText
+                  }
+                  width="full"
+                  closeLabel=""
+                />
+              )}
+            </PaddingBox>
             <MobileAndTablet>
               {items.map((vasu) => (
                 <MobileRowContainer key={vasu.id}>
