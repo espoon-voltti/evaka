@@ -39,7 +39,7 @@ interface Props extends ModalBaseProps {
 
 export default React.memo(function BaseModal(props: Props) {
   return (
-    <ModalBackground>
+    <ModalBackground zIndex={props.zIndex}>
       <ModalWrapper
         className={props.className}
         zIndex={props.zIndex}
