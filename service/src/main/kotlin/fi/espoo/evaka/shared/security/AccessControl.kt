@@ -8,10 +8,10 @@ import fi.espoo.evaka.pis.employeePinIsCorrect
 import fi.espoo.evaka.pis.markEmployeeLastLogin
 import fi.espoo.evaka.pis.resetEmployeePinFailureCount
 import fi.espoo.evaka.pis.updateEmployeePinFailureCountAndCheckIfLocked
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
@@ -138,22 +138,21 @@ class AccessControl(
         return decided + undecided.associateWith { AccessControlDecision.None }
     }
 
-    fun requireAuthorizationFilter(tx: Database.Read, user: AuthenticatedUser, clock: EvakaClock, action: Action.Unit): AccessControlFilter<DaycareId> =
+    fun <T> requireAuthorizationFilter(tx: Database.Read, user: AuthenticatedUser, clock: EvakaClock, action: Action.ScopedAction<T>): AccessControlFilter<T> =
         getAuthorizationFilter(tx, user, clock, action) ?: throw Forbidden()
-    fun getAuthorizationFilter(
+    fun <T> getAuthorizationFilter(
         tx: Database.Read,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        // WARN: don't enable this for other action types. This design can have severe performance issues!
-        action: Action.Unit
-    ): AccessControlFilter<DaycareId>? {
+        action: Action.ScopedAction<T>
+    ): AccessControlFilter<T>? {
         if (user.isAdmin) {
             return AccessControlFilter.PermitAll
         }
         val queryCtx = DatabaseActionRule.QueryContext(tx, user, clock.now())
         val unscopedEvaluator = UnscopedEvaluator(queryCtx)
-        val scopedEvaluator = ScopedEvaluator<DaycareId>(queryCtx)
-        var result: AccessControlFilter.Some<DaycareId>? = null
+        val scopedEvaluator = ScopedEvaluator<T>(queryCtx)
+        val filters: MutableList<QuerySql<T>> = mutableListOf()
         val rules = actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }
         for (rule in rules) {
             when (rule) {
@@ -166,15 +165,20 @@ class AccessControl(
                     is AccessControlDecision.Permitted -> return AccessControlFilter.PermitAll
                     AccessControlDecision.PermittedToAdmin -> return AccessControlFilter.PermitAll
                 }
-                is DatabaseActionRule.Scoped<in DaycareId, *> -> scopedEvaluator.evaluateWithParams(rule)?.let { filter ->
-                    when (filter) {
-                        AccessControlFilter.PermitAll -> return AccessControlFilter.PermitAll
-                        is AccessControlFilter.Some -> result = AccessControlFilter.Some(filter.filter + (result?.filter ?: emptySet()))
-                    }
+                is DatabaseActionRule.Scoped<in T, *> -> scopedEvaluator.queryWithParams(rule)?.let { filter ->
+                    filters += filter
                 }
             }
         }
-        return result
+        return if (filters.isEmpty()) {
+            null
+        } else {
+            AccessControlFilter.Some(
+                QuerySql.of {
+                    sql(filters.joinToString(separator = " UNION ALL ") { "(${subquery(it)})" })
+                }
+            )
+        }
     }
 
     inline fun <T, reified A> getPermittedActions(
@@ -241,19 +245,18 @@ class AccessControl(
         }
     }
     private class ScopedEvaluator<T>(private val queryCtx: DatabaseActionRule.QueryContext) {
-        private val targetCache = mutableMapOf<DatabaseActionRule.Scoped.Query<in T, Any>, Map<in T, DatabaseActionRule.Deferred<Any>>>()
-        private val paramsCache = mutableMapOf<DatabaseActionRule.Scoped.Query<in T, Any>, AccessControlFilter<T>?>()
+        private val cache = mutableMapOf<DatabaseActionRule.Scoped.Query<in T, Any>, Map<in T, DatabaseActionRule.Deferred<Any>>>()
 
         fun evaluateWithTargets(rule: DatabaseActionRule.Scoped<in T, *>, targets: Set<T>): Sequence<Pair<T, AccessControlDecision>> {
             @Suppress("UNCHECKED_CAST")
             val query = rule.query as DatabaseActionRule.Scoped.Query<in T, Any>
-            val deferreds = targetCache.getOrPut(query) { query.executeWithTargets(queryCtx, targets) }
+            val deferreds = cache.getOrPut(query) { query.executeWithTargets(queryCtx, targets) }
             return targets.asSequence().map { target -> target to (deferreds[target]?.evaluate(rule.params) ?: AccessControlDecision.None) }
         }
-        fun evaluateWithParams(rule: DatabaseActionRule.Scoped<in T, *>): AccessControlFilter<T>? {
+        fun queryWithParams(rule: DatabaseActionRule.Scoped<in T, *>): QuerySql<T>? {
             @Suppress("UNCHECKED_CAST")
             val query = rule.query as DatabaseActionRule.Scoped.Query<in T, Any>
-            return paramsCache.getOrPut(query) { query.executeWithParams(queryCtx, rule.params) }
+            return query.queryWithParams(queryCtx, rule.params)
         }
     }
     enum class PinError {

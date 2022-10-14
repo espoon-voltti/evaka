@@ -11,16 +11,20 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.daycare.service.DaycareManager
 import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
+import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.PilotFeature
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.toPredicate
 import java.time.DayOfWeek
 import java.time.LocalDate
 
@@ -69,9 +73,9 @@ data class DaycareFields(
 
 data class DaycareGroupSummary(val id: GroupId, val name: String, val endDate: LocalDate?)
 
-private fun Database.Read.getDaycaresQuery() = createQuery(
-    // language=SQL
-    """
+fun daycaresQuery(predicate: Predicate<DatabaseTable.Daycare>) = QuerySql.of {
+    sql(
+        """
 SELECT
   daycare.id,
   daycare.name,
@@ -125,14 +129,14 @@ FROM daycare
 LEFT JOIN unit_manager um ON daycare.unit_manager_id = um.id
 LEFT JOIN employee finance_decision_handler ON finance_decision_handler.id = daycare.finance_decision_handler
 JOIN care_area ca ON daycare.care_area_id = ca.id
-WHERE :idFilter::uuid[] IS NULL OR daycare.id = ANY(:idFilter)
-"""
-)
-
-fun Database.Read.getDaycares(authorizedUnits: AclAuthorization): List<Daycare> = getDaycaresQuery()
-    .bind("idFilter", authorizedUnits.ids)
-    .mapTo<Daycare>()
-    .toList()
+WHERE (${tablePredicate("daycare", predicate)})
+        """.trimIndent()
+    )
+}
+fun Database.Read.getDaycares(filter: AccessControlFilter<DaycareId>): List<Daycare> =
+    createQuery(daycaresQuery(filter.toPredicate()))
+        .mapTo<Daycare>()
+        .toList()
 
 data class UnitApplyPeriods(
     val id: DaycareId,
@@ -152,11 +156,10 @@ WHERE id = ANY(:ids)
     .mapTo<UnitApplyPeriods>()
     .toList()
 
-fun Database.Read.getDaycare(id: DaycareId): Daycare? = getDaycaresQuery()
-    .bind("idFilter", listOf(id))
-    .mapTo<Daycare>()
-    .asSequence()
-    .firstOrNull()
+fun Database.Read.getDaycare(id: DaycareId): Daycare? =
+    createQuery(daycaresQuery(Predicate.of { prefix -> sql("$prefix.id = ${bind(id)}") }))
+        .mapTo<Daycare>()
+        .firstOrNull()
 
 fun Database.Read.isValidDaycareId(id: DaycareId): Boolean = createQuery(
     // language=SQL
