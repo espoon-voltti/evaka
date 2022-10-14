@@ -1991,6 +1991,7 @@ const en: Translations = {
     },
     pedagogicalDocuments: {
       title: 'Growth and learning',
+      noDocuments: 'No documents',
       table: {
         date: 'Date',
         child: 'Child',

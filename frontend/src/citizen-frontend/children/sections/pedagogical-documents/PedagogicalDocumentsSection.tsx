@@ -31,7 +31,7 @@ import {
   TabletAndDesktop
 } from 'lib-components/layout/responsive-layout'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
-import { fontWeights } from 'lib-components/typography'
+import { Dimmed, fontWeights } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import {
   faArrowDown,
@@ -212,7 +212,12 @@ const PedagogicalDocumentsDisplay = React.memo(
     items: PedagogicalDocumentCitizen[]
     onRead: (doc: PedagogicalDocumentCitizen) => void
   }) {
-    return (
+    const t = useTranslation()
+    return items.length === 0 ? (
+      <NoDocumentsContainer>
+        <Dimmed>{t.children.pedagogicalDocuments.noDocuments}</Dimmed>
+      </NoDocumentsContainer>
+    ) : (
       <>
         <MobileOnly>
           <PedagogicalDocumentsList items={items} onRead={onRead} />
@@ -489,4 +494,9 @@ const ExpandableText = styled.span<ExpandableTextProps>`
   -webkit-box-orient: vertical;
   -webkit-line-clamp: ${(props) =>
     props.expanded ? 'none' : props.clampLines};
+`
+
+const NoDocumentsContainer = styled.div`
+  padding: ${defaultMargins.s};
+  padding-bottom: 0;
 `
