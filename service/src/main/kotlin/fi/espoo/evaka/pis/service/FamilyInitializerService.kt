@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.psqlCause
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.NotFound
 import mu.KotlinLogging
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.postgresql.util.PSQLState
@@ -110,12 +111,26 @@ class FamilyInitializerService(
 
         val fridgePartner = (fridgePartnerSSN ?: existingFridgePartnerInSameAddressAsGuardianSSN)
             ?.let { stringToSSN(it) }
-            ?.let { personService.getOrCreatePerson(tx, user, it) }
+            ?.let {
+                try {
+                    personService.getOrCreatePerson(tx, user, it)
+                } catch (e: NotFound) {
+                    logger.error(e) { "Family initialization failed for application ${application.id} partner with a valid SSN that cannot be found in VTJ" }
+                    null
+                }
+            }
 
         val fridgeSiblings = application.form.otherChildren
             .mapNotNull { it.socialSecurityNumber }
             .mapNotNull { stringToSSN(it) }
-            .mapNotNull { personService.getOrCreatePerson(tx, user, it) }
+            .mapNotNull {
+                try {
+                    personService.getOrCreatePerson(tx, user, it)
+                } catch (e: NotFound) {
+                    logger.error(e) { "Family initialization failed for application ${application.id} other child with a valid SSN that cannot be found in VTJ" }
+                    null
+                }
+            }
 
         return FridgeFamilyMembers(headOfFamily, fridgePartner, child, fridgeSiblings)
     }
