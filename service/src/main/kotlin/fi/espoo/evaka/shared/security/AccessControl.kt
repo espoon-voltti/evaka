@@ -41,10 +41,9 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping) {
         tx: Database.Read,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        action: Action.UnscopedAction,
-        allowedToAdmin: Boolean = true
+        action: Action.UnscopedAction
     ): AccessControlDecision {
-        if (allowedToAdmin && user.isAdmin) {
+        if (user.isAdmin) {
             return AccessControlDecision.PermittedToAdmin
         }
 

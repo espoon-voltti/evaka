@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.attachment.MessageAttachment
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -109,13 +110,21 @@ fun Database.Transaction.insertMessage(
     threadId: MessageThreadId,
     sender: MessageAccountId,
     recipientNames: List<String>,
+    municipalAccountName: String,
     repliesToMessageId: MessageId? = null
 ): MessageId {
     // language=SQL
     val insertMessageSql =
         """
         INSERT INTO message (content_id, thread_id, sender_id, sender_name, replies_to, sent_at, recipient_names)
-        SELECT :contentId, :threadId, :senderId, name_view.account_name, :repliesToId, :now, :recipientNames
+        SELECT
+            :contentId,
+            :threadId,
+            :senderId,
+            CASE WHEN name_view.type = 'MUNICIPAL' THEN :municipalAccountName ELSE name_view.account_name END,
+            :repliesToId,
+            :now,
+            :recipientNames
         FROM message_account_name_view name_view
         WHERE name_view.id = :senderId
         RETURNING id
@@ -128,6 +137,7 @@ fun Database.Transaction.insertMessage(
         .bind("repliesToId", repliesToMessageId)
         .bind("senderId", sender)
         .bind("recipientNames", recipientNames)
+        .bind("municipalAccountName", municipalAccountName)
         .mapTo<MessageId>()
         .one()
 }
@@ -255,7 +265,8 @@ private data class ReceivedThread(
 fun Database.Read.getThreads(
     accountId: MessageAccountId,
     pageSize: Int,
-    page: Int
+    page: Int,
+    municipalAccountName: String
 ): Paged<MessageThread> {
     val threads =
         createQuery(
@@ -290,7 +301,8 @@ LIMIT :pageSize OFFSET :offset
             .bind("offset", (page - 1) * pageSize)
             .mapToPaged<ReceivedThread>(pageSize)
 
-    val messagesByThread = getThreadMessages(accountId, threads.data.map { it.id })
+    val messagesByThread =
+        getThreadMessages(accountId, threads.data.map { it.id }, municipalAccountName)
     return combineThreadsAndMessages(accountId, threads, messagesByThread)
 }
 
@@ -298,7 +310,8 @@ LIMIT :pageSize OFFSET :offset
 fun Database.Read.getReceivedThreads(
     accountId: MessageAccountId,
     pageSize: Int,
-    page: Int
+    page: Int,
+    municipalAccountName: String
 ): Paged<MessageThread> {
     val threads =
         createQuery(
@@ -335,13 +348,15 @@ LIMIT :pageSize OFFSET :offset
             .bind("offset", (page - 1) * pageSize)
             .mapToPaged<ReceivedThread>(pageSize)
 
-    val messagesByThread = getThreadMessages(accountId, threads.data.map { it.id })
+    val messagesByThread =
+        getThreadMessages(accountId, threads.data.map { it.id }, municipalAccountName)
     return combineThreadsAndMessages(accountId, threads, messagesByThread)
 }
 
 private fun Database.Read.getThreadMessages(
     accountId: MessageAccountId,
-    threadIds: List<MessageThreadId>
+    threadIds: List<MessageThreadId>,
+    municipalAccountName: String
 ): Map<MessageThreadId, List<Message>> {
     if (threadIds.isEmpty()) return mapOf()
     return createQuery(
@@ -353,12 +368,22 @@ SELECT
     mc.content,
     mr_self.read_at,
     (
-        SELECT jsonb_build_object('id', mav.id, 'name', mav.name, 'type', mav.type)
+        SELECT jsonb_build_object(
+            'id', mav.id,
+            'name', CASE WHEN mav.type = 'MUNICIPAL' THEN :municipalAccountName ELSE mav.name END,
+            'type', mav.type
+        )
         FROM message_account_view mav
         WHERE mav.id = m.sender_id
     ) AS sender,
     (
-        SELECT jsonb_agg(jsonb_build_object('id', mav.id, 'name', mav.name, 'type', mav.type))
+        SELECT jsonb_agg(
+            jsonb_build_object(
+                'id', mav.id,
+                'name', CASE WHEN mav.type = 'MUNICIPAL' THEN :municipalAccountName ELSE mav.name END,
+                'type', mav.type
+            )
+        )
         FROM message_recipients mr
         JOIN message_account_view mav ON mav.id = mr.recipient_id
         WHERE mr.message_id = m.id
@@ -383,6 +408,7 @@ ORDER BY m.sent_at
         )
         .bind("accountId", accountId)
         .bind("threadIds", threadIds)
+        .bind("municipalAccountName", municipalAccountName)
         .mapTo<Message>()
         .groupBy { it.threadId }
 }
@@ -719,7 +745,7 @@ fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticip
         .firstOrNull()
 }
 
-data class MessageReceiversResult(
+data class UnitMessageReceiversResult(
     val accountId: MessageAccountId,
     val unitId: DaycareId?,
     val unitName: String?,
@@ -730,18 +756,26 @@ data class MessageReceiversResult(
     val lastName: String
 )
 
+data class MunicipalMessageReceiversResult(
+    val accountId: MessageAccountId,
+    val areaId: AreaId,
+    val areaName: String,
+    val unitId: DaycareId,
+    val unitName: String
+)
+
 fun Database.Read.getReceiversForNewMessage(
     employeeId: EmployeeId,
     today: LocalDate
 ): List<MessageReceiversResponse> {
     val accountIds = getEmployeeMessageAccountIds(employeeId)
 
-    // language=sql
-    val sql =
-        """
+    val unitReceivers =
+        createQuery(
+                """
         WITH accounts AS (
             SELECT id, type, daycare_group_id, employee_id, person_id FROM message_account
-            WHERE id = ANY(:accountIds) AND type != 'CITIZEN'
+            WHERE id = ANY(:accountIds) AND type = ANY('{PERSONAL,GROUP}'::message_account_type[])
         ), children AS (
             SELECT a.id AS account_id, p.child_id, NULL AS unit_id, NULL AS unit_name, p.group_id, g.name AS group_name
             FROM accounts a
@@ -784,36 +818,79 @@ fun Database.Read.getReceiversForNewMessage(
             LEFT JOIN messaging_blocklist bl ON fp.parent_id = bl.blocked_recipient AND fp.child_id = bl.child_id
             WHERE fp.child_id = c.child_id AND fp.valid_during @> :date AND bl.id IS NULL
         )
-    """
-            .trimIndent()
-
-    return this.createQuery(sql)
-        .bind("accountIds", accountIds)
-        .bind("date", today)
-        .mapTo<MessageReceiversResult>()
-        .toList()
-        .groupBy { it.accountId }
-        .map { (accountId, receivers) ->
-            val units = receivers.groupBy { it.unitId to it.unitName }
-            val accountReceivers =
-                units.flatMap { (unit, groups) ->
-                    val (unitId, unitName) = unit
-                    if (unitId == null || unitName == null) getReceiverGroups(groups)
-                    else
-                        listOf(
-                            MessageReceiver(
-                                id = unitId,
-                                type = MessageRecipientType.UNIT,
-                                name = unitName,
-                                receivers = getReceiverGroups(groups)
+        """
+                    .trimIndent()
+            )
+            .bind("accountIds", accountIds)
+            .bind("date", today)
+            .mapTo<UnitMessageReceiversResult>()
+            .toList()
+            .groupBy { it.accountId }
+            .map { (accountId, receivers) ->
+                val units = receivers.groupBy { it.unitId to it.unitName }
+                val accountReceivers =
+                    units.flatMap { (unit, groups) ->
+                        val (unitId, unitName) = unit
+                        if (unitId == null || unitName == null) getReceiverGroups(groups)
+                        else
+                            listOf(
+                                MessageReceiver(
+                                    id = unitId,
+                                    type = MessageRecipientType.UNIT,
+                                    name = unitName,
+                                    receivers = getReceiverGroups(groups)
+                                )
                             )
+                    }
+                MessageReceiversResponse(accountId = accountId, receivers = accountReceivers)
+            }
+
+    val municipalReceivers =
+        createQuery(
+                """
+        WITH accounts AS (
+            SELECT id, type, daycare_group_id, employee_id, person_id FROM message_account
+            WHERE id = ANY(:accountIds) AND type = 'MUNICIPAL'::message_account_type
+        )
+        SELECT acc.id AS account_id, a.id AS area_id, a.name AS area_name, d.id AS unit_id, d.name AS unit_name
+        FROM accounts acc, care_area a
+        JOIN daycare d ON a.id = d.care_area_id
+        WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
+        """
+                    .trimIndent()
+            )
+            .bind("accountIds", accountIds)
+            .bind("date", today)
+            .mapTo<MunicipalMessageReceiversResult>()
+            .toList()
+            .groupBy { it.accountId }
+            .map { (accountId, receivers) ->
+                val areas = receivers.groupBy { it.areaId to it.areaName }
+                val accountReceivers =
+                    areas.map { (area, units) ->
+                        val (areaId, areaName) = area
+                        MessageReceiver(
+                            id = areaId,
+                            type = MessageRecipientType.AREA,
+                            name = areaName,
+                            receivers =
+                                units.map { unit ->
+                                    MessageReceiver(
+                                        id = unit.unitId,
+                                        type = MessageRecipientType.UNIT,
+                                        name = unit.unitName,
+                                        receivers = listOf()
+                                    )
+                                }
                         )
-                }
-            MessageReceiversResponse(accountId = accountId, receivers = accountReceivers)
-        }
+                    }
+                MessageReceiversResponse(accountId = accountId, receivers = accountReceivers)
+            }
+
+    return municipalReceivers + unitReceivers
 }
 
-private fun getReceiverGroups(receivers: List<MessageReceiversResult>): List<MessageReceiver> =
+private fun getReceiverGroups(receivers: List<UnitMessageReceiversResult>): List<MessageReceiver> =
     receivers
         .groupBy { it.groupId to it.groupName }
         .map { (group, children) ->
@@ -844,12 +921,12 @@ fun Database.Read.getMessageAccountsForRecipients(
     return this.createQuery(
             """
 WITH sender AS (
-    SELECT daycare_group_id, employee_id FROM message_account WHERE id = :senderId
+    SELECT type, daycare_group_id, employee_id FROM message_account WHERE id = :senderId
 ), children AS (
     SELECT pl.child_id
     FROM realized_placement_all(:date) pl
     JOIN daycare d ON pl.unit_id = d.id
-    WHERE (pl.unit_id = ANY(:unitRecipients) OR pl.group_id = ANY(:groupRecipients) OR pl.child_id = ANY(:childRecipients))
+    WHERE (d.care_area_id = ANY(:areaRecipients) OR pl.unit_id = ANY(:unitRecipients) OR pl.group_id = ANY(:groupRecipients) OR pl.child_id = ANY(:childRecipients))
     AND EXISTS (
         SELECT 1
         FROM child_daycare_acl(:date)
@@ -869,6 +946,12 @@ WITH sender AS (
         SELECT 1
         FROM sender
         WHERE pl.group_id = sender.daycare_group_id
+
+        UNION ALL
+
+        SELECT 1
+        FROM sender
+        WHERE type = 'MUNICIPAL'
     )
     AND 'MESSAGING' = ANY(d.enabled_pilot_features)
 )
@@ -897,6 +980,10 @@ WHERE NOT EXISTS (
         )
         .bind("senderId", accountId)
         .bind("date", date)
+        .bind(
+            "areaRecipients",
+            groupedRecipients[MessageRecipientType.AREA]?.map { it.id } ?: listOf()
+        )
         .bind(
             "unitRecipients",
             groupedRecipients[MessageRecipientType.UNIT]?.map { it.id } ?: listOf()
@@ -929,6 +1016,7 @@ fun Database.Transaction.markNotificationAsSent(
 
 fun Database.Read.getStaffCopyRecipients(
     senderId: MessageAccountId,
+    areaIds: List<AreaId>,
     unitIds: List<DaycareId>,
     groupIds: List<GroupId>,
     date: LocalDate
@@ -937,14 +1025,15 @@ fun Database.Read.getStaffCopyRecipients(
             """
 SELECT receiver_acc.id
 FROM message_account sender_acc
-JOIN daycare_acl_view acl ON sender_acc.employee_id = acl.employee_id
+JOIN daycare_acl_view acl ON sender_acc.employee_id = acl.employee_id OR sender_acc.type = 'MUNICIPAL'
 JOIN daycare u ON u.id = acl.daycare_id
 JOIN daycare_group g ON u.id = g.daycare_id
 JOIN message_account receiver_acc ON g.id = receiver_acc.daycare_group_id
-WHERE sender_acc.id = :senderId AND (u.id = ANY(:unitIds) OR g.id = ANY(:groupIds))
+WHERE sender_acc.id = :senderId AND (u.care_area_id = ANY(:areaIds) OR u.id = ANY(:unitIds) OR g.id = ANY(:groupIds))
 """
         )
         .bind("senderId", senderId)
+        .bind("areaIds", areaIds)
         .bind("unitIds", unitIds)
         .bind("groupIds", groupIds)
         .bind("date", date)

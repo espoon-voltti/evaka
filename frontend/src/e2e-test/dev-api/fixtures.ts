@@ -1212,6 +1212,15 @@ export class Fixture {
       .withDaycareAcl(unitId, 'STAFF')
   }
 
+  static employeeMessenger(): EmployeeBuilder {
+    return Fixture.employee().with({
+      email: 'viena.viestittaja@evaka.test',
+      firstName: 'Viena',
+      lastName: 'Viestittäjä',
+      roles: ['MESSAGING']
+    })
+  }
+
   static decision(): DecisionBuilder {
     return new DecisionBuilder({
       id: uuidv4(),

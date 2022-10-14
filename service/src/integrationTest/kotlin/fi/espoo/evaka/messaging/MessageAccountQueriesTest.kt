@@ -117,7 +117,8 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val accounts = db.transaction { it.getEmployeeMessageAccountIds(supervisorId) }
         assertEquals(3, accounts.size)
 
-        val accounts2 = db.read { it.getAuthorizedMessageAccountsForEmployee(supervisorId) }
+        val accounts2 =
+            db.read { it.getAuthorizedMessageAccountsForEmployee(supervisorId, "Espoo") }
         assertEquals(3, accounts2.size)
         val personalAccount =
             accounts2.find { it.account.type === AccountType.PERSONAL }
@@ -148,7 +149,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val accounts = db.transaction { it.getEmployeeMessageAccountIds(employee1Id) }
         assertEquals(1, accounts.size)
 
-        val accounts2 = db.read { it.getAuthorizedMessageAccountsForEmployee(employee1Id) }
+        val accounts2 = db.read { it.getAuthorizedMessageAccountsForEmployee(employee1Id, "Espoo") }
         assertEquals(1, accounts2.size)
         assertNull(accounts2.find { it.account.type === AccountType.PERSONAL })
 
@@ -165,7 +166,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val accounts = db.transaction { it.getEmployeeMessageAccountIds(employee2Id) }
         assertEquals(0, accounts.size)
 
-        val accounts2 = db.read { it.getAuthorizedMessageAccountsForEmployee(employee2Id) }
+        val accounts2 = db.read { it.getAuthorizedMessageAccountsForEmployee(employee2Id, "Espoo") }
         assertEquals(0, accounts2.size)
     }
 
@@ -202,7 +203,8 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     contentId,
                     threadId,
                     employeeAccount,
-                    allAccounts.map { it.name }
+                    allAccounts.map { it.name },
+                    "Espoo"
                 )
             tx.insertRecipients(allAccounts.map { it.id }.toSet(), messageId)
         }

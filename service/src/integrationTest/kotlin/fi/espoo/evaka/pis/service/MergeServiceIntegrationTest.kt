@@ -252,7 +252,8 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 recipientGroups = setOf(setOf(receiverAccount)),
                 recipientNames = listOf(),
                 staffCopyRecipients = setOf(),
-                accountIdsToChildIds = mapOf()
+                accountIdsToChildIds = mapOf(),
+                municipalAccountName = "Espoo"
             )
         }
         assertEquals(listOf(0, 1), sentMessageCounts(senderAccount, senderDuplicateAccount))
@@ -298,7 +299,8 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 recipientGroups = setOf(setOf(receiverDuplicateAccount)),
                 recipientNames = listOf(),
                 staffCopyRecipients = setOf(),
-                accountIdsToChildIds = mapOf()
+                accountIdsToChildIds = mapOf(),
+                municipalAccountName = "Espoo"
             )
         }
         assertEquals(
@@ -318,7 +320,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     private fun receivedThreadCounts(accountIds: List<MessageAccountId>): List<Int> =
-        db.read { tx -> accountIds.map { tx.getReceivedThreads(it, 10, 1).total } }
+        db.read { tx -> accountIds.map { tx.getReceivedThreads(it, 10, 1, "Espoo").total } }
 
     @Test
     fun `merging child sends update event to head of child`() {

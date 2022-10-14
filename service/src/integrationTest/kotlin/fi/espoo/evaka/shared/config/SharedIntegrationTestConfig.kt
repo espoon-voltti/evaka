@@ -213,5 +213,6 @@ val testFeatureConfig =
         assistanceDecisionMakerRoles = null,
         requestedStartUpperLimit = 14,
         partialAbsenceThresholdsEnabled = true,
-        postOffice = "ESPOO"
+        postOffice = "ESPOO",
+        municipalMessageAccountName = "Espoon kaupunki - Esbo stad - City of Espoo"
     )

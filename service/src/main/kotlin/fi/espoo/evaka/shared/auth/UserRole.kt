@@ -14,6 +14,7 @@ enum class UserRole : DatabaseEnum {
     DIRECTOR,
     FINANCE_ADMIN,
     SERVICE_WORKER,
+    MESSAGING,
     UNIT_SUPERVISOR,
     STAFF,
     SPECIAL_EDUCATION_TEACHER,
@@ -30,6 +31,7 @@ enum class UserRole : DatabaseEnum {
             DIRECTOR -> true
             FINANCE_ADMIN -> true
             SERVICE_WORKER -> true
+            MESSAGING -> true
             else -> false
         }
     fun isUnitScopedRole(): Boolean =

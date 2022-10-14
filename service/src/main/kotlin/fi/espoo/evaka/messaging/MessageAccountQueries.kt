@@ -42,19 +42,24 @@ fun Database.Read.getEmployeeMessageAccountIds(employeeId: EmployeeId): Set<Mess
 }
 
 fun Database.Read.getAuthorizedMessageAccountsForEmployee(
-    employeeId: EmployeeId
+    employeeId: EmployeeId,
+    municipalAccountName: String
 ): Set<AuthorizedMessageAccount> {
     val accountIds = getEmployeeMessageAccountIds(employeeId)
 
     val sql =
         """
-SELECT acc.id AS account_id,
-       name_view.account_name AS account_name,
-       acc.type               AS account_type,
-       dg.id                  AS group_id,
-       dg.name                AS group_name,
-       dc.id                  AS group_unitId,
-       dc.name                AS group_unitName
+SELECT
+    acc.id AS account_id,
+    (CASE
+        WHEN acc.type = 'MUNICIPAL'::message_account_type THEN :municipalAccountName
+        ELSE name_view.account_name
+    END) AS account_name,
+    acc.type AS account_type,
+    dg.id AS group_id,
+    dg.name AS group_name,
+    dc.id AS group_unitId,
+    dc.name AS group_unitName
 FROM message_account acc
     JOIN message_account_name_view name_view ON name_view.id = acc.id
     LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
@@ -65,10 +70,12 @@ WHERE acc.id = ANY(:accountIds)
 AND (
     'MESSAGING' = ANY(dc.enabled_pilot_features)
     OR 'MESSAGING' = ANY(supervisor_dc.enabled_pilot_features)
+    OR acc.type = 'MUNICIPAL'
 )
 """
     return this.createQuery(sql)
         .bind("accountIds", accountIds)
+        .bind("municipalAccountName", municipalAccountName)
         .mapTo<AuthorizedMessageAccount>()
         .toSet()
 }
@@ -185,4 +192,11 @@ SELECT id, child_id FROM common_guardians
     val singleRecipients = (accountIds - accountsWithCommonChildren.map { it.id }).map { setOf(it) }
 
     return distinctSetsOfAccountsWithCommonChildren + singleRecipients
+}
+
+fun Database.Read.getMessageAccountType(accountId: MessageAccountId): AccountType {
+    return this.createQuery("SELECT type FROM message_account WHERE id = :accountId")
+        .bind("accountId", accountId)
+        .mapTo<AccountType>()
+        .one()
 }

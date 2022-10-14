@@ -128,6 +128,7 @@ export type UserRole =
   | 'DIRECTOR'
   | 'FINANCE_ADMIN'
   | 'SERVICE_WORKER'
+  | 'MESSAGING'
   | 'UNIT_SUPERVISOR'
   | 'STAFF'
   | 'SPECIAL_EDUCATION_TEACHER'

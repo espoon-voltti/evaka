@@ -675,6 +675,9 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
                 tx.execute(
                     "INSERT INTO message_account (employee_id) SELECT employee_id FROM daycare_acl WHERE role = 'UNIT_SUPERVISOR' ON CONFLICT DO NOTHING"
                 )
+                tx.execute(
+                    "INSERT INTO message_account (daycare_group_id, person_id, employee_id) VALUES (NULL, NULL, NULL) ON CONFLICT DO NOTHING"
+                )
             }
         }
     }

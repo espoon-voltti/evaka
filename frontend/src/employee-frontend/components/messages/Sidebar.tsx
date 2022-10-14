@@ -14,7 +14,11 @@ import {
 } from 'lib-common/generated/api-types/messaging'
 import Button from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import { isGroupMessageAccount } from 'lib-components/employee/messages/types'
+import {
+  isGroupMessageAccount,
+  isMunicipalMessageAccount,
+  isPersonalMessageAccount
+} from 'lib-components/employee/messages/types'
 import { SelectOption } from 'lib-components/molecules/Select'
 import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -27,7 +31,7 @@ import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
 import { MessageContext } from './MessageContext'
 import { getReceivers } from './api'
-import { personalMessageBoxes } from './types-view'
+import { municipalMessageBoxes, personalMessageBoxes } from './types-view'
 
 const Container = styled.div`
   flex: 0 1 260px;
@@ -90,21 +94,23 @@ function Accounts({ accounts, setReceivers }: AccountsProps) {
   const { setSelectedAccount, selectedAccount } = useContext(MessageContext)
   const [selectedUnit, setSelectedUnit] = useState<SelectOption>()
 
-  const [personalAccount, groupAccounts, unitOptions] = useMemo(() => {
-    const personal = accounts.find((a) => !isGroupMessageAccount(a))
-    const groupAccs = accounts.filter(isGroupMessageAccount)
-    const unitOpts = sortBy(
-      uniqBy(
-        groupAccs.map(({ daycareGroup }) => ({
-          value: daycareGroup.unitId,
-          label: daycareGroup.unitName
-        })),
-        (val) => val.value
-      ),
-      (u) => u.label
-    )
-    return [personal, groupAccs, unitOpts]
-  }, [accounts])
+  const [municipalAccount, personalAccount, groupAccounts, unitOptions] =
+    useMemo(() => {
+      const municipal = accounts.find(isMunicipalMessageAccount)
+      const personal = accounts.find(isPersonalMessageAccount)
+      const groupAccs = accounts.filter(isGroupMessageAccount)
+      const unitOpts = sortBy(
+        uniqBy(
+          groupAccs.map(({ daycareGroup }) => ({
+            value: daycareGroup.unitId,
+            label: daycareGroup.unitName
+          })),
+          (val) => val.value
+        ),
+        (u) => u.label
+      )
+      return [municipal, personal, groupAccs, unitOpts]
+    }, [accounts])
 
   const unitSelectionEnabled = unitOptions.length > 1
 
@@ -133,6 +139,23 @@ function Accounts({ accounts, setReceivers }: AccountsProps) {
     <>
       {accounts.length === 0 && (
         <NoAccounts>{i18n.messages.sidePanel.noAccountAccess}</NoAccounts>
+      )}
+
+      {municipalAccount && (
+        <AccountSection data-qa="municipal-account">
+          <AccountHeader>
+            {i18n.messages.sidePanel.municipalMessages}
+          </AccountHeader>
+          {municipalMessageBoxes.map((view) => (
+            <MessageBox
+              key={view}
+              view={view}
+              account={municipalAccount.account}
+              activeView={selectedAccount}
+              setView={setSelectedAccount}
+            />
+          ))}
+        </AccountSection>
       )}
 
       {personalAccount && (

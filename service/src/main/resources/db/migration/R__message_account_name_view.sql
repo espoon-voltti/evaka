@@ -1,14 +1,16 @@
 DROP VIEW IF EXISTS message_account_name_view;
 CREATE VIEW message_account_name_view(
     id,
+    type,
     account_name
 ) AS (
 SELECT
     acc.id,
+    acc.type,
     COALESCE(
         nullif(concat_ws(' - ', d.name, dg.name), ''),
         nullif(concat_ws(' ', p.last_name, p.first_name), ''),
-        concat_ws(' ', e.last_name, coalesce(e.preferred_first_name, e.first_name))
+        nullif(concat_ws(' ', e.last_name, coalesce(e.preferred_first_name, e.first_name)), '')
     )
 FROM message_account acc
     LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
@@ -39,6 +41,7 @@ CREATE VIEW message_account_view(id, type, name) AS (
                 FROM person p
                 WHERE p.id = acc.person_id
             )
+            WHEN 'MUNICIPAL' THEN NULL
         END
     FROM message_account acc
 );

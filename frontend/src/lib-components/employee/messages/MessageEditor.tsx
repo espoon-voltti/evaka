@@ -188,6 +188,10 @@ export default React.memo(function MessageEditor({
     saveDraftRaw,
     initDraftRaw
   })
+  const sender = useMemo(
+    () => accounts.find(({ account }) => account.id === message.sender.value),
+    [accounts, message.sender]
+  )
 
   const [expandedView, setExpandedView] = useState(false)
 
@@ -233,21 +237,18 @@ export default React.memo(function MessageEditor({
   )
   useEffect(
     function updateReceiversOnSenderChange() {
-      const acc = accounts.find(
-        (account) => account.account.id === message.sender.value
-      )
-      if (!acc) {
+      if (!sender) {
         throw new Error('Selected sender was not found in accounts')
       }
       const accountReceivers = receiversAsSelectorNode(
-        acc.account.id,
+        sender.account.id,
         availableReceivers
       )
       if (accountReceivers) {
         setReceiverTree(accountReceivers)
       }
     },
-    [message.sender, accounts, availableReceivers]
+    [sender, availableReceivers]
   )
 
   const debouncedSaveStatus = useDebounce(saveStatus, 250)
@@ -326,6 +327,12 @@ export default React.memo(function MessageEditor({
     [accounts]
   )
 
+  useEffect(() => {
+    if (sender?.account.type === 'MUNICIPAL' && message.type !== 'BULLETIN') {
+      updateMessage({ type: 'BULLETIN' })
+    }
+  }, [sender, message.type, updateMessage])
+
   const sendEnabled =
     !sending &&
     draftState === 'clean' &&
@@ -351,20 +358,29 @@ export default React.memo(function MessageEditor({
         }
       }
     }
-    const messageType = (
-      <FixedSpaceRow>
-        <Radio
-          label={i18n.type.message}
-          checked={message.type === 'MESSAGE'}
-          onChange={() => updateMessage({ type: 'MESSAGE' })}
-        />
-        <Radio
-          label={i18n.type.bulletin}
-          checked={message.type === 'BULLETIN'}
-          onChange={() => updateMessage({ type: 'BULLETIN' })}
-        />
-      </FixedSpaceRow>
-    )
+    const messageType =
+      sender?.account.type === 'MUNICIPAL' ? (
+        <FixedSpaceRow>
+          <Radio
+            label={i18n.type.bulletin}
+            checked={message.type === 'BULLETIN'}
+            onChange={() => updateMessage({ type: 'BULLETIN' })}
+          />
+        </FixedSpaceRow>
+      ) : (
+        <FixedSpaceRow>
+          <Radio
+            label={i18n.type.message}
+            checked={message.type === 'MESSAGE'}
+            onChange={() => updateMessage({ type: 'MESSAGE' })}
+          />
+          <Radio
+            label={i18n.type.bulletin}
+            checked={message.type === 'BULLETIN'}
+            onChange={() => updateMessage({ type: 'BULLETIN' })}
+          />
+        </FixedSpaceRow>
+      )
 
     return (
       <FullScreenContainer

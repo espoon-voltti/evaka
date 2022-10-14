@@ -72,7 +72,8 @@ data class MessageReceiver(
 enum class AccountType {
     PERSONAL,
     GROUP,
-    CITIZEN
+    CITIZEN,
+    MUNICIPAL
 }
 
 data class MessageAccount(val id: MessageAccountId, val name: String, val type: AccountType)
@@ -90,6 +91,7 @@ data class AuthorizedMessageAccount(
 )
 
 enum class MessageRecipientType {
+    AREA,
     UNIT,
     GROUP,
     CHILD

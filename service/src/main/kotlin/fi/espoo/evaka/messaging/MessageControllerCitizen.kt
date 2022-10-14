@@ -6,6 +6,7 @@ package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
@@ -32,7 +33,10 @@ data class CitizenMessageBody(
 
 @RestController
 @RequestMapping("/citizen/messages")
-class MessageControllerCitizen(messageNotificationEmailService: MessageNotificationEmailService) {
+class MessageControllerCitizen(
+    private val featureConfig: FeatureConfig,
+    messageNotificationEmailService: MessageNotificationEmailService
+) {
     private val messageService = MessageService(messageNotificationEmailService)
 
     @GetMapping("/my-account")
@@ -81,7 +85,14 @@ class MessageControllerCitizen(messageNotificationEmailService: MessageNotificat
     ): Paged<MessageThread> {
         return db.connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
-                dbc.read { it.getThreads(accountId, pageSize, page) }
+                dbc.read {
+                    it.getThreads(
+                        accountId,
+                        pageSize,
+                        page,
+                        featureConfig.municipalMessageAccountName
+                    )
+                }
             }
             .also { Audit.MessagingReceivedMessagesRead.log(args = mapOf("total" to it.total)) }
     }
@@ -130,7 +141,8 @@ class MessageControllerCitizen(messageNotificationEmailService: MessageNotificat
                     replyToMessageId = messageId,
                     senderAccount = accountId,
                     recipientAccountIds = body.recipientAccountIds,
-                    content = body.content
+                    content = body.content,
+                    municipalAccountName = featureConfig.municipalMessageAccountName
                 )
             }
             .also { Audit.MessagingReplyToMessageWrite.log(targetId = messageId) }
@@ -171,7 +183,8 @@ class MessageControllerCitizen(messageNotificationEmailService: MessageNotificat
                                 contentId = contentId,
                                 threadId = threadId,
                                 sender = senderId,
-                                recipientNames = body.recipients.map { it.name }
+                                recipientNames = body.recipients.map { it.name },
+                                municipalAccountName = featureConfig.municipalMessageAccountName
                             )
                         tx.insertMessageThreadChildren(body.children, threadId)
                         tx.insertRecipients(recipientIds, messageId)

@@ -147,8 +147,11 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         createThread("Lone Thread", "Alone", employee2Account, listOf(employee2Account))
 
         // employee is not a recipient in any threads
-        assertEquals(0, db.read { it.getReceivedThreads(employee1Account, 10, 1) }.data.size)
-        val personResult = db.read { it.getThreads(person1Account, 10, 1) }
+        assertEquals(
+            0,
+            db.read { it.getReceivedThreads(employee1Account, 10, 1, "Espoo") }.data.size
+        )
+        val personResult = db.read { it.getThreads(person1Account, 10, 1, "Espoo") }
         assertEquals(2, personResult.data.size)
 
         val thread = personResult.data.first()
@@ -159,7 +162,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { it.markThreadRead(RealEvakaClock(), person1Account, thread1Id) }
 
         // then the message has correct readAt
-        val person1Threads = db.read { it.getThreads(person1Account, 10, 1) }
+        val person1Threads = db.read { it.getThreads(person1Account, 10, 1, "Espoo") }
         assertEquals(2, person1Threads.data.size)
         val readMessages = person1Threads.data.flatMap { it.messages.mapNotNull { m -> m.readAt } }
         assertEquals(1, readMessages.size)
@@ -168,7 +171,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         // then person 2 threads are not affected
         assertEquals(
             0,
-            db.read { it.getThreads(person2Account, 10, 1) }
+            db.read { it.getThreads(person2Account, 10, 1, "Espoo") }
                 .data
                 .flatMap { it.messages.mapNotNull { m -> m.readAt } }
                 .size
@@ -188,20 +191,21 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     threadId = thread2Id,
                     sender = person1Account,
                     repliesToMessageId = thread.messages.last().id,
-                    recipientNames = listOf()
+                    recipientNames = listOf(),
+                    municipalAccountName = "Espoo"
                 )
             it.insertRecipients(recipientAccountIds = recipients, messageId = messageId)
             it.upsertThreadParticipants(thread2Id, person1Account, recipients, now)
         }
 
         // then employee sees the thread
-        val employeeResult = db.read { it.getReceivedThreads(employee1Account, 10, 1) }
+        val employeeResult = db.read { it.getReceivedThreads(employee1Account, 10, 1, "Espoo") }
         assertEquals(1, employeeResult.data.size)
         assertEquals("Newest thread", employeeResult.data[0].title)
         assertEquals(2, employeeResult.data[0].messages.size)
 
         // person 1 is recipient in both threads
-        val person1Result = db.read { it.getThreads(person1Account, 10, 1) }
+        val person1Result = db.read { it.getThreads(person1Account, 10, 1, "Espoo") }
         assertEquals(2, person1Result.data.size)
 
         val newestThread = person1Result.data[0]
@@ -219,13 +223,13 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertNull(oldestThread.messages.find { it.content == "Just replying here" }?.readAt)
 
         // person 2 is recipient in the oldest thread only
-        val person2Result = db.read { it.getThreads(person2Account, 10, 1) }
+        val person2Result = db.read { it.getThreads(person2Account, 10, 1, "Espoo") }
         assertEquals(1, person2Result.data.size)
         assertEquals(oldestThread.id, person2Result.data[0].id)
         assertEquals(0, person2Result.data.flatMap { it.messages }.mapNotNull { it.readAt }.size)
 
         // employee 2 is participating with himself
-        val employee2Result = db.read { it.getReceivedThreads(employee2Account, 10, 1) }
+        val employee2Result = db.read { it.getReceivedThreads(employee2Account, 10, 1, "Espoo") }
         assertEquals(1, employee2Result.data.size)
         assertEquals(1, employee2Result.data[0].messages.size)
         assertEquals(employee2Account, employee2Result.data[0].messages[0].sender.id)
@@ -245,7 +249,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         createThread("t1", "c1", employee1Account, listOf(person1Account))
         createThread("t2", "c2", employee1Account, listOf(person1Account))
 
-        val messages = db.read { it.getThreads(person1Account, 10, 1) }
+        val messages = db.read { it.getThreads(person1Account, 10, 1, "Espoo") }
         assertEquals(2, messages.total)
         assertEquals(2, messages.data.size)
         assertEquals("t2", messages.data[0].title)
@@ -253,7 +257,10 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val (page1, page2) =
             db.read {
-                listOf(it.getThreads(person1Account, 1, 1), it.getThreads(person1Account, 1, 2))
+                listOf(
+                    it.getThreads(person1Account, 1, 1, "Espoo"),
+                    it.getThreads(person1Account, 1, 2, "Espoo")
+                )
             }
         assertEquals(2, page1.total)
         assertEquals(2, page1.pages)
@@ -362,7 +369,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         contentId = contentId,
                         threadId = threadId,
                         sender = person2Account,
-                        recipientNames = tx.getAccountNames(setOf(employee1Account))
+                        recipientNames = tx.getAccountNames(setOf(employee1Account)),
+                        municipalAccountName = "Espoo"
                     )
                 tx.insertRecipients(setOf(employee1Account), messageId)
                 tx.getThreadByMessageId(messageId)
@@ -672,7 +680,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     contentId = contentId,
                     threadId = threadId,
                     sender = sender,
-                    recipientNames = tx.getAccountNames(recipientAccounts.toSet())
+                    recipientNames = tx.getAccountNames(recipientAccounts.toSet()),
+                    municipalAccountName = "Espoo"
                 )
             tx.insertRecipients(recipientAccounts.toSet(), messageId)
             tx.upsertThreadParticipants(threadId, sender, recipientAccounts.toSet(), now)
