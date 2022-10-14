@@ -80,7 +80,7 @@ export default React.memo(function Invoices({
 
   return (
     <div className="invoices">
-      {user?.permittedGlobalActions.has('CREATE_DRAFT_INVOICES') && (
+      {user?.accessibleFeatures.createDraftInvoices && (
         <RefreshInvoices>
           {refreshResult.isFailure ? (
             <RefreshError>{i18n.common.error.unknown}</RefreshError>

@@ -426,6 +426,34 @@ export interface ReferenceCount {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.Report
+*/
+export type Report =
+  | 'APPLICATIONS'
+  | 'ASSISTANCE_NEED_DECISIONS'
+  | 'ASSISTANCE_NEEDS_AND_ACTIONS'
+  | 'ATTENDANCE_RESERVATION'
+  | 'CHILD_AGE_LANGUAGE'
+  | 'CHILDREN_IN_DIFFERENT_ADDRESS'
+  | 'DECISIONS'
+  | 'DUPLICATE_PEOPLE'
+  | 'ENDED_PLACEMENTS'
+  | 'FAMILY_CONFLICT'
+  | 'INVOICE'
+  | 'MISSING_HEAD_OF_FAMILY'
+  | 'MISSING_SERVICE_NEED'
+  | 'OCCUPANCY'
+  | 'PARTNERS_IN_DIFFERENT_ADDRESS'
+  | 'PLACEMENT_SKETCHING'
+  | 'PRESENCE'
+  | 'RAW'
+  | 'SERVICE_NEED'
+  | 'SERVICE_VOUCHER_VALUE'
+  | 'SEXTET'
+  | 'STARTING_PLACEMENTS'
+  | 'VARDA_ERRORS'
+
+/**
 * Generated from fi.espoo.evaka.reports.ServiceNeedReportRow
 */
 export interface ServiceNeedReportRow {

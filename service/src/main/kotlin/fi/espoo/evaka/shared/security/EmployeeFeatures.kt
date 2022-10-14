@@ -19,5 +19,7 @@ data class EmployeeFeatures(
     val createUnits: Boolean,
     val vasuTemplates: Boolean,
     val personalMobileDevice: Boolean,
-    val pinCode: Boolean
+    val pinCode: Boolean,
+    val assistanceNeedDecisionsReport: Boolean,
+    val createDraftInvoices: Boolean
 )

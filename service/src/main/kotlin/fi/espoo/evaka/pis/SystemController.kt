@@ -117,7 +117,9 @@ class SystemController(private val personService: PersonService, private val acc
                         createUnits = permittedGlobalActions.contains(Action.Global.CREATE_UNIT),
                         vasuTemplates = permittedGlobalActions.contains(Action.Global.VASU_TEMPLATES_PAGE),
                         personalMobileDevice = permittedGlobalActions.contains(Action.Global.PERSONAL_MOBILE_DEVICE_PAGE),
-                        pinCode = permittedGlobalActions.contains(Action.Global.PIN_CODE_PAGE)
+                        pinCode = permittedGlobalActions.contains(Action.Global.PIN_CODE_PAGE),
+                        assistanceNeedDecisionsReport = permittedGlobalActions.contains(Action.Global.READ_ASSISTANCE_NEED_DECISIONS_REPORT),
+                        createDraftInvoices = permittedGlobalActions.contains(Action.Global.CREATE_DRAFT_INVOICES)
                     )
 
                     EmployeeUserResponse(

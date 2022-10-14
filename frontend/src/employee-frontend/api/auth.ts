@@ -41,10 +41,7 @@ export async function getAuthStatus(): Promise<AuthStatus<User>> {
     .then(({ data: { user, ...status } }) => {
       if (user?.userType === 'EMPLOYEE') {
         return {
-          user: {
-            ...user,
-            permittedGlobalActions: new Set(user.permittedGlobalActions)
-          },
+          user,
           ...status
         }
       } else {
