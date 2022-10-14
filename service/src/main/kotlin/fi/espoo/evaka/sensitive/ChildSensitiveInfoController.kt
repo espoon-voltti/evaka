@@ -26,7 +26,7 @@ class ChildSensitiveInfoController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable childId: ChildId,
+        @PathVariable childId: ChildId
     ): ChildSensitiveInformation {
         ac.requirePermissionFor(user, clock, Action.Child.READ_SENSITIVE_INFO, childId)
 

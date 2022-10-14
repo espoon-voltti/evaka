@@ -69,11 +69,15 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        from: LocalDate,
         @RequestParam(
             value = "to",
             required = false
-        ) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+        )
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        to: LocalDate
     ): UnitDataResponse {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_BASIC, unitId)
 
@@ -89,19 +93,27 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
                         Action.Unit.READ_MISSING_GROUP_PLACEMENTS,
                         unitId
                     )
-                ) getMissingGroupPlacements(tx, unitId) else emptyList()
+                ) {
+                    getMissingGroupPlacements(tx, unitId)
+                } else {
+                    emptyList()
+                }
                 val recentlyTerminatedPlacements = if (accessControl.hasPermissionFor(
                         user,
                         clock,
                         Action.Unit.READ_TERMINATED_PLACEMENTS,
                         unitId
                     )
-                ) tx.getTerminatedPlacements(
-                    clock.today(),
-                    unitId,
-                    clock.today().minusWeeks(terminatedPlacementsViewWeeks),
-                    clock.today()
-                ) else emptyList()
+                ) {
+                    tx.getTerminatedPlacements(
+                        clock.today(),
+                        unitId,
+                        clock.today().minusWeeks(terminatedPlacementsViewWeeks),
+                        clock.today()
+                    )
+                } else {
+                    emptyList()
+                }
                 val caretakers = Caretakers(
                     unitCaretakers = tx.getUnitStats(unitId, from, to),
                     groupCaretakers = tx.getGroupStats(unitId, from, to)
@@ -110,19 +122,25 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
                     missingGroupPlacements.mapNotNull {
                         if (it.backup) {
                             BackupCareId(it.placementId.raw)
-                        } else null
+                        } else {
+                            null
+                        }
                     }.toSet()
                 val placementIds = placements.map { it.id }.toSet() +
                     missingGroupPlacements.mapNotNull {
                         if (!it.backup) {
                             it.placementId
-                        } else null
+                        } else {
+                            null
+                        }
                     }.toSet()
 
                 val capacities =
-                    if (accessControl.hasPermissionFor(user, clock, Action.Unit.READ_CHILD_CAPACITY_FACTORS, unitId))
+                    if (accessControl.hasPermissionFor(user, clock, Action.Unit.READ_CHILD_CAPACITY_FACTORS, unitId)) {
                         tx.getUnitChildrenCapacities(unitId, from)
-                    else listOf()
+                    } else {
+                        listOf()
+                    }
 
                 val basicData = UnitDataResponse(
                     groups = groups,
@@ -234,17 +252,21 @@ private fun getUnitOccupancies(
         ),
         realized = getOccupancyResponse(tx.calculateOccupancyPeriods(now.toLocalDate(), unitId, period, OccupancyType.REALIZED, aclAuth)),
         realtime = if (period.start == period.end) {
-            val queryTimeRange = if (period.start == now.toLocalDate())
+            val queryTimeRange = if (period.start == now.toLocalDate()) {
                 HelsinkiDateTimeRange(now.minusHours(16), now)
-            else HelsinkiDateTimeRange(
-                HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)),
-                HelsinkiDateTime.of(period.start.plusDays(1), LocalTime.of(0, 0))
-            )
+            } else {
+                HelsinkiDateTimeRange(
+                    HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)),
+                    HelsinkiDateTime.of(period.start.plusDays(1), LocalTime.of(0, 0))
+                )
+            }
             RealtimeOccupancy(
                 childAttendances = tx.getChildOccupancyAttendances(unitId, queryTimeRange),
                 staffAttendances = tx.getStaffOccupancyAttendances(unitId, queryTimeRange)
             )
-        } else null
+        } else {
+            null
+        }
     )
 }
 

@@ -80,7 +80,7 @@ class MessageService(
         replyToMessageId: MessageId,
         senderAccount: MessageAccountId,
         recipientAccountIds: Set<MessageAccountId>,
-        content: String,
+        content: String
     ): ThreadReply {
         val (threadId, type, isCopy, senders, recipients) = db.read { it.getThreadByMessageId(replyToMessageId) }
             ?: throw NotFound("Message not found")

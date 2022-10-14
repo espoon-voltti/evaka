@@ -53,7 +53,7 @@ class AttachmentsIntegrationTest {
     fun `checkFileExtension does not throw on valid cases`() {
         val cases = listOf(
             "jpeg" to jpgFile,
-            "png" to pngFile,
+            "png" to pngFile
         )
         cases.forEach { (extension, file) ->
             file.openStream().use { stream ->
@@ -72,7 +72,7 @@ class AttachmentsIntegrationTest {
     fun `checkFileExtension throws on invalid cases`() {
         val cases = listOf(
             "foo" to jpgFile,
-            "pdf" to pngFile,
+            "pdf" to pngFile
         )
         cases.forEach { (extension, file) ->
             file.openStream().use { stream ->

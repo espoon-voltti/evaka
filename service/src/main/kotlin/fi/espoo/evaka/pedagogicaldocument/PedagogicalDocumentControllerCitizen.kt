@@ -41,10 +41,11 @@ class PedagogicalDocumentControllerCitizen(
                     pd.description.isNotEmpty() || pd.attachments.isNotEmpty()
                 }
 
-                if (user.authLevel == CitizenAuthLevel.STRONG)
+                if (user.authLevel == CitizenAuthLevel.STRONG) {
                     documents
-                else
+                } else {
                     documents.map { it.copy(attachments = it.attachments.map { it.copy(name = "") }) }
+                }
             }
         }.also {
             Audit.PedagogicalDocumentReadByGuardian.log(targetId = childId, args = mapOf("count" to it.size))

@@ -43,7 +43,9 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
                 val feeAlterations = tx.getFeeAlterationsForPerson(personId)
                 val permittedActions =
                     accessControl.getPermittedActions<FeeAlterationId, Action.FeeAlteration>(
-                        tx, user, clock,
+                        tx,
+                        user,
+                        clock,
                         feeAlterations.mapNotNull { it.id }
                     )
                 feeAlterations.map { FeeAlterationWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }

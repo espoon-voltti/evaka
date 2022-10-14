@@ -96,7 +96,9 @@ fun Database.Read.getAdditionalInformation(childId: ChildId): AdditionalInformat
             preferredName = child.additionalInformation.preferredName,
             medication = child.additionalInformation.medication
         )
-    } else AdditionalInformation()
+    } else {
+        AdditionalInformation()
+    }
 }
 
 fun Database.Transaction.upsertAdditionalInformation(childId: ChildId, data: AdditionalInformation) {

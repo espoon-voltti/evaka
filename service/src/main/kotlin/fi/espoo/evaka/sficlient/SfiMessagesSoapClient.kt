@@ -45,7 +45,7 @@ private const val MESSAGE_API_VERSION = "1.1"
 
 class SfiMessagesSoapClient(
     private val sfiEnv: SfiEnv,
-    private val getDocument: (bucketName: String, key: String) -> Document,
+    private val getDocument: (bucketName: String, key: String) -> Document
 ) : SfiMessagesClient {
     private val wsTemplate = WebServiceTemplate().apply {
         defaultUri = sfiEnv.address

@@ -109,7 +109,7 @@ class ReservableDaysCalculationUnitTest {
             listOf(
                 FiniteDateRange(LocalDate.of(2021, 5, 24), summer.period.start.minusDays(1))
             ),
-            midnightAfterSummerDeadline,
+            midnightAfterSummerDeadline
         )
     }
 
@@ -119,7 +119,7 @@ class ReservableDaysCalculationUnitTest {
             listOf(
                 FiniteDateRange(LocalDate.of(2021, 5, 24), end2021)
             ),
-            midnightAfterSummerDeadline.minusMinutes(1),
+            midnightAfterSummerDeadline.minusMinutes(1)
         )
     }
 
@@ -129,7 +129,7 @@ class ReservableDaysCalculationUnitTest {
             listOf(
                 FiniteDateRange(LocalDate.of(2021, 3, 8), end2021)
             ),
-            HelsinkiDateTime.of(LocalDateTime.of(2021, 3, 1, 12, 0)),
+            HelsinkiDateTime.of(LocalDateTime.of(2021, 3, 1, 12, 0))
         )
     }
 
@@ -140,7 +140,7 @@ class ReservableDaysCalculationUnitTest {
                 FiniteDateRange(LocalDate.of(2021, 2, 1), winter.period.start.minusDays(1)),
                 FiniteDateRange(winter.period.end.plusDays(1), end2021)
             ),
-            HelsinkiDateTime.of(winter.reservationDeadline.plusDays(1), LocalTime.of(0, 0)),
+            HelsinkiDateTime.of(winter.reservationDeadline.plusDays(1), LocalTime.of(0, 0))
         )
     }
 }

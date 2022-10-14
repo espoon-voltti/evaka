@@ -1113,7 +1113,7 @@ class VardaUpdateServiceIntegrationTest : VardaIntegrationTest(resetDbBeforeEach
                 value = value,
                 coPayment = coPayment,
                 placementType = PlacementType.DAYCARE,
-                serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
+                serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed()
             )
             it.upsertValueDecisions(listOf(decision))
             it.setVoucherValueDecisionSentAt(decision.id, sentAt)

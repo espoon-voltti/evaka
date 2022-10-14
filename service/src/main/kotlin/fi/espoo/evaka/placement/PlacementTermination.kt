@@ -108,7 +108,7 @@ fun cancelOrTerminatePlacement(
     terminationRequestedDate: LocalDate,
     placement: ChildPlacement,
     terminationDate: LocalDate,
-    terminatedBy: AuthenticatedUser.Citizen?,
+    terminatedBy: AuthenticatedUser.Citizen?
 ) {
     if (placement.startsAfter(terminationDate)) {
         tx.cancelPlacement(placement.id)

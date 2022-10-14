@@ -40,8 +40,11 @@ class EspooInvoiceIntegrationClient(
                 success to invoices
             }
             .fold(InvoiceIntegrationClient.SendResult(manuallySent = withoutSSN)) { result, (success, invoices) ->
-                if (success) result.copy(succeeded = result.succeeded + invoices)
-                else result.copy(failed = result.failed + invoices)
+                if (success) {
+                    result.copy(succeeded = result.succeeded + invoices)
+                } else {
+                    result.copy(failed = result.failed + invoices)
+                }
             }
     }
 
@@ -81,8 +84,11 @@ class EspooInvoiceIntegrationClient(
                         batchNumber = agType,
                         invoices = invoices.map { invoice ->
                             val lang =
-                                if (invoice.headOfFamily.language == "sv") EspooLang.SV
-                                else EspooLang.FI
+                                if (invoice.headOfFamily.language == "sv") {
+                                    EspooLang.SV
+                                } else {
+                                    EspooLang.FI
+                                }
 
                             val integrtionInvoice = EspooInvoice(
                                 invoiceNumber = invoice.number!!,
@@ -118,8 +124,11 @@ class EspooInvoiceIntegrationClient(
                                     }
                             )
 
-                            if (sendCodebtor) integrtionInvoice.withCodebtor(asCodebtor(invoice.codebtor))
-                            else integrtionInvoice
+                            if (sendCodebtor) {
+                                integrtionInvoice.withCodebtor(asCodebtor(invoice.codebtor))
+                            } else {
+                                integrtionInvoice
+                            }
                         }
                     )
                 }
@@ -168,8 +177,11 @@ class EspooInvoiceIntegrationClient(
 
         private fun asRecipient(headOfFamily: PersonDetailed): EspooRecipient {
             val (lastname, firstnames) =
-                if (headOfFamily.invoiceRecipientName.isNotBlank()) headOfFamily.invoiceRecipientName to ""
-                else headOfFamily.lastName to headOfFamily.firstName
+                if (headOfFamily.invoiceRecipientName.isNotBlank()) {
+                    headOfFamily.invoiceRecipientName to ""
+                } else {
+                    headOfFamily.lastName to headOfFamily.firstName
+                }
 
             val address = Triple(
                 headOfFamily.streetAddress.trim(),
@@ -255,8 +267,11 @@ class EspooInvoiceIntegrationClient(
                 account = acc,
                 costCenter = costC,
                 subCostCenter1 =
-                if (subCostC.isNullOrBlank()) null
-                else subCostC.padStart(communitySubCostCenterLength, '0')
+                if (subCostC.isNullOrBlank()) {
+                    null
+                } else {
+                    subCostC.padStart(communitySubCostCenterLength, '0')
+                }
             )
         }
 
@@ -324,7 +339,7 @@ class EspooInvoiceIntegrationClient(
             override val client: EspooClient,
             override val recipient: EspooRecipient,
             override val rows: List<EspooInvoiceRow>,
-            val codebtor: EspooCodebtor?,
+            val codebtor: EspooCodebtor?
         ) : IntegrationInvoice {
             override val useInvoiceNumber = false
             override val printDate = null

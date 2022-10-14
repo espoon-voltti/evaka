@@ -26,8 +26,12 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("placementStartDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) placementStartDate: LocalDate,
-        @RequestParam("earliestPreferredStartDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) earliestPreferredStartDate: LocalDate?
+        @RequestParam("placementStartDate")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        placementStartDate: LocalDate,
+        @RequestParam("earliestPreferredStartDate")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        earliestPreferredStartDate: LocalDate?
     ): List<PlacementSketchingReportRow> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_PLACEMENT_SKETCHING_REPORT)
         return db.connect { dbc ->

@@ -47,6 +47,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         assertEquals(vardaClient.sourceSystem, mockEndpoint.units.values.elementAt(0).lahdejarjestelma)
         assertEquals("[FI]", mockEndpoint.units.values.elementAt(0).asiointikieli_koodi.toString())
     }
+
     @Test
     fun `opening a closed unit`() {
         val ophMunicipalOrganizerIdUrl = "${vardaEnv.url}/v1/vakajarjestajat/${ophEnv.organizerId}/"

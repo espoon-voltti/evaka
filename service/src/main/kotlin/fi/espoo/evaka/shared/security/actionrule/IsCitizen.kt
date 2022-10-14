@@ -67,7 +67,9 @@ data class IsCitizen(val allowWeakLogin: Boolean) {
                         .toSet()
                         .let { ids -> AccessControlFilter.Some(ids) }
                 }
-            } else null
+            } else {
+                null
+            }
             else -> null
         }
     }
@@ -84,7 +86,9 @@ data class IsCitizen(val allowWeakLogin: Boolean) {
         override fun evaluate(user: AuthenticatedUser): AccessControlDecision =
             if (user is AuthenticatedUser.Citizen && isPermittedAuthLevel(user.authLevel)) {
                 AccessControlDecision.Permitted(this)
-            } else AccessControlDecision.None
+            } else {
+                AccessControlDecision.None
+            }
     }
 
     fun self() = object : DatabaseActionRule.Scoped<PersonId, IsCitizen> {

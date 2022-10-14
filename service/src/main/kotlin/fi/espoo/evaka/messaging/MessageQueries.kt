@@ -93,7 +93,7 @@ fun Database.Transaction.insertMessage(
     threadId: MessageThreadId,
     sender: MessageAccountId,
     recipientNames: List<String>,
-    repliesToMessageId: MessageId? = null,
+    repliesToMessageId: MessageId? = null
 ): MessageId {
     // language=SQL
     val insertMessageSql = """
@@ -129,7 +129,7 @@ fun Database.Transaction.insertMessageContent(
 
 fun Database.Transaction.insertRecipients(
     recipientAccountIds: Set<MessageAccountId>,
-    messageId: MessageId,
+    messageId: MessageId
 ) {
     // language=SQL
     val insertRecipientsSql =
@@ -142,7 +142,7 @@ fun Database.Transaction.insertRecipients(
 
 fun Database.Transaction.insertMessageThreadChildren(
     childIds: Set<ChildId>,
-    threadId: MessageThreadId,
+    threadId: MessageThreadId
 ) {
     // language=SQL
     val insertChildrenSql =
@@ -157,7 +157,7 @@ fun Database.Transaction.upsertThreadParticipants(
     threadId: MessageThreadId,
     senderId: MessageAccountId,
     receiverIds: Set<MessageAccountId>,
-    now: HelsinkiDateTime,
+    now: HelsinkiDateTime
 ) {
     this.createUpdate(
         """
@@ -228,7 +228,7 @@ private data class ReceivedThread(
     val urgent: Boolean,
     val isCopy: Boolean,
     @Json
-    val children: List<MessageChild>,
+    val children: List<MessageChild>
 )
 
 /** Return all threads that are visible to the account through sent and received messages **/
@@ -369,7 +369,7 @@ private fun combineThreadsAndMessages(accountId: MessageAccountId, threads: Page
                     urgent = thread.urgent,
                     isCopy = thread.isCopy,
                     children = thread.children,
-                    messages = messages,
+                    messages = messages
                 )
             )
         }

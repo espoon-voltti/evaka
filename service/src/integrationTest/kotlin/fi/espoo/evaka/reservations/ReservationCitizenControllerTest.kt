@@ -89,7 +89,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                     DailyReservationRequest(child, testDate, listOf(TimeRange(startTime, endTime)), absent = false),
                     DailyReservationRequest(child, testDate.plusDays(1), listOf(TimeRange(startTime, endTime)), absent = false)
                 )
-            },
+            }
         )
 
         val res = getReservations(FiniteDateRange(testDate, testDate.plusDays(2)))
@@ -116,7 +116,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                     placements = listOf(FiniteDateRange(testDate, testDate.plusDays(1))),
                     maxOperationalDays = setOf(1, 2, 3, 4, 5),
                     inShiftCareUnit = false
-                ),
+                )
             ),
             res.children
         )
@@ -137,7 +137,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(
             setOf(
                 ChildDailyData(testChild_1.id, false, null, listOf(TimeRange(startTime, endTime)), listOf(), dayOff = false),
-                ChildDailyData(testChild_2.id, false, null, listOf(TimeRange(startTime, endTime)), listOf(), dayOff = false),
+                ChildDailyData(testChild_2.id, false, null, listOf(TimeRange(startTime, endTime)), listOf(), dayOff = false)
             ),
             dailyData[1].children.toSet()
         )
@@ -171,7 +171,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
         assertEquals(testDate.plusDays(1), dailyData[1].date)
         assertEquals(
             setOf(
-                ChildDailyData(testChild_1.id, false, AbsenceType.OTHER_ABSENCE, emptyList(), listOf(), dayOff = false),
+                ChildDailyData(testChild_1.id, false, AbsenceType.OTHER_ABSENCE, emptyList(), listOf(), dayOff = false)
             ),
             dailyData[1].children.toSet()
         )
@@ -196,7 +196,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
         val request = AbsenceRequest(
             childIds = setOf(testChild_1.id, testChild_2.id),
             dateRange = FiniteDateRange(testDate, testDate.plusDays(2)),
-            absenceType = AbsenceType.OTHER_ABSENCE,
+            absenceType = AbsenceType.OTHER_ABSENCE
         )
         postAbsences(request)
 
@@ -257,7 +257,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
             testChild_1.id,
             listOf(
                 LocalDate.of(2021, 11, 15) to 2,
-                LocalDate.of(2021, 11, 16) to 2,
+                LocalDate.of(2021, 11, 16) to 2
             )
         )
 
@@ -266,7 +266,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
             testChild_2.id,
             listOf(
                 LocalDate.of(2021, 11, 15) to 1,
-                LocalDate.of(2021, 11, 16) to 1,
+                LocalDate.of(2021, 11, 16) to 1
             )
         )
     }
@@ -286,7 +286,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
         val request = AbsenceRequest(
             childIds = setOf(testChild_2.id),
             dateRange = FiniteDateRange(testDate, testDate.plusDays(1)),
-            absenceType = AbsenceType.OTHER_ABSENCE,
+            absenceType = AbsenceType.OTHER_ABSENCE
         )
         postAbsences(request)
 
@@ -303,7 +303,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                     reservations = listOf(),
                     attendances = listOf(),
                     dayOff = false
-                ),
+                )
             ),
             res.dailyData[0].children.toSet()
         )
@@ -318,7 +318,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                     reservations = listOf(),
                     attendances = listOf(),
                     dayOff = false
-                ),
+                )
             ),
             res.dailyData[1].children.toSet()
         )
@@ -327,7 +327,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
             testChild_2.id,
             listOf(
                 testDate to 1,
-                testDate.plusDays(1) to 1,
+                testDate.plusDays(1) to 1
             )
         )
     }
@@ -361,7 +361,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
             listOf(
                 DailyReservationRequest(testChild_3.id, testDate, listOf(TimeRange(startTime, endTime)), absent = false),
                 DailyReservationRequest(testChild_3.id, testDate.plusDays(1), null, absent = true),
-                DailyReservationRequest(testChild_3.id, testDate.plusDays(3), listOf(TimeRange(startTime, endTime)), absent = false),
+                DailyReservationRequest(testChild_3.id, testDate.plusDays(3), listOf(TimeRange(startTime, endTime)), absent = false)
             )
         )
 
@@ -417,7 +417,7 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
     private fun assertAbsenceCounts(childId: ChildId, counts: List<Pair<LocalDate, Int>>) {
         data class QueryResult(
             val date: LocalDate,
-            val count: Int,
+            val count: Int
         )
 
         val expected = counts.map { QueryResult(it.first, it.second) }

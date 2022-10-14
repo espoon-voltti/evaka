@@ -78,9 +78,11 @@ class FridgeFamilyService(
             newChildrenInSameAddress.forEach { child ->
                 try {
                     val startDate =
-                        if (childShouldBeAddedToFamilyStartingFromBirthday(clock.today(), child.dateOfBirth))
+                        if (childShouldBeAddedToFamilyStartingFromBirthday(clock.today(), child.dateOfBirth)) {
                             child.dateOfBirth
-                        else clock.today()
+                        } else {
+                            clock.today()
+                        }
                     db.transaction { tx ->
                         parentshipService.createParentship(
                             tx,

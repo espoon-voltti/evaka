@@ -188,29 +188,38 @@ class PersonController(
 
         val userEditablePersonData = data
             .let {
-                if (accessControl.hasPermissionFor(user, clock, Action.Person.UPDATE_PERSONAL_DETAILS, personId)) it
-                else it.copy(
-                    firstName = null,
-                    lastName = null,
-                    dateOfBirth = null,
-                    streetAddress = null,
-                    postalCode = null,
-                    postOffice = null
-                )
+                if (accessControl.hasPermissionFor(user, clock, Action.Person.UPDATE_PERSONAL_DETAILS, personId)) {
+                    it
+                } else {
+                    it.copy(
+                        firstName = null,
+                        lastName = null,
+                        dateOfBirth = null,
+                        streetAddress = null,
+                        postalCode = null,
+                        postOffice = null
+                    )
+                }
             }
             .let {
-                if (accessControl.hasPermissionFor(user, clock, Action.Person.UPDATE_INVOICE_ADDRESS, personId)) it
-                else it.copy(
-                    invoiceRecipientName = null,
-                    invoicingStreetAddress = null,
-                    invoicingPostalCode = null,
-                    invoicingPostOffice = null,
-                    forceManualFeeDecisions = null
-                )
+                if (accessControl.hasPermissionFor(user, clock, Action.Person.UPDATE_INVOICE_ADDRESS, personId)) {
+                    it
+                } else {
+                    it.copy(
+                        invoiceRecipientName = null,
+                        invoicingStreetAddress = null,
+                        invoicingPostalCode = null,
+                        invoicingPostOffice = null,
+                        forceManualFeeDecisions = null
+                    )
+                }
             }
             .let {
-                if (accessControl.hasPermissionFor(user, clock, Action.Person.UPDATE_OPH_OID, personId)) it
-                else it.copy(ophPersonOid = null)
+                if (accessControl.hasPermissionFor(user, clock, Action.Person.UPDATE_OPH_OID, personId)) {
+                    it
+                } else {
+                    it.copy(ophPersonOid = null)
+                }
             }
 
         return db.connect { dbc -> dbc.transaction { personService.patchUserDetails(it, personId, userEditablePersonData) } }
@@ -272,8 +281,11 @@ class PersonController(
         @PathVariable personId: PersonId,
         @RequestBody body: DisableSsnRequest
     ) {
-        if (!body.disabled) accessControl.requirePermissionFor(user, clock, Action.Person.ENABLE_SSN_ADDING, personId)
-        else accessControl.requirePermissionFor(user, clock, Action.Person.DISABLE_SSN_ADDING, personId)
+        if (!body.disabled) {
+            accessControl.requirePermissionFor(user, clock, Action.Person.ENABLE_SSN_ADDING, personId)
+        } else {
+            accessControl.requirePermissionFor(user, clock, Action.Person.DISABLE_SSN_ADDING, personId)
+        }
 
         db.connect { dbc -> dbc.transaction { personService.disableSsn(it, personId, body.disabled) } }
         Audit.PersonUpdate.log(targetId = personId)

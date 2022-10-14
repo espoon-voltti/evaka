@@ -47,9 +47,8 @@ data class DvvModification(
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "AIDINKIELI"),
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "TILAPAINEN_ULKOMAINEN_OSOITE"),
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "KOTIMAINEN_POSTIOSOITE"),
-    JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "VAKINAINEN_ULKOMAINEN_OSOITE"),
+    JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "VAKINAINEN_ULKOMAINEN_OSOITE")
 )
-
 interface DvvInfoGroup {
     val tietoryhma: String
 }

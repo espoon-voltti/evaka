@@ -37,7 +37,7 @@ class KoskiPayloadIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
             db,
             KoskiClient(
                 KoskiEnv.fromEnvironment(env).copy(
-                    url = "http://localhost:${koskiServer.port}",
+                    url = "http://localhost:${koskiServer.port}"
                 ),
                 OphEnv.fromEnvironment(env),
                 fuel = http,

@@ -179,8 +179,12 @@ class BackupCareController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable("daycareId") daycareId: DaycareId,
-        @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
-        @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate
+        @RequestParam("startDate")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        startDate: LocalDate,
+        @RequestParam("endDate")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        endDate: LocalDate
     ): UnitBackupCaresResponse {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_BACKUP_CARE, daycareId)
         val backupCares = db.connect { dbc -> dbc.read { it.getBackupCaresForDaycare(daycareId, FiniteDateRange(startDate, endDate)) } }

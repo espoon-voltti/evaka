@@ -20,9 +20,11 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 fun convertMidnightEndTime(timeRange: TimeRange) =
-    if (timeRange.endTime == LocalTime.of(0, 0).withNano(0).withSecond(0))
+    if (timeRange.endTime == LocalTime.of(0, 0).withNano(0).withSecond(0)) {
         timeRange.copy(endTime = LocalTime.of(23, 59))
-    else timeRange
+    } else {
+        timeRange
+    }
 
 fun validateReservationTimeRange(timeRange: TimeRange) {
     if (timeRange.endTime <= timeRange.startTime) {
@@ -42,7 +44,7 @@ data class TimeRange(
     @ForceCodeGenType(String::class)
     val startTime: LocalTime,
     @ForceCodeGenType(String::class)
-    val endTime: LocalTime,
+    val endTime: LocalTime
 )
 
 class TimeRangeSerializer : JsonSerializer<TimeRange>() {
@@ -59,7 +61,7 @@ data class OpenTimeRange(
     @ForceCodeGenType(String::class)
     val startTime: LocalTime,
     @ForceCodeGenType(String::class)
-    val endTime: LocalTime?,
+    val endTime: LocalTime?
 )
 
 private fun padWithZeros(hoursOrMinutes: Int) = hoursOrMinutes.toString().padStart(2, '0')
@@ -77,13 +79,13 @@ data class CreateReservationsResult(
     val deletedAbsences: List<AbsenceId>,
     val deletedReservations: List<AttendanceReservationId>,
     val upsertedAbsences: List<AbsenceId>,
-    val upsertedReservations: List<AttendanceReservationId>,
+    val upsertedReservations: List<AttendanceReservationId>
 )
 
 fun createReservationsAndAbsences(
     tx: Database.Transaction,
     userId: EvakaUserId,
-    reservationRequests: List<DailyReservationRequest>,
+    reservationRequests: List<DailyReservationRequest>
 ): CreateReservationsResult {
     val reservations = reservationRequests.map {
         it.copy(reservations = it.reservations?.map(::convertMidnightEndTime))
@@ -103,7 +105,9 @@ fun createReservationsAndAbsences(
         .map { AbsenceInsert(it.childId, it.date, AbsenceType.OTHER_ABSENCE) }
     val upsertedAbsences = if (absences.isNotEmpty()) {
         tx.insertAbsences(userId, absences)
-    } else emptyList()
+    } else {
+        emptyList()
+    }
 
     return CreateReservationsResult(deletedAbsences, deletedReservations, upsertedAbsences, upsertedReservations)
 }

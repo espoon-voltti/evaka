@@ -40,7 +40,7 @@ class VardaClient(
     private val tokenProvider: VardaTokenProvider,
     private val fuel: FuelManager,
     private val jsonMapper: JsonMapper,
-    env: VardaEnv,
+    env: VardaEnv
 ) {
     private val organizerUrl = "${env.url}/v1/vakajarjestajat/"
     private val unitUrl = "${env.url}/v1/toimipaikat/"
@@ -416,8 +416,9 @@ class VardaClient(
     ): List<T> {
         logger.info("VardaUpdate: client getting paginated result from $initialUrl")
         fun fetchNext(acc: List<T>, next: String?): List<T> {
-            return if (next == null) acc
-            else {
+            return if (next == null) {
+                acc
+            } else {
                 val (request, _, result) = fuel.get(next).authenticatedResponseStringWithRetries()
                 when (result) {
                     is Result.Success -> {

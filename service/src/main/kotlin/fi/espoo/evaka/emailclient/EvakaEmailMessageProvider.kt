@@ -310,7 +310,7 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
     }
 
     override fun getPreschoolApplicationReceivedEmailHtml(withinApplicationPeriod: Boolean): String {
-        return if (withinApplicationPeriod)
+        return if (withinApplicationPeriod) {
             """
                 <p>Hyvä(t) huoltaja(t),</p>
                 <p>Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> siihen saakka, kunnes hakemus on otettu käsittelyyn.</p>
@@ -342,7 +342,7 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
                 <p>Information about applying for a service voucher: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher#section-6228">Service voucher</a></p>
                 <p>Information about applying to private early childhood education units: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">Private early childhood education</a></p>
             """.trimIndent()
-        else
+        } else {
             """
                 <p>Hyvä(t) huoltaja(t),</p>
                 <p>Lapsenne esiopetushakemus on vastaanotettu. Hakemuksen tehnyt huoltaja voi muokata hakemusta osoitteessa <a href="https://www.espoonvarhaiskasvatus.fi">www.espoonvarhaiskasvatus.fi</a> siihen saakka, kunnes se on otettu käsittelyyn.</p>
@@ -380,10 +380,11 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
                 <p>Information about applying for a service voucher: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/service-voucher#section-6228">Service Voucher</a></p>
                 <p>Information about applying to private early childhood education units: <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers">Private early childhood education</a></p>
             """.trimIndent()
+        }
     }
 
     override fun getPreschoolApplicationReceivedEmailText(withinApplicationPeriod: Boolean): String {
-        return if (withinApplicationPeriod)
+        return if (withinApplicationPeriod) {
             """
                 Hyvä(t) huoltaja(t),
 
@@ -443,7 +444,7 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
 
                 Information about applying to private early childhood education units: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers
             """.trimIndent()
-        else
+        } else {
             """
                 Hyvä(t) huoltaja(t),
 
@@ -515,6 +516,7 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
 
                 Information about applying to private early childhood education units: https://www.espoo.fi/en/childcare-and-education/early-childhood-education/private-early-childhood-education-and-day-care-centers
             """.trimIndent()
+        }
     }
 
     override fun getDecisionEmailHtml(

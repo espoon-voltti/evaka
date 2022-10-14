@@ -29,24 +29,30 @@ fun resolveFiveYearOldPlacementPeriods(
         }
 
         listOfNotNull(
-            if (period.start < fiveYearOldTermStart)
+            if (period.start < fiveYearOldTermStart) {
                 FiniteDateRange(
                     period.start,
                     minOf(fiveYearOldTermStart.minusDays(1), period.end)
                 ) to normalPlacementType
-            else null,
-            if (fiveYearOldTermStart <= period.end && period.start <= fiveYearOldTermEnd)
+            } else {
+                null
+            },
+            if (fiveYearOldTermStart <= period.end && period.start <= fiveYearOldTermEnd) {
                 FiniteDateRange(
                     maxOf(fiveYearOldTermStart, period.start),
                     minOf(fiveYearOldTermEnd, period.end)
                 ) to fiveYearOldPlacementType
-            else null,
-            if (fiveYearOldTermEnd < period.end)
+            } else {
+                null
+            },
+            if (fiveYearOldTermEnd < period.end) {
                 FiniteDateRange(
                     maxOf(fiveYearOldTermEnd.plusDays(1), period.start),
                     period.end
                 ) to normalPlacementType
-            else null
+            } else {
+                null
+            }
         )
     }.flatten()
 }

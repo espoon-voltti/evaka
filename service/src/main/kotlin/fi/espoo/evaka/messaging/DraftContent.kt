@@ -20,7 +20,7 @@ data class DraftContent(
     val recipientIds: Set<Id<*>>,
     val recipientNames: List<String>,
     @Json
-    val attachments: List<MessageAttachment>,
+    val attachments: List<MessageAttachment>
 )
 
 data class UpdatableDraftContent(
@@ -29,5 +29,5 @@ data class UpdatableDraftContent(
     val content: String,
     val urgent: Boolean,
     val recipientIds: Set<Id<*>>,
-    val recipientNames: List<String>,
+    val recipientNames: List<String>
 )

@@ -187,7 +187,9 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                         q.copy(
                             value = "hello"
                         )
-                    } else q
+                    } else {
+                        q
+                    }
                 }
             )
         )
@@ -235,7 +237,9 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     questions = content.sections.first().questions.map { q ->
                         if (q is VasuQuestion.MultiField) {
                             q.copy(value = q.value.map { "primary author" })
-                        } else q
+                        } else {
+                            q
+                        }
                     }
                 )
             ) + content.sections.drop(1)
@@ -275,7 +279,9 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             }
                         }
                     )
-                } else section
+                } else {
+                    section
+                }
             }
         )
         putVasuDocument(
@@ -310,7 +316,9 @@ class VasuIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                             }
                         }
                     )
-                } else section
+                } else {
+                    section
+                }
             }
         )
         putVasuDocument(

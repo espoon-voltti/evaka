@@ -35,7 +35,9 @@ class InvoiceReportController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
+        @RequestParam("date")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        date: LocalDate
     ): InvoiceReport {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_INVOICE_REPORT)
         return db.connect { dbc ->

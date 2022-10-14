@@ -147,7 +147,9 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
                                     .sortedBy { it.siblingDiscount }
                                     .sortedByDescending { it.child.dateOfBirth }
                             )
-                        } else decision.copy(validDuring = period)
+                        } else {
+                            decision.copy(validDuring = period)
+                        }
                     }
             }
             .let { mergePeriods(it) }
@@ -373,6 +375,7 @@ private val excludedPlacementTypes = arrayOf(
     fi.espoo.evaka.placement.PlacementType.TEMPORARY_DAYCARE_PART_DAY,
     fi.espoo.evaka.placement.PlacementType.SCHOOL_SHIFT_CARE
 )
+
 /**
  * Leaves out club and temporary placements since they shouldn't have an effect on fee or value decisions
  */

@@ -38,7 +38,7 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest(resetD
         active = FiniteDateRange(LocalDate.of(2021, 4, 1), LocalDate.of(2021, 5, 31)),
         periodOptions = listOf(
             FiniteDateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 7)),
-            FiniteDateRange(LocalDate.of(2021, 7, 8), LocalDate.of(2021, 7, 14)),
+            FiniteDateRange(LocalDate.of(2021, 7, 8), LocalDate.of(2021, 7, 14))
         ),
         periodOptionLabel = emptyTranslatable,
         description = emptyTranslatable,
@@ -84,7 +84,7 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest(resetD
         assertEquals(1, response.size)
         assertEquals(
             listOf(child1.id, child2.id).sorted(),
-            response[0].eligibleChildren.sorted(),
+            response[0].eligibleChildren.sorted()
         )
     }
 
@@ -108,7 +108,7 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest(resetD
                 child3.id,
                 testDaycare.id,
                 condition.start,
-                condition.end.minusDays(1),
+                condition.end.minusDays(1)
             )
             // child4 has two placements that cover the period together
             tx.insertPlacement(
@@ -116,14 +116,14 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest(resetD
                 child4.id,
                 testDaycare.id,
                 condition.start,
-                condition.start.plusDays(5),
+                condition.start.plusDays(5)
             )
             tx.insertPlacement(
                 PlacementType.DAYCARE,
                 child4.id,
                 testDaycare.id,
                 condition.start.plusDays(6),
-                condition.end,
+                condition.end
             )
         }
         createFixedPeriodQuestionnaire(
@@ -139,7 +139,7 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest(resetD
         assertEquals(1, response.size)
         assertEquals(
             listOf(child1.id, child4.id).sorted(),
-            response[0].eligibleChildren.sorted(),
+            response[0].eligibleChildren.sorted()
         )
     }
 
@@ -238,7 +238,7 @@ class HolidayPeriodControllerCitizenIntegrationTest : FullApplicationTest(resetD
                     child2.id to firstOption
                 )
             ),
-            expectedStatus = 400,
+            expectedStatus = 400
         )
     }
 

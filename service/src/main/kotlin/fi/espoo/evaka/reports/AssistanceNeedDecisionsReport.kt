@@ -25,7 +25,7 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl, pr
     fun getAssistanceNeedDecisions(
         db: Database,
         user: AuthenticatedUser,
-        clock: EvakaClock,
+        clock: EvakaClock
     ): List<AssistanceNeedDecisionsReportRow> {
         return db.connect { dbc ->
             dbc.read {
@@ -47,7 +47,7 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl, pr
     fun getAssistanceNeedDecisionUnreadCount(
         db: Database,
         user: AuthenticatedUser,
-        clock: EvakaClock,
+        clock: EvakaClock
     ): Int {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_ASSISTANCE_NEED_DECISIONS_REPORT)
 
@@ -63,7 +63,7 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl, pr
 
 private fun Database.Read.getDecisionRows(
     userId: EvakaUserId,
-    authorizedUnits: AclAuthorization,
+    authorizedUnits: AclAuthorization
 ): List<AssistanceNeedDecisionsReportRow> {
     // language=sql
     val sql =

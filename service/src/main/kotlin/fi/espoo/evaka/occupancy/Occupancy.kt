@@ -71,7 +71,11 @@ data class OccupancyValues(
     val percentage: Double? = null
 ) {
     fun withPeriod(period: FiniteDateRange) = OccupancyPeriod(
-        period, sum, headcount, caretakers, percentage
+        period,
+        sum,
+        headcount,
+        caretakers,
+        percentage
     )
 }
 
@@ -200,8 +204,11 @@ private fun getAndValidatePeriod(
     val maxLength = if (singleUnit) 400 else 50
 
     val period =
-        if (type == OccupancyType.REALIZED) queryPeriod.copy(end = minOf(queryPeriod.end, today))
-        else queryPeriod
+        if (type == OccupancyType.REALIZED) {
+            queryPeriod.copy(end = minOf(queryPeriod.end, today))
+        } else {
+            queryPeriod
+        }
 
     if (period.start.plusDays(maxLength.toLong()) < period.end) {
         throw BadRequest("Date range ${period.start} - ${period.end} is too long. Maximum range is $maxLength days.")
@@ -222,7 +229,8 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
 ): Map<K, List<Caretakers<K>>> {
     val workingDayHours = 7.75
     val defaultOccupancyCoefficient = 7
-    val caretakersSum = if (type == OccupancyType.REALIZED) """
+    val caretakersSum = if (type == OccupancyType.REALIZED) {
+        """
         sum(
             CASE
                 WHEN sar.arrived IS NOT NULL
@@ -230,12 +238,16 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
                 ELSE s.count
             END
         )
-    """.trimIndent() else """
+        """.trimIndent()
+    } else {
+        """
         sum(c.amount)
-    """.trimIndent()
+        """.trimIndent()
+    }
 
     val presentStaffAttendanceTypes = "'{${StaffAttendanceType.values().filter { it.presentInGroup() }.joinToString()}}'::staff_attendance_type[]"
-    val caretakersJoin = if (type == OccupancyType.REALIZED) """
+    val caretakersJoin = if (type == OccupancyType.REALIZED) {
+        """
         LEFT JOIN (
             SELECT group_id, arrived, departed, occupancy_coefficient
             FROM staff_attendance_realtime
@@ -246,9 +258,12 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
             WHERE departed IS NOT NULL
         ) sar ON g.id = sar.group_id AND t = DATE(sar.arrived)
         LEFT JOIN staff_attendance s ON g.id = s.group_id AND t = s.date
-    """.trimIndent() else """
+        """.trimIndent()
+    } else {
+        """
         LEFT JOIN daycare_caretaker c ON g.id = c.group_id AND daterange(c.start_date, c.end_date, '[]') @> t::date
-    """.trimIndent()
+        """.trimIndent()
+    }
 
     // language=sql
     val (keyColumns, groupBy) = when (K::class) {
@@ -415,10 +430,11 @@ private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
     type: OccupancyType
 ): List<DailyOccupancyValues<K>> {
     val placementPlans =
-        if (type == OccupancyType.PLANNED)
+        if (type == OccupancyType.PLANNED) {
             this.getPlacementPlans(range, caretakerCounts.keys.map { it.unitId })
-        else
+        } else {
             listOf()
+        }
 
     val childIds = (placements.map { it.childId } + placementPlans.map { it.childId }).toSet()
 
@@ -470,14 +486,15 @@ WHERE sn.placement_id = ANY(:placementIds)
             .groupBy { it.childId }
 
     val absences =
-        if (type == OccupancyType.REALIZED)
+        if (type == OccupancyType.REALIZED) {
             this.createQuery("SELECT child_id, date, category FROM absence WHERE child_id = ANY(:childIds) AND between_start_and_end(:range, date)")
                 .bind("childIds", childIds)
                 .bind("range", range)
                 .mapTo<Absence>()
                 .groupBy { it.childId }
-        else
+        } else {
             mapOf()
+        }
 
     fun getCoefficient(date: LocalDate, placement: Placement): BigDecimal {
         val assistanceCoefficient = assistanceNeeds[placement.childId]
@@ -531,11 +548,14 @@ WHERE sn.placement_id = ANY(:placementIds)
                         .fold(BigDecimal.ZERO) { sum, coefficient -> sum + coefficient }
 
                     val percentage =
-                        if (caretakers.caretakerCount.compareTo(BigDecimal.ZERO) == 0) null
-                        else coefficientSum
-                            .divide(caretakers.caretakerCount * BigDecimal(7), 4, RoundingMode.HALF_EVEN)
-                            .times(BigDecimal(100))
-                            .setScale(1, RoundingMode.HALF_EVEN)
+                        if (caretakers.caretakerCount.compareTo(BigDecimal.ZERO) == 0) {
+                            null
+                        } else {
+                            coefficientSum
+                                .divide(caretakers.caretakerCount * BigDecimal(7), 4, RoundingMode.HALF_EVEN)
+                                .times(BigDecimal(100))
+                                .setScale(1, RoundingMode.HALF_EVEN)
+                        }
 
                     caretakers.date to OccupancyValues(
                         sum = coefficientSum.toDouble(),
@@ -584,9 +604,9 @@ WHERE NOT p.deleted AND (
         .flatMap { placementPlan ->
             // If the placement plan has preschool daycare dates set it means that the placement plan could in reality
             // be split into parts with and without preschool daycare, so take that into account.
-            if (placementPlan.preschoolDaycareStartDate == null || placementPlan.preschoolDaycareEndDate == null)
+            if (placementPlan.preschoolDaycareStartDate == null || placementPlan.preschoolDaycareEndDate == null) {
                 listOf(placementPlan.placement)
-            else {
+            } else {
                 val preschoolDaycarePeriod = FiniteDateRange(placementPlan.preschoolDaycareStartDate, placementPlan.preschoolDaycareEndDate)
                 val onlyPreschoolPeriods = placementPlan.placement.period.complement(preschoolDaycarePeriod)
 

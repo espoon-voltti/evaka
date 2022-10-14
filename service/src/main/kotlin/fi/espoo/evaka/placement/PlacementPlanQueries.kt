@@ -100,7 +100,9 @@ WHERE application_id = :applicationId AND deleted = false
                 period = FiniteDateRange(it.startDate, it.endDate),
                 preschoolDaycarePeriod = if (it.preschoolDaycareStartDate != null && it.preschoolDaycareEndDate != null) {
                     FiniteDateRange(it.preschoolDaycareStartDate, it.preschoolDaycareEndDate)
-                } else null
+                } else {
+                    null
+                }
             )
         }
 }
@@ -188,9 +190,11 @@ WHERE
                 applicationId = it.applicationId,
                 type = it.type,
                 period = FiniteDateRange(it.startDate, it.endDate),
-                preschoolDaycarePeriod = if (it.preschoolDaycareStartDate != null && it.preschoolDaycareEndDate != null)
+                preschoolDaycarePeriod = if (it.preschoolDaycareStartDate != null && it.preschoolDaycareEndDate != null) {
                     FiniteDateRange(it.preschoolDaycareStartDate, it.preschoolDaycareEndDate)
-                else null,
+                } else {
+                    null
+                },
                 child = PlacementPlanChild(
                     id = it.childId,
                     firstName = it.firstName,

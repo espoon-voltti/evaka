@@ -78,18 +78,25 @@ fun Database.Read.getAttachment(id: AttachmentId): Attachment? = this
         val messageContentId = row.mapColumn<MessageContentId?>("message_content_id")
         val pedagogicalDocumentId = row.mapColumn<PedagogicalDocumentId?>("pedagogical_document_id")
         val attachedTo =
-            if (applicationId != null) AttachmentParent.Application(applicationId)
-            else if (incomeStatementId != null) AttachmentParent.IncomeStatement(incomeStatementId)
-            else if (messageDraftId != null) AttachmentParent.MessageDraft(messageDraftId)
-            else if (messageContentId != null) AttachmentParent.MessageContent(messageContentId)
-            else if (pedagogicalDocumentId != null) AttachmentParent.PedagogicalDocument(pedagogicalDocumentId)
-            else AttachmentParent.None
+            if (applicationId != null) {
+                AttachmentParent.Application(applicationId)
+            } else if (incomeStatementId != null) {
+                AttachmentParent.IncomeStatement(incomeStatementId)
+            } else if (messageDraftId != null) {
+                AttachmentParent.MessageDraft(messageDraftId)
+            } else if (messageContentId != null) {
+                AttachmentParent.MessageContent(messageContentId)
+            } else if (pedagogicalDocumentId != null) {
+                AttachmentParent.PedagogicalDocument(pedagogicalDocumentId)
+            } else {
+                AttachmentParent.None
+            }
 
         Attachment(
             id = row.mapColumn("id"),
             name = row.mapColumn("name"),
             contentType = row.mapColumn("content_type"),
-            attachedTo = attachedTo,
+            attachedTo = attachedTo
         )
     }
     .firstOrNull()
@@ -169,7 +176,7 @@ fun Database.Transaction.associateIncomeAttachments(
 
 fun Database.Transaction.dissociateAllPersonsAttachments(
     personId: PersonId,
-    incomeStatementId: IncomeStatementId,
+    incomeStatementId: IncomeStatementId
 ) {
     createUpdate(
         """

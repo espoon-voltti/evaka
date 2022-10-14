@@ -391,7 +391,6 @@ class VtjHenkiloMapperTest {
 
     @Test
     fun `parseLocalDateFromString should parse date in format vvvvkkpp`() {
-
         val dateString = "20080229"
         val result = parseLocalDateFromString(dateString)
 
@@ -402,7 +401,6 @@ class VtjHenkiloMapperTest {
 
     @Test
     fun `parseLocalDateFromString should parse empty date`() {
-
         val dateString = ""
         val result = parseLocalDateFromString(dateString)
 

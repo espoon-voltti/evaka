@@ -779,7 +779,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         expectedSums = mapOf(
             5 to 0.5,
             6 to 1.0,
-            7 to 1.0,
+            7 to 1.0
         )
     )
 
@@ -835,7 +835,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         expectedSums = mapOf(
             5 to 1.0,
             6 to 1.0,
-            7 to 1.0,
+            7 to 1.0
         )
     )
 

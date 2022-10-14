@@ -43,6 +43,7 @@ class PairingsController(
         data class Unit(val unitId: DaycareId) : PostPairingReq(unitId)
         data class Employee(val employeeId: EmployeeId) : PostPairingReq(employeeId)
     }
+
     @PostMapping("/pairings")
     fun postPairing(
         db: Database,
@@ -88,6 +89,7 @@ class PairingsController(
     data class PostPairingChallengeReq(
         val challengeKey: String
     )
+
     @PostMapping("/public/pairings/challenge")
     fun postPairingChallenge(
         db: Database,
@@ -110,6 +112,7 @@ class PairingsController(
         val challengeKey: String,
         val responseKey: String
     )
+
     @PostMapping("/pairings/{id}/response")
     fun postPairingResponse(
         db: Database,
@@ -154,6 +157,7 @@ class PairingsController(
         val challengeKey: String,
         val responseKey: String
     )
+
     @PostMapping("/system/pairings/{id}/validation")
     fun postPairingValidation(
         db: Database,
@@ -184,6 +188,7 @@ class PairingsController(
     data class PairingStatusRes(
         val status: PairingStatus
     )
+
     @GetMapping("/public/pairings/{id}/status")
     fun getPairingStatus(
         db: Database,

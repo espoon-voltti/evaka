@@ -17,6 +17,7 @@ HH = holiday
  */
 class KoskiTest {
     private val preschoolTerm2020 = FiniteDateRange(LocalDate.of(2020, 8, 13), LocalDate.of(2021, 6, 4))
+
     /*
          Mo Tu We Th Fr Sa Su
 Week 12  AA AA AA AA AA 27 28

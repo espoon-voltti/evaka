@@ -133,7 +133,7 @@ class VoucherValueDecisionService(
         } ?: error("No voucher value decision found with ID ($decisionId)")
 
     private fun generatePdf(decision: VoucherValueDecisionDetailed, settings: Map<SettingType, String>): ByteArray {
-        val lang = if (decision.headOfFamily.language == "sv") DocumentLang.sv else DocumentLang.fi
+        val lang = if (decision.headOfFamily.language == "sv") DocumentLang.SV else DocumentLang.FI
         return pdfService.generateVoucherValueDecisionPdf(VoucherValueDecisionPdfData(decision, settings, lang))
     }
 
@@ -149,5 +149,8 @@ class VoucherValueDecisionService(
 }
 
 private fun suomiFiDocumentFileName(lang: String) =
-    if (lang == "sv") "Beslut_om_avgift_för_småbarnspedagogik.pdf"
-    else "Varhaiskasvatuksen_maksupäätös.pdf"
+    if (lang == "sv") {
+        "Beslut_om_avgift_för_småbarnspedagogik.pdf"
+    } else {
+        "Varhaiskasvatuksen_maksupäätös.pdf"
+    }

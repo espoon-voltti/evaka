@@ -29,10 +29,10 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
-@RestController
 /**
  * Controller for "system" endpoints intended to be only called from apigw as the system internal user
  */
+@RestController
 class SystemController(private val personService: PersonService, private val accessControl: AccessControl) {
     @PostMapping("/system/citizen-login")
     fun citizenLogin(
@@ -117,7 +117,7 @@ class SystemController(private val personService: PersonService, private val acc
                         createUnits = permittedGlobalActions.contains(Action.Global.CREATE_UNIT),
                         vasuTemplates = permittedGlobalActions.contains(Action.Global.VASU_TEMPLATES_PAGE),
                         personalMobileDevice = permittedGlobalActions.contains(Action.Global.PERSONAL_MOBILE_DEVICE_PAGE),
-                        pinCode = permittedGlobalActions.contains(Action.Global.PIN_CODE_PAGE),
+                        pinCode = permittedGlobalActions.contains(Action.Global.PIN_CODE_PAGE)
                     )
 
                     EmployeeUserResponse(
@@ -160,7 +160,7 @@ class SystemController(private val personService: PersonService, private val acc
         val firstName: String,
         val lastName: String,
         val employeeNumber: String?,
-        val email: String?,
+        val email: String?
     ) {
         fun toNewEmployee(): NewEmployee =
             NewEmployee(firstName = firstName, lastName = lastName, email = email, externalId = externalId, employeeNumber = employeeNumber)

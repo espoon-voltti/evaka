@@ -88,7 +88,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
             it.insertTestPartnership(
                 adult1 = testAdult_1.id,
-                adult2 = testAdult_2.id,
+                adult2 = testAdult_2.id
             )
         }
     }
@@ -414,7 +414,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
             it.insertTestPartnership(
                 adult1 = testAdult_7.id,
-                adult2 = testAdult_3.id,
+                adult2 = testAdult_3.id
             )
         }
         createPlacement(startDate, endDate, childId = testChild_2.id)
@@ -432,7 +432,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         val testChildRestricted = testChild_1.copy(
             id = PersonId(UUID.randomUUID()),
             ssn = "010617A125W",
-            restrictedDetailsEnabled = true,
+            restrictedDetailsEnabled = true
         )
 
         db.transaction {
@@ -462,7 +462,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
             it.insertTestPartnership(
                 adult1 = testAdult_7.id,
-                adult2 = testAdult_3.id,
+                adult2 = testAdult_3.id
             )
         }
         createPlacement(startDate, endDate, childId = testChild_2.id)

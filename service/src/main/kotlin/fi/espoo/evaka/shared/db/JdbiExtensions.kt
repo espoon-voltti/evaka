@@ -212,14 +212,14 @@ val feeDecisionRowMapper = RowViewMapper { rv ->
                     ),
                     placement = FeeDecisionPlacement(
                         unitId = rv.mapColumn("placement_unit_id"),
-                        type = rv.mapColumn("placement_type"),
+                        type = rv.mapColumn("placement_type")
                     ),
                     serviceNeed = FeeDecisionServiceNeed(
                         feeCoefficient = rv.mapColumn("service_need_fee_coefficient"),
                         contractDaysPerMonth = rv.mapColumn("service_need_contract_days_per_month"),
                         descriptionFi = rv.mapColumn("service_need_description_fi"),
                         descriptionSv = rv.mapColumn("service_need_description_sv"),
-                        missing = rv.mapColumn("service_need_missing"),
+                        missing = rv.mapColumn("service_need_missing")
                     ),
                     baseFee = rv.mapColumn("base_fee"),
                     siblingDiscount = rv.mapColumn("sibling_discount"),
@@ -358,6 +358,6 @@ val feeDecisionSummaryRowMapper = RowViewMapper { rv ->
         created = rv.mapColumn("created"),
         sentAt = rv.mapColumn("sent_at"),
         finalPrice = rv.mapColumn("total_fee"),
-        difference = rv.mapColumn("difference"),
+        difference = rv.mapColumn("difference")
     )
 }

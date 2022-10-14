@@ -59,7 +59,9 @@ class VardaClientTest {
             .thenReturn(Response(statusCode = 204, url = URL("https://example.com")))
 
         val client = VardaClient(
-            mockTokenProvider, fuel, jsonMapper,
+            mockTokenProvider,
+            fuel,
+            jsonMapper,
             VardaEnv(
                 url = "https://example.com/mock-integration/varda/api",
                 basicAuth = Sensitive(""),

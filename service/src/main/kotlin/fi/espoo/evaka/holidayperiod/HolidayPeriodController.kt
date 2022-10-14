@@ -42,7 +42,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable id: HolidayPeriodId,
+        @PathVariable id: HolidayPeriodId
     ): HolidayPeriod {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_PERIOD)
         return db.connect { dbc -> dbc.read { it.getHolidayPeriod(id) } ?: throw NotFound() }.also {

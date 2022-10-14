@@ -45,8 +45,12 @@ class RealtimeStaffAttendanceController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @RequestParam unitId: DaycareId,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        start: LocalDate,
+        @RequestParam
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        end: LocalDate
     ): StaffAttendanceResponse {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_STAFF_ATTENDANCES, unitId)
 
@@ -87,7 +91,8 @@ class RealtimeStaffAttendanceController(
                             groups = noAttendanceEmployeeToGroups[emp.id] ?: listOf(),
                             firstName = emp.firstName,
                             lastName = emp.lastName,
-                            currentOccupancyCoefficient = emp.currentOccupancyCoefficient ?: BigDecimal.ZERO, listOf(),
+                            currentOccupancyCoefficient = emp.currentOccupancyCoefficient ?: BigDecimal.ZERO,
+                            listOf(),
                             hasFutureAttendances = emp.hasFutureAttendances,
                             plannedAttendances = plannedAttendances[emp.id] ?: emptyList()
                         )
@@ -200,7 +205,9 @@ class RealtimeStaffAttendanceController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
         @PathVariable employeeId: EmployeeId,
-        @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
+        @PathVariable
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        date: LocalDate,
         @RequestBody body: List<SingleDayStaffAttendanceUpsert>
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE_STAFF_ATTENDANCES, unitId)

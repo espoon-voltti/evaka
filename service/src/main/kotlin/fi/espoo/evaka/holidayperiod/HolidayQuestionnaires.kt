@@ -56,7 +56,7 @@ data class FixedPeriodQuestionnaireBody(
     val conditions: QuestionnaireConditions,
     val periodOptions: List<FiniteDateRange>,
     @Json
-    val periodOptionLabel: Translatable,
+    val periodOptionLabel: Translatable
 )
 
 data class HolidayQuestionnaireAnswer(

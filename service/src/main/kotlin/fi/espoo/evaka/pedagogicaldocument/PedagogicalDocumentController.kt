@@ -121,7 +121,7 @@ data class PedagogicalDocument(
 
 data class PedagogicalDocumentPostBody(
     val childId: ChildId,
-    val description: String,
+    val description: String
 )
 
 private fun Database.Transaction.createDocument(

@@ -148,8 +148,12 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
         val event = this.calendarEventController.getUnitCalendarEvents(
-            dbInstance(), admin, clock, testDaycare.id,
-            today, today.plusDays(4)
+            dbInstance(),
+            admin,
+            clock,
+            testDaycare.id,
+            today,
+            today.plusDays(4)
         )[0]
 
         assertEquals(form.period, event.period)
@@ -172,8 +176,12 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
         val event = this.calendarEventController.getUnitCalendarEvents(
-            dbInstance(), admin, clock, testDaycare.id,
-            today, today.plusDays(5)
+            dbInstance(),
+            admin,
+            clock,
+            testDaycare.id,
+            today,
+            today.plusDays(5)
         )[0]
 
         assertEquals(form.period, event.period)
@@ -196,8 +204,12 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
 
         val event = this.calendarEventController.getUnitCalendarEvents(
-            dbInstance(), admin, clock, testDaycare.id,
-            today, today.plusDays(5)
+            dbInstance(),
+            admin,
+            clock,
+            testDaycare.id,
+            today,
+            today.plusDays(5)
         )[0]
 
         assertEquals(form.period, event.period)
@@ -224,15 +236,23 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             admin,
             clock,
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, clock, testDaycare.id,
-                today, today.plusDays(4)
+                dbInstance(),
+                admin,
+                clock,
+                testDaycare.id,
+                today,
+                today.plusDays(4)
             )[0].id,
             CalendarEventUpdateForm(title = "Updated title", description = "desc, updated")
         )
 
         val event = this.calendarEventController.getUnitCalendarEvents(
-            dbInstance(), admin, clock, testDaycare.id,
-            today, today.plusDays(4)
+            dbInstance(),
+            admin,
+            clock,
+            testDaycare.id,
+            today,
+            today.plusDays(4)
         )[0]
 
         assertEquals("Updated title", event.title)
@@ -255,15 +275,23 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
             admin,
             clock,
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, clock, testDaycare.id,
-                today, today.plusDays(4)
+                dbInstance(),
+                admin,
+                clock,
+                testDaycare.id,
+                today,
+                today.plusDays(4)
             )[0].id
         )
 
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, clock, testDaycare.id,
-                today, today.plusDays(4)
+                dbInstance(),
+                admin,
+                clock,
+                testDaycare.id,
+                today,
+                today.plusDays(4)
             ).isEmpty()
         )
     }
@@ -535,8 +563,11 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form2)
 
         val guardianEvents = this.calendarEventController.getCitizenCalendarEvents(
-            dbInstance(), AuthenticatedUser.Citizen(testAdult_3.id, CitizenAuthLevel.STRONG), clock,
-            placementStart, placementStart.plusDays(50)
+            dbInstance(),
+            AuthenticatedUser.Citizen(testAdult_3.id, CitizenAuthLevel.STRONG),
+            clock,
+            placementStart,
+            placementStart.plusDays(50)
         )
 
         val mainUnitEvent = guardianEvents.find { it.title == "Group event (unit 1)" }
@@ -591,8 +622,12 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         this.placementController.deletePlacement(dbInstance(), admin, clock, placementId)
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, clock, testDaycare.id,
-                today, today.plusDays(5)
+                dbInstance(),
+                admin,
+                clock,
+                testDaycare.id,
+                today,
+                today.plusDays(5)
             ).isEmpty()
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) })
@@ -617,8 +652,12 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, clock, testDaycare.id,
-                today, today.plusDays(5)
+                dbInstance(),
+                admin,
+                clock,
+                testDaycare.id,
+                today,
+                today.plusDays(5)
             ).isEmpty()
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) })
@@ -635,14 +674,20 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.updatePlacementById(
-            dbInstance(), admin, clock,
+            dbInstance(),
+            admin,
+            clock,
             placementId,
             PlacementUpdateRequestBody(startDate = placementStart, endDate = today.minusDays(1))
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, clock, testDaycare.id,
-                today, today.plusDays(5)
+                dbInstance(),
+                admin,
+                clock,
+                testDaycare.id,
+                today,
+                today.plusDays(5)
             ).isEmpty()
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) })
@@ -659,13 +704,19 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.deleteGroupPlacement(
-            dbInstance(), admin, clock,
+            dbInstance(),
+            admin,
+            clock,
             groupPlacementId
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, clock, testDaycare.id,
-                today, today.plusDays(5)
+                dbInstance(),
+                admin,
+                clock,
+                testDaycare.id,
+                today,
+                today.plusDays(5)
             ).isEmpty()
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) })
@@ -682,14 +733,20 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.transferGroupPlacement(
-            dbInstance(), admin, clock,
+            dbInstance(),
+            admin,
+            clock,
             groupPlacementId,
-            GroupTransferRequestBody(groupId = groupId2, startDate = today),
+            GroupTransferRequestBody(groupId = groupId2, startDate = today)
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, clock, testDaycare.id,
-                today, today.plusDays(5)
+                dbInstance(),
+                admin,
+                clock,
+                testDaycare.id,
+                today,
+                today.plusDays(5)
             ).isEmpty()
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) })
@@ -706,14 +763,20 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
         this.calendarEventController.createCalendarEvent(dbInstance(), admin, clock, form)
         this.placementController.transferGroupPlacement(
-            dbInstance(), admin, clock,
+            dbInstance(),
+            admin,
+            clock,
             groupPlacementId,
             GroupTransferRequestBody(groupId = groupId2, startDate = today.plusDays(5))
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, clock, testDaycare.id,
-                today, today.plusDays(5)
+                dbInstance(),
+                admin,
+                clock,
+                testDaycare.id,
+                today,
+                today.plusDays(5)
             ).isNotEmpty()
         )
     }
@@ -737,8 +800,12 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, clock, testDaycare.id,
-                today, today.plusDays(5)
+                dbInstance(),
+                admin,
+                clock,
+                testDaycare.id,
+                today,
+                today.plusDays(5)
             ).isEmpty()
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) })
@@ -763,8 +830,12 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, clock, testDaycare.id,
-                today, today.plusDays(5)
+                dbInstance(),
+                admin,
+                clock,
+                testDaycare.id,
+                today,
+                today.plusDays(5)
             ).isNotEmpty()
         )
     }
@@ -795,8 +866,12 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, clock, testDaycare.id,
-                today, today.plusDays(5)
+                dbInstance(),
+                admin,
+                clock,
+                testDaycare.id,
+                today,
+                today.plusDays(5)
             ).isEmpty()
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) })
@@ -828,8 +903,12 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, clock, testDaycare.id,
-                today, today.plusDays(5)
+                dbInstance(),
+                admin,
+                clock,
+                testDaycare.id,
+                today,
+                today.plusDays(5)
             ).isEmpty()
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) })
@@ -903,7 +982,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, clock, testDaycare2.id,
+                dbInstance(),
+                admin,
+                clock,
+                testDaycare2.id,
                 today,
                 today.plusDays(5)
             ).isEmpty()
@@ -936,7 +1018,10 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, clock, testDaycare2.id,
+                dbInstance(),
+                admin,
+                clock,
+                testDaycare2.id,
                 today,
                 today.plusDays(5)
             ).isEmpty()
@@ -968,8 +1053,12 @@ class CalendarEventServiceIntegrationTest : FullApplicationTest(resetDbBeforeEac
         )
         assert(
             this.calendarEventController.getUnitCalendarEvents(
-                dbInstance(), admin, clock, testDaycare.id,
-                today, today.plusDays(5)
+                dbInstance(),
+                admin,
+                clock,
+                testDaycare.id,
+                today,
+                today.plusDays(5)
             ).isEmpty()
         )
         assertEquals(0, db.transaction { tx -> tx.devCalendarEventUnitAttendeeCount(testDaycare.id) })

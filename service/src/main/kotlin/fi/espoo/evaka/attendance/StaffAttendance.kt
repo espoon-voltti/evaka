@@ -24,7 +24,7 @@ enum class StaffAttendanceType : DatabaseEnum {
     OTHER_WORK,
     TRAINING,
     OVERTIME,
-    JUSTIFIED_CHANGE,
+    JUSTIFIED_CHANGE
     ;
 
     override val sqlType: String = "staff_attendance_type"
@@ -37,7 +37,7 @@ enum class StaffAttendanceType : DatabaseEnum {
 
 data class CurrentDayStaffAttendanceResponse(
     val staff: List<StaffMember>,
-    val extraAttendances: List<ExternalStaffMember>,
+    val extraAttendances: List<ExternalStaffMember>
 )
 
 data class ExternalStaffMember(
@@ -66,8 +66,11 @@ data class StaffMember(
 
     val spanningPlan: HelsinkiDateTimeRange?
         get() =
-            if (plannedAttendances.isEmpty()) null
-            else HelsinkiDateTimeRange(plannedAttendances.minOf { it.start }, plannedAttendances.maxOf { it.end })
+            if (plannedAttendances.isEmpty()) {
+                null
+            } else {
+                HelsinkiDateTimeRange(plannedAttendances.minOf { it.start }, plannedAttendances.maxOf { it.end })
+            }
 }
 
 data class StaffMemberAttendance(
@@ -114,7 +117,7 @@ data class EmployeeAttendance(
 
 data class StaffAttendanceResponse(
     val staff: List<EmployeeAttendance>,
-    val extraAttendances: List<ExternalAttendance>,
+    val extraAttendances: List<ExternalAttendance>
 )
 
 data class PlannedStaffAttendance(

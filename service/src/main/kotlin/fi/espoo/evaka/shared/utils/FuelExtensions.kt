@@ -84,8 +84,9 @@ fun Request.responseStringWithRetries(
 
                     if (retryAfter > maxRetryAfterWaitSeconds) throw IllegalStateException("Aborting fuel request after too big Retry-After value: $retryAfter > $maxRetryAfterWaitSeconds seconds")
 
-                    if (retryAfter > retryWaitLoggingThresholdSeconds)
+                    if (retryAfter > retryWaitLoggingThresholdSeconds) {
                         logger.warn("Waiting for a large RETRY_AFTER as requested: $retryAfter seconds")
+                    }
 
                     TimeUnit.SECONDS.sleep(retryAfter)
                     this.responseStringWithRetries(remainingTries - 1, maxRetryAfterWaitSeconds)

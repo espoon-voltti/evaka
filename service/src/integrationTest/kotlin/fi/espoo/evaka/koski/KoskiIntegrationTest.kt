@@ -58,7 +58,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             db,
             KoskiClient(
                 KoskiEnv.fromEnvironment(env).copy(
-                    url = "http://localhost:${koskiServer.port}",
+                    url = "http://localhost:${koskiServer.port}"
                 ),
                 OphEnv.fromEnvironment(env),
                 fuel = http,
@@ -418,7 +418,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             ),
             TestCase(
                 testPeriod(6L to 7L),
-                AssistanceMeasure.SPECIAL_ASSISTANCE_DECISION,
+                AssistanceMeasure.SPECIAL_ASSISTANCE_DECISION
             )
         )
         db.transaction { tx ->
@@ -566,7 +566,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         insertPlacement(testChild_1)
         val assistanceNeeds = listOf(
-            Pair(testPeriod(0L to 6L), "DEVELOPMENTAL_DISABILITY_1"),
+            Pair(testPeriod(0L to 6L), "DEVELOPMENTAL_DISABILITY_1")
         )
         db.transaction { tx ->
             assistanceNeeds.forEach {
@@ -974,7 +974,7 @@ class KoskiIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             db,
             KoskiClient(
                 KoskiEnv.fromEnvironment(env).copy(
-                    url = "http://localhost:${koskiServer.port}",
+                    url = "http://localhost:${koskiServer.port}"
                 ),
                 OphEnv.fromEnvironment(env).copy(
                     municipalityCode = "001"

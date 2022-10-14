@@ -801,7 +801,7 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
                         VasuLanguage.SV -> "I detta fält beskrivs barnets eventuella behov av stöd som påverkar de mål som anges för verksamheten samt metoderna och åtgärderna för att uppnå målen."
                     },
                     multiline = true,
-                    value = "",
+                    value = ""
                 ),
                 VasuQuestion.MultiSelectQuestion(
                     name = when (lang) {
@@ -1184,7 +1184,7 @@ fun getDefaultLeopsContent(lang: VasuLanguage) = VasuContent(
                     },
                     value = listOf(listOf("", "", ""))
                 )
-            ),
+            )
         ),
         VasuSection(
             name = when (lang) {

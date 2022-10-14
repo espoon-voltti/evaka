@@ -37,7 +37,7 @@ data class VasuTemplateUpdate(
 
 fun validateTemplateUpdate(
     template: VasuTemplateSummary,
-    body: VasuTemplateUpdate,
+    body: VasuTemplateUpdate
 ): Boolean {
     if (template.documentCount == 0) {
         return true

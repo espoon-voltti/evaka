@@ -155,7 +155,8 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             val child = testChild_7
             tx.insertTestPlacement(
                 DevPlacement(
-                    childId = child.id, unitId = testDaycare2.id,
+                    childId = child.id,
+                    unitId = testDaycare2.id,
                     startDate = placementStart,
                     endDate = placementEnd,
                     type = PlacementType.PRESCHOOL_DAYCARE
@@ -163,7 +164,8 @@ class MobileUnitControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             )
             tx.insertTestBackupCare(
                 DevBackupCare(
-                    childId = child.id, unitId = testDaycare.id,
+                    childId = child.id,
+                    unitId = testDaycare.id,
                     period = FiniteDateRange(placementStart, placementEnd),
                     groupId = groupId
                 )

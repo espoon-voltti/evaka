@@ -594,7 +594,7 @@ val serviceNeedOptionVoucherValueCoefficients = mapOf(
     snDaycareFiveYearOldsFullDayPartWeek25.id to BigDecimal("0.60"),
     snDaycareContractDays15.id to BigDecimal("0.75"),
     snDaycareContractDays10.id to BigDecimal("0.50"),
-    snDefaultSchoolShiftcare.id to BigDecimal("0.00"),
+    snDefaultSchoolShiftcare.id to BigDecimal("0.00")
 )
 
 val serviceNeedOptionVoucherValueTestFixtures = serviceNeedTestFixtures.map {
@@ -611,7 +611,7 @@ val serviceNeedOptionVoucherValueTestFixtures = serviceNeedTestFixtures.map {
         value = (BigDecimal(baseValue) * coefficient).toInt(),
         baseValueUnder3y = baseValueUnder3y,
         coefficientUnder3y = coefficient,
-        valueUnder3y = (BigDecimal(baseValueUnder3y) * coefficient).toInt(),
+        valueUnder3y = (BigDecimal(baseValueUnder3y) * coefficient).toInt()
     )
 }
 
@@ -629,5 +629,5 @@ fun ServiceNeedOption.toValueDecisionServiceNeed() = VoucherValueDecisionService
     feeDescriptionFi = this.feeDescriptionFi,
     feeDescriptionSv = this.feeDescriptionSv,
     voucherValueDescriptionFi = this.voucherValueDescriptionFi,
-    voucherValueDescriptionSv = this.voucherValueDescriptionSv,
+    voucherValueDescriptionSv = this.voucherValueDescriptionSv
 )

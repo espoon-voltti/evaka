@@ -216,7 +216,7 @@ data class ExternalStaffArrival(
     val name: String,
     val groupId: GroupId,
     val arrived: HelsinkiDateTime,
-    val occupancyCoefficient: BigDecimal,
+    val occupancyCoefficient: BigDecimal
 )
 fun Database.Transaction.markExternalStaffArrival(params: ExternalStaffArrival): StaffAttendanceExternalId = createUpdate(
     """

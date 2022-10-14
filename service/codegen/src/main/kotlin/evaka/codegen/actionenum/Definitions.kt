@@ -44,14 +44,14 @@ val generatedFiles = listOf(
             generateEnum<Action.ServiceNeed>(),
             generateEnum<Action.Unit>(),
             generateEnum<Action.VasuDocument>(),
-            generateEnum<Action.VasuTemplate>(),
+            generateEnum<Action.VasuTemplate>()
         )
     ),
     defineFile(
         "enums.d.ts",
         generateEnum<DailyServiceTimesType>(),
         generateEnum<IncomeSource>(),
-        generateEnum<OtherIncome>(),
+        generateEnum<OtherIncome>()
     )
 )
 

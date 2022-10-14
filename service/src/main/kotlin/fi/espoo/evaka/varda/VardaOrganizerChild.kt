@@ -50,7 +50,7 @@ data class VardaChildOrganizerRow(
 
 private fun getVardaOrganizerChildRows(
     tx: Database.Transaction,
-    evakaPersonId: ChildId,
+    evakaPersonId: ChildId
 ): List<VardaChildOrganizerRow> {
     val sql = """
         SELECT evaka_person_id, varda_person_id, varda_person_oid, varda_child_id, organizer_oid

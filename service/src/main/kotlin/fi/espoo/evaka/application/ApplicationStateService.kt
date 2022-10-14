@@ -154,17 +154,20 @@ class ApplicationStateService(
     ): ApplicationForm {
         val vtjChildren = personService.getPersonWithChildren(tx, user, guardian.id)?.children ?: listOf()
         // if the applicant is not the child's guardian (ie. they are a foster parent) do not include other children
-        val vtjOtherChildren = if (vtjChildren.none { it.id == child.id }) listOf()
-        else vtjChildren
-            .filter { it.id != child.id }
-            .filter { personService.personsLiveInTheSameAddress(guardian, it.toPersonDTO()) }
-            .map {
-                PersonBasics(
-                    firstName = it.firstName,
-                    lastName = it.lastName,
-                    socialSecurityNumber = it.socialSecurityNumber
-                )
-            }
+        val vtjOtherChildren = if (vtjChildren.none { it.id == child.id }) {
+            listOf()
+        } else {
+            vtjChildren
+                .filter { it.id != child.id }
+                .filter { personService.personsLiveInTheSameAddress(guardian, it.toPersonDTO()) }
+                .map {
+                    PersonBasics(
+                        firstName = it.firstName,
+                        lastName = it.lastName,
+                        socialSecurityNumber = it.socialSecurityNumber
+                    )
+                }
+        }
         return form.copy(otherChildren = vtjOtherChildren)
     }
 
@@ -218,7 +221,7 @@ class ApplicationStateService(
             sentDate,
             application.form.preferences.urgent,
             applicationFlags.isTransferApplication,
-            application.attachments,
+            application.attachments
         )
         tx.updateApplicationDates(application.id, sentDate, dueDate)
 
@@ -386,10 +389,12 @@ class ApplicationStateService(
         verifyStatus(application, WAITING_UNIT_CONFIRMATION)
 
         if (status == PlacementPlanConfirmationStatus.REJECTED || status == PlacementPlanConfirmationStatus.REJECTED_NOT_CONFIRMED) {
-            if (rejectReason == null)
+            if (rejectReason == null) {
                 throw BadRequest("Must give reason for rejecting")
-            if (rejectReason == PlacementPlanRejectReason.OTHER && rejectOtherReason.isNullOrBlank())
+            }
+            if (rejectReason == PlacementPlanRejectReason.OTHER && rejectOtherReason.isNullOrBlank()) {
                 throw BadRequest("Must describe other reason for rejecting")
+            }
 
             tx.updatePlacementPlanUnitConfirmation(applicationId, status, rejectReason, rejectOtherReason)
         } else {
@@ -500,7 +505,7 @@ class ApplicationStateService(
             application,
             plan.unitId,
             plan.type,
-            extent,
+            extent
         )
 
         placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
@@ -533,7 +538,9 @@ class ApplicationStateService(
 
         val alsoReject = if (decision.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION)) {
             decisions.find { it.type === DecisionType.PRESCHOOL_DAYCARE && it.status == DecisionStatus.PENDING }
-        } else null
+        } else {
+            null
+        }
         alsoReject?.let { tx.markDecisionRejected(user, clock, it.id) }
 
         placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
@@ -578,8 +585,9 @@ class ApplicationStateService(
             if (listOf(SENT).contains(original.status)) {
                 original.form.preferences.preferredStartDate?.let { previousStartDate ->
                     updatedForm.preferences.preferredStartDate?.let { newStartDate ->
-                        if (previousStartDate.isAfter(newStartDate))
+                        if (previousStartDate.isAfter(newStartDate)) {
                             throw BadRequest("Moving start date $previousStartDate earlier to $newStartDate is not allowed")
+                        }
                     }
                 }
             }
@@ -625,8 +633,9 @@ class ApplicationStateService(
     }
 
     private fun Database.Transaction.updateApplicationContents(today: LocalDate, original: ApplicationDetails, updatedForm: ApplicationForm, manuallySetDueDate: LocalDate? = null) {
-        if (!listOf(CREATED, SENT).contains(original.status))
+        if (!listOf(CREATED, SENT).contains(original.status)) {
             throw BadRequest("Cannot update application with status ${original.status}")
+        }
 
         updateForm(original.id, updatedForm, original.type, original.childRestricted, original.guardianRestricted)
         setCheckedByAdminToDefault(original.id, updatedForm)
@@ -674,13 +683,15 @@ class ApplicationStateService(
     }
 
     private fun verifyStatus(application: ApplicationDetails, status: ApplicationStatus) {
-        if (application.status != status)
+        if (application.status != status) {
             throw BadRequest("Expected status $status but was ${application.status}")
+        }
     }
 
     private fun verifyStatus(application: ApplicationDetails, statuses: Set<ApplicationStatus>) {
-        if (!statuses.contains(application.status))
+        if (!statuses.contains(application.status)) {
             throw BadRequest("Expected status to be one of [${statuses.joinToString(separator = ", ")}] but was ${application.status}")
+        }
     }
 
     private fun validateApplication(
@@ -688,7 +699,7 @@ class ApplicationStateService(
         type: ApplicationType,
         application: ApplicationForm,
         currentDate: LocalDate,
-        strict: Boolean,
+        strict: Boolean
     ) {
         val preferredStartDate = application.preferences.preferredStartDate
         if (type == ApplicationType.PRESCHOOL && preferredStartDate != null) {
@@ -719,12 +730,15 @@ class ApplicationStateService(
             if (strict) {
                 if (preferredStartDate != null) {
                     for (daycare in daycares) {
-                        if (type == ApplicationType.DAYCARE && (daycare.daycareApplyPeriod == null || !daycare.daycareApplyPeriod.includes(preferredStartDate)))
+                        if (type == ApplicationType.DAYCARE && (daycare.daycareApplyPeriod == null || !daycare.daycareApplyPeriod.includes(preferredStartDate))) {
                             throw BadRequest("Cannot apply for daycare in ${daycare.id} (preferred start date $preferredStartDate, apply period ${daycare.daycareApplyPeriod})")
-                        if (type == ApplicationType.PRESCHOOL && (daycare.preschoolApplyPeriod == null || !daycare.preschoolApplyPeriod.includes(preferredStartDate)))
+                        }
+                        if (type == ApplicationType.PRESCHOOL && (daycare.preschoolApplyPeriod == null || !daycare.preschoolApplyPeriod.includes(preferredStartDate))) {
                             throw BadRequest("Cannot apply for preschool in ${daycare.id} (preferred start date $preferredStartDate, apply period ${daycare.daycareApplyPeriod})")
-                        if (type == ApplicationType.CLUB && (daycare.clubApplyPeriod == null || !daycare.clubApplyPeriod.includes(preferredStartDate)))
+                        }
+                        if (type == ApplicationType.CLUB && (daycare.clubApplyPeriod == null || !daycare.clubApplyPeriod.includes(preferredStartDate))) {
                             throw BadRequest("Cannot apply for club in ${daycare.id} (preferred start date $preferredStartDate, apply period ${daycare.daycareApplyPeriod})")
+                        }
                     }
                 }
             }

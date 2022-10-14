@@ -70,7 +70,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
 
         val id = db.transaction { tx ->
             tx.createIncomeStatement(
-                citizenId, IncomeStatementBody.HighestFee(startDate, endDate)
+                citizenId,
+                IncomeStatementBody.HighestFee(startDate, endDate)
             )
         }
 
@@ -86,7 +87,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 created = incomeStatement1.created,
                 updated = incomeStatement1.updated,
                 handled = false,
-                handlerNote = "",
+                handlerNote = ""
             ),
             incomeStatement1
         )
@@ -124,7 +125,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 created = incomeStatement1.created,
                 updated = incomeStatement3.updated,
                 handled = false,
-                handlerNote = "is not cool",
+                handlerNote = "is not cool"
             ),
             incomeStatement3
         )
@@ -144,13 +145,13 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         incomeSource = IncomeSource.ATTACHMENTS,
                         estimatedMonthlyIncome = 2000,
                         otherIncome = setOf(),
-                        otherIncomeInfo = "",
+                        otherIncomeInfo = ""
                     ),
                     entrepreneur = null,
                     student = false,
                     alimonyPayer = false,
                     otherInfo = "",
-                    attachmentIds = listOf(),
+                    attachmentIds = listOf()
                 )
             )
         }
@@ -170,7 +171,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     incomeSource = IncomeSource.ATTACHMENTS,
                     estimatedMonthlyIncome = 2000,
                     otherIncome = setOf(),
-                    otherIncomeInfo = "",
+                    otherIncomeInfo = ""
                 ),
                 entrepreneur = null,
                 student = false,
@@ -181,13 +182,13 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         id = attachmentId,
                         name = "evaka-logo.png",
                         contentType = "image/png",
-                        uploadedByEmployee = true,
+                        uploadedByEmployee = true
                     )
                 ),
                 created = incomeStatement.created,
                 updated = incomeStatement.updated,
                 handled = false,
-                handlerNote = "",
+                handlerNote = ""
             ),
             getIncomeStatement(id)
         )
@@ -199,7 +200,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                 personId,
                 IncomeStatementBody.HighestFee(
                     startDate = startDate ?: LocalDate.now(),
-                    endDate = null,
+                    endDate = null
                 )
             )
         }
@@ -214,7 +215,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                     startDate = LocalDate.now(),
                     endDate = null,
                     attachmentIds = listOf(),
-                    otherInfo = "",
+                    otherInfo = ""
                 )
             )
         }
@@ -300,7 +301,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = citizenId,
                         personName = "Doe John",
-                        primaryCareArea = "Test Area",
+                        primaryCareArea = "Test Area"
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement2.id,
@@ -309,7 +310,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
                         personName = "Doe Joan",
-                        primaryCareArea = "Lwiz Foo",
+                        primaryCareArea = "Lwiz Foo"
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement3.id,
@@ -318,7 +319,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_3.id,
                         personName = "Foo Mark",
-                        primaryCareArea = "Lwiz Foo",
+                        primaryCareArea = "Lwiz Foo"
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement4.id,
@@ -327,7 +328,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_4.id,
                         personName = "Aman Dork",
-                        primaryCareArea = "Test Area",
+                        primaryCareArea = "Test Area"
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement5.id,
@@ -336,7 +337,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_5.id,
                         personName = "Karhula Johannes Olavi Antero Tapio",
-                        primaryCareArea = "Lwiz Foo",
+                        primaryCareArea = "Lwiz Foo"
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement6.id,
@@ -345,7 +346,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_6.id,
                         personName = "Vilkas Ville",
-                        primaryCareArea = null,
+                        primaryCareArea = null
                     ),
                     IncomeStatementAwaitingHandler(
                         id = incomeStatement7.id,
@@ -354,10 +355,11 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.CHILD_INCOME,
                         personId = testChild_1.id,
                         personName = "Doe Ricky",
-                        primaryCareArea = "Test Area",
+                        primaryCareArea = "Test Area"
                     )
                 ),
-                7, 1
+                7,
+                1
             ),
             getIncomeStatementsAwaitingHandler()
         )
@@ -404,10 +406,11 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
                         personName = "Doe Joan",
-                        primaryCareArea = "Lwiz Foo",
+                        primaryCareArea = "Lwiz Foo"
                     )
                 ),
-                1, 1
+                1,
+                1
             ),
             // short name for the "Lwiz Foo" care area is "short name 2"
             getIncomeStatementsAwaitingHandler(
@@ -460,10 +463,11 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
                         personName = "Doe Joan",
-                        primaryCareArea = "Test Area",
+                        primaryCareArea = "Test Area"
                     )
                 ),
-                1, 1
+                1,
+                1
             ),
             getIncomeStatementsAwaitingHandler(
                 SearchIncomeStatementsRequest(
@@ -526,12 +530,13 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         primaryCareArea = "Test Area"
                     )
                 ),
-                1, 1
+                1,
+                1
             ),
             getIncomeStatementsAwaitingHandler(
                 SearchIncomeStatementsRequest(
                     sentStartDate = LocalDate.now().minusDays(3),
-                    sentEndDate = LocalDate.now().minusDays(1),
+                    sentEndDate = LocalDate.now().minusDays(1)
                 )
             )
         )
@@ -546,10 +551,11 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
                         personName = "Doe Joan",
-                        primaryCareArea = "Test Area",
+                        primaryCareArea = "Test Area"
                     )
                 ),
-                1, 1
+                1,
+                1
             ),
             getIncomeStatementsAwaitingHandler(
                 SearchIncomeStatementsRequest(
@@ -621,7 +627,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             getIncomeStatementsAwaitingHandler(
                 SearchIncomeStatementsRequest(
                     sortBy = IncomeStatementSortParam.START_DATE,
-                    sortDirection = SortDirection.ASC,
+                    sortDirection = SortDirection.ASC
                 )
             )
         )
@@ -630,7 +636,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             getIncomeStatementsAwaitingHandler(
                 SearchIncomeStatementsRequest(
                     sortBy = IncomeStatementSortParam.START_DATE,
-                    sortDirection = SortDirection.DESC,
+                    sortDirection = SortDirection.DESC
                 )
             )
         )

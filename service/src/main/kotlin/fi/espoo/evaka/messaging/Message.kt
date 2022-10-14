@@ -42,7 +42,7 @@ data class MessageThread(
     val isCopy: Boolean,
     val children: List<MessageChild>,
     @Json
-    val messages: List<Message>,
+    val messages: List<Message>
 )
 data class SentMessage(
     val contentId: MessageContentId,
@@ -93,7 +93,7 @@ data class Group(
     val id: GroupId,
     val name: String,
     val unitId: DaycareId,
-    val unitName: String,
+    val unitName: String
 )
 
 data class AuthorizedMessageAccount(

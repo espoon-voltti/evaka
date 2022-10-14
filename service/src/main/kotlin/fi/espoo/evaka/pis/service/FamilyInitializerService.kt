@@ -55,10 +55,11 @@ class FamilyInitializerService(
             familyFromApplication.fridgePartner != null &&
             tx.personIsHeadOfFamily(familyFromApplication.fridgePartner.id, evakaClock.today()) &&
             personService.personsLiveInTheSameAddress(tx, familyFromApplication.fridgePartner.id, familyFromApplication.headOfFamily.id)
-        )
+        ) {
             familyFromApplication.fridgePartner
-        else
+        } else {
             familyFromApplication.headOfFamily
+        }
 
         tx.subTransaction { createParentship(tx, evakaClock, child = familyFromApplication.fridgeChild, headOfChildId = headOfFamily.id) }
 
@@ -96,8 +97,9 @@ class FamilyInitializerService(
         val fridgePartnerSSN = application.form.otherPartner?.socialSecurityNumber
             ?: (otherGuardian?.identity as? SSN)?.ssn
 
-        val existingFridgePartnerInSameAddressAsGuardianSSN = if (otherGuardian != null || fridgePartnerSSN != null) null
-        else {
+        val existingFridgePartnerInSameAddressAsGuardianSSN = if (otherGuardian != null || fridgePartnerSSN != null) {
+            null
+        } else {
             tx.getPartnershipsForPerson(application.guardianId, false).filter {
                 DateRange(it.startDate, it.endDate).includes(clock.today()) &&
                     it.partners.any { partner -> partner.id != application.guardianId && personService.personsLiveInTheSameAddress(tx, partner.id, application.guardianId) }

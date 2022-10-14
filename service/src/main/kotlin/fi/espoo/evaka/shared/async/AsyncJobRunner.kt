@@ -40,7 +40,7 @@ private data class Registration<T : AsyncJobPayload>(val handler: (db: Database,
 
 data class AsyncJobRunnerConfig(
     val threadPoolSize: Int = 4,
-    val throttleInterval: Duration? = null,
+    val throttleInterval: Duration? = null
 )
 
 class AsyncJobRunner<T : AsyncJobPayload>(val payloadType: KClass<T>, private val jdbi: Jdbi, private val config: AsyncJobRunnerConfig) : AutoCloseable {

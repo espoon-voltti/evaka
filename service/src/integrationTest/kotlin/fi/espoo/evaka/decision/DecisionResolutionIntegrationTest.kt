@@ -375,7 +375,7 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             status = status,
             guardianId = adult.id,
             childId = child.id,
-            type = type.toApplicationType(),
+            type = type.toApplicationType()
         )
         val preschoolDaycare = type in listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE)
         tx.insertTestApplicationForm(
@@ -403,25 +403,28 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
             preschoolDaycareEndDate = preschoolDaycarePeriod?.end
         )
         val primaryId =
-            if (preschoolDaycareWithoutPreschool) null
-            else tx.insertTestDecision(
-                TestDecision(
-                    createdBy = EvakaUserId(testDecisionMaker_1.id.raw),
-                    unitId = unit.id,
-                    applicationId = applicationId,
-                    type = when (type) {
-                        PlacementType.CLUB -> DecisionType.CLUB
-                        PlacementType.DAYCARE, PlacementType.DAYCARE_FIVE_YEAR_OLDS -> DecisionType.DAYCARE
-                        PlacementType.DAYCARE_PART_TIME, PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> DecisionType.DAYCARE_PART_TIME
-                        PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE -> DecisionType.PRESCHOOL
-                        PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE -> DecisionType.PREPARATORY_EDUCATION
-                        PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY, PlacementType.SCHOOL_SHIFT_CARE ->
-                            error("Unsupported placement type ($type)")
-                    },
-                    startDate = period.start,
-                    endDate = period.end
+            if (preschoolDaycareWithoutPreschool) {
+                null
+            } else {
+                tx.insertTestDecision(
+                    TestDecision(
+                        createdBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                        unitId = unit.id,
+                        applicationId = applicationId,
+                        type = when (type) {
+                            PlacementType.CLUB -> DecisionType.CLUB
+                            PlacementType.DAYCARE, PlacementType.DAYCARE_FIVE_YEAR_OLDS -> DecisionType.DAYCARE
+                            PlacementType.DAYCARE_PART_TIME, PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> DecisionType.DAYCARE_PART_TIME
+                            PlacementType.PRESCHOOL, PlacementType.PRESCHOOL_DAYCARE -> DecisionType.PRESCHOOL
+                            PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE -> DecisionType.PREPARATORY_EDUCATION
+                            PlacementType.TEMPORARY_DAYCARE, PlacementType.TEMPORARY_DAYCARE_PART_DAY, PlacementType.SCHOOL_SHIFT_CARE ->
+                                error("Unsupported placement type ($type)")
+                        },
+                        startDate = period.start,
+                        endDate = period.end
+                    )
                 )
-            )
+            }
         val preschoolDaycareId = preschoolDaycarePeriod?.let {
             tx.insertTestDecision(
                 TestDecision(

@@ -26,7 +26,7 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
     fun getDailyServiceTimeNotifications(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        clock: EvakaClock,
+        clock: EvakaClock
     ): List<DailyServiceTimeNotification> {
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_DAILY_SERVICE_TIME_NOTIFICATIONS, user.id)
 

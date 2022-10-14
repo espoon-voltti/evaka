@@ -61,7 +61,7 @@ class FeeDecisionService(
     private val messageProvider: IMessageProvider,
     private val sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>,
     private val env: EvakaEnv,
-    private val bucketEnv: BucketEnv,
+    private val bucketEnv: BucketEnv
 ) {
     val bucket = bucketEnv.feeDecisions
 

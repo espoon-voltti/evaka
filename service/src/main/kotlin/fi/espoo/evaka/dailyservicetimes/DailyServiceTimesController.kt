@@ -50,7 +50,10 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
                     DailyServiceTimesResponse(
                         it,
                         permittedActions = accessControl.getPermittedActions(
-                            tx, user, clock, it.id
+                            tx,
+                            user,
+                            clock,
+                            it.id
                         )
                     )
                 }
@@ -218,7 +221,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         now: HelsinkiDateTime,
         id: DailyServiceTimesId,
         childId: ChildId,
-        validityPeriod: DateRange,
+        validityPeriod: DateRange
     ) {
         val today = now.toLocalDate()
         if ((validityPeriod.end ?: LocalDate.MAX) <= today) throw Error("Unexpected validity period")

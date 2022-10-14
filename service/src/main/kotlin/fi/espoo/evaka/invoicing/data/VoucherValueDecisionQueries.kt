@@ -302,7 +302,7 @@ fun Database.Read.searchValueDecisions(
         Binding.of("end_date", endDate),
         Binding.of("financeDecisionHandlerId", financeDecisionHandlerId),
         Binding.of("difference", difference),
-        Binding.of("firstPlacementStartDate", evakaClock.now().toLocalDate().withDayOfMonth(1)),
+        Binding.of("firstPlacementStartDate", evakaClock.now().toLocalDate().withDayOfMonth(1))
     )
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "partner", "child"), searchTerms)
@@ -332,7 +332,7 @@ NOT EXISTS (
         if (financeDecisionHandlerId != null) "placement_unit.finance_decision_handler = :financeDecisionHandlerId" else null,
         if (difference.isNotEmpty()) "decision.difference && :difference" else null,
         if (noStartingPlacements) noStartingPlacementsQuery else null,
-        if (maxFeeAccepted) "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')" else null,
+        if (maxFeeAccepted) "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')" else null
     )
     val sql =
         // language=sql
@@ -370,8 +370,12 @@ LEFT JOIN care_area AS area ON placement_unit.care_area_id = area.id
 WHERE
     decision.status = :status::voucher_value_decision_status
     AND $freeTextQuery
-    ${if (conditions.isNotEmpty()) """AND ${conditions.joinToString("\nAND ")}
-        """.trimIndent() else ""}
+    ${if (conditions.isNotEmpty()) {
+            """AND ${conditions.joinToString("\nAND ")}
+            """.trimIndent()
+        } else {
+            ""
+        }}
 ORDER BY $sortColumn $sortDirection, decision.id DESC
 LIMIT :pageSize OFFSET :pageSize * :page
 """

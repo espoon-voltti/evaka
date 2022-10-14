@@ -30,7 +30,7 @@ import java.time.LocalDate
 @RestController
 @RequestMapping("/income-statements")
 class IncomeStatementController(
-    private val accessControl: AccessControl,
+    private val accessControl: AccessControl
 ) {
     @GetMapping("/person/{personId}")
     fun getIncomeStatements(
@@ -82,7 +82,7 @@ class IncomeStatementController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable personId: PersonId,
-        @PathVariable incomeStatementId: IncomeStatementId,
+        @PathVariable incomeStatementId: IncomeStatementId
     ): IncomeStatement {
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_INCOME_STATEMENTS, personId)
         return db.connect { dbc ->
@@ -114,7 +114,7 @@ class IncomeStatementController(
                 tx.updateIncomeStatementHandled(
                     incomeStatementId,
                     body.handlerNote,
-                    if (body.handled) user.id else null,
+                    if (body.handled) user.id else null
                 )
             }
         }
@@ -140,7 +140,7 @@ class IncomeStatementController(
                     body.page,
                     body.pageSize,
                     body.sortBy ?: IncomeStatementSortParam.CREATED,
-                    body.sortDirection ?: SortDirection.ASC,
+                    body.sortDirection ?: SortDirection.ASC
                 )
             }
         }.also {
@@ -174,10 +174,10 @@ data class SearchIncomeStatementsRequest(
     val areas: List<String>? = emptyList(),
     val providerTypes: List<ProviderType>? = emptyList(),
     val sentStartDate: LocalDate? = null,
-    val sentEndDate: LocalDate? = null,
+    val sentEndDate: LocalDate? = null
 )
 
 enum class IncomeStatementSortParam {
     CREATED,
-    START_DATE,
+    START_DATE
 }

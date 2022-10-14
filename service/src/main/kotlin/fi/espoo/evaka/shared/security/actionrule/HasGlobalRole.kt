@@ -28,7 +28,9 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule {
     override fun evaluate(user: AuthenticatedUser): AccessControlDecision =
         if (user is AuthenticatedUser.Employee && user.globalRoles.any { this.oneOf.contains(it) }) {
             AccessControlDecision.Permitted(this)
-        } else AccessControlDecision.None
+        } else {
+            AccessControlDecision.None
+        }
 
     private fun <T : Id<*>> rule(filter: Filter<T>): DatabaseActionRule.Scoped<T, HasGlobalRole> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
@@ -68,7 +70,9 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule {
                         .toSet()
                         .let { ids -> AccessControlFilter.Some(ids) }
                 }
-            } else null
+            } else {
+                null
+            }
             else -> null
         }
     }

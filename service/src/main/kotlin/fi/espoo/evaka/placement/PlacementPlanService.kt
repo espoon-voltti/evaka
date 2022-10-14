@@ -72,12 +72,18 @@ class PlacementPlanService(
                         tx,
                         preferredUnits[0].id
                     )
-                ) preschoolTerms.swedishPreschool else preschoolTerms.finnishPreschool
+                ) {
+                    preschoolTerms.swedishPreschool
+                } else {
+                    preschoolTerms.finnishPreschool
+                }
                 val period = FiniteDateRange(startDate, exactTerm.end)
                 val preschoolDaycarePeriod =
                     if (type == PlacementType.PRESCHOOL_DAYCARE || type == PlacementType.PREPARATORY_DAYCARE) {
                         FiniteDateRange(startDate, LocalDate.of(preschoolTerms.extendedTerm.end.year, 7, 31))
-                    } else null
+                    } else {
+                        null
+                    }
 
                 PlacementPlanDraft(
                     child = child,
@@ -91,10 +97,11 @@ class PlacementPlanService(
             }
             ApplicationType.DAYCARE -> {
                 val endFromBirthDate = LocalDate.of(child.dob.year + 6, 7, 31)
-                val endFromStartDate = if (startDate.month >= Month.AUGUST)
+                val endFromStartDate = if (startDate.month >= Month.AUGUST) {
                     LocalDate.of(startDate.year + 1, 7, 31)
-                else
+                } else {
                     LocalDate.of(startDate.year, 7, 31)
+                }
                 val period =
                     FiniteDateRange(startDate, if (endFromBirthDate < startDate) endFromStartDate else endFromBirthDate)
                 PlacementPlanDraft(
@@ -157,8 +164,11 @@ class PlacementPlanService(
                     val preschoolTerms = tx.getActivePreschoolTermAt(period.start)
                         ?: throw Exception("No suitable preschool term found for start date ${period.start}")
 
-                    val exactTerm = if (isSvebiUnit(tx, unitId))
-                        preschoolTerms.swedishPreschool else preschoolTerms.finnishPreschool
+                    val exactTerm = if (isSvebiUnit(tx, unitId)) {
+                        preschoolTerms.swedishPreschool
+                    } else {
+                        preschoolTerms.finnishPreschool
+                    }
 
                     // if the preschool daycare extends beyond the end of the preschool term, a normal daycare
                     // placement is used because invoices are handled differently
@@ -191,7 +201,7 @@ class PlacementPlanService(
         application: ApplicationDetails,
         unitId: DaycareId,
         type: PlacementType,
-        extent: PlacementPlanExtent,
+        extent: PlacementPlanExtent
     ) {
         val childId = application.childId
         val placementTypePeriods = getPlacementTypePeriods(
@@ -199,7 +209,7 @@ class PlacementPlanService(
             childId,
             unitId,
             type,
-            extent,
+            extent
         )
         val serviceNeed = resolveServiceNeedFromApplication(tx, application)
 
@@ -236,10 +246,11 @@ class PlacementPlanService(
             placementType,
             when (placementType) {
                 PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE -> PlacementPlanExtent.FullDouble(
-                    period, preschoolDaycarePeriod!!
+                    period,
+                    preschoolDaycarePeriod!!
                 )
                 else -> PlacementPlanExtent.FullSingle(period)
-            },
+            }
         )
 
         return placementTypePeriods.map { (period, placementType) ->
@@ -251,7 +262,7 @@ class PlacementPlanService(
                 startDate = period.start,
                 endDate = period.end,
                 terminationRequestedBy = null,
-                terminationRequestedDate = null,
+                terminationRequestedDate = null
             )
         }
     }

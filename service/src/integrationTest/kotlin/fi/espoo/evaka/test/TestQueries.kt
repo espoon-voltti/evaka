@@ -93,10 +93,14 @@ data class PlacementPlanTableRow(
 ) {
     fun period() = FiniteDateRange(startDate, endDate)
     fun preschoolDaycarePeriod() =
-        if (preschoolDaycareStartDate != null && preschoolDaycareEndDate != null) FiniteDateRange(
-            preschoolDaycareStartDate,
-            preschoolDaycareEndDate
-        ) else null
+        if (preschoolDaycareStartDate != null && preschoolDaycareEndDate != null) {
+            FiniteDateRange(
+                preschoolDaycareStartDate,
+                preschoolDaycareEndDate
+            )
+        } else {
+            null
+        }
 }
 
 fun Database.Read.getPlacementPlanRowByApplication(applicationId: ApplicationId) = createQuery(

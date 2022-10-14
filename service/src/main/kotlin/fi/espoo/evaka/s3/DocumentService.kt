@@ -22,7 +22,7 @@ import java.time.Duration
 data class Document(
     val name: String,
     val bytes: ByteArray,
-    val contentType: String,
+    val contentType: String
 )
 
 data class DocumentLocation(val bucket: String, val key: String)
@@ -32,7 +32,7 @@ const val INTERNAL_REDIRECT_PREFIX = "/internal_redirect/"
 class DocumentService(
     private val s3Client: S3Client,
     private val s3Presigner: S3Presigner,
-    private val proxyThroughNginx: Boolean,
+    private val proxyThroughNginx: Boolean
 ) {
     fun get(bucketName: String, key: String): Document {
         val request = GetObjectRequest.builder()

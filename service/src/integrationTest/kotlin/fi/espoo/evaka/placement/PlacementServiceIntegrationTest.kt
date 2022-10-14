@@ -914,7 +914,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     serviceNeeds = emptyList(),
                     terminatedBy = null,
                     terminationRequestedDate = null
-                ),
+                )
             ),
             placements
         )

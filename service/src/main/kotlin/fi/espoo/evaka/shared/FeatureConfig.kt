@@ -98,5 +98,5 @@ data class FeatureConfig(
     val requestedStartUpperLimit: Int,
 
     /** Control whether to use partial absence thresholds in child attendance departure **/
-    val partialAbsenceThresholdsEnabled: Boolean,
+    val partialAbsenceThresholdsEnabled: Boolean
 )

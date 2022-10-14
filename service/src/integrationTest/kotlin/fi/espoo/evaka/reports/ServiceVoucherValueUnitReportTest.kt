@@ -87,7 +87,10 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
     @Test
     fun `service voucher unit report counts fee alterations correctly`() {
         createVoucherDecision(
-            validFrom = janFirst, unitId = testDaycare.id, value = 87000, coPayment = 28800,
+            validFrom = janFirst,
+            unitId = testDaycare.id,
+            value = 87000,
+            coPayment = 28800,
             feeAlterations = listOf(
                 FeeAlterationWithEffect(
                     type = FeeAlteration.Type.DISCOUNT,

@@ -110,12 +110,12 @@ class SoapStackIntegrationTest {
             forcePrintForElectronicUser = false,
             printingProvider = "provider",
             billingId = "billing-id",
-            billingPassword = Sensitive("billing-password"),
+            billingPassword = Sensitive("billing-password")
         ),
         contactPerson = SfiContactPersonEnv(
             name = "contact-name",
             phone = "contact-phone",
-            email = "contact-email",
+            email = "contact-email"
         )
     )
 
@@ -175,7 +175,7 @@ class SoapStackIntegrationTest {
             defaultEnv().copy(
                 keyStore = clientKeystore,
                 signingKeyAlias = "client",
-                trustStore = untrustWorthyKeystore,
+                trustStore = untrustWorthyKeystore
             ),
             ::dummyGetDocument
         )

@@ -65,7 +65,7 @@ enum class DistinctiveParams {
     EXTERNAL_CHILD,
     RETROACTIVE,
     NO_STARTING_PLACEMENTS,
-    MAX_FEE_ACCEPTED,
+    MAX_FEE_ACCEPTED
 }
 
 @RestController
@@ -87,8 +87,9 @@ class FeeDecisionController(
         accessControl.requirePermissionFor(user, clock, Action.Global.SEARCH_FEE_DECISIONS)
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
-        if (body.startDate != null && body.endDate != null && body.endDate < body.startDate)
+        if (body.startDate != null && body.endDate != null && body.endDate < body.startDate) {
             throw BadRequest("End date cannot be before start date")
+        }
         return db.connect { dbc ->
             dbc.read { tx ->
                 tx.searchFeeDecisions(
@@ -106,7 +107,7 @@ class FeeDecisionController(
                     body.endDate,
                     body.searchByStartDate,
                     body.financeDecisionHandlerId,
-                    body.difference ?: emptySet(),
+                    body.difference ?: emptySet()
                 )
             }
         }.also {
@@ -154,7 +155,7 @@ class FeeDecisionController(
 
                 val personIds = listOfNotNull(
                     decision.headOfFamily.id,
-                    decision.partner?.id,
+                    decision.partner?.id
                 ) + decision.children.map { part -> part.child.id }
 
                 val restrictedDetails = personIds.any { personId ->
@@ -241,7 +242,7 @@ data class SearchFeeDecisionRequest(
     val endDate: LocalDate?,
     val searchByStartDate: Boolean = false,
     val financeDecisionHandlerId: EmployeeId?,
-    val difference: Set<FeeDecisionDifference>?,
+    val difference: Set<FeeDecisionDifference>?
 
 )
 

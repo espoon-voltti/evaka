@@ -159,7 +159,7 @@ WHERE employee_id = :userId AND av.status = ANY ('{WAITING_CONFIRMATION,WAITING_
         ).bind("userId", user.id)
     }
 
-    fun inPlacementUnitOfChildOfAssistanceAction() = rule<AssistanceActionId> { user, now, ->
+    fun inPlacementUnitOfChildOfAssistanceAction() = rule<AssistanceActionId> { user, now ->
         QueryFragment<IdRoleFeatures>(
             """
 SELECT aa.id, role, daycare.enabled_pilot_features AS unit_features

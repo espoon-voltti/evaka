@@ -149,8 +149,11 @@ data class DateRange(val start: LocalDate, val end: LocalDate?) {
     fun intersection(other: DateRange): DateRange? {
         val start = maxOf(this.start, other.start)
         val end =
-            if (this.end != null && other.end != null) minOf(this.end, other.end)
-            else this.end ?: other.end
+            if (this.end != null && other.end != null) {
+                minOf(this.end, other.end)
+            } else {
+                this.end ?: other.end
+            }
         return if (end == null || start <= end) DateRange(start, end) else null
     }
 

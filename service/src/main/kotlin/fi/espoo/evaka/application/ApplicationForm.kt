@@ -22,7 +22,7 @@ data class ApplicationFormUpdate(
     val preferences: Preferences,
     val maxFeeAccepted: Boolean,
     val otherInfo: String,
-    val clubDetails: ClubDetails?,
+    val clubDetails: ClubDetails?
 ) {
     companion object {
         fun from(form: ApplicationForm): ApplicationFormUpdate {
@@ -45,7 +45,7 @@ data class ApplicationFormUpdate(
                 preferences = form.preferences,
                 maxFeeAccepted = form.maxFeeAccepted,
                 otherInfo = form.otherInfo,
-                clubDetails = form.clubDetails,
+                clubDetails = form.clubDetails
             )
         }
     }
@@ -116,11 +116,15 @@ data class ApplicationForm(
                     phoneNumber = v0.guardian.phoneNumber ?: "",
                     email = v0.guardian.email ?: ""
                 ),
-                secondGuardian = if (v0.guardian2 != null) SecondGuardian(
-                    phoneNumber = v0.guardian2.phoneNumber ?: "",
-                    email = v0.guardian2.email ?: "",
-                    agreementStatus = v0.otherGuardianAgreementStatus
-                ) else null,
+                secondGuardian = if (v0.guardian2 != null) {
+                    SecondGuardian(
+                        phoneNumber = v0.guardian2.phoneNumber ?: "",
+                        email = v0.guardian2.email ?: "",
+                        agreementStatus = v0.otherGuardianAgreementStatus
+                    )
+                } else {
+                    null
+                },
                 otherPartner = v0.otherAdults.firstOrNull()
                     ?.takeIf { v0.hasOtherAdults }
                     ?.let {
@@ -155,12 +159,16 @@ data class ApplicationForm(
                             ?: "",
                         shiftCare = v0.extendedCare,
                         partTime = v0.partTime,
-                        serviceNeedOption = if (v0.serviceNeedOption != null) ServiceNeedOption(
-                            id = v0.serviceNeedOption.id,
-                            nameFi = v0.serviceNeedOption.nameFi,
-                            nameSv = v0.serviceNeedOption.nameSv,
-                            nameEn = v0.serviceNeedOption.nameEn
-                        ) else null
+                        serviceNeedOption = if (v0.serviceNeedOption != null) {
+                            ServiceNeedOption(
+                                id = v0.serviceNeedOption.id,
+                                nameFi = v0.serviceNeedOption.nameFi,
+                                nameSv = v0.serviceNeedOption.nameSv,
+                                nameEn = v0.serviceNeedOption.nameEn
+                            )
+                        } else {
+                            null
+                        }
                     ).takeIf { v0.type == ApplicationType.DAYCARE || v0.connectedDaycare == true },
                     siblingBasis = SiblingBasis(
                         siblingName = v0.apply.siblingName,
@@ -297,23 +305,31 @@ data class ApplicationForm(
                 preferences = Preferences(
                     preferredUnits = emptyList(),
                     preferredStartDate = null,
-                    serviceNeed = if (type == ApplicationType.DAYCARE) ServiceNeed(
-                        startTime = "",
-                        endTime = "",
-                        partTime = false,
-                        shiftCare = false,
-                        serviceNeedOption = null
-                    ) else null,
+                    serviceNeed = if (type == ApplicationType.DAYCARE) {
+                        ServiceNeed(
+                            startTime = "",
+                            endTime = "",
+                            partTime = false,
+                            shiftCare = false,
+                            serviceNeedOption = null
+                        )
+                    } else {
+                        null
+                    },
                     siblingBasis = null,
                     preparatory = false,
                     urgent = false
                 ),
                 maxFeeAccepted = false,
                 otherInfo = "",
-                clubDetails = if (type == ApplicationType.CLUB) ClubDetails(
-                    wasOnClubCare = false,
-                    wasOnDaycare = false
-                ) else null
+                clubDetails = if (type == ApplicationType.CLUB) {
+                    ClubDetails(
+                        wasOnClubCare = false,
+                        wasOnDaycare = false
+                    )
+                } else {
+                    null
+                }
             )
         }
     }

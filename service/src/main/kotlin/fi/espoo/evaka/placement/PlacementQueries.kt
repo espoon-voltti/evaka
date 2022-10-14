@@ -511,7 +511,7 @@ data class ChildPlacement(
     val terminatable: Boolean,
     val terminationRequestedDate: LocalDate?,
     @Nested("terminated_by")
-    val terminatedBy: EvakaUser?,
+    val terminatedBy: EvakaUser?
 )
 
 fun Database.Read.getCitizenChildPlacements(today: LocalDate, childId: ChildId): List<ChildPlacement> = createQuery(

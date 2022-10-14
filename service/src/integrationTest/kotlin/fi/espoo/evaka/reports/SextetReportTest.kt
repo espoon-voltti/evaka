@@ -68,7 +68,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insertTestAbsence(
                 childId = testChild_2.id,
                 date = LocalDate.of(2021, 12, 1),
-                category = AbsenceCategory.BILLABLE,
+                category = AbsenceCategory.BILLABLE
             )
 
             // 10
@@ -103,18 +103,18 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insertTestAbsence(
                 childId = testChild_5.id,
                 date = LocalDate.of(2021, 12, 1),
-                category = AbsenceCategory.BILLABLE,
+                category = AbsenceCategory.BILLABLE
             )
             // Affects because both halves off
             tx.insertTestAbsence(
                 childId = testChild_5.id,
                 date = LocalDate.of(2021, 12, 2),
-                category = AbsenceCategory.BILLABLE,
+                category = AbsenceCategory.BILLABLE
             )
             tx.insertTestAbsence(
                 childId = testChild_5.id,
                 date = LocalDate.of(2021, 12, 2),
-                category = AbsenceCategory.NONBILLABLE,
+                category = AbsenceCategory.NONBILLABLE
             )
 
             // 5 to daycare 1
@@ -123,14 +123,14 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                 unitId = testDaycare.id,
                 type = PlacementType.PRESCHOOL_DAYCARE,
                 startDate = startDate,
-                endDate = endDate,
+                endDate = endDate
             )
             // 5 to daycare 2 (backup care)
             tx.insertTestBackUpCare(
                 childId = testChild_6.id,
                 unitId = testDaycare2.id,
                 startDate = startDate,
-                endDate = midDate,
+                endDate = midDate
             )
 
             // 10 to daycare 1 (same unit in backup care)
@@ -139,13 +139,13 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                 unitId = testDaycare.id,
                 type = PlacementType.PRESCHOOL_DAYCARE,
                 startDate = startDate,
-                endDate = endDate,
+                endDate = endDate
             )
             tx.insertTestBackUpCare(
                 childId = testChild_7.id,
                 unitId = testDaycare.id,
                 startDate = startDate,
-                endDate = midDate,
+                endDate = midDate
             )
         }
 
@@ -163,7 +163,7 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
                 SextetReportRow(testDaycare2.id, testDaycare2.name, PlacementType.DAYCARE, 10),
                 SextetReportRow(testRoundTheClockDaycare.id, testRoundTheClockDaycare.name, PlacementType.DAYCARE, 15)
             ),
-            report1,
+            report1
         )
 
         val report2 = db.read {
@@ -177,9 +177,9 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             listOf(
                 SextetReportRow(testDaycare.id, testDaycare.name, PlacementType.PRESCHOOL_DAYCARE, 9 + 5 + 10),
-                SextetReportRow(testDaycare2.id, testDaycare2.name, PlacementType.PRESCHOOL_DAYCARE, 5),
+                SextetReportRow(testDaycare2.id, testDaycare2.name, PlacementType.PRESCHOOL_DAYCARE, 5)
             ),
-            report2,
+            report2
         )
     }
 }

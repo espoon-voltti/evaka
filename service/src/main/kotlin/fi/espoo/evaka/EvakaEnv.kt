@@ -70,7 +70,7 @@ data class EvakaEnv(
 data class JwtEnv(val publicKeysUrl: URI) {
     companion object {
         fun fromEnvironment(env: Environment) = JwtEnv(
-            publicKeysUrl = env.lookup("evaka.jwt.public_keys_url", "fi.espoo.voltti.auth.jwks.default.url"),
+            publicKeysUrl = env.lookup("evaka.jwt.public_keys_url", "fi.espoo.voltti.auth.jwks.default.url")
         )
     }
 }
@@ -181,7 +181,7 @@ data class BucketEnv(
             voucherValueDecisions = env.lookup(
                 "evaka.bucket.voucher_value_decisions",
                 "fi.espoo.voltti.document.bucket.vouchervaluedecision"
-            ),
+            )
         )
     }
 }
@@ -258,7 +258,7 @@ data class DvvModificationsEnv(
 
 data class VtjEnv(
     val username: String,
-    val password: Sensitive<String>?,
+    val password: Sensitive<String>?
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = VtjEnv(
@@ -280,7 +280,7 @@ data class VtjXroadEnv(
     val address: String,
     val client: VtjXroadClientEnv,
     val service: VtjXroadServiceEnv,
-    val protocolVersion: String,
+    val protocolVersion: String
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = VtjXroadEnv(
@@ -310,14 +310,14 @@ data class VtjXroadClientEnv(
     val instance: String,
     val memberClass: String,
     val memberCode: String,
-    val subsystemCode: String,
+    val subsystemCode: String
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = VtjXroadClientEnv(
             instance = env.lookup("evaka.integration.vtj.xroad.client.instance", "fi.espoo.voltti.vtj.xroad.client.instance") ?: "",
             memberClass = env.lookup("evaka.integration.vtj.xroad.client.member_class", "fi.espoo.voltti.vtj.xroad.client.memberClass") ?: "",
             memberCode = env.lookup("evaka.integration.vtj.xroad.client.member_code", "fi.espoo.voltti.vtj.xroad.client.memberCode") ?: "",
-            subsystemCode = env.lookup("evaka.integration.vtj.xroad.client.subsystem_code", "fi.espoo.voltti.vtj.xroad.client.subsystemCode") ?: "",
+            subsystemCode = env.lookup("evaka.integration.vtj.xroad.client.subsystem_code", "fi.espoo.voltti.vtj.xroad.client.subsystemCode") ?: ""
         )
     }
 }
@@ -337,7 +337,7 @@ data class VtjXroadServiceEnv(
             memberCode = env.lookup("evaka.integration.vtj.xroad.service.member_code", "fi.espoo.voltti.vtj.xroad.service.memberCode") ?: "",
             subsystemCode = env.lookup("evaka.integration.vtj.xroad.service.subsystem_code", "fi.espoo.voltti.vtj.xroad.service.subsystemCode") ?: "",
             serviceCode = env.lookup("evaka.integration.vtj.xroad.service.service_code", "fi.espoo.voltti.vtj.xroad.service.serviceCode") ?: "",
-            serviceVersion = env.lookup("evaka.integration.vtj.xroad.service.service_version", "fi.espoo.voltti.vtj.xroad.service.serviceVersion"),
+            serviceVersion = env.lookup("evaka.integration.vtj.xroad.service.service_version", "fi.espoo.voltti.vtj.xroad.service.serviceVersion")
         )
     }
 }
@@ -448,7 +448,7 @@ data class SfiPrintingEnv(
     /**
      * Billing password, if required by the printing provider
      */
-    val billingPassword: Sensitive<String>?,
+    val billingPassword: Sensitive<String>?
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = SfiPrintingEnv(
@@ -456,7 +456,7 @@ data class SfiPrintingEnv(
             forcePrintForElectronicUser = env.lookup("evaka.integration.sfi.printing.force_print_for_electronic_user", "fi.espoo.evaka.msg.sfi.printing.forcePrintForElectronicUser") ?: false,
             printingProvider = env.lookup("evaka.integration.sfi.printing.provider", "fi.espoo.evaka.msg.sfi.printing.printingProvider"),
             billingId = env.lookup("evaka.integration.sfi.printing.billing.id", "fi.espoo.evaka.msg.sfi.printing.billingId"),
-            billingPassword = env.lookup<String?>("evaka.integration.sfi.printing.billing.password", "fi.espoo.evaka.msg.sfi.printing.billingPassword")?.let(::Sensitive),
+            billingPassword = env.lookup<String?>("evaka.integration.sfi.printing.billing.password", "fi.espoo.evaka.msg.sfi.printing.billingPassword")?.let(::Sensitive)
         )
     }
 }
@@ -464,13 +464,13 @@ data class SfiPrintingEnv(
 data class SfiContactPersonEnv(
     val name: String?,
     val email: String?,
-    val phone: String?,
+    val phone: String?
 ) {
     companion object {
         fun fromEnvironment(env: Environment) = SfiContactPersonEnv(
             name = env.lookup("evaka.integration.sfi.contact_person.name", "fi.espoo.evaka.msg.sfi.printing.contactPersonName"),
             phone = env.lookup("evaka.integration.sfi.contact_person.phone", "fi.espoo.evaka.msg.sfi.printing.contactPersonPhone"),
-            email = env.lookup("evaka.integration.sfi.contact_person.email", "fi.espoo.evaka.msg.sfi.printing.contactPersonEmail"),
+            email = env.lookup("evaka.integration.sfi.contact_person.email", "fi.espoo.evaka.msg.sfi.printing.contactPersonEmail")
         )
     }
 }
@@ -478,7 +478,7 @@ data class SfiContactPersonEnv(
 data class KeystoreEnv(
     val location: URI,
     val type: String = "pkcs12",
-    val password: Sensitive<String>? = null,
+    val password: Sensitive<String>? = null
 ) {
     fun load(): KeyStore = KeyStore.getInstance(type).apply {
         UrlResource(location).inputStream.use { load(it, password?.value?.toCharArray()) }

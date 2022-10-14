@@ -121,7 +121,7 @@ fun Database.Read.duplicateApplicationExists(
 fun Database.Read.activePlacementExists(
     childId: ChildId,
     type: ApplicationType,
-    today: LocalDate,
+    today: LocalDate
 ): Boolean {
     val placementTypes = when (type) {
         ApplicationType.DAYCARE -> listOf(PlacementType.DAYCARE, PlacementType.DAYCARE_PART_TIME)
@@ -182,7 +182,7 @@ fun Database.Read.fetchApplicationSummaries(
         Binding.of("preschoolType", preschoolType),
         Binding.of("status", statuses),
         Binding.of("periodStart", periodStart),
-        Binding.of("periodEnd", periodEnd),
+        Binding.of("periodEnd", periodEnd)
     )
 
     val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("child"), searchTerms)
@@ -190,23 +190,27 @@ fun Database.Read.fetchApplicationSummaries(
     val conditions = listOfNotNull(
         "a.status = ANY(:status::application_status_type[])",
         if (areas.isNotEmpty()) "ca.short_name = ANY(:area)" else null,
-        if (basis.isNotEmpty()) basis.joinToString("\nAND ") { applicationBasis ->
-            when (applicationBasis) {
-                ApplicationBasis.ADDITIONAL_INFO -> """(
+        if (basis.isNotEmpty()) {
+            basis.joinToString("\nAND ") { applicationBasis ->
+                when (applicationBasis) {
+                    ApplicationBasis.ADDITIONAL_INFO -> """(
                             (f.document -> 'additionalDetails' ->> 'dietType') != '' OR 
                             (f.document -> 'additionalDetails' ->> 'otherInfo') != '' OR 
                             (f.document -> 'additionalDetails' ->> 'allergyType') != '')
-                """.trimIndent()
-                ApplicationBasis.SIBLING_BASIS -> "(f.document -> 'apply' ->> 'siblingBasis')::boolean = true"
-                ApplicationBasis.ASSISTANCE_NEED -> "(f.document -> 'careDetails' ->> 'assistanceNeeded')::boolean = true"
-                ApplicationBasis.CLUB_CARE -> "(f.document -> 'clubCare' ->> 'assistanceNeeded')::boolean = true"
-                ApplicationBasis.DAYCARE -> "(f.document ->> 'wasOnDaycare')::boolean = true"
-                ApplicationBasis.EXTENDED_CARE -> "(f.document ->> 'extendedCare')::boolean = true"
-                ApplicationBasis.DUPLICATE_APPLICATION -> "has_duplicates"
-                ApplicationBasis.URGENT -> "(f.document ->> 'urgent')::boolean = true"
-                ApplicationBasis.HAS_ATTACHMENTS -> "((f.document ->> 'urgent')::boolean = true OR (f.document ->> 'extendedCare')::boolean = true) AND array_length(attachments.attachment_ids, 1) > 0"
+                    """.trimIndent()
+                    ApplicationBasis.SIBLING_BASIS -> "(f.document -> 'apply' ->> 'siblingBasis')::boolean = true"
+                    ApplicationBasis.ASSISTANCE_NEED -> "(f.document -> 'careDetails' ->> 'assistanceNeeded')::boolean = true"
+                    ApplicationBasis.CLUB_CARE -> "(f.document -> 'clubCare' ->> 'assistanceNeeded')::boolean = true"
+                    ApplicationBasis.DAYCARE -> "(f.document ->> 'wasOnDaycare')::boolean = true"
+                    ApplicationBasis.EXTENDED_CARE -> "(f.document ->> 'extendedCare')::boolean = true"
+                    ApplicationBasis.DUPLICATE_APPLICATION -> "has_duplicates"
+                    ApplicationBasis.URGENT -> "(f.document ->> 'urgent')::boolean = true"
+                    ApplicationBasis.HAS_ATTACHMENTS -> "((f.document ->> 'urgent')::boolean = true OR (f.document ->> 'extendedCare')::boolean = true) AND array_length(attachments.attachment_ids, 1) > 0"
+                }
             }
-        } else null,
+        } else {
+            null
+        },
         if (type != ApplicationTypeToggle.ALL) "a.type = :documentType" else null,
         if (type == ApplicationTypeToggle.PRESCHOOL) {
             data class PreschoolFlags(val preparatory: Boolean, val connectedDaycare: Boolean, val additionalDaycareApplication: Boolean)
@@ -224,7 +228,9 @@ fun Database.Read.fetchApplicationSummaries(
                     }
                 }
             }
-        } else null,
+        } else {
+            null
+        },
         if (distinctions.contains(ApplicationDistinctions.SECONDARY)) "f.preferredUnits && :units" else if (units.isNotEmpty()) "d.id = ANY(:units)" else null,
         if (authorizedUnitsForApplicationsWithoutAssistanceNeed != AclAuthorization.All) "((f.document->'careDetails'->>'assistanceNeeded')::boolean = true OR f.preferredUnits && :authorizedUnitsForApplicationsWithoutAssistanceNeed)" else null,
         if (authorizedUnitsForApplicationsWithAssistanceNeed != AclAuthorization.All) "((f.document->'careDetails'->>'assistanceNeeded')::boolean = false OR f.preferredUnits && :authorizedUnitsForApplicationsWithAssistanceNeed)" else null,
@@ -662,7 +668,9 @@ fun Database.Read.fetchApplicationDetails(applicationId: ApplicationId, includeC
                 )
             )
         )
-    } else return null
+    } else {
+        return null
+    }
 }
 
 fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<ApplicationUnitSummary> {
@@ -782,8 +790,11 @@ fun Database.Transaction.updateForm(
 ) {
     check(getApplicationType(id) == formType) { "Invalid form type for the application" }
     val transformedForm =
-        if (formType == ApplicationType.CLUB) ClubFormV0.fromForm2(form, childRestricted, guardianRestricted)
-        else DaycareFormV0.fromForm2(form, formType, childRestricted, guardianRestricted)
+        if (formType == ApplicationType.CLUB) {
+            ClubFormV0.fromForm2(form, childRestricted, guardianRestricted)
+        } else {
+            DaycareFormV0.fromForm2(form, formType, childRestricted, guardianRestricted)
+        }
 
     // language=SQL
     val sql =

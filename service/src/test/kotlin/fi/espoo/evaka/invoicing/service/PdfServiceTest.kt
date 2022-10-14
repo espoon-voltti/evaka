@@ -104,7 +104,7 @@ class PdfServiceTest {
                 fee = it.fee,
                 feeAlterations = it.feeAlterations,
                 finalFee = it.finalFee,
-                childIncome = if (index == 0) testDecisionIncome.copy(total = 123456) else null,
+                childIncome = if (index == 0) testDecisionIncome.copy(total = 123456) else null
             )
         },
         financeDecisionHandlerFirstName = null,
@@ -194,7 +194,7 @@ class PdfServiceTest {
         val feeDecisionPdfData = FeeDecisionPdfData(
             decision = normalDecision,
             settings = mapOf(),
-            lang = DocumentLang.fi.name
+            lang = DocumentLang.FI.name
         )
 
         val simpleVariables = service.getFeeDecisionPdfVariables(feeDecisionPdfData).filterKeys {
@@ -248,7 +248,7 @@ class PdfServiceTest {
         val feeDecisionPdfData = FeeDecisionPdfData(
             decision = reliefDecision,
             settings = mapOf(),
-            lang = DocumentLang.fi.name
+            lang = DocumentLang.FI.name
         )
 
         val simpleVariables = service.getFeeDecisionPdfVariables(feeDecisionPdfData).filterKeys {
@@ -302,7 +302,7 @@ class PdfServiceTest {
         val feeDecisionPdfData = FeeDecisionPdfData(
             decision = normalDecision,
             settings = mapOf(),
-            lang = DocumentLang.fi.name
+            lang = DocumentLang.FI.name
         )
         val pdfBytes = service.generateFeeDecisionPdf(feeDecisionPdfData)
 
@@ -314,11 +314,10 @@ class PdfServiceTest {
 
     @Test
     fun `generateVoucherValueDecisionPdf smoke test`() {
-
         val voucherValueDecisionPdfData = VoucherValueDecisionPdfData(
             decision = normalVoucherValueDecision,
             settings = mapOf(),
-            lang = DocumentLang.fi
+            lang = DocumentLang.FI
         )
         val pdfBytes = service.generateVoucherValueDecisionPdf(voucherValueDecisionPdfData)
 

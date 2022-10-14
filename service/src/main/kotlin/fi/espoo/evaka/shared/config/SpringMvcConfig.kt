@@ -69,8 +69,9 @@ class SpringMvcConfig(private val jdbi: Jdbi, private val env: EvakaEnv) : WebMv
     }
 
     private fun WebRequest.getEvakaClock(): EvakaClock =
-        if (!env.mockClock) RealEvakaClock()
-        else {
+        if (!env.mockClock) {
+            RealEvakaClock()
+        } else {
             val mockTime = this.getHeader("EvakaMockedTime")?.let {
                 HelsinkiDateTime.from(ZonedDateTime.parse(it))
             }

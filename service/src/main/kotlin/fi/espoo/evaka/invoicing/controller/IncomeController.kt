@@ -176,10 +176,14 @@ fun validateIncome(income: Income, incomeTypes: Map<String, IncomeType>): Income
         income.copy(
             data = income.data.mapValues { (type, value) ->
                 val incomeType = incomeTypes[type] ?: throw BadRequest("Invalid income type: $type")
-                if (incomeType.withCoefficient) value.copy(multiplier = incomeType.multiplier) else value.copy(
-                    multiplier = incomeType.multiplier,
-                    coefficient = IncomeCoefficient.default()
-                )
+                if (incomeType.withCoefficient) {
+                    value.copy(multiplier = incomeType.multiplier)
+                } else {
+                    value.copy(
+                        multiplier = incomeType.multiplier,
+                        coefficient = IncomeCoefficient.default()
+                    )
+                }
             }
         )
     } else {

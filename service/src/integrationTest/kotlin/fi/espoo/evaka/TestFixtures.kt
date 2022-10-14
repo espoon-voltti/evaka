@@ -108,7 +108,7 @@ val testDaycare = DevDaycare(
     name = "Test Daycare",
     areaId = testArea.id,
     ophOrganizerOid = defaultMunicipalOrganizerOid,
-    enabledPilotFeatures = setOf(PilotFeature.MESSAGING, PilotFeature.MOBILE, PilotFeature.RESERVATIONS, PilotFeature.PLACEMENT_TERMINATION),
+    enabledPilotFeatures = setOf(PilotFeature.MESSAGING, PilotFeature.MOBILE, PilotFeature.RESERVATIONS, PilotFeature.PLACEMENT_TERMINATION)
 )
 
 val testDaycare2 = DevDaycare(
@@ -735,13 +735,17 @@ fun Database.Transaction.insertApplication(
                         PlacementType.PRESCHOOL,
                         PlacementType.PREPARATORY
                     )
-                ) null else ServiceNeed(
-                    startTime = "09:00",
-                    endTime = "15:00",
-                    shiftCare = false,
-                    partTime = appliedType == PlacementType.DAYCARE_PART_TIME,
-                    serviceNeedOption = serviceNeedOption
-                ),
+                ) {
+                    null
+                } else {
+                    ServiceNeed(
+                        startTime = "09:00",
+                        endTime = "15:00",
+                        shiftCare = false,
+                        partTime = appliedType == PlacementType.DAYCARE_PART_TIME,
+                        serviceNeedOption = serviceNeedOption
+                    )
+                },
                 siblingBasis = null,
                 preparatory = appliedType in listOf(PlacementType.PREPARATORY, PlacementType.PREPARATORY_DAYCARE),
                 urgent = urgent

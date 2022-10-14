@@ -336,13 +336,17 @@ WHERE id = :unitId
                     providerType = ProviderType.MUNICIPAL
                 ),
                 guardian = GuardianInfo(null, adult.ssn, adult.firstName, adult.lastName, isVtjGuardian = true),
-                otherGuardian = if (otherGuardian != null) GuardianInfo(
-                    otherGuardian.id,
-                    otherGuardian.ssn,
-                    otherGuardian.firstName,
-                    otherGuardian.lastName,
-                    isVtjGuardian = true
-                ) else null,
+                otherGuardian = if (otherGuardian != null) {
+                    GuardianInfo(
+                        otherGuardian.id,
+                        otherGuardian.ssn,
+                        otherGuardian.firstName,
+                        otherGuardian.lastName,
+                        isVtjGuardian = true
+                    )
+                } else {
+                    null
+                },
                 child = ChildInfo(child.ssn, child.firstName, child.lastName)
             ),
             body.get().copy(
@@ -416,7 +420,7 @@ WHERE id = :unitId
             status = ApplicationStatus.WAITING_PLACEMENT,
             guardianId = adult.id,
             childId = child.id,
-            type = type.toApplicationType(),
+            type = type.toApplicationType()
         )
         val preschoolDaycare = type == PlacementType.PRESCHOOL_DAYCARE
         tx.insertTestApplicationForm(

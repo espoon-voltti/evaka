@@ -93,7 +93,7 @@ data class FeeDecisionChild(
     val feeAlterations: List<FeeAlterationWithEffect>,
     val finalFee: Int,
     @Json
-    val childIncome: DecisionIncome?,
+    val childIncome: DecisionIncome?
 )
 
 data class FeeDecisionPlacement(
@@ -272,7 +272,7 @@ data class FeeDecisionSummary(
     val sentAt: HelsinkiDateTime? = null,
     val finalPrice: Int,
     val created: HelsinkiDateTime = HelsinkiDateTime.now(),
-    val difference: Set<FeeDecisionDifference>,
+    val difference: Set<FeeDecisionDifference>
 ) : Mergeable<PersonBasic, FeeDecisionSummary> {
     override fun withChildren(children: List<PersonBasic>) = this.copy(children = children)
 
@@ -367,8 +367,11 @@ fun calculateFeeBeforeFeeAlterations(
     val feeAfterSiblingDiscount = roundToEuros(BigDecimal(baseFee) * siblingDiscountMultiplier)
     val feeBeforeRounding = roundToEuros(feeAfterSiblingDiscount * serviceNeedCoefficient).toInt()
     return feeBeforeRounding.let { fee ->
-        if (fee < minFee) 0
-        else fee
+        if (fee < minFee) {
+            0
+        } else {
+            fee
+        }
     }
 }
 

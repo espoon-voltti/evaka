@@ -155,7 +155,7 @@ val testDecision1 = FeeDecision(
     feeThresholds = testFeeThresholds.getFeeDecisionThresholds(3),
     children = listOf(testDecisionChild1, testDecisionChild2.copy(siblingDiscount = 50, fee = 14500, finalFee = 14500)),
     created = HelsinkiDateTime.now(),
-    difference = emptySet(),
+    difference = emptySet()
 )
 
 val testIncome = Income(
@@ -194,7 +194,7 @@ fun createFeeDecisionChildFixture(
     baseFee: Int = 28900,
     siblingDiscount: Int = 0,
     fee: Int = 28900,
-    feeAlterations: List<FeeAlterationWithEffect> = listOf(),
+    feeAlterations: List<FeeAlterationWithEffect> = listOf()
 ) = FeeDecisionChild(
     child = ChildWithDateOfBirth(id = childId, dateOfBirth = dateOfBirth),
     placement = FeeDecisionPlacement(placementUnitId, placementType),
@@ -230,7 +230,7 @@ fun createFeeDecisionFixture(
     familySize = familySize,
     feeThresholds = feeThresholds,
     children = children,
-    difference = emptySet(),
+    difference = emptySet()
 )
 
 fun createVoucherValueDecisionFixture(
@@ -275,7 +275,7 @@ fun createVoucherValueDecisionFixture(
     coPayment = coPayment,
     feeAlterations = feeAlterations,
     finalCoPayment = coPayment + feeAlterations.sumOf { it.effect },
-    difference = emptySet(),
+    difference = emptySet()
 )
 
 fun createInvoiceRowFixture(childId: ChildId, unitId: DaycareId, amount: Int = 1, unitPrice: Int = 28900) = InvoiceRow(

@@ -899,7 +899,7 @@ fun Database.Transaction.insertTestAbsence(
     category: AbsenceCategory,
     absenceType: AbsenceType = AbsenceType.SICKLEAVE,
     modifiedBy: EvakaUserId = AuthenticatedUser.SystemInternalUser.evakaUserId,
-    modifiedAt: HelsinkiDateTime? = null,
+    modifiedAt: HelsinkiDateTime? = null
 ) {
     //language=sql
     val sql =
@@ -925,17 +925,20 @@ fun Database.Transaction.insertTestChildAttendance(
     departed: HelsinkiDateTime?
 ) {
     val attendances: List<Triple<LocalDate, LocalTime, LocalTime?>> =
-        if (departed == null) listOf(Triple(arrived.toLocalDate(), arrived.toLocalTime(), null))
-        else generateSequence(arrived.toLocalDate()) { it.plusDays(1) }
-            .takeWhile { it <= departed.toLocalDate() }
-            .map { date ->
-                Triple(
-                    date,
-                    if (arrived.toLocalDate() == date) arrived.toLocalTime() else LocalTime.of(0, 0),
-                    if (departed.toLocalDate() == date) departed.toLocalTime() else LocalTime.of(23, 59)
-                )
-            }
-            .toList()
+        if (departed == null) {
+            listOf(Triple(arrived.toLocalDate(), arrived.toLocalTime(), null))
+        } else {
+            generateSequence(arrived.toLocalDate()) { it.plusDays(1) }
+                .takeWhile { it <= departed.toLocalDate() }
+                .map { date ->
+                    Triple(
+                        date,
+                        if (arrived.toLocalDate() == date) arrived.toLocalTime() else LocalTime.of(0, 0),
+                        if (departed.toLocalDate() == date) departed.toLocalTime() else LocalTime.of(23, 59)
+                    )
+                }
+                .toList()
+        }
 
     prepareBatch(
         """

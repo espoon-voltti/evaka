@@ -51,15 +51,18 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
         val result = fetchAndParseFamilyDetails(testAdult_1.id)
 
         assertEquals(
-            1, result.children.size
+            1,
+            result.children.size
         )
 
         assertEquals(
-            testAdult_1.id, result.headOfFamily.personId
+            testAdult_1.id,
+            result.headOfFamily.personId
         )
 
         assertEquals(
-            setOf(testChild_1.id), result.children.map { it.personId }.toSet()
+            setOf(testChild_1.id),
+            result.children.map { it.personId }.toSet()
         )
     }
 
@@ -69,15 +72,18 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
         val result = fetchAndParseFamilyDetails(testAdult_1.id)
 
         assertEquals(
-            2, result.children.size
+            2,
+            result.children.size
         )
 
         assertEquals(
-            testAdult_1.id, result.headOfFamily.personId
+            testAdult_1.id,
+            result.headOfFamily.personId
         )
 
         assertEquals(
-            setOf(testChild_1.id, testChild_2.id), result.children.map { it.personId }.toSet()
+            setOf(testChild_1.id, testChild_2.id),
+            result.children.map { it.personId }.toSet()
         )
     }
 
@@ -87,19 +93,23 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
         val result = fetchAndParseFamilyDetails(testAdult_1.id)
 
         assertEquals(
-            2, result.children.size
+            2,
+            result.children.size
         )
 
         assertEquals(
-            testAdult_1.id, result.headOfFamily.personId
+            testAdult_1.id,
+            result.headOfFamily.personId
         )
 
         assertEquals(
-            testAdult_2.id, result.partner!!.personId
+            testAdult_2.id,
+            result.partner!!.personId
         )
 
         assertEquals(
-            setOf(testChild_1.id, testChild_2.id), result.children.map { it.personId }.toSet()
+            setOf(testChild_1.id, testChild_2.id),
+            result.children.map { it.personId }.toSet()
         )
     }
 
@@ -108,11 +118,13 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
         val result = fetchAndParseFamilyDetails(testAdult_1.id)
 
         assertEquals(
-            0, result.children.size
+            0,
+            result.children.size
         )
 
         assertEquals(
-            testAdult_1.id, result.headOfFamily.personId
+            testAdult_1.id,
+            result.headOfFamily.personId
         )
     }
 

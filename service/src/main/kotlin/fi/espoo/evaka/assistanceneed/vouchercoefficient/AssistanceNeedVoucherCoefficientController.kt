@@ -132,12 +132,13 @@ class AssistanceNeedVoucherCoefficientController(
                         data = AssistanceNeedVoucherCoefficientRequest(
                             coefficient = it.coefficient.toDouble(),
                             validityPeriod =
-                            if (range.start <= it.validityPeriod.end && range.start >= it.validityPeriod.start)
+                            if (range.start <= it.validityPeriod.end && range.start >= it.validityPeriod.start) {
                                 it.validityPeriod.copy(end = range.start.minusDays(1))
-                            else if (range.end >= it.validityPeriod.start && range.end <= it.validityPeriod.end)
+                            } else if (range.end >= it.validityPeriod.start && range.end <= it.validityPeriod.end) {
                                 it.validityPeriod.copy(start = range.end.plusDays(1))
-                            else
+                            } else {
                                 it.validityPeriod
+                            }
                         )
                     )
                 }

@@ -394,7 +394,7 @@ class DevApi(
     fun rejectDecisionByCitizen(
         db: Database,
         clock: EvakaClock,
-        @PathVariable id: DecisionId,
+        @PathVariable id: DecisionId
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
@@ -406,7 +406,7 @@ class DevApi(
                     AuthenticatedUser.Citizen(application.guardianId, CitizenAuthLevel.STRONG),
                     clock,
                     application.id,
-                    id,
+                    id
                 )
             }
         }
@@ -676,9 +676,14 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
             dbc.transaction { tx ->
                 val application = tx.fetchApplicationDetails(applicationId)
                     ?: throw NotFound("application $applicationId not found")
-                val preschoolDaycarePeriod = if (placementPlan.preschoolDaycarePeriodStart != null) FiniteDateRange(
-                    placementPlan.preschoolDaycarePeriodStart, placementPlan.preschoolDaycarePeriodEnd!!
-                ) else null
+                val preschoolDaycarePeriod = if (placementPlan.preschoolDaycarePeriodStart != null) {
+                    FiniteDateRange(
+                        placementPlan.preschoolDaycarePeriodStart,
+                        placementPlan.preschoolDaycarePeriodEnd!!
+                    )
+                } else {
+                    null
+                }
 
                 placementPlanService.createPlacementPlan(
                     tx,
@@ -990,11 +995,15 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
             dbc.transaction {
                 employeePins.forEach { employeePin ->
                     val userId =
-                        if (employeePin.userId != null) employeePin.userId
-                        else if (!employeePin.employeeExternalId.isNullOrBlank()) it.getEmployeeIdByExternalId(
-                            employeePin.employeeExternalId
-                        )
-                        else throw Error("Cannot create dev employee pin: user id and external user id missing")
+                        if (employeePin.userId != null) {
+                            employeePin.userId
+                        } else if (!employeePin.employeeExternalId.isNullOrBlank()) {
+                            it.getEmployeeIdByExternalId(
+                                employeePin.employeeExternalId
+                            )
+                        } else {
+                            throw Error("Cannot create dev employee pin: user id and external user id missing")
+                        }
 
                     it.insertEmployeePin(employeePin.copy(userId = userId))
                 }
@@ -1037,7 +1046,7 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
                         name = id.toString(),
                         bytes = file.bytes,
                         contentType = file.contentType ?: "image/jpeg"
-                    ),
+                    )
                 )
             }
         }.key
@@ -1524,7 +1533,7 @@ data class DevDaycare(
     val financeDecisionHandler: EmployeeId? = null,
     val businessId: String = "",
     val iban: String = "",
-    val providerId: String = "",
+    val providerId: String = ""
 )
 
 data class DevDaycareGroup(
@@ -1550,7 +1559,7 @@ data class DevAssistanceNeed(
     val startDate: LocalDate = LocalDate.of(2019, 1, 1),
     val endDate: LocalDate = LocalDate.of(2019, 12, 31),
     val capacityFactor: Double = 1.0,
-    val bases: Set<String> = emptySet(),
+    val bases: Set<String> = emptySet()
 )
 
 data class DevAssistanceNeedDecision(
@@ -1800,7 +1809,7 @@ data class DevDailyServiceTimes(
     val thursdayTimes: TimeRange? = null,
     val fridayTimes: TimeRange? = null,
     val saturdayTimes: TimeRange? = null,
-    val sundayTimes: TimeRange? = null,
+    val sundayTimes: TimeRange? = null
 )
 
 data class DevDailyServiceTimeNotification(

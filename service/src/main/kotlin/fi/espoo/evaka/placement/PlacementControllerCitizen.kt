@@ -31,11 +31,11 @@ import java.time.LocalDate
 @RestController
 class PlacementControllerCitizen(
     private val accessControl: AccessControl,
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
 
     data class ChildPlacementResponse(
-        val placements: List<TerminatablePlacementGroup>,
+        val placements: List<TerminatablePlacementGroup>
     )
 
     @GetMapping("/citizen/children/{childId}/placements")
@@ -43,7 +43,7 @@ class PlacementControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @PathVariable childId: ChildId,
+        @PathVariable childId: ChildId
     ): ChildPlacementResponse {
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_PLACEMENT, childId)
 
@@ -68,7 +68,7 @@ class PlacementControllerCitizen(
         val type: TerminatablePlacementType,
         val unitId: DaycareId,
         val terminationDate: LocalDate,
-        val terminateDaycareOnly: Boolean?,
+        val terminateDaycareOnly: Boolean?
     )
 
     @PostMapping("/citizen/children/{childId}/placements/terminate")

@@ -27,7 +27,9 @@ class ChildAgeLanguageReportController(private val acl: AccessControlList, priva
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
+        @RequestParam("date")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        date: LocalDate
     ): List<ChildAgeLanguageReportRow> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_CHILD_AGE_AND_LANGUAGE_REPORT)
         return db.connect { dbc ->

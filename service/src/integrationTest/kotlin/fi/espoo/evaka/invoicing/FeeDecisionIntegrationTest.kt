@@ -1245,7 +1245,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val notToBeCreated = toBeCreatedDecisions.first()
         val requiresManualSending = notToBeCreated.copy(
             id = FeeDecisionId(UUID.randomUUID()),
-            status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING,
+            status = FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING
         )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(requiresManualSending)) }
 
@@ -1273,7 +1273,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val notToBeCreated = toBeCreatedDecisions.first()
         val requiresSending = notToBeCreated.copy(
             id = FeeDecisionId(UUID.randomUUID()),
-            status = FeeDecisionStatus.WAITING_FOR_SENDING,
+            status = FeeDecisionStatus.WAITING_FOR_SENDING
         )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(requiresSending)) }
 
@@ -1982,7 +1982,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val testChildRestricted = testChild_1.copy(
             id = PersonId(UUID.randomUUID()),
             ssn = "010617A125W",
-            restrictedDetailsEnabled = true,
+            restrictedDetailsEnabled = true
         )
         db.transaction {
             it.insertTestPerson(testChildRestricted)

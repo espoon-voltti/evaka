@@ -26,7 +26,9 @@ class ServiceNeedReport(private val acl: AccessControlList, private val accessCo
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
+        @RequestParam("date")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        date: LocalDate
     ): List<ServiceNeedReportRow> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_SERVICE_NEED_REPORT)
         return db.connect { dbc ->

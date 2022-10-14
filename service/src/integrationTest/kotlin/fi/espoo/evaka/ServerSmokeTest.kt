@@ -24,7 +24,8 @@ class ServerSmokeTest : FullApplicationTest(resetDbBeforeEach = false) {
     "status": "UP"
 }
         """,
-            res.get(), false
+            res.get(),
+            false
         )
     }
 

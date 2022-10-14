@@ -50,12 +50,15 @@ class FamilyController(
         return db.connect { dbc ->
             dbc.read {
                 val overview = familyOverviewService.getFamilyByAdult(it, clock, id)
-                if (includeIncome) overview
-                else overview?.copy(
-                    headOfFamily = overview.headOfFamily.copy(income = null),
-                    partner = overview.partner?.copy(income = null),
-                    totalIncome = null
-                )
+                if (includeIncome) {
+                    overview
+                } else {
+                    overview?.copy(
+                        headOfFamily = overview.headOfFamily.copy(income = null),
+                        partner = overview.partner?.copy(income = null),
+                        totalIncome = null
+                    )
+                }
             } ?: throw NotFound("No family overview found for person $id")
         }.also {
             Audit.PisFamilyRead.log(targetId = id)
@@ -89,11 +92,12 @@ class FamilyController(
                     throw BadRequest("Invalid child or contact person")
                 }
                 personService.patchUserDetails(
-                    it, body.contactPersonId,
+                    it,
+                    body.contactPersonId,
                     PersonPatch(
                         email = body.email,
                         phone = body.phone,
-                        backupPhone = body.backupPhone,
+                        backupPhone = body.backupPhone
                     )
                 )
             }
@@ -130,7 +134,7 @@ data class FamilyContactUpdate(
     val contactPersonId: PersonId,
     val email: String?,
     val phone: String?,
-    val backupPhone: String?,
+    val backupPhone: String?
 )
 
 data class FamilyContactPriorityUpdate(
@@ -293,13 +297,17 @@ ORDER BY priority ASC, role_order ASC
 private val defaultContacts = setOf(LOCAL_GUARDIAN, REMOTE_GUARDIAN)
 
 private fun addDefaultPriorities(contacts: List<FamilyContact>): List<FamilyContact> =
-    if (contacts.none { it.priority != null })
+    if (contacts.none { it.priority != null }) {
         contacts
             .fold(listOf<FamilyContact>()) { acc, contact ->
                 acc + if (defaultContacts.contains(contact.role)) {
                     val highestPriority = acc.mapNotNull { it.priority }.maxOrNull() ?: 0
                     contact.copy(priority = highestPriority + 1)
-                } else contact
+                } else {
+                    contact
+                }
             }
             .sortedWith(compareBy(nullsLast()) { it.priority })
-    else contacts
+    } else {
+        contacts
+    }

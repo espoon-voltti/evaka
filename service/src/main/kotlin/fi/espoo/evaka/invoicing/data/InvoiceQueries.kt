@@ -219,7 +219,7 @@ fun Database.Read.paginatedSearch(
         Binding.of("page", page),
         Binding.of("pageSize", pageSize),
         Binding.of("periodStart", periodStart),
-        Binding.of("periodEnd", periodEnd),
+        Binding.of("periodEnd", periodEnd)
     )
         .let { ps -> if (areas.isNotEmpty()) ps + Binding.of("area", areas) else ps }
         .let { ps -> if (statuses.isNotEmpty()) ps + Binding.of("status", statuses) else ps }
@@ -247,9 +247,13 @@ fun Database.Read.paginatedSearch(
             LEFT JOIN invoice_row AS row ON invoice.id = row.invoice_id
             LEFT JOIN person AS head ON invoice.head_of_family = head.id
             LEFT JOIN person AS child ON row.child = child.id
-            ${if (conditions.isNotEmpty()) """
+            ${if (conditions.isNotEmpty()) {
+            """
             WHERE ${conditions.joinToString("\nAND ")}
-        """.trimIndent() else ""}
+            """.trimIndent()
+        } else {
+            ""
+        }}
             GROUP BY invoice.id
             ORDER BY ${sortColumn.first} ${sortDirection.name}, invoice.id
             LIMIT :pageSize OFFSET (:page - 1) * :pageSize
@@ -331,8 +335,10 @@ fun Database.Read.searchInvoices(
     )
 
     val where =
-        if (conditions.isEmpty()) ""
-        else """
+        if (conditions.isEmpty()) {
+            ""
+        } else {
+            """
             WHERE invoice.id IN (
                 SELECT invoice.id
                 FROM invoice
@@ -341,7 +347,8 @@ fun Database.Read.searchInvoices(
                 LEFT JOIN person AS child ON row.child = child.id
                 WHERE ${conditions.joinToString("\nAND ")}
             )
-        """.trimIndent()
+            """.trimIndent()
+        }
 
     val sql =
         """

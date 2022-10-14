@@ -106,10 +106,11 @@ class ApplicationControllerCitizen(
         }
         Audit.ApplicationRead.log(targetId = applicationId)
 
-        return if (application?.guardianId == user.id && !application.hideFromGuardian)
+        return if (application?.guardianId == user.id && !application.hideFromGuardian) {
             application
-        else
+        } else {
             throw NotFound("Application not found")
+        }
     }
 
     @PostMapping("/applications")
@@ -264,8 +265,9 @@ class ApplicationControllerCitizen(
                 val application = tx.fetchApplicationDetails(applicationId)
                     ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
 
-                if (application.status != ApplicationStatus.CREATED && application.status != ApplicationStatus.SENT)
+                if (application.status != ApplicationStatus.CREATED && application.status != ApplicationStatus.SENT) {
                     throw BadRequest("Only applications which are not yet being processed can be deleted")
+                }
 
                 tx.deleteApplication(applicationId)
             }
@@ -334,7 +336,7 @@ class ApplicationControllerCitizen(
                     clock,
                     applicationId,
                     body.decisionId,
-                    body.requestedStartDate,
+                    body.requestedStartDate
                 )
             }
         }

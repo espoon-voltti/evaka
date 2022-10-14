@@ -35,7 +35,7 @@ data class UnreadCountByAccountAndGroup(val accountId: MessageAccountId, val unr
 
 data class ReplyToMessageBody(
     val content: String,
-    val recipientAccountIds: Set<MessageAccountId>,
+    val recipientAccountIds: Set<MessageAccountId>
 )
 
 @RestController
@@ -64,7 +64,9 @@ class MessageController(
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_MESSAGING_ACCOUNTS, unitId)
         val result = if (user.employeeId != null) {
             db.connect { dbc -> dbc.read { it.getAuthorizedMessageAccountsForEmployee(user.employeeId) } }
-        } else setOf()
+        } else {
+            setOf()
+        }
         Audit.MessagingMyAccountsRead.log(targetId = unitId, args = mapOf("count" to result.size))
         return result
     }
@@ -76,7 +78,7 @@ class MessageController(
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @RequestParam pageSize: Int,
-        @RequestParam page: Int,
+        @RequestParam page: Int
     ): Paged<MessageThread> {
         return db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)
@@ -93,7 +95,7 @@ class MessageController(
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @RequestParam pageSize: Int,
-        @RequestParam page: Int,
+        @RequestParam page: Int
     ): Paged<MessageCopy> {
         return db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)
@@ -110,7 +112,7 @@ class MessageController(
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @RequestParam pageSize: Int,
-        @RequestParam page: Int,
+        @RequestParam page: Int
     ): Paged<SentMessage> {
         return db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)
@@ -192,7 +194,9 @@ class MessageController(
                         },
                         clock.today()
                     )
-                } else setOf()
+                } else {
+                    setOf()
+                }
 
                 val groupedRecipients = tx.groupRecipientAccountsByGuardianship(messageRecipients)
                 messageService.createMessageThreadsForRecipientGroups(
@@ -220,7 +224,7 @@ class MessageController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable accountId: MessageAccountId,
+        @PathVariable accountId: MessageAccountId
     ): List<DraftContent> {
         return db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)
@@ -235,7 +239,7 @@ class MessageController(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable accountId: MessageAccountId,
+        @PathVariable accountId: MessageAccountId
     ): MessageDraftId {
         return db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)
@@ -252,7 +256,7 @@ class MessageController(
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @PathVariable draftId: MessageDraftId,
-        @RequestBody content: UpdatableDraftContent,
+        @RequestBody content: UpdatableDraftContent
     ) {
         return db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)
@@ -268,7 +272,7 @@ class MessageController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
-        @PathVariable draftId: MessageDraftId,
+        @PathVariable draftId: MessageDraftId
     ) {
         return db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)
@@ -285,7 +289,7 @@ class MessageController(
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @PathVariable messageId: MessageId,
-        @RequestBody body: ReplyToMessageBody,
+        @RequestBody body: ReplyToMessageBody
     ): MessageService.ThreadReply {
         return db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)
@@ -309,7 +313,7 @@ class MessageController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
-        @PathVariable threadId: MessageThreadId,
+        @PathVariable threadId: MessageThreadId
     ) {
         db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)

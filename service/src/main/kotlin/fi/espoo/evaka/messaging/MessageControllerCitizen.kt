@@ -81,7 +81,7 @@ class MessageControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         @RequestParam pageSize: Int,
-        @RequestParam page: Int,
+        @RequestParam page: Int
     ): Paged<MessageThread> {
         return db.connect { dbc ->
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
@@ -100,7 +100,7 @@ class MessageControllerCitizen(
     fun getReceivers(
         db: Database,
         user: AuthenticatedUser.Citizen,
-        evakaClock: EvakaClock,
+        evakaClock: EvakaClock
     ): GetReceiversResponse {
         return db.connect { dbc ->
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
@@ -120,7 +120,7 @@ class MessageControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable messageId: MessageId,
-        @RequestBody body: ReplyToMessageBody,
+        @RequestBody body: ReplyToMessageBody
     ): MessageService.ThreadReply {
         return db.connect { dbc ->
             val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
@@ -143,7 +143,7 @@ class MessageControllerCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestBody body: CitizenMessageBody,
+        @RequestBody body: CitizenMessageBody
     ): MessageThreadId {
         val now = clock.now()
         val today = now.toLocalDate()

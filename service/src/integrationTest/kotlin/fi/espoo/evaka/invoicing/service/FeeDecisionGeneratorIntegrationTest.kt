@@ -909,7 +909,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference }, { it.headOfFamilyId })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), testAdult_1.id),
-                Tuple(subPeriod2, emptySet<FeeDecisionDifference>(), testAdult_2.id),
+                Tuple(subPeriod2, emptySet<FeeDecisionDifference>(), testAdult_2.id)
             )
     }
 
@@ -930,7 +930,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference }, { it.partnerId })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), testAdult_2.id),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.GUARDIANS), testAdult_3.id),
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.GUARDIANS), testAdult_3.id)
             )
     }
 
@@ -953,7 +953,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference }, { it.headOfFamilyId })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), testAdult_1.id),
-                Tuple(subPeriod2, emptySet<FeeDecisionDifference>(), testAdult_2.id),
+                Tuple(subPeriod2, emptySet<FeeDecisionDifference>(), testAdult_2.id)
             )
     }
 
@@ -973,7 +973,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>()),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.INCOME)),
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.INCOME))
             )
     }
 
@@ -994,7 +994,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>()),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.INCOME)),
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.INCOME))
             )
     }
 
@@ -1014,7 +1014,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>()),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.INCOME)),
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.INCOME))
             )
     }
 
@@ -1034,7 +1034,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference }, { it.familySize })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), 2),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.FAMILY_SIZE, FeeDecisionDifference.FEE_THRESHOLDS), 3),
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.FAMILY_SIZE, FeeDecisionDifference.FEE_THRESHOLDS), 3)
             )
     }
 
@@ -1054,7 +1054,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference }, { it.children.map { child -> child.placement.unitId } })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), listOf(testDaycare.id)),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.PLACEMENT), listOf(testDaycare2.id)),
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.PLACEMENT), listOf(testDaycare2.id))
             )
     }
 
@@ -1074,7 +1074,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference }, { it.children.map { child -> child.placement.type } })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>(), listOf(DAYCARE)),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.PLACEMENT), listOf(DAYCARE_PART_TIME)),
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.PLACEMENT), listOf(DAYCARE_PART_TIME))
             )
     }
 
@@ -1097,13 +1097,13 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 Tuple(
                     subPeriod1.asDateRange(),
                     emptySet<FeeDecisionDifference>(),
-                    listOf(snDaycareFullDay35.toFeeDecisionServiceNeed()),
+                    listOf(snDaycareFullDay35.toFeeDecisionServiceNeed())
                 ),
                 Tuple(
                     subPeriod2.asDateRange(),
                     setOf(FeeDecisionDifference.SERVICE_NEED),
-                    listOf(snDaycareFullDayPartWeek25.toFeeDecisionServiceNeed()),
-                ),
+                    listOf(snDaycareFullDayPartWeek25.toFeeDecisionServiceNeed())
+                )
             )
     }
 
@@ -1134,8 +1134,8 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 Tuple(
                     subPeriod2,
                     setOf(FeeDecisionDifference.CHILDREN, FeeDecisionDifference.SIBLING_DISCOUNT),
-                    listOf(Pair(testChild_2.dateOfBirth, 50), Pair(testChild_1.dateOfBirth, 0)),
-                ),
+                    listOf(Pair(testChild_2.dateOfBirth, 50), Pair(testChild_1.dateOfBirth, 0))
+                )
             )
     }
 
@@ -1155,7 +1155,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>()),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.FEE_ALTERATIONS)),
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.FEE_ALTERATIONS))
             )
     }
 
@@ -1208,7 +1208,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>()),
-                Tuple(subPeriod2, setOf(FeeDecisionDifference.FEE_THRESHOLDS)),
+                Tuple(subPeriod2, setOf(FeeDecisionDifference.FEE_THRESHOLDS))
             )
     }
 
@@ -1232,7 +1232,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 Tuple(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 3, 31), emptySet<FeeDecisionDifference>()),
                 Tuple(LocalDate.of(2022, 4, 1), LocalDate.of(2022, 6, 30), setOf(FeeDecisionDifference.INCOME)),
                 Tuple(LocalDate.of(2022, 7, 1), LocalDate.of(2022, 9, 1), setOf(FeeDecisionDifference.PLACEMENT)),
-                Tuple(LocalDate.of(2022, 9, 2), LocalDate.of(2022, 12, 31), setOf(FeeDecisionDifference.INCOME)),
+                Tuple(LocalDate.of(2022, 9, 2), LocalDate.of(2022, 12, 31), setOf(FeeDecisionDifference.INCOME))
             )
     }
 
@@ -1256,7 +1256,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.status }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, FeeDecisionStatus.SENT, emptySet<FeeDecisionDifference>()),
-                Tuple(subPeriod2, FeeDecisionStatus.DRAFT, setOf(FeeDecisionDifference.PLACEMENT)),
+                Tuple(subPeriod2, FeeDecisionStatus.DRAFT, setOf(FeeDecisionDifference.PLACEMENT))
             )
     }
 
@@ -1283,7 +1283,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .containsExactlyInAnyOrder(
                 Tuple(period, FeeDecisionStatus.SENT, emptySet<FeeDecisionDifference>()),
                 Tuple(subPeriod1, FeeDecisionStatus.DRAFT, setOf(FeeDecisionDifference.PLACEMENT)),
-                Tuple(subPeriod2, FeeDecisionStatus.DRAFT, setOf(FeeDecisionDifference.PLACEMENT)),
+                Tuple(subPeriod2, FeeDecisionStatus.DRAFT, setOf(FeeDecisionDifference.PLACEMENT))
             )
     }
 
@@ -1303,7 +1303,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, emptySet<FeeDecisionDifference>()),
-                Tuple(subPeriod2, emptySet<FeeDecisionDifference>()),
+                Tuple(subPeriod2, emptySet<FeeDecisionDifference>())
             )
     }
 
@@ -1327,7 +1327,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
             .extracting({ it.validDuring }, { it.status }, { it.difference })
             .containsExactlyInAnyOrder(
                 Tuple(subPeriod1, FeeDecisionStatus.SENT, emptySet<FeeDecisionDifference>()),
-                Tuple(subPeriod2, FeeDecisionStatus.DRAFT, emptySet<FeeDecisionDifference>()),
+                Tuple(subPeriod2, FeeDecisionStatus.DRAFT, emptySet<FeeDecisionDifference>())
             )
     }
 

@@ -39,19 +39,19 @@ enum class OtherIncome {
     GRANT,
     APPRENTICESHIP_SALARY,
     ACCIDENT_INSURANCE_COMPENSATION,
-    OTHER_INCOME,
+    OTHER_INCOME
 }
 
 enum class IncomeSource {
     INCOMES_REGISTER,
-    ATTACHMENTS,
+    ATTACHMENTS
 }
 
 data class Gross(
     val incomeSource: IncomeSource,
     val estimatedMonthlyIncome: Int,
     val otherIncome: Set<OtherIncome>,
-    val otherIncomeInfo: String,
+    val otherIncomeInfo: String
 )
 
 data class SelfEmployed(
@@ -62,7 +62,7 @@ data class SelfEmployed(
 data class EstimatedIncome(
     val estimatedMonthlyIncome: Int,
     val incomeStartDate: LocalDate,
-    val incomeEndDate: LocalDate?,
+    val incomeEndDate: LocalDate?
 )
 
 data class LimitedCompany(
@@ -73,7 +73,7 @@ data class Accountant(
     val name: String,
     val address: String,
     val phone: String,
-    val email: String,
+    val email: String
 )
 
 data class Entrepreneur(
@@ -92,7 +92,7 @@ data class Entrepreneur(
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed class IncomeStatementBody(
     open val startDate: LocalDate,
-    open val endDate: LocalDate?,
+    open val endDate: LocalDate?
 ) {
     @JsonTypeName("HIGHEST_FEE")
     data class HighestFee(
@@ -127,8 +127,9 @@ fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean {
         is IncomeStatementBody.HighestFee -> true
         is IncomeStatementBody.ChildIncome -> true
         is IncomeStatementBody.Income ->
-            if (body.gross == null && body.entrepreneur == null) false
-            else
+            if (body.gross == null && body.entrepreneur == null) {
+                false
+            } else {
                 body.entrepreneur.let { entrepreneur ->
                     entrepreneur == null ||
                         // At least one company type must be selected
@@ -151,14 +152,16 @@ fun validateIncomeStatementBody(body: IncomeStatementBody): Boolean {
                                 validateEstimatedIncome(entrepreneur.selfEmployed?.estimatedIncome)
                             )
                 }
+            }
     }
 }
 
 fun createIncomeStatement(dbc: Database.Connection, incomeStatementPersonId: PersonId, attachmentUploadedByPersonId: PersonId, body: IncomeStatementBody): IncomeStatementId {
     if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement")
 
-    if (dbc.read { tx -> tx.incomeStatementExistsForStartDate(incomeStatementPersonId, body.startDate) })
+    if (dbc.read { tx -> tx.incomeStatementExistsForStartDate(incomeStatementPersonId, body.startDate) }) {
         throw BadRequest("An income statement for this start date already exists")
+    }
 
     return dbc.transaction { tx ->
         val incomeStatementId = tx.createIncomeStatement(incomeStatementPersonId, body)
@@ -231,7 +234,7 @@ sealed class IncomeStatement(
         override val updated: HelsinkiDateTime,
         override val handled: Boolean,
         override val handlerNote: String,
-        val attachments: List<Attachment>,
+        val attachments: List<Attachment>
     ) : IncomeStatement(IncomeStatementType.INCOME)
 
     @JsonTypeName("CHILD_INCOME")
@@ -247,6 +250,6 @@ sealed class IncomeStatement(
         override val updated: HelsinkiDateTime,
         override val handled: Boolean,
         override val handlerNote: String,
-        val attachments: List<Attachment>,
+        val attachments: List<Attachment>
     ) : IncomeStatement(IncomeStatementType.CHILD_INCOME)
 }

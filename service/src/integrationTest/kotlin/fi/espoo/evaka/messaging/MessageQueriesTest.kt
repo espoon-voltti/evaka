@@ -398,7 +398,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             setOf(
                 MessageAccount(group1Account, "Testiläiset", AccountType.GROUP),
-                MessageAccount(supervisorPersonalAccount, "Employee Firstname", AccountType.PERSONAL),
+                MessageAccount(supervisorPersonalAccount, "Employee Firstname", AccountType.PERSONAL)
             ),
             receivers
         )

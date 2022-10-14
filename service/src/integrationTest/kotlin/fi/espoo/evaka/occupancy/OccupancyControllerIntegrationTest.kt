@@ -55,7 +55,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             testDaycare.id,
             applicationId,
             period = FiniteDateRange(startDate, endDate),
-            preschoolDaycarePeriod = null,
+            preschoolDaycarePeriod = null
         )
 
         assertEquals(
@@ -72,7 +72,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 groupId,
                 amount = 1.0,
                 startDate = startDate,
-                endDate = endDate,
+                endDate = endDate
             )
         }
         val applicationId = createApplication(testChild_1.id)
@@ -81,7 +81,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             testDaycare.id,
             applicationId,
             period = FiniteDateRange(startDate, endDate),
-            preschoolDaycarePeriod = null,
+            preschoolDaycarePeriod = null
         )
 
         assertEquals(
@@ -103,7 +103,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 groupId,
                 amount = 1.0,
                 startDate = startDate,
-                endDate = endDate,
+                endDate = endDate
             )
 
             // Under 3 years (coefficient 1.75)
@@ -111,7 +111,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 childId = testChild_3.id,
                 unitId = testDaycare.id,
                 startDate = startDate,
-                endDate = endDate,
+                endDate = endDate
             )
 
             // Over 3 years (coefficient 1), starts after 3 months of the speculated placement
@@ -119,7 +119,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 childId = testChild_2.id,
                 unitId = testDaycare.id,
                 startDate = startDate.plusMonths(4),
-                endDate = endDate,
+                endDate = endDate
             )
         }
 
@@ -130,7 +130,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             testDaycare.id,
             applicationId,
             period = FiniteDateRange(startDate, endDate),
-            preschoolDaycarePeriod = null,
+            preschoolDaycarePeriod = null
         )
 
         assertEquals(
@@ -140,7 +140,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 max3MonthsSpeculated = OccupancyValues(sum = 3.5, headcount = 2, caretakers = 1.0, percentage = 50.0),
                 max6MonthsSpeculated = OccupancyValues(sum = 4.5, headcount = 3, caretakers = 1.0, percentage = 64.3)
             ),
-            occupancies,
+            occupancies
         )
     }
 
@@ -152,7 +152,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 groupId,
                 amount = 1.0,
                 startDate = startDate,
-                endDate = endDate,
+                endDate = endDate
             )
 
             // Under 3 years (coefficient 1.75)
@@ -160,7 +160,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 childId = testChild_3.id,
                 unitId = testDaycare.id,
                 startDate = startDate,
-                endDate = endDate,
+                endDate = endDate
             )
 
             // Over 3 years (coefficient 1), starts after 3 months of the speculated placement
@@ -168,7 +168,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = LocalDate.of(2021, 7, 1),
-                endDate = endDate,
+                endDate = endDate
             )
         }
 
@@ -180,7 +180,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             testDaycare.id,
             applicationId,
             period = FiniteDateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 6, 4)),
-            preschoolDaycarePeriod = null,
+            preschoolDaycarePeriod = null
         )
 
         assertEquals(
@@ -188,7 +188,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 max3Months = OccupancyValues(sum = 1.75, headcount = 1, caretakers = 1.0, percentage = 25.0),
                 max6Months = OccupancyValues(sum = 2.75, headcount = 2, caretakers = 1.0, percentage = 39.3),
                 max3MonthsSpeculated = OccupancyValues(sum = 2.25, headcount = 2, caretakers = 1.0, percentage = 32.1),
-                max6MonthsSpeculated = OccupancyValues(sum = 2.75, headcount = 2, caretakers = 1.0, percentage = 39.3),
+                max6MonthsSpeculated = OccupancyValues(sum = 2.75, headcount = 2, caretakers = 1.0, percentage = 39.3)
             ),
             occupancies
         )
@@ -202,7 +202,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 groupId,
                 amount = 1.0,
                 startDate = startDate,
-                endDate = endDate,
+                endDate = endDate
             )
 
             // Under 3 years (coefficient 1.75)
@@ -210,7 +210,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 childId = testChild_3.id,
                 unitId = testDaycare.id,
                 startDate = startDate,
-                endDate = endDate,
+                endDate = endDate
             )
 
             // Over 3 years (coefficient 1), starts after 3 months of the speculated placement
@@ -218,7 +218,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = LocalDate.of(2021, 7, 1),
-                endDate = endDate,
+                endDate = endDate
             )
         }
 
@@ -253,7 +253,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 groupId,
                 amount = 1.0,
                 startDate = startDate,
-                endDate = endDate,
+                endDate = endDate
             )
 
             // Under 3 years (coefficient 1.75)
@@ -261,7 +261,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 childId = testChild_3.id,
                 unitId = testDaycare.id,
                 startDate = startDate,
-                endDate = endDate,
+                endDate = endDate
             )
 
             // Over 3 years (coefficient 1), starts after 3 months of the speculated placement
@@ -269,7 +269,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 childId = testChild_1.id,
                 unitId = testDaycare.id,
                 startDate = LocalDate.of(2021, 7, 1),
-                endDate = endDate,
+                endDate = endDate
             )
 
             // Over 3 years (coefficient 1), will be speculated for preschool
@@ -277,7 +277,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 childId = testChild_2.id,
                 unitId = testDaycare.id,
                 startDate = startDate,
-                endDate = endDate,
+                endDate = endDate
             )
         }
 
@@ -312,7 +312,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 childId = childId,
                 headOfChildId = testAdult_1.id,
                 startDate = startDate,
-                endDate = endDate,
+                endDate = endDate
             )
             val applicationId = tx.insertTestApplication(
                 status = ApplicationStatus.WAITING_PLACEMENT,
@@ -340,7 +340,7 @@ class OccupancyControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 "from" to period.start.toString(),
                 "to" to period.end.toString(),
                 "preschoolDaycareFrom" to (preschoolDaycarePeriod?.start?.toString() ?: ""),
-                "preschoolDaycareTo" to (preschoolDaycarePeriod?.end?.toString() ?: ""),
+                "preschoolDaycareTo" to (preschoolDaycarePeriod?.end?.toString() ?: "")
             )
         )
             .asUser(user)

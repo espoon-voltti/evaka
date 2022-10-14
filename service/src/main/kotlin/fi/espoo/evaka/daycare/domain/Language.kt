@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.daycare.domain
 
+@Suppress("EnumEntryName", "ktlint:enum-entry-name-case")
 enum class Language {
     fi, sv, en;
 }

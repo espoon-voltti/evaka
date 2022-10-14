@@ -35,7 +35,7 @@ class SextetReportController(private val accessControl: AccessControl) {
                 it.sextetReport(
                     LocalDate.of(year, 1, 1),
                     LocalDate.of(year, 12, 31),
-                    placementType,
+                    placementType
                 )
             }
         }.also {

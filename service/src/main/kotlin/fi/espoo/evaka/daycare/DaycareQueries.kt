@@ -434,7 +434,7 @@ fun Database.Read.getUnitFeatures(id: DaycareId): UnitFeatures? = createQuery(
 
 private data class UnitOperationDays(
     val id: DaycareId,
-    val operationDays: List<Int>,
+    val operationDays: List<Int>
 )
 
 fun Database.Read.getUnitOperationDays(): Map<DaycareId, Set<DayOfWeek>> = createQuery(
