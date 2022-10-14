@@ -40,7 +40,7 @@ class Page(val template: Template, val context: Context)
 data class FeeDecisionPdfData(
     val decision: FeeDecisionDetailed,
     val settings: Map<SettingType, String>,
-    val lang: String
+    val lang: DocumentLang
 )
 
 data class VoucherValueDecisionPdfData(
@@ -49,9 +49,14 @@ data class VoucherValueDecisionPdfData(
     val lang: DocumentLang
 )
 
-enum class DocumentLang {
-    FI,
-    SV
+enum class DocumentLang(val langCode: String) {
+    FI("fi"),
+    SV("sv");
+
+    val messageLang: MessageLanguage get() = when (this) {
+        FI -> MessageLanguage.FI
+        SV -> MessageLanguage.SV
+    }
 }
 
 fun BigDecimal.toDecimalString(): String = this.toString().replace('.', ',')
@@ -114,7 +119,7 @@ class PDFService(
 
     private fun createVoucherValueDecisionPdfContext(data: VoucherValueDecisionPdfData): Context {
         return Context().apply {
-            locale = Locale.Builder().setLanguage(data.lang.name).build()
+            locale = Locale.Builder().setLanguage(data.lang.langCode).build()
             setVariables(getVoucherValueDecisionPdfVariables(data))
         }
     }
@@ -134,10 +139,8 @@ class PDFService(
             (decision.headOfFamilyIncome == null || decision.headOfFamilyIncome.effect != IncomeEffect.INCOME) ||
                 (decision.partnerIncome != null && decision.partnerIncome.effect != IncomeEffect.INCOME)
 
-        val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily) ?: when (lang.name) {
-            "sv" -> messageProvider.getDefaultFinancialDecisionAddress(MessageLanguage.SV)
-            else -> messageProvider.getDefaultFinancialDecisionAddress(MessageLanguage.FI)
-        }
+        val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily)
+            ?: messageProvider.getDefaultFinancialDecisionAddress(lang.messageLang)
 
         val isReliefDecision = decision.decisionType !== VoucherValueDecisionType.NORMAL
 
@@ -201,7 +204,7 @@ class PDFService(
 
     ): Context {
         return Context().apply {
-            locale = Locale.Builder().setLanguage(data.lang).build()
+            locale = Locale.Builder().setLanguage(data.lang.langCode).build()
             setVariables(getFeeDecisionPdfVariables(data))
         }
     }
@@ -224,10 +227,8 @@ class PDFService(
 
         val totalIncome = listOfNotNull(decision.headOfFamilyIncome?.total, decision.partnerIncome?.total).sum()
 
-        val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily) ?: when (lang) {
-            "sv" -> messageProvider.getDefaultFinancialDecisionAddress(MessageLanguage.SV)
-            else -> messageProvider.getDefaultFinancialDecisionAddress(MessageLanguage.FI)
-        }
+        val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily)
+            ?: messageProvider.getDefaultFinancialDecisionAddress(lang.messageLang)
 
         val hideTotalIncome =
             (decision.headOfFamilyIncome == null || decision.headOfFamilyIncome.effect != IncomeEffect.INCOME) ||
@@ -254,7 +255,7 @@ class PDFService(
                 FeeDecisionPdfPart(
                     "${it.child.firstName} ${it.child.lastName}",
                     it.placementType,
-                    if (lang == "sv") it.serviceNeedDescriptionSv else it.serviceNeedDescriptionFi,
+                    if (lang == DocumentLang.SV) it.serviceNeedDescriptionSv else it.serviceNeedDescriptionFi,
                     it.feeAlterations.map { fa ->
                         FeeAlterationPdfPart(fa.type, fa.amount, fa.isAbsolute, formatCents(fa.effect)!!)
                     },

@@ -11,6 +11,7 @@ import fi.espoo.evaka.decision.getSendAddress
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.pis.Employee
 import fi.espoo.evaka.pis.getEmployees
 import fi.espoo.evaka.pis.getEmployeesByRoles
@@ -29,7 +30,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IMessageProvider
-import fi.espoo.evaka.shared.message.langWithDefault
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.voltti.pdfgen.PDFService
 import fi.espoo.voltti.pdfgen.Page
@@ -142,7 +142,7 @@ class AssistanceNeedDecisionService(
             throw IllegalStateException("Assistance need decision has to be associated with a child")
         }
 
-        val lang = if (decision.language == AssistanceNeedDecisionLanguage.SV) "sv" else "fi"
+        val lang = if (decision.language == AssistanceNeedDecisionLanguage.SV) DocumentLang.SV else DocumentLang.FI
 
         tx.getChildGuardians(decision.child.id).mapNotNull { tx.getPersonById(it) }.forEach { guardian ->
             if (guardian.identity !is ExternalIdentifier.SSN) {
@@ -158,8 +158,8 @@ class AssistanceNeedDecisionService(
 
             val pdf = generatePdf(clock.today(), decision, sendAddress, guardian)
 
-            val messageHeader = messageProvider.getAssistanceNeedDecisionHeader(langWithDefault(lang))
-            val messageContent = messageProvider.getAssistanceNeedDecisionContent(langWithDefault(lang))
+            val messageHeader = messageProvider.getAssistanceNeedDecisionHeader(lang.messageLang)
+            val messageContent = messageProvider.getAssistanceNeedDecisionContent(lang.messageLang)
             val messageId = "${decision.id}_${guardian.id}"
 
             sfiClient.send(
@@ -169,7 +169,7 @@ class AssistanceNeedDecisionService(
                     documentDisplayName = suomiFiDocumentFileName(decision.language),
                     documentKey = "",
                     documentBucket = "",
-                    language = lang,
+                    language = lang.langCode,
                     firstName = guardian.firstName,
                     lastName = guardian.lastName,
                     streetAddress = sendAddress.street,

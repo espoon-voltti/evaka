@@ -13,6 +13,7 @@ import fi.espoo.evaka.decision.DecisionType
 import fi.espoo.evaka.decision.DecisionUnit
 import fi.espoo.evaka.decision.createDecisionPdf
 import fi.espoo.evaka.identity.ExternalIdentifier
+import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.shared.config.PDFConfig
@@ -132,29 +133,29 @@ class PDFServiceTest {
 
     @Test
     fun createFinnishPDFs() {
-        createPDF(daycareTransferDecision, true, "fi")
-        createPDF(daycareDecision, false, "fi")
-        createPDF(daycareDecisionPartTime, false, "fi")
-        createPDF(preschoolDaycareDecision, false, "fi")
-        createPDF(preschoolDecision, false, "fi")
-        createPDF(preparatoryDecision, false, "fi")
-        createPDF(voucherDecision, false, "fi")
-        createPDF(clubDecision, false, "fi")
+        createPDF(daycareTransferDecision, true, DocumentLang.FI)
+        createPDF(daycareDecision, false, DocumentLang.FI)
+        createPDF(daycareDecisionPartTime, false, DocumentLang.FI)
+        createPDF(preschoolDaycareDecision, false, DocumentLang.FI)
+        createPDF(preschoolDecision, false, DocumentLang.FI)
+        createPDF(preparatoryDecision, false, DocumentLang.FI)
+        createPDF(voucherDecision, false, DocumentLang.FI)
+        createPDF(clubDecision, false, DocumentLang.FI)
     }
 
     @Test
     fun createSwedishPDFs() {
-        createPDF(daycareTransferDecision, true, "sv")
-        createPDF(daycareDecision, false, "sv")
-        createPDF(daycareDecisionPartTime, false, "sv")
-        createPDF(preschoolDaycareDecision, false, "sv")
-        createPDF(preschoolDecision, false, "sv")
-        createPDF(preparatoryDecision, false, "sv")
-        createPDF(voucherDecision, false, "sv")
-        createPDF(clubDecision, false, "sv")
+        createPDF(daycareTransferDecision, true, DocumentLang.SV)
+        createPDF(daycareDecision, false, DocumentLang.SV)
+        createPDF(daycareDecisionPartTime, false, DocumentLang.SV)
+        createPDF(preschoolDaycareDecision, false, DocumentLang.SV)
+        createPDF(preschoolDecision, false, DocumentLang.SV)
+        createPDF(preparatoryDecision, false, DocumentLang.SV)
+        createPDF(voucherDecision, false, DocumentLang.SV)
+        createPDF(clubDecision, false, DocumentLang.SV)
     }
 
-    private fun createPDF(decision: Decision, isTransferApplication: Boolean, lang: String, serviceNeed: ServiceNeed? = null) {
+    private fun createPDF(decision: Decision, isTransferApplication: Boolean, lang: DocumentLang, serviceNeed: ServiceNeed? = null) {
         val decisionPdfByteArray =
             createDecisionPdf(
                 EvakaMessageProvider(),

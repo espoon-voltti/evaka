@@ -6,29 +6,23 @@ package fi.espoo.evaka.decision
 
 import fi.espoo.evaka.invoicing.domain.PersonDetailed
 import fi.espoo.evaka.invoicing.domain.addressUsable
+import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.message.IMessageProvider
-import fi.espoo.evaka.shared.message.MessageLanguage
 
 private fun addressIsUnusable(streetAddress: String?, postalCode: String?, postOffice: String?): Boolean {
     return streetAddress.isNullOrBlank() || postalCode.isNullOrBlank() || postOffice.isNullOrBlank()
 }
 
-fun getSendAddress(messageProvider: IMessageProvider, guardian: PersonDTO, lang: String): DecisionSendAddress {
+fun getSendAddress(messageProvider: IMessageProvider, guardian: PersonDTO, lang: DocumentLang): DecisionSendAddress {
     val logMissingAddress = {
         logger.warn("Cannot deliver daycare decision to guardian ${guardian.id} with incomplete address. Using default decision address.")
     }
     return when {
-        guardian.restrictedDetailsEnabled -> when (lang) {
-            "sv" -> messageProvider.getDefaultDecisionAddress(MessageLanguage.SV)
-            else -> messageProvider.getDefaultDecisionAddress(MessageLanguage.FI)
-        }
+        guardian.restrictedDetailsEnabled -> messageProvider.getDefaultDecisionAddress(lang.messageLang)
         addressIsUnusable(guardian.streetAddress, guardian.postalCode, guardian.postOffice) -> {
             logMissingAddress()
-            when (lang) {
-                "sv" -> messageProvider.getDefaultDecisionAddress(MessageLanguage.SV)
-                else -> messageProvider.getDefaultDecisionAddress(MessageLanguage.FI)
-            }
+            messageProvider.getDefaultDecisionAddress(lang.messageLang)
         }
         else -> DecisionSendAddress(
             street = guardian.streetAddress,
