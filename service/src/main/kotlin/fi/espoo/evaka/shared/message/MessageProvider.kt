@@ -31,6 +31,3 @@ enum class MessageLanguage {
     FI,
     SV
 }
-
-fun langWithDefault(lang: String): MessageLanguage =
-    if (lang.lowercase() == "sv") MessageLanguage.SV else MessageLanguage.FI

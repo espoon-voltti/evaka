@@ -30,8 +30,6 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IMessageProvider
-import fi.espoo.evaka.shared.message.MessageLanguage
-import fi.espoo.evaka.shared.message.langWithDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 
@@ -79,17 +77,15 @@ class VoucherValueDecisionService(
             return false
         }
 
-        val lang = if (decision.headOfFamily.language == "sv") "sv" else "fi"
+        val lang = if (decision.headOfFamily.language == "sv") DocumentLang.SV else DocumentLang.FI
 
         // If address is missing (restricted info enabled), use the financial handling address instead
-        val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily) ?: when (lang) {
-            "sv" -> messageProvider.getDefaultFinancialDecisionAddress(MessageLanguage.SV)
-            else -> messageProvider.getDefaultFinancialDecisionAddress(MessageLanguage.FI)
-        }
+        val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily)
+            ?: messageProvider.getDefaultFinancialDecisionAddress(lang.messageLang)
 
         val documentDisplayName = suomiFiDocumentFileName(lang)
-        val messageHeader = messageProvider.getVoucherValueDecisionHeader(langWithDefault(lang))
-        val messageContent = messageProvider.getVoucherValueDecisionContent(langWithDefault(lang))
+        val messageHeader = messageProvider.getVoucherValueDecisionHeader(lang.messageLang)
+        val messageContent = messageProvider.getVoucherValueDecisionContent(lang.messageLang)
         sfiAsyncJobRunner.plan(
             tx,
             listOf(
@@ -100,7 +96,7 @@ class VoucherValueDecisionService(
                         documentDisplayName = documentDisplayName,
                         documentBucket = bucket,
                         documentKey = decision.documentKey,
-                        language = lang,
+                        language = lang.langCode,
                         firstName = decision.headOfFamily.firstName,
                         lastName = decision.headOfFamily.lastName,
                         streetAddress = sendAddress.street,
@@ -148,8 +144,8 @@ class VoucherValueDecisionService(
     }
 }
 
-private fun suomiFiDocumentFileName(lang: String) =
-    if (lang == "sv") {
+private fun suomiFiDocumentFileName(lang: DocumentLang) =
+    if (lang == DocumentLang.SV) {
         "Beslut_om_avgift_för_småbarnspedagogik.pdf"
     } else {
         "Varhaiskasvatuksen_maksupäätös.pdf"

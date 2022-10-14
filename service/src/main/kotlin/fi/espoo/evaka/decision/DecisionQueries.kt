@@ -6,6 +6,7 @@ package fi.espoo.evaka.decision
 
 import fi.espoo.evaka.application.ApplicationDecisions
 import fi.espoo.evaka.application.DecisionSummary
+import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -269,7 +270,7 @@ AND application_id = (SELECT application_id FROM decision WHERE id = :id)
         .mapTo<Boolean>().first() ?: false
 }
 
-fun Database.Read.getDecisionLanguage(decisionId: DecisionId): String {
+fun Database.Read.getDecisionLanguage(decisionId: DecisionId): DocumentLang {
     return createQuery(
         //language=SQL
         """
@@ -280,7 +281,7 @@ fun Database.Read.getDecisionLanguage(decisionId: DecisionId): String {
         """.trimIndent().trimIndent()
     )
         .bind("id", decisionId)
-        .mapTo<String>()
+        .mapTo<DocumentLang>()
         .first()
 }
 

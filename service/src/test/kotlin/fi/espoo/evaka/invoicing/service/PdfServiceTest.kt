@@ -194,7 +194,7 @@ class PdfServiceTest {
         val feeDecisionPdfData = FeeDecisionPdfData(
             decision = normalDecision,
             settings = mapOf(),
-            lang = DocumentLang.FI.name
+            lang = DocumentLang.FI
         )
 
         val simpleVariables = service.getFeeDecisionPdfVariables(feeDecisionPdfData).filterKeys {
@@ -248,7 +248,7 @@ class PdfServiceTest {
         val feeDecisionPdfData = FeeDecisionPdfData(
             decision = reliefDecision,
             settings = mapOf(),
-            lang = DocumentLang.FI.name
+            lang = DocumentLang.FI
         )
 
         val simpleVariables = service.getFeeDecisionPdfVariables(feeDecisionPdfData).filterKeys {
@@ -302,7 +302,7 @@ class PdfServiceTest {
         val feeDecisionPdfData = FeeDecisionPdfData(
             decision = normalDecision,
             settings = mapOf(),
-            lang = DocumentLang.FI.name
+            lang = DocumentLang.FI
         )
         val pdfBytes = service.generateFeeDecisionPdf(feeDecisionPdfData)
 

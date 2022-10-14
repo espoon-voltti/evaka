@@ -46,8 +46,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.message.IMessageProvider
-import fi.espoo.evaka.shared.message.MessageLanguage
-import fi.espoo.evaka.shared.message.langWithDefault
 import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
@@ -153,13 +151,13 @@ class FeeDecisionService(
         return validDecisions.map { it.id }
     }
 
-    private fun getDecisionLanguage(decision: FeeDecisionDetailed): String {
-        val defaultLanguage = if (decision.headOfFamily.language == "sv") "sv" else "fi"
+    private fun getDecisionLanguage(decision: FeeDecisionDetailed): DocumentLang {
+        val defaultLanguage = if (decision.headOfFamily.language == "sv") DocumentLang.SV else DocumentLang.FI
 
         val youngestChildUnitLanguage =
             decision.children.maxByOrNull { it.child.dateOfBirth }?.placementUnit?.language
 
-        return if (youngestChildUnitLanguage == "sv") "sv" else defaultLanguage
+        return if (youngestChildUnitLanguage == "sv") DocumentLang.SV else defaultLanguage
     }
 
     fun createFeeDecisionPdf(tx: Database.Transaction, id: FeeDecisionId) {
@@ -181,7 +179,7 @@ class FeeDecisionService(
         val lang = getDecisionLanguage(decision)
 
         val pdfByteArray = pdfService.generateFeeDecisionPdf(FeeDecisionPdfData(decision, settings, lang))
-        val documentKey = documentClient.upload(bucket, Document("feedecision_${decision.id}_$lang.pdf", pdfByteArray, "application/pdf")).key
+        val documentKey = documentClient.upload(bucket, Document("feedecision_${decision.id}_${lang.langCode}.pdf", pdfByteArray, "application/pdf")).key
         tx.updateFeeDecisionDocumentKey(decision.id, documentKey)
     }
 
@@ -206,13 +204,11 @@ class FeeDecisionService(
         val lang = getDecisionLanguage(decision)
 
         // If address is missing (restricted info enabled), use the financial handling address instead
-        val sendAddress = DecisionSendAddress.fromPerson(recipient) ?: when (lang) {
-            "sv" -> messageProvider.getDefaultFinancialDecisionAddress(MessageLanguage.SV)
-            else -> messageProvider.getDefaultFinancialDecisionAddress(MessageLanguage.FI)
-        }
+        val sendAddress = DecisionSendAddress.fromPerson(recipient)
+            ?: messageProvider.getDefaultFinancialDecisionAddress(lang.messageLang)
 
         val feeDecisionDisplayName =
-            if (lang == "sv") "Beslut_om_avgift_för_småbarnspedagogik.pdf" else "Varhaiskasvatuksen_maksupäätös.pdf"
+            if (lang == DocumentLang.SV) "Beslut_om_avgift_för_småbarnspedagogik.pdf" else "Varhaiskasvatuksen_maksupäätös.pdf"
 
         val message = SfiMessage(
             messageId = decision.id.toString(),
@@ -220,15 +216,15 @@ class FeeDecisionService(
             documentDisplayName = feeDecisionDisplayName,
             documentBucket = bucket,
             documentKey = decision.documentKey,
-            language = lang,
+            language = lang.langCode,
             firstName = recipient.firstName,
             lastName = recipient.lastName,
             streetAddress = sendAddress.street,
             postalCode = sendAddress.postalCode,
             postOffice = sendAddress.postOffice,
             ssn = recipient.ssn!!,
-            messageHeader = messageProvider.getFeeDecisionHeader(langWithDefault(lang)),
-            messageContent = messageProvider.getFeeDecisionContent(langWithDefault(lang))
+            messageHeader = messageProvider.getFeeDecisionHeader(lang.messageLang),
+            messageContent = messageProvider.getFeeDecisionContent(lang.messageLang)
         )
 
         logger.info("Sending fee decision as suomi.fi message ${message.documentId}")
