@@ -3149,7 +3149,7 @@ __metadata:
     nodemon: ^2.0.15
     passport: ^0.5.2
     passport-dummy: 0.0.1
-    passport-saml: 3.2.1
+    passport-saml: 3.2.3
     pino: ^7.10.0
     pino-http: ^6.6.0
     pino-pretty: ^7.6.1
@@ -5739,9 +5739,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport-saml@npm:3.2.1":
-  version: 3.2.1
-  resolution: "passport-saml@npm:3.2.1"
+"passport-saml@npm:3.2.3":
+  version: 3.2.3
+  resolution: "passport-saml@npm:3.2.3"
   dependencies:
     "@xmldom/xmldom": ^0.7.5
     debug: ^4.3.2
@@ -5750,7 +5750,7 @@ __metadata:
     xml-encryption: ^2.0.0
     xml2js: ^0.4.23
     xmlbuilder: ^15.1.1
-  checksum: 7236c82f2b16240acc6e026cbe171e130e703d0e85c7f83733be0137218a62f61dee72d34cea00ea02a0db4b823497e574ef4b6585a316097b926eb760f90bb8
+  checksum: ccddfa37557ef39219b447285d9b87ad08309b3cd2537aab5df344fd3910d9b506eb36e4f24f2eec35047465f00fbea53b320674de9ae68ea18cbbce17de79f4
   languageName: node
   linkType: hard
 
