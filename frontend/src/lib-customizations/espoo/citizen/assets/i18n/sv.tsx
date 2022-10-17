@@ -2095,6 +2095,7 @@ const sv: Translations = {
     },
     pedagogicalDocuments: {
       title: 'Tillväxt och inlärning',
+      noDocuments: 'Inga dokument',
       table: {
         date: 'Datum',
         child: 'Barn',

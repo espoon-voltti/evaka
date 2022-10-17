@@ -166,7 +166,7 @@ const ResponsiveCollapsibleContainer = styled.div<{ open: boolean }>`
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 100;
+    z-index: 29;
     background-color: ${(p) => p.theme.colors.grayscale.g0};
     margin-top: 0;
     display: ${(props) => (props.open ? 'flex' : 'none')};
@@ -175,7 +175,7 @@ const ResponsiveCollapsibleContainer = styled.div<{ open: boolean }>`
 `
 
 const ResponsiveCollapsibleTitle = styled.div`
-  z-index: 105;
+  z-index: 30;
   top: 0;
   width: 100%;
   background-color: ${(p) => p.theme.colors.grayscale.g0};

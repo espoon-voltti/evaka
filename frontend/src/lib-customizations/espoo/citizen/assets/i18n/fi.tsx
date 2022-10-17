@@ -2065,6 +2065,7 @@ export default {
     },
     pedagogicalDocuments: {
       title: 'Lapsen arkeen liittyviä dokumentteja',
+      noDocuments: 'Ei dokumentteja',
       table: {
         date: 'Päivämäärä',
         child: 'Lapsi',
