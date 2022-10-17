@@ -14,10 +14,6 @@ import {
 } from 'lib-common/generated/api-types/messaging'
 import Button from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import {
-  SelectorNode,
-  unitAsSelectorNode
-} from 'lib-components/employee/messages/SelectorNode'
 import { isGroupMessageAccount } from 'lib-components/employee/messages/types'
 import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -83,12 +79,12 @@ const UnitSelection = styled.div`
 
 interface AccountsProps {
   accounts: AuthorizedMessageAccount[]
-  setSelectedReceivers: React.Dispatch<
-    React.SetStateAction<SelectorNode | undefined>
+  setReceivers: React.Dispatch<
+    React.SetStateAction<MessageReceiversResponse[] | undefined>
   >
 }
 
-function Accounts({ accounts, setSelectedReceivers }: AccountsProps) {
+function Accounts({ accounts, setReceivers }: AccountsProps) {
   const { i18n } = useTranslation()
   const { setSelectedAccount, selectedAccount, selectedUnit, setSelectedUnit } =
     useContext(MessageContext)
@@ -116,19 +112,12 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsProps) {
   }, [selectedUnit, setSelectedUnit, unitOptions])
 
   useEffect(() => {
-    if (!selectedUnit) {
-      return
-    }
-    const { label: unitName, value: unitId } = selectedUnit
-    void getReceivers(unitId).then(
-      (result: Result<MessageReceiversResponse[]>) => {
-        if (result.isSuccess)
-          setSelectedReceivers(() =>
-            unitAsSelectorNode({ id: unitId, name: unitName }, result.value)
-          )
+    void getReceivers().then((result: Result<MessageReceiversResponse[]>) => {
+      if (result.isSuccess) {
+        setReceivers(result.value)
       }
-    )
-  }, [selectedUnit, setSelectedReceivers])
+    })
+  }, [setReceivers])
 
   const visibleGroupAccounts = selectedUnit
     ? sortBy(
@@ -188,14 +177,14 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsProps) {
 
 interface Props {
   showEditor: () => void
-  setSelectedReceivers: React.Dispatch<
-    React.SetStateAction<SelectorNode | undefined>
+  setReceivers: React.Dispatch<
+    React.SetStateAction<MessageReceiversResponse[] | undefined>
   >
 }
 
 export default React.memo(function Sidebar({
   showEditor,
-  setSelectedReceivers
+  setReceivers
 }: Props) {
   const { i18n } = useTranslation()
   const { accounts } = useContext(MessageContext)
@@ -220,10 +209,7 @@ export default React.memo(function Sidebar({
           />
         </HeaderContainer>
         {renderResult(accounts, (value) => (
-          <Accounts
-            accounts={value}
-            setSelectedReceivers={setSelectedReceivers}
-          />
+          <Accounts accounts={value} setReceivers={setReceivers} />
         ))}
       </AccountContainer>
     </Container>

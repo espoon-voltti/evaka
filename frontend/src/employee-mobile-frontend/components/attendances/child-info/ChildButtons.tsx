@@ -45,7 +45,7 @@ export default React.memo(function ChildButtons({
       >
         {unit.features.includes('MOBILE_MESSAGING') ? (
           <Link
-            to={`/units/${unitId}/groups/${groupId}/messages/${child.id}/new-message`}
+            to={`/units/${unitId}/groups/${groupId}/child-attendance/${child.id}/new-message`}
             data-qa="link-new-message"
           >
             <RoundIcon

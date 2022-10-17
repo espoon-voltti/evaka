@@ -6,7 +6,6 @@
 /* eslint-disable import/order, prettier/prettier */
 
 import HelsinkiDateTime from '../../helsinki-date-time'
-import LocalDate from '../../local-date'
 import { MessageAttachment } from './attachment'
 import { UUID } from '../../types'
 
@@ -136,18 +135,17 @@ export interface MessageCopy {
 * Generated from fi.espoo.evaka.messaging.MessageReceiver
 */
 export interface MessageReceiver {
-  childDateOfBirth: LocalDate
-  childFirstName: string
-  childId: UUID
-  childLastName: string
+  id: UUID
+  name: string
+  receivers: MessageReceiver[]
+  type: MessageRecipientType
 }
 
 /**
 * Generated from fi.espoo.evaka.messaging.MessageReceiversResponse
 */
 export interface MessageReceiversResponse {
-  groupId: UUID
-  groupName: string
+  accountId: UUID
   receivers: MessageReceiver[]
 }
 

@@ -218,6 +218,16 @@ sealed interface Action {
                 )
                 .inAnyUnit()
         ),
+        READ_MESSAGE_RECEIVERS(
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    STAFF,
+                    SPECIAL_EDUCATION_TEACHER,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                )
+                .inAnyUnit(),
+            IsMobile(requirePinLogin = true).any()
+        ),
         READ_UNITS(
             HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(
@@ -1570,16 +1580,6 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
         ),
         UPDATE_FEATURES,
-        READ_RECEIVERS_FOR_NEW_MESSAGE(
-            HasUnitRole(
-                    UNIT_SUPERVISOR,
-                    STAFF,
-                    SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
-                )
-                .inUnit(),
-            IsMobile(requirePinLogin = false).inUnit()
-        ),
         READ_MESSAGING_ACCOUNTS(IsMobile(requirePinLogin = false).inUnit()),
         READ_UNREAD_MESSAGES(IsMobile(requirePinLogin = false).inUnit()),
         READ_TERMINATED_PLACEMENTS(HasUnitRole(UNIT_SUPERVISOR).inUnit()),

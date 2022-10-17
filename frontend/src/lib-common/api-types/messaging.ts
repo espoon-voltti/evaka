@@ -8,9 +8,9 @@ import {
   MessageCopy,
   MessageThread,
   ThreadReply
-} from '../../generated/api-types/messaging'
-import HelsinkiDateTime from '../../helsinki-date-time'
-import { JsonOf } from '../../json'
+} from '../generated/api-types/messaging'
+import HelsinkiDateTime from '../helsinki-date-time'
+import { JsonOf } from '../json'
 
 export const deserializeMessageAccount = (
   account: JsonOf<MessageAccount>,

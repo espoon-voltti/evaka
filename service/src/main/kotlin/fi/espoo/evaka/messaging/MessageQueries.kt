@@ -8,8 +8,8 @@ import fi.espoo.evaka.attachment.MessageAttachment
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
+import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
@@ -720,72 +720,55 @@ fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticip
 }
 
 data class MessageReceiversResult(
-    val childId: ChildId,
+    val accountId: MessageAccountId,
+    val unitId: DaycareId?,
+    val unitName: String?,
     val groupId: GroupId,
     val groupName: String,
+    val childId: ChildId,
     val firstName: String,
-    val lastName: String,
-    val dateOfBirth: LocalDate
+    val lastName: String
 )
 
 fun Database.Read.getReceiversForNewMessage(
-    employeeOrMobileId: Id<*>,
-    unitId: DaycareId
+    employeeId: EmployeeId,
+    today: LocalDate
 ): List<MessageReceiversResponse> {
+    val accountIds = getEmployeeMessageAccountIds(employeeId)
+
     // language=sql
     val sql =
         """
-        WITH children AS (
-            SELECT pl.child_id, dg.id group_id, dg.name group_name
-            FROM daycare_group dg
-            JOIN daycare_group_placement gpl ON dg.id = gpl.daycare_group_id AND daterange(gpl.start_date, gpl.end_date, '[]') @> :date
-            JOIN placement pl ON gpl.daycare_placement_id = pl.id
-            JOIN daycare d ON pl.unit_id = d.id
-            WHERE pl.unit_id = :unitId AND EXISTS (
-                SELECT 1
-                FROM child_daycare_acl(:date)
-                JOIN mobile_device_daycare_acl_view USING (daycare_id)
-                WHERE mobile_device_id = :employeeOrMobileId
-                AND child_id = pl.child_id
-
-                UNION ALL
-
-                SELECT 1
-                FROM employee_child_daycare_acl(:date)
-                WHERE employee_id = :employeeOrMobileId
-                AND child_id = pl.child_id
-            )
-            AND 'MESSAGING' = ANY(d.enabled_pilot_features)
+        WITH accounts AS (
+            SELECT id, type, daycare_group_id, employee_id, person_id FROM message_account
+            WHERE id = ANY(:accountIds) AND type != 'CITIZEN'
+        ), children AS (
+            SELECT a.id AS account_id, p.child_id, NULL AS unit_id, NULL AS unit_name, p.group_id, g.name AS group_name
+            FROM accounts a
+            JOIN realized_placement_all(:date) p ON a.daycare_group_id = p.group_id
+            JOIN daycare d ON p.unit_id = d.id
+            JOIN daycare_group g ON p.group_id = g.id
+            WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
 
             UNION ALL
 
-            SELECT bc.child_id, dg.id group_id, dg.name group_name
-            FROM daycare_group dg
-            JOIN backup_care bc ON dg.id = bc.group_id AND daterange(bc.start_date, bc.end_date, '[]') @> :date
-            JOIN daycare d ON bc.unit_id = d.id
-            WHERE d.id = :unitId AND EXISTS (
-                SELECT 1
-                FROM child_daycare_acl(:date)
-                JOIN mobile_device_daycare_acl_view USING (daycare_id)
-                WHERE mobile_device_id = :employeeOrMobileId
-                AND child_id = bc.child_id
-
-                UNION ALL
-
-                SELECT 1
-                FROM employee_child_daycare_acl(:date)
-                WHERE employee_id = :employeeOrMobileId
-                AND child_id = bc.child_id
-            )
-            AND 'MESSAGING' = ANY(d.enabled_pilot_features)
+            SELECT a.id AS account_id, p.child_id, p.unit_id, d.name AS unit_name, p.group_id, g.name AS group_name
+            FROM accounts a
+            JOIN daycare_acl_view acl ON a.employee_id = acl.employee_id
+            JOIN daycare d ON acl.daycare_id = d.id
+            JOIN daycare_group g ON d.id = g.daycare_id
+            JOIN realized_placement_all(:date) p ON g.id = p.group_id
+            WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
         )
         SELECT DISTINCT
-            c.child_id,
+            c.account_id,
+            c.unit_id,
+            c.unit_name,
             c.group_id,
             c.group_name,
+            c.child_id,
             p.first_name,
-            p.last_name,
-            p.date_of_birth
+            p.last_name
         FROM children c
         JOIN person p ON c.child_id = p.id
         WHERE EXISTS (
@@ -805,28 +788,51 @@ fun Database.Read.getReceiversForNewMessage(
             .trimIndent()
 
     return this.createQuery(sql)
-        .bind("employeeOrMobileId", employeeOrMobileId)
-        .bind("date", HelsinkiDateTime.now().toLocalDate())
-        .bind("unitId", unitId)
+        .bind("accountIds", accountIds)
+        .bind("date", today)
         .mapTo<MessageReceiversResult>()
         .toList()
-        .groupBy { it.groupId }
-        .map { (groupId, receiverChildren) ->
-            MessageReceiversResponse(
-                groupId = groupId,
-                groupName = receiverChildren.first().groupName,
+        .groupBy { it.accountId }
+        .map { (accountId, receivers) ->
+            val units = receivers.groupBy { it.unitId to it.unitName }
+            val accountReceivers =
+                units.flatMap { (unit, groups) ->
+                    val (unitId, unitName) = unit
+                    if (unitId == null || unitName == null) getReceiverGroups(groups)
+                    else
+                        listOf(
+                            MessageReceiver(
+                                id = unitId,
+                                type = MessageRecipientType.UNIT,
+                                name = unitName,
+                                receivers = getReceiverGroups(groups)
+                            )
+                        )
+                }
+            MessageReceiversResponse(accountId = accountId, receivers = accountReceivers)
+        }
+}
+
+private fun getReceiverGroups(receivers: List<MessageReceiversResult>): List<MessageReceiver> =
+    receivers
+        .groupBy { it.groupId to it.groupName }
+        .map { (group, children) ->
+            val (groupId, groupName) = group
+            MessageReceiver(
+                id = groupId,
+                type = MessageRecipientType.GROUP,
+                name = groupName,
                 receivers =
-                    receiverChildren.map { child ->
+                    children.map {
                         MessageReceiver(
-                            childId = child.childId,
-                            childFirstName = child.firstName,
-                            childLastName = child.lastName,
-                            childDateOfBirth = child.dateOfBirth
+                            id = it.childId,
+                            type = MessageRecipientType.CHILD,
+                            name = "${it.firstName} ${it.lastName}",
+                            receivers = listOf()
                         )
                     }
             )
         }
-}
 
 fun Database.Read.getMessageAccountsForRecipients(
     accountId: MessageAccountId,

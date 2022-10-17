@@ -115,30 +115,45 @@ export const isChildSelectorNode = (
   node: SelectorNode
 ): node is ChildSelectorNode => 'dateOfBirth' in node
 
-export const unitAsSelectorNode = (
-  { id, name }: { id: UUID; name: string },
-  receiverGroups: MessageReceiversResponse[]
-): SelectorNode => ({
-  selectorId: id,
+export const receiversAsSelectorNode = (
+  accountId: UUID,
+  unitId: UUID,
+  receivers: MessageReceiversResponse[]
+): SelectorNode | undefined => {
+  const accountReceivers = receivers.find(
+    (receiver) => receiver.accountId === accountId
+  )
+
+  if (!accountReceivers) {
+    return undefined
+  }
+
+  const receiver = accountReceivers.receivers.filter((receiver) =>
+    receiver.type === 'UNIT' ? receiver.id === unitId : true
+  )[0]
+
+  if (!receiver) {
+    return undefined
+  }
+
+  const selectorNode = receiverAsSelectorNode(receiver)
+
+  if (selectorNode.childNodes.length === 0) {
+    return {
+      ...selectorNode,
+      selected: true
+    }
+  }
+
+  return selectorNode
+}
+
+const receiverAsSelectorNode = (receiver: MessageReceiver): SelectorNode => ({
+  selectorId: receiver.id,
   selected: false,
-  name,
-  messageRecipient: { type: 'UNIT', id },
-  childNodes: receiverGroups.map((group: MessageReceiversResponse) => ({
-    selectorId: group.groupId,
-    selected: false,
-    name: group.groupName,
-    messageRecipient: { type: 'GROUP', id: group.groupId },
-    childNodes: group.receivers.map<ChildSelectorNode>(
-      ({ childId, childFirstName, childLastName, childDateOfBirth }) => ({
-        selectorId: childId,
-        selected: false,
-        name: `${childFirstName} ${childLastName}`,
-        messageRecipient: { type: 'CHILD', id: childId },
-        dateOfBirth: childDateOfBirth,
-        childNodes: []
-      })
-    )
-  }))
+  name: receiver.name,
+  messageRecipient: { type: receiver.type, id: receiver.id },
+  childNodes: receiver.receivers.map(receiverAsSelectorNode)
 })
 
 export const getSelectedBottomElements = (selector: SelectorNode): UUID[] => {
@@ -188,11 +203,3 @@ export const getSubTree = (
   }
   return undefined
 }
-
-export const receiverAsSelectorNode = (r: MessageReceiver): SelectorNode => ({
-  selectorId: r.childId,
-  selected: true,
-  name: `${r.childFirstName} ${r.childLastName}`,
-  messageRecipient: { type: 'CHILD', id: r.childId },
-  childNodes: []
-})

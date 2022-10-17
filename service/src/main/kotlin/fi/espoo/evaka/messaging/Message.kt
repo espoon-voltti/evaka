@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
@@ -59,16 +58,15 @@ enum class MessageType {
 }
 
 data class MessageReceiversResponse(
-    val groupId: GroupId,
-    val groupName: String,
+    val accountId: MessageAccountId,
     val receivers: List<MessageReceiver>
 )
 
 data class MessageReceiver(
-    val childId: ChildId,
-    val childFirstName: String,
-    val childLastName: String,
-    val childDateOfBirth: LocalDate
+    val id: Id<*>,
+    val type: MessageRecipientType,
+    val name: String,
+    val receivers: List<MessageReceiver>
 )
 
 enum class AccountType {

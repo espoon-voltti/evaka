@@ -13,7 +13,8 @@ import {
   DraftContent,
   AuthorizedMessageAccount,
   PostMessageBody,
-  UpdatableDraftContent
+  UpdatableDraftContent,
+  MessageReceiversResponse
 } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
@@ -28,10 +29,8 @@ import {
   deselectAll,
   getReceiverOptions,
   getSelected,
-  getSelectedBottomElements,
-  getSelectorName,
-  getSubTree,
   ReactSelectOption,
+  receiversAsSelectorNode,
   SelectorNode,
   updateSelector
 } from 'lib-components/employee/messages/SelectorNode'
@@ -137,7 +136,7 @@ export interface MessageEditorI18n {
 }
 
 interface Props {
-  availableReceivers: SelectorNode
+  availableReceivers: MessageReceiversResponse[]
   defaultSender: ReactSelectOption
   deleteAttachment: (id: UUID) => Promise<Result<void>>
   draftContent?: DraftContent
@@ -177,13 +176,9 @@ export default React.memo(function MessageEditor({
   selectedUnit,
   sending
 }: Props) {
-  const [receiverTree, setReceiverTree] = useState<SelectorNode>(() =>
-    draftContent
-      ? createReceiverTree(availableReceivers, draftContent.recipientIds)
-      : availableReceivers
-  )
+  const [receiverTree, setReceiverTree] = useState<SelectorNode>()
   const selectedReceivers = useMemo(
-    () => getSelected(receiverTree),
+    () => (receiverTree ? getSelected(receiverTree) : []),
     [receiverTree]
   )
   const selectedReceiverOptions = useMemo(
@@ -191,7 +186,7 @@ export default React.memo(function MessageEditor({
     [selectedReceivers]
   )
   const receiverOptions = useMemo(
-    () => getReceiverOptions(receiverTree),
+    () => (receiverTree ? getReceiverOptions(receiverTree) : []),
     [receiverTree]
   )
 
@@ -231,10 +226,12 @@ export default React.memo(function MessageEditor({
   const updateReceiverTree = useCallback(
     (newSelection: ReactSelectOption[]) => {
       setReceiverTree((old) =>
-        createReceiverTree(
-          old,
-          newSelection.map((s) => s.value)
-        )
+        old
+          ? createReceiverTree(
+              old,
+              newSelection.map((s) => s.value)
+            )
+          : old
       )
     },
     []
@@ -242,6 +239,10 @@ export default React.memo(function MessageEditor({
 
   useEffect(
     function updateSelectedReceiversOnReceiverTreeChanges() {
+      if (!receiverTree) {
+        return
+      }
+
       const selected = getSelected(receiverTree)
       setMessage((old) => ({
         ...old,
@@ -276,29 +277,16 @@ export default React.memo(function MessageEditor({
       if (!acc) {
         throw new Error('Selected sender was not found in accounts')
       }
-      if (!isGroupMessageAccount(acc)) {
-        setReceiverTree((previousReceivers) =>
-          getSelectedBottomElements(previousReceivers).reduce(
-            (acc, id) =>
-              updateSelector(acc, { selectorId: id, selected: true }),
-            availableReceivers
-          )
-        )
-      } else {
-        const groupId = acc.daycareGroup.id
-        const selection = getSubTree(availableReceivers, groupId)
-        if (selection) {
-          setReceiverTree((previousReceivers) =>
-            getSelectedBottomElements(previousReceivers).reduce(
-              (acc, id) =>
-                updateSelector(acc, { selectorId: id, selected: true }),
-              selection
-            )
-          )
-        }
+      const accountReceivers = receiversAsSelectorNode(
+        acc.account.id,
+        selectedUnit.value,
+        availableReceivers
+      )
+      if (accountReceivers) {
+        setReceiverTree(accountReceivers)
       }
     },
-    [message.sender, accounts, availableReceivers]
+    [message.sender, accounts, selectedUnit, availableReceivers]
   )
 
   const debouncedSaveStatus = useDebounce(saveStatus, 250)
@@ -376,14 +364,13 @@ export default React.memo(function MessageEditor({
           (acc: AuthorizedMessageAccount) =>
             !isGroupMessageAccount(acc) ||
             (isGroupMessageAccount(acc) &&
-              !!getSelectorName(acc.daycareGroup.id, availableReceivers) &&
               acc.daycareGroup.unitId === selectedUnit.value)
         )
         .map(({ account: { id, name } }: AuthorizedMessageAccount) => ({
           value: id,
           label: name
         })),
-    [accounts, availableReceivers, selectedUnit.value]
+    [accounts, selectedUnit.value]
   )
 
   const sendEnabled =

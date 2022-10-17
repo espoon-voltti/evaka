@@ -392,27 +392,21 @@ class MessageController(
     fun getReceiversForNewMessage(
         db: Database,
         user: AuthenticatedUser,
-        clock: EvakaClock,
-        @RequestParam unitId: DaycareId
+        clock: EvakaClock
     ): List<MessageReceiversResponse> {
+        val employeeId = getEmployeeId(user) ?: throw Forbidden("Permission denied")
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
                         user,
                         clock,
-                        Action.Unit.READ_RECEIVERS_FOR_NEW_MESSAGE,
-                        unitId
+                        Action.Global.READ_MESSAGE_RECEIVERS
                     )
-                    it.getReceiversForNewMessage(EmployeeId(user.rawId()), unitId)
+                    it.getReceiversForNewMessage(employeeId, clock.today())
                 }
             }
-            .also {
-                Audit.MessagingMessageReceiversRead.log(
-                    targetId = unitId,
-                    args = mapOf("count" to it.size)
-                )
-            }
+            .also { Audit.MessagingMessageReceiversRead.log(args = mapOf("count" to it.size)) }
     }
 
     private fun requireMessageAccountAccess(

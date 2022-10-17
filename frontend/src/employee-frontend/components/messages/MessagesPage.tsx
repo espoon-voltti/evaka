@@ -5,13 +5,12 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
+import {
+  MessageReceiversResponse,
+  PostMessageBody
+} from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import MessageEditor from 'lib-components/employee/messages/MessageEditor'
-import {
-  deselectAll,
-  SelectorNode
-} from 'lib-components/employee/messages/SelectorNode'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 
@@ -82,10 +81,9 @@ export default React.memo(function MessagesPage() {
     }
   }, [selectedDraft])
 
-  const [selectedReceivers, setSelectedReceivers] = useState<SelectorNode>()
+  const [receivers, setReceivers] = useState<MessageReceiversResponse[]>()
 
   const hideEditor = useCallback(() => {
-    setSelectedReceivers((old) => (old ? deselectAll(old) : old))
     setShowEditor(false)
     setSelectedDraft(undefined)
   }, [setSelectedDraft])
@@ -127,16 +125,16 @@ export default React.memo(function MessagesPage() {
       <PanelContainer>
         <Sidebar
           showEditor={() => setShowEditor(true)}
-          setSelectedReceivers={setSelectedReceivers}
+          setReceivers={setReceivers}
         />
         {selectedAccount?.view && <MessageList {...selectedAccount} />}
         {showEditor &&
           accounts.isSuccess &&
-          selectedReceivers &&
+          receivers &&
           selectedAccount &&
           selectedUnit && (
             <MessageEditor
-              availableReceivers={selectedReceivers}
+              availableReceivers={receivers}
               defaultSender={{
                 value: selectedAccount.account.id,
                 label: selectedAccount.account.name
