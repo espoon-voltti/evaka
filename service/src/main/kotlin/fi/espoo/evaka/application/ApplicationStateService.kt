@@ -225,7 +225,7 @@ class ApplicationStateService(
         clock: EvakaClock,
         applicationId: ApplicationId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Application.SEND, applicationId)
+        accessControl.requirePermissionFor(tx, user, clock, Action.Application.SEND, applicationId)
 
         val currentDate = clock.today()
         val application = getApplication(tx, applicationId)
@@ -323,6 +323,7 @@ class ApplicationStateService(
         applicationId: ApplicationId
     ) {
         accessControl.requirePermissionFor(
+            tx,
             user,
             clock,
             Action.Application.MOVE_TO_WAITING_PLACEMENT,
@@ -361,6 +362,7 @@ class ApplicationStateService(
         applicationId: ApplicationId
     ) {
         accessControl.requirePermissionFor(
+            tx,
             user,
             clock,
             Action.Application.RETURN_TO_SENT,
@@ -379,7 +381,13 @@ class ApplicationStateService(
         clock: EvakaClock,
         applicationId: ApplicationId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Application.CANCEL, applicationId)
+        accessControl.requirePermissionFor(
+            tx,
+            user,
+            clock,
+            Action.Application.CANCEL,
+            applicationId
+        )
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(SENT, WAITING_PLACEMENT))
@@ -393,7 +401,13 @@ class ApplicationStateService(
         clock: EvakaClock,
         applicationId: ApplicationId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Application.VERIFY, applicationId)
+        accessControl.requirePermissionFor(
+            tx,
+            user,
+            clock,
+            Action.Application.VERIFY,
+            applicationId
+        )
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
@@ -407,7 +421,13 @@ class ApplicationStateService(
         clock: EvakaClock,
         applicationId: ApplicationId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Application.VERIFY, applicationId)
+        accessControl.requirePermissionFor(
+            tx,
+            user,
+            clock,
+            Action.Application.VERIFY,
+            applicationId
+        )
 
         val application = getApplication(tx, applicationId)
         verifyStatus(application, WAITING_PLACEMENT)
@@ -451,6 +471,7 @@ class ApplicationStateService(
         applicationId: ApplicationId
     ) {
         accessControl.requirePermissionFor(
+            tx,
             user,
             clock,
             Action.Application.CANCEL_PLACEMENT_PLAN,
@@ -472,6 +493,7 @@ class ApplicationStateService(
         applicationId: ApplicationId
     ) {
         accessControl.requirePermissionFor(
+            tx,
             user,
             clock,
             Action.Application.SEND_DECISIONS_WITHOUT_PROPOSAL,
@@ -494,6 +516,7 @@ class ApplicationStateService(
         applicationId: ApplicationId
     ) {
         accessControl.requirePermissionFor(
+            tx,
             user,
             clock,
             Action.Application.SEND_PLACEMENT_PROPOSAL,
@@ -513,6 +536,7 @@ class ApplicationStateService(
         applicationId: ApplicationId
     ) {
         accessControl.requirePermissionFor(
+            tx,
             user,
             clock,
             Action.Application.WITHDRAW_PLACEMENT_PROPOSAL,
@@ -535,6 +559,7 @@ class ApplicationStateService(
         rejectOtherReason: String? = null
     ) {
         accessControl.requirePermissionFor(
+            tx,
             user,
             clock,
             Action.Application.RESPOND_TO_PLACEMENT_PROPOSAL,
@@ -576,6 +601,7 @@ class ApplicationStateService(
         unitId: DaycareId
     ) {
         accessControl.requirePermissionFor(
+            tx,
             user,
             clock,
             Action.Unit.ACCEPT_PLACEMENT_PROPOSAL,
@@ -622,6 +648,7 @@ class ApplicationStateService(
         applicationId: ApplicationId
     ) {
         accessControl.requirePermissionFor(
+            tx,
             user,
             clock,
             Action.Application.CONFIRM_DECISIONS_MAILED,
@@ -644,6 +671,7 @@ class ApplicationStateService(
         requestedStartDate: LocalDate
     ) {
         accessControl.requirePermissionFor(
+            tx,
             user,
             clock,
             Action.Application.ACCEPT_DECISION,
@@ -741,6 +769,7 @@ class ApplicationStateService(
         decisionId: DecisionId
     ) {
         accessControl.requirePermissionFor(
+            tx,
             user,
             clock,
             Action.Application.REJECT_DECISION,

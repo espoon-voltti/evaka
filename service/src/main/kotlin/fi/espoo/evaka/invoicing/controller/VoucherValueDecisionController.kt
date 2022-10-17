@@ -79,15 +79,16 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @RequestBody body: SearchVoucherValueDecisionRequest
     ): Paged<VoucherValueDecisionSummary> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Global.SEARCH_VOUCHER_VALUE_DECISIONS
-        )
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.SEARCH_VOUCHER_VALUE_DECISIONS
+                    )
                     tx.searchValueDecisions(
                         clock,
                         body.page,
@@ -117,9 +118,19 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @PathVariable id: VoucherValueDecisionId
     ): Wrapper<VoucherValueDecisionDetailed> {
-        accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.READ, id)
         val res =
-            db.connect { dbc -> dbc.read { it.getVoucherValueDecision(id) } }
+            db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.VoucherValueDecision.READ,
+                        id
+                    )
+                    it.getVoucherValueDecision(id)
+                }
+            }
                 ?: throw NotFound("No voucher value decision found with given ID ($id)")
         Audit.VoucherValueDecisionRead.log(targetId = id)
         return Wrapper(res)
@@ -132,14 +143,17 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @PathVariable headOfFamilyId: PersonId
     ): List<VoucherValueDecisionSummary> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Person.READ_VOUCHER_VALUE_DECISIONS,
-            headOfFamilyId
-        )
         return db.connect { dbc ->
-                dbc.read { it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId) }
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Person.READ_VOUCHER_VALUE_DECISIONS,
+                        headOfFamilyId
+                    )
+                    it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId)
+                }
             }
             .also { Audit.VoucherValueDecisionHeadOfFamilyRead.log(targetId = headOfFamilyId) }
     }
@@ -151,14 +165,15 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @RequestBody decisionIds: List<VoucherValueDecisionId>
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.VoucherValueDecision.UPDATE,
-            decisionIds
-        )
         db.connect { dbc ->
             dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.VoucherValueDecision.UPDATE,
+                    decisionIds
+                )
                 sendVoucherValueDecisions(
                     tx = it,
                     asyncJobRunner = asyncJobRunner,
@@ -180,9 +195,15 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @RequestBody ids: List<VoucherValueDecisionId>
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.UPDATE, ids)
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.VoucherValueDecision.UPDATE,
+                    ids
+                )
                 val decisions = tx.getValueDecisionsByIds(ids)
                 if (decisions.any { it.status != WAITING_FOR_MANUAL_SENDING }) {
                     throw BadRequest("Voucher value decision cannot be marked sent")
@@ -200,15 +221,15 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @PathVariable decisionId: VoucherValueDecisionId
     ): ResponseEntity<Any> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.VoucherValueDecision.READ,
-            decisionId
-        )
-
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.VoucherValueDecision.READ,
+                        decisionId
+                    )
                     val decision =
                         tx.getVoucherValueDecision(decisionId)
                             ?: error("Cannot find voucher value decision $decisionId")
@@ -243,9 +264,17 @@ class VoucherValueDecisionController(
         @PathVariable uuid: VoucherValueDecisionId,
         @RequestBody request: VoucherValueDecisionTypeRequest
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.UPDATE, uuid)
         db.connect { dbc ->
-            dbc.transaction { valueDecisionService.setType(it, uuid, request.type) }
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.VoucherValueDecision.UPDATE,
+                    uuid
+                )
+                valueDecisionService.setType(it, uuid, request.type)
+            }
         }
         Audit.VoucherValueDecisionSetType.log(targetId = uuid)
     }
@@ -258,14 +287,17 @@ class VoucherValueDecisionController(
         @PathVariable id: PersonId,
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Person.GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS,
-            id
-        )
         db.connect { dbc ->
-            dbc.transaction { generator.createRetroactiveValueDecisions(it, clock, id, body.from) }
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Person.GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS,
+                    id
+                )
+                generator.createRetroactiveValueDecisions(it, clock, id, body.from)
+            }
         }
         Audit.VoucherValueDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
     }

@@ -28,13 +28,14 @@ class StartingPlacementsReportController(private val accessControl: AccessContro
         @RequestParam("year") year: Int,
         @RequestParam("month") month: Int
     ): List<StartingPlacementsRow> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Global.READ_STARTING_PLACEMENTS_REPORT
-        )
         return db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_STARTING_PLACEMENTS_REPORT
+                    )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getStartingPlacementsRows(year, month)
                 }

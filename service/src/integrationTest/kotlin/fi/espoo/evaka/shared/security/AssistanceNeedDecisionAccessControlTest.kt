@@ -119,11 +119,23 @@ class AssistanceNeedDecisionAccessControlTest : AccessControlTest() {
             }
         val unitSupervisor =
             createTestEmployee(emptySet(), mapOf(daycareId to UserRole.UNIT_SUPERVISOR))
-        assertTrue(
-            accessControl.hasPermissionFor(unitSupervisor, clock, action, assistanceNeedDecisionId)
-        )
+        db.read { tx ->
+            assertTrue(
+                accessControl.hasPermissionFor(
+                    tx,
+                    unitSupervisor,
+                    clock,
+                    action,
+                    assistanceNeedDecisionId
+                )
+            )
+        }
 
         val staff = createTestEmployee(emptySet(), mapOf(daycareId to UserRole.STAFF))
-        assertFalse(accessControl.hasPermissionFor(staff, clock, action, assistanceNeedDecisionId))
+        db.read { tx ->
+            assertFalse(
+                accessControl.hasPermissionFor(tx, staff, clock, action, assistanceNeedDecisionId)
+            )
+        }
     }
 }

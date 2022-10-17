@@ -63,13 +63,16 @@ class AttachmentsController(
         @RequestParam type: AttachmentType,
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Application.UPLOAD_ATTACHMENT,
-            applicationId
-        )
         return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Application.UPLOAD_ATTACHMENT,
+                        applicationId
+                    )
+                }
                 handleFileUpload(
                         dbc,
                         user,
@@ -104,13 +107,16 @@ class AttachmentsController(
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.IncomeStatement.UPLOAD_ATTACHMENT,
-            incomeStatementId
-        )
         return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.IncomeStatement.UPLOAD_ATTACHMENT,
+                        incomeStatementId
+                    )
+                }
                 handleFileUpload(
                     dbc,
                     user,
@@ -139,18 +145,22 @@ class AttachmentsController(
         @PathVariable(required = false) incomeId: IncomeId?,
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
-        if (incomeId != null) {
-            accessControl.requirePermissionFor(
-                user,
-                clock,
-                Action.Income.UPLOAD_ATTACHMENT,
-                incomeId
-            )
-        }
-        val attachTo =
-            if (incomeId != null) AttachmentParent.Income(incomeId) else AttachmentParent.None
-
         return db.connect { dbc ->
+                if (incomeId != null) {
+                    dbc.read {
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Income.UPLOAD_ATTACHMENT,
+                            incomeId
+                        )
+                    }
+                }
+                val attachTo =
+                    if (incomeId != null) AttachmentParent.Income(incomeId)
+                    else AttachmentParent.None
+
                 handleFileUpload(dbc, user, attachTo, file, defaultAllowedAttachmentContentTypes)
             }
             .also { attachmentId ->
@@ -170,13 +180,16 @@ class AttachmentsController(
         @PathVariable draftId: MessageDraftId,
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.MessageDraft.UPLOAD_ATTACHMENT,
-            draftId
-        )
         return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.MessageDraft.UPLOAD_ATTACHMENT,
+                        draftId
+                    )
+                }
                 handleFileUpload(
                     dbc,
                     user,
@@ -205,14 +218,16 @@ class AttachmentsController(
         @PathVariable documentId: PedagogicalDocumentId,
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.PedagogicalDocument.CREATE_ATTACHMENT,
-            documentId
-        )
-
         return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.PedagogicalDocument.CREATE_ATTACHMENT,
+                        documentId
+                    )
+                }
                 handleFileUpload(
                     dbc,
                     user,
@@ -247,15 +262,18 @@ class AttachmentsController(
         @RequestParam type: AttachmentType,
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Application.UPLOAD_ATTACHMENT,
-            applicationId
-        )
-
         val attachTo = AttachmentParent.Application(applicationId)
         return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Citizen.Application.UPLOAD_ATTACHMENT,
+                        applicationId
+                    )
+                }
+
                 checkAttachmentCount(dbc, attachTo, user)
 
                 handleFileUpload(
@@ -289,20 +307,23 @@ class AttachmentsController(
         @PathVariable(required = false) incomeStatementId: IncomeStatementId?,
         @RequestPart("file") file: MultipartFile
     ): AttachmentId {
-        if (incomeStatementId != null) {
-            accessControl.requirePermissionFor(
-                user,
-                clock,
-                Action.Citizen.IncomeStatement.UPLOAD_ATTACHMENT,
-                incomeStatementId
-            )
-        }
-
-        val attachTo =
-            if (incomeStatementId != null) AttachmentParent.IncomeStatement(incomeStatementId)
-            else AttachmentParent.None
-
         return db.connect { dbc ->
+                if (incomeStatementId != null) {
+                    dbc.read {
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Citizen.IncomeStatement.UPLOAD_ATTACHMENT,
+                            incomeStatementId
+                        )
+                    }
+                }
+                val attachTo =
+                    if (incomeStatementId != null)
+                        AttachmentParent.IncomeStatement(incomeStatementId)
+                    else AttachmentParent.None
+
                 checkAttachmentCount(dbc, attachTo, user)
                 handleFileUpload(dbc, user, attachTo, file, defaultAllowedAttachmentContentTypes)
             }
@@ -399,22 +420,30 @@ class AttachmentsController(
         @PathVariable requestedFilename: String
     ): ResponseEntity<Any> {
         val attachment =
-            db.connect { dbc -> dbc.read { it.getAttachment(attachmentId) } }
-                ?: throw NotFound("Attachment $attachmentId not found")
-
-        val action =
-            when (attachment.attachedTo) {
-                is AttachmentParent.Application -> Action.Attachment.READ_APPLICATION_ATTACHMENT
-                is AttachmentParent.Income -> Action.Attachment.READ_INCOME_ATTACHMENT
-                is AttachmentParent.IncomeStatement,
-                is AttachmentParent.None -> Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT
-                is AttachmentParent.MessageContent ->
-                    Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT
-                is AttachmentParent.MessageDraft -> Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT
-                is AttachmentParent.PedagogicalDocument ->
-                    Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT
-            }.exhaust()
-        accessControl.requirePermissionFor(user, clock, action, attachmentId)
+            db.connect { dbc ->
+                dbc.read {
+                    val attachment =
+                        it.getAttachment(attachmentId)
+                            ?: throw NotFound("Attachment $attachmentId not found")
+                    val action =
+                        when (attachment.attachedTo) {
+                            is AttachmentParent.Application ->
+                                Action.Attachment.READ_APPLICATION_ATTACHMENT
+                            is AttachmentParent.Income -> Action.Attachment.READ_INCOME_ATTACHMENT
+                            is AttachmentParent.IncomeStatement,
+                            is AttachmentParent.None ->
+                                Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT
+                            is AttachmentParent.MessageContent ->
+                                Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT
+                            is AttachmentParent.MessageDraft ->
+                                Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT
+                            is AttachmentParent.PedagogicalDocument ->
+                                Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT
+                        }.exhaust()
+                    accessControl.requirePermissionFor(it, user, clock, action, attachmentId)
+                    attachment
+                }
+            }
 
         if (requestedFilename != attachment.name)
             throw BadRequest("Requested file name doesn't match actual file name for $attachmentId")
@@ -450,7 +479,7 @@ class AttachmentsController(
                     is AttachmentParent.PedagogicalDocument ->
                         Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT
                 }.exhaust()
-            accessControl.requirePermissionFor(user, clock, action, attachmentId)
+            dbc.read { accessControl.requirePermissionFor(it, user, clock, action, attachmentId) }
 
             dbc.transaction { deleteAttachment(it, attachmentId) }
         }

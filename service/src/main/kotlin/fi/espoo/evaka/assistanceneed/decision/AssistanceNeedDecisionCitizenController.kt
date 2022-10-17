@@ -30,15 +30,16 @@ class AssistanceNeedDecisionCitizenController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): List<AssistanceNeedDecisionCitizenListItem> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Person.READ_ASSISTANCE_NEED_DECISIONS,
-            user.id
-        )
-
         return db.connect { dbc ->
-                dbc.transaction { tx ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Person.READ_ASSISTANCE_NEED_DECISIONS,
+                        user.id
+                    )
+
                     tx.getAssistanceNeedDecisionsForCitizen(clock.today(), user.id)
                 }
             }
@@ -52,14 +53,15 @@ class AssistanceNeedDecisionCitizenController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ): AssistanceNeedDecision {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.AssistanceNeedDecision.READ,
-            id
-        )
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.AssistanceNeedDecision.READ,
+                        id
+                    )
                     val decision = tx.getAssistanceNeedDecisionById(id)
 
                     if (
@@ -84,13 +86,18 @@ class AssistanceNeedDecisionCitizenController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ): ResponseEntity<Any> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.AssistanceNeedDecision.DOWNLOAD,
-            id
-        )
-        return db.connect { assistanceNeedDecisionService.getDecisionPdfResponse(it, id) }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Citizen.AssistanceNeedDecision.DOWNLOAD,
+                        id
+                    )
+                }
+                assistanceNeedDecisionService.getDecisionPdfResponse(dbc, id)
+            }
             .also { Audit.ChildAssistanceNeedDecisionDownloadCitizen.log(targetId = id) }
     }
 
@@ -101,14 +108,17 @@ class AssistanceNeedDecisionCitizenController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.AssistanceNeedDecision.MARK_AS_READ,
-            id
-        )
         return db.connect { dbc ->
-                dbc.transaction { tx -> tx.markAssistanceNeedDecisionAsReadByGuardian(id, user.id) }
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.AssistanceNeedDecision.MARK_AS_READ,
+                        id
+                    )
+                    tx.markAssistanceNeedDecisionAsReadByGuardian(id, user.id)
+                }
             }
             .also { Audit.ChildAssistanceNeedDecisionMarkReadCitizen.log(targetId = id) }
     }
@@ -119,14 +129,15 @@ class AssistanceNeedDecisionCitizenController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): List<UnreadAssistanceNeedDecisionItem> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Person.READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT,
-            user.id
-        )
         return db.connect { dbc ->
-                dbc.transaction { tx ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Person.READ_UNREAD_ASSISTANCE_NEED_DECISION_COUNT,
+                        user.id
+                    )
                     tx.getAssistanceNeedDecisionsUnreadCountsForCitizen(clock.today(), user.id)
                 }
             }

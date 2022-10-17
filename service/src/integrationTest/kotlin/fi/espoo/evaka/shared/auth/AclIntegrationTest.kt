@@ -118,7 +118,7 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
             mobileId = it.insertTestMobileDevice(DevMobileDevice(unitId = daycareId))
         }
         acl = AccessControlList(jdbi)
-        accessControl = AccessControl(DefaultActionRuleMapping(), jdbi)
+        accessControl = AccessControl(DefaultActionRuleMapping())
     }
 
     @BeforeEach
@@ -134,8 +134,14 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
 
         assertEquals(aclAuth, acl.getAuthorizedUnits(user))
 
-        assertTrue(accessControl.hasPermissionFor(user, clock, Action.Person.READ, fridgeParentId))
-        assertTrue(accessControl.hasPermissionFor(user, clock, Action.Person.READ, guardianId))
+        db.read { tx ->
+            assertTrue(
+                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, fridgeParentId)
+            )
+            assertTrue(
+                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, guardianId)
+            )
+        }
     }
 
     @ParameterizedTest(name = "{0}")
@@ -146,14 +152,26 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
         val positiveAclAuth = AclAuthorization.Subset(setOf(daycareId))
 
         assertEquals(negativeAclAuth, acl.getAuthorizedUnits(user))
-        assertFalse(accessControl.hasPermissionFor(user, clock, Action.Person.READ, fridgeParentId))
-        assertFalse(accessControl.hasPermissionFor(user, clock, Action.Person.READ, guardianId))
+        db.read { tx ->
+            assertFalse(
+                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, fridgeParentId)
+            )
+            assertFalse(
+                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, guardianId)
+            )
+        }
 
         db.transaction { it.insertDaycareAclRow(daycareId, employeeId, role) }
 
         assertEquals(positiveAclAuth, acl.getAuthorizedUnits(user))
-        assertTrue(accessControl.hasPermissionFor(user, clock, Action.Person.READ, fridgeParentId))
-        assertTrue(accessControl.hasPermissionFor(user, clock, Action.Person.READ, guardianId))
+        db.read { tx ->
+            assertTrue(
+                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, fridgeParentId)
+            )
+            assertTrue(
+                accessControl.hasPermissionFor(tx, user, clock, Action.Person.READ, guardianId)
+            )
+        }
     }
 
     @Test

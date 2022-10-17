@@ -32,14 +32,15 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<PedagogicalDocumentCitizen> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Child.READ_PEDAGOGICAL_DOCUMENTS,
-            childId
-        )
         return db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Citizen.Child.READ_PEDAGOGICAL_DOCUMENTS,
+                        childId
+                    )
                     val documents =
                         it.getChildPedagogicalDocuments(childId, user.id).filter { pd ->
                             pd.description.isNotEmpty() || pd.attachments.isNotEmpty()
@@ -69,14 +70,17 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
         clock: EvakaClock,
         @PathVariable documentId: PedagogicalDocumentId
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.PedagogicalDocument.READ,
-            documentId
-        )
         db.connect { dbc ->
-            dbc.transaction { it.markDocumentReadByGuardian(clock, documentId, user.id) }
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Citizen.PedagogicalDocument.READ,
+                    documentId
+                )
+                it.markDocumentReadByGuardian(clock, documentId, user.id)
+            }
         }
         Audit.PedagogicalDocumentUpdate.log(targetId = documentId)
     }
@@ -87,14 +91,17 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): Map<ChildId, Int> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Person.READ_PEDAGOGICAL_DOCUMENT_UNREAD_COUNTS,
-            user.id
-        )
         return db.connect { dbc ->
-                dbc.transaction { it.countUnreadDocumentsByUser(clock.today(), user.id) }
+                dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Citizen.Person.READ_PEDAGOGICAL_DOCUMENT_UNREAD_COUNTS,
+                        user.id
+                    )
+                    it.countUnreadDocumentsByUser(clock.today(), user.id)
+                }
             }
             .also { Audit.PedagogicalDocumentCountUnread.log(user.id) }
     }

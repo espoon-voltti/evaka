@@ -25,9 +25,14 @@ class DuplicatePeopleReportController(private val accessControl: AccessControl) 
         user: AuthenticatedUser,
         clock: EvakaClock
     ): List<DuplicatePeopleReportRow> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_DUPLICATE_PEOPLE_REPORT)
         return db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_DUPLICATE_PEOPLE_REPORT
+                    )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getDuplicatePeople()
                 }

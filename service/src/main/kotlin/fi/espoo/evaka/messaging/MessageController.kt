@@ -59,9 +59,16 @@ class MessageController(
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
     ): Set<AuthorizedMessageAccount> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_USER_MESSAGE_ACCOUNTS)
         return db.connect { dbc ->
-                dbc.read { it.getAuthorizedMessageAccountsForEmployee(user.id) }
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_USER_MESSAGE_ACCOUNTS
+                    )
+                    it.getAuthorizedMessageAccountsForEmployee(user.id)
+                }
             }
             .also { Audit.MessagingMyAccountsRead.log(args = mapOf("count" to it.size)) }
     }
@@ -73,14 +80,22 @@ class MessageController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId
     ): Set<AuthorizedMessageAccount> {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_MESSAGING_ACCOUNTS, unitId)
         val result =
-            if (user.employeeId != null) {
-                db.connect { dbc ->
-                    dbc.read { it.getAuthorizedMessageAccountsForEmployee(user.employeeId) }
+            db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Unit.READ_MESSAGING_ACCOUNTS,
+                        unitId
+                    )
+                    if (user.employeeId != null) {
+                        it.getAuthorizedMessageAccountsForEmployee(user.employeeId)
+                    } else {
+                        setOf()
+                    }
                 }
-            } else {
-                setOf()
             }
         Audit.MessagingMyAccountsRead.log(targetId = unitId, args = mapOf("count" to result.size))
         return result
@@ -155,9 +170,14 @@ class MessageController(
         user: AuthenticatedUser,
         clock: EvakaClock
     ): Set<UnreadCountByAccount> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.ACCESS_MESSAGING)
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.ACCESS_MESSAGING
+                    )
                     tx.getUnreadMessagesCounts(
                         tx.getEmployeeMessageAccountIds(getEmployeeId(user)!!)
                     )
@@ -173,8 +193,18 @@ class MessageController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId
     ): Set<UnreadCountByAccountAndGroup> {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_UNREAD_MESSAGES, unitId)
-        return db.connect { dbc -> dbc.read { tx -> tx.getUnreadMessagesCountsByDaycare(unitId) } }
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_UNREAD_MESSAGES,
+                        unitId
+                    )
+                    tx.getUnreadMessagesCountsByDaycare(unitId)
+                }
+            }
             .also {
                 Audit.MessagingUnreadMessagesRead.log(
                     targetId = unitId,
@@ -365,14 +395,17 @@ class MessageController(
         clock: EvakaClock,
         @RequestParam unitId: DaycareId
     ): List<MessageReceiversResponse> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Unit.READ_RECEIVERS_FOR_NEW_MESSAGE,
-            unitId
-        )
         return db.connect { dbc ->
-                dbc.read { it.getReceiversForNewMessage(EmployeeId(user.rawId()), unitId) }
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Unit.READ_RECEIVERS_FOR_NEW_MESSAGE,
+                        unitId
+                    )
+                    it.getReceiversForNewMessage(EmployeeId(user.rawId()), unitId)
+                }
             }
             .also {
                 Audit.MessagingMessageReceiversRead.log(
@@ -388,8 +421,11 @@ class MessageController(
         clock: EvakaClock,
         accountId: MessageAccountId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Global.ACCESS_MESSAGING)
-        db.read { it.getEmployeeMessageAccountIds(getEmployeeId(user)!!) }.find { it == accountId }
+        db.read {
+                accessControl.requirePermissionFor(it, user, clock, Action.Global.ACCESS_MESSAGING)
+                it.getEmployeeMessageAccountIds(getEmployeeId(user)!!)
+            }
+            .find { it == accountId }
             ?: throw Forbidden("Message account not found for user")
     }
 

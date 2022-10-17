@@ -24,9 +24,14 @@ class VardaErrorReport(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock
     ): List<VardaErrorReportRow> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_VARDA_REPORT)
         return db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_VARDA_REPORT
+                    )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getVardaErrors()
                 }

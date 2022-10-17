@@ -32,11 +32,20 @@ class ChildStickyNoteController(private val ac: AccessControl) {
         @PathVariable childId: ChildId,
         @RequestBody body: ChildStickyNoteBody
     ): ChildStickyNoteId {
-        ac.requirePermissionFor(user, clock, Action.Child.CREATE_STICKY_NOTE, childId)
-
         validateExpiration(clock, body.expires)
 
-        return db.connect { dbc -> dbc.transaction { it.createChildStickyNote(childId, body) } }
+        return db.connect { dbc ->
+                dbc.transaction {
+                    ac.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Child.CREATE_STICKY_NOTE,
+                        childId
+                    )
+                    it.createChildStickyNote(childId, body)
+                }
+            }
             .also { noteId ->
                 Audit.ChildStickyNoteCreate.log(targetId = childId, objectId = noteId)
             }
@@ -50,12 +59,13 @@ class ChildStickyNoteController(private val ac: AccessControl) {
         @PathVariable noteId: ChildStickyNoteId,
         @RequestBody body: ChildStickyNoteBody
     ): ChildStickyNote {
-        ac.requirePermissionFor(user, clock, Action.ChildStickyNote.UPDATE, noteId)
-
         validateExpiration(clock, body.expires)
 
         return db.connect { dbc ->
-                dbc.transaction { it.updateChildStickyNote(clock, noteId, body) }
+                dbc.transaction {
+                    ac.requirePermissionFor(it, user, clock, Action.ChildStickyNote.UPDATE, noteId)
+                    it.updateChildStickyNote(clock, noteId, body)
+                }
             }
             .also { Audit.ChildStickyNoteUpdate.log(targetId = noteId) }
     }
@@ -67,9 +77,12 @@ class ChildStickyNoteController(private val ac: AccessControl) {
         clock: EvakaClock,
         @PathVariable noteId: ChildStickyNoteId
     ) {
-        ac.requirePermissionFor(user, clock, Action.ChildStickyNote.DELETE, noteId)
-
-        return db.connect { dbc -> dbc.transaction { it.deleteChildStickyNote(noteId) } }
+        return db.connect { dbc ->
+                dbc.transaction {
+                    ac.requirePermissionFor(it, user, clock, Action.ChildStickyNote.DELETE, noteId)
+                    it.deleteChildStickyNote(noteId)
+                }
+            }
             .also { Audit.ChildStickyNoteDelete.log(targetId = noteId) }
     }
 

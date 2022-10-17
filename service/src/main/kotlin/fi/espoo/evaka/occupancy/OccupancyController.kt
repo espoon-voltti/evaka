@@ -47,11 +47,16 @@ class OccupancyController(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
         @RequestParam type: OccupancyType
     ): OccupancyResponse {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_OCCUPANCIES, unitId)
-
         val occupancies =
             db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Unit.READ_OCCUPANCIES,
+                        unitId
+                    )
                     it.calculateOccupancyPeriods(
                         clock.today(),
                         unitId,
@@ -84,9 +89,6 @@ class OccupancyController(
         preschoolDaycareFrom: LocalDate?,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) preschoolDaycareTo: LocalDate?
     ): OccupancyResponseSpeculated {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_OCCUPANCIES, unitId)
-        accessControl.requirePermissionFor(user, clock, Action.Application.READ, applicationId)
-
         val period = FiniteDateRange(from, to)
         val preschoolDaycarePeriod =
             if (preschoolDaycareFrom != null && preschoolDaycareTo != null) {
@@ -97,6 +99,21 @@ class OccupancyController(
 
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_OCCUPANCIES,
+                        unitId
+                    )
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Application.READ,
+                        applicationId
+                    )
+
                     val unit = tx.getDaycare(unitId) ?: throw NotFound("Unit $unitId not found")
                     val application =
                         tx.fetchApplicationDetails(applicationId)
@@ -156,11 +173,16 @@ class OccupancyController(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate,
         @RequestParam type: OccupancyType
     ): List<OccupancyResponseGroupLevel> {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_OCCUPANCIES, unitId)
-
         val occupancies =
             db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Unit.READ_OCCUPANCIES,
+                        unitId
+                    )
                     it.calculateOccupancyPeriodsGroupLevel(
                         clock.today(),
                         unitId,

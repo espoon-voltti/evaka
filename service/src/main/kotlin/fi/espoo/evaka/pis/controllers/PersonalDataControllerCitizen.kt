@@ -29,15 +29,16 @@ class PersonalDataControllerCitizen(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: PersonalDataUpdate
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Person.UPDATE_PERSONAL_DATA,
-            user.id
-        )
-
         db.connect { dbc ->
             dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Citizen.Person.UPDATE_PERSONAL_DATA,
+                    user.id
+                )
+
                 val person = it.getPersonById(user.id) ?: error("User not found")
 
                 val validationErrors =

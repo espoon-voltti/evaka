@@ -35,13 +35,16 @@ class AssistanceNeedController(
         @PathVariable childId: ChildId,
         @RequestBody body: AssistanceNeedRequest
     ): AssistanceNeed {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Child.CREATE_ASSISTANCE_NEED,
-            childId
-        )
         return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Child.CREATE_ASSISTANCE_NEED,
+                        childId
+                    )
+                }
                 assistanceNeedService.createAssistanceNeed(
                     dbc,
                     user,
@@ -65,8 +68,16 @@ class AssistanceNeedController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<AssistanceNeedResponse> {
-        accessControl.requirePermissionFor(user, clock, Action.Child.READ_ASSISTANCE_NEED, childId)
         return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Child.READ_ASSISTANCE_NEED,
+                        childId
+                    )
+                }
                 val relevantPreschoolPlacements =
                     dbc.read { tx ->
                         tx.getPlacementsForChild(childId).filter {
@@ -128,13 +139,16 @@ class AssistanceNeedController(
         @PathVariable("id") assistanceNeedId: AssistanceNeedId,
         @RequestBody body: AssistanceNeedRequest
     ): AssistanceNeed {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.AssistanceNeed.UPDATE,
-            assistanceNeedId
-        )
         return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.AssistanceNeed.UPDATE,
+                        assistanceNeedId
+                    )
+                }
                 assistanceNeedService.updateAssistanceNeed(
                     dbc,
                     user,
@@ -153,13 +167,16 @@ class AssistanceNeedController(
         clock: EvakaClock,
         @PathVariable("id") assistanceNeedId: AssistanceNeedId
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.AssistanceNeed.DELETE,
-            assistanceNeedId
-        )
         db.connect { dbc ->
+            dbc.read {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.AssistanceNeed.DELETE,
+                    assistanceNeedId
+                )
+            }
             assistanceNeedService.deleteAssistanceNeed(dbc, clock, assistanceNeedId)
         }
         Audit.ChildAssistanceNeedDelete.log(targetId = assistanceNeedId)
@@ -171,7 +188,16 @@ class AssistanceNeedController(
         user: AuthenticatedUser,
         clock: EvakaClock
     ): List<AssistanceBasisOption> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_ASSISTANCE_BASIS_OPTIONS)
-        return db.connect { dbc -> assistanceNeedService.getAssistanceBasisOptions(dbc) }
+        return db.connect { dbc ->
+            dbc.read {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Global.READ_ASSISTANCE_BASIS_OPTIONS
+                )
+            }
+            assistanceNeedService.getAssistanceBasisOptions(dbc)
+        }
     }
 }

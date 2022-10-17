@@ -20,26 +20,21 @@ import fi.espoo.evaka.shared.security.actionrule.DatabaseActionRule
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
 import fi.espoo.evaka.shared.security.actionrule.UnscopedActionRule
 import java.util.EnumSet
-import org.jdbi.v3.core.Jdbi
 
-class AccessControl(private val actionRuleMapping: ActionRuleMapping, private val jdbi: Jdbi) {
+class AccessControl(private val actionRuleMapping: ActionRuleMapping) {
     fun requirePermissionFor(
+        tx: Database.Read,
         user: AuthenticatedUser,
         clock: EvakaClock,
         action: Action.UnscopedAction
-    ) =
-        Database(jdbi).connect { dbc ->
-            dbc.read { tx -> checkPermissionFor(tx, user, clock, action) }.assert()
-        }
+    ) = checkPermissionFor(tx, user, clock, action).assert()
 
     fun hasPermissionFor(
+        tx: Database.Read,
         user: AuthenticatedUser,
         clock: EvakaClock,
         action: Action.UnscopedAction
-    ): Boolean =
-        Database(jdbi).connect { dbc ->
-            dbc.read { tx -> checkPermissionFor(tx, user, clock, action) }.isPermitted()
-        }
+    ): Boolean = checkPermissionFor(tx, user, clock, action).isPermitted()
 
     fun checkPermissionFor(
         tx: Database.Read,
@@ -101,40 +96,35 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
     }
 
     fun <T> requirePermissionFor(
+        tx: Database.Read,
         user: AuthenticatedUser,
         clock: EvakaClock,
         action: Action.ScopedAction<T>,
         target: T
-    ) = requirePermissionFor(user, clock, action, listOf(target))
+    ) = requirePermissionFor(tx, user, clock, action, listOf(target))
     fun <T> requirePermissionFor(
+        tx: Database.Read,
         user: AuthenticatedUser,
         clock: EvakaClock,
         action: Action.ScopedAction<T>,
         targets: Iterable<T>
-    ) =
-        Database(jdbi).connect { dbc ->
-            dbc.read { tx ->
-                checkPermissionFor(tx, user, clock, action, targets).values.forEach { it.assert() }
-            }
-        }
+    ) = checkPermissionFor(tx, user, clock, action, targets).values.forEach { it.assert() }
 
     fun <T> hasPermissionFor(
+        tx: Database.Read,
         user: AuthenticatedUser,
         clock: EvakaClock,
         action: Action.ScopedAction<T>,
         target: T
-    ): Boolean = hasPermissionFor(user, clock, action, listOf(target))
+    ): Boolean = hasPermissionFor(tx, user, clock, action, listOf(target))
     fun <T> hasPermissionFor(
+        tx: Database.Read,
         user: AuthenticatedUser,
         clock: EvakaClock,
         action: Action.ScopedAction<T>,
         targets: Iterable<T>
     ): Boolean =
-        Database(jdbi).connect { dbc ->
-            dbc.read { tx ->
-                checkPermissionFor(tx, user, clock, action, targets).values.all { it.isPermitted() }
-            }
-        }
+        checkPermissionFor(tx, user, clock, action, targets).values.all { it.isPermitted() }
 
     fun <T> checkPermissionFor(
         tx: Database.Read,
@@ -337,26 +327,32 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping, private va
         WRONG_PIN
     }
 
-    fun verifyPinCode(employeeId: EmployeeId, pinCode: String, clock: EvakaClock): PinError? {
-        return Database(jdbi).connect {
-            it.transaction { tx ->
-                if (tx.employeePinIsCorrect(employeeId, pinCode)) {
-                    tx.markEmployeeLastLogin(clock, employeeId)
-                    tx.resetEmployeePinFailureCount(employeeId)
-                    null
-                } else {
-                    if (tx.updateEmployeePinFailureCountAndCheckIfLocked(employeeId)) {
-                        PinError.PIN_LOCKED
-                    } else {
-                        PinError.WRONG_PIN
-                    }
-                }
+    fun verifyPinCode(
+        tx: Database.Transaction,
+        employeeId: EmployeeId,
+        pinCode: String,
+        clock: EvakaClock
+    ): PinError? {
+        return if (tx.employeePinIsCorrect(employeeId, pinCode)) {
+            tx.markEmployeeLastLogin(clock, employeeId)
+            tx.resetEmployeePinFailureCount(employeeId)
+            null
+        } else {
+            if (tx.updateEmployeePinFailureCountAndCheckIfLocked(employeeId)) {
+                PinError.PIN_LOCKED
+            } else {
+                PinError.WRONG_PIN
             }
         }
     }
 
-    fun verifyPinCodeAndThrow(employeeId: EmployeeId, pinCode: String, clock: EvakaClock) {
-        val errorCode = verifyPinCode(employeeId, pinCode, clock)
+    fun verifyPinCodeAndThrow(
+        tx: Database.Transaction,
+        employeeId: EmployeeId,
+        pinCode: String,
+        clock: EvakaClock
+    ) {
+        val errorCode = verifyPinCode(tx, employeeId, pinCode, clock)
         if (errorCode != null) throw Forbidden("Invalid pin code", errorCode.name)
     }
 }

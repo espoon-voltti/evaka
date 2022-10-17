@@ -42,16 +42,16 @@ class ParentshipController(
         clock: EvakaClock,
         @RequestBody body: ParentshipRequest
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Person.CREATE_PARENTSHIP,
-            body.headOfChildId
-        )
-
         val parentship =
             db.connect { dbc ->
                 dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Person.CREATE_PARENTSHIP,
+                        body.headOfChildId
+                    )
                     parentshipService.createParentship(
                         it,
                         clock,
@@ -87,10 +87,15 @@ class ParentshipController(
                     "One of parameters headOfChildId and childId should be validated not to be null"
                 )
 
-        accessControl.requirePermissionFor(user, clock, Action.Person.READ_PARENTSHIPS, personId)
-
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Person.READ_PARENTSHIPS,
+                        personId
+                    )
                     val parentships =
                         tx.getParentships(
                             headOfChildId = headOfChildId,
@@ -124,9 +129,13 @@ class ParentshipController(
         clock: EvakaClock,
         @PathVariable(value = "id") id: ParentshipId
     ): Parentship {
-        accessControl.requirePermissionFor(user, clock, Action.Parentship.READ, id)
-
-        return db.connect { dbc -> dbc.read { it.getParentship(id) } ?: throw NotFound() }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(it, user, clock, Action.Parentship.READ, id)
+                    it.getParentship(id)
+                }
+                    ?: throw NotFound()
+            }
             .also { Audit.ParentShipsRead.log(targetId = id) }
     }
 
@@ -138,10 +147,9 @@ class ParentshipController(
         @PathVariable(value = "id") id: ParentshipId,
         @RequestBody body: ParentshipUpdateRequest
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Parentship.UPDATE, id)
-
         db.connect { dbc ->
             dbc.transaction {
+                accessControl.requirePermissionFor(it, user, clock, Action.Parentship.UPDATE, id)
                 parentshipService.updateParentshipDuration(
                     it,
                     clock,
@@ -164,10 +172,17 @@ class ParentshipController(
         clock: EvakaClock,
         @PathVariable(value = "id") parentshipId: ParentshipId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Parentship.RETRY, parentshipId)
-
         db.connect { dbc ->
-            dbc.transaction { parentshipService.retryParentship(it, clock, parentshipId) }
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Parentship.RETRY,
+                    parentshipId
+                )
+                parentshipService.retryParentship(it, clock, parentshipId)
+            }
         }
         Audit.ParentShipsRetry.log(targetId = parentshipId)
     }
@@ -180,20 +195,29 @@ class ParentshipController(
         @PathVariable(value = "id") id: ParentshipId
     ) {
         db.connect { dbc ->
-            val parentship = dbc.transaction { it.getParentship(id) }
+            dbc.transaction { tx ->
+                val parentship = tx.getParentship(id)
 
-            if (parentship?.conflict == false) {
-                accessControl.requirePermissionFor(user, clock, Action.Parentship.DELETE, id)
-            } else {
-                accessControl.requirePermissionFor(
-                    user,
-                    clock,
-                    Action.Parentship.DELETE_CONFLICTED_PARENTSHIP,
-                    id
-                )
+                if (parentship?.conflict == false) {
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Parentship.DELETE,
+                        id
+                    )
+                } else {
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Parentship.DELETE_CONFLICTED_PARENTSHIP,
+                        id
+                    )
+                }
+
+                parentshipService.deleteParentship(tx, clock, id)
             }
-
-            dbc.transaction { parentshipService.deleteParentship(it, clock, id) }
         }
         Audit.ParentShipsDelete.log(targetId = id)
     }

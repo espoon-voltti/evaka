@@ -43,21 +43,23 @@ class PlacementControllerCitizen(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): ChildPlacementResponse {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Child.READ_PLACEMENT,
-            childId
-        )
-
         return db.connect { dbc ->
-                ChildPlacementResponse(
-                    placements =
-                        mapToTerminatablePlacements(
-                            dbc.read { it.getCitizenChildPlacements(clock.today(), childId) },
-                            clock.today()
-                        )
-                )
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Citizen.Child.READ_PLACEMENT,
+                        childId
+                    )
+                    ChildPlacementResponse(
+                        placements =
+                            mapToTerminatablePlacements(
+                                it.getCitizenChildPlacements(clock.today(), childId),
+                                clock.today()
+                            )
+                    )
+                }
             }
             .also {
                 Audit.PlacementSearch.log(
@@ -87,29 +89,32 @@ class PlacementControllerCitizen(
                 if (it.isBefore(clock.today())) throw BadRequest("Invalid terminationDate")
             }
         db.connect { dbc ->
-            if (
-                dbc.read { it.getUnitFeatures(body.unitId) }
-                    ?.features
-                    ?.contains(PilotFeature.PLACEMENT_TERMINATION) != true
-            ) {
-                throw Forbidden(
-                    "Placement termination not enabled for unit",
-                    "PLACEMENT_TERMINATION_DISABLED"
-                )
-            }
             val terminatablePlacementGroup =
-                dbc.read { it.getCitizenChildPlacements(clock.today(), childId) }
-                    .also { placements ->
-                        accessControl.requirePermissionFor(
-                            user,
-                            clock,
-                            Action.Citizen.Placement.TERMINATE,
-                            placements.map { it.id }
+                dbc.read { tx ->
+                    if (
+                        tx.getUnitFeatures(body.unitId)
+                            ?.features
+                            ?.contains(PilotFeature.PLACEMENT_TERMINATION) != true
+                    ) {
+                        throw Forbidden(
+                            "Placement termination not enabled for unit",
+                            "PLACEMENT_TERMINATION_DISABLED"
                         )
                     }
-                    .let { mapToTerminatablePlacements(it, clock.today()) }
-                    .find { it.unitId == body.unitId && it.type == body.type }
-                    ?: throw NotFound("Matching placement type not found")
+                    tx.getCitizenChildPlacements(clock.today(), childId)
+                        .also { placements ->
+                            accessControl.requirePermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Citizen.Placement.TERMINATE,
+                                placements.map { it.id }
+                            )
+                        }
+                        .let { mapToTerminatablePlacements(it, clock.today()) }
+                        .find { it.unitId == body.unitId && it.type == body.type }
+                        ?: throw NotFound("Matching placement type not found")
+                }
 
             dbc.transaction { tx ->
                 if (body.terminateDaycareOnly == true) {

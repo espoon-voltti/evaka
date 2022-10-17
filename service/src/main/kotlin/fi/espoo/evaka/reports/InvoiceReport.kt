@@ -37,9 +37,14 @@ class InvoiceReportController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): InvoiceReport {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_INVOICE_REPORT)
         return db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_INVOICE_REPORT
+                    )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getInvoiceReportWithRows(getMonthPeriod(date))
                 }

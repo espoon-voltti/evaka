@@ -31,9 +31,15 @@ class ChildConsentController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<ChildConsent> {
-        accessControl.requirePermissionFor(user, clock, Action.Child.READ_CHILD_CONSENTS, childId)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.READ_CHILD_CONSENTS,
+                        childId
+                    )
                     val consents = tx.getChildConsentsByChild(childId)
                     featureConfig.enabledChildConsentTypes.map { type ->
                         consents.find { it.type == type }
@@ -52,14 +58,15 @@ class ChildConsentController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): Map<ChildId, List<CitizenChildConsent>> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Person.READ_CHILD_CONSENTS,
-            user.id
-        )
         return db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Person.READ_CHILD_CONSENTS,
+                        user.id
+                    )
                     tx.getCitizenChildConsentsForGuardian(user.id, clock.today()).mapValues {
                         consent ->
                         featureConfig.enabledChildConsentTypes.map { type ->
@@ -88,9 +95,15 @@ class ChildConsentController(
         @PathVariable childId: ChildId,
         @RequestBody body: List<UpdateChildConsentRequest>
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Child.UPSERT_CHILD_CONSENT, childId)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.UPSERT_CHILD_CONSENT,
+                        childId
+                    )
                     body
                         .filter { featureConfig.enabledChildConsentTypes.contains(it.type) }
                         .forEach { consent ->
@@ -120,14 +133,15 @@ class ChildConsentController(
         @PathVariable childId: ChildId,
         @RequestBody body: List<CitizenChildConsent>
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Child.INSERT_CHILD_CONSENTS,
-            childId
-        )
         return db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Child.INSERT_CHILD_CONSENTS,
+                        childId
+                    )
                     body
                         .filter { featureConfig.enabledChildConsentTypes.contains(it.type) }
                         .forEach { consent ->
@@ -157,14 +171,15 @@ class ChildConsentController(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): Map<ChildId, Int> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Person.READ_CHILD_CONSENT_NOTIFICATIONS,
-            user.id
-        )
         return db.connect { dbc ->
-                dbc.transaction { tx ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Person.READ_CHILD_CONSENT_NOTIFICATIONS,
+                        user.id
+                    )
                     tx.getCitizenConsentedChildConsentTypes(user.id, clock.today())
                         .map { (child, knownConsentTypes) ->
                             child to

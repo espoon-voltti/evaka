@@ -51,16 +51,19 @@ class ChildAccessControlTest : AccessControlTest() {
         db.transaction { tx -> tx.insertGuardian(guardianCitizen.id, childId) }
         val otherCitizen = createTestCitizen(CitizenAuthLevel.STRONG)
 
-        assertTrue(accessControl.hasPermissionFor(guardianCitizen, clock, action, childId))
-        assertFalse(accessControl.hasPermissionFor(otherCitizen, clock, action, childId))
-        assertFalse(
-            accessControl.hasPermissionFor(
-                guardianCitizen.copy(authLevel = CitizenAuthLevel.WEAK),
-                clock,
-                action,
-                childId
+        db.read { tx ->
+            assertTrue(accessControl.hasPermissionFor(tx, guardianCitizen, clock, action, childId))
+            assertFalse(accessControl.hasPermissionFor(tx, otherCitizen, clock, action, childId))
+            assertFalse(
+                accessControl.hasPermissionFor(
+                    tx,
+                    guardianCitizen.copy(authLevel = CitizenAuthLevel.WEAK),
+                    clock,
+                    action,
+                    childId
+                )
             )
-        )
+        }
     }
 
     @Test
@@ -82,10 +85,14 @@ class ChildAccessControlTest : AccessControlTest() {
             }
         val unitSupervisor =
             createTestEmployee(emptySet(), mapOf(daycareId to UserRole.UNIT_SUPERVISOR))
-        assertTrue(accessControl.hasPermissionFor(unitSupervisor, clock, action, childId))
+        db.read { tx ->
+            assertTrue(accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, childId))
+        }
 
         val staff = createTestEmployee(emptySet(), mapOf(daycareId to UserRole.STAFF))
-        assertFalse(accessControl.hasPermissionFor(staff, clock, action, childId))
+        db.read { tx ->
+            assertFalse(accessControl.hasPermissionFor(tx, staff, clock, action, childId))
+        }
     }
 
     @Test
@@ -107,9 +114,13 @@ class ChildAccessControlTest : AccessControlTest() {
                 Pair(daycareId, otherDaycareId)
             }
         val unitMobile = createTestMobile(daycareId)
-        assertTrue(accessControl.hasPermissionFor(unitMobile, clock, action, childId))
+        db.read { tx ->
+            assertTrue(accessControl.hasPermissionFor(tx, unitMobile, clock, action, childId))
+        }
 
         val otherMobile = createTestMobile(otherDaycareId)
-        assertFalse(accessControl.hasPermissionFor(otherMobile, clock, action, childId))
+        db.read { tx ->
+            assertFalse(accessControl.hasPermissionFor(tx, otherMobile, clock, action, childId))
+        }
     }
 }

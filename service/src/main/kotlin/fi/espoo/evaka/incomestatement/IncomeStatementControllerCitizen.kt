@@ -41,15 +41,15 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @RequestParam page: Int,
         @RequestParam pageSize: Int
     ): Paged<IncomeStatement> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Person.READ_INCOME_STATEMENTS,
-            user.id
-        )
-
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Person.READ_INCOME_STATEMENTS,
+                        user.id
+                    )
                     tx.readIncomeStatementsForPerson(
                         user.id,
                         includeEmployeeContent = false,
@@ -75,15 +75,15 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @RequestParam page: Int,
         @RequestParam pageSize: Int
     ): Paged<IncomeStatement> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Child.READ_INCOME_STATEMENTS,
-            childId
-        )
-
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Child.READ_INCOME_STATEMENTS,
+                        childId
+                    )
                     tx.readIncomeStatementsForPerson(
                         childId,
                         includeEmployeeContent = false,
@@ -107,14 +107,18 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<LocalDate> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Child.READ_INCOME_STATEMENTS,
-            childId
-        )
-
-        return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(childId) } }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Citizen.Child.READ_INCOME_STATEMENTS,
+                        childId
+                    )
+                    it.readIncomeStatementStartDates(childId)
+                }
+            }
             .also {
                 Audit.IncomeStatementStartDatesOfChild.log(
                     targetId = childId,
@@ -129,13 +133,18 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): List<LocalDate> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Person.READ_INCOME_STATEMENTS,
-            user.id
-        )
-        return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(user.id) } }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Citizen.Person.READ_INCOME_STATEMENTS,
+                        user.id
+                    )
+                    it.readIncomeStatementStartDates(user.id)
+                }
+            }
             .also {
                 Audit.IncomeStatementStartDates.log(
                     targetId = user.id,
@@ -151,15 +160,15 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId
     ): IncomeStatement {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.IncomeStatement.READ,
-            incomeStatementId
-        )
-
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.IncomeStatement.READ,
+                        incomeStatementId
+                    )
                     tx.readIncomeStatementForPerson(
                         user.id,
                         incomeStatementId,
@@ -179,15 +188,15 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @PathVariable childId: ChildId,
         @PathVariable incomeStatementId: IncomeStatementId
     ): IncomeStatement {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.IncomeStatement.READ,
-            incomeStatementId
-        )
-
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.IncomeStatement.READ,
+                        incomeStatementId
+                    )
                     tx.readIncomeStatementForPerson(
                         PersonId(childId.raw),
                         incomeStatementId,
@@ -206,13 +215,19 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
         @RequestBody body: IncomeStatementBody
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Person.CREATE_INCOME_STATEMENT,
-            user.id
-        )
-        val id = db.connect { createIncomeStatement(it, user.id, user.id, body) }
+        val id =
+            db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Citizen.Person.CREATE_INCOME_STATEMENT,
+                        user.id
+                    )
+                }
+                createIncomeStatement(dbc, user.id, user.id, body)
+            }
         Audit.IncomeStatementCreate.log(targetId = user.id, objectId = id)
     }
 
@@ -224,13 +239,19 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @PathVariable childId: ChildId,
         @RequestBody body: IncomeStatementBody
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Child.CREATE_INCOME_STATEMENT,
-            childId
-        )
-        val id = db.connect { createIncomeStatement(it, childId, user.id, body) }
+        val id =
+            db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Citizen.Child.CREATE_INCOME_STATEMENT,
+                        childId
+                    )
+                }
+                createIncomeStatement(dbc, childId, user.id, body)
+            }
         Audit.IncomeStatementCreateForChild.log(user.id, objectId = id)
     }
 
@@ -242,16 +263,16 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: IncomeStatementBody
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.IncomeStatement.UPDATE,
-            incomeStatementId
-        )
-
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement body")
         db.connect { dbc ->
             dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.IncomeStatement.UPDATE,
+                        incomeStatementId
+                    )
                     verifyIncomeStatementModificationsAllowed(tx, user.id, incomeStatementId)
                     tx.updateIncomeStatement(incomeStatementId, body).also { success ->
                         if (success) {
@@ -282,18 +303,18 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: IncomeStatementBody
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.IncomeStatement.UPDATE,
-            incomeStatementId
-        )
-
         if (!validateIncomeStatementBody(body))
             throw BadRequest("Invalid child income statement body")
 
         db.connect { dbc ->
             dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.IncomeStatement.UPDATE,
+                        incomeStatementId
+                    )
                     verifyIncomeStatementModificationsAllowed(
                         tx,
                         PersonId(childId.raw),
@@ -326,9 +347,15 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock,
         @PathVariable id: IncomeStatementId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.IncomeStatement.DELETE, id)
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.IncomeStatement.DELETE,
+                    id
+                )
                 verifyIncomeStatementModificationsAllowed(tx, user.id, id)
                 tx.removeIncomeStatement(id)
             }
@@ -344,10 +371,15 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         @PathVariable childId: ChildId,
         @PathVariable id: IncomeStatementId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.IncomeStatement.DELETE, id)
-
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.IncomeStatement.DELETE,
+                    id
+                )
                 verifyIncomeStatementModificationsAllowed(tx, childId, id)
                 tx.removeIncomeStatement(id)
             }
@@ -362,13 +394,18 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
         clock: EvakaClock
     ): List<ChildBasicInfo> {
         val personId = user.id
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Person.READ_CHILDREN,
-            personId
-        )
-        return db.connect { dbc -> dbc.read { it.getIncomeStatementChildrenByGuardian(personId) } }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Citizen.Person.READ_CHILDREN,
+                        personId
+                    )
+                    it.getIncomeStatementChildrenByGuardian(personId)
+                }
+            }
             .also {
                 Audit.CitizenChildrenRead.log(targetId = personId, args = mapOf("count" to it.size))
             }

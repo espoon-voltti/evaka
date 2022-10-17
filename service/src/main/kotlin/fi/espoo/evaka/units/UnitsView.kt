@@ -74,11 +74,16 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         to: LocalDate
     ): UnitDataResponse {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_BASIC, unitId)
-
         val period = FiniteDateRange(from, to)
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_BASIC,
+                        unitId
+                    )
                     val groups = tx.getDaycareGroups(unitId, from, to)
                     val placements =
                         tx.getDetailedDaycarePlacements(unitId, null, from, to).toList()
@@ -86,6 +91,7 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
                     val missingGroupPlacements =
                         if (
                             accessControl.hasPermissionFor(
+                                tx,
                                 user,
                                 clock,
                                 Action.Unit.READ_MISSING_GROUP_PLACEMENTS,
@@ -99,6 +105,7 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
                     val recentlyTerminatedPlacements =
                         if (
                             accessControl.hasPermissionFor(
+                                tx,
                                 user,
                                 clock,
                                 Action.Unit.READ_TERMINATED_PLACEMENTS,
@@ -145,6 +152,7 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
                     val capacities =
                         if (
                             accessControl.hasPermissionFor(
+                                tx,
                                 user,
                                 clock,
                                 Action.Unit.READ_CHILD_CAPACITY_FACTORS,
@@ -184,6 +192,7 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
 
                     if (
                         accessControl.hasPermissionFor(
+                            tx,
                             user,
                             clock,
                             Action.Unit.READ_DETAILED,

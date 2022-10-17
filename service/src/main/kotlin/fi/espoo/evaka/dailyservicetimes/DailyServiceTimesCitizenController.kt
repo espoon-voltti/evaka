@@ -28,15 +28,17 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): List<DailyServiceTimeNotification> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Person.READ_DAILY_SERVICE_TIME_NOTIFICATIONS,
-            user.id
-        )
-
         return db.connect { dbc ->
-                dbc.transaction { tx -> tx.getDailyServiceTimesNotifications(user.id) }
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Person.READ_DAILY_SERVICE_TIME_NOTIFICATIONS,
+                        user.id
+                    )
+                    tx.getDailyServiceTimesNotifications(user.id)
+                }
             }
             .also {
                 Audit.ChildDailyServiceTimeNotificationsRead.log(
@@ -53,15 +55,17 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
         clock: EvakaClock,
         @RequestBody body: List<DailyServiceTimeNotificationId>
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.DailyServiceTimeNotification.DISMISS,
-            body
-        )
-
         db.connect { dbc ->
-            dbc.transaction { tx -> tx.deleteDailyServiceTimesNotifications(body) }
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.DailyServiceTimeNotification.DISMISS,
+                    body
+                )
+                tx.deleteDailyServiceTimesNotifications(body)
+            }
         }
         Audit.ChildDailyServiceTimeNotificationsDismiss.log(targetId = body)
     }

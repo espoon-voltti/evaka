@@ -259,10 +259,7 @@ class DevApi(
     }
 
     @DeleteMapping("/daycare/{daycareId}/cost-center")
-    fun deleteDaycareCostCenter(
-        db: Database,
-        @PathVariable daycareId: DaycareId
-    ) {
+    fun deleteDaycareCostCenter(db: Database, @PathVariable daycareId: DaycareId) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.createUpdate("UPDATE daycare SET cost_center = NULL WHERE id = :daycareId")

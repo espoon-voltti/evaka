@@ -43,13 +43,6 @@ class ReservationControllerCitizen(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): ReservationsResponse {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Person.READ_RESERVATIONS,
-            user.id
-        )
-
         val range =
             try {
                 FiniteDateRange(from, to)
@@ -59,6 +52,13 @@ class ReservationControllerCitizen(
 
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Person.READ_RESERVATIONS,
+                        user.id
+                    )
                     val children = tx.getReservationChildren(clock.today(), user.id, range)
                     val includeWeekends =
                         children.any {
@@ -108,16 +108,17 @@ class ReservationControllerCitizen(
         @RequestBody body: List<DailyReservationRequest>
     ) {
         val children = body.map { it.childId }.toSet()
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Child.CREATE_RESERVATION,
-            children
-        )
 
         val result =
             db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Child.CREATE_RESERVATION,
+                        children
+                    )
                     val deadlines = tx.getHolidayPeriodDeadlines()
                     val reservableRanges =
                         getReservableDays(
@@ -151,13 +152,6 @@ class ReservationControllerCitizen(
         clock: EvakaClock,
         @RequestBody body: AbsenceRequest
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Child.CREATE_ABSENCE,
-            body.childIds
-        )
-
         if (body.dateRange.start.isBefore(clock.today())) {
             throw BadRequest("Cannot mark absences for past days")
         }
@@ -169,6 +163,14 @@ class ReservationControllerCitizen(
         val (deleted, inserted) =
             db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Child.CREATE_ABSENCE,
+                        body.childIds
+                    )
+
                     val deleted =
                         tx.clearOldCitizenEditableAbsences(
                             body.childIds.flatMap { childId ->

@@ -46,12 +46,18 @@ class AttendanceReservationController(private val ac: AccessControl) {
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): UnitAttendanceReservations {
-        ac.requirePermissionFor(user, clock, Action.Unit.READ_ATTENDANCE_RESERVATIONS, unitId)
         if (to < from || from.plusMonths(1) < to) throw BadRequest("Invalid query dates")
         val period = FiniteDateRange(from, to)
 
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    ac.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_ATTENDANCE_RESERVATIONS,
+                        unitId
+                    )
                     val unitName =
                         tx.getDaycare(unitId)?.name ?: throw NotFound("Unit $unitId not found")
                     val operationalDays = tx.getUnitOperationalDays(unitId, period)
@@ -127,7 +133,6 @@ class AttendanceReservationController(private val ac: AccessControl) {
         @RequestBody body: List<DailyReservationRequest>
     ) {
         val children = body.map { it.childId }.toSet()
-        ac.requirePermissionFor(user, clock, Action.Child.CREATE_ATTENDANCE_RESERVATION, children)
 
         if (body.any { it.absent }) {
             throw BadRequest("Absences are not allowed", "ABSENCES_NOT_ALLOWED")
@@ -135,7 +140,16 @@ class AttendanceReservationController(private val ac: AccessControl) {
 
         val result =
             db.connect { dbc ->
-                dbc.transaction { createReservationsAndAbsences(it, user.evakaUserId, body) }
+                dbc.transaction {
+                    ac.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Child.CREATE_ATTENDANCE_RESERVATION,
+                        children
+                    )
+                    createReservationsAndAbsences(it, user.evakaUserId, body)
+                }
             }
         Audit.AttendanceReservationEmployeeCreate.log(
             targetId = children,

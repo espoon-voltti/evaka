@@ -47,8 +47,6 @@ class ChildImageController(
         @PathVariable childId: ChildId,
         @RequestPart("file") file: MultipartFile
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Child.UPLOAD_IMAGE, childId)
-
         val contentType = checkFileContentType(file.inputStream, allowedContentTypes)
 
         val imageSize = Imaging.getImageSize(file.inputStream, null)
@@ -59,6 +57,16 @@ class ChildImageController(
 
         val imageId =
             db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Child.UPLOAD_IMAGE,
+                        childId
+                    )
+                }
+
                 replaceImage(dbc, documentClient, bucket, childId, file, contentType)
             }
         Audit.ChildImageUpload.log(
@@ -75,9 +83,19 @@ class ChildImageController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Child.DELETE_IMAGE, childId)
-
-        val imageId = db.connect { dbc -> removeImage(dbc, documentClient, bucket, childId) }
+        val imageId =
+            db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Child.DELETE_IMAGE,
+                        childId
+                    )
+                }
+                removeImage(dbc, documentClient, bucket, childId)
+            }
         Audit.ChildImageDelete.log(targetId = childId, objectId = imageId)
     }
 
@@ -88,7 +106,17 @@ class ChildImageController(
         clock: EvakaClock,
         @PathVariable imageId: ChildImageId
     ): ResponseEntity<Any> {
-        accessControl.requirePermissionFor(user, clock, Action.ChildImage.DOWNLOAD, imageId)
+        db.connect { dbc ->
+            dbc.read {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.ChildImage.DOWNLOAD,
+                    imageId
+                )
+            }
+        }
 
         val key = "$childImagesBucketPrefix$imageId"
         return documentClient.responseInline(bucket, key, null).also {

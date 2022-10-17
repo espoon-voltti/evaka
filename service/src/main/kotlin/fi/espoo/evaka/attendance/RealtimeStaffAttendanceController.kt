@@ -46,10 +46,15 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
     ): StaffAttendanceResponse {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_STAFF_ATTENDANCES, unitId)
-
         return db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Unit.READ_STAFF_ATTENDANCES,
+                        unitId
+                    )
                     val range = FiniteDateRange(start, end)
                     val attendancesByEmployee =
                         it.getStaffAttendancesForDateRange(unitId, range).groupBy { raw ->
@@ -160,13 +165,6 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         @PathVariable unitId: DaycareId,
         @RequestBody body: UpsertStaffAndExternalAttendanceRequest
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Unit.UPDATE_STAFF_ATTENDANCES,
-            unitId
-        )
-
         if (!body.isArrivedBeforeDeparted()) {
             throw BadRequest("Arrival time must be before departure time for all entries")
         }
@@ -174,6 +172,13 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         val objectId =
             db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.UPDATE_STAFF_ATTENDANCES,
+                        unitId
+                    )
                     try {
                         val occupancyCoefficients =
                             body.staffAttendances.associate {
@@ -234,16 +239,16 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
         @RequestBody body: List<SingleDayStaffAttendanceUpsert>
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Unit.UPDATE_STAFF_ATTENDANCES,
-            unitId
-        )
-
         val staffAttendanceIds =
             db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.UPDATE_STAFF_ATTENDANCES,
+                        unitId
+                    )
                     val occupancyCoefficients =
                         body
                             .map { it.groupId }
@@ -290,14 +295,18 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         @PathVariable unitId: DaycareId,
         @PathVariable attendanceId: StaffAttendanceId
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Unit.DELETE_STAFF_ATTENDANCES,
-            unitId
-        )
-
-        db.connect { dbc -> dbc.transaction { tx -> tx.deleteStaffAttendance(attendanceId) } }
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.DELETE_STAFF_ATTENDANCES,
+                    unitId
+                )
+                tx.deleteStaffAttendance(attendanceId)
+            }
+        }
         Audit.StaffAttendanceDelete.log(targetId = attendanceId)
     }
 
@@ -309,15 +318,17 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         @PathVariable unitId: DaycareId,
         @PathVariable attendanceId: StaffAttendanceExternalId
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Unit.DELETE_STAFF_ATTENDANCES,
-            unitId
-        )
-
         db.connect { dbc ->
-            dbc.transaction { tx -> tx.deleteExternalStaffAttendance(attendanceId) }
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.DELETE_STAFF_ATTENDANCES,
+                    unitId
+                )
+                tx.deleteExternalStaffAttendance(attendanceId)
+            }
         }
         Audit.StaffAttendanceExternalDelete.log(targetId = attendanceId)
     }

@@ -46,11 +46,18 @@ class ServiceVoucherValueReportController(
         @RequestParam month: Int,
         @RequestParam(required = false) areaId: AreaId?
     ): ServiceVoucherReport {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_SERVICE_VOUCHER_REPORT)
         val authorization = acl.getAuthorizedUnits(user, setOf(UserRole.UNIT_SUPERVISOR))
 
         return db.connect { dbc ->
-            dbc.read { tx -> getServiceVoucherReport(tx, year, month, areaId, authorization.ids) }
+            dbc.read { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Global.READ_SERVICE_VOUCHER_REPORT
+                )
+                getServiceVoucherReport(tx, year, month, areaId, authorization.ids)
+            }
         }
     }
 
@@ -69,15 +76,16 @@ class ServiceVoucherValueReportController(
         @RequestParam year: Int,
         @RequestParam month: Int
     ): ServiceVoucherUnitReport {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Unit.READ_SERVICE_VOUCHER_VALUES_REPORT,
-            unitId
-        )
-
         return db.connect { dbc ->
             dbc.read { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.READ_SERVICE_VOUCHER_VALUES_REPORT,
+                    unitId
+                )
+
                 val snapshotTime = tx.getSnapshotDate(year, month)
                 val rows =
                     if (snapshotTime != null) {

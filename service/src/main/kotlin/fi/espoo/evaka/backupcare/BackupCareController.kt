@@ -40,10 +40,16 @@ class BackupCareController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable("childId") childId: ChildId
     ): ChildBackupCaresResponse {
-        accessControl.requirePermissionFor(user, clock, Action.Child.READ_BACKUP_CARE, childId)
         return ChildBackupCaresResponse(
             db.connect { dbc ->
                     dbc.read { tx ->
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Child.READ_BACKUP_CARE,
+                            childId
+                        )
                         val backupCares = tx.getBackupCaresForChild(childId)
                         val backupCareIds = backupCares.map { bc -> bc.id }
                         val permittedActions =
@@ -75,11 +81,17 @@ class BackupCareController(private val accessControl: AccessControl) {
         @PathVariable("childId") childId: ChildId,
         @RequestBody body: NewBackupCare
     ): BackupCareCreateResponse {
-        accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_BACKUP_CARE, childId)
         try {
             val id =
                 db.connect { dbc ->
                     dbc.transaction { tx ->
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Child.CREATE_BACKUP_CARE,
+                            childId
+                        )
                         if (!tx.childPlacementsHasConsecutiveRange(childId, body.period)) {
                             throw BadRequest(
                                 "The new backup care period is not contained within a placement"
@@ -111,10 +123,16 @@ class BackupCareController(private val accessControl: AccessControl) {
         @PathVariable("id") backupCareId: BackupCareId,
         @RequestBody body: BackupCareUpdateRequest
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.BackupCare.UPDATE, backupCareId)
         try {
             db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.BackupCare.UPDATE,
+                        backupCareId
+                    )
                     if (
                         !tx.childPlacementsHasConsecutiveRange(
                             tx.getBackupCareChildId(backupCareId),
@@ -207,9 +225,15 @@ class BackupCareController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable("id") backupCareId: BackupCareId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.BackupCare.DELETE, backupCareId)
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.BackupCare.DELETE,
+                    backupCareId
+                )
                 val backupCare = tx.getBackupCare(backupCareId)
                 if (backupCare != null) {
                     tx.clearCalendarEventAttendees(
@@ -235,10 +259,16 @@ class BackupCareController(private val accessControl: AccessControl) {
         startDate: LocalDate,
         @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate
     ): UnitBackupCaresResponse {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_BACKUP_CARE, daycareId)
         val backupCares =
             db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Unit.READ_BACKUP_CARE,
+                        daycareId
+                    )
                     it.getBackupCaresForDaycare(daycareId, FiniteDateRange(startDate, endDate))
                 }
             }

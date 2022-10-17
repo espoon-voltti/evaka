@@ -30,26 +30,38 @@ class IsCitizenTest : AccessControlTest() {
     fun `permits only strongly authenticated citizen if allowWeakLogin = false`() {
         val action = Action.Global.READ_HOLIDAY_PERIODS
         rules.add(action, IsCitizen(allowWeakLogin = false).any())
-        assertTrue(accessControl.hasPermissionFor(strongCitizen, clock, action))
-        assertFalse(accessControl.hasPermissionFor(weakCitizen, clock, action))
-        assertFalse(accessControl.hasPermissionFor(employee, clock, action))
+        db.read { tx ->
+            assertTrue(accessControl.hasPermissionFor(tx, strongCitizen, clock, action))
+            assertFalse(accessControl.hasPermissionFor(tx, weakCitizen, clock, action))
+            assertFalse(accessControl.hasPermissionFor(tx, employee, clock, action))
+        }
     }
 
     @Test
     fun `permits any citizen if allowWeakLogin = true`() {
         val action = Action.Global.READ_HOLIDAY_PERIODS
         rules.add(action, IsCitizen(allowWeakLogin = true).any())
-        assertTrue(accessControl.hasPermissionFor(strongCitizen, clock, action))
-        assertTrue(accessControl.hasPermissionFor(weakCitizen, clock, action))
-        assertFalse(accessControl.hasPermissionFor(employee, clock, action))
+        db.read { tx ->
+            assertTrue(accessControl.hasPermissionFor(tx, strongCitizen, clock, action))
+            assertTrue(accessControl.hasPermissionFor(tx, weakCitizen, clock, action))
+            assertFalse(accessControl.hasPermissionFor(tx, employee, clock, action))
+        }
     }
 
     @Test
     fun `self() permits only if the target is the same citizen user doing the action`() {
         val action = Action.Person.READ
         rules.add(action, IsCitizen(allowWeakLogin = false).self())
-        assertTrue(accessControl.hasPermissionFor(strongCitizen, clock, action, strongCitizen.id))
-        assertFalse(accessControl.hasPermissionFor(strongCitizen, clock, action, weakCitizen.id))
-        assertFalse(accessControl.hasPermissionFor(weakCitizen, clock, action, weakCitizen.id))
+        db.read { tx ->
+            assertTrue(
+                accessControl.hasPermissionFor(tx, strongCitizen, clock, action, strongCitizen.id)
+            )
+            assertFalse(
+                accessControl.hasPermissionFor(tx, strongCitizen, clock, action, weakCitizen.id)
+            )
+            assertFalse(
+                accessControl.hasPermissionFor(tx, weakCitizen, clock, action, weakCitizen.id)
+            )
+        }
     }
 }

@@ -32,15 +32,15 @@ class AssistanceNeedVoucherCoefficientController(private val accessControl: Acce
         @PathVariable childId: ChildId,
         @RequestBody body: AssistanceNeedVoucherCoefficientRequest
     ): AssistanceNeedVoucherCoefficient {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Child.CREATE_ASSISTANCE_NEED_VOUCHER_COEFFICIENT,
-            childId
-        )
-
         return db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.CREATE_ASSISTANCE_NEED_VOUCHER_COEFFICIENT,
+                        childId
+                    )
                     adjustExistingCoefficients(tx, childId, body.validityPeriod, null)
                     tx.insertAssistanceNeedVoucherCoefficient(childId, body)
                 }
@@ -60,14 +60,15 @@ class AssistanceNeedVoucherCoefficientController(private val accessControl: Acce
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<AssistanceNeedVoucherCoefficientResponse> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Child.READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS,
-            childId
-        )
         return db.connect { dbc ->
-                dbc.transaction { tx ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS,
+                        childId
+                    )
                     tx.getAssistanceNeedVoucherCoefficientsForChild(childId).map {
                         AssistanceNeedVoucherCoefficientResponse(
                             voucherCoefficient = it,
@@ -93,14 +94,15 @@ class AssistanceNeedVoucherCoefficientController(private val accessControl: Acce
         @PathVariable("id") assistanceNeedVoucherCoefficientId: AssistanceNeedVoucherCoefficientId,
         @RequestBody body: AssistanceNeedVoucherCoefficientRequest
     ): AssistanceNeedVoucherCoefficient {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.AssistanceNeedVoucherCoefficient.UPDATE,
-            assistanceNeedVoucherCoefficientId
-        )
         return db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedVoucherCoefficient.UPDATE,
+                        assistanceNeedVoucherCoefficientId
+                    )
                     adjustExistingCoefficients(
                         tx,
                         tx.getAssistanceNeedVoucherCoefficientById(
@@ -130,14 +132,15 @@ class AssistanceNeedVoucherCoefficientController(private val accessControl: Acce
         clock: EvakaClock,
         @PathVariable("id") assistanceNeedVoucherCoefficientId: AssistanceNeedVoucherCoefficientId
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.AssistanceNeedVoucherCoefficient.DELETE,
-            assistanceNeedVoucherCoefficientId
-        )
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.AssistanceNeedVoucherCoefficient.DELETE,
+                    assistanceNeedVoucherCoefficientId
+                )
                 if (
                     !tx.deleteAssistanceNeedVoucherCoefficient(assistanceNeedVoucherCoefficientId)
                 ) {

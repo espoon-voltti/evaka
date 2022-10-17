@@ -28,13 +28,14 @@ class PartnersInDifferentAddressReportController(
         user: AuthenticatedUser,
         clock: EvakaClock
     ): List<PartnersInDifferentAddressReportRow> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Global.READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT
-        )
         return db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT
+                    )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getPartnersInDifferentAddressRows(acl.getAuthorizedUnits(user), clock)
                 }

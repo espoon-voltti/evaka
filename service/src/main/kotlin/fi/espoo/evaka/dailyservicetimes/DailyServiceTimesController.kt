@@ -43,14 +43,15 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<DailyServiceTimesResponse> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Child.READ_DAILY_SERVICE_TIMES,
-            childId
-        )
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.READ_DAILY_SERVICE_TIMES,
+                        childId
+                    )
                     tx.getChildDailyServiceTimes(childId).map {
                         DailyServiceTimesResponse(
                             it,
@@ -76,12 +77,6 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         @PathVariable childId: ChildId,
         @RequestBody body: DailyServiceTimesValue
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Child.CREATE_DAILY_SERVICE_TIME,
-            childId
-        )
         val now = clock.now()
         val today = now.toLocalDate()
 
@@ -94,6 +89,13 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         val id =
             db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.CREATE_DAILY_SERVICE_TIME,
+                        childId
+                    )
                     updateOverlappingDailyServiceTimes(tx, childId, body.validityPeriod)
                     val id = tx.createChildDailyServiceTimes(childId, body)
                     deleteCollidingReservationsAndNotify(tx, now, id, childId, body.validityPeriod)
@@ -112,12 +114,18 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         @PathVariable id: DailyServiceTimesId,
         @RequestBody body: DailyServiceTimesValue
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.DailyServiceTime.UPDATE, id)
         val now = clock.now()
         val today = now.toLocalDate()
 
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.DailyServiceTime.UPDATE,
+                    id
+                )
                 val old = tx.getDailyServiceTimesValidity(id) ?: throw NotFound()
                 if (old.validityPeriod.start <= today) {
                     throw BadRequest(
@@ -156,7 +164,6 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         @PathVariable id: DailyServiceTimesId,
         @RequestBody body: DailyServiceTimesEndDate
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.DailyServiceTime.UPDATE, id)
         val now = clock.now()
         val today = now.toLocalDate()
 
@@ -166,6 +173,13 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
 
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.DailyServiceTime.UPDATE,
+                    id
+                )
                 val old = tx.getDailyServiceTimesValidity(id) ?: throw NotFound()
                 if ((old.validityPeriod.end ?: LocalDate.MAX) <= today) {
                     throw BadRequest(
@@ -199,12 +213,18 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: DailyServiceTimesId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.DailyServiceTime.DELETE, id)
         val now = clock.now()
         val today = now.toLocalDate()
 
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.DailyServiceTime.DELETE,
+                    id
+                )
                 val old = tx.getDailyServiceTimesValidity(id) ?: throw NotFound()
                 if (old.validityPeriod.start <= today) {
                     throw BadRequest(

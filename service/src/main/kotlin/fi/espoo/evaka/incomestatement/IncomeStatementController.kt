@@ -38,14 +38,15 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         @RequestParam page: Int,
         @RequestParam pageSize: Int
     ): Paged<IncomeStatement> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Person.READ_INCOME_STATEMENTS,
-            personId
-        )
         return db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Person.READ_INCOME_STATEMENTS,
+                        personId
+                    )
                     it.readIncomeStatementsForPerson(
                         personId = personId,
                         includeEmployeeContent = true,
@@ -71,15 +72,15 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         @RequestParam page: Int,
         @RequestParam pageSize: Int
     ): Paged<IncomeStatement> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Person.READ_INCOME_STATEMENTS,
-            PersonId(childId.raw)
-        )
-
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Person.READ_INCOME_STATEMENTS,
+                        PersonId(childId.raw)
+                    )
                     tx.readIncomeStatementsForPerson(
                         PersonId(childId.raw),
                         includeEmployeeContent = true,
@@ -104,14 +105,15 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         @PathVariable personId: PersonId,
         @PathVariable incomeStatementId: IncomeStatementId
     ): IncomeStatement {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Person.READ_INCOME_STATEMENTS,
-            personId
-        )
         return db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Person.READ_INCOME_STATEMENTS,
+                        personId
+                    )
                     it.readIncomeStatementForPerson(
                         personId,
                         incomeStatementId,
@@ -133,14 +135,15 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: SetIncomeStatementHandledBody
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.IncomeStatement.UPDATE_HANDLED,
-            incomeStatementId
-        )
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.IncomeStatement.UPDATE_HANDLED,
+                    incomeStatementId
+                )
                 tx.updateIncomeStatementHandled(
                     incomeStatementId,
                     body.handlerNote,
@@ -158,13 +161,14 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: SearchIncomeStatementsRequest
     ): Paged<IncomeStatementAwaitingHandler> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Global.FETCH_INCOME_STATEMENTS_AWAITING_HANDLER
-        )
         return db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.FETCH_INCOME_STATEMENTS_AWAITING_HANDLER
+                    )
                     it.fetchIncomeStatementsAwaitingHandler(
                         clock.now().toLocalDate(),
                         body.areas ?: emptyList(),
@@ -189,14 +193,17 @@ class IncomeStatementController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable guardianId: PersonId
     ): List<ChildBasicInfo> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Person.READ_INCOME_STATEMENTS,
-            guardianId
-        )
         return db.connect { dbc ->
-                dbc.read { it.getIncomeStatementChildrenByGuardian(guardianId) }
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Person.READ_INCOME_STATEMENTS,
+                        guardianId
+                    )
+                    it.getIncomeStatementChildrenByGuardian(guardianId)
+                }
             }
             .also {
                 Audit.GuardianChildrenRead.log(targetId = guardianId, mapOf("count" to it.size))

@@ -43,8 +43,17 @@ class EmployeeController(private val accessControl: AccessControl) {
 
     @GetMapping
     fun getEmployees(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<Employee> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_EMPLOYEES)
-        return db.connect { dbc -> dbc.read { it.getEmployees() } }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_EMPLOYEES
+                    )
+                    it.getEmployees()
+                }
+            }
             .sortedBy { it.email }
             .also { Audit.EmployeesRead.log() }
     }
@@ -55,12 +64,17 @@ class EmployeeController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock
     ): List<Employee> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Global.READ_FINANCE_DECISION_HANDLERS
-        )
-        return db.connect { dbc -> dbc.read { it.getFinanceDecisionHandlers() } }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_FINANCE_DECISION_HANDLERS
+                    )
+                    it.getFinanceDecisionHandlers()
+                }
+            }
             .sortedBy { it.email }
             .also { Audit.EmployeesRead.log() }
     }
@@ -72,8 +86,13 @@ class EmployeeController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable(value = "id") id: EmployeeId
     ): Employee {
-        accessControl.requirePermissionFor(user, clock, Action.Employee.READ, id)
-        return db.connect { dbc -> dbc.read { it.getEmployee(id) } ?: throw NotFound() }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(it, user, clock, Action.Employee.READ, id)
+                    it.getEmployee(id)
+                }
+                    ?: throw NotFound()
+            }
             .also { Audit.EmployeeRead.log(targetId = id) }
     }
 
@@ -87,10 +106,12 @@ class EmployeeController(private val accessControl: AccessControl) {
         @PathVariable(value = "id") id: EmployeeId,
         @RequestBody body: EmployeeUpdate
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Employee.UPDATE, id)
-
         db.connect { dbc ->
-            dbc.transaction { it.updateEmployee(id = id, globalRoles = body.globalRoles) }
+            dbc.transaction {
+                accessControl.requirePermissionFor(it, user, clock, Action.Employee.UPDATE, id)
+
+                it.updateEmployee(id = id, globalRoles = body.globalRoles)
+            }
         }
         Audit.EmployeeUpdate.log(targetId = id, args = mapOf("globalRoles" to body.globalRoles))
     }
@@ -102,10 +123,18 @@ class EmployeeController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable(value = "id") id: EmployeeId
     ): EmployeeWithDaycareRoles {
-        accessControl.requirePermissionFor(user, clock, Action.Employee.READ_DETAILS, id)
-
         return db.connect { dbc ->
-                dbc.read { it.getEmployeeWithRoles(id) } ?: throw NotFound("employee $id not found")
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Employee.READ_DETAILS,
+                        id
+                    )
+                    it.getEmployeeWithRoles(id)
+                }
+                    ?: throw NotFound("employee $id not found")
             }
             .also { Audit.EmployeeRead.log(targetId = id) }
     }
@@ -117,8 +146,17 @@ class EmployeeController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody employee: NewEmployee
     ): Employee {
-        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_EMPLOYEE)
-        return db.connect { dbc -> dbc.transaction { it.createEmployee(employee) } }
+        return db.connect { dbc ->
+                dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.CREATE_EMPLOYEE
+                    )
+                    it.createEmployee(employee)
+                }
+            }
             .also { Audit.EmployeeCreate.log(targetId = it.id) }
     }
 
@@ -129,8 +167,12 @@ class EmployeeController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable(value = "id") id: EmployeeId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Employee.DELETE, id)
-        db.connect { dbc -> dbc.transaction { it.deleteEmployee(id) } }
+        db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(it, user, clock, Action.Employee.DELETE, id)
+                it.deleteEmployee(id)
+            }
+        }
         Audit.EmployeeDelete.log(targetId = id)
     }
 
@@ -153,9 +195,14 @@ class EmployeeController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: SearchEmployeeRequest
     ): Paged<EmployeeWithDaycareRoles> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.SEARCH_EMPLOYEES)
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.SEARCH_EMPLOYEES
+                    )
                     getEmployeesPaged(
                         tx,
                         body.page ?: 1,

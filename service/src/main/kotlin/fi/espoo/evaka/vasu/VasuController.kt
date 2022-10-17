@@ -52,10 +52,15 @@ class VasuController(
         @PathVariable childId: ChildId,
         @RequestBody body: CreateDocumentRequest
     ): VasuDocumentId {
-        accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_VASU_DOCUMENT, childId)
-
         return db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.CREATE_VASU_DOCUMENT,
+                        childId
+                    )
                     if (
                         tx.getVasuDocumentSummaries(childId).any {
                             it.documentState != VasuDocumentState.CLOSED
@@ -89,10 +94,15 @@ class VasuController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<VasuDocumentSummaryWithPermittedActions> {
-        accessControl.requirePermissionFor(user, clock, Action.Child.READ_VASU_DOCUMENT, childId)
-
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.READ_VASU_DOCUMENT,
+                        childId
+                    )
                     val summaries = tx.getVasuDocumentSummaries(childId)
                     val permittedActions =
                         accessControl.getPermittedActions<VasuDocumentId, Action.VasuDocument>(
@@ -131,10 +141,15 @@ class VasuController(
         clock: EvakaClock,
         @PathVariable id: VasuDocumentId
     ): VasuDocumentWithPermittedActions {
-        accessControl.requirePermissionFor(user, clock, Action.VasuDocument.READ, id)
-
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.VasuDocument.READ,
+                        id
+                    )
                     val doc =
                         tx.getVasuDocumentMaster(id) ?: throw NotFound("template $id not found")
 
@@ -193,10 +208,9 @@ class VasuController(
         @PathVariable id: VasuDocumentId,
         @RequestBody body: UpdateDocumentRequest
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.VasuDocument.UPDATE, id)
-
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.VasuDocument.UPDATE, id)
                 val vasu = tx.getVasuDocumentMaster(id) ?: throw NotFound("vasu $id not found")
                 validateVasuDocumentUpdate(vasu, body)
 
@@ -310,55 +324,61 @@ class VasuController(
                 listOf(body.eventType)
             }
 
-        events.forEach { eventType ->
-            when (eventType) {
-                PUBLISHED ->
-                    accessControl.requirePermissionFor(
-                        user,
-                        clock,
-                        Action.VasuDocument.EVENT_PUBLISHED,
-                        id
-                    )
-                MOVED_TO_READY ->
-                    accessControl.requirePermissionFor(
-                        user,
-                        clock,
-                        Action.VasuDocument.EVENT_MOVED_TO_READY,
-                        id
-                    )
-                RETURNED_TO_READY ->
-                    accessControl.requirePermissionFor(
-                        user,
-                        clock,
-                        Action.VasuDocument.EVENT_RETURNED_TO_READY,
-                        id
-                    )
-                MOVED_TO_REVIEWED ->
-                    accessControl.requirePermissionFor(
-                        user,
-                        clock,
-                        Action.VasuDocument.EVENT_MOVED_TO_REVIEWED,
-                        id
-                    )
-                RETURNED_TO_REVIEWED ->
-                    accessControl.requirePermissionFor(
-                        user,
-                        clock,
-                        Action.VasuDocument.EVENT_RETURNED_TO_REVIEWED,
-                        id
-                    )
-                MOVED_TO_CLOSED ->
-                    accessControl.requirePermissionFor(
-                        user,
-                        clock,
-                        Action.VasuDocument.EVENT_MOVED_TO_CLOSED,
-                        id
-                    )
-            }.exhaust()
-        }
-
         db.connect { dbc ->
             dbc.transaction { tx ->
+                events.forEach { eventType ->
+                    when (eventType) {
+                        PUBLISHED ->
+                            accessControl.requirePermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.VasuDocument.EVENT_PUBLISHED,
+                                id
+                            )
+                        MOVED_TO_READY ->
+                            accessControl.requirePermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.VasuDocument.EVENT_MOVED_TO_READY,
+                                id
+                            )
+                        RETURNED_TO_READY ->
+                            accessControl.requirePermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.VasuDocument.EVENT_RETURNED_TO_READY,
+                                id
+                            )
+                        MOVED_TO_REVIEWED ->
+                            accessControl.requirePermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.VasuDocument.EVENT_MOVED_TO_REVIEWED,
+                                id
+                            )
+                        RETURNED_TO_REVIEWED ->
+                            accessControl.requirePermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.VasuDocument.EVENT_RETURNED_TO_REVIEWED,
+                                id
+                            )
+                        MOVED_TO_CLOSED ->
+                            accessControl.requirePermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.VasuDocument.EVENT_MOVED_TO_CLOSED,
+                                id
+                            )
+                    }.exhaust()
+                }
+
                 val currentState =
                     tx.getVasuDocumentMaster(id)?.documentState
                         ?: throw NotFound("Vasu was not found")

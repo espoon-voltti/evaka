@@ -39,18 +39,40 @@ class AttachmentAccessControlTest : AccessControlTest() {
 
         val uploaderEmployee = createTestEmployee(emptySet())
         val employeeAttachmentId = insertApplicationAttachment(uploaderEmployee)
-        assertTrue(
-            accessControl.hasPermissionFor(permittedEmployee, clock, action, employeeAttachmentId)
-        )
-        assertFalse(
-            accessControl.hasPermissionFor(deniedEmployee, clock, action, employeeAttachmentId)
-        )
+        db.read { tx ->
+            assertTrue(
+                accessControl.hasPermissionFor(
+                    tx,
+                    permittedEmployee,
+                    clock,
+                    action,
+                    employeeAttachmentId
+                )
+            )
+            assertFalse(
+                accessControl.hasPermissionFor(
+                    tx,
+                    deniedEmployee,
+                    clock,
+                    action,
+                    employeeAttachmentId
+                )
+            )
+        }
 
         val uploaderCitizen = createTestCitizen(CitizenAuthLevel.STRONG)
         val citizenAttachmentId = insertApplicationAttachment(uploaderCitizen)
-        assertFalse(
-            accessControl.hasPermissionFor(permittedEmployee, clock, action, citizenAttachmentId)
-        )
+        db.read { tx ->
+            assertFalse(
+                accessControl.hasPermissionFor(
+                    tx,
+                    permittedEmployee,
+                    clock,
+                    action,
+                    citizenAttachmentId
+                )
+            )
+        }
     }
 
     @Test
@@ -61,16 +83,23 @@ class AttachmentAccessControlTest : AccessControlTest() {
         val otherCitizen = createTestCitizen(CitizenAuthLevel.STRONG)
 
         val attachmentId = insertApplicationAttachment(uploaderCitizen)
-        assertTrue(accessControl.hasPermissionFor(uploaderCitizen, clock, action, attachmentId))
-        assertFalse(accessControl.hasPermissionFor(otherCitizen, clock, action, attachmentId))
-        assertFalse(
-            accessControl.hasPermissionFor(
-                uploaderCitizen.copy(authLevel = CitizenAuthLevel.WEAK),
-                clock,
-                action,
-                attachmentId
+        db.read { tx ->
+            assertTrue(
+                accessControl.hasPermissionFor(tx, uploaderCitizen, clock, action, attachmentId)
             )
-        )
+            assertFalse(
+                accessControl.hasPermissionFor(tx, otherCitizen, clock, action, attachmentId)
+            )
+            assertFalse(
+                accessControl.hasPermissionFor(
+                    tx,
+                    uploaderCitizen.copy(authLevel = CitizenAuthLevel.WEAK),
+                    clock,
+                    action,
+                    attachmentId
+                )
+            )
+        }
     }
 
     private fun insertApplicationAttachment(user: AuthenticatedUser) =

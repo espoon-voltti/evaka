@@ -45,14 +45,15 @@ class AssistanceNeedDecisionController(
         @PathVariable childId: ChildId,
         @RequestBody body: AssistanceNeedDecisionRequest
     ): AssistanceNeedDecision {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Child.CREATE_ASSISTANCE_NEED_DECISION,
-            childId
-        )
         return db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.CREATE_ASSISTANCE_NEED_DECISION,
+                        childId
+                    )
                     var decision: AssistanceNeedDecisionForm =
                         body.decision.copy(
                             status = AssistanceNeedDecisionStatus.DRAFT,
@@ -95,9 +96,15 @@ class AssistanceNeedDecisionController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ): AssistanceNeedDecisionResponse {
-        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.READ, id)
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedDecision.READ,
+                        id
+                    )
                     val decision = tx.getAssistanceNeedDecisionById(id)
 
                     AssistanceNeedDecisionResponse(
@@ -118,9 +125,15 @@ class AssistanceNeedDecisionController(
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: AssistanceNeedDecisionRequest
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.UPDATE, id)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedDecision.UPDATE,
+                        id
+                    )
                     val decision = tx.getAssistanceNeedDecisionById(id)
 
                     if (
@@ -163,9 +176,15 @@ class AssistanceNeedDecisionController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.SEND, id)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedDecision.SEND,
+                        id
+                    )
                     val decision = tx.getAssistanceNeedDecisionById(id)
 
                     if (
@@ -209,14 +228,15 @@ class AssistanceNeedDecisionController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<AssistanceNeedDecisionBasicsResponse> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Child.READ_ASSISTANCE_NEED_DECISIONS,
-            childId
-        )
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.READ_ASSISTANCE_NEED_DECISIONS,
+                        childId
+                    )
                     val decisions = tx.getAssistanceNeedDecisionsByChildId(childId)
                     val permittedActions =
                         accessControl.getPermittedActions<
@@ -250,9 +270,15 @@ class AssistanceNeedDecisionController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.DELETE, id)
         return db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedDecision.DELETE,
+                        id
+                    )
                     if (!tx.deleteAssistanceNeedDecision(id)) {
                         throw NotFound(
                             "Assistance need decision $id cannot found or cannot be deleted",
@@ -272,14 +298,20 @@ class AssistanceNeedDecisionController(
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: DecideAssistanceNeedDecisionRequest
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedDecision.DECIDE, id)
-
         if (body.status == AssistanceNeedDecisionStatus.DRAFT) {
             throw BadRequest("Assistance need decisions cannot be decided to be a draft")
         }
 
         return db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedDecision.DECIDE,
+                        id
+                    )
+
                     val decision = tx.getAssistanceNeedDecisionById(id)
 
                     if (
@@ -343,15 +375,17 @@ class AssistanceNeedDecisionController(
         clock: EvakaClock,
         @PathVariable id: AssistanceNeedDecisionId
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.AssistanceNeedDecision.MARK_AS_OPENED,
-            id
-        )
-
         return db.connect { dbc ->
-                dbc.transaction { tx -> tx.markAssistanceNeedDecisionAsOpened(id) }
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedDecision.MARK_AS_OPENED,
+                        id
+                    )
+                    tx.markAssistanceNeedDecisionAsOpened(id)
+                }
             }
             .also { Audit.ChildAssistanceNeedDecisionOpened.log(targetId = id) }
     }
@@ -364,15 +398,15 @@ class AssistanceNeedDecisionController(
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: UpdateDecisionMakerForAssistanceNeedDecisionRequest
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.AssistanceNeedDecision.UPDATE_DECISION_MAKER,
-            id
-        )
-
         return db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedDecision.UPDATE_DECISION_MAKER,
+                        id
+                    )
                     val decision = tx.getAssistanceNeedDecisionById(id)
 
                     if (
@@ -410,14 +444,15 @@ class AssistanceNeedDecisionController(
         user: AuthenticatedUser,
         db: Database
     ): List<Employee> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.AssistanceNeedDecision.READ_DECISION_MAKER_OPTIONS,
-            id
-        )
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedDecision.READ_DECISION_MAKER_OPTIONS,
+                        id
+                    )
                     assistanceNeedDecisionService.getDecisionMakerOptions(
                         tx,
                         id,

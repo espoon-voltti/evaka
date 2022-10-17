@@ -32,18 +32,22 @@ class StaticActionRuleTest : AccessControlTest() {
     fun `IsCitizen permits only strongly authenticated citizen if allowWeakLogin = false`() {
         val action = Action.Global.READ_HOLIDAY_PERIODS
         rules.add(action, IsCitizen(allowWeakLogin = false).any())
-        assertTrue(accessControl.hasPermissionFor(strongCitizen, clock, action))
-        assertFalse(accessControl.hasPermissionFor(weakCitizen, clock, action))
-        assertFalse(accessControl.hasPermissionFor(employee, clock, action))
+        db.read { tx ->
+            assertTrue(accessControl.hasPermissionFor(tx, strongCitizen, clock, action))
+            assertFalse(accessControl.hasPermissionFor(tx, weakCitizen, clock, action))
+            assertFalse(accessControl.hasPermissionFor(tx, employee, clock, action))
+        }
     }
 
     @Test
     fun `IsCitizen permits any citizen if allowWeakLogin = true`() {
         val action = Action.Global.READ_HOLIDAY_PERIODS
         rules.add(action, IsCitizen(allowWeakLogin = true).any())
-        assertTrue(accessControl.hasPermissionFor(strongCitizen, clock, action))
-        assertTrue(accessControl.hasPermissionFor(weakCitizen, clock, action))
-        assertFalse(accessControl.hasPermissionFor(employee, clock, action))
+        db.read { tx ->
+            assertTrue(accessControl.hasPermissionFor(tx, strongCitizen, clock, action))
+            assertTrue(accessControl.hasPermissionFor(tx, weakCitizen, clock, action))
+            assertFalse(accessControl.hasPermissionFor(tx, employee, clock, action))
+        }
     }
 
     @Test
@@ -58,7 +62,9 @@ class StaticActionRuleTest : AccessControlTest() {
         val deniedEmployee =
             AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.DIRECTOR))
 
-        assertTrue(accessControl.hasPermissionFor(permittedEmployee, clock, action))
-        assertFalse(accessControl.hasPermissionFor(deniedEmployee, clock, action))
+        db.read { tx ->
+            assertTrue(accessControl.hasPermissionFor(tx, permittedEmployee, clock, action))
+            assertFalse(accessControl.hasPermissionFor(tx, deniedEmployee, clock, action))
+        }
     }
 }

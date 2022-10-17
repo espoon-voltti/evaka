@@ -39,10 +39,10 @@ class PatuReportingController(
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Global.SEND_PATU_REPORT)
+        val range = DateRange(from, to)
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val range = DateRange(from, to)
+                accessControl.requirePermissionFor(tx, user, clock, Action.Global.SEND_PATU_REPORT)
                 logger.info("Scheduling patu report $range")
                 asyncJobRunner.plan(
                     tx,

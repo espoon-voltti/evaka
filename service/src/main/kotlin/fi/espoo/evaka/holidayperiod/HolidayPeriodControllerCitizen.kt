@@ -41,8 +41,17 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): List<HolidayPeriod> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_PERIODS)
-        return db.connect { dbc -> dbc.read { it.getHolidayPeriods() } }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_HOLIDAY_PERIODS
+                    )
+                    it.getHolidayPeriods()
+                }
+            }
             .also { Audit.HolidayPeriodsList.log(args = mapOf("count" to it.size)) }
     }
 
@@ -52,13 +61,14 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): List<ActiveQuestionnaire> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Global.READ_ACTIVE_HOLIDAY_QUESTIONNAIRES
-        )
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.READ_ACTIVE_HOLIDAY_QUESTIONNAIRES
+                    )
                     val activeQuestionnaire =
                         tx.getActiveFixedPeriodQuestionnaire(clock.today()) ?: return@read listOf()
 
@@ -103,15 +113,16 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
         @RequestBody body: FixedPeriodsBody
     ) {
         val childIds = body.fixedPeriods.keys
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Child.CREATE_HOLIDAY_ABSENCE,
-            childIds
-        )
 
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Citizen.Child.CREATE_HOLIDAY_ABSENCE,
+                    childIds
+                )
                 val questionnaire =
                     tx.getFixedPeriodQuestionnaire(id)?.also {
                         if (!it.active.includes(clock.today()))

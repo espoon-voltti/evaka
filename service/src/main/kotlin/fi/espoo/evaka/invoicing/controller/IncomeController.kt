@@ -64,11 +64,17 @@ class IncomeController(
         clock: EvakaClock,
         @RequestParam personId: PersonId
     ): Wrapper<List<IncomeWithPermittedActions>> {
-        accessControl.requirePermissionFor(user, clock, Action.Person.READ_INCOME, personId)
-
         val incomes =
             db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Person.READ_INCOME,
+                        personId
+                    )
+
                     val incomes = tx.getIncomesForPerson(mapper, incomeTypesProvider, personId)
                     val permittedActions =
                         accessControl.getPermittedActions<IncomeId, Action.Income>(
@@ -99,12 +105,6 @@ class IncomeController(
         clock: EvakaClock,
         @RequestBody income: Income
     ): IncomeId {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Person.CREATE_INCOME,
-            income.personId
-        )
         val period =
             try {
                 DateRange(income.validFrom, income.validTo)
@@ -114,6 +114,14 @@ class IncomeController(
 
         return db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Person.CREATE_INCOME,
+                        income.personId
+                    )
+
                     val id = IncomeId(UUID.randomUUID())
                     val incomeTypes = incomeTypesProvider.get()
                     val validIncome = validateIncome(income.copy(id = id), incomeTypes)
@@ -154,10 +162,10 @@ class IncomeController(
         @PathVariable incomeId: IncomeId,
         @RequestBody income: Income
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Income.UPDATE, incomeId)
-
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.Income.UPDATE, incomeId)
+
                 val existing = tx.getIncome(mapper, incomeTypesProvider, incomeId)
                 val incomeTypes = incomeTypesProvider.get()
                 val validIncome =
@@ -205,10 +213,10 @@ class IncomeController(
         clock: EvakaClock,
         @PathVariable incomeId: IncomeId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Income.DELETE, incomeId)
-
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.Income.DELETE, incomeId)
+
                 val existing =
                     tx.getIncome(mapper, incomeTypesProvider, incomeId)
                         ?: throw BadRequest("Income not found")
@@ -236,8 +244,16 @@ class IncomeController(
     }
 
     @GetMapping("/types")
-    fun getTypes(user: AuthenticatedUser, clock: EvakaClock): Map<String, IncomeType> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_INCOME_TYPES)
+    fun getTypes(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock
+    ): Map<String, IncomeType> {
+        db.connect { dbc ->
+            dbc.read {
+                accessControl.requirePermissionFor(it, user, clock, Action.Global.READ_INCOME_TYPES)
+            }
+        }
         return incomeTypesProvider.get()
     }
 }

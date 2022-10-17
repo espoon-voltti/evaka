@@ -45,12 +45,17 @@ class OccupancyReportController(
         @RequestParam year: Int,
         @RequestParam month: Int
     ): List<OccupancyUnitReportResultRow> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_OCCUPANCY_REPORT)
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.READ_OCCUPANCY_REPORT
+                    )
                     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     tx.calculateUnitOccupancyReport(
                         clock.today(),
@@ -90,12 +95,17 @@ class OccupancyReportController(
         @RequestParam year: Int,
         @RequestParam month: Int
     ): List<OccupancyGroupReportResultRow> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_OCCUPANCY_REPORT)
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.READ_OCCUPANCY_REPORT
+                    )
                     tx.calculateGroupOccupancyReport(
                         clock.today(),
                         careAreaId,
