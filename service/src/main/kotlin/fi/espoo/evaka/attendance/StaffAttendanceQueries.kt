@@ -422,41 +422,49 @@ fun Database.Transaction.addMissingStaffAttendanceDepartures(now: HelsinkiDateTi
     createUpdate(
         // language=SQL
         """ 
-                    WITH missing_planned_departures AS (
-                        SELECT realtime.id, plan.end_time AS planned_departure
-                        FROM staff_attendance_realtime realtime
-                              JOIN staff_attendance_plan plan ON realtime.employee_id = plan.employee_id
-                                    AND realtime.departed IS NULL
-                                    AND realtime.arrived BETWEEN plan.start_time AND plan.end_time
-                                    AND plan.end_time < :now 
-                    )
-                    UPDATE staff_attendance_realtime realtime
-                    SET departed = missing_planned_departures.planned_departure
-                    FROM missing_planned_departures WHERE realtime.id = missing_planned_departures.id
-        """.trimIndent()
+WITH missing_planned_departures AS (
+    SELECT realtime.id, plan.end_time AS planned_departure
+    FROM staff_attendance_realtime realtime
+          JOIN staff_attendance_plan plan ON realtime.employee_id = plan.employee_id
+                AND realtime.departed IS NULL
+                AND realtime.arrived BETWEEN plan.start_time AND plan.end_time
+                AND plan.end_time < :now
+)
+UPDATE staff_attendance_realtime realtime
+SET departed = missing_planned_departures.planned_departure
+FROM missing_planned_departures WHERE realtime.id = missing_planned_departures.id
+"""
     )
         .bind("now", now)
+        .execute()
+
+    val defaultDepartureTime = now.minusDays(1).withTime(LocalTime.of(18, 0))
+    createUpdate(
+        // language=SQL
+        """
+UPDATE staff_attendance_realtime a
+SET departed = :defaultDepartureTime
+FROM daycare_group g
+JOIN daycare d ON g.daycare_id = d.id
+WHERE a.departed IS NULL AND a.arrived < :startOfDay AND a.group_id = g.id AND NOT d.round_the_clock
+        """.trimIndent()
+    )
+        .bind("startOfDay", now.atStartOfDay())
+        .bind("defaultDepartureTime", defaultDepartureTime)
         .execute()
 
     createUpdate(
         // language=SQL
         """
-                    UPDATE staff_attendance_realtime
-                    SET departed = :now
-                    WHERE departed IS NULL AND arrived + interval '1 day' < :now
+UPDATE staff_attendance_external a
+SET departed = :defaultDepartureTime
+FROM daycare_group g
+JOIN daycare d ON g.daycare_id = d.id
+WHERE a.departed IS NULL AND a.arrived < :startOfDay AND a.group_id = g.id AND NOT d.round_the_clock
         """.trimIndent()
     )
-        .bind("now", now)
-        .execute()
-
-    createUpdate(
-        // language=SQL
-        """
-                    UPDATE staff_attendance_external
-                    SET departed = :now
-                    WHERE departed IS NULL AND arrived + interval '1 day' < :now
-        """.trimIndent()
-    ).bind("now", now)
+        .bind("startOfDay", now.atStartOfDay())
+        .bind("defaultDepartureTime", defaultDepartureTime)
         .execute()
 }
 
