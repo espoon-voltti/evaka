@@ -137,6 +137,7 @@ class IncomeStatementController(
                     body.providerTypes ?: emptyList(),
                     body.sentStartDate,
                     body.sentEndDate,
+                    body.placementValidDate,
                     body.page,
                     body.pageSize,
                     body.sortBy ?: IncomeStatementSortParam.CREATED,
@@ -174,7 +175,8 @@ data class SearchIncomeStatementsRequest(
     val areas: List<String>? = emptyList(),
     val providerTypes: List<ProviderType>? = emptyList(),
     val sentStartDate: LocalDate? = null,
-    val sentEndDate: LocalDate? = null
+    val sentEndDate: LocalDate? = null,
+    val placementValidDate: LocalDate? = null
 )
 
 enum class IncomeStatementSortParam {

@@ -535,6 +535,7 @@ WHERE handler_id IS NULL
 AND (cardinality(:areas) = 0 OR ca.short_name = ANY(:areas))
 AND (cardinality(:providerTypes) = 0 OR d.provider_type = ANY(:providerTypes::unit_provider_type[]))
 AND daterange(:sentStartDate, :sentEndDate, '[]') @> i.created::date
+AND (:placementValidDate IS NULL OR daterange(p.start_date, p.end_date, '[]') @> :placementValidDate)
 """
 
 fun Database.Read.fetchIncomeStatementsAwaitingHandler(
@@ -543,6 +544,7 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
     providerTypes: List<ProviderType>,
     sentStartDate: LocalDate?,
     sentEndDate: LocalDate?,
+    placementValidDate: LocalDate?,
     page: Int,
     pageSize: Int,
     sortBy: IncomeStatementSortParam,
@@ -554,6 +556,7 @@ fun Database.Read.fetchIncomeStatementsAwaitingHandler(
         .bind("providerTypes", providerTypes)
         .bind("sentStartDate", sentStartDate)
         .bind("sentEndDate", sentEndDate)
+        .bind("placementValidDate", placementValidDate)
         .mapTo<Int>()
         .one()
     val sortColumn = when (sortBy) {
@@ -572,6 +575,7 @@ LIMIT :pageSize OFFSET :offset
         .bind("providerTypes", providerTypes)
         .bind("sentStartDate", sentStartDate)
         .bind("sentEndDate", sentEndDate)
+        .bind("placementValidDate", placementValidDate)
         .bind("pageSize", pageSize)
         .bind("offset", (page - 1) * pageSize)
         .mapTo<IncomeStatementAwaitingHandler>()
