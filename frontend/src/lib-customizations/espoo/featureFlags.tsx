@@ -86,7 +86,7 @@ const features: Features = {
       assistanceNeedDecisions: true,
       assistanceNeedDecisionsLanguageSelect: true,
       staffAttendanceTypes: false,
-      fosterParents: false
+      fosterParents: true
     }
   }
 }
