@@ -1149,7 +1149,7 @@ const sv: Translations = {
         secondGuardianNotFound:
           'Baserat på information från Befolkningsdatasystemet har barnet ingen andra vårdnadshavare',
         secondGuardianInfoPreschoolSeparated:
-          'Enligt våra uppgifter bor barnets andra vårdnadshavare på en annan adress. Du ska avtala om ansökan om småbarnspedagogik med en annan vårdnadshavare.',
+          'Enligt våra uppgifter bor barnets andra vårdnadshavare på en annan adress.',
         secondGuardianAgreementStatus: {
           label:
             'Har du kommit överens om ansökan med den andra vårdnadshavaren?',

@@ -1136,7 +1136,7 @@ export default {
         secondGuardianNotFound:
           'Väestötietojärjestelmästä saatujen tietojen mukaan lapsella ei ole toista huoltajaa',
         secondGuardianInfoPreschoolSeparated:
-          'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä. Tietojemme mukaan lapsen toinen huoltaja asuu eri osoitteessa. Esiopetukseen ilmoittautumisesta tulee sopia yhdessä toisen huoltajan kanssa.',
+          'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä. Tietojemme mukaan lapsen toinen huoltaja asuu eri osoitteessa.',
         secondGuardianAgreementStatus: {
           label:
             'Oletteko sopineet hakemuksen tekemisestä yhdessä toisen huoltajan kanssa?',
