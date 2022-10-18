@@ -98,5 +98,8 @@ data class FeatureConfig(
     val requestedStartUpperLimit: Int,
 
     /** Control whether to use partial absence thresholds in child attendance departure **/
-    val partialAbsenceThresholdsEnabled: Boolean
+    val partialAbsenceThresholdsEnabled: Boolean,
+
+    /** Post office for the city. Used for external children filter in finance decision searches **/
+    val postOffice: String
 )

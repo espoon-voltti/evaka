@@ -270,6 +270,7 @@ fun Database.Transaction.deleteFeeDecisions(ids: List<FeeDecisionId>) {
 
 fun Database.Read.searchFeeDecisions(
     clock: EvakaClock,
+    postOffice: String,
     page: Int,
     pageSize: Int,
     sortBy: FeeDecisionSortParam,
@@ -303,7 +304,7 @@ fun Database.Read.searchFeeDecisions(
         Binding.of("status", statuses),
         Binding.of("area", areas),
         Binding.of("unit", unit),
-        Binding.of("espooPostOffice", "ESPOO"),
+        Binding.of("postOffice", postOffice),
         Binding.of("start_date", startDate),
         Binding.of("end_date", endDate),
         Binding.of("finance_decision_handler", financeDecisionHandlerId),
@@ -332,7 +333,7 @@ fun Database.Read.searchFeeDecisions(
         if (areas.isNotEmpty()) "youngest_child.area = ANY(:area)" else null,
         if (unit != null) "part.placement_unit_id = :unit" else null,
         if (withNullHours) "part.service_need_missing" else null,
-        if (havingExternalChildren) "child.post_office <> '' AND child.post_office NOT ILIKE :espooPostOffice" else null,
+        if (havingExternalChildren) "child.post_office <> '' AND child.post_office NOT ILIKE :postOffice" else null,
         if (retroactiveOnly) "lower(decision.valid_during) < date_trunc('month', COALESCE(decision.approved_at, :now))" else null,
         if (numberParamsRaw.isNotEmpty()) numberQuery else null,
         if (searchTextWithoutNumbers.isNotBlank()) freeTextQuery else null,

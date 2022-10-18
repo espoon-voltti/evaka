@@ -94,6 +94,7 @@ class FeeDecisionController(
             dbc.read { tx ->
                 tx.searchFeeDecisions(
                     clock,
+                    featureConfig.postOffice,
                     body.page,
                     body.pageSize,
                     body.sortBy ?: FeeDecisionSortParam.STATUS,
