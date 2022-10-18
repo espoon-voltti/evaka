@@ -284,6 +284,7 @@ fun Database.Transaction.deleteValueDecisions(ids: List<VoucherValueDecisionId>)
 
 fun Database.Read.searchValueDecisions(
     evakaClock: EvakaClock,
+    postOffice: String,
     page: Int,
     pageSize: Int,
     sortBy: VoucherValueDecisionSortParam,
@@ -305,22 +306,33 @@ fun Database.Read.searchValueDecisions(
             VoucherValueDecisionSortParam.STATUS -> "decision.status"
         }
 
+    val retroactiveOnly =
+        distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.RETROACTIVE)
+
     val params =
-        listOf(
+        listOfNotNull(
             Binding.of("page", page),
             Binding.of("pageSize", pageSize),
             Binding.of("status", status),
             Binding.of("areas", areas),
             Binding.of("unit", unit),
+            Binding.of("postOffice", postOffice),
             Binding.of("start_date", startDate),
             Binding.of("end_date", endDate),
             Binding.of("financeDecisionHandlerId", financeDecisionHandlerId),
             Binding.of("difference", difference),
-            Binding.of("firstPlacementStartDate", evakaClock.now().toLocalDate().withDayOfMonth(1))
+            Binding.of("firstPlacementStartDate", evakaClock.now().toLocalDate().withDayOfMonth(1)),
+            if (retroactiveOnly) Binding.of("now", evakaClock.now()) else null
         )
 
     val (freeTextQuery, freeTextParams) =
         freeTextSearchQuery(listOf("head", "partner", "child"), searchTerms)
+
+    val withNullHours =
+        distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.UNCONFIRMED_HOURS)
+
+    val havingExternalChildren =
+        distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.EXTERNAL_CHILD)
 
     val noStartingPlacements =
         distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.NO_STARTING_PLACEMENTS)
@@ -356,6 +368,13 @@ NOT EXISTS (
                 "placement_unit.finance_decision_handler = :financeDecisionHandlerId"
             else null,
             if (difference.isNotEmpty()) "decision.difference && :difference" else null,
+            if (withNullHours) "service_need.option_id IS NULL" else null,
+            if (havingExternalChildren)
+                "child.post_office <> '' AND child.post_office NOT ILIKE :postOffice"
+            else null,
+            if (retroactiveOnly)
+                "decision.valid_from < date_trunc('month', COALESCE(decision.approved_at, :now))"
+            else null,
             if (noStartingPlacements) noStartingPlacementsQuery else null,
             if (maxFeeAccepted)
                 "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')"
@@ -394,6 +413,8 @@ LEFT JOIN person AS child ON decision.child_id = child.id
 LEFT JOIN person AS partner ON decision.partner_id = partner.id
 LEFT JOIN daycare AS placement_unit ON placement_unit.id = decision.placement_unit_id
 LEFT JOIN care_area AS area ON placement_unit.care_area_id = area.id
+LEFT JOIN placement ON placement.child_id = child.id AND decision.valid_from BETWEEN placement.start_date AND placement.end_date
+LEFT JOIN service_need ON service_need.placement_id = placement.id AND decision.valid_from BETWEEN service_need.start_date AND service_need.end_date
 WHERE
     decision.status = :status::voucher_value_decision_status
     AND $freeTextQuery

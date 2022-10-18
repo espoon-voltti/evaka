@@ -90,6 +90,7 @@ class VoucherValueDecisionController(
                 dbc.read { tx ->
                     tx.searchValueDecisions(
                         clock,
+                        featureConfig.postOffice,
                         body.page,
                         body.pageSize,
                         body.sortBy ?: VoucherValueDecisionSortParam.STATUS,
@@ -351,6 +352,9 @@ enum class VoucherValueDecisionSortParam {
 
 @ConstList("voucherValueDecisionDistinctiveParams")
 enum class VoucherValueDecisionDistinctiveParams {
+    UNCONFIRMED_HOURS,
+    EXTERNAL_CHILD,
+    RETROACTIVE,
     NO_STARTING_PLACEMENTS,
     MAX_FEE_ACCEPTED
 }
