@@ -253,6 +253,16 @@ export async function insertDaycareFixtures(fixture: Daycare[]): Promise<void> {
   }
 }
 
+export async function deleteDaycareCostCenter(
+  daycareId: string
+): Promise<void> {
+  try {
+    await devClient.delete(`/daycare/${daycareId}/cost-center`)
+  } catch (e) {
+    throw new DevApiError(e)
+  }
+}
+
 export async function insertDaycareGroupFixtures(
   fixture: DaycareGroup[]
 ): Promise<void> {

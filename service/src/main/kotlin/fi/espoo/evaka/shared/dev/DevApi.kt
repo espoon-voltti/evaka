@@ -253,6 +253,20 @@ class DevApi(
         db.connect { dbc -> dbc.transaction { daycares.forEach { daycare -> it.insertTestDaycare(daycare) } } }
     }
 
+    @DeleteMapping("/daycare/{daycareId}/cost-center")
+    fun deleteDaycareCostCenter(
+        db: Database,
+        @PathVariable daycareId: DaycareId
+    ) {
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                tx.createUpdate("UPDATE daycare SET cost_center = NULL WHERE id = :daycareId")
+                    .bind("daycareId", daycareId)
+                    .execute()
+            }
+        }
+    }
+
     @PutMapping("/daycares/{daycareId}/acl")
     fun addAclRoleForDaycare(
         db: Database,

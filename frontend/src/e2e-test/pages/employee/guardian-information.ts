@@ -577,6 +577,34 @@ class InvoicesSection extends Section {
   }
 }
 
+class InvoiceCorrectionsSection extends Section {
+  #invoiceCorrectionRows = this.findAll(
+    '[data-qa="invoice-details-invoice-row"]'
+  )
+  #createInvoiceCorrectionButton = this.findByDataQa(
+    'create-invoice-correction'
+  )
+  #unitSelect = new Select(this.findByDataQa('input-unit'))
+
+  async assertInvoiceCorrectionsCount(n: number) {
+    await waitUntilEqual(() => this.#invoiceCorrectionRows.count(), n)
+  }
+
+  async createInvoiceCorrection() {
+    await this.#createInvoiceCorrectionButton.click()
+  }
+
+  async clickAndAssertUnitVisibility(
+    expectedUnitName: string,
+    visible: boolean
+  ) {
+    await this.#unitSelect.click()
+    visible
+      ? await this.#unitSelect.findText(expectedUnitName).waitUntilVisible()
+      : await this.#unitSelect.findText(expectedUnitName).waitUntilHidden()
+  }
+}
+
 const collapsibles = {
   personInfo: {
     selector: '[data-qa="person-info-collapsible"]',
@@ -625,6 +653,10 @@ const collapsibles = {
   invoices: {
     selector: '[data-qa="person-invoices-collapsible"]',
     section: InvoicesSection
+  },
+  invoiceCorrections: {
+    selector: '[data-qa="person-invoice-corrections-collapsible"]',
+    section: InvoiceCorrectionsSection
   }
 }
 
