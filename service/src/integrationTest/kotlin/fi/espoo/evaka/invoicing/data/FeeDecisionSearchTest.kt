@@ -368,6 +368,7 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
     ) = db.read { tx ->
         tx.searchFeeDecisions(
             clock = clock,
+            postOffice = "ESPOO",
             searchTerms = searchTerm,
             page = 0,
             pageSize = 100,

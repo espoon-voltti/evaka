@@ -342,6 +342,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val result = db.read { tx ->
             tx.searchFeeDecisions(
                 clock = MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(13, 37))),
+                postOffice = "ESPOO",
                 page = 0,
                 pageSize = 100,
                 sortBy = FeeDecisionSortParam.HEAD_OF_FAMILY,
@@ -411,6 +412,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val result = db.read { tx ->
             tx.searchFeeDecisions(
                 clock = MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(17, 16))),
+                postOffice = "ESPOO",
                 page = 0,
                 pageSize = 100,
                 sortBy = FeeDecisionSortParam.HEAD_OF_FAMILY,
@@ -438,6 +440,7 @@ class FeeDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val result = db.read { tx ->
             tx.searchFeeDecisions(
                 clock = RealEvakaClock(),
+                postOffice = "ESPOO",
                 searchTerms = searchTerms,
                 page = 0,
                 pageSize = 100,
