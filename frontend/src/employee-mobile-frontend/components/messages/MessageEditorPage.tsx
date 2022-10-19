@@ -46,7 +46,7 @@ export default function MessageEditorPage() {
   }>()
 
   const navigate = useNavigate()
-  const { accounts, selectedAccount, selectedUnit } = useContext(MessageContext)
+  const { accounts, selectedAccount } = useContext(MessageContext)
   const [messageReceivers] = useApiState(getReceivers, [])
   const [sending, setSending] = useState(false)
 
@@ -94,7 +94,7 @@ export default function MessageEditorPage() {
   }, [navigate])
 
   return renderResult(combine(accounts, receivers), ([accounts, receivers]) =>
-    receivers.length > 0 && selectedAccount && selectedUnit ? (
+    receivers.length > 0 && selectedAccount ? (
       <MessageEditor
         availableReceivers={receivers}
         defaultSender={{
@@ -117,7 +117,6 @@ export default function MessageEditorPage() {
         onSend={onSend}
         saveDraftRaw={saveDraft}
         saveMessageAttachment={saveMessageAttachment}
-        selectedUnit={selectedUnit}
         sending={sending}
       />
     ) : receivers.length === 0 ? (

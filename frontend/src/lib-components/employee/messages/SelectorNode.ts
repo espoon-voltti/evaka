@@ -88,24 +88,22 @@ export const updateSelector = (
 }
 
 export const getReceiverOptions = (
-  selectorNode: SelectorNode
-): ReactSelectOption[] => {
-  return !selectorNode.selected
-    ? [asSelectOption(selectorNode)].concat(
-        selectorNode.childNodes.flatMap(getReceiverOptions)
-      )
-    : []
-}
+  selectorNodes: SelectorNode[]
+): ReactSelectOption[] =>
+  selectorNodes.flatMap((selectorNode) => {
+    return !selectorNode.selected
+      ? [asSelectOption(selectorNode)].concat(
+          getReceiverOptions(selectorNode.childNodes)
+        )
+      : []
+  })
 
-export const deselectAll = (selectorNode: SelectorNode): SelectorNode => {
-  return {
-    ...selectorNode,
+export const deselectAll = (selectorNodes: SelectorNode[]): SelectorNode[] =>
+  selectorNodes.map((node) => ({
+    ...node,
     selected: false,
-    childNodes: selectorNode.childNodes.map((childNode) =>
-      deselectAll(childNode)
-    )
-  }
-}
+    childNodes: deselectAll(node.childNodes)
+  }))
 
 export interface ChildSelectorNode extends SelectorNode {
   dateOfBirth: LocalDate
@@ -117,35 +115,23 @@ export const isChildSelectorNode = (
 
 export const receiversAsSelectorNode = (
   accountId: UUID,
-  unitId: UUID,
   receivers: MessageReceiversResponse[]
-): SelectorNode | undefined => {
+): SelectorNode[] => {
   const accountReceivers = receivers.find(
     (receiver) => receiver.accountId === accountId
-  )
+  )?.receivers
 
   if (!accountReceivers) {
-    return undefined
+    return []
   }
 
-  const receiver = accountReceivers.receivers.filter((receiver) =>
-    receiver.type === 'UNIT' ? receiver.id === unitId : true
-  )[0]
+  const selectorNodes = accountReceivers.map(receiverAsSelectorNode)
 
-  if (!receiver) {
-    return undefined
+  if (selectorNodes.length === 1 && selectorNodes[0].childNodes.length === 0) {
+    return selectorNodes.map((node) => ({ ...node, selected: true }))
   }
 
-  const selectorNode = receiverAsSelectorNode(receiver)
-
-  if (selectorNode.childNodes.length === 0) {
-    return {
-      ...selectorNode,
-      selected: true
-    }
-  }
-
-  return selectorNode
+  return selectorNodes
 }
 
 const receiverAsSelectorNode = (receiver: MessageReceiver): SelectorNode => ({
@@ -178,14 +164,15 @@ type SelectedNode = {
   messageRecipient: MessageRecipient
 }
 
-export const getSelected = (selector: SelectorNode): SelectedNode[] => {
-  if (!selector.selected) {
-    return selector.childNodes.flatMap(getSelected)
-  } else {
-    const { selectorId, name, messageRecipient } = selector
-    return [{ selectorId, name, messageRecipient }]
-  }
-}
+export const getSelected = (selectors: SelectorNode[]): SelectedNode[] =>
+  selectors.flatMap((selector) => {
+    if (!selector.selected) {
+      return getSelected(selector.childNodes)
+    } else {
+      const { selectorId, name, messageRecipient } = selector
+      return [{ selectorId, name, messageRecipient }]
+    }
+  })
 
 export const getSubTree = (
   selector: SelectorNode,

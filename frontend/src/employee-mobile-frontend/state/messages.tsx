@@ -22,7 +22,6 @@ import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useDebouncedCallback } from 'lib-common/utils/useDebouncedCallback'
 import { useRestApi } from 'lib-common/utils/useRestApi'
-import { SelectOption } from 'lib-components/molecules/Select'
 
 import {
   getMessagingAccounts,
@@ -61,7 +60,6 @@ export interface MessagesState {
   groupAccounts: AuthorizedMessageAccount[]
   selectedAccount: AuthorizedMessageAccount | undefined
   receivedMessages: Result<MessageThread[]>
-  selectedUnit: SelectOption | undefined
   selectedThread: MessageThread | undefined
   selectThread: (thread: MessageThread | undefined) => void
   sendReply: (params: ReplyToThreadParams) => void
@@ -80,7 +78,6 @@ const defaultState: MessagesState = {
   selectedAccount: undefined,
   groupAccounts: [],
   receivedMessages: Loading.of(),
-  selectedUnit: undefined,
   selectedThread: undefined,
   selectThread: () => undefined,
   sendReply: () => undefined,
@@ -98,14 +95,6 @@ export const MessageContextProvider = React.memo(
     const { unitInfoResponse, reloadUnreadCounts } = useContext(UnitContext)
     const { user } = useContext(UserContext)
     const unitId = unitInfoResponse.map((res) => res.id).getOrElse(undefined)
-
-    const selectedUnit = useMemo(
-      () =>
-        unitInfoResponse
-          .map(({ id, name }) => ({ value: id, label: name }))
-          .getOrElse(undefined),
-      [unitInfoResponse]
-    )
 
     const [accounts, setAccounts] = useState<
       Result<AuthorizedMessageAccount[]>
@@ -228,7 +217,6 @@ export const MessageContextProvider = React.memo(
         pages,
         setPages,
         receivedMessages,
-        selectedUnit,
         selectThread,
         selectedThread,
         getReplyContent,
@@ -244,7 +232,6 @@ export const MessageContextProvider = React.memo(
         page,
         pages,
         receivedMessages,
-        selectedUnit,
         selectedThread,
         selectThread,
         getReplyContent,

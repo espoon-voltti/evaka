@@ -43,7 +43,6 @@ export default React.memo(function MessagesPage() {
     setSelectedDraft,
     selectedAccount,
     setSelectedAccount,
-    selectedUnit,
     refreshMessages
   } = useContext(MessageContext)
 
@@ -128,36 +127,31 @@ export default React.memo(function MessagesPage() {
           setReceivers={setReceivers}
         />
         {selectedAccount?.view && <MessageList {...selectedAccount} />}
-        {showEditor &&
-          accounts.isSuccess &&
-          receivers &&
-          selectedAccount &&
-          selectedUnit && (
-            <MessageEditor
-              availableReceivers={receivers}
-              defaultSender={{
-                value: selectedAccount.account.id,
-                label: selectedAccount.account.name
-              }}
-              deleteAttachment={deleteAttachment}
-              draftContent={selectedDraft}
-              getAttachmentUrl={getAttachmentUrl}
-              i18n={{
-                ...i18n.messages.messageEditor,
-                ...i18n.fileUpload,
-                ...i18n.common
-              }}
-              initDraftRaw={initDraft}
-              accounts={accounts.value}
-              onClose={onHide}
-              onDiscard={onDiscard}
-              onSend={onSend}
-              saveDraftRaw={saveDraft}
-              saveMessageAttachment={saveMessageAttachment}
-              selectedUnit={selectedUnit}
-              sending={sending}
-            />
-          )}
+        {showEditor && accounts.isSuccess && receivers && selectedAccount && (
+          <MessageEditor
+            availableReceivers={receivers}
+            defaultSender={{
+              value: selectedAccount.account.id,
+              label: selectedAccount.account.name
+            }}
+            deleteAttachment={deleteAttachment}
+            draftContent={selectedDraft}
+            getAttachmentUrl={getAttachmentUrl}
+            i18n={{
+              ...i18n.messages.messageEditor,
+              ...i18n.fileUpload,
+              ...i18n.common
+            }}
+            initDraftRaw={initDraft}
+            accounts={accounts.value}
+            onClose={onHide}
+            onDiscard={onDiscard}
+            onSend={onSend}
+            saveDraftRaw={saveDraft}
+            saveMessageAttachment={saveMessageAttachment}
+            sending={sending}
+          />
+        )}
       </PanelContainer>
     </Container>
   )

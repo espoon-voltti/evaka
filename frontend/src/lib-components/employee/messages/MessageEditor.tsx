@@ -96,14 +96,17 @@ const areRequiredFieldsFilled = (
   recipients: { selectorId: UUID }[]
 ): boolean => !!(recipients.length > 0 && msg.type && msg.content && msg.title)
 
-const createReceiverTree = (tree: SelectorNode, selectedIds: UUID[]) =>
+const createReceiverTree = (tree: SelectorNode[], selectedIds: UUID[]) =>
   selectedIds.reduce(
-    (acc, next) => updateSelector(acc, { selectorId: next, selected: true }),
+    (acc, next) =>
+      acc.map((node) =>
+        updateSelector(node, { selectorId: next, selected: true })
+      ),
     deselectAll(tree)
   )
 
 export interface MessageEditorI18n {
-  newMessage: (unitName: string) => string
+  newMessage: string
   to: {
     label: string
     placeholder: string
@@ -154,7 +157,6 @@ interface Props {
     file: File,
     onUploadProgress: (progressEvent: ProgressEvent) => void
   ) => Promise<Result<UUID>>
-  selectedUnit: ReactSelectOption
   sending: boolean
 }
 
@@ -173,10 +175,9 @@ export default React.memo(function MessageEditor({
   onSend,
   saveDraftRaw,
   saveMessageAttachment,
-  selectedUnit,
   sending
 }: Props) {
-  const [receiverTree, setReceiverTree] = useState<SelectorNode>()
+  const [receiverTree, setReceiverTree] = useState<SelectorNode[]>([])
   const selectedReceivers = useMemo(
     () => (receiverTree ? getSelected(receiverTree) : []),
     [receiverTree]
@@ -226,12 +227,10 @@ export default React.memo(function MessageEditor({
   const updateReceiverTree = useCallback(
     (newSelection: ReactSelectOption[]) => {
       setReceiverTree((old) =>
-        old
-          ? createReceiverTree(
-              old,
-              newSelection.map((s) => s.value)
-            )
-          : old
+        createReceiverTree(
+          old,
+          newSelection.map((s) => s.value)
+        )
       )
     },
     []
@@ -279,19 +278,17 @@ export default React.memo(function MessageEditor({
       }
       const accountReceivers = receiversAsSelectorNode(
         acc.account.id,
-        selectedUnit.value,
         availableReceivers
       )
       if (accountReceivers) {
         setReceiverTree(accountReceivers)
       }
     },
-    [message.sender, accounts, selectedUnit, availableReceivers]
+    [message.sender, accounts, availableReceivers]
   )
 
   const debouncedSaveStatus = useDebounce(saveStatus, 250)
-  const title =
-    debouncedSaveStatus || message.title || i18n.newMessage(selectedUnit.label)
+  const title = debouncedSaveStatus || message.title || i18n.newMessage
 
   const updateMessage = useCallback<UpdateStateFn<Message>>((changes) => {
     setMessage((old) => ({ ...old, ...changes }))
@@ -359,18 +356,11 @@ export default React.memo(function MessageEditor({
 
   const senderOptions = useMemo(
     () =>
-      accounts
-        .filter(
-          (acc: AuthorizedMessageAccount) =>
-            !isGroupMessageAccount(acc) ||
-            (isGroupMessageAccount(acc) &&
-              acc.daycareGroup.unitId === selectedUnit.value)
-        )
-        .map(({ account: { id, name } }: AuthorizedMessageAccount) => ({
-          value: id,
-          label: name
-        })),
-    [accounts, selectedUnit.value]
+      accounts.map(({ account: { id, name } }: AuthorizedMessageAccount) => ({
+        value: id,
+        label: name
+      })),
+    [accounts]
   )
 
   const sendEnabled =

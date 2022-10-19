@@ -314,7 +314,7 @@ export const fi = {
     inputPlaceholder: 'Kirjoita...',
     newMessage: 'Uusi viesti',
     messageEditor: {
-      newMessage: (unitName: string) => `Uusi viesti (${unitName})`,
+      newMessage: 'Uusi viesti',
       to: {
         label: 'Vastaanottaja',
         placeholder: 'Valitse ryhmä',
