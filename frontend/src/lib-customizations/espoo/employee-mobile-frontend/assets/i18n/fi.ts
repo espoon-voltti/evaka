@@ -83,7 +83,13 @@ export const fi = {
     validity: 'Voimassaolo',
     validTo: (date: string) => `Voimassa ${date} saakka`,
     lastName: 'Sukunimi',
-    firstName: 'Etunimi'
+    firstName: 'Etunimi',
+    treeDropdown: {
+      expandDropdown: 'Avaa',
+      expand: (opt: string) => `Avaa vaihtoehdon ${opt} alaiset vaihtoehdot`,
+      collapse: (opt: string) => `Sulje vaihtoehdon ${opt} alaiset vaihtoehdot`,
+      placeholder: 'Valitse...'
+    }
   },
   errorPage: {
     reload: 'Lataa sivu uudelleen',

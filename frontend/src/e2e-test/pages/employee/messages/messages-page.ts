@@ -8,8 +8,8 @@ import {
   TextInput,
   Page,
   Checkbox,
-  MultiSelect,
-  Combobox
+  Combobox,
+  TreeDropdown
 } from '../../../utils/page'
 
 export default class MessagesPage {
@@ -22,7 +22,7 @@ export default class MessagesPage {
   )
   #discardMessageButton = this.page.find('[data-qa="discard-draft-btn"]')
   #senderSelection = new Combobox(this.page.findByDataQa('select-sender'))
-  #receiverSelection = new MultiSelect(
+  #receiverSelection = new TreeDropdown(
     this.page.find('[data-qa="select-receiver"]')
   )
   #inputTitle = new TextInput(this.page.find('[data-qa="input-title"]'))
@@ -124,9 +124,14 @@ export default class MessagesPage {
       await this.#senderSelection.fillAndSelectFirst(message.sender)
     }
     if (message.receiver) {
-      await this.#receiverSelection.fillAndSelectFirst(message.receiver)
+      await this.#receiverSelection.open()
+      await this.#receiverSelection.expandAll()
+      await this.#receiverSelection.option(message.receiver).click()
+      await this.#receiverSelection.close()
     } else {
-      await this.#receiverSelection.selectFirst()
+      await this.#receiverSelection.open()
+      await this.#receiverSelection.firstOption().click()
+      await this.#receiverSelection.close()
     }
     if (message.urgent ?? false) {
       await this.#urgent.check()
@@ -167,7 +172,9 @@ export default class MessagesPage {
     await waitUntilEqual(() => this.isEditorVisible(), true)
     await this.#inputTitle.fill(title)
     await this.#inputContent.fill(content)
-    await this.#receiverSelection.click()
+    await this.#receiverSelection.open()
+    await this.#receiverSelection.firstOption().click()
+    await this.#receiverSelection.close()
     await this.page.keyboard.press('Enter')
     await waitUntilEqual(() => this.getEditorState(), 'clean')
   }

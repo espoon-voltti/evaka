@@ -21,27 +21,20 @@ import { useDebounce } from 'lib-common/utils/useDebounce'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import TreeDropdown from 'lib-components/atoms/dropdowns/TreeDropdown'
 import InputField from 'lib-components/atoms/form/InputField'
-import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import Radio from 'lib-components/atoms/form/Radio'
 import {
-  asSelectOption,
-  deselectAll,
-  getReceiverOptions,
   getSelected,
-  ReactSelectOption,
   receiversAsSelectorNode,
-  SelectorNode,
-  updateSelector
+  SelectorNode
 } from 'lib-components/employee/messages/SelectorNode'
-import {
-  isGroupMessageAccount,
-  SaveDraftParams
-} from 'lib-components/employee/messages/types'
+import { SaveDraftParams } from 'lib-components/employee/messages/types'
 import { Draft, useDraft } from 'lib-components/employee/messages/useDraft'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { modalZIndex } from 'lib-components/layout/z-helpers'
 import FileUpload, { FileUploadI18n } from 'lib-components/molecules/FileUpload'
+import { SelectOption } from 'lib-components/molecules/Select'
 import { Bold } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import {
@@ -59,19 +52,19 @@ type Message = Omit<
   UpdatableDraftContent,
   'recipientIds' | 'recipientNames'
 > & {
-  sender: ReactSelectOption
+  sender: SelectOption
   attachments: Attachment[]
 }
 
 const messageToUpdatableDraftWithAccount = (
   m: Message,
-  recipients: ReactSelectOption[]
+  recipients: { key: string; text: string }[]
 ): Draft => {
   return {
     content: m.content,
     urgent: m.urgent,
-    recipientIds: recipients.map(({ value }) => value),
-    recipientNames: recipients.map(({ label }) => label),
+    recipientIds: recipients.map(({ key }) => key),
+    recipientNames: recipients.map(({ text }) => text),
     title: m.title,
     type: m.type,
     accountId: m.sender.value
@@ -88,22 +81,13 @@ const emptyMessage: Omit<Message, 'sender'> = {
 
 const getInitialMessage = (
   draft: DraftContent | undefined,
-  sender: ReactSelectOption
+  sender: SelectOption
 ): Message => (draft ? { ...draft, sender } : { sender, ...emptyMessage })
 
 const areRequiredFieldsFilled = (
   msg: Message,
-  recipients: { selectorId: UUID }[]
+  recipients: { key: UUID }[]
 ): boolean => !!(recipients.length > 0 && msg.type && msg.content && msg.title)
-
-const createReceiverTree = (tree: SelectorNode[], selectedIds: UUID[]) =>
-  selectedIds.reduce(
-    (acc, next) =>
-      acc.map((node) =>
-        updateSelector(node, { selectorId: next, selected: true })
-      ),
-    deselectAll(tree)
-  )
 
 export interface MessageEditorI18n {
   newMessage: string
@@ -136,11 +120,17 @@ export interface MessageEditorI18n {
   addAttachmentInfo: string
   close: string
   open: string
+  treeDropdown: {
+    expandDropdown: string
+    expand: (opt: string) => string
+    collapse: (opt: string) => string
+    placeholder: string
+  }
 }
 
 interface Props {
   availableReceivers: MessageReceiversResponse[]
-  defaultSender: ReactSelectOption
+  defaultSender: SelectOption
   deleteAttachment: (id: UUID) => Promise<Result<void>>
   draftContent?: DraftContent
   getAttachmentUrl: (attachmentId: UUID, fileName: string) => string
@@ -182,14 +172,6 @@ export default React.memo(function MessageEditor({
     () => (receiverTree ? getSelected(receiverTree) : []),
     [receiverTree]
   )
-  const selectedReceiverOptions = useMemo(
-    () => selectedReceivers.map(asSelectOption),
-    [selectedReceivers]
-  )
-  const receiverOptions = useMemo(
-    () => (receiverTree ? getReceiverOptions(receiverTree) : []),
-    [receiverTree]
-  )
 
   const [message, setMessage] = useState<Message>(() =>
     getInitialMessage(draftContent, defaultSender)
@@ -217,39 +199,20 @@ export default React.memo(function MessageEditor({
   useEffect(
     function syncDraftContentOnMessageChanges() {
       contentTouched &&
-        setDraft(
-          messageToUpdatableDraftWithAccount(message, selectedReceiverOptions)
-        )
+        setDraft(messageToUpdatableDraftWithAccount(message, selectedReceivers))
     },
-    [contentTouched, message, selectedReceiverOptions, setDraft]
-  )
-
-  const updateReceiverTree = useCallback(
-    (newSelection: ReactSelectOption[]) => {
-      setReceiverTree((old) =>
-        createReceiverTree(
-          old,
-          newSelection.map((s) => s.value)
-        )
-      )
-    },
-    []
+    [contentTouched, message, selectedReceivers, setDraft]
   )
 
   useEffect(
     function updateSelectedReceiversOnReceiverTreeChanges() {
-      if (!receiverTree) {
-        return
-      }
-
-      const selected = getSelected(receiverTree)
       setMessage((old) => ({
         ...old,
-        recipientIds: selected.map((s) => s.selectorId),
-        recipientNames: selected.map((s) => s.name)
+        recipientIds: selectedReceivers.map((s) => s.key),
+        recipientNames: selectedReceivers.map((s) => s.text)
       }))
     },
-    [receiverTree]
+    [selectedReceivers]
   )
 
   const [saveStatus, setSaveStatus] = useState<string>()
@@ -309,7 +272,7 @@ export default React.memo(function MessageEditor({
       recipients: selectedReceivers.map(
         ({ messageRecipient }) => messageRecipient
       ),
-      recipientNames: selectedReceivers.map(({ name }) => name)
+      recipientNames: selectedReceivers.map(({ text: name }) => name)
     })
   }, [onSend, message, selectedReceivers, draftId])
 
@@ -464,14 +427,11 @@ export default React.memo(function MessageEditor({
                 <Gap size="s" />
                 <HorizontalField>
                   <Bold>{i18n.receivers}</Bold>
-                  <MultiSelect
-                    placeholder={i18n.search}
-                    value={selectedReceiverOptions}
-                    options={receiverOptions}
-                    onChange={updateReceiverTree}
-                    noOptionsMessage={i18n.noResults}
-                    getOptionId={({ value }) => value}
-                    getOptionLabel={({ label }) => label}
+                  <TreeDropdown
+                    tree={receiverTree}
+                    onChange={setReceiverTree}
+                    labels={i18n.treeDropdown}
+                    placeholder={i18n.treeDropdown.placeholder}
                     data-qa="select-receiver"
                   />
                 </HorizontalField>
@@ -592,15 +552,12 @@ export default React.memo(function MessageEditor({
           <Bold>{i18n.receivers}</Bold>
           <Gap size="xs" />
         </div>
-        <MultiSelect
-          placeholder={i18n.search}
-          value={selectedReceiverOptions}
-          options={receiverOptions}
-          onChange={updateReceiverTree}
-          noOptionsMessage={i18n.noResults}
-          getOptionId={({ value }) => value}
-          getOptionLabel={({ label }) => label}
-          data-qa="select-receiver"
+        <TreeDropdown
+          tree={receiverTree}
+          onChange={setReceiverTree}
+          data-qa="attendees"
+          labels={i18n.treeDropdown}
+          placeholder={i18n.treeDropdown.placeholder}
         />
         <Gap size="s" />
         <Bold>{i18n.urgent.heading}</Bold>

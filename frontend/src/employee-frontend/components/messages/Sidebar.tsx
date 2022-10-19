@@ -4,7 +4,7 @@
 
 import sortBy from 'lodash/sortBy'
 import uniqBy from 'lodash/uniqBy'
-import React, { useContext, useEffect, useMemo } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
@@ -15,6 +15,7 @@ import {
 import Button from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import { isGroupMessageAccount } from 'lib-components/employee/messages/types'
+import { SelectOption } from 'lib-components/molecules/Select'
 import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -86,8 +87,8 @@ interface AccountsProps {
 
 function Accounts({ accounts, setReceivers }: AccountsProps) {
   const { i18n } = useTranslation()
-  const { setSelectedAccount, selectedAccount, selectedUnit, setSelectedUnit } =
-    useContext(MessageContext)
+  const { setSelectedAccount, selectedAccount } = useContext(MessageContext)
+  const [selectedUnit, setSelectedUnit] = useState<SelectOption>()
 
   const [personalAccount, groupAccounts, unitOptions] = useMemo(() => {
     const personal = accounts.find((a) => !isGroupMessageAccount(a))
