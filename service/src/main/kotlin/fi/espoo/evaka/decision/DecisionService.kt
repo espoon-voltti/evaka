@@ -64,7 +64,7 @@ class DecisionService(
         applicationId: ApplicationId,
         sendAsMessage: Boolean
     ): List<DecisionId> {
-        val decisionIds = tx.finalizeDecisions(applicationId)
+        val decisionIds = tx.finalizeDecisions(applicationId, clock.today())
         asyncJobRunner.plan(tx, decisionIds.map { AsyncJob.NotifyDecisionCreated(it, user, sendAsMessage) }, runAt = clock.now())
         return decisionIds
     }

@@ -140,7 +140,7 @@ fun Database.Read.getOwnDecisions(guardianId: PersonId): List<ApplicationDecisio
         FROM decision d
         JOIN application a ON d.application_id = a.id
         JOIN person p ON a.child_id = p.id
-        WHERE a.guardian_id = :guardianId AND d.sent_date IS NOT NULL
+        WHERE a.guardian_id = :guardianId AND d.sent_date IS NOT NULL AND a.status != 'WAITING_MAILING'::application_status_type
         """.trimIndent()
 
     val rows = createQuery(sql)
@@ -175,7 +175,8 @@ fun Database.Read.fetchDecisionDrafts(applicationId: ApplicationId): List<Decisi
 }
 
 fun Database.Transaction.finalizeDecisions(
-    applicationId: ApplicationId
+    applicationId: ApplicationId,
+    today: LocalDate
 ): List<DecisionId> {
     // discard unplanned drafts
     createUpdate("DELETE FROM decision WHERE sent_date IS NULL AND application_id = :applicationId AND planned = false")
@@ -183,8 +184,9 @@ fun Database.Transaction.finalizeDecisions(
         .execute()
 
     // confirm planned drafts
-    return createQuery("SELECT id FROM decision WHERE application_id = :applicationId")
+    return createQuery("UPDATE decision SET sent_date = :today WHERE application_id = :applicationId RETURNING id")
         .bind("applicationId", applicationId)
+        .bind("today", today)
         .mapTo<DecisionId>()
         .list()
 }
