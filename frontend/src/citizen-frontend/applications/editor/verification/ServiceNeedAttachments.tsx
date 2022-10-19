@@ -40,7 +40,7 @@ export const ServiceNeedUrgency = React.memo(function ServiceNeedUrgency({
               .withoutUrgency}
       </span>
 
-      {formData.serviceNeed.urgent && featureFlags.urgencyAttachmentsEnabled && (
+      {formData.serviceNeed.urgent && featureFlags.urgencyAttachments && (
         <>
           <>
             <Label>

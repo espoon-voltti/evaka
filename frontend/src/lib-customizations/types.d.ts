@@ -100,15 +100,15 @@ interface BaseFeatureFlags {
    * Whether to show PLANNED_ABSENCE as a third absence option for shift care children in
    * citizen's absence modal
    */
-  citizenShiftCareAbsenceEnabled: boolean
+  citizenShiftCareAbsence: boolean
 
-  assistanceActionOtherEnabled: boolean
+  assistanceActionOther: boolean
   daycareApplication: {
-    dailyTimesEnabled: boolean
+    dailyTimes: boolean
   }
-  groupsTableServiceNeedsEnabled: boolean
-  preschoolEnabled: boolean
-  urgencyAttachmentsEnabled: boolean
+  groupsTableServiceNeeds: boolean
+  preschool: boolean
+  urgencyAttachments: boolean
 
   /**
    * Experimental flags are features in development: features that aren't yet

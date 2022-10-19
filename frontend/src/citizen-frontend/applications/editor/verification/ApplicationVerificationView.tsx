@@ -52,7 +52,7 @@ export default React.memo(function ApplicationVerificationViewDaycare({
   const missingUrgencyAttachments =
     formData.serviceNeed.urgent &&
     formData.serviceNeed.urgencyAttachments.length === 0 &&
-    featureFlags.urgencyAttachmentsEnabled === true
+    featureFlags.urgencyAttachments
 
   const missingAttachments =
     missingUrgencyAttachments ||

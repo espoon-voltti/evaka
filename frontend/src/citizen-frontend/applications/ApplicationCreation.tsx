@@ -113,7 +113,7 @@ export default React.memo(function ApplicationCreation() {
               />
             </ExpandingInfo>
             <Gap size="s" />
-            {featureFlags.preschoolEnabled && (
+            {featureFlags.preschool && (
               <>
                 <Radio
                   checked={selectedType === 'PRESCHOOL'}

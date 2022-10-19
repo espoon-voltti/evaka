@@ -185,7 +185,7 @@ export default React.memo(function ServiceTimeSubSectionDaycare({
 
   function renderServiceNeedDailyTimeSelection() {
     return (
-      featureFlags.daycareApplication.dailyTimesEnabled && (
+      featureFlags.daycareApplication.dailyTimes && (
         <>
           <ExpandingInfo
             info={

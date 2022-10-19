@@ -283,7 +283,7 @@ function validateApplication(
   if (
     preferences.serviceNeed !== null &&
     ((application.type === 'DAYCARE' &&
-      featureFlags.daycareApplication.dailyTimesEnabled) ||
+      featureFlags.daycareApplication.dailyTimes) ||
       application.type === 'PRESCHOOL')
   ) {
     if (!preferences.serviceNeed.startTime) {

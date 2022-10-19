@@ -14,14 +14,14 @@ type Features = {
 
 const features: Features = {
   default: {
-    citizenShiftCareAbsenceEnabled: true,
-    assistanceActionOtherEnabled: true,
+    citizenShiftCareAbsence: true,
+    assistanceActionOther: true,
     daycareApplication: {
-      dailyTimesEnabled: true
+      dailyTimes: true
     },
-    groupsTableServiceNeedsEnabled: false,
-    preschoolEnabled: true,
-    urgencyAttachmentsEnabled: true,
+    groupsTableServiceNeeds: false,
+    preschool: true,
+    urgencyAttachments: true,
     experimental: {
       leops: true,
       citizenVasu: true,
@@ -33,14 +33,14 @@ const features: Features = {
     }
   },
   staging: {
-    citizenShiftCareAbsenceEnabled: true,
-    assistanceActionOtherEnabled: true,
+    citizenShiftCareAbsence: true,
+    assistanceActionOther: true,
     daycareApplication: {
-      dailyTimesEnabled: true
+      dailyTimes: true
     },
-    groupsTableServiceNeedsEnabled: false,
-    preschoolEnabled: true,
-    urgencyAttachmentsEnabled: true,
+    groupsTableServiceNeeds: false,
+    preschool: true,
+    urgencyAttachments: true,
     experimental: {
       leops: true,
       citizenVasu: true,
@@ -51,14 +51,14 @@ const features: Features = {
     }
   },
   prod: {
-    citizenShiftCareAbsenceEnabled: true,
-    assistanceActionOtherEnabled: true,
+    citizenShiftCareAbsence: true,
+    assistanceActionOther: true,
     daycareApplication: {
-      dailyTimesEnabled: true
+      dailyTimes: true
     },
-    groupsTableServiceNeedsEnabled: false,
-    preschoolEnabled: true,
-    urgencyAttachmentsEnabled: true,
+    groupsTableServiceNeeds: false,
+    preschool: true,
+    urgencyAttachments: true,
     experimental: {
       leops: true,
       citizenVasu: true,

@@ -72,7 +72,7 @@ function renderMissingGroupPlacementRow(
           <PlacementCircle
             type={isPartDayPlacement(placementType) ? 'half' : 'full'}
             label={
-              featureFlags.groupsTableServiceNeedsEnabled
+              featureFlags.groupsTableServiceNeeds
                 ? serviceNeeds
                     .filter((sn) =>
                       new FiniteDateRange(sn.startDate, sn.endDate).includes(

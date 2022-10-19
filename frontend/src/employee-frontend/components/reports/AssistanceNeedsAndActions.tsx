@@ -191,7 +191,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
                   label: action.nameFi,
                   key: `ACTION-${action.value}`
                 })),
-                ...(featureFlags.assistanceActionOtherEnabled
+                ...(featureFlags.assistanceActionOther
                   ? [
                       {
                         label:
@@ -230,7 +230,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
                   {report.value.actions.map((action) => (
                     <Th key={action.value}>{action.nameFi}</Th>
                   ))}
-                  {featureFlags.assistanceActionOtherEnabled && (
+                  {featureFlags.assistanceActionOther && (
                     <Th>
                       {
                         i18n.childInformation.assistanceAction.fields
@@ -282,7 +282,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
                         {row.actionCounts[action.value] ?? 0}
                       </Td>
                     ))}
-                    {featureFlags.assistanceActionOtherEnabled && (
+                    {featureFlags.assistanceActionOther && (
                       <Td>{row.otherActionCount}</Td>
                     )}
                     <Td>{row.noActionCount}</Td>
@@ -318,7 +318,7 @@ export default React.memo(function AssistanceNeedsAndActions() {
                       )}
                     </Td>
                   ))}
-                  {featureFlags.assistanceActionOtherEnabled && (
+                  {featureFlags.assistanceActionOther && (
                     <Td>
                       {reducePropertySum(
                         filteredRows,

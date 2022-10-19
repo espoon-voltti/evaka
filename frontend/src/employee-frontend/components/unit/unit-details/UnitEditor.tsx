@@ -566,7 +566,7 @@ export default function UnitEditor(props: Props): JSX.Element {
       field: 'daycareApplyPeriod',
       period: form.daycareApplyPeriod
     },
-    ...(featureFlags.preschoolEnabled
+    ...(featureFlags.preschool
       ? [
           {
             type: 'preschool',
@@ -772,7 +772,7 @@ export default function UnitEditor(props: Props): JSX.Element {
               />
             )}
           </DaycareTypeSelectContainer>
-          {featureFlags.preschoolEnabled && (
+          {featureFlags.preschool && (
             <>
               <Checkbox
                 disabled={!props.editable}
@@ -1089,7 +1089,7 @@ export default function UnitEditor(props: Props): JSX.Element {
               updateForm({ uploadChildrenToVarda })
             }
           />
-          {featureFlags.preschoolEnabled && (
+          {featureFlags.preschool && (
             <Checkbox
               disabled={!props.editable}
               label={i18n.unitEditor.field.uploadToKoski}
@@ -1349,7 +1349,7 @@ export default function UnitEditor(props: Props): JSX.Element {
           decisionCustomization.daycareName
         )}
       </FormPart>
-      {featureFlags.preschoolEnabled && (
+      {featureFlags.preschool && (
         <>
           <FormPart>
             <label htmlFor="unit-preschool-name">

@@ -292,7 +292,7 @@ export default React.memo(function AssistanceActionForm(props: Props) {
                     </CheckboxRow>
                   )
                 )}
-                {featureFlags.assistanceActionOtherEnabled ? (
+                {featureFlags.assistanceActionOther ? (
                   <>
                     <CheckboxRow>
                       <Checkbox

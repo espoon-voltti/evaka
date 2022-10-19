@@ -265,7 +265,7 @@ export default React.memo(function ApplicationEditView({
                 data-qa="checkbox-urgent"
               />
 
-              {urgent && featureFlags.urgencyAttachmentsEnabled && (
+              {urgent && featureFlags.urgencyAttachments && (
                 <FileUploadGridContainer>
                   <FileUpload
                     onUpload={onUploadAttachment('URGENCY')}
@@ -382,7 +382,7 @@ export default React.memo(function ApplicationEditView({
           {serviceNeed !== null && (
             <>
               {((type === 'DAYCARE' &&
-                featureFlags.daycareApplication.dailyTimesEnabled) ||
+                featureFlags.daycareApplication.dailyTimes) ||
                 type === 'PRESCHOOL') && (
                 <>
                   <Label>{i18n.application.serviceNeed.dailyTime}</Label>

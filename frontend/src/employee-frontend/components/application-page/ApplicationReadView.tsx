@@ -190,7 +190,7 @@ export default React.memo(function ApplicationReadView({
                   ) : (
                     <>
                       <span>{i18n.application.serviceNeed.isUrgent}</span>
-                      {featureFlags.urgencyAttachmentsEnabled && (
+                      {featureFlags.urgencyAttachments && (
                         <Dimmed>
                           {i18n.application.serviceNeed.missingAttachment}
                         </Dimmed>
@@ -233,7 +233,7 @@ export default React.memo(function ApplicationReadView({
           {serviceNeed !== null && (
             <>
               {((type === 'DAYCARE' &&
-                featureFlags.daycareApplication.dailyTimesEnabled) ||
+                featureFlags.daycareApplication.dailyTimes) ||
                 type === 'PRESCHOOL') && (
                 <>
                   <Label>{i18n.application.serviceNeed.dailyTime}</Label>

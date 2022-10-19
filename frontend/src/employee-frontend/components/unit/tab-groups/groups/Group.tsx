@@ -623,7 +623,7 @@ export default React.memo(function Group({
                                   : 'full'
                               }
                               label={
-                                featureFlags.groupsTableServiceNeedsEnabled
+                                featureFlags.groupsTableServiceNeeds
                                   ? placement.serviceNeeds
                                       .filter((sn) =>
                                         new FiniteDateRange(

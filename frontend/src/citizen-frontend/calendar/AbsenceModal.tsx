@@ -93,7 +93,7 @@ export default React.memo(function AbsenceModal({
 
   const showShiftCareAbsenceType = useMemo(
     () =>
-      featureFlags.citizenShiftCareAbsenceEnabled
+      featureFlags.citizenShiftCareAbsence
         ? availableChildren.some(({ inShiftCareUnit }) => inShiftCareUnit)
         : false,
     [availableChildren]
