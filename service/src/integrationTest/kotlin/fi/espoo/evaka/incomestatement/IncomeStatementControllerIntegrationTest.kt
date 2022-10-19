@@ -28,7 +28,10 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
@@ -47,6 +50,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 
@@ -566,6 +570,106 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     }
 
     @Test
+    fun `list income statements awaiting handler - placement valid date filter`() {
+        val placementId1 = PlacementId(UUID.randomUUID())
+        val placementId2 = PlacementId(UUID.randomUUID())
+        val placement1Start = LocalDate.of(2022, 9, 19)
+        val placement1End = LocalDate.of(2022, 11, 19)
+        val placement2Start = LocalDate.of(2022, 10, 19)
+        val placement2End = LocalDate.of(2023, 1, 17)
+        db.transaction { tx ->
+            tx.insertTestParentship(citizenId, testChild_1.id, startDate = placement1Start, endDate = placement1End)
+            tx.insertTestPlacement(
+                id = placementId1,
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = placement1Start,
+                endDate = placement1End,
+                type = PlacementType.PRESCHOOL_DAYCARE
+            )
+
+            tx.insertTestParentship(testAdult_2.id, testChild_2.id, startDate = placement2Start, endDate = placement2End)
+            tx.insertTestPlacement(
+                id = placementId2,
+                childId = testChild_2.id,
+                unitId = testDaycare.id,
+                startDate = placement2Start,
+                endDate = placement2End,
+                type = PlacementType.PRESCHOOL_DAYCARE
+            )
+        }
+
+        val incomeStatement1 = createTestIncomeStatement(citizenId)
+        val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
+
+        val newCreated = HelsinkiDateTime.of(LocalDate.of(2022, 10, 17), LocalTime.of(11, 4))
+
+        db.transaction {
+            it.createUpdate("UPDATE income_statement SET created = :newCreated WHERE id = :id")
+                .bind("newCreated", newCreated)
+                .bind("id", incomeStatement1.id)
+                .execute()
+        }
+
+        assertEquals(
+            Paged(
+                listOf(
+                    IncomeStatementAwaitingHandler(
+                        id = incomeStatement2.id,
+                        created = incomeStatement2.created,
+                        startDate = incomeStatement2.startDate,
+                        type = IncomeStatementType.HIGHEST_FEE,
+                        personId = testAdult_2.id,
+                        personName = "Doe Joan",
+                        primaryCareArea = "Test Area"
+                    )
+                ),
+                1,
+                1
+            ),
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(
+                    placementValidDate = placement2End
+                ),
+                MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.MAX))
+            )
+        )
+
+        assertEquals(
+            Paged(
+                listOf(
+                    IncomeStatementAwaitingHandler(
+                        id = incomeStatement1.id,
+                        created = newCreated,
+                        startDate = incomeStatement1.startDate,
+                        type = IncomeStatementType.HIGHEST_FEE,
+                        personId = citizenId,
+                        personName = "Doe John",
+                        primaryCareArea = "Test Area"
+                    ),
+                    IncomeStatementAwaitingHandler(
+                        id = incomeStatement2.id,
+                        created = incomeStatement2.created,
+                        startDate = incomeStatement2.startDate,
+                        type = IncomeStatementType.HIGHEST_FEE,
+                        personId = testAdult_2.id,
+                        personName = "Doe Joan",
+                        primaryCareArea = "Test Area"
+                    )
+                ),
+                2,
+                1
+            ),
+            getIncomeStatementsAwaitingHandler(
+                SearchIncomeStatementsRequest(
+                    placementValidDate = placement2Start
+                ),
+                MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.MAX))
+            )
+        )
+    }
+
+    @Test
     fun `list income statements awaiting handler - sent date sort`() {
         val placementId1 = PlacementId(UUID.randomUUID())
         val placementId2 = PlacementId(UUID.randomUUID())
@@ -668,10 +772,12 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     }
 
     private fun getIncomeStatementsAwaitingHandler(
-        body: SearchIncomeStatementsRequest = SearchIncomeStatementsRequest(1, 50, null, null, emptyList(), emptyList(), null, null)
+        body: SearchIncomeStatementsRequest = SearchIncomeStatementsRequest(1, 50, null, null, emptyList(), emptyList(), null, null),
+        clock: EvakaClock = RealEvakaClock()
     ): Paged<IncomeStatementAwaitingHandler> =
         http.post("/income-statements/awaiting-handler")
             .asUser(employee)
+            .header("EvakaMockedTime", clock.now())
             .objectBody(body, mapper = jsonMapper)
             .responseObject<Paged<IncomeStatementAwaitingHandler>>(jsonMapper)
             .let { (_, _, body) -> body.get() }

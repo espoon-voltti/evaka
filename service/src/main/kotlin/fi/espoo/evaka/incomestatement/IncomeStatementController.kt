@@ -14,7 +14,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
@@ -132,11 +131,12 @@ class IncomeStatementController(
         return db.connect { dbc ->
             dbc.read {
                 it.fetchIncomeStatementsAwaitingHandler(
-                    HelsinkiDateTime.now().toLocalDate(),
+                    clock.now().toLocalDate(),
                     body.areas ?: emptyList(),
                     body.providerTypes ?: emptyList(),
                     body.sentStartDate,
                     body.sentEndDate,
+                    body.placementValidDate,
                     body.page,
                     body.pageSize,
                     body.sortBy ?: IncomeStatementSortParam.CREATED,
@@ -174,7 +174,8 @@ data class SearchIncomeStatementsRequest(
     val areas: List<String>? = emptyList(),
     val providerTypes: List<ProviderType>? = emptyList(),
     val sentStartDate: LocalDate? = null,
-    val sentEndDate: LocalDate? = null
+    val sentEndDate: LocalDate? = null,
+    val placementValidDate: LocalDate? = null
 )
 
 enum class IncomeStatementSortParam {

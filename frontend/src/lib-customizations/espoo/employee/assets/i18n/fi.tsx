@@ -2517,7 +2517,8 @@ export const fi = {
     invoiceSearchByStartDate: 'Lähetä laskut valitulta kaudelta',
     paymentDate: 'Maksupäivä',
     paymentFreeTextPlaceholder: 'Haku maksun numerolla',
-    incomeStatementSent: 'Tuloselvitys lähetetty'
+    incomeStatementSent: 'Tuloselvitys lähetetty',
+    incomeStatementPlacementValidDate: 'Sijoitus voimassa'
   },
   valueDecision: {
     title: {

@@ -60,6 +60,7 @@ export async function getIncomeStatementsAwaitingHandler(
             : undefined,
         sentStartDate: searchFilters.sentStartDate?.formatIso(),
         sentEndDate: searchFilters.sentEndDate?.formatIso(),
+        placementValidDate: searchFilters.placementValidDate?.formatIso(),
         page: page,
         pageSize,
         sortBy,
