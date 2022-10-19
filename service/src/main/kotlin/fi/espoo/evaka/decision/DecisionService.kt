@@ -64,7 +64,7 @@ class DecisionService(
         applicationId: ApplicationId,
         sendAsMessage: Boolean
     ): List<DecisionId> {
-        val decisionIds = tx.finalizeDecisions(applicationId)
+        val decisionIds = tx.finalizeDecisions(applicationId, clock.today())
         asyncJobRunner.plan(tx, decisionIds.map { AsyncJob.NotifyDecisionCreated(it, user, sendAsMessage) }, runAt = clock.now())
         return decisionIds
     }
@@ -289,7 +289,7 @@ class DecisionService(
 
     private fun getLocalizedFilename(type: DecisionType, lang: DocumentLang): String {
         return when (lang) {
-            DocumentLang.FI -> when (type) {
+            DocumentLang.SV -> when (type) {
                 DecisionType.CLUB -> "Kerhopäätös" // All clubs are in Finnish
                 DecisionType.DAYCARE, DecisionType.DAYCARE_PART_TIME -> "Beslut_om_småbarnspedagogisk_verksamhet"
                 DecisionType.PRESCHOOL -> "Beslut_om_förskoleplats"
