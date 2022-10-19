@@ -20,7 +20,6 @@ import {
 } from 'lib-components/employee/messages/SelectorNode'
 import { ContentArea } from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employeeMobile'
 import { faArrowLeft } from 'lib-icons'
 
 import {
@@ -104,9 +103,6 @@ export default function MessageEditorPage() {
     selectedReceivers && selectedAccount && selectedUnit ? (
       <MessageEditor
         availableReceivers={selectedReceivers}
-        attachmentsEnabled={
-          featureFlags.experimental?.messageAttachments ?? false
-        }
         defaultSender={{
           value: selectedAccount.account.id,
           label: selectedAccount.account.name

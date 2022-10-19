@@ -14,22 +14,15 @@ type Features = {
 
 const features: Features = {
   default: {
-    citizenShiftCareAbsenceEnabled: true,
-    assistanceActionOtherEnabled: true,
+    citizenShiftCareAbsence: true,
+    assistanceActionOther: true,
     daycareApplication: {
-      dailyTimesEnabled: true
+      dailyTimes: true
     },
-    groupsTableServiceNeedsEnabled: false,
-    evakaLogin: true,
-    financeBasicsPage: true,
-    preschoolEnabled: true,
-    urgencyAttachmentsEnabled: true,
-    adminSettingsEnabled: false,
+    groupsTableServiceNeeds: false,
+    preschool: true,
+    urgencyAttachments: true,
     experimental: {
-      ai: true,
-      messageAttachments: true,
-      personalDetailsPage: true,
-      mobileMessages: true,
       leops: true,
       citizenVasu: true,
       voucherUnitPayments: true,
@@ -40,22 +33,15 @@ const features: Features = {
     }
   },
   staging: {
-    citizenShiftCareAbsenceEnabled: true,
-    assistanceActionOtherEnabled: true,
+    citizenShiftCareAbsence: true,
+    assistanceActionOther: true,
     daycareApplication: {
-      dailyTimesEnabled: true
+      dailyTimes: true
     },
-    groupsTableServiceNeedsEnabled: false,
-    evakaLogin: true,
-    financeBasicsPage: true,
-    preschoolEnabled: true,
-    urgencyAttachmentsEnabled: true,
-    adminSettingsEnabled: false,
+    groupsTableServiceNeeds: false,
+    preschool: true,
+    urgencyAttachments: true,
     experimental: {
-      ai: true,
-      messageAttachments: true,
-      personalDetailsPage: true,
-      mobileMessages: true,
       leops: true,
       citizenVasu: true,
       assistanceNeedDecisions: true,
@@ -65,22 +51,15 @@ const features: Features = {
     }
   },
   prod: {
-    citizenShiftCareAbsenceEnabled: true,
-    assistanceActionOtherEnabled: true,
+    citizenShiftCareAbsence: true,
+    assistanceActionOther: true,
     daycareApplication: {
-      dailyTimesEnabled: true
+      dailyTimes: true
     },
-    groupsTableServiceNeedsEnabled: false,
-    evakaLogin: true,
-    financeBasicsPage: true,
-    preschoolEnabled: true,
-    urgencyAttachmentsEnabled: true,
-    adminSettingsEnabled: false,
+    groupsTableServiceNeeds: false,
+    preschool: true,
+    urgencyAttachments: true,
     experimental: {
-      ai: false,
-      messageAttachments: true,
-      personalDetailsPage: false,
-      mobileMessages: false,
       leops: true,
       citizenVasu: true,
       assistanceNeedDecisions: true,

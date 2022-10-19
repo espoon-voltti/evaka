@@ -18,7 +18,6 @@ import ErrorPage from 'lib-components/molecules/ErrorPage'
 import ReloadNotification from 'lib-components/molecules/ReloadNotification'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
 import { theme } from 'lib-customizations/common'
-import { featureFlags } from 'lib-customizations/employee'
 
 import { getAuthStatus } from './api/auth'
 import { client } from './api/client'
@@ -41,7 +40,6 @@ import UnitFeaturesPage from './components/UnitFeaturesPage'
 import UnitPage from './components/UnitPage'
 import Units from './components/Units'
 import WelcomePage from './components/WelcomePage'
-import AIPage from './components/ai/AIPage'
 import ApplicationsPage from './components/applications/ApplicationsPage'
 import AssistanceNeedDecisionEditPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionEditPage'
 import AssistanceNeedDecisionPage from './components/child-information/assistance-need/decision/AssistanceNeedDecisionPage'
@@ -138,16 +136,6 @@ export default function App() {
                       </EmployeeRoute>
                     }
                   />
-                  {featureFlags.experimental?.ai && (
-                    <Route
-                      path="/ai"
-                      element={
-                        <EmployeeRoute title={i18n.titles.ai}>
-                          <AIPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                  )}
                   <Route
                     path="/settings"
                     element={
@@ -292,16 +280,14 @@ export default function App() {
                       </EmployeeRoute>
                     }
                   />
-                  {featureFlags.financeBasicsPage ? (
-                    <Route
-                      path="/finance/basics"
-                      element={
-                        <EmployeeRoute>
-                          <FinanceBasicsPage />
-                        </EmployeeRoute>
-                      }
-                    />
-                  ) : null}
+                  <Route
+                    path="/finance/basics"
+                    element={
+                      <EmployeeRoute>
+                        <FinanceBasicsPage />
+                      </EmployeeRoute>
+                    }
+                  />
                   <Route
                     path="/finance/fee-decisions/:id"
                     element={

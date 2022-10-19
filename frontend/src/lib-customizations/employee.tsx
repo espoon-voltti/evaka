@@ -83,4 +83,4 @@ export const vasuTranslations: { [K in VasuLang]: VasuTranslations } = {
 
 export const applicationTypes: ApplicationType[] = (
   ['DAYCARE', 'PRESCHOOL', 'CLUB'] as const
-).filter((type) => featureFlags.preschoolEnabled || type !== 'PRESCHOOL')
+).filter((type) => featureFlags.preschool || type !== 'PRESCHOOL')

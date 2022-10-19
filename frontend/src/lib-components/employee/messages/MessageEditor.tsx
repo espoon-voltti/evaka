@@ -138,7 +138,6 @@ export interface MessageEditorI18n {
 
 interface Props {
   availableReceivers: SelectorNode
-  attachmentsEnabled: boolean
   defaultSender: ReactSelectOption
   deleteAttachment: (id: UUID) => Promise<Result<void>>
   draftContent?: DraftContent
@@ -162,7 +161,6 @@ interface Props {
 
 export default React.memo(function MessageEditor({
   availableReceivers,
-  attachmentsEnabled,
   defaultSender,
   deleteAttachment,
   draftContent,
@@ -561,18 +559,16 @@ export default React.memo(function MessageEditor({
               onChange={(e) => updateMessage({ content: e.target.value })}
               data-qa="input-content"
             />
-            {attachmentsEnabled && (
-              <FileUpload
-                slim
-                disabled={!draftId}
-                data-qa="upload-message-attachment"
-                files={message.attachments}
-                i18n={i18nWithReplacedTitle}
-                getDownloadUrl={getAttachmentUrl}
-                onUpload={handleAttachmentUpload}
-                onDelete={handleAttachmentDelete}
-              />
-            )}
+            <FileUpload
+              slim
+              disabled={!draftId}
+              data-qa="upload-message-attachment"
+              files={message.attachments}
+              i18n={i18nWithReplacedTitle}
+              getDownloadUrl={getAttachmentUrl}
+              onUpload={handleAttachmentUpload}
+              onDelete={handleAttachmentDelete}
+            />
             <Gap size="L" />
           </ScrollableFormArea>
           <BottomBar>

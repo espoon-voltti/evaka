@@ -14,7 +14,6 @@ import {
 } from 'lib-components/employee/messages/SelectorNode'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/employee'
 
 import {
   deleteAttachment,
@@ -138,9 +137,6 @@ export default React.memo(function MessagesPage() {
           selectedUnit && (
             <MessageEditor
               availableReceivers={selectedReceivers}
-              attachmentsEnabled={
-                featureFlags.experimental?.messageAttachments ?? false
-              }
               defaultSender={{
                 value: selectedAccount.account.id,
                 label: selectedAccount.account.name

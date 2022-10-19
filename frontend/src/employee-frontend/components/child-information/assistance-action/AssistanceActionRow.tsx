@@ -129,7 +129,7 @@ export default React.memo(function AssistanceActionRow({
                           <li key={option.value}>{option.nameFi}</li>
                         )
                     )}
-                    {featureFlags.assistanceActionOtherEnabled &&
+                    {featureFlags.assistanceActionOther &&
                     assistanceAction.otherAction !== '' ? (
                       <li>
                         {

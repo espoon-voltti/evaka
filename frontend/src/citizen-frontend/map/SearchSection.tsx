@@ -104,7 +104,7 @@ export default React.memo(function SearchSection({
             label={t.map.careTypes.DAYCARE}
             onChange={() => setCareType('DAYCARE')}
           />
-          {featureFlags.preschoolEnabled && (
+          {featureFlags.preschool && (
             <Radio
               data-qa="map-filter-preschool"
               checked={careType === 'PRESCHOOL'}

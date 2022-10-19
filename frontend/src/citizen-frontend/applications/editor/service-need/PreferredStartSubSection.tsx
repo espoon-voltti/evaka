@@ -201,7 +201,7 @@ export default React.memo(function PreferredStartSubSection({
             <Gap size="s" />
             {t.applications.editor.serviceNeed.urgent.attachmentsMessage.text}
 
-            {formData.urgent && featureFlags.urgencyAttachmentsEnabled && (
+            {formData.urgent && featureFlags.urgencyAttachments && (
               <>
                 <Gap size="s" />
 

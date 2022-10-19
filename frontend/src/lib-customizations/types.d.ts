@@ -100,18 +100,15 @@ interface BaseFeatureFlags {
    * Whether to show PLANNED_ABSENCE as a third absence option for shift care children in
    * citizen's absence modal
    */
-  citizenShiftCareAbsenceEnabled: boolean
+  citizenShiftCareAbsence: boolean
 
-  assistanceActionOtherEnabled: boolean
+  assistanceActionOther: boolean
   daycareApplication: {
-    dailyTimesEnabled: boolean
+    dailyTimes: boolean
   }
-  groupsTableServiceNeedsEnabled: boolean
-  evakaLogin: boolean
-  financeBasicsPage: boolean
-  preschoolEnabled: boolean
-  urgencyAttachmentsEnabled: boolean
-  adminSettingsEnabled: boolean
+  groupsTableServiceNeeds: boolean
+  preschool: boolean
+  urgencyAttachments: boolean
 
   /**
    * Experimental flags are features in development: features that aren't yet
@@ -120,10 +117,6 @@ interface BaseFeatureFlags {
    * are deemed ready or promoted to top-level flags.
    */
   experimental?: {
-    ai?: boolean
-    messageAttachments?: boolean
-    personalDetailsPage?: boolean
-    mobileMessages?: boolean
     leops?: boolean
     citizenVasu?: boolean
     voucherUnitPayments?: boolean
