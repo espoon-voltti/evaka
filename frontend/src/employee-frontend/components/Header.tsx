@@ -350,16 +350,15 @@ export default React.memo(function Header() {
                   {i18n.employees.title}
                 </Link>
               )}
-              {featureFlags.financeBasicsPage &&
-                user?.accessibleFeatures.financeBasics && (
-                  <Link
-                    to="/finance/basics"
-                    onClick={closeUserPopup}
-                    data-qa="user-popup-finance-basics"
-                  >
-                    {i18n.financeBasics.title}
-                  </Link>
-                )}
+              {user?.accessibleFeatures.financeBasics && (
+                <Link
+                  to="/finance/basics"
+                  onClick={closeUserPopup}
+                  data-qa="user-popup-finance-basics"
+                >
+                  {i18n.financeBasics.title}
+                </Link>
+              )}
               {user?.accessibleFeatures.vasuTemplates && (
                 <Link
                   to="/vasu-templates"
@@ -378,16 +377,15 @@ export default React.memo(function Header() {
                   {i18n.titles.holidayPeriods}
                 </Link>
               )}
-              {featureFlags.adminSettingsEnabled &&
-                user?.accessibleFeatures.settings && (
-                  <Link
-                    to="/settings"
-                    onClick={closeUserPopup}
-                    data-qa="user-popup-settings"
-                  >
-                    {i18n.settings.title}
-                  </Link>
-                )}
+              {user?.accessibleFeatures.settings && (
+                <Link
+                  to="/settings"
+                  onClick={closeUserPopup}
+                  data-qa="user-popup-settings"
+                >
+                  {i18n.settings.title}
+                </Link>
+              )}
               {user?.accessibleFeatures.unitFeatures && (
                 <Link
                   to="/unit-features"

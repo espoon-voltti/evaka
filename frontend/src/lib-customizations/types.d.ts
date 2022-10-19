@@ -107,11 +107,8 @@ interface BaseFeatureFlags {
     dailyTimesEnabled: boolean
   }
   groupsTableServiceNeedsEnabled: boolean
-  evakaLogin: boolean
-  financeBasicsPage: boolean
   preschoolEnabled: boolean
   urgencyAttachmentsEnabled: boolean
-  adminSettingsEnabled: boolean
 
   /**
    * Experimental flags are features in development: features that aren't yet
@@ -120,10 +117,6 @@ interface BaseFeatureFlags {
    * are deemed ready or promoted to top-level flags.
    */
   experimental?: {
-    ai?: boolean
-    messageAttachments?: boolean
-    personalDetailsPage?: boolean
-    mobileMessages?: boolean
     leops?: boolean
     citizenVasu?: boolean
     voucherUnitPayments?: boolean
