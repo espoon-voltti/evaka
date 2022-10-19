@@ -347,7 +347,7 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping) {
         }
     }
     private class ScopedEvaluator<T>(private val queryCtx: DatabaseActionRule.QueryContext) {
-        private val cache =
+        private val query =
             mutableMapOf<
                 DatabaseActionRule.Scoped.Query<in T, Any>,
                 Map<in T, DatabaseActionRule.Deferred<Any>>
@@ -359,7 +359,8 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping) {
         ): Sequence<Pair<T, AccessControlDecision>> {
             @Suppress("UNCHECKED_CAST")
             val query = rule.query as DatabaseActionRule.Scoped.Query<in T, Any>
-            val deferreds = cache.getOrPut(query) { query.executeWithTargets(queryCtx, targets) }
+            val deferreds =
+                this.query.getOrPut(query) { query.executeWithTargets(queryCtx, targets) }
             return targets.asSequence().map { target ->
                 target to (deferreds[target]?.evaluate(rule.params) ?: AccessControlDecision.None)
             }

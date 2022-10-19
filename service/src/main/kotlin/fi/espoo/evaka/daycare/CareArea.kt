@@ -10,6 +10,7 @@ import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.Coordinate
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -84,13 +85,15 @@ data class DaycareDecisionCustomization(
 data class DaycareCareArea(val id: AreaId, val name: String, val shortName: String)
 
 @ConstList("careTypes")
-enum class CareType {
+enum class CareType : DatabaseEnum {
     CLUB,
     FAMILY,
     CENTRE,
     GROUP_FAMILY,
     PRESCHOOL,
-    PREPARATORY_EDUCATION
+    PREPARATORY_EDUCATION;
+
+    override val sqlType: String = "care_types"
 }
 
 data class Location(

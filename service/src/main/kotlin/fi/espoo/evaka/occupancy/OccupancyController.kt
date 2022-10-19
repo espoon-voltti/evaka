@@ -12,8 +12,6 @@ import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.auth.AccessControlList
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -22,6 +20,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
@@ -34,7 +33,6 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/occupancy")
 class OccupancyController(
     private val accessControl: AccessControl,
-    private val acl: AccessControlList,
     private val placementPlanService: PlacementPlanService
 ) {
     @GetMapping("/by-unit/{unitId}")
@@ -62,7 +60,7 @@ class OccupancyController(
                         unitId,
                         FiniteDateRange(from, to),
                         type,
-                        acl.getAuthorizedUnits(user)
+                        AccessControlFilter.PermitAll
                     )
                 }
             }
@@ -146,7 +144,7 @@ class OccupancyController(
                         calculateSpeculatedMaxOccupancies(
                             tx,
                             clock.today(),
-                            acl.getAuthorizedUnits(user),
+                            AccessControlFilter.PermitAll,
                             unitId,
                             speculatedPlacements,
                             from,
@@ -188,7 +186,7 @@ class OccupancyController(
                         unitId,
                         FiniteDateRange(from, to),
                         type,
-                        acl.getAuthorizedUnits(user)
+                        AccessControlFilter.PermitAll
                     )
                 }
             }
@@ -247,7 +245,7 @@ fun Database.Read.calculateOccupancyPeriods(
     unitId: DaycareId,
     period: FiniteDateRange,
     type: OccupancyType,
-    aclAuth: AclAuthorization
+    unitFilter: AccessControlFilter<DaycareId>
 ): List<OccupancyPeriod> {
     if (period.start.plusYears(2) < period.end) {
         throw BadRequest(
@@ -256,7 +254,7 @@ fun Database.Read.calculateOccupancyPeriods(
     }
 
     return reduceDailyOccupancyValues(
-            calculateDailyUnitOccupancyValues(today, period, type, aclAuth, unitId = unitId)
+            calculateDailyUnitOccupancyValues(today, period, type, unitFilter, unitId = unitId)
         )
         .flatMap { (_, values) -> values }
 }
@@ -266,7 +264,7 @@ fun Database.Read.calculateOccupancyPeriodsGroupLevel(
     unitId: DaycareId,
     period: FiniteDateRange,
     type: OccupancyType,
-    aclAuth: AclAuthorization
+    unitFilter: AccessControlFilter<DaycareId>
 ): List<OccupancyPeriodGroupLevel> {
     if (period.start.plusYears(2) < period.end) {
         throw BadRequest(
@@ -275,7 +273,7 @@ fun Database.Read.calculateOccupancyPeriodsGroupLevel(
     }
 
     return reduceDailyOccupancyValues(
-            calculateDailyGroupOccupancyValues(today, period, type, aclAuth, unitId = unitId)
+            calculateDailyGroupOccupancyValues(today, period, type, unitFilter, unitId = unitId)
         )
         .flatMap { (groupKey, values) ->
             values.map { value ->
@@ -299,7 +297,7 @@ private data class SpeculatedMaxOccupancies(
 private fun calculateSpeculatedMaxOccupancies(
     tx: Database.Read,
     now: LocalDate,
-    aclAuth: AclAuthorization,
+    unitFilter: AccessControlFilter<DaycareId>,
     unitId: DaycareId,
     speculatedPlacements: List<Placement>,
     from: LocalDate,
@@ -314,7 +312,7 @@ private fun calculateSpeculatedMaxOccupancies(
             today = now,
             queryPeriod = longestPeriod,
             type = OccupancyType.PLANNED,
-            aclAuth = aclAuth,
+            unitFilter = unitFilter,
             unitId = unitId
         )
     val speculatedOccupancies =
@@ -322,7 +320,7 @@ private fun calculateSpeculatedMaxOccupancies(
             today = now,
             queryPeriod = longestPeriod,
             type = OccupancyType.PLANNED,
-            aclAuth = aclAuth,
+            unitFilter = unitFilter,
             unitId = unitId,
             speculatedPlacements = speculatedPlacements
         )

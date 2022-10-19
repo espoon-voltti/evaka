@@ -7,6 +7,7 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.assistanceneed.decision.AssistanceNeedDecisionStatus
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -14,7 +15,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
-import fi.espoo.evaka.shared.security.actionrule.toPredicate
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
@@ -46,18 +47,23 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
     @GetMapping("/reports/assistance-need-decisions/unread-count")
     fun getAssistanceNeedDecisionUnreadCount(
         db: Database,
-        user: AuthenticatedUser,
+        user: AuthenticatedUser.Employee,
         clock: EvakaClock
     ): Int {
         return db.connect { dbc ->
-                dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Global.READ_ASSISTANCE_NEED_DECISIONS_REPORT
-                    )
-                    it.getDecisionMakerUnreadCount(user.evakaUserId)
+                dbc.read { tx ->
+                    if (
+                        accessControl.isPermittedForSomeTarget(
+                            tx,
+                            user,
+                            clock,
+                            Action.AssistanceNeedDecision.READ_IN_REPORT
+                        )
+                    ) {
+                        tx.getDecisionMakerUnreadCount(user.evakaUserId)
+                    } else {
+                        0
+                    }
                 }
             }
             .also { Audit.AssistanceNeedDecisionsReportUnreadCount.log() }
@@ -68,7 +74,7 @@ private fun Database.Read.getDecisionRows(
     userId: EvakaUserId,
     idFilter: AccessControlFilter<AssistanceNeedDecisionId>
 ): List<AssistanceNeedDecisionsReportRow> =
-    createQuery {
+    createQuery<DatabaseTable> {
             sql(
                 """
 SELECT ad.id, sent_for_decision, concat(child.last_name, ' ', child.first_name) child_name,
@@ -79,7 +85,7 @@ JOIN person child ON child.id = ad.child_id
 JOIN daycare ON daycare.id = ad.selected_unit
 JOIN care_area ON care_area.id = daycare.care_area_id
 WHERE sent_for_decision IS NOT NULL
-AND (${tablePredicate("ad", idFilter.toPredicate())})
+AND (${predicate(idFilter.forTable("ad"))})
         """
                     .trimIndent()
             )

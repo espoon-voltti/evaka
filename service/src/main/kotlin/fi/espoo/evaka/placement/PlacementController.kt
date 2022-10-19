@@ -220,7 +220,6 @@ class PlacementController(
         @RequestBody body: PlacementUpdateRequestBody
     ) {
         val now = clock.now()
-        val aclAuth = acl.getAuthorizedUnits(user)
         db.connect { dbc ->
             dbc.transaction { tx ->
                 accessControl.requirePermissionFor(
@@ -230,6 +229,7 @@ class PlacementController(
                     Action.Placement.UPDATE,
                     placementId
                 )
+                val aclAuth = acl.getAuthorizedUnits(user)
                 val oldPlacement =
                     tx.updatePlacement(
                         placementId,

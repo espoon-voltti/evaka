@@ -6,23 +6,21 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.auth.AccessControlList
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class ChildrenInDifferentAddressReportController(
-    private val acl: AccessControlList,
-    private val accessControl: AccessControl
-) {
+class ChildrenInDifferentAddressReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/children-in-different-address")
     fun getChildrenInDifferentAddressReport(
         db: Database,
@@ -31,14 +29,15 @@ class ChildrenInDifferentAddressReportController(
     ): List<ChildrenInDifferentAddressReportRow> {
         return db.connect { dbc ->
                 dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Global.READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT
-                    )
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.Unit.READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT
+                        )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getChildrenInDifferentAddressRows(acl.getAuthorizedUnits(user), clock)
+                    it.getChildrenInDifferentAddressRows(clock, filter)
                 }
             }
             .also {
@@ -48,13 +47,12 @@ class ChildrenInDifferentAddressReportController(
 }
 
 private fun Database.Read.getChildrenInDifferentAddressRows(
-    authorizedUnits: AclAuthorization,
-    clock: EvakaClock
-): List<ChildrenInDifferentAddressReportRow> {
-    val units = authorizedUnits.ids
-    // language=sql
-    val sql =
-        """
+    clock: EvakaClock,
+    unitFilter: AccessControlFilter<DaycareId>
+): List<ChildrenInDifferentAddressReportRow> =
+    createQuery<DatabaseTable> {
+            sql(
+                """
         SELECT
             ca.name AS care_area_name,
             u.id AS unit_id,
@@ -71,13 +69,13 @@ private fun Database.Read.getChildrenInDifferentAddressRows(
         JOIN person p ON p.id = fc.head_of_child
         JOIN person ch ON ch.id = fc.child_id
         JOIN placement pl ON pl.child_id = fc.child_id
-          AND daterange(pl.start_date, pl.end_date, '[]') @> :today
+          AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(clock.today())}
           AND pl.type != 'CLUB'::placement_type
         JOIN daycare u ON u.id = pl.unit_id
         JOIN care_area ca ON ca.id = u.care_area_id
         WHERE
-            (:units::uuid[] IS NULL OR u.id = ANY(:units)) AND
-            daterange(fc.start_date, fc.end_date, '[]') @> :today AND
+            ${predicate(unitFilter.forTable("u"))} AND
+            daterange(fc.start_date, fc.end_date, '[]') @> ${bind(clock.today())} AND
             fc.conflict = false AND
             p.residence_code <> ch.residence_code AND
             p.residence_code IS NOT NULL AND
@@ -92,13 +90,11 @@ private fun Database.Read.getChildrenInDifferentAddressRows(
             lower(ch.street_address) <> 'poste restante'
         ORDER BY u.name, p.last_name, p.first_name, ch.last_name, ch.first_name;
         """
-            .trimIndent()
-    return createQuery(sql)
-        .bind("today", clock.today())
-        .bind("units", units)
+                    .trimIndent()
+            )
+        }
         .mapTo<ChildrenInDifferentAddressReportRow>()
         .toList()
-}
 
 data class ChildrenInDifferentAddressReportRow(
     val careAreaName: String,

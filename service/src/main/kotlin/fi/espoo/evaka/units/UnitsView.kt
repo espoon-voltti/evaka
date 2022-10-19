@@ -39,8 +39,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PlacementId
-import fi.espoo.evaka.shared.auth.AccessControlList
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -49,6 +47,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
 import java.time.LocalTime
 import org.springframework.format.annotation.DateTimeFormat
@@ -60,7 +59,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/views/units")
-class UnitsView(private val accessControl: AccessControl, private val acl: AccessControlList) {
+class UnitsView(private val accessControl: AccessControl) {
     private val terminatedPlacementsViewWeeks = 2L
 
     @GetMapping("/{unitId}")
@@ -205,7 +204,7 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
                                 clock.now(),
                                 unitId,
                                 period,
-                                acl.getAuthorizedUnits(user)
+                                AccessControlFilter.PermitAll
                             )
                         val groupOccupancies =
                             getGroupOccupancies(
@@ -213,7 +212,7 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
                                 clock.today(),
                                 unitId,
                                 period,
-                                acl.getAuthorizedUnits(user)
+                                AccessControlFilter.PermitAll
                             )
                         val placementProposals =
                             tx.getPlacementPlans(
@@ -285,7 +284,7 @@ private fun getUnitOccupancies(
     now: HelsinkiDateTime,
     unitId: DaycareId,
     period: FiniteDateRange,
-    aclAuth: AclAuthorization
+    unitFilter: AccessControlFilter<DaycareId>
 ): UnitOccupancies {
     return UnitOccupancies(
         planned =
@@ -295,7 +294,7 @@ private fun getUnitOccupancies(
                     unitId,
                     period,
                     OccupancyType.PLANNED,
-                    aclAuth
+                    unitFilter
                 )
             ),
         confirmed =
@@ -305,7 +304,7 @@ private fun getUnitOccupancies(
                     unitId,
                     period,
                     OccupancyType.CONFIRMED,
-                    aclAuth
+                    unitFilter
                 )
             ),
         realized =
@@ -315,7 +314,7 @@ private fun getUnitOccupancies(
                     unitId,
                     period,
                     OccupancyType.REALIZED,
-                    aclAuth
+                    unitFilter
                 )
             ),
         realtime =
@@ -357,7 +356,7 @@ private fun getGroupOccupancies(
     today: LocalDate,
     unitId: DaycareId,
     period: FiniteDateRange,
-    aclAuth: AclAuthorization
+    unitFilter: AccessControlFilter<DaycareId>
 ): GroupOccupancies {
     return GroupOccupancies(
         confirmed =
@@ -367,7 +366,7 @@ private fun getGroupOccupancies(
                     unitId,
                     period,
                     OccupancyType.CONFIRMED,
-                    aclAuth
+                    unitFilter
                 )
             ),
         realized =
@@ -377,7 +376,7 @@ private fun getGroupOccupancies(
                     unitId,
                     period,
                     OccupancyType.REALIZED,
-                    aclAuth
+                    unitFilter
                 )
             )
     )

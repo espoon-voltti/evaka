@@ -6,14 +6,16 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.auth.AccessControlList
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
@@ -21,10 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class MissingHeadOfFamilyReportController(
-    private val acl: AccessControlList,
-    private val accessControl: AccessControl
-) {
+class MissingHeadOfFamilyReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/missing-head-of-family")
     fun getMissingHeadOfFamilyReport(
         db: Database,
@@ -35,14 +34,15 @@ class MissingHeadOfFamilyReportController(
     ): List<MissingHeadOfFamilyReportRow> {
         return db.connect { dbc ->
                 dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Global.READ_MISSING_HEAD_OF_FAMILY_REPORT
-                    )
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.Unit.READ_MISSING_HEAD_OF_FAMILY_REPORT
+                        )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getMissingHeadOfFamilyRows(from, to, acl.getAuthorizedUnits(user))
+                    it.getMissingHeadOfFamilyRows(from, to, filter)
                 }
             }
             .also {
@@ -56,11 +56,12 @@ class MissingHeadOfFamilyReportController(
 private fun Database.Read.getMissingHeadOfFamilyRows(
     from: LocalDate,
     to: LocalDate?,
-    authorizedUnits: AclAuthorization
-): List<MissingHeadOfFamilyReportRow> {
-    // language=sql
-    val sql =
-        """
+    idFilter: AccessControlFilter<DaycareId>
+): List<MissingHeadOfFamilyReportRow> =
+    createQuery<DatabaseTable> {
+            val dateRange = DateRange(from, to)
+            sql(
+                """
         SELECT 
             ca.name AS care_area_name, daycare.name AS unit_name, unit_id,
             child_id, first_name, last_name, sum(days_without_head) AS days_without_head
@@ -76,12 +77,12 @@ private fun Database.Read.getMissingHeadOfFamilyRows(
               days_in_range(pl.period) AS days,
               coalesce(sum(days_in_range(pl.period * sn.period)) OVER w, 0) AS days_with_head
             FROM (
-              SELECT id, child_id, unit_id, daterange(start_date, end_date, '[]') * daterange(:from, NULL) AS period
+              SELECT id, child_id, unit_id, daterange(start_date, end_date, '[]') * ${bind(dateRange)} AS period
               FROM placement
               WHERE placement.type != 'CLUB'::placement_type
             ) AS pl
             LEFT JOIN (
-              SELECT child_id, daterange(start_date, end_date, '[]') * daterange(:from, NULL) AS period
+              SELECT child_id, daterange(start_date, end_date, '[]') * ${bind(dateRange)} AS period
               FROM fridge_child
               WHERE conflict = FALSE
             ) AS sn
@@ -95,18 +96,15 @@ private fun Database.Read.getMissingHeadOfFamilyRows(
         JOIN daycare ON daycare.id = unit_id
         JOIN care_area ca ON ca.id = daycare.care_area_id
         WHERE person.date_of_death IS NULL
-        ${if (authorizedUnits != AclAuthorization.All) " AND daycare.id = ANY(:units)" else ""}
+        AND ${predicate(idFilter.forTable("daycare"))}
         GROUP BY ca.name, daycare.name, unit_id, child_id, first_name, last_name, unit_id
         ORDER BY ca.name, daycare.name, last_name, first_name
         """
-            .trimIndent()
-    return createQuery(sql)
-        .bind("units", authorizedUnits.ids)
-        .bind("from", from)
-        .bind("to", to)
+                    .trimIndent()
+            )
+        }
         .mapTo<MissingHeadOfFamilyReportRow>()
         .toList()
-}
 
 data class MissingHeadOfFamilyReportRow(
     val careAreaName: String,

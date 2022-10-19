@@ -233,60 +233,13 @@ sealed interface Action {
             HasGlobalRole(SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
         ),
-        READ_APPLICATIONS_REPORT(
-            HasGlobalRole(SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
-        ),
-        READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT(
-            HasGlobalRole(SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
-            HasUnitRole(
-                    UNIT_SUPERVISOR,
-                    SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
-                )
-                .inAnyUnit()
-        ),
-        READ_ASSISTANCE_NEED_DECISIONS_REPORT(
-            IsEmployee.andIsDecisionMakerForAnyAssistanceNeedDecision()
-        ),
-        READ_ATTENDANCE_RESERVATION_REPORT(HasUnitRole(UNIT_SUPERVISOR).inAnyUnit()),
-        READ_CHILD_AGE_AND_LANGUAGE_REPORT(
-            HasGlobalRole(SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
-            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit()
-        ),
-        READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN)),
         READ_DECISIONS_REPORT(HasGlobalRole(SERVICE_WORKER, DIRECTOR, REPORT_VIEWER)),
         READ_DUPLICATE_PEOPLE_REPORT,
         READ_ENDED_PLACEMENTS_REPORT(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN)),
-        READ_FAMILY_CONFLICT_REPORT(
-            HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
-        ),
         READ_INVOICE_REPORT(HasGlobalRole(FINANCE_ADMIN)),
-        READ_MISSING_HEAD_OF_FAMILY_REPORT(
-            HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
-        ),
-        READ_MISSING_SERVICE_NEED_REPORT(
-            HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
-        ),
-        READ_OCCUPANCY_REPORT(
-            HasGlobalRole(SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
-        ),
-        READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN)),
         READ_PLACEMENT_SKETCHING_REPORT(HasGlobalRole(SERVICE_WORKER)),
         READ_PRESENCE_REPORT(HasGlobalRole(DIRECTOR, REPORT_VIEWER)),
         READ_RAW_REPORT(HasGlobalRole(REPORT_VIEWER)),
-        READ_SERVICE_NEED_REPORT(
-            HasGlobalRole(SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
-        ),
-        READ_SERVICE_VOUCHER_REPORT(
-            HasGlobalRole(DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inAnyUnit()
-        ),
         READ_STARTING_PLACEMENTS_REPORT(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN)),
         READ_SEXTET_REPORT(HasGlobalRole(DIRECTOR, REPORT_VIEWER)),
         READ_VARDA_REPORT,
@@ -1022,6 +975,10 @@ sealed interface Action {
     }
     enum class Decision(override vararg val defaultRules: ScopedActionRule<in DecisionId>) :
         ScopedAction<DecisionId> {
+        READ(
+            HasGlobalRole(SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfDecision()
+        ),
         DOWNLOAD_PDF(
             HasGlobalRole(SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
@@ -1561,8 +1518,51 @@ sealed interface Action {
         UPDATE_STAFF_GROUP_ACL(
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
         ),
+        READ_APPLICATIONS_REPORT(
+            HasGlobalRole(SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+        ),
+        READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT(
+            HasGlobalRole(SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    SPECIAL_EDUCATION_TEACHER,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                )
+                .inUnit()
+        ),
         READ_ATTENDANCE_RESERVATION_REPORT(HasUnitRole(UNIT_SUPERVISOR).inUnit()),
+        READ_CHILD_AGE_AND_LANGUAGE_REPORT(
+            HasGlobalRole(SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inUnit()
+        ),
+        READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN)),
+        READ_FAMILY_CONFLICT_REPORT(
+            HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+        ),
         READ_FAMILY_CONTACT_REPORT(
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+        ),
+        READ_MISSING_HEAD_OF_FAMILY_REPORT(
+            HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+        ),
+        READ_MISSING_SERVICE_NEED_REPORT(
+            HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+        ),
+        READ_OCCUPANCY_REPORT(
+            HasGlobalRole(SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+        ),
+        READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT(HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN)),
+        READ_SERVICE_NEED_REPORT(
+            HasGlobalRole(SERVICE_WORKER, DIRECTOR, REPORT_VIEWER),
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
+        ),
+        READ_SERVICE_VOUCHER_REPORT(
+            HasGlobalRole(DIRECTOR, REPORT_VIEWER, FINANCE_ADMIN),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
         ),
         READ_SERVICE_VOUCHER_VALUES_REPORT(

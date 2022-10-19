@@ -8,18 +8,18 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.VoucherValueDecisionId
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
@@ -31,11 +31,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/reports/service-voucher-value")
-class ServiceVoucherValueReportController(
-    private val acl: AccessControlList,
-    private val accessControl: AccessControl,
-    private val featureConfig: FeatureConfig
-) {
+class ServiceVoucherValueReportController(private val accessControl: AccessControl) {
 
     @GetMapping("/units")
     fun getServiceVoucherValuesForAllUnits(
@@ -46,17 +42,16 @@ class ServiceVoucherValueReportController(
         @RequestParam month: Int,
         @RequestParam(required = false) areaId: AreaId?
     ): ServiceVoucherReport {
-        val authorization = acl.getAuthorizedUnits(user, setOf(UserRole.UNIT_SUPERVISOR))
-
         return db.connect { dbc ->
             dbc.read { tx ->
-                accessControl.requirePermissionFor(
-                    tx,
-                    user,
-                    clock,
-                    Action.Global.READ_SERVICE_VOUCHER_REPORT
-                )
-                getServiceVoucherReport(tx, year, month, areaId, authorization.ids)
+                val filter =
+                    accessControl.requireAuthorizationFilter(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_SERVICE_VOUCHER_REPORT
+                    )
+                getServiceVoucherReport(tx, year, month, areaId, filter)
             }
         }
     }
@@ -155,9 +150,22 @@ fun getServiceVoucherReport(
     year: Int,
     month: Int,
     areaId: AreaId?,
-    unitIds: Set<DaycareId>?
+    unitFilter: AccessControlFilter<DaycareId>
 ): ServiceVoucherReport {
     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+
+    val unitIds =
+        when (unitFilter) {
+            AccessControlFilter.PermitAll -> null
+            is AccessControlFilter.Some ->
+                tx.createQuery<DatabaseTable> {
+                        sql(
+                            "SELECT id FROM daycare WHERE ${predicate(unitFilter.forTable("daycare"))}"
+                        )
+                    }
+                    .mapTo<DaycareId>()
+                    .toSet()
+        }
     val snapshotTime = tx.getSnapshotDate(year, month)
     val rows =
         if (snapshotTime != null) {

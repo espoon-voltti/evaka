@@ -5,23 +5,21 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.auth.AccessControlList
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class FamilyConflictReportController(
-    private val acl: AccessControlList,
-    private val accessControl: AccessControl
-) {
+class FamilyConflictReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/family-conflicts")
     fun getFamilyConflictsReport(
         db: Database,
@@ -30,14 +28,15 @@ class FamilyConflictReportController(
     ): List<FamilyConflictReportRow> {
         return db.connect { dbc ->
                 dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Global.READ_FAMILY_CONFLICT_REPORT
-                    )
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.Unit.READ_FAMILY_CONFLICT_REPORT
+                        )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getFamilyConflicts(acl.getAuthorizedUnits(user))
+                    it.getFamilyConflicts(filter)
                 }
             }
             .also { Audit.FamilyConflictReportRead.log(args = mapOf("count" to it.size)) }
@@ -45,11 +44,11 @@ class FamilyConflictReportController(
 }
 
 private fun Database.Read.getFamilyConflicts(
-    authorizedUnits: AclAuthorization
-): List<FamilyConflictReportRow> {
-    // language=sql
-    val sql =
-        """
+    unitFilter: AccessControlFilter<DaycareId>
+): List<FamilyConflictReportRow> =
+    createQuery<DatabaseTable> {
+            sql(
+                """
         WITH child_conflicts AS (
             SELECT head_of_child as id, count(*) as child_conflict_count
             FROM fridge_child
@@ -86,15 +85,14 @@ private fun Database.Read.getFamilyConflicts(
         JOIN primary_units_view pu ON co.id = pu.head_of_child
         JOIN daycare u ON u.id = pu.unit_id
         JOIN care_area ca ON ca.id = u.care_area_id
-        WHERE (:units::uuid[] IS NULL OR u.id = ANY(:units))
+        WHERE ${predicate(unitFilter.forTable("u"))}
         ORDER BY ca.name, u.name, co.last_name, co.first_name
-        """
-            .trimIndent()
-    return createQuery(sql)
-        .bind("units", if (authorizedUnits != AclAuthorization.All) authorizedUnits.ids else null)
+            """
+                    .trimIndent()
+            )
+        }
         .mapTo<FamilyConflictReportRow>()
         .toList()
-}
 
 data class FamilyConflictReportRow(
     val careAreaName: String,

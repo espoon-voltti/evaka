@@ -11,7 +11,6 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -29,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/decisions2")
 class DecisionController(
-    private val acl: AccessControlList,
     private val decisionService: DecisionService,
     private val decisionDraftService: DecisionDraftService,
     private val accessControl: AccessControl
@@ -51,7 +49,14 @@ class DecisionController(
                         Action.Person.READ_DECISIONS,
                         guardianId
                     )
-                    it.getDecisionsByGuardian(guardianId, acl.getAuthorizedUnits(user))
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.Decision.READ
+                        )
+                    it.getDecisionsByGuardian(guardianId, filter)
                 }
             }
         Audit.DecisionRead.log(targetId = guardianId, args = mapOf("count" to decisions.size))
@@ -75,7 +80,14 @@ class DecisionController(
                         Action.Child.READ_DECISIONS,
                         childId
                     )
-                    it.getDecisionsByChild(childId, acl.getAuthorizedUnits(user))
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.Decision.READ
+                        )
+                    it.getDecisionsByChild(childId, filter)
                 }
             }
         Audit.DecisionRead.log(targetId = childId, args = mapOf("count" to decisions.size))
@@ -99,7 +111,14 @@ class DecisionController(
                         Action.Application.READ_DECISIONS,
                         applicationId
                     )
-                    it.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user))
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.Decision.READ
+                        )
+                    it.getDecisionsByApplication(applicationId, filter)
                 }
             }
         Audit.DecisionReadByApplication.log(targetId = applicationId)

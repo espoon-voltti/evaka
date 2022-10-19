@@ -11,15 +11,16 @@ import fi.espoo.evaka.assistanceaction.getAssistanceActionOptions
 import fi.espoo.evaka.assistanceneed.AssistanceBasisOption
 import fi.espoo.evaka.assistanceneed.getAssistanceBasisOptions
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.auth.AccessControlList
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
@@ -28,10 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class AssistanceNeedsAndActionsReportController(
-    private val acl: AccessControlList,
-    private val accessControl: AccessControl
-) {
+class AssistanceNeedsAndActionsReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/assistance-needs-and-actions")
     fun getAssistanceNeedReport(
         db: Database,
@@ -41,17 +39,18 @@ class AssistanceNeedsAndActionsReportController(
     ): AssistanceNeedsAndActionsReport {
         return db.connect { dbc ->
                 dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Global.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT
-                    )
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.Unit.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT
+                        )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     AssistanceNeedsAndActionsReport(
                         bases = it.getAssistanceBasisOptions(),
                         actions = it.getAssistanceActionOptions(),
-                        rows = it.getReportRows(date, acl.getAuthorizedUnits(user))
+                        rows = it.getReportRows(date, filter)
                     )
                 }
             }
@@ -89,9 +88,13 @@ private typealias AssistanceBasisOptionValue = String
 
 private typealias AssistanceActionOptionValue = String
 
-private fun Database.Read.getReportRows(date: LocalDate, authorizedUnits: AclAuthorization) =
-    createQuery(
-            """
+private fun Database.Read.getReportRows(
+    date: LocalDate,
+    unitFilter: AccessControlFilter<DaycareId>
+) =
+    createQuery<DatabaseTable> {
+            sql(
+                """
 WITH basis_counts AS (
     SELECT
         daycare_group_id,
@@ -107,9 +110,9 @@ WITH basis_counts AS (
         JOIN assistance_need an ON an.child_id = pl.child_id
         LEFT JOIN assistance_basis_option_ref r ON r.need_id = an.id
         LEFT JOIN assistance_basis_option o on r.option_id = o.id
-        WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> :targetDate
-        AND daterange(pl.start_date, pl.end_date, '[]') @> :targetDate
-        AND daterange(an.start_date, an.end_date, '[]') @> :targetDate
+        WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
+        AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+        AND daterange(an.start_date, an.end_date, '[]') @> ${bind(date)}
         GROUP BY 1, 2
     ) basis_stats
     GROUP BY daycare_group_id
@@ -126,9 +129,9 @@ WITH basis_counts AS (
         JOIN placement pl ON pl.id = gpl.daycare_placement_id
         JOIN assistance_action aa ON aa.child_id = pl.child_id
         JOIN LATERAL (SELECT unnest(aa.measures) AS value) measures ON true
-        WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> :targetDate
-        AND daterange(pl.start_date, pl.end_date, '[]') @> :targetDate
-        AND daterange(aa.start_date, aa.end_date, '[]') @> :targetDate
+        WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
+        AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+        AND daterange(aa.start_date, aa.end_date, '[]') @> ${bind(date)}
         GROUP BY 1, 2
     ) measure_stats
     GROUP BY daycare_group_id
@@ -150,9 +153,9 @@ WITH basis_counts AS (
         JOIN assistance_action aa ON aa.child_id = pl.child_id
         LEFT JOIN assistance_action_option_ref r ON r.action_id = aa.id
         LEFT JOIN assistance_action_option o on r.option_id = o.id
-        WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> :targetDate
-        AND daterange(pl.start_date, pl.end_date, '[]') @> :targetDate
-        AND daterange(aa.start_date, aa.end_date, '[]') @> :targetDate
+        WHERE daterange(gpl.start_date, gpl.end_date, '[]') @> ${bind(date)}
+        AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
+        AND daterange(aa.start_date, aa.end_date, '[]') @> ${bind(date)}
         GROUP BY GROUPING SETS ((1, 2), (1, 3), (1, 4))
     ) action_stats
     GROUP BY daycare_group_id
@@ -173,17 +176,16 @@ SELECT
     coalesce(measure_counts, '{}') AS measure_counts
 FROM daycare u
 JOIN care_area ca ON u.care_area_id = ca.id
-JOIN daycare_group g ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> :targetDate
+JOIN daycare_group g ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> ${bind(date)}
 LEFT JOIN basis_counts ON g.id = basis_counts.daycare_group_id
 LEFT JOIN measure_counts ON g.id = measure_counts.daycare_group_id
 LEFT JOIN action_counts ON g.id = action_counts.daycare_group_id
-${if (authorizedUnits != AclAuthorization.All) "WHERE u.id = ANY(:units)" else ""}
+WHERE ${predicate(unitFilter.forTable("u"))}
 ORDER BY ca.name, u.name, g.name
         """
-                .trimIndent()
-        )
-        .bind("targetDate", date)
-        .bind("units", authorizedUnits.ids)
+                    .trimIndent()
+            )
+        }
         .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
         .mapTo<AssistanceNeedsAndActionsReportController.AssistanceNeedsAndActionsReportRow>()
         .list()

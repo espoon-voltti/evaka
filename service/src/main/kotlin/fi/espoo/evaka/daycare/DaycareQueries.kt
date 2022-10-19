@@ -74,7 +74,7 @@ data class DaycareFields(
 data class DaycareGroupSummary(val id: GroupId, val name: String, val endDate: LocalDate?)
 
 fun daycaresQuery(predicate: Predicate<DatabaseTable.Daycare>) =
-    QuerySql.of {
+    QuerySql.of<DatabaseTable.Daycare> {
         sql(
             """
 SELECT
@@ -130,7 +130,7 @@ FROM daycare
 LEFT JOIN unit_manager um ON daycare.unit_manager_id = um.id
 LEFT JOIN employee finance_decision_handler ON finance_decision_handler.id = daycare.finance_decision_handler
 JOIN care_area ca ON daycare.care_area_id = ca.id
-WHERE (${tablePredicate("daycare", predicate)})
+WHERE ${predicate(predicate.forTable("daycare"))}
         """
                 .trimIndent()
         )
@@ -161,7 +161,7 @@ WHERE id = ANY(:ids)
         .toList()
 
 fun Database.Read.getDaycare(id: DaycareId): Daycare? =
-    createQuery(daycaresQuery(Predicate.of { prefix -> sql("$prefix.id = ${bind(id)}") }))
+    createQuery(daycaresQuery(Predicate { where("$it.id = ${bind(id)}") }))
         .mapTo<Daycare>()
         .firstOrNull()
 

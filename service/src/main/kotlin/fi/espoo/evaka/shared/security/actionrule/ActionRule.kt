@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.Predicate
+import fi.espoo.evaka.shared.db.PredicateSql
 import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
@@ -126,6 +127,8 @@ sealed interface AccessControlFilter<out T> {
 fun <T : DatabaseTable> AccessControlFilter<Id<T>>.toPredicate(): Predicate<T> =
     when (this) {
         AccessControlFilter.PermitAll -> Predicate.alwaysTrue()
-        is AccessControlFilter.Some<Id<T>> ->
-            Predicate.of { prefix -> sql("($prefix.id IN (${subquery(filter)}))") }
+        is AccessControlFilter.Some<Id<T>> -> Predicate { where("$it.id IN (${subquery(filter)})") }
     }
+
+fun <T : DatabaseTable> AccessControlFilter<Id<T>>.forTable(table: String): PredicateSql<T> =
+    toPredicate().forTable(table)

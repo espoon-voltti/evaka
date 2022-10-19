@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
 import mu.KotlinLogging
@@ -65,7 +66,14 @@ fun createPaymentDrafts(tx: Database.Transaction) {
     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
     tx.createUpdate("LOCK TABLE payment").execute()
 
-    val report = getServiceVoucherReport(tx, lastSnapshot.year, lastSnapshot.month, null, null)
+    val report =
+        getServiceVoucherReport(
+            tx,
+            lastSnapshot.year,
+            lastSnapshot.month,
+            null,
+            AccessControlFilter.PermitAll
+        )
     if (report.locked == null) throw BadRequest("Voucher value report is not locked")
 
     val period =

@@ -18,7 +18,6 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.FeatureConfig
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -27,6 +26,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -429,12 +429,13 @@ class ApplicationControllerCitizen(
                     )
                     tx.fetchApplicationDetails(applicationId)
                         ?: throw NotFound("Application not found")
-                    tx.getSentDecisionsByApplication(applicationId, AclAuthorization.All).map {
-                        DecisionWithValidStartDatePeriod(
-                            it,
-                            it.validRequestedStartDatePeriod(featureConfig)
-                        )
-                    }
+                    tx.getSentDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
+                        .map {
+                            DecisionWithValidStartDatePeriod(
+                                it,
+                                it.validRequestedStartDatePeriod(featureConfig)
+                            )
+                        }
                 }
             }
             .also {

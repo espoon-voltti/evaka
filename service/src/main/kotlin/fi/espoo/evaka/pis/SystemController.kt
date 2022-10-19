@@ -183,8 +183,11 @@ class SystemController(
                                 pinCode =
                                     permittedGlobalActions.contains(Action.Global.PIN_CODE_PAGE),
                                 assistanceNeedDecisionsReport =
-                                    permittedGlobalActions.contains(
-                                        Action.Global.READ_ASSISTANCE_NEED_DECISIONS_REPORT
+                                    accessControl.isPermittedForSomeTarget(
+                                        tx,
+                                        user,
+                                        clock,
+                                        Action.AssistanceNeedDecision.READ_IN_REPORT
                                     ),
                                 createDraftInvoices =
                                     permittedGlobalActions.contains(

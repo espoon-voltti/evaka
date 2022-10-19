@@ -21,7 +21,7 @@ import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.HasGlobalRole
 import fi.espoo.evaka.shared.security.actionrule.HasUnitRole
 import fi.espoo.evaka.shared.security.actionrule.IsMobile
-import fi.espoo.evaka.shared.security.actionrule.toPredicate
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -152,11 +152,11 @@ class UnitAccessControlTest : AccessControlTest() {
             db.read { accessControl.getAuthorizationFilter(it, user, clock, action) }
         fun execute(filter: AccessControlFilter.Some<DaycareId>) =
             db.read {
-                it.createQuery {
+                it.createQuery<Any> {
                         sql(
                             """
                     SELECT id FROM daycare
-                    WHERE ${tablePredicate("daycare", filter.toPredicate())}
+                    WHERE ${predicate(filter.forTable("daycare"))}
                     """
                                 .trimIndent()
                         )

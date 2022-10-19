@@ -70,7 +70,6 @@ import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -80,6 +79,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
 import java.util.UUID
 import mu.KotlinLogging
@@ -681,7 +681,7 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(WAITING_CONFIRMATION, ACTIVE))
 
-        val decisions = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
+        val decisions = tx.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
 
         val decision =
             decisions.find { it.id == decisionId }
@@ -779,7 +779,7 @@ class ApplicationStateService(
         val application = getApplication(tx, applicationId)
         verifyStatus(application, setOf(WAITING_CONFIRMATION, ACTIVE, REJECTED))
 
-        val decisions = tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
+        val decisions = tx.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
         val decision =
             decisions.find { it.id == decisionId }
                 ?: throw NotFound("Decision $decisionId not found on application $applicationId")

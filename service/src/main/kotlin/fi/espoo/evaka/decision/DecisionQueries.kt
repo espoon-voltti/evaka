@@ -9,24 +9,31 @@ import fi.espoo.evaka.application.DecisionSummary
 import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.Predicate
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 import org.jdbi.v3.core.result.RowView
 
-// language=SQL
-private val decisionSelector =
-    """
-        SELECT 
+private fun Database.Read.createDecisionQuery(
+    decision: Predicate<DatabaseTable.Decision> = Predicate.alwaysTrue(),
+    application: Predicate<DatabaseTable.Application> = Predicate.alwaysTrue(),
+) =
+    createQuery<Any> {
+        sql(
+            """
+        SELECT
             d.id, d.type, d.start_date, d.end_date, d.document_key, d.other_guardian_document_key, d.number, d.sent_date, d.status, d.unit_id, d.application_id, d.requested_start_date, d.resolved,
             u.name, u.decision_daycare_name, u.decision_preschool_name, u.decision_handler, u.decision_handler_address, u.provider_type,
             u.street_address, u.postal_code, u.post_office,
@@ -37,11 +44,15 @@ private val decisionSelector =
             c.first_name AS child_first_name, c.last_name AS child_last_name
         FROM decision d
         INNER JOIN daycare u on d.unit_id = u.id
-        INNER JOIN application ap on d.application_id = ap.id 
+        INNER JOIN application ap on d.application_id = ap.id
         INNER JOIN person c on ap.child_id = c.id
         LEFT JOIN unit_manager m on u.unit_manager_id = m.id
+        WHERE ${predicate(decision.forTable("d"))}
+        AND ${predicate(application.forTable("ap"))}
     """
-        .trimIndent()
+                .trimIndent()
+        )
+    }
 
 private fun decisionFromResultSet(row: RowView): Decision =
     Decision(
@@ -78,70 +89,81 @@ private fun decisionFromResultSet(row: RowView): Decision =
             "${row.mapColumn<String>("child_last_name")} ${row.mapColumn<String>("child_first_name")}"
     )
 
-fun Database.Read.getDecision(decisionId: DecisionId): Decision? {
-    return createQuery("$decisionSelector WHERE d.id = :id")
-        .bind("id", decisionId)
+fun Database.Read.getDecision(decisionId: DecisionId): Decision? =
+    createDecisionQuery(decision = Predicate { where("$it.id = ${bind(decisionId)}") })
         .map(::decisionFromResultSet)
         .first()
-}
 
-fun Database.Read.getSentDecision(decisionId: DecisionId): Decision? {
-    return createQuery("$decisionSelector WHERE d.id = :id AND d.sent_date IS NOT NULL")
-        .bind("id", decisionId)
+fun Database.Read.getSentDecision(decisionId: DecisionId): Decision? =
+    createDecisionQuery(
+            decision =
+                Predicate { where("$it.sent_date IS NOT NULL AND $it.id = ${bind(decisionId)}") }
+        )
         .map(::decisionFromResultSet)
         .first()
-}
 
 fun Database.Read.getDecisionsByChild(
     childId: ChildId,
-    authorizedUnits: AclAuthorization
-): List<Decision> {
-    val units = authorizedUnits.ids
-    val sql =
-        "$decisionSelector WHERE ap.child_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id = ANY(:units)" } ?: ""}"
-    val query = createQuery(sql).bind("id", childId)
-    units?.let { query.bind("units", units) }
-    return query.map(::decisionFromResultSet).list()
-}
+    filter: AccessControlFilter<DecisionId>
+): List<Decision> =
+    createDecisionQuery(
+            decision =
+                Predicate {
+                    where("$it.sent_date IS NOT NULL AND ${predicate(filter.forTable(it))}")
+                },
+            application = Predicate { where("$it.child_id = ${bind(childId)}") }
+        )
+        .map(::decisionFromResultSet)
+        .toList()
 
 fun Database.Read.getDecisionsByApplication(
     applicationId: ApplicationId,
-    authorizedUnits: AclAuthorization
-): List<Decision> {
-    val units = authorizedUnits.ids
-    val sql =
-        "$decisionSelector WHERE d.application_id = :id ${units?.let { " AND d.unit_id = ANY(:units)" } ?: ""}"
-    val query = createQuery(sql).bind("id", applicationId)
-    units?.let { query.bind("units", units) }
-
-    return query.map(::decisionFromResultSet).list()
-}
+    filter: AccessControlFilter<DecisionId>
+): List<Decision> =
+    createDecisionQuery(
+            decision =
+                Predicate {
+                    where(
+                        "$it.application_id = ${bind(applicationId)} AND ${predicate(filter.forTable(it))}"
+                    )
+                }
+        )
+        .map(::decisionFromResultSet)
+        .toList()
 
 fun Database.Read.getSentDecisionsByApplication(
     applicationId: ApplicationId,
-    authorizedUnits: AclAuthorization
-): List<Decision> {
-    val units = authorizedUnits.ids
-    val sql =
-        "$decisionSelector WHERE d.application_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id = ANY(:units)" } ?: ""}"
-    val query = createQuery(sql).bind("id", applicationId)
-    units?.let { query.bind("units", units) }
-
-    return query.map(::decisionFromResultSet).list()
-}
+    filter: AccessControlFilter<DecisionId>
+): List<Decision> =
+    createDecisionQuery(
+            decision =
+                Predicate {
+                    where(
+                        """
+                            $it.application_id = ${bind(applicationId)}
+                            AND $it.sent_date IS NOT NULL
+                            AND ${predicate(filter.forTable(it))}
+                        """
+                            .trimIndent()
+                    )
+                }
+        )
+        .map(::decisionFromResultSet)
+        .toList()
 
 fun Database.Read.getDecisionsByGuardian(
     guardianId: PersonId,
-    authorizedUnits: AclAuthorization
-): List<Decision> {
-    val units = authorizedUnits.ids
-    val sql =
-        "$decisionSelector WHERE ap.guardian_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id = ANY(:units)" } ?: ""}"
-    val query = createQuery(sql).bind("id", guardianId)
-    units?.let { query.bind("units", units) }
-
-    return query.map(::decisionFromResultSet).list()
-}
+    filter: AccessControlFilter<DecisionId>
+): List<Decision> =
+    createDecisionQuery(
+            decision =
+                Predicate {
+                    where("$it.sent_date IS NOT NULL AND ${predicate(filter.forTable(it))}")
+                },
+            application = Predicate { where("$it.guardian_id = ${bind(guardianId)}") }
+        )
+        .map(::decisionFromResultSet)
+        .toList()
 
 data class ApplicationDecisionRow(
     val applicationId: ApplicationId,
@@ -319,7 +341,6 @@ fun Database.Read.getDecisionLanguage(decisionId: DecisionId): DocumentLang {
                 INNER JOIN daycare ON unit_id = daycare.id
             WHERE decision.id = :id
         """
-                .trimIndent()
                 .trimIndent()
         )
         .bind("id", decisionId)
