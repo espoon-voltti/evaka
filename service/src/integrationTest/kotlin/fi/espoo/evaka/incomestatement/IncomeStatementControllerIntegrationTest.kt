@@ -28,7 +28,10 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
@@ -47,6 +50,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 
@@ -569,10 +573,10 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     fun `list income statements awaiting handler - placement valid date filter`() {
         val placementId1 = PlacementId(UUID.randomUUID())
         val placementId2 = PlacementId(UUID.randomUUID())
-        val placement1Start = LocalDate.now().minusDays(30)
-        val placement1End = LocalDate.now().plusDays(30)
-        val placement2Start = LocalDate.now().plusDays(30)
-        val placement2End = LocalDate.now().plusDays(90)
+        val placement1Start = LocalDate.of(2022, 9, 19)
+        val placement1End = LocalDate.of(2022, 11, 19)
+        val placement2Start = LocalDate.of(2022, 10, 19)
+        val placement2End = LocalDate.of(2023, 1, 17)
         db.transaction { tx ->
             tx.insertTestParentship(citizenId, testChild_1.id, startDate = placement1Start, endDate = placement1End)
             tx.insertTestPlacement(
@@ -598,7 +602,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         val incomeStatement1 = createTestIncomeStatement(citizenId)
         val incomeStatement2 = createTestIncomeStatement(testAdult_2.id)
 
-        val newCreated = HelsinkiDateTime.now().minusDays(2)
+        val newCreated = HelsinkiDateTime.of(LocalDate.of(2022, 10, 17), LocalTime.of(11, 4))
 
         db.transaction {
             it.createUpdate("UPDATE income_statement SET created = :newCreated WHERE id = :id")
@@ -617,7 +621,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
                         personName = "Doe Joan",
-                        primaryCareArea = null
+                        primaryCareArea = "Test Area"
                     )
                 ),
                 1,
@@ -626,7 +630,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             getIncomeStatementsAwaitingHandler(
                 SearchIncomeStatementsRequest(
                     placementValidDate = placement2End
-                )
+                ),
+                MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.MAX))
             )
         )
 
@@ -649,7 +654,7 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
                         type = IncomeStatementType.HIGHEST_FEE,
                         personId = testAdult_2.id,
                         personName = "Doe Joan",
-                        primaryCareArea = null
+                        primaryCareArea = "Test Area"
                     )
                 ),
                 2,
@@ -658,7 +663,8 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
             getIncomeStatementsAwaitingHandler(
                 SearchIncomeStatementsRequest(
                     placementValidDate = placement2Start
-                )
+                ),
+                MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 10, 19), LocalTime.MAX))
             )
         )
     }
@@ -766,10 +772,12 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
     }
 
     private fun getIncomeStatementsAwaitingHandler(
-        body: SearchIncomeStatementsRequest = SearchIncomeStatementsRequest(1, 50, null, null, emptyList(), emptyList(), null, null)
+        body: SearchIncomeStatementsRequest = SearchIncomeStatementsRequest(1, 50, null, null, emptyList(), emptyList(), null, null),
+        clock: EvakaClock = RealEvakaClock()
     ): Paged<IncomeStatementAwaitingHandler> =
         http.post("/income-statements/awaiting-handler")
             .asUser(employee)
+            .header("EvakaMockedTime", clock.now())
             .objectBody(body, mapper = jsonMapper)
             .responseObject<Paged<IncomeStatementAwaitingHandler>>(jsonMapper)
             .let { (_, _, body) -> body.get() }

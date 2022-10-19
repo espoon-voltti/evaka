@@ -535,7 +535,7 @@ WHERE handler_id IS NULL
 AND (cardinality(:areas) = 0 OR ca.short_name = ANY(:areas))
 AND (cardinality(:providerTypes) = 0 OR d.provider_type = ANY(:providerTypes::unit_provider_type[]))
 AND daterange(:sentStartDate, :sentEndDate, '[]') @> i.created::date
-AND (:placementValidDate IS NULL OR daterange(p.start_date, p.end_date, '[]') @> :placementValidDate)
+AND (:placementValidDate IS NULL OR (p.start_date IS NOT NULL AND p.end_date IS NOT NULL AND daterange(p.start_date, p.end_date, '[]') @> :placementValidDate))
 """
 
 fun Database.Read.fetchIncomeStatementsAwaitingHandler(
