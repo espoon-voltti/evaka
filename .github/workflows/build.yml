@@ -478,7 +478,7 @@ jobs:
         if: ${{ !github.event.pull_request.head.repo.fork }}
         shell: bash
         run: |
-          docker run --rm ${{ steps.build.outputs.image }} sh -c "./gradlew --no-daemon dependencyCheckUpdate && ./gradlew --no-daemon dependencyCheckAnalyze"
+          docker run --rm ${{ needs.service.outputs.image }} sh -c "./gradlew --no-daemon dependencyCheckUpdate && ./gradlew --no-daemon dependencyCheckAnalyze"
 
       - name: Run service tests for fork
         if: ${{ github.event.pull_request.head.repo.fork }}
