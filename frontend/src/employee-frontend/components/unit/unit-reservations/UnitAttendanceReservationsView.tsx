@@ -29,6 +29,7 @@ import { getStaffAttendances } from '../../../api/staff-attendance'
 import { getUnitAttendanceReservations } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
 import { AbsenceLegend } from '../../absences/AbsenceLegend'
+import { AttendanceGroupFilter } from '../TabCalendar'
 
 import ChildReservationsTable from './ChildReservationsTable'
 import ReservationModalSingleChild from './ReservationModalSingleChild'
@@ -49,7 +50,7 @@ const AttendanceTime = styled(Time)`
 
 interface Props {
   unitId: UUID
-  groupId: UUID | 'no-group' | 'staff' | 'all'
+  selectedGroup: AttendanceGroupFilter
   selectedDate: LocalDate
   setSelectedDate: (date: LocalDate) => void
   isShiftCareUnit: boolean
@@ -61,7 +62,7 @@ interface Props {
 
 export default React.memo(function UnitAttendanceReservationsView({
   unitId,
-  groupId,
+  selectedGroup,
   selectedDate,
   isShiftCareUnit,
   realtimeStaffAttendanceEnabled,
@@ -98,7 +99,12 @@ export default React.memo(function UnitAttendanceReservationsView({
     }).map(([value, label]) => ({ label, value }))
   }, [i18n])
 
-  const groupFilter = useCallback((id) => id === groupId, [groupId])
+  const groupFilter = useCallback(
+    (id) =>
+      (selectedGroup.type === 'group' && selectedGroup.id === id) ||
+      selectedGroup.type === 'all',
+    [selectedGroup]
+  )
   const noFilter = useCallback(() => true, [])
 
   const combinedData = combine(childReservations, staffAttendances)
@@ -124,7 +130,7 @@ export default React.memo(function UnitAttendanceReservationsView({
       )}
 
       <FixedSpaceColumn spacing="L">
-        {groupId === 'staff' ? (
+        {selectedGroup.type === 'staff' ? (
           <StaffAttendanceTable
             unitId={unitId}
             operationalDays={childData.operationalDays}
@@ -142,35 +148,46 @@ export default React.memo(function UnitAttendanceReservationsView({
                 unitId={unitId}
                 operationalDays={childData.operationalDays}
                 staffAttendances={
-                  groupId === 'all'
+                  selectedGroup.type === 'all'
                     ? staffData.staff
-                    : staffData.staff.filter((s) => s.groups.includes(groupId))
+                    : selectedGroup.type === 'group'
+                    ? staffData.staff.filter((s) =>
+                        s.groups.includes(selectedGroup.id)
+                      )
+                    : []
                 }
                 extraAttendances={
-                  groupId === 'all'
+                  selectedGroup.type === 'all'
                     ? staffData.extraAttendances
-                    : staffData.extraAttendances.filter(
-                        (ea) => ea.groupId === groupId
+                    : selectedGroup.type === 'group'
+                    ? staffData.extraAttendances.filter(
+                        (ea) => ea.groupId === selectedGroup.id
                       )
+                    : []
                 }
                 reloadStaffAttendances={reloadStaffAttendances}
                 groups={groups}
                 groupFilter={groupFilter}
-                defaultGroup={groupId}
+                defaultGroup={
+                  selectedGroup.type === 'group' ? selectedGroup.id : null
+                }
               />
             )}
             <ChildReservationsTable
               unitId={unitId}
               operationalDays={childData.operationalDays}
               allDayRows={
-                groupId === 'all'
+                selectedGroup.type === 'all'
                   ? childData.groups
                       .flatMap(({ children }) => children)
                       .concat(childData.ungrouped)
-                  : groupId === 'no-group'
+                  : selectedGroup.type === 'no-group'
                   ? childData.ungrouped
-                  : childData.groups.find((g) => g.group.id === groupId)
-                      ?.children ?? []
+                  : selectedGroup.type === 'group'
+                  ? childData.groups.find(
+                      (g) => g.group.id === selectedGroup.id
+                    )?.children ?? []
+                  : []
               }
               onMakeReservationForChild={setCreatingReservationChild}
               selectedDate={selectedDate}

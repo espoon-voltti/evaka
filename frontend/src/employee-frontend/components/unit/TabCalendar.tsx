@@ -44,14 +44,16 @@ import { renderResult } from '../async-rendering'
 import { DataList } from '../common/DataList'
 
 import UnitDataFilters from './UnitDataFilters'
+import AttendanceGroupFilterSelect from './tab-calendar/AttendanceGroupFilterSelect'
 import CalendarEventsSection from './tab-calendar/CalendarEventsSection'
-import GroupSelector from './tab-calendar/GroupSelector'
 import Occupancy from './tab-unit-information/Occupancy'
 import UnitAttendanceReservationsView from './unit-reservations/UnitAttendanceReservationsView'
 
 type CalendarMode = 'week' | 'month'
-type GroupId = UUID
-export type AttendanceGroupFilter = GroupId | 'no-group' | 'staff' | 'all'
+
+export type AttendanceGroupFilter =
+  | { type: 'group'; id: UUID }
+  | { type: 'no-group' | 'staff' | 'all' }
 
 const GroupSelectorWrapper = styled.div`
   min-width: 320px;
@@ -90,16 +92,32 @@ function getDefaultGroup(
   groups: DaycareGroup[]
 ): AttendanceGroupFilter {
   if (groupParam !== null) {
-    if (['no-group', 'staff', 'all'].includes(groupParam)) return groupParam
-    if (groups.some((g) => g.id === groupParam)) return groupParam
+    if (
+      groupParam === 'no-group' ||
+      groupParam === 'staff' ||
+      groupParam === 'all'
+    ) {
+      return { type: groupParam }
+    }
+    if (groups.some((g) => g.id === groupParam)) {
+      return { type: 'group', id: groupParam }
+    }
   }
-  return (
-    sortBy(groups, [(g) => g.name.toLowerCase()]).find((group) =>
-      new DateRange(group.startDate, group.endDate).includes(
-        LocalDate.todayInSystemTz()
-      )
-    )?.id ?? 'no-group'
+
+  // Default to the first open group
+  const group = sortBy(groups, [(g) => g.name.toLowerCase()]).find((group) =>
+    new DateRange(group.startDate, group.endDate).includes(
+      LocalDate.todayInSystemTz()
+    )
   )
+  if (group !== undefined) return { type: 'group', id: group.id }
+
+  return { type: 'no-group' }
+}
+
+function attendanceGroupToString(group: AttendanceGroupFilter): string {
+  if (group.type === 'group') return group.id
+  return group.type
 }
 
 export default React.memo(function TabCalendar() {
@@ -161,12 +179,12 @@ const TabContent = React.memo(function TabContent({
   )
 
   const groupParam = query.get('group')
-  const [groupId, setGroupId] = useState<AttendanceGroupFilter>(() =>
-    getDefaultGroup(groupParam, groups)
+  const [selectedGroup, setSelectedGroup] = useState<AttendanceGroupFilter>(
+    () => getDefaultGroup(groupParam, groups)
   )
 
   useSyncQueryParams({
-    ...(groupId ? { group: groupId } : {}),
+    group: attendanceGroupToString(selectedGroup),
     date: selectedDate.toString(),
     mode
   })
@@ -194,7 +212,9 @@ const TabContent = React.memo(function TabContent({
   }, [realtimeStaffAttendanceEnabled, setMode])
 
   const onlyShowWeeklyView =
-    groupId === 'staff' || groupId === 'no-group' || groupId === 'all'
+    selectedGroup.type === 'staff' ||
+    selectedGroup.type === 'no-group' ||
+    selectedGroup.type === 'all'
 
   const [calendarOpen, setCalendarOpen] = useState(true)
   const [attendancesOpen, setAttendancesOpen] = useState(true)
@@ -272,10 +292,10 @@ const TabContent = React.memo(function TabContent({
         <StickyTopBar>
           <FixedSpaceRow spacing="s" alignItems="center">
             <GroupSelectorWrapper>
-              <GroupSelector
+              <AttendanceGroupFilterSelect
                 groups={groups}
-                selected={groupId}
-                onSelect={setGroupId}
+                value={selectedGroup}
+                onChange={setSelectedGroup}
                 data-qa="attendances-group-select"
                 realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
               />
@@ -300,19 +320,21 @@ const TabContent = React.memo(function TabContent({
           paddingHorizontal="zero"
           paddingVertical="zero"
         >
-          {mode === 'month' && groupId !== null && !onlyShowWeeklyView && (
+          {mode === 'month' &&
+          !onlyShowWeeklyView &&
+          selectedGroup.type === 'group' ? (
             <Absences
-              groupId={groupId}
+              groupId={selectedGroup.id}
               selectedDate={selectedDate}
               reservationEnabled={reservationEnabled}
               staffAttendanceEnabled={!realtimeStaffAttendanceEnabled}
             />
-          )}
+          ) : null}
 
-          {((mode === 'week' && groupId !== null) || onlyShowWeeklyView) && (
+          {mode === 'week' || onlyShowWeeklyView ? (
             <UnitAttendanceReservationsView
               unitId={unitId}
-              groupId={groupId}
+              selectedGroup={selectedGroup}
               selectedDate={selectedDate}
               setSelectedDate={setSelectedDate}
               isShiftCareUnit={unitInformation.daycare.roundTheClock}
@@ -321,31 +343,33 @@ const TabContent = React.memo(function TabContent({
               groups={groups}
               weekRange={weekRange}
             />
-          )}
+          ) : null}
         </CollapsibleContentArea>
 
-        {groupId !== 'no-group' &&
-          groupId !== 'staff' &&
-          (mode === 'week' || onlyShowWeeklyView) && (
-            <>
-              <HorizontalLine dashed slim />
+        {selectedGroup.type === 'group' ||
+        (selectedGroup.type === 'all' &&
+          (mode === 'week' || onlyShowWeeklyView)) ? (
+          <>
+            <HorizontalLine dashed slim />
 
-              <CollapsibleContentArea
-                open={eventsOpen}
-                toggleOpen={() => setEventsOpen(!eventsOpen)}
-                title={<H4 noMargin>{i18n.unit.calendar.events.title}</H4>}
-                opaque
-                paddingHorizontal="zero"
-                paddingVertical="zero"
-              >
-                <CalendarEventsSection
-                  weekDateRange={weekRange}
-                  unitId={unitId}
-                  selectedGroupId={groupId}
-                />
-              </CollapsibleContentArea>
-            </>
-          )}
+            <CollapsibleContentArea
+              open={eventsOpen}
+              toggleOpen={() => setEventsOpen(!eventsOpen)}
+              title={<H4 noMargin>{i18n.unit.calendar.events.title}</H4>}
+              opaque
+              paddingHorizontal="zero"
+              paddingVertical="zero"
+            >
+              <CalendarEventsSection
+                weekDateRange={weekRange}
+                unitId={unitId}
+                groupId={
+                  selectedGroup.type === 'group' ? selectedGroup.id : null
+                }
+              />
+            </CollapsibleContentArea>
+          </>
+        ) : null}
       </CollapsibleContentArea>
     </>
   )
