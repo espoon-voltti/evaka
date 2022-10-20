@@ -1,4 +1,4 @@
-name: Build
+name: Build # dummy comment
 on:
   pull_request:
   push:
