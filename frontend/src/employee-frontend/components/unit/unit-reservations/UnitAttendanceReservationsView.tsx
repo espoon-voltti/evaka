@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { MutableRefObject, useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import LabelValueList from 'employee-frontend/components/common/LabelValueList'
-import { combine, Result } from 'lib-common/api'
+import { combine } from 'lib-common/api'
 import { Child } from 'lib-common/api-types/reservations'
-import { UpsertStaffAndExternalAttendanceRequest } from 'lib-common/generated/api-types/attendance'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -25,16 +25,10 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
-import {
-  deleteExternalStaffAttendance,
-  deleteStaffAttendance,
-  getStaffAttendances,
-  postStaffAndExternalAttendances
-} from '../../../api/staff-attendance'
+import { getStaffAttendances } from '../../../api/staff-attendance'
 import { getUnitAttendanceReservations } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
 import { AbsenceLegend } from '../../absences/AbsenceLegend'
-import { WeekData, WeekSavingFns } from '../TabCalendar'
 
 import ChildReservationsTable from './ChildReservationsTable'
 import ReservationModalSingleChild from './ReservationModalSingleChild'
@@ -62,8 +56,7 @@ interface Props {
   realtimeStaffAttendanceEnabled: boolean
   operationalDays: number[]
   groups: DaycareGroup[]
-  week: WeekData
-  weekSavingFns: MutableRefObject<WeekSavingFns>
+  weekRange: FiniteDateRange
 }
 
 export default React.memo(function UnitAttendanceReservationsView({
@@ -74,25 +67,18 @@ export default React.memo(function UnitAttendanceReservationsView({
   realtimeStaffAttendanceEnabled,
   operationalDays,
   groups,
-  week,
-  weekSavingFns
+  weekRange
 }: Props) {
   const { i18n } = useTranslation()
 
   const [childReservations, reloadChildReservations] = useApiState(
-    () =>
-      week.savingPromise.then(() =>
-        getUnitAttendanceReservations(unitId, week.dateRange)
-      ),
-    [unitId, week.dateRange, week.savingPromise]
+    () => getUnitAttendanceReservations(unitId, weekRange),
+    [unitId, weekRange]
   )
 
   const [staffAttendances, reloadStaffAttendances] = useApiState(
-    () =>
-      week.savingPromise.then(() =>
-        getStaffAttendances(unitId, week.dateRange)
-      ),
-    [unitId, week.dateRange, week.savingPromise]
+    () => getStaffAttendances(unitId, weekRange),
+    [unitId, weekRange]
   )
 
   const [creatingReservationChild, setCreatingReservationChild] =
@@ -111,39 +97,6 @@ export default React.memo(function UnitAttendanceReservationsView({
       [t.attendanceTime]: <AttendanceTime>{t.hhmm}</AttendanceTime>
     }).map(([value, label]) => ({ label, value }))
   }, [i18n])
-
-  const saveAttendances = useCallback(
-    (body: UpsertStaffAndExternalAttendanceRequest) =>
-      groupId === 'staff'
-        ? postStaffAndExternalAttendances(unitId, body)
-        : postStaffAndExternalAttendances(unitId, {
-            staffAttendances: body.staffAttendances.map((a) => ({
-              ...a,
-              groupId
-            })),
-            externalAttendances: body.externalAttendances.map((a) => ({
-              ...a,
-              groupId
-            }))
-          }),
-    [groupId, unitId]
-  )
-
-  const deleteAttendances = useCallback(
-    (
-      staffAttendanceIds: UUID[],
-      externalStaffAttendanceIds: UUID[]
-    ): Promise<Result<void>[]> => {
-      const staffDeletes = staffAttendanceIds.map((id) =>
-        deleteStaffAttendance(unitId, id)
-      )
-      const externalDeletes = externalStaffAttendanceIds.map((id) =>
-        deleteExternalStaffAttendance(unitId, id)
-      )
-      return Promise.all([...staffDeletes, ...externalDeletes])
-    },
-    [unitId]
-  )
 
   const groupFilter = useCallback((id) => id === groupId, [groupId])
   const noFilter = useCallback(() => true, [])
@@ -172,21 +125,16 @@ export default React.memo(function UnitAttendanceReservationsView({
 
       <FixedSpaceColumn spacing="L">
         {groupId === 'staff' ? (
-          groups.length > 0 ? (
-            <StaffAttendanceTable
-              unitId={unitId}
-              operationalDays={childData.operationalDays}
-              staffAttendances={staffData.staff}
-              extraAttendances={staffData.extraAttendances}
-              saveAttendances={saveAttendances}
-              deleteAttendances={deleteAttendances}
-              reloadStaffAttendances={reloadStaffAttendances}
-              groups={groups}
-              groupFilter={noFilter}
-              defaultGroup={null}
-              weekSavingFns={weekSavingFns}
-            />
-          ) : null
+          <StaffAttendanceTable
+            unitId={unitId}
+            operationalDays={childData.operationalDays}
+            staffAttendances={staffData.staff}
+            extraAttendances={staffData.extraAttendances}
+            reloadStaffAttendances={reloadStaffAttendances}
+            groups={groups}
+            groupFilter={noFilter}
+            defaultGroup={null}
+          />
         ) : (
           <>
             {realtimeStaffAttendanceEnabled && (
@@ -205,13 +153,10 @@ export default React.memo(function UnitAttendanceReservationsView({
                         (ea) => ea.groupId === groupId
                       )
                 }
-                saveAttendances={saveAttendances}
-                deleteAttendances={deleteAttendances}
                 reloadStaffAttendances={reloadStaffAttendances}
                 groups={groups}
                 groupFilter={groupFilter}
                 defaultGroup={groupId}
-                weekSavingFns={weekSavingFns}
               />
             )}
             <ChildReservationsTable

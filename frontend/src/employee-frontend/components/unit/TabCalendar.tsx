@@ -8,7 +8,6 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState
 } from 'react'
 import styled from 'styled-components'
@@ -31,7 +30,7 @@ import { CollapsibleContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { H3, H4, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { faChevronLeft, faChevronRight, faCalendarAlt } from 'lib-icons'
+import { faCalendarAlt, faChevronLeft, faChevronRight } from 'lib-icons'
 
 import { getDaycareGroups, UnitData, UnitResponse } from '../../api/unit'
 import { useTranslation } from '../../state/i18n'
@@ -123,14 +122,6 @@ export default React.memo(function TabCalendar() {
   ))
 })
 
-export interface WeekData {
-  dateRange: FiniteDateRange
-  saved: boolean
-  savingPromise: Promise<void>
-}
-
-export type WeekSavingFns = Map<string, () => Promise<void>>
-
 interface TabContentProps {
   unitInformation: UnitResponse
   unitData: UnitData
@@ -184,49 +175,10 @@ const TabContent = React.memo(function TabContent({
     return days.length === 0 ? [1, 2, 3, 4, 5] : days
   }, [unitInformation.daycare.operationDays])
 
-  // Before changing the week, the current week's data should be saved
-  // because it is possible the user has started adding an overnight
-  // entry over the week boundary, so the partial data should be saved
-  // before navigating to the next week. The callbacks to save the data
-  // are stored here, and added in the row components.
-  const weekSavingFns = useRef<WeekSavingFns>(new Map())
-
-  const [week, setWeek] = useState(() => ({
-    dateRange: getWeekDateRange(selectedDate, operationalDays),
-    saved: true,
-    savingPromise: Promise.resolve()
-  }))
-
-  useEffect(() => {
-    let cancelled = false
-
-    const dateRange = getWeekDateRange(selectedDate, operationalDays)
-    setWeek({
-      dateRange,
-      saved: false,
-      savingPromise: Promise.all(
-        Array.from(weekSavingFns.current.values()).map((fn) => fn())
-      ).then(() => {
-        if (!cancelled) {
-          setWeek((week) =>
-            // strict equality check: ensure the current week is the
-            // same one as when originally started, even when switching
-            // going x* -> y -> x the save at * should be ignored at the end
-            week.dateRange === dateRange
-              ? {
-                  ...week,
-                  saved: true
-                }
-              : week
-          )
-        }
-      })
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [selectedDate, operationalDays])
+  const weekRange = useMemo(
+    () => getWeekDateRange(selectedDate, operationalDays),
+    [operationalDays, selectedDate]
+  )
 
   const { enabledPilotFeatures } = unitInformation.daycare
   const reservationEnabled = enabledPilotFeatures.includes('RESERVATIONS')
@@ -333,7 +285,7 @@ const TabContent = React.memo(function TabContent({
               selectedDate={selectedDate}
               setSelectedDate={setSelectedDate}
               mode={mode}
-              weekRange={week.dateRange}
+              weekRange={weekRange}
             />
           </FixedSpaceRow>
         </StickyTopBar>
@@ -367,8 +319,7 @@ const TabContent = React.memo(function TabContent({
               operationalDays={operationalDays}
               realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
               groups={groups}
-              week={week}
-              weekSavingFns={weekSavingFns}
+              weekRange={weekRange}
             />
           )}
         </CollapsibleContentArea>
@@ -388,7 +339,7 @@ const TabContent = React.memo(function TabContent({
                 paddingVertical="zero"
               >
                 <CalendarEventsSection
-                  weekDateRange={week.dateRange}
+                  weekDateRange={weekRange}
                   unitId={unitId}
                   selectedGroupId={groupId}
                 />
