@@ -1192,7 +1192,7 @@ const en: Translations = {
         secondGuardianNotFound:
           'Based on information from the national Population Information System (VTJ) the child does not have a second guardian.',
         secondGuardianInfoPreschoolSeparated:
-          'Information about other guardian is automatically fetched from the national Population Information System. According to it, the other guardian lives in a different address. Guardians need to agree on applying to early childhood education.',
+          'Information about other guardian is automatically fetched from the national Population Information System. According to it, the other guardian lives in a different address.',
         secondGuardianAgreementStatus: {
           label:
             'Have you agreed about the application together with the second guardian?',

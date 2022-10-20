@@ -51,11 +51,7 @@ export default React.memo(function SecondGuardianSubSection({
     <>
       <H3>{t.applications.editor.contactInfo.secondGuardianInfoTitle}</H3>
 
-      {type === 'DAYCARE' && (
-        <P>{t.applications.editor.contactInfo.secondGuardianInfo}</P>
-      )}
-
-      {type === 'PRESCHOOL' && (
+      {(type === 'PRESCHOOL' || type === 'DAYCARE') && (
         <>
           {otherGuardianStatus === 'NO' && (
             <P>{t.applications.editor.contactInfo.secondGuardianNotFound}</P>
