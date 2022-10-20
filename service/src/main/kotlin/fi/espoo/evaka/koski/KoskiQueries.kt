@@ -11,15 +11,19 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import java.time.LocalDate
 
-data class KoskiStudyRightKey(val childId: ChildId, val unitId: DaycareId, val type: OpiskeluoikeudenTyyppiKoodi)
+data class KoskiStudyRightKey(
+    val childId: ChildId,
+    val unitId: DaycareId,
+    val type: OpiskeluoikeudenTyyppiKoodi
+)
 
 fun Database.Read.getPendingStudyRights(
     today: LocalDate,
     params: KoskiSearchParams = KoskiSearchParams()
 ): List<KoskiStudyRightKey> =
     createQuery(
-        // language=SQL
-        """
+            // language=SQL
+            """
 SELECT kasr.child_id, kasr.unit_id, kasr.type
 FROM koski_active_study_right(:today) kasr
 LEFT JOIN koski_study_right ksr
@@ -36,16 +40,23 @@ WHERE kvsr.void_date IS NULL
 AND (:personIds = '{}' OR kvsr.child_id = ANY(:personIds))
 AND (:daycareIds = '{}' OR kvsr.unit_id = ANY(:daycareIds))
 """
-    ).bind("personIds", params.personIds)
+        )
+        .bind("personIds", params.personIds)
         .bind("daycareIds", params.daycareIds)
         .bind("today", today)
         .mapTo<KoskiStudyRightKey>()
         .list()
 
-fun Database.Transaction.beginKoskiUpload(sourceSystem: String, ophOrganizationOid: String, ophMunicipalityCode: String, key: KoskiStudyRightKey, today: LocalDate) =
+fun Database.Transaction.beginKoskiUpload(
+    sourceSystem: String,
+    ophOrganizationOid: String,
+    ophMunicipalityCode: String,
+    key: KoskiStudyRightKey,
+    today: LocalDate
+) =
     createQuery(
-        // language=SQL
-        """
+            // language=SQL
+            """
 INSERT INTO koski_study_right (child_id, unit_id, type, void_date, input_data, payload, version)
 SELECT
     child_id, unit_id, type,
@@ -67,15 +78,18 @@ DO UPDATE SET
     study_right_oid = CASE WHEN koski_study_right.void_date IS NULL THEN koski_study_right.study_right_oid END
 RETURNING id, void_date IS NOT NULL AS voided
 """
-    ).bindKotlin(key)
+        )
+        .bindKotlin(key)
         .bind("today", today)
-        .map { row -> Pair(row.mapColumn<KoskiStudyRightId>("id"), row.mapColumn<Boolean>("voided")) }
+        .map { row ->
+            Pair(row.mapColumn<KoskiStudyRightId>("id"), row.mapColumn<Boolean>("voided"))
+        }
         .single()
         .let { (id, voided) ->
             if (voided) {
                 createQuery(
-                    // language=SQL
-                    """
+                        // language=SQL
+                        """
             SELECT
                 kvsr.*,
                 ksr.id AS study_right_id,
@@ -93,12 +107,16 @@ RETURNING id, void_date IS NOT NULL AS voided
             JOIN person pr ON ksr.child_id = pr.id
             WHERE ksr.id = :id
                     """
-                ).bind("id", id).bind("today", today)
-                    .mapTo<KoskiVoidedDataRaw>().singleOrNull()?.toKoskiData(sourceSystem, ophOrganizationOid)
+                    )
+                    .bind("id", id)
+                    .bind("today", today)
+                    .mapTo<KoskiVoidedDataRaw>()
+                    .singleOrNull()
+                    ?.toKoskiData(sourceSystem, ophOrganizationOid)
             } else {
                 createQuery(
-                    // language=SQL
-                    """
+                        // language=SQL
+                        """
             SELECT
                 kasr.*,
                 ksr.id AS study_right_id,
@@ -124,8 +142,12 @@ RETURNING id, void_date IS NOT NULL AS voided
             ) h ON ksr.type = 'PREPARATORY'
             WHERE ksr.id = :id
                     """
-                ).bind("id", id).bind("today", today)
-                    .mapTo<KoskiActiveDataRaw>().singleOrNull()?.toKoskiData(sourceSystem, ophOrganizationOid, ophMunicipalityCode, today)
+                    )
+                    .bind("id", id)
+                    .bind("today", today)
+                    .mapTo<KoskiActiveDataRaw>()
+                    .singleOrNull()
+                    ?.toKoskiData(sourceSystem, ophOrganizationOid, ophMunicipalityCode, today)
             }
         }
 
@@ -137,9 +159,10 @@ data class KoskiUploadResponse(
     val payload: String
 )
 
-fun Database.Read.isPayloadChanged(key: KoskiStudyRightKey, payload: String): Boolean = createQuery(
-    // language=SQL
-    """
+fun Database.Read.isPayloadChanged(key: KoskiStudyRightKey, payload: String): Boolean =
+    createQuery(
+            // language=SQL
+            """
 SELECT ksr.payload != :payload::jsonb
 FROM (
     SELECT :childId AS child_id, :unitId AS unit_id, :type::koski_study_right_type AS type
@@ -147,17 +170,20 @@ FROM (
 LEFT JOIN koski_study_right ksr
 USING (child_id, unit_id, type)
 """
-).bindKotlin(key)
-    .bind("payload", payload)
-    .mapTo<Boolean>()
-    .single()
+        )
+        .bindKotlin(key)
+        .bind("payload", payload)
+        .mapTo<Boolean>()
+        .single()
 
-fun Database.Transaction.finishKoskiUpload(response: KoskiUploadResponse) = createUpdate(
-    // language=SQL
-    """
+fun Database.Transaction.finishKoskiUpload(response: KoskiUploadResponse) =
+    createUpdate(
+            // language=SQL
+            """
 UPDATE koski_study_right
 SET study_right_oid = :studyRightOid, person_oid = :personOid, version = :version, payload = :payload::jsonb
 WHERE id = :id
 """
-).bindKotlin(response)
-    .execute()
+        )
+        .bindKotlin(response)
+        .execute()

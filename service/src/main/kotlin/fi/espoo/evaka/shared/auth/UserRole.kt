@@ -9,13 +9,11 @@ import fi.espoo.evaka.shared.db.DatabaseEnum
 enum class UserRole : DatabaseEnum {
     END_USER,
     CITIZEN_WEAK,
-
     ADMIN,
     REPORT_VIEWER,
     DIRECTOR,
     FINANCE_ADMIN,
     SERVICE_WORKER,
-
     UNIT_SUPERVISOR,
     STAFF,
     SPECIAL_EDUCATION_TEACHER,
@@ -23,29 +21,37 @@ enum class UserRole : DatabaseEnum {
     /** Varhaiskasvatussihteeri */
     EARLY_CHILDHOOD_EDUCATION_SECRETARY,
     MOBILE,
+    @Deprecated("Exists only for backwards compatibility") GROUP_STAFF;
 
-    @Deprecated("Exists only for backwards compatibility")
-    GROUP_STAFF;
-
-    fun isGlobalRole(): Boolean = when (this) {
-        ADMIN -> true
-        REPORT_VIEWER -> true
-        DIRECTOR -> true
-        FINANCE_ADMIN -> true
-        SERVICE_WORKER -> true
-        else -> false
-    }
-    fun isUnitScopedRole(): Boolean = when (this) {
-        UNIT_SUPERVISOR -> true
-        STAFF -> true
-        SPECIAL_EDUCATION_TEACHER -> true
-        EARLY_CHILDHOOD_EDUCATION_SECRETARY -> true
-        else -> false
-    }
+    fun isGlobalRole(): Boolean =
+        when (this) {
+            ADMIN -> true
+            REPORT_VIEWER -> true
+            DIRECTOR -> true
+            FINANCE_ADMIN -> true
+            SERVICE_WORKER -> true
+            else -> false
+        }
+    fun isUnitScopedRole(): Boolean =
+        when (this) {
+            UNIT_SUPERVISOR -> true
+            STAFF -> true
+            SPECIAL_EDUCATION_TEACHER -> true
+            EARLY_CHILDHOOD_EDUCATION_SECRETARY -> true
+            else -> false
+        }
 
     override val sqlType: String = "user_role"
     companion object {
         @Suppress("DEPRECATION")
-        val SCOPED_ROLES = setOf(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER, EARLY_CHILDHOOD_EDUCATION_SECRETARY, MOBILE, GROUP_STAFF)
+        val SCOPED_ROLES =
+            setOf(
+                UNIT_SUPERVISOR,
+                STAFF,
+                SPECIAL_EDUCATION_TEACHER,
+                EARLY_CHILDHOOD_EDUCATION_SECRETARY,
+                MOBILE,
+                GROUP_STAFF
+            )
     }
 }

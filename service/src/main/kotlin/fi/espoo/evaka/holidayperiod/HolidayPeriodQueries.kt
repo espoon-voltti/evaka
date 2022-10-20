@@ -8,7 +8,9 @@ import fi.espoo.evaka.shared.HolidayPeriodId
 import fi.espoo.evaka.shared.db.Database
 
 fun Database.Read.getHolidayPeriodDeadlines(): List<HolidayPeriodDeadline> =
-    this.createQuery("SELECT id, period, reservation_deadline FROM holiday_period WHERE reservation_deadline IS NOT NULL")
+    this.createQuery(
+            "SELECT id, period, reservation_deadline FROM holiday_period WHERE reservation_deadline IS NOT NULL"
+        )
         .mapTo<HolidayPeriodDeadline>()
         .list()
 
@@ -25,30 +27,30 @@ fun Database.Read.getHolidayPeriod(id: HolidayPeriodId): HolidayPeriod? =
 
 fun Database.Transaction.createHolidayPeriod(data: HolidayPeriodBody): HolidayPeriod =
     this.createQuery(
-        """
+            """
 INSERT INTO holiday_period (period, reservation_deadline)
 VALUES (:period, :reservationDeadline)
 RETURNING *
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bindKotlin(data)
         .mapTo<HolidayPeriod>()
         .one()
 
 fun Database.Transaction.updateHolidayPeriod(id: HolidayPeriodId, data: HolidayPeriodBody) =
     this.createUpdate(
-        """
+            """
 UPDATE holiday_period
 SET period = :period,
     reservation_deadline = :reservationDeadline
 WHERE id = :id
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bindKotlin(data)
         .bind("id", id)
         .updateExactlyOne()
 
 fun Database.Transaction.deleteHolidayPeriod(id: HolidayPeriodId) =
-    this.createUpdate("DELETE FROM holiday_period WHERE id = :id")
-        .bind("id", id)
-        .execute()
+    this.createUpdate("DELETE FROM holiday_period WHERE id = :id").bind("id", id).execute()

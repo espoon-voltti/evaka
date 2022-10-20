@@ -17,6 +17,5 @@ import org.springframework.context.annotation.Profile
 @Profile("integration-test")
 @Import(XroadSoapClientConfig::class, TrustManagerConfig::class)
 class VtjIntegrationTestConfig {
-    @Bean
-    fun personDetailsService(): IPersonDetailsService = MockPersonDetailsService()
+    @Bean fun personDetailsService(): IPersonDetailsService = MockPersonDetailsService()
 }

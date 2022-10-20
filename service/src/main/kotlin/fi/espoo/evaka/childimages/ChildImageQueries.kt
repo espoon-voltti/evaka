@@ -10,13 +10,12 @@ import fi.espoo.evaka.shared.db.Database
 
 fun Database.Transaction.insertChildImage(childId: ChildId): ChildImageId {
     // language=sql
-    val sql = """
+    val sql =
+        """
         INSERT INTO child_images (child_id) VALUES (:childId) RETURNING id;
-    """.trimIndent()
-    return createQuery(sql)
-        .bind("childId", childId)
-        .mapTo<ChildImageId>()
-        .one()
+    """
+            .trimIndent()
+    return createQuery(sql).bind("childId", childId).mapTo<ChildImageId>().one()
 }
 
 fun Database.Transaction.deleteChildImage(childId: ChildId): ChildImageId? {

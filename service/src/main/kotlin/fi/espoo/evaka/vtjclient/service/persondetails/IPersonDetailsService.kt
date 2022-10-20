@@ -15,5 +15,8 @@ interface IPersonDetailsService {
 
     fun getBasicDetailsFor(query: DetailsQuery): VtjPerson
 
-    data class DetailsQuery(val requestingUser: EvakaUserId, val targetIdentifier: ExternalIdentifier.SSN)
+    data class DetailsQuery(
+        val requestingUser: EvakaUserId,
+        val targetIdentifier: ExternalIdentifier.SSN
+    )
 }

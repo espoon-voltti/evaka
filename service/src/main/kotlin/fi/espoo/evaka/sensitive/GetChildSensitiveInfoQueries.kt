@@ -14,7 +14,10 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 
-fun Database.Read.getChildSensitiveInfo(clock: EvakaClock, childId: ChildId): ChildSensitiveInformation? {
+fun Database.Read.getChildSensitiveInfo(
+    clock: EvakaClock,
+    childId: ChildId
+): ChildSensitiveInformation? {
     val person = getPersonById(childId) ?: return null
 
     val placementType = getCurrentPlacementForChild(clock, childId)?.let { it.type }
@@ -36,27 +39,32 @@ fun Database.Read.getChildSensitiveInfo(clock: EvakaClock, childId: ChildId): Ch
         diet = child?.additionalInformation?.diet ?: "",
         medication = child?.additionalInformation?.medication ?: "",
         additionalInfo = child?.additionalInformation?.additionalInfo ?: "",
-        contacts = familyContacts.filter { it.priority != null }.sortedBy { it.priority }.map {
-            ContactInfo(
-                id = it.id.toString(),
-                firstName = it.firstName,
-                lastName = it.lastName,
-                phone = it.phone,
-                backupPhone = it.backupPhone,
-                email = it.email ?: "",
-                priority = it.priority
-            )
-        },
-        backupPickups = backupPickups.map {
-            ContactInfo(
-                id = it.id.toString(),
-                firstName = it.name,
-                lastName = "",
-                phone = it.phone,
-                backupPhone = "",
-                email = "",
-                priority = 1
-            )
-        }
+        contacts =
+            familyContacts
+                .filter { it.priority != null }
+                .sortedBy { it.priority }
+                .map {
+                    ContactInfo(
+                        id = it.id.toString(),
+                        firstName = it.firstName,
+                        lastName = it.lastName,
+                        phone = it.phone,
+                        backupPhone = it.backupPhone,
+                        email = it.email ?: "",
+                        priority = it.priority
+                    )
+                },
+        backupPickups =
+            backupPickups.map {
+                ContactInfo(
+                    id = it.id.toString(),
+                    firstName = it.name,
+                    lastName = "",
+                    phone = it.phone,
+                    backupPhone = "",
+                    email = "",
+                    priority = 1
+                )
+            }
     )
 }

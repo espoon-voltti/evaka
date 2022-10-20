@@ -9,12 +9,13 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import org.jdbi.v3.core.mapper.Nested
 import java.time.LocalDate
+import org.jdbi.v3.core.mapper.Nested
 
 fun Database.Transaction.initCaretakers(groupId: GroupId, startDate: LocalDate, amount: Double) {
     // language=SQL
-    val sql = "INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) VALUES (:groupId, :startDate, NULL, :amount)"
+    val sql =
+        "INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) VALUES (:groupId, :startDate, NULL, :amount)"
 
     createUpdate(sql)
         .bind("groupId", groupId)
@@ -43,7 +44,8 @@ fun Database.Read.getUnitStats(unitId: DaycareId, startDate: LocalDate, endDate:
             coalesce(min(total), 0.0) as minimum,
             coalesce(max(total), 0.0) as maximum
         from dailyTotals;
-        """.trimIndent()
+        """
+            .trimIndent()
 
     return createQuery(sql)
         .bind("unitId", unitId)
@@ -53,7 +55,11 @@ fun Database.Read.getUnitStats(unitId: DaycareId, startDate: LocalDate, endDate:
         .first()
 }
 
-fun Database.Read.getGroupStats(unitId: DaycareId, startDate: LocalDate, endDate: LocalDate): Map<GroupId, Stats> {
+fun Database.Read.getGroupStats(
+    unitId: DaycareId,
+    startDate: LocalDate,
+    endDate: LocalDate
+): Map<GroupId, Stats> {
     // language=SQL
     val sql =
         """
@@ -67,7 +73,8 @@ fun Database.Read.getGroupStats(unitId: DaycareId, startDate: LocalDate, endDate
         and daterange(:startDate, :endDate, '[]') && daterange(dc.start_date, dc.end_date, '[]')
         and daterange(:startDate, :endDate, '[]') && daterange(dg.start_date, dg.end_date, '[]')
         group by dg.id;
-        """.trimIndent()
+        """
+            .trimIndent()
 
     return createQuery(sql)
         .bind("startDate", startDate)
@@ -78,7 +85,4 @@ fun Database.Read.getGroupStats(unitId: DaycareId, startDate: LocalDate, endDate
         .toMap()
 }
 
-private data class GroupStats(
-    val groupId: GroupId,
-    @Nested val stats: Stats
-)
+private data class GroupStats(val groupId: GroupId, @Nested val stats: Stats)

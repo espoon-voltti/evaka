@@ -12,11 +12,11 @@ import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
+import java.math.BigDecimal
+import java.util.UUID
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
-import java.math.BigDecimal
-import java.util.UUID
 
 @ConstList("staffAttendanceTypes")
 enum class StaffAttendanceType : DatabaseEnum {
@@ -24,15 +24,16 @@ enum class StaffAttendanceType : DatabaseEnum {
     OTHER_WORK,
     TRAINING,
     OVERTIME,
-    JUSTIFIED_CHANGE
-    ;
+    JUSTIFIED_CHANGE;
 
     override val sqlType: String = "staff_attendance_type"
 
-    fun presentInGroup() = when (this) {
-        OTHER_WORK, TRAINING -> false
-        else -> true
-    }
+    fun presentInGroup() =
+        when (this) {
+            OTHER_WORK,
+            TRAINING -> false
+            else -> true
+        }
 }
 
 data class CurrentDayStaffAttendanceResponse(
@@ -53,29 +54,31 @@ data class StaffMember(
     val firstName: String,
     val lastName: String,
     val groupIds: List<GroupId>,
-    @Nested("attendance")
-    val latestCurrentDayAttendance: StaffMemberAttendance?,
-    @Json
-    val attendances: List<StaffMemberAttendance>,
-    @Json
-    val plannedAttendances: List<PlannedStaffAttendance>,
+    @Nested("attendance") val latestCurrentDayAttendance: StaffMemberAttendance?,
+    @Json val attendances: List<StaffMemberAttendance>,
+    @Json val plannedAttendances: List<PlannedStaffAttendance>,
     val hasFutureAttendances: Boolean
 ) {
     val present: GroupId?
-        get() = latestCurrentDayAttendance?.takeIf { it.departed == null && it.type.presentInGroup() }?.groupId
+        get() =
+            latestCurrentDayAttendance
+                ?.takeIf { it.departed == null && it.type.presentInGroup() }
+                ?.groupId
 
     val spanningPlan: HelsinkiDateTimeRange?
         get() =
             if (plannedAttendances.isEmpty()) {
                 null
             } else {
-                HelsinkiDateTimeRange(plannedAttendances.minOf { it.start }, plannedAttendances.maxOf { it.end })
+                HelsinkiDateTimeRange(
+                    plannedAttendances.minOf { it.start },
+                    plannedAttendances.maxOf { it.end }
+                )
             }
 }
 
 data class StaffMemberAttendance(
-    @PropagateNull
-    val id: StaffAttendanceId,
+    @PropagateNull val id: StaffAttendanceId,
     val employeeId: EmployeeId,
     val groupId: GroupId,
     val arrived: HelsinkiDateTime,

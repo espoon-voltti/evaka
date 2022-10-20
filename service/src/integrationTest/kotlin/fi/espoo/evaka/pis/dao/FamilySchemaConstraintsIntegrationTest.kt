@@ -16,10 +16,10 @@ import fi.espoo.evaka.shared.dev.DevFridgePartner
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertFridgePartner
 import fi.espoo.evaka.shared.dev.insertTestPerson
-import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.Test
 
 class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
@@ -30,8 +30,12 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         val endDate = startDate.plusDays(200)
         db.transaction {
             val partnershipId = PartnershipId(UUID.randomUUID())
-            it.insertFridgePartner(DevFridgePartner(partnershipId, 1, 2, person1.id, startDate, endDate))
-            it.insertFridgePartner(DevFridgePartner(partnershipId, 2, 1, person2.id, startDate, endDate))
+            it.insertFridgePartner(
+                DevFridgePartner(partnershipId, 1, 2, person1.id, startDate, endDate)
+            )
+            it.insertFridgePartner(
+                DevFridgePartner(partnershipId, 2, 1, person2.id, startDate, endDate)
+            )
         }
     }
 
@@ -43,16 +47,24 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         val endDate1 = startDate1.plusDays(200)
         db.transaction {
             val partnershipId = PartnershipId(UUID.randomUUID())
-            it.insertFridgePartner(DevFridgePartner(partnershipId, 1, 2, person1.id, startDate1, endDate1))
-            it.insertFridgePartner(DevFridgePartner(partnershipId, 2, 1, person2.id, startDate1, endDate1))
+            it.insertFridgePartner(
+                DevFridgePartner(partnershipId, 1, 2, person1.id, startDate1, endDate1)
+            )
+            it.insertFridgePartner(
+                DevFridgePartner(partnershipId, 2, 1, person2.id, startDate1, endDate1)
+            )
         }
 
         val startDate2 = endDate1.plusDays(1)
         val endDate2 = startDate2.plusDays(200)
         db.transaction {
             val partnershipId = PartnershipId(UUID.randomUUID())
-            it.insertFridgePartner(DevFridgePartner(partnershipId, 1, 2, person1.id, startDate2, endDate2))
-            it.insertFridgePartner(DevFridgePartner(partnershipId, 2, 1, person2.id, startDate2, endDate2))
+            it.insertFridgePartner(
+                DevFridgePartner(partnershipId, 1, 2, person1.id, startDate2, endDate2)
+            )
+            it.insertFridgePartner(
+                DevFridgePartner(partnershipId, 2, 1, person2.id, startDate2, endDate2)
+            )
         }
     }
 
@@ -64,8 +76,12 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         val endDate1 = startDate1.plusDays(200)
         db.transaction {
             val partnershipId = PartnershipId(UUID.randomUUID())
-            it.insertFridgePartner(DevFridgePartner(partnershipId, 1, 2, person1.id, startDate1, endDate1))
-            it.insertFridgePartner(DevFridgePartner(partnershipId, 2, 1, person2.id, startDate1, endDate1))
+            it.insertFridgePartner(
+                DevFridgePartner(partnershipId, 1, 2, person1.id, startDate1, endDate1)
+            )
+            it.insertFridgePartner(
+                DevFridgePartner(partnershipId, 2, 1, person2.id, startDate1, endDate1)
+            )
         }
 
         val startDate2 = endDate1.plusDays(0)
@@ -74,8 +90,12 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         assertThatThrownBy {
             db.transaction {
                 val partnershipId = PartnershipId(UUID.randomUUID())
-                it.insertFridgePartner(DevFridgePartner(partnershipId, 1, 2, person1.id, startDate2, endDate2))
-                it.insertFridgePartner(DevFridgePartner(partnershipId, 2, 1, person2.id, startDate2, endDate2))
+                it.insertFridgePartner(
+                    DevFridgePartner(partnershipId, 1, 2, person1.id, startDate2, endDate2)
+                )
+                it.insertFridgePartner(
+                    DevFridgePartner(partnershipId, 2, 1, person2.id, startDate2, endDate2)
+                )
             }
         }
     }
@@ -91,9 +111,15 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         assertThatThrownBy {
             db.transaction {
                 val partnershipId = PartnershipId(UUID.randomUUID())
-                it.insertFridgePartner(DevFridgePartner(partnershipId, 1, 2, person1.id, startDate, endDate))
-                it.insertFridgePartner(DevFridgePartner(partnershipId, 2, 3, person2.id, startDate, endDate))
-                it.insertFridgePartner(DevFridgePartner(partnershipId, 3, 1, person3.id, startDate, endDate))
+                it.insertFridgePartner(
+                    DevFridgePartner(partnershipId, 1, 2, person1.id, startDate, endDate)
+                )
+                it.insertFridgePartner(
+                    DevFridgePartner(partnershipId, 2, 3, person2.id, startDate, endDate)
+                )
+                it.insertFridgePartner(
+                    DevFridgePartner(partnershipId, 3, 1, person3.id, startDate, endDate)
+                )
             }
         }
     }
@@ -109,9 +135,15 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         assertThatThrownBy {
             db.transaction {
                 val partnershipId = PartnershipId(UUID.randomUUID())
-                it.insertFridgePartner(DevFridgePartner(partnershipId, 0, 1, person1.id, startDate, endDate))
-                it.insertFridgePartner(DevFridgePartner(partnershipId, 1, 2, person2.id, startDate, endDate))
-                it.insertFridgePartner(DevFridgePartner(partnershipId, 2, 0, person3.id, startDate, endDate))
+                it.insertFridgePartner(
+                    DevFridgePartner(partnershipId, 0, 1, person1.id, startDate, endDate)
+                )
+                it.insertFridgePartner(
+                    DevFridgePartner(partnershipId, 1, 2, person2.id, startDate, endDate)
+                )
+                it.insertFridgePartner(
+                    DevFridgePartner(partnershipId, 2, 0, person3.id, startDate, endDate)
+                )
             }
         }
     }
@@ -127,9 +159,15 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         assertThatThrownBy {
             db.transaction {
                 val partnershipId = PartnershipId(UUID.randomUUID())
-                it.insertFridgePartner(DevFridgePartner(partnershipId, 1, 2, person1.id, startDate, endDate))
-                it.insertFridgePartner(DevFridgePartner(partnershipId, 2, 1, person2.id, startDate, endDate))
-                it.insertFridgePartner(DevFridgePartner(partnershipId, 2, 1, person3.id, startDate, endDate))
+                it.insertFridgePartner(
+                    DevFridgePartner(partnershipId, 1, 2, person1.id, startDate, endDate)
+                )
+                it.insertFridgePartner(
+                    DevFridgePartner(partnershipId, 2, 1, person2.id, startDate, endDate)
+                )
+                it.insertFridgePartner(
+                    DevFridgePartner(partnershipId, 2, 1, person3.id, startDate, endDate)
+                )
             }
         }
     }
@@ -143,8 +181,12 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         assertThatThrownBy {
             db.transaction {
                 val partnershipId = PartnershipId(UUID.randomUUID())
-                it.insertFridgePartner(DevFridgePartner(partnershipId, 1, 2, person1.id, startDate, endDate))
-                it.insertFridgePartner(DevFridgePartner(partnershipId, 2, 1, person1.id, startDate, endDate))
+                it.insertFridgePartner(
+                    DevFridgePartner(partnershipId, 1, 2, person1.id, startDate, endDate)
+                )
+                it.insertFridgePartner(
+                    DevFridgePartner(partnershipId, 2, 1, person1.id, startDate, endDate)
+                )
             }
         }
     }
@@ -160,8 +202,12 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         assertThatThrownBy {
             db.transaction {
                 val partnershipId = PartnershipId(UUID.randomUUID())
-                it.insertFridgePartner(DevFridgePartner(partnershipId, 1, 2, person1.id, startDate1, endDate))
-                it.insertFridgePartner(DevFridgePartner(partnershipId, 2, 1, person2.id, startDate2, endDate))
+                it.insertFridgePartner(
+                    DevFridgePartner(partnershipId, 1, 2, person1.id, startDate1, endDate)
+                )
+                it.insertFridgePartner(
+                    DevFridgePartner(partnershipId, 2, 1, person2.id, startDate2, endDate)
+                )
             }
         }
     }
@@ -177,8 +223,12 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         assertThatThrownBy {
             db.transaction {
                 val partnershipId = PartnershipId(UUID.randomUUID())
-                it.insertFridgePartner(DevFridgePartner(partnershipId, 1, 2, person1.id, startDate, endDate1))
-                it.insertFridgePartner(DevFridgePartner(partnershipId, 2, 1, person2.id, startDate, endDate2))
+                it.insertFridgePartner(
+                    DevFridgePartner(partnershipId, 1, 2, person1.id, startDate, endDate1)
+                )
+                it.insertFridgePartner(
+                    DevFridgePartner(partnershipId, 2, 1, person2.id, startDate, endDate2)
+                )
             }
         }
     }
@@ -193,8 +243,12 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         assertThatThrownBy {
             db.transaction {
                 val partnershipId = PartnershipId(UUID.randomUUID())
-                it.insertFridgePartner(DevFridgePartner(partnershipId, 1, 2, person1.id, startDate, endDate))
-                it.insertFridgePartner(DevFridgePartner(partnershipId, 2, 1, person2.id, startDate, endDate))
+                it.insertFridgePartner(
+                    DevFridgePartner(partnershipId, 1, 2, person1.id, startDate, endDate)
+                )
+                it.insertFridgePartner(
+                    DevFridgePartner(partnershipId, 2, 1, person2.id, startDate, endDate)
+                )
             }
         }
     }
@@ -252,21 +306,25 @@ class FamilySchemaConstraintsIntegrationTest : PureJdbiTest(resetDbBeforeEach = 
         assertThatThrownBy { createParentshipRecord(child.id, parent2.id, startDate, endDate) }
     }
 
-    private fun createParentshipRecord(childId: ChildId, parentId: PersonId, startDate: LocalDate, endDate: LocalDate) =
-        db.transaction { it.createParentship(childId, parentId, startDate, endDate) }
+    private fun createParentshipRecord(
+        childId: ChildId,
+        parentId: PersonId,
+        startDate: LocalDate,
+        endDate: LocalDate
+    ) = db.transaction { it.createParentship(childId, parentId, startDate, endDate) }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
         return db.transaction { tx ->
             tx.insertTestPerson(
-                DevPerson(
-                    ssn = ssn,
-                    dateOfBirth = getDobFromSsn(ssn),
-                    firstName = firstName,
-                    lastName = "Meikäläinen",
-                    email = "${firstName.lowercase()}.meikalainen@example.com",
-                    language = "fi"
+                    DevPerson(
+                        ssn = ssn,
+                        dateOfBirth = getDobFromSsn(ssn),
+                        firstName = firstName,
+                        lastName = "Meikäläinen",
+                        email = "${firstName.lowercase()}.meikalainen@example.com",
+                        language = "fi"
+                    )
                 )
-            )
                 .let { tx.getPersonById(it)!! }
         }
     }

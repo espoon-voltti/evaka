@@ -10,15 +10,30 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.varda.integration.VardaClient
-import mu.KotlinLogging
 import java.util.UUID
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-val unitTypesToUpload = listOf(VardaUnitProviderType.MUNICIPAL, VardaUnitProviderType.MUNICIPAL_SCHOOL)
+val unitTypesToUpload =
+    listOf(VardaUnitProviderType.MUNICIPAL, VardaUnitProviderType.MUNICIPAL_SCHOOL)
 
-fun updateUnits(db: Database.Connection, clock: EvakaClock, client: VardaClient, ophMunicipalityCode: String, ophMunicipalOrganizerIdUrl: String) {
-    val units = db.read { getNewOrStaleUnits(it, ophMunicipalityCode, ophMunicipalOrganizerIdUrl, client.sourceSystem) }
+fun updateUnits(
+    db: Database.Connection,
+    clock: EvakaClock,
+    client: VardaClient,
+    ophMunicipalityCode: String,
+    ophMunicipalOrganizerIdUrl: String
+) {
+    val units =
+        db.read {
+            getNewOrStaleUnits(
+                it,
+                ophMunicipalityCode,
+                ophMunicipalOrganizerIdUrl,
+                client.sourceSystem
+            )
+        }
     logger.info { "VardaUpdate: Sending ${units.size} new or updated units" }
     units.forEach { unit ->
         try {
@@ -28,15 +43,26 @@ fun updateUnits(db: Database.Connection, clock: EvakaClock, client: VardaClient,
                 } else {
                     client.updateUnit(unit.toVardaUnitRequest())
                 }
-            db.transaction { setUnitUploaded(it, clock, unit.copy(vardaUnitId = response.id, ophUnitOid = response.organisaatio_oid)) }
+            db.transaction {
+                setUnitUploaded(
+                    it,
+                    clock,
+                    unit.copy(vardaUnitId = response.id, ophUnitOid = response.organisaatio_oid)
+                )
+            }
         } catch (e: Exception) {
             logger.error { "VardaUpdate: failed to update unit ${unit.name}: $e" }
         }
     }
 }
 
-fun getNewOrStaleUnits(tx: Database.Read, ophMunicipalityCode: String, ophMunicipalOrganizerIdUrl: String, sourceSystem: String): List<VardaUnit> {
-    //language=SQL
+fun getNewOrStaleUnits(
+    tx: Database.Read,
+    ophMunicipalityCode: String,
+    ophMunicipalOrganizerIdUrl: String,
+    sourceSystem: String
+): List<VardaUnit> {
+    // language=SQL
     val sql =
         """
         SELECT
@@ -72,7 +98,8 @@ fun getNewOrStaleUnits(tx: Database.Read, ophMunicipalityCode: String, ophMunici
                 daycare.oph_unit_oid IS NULL
             )
             AND daycare.provider_type = ANY(:providerTypes)
-        """.trimIndent()
+        """
+            .trimIndent()
 
     return tx.createQuery(sql)
         .bind("ophMunicipalityCode", ophMunicipalityCode)
@@ -84,14 +111,15 @@ fun getNewOrStaleUnits(tx: Database.Read, ophMunicipalityCode: String, ophMunici
 }
 
 fun setUnitUploaded(tx: Database.Transaction, clock: EvakaClock, vardaUnit: VardaUnit) {
-    //language=SQL
+    // language=SQL
     val sql =
         """
     INSERT INTO varda_unit (evaka_daycare_id, varda_unit_id, uploaded_at)
     VALUES (:evakaDaycareId, :vardaUnitId, :now)
     ON CONFLICT (evaka_daycare_id)
     DO UPDATE SET varda_unit_id = :vardaUnitId, uploaded_at = :now;
-        """.trimIndent()
+        """
+            .trimIndent()
 
     tx.createUpdate(sql)
         .bind("now", clock.now())
@@ -147,10 +175,7 @@ enum class VardaUnitEducationSystem(val vardaCode: String) {
     OTHER("kj99")
 }
 
-data class VardaUnitResponse(
-    var id: Long,
-    val organisaatio_oid: String
-)
+data class VardaUnitResponse(var id: Long, val organisaatio_oid: String)
 
 data class VardaUnit(
     var vardaUnitId: Long?,
@@ -176,45 +201,47 @@ data class VardaUnit(
     val language: VardaLanguage,
     val languageEmphasisId: UUID?
 ) {
-    fun toVardaUnitRequest() = VardaUnitRequest(
-        id = vardaUnitId,
-        organisaatio_oid = ophUnitOid,
-        vakajarjestaja = organizer,
-        nimi = name,
-        kayntiosoite = address,
-        kayntiosoite_postinumero = postalCode,
-        kayntiosoite_postitoimipaikka = postOffice,
-        postiosoite = mailingStreetAddress,
-        postinumero = mailingPostalCode,
-        postitoimipaikka = mailingPostOffice,
-        puhelinnumero = phoneNumber,
-        sahkopostiosoite = email,
-        varhaiskasvatuspaikat = capacity,
-        alkamis_pvm = openingDate,
-        paattymis_pvm = closingDate,
-        kunta_koodi = municipalityCode,
-        lahdejarjestelma = sourceSystem,
-        toiminnallinenpainotus_kytkin = false,
-        kasvatusopillinen_jarjestelma_koodi = VardaUnitEducationSystem.NONE.vardaCode,
-        jarjestamismuoto_koodi = listOfNotNull(unitProviderType.vardaCode),
-        toimintamuoto_koodi = when {
-            unitType.contains(VardaUnitType.CENTRE) -> {
-                VardaUnitType.CENTRE.vardaCode
-            }
-            unitType.contains(VardaUnitType.FAMILY) -> {
-                VardaUnitType.FAMILY.vardaCode
-            }
-            unitType.contains(VardaUnitType.GROUP_FAMILY) -> {
-                VardaUnitType.GROUP_FAMILY.vardaCode
-            }
-            unitType.contains(VardaUnitType.PRESCHOOL) -> {
-                VardaUnitType.PRESCHOOL.vardaCode
-            }
-            else -> null
-        },
-        asiointikieli_koodi = listOfNotNull(language.vardaCode),
-        kielipainotus_kytkin = languageEmphasisId?.let { true } ?: false
-    )
+    fun toVardaUnitRequest() =
+        VardaUnitRequest(
+            id = vardaUnitId,
+            organisaatio_oid = ophUnitOid,
+            vakajarjestaja = organizer,
+            nimi = name,
+            kayntiosoite = address,
+            kayntiosoite_postinumero = postalCode,
+            kayntiosoite_postitoimipaikka = postOffice,
+            postiosoite = mailingStreetAddress,
+            postinumero = mailingPostalCode,
+            postitoimipaikka = mailingPostOffice,
+            puhelinnumero = phoneNumber,
+            sahkopostiosoite = email,
+            varhaiskasvatuspaikat = capacity,
+            alkamis_pvm = openingDate,
+            paattymis_pvm = closingDate,
+            kunta_koodi = municipalityCode,
+            lahdejarjestelma = sourceSystem,
+            toiminnallinenpainotus_kytkin = false,
+            kasvatusopillinen_jarjestelma_koodi = VardaUnitEducationSystem.NONE.vardaCode,
+            jarjestamismuoto_koodi = listOfNotNull(unitProviderType.vardaCode),
+            toimintamuoto_koodi =
+                when {
+                    unitType.contains(VardaUnitType.CENTRE) -> {
+                        VardaUnitType.CENTRE.vardaCode
+                    }
+                    unitType.contains(VardaUnitType.FAMILY) -> {
+                        VardaUnitType.FAMILY.vardaCode
+                    }
+                    unitType.contains(VardaUnitType.GROUP_FAMILY) -> {
+                        VardaUnitType.GROUP_FAMILY.vardaCode
+                    }
+                    unitType.contains(VardaUnitType.PRESCHOOL) -> {
+                        VardaUnitType.PRESCHOOL.vardaCode
+                    }
+                    else -> null
+                },
+            asiointikieli_koodi = listOfNotNull(language.vardaCode),
+            kielipainotus_kytkin = languageEmphasisId?.let { true } ?: false
+        )
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -233,8 +260,7 @@ data class VardaUnitRequest(
     val sahkopostiosoite: String?,
     val varhaiskasvatuspaikat: Int,
     val alkamis_pvm: String?,
-    @JsonInclude(JsonInclude.Include.ALWAYS)
-    val paattymis_pvm: String?,
+    @JsonInclude(JsonInclude.Include.ALWAYS) val paattymis_pvm: String?,
     val kunta_koodi: String?,
     val lahdejarjestelma: String?,
     val toiminnallinenpainotus_kytkin: Boolean? = false,

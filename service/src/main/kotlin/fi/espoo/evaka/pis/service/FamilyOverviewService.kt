@@ -19,9 +19,9 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
+import java.time.LocalDate
 import org.jdbi.v3.core.result.RowView
 import org.springframework.stereotype.Service
-import java.time.LocalDate
 
 @Service
 class FamilyOverviewService(
@@ -84,10 +84,9 @@ AND fc.conflict = FALSE
 ORDER BY date_of_birth ASC
 """
         val familyMembersNow =
-            tx.createQuery(sql)
-                .bind("today", clock.today())
-                .bind("id", adultId)
-                .map { row -> toFamilyOverviewPerson(row, jsonMapper, incomeTypesProvider) }
+            tx.createQuery(sql).bind("today", clock.today()).bind("id", adultId).map { row ->
+                toFamilyOverviewPerson(row, jsonMapper, incomeTypesProvider)
+            }
 
         val (adults, children) = familyMembersNow.partition { it.headOfChild == null }
 
@@ -97,33 +96,43 @@ ORDER BY date_of_birth ASC
 
         val supposedHead = adults.first()
         val supposedPartner = adults.getOrNull(1)
-        val (headOfFamily, partner) = determineHeadOfFamily(
-            Pair(supposedHead, children.filter { it.headOfChild == supposedHead.personId }),
-            Pair(supposedPartner, children.filter { it.headOfChild == supposedPartner?.personId })
-        )
+        val (headOfFamily, partner) =
+            determineHeadOfFamily(
+                Pair(supposedHead, children.filter { it.headOfChild == supposedHead.personId }),
+                Pair(
+                    supposedPartner,
+                    children.filter { it.headOfChild == supposedPartner?.personId }
+                )
+            )
 
         return FamilyOverview(
             headOfFamily = headOfFamily,
             partner = partner,
             children = children,
-            totalIncome = FamilyOverviewIncome(
-                effect = getTotalIncomeEffect(partner != null, headOfFamily.income?.effect, partner?.income?.effect),
-                total = getTotalIncome(
-                    partner != null,
-                    headOfFamily.income?.effect,
-                    headOfFamily.income?.total,
-                    partner?.income?.effect,
-                    partner?.income?.total
+            totalIncome =
+                FamilyOverviewIncome(
+                    effect =
+                        getTotalIncomeEffect(
+                            partner != null,
+                            headOfFamily.income?.effect,
+                            partner?.income?.effect
+                        ),
+                    total =
+                        getTotalIncome(
+                            partner != null,
+                            headOfFamily.income?.effect,
+                            headOfFamily.income?.total,
+                            partner?.income?.effect,
+                            partner?.income?.total
+                        )
                 )
-            )
         )
     }
 }
 
 data class FamilyOverview(
     val headOfFamily: FamilyOverviewPerson,
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    val partner: FamilyOverviewPerson?,
+    @JsonInclude(JsonInclude.Include.NON_NULL) val partner: FamilyOverviewPerson?,
     val children: List<FamilyOverviewPerson>,
     val totalIncome: FamilyOverviewIncome?
 )
@@ -137,16 +146,13 @@ data class FamilyOverviewPerson(
     val streetAddress: String,
     val postalCode: String,
     val postOffice: String,
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    val headOfChild: PersonId?,
+    @JsonInclude(JsonInclude.Include.NON_NULL) val headOfChild: PersonId?,
     val income: FamilyOverviewIncome?
 ) : HasDateOfBirth
 
 data class FamilyOverviewIncome(
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    val effect: IncomeEffect?,
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    val total: Int?
+    @JsonInclude(JsonInclude.Include.NON_NULL) val effect: IncomeEffect?,
+    @JsonInclude(JsonInclude.Include.NON_NULL) val total: Int?
 )
 
 fun toFamilyOverviewPerson(
@@ -164,11 +170,13 @@ fun toFamilyOverviewPerson(
         postalCode = row.mapColumn("postal_code"),
         postOffice = row.mapColumn("post_office"),
         headOfChild = row.mapColumn("head_of_child"),
-        income = FamilyOverviewIncome(
-            effect = row.mapColumn("income_effect"),
-            total = row.mapColumn<String?>("income_data")?.let {
-                incomeTotal(parseIncomeDataJson(it, jsonMapper, incomeTypesProvider.get()))
-            }
-        )
+        income =
+            FamilyOverviewIncome(
+                effect = row.mapColumn("income_effect"),
+                total =
+                    row.mapColumn<String?>("income_data")?.let {
+                        incomeTotal(parseIncomeDataJson(it, jsonMapper, incomeTypesProvider.get()))
+                    }
+            )
     )
 }

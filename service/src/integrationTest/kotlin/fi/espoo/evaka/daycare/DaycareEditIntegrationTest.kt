@@ -23,82 +23,87 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
-    private val fields = DaycareFields(
-        name = "Uusi päiväkoti",
-        openingDate = LocalDate.of(2020, 1, 1),
-        closingDate = LocalDate.of(2120, 1, 1),
-        areaId = testArea.id,
-        type = setOf(CareType.CENTRE),
-        daycareApplyPeriod = DateRange(LocalDate.of(2020, 3, 1), null),
-        preschoolApplyPeriod = null,
-        clubApplyPeriod = null,
-        providerType = ProviderType.MUNICIPAL,
-        capacity = 1,
-        language = Language.fi,
-        ghostUnit = false,
-        uploadToVarda = false,
-        uploadChildrenToVarda = false,
-        uploadToKoski = false,
-        invoicedByMunicipality = false,
-        costCenter = "123456",
-        additionalInfo = "Tämä on testi",
-        phone = "123 456 7890",
-        email = "test@example.com",
-        url = "https://espoo.fi",
-        visitingAddress = VisitingAddress(
-            streetAddress = "Testikatu 1",
-            postalCode = "00000",
-            postOffice = "Espoo"
-        ),
-        location = Coordinate(1.0, 2.0),
-        mailingAddress = MailingAddress(
-            poBox = "PL 999",
-            postalCode = "99999",
-            postOffice = "Espoo"
-        ),
-        unitManager = UnitManager(
-            name = "Joh taja",
-            email = "joh.taja@example.com",
-            phone = "000-0000000"
-        ),
-        decisionCustomization = DaycareDecisionCustomization(
-            daycareName = "Uusi päiväkoti (vaka)",
-            preschoolName = "Uusi päiväkoti (eskari)",
-            handler = "Käsittelijä",
-            handlerAddress = "Käsittelijänkuja 1"
-        ),
-        ophUnitOid = "1.2.3.4.5",
-        ophOrganizerOid = "1.22.33.44.55",
-        operationDays = setOf(1, 2, 3, 4, 5),
-        financeDecisionHandlerId = null,
-        roundTheClock = false,
-        businessId = "Y-123456789",
-        iban = "FI123456789",
-        providerId = "123456789"
-    )
+    private val fields =
+        DaycareFields(
+            name = "Uusi päiväkoti",
+            openingDate = LocalDate.of(2020, 1, 1),
+            closingDate = LocalDate.of(2120, 1, 1),
+            areaId = testArea.id,
+            type = setOf(CareType.CENTRE),
+            daycareApplyPeriod = DateRange(LocalDate.of(2020, 3, 1), null),
+            preschoolApplyPeriod = null,
+            clubApplyPeriod = null,
+            providerType = ProviderType.MUNICIPAL,
+            capacity = 1,
+            language = Language.fi,
+            ghostUnit = false,
+            uploadToVarda = false,
+            uploadChildrenToVarda = false,
+            uploadToKoski = false,
+            invoicedByMunicipality = false,
+            costCenter = "123456",
+            additionalInfo = "Tämä on testi",
+            phone = "123 456 7890",
+            email = "test@example.com",
+            url = "https://espoo.fi",
+            visitingAddress =
+                VisitingAddress(
+                    streetAddress = "Testikatu 1",
+                    postalCode = "00000",
+                    postOffice = "Espoo"
+                ),
+            location = Coordinate(1.0, 2.0),
+            mailingAddress =
+                MailingAddress(poBox = "PL 999", postalCode = "99999", postOffice = "Espoo"),
+            unitManager =
+                UnitManager(
+                    name = "Joh taja",
+                    email = "joh.taja@example.com",
+                    phone = "000-0000000"
+                ),
+            decisionCustomization =
+                DaycareDecisionCustomization(
+                    daycareName = "Uusi päiväkoti (vaka)",
+                    preschoolName = "Uusi päiväkoti (eskari)",
+                    handler = "Käsittelijä",
+                    handlerAddress = "Käsittelijänkuja 1"
+                ),
+            ophUnitOid = "1.2.3.4.5",
+            ophOrganizerOid = "1.22.33.44.55",
+            operationDays = setOf(1, 2, 3, 4, 5),
+            financeDecisionHandlerId = null,
+            roundTheClock = false,
+            businessId = "Y-123456789",
+            iban = "FI123456789",
+            providerId = "123456789"
+        )
 
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertTestCareArea(testArea)
-            tx.insertTestDaycare(DevDaycare(id = testDaycare.id, areaId = testArea.id, name = testDaycare.name))
+            tx.insertTestDaycare(
+                DevDaycare(id = testDaycare.id, areaId = testArea.id, name = testDaycare.name)
+            )
         }
     }
 
     @Test
     fun testCreate() {
-        val (_, res, body) = http.post("/daycares")
-            .jsonBody(jsonMapper.writeValueAsString(fields))
-            .asUser(admin)
-            .responseObject<DaycareController.CreateDaycareResponse>()
+        val (_, res, body) =
+            http
+                .post("/daycares")
+                .jsonBody(jsonMapper.writeValueAsString(fields))
+                .asUser(admin)
+                .responseObject<DaycareController.CreateDaycareResponse>()
         assertTrue(res.isSuccessful)
 
         getAndAssertDaycareFields(body.get().id, fields)
@@ -106,19 +111,23 @@ class DaycareEditIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     @Test
     fun testUpdate() {
-        val (_, res, _) = http.put("/daycares/${testDaycare.id}")
-            .jsonBody(jsonMapper.writeValueAsString(fields))
-            .asUser(admin)
-            .response()
+        val (_, res, _) =
+            http
+                .put("/daycares/${testDaycare.id}")
+                .jsonBody(jsonMapper.writeValueAsString(fields))
+                .asUser(admin)
+                .response()
         assertTrue(res.isSuccessful)
 
         getAndAssertDaycareFields(testDaycare.id, fields)
     }
 
     private fun getAndAssertDaycareFields(daycareId: DaycareId, fields: DaycareFields) {
-        val (_, _, body) = http.get("/daycares/$daycareId")
-            .asUser(admin)
-            .responseObject<DaycareController.DaycareResponse>(jsonMapper)
+        val (_, _, body) =
+            http
+                .get("/daycares/$daycareId")
+                .asUser(admin)
+                .responseObject<DaycareController.DaycareResponse>(jsonMapper)
         val daycare = body.get().daycare
 
         assertEquals(fields.name, daycare.name)

@@ -16,12 +16,12 @@ import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val staffAttendanceService = StaffAttendanceService()
@@ -41,10 +41,20 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
             tx.insertTestCareArea(DevCareArea(id = areaId))
             tx.insertTestDaycare(DevDaycare(areaId = areaId, id = daycareId))
             tx.insertTestDaycareGroup(
-                DevDaycareGroup(daycareId = daycareId, id = groupId, name = groupName, startDate = groupStartDate)
+                DevDaycareGroup(
+                    daycareId = daycareId,
+                    id = groupId,
+                    name = groupName,
+                    startDate = groupStartDate
+                )
             )
             tx.insertTestDaycareGroup(
-                DevDaycareGroup(daycareId = daycareId, id = groupId2, name = groupName2, startDate = groupStartDate)
+                DevDaycareGroup(
+                    daycareId = daycareId,
+                    id = groupId2,
+                    name = groupName2,
+                    startDate = groupStartDate
+                )
             )
         }
     }
@@ -68,7 +78,10 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
     @Test
     fun `create attendance`() {
         val attendanceDate = groupStartDate
-        staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5))
+        staffAttendanceService.upsertStaffAttendance(
+            db,
+            StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5)
+        )
 
         val result =
             staffAttendanceService.getGroupAttendancesByMonth(
@@ -86,7 +99,10 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
     @Test
     fun `creating an attendance with null countOther sets countOther to 0`() {
         val attendanceDate = groupStartDate
-        staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId, attendanceDate, 1.0, null))
+        staffAttendanceService.upsertStaffAttendance(
+            db,
+            StaffAttendanceUpdate(groupId, attendanceDate, 1.0, null)
+        )
 
         val result =
             staffAttendanceService.getGroupAttendancesByMonth(
@@ -104,7 +120,10 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
     @Test
     fun `modify attendance`() {
         val attendanceDate = groupStartDate
-        staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5))
+        staffAttendanceService.upsertStaffAttendance(
+            db,
+            StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5)
+        )
 
         var result =
             staffAttendanceService.getGroupAttendancesByMonth(
@@ -116,13 +135,17 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
         assertEquals(1.0, result.attendances[attendanceDate]?.count)
         assertEquals(0.5, result.attendances[attendanceDate]?.countOther)
 
-        staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId, attendanceDate, 2.5, 0.0))
-        result = staffAttendanceService.getGroupAttendancesByMonth(
+        staffAttendanceService.upsertStaffAttendance(
             db,
-            attendanceDate.year,
-            attendanceDate.monthValue,
-            groupId
+            StaffAttendanceUpdate(groupId, attendanceDate, 2.5, 0.0)
         )
+        result =
+            staffAttendanceService.getGroupAttendancesByMonth(
+                db,
+                attendanceDate.year,
+                attendanceDate.monthValue,
+                groupId
+            )
         assertEquals(2.5, result.attendances[attendanceDate]?.count)
         assertEquals(0.0, result.attendances[attendanceDate]?.countOther)
     }
@@ -130,7 +153,10 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
     @Test
     fun `modifying attendance with null countOther doesn't change countOther`() {
         val attendanceDate = groupStartDate
-        staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5))
+        staffAttendanceService.upsertStaffAttendance(
+            db,
+            StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5)
+        )
 
         var result =
             staffAttendanceService.getGroupAttendancesByMonth(
@@ -142,13 +168,17 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
         assertEquals(1.0, result.attendances[attendanceDate]?.count)
         assertEquals(0.5, result.attendances[attendanceDate]?.countOther)
 
-        staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId, attendanceDate, 2.5, null))
-        result = staffAttendanceService.getGroupAttendancesByMonth(
+        staffAttendanceService.upsertStaffAttendance(
             db,
-            attendanceDate.year,
-            attendanceDate.monthValue,
-            groupId
+            StaffAttendanceUpdate(groupId, attendanceDate, 2.5, null)
         )
+        result =
+            staffAttendanceService.getGroupAttendancesByMonth(
+                db,
+                attendanceDate.year,
+                attendanceDate.monthValue,
+                groupId
+            )
         assertEquals(2.5, result.attendances[attendanceDate]?.count)
         assertEquals(0.5, result.attendances[attendanceDate]?.countOther)
     }
@@ -157,7 +187,10 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
     fun `create attendance for a date when group is not operating`() {
         val attendanceDate = groupStartDate.minusDays(1)
         assertThrows<BadRequest> {
-            staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5))
+            staffAttendanceService.upsertStaffAttendance(
+                db,
+                StaffAttendanceUpdate(groupId, attendanceDate, 1.0, 0.5)
+            )
         }
 
         val result =
@@ -173,11 +206,20 @@ class StaffAttendanceServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = t
     @Test
     fun `get unit attendances`() {
         val firstDay = groupStartDate
-        staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId, firstDay, 1.0, 0.5))
-        staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId2, firstDay, 2.0, 1.5))
+        staffAttendanceService.upsertStaffAttendance(
+            db,
+            StaffAttendanceUpdate(groupId, firstDay, 1.0, 0.5)
+        )
+        staffAttendanceService.upsertStaffAttendance(
+            db,
+            StaffAttendanceUpdate(groupId2, firstDay, 2.0, 1.5)
+        )
 
         val secondDay = groupStartDate.plusDays(5)
-        staffAttendanceService.upsertStaffAttendance(db, StaffAttendanceUpdate(groupId, secondDay, 6.5, null))
+        staffAttendanceService.upsertStaffAttendance(
+            db,
+            StaffAttendanceUpdate(groupId, secondDay, 6.5, null)
+        )
 
         val unitResult = staffAttendanceService.getUnitAttendancesForDate(db, daycareId, firstDay)
         assertEquals(firstDay, unitResult.date)

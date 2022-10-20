@@ -20,11 +20,11 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import org.jdbi.v3.core.mapper.Nested
-import org.jdbi.v3.core.result.RowView
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
+import org.jdbi.v3.core.mapper.Nested
+import org.jdbi.v3.core.result.RowView
 
 const val familyUnitPlacementCoefficient = "1.75"
 
@@ -70,13 +70,8 @@ data class OccupancyValues(
     val caretakers: Double? = null,
     val percentage: Double? = null
 ) {
-    fun withPeriod(period: FiniteDateRange) = OccupancyPeriod(
-        period,
-        sum,
-        headcount,
-        caretakers,
-        percentage
-    )
+    fun withPeriod(period: FiniteDateRange) =
+        OccupancyPeriod(period, sum, headcount, caretakers, percentage)
 }
 
 data class OccupancyPeriod(
@@ -110,26 +105,28 @@ fun Database.Read.calculateDailyUnitOccupancyValues(
     if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
 
-    val caretakerCounts = getCaretakers(type, period, aclAuth, areaId, providerType, unitTypes, unitId) { row ->
-        Caretakers(
-            UnitKey(
-                areaId = row.mapColumn("area_id"),
-                areaName = row.mapColumn("area_name"),
-                unitId = row.mapColumn("unit_id"),
-                unitName = row.mapColumn("unit_name")
-            ),
-            date = row.mapColumn("date"),
-            caretakerCount = row.mapColumn("caretaker_count")
-        )
-    }
+    val caretakerCounts =
+        getCaretakers(type, period, aclAuth, areaId, providerType, unitTypes, unitId) { row ->
+            Caretakers(
+                UnitKey(
+                    areaId = row.mapColumn("area_id"),
+                    areaName = row.mapColumn("area_name"),
+                    unitId = row.mapColumn("unit_id"),
+                    unitName = row.mapColumn("unit_name")
+                ),
+                date = row.mapColumn("date"),
+                caretakerCount = row.mapColumn("caretaker_count")
+            )
+        }
 
-    val placements = when (type) {
-        OccupancyType.REALIZED -> getRealizedPlacements(caretakerCounts.keys, period)
-        else -> getPlacements(caretakerCounts.keys, period)
-    }.let { placements ->
-        val childrenToRemove = speculatedPlacements.map { it.childId }
-        placements.filterNot { childrenToRemove.contains(it.childId) } + speculatedPlacements
-    }
+    val placements =
+        when (type) {
+            OccupancyType.REALIZED -> getRealizedPlacements(caretakerCounts.keys, period)
+            else -> getPlacements(caretakerCounts.keys, period)
+        }.let { placements ->
+            val childrenToRemove = speculatedPlacements.map { it.childId }
+            placements.filterNot { childrenToRemove.contains(it.childId) } + speculatedPlacements
+        }
 
     return calculateDailyOccupancies(caretakerCounts, placements, period, type)
 }
@@ -147,30 +144,34 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
     if (type == OccupancyType.REALIZED && today < queryPeriod.start) return listOf()
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
 
-    val caretakerCounts = getCaretakers(type, period, aclAuth, areaId, providerType, unitTypes, unitId) { row ->
-        Caretakers(
-            UnitGroupKey(
-                areaId = row.mapColumn("area_id"),
-                areaName = row.mapColumn("area_name"),
-                unitId = row.mapColumn("unit_id"),
-                unitName = row.mapColumn("unit_name"),
-                groupId = row.mapColumn("group_id"),
-                groupName = row.mapColumn("group_name")
-            ),
-            date = row.mapColumn("date"),
-            caretakerCount = row.mapColumn("caretaker_count")
-        )
-    }
+    val caretakerCounts =
+        getCaretakers(type, period, aclAuth, areaId, providerType, unitTypes, unitId) { row ->
+            Caretakers(
+                UnitGroupKey(
+                    areaId = row.mapColumn("area_id"),
+                    areaName = row.mapColumn("area_name"),
+                    unitId = row.mapColumn("unit_id"),
+                    unitName = row.mapColumn("unit_name"),
+                    groupId = row.mapColumn("group_id"),
+                    groupName = row.mapColumn("group_name")
+                ),
+                date = row.mapColumn("date"),
+                caretakerCount = row.mapColumn("caretaker_count")
+            )
+        }
 
-    val placements = when (type) {
-        OccupancyType.REALIZED -> getRealizedPlacements(caretakerCounts.keys, period)
-        else -> getPlacements(caretakerCounts.keys, period)
-    }
+    val placements =
+        when (type) {
+            OccupancyType.REALIZED -> getRealizedPlacements(caretakerCounts.keys, period)
+            else -> getPlacements(caretakerCounts.keys, period)
+        }
 
     return calculateDailyOccupancies(caretakerCounts, placements, period, type)
 }
 
-fun <K : OccupancyGroupingKey> reduceDailyOccupancyValues(dailyOccupancies: List<DailyOccupancyValues<K>>): Map<K, List<OccupancyPeriod>> {
+fun <K : OccupancyGroupingKey> reduceDailyOccupancyValues(
+    dailyOccupancies: List<DailyOccupancyValues<K>>
+): Map<K, List<OccupancyPeriod>> {
     return dailyOccupancies.associateByTo(
         destination = mutableMapOf(),
         keySelector = { it.key },
@@ -178,18 +179,23 @@ fun <K : OccupancyGroupingKey> reduceDailyOccupancyValues(dailyOccupancies: List
     )
 }
 
-private fun reduceDailyOccupancyValues(dailyOccupancies: Map<LocalDate, OccupancyValues>): List<OccupancyPeriod> {
-    return dailyOccupancies.entries.sortedBy { it.key }
+private fun reduceDailyOccupancyValues(
+    dailyOccupancies: Map<LocalDate, OccupancyValues>
+): List<OccupancyPeriod> {
+    return dailyOccupancies.entries
+        .sortedBy { it.key }
         .fold(listOf<Pair<FiniteDateRange, OccupancyValues>>()) { acc, (date, values) ->
             when {
                 acc.isEmpty() -> listOf(FiniteDateRange(date, date) to values)
-                else -> acc.last().let { (lastPeriod, lastValues) ->
-                    when {
-                        values == lastValues && lastPeriod.end.isEqual(date.minusDays(1)) ->
-                            acc.dropLast(1) + (FiniteDateRange(lastPeriod.start, date) to values)
-                        else -> acc + (FiniteDateRange(date, date) to values)
+                else ->
+                    acc.last().let { (lastPeriod, lastValues) ->
+                        when {
+                            values == lastValues && lastPeriod.end.isEqual(date.minusDays(1)) ->
+                                acc.dropLast(1) +
+                                    (FiniteDateRange(lastPeriod.start, date) to values)
+                            else -> acc + (FiniteDateRange(date, date) to values)
+                        }
                     }
-                }
             }
         }
         .map { (period, values) -> values.withPeriod(period) }
@@ -211,7 +217,9 @@ private fun getAndValidatePeriod(
         }
 
     if (period.start.plusDays(maxLength.toLong()) < period.end) {
-        throw BadRequest("Date range ${period.start} - ${period.end} is too long. Maximum range is $maxLength days.")
+        throw BadRequest(
+            "Date range ${period.start} - ${period.end} is too long. Maximum range is $maxLength days."
+        )
     }
 
     return period
@@ -229,8 +237,9 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
 ): Map<K, List<Caretakers<K>>> {
     val workingDayHours = 7.75
     val defaultOccupancyCoefficient = 7
-    val caretakersSum = if (type == OccupancyType.REALIZED) {
-        """
+    val caretakersSum =
+        if (type == OccupancyType.REALIZED) {
+            """
         sum(
             CASE
                 WHEN sar.arrived IS NOT NULL
@@ -238,16 +247,20 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
                 ELSE s.count
             END
         )
-        """.trimIndent()
-    } else {
         """
+                .trimIndent()
+        } else {
+            """
         sum(c.amount)
-        """.trimIndent()
-    }
-
-    val presentStaffAttendanceTypes = "'{${StaffAttendanceType.values().filter { it.presentInGroup() }.joinToString()}}'::staff_attendance_type[]"
-    val caretakersJoin = if (type == OccupancyType.REALIZED) {
         """
+                .trimIndent()
+        }
+
+    val presentStaffAttendanceTypes =
+        "'{${StaffAttendanceType.values().filter { it.presentInGroup() }.joinToString()}}'::staff_attendance_type[]"
+    val caretakersJoin =
+        if (type == OccupancyType.REALIZED) {
+            """
         LEFT JOIN (
             SELECT group_id, arrived, departed, occupancy_coefficient
             FROM staff_attendance_realtime
@@ -258,22 +271,30 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
             WHERE departed IS NOT NULL
         ) sar ON g.id = sar.group_id AND t = DATE(sar.arrived)
         LEFT JOIN staff_attendance s ON g.id = s.group_id AND t = s.date
-        """.trimIndent()
-    } else {
         """
+                .trimIndent()
+        } else {
+            """
         LEFT JOIN daycare_caretaker c ON g.id = c.group_id AND daterange(c.start_date, c.end_date, '[]') @> t::date
-        """.trimIndent()
-    }
+        """
+                .trimIndent()
+        }
 
     // language=sql
-    val (keyColumns, groupBy) = when (K::class) {
-        UnitKey::class -> "a.id AS area_id, a.name AS area_name, u.id AS unit_id, u.name AS unit_name" to "a.id, u.id"
-        UnitGroupKey::class -> "a.id AS area_id, a.name AS area_name, g.id AS group_id, g.name AS group_name, u.id AS unit_id, u.name AS unit_name" to "a.id, g.id, u.id"
-        else -> error("Unsupported caretakers query class parameter (${K::class})")
-    }
+    val (keyColumns, groupBy) =
+        when (K::class) {
+            UnitKey::class ->
+                "a.id AS area_id, a.name AS area_name, u.id AS unit_id, u.name AS unit_name" to
+                    "a.id, u.id"
+            UnitGroupKey::class ->
+                "a.id AS area_id, a.name AS area_name, g.id AS group_id, g.name AS group_name, u.id AS unit_id, u.name AS unit_name" to
+                    "a.id, g.id, u.id"
+            else -> error("Unsupported caretakers query class parameter (${K::class})")
+        }
 
     // language=sql
-    val query = """
+    val query =
+        """
 SELECT $keyColumns, t::date AS date,
 coalesce(
     $caretakersSum,
@@ -312,22 +333,21 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getPlacement
     period: FiniteDateRange
 ): Iterable<Placement> {
     // language=sql
-    val (groupingId, daterange, additionalJoin) = when (K::class) {
-        UnitKey::class -> Triple(
-            "u.id",
-            "daterange(p.start_date, p.end_date, '[]')",
-            ""
-        )
-        UnitGroupKey::class -> Triple(
-            "gp.daycare_group_id",
-            "daterange(greatest(p.start_date, gp.start_date), least(p.end_date, gp.end_date), '[]')",
-            "JOIN daycare_group_placement gp ON gp.daycare_placement_id = p.id"
-        )
-        else -> error("Unsupported placement query class parameter (${K::class})")
-    }
+    val (groupingId, daterange, additionalJoin) =
+        when (K::class) {
+            UnitKey::class -> Triple("u.id", "daterange(p.start_date, p.end_date, '[]')", "")
+            UnitGroupKey::class ->
+                Triple(
+                    "gp.daycare_group_id",
+                    "daterange(greatest(p.start_date, gp.start_date), least(p.end_date, gp.end_date), '[]')",
+                    "JOIN daycare_group_placement gp ON gp.daycare_placement_id = p.id"
+                )
+            else -> error("Unsupported placement query class parameter (${K::class})")
+        }
 
     // language=sql
-    val query = """
+    val query =
+        """
 SELECT
     $groupingId AS grouping_id,
     p.id AS placement_id,
@@ -355,12 +375,14 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getRealizedP
     val placements = getPlacements(keys, period)
 
     // remove periods where child is away in backup care
-    val periodsAwayByChild = getPeriodsAwayInBackupCareByChildId(period, placements.map { it.childId }.toSet())
-    val placementsWithChildPresent = placements.flatMap { placement ->
-        val periodsAway = periodsAwayByChild.getOrDefault(placement.childId, emptyList())
-        val periodsPresent = placement.period.complement(periodsAway)
-        periodsPresent.map { period -> placement.copy(period = period) }
-    }
+    val periodsAwayByChild =
+        getPeriodsAwayInBackupCareByChildId(period, placements.map { it.childId }.toSet())
+    val placementsWithChildPresent =
+        placements.flatMap { placement ->
+            val periodsAway = periodsAwayByChild.getOrDefault(placement.childId, emptyList())
+            val periodsPresent = placement.period.complement(periodsAway)
+            periodsPresent.map { period -> placement.copy(period = period) }
+        }
 
     // add backup care placements into these units/groups
     return placementsWithChildPresent + getBackupCarePlacements(keys, period)
@@ -370,14 +392,11 @@ private fun Database.Read.getPeriodsAwayInBackupCareByChildId(
     period: FiniteDateRange,
     childIds: Set<ChildId>
 ): Map<ChildId, List<FiniteDateRange>> {
-    data class QueryResult(
-        val childId: ChildId,
-        val startDate: LocalDate,
-        val endDate: LocalDate
-    )
+    data class QueryResult(val childId: ChildId, val startDate: LocalDate, val endDate: LocalDate)
 
     // language=sql
-    val query = """
+    val query =
+        """
 SELECT bc.child_id, bc.start_date, bc.end_date
 FROM backup_care bc
 WHERE daterange(bc.start_date, bc.end_date, '[]') && :period AND bc.child_id = ANY(:childIds)
@@ -395,14 +414,16 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getBackupCar
     keys: Set<K>,
     period: FiniteDateRange
 ): Iterable<Placement> {
-    val groupingId = when (K::class) {
-        UnitKey::class -> "bc.unit_id"
-        UnitGroupKey::class -> "bc.group_id"
-        else -> error("Unsupported placement query class parameter (${K::class})")
-    }
+    val groupingId =
+        when (K::class) {
+            UnitKey::class -> "bc.unit_id"
+            UnitGroupKey::class -> "bc.group_id"
+            else -> error("Unsupported placement query class parameter (${K::class})")
+        }
 
     // language=sql
-    val query = """
+    val query =
+        """
 SELECT
     $groupingId AS grouping_id,
     p.id AS placement_id,
@@ -438,14 +459,16 @@ private fun <K : OccupancyGroupingKey> Database.Read.calculateDailyOccupancies(
 
     val childIds = (placements.map { it.childId } + placementPlans.map { it.childId }).toSet()
 
-    val childBirthdays = this.createQuery("SELECT id, date_of_birth FROM person WHERE id = ANY(:childIds)")
-        .bind("childIds", childIds)
-        .mapTo<Child>()
-        .map { it.id to it.dateOfBirth }
-        .toMap()
+    val childBirthdays =
+        this.createQuery("SELECT id, date_of_birth FROM person WHERE id = ANY(:childIds)")
+            .bind("childIds", childIds)
+            .mapTo<Child>()
+            .map { it.id to it.dateOfBirth }
+            .toMap()
 
-    val serviceNeeds = this.createQuery(
-        """
+    val serviceNeeds =
+        this.createQuery(
+                """
 SELECT
     sn.placement_id,
     CASE
@@ -464,30 +487,39 @@ JOIN person ch ON ch.id = pl.child_id
 JOIN daycare u ON pl.unit_id = u.id
 WHERE sn.placement_id = ANY(:placementIds)
 """
-    )
-        .bind("placementIds", placements.map { it.placementId })
-        .mapTo<ServiceNeed>()
-        .groupBy { it.placementId }
+            )
+            .bind("placementIds", placements.map { it.placementId })
+            .mapTo<ServiceNeed>()
+            .groupBy { it.placementId }
 
     val defaultServiceNeedCoefficients =
-        this.createQuery("SELECT occupancy_coefficient, occupancy_coefficient_under_3y, valid_placement_type FROM service_need_option WHERE default_option")
+        this.createQuery(
+                "SELECT occupancy_coefficient, occupancy_coefficient_under_3y, valid_placement_type FROM service_need_option WHERE default_option"
+            )
             .map { row ->
-                row.mapColumn<PlacementType>("valid_placement_type") to object {
-                    val occupancyCoefficient = row.mapColumn<BigDecimal>("occupancy_coefficient")
-                    val occupancyCoefficientUnder3y = row.mapColumn<BigDecimal>("occupancy_coefficient_under_3y")
-                }
+                row.mapColumn<PlacementType>("valid_placement_type") to
+                    object {
+                        val occupancyCoefficient =
+                            row.mapColumn<BigDecimal>("occupancy_coefficient")
+                        val occupancyCoefficientUnder3y =
+                            row.mapColumn<BigDecimal>("occupancy_coefficient_under_3y")
+                    }
             }
             .toMap()
 
     val assistanceNeeds =
-        this.createQuery("SELECT child_id, capacity_factor, daterange(start_date, end_date, '[]') AS period FROM assistance_need WHERE child_id = ANY(:childIds)")
+        this.createQuery(
+                "SELECT child_id, capacity_factor, daterange(start_date, end_date, '[]') AS period FROM assistance_need WHERE child_id = ANY(:childIds)"
+            )
             .bind("childIds", childIds)
             .mapTo<AssistanceNeed>()
             .groupBy { it.childId }
 
     val absences =
         if (type == OccupancyType.REALIZED) {
-            this.createQuery("SELECT child_id, date, category FROM absence WHERE child_id = ANY(:childIds) AND between_start_and_end(:range, date)")
+            this.createQuery(
+                    "SELECT child_id, date, category FROM absence WHERE child_id = ANY(:childIds) AND between_start_and_end(:range, date)"
+                )
                 .bind("childIds", childIds)
                 .bind("range", range)
                 .mapTo<Absence>()
@@ -497,22 +529,25 @@ WHERE sn.placement_id = ANY(:placementIds)
         }
 
     fun getCoefficient(date: LocalDate, placement: Placement): BigDecimal {
-        val assistanceCoefficient = assistanceNeeds[placement.childId]
-            ?.find { it.period.includes(date) }
-            ?.capacityFactor
-            ?: BigDecimal.ONE
+        val assistanceCoefficient =
+            assistanceNeeds[placement.childId]?.find { it.period.includes(date) }?.capacityFactor
+                ?: BigDecimal.ONE
 
-        val dateOfBirth = childBirthdays[placement.childId]
-            ?: error("No date of birth found for child ${placement.childId}")
+        val dateOfBirth =
+            childBirthdays[placement.childId]
+                ?: error("No date of birth found for child ${placement.childId}")
 
         val serviceNeedCoefficient = run {
-            val (coefficient, coefficientUnder3y) = serviceNeeds[placement.placementId]
-                ?.let { it.find { sn -> sn.period.includes(date) } }
-                ?.let { it.occupancyCoefficient to it.occupancyCoefficientUnder3y }
-                ?: defaultServiceNeedCoefficients[placement.type]?.let {
-                    it.occupancyCoefficient to it.occupancyCoefficientUnder3y
-                }
-                ?: error("No occupancy coefficients found for placement type ${placement.type}")
+            val (coefficient, coefficientUnder3y) =
+                serviceNeeds[placement.placementId]
+                    ?.let { it.find { sn -> sn.period.includes(date) } }
+                    ?.let { it.occupancyCoefficient to it.occupancyCoefficientUnder3y }
+                    ?: defaultServiceNeedCoefficients[placement.type]?.let {
+                        it.occupancyCoefficient to it.occupancyCoefficientUnder3y
+                    }
+                        ?: error(
+                        "No occupancy coefficients found for placement type ${placement.type}"
+                    )
 
             when {
                 placement.familyUnitPlacement -> BigDecimal(familyUnitPlacementCoefficient)
@@ -526,11 +561,11 @@ WHERE sn.placement_id = ANY(:placementIds)
 
     val placementsAndPlans = (placements + placementPlans).groupBy { it.groupingId }
 
-    return caretakerCounts
-        .map { (key, values) ->
-            val occupancies = values
-                .associate { caretakers ->
-                    val placementsOnDate = (placementsAndPlans[key.groupingId] ?: listOf())
+    return caretakerCounts.map { (key, values) ->
+        val occupancies =
+            values.associate { caretakers ->
+                val placementsOnDate =
+                    (placementsAndPlans[key.groupingId] ?: listOf())
                         .filter { it.period.includes(caretakers.date) }
                         .filterNot {
                             childWasAbsentWholeDay(
@@ -540,41 +575,47 @@ WHERE sn.placement_id = ANY(:placementIds)
                             )
                         }
 
-                    val coefficientSum = placementsOnDate
+                val coefficientSum =
+                    placementsOnDate
                         .groupBy { it.childId }
                         .mapNotNull { (_, childPlacements) ->
                             childPlacements.map { getCoefficient(caretakers.date, it) }.maxOrNull()
                         }
                         .fold(BigDecimal.ZERO) { sum, coefficient -> sum + coefficient }
 
-                    val percentage =
-                        if (caretakers.caretakerCount.compareTo(BigDecimal.ZERO) == 0) {
-                            null
-                        } else {
-                            coefficientSum
-                                .divide(caretakers.caretakerCount * BigDecimal(7), 4, RoundingMode.HALF_EVEN)
-                                .times(BigDecimal(100))
-                                .setScale(1, RoundingMode.HALF_EVEN)
-                        }
+                val percentage =
+                    if (caretakers.caretakerCount.compareTo(BigDecimal.ZERO) == 0) {
+                        null
+                    } else {
+                        coefficientSum
+                            .divide(
+                                caretakers.caretakerCount * BigDecimal(7),
+                                4,
+                                RoundingMode.HALF_EVEN
+                            )
+                            .times(BigDecimal(100))
+                            .setScale(1, RoundingMode.HALF_EVEN)
+                    }
 
-                    caretakers.date to OccupancyValues(
+                caretakers.date to
+                    OccupancyValues(
                         sum = coefficientSum.toDouble(),
                         headcount = placementsOnDate.size,
                         percentage = percentage?.toDouble(),
                         caretakers = caretakers.caretakerCount.toDouble().takeUnless { it == 0.0 }
                     )
-                }
+            }
 
-            DailyOccupancyValues(
-                key = key,
-                occupancies = occupancies
-            )
-        }
+        DailyOccupancyValues(key = key, occupancies = occupancies)
+    }
 }
 
-private fun Database.Read.getPlacementPlans(period: FiniteDateRange, unitIds: Collection<DaycareId>): List<Placement> {
+private fun Database.Read.getPlacementPlans(
+    period: FiniteDateRange,
+    unitIds: Collection<DaycareId>
+): List<Placement> {
     return this.createQuery(
-        """
+            """
 SELECT
     u.id AS grouping_id,
     p.id AS placement_id,
@@ -597,31 +638,39 @@ WHERE NOT p.deleted AND (
     )
 )
 """
-    )
+        )
         .bind("unitIds", unitIds)
         .bind("period", period)
         .mapTo<PlacementPlan>()
         .flatMap { placementPlan ->
-            // If the placement plan has preschool daycare dates set it means that the placement plan could in reality
+            // If the placement plan has preschool daycare dates set it means that the placement
+            // plan could in reality
             // be split into parts with and without preschool daycare, so take that into account.
-            if (placementPlan.preschoolDaycareStartDate == null || placementPlan.preschoolDaycareEndDate == null) {
+            if (
+                placementPlan.preschoolDaycareStartDate == null ||
+                    placementPlan.preschoolDaycareEndDate == null
+            ) {
                 listOf(placementPlan.placement)
             } else {
-                val preschoolDaycarePeriod = FiniteDateRange(placementPlan.preschoolDaycareStartDate, placementPlan.preschoolDaycareEndDate)
-                val onlyPreschoolPeriods = placementPlan.placement.period.complement(preschoolDaycarePeriod)
+                val preschoolDaycarePeriod =
+                    FiniteDateRange(
+                        placementPlan.preschoolDaycareStartDate,
+                        placementPlan.preschoolDaycareEndDate
+                    )
+                val onlyPreschoolPeriods =
+                    placementPlan.placement.period.complement(preschoolDaycarePeriod)
 
                 onlyPreschoolPeriods.map {
                     placementPlan.placement.copy(
-                        type = when (placementPlan.placement.type) {
-                            PlacementType.PREPARATORY_DAYCARE -> PlacementType.PREPARATORY
-                            PlacementType.PRESCHOOL_DAYCARE -> PlacementType.PRESCHOOL
-                            else -> placementPlan.placement.type
-                        },
+                        type =
+                            when (placementPlan.placement.type) {
+                                PlacementType.PREPARATORY_DAYCARE -> PlacementType.PREPARATORY
+                                PlacementType.PRESCHOOL_DAYCARE -> PlacementType.PRESCHOOL
+                                else -> placementPlan.placement.type
+                            },
                         period = it
                     )
-                } + placementPlan.placement.copy(
-                    period = preschoolDaycarePeriod
-                )
+                } + placementPlan.placement.copy(period = preschoolDaycarePeriod)
             }
         }
 }
@@ -652,16 +701,12 @@ data class Placement(
 )
 
 private data class PlacementPlan(
-    @Nested
-    val placement: Placement,
+    @Nested val placement: Placement,
     val preschoolDaycareStartDate: LocalDate?,
     val preschoolDaycareEndDate: LocalDate?
 )
 
-private data class Child(
-    val id: ChildId,
-    val dateOfBirth: LocalDate
-)
+private data class Child(val id: ChildId, val dateOfBirth: LocalDate)
 
 data class ServiceNeed(
     val placementId: PlacementId,
@@ -676,8 +721,4 @@ data class AssistanceNeed(
     val period: FiniteDateRange
 )
 
-data class Absence(
-    val childId: ChildId,
-    val date: LocalDate,
-    val category: AbsenceCategory
-)
+data class Absence(val childId: ChildId, val date: LocalDate, val category: AbsenceCategory)

@@ -10,35 +10,52 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.Month
+import org.springframework.stereotype.Service
 
 @Service
 class StaffAttendanceService {
-    fun getUnitAttendancesForDate(db: Database.Connection, unitId: DaycareId, date: LocalDate): UnitStaffAttendance {
-        return db.read { tx ->
-            tx.getUnitStaffAttendanceForDate(unitId, date)
-        }
+    fun getUnitAttendancesForDate(
+        db: Database.Connection,
+        unitId: DaycareId,
+        date: LocalDate
+    ): UnitStaffAttendance {
+        return db.read { tx -> tx.getUnitStaffAttendanceForDate(unitId, date) }
     }
 
-    fun getGroupAttendancesByMonth(db: Database.Connection, year: Int, month: Int, groupId: GroupId): StaffAttendanceForDates {
+    fun getGroupAttendancesByMonth(
+        db: Database.Connection,
+        year: Int,
+        month: Int,
+        groupId: GroupId
+    ): StaffAttendanceForDates {
         val range = FiniteDateRange.ofMonth(year, Month.of(month))
 
         return db.read { tx ->
-            val groupInfo = tx.getGroupInfo(groupId) ?: throw BadRequest("Couldn't find group info with id $groupId")
+            val groupInfo =
+                tx.getGroupInfo(groupId)
+                    ?: throw BadRequest("Couldn't find group info with id $groupId")
 
             val attendanceList = tx.getStaffAttendanceByRange(range, groupId)
             val attendanceMap = attendanceList.associateBy { it.date }
 
-            StaffAttendanceForDates(groupId, groupInfo.groupName, groupInfo.startDate, groupInfo.endDate, attendanceMap)
+            StaffAttendanceForDates(
+                groupId,
+                groupInfo.groupName,
+                groupInfo.startDate,
+                groupInfo.endDate,
+                attendanceMap
+            )
         }
     }
 
     fun upsertStaffAttendance(db: Database.Connection, staffAttendance: StaffAttendanceUpdate) {
         db.transaction { tx ->
             if (!tx.isValidStaffAttendanceDate(staffAttendance)) {
-                throw BadRequest("Error: Upserting staff count failed. Group is not operating in given date")
+                throw BadRequest(
+                    "Error: Upserting staff count failed. Group is not operating in given date"
+                )
             }
             tx.upsertStaffAttendance(staffAttendance)
         }
@@ -84,29 +101,28 @@ data class StaffAttendanceUpdate(
 )
 
 fun Database.Read.getGroupInfo(groupId: GroupId): GroupInfo? {
-    //language=SQL
+    // language=SQL
     val sql =
         """
             SELECT dg.id AS group_id, dg.name AS group_name, dg.start_date, dg.end_date
             FROM daycare_group AS dg
             WHERE id = :groupId;
-        """.trimIndent()
+        """
+            .trimIndent()
 
-    return createQuery(sql)
-        .bind("groupId", groupId)
-        .mapTo<GroupInfo>()
-        .firstOrNull()
+    return createQuery(sql).bind("groupId", groupId).mapTo<GroupInfo>().firstOrNull()
 }
 
 fun Database.Read.isValidStaffAttendanceDate(staffAttendance: StaffAttendanceUpdate): Boolean {
-    //language=SQL
+    // language=SQL
     val sql =
         """
         SELECT 1
         FROM daycare_group
         WHERE id = :id
         AND daterange(start_date, end_date, '[]') @> :date
-        """.trimIndent()
+        """
+            .trimIndent()
 
     return createQuery(sql)
         .bind("id", staffAttendance.groupId)
@@ -116,23 +132,25 @@ fun Database.Read.isValidStaffAttendanceDate(staffAttendance: StaffAttendanceUpd
 }
 
 fun Database.Transaction.upsertStaffAttendance(staffAttendance: StaffAttendanceUpdate) {
-    //language=SQL
-    val sql = if (staffAttendance.countOther != null) {
-        """
+    // language=SQL
+    val sql =
+        if (staffAttendance.countOther != null) {
+                """
         INSERT INTO staff_attendance (group_id, date, count, count_other)
         VALUES (:groupId, :date, :count, :count_other)
         ON CONFLICT (group_id, date) DO UPDATE SET
             count = :count,
             count_other = :count_other
         """
-    } else {
-        """
+            } else {
+                """
         INSERT INTO staff_attendance (group_id, date, count, count_other)
         VALUES (:groupId, :date, :count, DEFAULT)
         ON CONFLICT (group_id, date) DO UPDATE SET
             count = :count
         """
-    }.trimIndent()
+            }
+            .trimIndent()
 
     createUpdate(sql)
         .bind("groupId", staffAttendance.groupId)
@@ -146,14 +164,15 @@ fun Database.Read.getStaffAttendanceByRange(
     range: FiniteDateRange,
     groupId: GroupId
 ): List<GroupStaffAttendance> {
-    //language=SQL
+    // language=SQL
     val sql =
         """
         SELECT group_id, date, count, count_other, updated
         FROM staff_attendance
         WHERE group_id = :groupId
         AND between_start_and_end(:range, date)
-        """.trimIndent()
+        """
+            .trimIndent()
 
     return createQuery(sql)
         .bind("groupId", groupId)
@@ -162,8 +181,11 @@ fun Database.Read.getStaffAttendanceByRange(
         .list()
 }
 
-fun Database.Read.getUnitStaffAttendanceForDate(unitId: DaycareId, date: LocalDate): UnitStaffAttendance {
-    //language=SQL
+fun Database.Read.getUnitStaffAttendanceForDate(
+    unitId: DaycareId,
+    date: LocalDate
+): UnitStaffAttendance {
+    // language=SQL
     val sql =
         """
         SELECT group_id, date, count, count_other, updated
@@ -171,13 +193,15 @@ fun Database.Read.getUnitStaffAttendanceForDate(unitId: DaycareId, date: LocalDa
         JOIN daycare_group dg on sa.group_id = dg.id
         WHERE dg.daycare_id = :unitId
           AND sa.date = :date
-        """.trimIndent()
+        """
+            .trimIndent()
 
-    val groupAttendances = createQuery(sql)
-        .bind("unitId", unitId)
-        .bind("date", date)
-        .mapTo<GroupStaffAttendance>()
-        .list()
+    val groupAttendances =
+        createQuery(sql)
+            .bind("unitId", unitId)
+            .bind("date", date)
+            .mapTo<GroupStaffAttendance>()
+            .list()
 
     val count = groupAttendances.sumOf { it.count }
     val countOther = groupAttendances.sumOf { it.countOther }

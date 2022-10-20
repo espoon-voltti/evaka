@@ -21,13 +21,13 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
+import java.time.LocalDate
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
-import java.time.LocalDate
 
 @Service
 class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
-    private val logger = KotlinLogging.logger { }
+    private val logger = KotlinLogging.logger {}
 
     fun createParentship(
         tx: Database.Transaction,
@@ -37,17 +37,27 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         startDate: LocalDate,
         endDate: LocalDate
     ): Parentship {
-        tx.getPersonById(childId)?.let { child -> validateDates(child.dateOfBirth, startDate, endDate) }
+        tx.getPersonById(childId)?.let { child ->
+            validateDates(child.dateOfBirth, startDate, endDate)
+        }
         return try {
-            tx.createParentship(childId, headOfChildId, startDate, endDate, false)
-                .also { tx.sendFamilyUpdatedMessage(clock, headOfChildId, startDate, endDate) }
+            tx.createParentship(childId, headOfChildId, startDate, endDate, false).also {
+                tx.sendFamilyUpdatedMessage(clock, headOfChildId, startDate, endDate)
+            }
         } catch (e: Exception) {
             throw mapPSQLException(e)
         }
     }
 
-    fun updateParentshipDuration(tx: Database.Transaction, clock: EvakaClock, id: ParentshipId, startDate: LocalDate, endDate: LocalDate): Parentship {
-        val oldParentship = tx.getParentship(id) ?: throw NotFound("No parentship found with id $id")
+    fun updateParentshipDuration(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        id: ParentshipId,
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): Parentship {
+        val oldParentship =
+            tx.getParentship(id) ?: throw NotFound("No parentship found with id $id")
         validateDates(oldParentship.child.dateOfBirth, startDate, endDate)
         try {
             val success = tx.updateParentshipDuration(id, startDate, endDate)
@@ -89,14 +99,23 @@ class ParentshipService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         val success = tx.deleteParentship(id)
         if (parentship == null || !success) throw NotFound("No parentship found with id $id")
 
-        with(parentship) {
-            tx.sendFamilyUpdatedMessage(clock, headOfChildId, startDate, endDate)
-        }
+        with(parentship) { tx.sendFamilyUpdatedMessage(clock, headOfChildId, startDate, endDate) }
     }
 
-    private fun Database.Transaction.sendFamilyUpdatedMessage(clock: EvakaClock, adultId: PersonId, startDate: LocalDate, endDate: LocalDate) {
+    private fun Database.Transaction.sendFamilyUpdatedMessage(
+        clock: EvakaClock,
+        adultId: PersonId,
+        startDate: LocalDate,
+        endDate: LocalDate
+    ) {
         logger.info("Sending update family message with adult $adultId")
-        asyncJobRunner.plan(this, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(adultId, DateRange(startDate, endDate))), runAt = clock.now())
+        asyncJobRunner.plan(
+            this,
+            listOf(
+                AsyncJob.GenerateFinanceDecisions.forAdult(adultId, DateRange(startDate, endDate))
+            ),
+            runAt = clock.now()
+        )
     }
 }
 

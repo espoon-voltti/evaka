@@ -5,38 +5,39 @@
 package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.PureJdbiTest
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.postgresql.util.PSQLState
-import kotlin.test.assertEquals
 
 class PGUtilsTest : PureJdbiTest(resetDbBeforeEach = false) {
     @Test
     fun `psqlCause finds the underlying PSQLException from a long chain of wrappers`() {
-        val e = assertThrows<Exception> {
-            db.transaction { tx ->
-                try {
+        val e =
+            assertThrows<Exception> {
+                db.transaction { tx ->
                     try {
                         try {
                             try {
-                                tx.execute(
-                                    // language=
-                                    "Not valid SQL"
-                                )
+                                try {
+                                    tx.execute(
+                                        // language=
+                                        "Not valid SQL"
+                                    )
+                                } catch (e: Throwable) {
+                                    throw Exception("Wrap", e)
+                                }
                             } catch (e: Throwable) {
-                                throw Exception("Wrap", e)
+                                throw RuntimeException("Wrapper", e)
                             }
                         } catch (e: Throwable) {
-                            throw RuntimeException("Wrapper", e)
+                            throw Exception("Wrappest", e)
                         }
                     } catch (e: Throwable) {
-                        throw Exception("Wrappest", e)
+                        throw Exception("More is more", e)
                     }
-                } catch (e: Throwable) {
-                    throw Exception("More is more", e)
                 }
             }
-        }
         assertEquals("More is more", e.message)
         val psql = e.psqlCause()
         assertEquals(PSQLState.SYNTAX_ERROR.state, psql?.sqlState)

@@ -30,8 +30,8 @@ import java.time.LocalDate
 
 fun Database.Transaction.upsertValueDecisions(decisions: List<VoucherValueDecision>) {
     val sql =
-        // language=sql
-        """
+    // language=sql
+    """
 INSERT INTO voucher_value_decision (
     id,
     status,
@@ -142,19 +142,30 @@ INSERT INTO voucher_value_decision (
             .bind("placementUnitId", decision.placement?.unitId)
             .bind("placementType", decision.placement?.type)
             .bind("serviceNeedFeeCoefficient", decision.serviceNeed?.feeCoefficient)
-            .bind("serviceNeedVoucherValueCoefficient", decision.serviceNeed?.voucherValueCoefficient)
+            .bind(
+                "serviceNeedVoucherValueCoefficient",
+                decision.serviceNeed?.voucherValueCoefficient
+            )
             .bind("serviceNeedFeeDescriptionFi", decision.serviceNeed?.feeDescriptionFi)
             .bind("serviceNeedFeeDescriptionSv", decision.serviceNeed?.feeDescriptionSv)
-            .bind("serviceNeedVoucherValueDescriptionFi", decision.serviceNeed?.voucherValueDescriptionFi)
-            .bind("serviceNeedVoucherValueDescriptionSv", decision.serviceNeed?.voucherValueDescriptionSv)
+            .bind(
+                "serviceNeedVoucherValueDescriptionFi",
+                decision.serviceNeed?.voucherValueDescriptionFi
+            )
+            .bind(
+                "serviceNeedVoucherValueDescriptionSv",
+                decision.serviceNeed?.voucherValueDescriptionSv
+            )
             .bind("sentAt", decision.sentAt)
             .execute()
     }
 }
 
-fun Database.Read.getValueDecisionsByIds(ids: List<VoucherValueDecisionId>): List<VoucherValueDecision> {
+fun Database.Read.getValueDecisionsByIds(
+    ids: List<VoucherValueDecisionId>
+): List<VoucherValueDecision> {
     return createQuery(
-        """
+            """
 SELECT
     id,
     valid_from,
@@ -195,8 +206,9 @@ SELECT
     created
 FROM voucher_value_decision
 WHERE id = ANY(:ids)
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("ids", ids)
         .mapTo<VoucherValueDecision>()
         .toList()
@@ -287,29 +299,34 @@ fun Database.Read.searchValueDecisions(
     difference: Set<VoucherValueDecisionDifference>,
     distinctiveParams: List<VoucherValueDecisionDistinctiveParams>
 ): Paged<VoucherValueDecisionSummary> {
-    val sortColumn = when (sortBy) {
-        VoucherValueDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
-        VoucherValueDecisionSortParam.STATUS -> "decision.status"
-    }
+    val sortColumn =
+        when (sortBy) {
+            VoucherValueDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
+            VoucherValueDecisionSortParam.STATUS -> "decision.status"
+        }
 
-    val params = listOf(
-        Binding.of("page", page),
-        Binding.of("pageSize", pageSize),
-        Binding.of("status", status),
-        Binding.of("areas", areas),
-        Binding.of("unit", unit),
-        Binding.of("start_date", startDate),
-        Binding.of("end_date", endDate),
-        Binding.of("financeDecisionHandlerId", financeDecisionHandlerId),
-        Binding.of("difference", difference),
-        Binding.of("firstPlacementStartDate", evakaClock.now().toLocalDate().withDayOfMonth(1))
-    )
+    val params =
+        listOf(
+            Binding.of("page", page),
+            Binding.of("pageSize", pageSize),
+            Binding.of("status", status),
+            Binding.of("areas", areas),
+            Binding.of("unit", unit),
+            Binding.of("start_date", startDate),
+            Binding.of("end_date", endDate),
+            Binding.of("financeDecisionHandlerId", financeDecisionHandlerId),
+            Binding.of("difference", difference),
+            Binding.of("firstPlacementStartDate", evakaClock.now().toLocalDate().withDayOfMonth(1))
+        )
 
-    val (freeTextQuery, freeTextParams) = freeTextSearchQuery(listOf("head", "partner", "child"), searchTerms)
+    val (freeTextQuery, freeTextParams) =
+        freeTextSearchQuery(listOf("head", "partner", "child"), searchTerms)
 
-    val noStartingPlacements = distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.NO_STARTING_PLACEMENTS)
+    val noStartingPlacements =
+        distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.NO_STARTING_PLACEMENTS)
 
-    val maxFeeAccepted = distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.MAX_FEE_ACCEPTED)
+    val maxFeeAccepted =
+        distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.MAX_FEE_ACCEPTED)
 
     val noStartingPlacementsQuery =
         """
@@ -322,21 +339,31 @@ NOT EXISTS (
     WHERE p.start_date >= :firstPlacementStartDate AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
         AND vvd.id = decision.id
 )
-        """.trimIndent()
-
-    val conditions = listOfNotNull(
-        if (areas.isNotEmpty()) "area.short_name = ANY(:areas)" else null,
-        if (unit != null) "decision.placement_unit_id = :unit" else null,
-        if ((startDate != null || endDate != null) && !searchByStartDate) "daterange(:start_date, :end_date, '[]') && daterange(valid_from, valid_to, '[]')" else null,
-        if ((startDate != null || endDate != null) && searchByStartDate) "daterange(:start_date, :end_date, '[]') @> valid_from" else null,
-        if (financeDecisionHandlerId != null) "placement_unit.finance_decision_handler = :financeDecisionHandlerId" else null,
-        if (difference.isNotEmpty()) "decision.difference && :difference" else null,
-        if (noStartingPlacements) noStartingPlacementsQuery else null,
-        if (maxFeeAccepted) "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')" else null
-    )
-    val sql =
-        // language=sql
         """
+            .trimIndent()
+
+    val conditions =
+        listOfNotNull(
+            if (areas.isNotEmpty()) "area.short_name = ANY(:areas)" else null,
+            if (unit != null) "decision.placement_unit_id = :unit" else null,
+            if ((startDate != null || endDate != null) && !searchByStartDate)
+                "daterange(:start_date, :end_date, '[]') && daterange(valid_from, valid_to, '[]')"
+            else null,
+            if ((startDate != null || endDate != null) && searchByStartDate)
+                "daterange(:start_date, :end_date, '[]') @> valid_from"
+            else null,
+            if (financeDecisionHandlerId != null)
+                "placement_unit.finance_decision_handler = :financeDecisionHandlerId"
+            else null,
+            if (difference.isNotEmpty()) "decision.difference && :difference" else null,
+            if (noStartingPlacements) noStartingPlacementsQuery else null,
+            if (maxFeeAccepted)
+                "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')"
+            else null
+        )
+    val sql =
+    // language=sql
+    """
 SELECT
     count(*) OVER () AS count,
     decision.id,
@@ -385,7 +412,9 @@ LIMIT :pageSize OFFSET :pageSize * :page
         .mapToPaged(pageSize)
 }
 
-fun Database.Read.getVoucherValueDecision(id: VoucherValueDecisionId): VoucherValueDecisionDetailed? {
+fun Database.Read.getVoucherValueDecision(
+    id: VoucherValueDecisionId
+): VoucherValueDecisionDetailed? {
     // language=sql
     val sql =
         """
@@ -441,21 +470,25 @@ WHERE decision.id = :id
     return createQuery(sql)
         .bind("id", id)
         .mapTo<VoucherValueDecisionDetailed>()
-        .singleOrNull()?.let {
+        .singleOrNull()
+        ?.let {
             it.copy(
-                partnerIsCodebtor = partnerIsCodebtor(
-                    it.headOfFamily.id,
-                    it.partner?.id,
-                    listOf(it.child.id),
-                    DateRange(it.validFrom, it.validTo)
-                )
+                partnerIsCodebtor =
+                    partnerIsCodebtor(
+                        it.headOfFamily.id,
+                        it.partner?.id,
+                        listOf(it.child.id),
+                        DateRange(it.validFrom, it.validTo)
+                    )
             )
         }
 }
 
-fun Database.Read.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId: PersonId): List<VoucherValueDecisionSummary> {
+fun Database.Read.getHeadOfFamilyVoucherValueDecisions(
+    headOfFamilyId: PersonId
+): List<VoucherValueDecisionSummary> {
     return createQuery(
-        """
+            """
 SELECT
     decision.id,
     decision.status,
@@ -484,7 +517,7 @@ JOIN person head ON decision.head_of_family_id = head.id
 JOIN person child ON decision.child_id = child.id
 WHERE decision.head_of_family_id = :headOfFamilyId
 """
-    )
+        )
         .bind("headOfFamilyId", headOfFamilyId)
         .mapTo<VoucherValueDecisionSummary>()
         .toList()
@@ -512,7 +545,8 @@ fun Database.Transaction.approveValueDecisionDraftsForSending(
         FROM voucher_value_decision AS vd
         JOIN daycare ON vd.placement_unit_id = daycare.id
         WHERE vd.id = :id AND voucher_value_decision.id = vd.id
-        """.trimIndent()
+        """
+            .trimIndent()
 
     val batch = prepareBatch(sql)
     ids.forEach { id ->
@@ -531,20 +565,17 @@ fun Database.Read.getVoucherValueDecisionDocumentKey(id: VoucherValueDecisionId)
     // language=sql
     val sql = "SELECT document_key FROM voucher_value_decision WHERE id = :id"
 
-    return createQuery(sql)
-        .bind("id", id)
-        .mapTo<String>()
-        .singleOrNull()
+    return createQuery(sql).bind("id", id).mapTo<String>().singleOrNull()
 }
 
-fun Database.Transaction.updateVoucherValueDecisionDocumentKey(id: VoucherValueDecisionId, documentKey: String) {
+fun Database.Transaction.updateVoucherValueDecisionDocumentKey(
+    id: VoucherValueDecisionId,
+    documentKey: String
+) {
     // language=sql
     val sql = "UPDATE voucher_value_decision SET document_key = :documentKey WHERE id = :id"
 
-    createUpdate(sql)
-        .bind("id", id)
-        .bind("documentKey", documentKey)
-        .execute()
+    createUpdate(sql).bind("id", id).bind("documentKey", documentKey).execute()
 }
 
 fun Database.Transaction.updateVoucherValueDecisionStatus(
@@ -552,16 +583,17 @@ fun Database.Transaction.updateVoucherValueDecisionStatus(
     status: VoucherValueDecisionStatus
 ) {
     // language=sql
-    val sql = "UPDATE voucher_value_decision SET status = :status::voucher_value_decision_status WHERE id = ANY(:ids)"
+    val sql =
+        "UPDATE voucher_value_decision SET status = :status::voucher_value_decision_status WHERE id = ANY(:ids)"
 
-    createUpdate(sql)
-        .bind("ids", ids)
-        .bind("status", status)
-        .execute()
+    createUpdate(sql).bind("ids", ids).bind("status", status).execute()
 }
 
-fun Database.Transaction.setVoucherValueDecisionType(id: VoucherValueDecisionId, type: VoucherValueDecisionType) {
-    //language=SQL
+fun Database.Transaction.setVoucherValueDecisionType(
+    id: VoucherValueDecisionId,
+    type: VoucherValueDecisionType
+) {
+    // language=SQL
     val sql =
         """
         UPDATE voucher_value_decision
@@ -577,8 +609,13 @@ fun Database.Transaction.setVoucherValueDecisionType(id: VoucherValueDecisionId,
         .execute()
 }
 
-fun Database.Transaction.markVoucherValueDecisionsSent(ids: List<VoucherValueDecisionId>, now: HelsinkiDateTime) {
-    createUpdate("UPDATE voucher_value_decision SET status = :sent::voucher_value_decision_status, sent_at = :now WHERE id = ANY(:ids)")
+fun Database.Transaction.markVoucherValueDecisionsSent(
+    ids: List<VoucherValueDecisionId>,
+    now: HelsinkiDateTime
+) {
+    createUpdate(
+            "UPDATE voucher_value_decision SET status = :sent::voucher_value_decision_status, sent_at = :now WHERE id = ANY(:ids)"
+        )
         .bind("ids", ids)
         .bind("sent", VoucherValueDecisionStatus.SENT)
         .bind("now", now)
@@ -589,7 +626,9 @@ fun Database.Transaction.updateVoucherValueDecisionEndDates(
     updatedDecisions: List<VoucherValueDecision>,
     now: HelsinkiDateTime
 ) {
-    prepareBatch("UPDATE voucher_value_decision SET valid_to = :validTo, validity_updated_at = :now WHERE id = :id")
+    prepareBatch(
+            "UPDATE voucher_value_decision SET valid_to = :validTo, validity_updated_at = :now WHERE id = :id"
+        )
         .also { batch ->
             updatedDecisions.forEach { decision ->
                 batch
@@ -602,10 +641,15 @@ fun Database.Transaction.updateVoucherValueDecisionEndDates(
         .execute()
 }
 
-fun Database.Transaction.annulVoucherValueDecisions(ids: List<VoucherValueDecisionId>, now: HelsinkiDateTime) {
+fun Database.Transaction.annulVoucherValueDecisions(
+    ids: List<VoucherValueDecisionId>,
+    now: HelsinkiDateTime
+) {
     if (ids.isEmpty()) return
 
-    createUpdate("UPDATE voucher_value_decision SET status = :status, annulled_at = :now WHERE id = ANY(:ids)")
+    createUpdate(
+            "UPDATE voucher_value_decision SET status = :status, annulled_at = :now WHERE id = ANY(:ids)"
+        )
         .bind("ids", ids)
         .bind("status", VoucherValueDecisionStatus.ANNULLED)
         .bind("now", now)

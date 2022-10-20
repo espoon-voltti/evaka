@@ -9,13 +9,13 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.vtjclient.dto.Nationality
 import fi.espoo.evaka.vtjclient.service.persondetails.IPersonDetailsService.DetailsQuery
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
+import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
-import java.util.UUID
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 @ExtendWith(MockitoExtension::class)
 class MockDataServiceTest {
@@ -68,11 +68,14 @@ class MockDataServiceTest {
 
         val children = parent.dependants
         assertThat(children).size().isEqualTo(2)
-        assertThat(children).allMatch(
-            { !it.restrictedDetails!!.enabled },
-            "restricted details should not be enabled"
-        )
-        assertThat(children).extracting("address.streetAddress").containsExactly(expectedAddress, expectedAddress)
+        assertThat(children)
+            .allMatch(
+                { !it.restrictedDetails!!.enabled },
+                "restricted details should not be enabled"
+            )
+        assertThat(children)
+            .extracting("address.streetAddress")
+            .containsExactly(expectedAddress, expectedAddress)
     }
 
     @Test
@@ -86,11 +89,10 @@ class MockDataServiceTest {
 
         val children = parent.dependants
         assertThat(children).size().isEqualTo(2)
-        assertThat(children).allMatch(
-            { it.restrictedDetails!!.enabled },
-            "restricted details should be enabled"
-        )
-        assertThat(children).extracting("address.streetAddress")
+        assertThat(children)
+            .allMatch({ it.restrictedDetails!!.enabled }, "restricted details should be enabled")
+        assertThat(children)
+            .extracting("address.streetAddress")
             .containsExactly(expectedEmptyAddress, expectedEmptyAddress)
     }
 
@@ -106,11 +108,10 @@ class MockDataServiceTest {
 
         val children = parent.dependants
         assertThat(children).size().isEqualTo(2)
-        assertThat(children).allMatch(
-            { it.restrictedDetails!!.enabled },
-            "restricted details should be enabled"
-        )
-        assertThat(children).extracting("address.streetAddress")
+        assertThat(children)
+            .allMatch({ it.restrictedDetails!!.enabled }, "restricted details should be enabled")
+        assertThat(children)
+            .extracting("address.streetAddress")
             .containsExactly(expectedEmptyAddress, expectedEmptyAddress)
     }
 
@@ -125,11 +126,10 @@ class MockDataServiceTest {
 
         val children = parent.dependants
         assertThat(children).size().isEqualTo(2)
-        assertThat(children).allMatch(
-            { !it.restrictedDetails!!.enabled },
-            "restricted details should not enabled"
-        )
-        assertThat(children).extracting("address.streetAddress")
+        assertThat(children)
+            .allMatch({ !it.restrictedDetails!!.enabled }, "restricted details should not enabled")
+        assertThat(children)
+            .extracting("address.streetAddress")
             .containsExactly(expectedChildAddress, expectedChildAddress)
     }
 
@@ -149,8 +149,9 @@ class MockDataServiceTest {
         assertEquals(listOf(expectedNationality), parent.nationalities)
     }
 
-    private fun mapToQuery(ssn: String) = DetailsQuery(
-        targetIdentifier = getInstance(ssn),
-        requestingUser = EvakaUserId(UUID.randomUUID())
-    )
+    private fun mapToQuery(ssn: String) =
+        DetailsQuery(
+            targetIdentifier = getInstance(ssn),
+            requestingUser = EvakaUserId(UUID.randomUUID())
+        )
 }

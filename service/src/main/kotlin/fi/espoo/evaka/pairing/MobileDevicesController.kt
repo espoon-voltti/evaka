@@ -33,9 +33,10 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         @RequestParam unitId: DaycareId
     ): List<MobileDevice> {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_MOBILE_DEVICES, unitId)
-        return db.connect { dbc -> dbc.read { it.listSharedDevices(unitId) } }.also {
-            Audit.MobileDevicesList.log(targetId = unitId, args = mapOf("count" to it.size))
-        }
+        return db.connect { dbc -> dbc.read { it.listSharedDevices(unitId) } }
+            .also {
+                Audit.MobileDevicesList.log(targetId = unitId, args = mapOf("count" to it.size))
+            }
     }
 
     @GetMapping("/mobile-devices/personal")
@@ -45,9 +46,10 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         clock: EvakaClock
     ): List<MobileDevice> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_PERSONAL_MOBILE_DEVICES)
-        return db.connect { dbc -> dbc.read { it.listPersonalDevices(user.id) } }.also {
-            Audit.MobileDevicesList.log(targetId = user.id, args = mapOf("count" to it.size))
-        }
+        return db.connect { dbc -> dbc.read { it.listPersonalDevices(user.id) } }
+            .also {
+                Audit.MobileDevicesList.log(targetId = user.id, args = mapOf("count" to it.size))
+            }
     }
 
     @GetMapping("/system/mobile-devices/{id}")
@@ -57,14 +59,11 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         @PathVariable id: MobileDeviceId
     ): MobileDeviceDetails {
         // TODO access control
-        return db.connect { dbc -> dbc.read { it.getDevice(id) } }.also {
-            Audit.MobileDevicesRead.log(targetId = id)
-        }
+        return db.connect { dbc -> dbc.read { it.getDevice(id) } }
+            .also { Audit.MobileDevicesRead.log(targetId = id) }
     }
 
-    data class RenameRequest(
-        val name: String
-    )
+    data class RenameRequest(val name: String)
 
     @PutMapping("/mobile-devices/{id}/name")
     fun putMobileDeviceName(
@@ -101,37 +100,32 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         when (accessControl.verifyPinCode(params.employeeId, params.pin, clock)) {
             AccessControl.PinError.PIN_LOCKED -> PinLoginResponse(PinLoginStatus.PIN_LOCKED)
             AccessControl.PinError.WRONG_PIN -> PinLoginResponse(PinLoginStatus.WRONG_PIN)
-            null -> db.connect { dbc ->
-                dbc.transaction { tx ->
-                    val employee = tx.getEmployeeUser(params.employeeId)
-                    employee?.let {
-                        PinLoginResponse(
-                            PinLoginStatus.SUCCESS,
-                            Employee(it.preferredFirstName ?: it.firstName, it.lastName)
-                        )
-                    } ?: PinLoginResponse(PinLoginStatus.WRONG_PIN)
+            null ->
+                db.connect { dbc ->
+                    dbc.transaction { tx ->
+                        val employee = tx.getEmployeeUser(params.employeeId)
+                        employee?.let {
+                            PinLoginResponse(
+                                PinLoginStatus.SUCCESS,
+                                Employee(it.preferredFirstName ?: it.firstName, it.lastName)
+                            )
+                        }
+                            ?: PinLoginResponse(PinLoginStatus.WRONG_PIN)
+                    }
                 }
-            }
         }.also {
             Audit.PinLogin.log(targetId = params.employeeId, args = mapOf("status" to it.status))
         }
 }
 
-data class PinLoginRequest(
-    val pin: String,
-    val employeeId: EmployeeId
-)
+data class PinLoginRequest(val pin: String, val employeeId: EmployeeId)
 
 enum class PinLoginStatus {
-    SUCCESS, WRONG_PIN, PIN_LOCKED
+    SUCCESS,
+    WRONG_PIN,
+    PIN_LOCKED
 }
 
-data class Employee(
-    val firstName: String,
-    val lastName: String
-)
+data class Employee(val firstName: String, val lastName: String)
 
-data class PinLoginResponse(
-    val status: PinLoginStatus,
-    val employee: Employee? = null
-)
+data class PinLoginResponse(val status: PinLoginStatus, val employee: Employee? = null)

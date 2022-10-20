@@ -37,7 +37,8 @@ data class AsyncJobType<T : AsyncJobPayload>(val payloadClass: KClass<T>) {
     override fun toString(): String = name
 
     companion object {
-        fun <T : AsyncJobPayload> ofPayload(payload: T): AsyncJobType<T> = AsyncJobType(payload.javaClass.kotlin)
+        fun <T : AsyncJobPayload> ofPayload(payload: T): AsyncJobType<T> =
+            AsyncJobType(payload.javaClass.kotlin)
     }
 }
 
@@ -52,15 +53,11 @@ sealed interface VardaAsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class ResetVardaChild(
-        val childId: ChildId
-    ) : VardaAsyncJob {
+    data class ResetVardaChild(val childId: ChildId) : VardaAsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
-    data class DeleteVardaChild(
-        val vardaChildId: Long
-    ) : VardaAsyncJob {
+    data class DeleteVardaChild(val vardaChildId: Long) : VardaAsyncJob {
         override val user: AuthenticatedUser? = null
     }
 }
@@ -72,7 +69,8 @@ sealed interface SuomiFiAsyncJob : AsyncJobPayload {
 }
 
 sealed interface AsyncJob : AsyncJobPayload {
-    data class DvvModificationsRefresh(val ssns: List<String>, val requestingUserId: UUID) : AsyncJob {
+    data class DvvModificationsRefresh(val ssns: List<String>, val requestingUserId: UUID) :
+        AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
@@ -80,11 +78,21 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendApplicationEmail(val guardianId: PersonId, val language: Language, val type: ApplicationType = ApplicationType.DAYCARE, val sentWithinPreschoolApplicationPeriod: Boolean? = null) : AsyncJob {
+    data class SendApplicationEmail(
+        val guardianId: PersonId,
+        val language: Language,
+        val type: ApplicationType = ApplicationType.DAYCARE,
+        val sentWithinPreschoolApplicationPeriod: Boolean? = null
+    ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendPendingDecisionEmail(val guardianId: PersonId, val email: String, val language: String?, val decisionIds: List<DecisionId>) : AsyncJob {
+    data class SendPendingDecisionEmail(
+        val guardianId: PersonId,
+        val email: String,
+        val language: String?,
+        val decisionIds: List<DecisionId>
+    ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
@@ -107,7 +115,11 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class NotifyDecisionCreated(val decisionId: DecisionId, override val user: AuthenticatedUser, val sendAsMessage: Boolean) : AsyncJob
+    data class NotifyDecisionCreated(
+        val decisionId: DecisionId,
+        override val user: AuthenticatedUser,
+        val sendAsMessage: Boolean
+    ) : AsyncJob
 
     data class SendDecision(val decisionId: DecisionId) : AsyncJob {
         override val user: AuthenticatedUser? = null
@@ -121,16 +133,20 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class NotifyVoucherValueDecisionApproved(val decisionId: VoucherValueDecisionId) : AsyncJob {
+    data class NotifyVoucherValueDecisionApproved(val decisionId: VoucherValueDecisionId) :
+        AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
-    data class NotifyVoucherValueDecisionPdfGenerated(val decisionId: VoucherValueDecisionId) : AsyncJob {
+    data class NotifyVoucherValueDecisionPdfGenerated(val decisionId: VoucherValueDecisionId) :
+        AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
-    data class InitializeFamilyFromApplication(val applicationId: ApplicationId, override val user: AuthenticatedUser) :
-        AsyncJob
+    data class InitializeFamilyFromApplication(
+        val applicationId: ApplicationId,
+        override val user: AuthenticatedUser
+    ) : AsyncJob
 
     @JsonIgnoreProperties("requestingUser") // only present in old jobs
     data class VTJRefresh(val personId: PersonId) : AsyncJob {
@@ -145,13 +161,15 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class GenerateFinanceDecisions private constructor(val person: Person, val dateRange: DateRange) :
-        AsyncJob {
+    data class GenerateFinanceDecisions
+    private constructor(val person: Person, val dateRange: DateRange) : AsyncJob {
         override val user: AuthenticatedUser? = null
 
         companion object {
-            fun forAdult(personId: PersonId, dateRange: DateRange) = GenerateFinanceDecisions(Person.Adult(personId), dateRange)
-            fun forChild(personId: ChildId, dateRange: DateRange) = GenerateFinanceDecisions(Person.Child(personId), dateRange)
+            fun forAdult(personId: PersonId, dateRange: DateRange) =
+                GenerateFinanceDecisions(Person.Adult(personId), dateRange)
+            fun forChild(personId: ChildId, dateRange: DateRange) =
+                GenerateFinanceDecisions(Person.Child(personId), dateRange)
         }
 
         @JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
@@ -161,11 +179,20 @@ sealed interface AsyncJob : AsyncJobPayload {
         }
     }
 
-    data class SendPedagogicalDocumentNotificationEmail(val pedagogicalDocumentId: PedagogicalDocumentId, val recipientEmail: String, val language: Language) : AsyncJob {
+    data class SendPedagogicalDocumentNotificationEmail(
+        val pedagogicalDocumentId: PedagogicalDocumentId,
+        val recipientEmail: String,
+        val language: Language
+    ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendVasuNotificationEmail(val vasuDocumentId: VasuDocumentId, val childId: ChildId, val recipientEmail: String, val language: Language) : AsyncJob {
+    data class SendVasuNotificationEmail(
+        val vasuDocumentId: VasuDocumentId,
+        val childId: ChildId,
+        val recipientEmail: String,
+        val language: Language
+    ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
@@ -173,15 +200,18 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendAssistanceNeedDecisionEmail(val decisionId: AssistanceNeedDecisionId) : AsyncJob {
+    data class SendAssistanceNeedDecisionEmail(val decisionId: AssistanceNeedDecisionId) :
+        AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
-    data class CreateAssistanceNeedDecisionPdf(val decisionId: AssistanceNeedDecisionId) : AsyncJob {
+    data class CreateAssistanceNeedDecisionPdf(val decisionId: AssistanceNeedDecisionId) :
+        AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
-    data class SendAssistanceNeedDecisionSfiMessage(val decisionId: AssistanceNeedDecisionId) : AsyncJob {
+    data class SendAssistanceNeedDecisionSfiMessage(val decisionId: AssistanceNeedDecisionId) :
+        AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 
@@ -201,4 +231,9 @@ data class JobParams<T : AsyncJobPayload>(
     val runAt: HelsinkiDateTime
 )
 
-data class ClaimedJobRef<T : AsyncJobPayload>(val jobId: UUID, val jobType: AsyncJobType<T>, val txId: Long, val remainingAttempts: Int)
+data class ClaimedJobRef<T : AsyncJobPayload>(
+    val jobId: UUID,
+    val jobType: AsyncJobType<T>,
+    val txId: Long,
+    val remainingAttempts: Int
+)

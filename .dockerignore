@@ -6,6 +6,7 @@
 
 !service/*.kts
 
+!service/.editorconfig
 !service/gradle/wrapper
 !service/gradlew
 !service/gradle.properties

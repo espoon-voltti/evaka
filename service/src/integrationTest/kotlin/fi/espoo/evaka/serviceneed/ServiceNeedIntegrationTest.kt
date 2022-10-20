@@ -26,14 +26,15 @@ import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val unitSupervisor = AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf(UserRole.UNIT_SUPERVISOR))
+    private val unitSupervisor =
+        AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf(UserRole.UNIT_SUPERVISOR))
 
     lateinit var placementId: PlacementId
 
@@ -41,12 +42,13 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            placementId = tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = testDate(1),
-                endDate = testDate(30)
-            )
+            placementId =
+                tx.insertTestPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = testDate(1),
+                    endDate = testDate(30)
+                )
         }
     }
 
@@ -132,8 +134,12 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         getServiceNeeds(testChild_1.id, placementId).let { serviceNeeds ->
             assertEquals(2, serviceNeeds.size)
-            assertTrue(serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(15) })
-            assertTrue(serviceNeeds.any { it.startDate == testDate(16) && it.endDate == testDate(30) })
+            assertTrue(
+                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(15) }
+            )
+            assertTrue(
+                serviceNeeds.any { it.startDate == testDate(16) && it.endDate == testDate(30) }
+            )
         }
     }
 
@@ -179,8 +185,12 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         getServiceNeeds(testChild_1.id, placementId).let { serviceNeeds ->
             assertEquals(2, serviceNeeds.size)
-            assertTrue(serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(15) })
-            assertTrue(serviceNeeds.any { it.startDate == testDate(16) && it.endDate == testDate(30) })
+            assertTrue(
+                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(15) }
+            )
+            assertTrue(
+                serviceNeeds.any { it.startDate == testDate(16) && it.endDate == testDate(30) }
+            )
         }
     }
 
@@ -200,8 +210,12 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         getServiceNeeds(testChild_1.id, placementId).let { serviceNeeds ->
             assertEquals(2, serviceNeeds.size)
-            assertTrue(serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(20) })
-            assertTrue(serviceNeeds.any { it.startDate == testDate(21) && it.endDate == testDate(30) })
+            assertTrue(
+                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(20) }
+            )
+            assertTrue(
+                serviceNeeds.any { it.startDate == testDate(21) && it.endDate == testDate(30) }
+            )
         }
     }
 
@@ -221,9 +235,15 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         getServiceNeeds(testChild_1.id, placementId).let { serviceNeeds ->
             assertEquals(3, serviceNeeds.size)
-            assertTrue(serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(9) })
-            assertTrue(serviceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(20) })
-            assertTrue(serviceNeeds.any { it.startDate == testDate(21) && it.endDate == testDate(30) })
+            assertTrue(
+                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(9) }
+            )
+            assertTrue(
+                serviceNeeds.any { it.startDate == testDate(10) && it.endDate == testDate(20) }
+            )
+            assertTrue(
+                serviceNeeds.any { it.startDate == testDate(21) && it.endDate == testDate(30) }
+            )
         }
     }
 
@@ -245,9 +265,15 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         getServiceNeeds(testChild_1.id, placementId).let { serviceNeeds ->
             assertEquals(3, serviceNeeds.size)
-            assertTrue(serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(4) })
-            assertTrue(serviceNeeds.any { it.startDate == testDate(5) && it.endDate == testDate(25) })
-            assertTrue(serviceNeeds.any { it.startDate == testDate(26) && it.endDate == testDate(30) })
+            assertTrue(
+                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(4) }
+            )
+            assertTrue(
+                serviceNeeds.any { it.startDate == testDate(5) && it.endDate == testDate(25) }
+            )
+            assertTrue(
+                serviceNeeds.any { it.startDate == testDate(26) && it.endDate == testDate(30) }
+            )
         }
     }
 
@@ -261,8 +287,12 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         getServiceNeeds(testChild_1.id, placementId).let { serviceNeeds ->
             assertEquals(2, serviceNeeds.size)
-            assertTrue(serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(9) })
-            assertTrue(serviceNeeds.any { it.startDate == testDate(20) && it.endDate == testDate(30) })
+            assertTrue(
+                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(9) }
+            )
+            assertTrue(
+                serviceNeeds.any { it.startDate == testDate(20) && it.endDate == testDate(30) }
+            )
         }
     }
 
@@ -284,15 +314,31 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         getServiceNeeds(testChild_1.id, placementId).let { serviceNeeds ->
             assertEquals(3, serviceNeeds.size)
-            assertTrue(serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(4) })
-            assertTrue(serviceNeeds.any { it.startDate == testDate(5) && it.endDate == testDate(25) && it.shiftCare && it.option.id == snDaycareFullDay25to35.id })
-            assertTrue(serviceNeeds.any { it.startDate == testDate(26) && it.endDate == testDate(30) })
+            assertTrue(
+                serviceNeeds.any { it.startDate == testDate(1) && it.endDate == testDate(4) }
+            )
+            assertTrue(
+                serviceNeeds.any {
+                    it.startDate == testDate(5) &&
+                        it.endDate == testDate(25) &&
+                        it.shiftCare &&
+                        it.option.id == snDaycareFullDay25to35.id
+                }
+            )
+            assertTrue(
+                serviceNeeds.any { it.startDate == testDate(26) && it.endDate == testDate(30) }
+            )
         }
     }
 
     private fun testDate(day: Int) = LocalDate.now().plusDays(day.toLong())
 
-    private fun givenServiceNeed(start: Int, end: Int, placementId: PlacementId, optionId: ServiceNeedOptionId = snDefaultDaycare.id): ServiceNeedId {
+    private fun givenServiceNeed(
+        start: Int,
+        end: Int,
+        placementId: PlacementId,
+        optionId: ServiceNeedOptionId = snDefaultDaycare.id
+    ): ServiceNeedId {
         return db.transaction { tx ->
             tx.insertTestServiceNeed(
                 confirmedBy = unitSupervisor.evakaUserId,
@@ -303,37 +349,48 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         }
     }
 
-    private fun postServiceNeed(request: ServiceNeedController.ServiceNeedCreateRequest, expectedStatus: Int = 200) {
-        val (_, res, _) = http.post("/service-needs")
-            .jsonBody(jsonMapper.writeValueAsString(request))
-            .asUser(unitSupervisor)
-            .response()
+    private fun postServiceNeed(
+        request: ServiceNeedController.ServiceNeedCreateRequest,
+        expectedStatus: Int = 200
+    ) {
+        val (_, res, _) =
+            http
+                .post("/service-needs")
+                .jsonBody(jsonMapper.writeValueAsString(request))
+                .asUser(unitSupervisor)
+                .response()
 
         assertEquals(expectedStatus, res.statusCode)
     }
 
     private fun getServiceNeeds(childId: ChildId, placementId: PlacementId): List<ServiceNeed> {
-        val (_, res, result) = http.get("/placements?childId=$childId")
-            .asUser(unitSupervisor)
-            .responseObject<List<DaycarePlacementWithDetails>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get("/placements?childId=$childId")
+                .asUser(unitSupervisor)
+                .responseObject<List<DaycarePlacementWithDetails>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get().first { it.id == placementId }.serviceNeeds
     }
 
-    private fun putServiceNeed(id: ServiceNeedId, request: ServiceNeedController.ServiceNeedUpdateRequest, expectedStatus: Int = 200) {
-        val (_, res, _) = http.put("/service-needs/$id")
-            .jsonBody(jsonMapper.writeValueAsString(request))
-            .asUser(unitSupervisor)
-            .response()
+    private fun putServiceNeed(
+        id: ServiceNeedId,
+        request: ServiceNeedController.ServiceNeedUpdateRequest,
+        expectedStatus: Int = 200
+    ) {
+        val (_, res, _) =
+            http
+                .put("/service-needs/$id")
+                .jsonBody(jsonMapper.writeValueAsString(request))
+                .asUser(unitSupervisor)
+                .response()
 
         assertEquals(expectedStatus, res.statusCode)
     }
 
     private fun deleteServiceNeed(id: ServiceNeedId) {
-        val (_, res, _) = http.delete("/service-needs/$id")
-            .asUser(unitSupervisor)
-            .response()
+        val (_, res, _) = http.delete("/service-needs/$id").asUser(unitSupervisor).response()
 
         assertEquals(200, res.statusCode)
     }

@@ -53,121 +53,154 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.toFeeDecisionServiceNeed
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.skyscreamer.jsonassert.JSONAssert
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.skyscreamer.jsonassert.JSONAssert
 
 class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private fun assertEqualEnough(expected: List<InvoiceSummary>, actual: List<InvoiceSummary>) {
         assertEquals(
-            expected.map { it.copy(sentAt = null, createdAt = null, headOfFamily = it.headOfFamily.copy(email = null)) }.toSet(),
+            expected
+                .map {
+                    it.copy(
+                        sentAt = null,
+                        createdAt = null,
+                        headOfFamily = it.headOfFamily.copy(email = null)
+                    )
+                }
+                .toSet(),
             actual.map { it.copy(sentAt = null, createdAt = null) }.toSet()
         )
     }
 
-    private fun assertDetailedEqualEnough(expected: List<InvoiceDetailed>, actual: List<InvoiceDetailed>) {
+    private fun assertDetailedEqualEnough(
+        expected: List<InvoiceDetailed>,
+        actual: List<InvoiceDetailed>
+    ) {
         assertEquals(
-            expected.map { it.copy(sentAt = null, headOfFamily = it.headOfFamily.copy(email = null)) }.toSet(),
+            expected
+                .map { it.copy(sentAt = null, headOfFamily = it.headOfFamily.copy(email = null)) }
+                .toSet(),
             actual.map { it.copy(sentAt = null) }.toSet()
         )
     }
 
-    private fun deserializeListResult(json: String) = jsonMapper.readValue<Paged<InvoiceController.InvoiceSummaryResponse>>(json)
-    private fun deserializeResult(json: String) = jsonMapper.readValue<Wrapper<InvoiceController.InvoiceDetailedResponse>>(json)
+    private fun deserializeListResult(json: String) =
+        jsonMapper.readValue<Paged<InvoiceController.InvoiceSummaryResponse>>(json)
+    private fun deserializeResult(json: String) =
+        jsonMapper.readValue<Wrapper<InvoiceController.InvoiceDetailedResponse>>(json)
 
-    private val testInvoices = listOf(
-        createInvoiceFixture(
-            status = InvoiceStatus.DRAFT,
+    private val testInvoices =
+        listOf(
+            createInvoiceFixture(
+                status = InvoiceStatus.DRAFT,
+                headOfFamilyId = testAdult_1.id,
+                areaId = testArea.id,
+                rows =
+                    listOf(
+                        createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id)
+                    )
+            ),
+            createInvoiceFixture(
+                status = InvoiceStatus.SENT,
+                headOfFamilyId = testAdult_1.id,
+                areaId = testArea.id,
+                number = 5000000001L,
+                period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31)),
+                rows =
+                    listOf(
+                        createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id)
+                    )
+            ),
+            createInvoiceFixture(
+                status = InvoiceStatus.DRAFT,
+                headOfFamilyId = testAdult_2.id,
+                areaId = testArea.id,
+                period = FiniteDateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 31)),
+                rows =
+                    listOf(
+                        createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare.id)
+                    )
+            )
+        )
+
+    private val decision1 =
+        createFeeDecisionFixture(
+            status = FeeDecisionStatus.SENT,
+            decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_1.id,
-            areaId = testArea.id,
-            rows = listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id))
-        ),
-        createInvoiceFixture(
-            status = InvoiceStatus.SENT,
-            headOfFamilyId = testAdult_1.id,
-            areaId = testArea.id,
-            number = 5000000001L,
-            period = FiniteDateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 31)),
-            rows = listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id))
-        ),
-        createInvoiceFixture(
-            status = InvoiceStatus.DRAFT,
+            period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
+            children =
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_2.id,
+                        dateOfBirth = testChild_2.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
+                    )
+                )
+        )
+    private val decision2 =
+        createFeeDecisionFixture(
+            status = FeeDecisionStatus.SENT,
+            decisionType = FeeDecisionType.NORMAL,
             headOfFamilyId = testAdult_2.id,
-            areaId = testArea.id,
-            period = FiniteDateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 31)),
-            rows = listOf(createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare.id))
+            period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
+            children =
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
+                    )
+                )
         )
-    )
+    private val decisionNoSsn =
+        createFeeDecisionFixture(
+            status = FeeDecisionStatus.SENT,
+            decisionType = FeeDecisionType.NORMAL,
+            headOfFamilyId = testAdult_3.id, // Does not have SSN
+            period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
+            children =
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_3.id,
+                        dateOfBirth = testChild_3.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
+                    )
+                )
+        )
 
-    private val decision1 = createFeeDecisionFixture(
-        status = FeeDecisionStatus.SENT,
-        decisionType = FeeDecisionType.NORMAL,
-        headOfFamilyId = testAdult_1.id,
-        period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
-        children = listOf(
-            createFeeDecisionChildFixture(
-                childId = testChild_2.id,
-                dateOfBirth = testChild_2.dateOfBirth,
-                placementUnitId = testDaycare.id,
-                placementType = PlacementType.DAYCARE,
-                serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
-            )
-        )
-    )
-    private val decision2 = createFeeDecisionFixture(
-        status = FeeDecisionStatus.SENT,
-        decisionType = FeeDecisionType.NORMAL,
-        headOfFamilyId = testAdult_2.id,
-        period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
-        children = listOf(
-            createFeeDecisionChildFixture(
-                childId = testChild_1.id,
-                dateOfBirth = testChild_1.dateOfBirth,
-                placementUnitId = testDaycare.id,
-                placementType = PlacementType.DAYCARE,
-                serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
-            )
-        )
-    )
-    private val decisionNoSsn = createFeeDecisionFixture(
-        status = FeeDecisionStatus.SENT,
-        decisionType = FeeDecisionType.NORMAL,
-        headOfFamilyId = testAdult_3.id, // Does not have SSN
-        period = DateRange(LocalDate.now().minusMonths(6), LocalDate.now().plusMonths(6)),
-        children = listOf(
-            createFeeDecisionChildFixture(
-                childId = testChild_3.id,
-                dateOfBirth = testChild_3.dateOfBirth,
-                placementUnitId = testDaycare.id,
-                placementType = PlacementType.DAYCARE,
-                serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed()
-            )
-        )
-    )
-
-    private val testUser = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+    private val testUser =
+        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
     fun `search works with draft status parameter`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
-        val drafts = testInvoices.filter { it.status === InvoiceStatus.DRAFT }.sortedBy { it.dueDate }
+        val drafts =
+            testInvoices.filter { it.status === InvoiceStatus.DRAFT }.sortedBy { it.dueDate }
 
-        val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "status": ["DRAFT"]}""")
-            .asUser(testUser)
-            .responseString()
+        val (_, response, result) =
+            http
+                .post("/invoices/search")
+                .jsonBody("""{"page": 1, "pageSize": 200, "status": ["DRAFT"]}""")
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
@@ -181,10 +214,12 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val sent = testInvoices.filter { it.status === InvoiceStatus.SENT }
 
-        val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "status": ["SENT"]}""")
-            .asUser(testUser)
-            .responseString()
+        val (_, response, result) =
+            http
+                .post("/invoices/search")
+                .jsonBody("""{"page": 1, "pageSize": 200, "status": ["SENT"]}""")
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
@@ -198,10 +233,12 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val canceled = testInvoices.filter { it.status === InvoiceStatus.CANCELED }
 
-        val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "status": ["CANCELED"]}""")
-            .asUser(testUser)
-            .responseString()
+        val (_, response, result) =
+            http
+                .post("/invoices/search")
+                .jsonBody("""{"page": 1, "pageSize": 200, "status": ["CANCELED"]}""")
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
@@ -214,12 +251,16 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `search works with multiple status parameters`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val sentAndCanceled =
-            testInvoices.filter { it.status == InvoiceStatus.SENT || it.status == InvoiceStatus.CANCELED }
+            testInvoices.filter {
+                it.status == InvoiceStatus.SENT || it.status == InvoiceStatus.CANCELED
+            }
 
-        val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "status": ["SENT","CANCELED"]}""")
-            .asUser(testUser)
-            .responseString()
+        val (_, response, result) =
+            http
+                .post("/invoices/search")
+                .jsonBody("""{"page": 1, "pageSize": 200, "status": ["SENT","CANCELED"]}""")
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
@@ -234,10 +275,12 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.upsertInvoices(testInvoiceSubset) }
         val invoices = testInvoiceSubset.sortedBy { it.status }.reversed()
 
-        val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "status": ["DRAFT","SENT","CANCELED"]}""")
-            .asUser(testUser)
-            .responseString()
+        val (_, response, result) =
+            http
+                .post("/invoices/search")
+                .jsonBody("""{"page": 1, "pageSize": 200, "status": ["DRAFT","SENT","CANCELED"]}""")
+                .asUser(testUser)
+                .responseString()
 
         assertEquals(200, response.statusCode)
 
@@ -252,10 +295,12 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val invoices = testInvoices.sortedBy { it.status }.reversed()
 
-        val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "area": ["test_area"]}""")
-            .asUser(testUser)
-            .responseString()
+        val (_, response, result) =
+            http
+                .post("/invoices/search")
+                .jsonBody("""{"page": 1, "pageSize": 200, "area": ["test_area"]}""")
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
@@ -269,16 +314,20 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val invoices = testInvoices.sortedBy { it.status }.reversed()
 
-        val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "area": ["test_area"], "status": ["DRAFT"]}""")
-            .asUser(testUser)
-            .responseString()
+        val (_, response, result) =
+            http
+                .post("/invoices/search")
+                .jsonBody(
+                    """{"page": 1, "pageSize": 200, "area": ["test_area"], "status": ["DRAFT"]}"""
+                )
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
-            invoices.filter {
-                it.status == InvoiceStatus.DRAFT && it.areaId == testArea.id
-            }.map(::toSummary),
+            invoices
+                .filter { it.status == InvoiceStatus.DRAFT && it.areaId == testArea.id }
+                .map(::toSummary),
             deserializeListResult(result.get()).data.map { it.data }
         )
     }
@@ -287,29 +336,30 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `search works as expected with non-existent area param`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
 
-        val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "area": ["non_existent"]}""")
-            .asUser(testUser)
-            .responseString()
+        val (_, response, result) =
+            http
+                .post("/invoices/search")
+                .jsonBody("""{"page": 1, "pageSize": 200, "area": ["non_existent"]}""")
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
-        assertEqualEnough(
-            listOf(),
-            deserializeListResult(result.get()).data.map { it.data }
-        )
+        assertEqualEnough(listOf(), deserializeListResult(result.get()).data.map { it.data })
     }
 
     @Test
     fun `search works as expected with multiple partial search terms`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
 
-        val (_, response, result) = http.post("/invoices/search")
-            .jsonBody(
-                """{"page": 1, "pageSize": 200,
+        val (_, response, result) =
+            http
+                .post("/invoices/search")
+                .jsonBody(
+                    """{"page": 1, "pageSize": 200,
                           "searchTerms": "${testAdult_1.streetAddress} ${testAdult_1.firstName.substring(0, 2)}"}"""
-            )
-            .asUser(testUser)
-            .responseString()
+                )
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
@@ -322,10 +372,14 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `search works as expected with multiple more specific search terms`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
 
-        val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "searchTerms": "${testAdult_1.lastName.substring(0, 2)} ${testAdult_1.firstName}"}""")
-            .asUser(testUser)
-            .responseString()
+        val (_, response, result) =
+            http
+                .post("/invoices/search")
+                .jsonBody(
+                    """{"page": 1, "pageSize": 200, "searchTerms": "${testAdult_1.lastName.substring(0, 2)} ${testAdult_1.firstName}"}"""
+                )
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
@@ -338,26 +392,31 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `search works as expected with multiple search terms where one does not match anything`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
 
-        val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "searchTerms": "${testAdult_1.lastName} ${testAdult_1.streetAddress} nomatch"}""")
-            .asUser(testUser)
-            .responseString()
+        val (_, response, result) =
+            http
+                .post("/invoices/search")
+                .jsonBody(
+                    """{"page": 1, "pageSize": 200, "searchTerms": "${testAdult_1.lastName} ${testAdult_1.streetAddress} nomatch"}"""
+                )
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
-        assertEqualEnough(
-            listOf(),
-            deserializeListResult(result.get()).data.map { it.data }
-        )
+        assertEqualEnough(listOf(), deserializeListResult(result.get()).data.map { it.data })
     }
 
     @Test
     fun `search works as expected with child name as search term`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
 
-        val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "searchTerms": "${testChild_2.firstName}"}""")
-            .asUser(testUser)
-            .responseString()
+        val (_, response, result) =
+            http
+                .post("/invoices/search")
+                .jsonBody(
+                    """{"page": 1, "pageSize": 200, "searchTerms": "${testChild_2.firstName}"}"""
+                )
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
@@ -370,13 +429,15 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `search works as expected with ssn as search term`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
 
-        val (_, response, result) = http.post("/invoices/search")
-            .jsonBody(
-                """{"page": 1, "pageSize": 200,
+        val (_, response, result) =
+            http
+                .post("/invoices/search")
+                .jsonBody(
+                    """{"page": 1, "pageSize": 200,
                           "searchTerms": "${testAdult_1.ssn}"}"""
-            )
-            .asUser(testUser)
-            .responseString()
+                )
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
@@ -389,10 +450,14 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `search works as expected with date of birth as search term`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
 
-        val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 200, "searchTerms": "${testAdult_1.ssn!!.substring(0, 6)}"}""")
-            .asUser(testUser)
-            .responseString()
+        val (_, response, result) =
+            http
+                .post("/invoices/search")
+                .jsonBody(
+                    """{"page": 1, "pageSize": 200, "searchTerms": "${testAdult_1.ssn!!.substring(0, 6)}"}"""
+                )
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
@@ -406,10 +471,14 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val sent = listOf(testInvoices.sortedWith(compareBy({ it.periodStart }, { it.id })).first())
 
-        val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 1, "sortBy": "START", "sortDirection": "ASC"}""")
-            .asUser(testUser)
-            .responseString()
+        val (_, response, result) =
+            http
+                .post("/invoices/search")
+                .jsonBody(
+                    """{"page": 1, "pageSize": 1, "sortBy": "START", "sortDirection": "ASC"}"""
+                )
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
@@ -423,10 +492,14 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val sent = listOf(testInvoices.sortedWith(compareBy({ it.periodStart }, { it.id }))[1])
 
-        val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 2, "pageSize": 1, "sortBy": "START", "sortDirection": "ASC"}""")
-            .asUser(testUser)
-            .responseString()
+        val (_, response, result) =
+            http
+                .post("/invoices/search")
+                .jsonBody(
+                    """{"page": 2, "pageSize": 1, "sortBy": "START", "sortDirection": "ASC"}"""
+                )
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
@@ -440,10 +513,14 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val sent = testInvoices.sortedWith(compareBy({ it.periodStart }, { it.id })).subList(0, 2)
 
-        val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 2, "sortBy": "START", "sortDirection": "ASC"}""")
-            .asUser(testUser)
-            .responseString()
+        val (_, response, result) =
+            http
+                .post("/invoices/search")
+                .jsonBody(
+                    """{"page": 1, "pageSize": 2, "sortBy": "START", "sortDirection": "ASC"}"""
+                )
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
         assertEqualEnough(
@@ -455,15 +532,20 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `search gives correct total and page composition when using filters`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
-        val sent = testInvoices
-            .filter { it.status == InvoiceStatus.DRAFT }
-            .sortedBy { it.periodStart }
-            .reversed()
+        val sent =
+            testInvoices
+                .filter { it.status == InvoiceStatus.DRAFT }
+                .sortedBy { it.periodStart }
+                .reversed()
 
-        val (_, response, result) = http.post("/invoices/search")
-            .jsonBody("""{"page": 1, "pageSize": 2, "status": ["DRAFT"], "sortBy": "START", "sortDirection": "DESC"}""")
-            .asUser(testUser)
-            .responseString()
+        val (_, response, result) =
+            http
+                .post("/invoices/search")
+                .jsonBody(
+                    """{"page": 1, "pageSize": 2, "status": ["DRAFT"], "sortBy": "START", "sortDirection": "DESC"}"""
+                )
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
         assertEquals(2, deserializeListResult(result.get()).total)
@@ -478,9 +560,8 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val invoice = testInvoices[0]
 
-        val (_, response, result) = http.get("/invoices/${invoice.id}")
-            .asUser(testUser)
-            .responseString()
+        val (_, response, result) =
+            http.get("/invoices/${invoice.id}").asUser(testUser).responseString()
         assertEquals(200, response.statusCode)
 
         assertDetailedEqualEnough(
@@ -493,9 +574,11 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `getInvoice returns not found with non-existent invoice`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
 
-        val (_, response, _) = http.get("/invoices/00000000-0000-0000-0000-000000000000")
-            .asUser(testUser)
-            .responseString()
+        val (_, response, _) =
+            http
+                .get("/invoices/00000000-0000-0000-0000-000000000000")
+                .asUser(testUser)
+                .responseString()
         assertEquals(404, response.statusCode)
     }
 
@@ -522,11 +605,14 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         sendInvoices(listOf(draft.id))
 
-        val (_, _, result) = http.get("/invoices/${draft.id}")
-            .asUser(testUser)
-            .responseString()
+        val (_, _, result) = http.get("/invoices/${draft.id}").asUser(testUser).responseString()
 
-        val updated = draft.copy(status = InvoiceStatus.SENT, number = 5000000002L, sentBy = EvakaUserId(testDecisionMaker_1.id.raw))
+        val updated =
+            draft.copy(
+                status = InvoiceStatus.SENT,
+                number = 5000000002L,
+                sentBy = EvakaUserId(testDecisionMaker_1.id.raw)
+            )
 
         assertDetailedEqualEnough(
             listOf(updated.let(::toDetailed)),
@@ -542,14 +628,21 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `send sets distinct numbers`() {
-        val drafts = (1..5).map {
-            createInvoiceFixture(
-                status = InvoiceStatus.DRAFT,
-                headOfFamilyId = testAdult_1.id,
-                areaId = testArea.id,
-                rows = listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id))
-            )
-        }
+        val drafts =
+            (1..5).map {
+                createInvoiceFixture(
+                    status = InvoiceStatus.DRAFT,
+                    headOfFamilyId = testAdult_1.id,
+                    areaId = testArea.id,
+                    rows =
+                        listOf(
+                            createInvoiceRowFixture(
+                                childId = testChild_1.id,
+                                unitId = testDaycare.id
+                            )
+                        )
+                )
+            }
 
         db.transaction { tx -> tx.upsertInvoices(drafts) }
 
@@ -566,15 +659,16 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `send sets numbers correctly when earlier rows exist`() {
         val sentInvoice = testInvoices[1]
-        val drafts = (1..2).map {
-            testInvoices[0].let {
-                it.copy(
-                    id = InvoiceId(UUID.randomUUID()),
-                    number = null,
-                    rows = it.rows.map { row -> row.copy(id = InvoiceRowId(UUID.randomUUID())) }
-                )
+        val drafts =
+            (1..2).map {
+                testInvoices[0].let {
+                    it.copy(
+                        id = InvoiceId(UUID.randomUUID()),
+                        number = null,
+                        rows = it.rows.map { row -> row.copy(id = InvoiceRowId(UUID.randomUUID())) }
+                    )
+                }
             }
-        }
 
         db.transaction { tx -> tx.upsertInvoices(drafts + sentInvoice) }
 
@@ -586,16 +680,21 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `send saves cost center information to invoice rows`() {
-        fun Database.Read.readCostCenterFields(invoiceId: InvoiceId): Pair<String, String> = createQuery(
-            """
+        fun Database.Read.readCostCenterFields(invoiceId: InvoiceId): Pair<String, String> =
+            createQuery(
+                    """
                 SELECT saved_cost_center, saved_sub_cost_center FROM invoice_row WHERE invoice_id = :invoiceId
-            """.trimIndent()
-        ).bind("invoiceId", invoiceId).map { row ->
-            Pair(
-                row.mapColumn<String>("saved_cost_center"),
-                row.mapColumn<String>("saved_sub_cost_center")
-            )
-        }.single()
+            """
+                        .trimIndent()
+                )
+                .bind("invoiceId", invoiceId)
+                .map { row ->
+                    Pair(
+                        row.mapColumn<String>("saved_cost_center"),
+                        row.mapColumn<String>("saved_sub_cost_center")
+                    )
+                }
+                .single()
 
         val draft = testInvoices[0]
         db.transaction { tx -> tx.upsertInvoices(listOf(draft)) }
@@ -615,17 +714,21 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.createUpdate("UPDATE invoice_row SET saved_cost_center = '31500'").execute()
         }
 
-        val (_, response, _) = http.post("/invoices/mark-sent")
-            .jsonBody(jsonMapper.writeValueAsString(listOf(invoice.id)))
-            .asUser(testUser)
-            .responseString()
+        val (_, response, _) =
+            http
+                .post("/invoices/mark-sent")
+                .jsonBody(jsonMapper.writeValueAsString(listOf(invoice.id)))
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
-        val (_, _, result) = http.get("/invoices/${invoice.id}")
-            .asUser(testUser)
-            .responseString()
+        val (_, _, result) = http.get("/invoices/${invoice.id}").asUser(testUser).responseString()
 
-        val updated = invoice.copy(status = InvoiceStatus.SENT, sentBy = EvakaUserId(testDecisionMaker_1.id.raw))
+        val updated =
+            invoice.copy(
+                status = InvoiceStatus.SENT,
+                sentBy = EvakaUserId(testDecisionMaker_1.id.raw)
+            )
 
         assertDetailedEqualEnough(
             listOf(updated.let(::toDetailed)),
@@ -644,10 +747,12 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val invoice = testInvoices.first().copy(status = InvoiceStatus.DRAFT)
         db.transaction { tx -> tx.upsertInvoices(listOf(invoice)) }
 
-        val (_, response, _) = http.post("/invoices/mark-sent")
-            .jsonBody(jsonMapper.writeValueAsString(listOf(invoice.id)))
-            .asUser(testUser)
-            .responseString()
+        val (_, response, _) =
+            http
+                .post("/invoices/mark-sent")
+                .jsonBody(jsonMapper.writeValueAsString(listOf(invoice.id)))
+                .asUser(testUser)
+                .responseString()
         assertEquals(400, response.statusCode)
     }
 
@@ -656,10 +761,12 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val invoice = testInvoices.first().copy(status = InvoiceStatus.DRAFT)
         db.transaction { tx -> tx.upsertInvoices(listOf(invoice)) }
 
-        val (_, response, _) = http.post("/invoices/mark-sent")
-            .jsonBody(jsonMapper.writeValueAsString(listOf(invoice.id, UUID.randomUUID())))
-            .asUser(testUser)
-            .responseString()
+        val (_, response, _) =
+            http
+                .post("/invoices/mark-sent")
+                .jsonBody(jsonMapper.writeValueAsString(listOf(invoice.id, UUID.randomUUID())))
+                .asUser(testUser)
+                .responseString()
         assertEquals(400, response.statusCode)
     }
 
@@ -668,10 +775,12 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val draft = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
 
-        val (_, response, _) = http.put("/invoices/${draft.id}")
-            .jsonBody(jsonMapper.writeValueAsString(draft))
-            .asUser(testUser)
-            .responseString()
+        val (_, response, _) =
+            http
+                .put("/invoices/${draft.id}")
+                .jsonBody(jsonMapper.writeValueAsString(draft))
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
     }
 
@@ -680,10 +789,12 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val sent = testInvoices.find { it.status == InvoiceStatus.SENT }!!
 
-        val (_, response, _) = http.put("/invoices/${sent.id}")
-            .jsonBody(jsonMapper.writeValueAsString(sent))
-            .asUser(testUser)
-            .responseString()
+        val (_, response, _) =
+            http
+                .put("/invoices/${sent.id}")
+                .jsonBody(jsonMapper.writeValueAsString(sent))
+                .asUser(testUser)
+                .responseString()
         assertEquals(400, response.statusCode)
     }
 
@@ -691,28 +802,29 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `updateInvoice updates invoice row unitId and adds a new row`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val original = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
-        val updated = original.copy(
-            rows = original.rows.map {
-                it.copy(
-                    description = "UPDATED",
-                    unitId = testDaycare2.id
-                )
-            } + createInvoiceRowFixture(testChild_1.id, testDaycare.id).copy(
-                product = ProductKey("PRESCHOOL_WITH_DAYCARE"),
-                amount = 100,
-                unitPrice = 100000
+        val updated =
+            original.copy(
+                rows =
+                    original.rows.map {
+                        it.copy(description = "UPDATED", unitId = testDaycare2.id)
+                    } +
+                        createInvoiceRowFixture(testChild_1.id, testDaycare.id)
+                            .copy(
+                                product = ProductKey("PRESCHOOL_WITH_DAYCARE"),
+                                amount = 100,
+                                unitPrice = 100000
+                            )
             )
-        )
 
-        val (_, response, _) = http.put("/invoices/${updated.id}")
-            .jsonBody(jsonMapper.writeValueAsString(updated))
-            .asUser(testUser)
-            .responseString()
+        val (_, response, _) =
+            http
+                .put("/invoices/${updated.id}")
+                .jsonBody(jsonMapper.writeValueAsString(updated))
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
-        val (_, _, result) = http.get("/invoices/${updated.id}")
-            .asUser(testUser)
-            .responseString()
+        val (_, _, result) = http.get("/invoices/${updated.id}").asUser(testUser).responseString()
 
         assertDetailedEqualEnough(
             listOf(updated.let(::toDetailed)),
@@ -724,23 +836,24 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `updateInvoice does not update invoice status, periods, invoiceDate, dueDate or headOfFamily`() {
         db.transaction { tx -> tx.upsertInvoices(testInvoices) }
         val original = testInvoices.find { it.status == InvoiceStatus.DRAFT }!!
-        val updated = original.copy(
-            status = InvoiceStatus.SENT,
-            periodStart = LocalDate.MIN,
-            periodEnd = LocalDate.MAX,
-            invoiceDate = LocalDate.MIN,
-            dueDate = LocalDate.MAX
-        )
+        val updated =
+            original.copy(
+                status = InvoiceStatus.SENT,
+                periodStart = LocalDate.MIN,
+                periodEnd = LocalDate.MAX,
+                invoiceDate = LocalDate.MIN,
+                dueDate = LocalDate.MAX
+            )
 
-        val (_, response, _) = http.put("/invoices/${updated.id}")
-            .jsonBody(jsonMapper.writeValueAsString(updated))
-            .asUser(testUser)
-            .responseString()
+        val (_, response, _) =
+            http
+                .put("/invoices/${updated.id}")
+                .jsonBody(jsonMapper.writeValueAsString(updated))
+                .asUser(testUser)
+                .responseString()
         assertEquals(200, response.statusCode)
 
-        val (_, _, result) = http.get("/invoices/${updated.id}")
-            .asUser(testUser)
-            .responseString()
+        val (_, _, result) = http.get("/invoices/${updated.id}").asUser(testUser).responseString()
 
         JSONAssert.assertNotEquals(
             jsonMapper.writeValueAsString(Wrapper(updated.let(::toDetailed))),
@@ -761,18 +874,19 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         createDraftInvoices()
 
-        val drafts = db.read { tx ->
-            tx.paginatedSearch(
-                1,
-                50,
-                InvoiceSortParam.STATUS,
-                SortDirection.DESC,
-                listOf(InvoiceStatus.DRAFT),
-                listOf(),
-                null,
-                listOf()
-            )
-        }
+        val drafts =
+            db.read { tx ->
+                tx.paginatedSearch(
+                    1,
+                    50,
+                    InvoiceSortParam.STATUS,
+                    SortDirection.DESC,
+                    listOf(InvoiceStatus.DRAFT),
+                    listOf(),
+                    null,
+                    listOf()
+                )
+            }
 
         assertEquals(1, drafts.data.size)
     }
@@ -784,18 +898,19 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         createDraftInvoices()
 
-        val drafts = db.read { tx ->
-            tx.paginatedSearch(
-                1,
-                50,
-                InvoiceSortParam.STATUS,
-                SortDirection.DESC,
-                listOf(InvoiceStatus.DRAFT),
-                listOf(),
-                null,
-                listOf()
-            )
-        }
+        val drafts =
+            db.read { tx ->
+                tx.paginatedSearch(
+                    1,
+                    50,
+                    InvoiceSortParam.STATUS,
+                    SortDirection.DESC,
+                    listOf(InvoiceStatus.DRAFT),
+                    listOf(),
+                    null,
+                    listOf()
+                )
+            }
 
         assertEquals(2, drafts.data.size)
     }
@@ -809,18 +924,19 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             createDraftInvoices()
         }
 
-        val drafts = db.read { tx ->
-            tx.paginatedSearch(
-                1,
-                50,
-                InvoiceSortParam.STATUS,
-                SortDirection.DESC,
-                listOf(InvoiceStatus.DRAFT),
-                listOf(),
-                null,
-                listOf()
-            )
-        }
+        val drafts =
+            db.read { tx ->
+                tx.paginatedSearch(
+                    1,
+                    50,
+                    InvoiceSortParam.STATUS,
+                    SortDirection.DESC,
+                    listOf(InvoiceStatus.DRAFT),
+                    listOf(),
+                    null,
+                    listOf()
+                )
+            }
 
         assertEquals(1, drafts.data.size)
     }
@@ -892,45 +1008,45 @@ class InvoiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(0, newDrafts.size)
     }
 
-    private fun insertDecisions(decisions: List<FeeDecision>) = db.transaction { tx ->
-        tx.upsertFeeDecisions(decisions)
-        decisions.forEach { decision ->
-            decision.children.forEach { part ->
-                tx.insertTestPlacement(
-                    DevPlacement(
+    private fun insertDecisions(decisions: List<FeeDecision>) =
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(decisions)
+            decisions.forEach { decision ->
+                decision.children.forEach { part ->
+                    tx.insertTestPlacement(
+                        DevPlacement(
+                            childId = part.child.id,
+                            unitId = part.placement.unitId,
+                            startDate = decision.validFrom,
+                            endDate = decision.validTo!!
+                        )
+                    )
+                    tx.insertTestParentship(
+                        headOfChild = decision.headOfFamilyId,
                         childId = part.child.id,
-                        unitId = part.placement.unitId,
                         startDate = decision.validFrom,
                         endDate = decision.validTo!!
                     )
-                )
-                tx.insertTestParentship(
-                    headOfChild = decision.headOfFamilyId,
-                    childId = part.child.id,
-                    startDate = decision.validFrom,
-                    endDate = decision.validTo!!
-                )
+                }
             }
         }
-    }
 
     private fun createDraftInvoices() {
-        val (_, response, _) = http.post("/invoices/create-drafts")
-            .asUser(testUser)
-            .responseString()
+        val (_, response, _) =
+            http.post("/invoices/create-drafts").asUser(testUser).responseString()
         assertEquals(200, response.statusCode)
     }
 
     private fun sendInvoices(invoiceIds: List<InvoiceId>, expectedStatus: Int = 200) {
-        val (_, response, _) = http.post("/invoices/send")
-            .jsonBody(jsonMapper.writeValueAsString(invoiceIds))
-            .asUser(testUser)
-            .responseString()
+        val (_, response, _) =
+            http
+                .post("/invoices/send")
+                .jsonBody(jsonMapper.writeValueAsString(invoiceIds))
+                .asUser(testUser)
+                .responseString()
         assertEquals(expectedStatus, response.statusCode)
     }
 
     private fun getInvoicesWithStatus(status: InvoiceStatus): List<InvoiceDetailed> =
-        db.transaction { tx ->
-            tx.searchInvoices(listOf(status), listOf(), null, listOf())
-        }
+        db.transaction { tx -> tx.searchInvoices(listOf(status), listOf(), null, listOf()) }
 }

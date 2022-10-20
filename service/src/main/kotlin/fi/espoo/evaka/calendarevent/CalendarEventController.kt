@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -26,7 +27,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 class CalendarEventController(private val accessControl: AccessControl) {
@@ -36,12 +36,8 @@ class CalendarEventController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @RequestParam("start")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        start: LocalDate,
-        @RequestParam("end")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        end: LocalDate
+        @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
+        @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
     ): List<CalendarEvent> {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_CALENDAR_EVENTS, unitId)
 
@@ -56,13 +52,14 @@ class CalendarEventController(private val accessControl: AccessControl) {
         }
 
         return db.connect { dbc ->
-            dbc.transaction { tx -> tx.getCalendarEventsByUnit(unitId, range) }
-        }.also {
-            Audit.UnitCalendarEventsRead.log(
-                targetId = unitId,
-                args = mapOf("start" to start, "end" to end, "count" to it.size)
-            )
-        }
+                dbc.transaction { tx -> tx.getCalendarEventsByUnit(unitId, range) }
+            }
+            .also {
+                Audit.UnitCalendarEventsRead.log(
+                    targetId = unitId,
+                    args = mapOf("start" to start, "end" to end, "count" to it.size)
+                )
+            }
     }
 
     @PostMapping("/calendar-event")
@@ -72,34 +69,61 @@ class CalendarEventController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: CalendarEventForm
     ) {
-        val eventId = db.connect { dbc ->
-            dbc.transaction { tx ->
-                accessControl.requirePermissionFor(user, clock, Action.Unit.CREATE_CALENDAR_EVENT, body.unitId)
+        val eventId =
+            db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        user,
+                        clock,
+                        Action.Unit.CREATE_CALENDAR_EVENT,
+                        body.unitId
+                    )
 
-                if (body.tree != null) {
-                    accessControl.requirePermissionFor(user, clock, Action.Group.CREATE_CALENDAR_EVENT, body.tree.keys)
+                    if (body.tree != null) {
+                        accessControl.requirePermissionFor(
+                            user,
+                            clock,
+                            Action.Group.CREATE_CALENDAR_EVENT,
+                            body.tree.keys
+                        )
 
-                    val unitGroupIds = tx.getDaycareGroups(body.unitId, body.period.start, body.period.end)
+                        val unitGroupIds =
+                            tx.getDaycareGroups(body.unitId, body.period.start, body.period.end)
 
-                    if (body.tree.keys.any { groupId -> !unitGroupIds.any { unitGroup -> unitGroup.id == groupId } }) {
-                        throw BadRequest("Group ID is not of the specified unit's")
-                    }
+                        if (
+                            body.tree.keys.any { groupId ->
+                                !unitGroupIds.any { unitGroup -> unitGroup.id == groupId }
+                            }
+                        ) {
+                            throw BadRequest("Group ID is not of the specified unit's")
+                        }
 
-                    body.tree.forEach { (groupId, childIds) ->
-                        if (childIds != null) {
-                            val groupChildIds = tx.getGroupPlacementChildren(groupId, body.period)
-                            val backupCareChildren = tx.getBackupCareChildrenInGroup(body.unitId, groupId, body.period)
+                        body.tree.forEach { (groupId, childIds) ->
+                            if (childIds != null) {
+                                val groupChildIds =
+                                    tx.getGroupPlacementChildren(groupId, body.period)
+                                val backupCareChildren =
+                                    tx.getBackupCareChildrenInGroup(
+                                        body.unitId,
+                                        groupId,
+                                        body.period
+                                    )
 
-                            if (childIds.any { !groupChildIds.contains(it) && !backupCareChildren.contains(it) }) {
-                                throw BadRequest("Child is not placed into the selected group")
+                                if (
+                                    childIds.any {
+                                        !groupChildIds.contains(it) &&
+                                            !backupCareChildren.contains(it)
+                                    }
+                                ) {
+                                    throw BadRequest("Child is not placed into the selected group")
+                                }
                             }
                         }
                     }
-                }
 
-                tx.createCalendarEvent(body)
+                    tx.createCalendarEvent(body)
+                }
             }
-        }
         Audit.CalendarEventCreate.log(targetId = body.unitId, objectId = eventId)
     }
 
@@ -111,11 +135,8 @@ class CalendarEventController(private val accessControl: AccessControl) {
         @PathVariable id: CalendarEventId
     ) {
         accessControl.requirePermissionFor(user, clock, Action.CalendarEvent.DELETE, id)
-        return db.connect { dbc ->
-            dbc.transaction { tx -> tx.deleteCalendarEvent(id) }
-        }.also {
-            Audit.CalendarEventDelete.log(targetId = id)
-        }
+        return db.connect { dbc -> dbc.transaction { tx -> tx.deleteCalendarEvent(id) } }
+            .also { Audit.CalendarEventDelete.log(targetId = id) }
     }
 
     @PatchMapping("/calendar-event/{id}")
@@ -127,11 +148,8 @@ class CalendarEventController(private val accessControl: AccessControl) {
         @RequestBody body: CalendarEventUpdateForm
     ) {
         accessControl.requirePermissionFor(user, clock, Action.CalendarEvent.UPDATE, id)
-        return db.connect { dbc ->
-            dbc.transaction { tx -> tx.updateCalendarEvent(id, body) }
-        }.also {
-            Audit.CalendarEventUpdate.log(targetId = id)
-        }
+        return db.connect { dbc -> dbc.transaction { tx -> tx.updateCalendarEvent(id, body) } }
+            .also { Audit.CalendarEventUpdate.log(targetId = id) }
     }
 
     @GetMapping("/citizen/calendar-events")
@@ -139,14 +157,15 @@ class CalendarEventController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
-        @RequestParam("start")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        start: LocalDate,
-        @RequestParam("end")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        end: LocalDate
+        @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
+        @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
     ): List<CitizenCalendarEvent> {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_CALENDAR_EVENTS, user.id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.READ_CALENDAR_EVENTS,
+            user.id
+        )
 
         if (start.isAfter(end)) {
             throw BadRequest("Start must be before or equal to the end")
@@ -159,30 +178,38 @@ class CalendarEventController(private val accessControl: AccessControl) {
         }
 
         return db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.getCalendarEventsForGuardian(user.id, range).groupBy { it.id }.map { (eventId, attendees) ->
-                    CitizenCalendarEvent(
-                        id = eventId,
-                        title = attendees[0].title,
-                        description = attendees[0].description,
-                        attendingChildren = attendees.groupBy { it.childId }.mapValues { (_, attendee) ->
-                            attendee.groupBy { Triple(it.type, it.groupId, it.unitId) }.map { (t, attendance) ->
-                                AttendingChild(
-                                    periods = attendance.map { it.period },
-                                    type = t.first,
-                                    groupName = attendance[0].groupName,
-                                    unitName = attendance[0].unitName
-                                )
-                            }
+                dbc.transaction { tx ->
+                    tx.getCalendarEventsForGuardian(user.id, range)
+                        .groupBy { it.id }
+                        .map { (eventId, attendees) ->
+                            CitizenCalendarEvent(
+                                id = eventId,
+                                title = attendees[0].title,
+                                description = attendees[0].description,
+                                attendingChildren =
+                                    attendees
+                                        .groupBy { it.childId }
+                                        .mapValues { (_, attendee) ->
+                                            attendee
+                                                .groupBy { Triple(it.type, it.groupId, it.unitId) }
+                                                .map { (t, attendance) ->
+                                                    AttendingChild(
+                                                        periods = attendance.map { it.period },
+                                                        type = t.first,
+                                                        groupName = attendance[0].groupName,
+                                                        unitName = attendance[0].unitName
+                                                    )
+                                                }
+                                        }
+                            )
                         }
-                    )
                 }
             }
-        }.also {
-            Audit.UnitCalendarEventsRead.log(
-                targetId = user.id,
-                args = mapOf("start" to start, "end" to end, "count" to it.size)
-            )
-        }
+            .also {
+                Audit.UnitCalendarEventsRead.log(
+                    targetId = user.id,
+                    args = mapOf("start" to start, "end" to end, "count" to it.size)
+                )
+            }
     }
 }

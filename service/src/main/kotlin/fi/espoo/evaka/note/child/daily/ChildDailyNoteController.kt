@@ -25,9 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 private val logger = KotlinLogging.logger {}
 
 @RestController
-class ChildDailyNoteController(
-    private val ac: AccessControl
-) {
+class ChildDailyNoteController(private val ac: AccessControl) {
     @PostMapping("/children/{childId}/child-daily-notes")
     fun createChildDailyNote(
         db: Database,
@@ -39,13 +37,10 @@ class ChildDailyNoteController(
         ac.requirePermissionFor(user, clock, Action.Child.CREATE_DAILY_NOTE, childId)
 
         try {
-            return db.connect { dbc ->
-                dbc.transaction {
-                    it.createChildDailyNote(childId, body)
+            return db.connect { dbc -> dbc.transaction { it.createChildDailyNote(childId, body) } }
+                .also { noteId ->
+                    Audit.ChildDailyNoteCreate.log(targetId = childId, objectId = noteId)
                 }
-            }.also { noteId ->
-                Audit.ChildDailyNoteCreate.log(targetId = childId, objectId = noteId)
-            }
         } catch (e: Exception) {
             val error = mapPSQLException(e)
             // monitor if there is issues with stale data or need for upsert
@@ -64,9 +59,10 @@ class ChildDailyNoteController(
     ): ChildDailyNote {
         ac.requirePermissionFor(user, clock, Action.ChildDailyNote.UPDATE, noteId)
 
-        return db.connect { dbc -> dbc.transaction { it.updateChildDailyNote(clock, noteId, body) } }.also {
-            Audit.ChildDailyNoteUpdate.log(targetId = noteId)
-        }
+        return db.connect { dbc ->
+                dbc.transaction { it.updateChildDailyNote(clock, noteId, body) }
+            }
+            .also { Audit.ChildDailyNoteUpdate.log(targetId = noteId) }
     }
 
     @DeleteMapping("/child-daily-notes/{noteId}")

@@ -32,17 +32,15 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
@@ -50,20 +48,11 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
         createTestFixture1plus1()
         val result = fetchAndParseFamilyDetails(testAdult_1.id)
 
-        assertEquals(
-            1,
-            result.children.size
-        )
+        assertEquals(1, result.children.size)
 
-        assertEquals(
-            testAdult_1.id,
-            result.headOfFamily.personId
-        )
+        assertEquals(testAdult_1.id, result.headOfFamily.personId)
 
-        assertEquals(
-            setOf(testChild_1.id),
-            result.children.map { it.personId }.toSet()
-        )
+        assertEquals(setOf(testChild_1.id), result.children.map { it.personId }.toSet())
     }
 
     @Test
@@ -71,15 +60,9 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
         createTestFixture1plus2()
         val result = fetchAndParseFamilyDetails(testAdult_1.id)
 
-        assertEquals(
-            2,
-            result.children.size
-        )
+        assertEquals(2, result.children.size)
 
-        assertEquals(
-            testAdult_1.id,
-            result.headOfFamily.personId
-        )
+        assertEquals(testAdult_1.id, result.headOfFamily.personId)
 
         assertEquals(
             setOf(testChild_1.id, testChild_2.id),
@@ -92,20 +75,11 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
         createTestFixture2plus2()
         val result = fetchAndParseFamilyDetails(testAdult_1.id)
 
-        assertEquals(
-            2,
-            result.children.size
-        )
+        assertEquals(2, result.children.size)
 
-        assertEquals(
-            testAdult_1.id,
-            result.headOfFamily.personId
-        )
+        assertEquals(testAdult_1.id, result.headOfFamily.personId)
 
-        assertEquals(
-            testAdult_2.id,
-            result.partner!!.personId
-        )
+        assertEquals(testAdult_2.id, result.partner!!.personId)
 
         assertEquals(
             setOf(testChild_1.id, testChild_2.id),
@@ -117,15 +91,9 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `doesn't explode if children are missing`() {
         val result = fetchAndParseFamilyDetails(testAdult_1.id)
 
-        assertEquals(
-            0,
-            result.children.size
-        )
+        assertEquals(0, result.children.size)
 
-        assertEquals(
-            testAdult_1.id,
-            result.headOfFamily.personId
-        )
+        assertEquals(testAdult_1.id, result.headOfFamily.personId)
     }
 
     @Test
@@ -150,28 +118,27 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(null, result.headOfFamily.income)
     }
 
-    private val financeUser = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
+    private val financeUser =
+        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
 
-    private fun fetchAndParseFamilyDetails(personId: PersonId, user: AuthenticatedUser = financeUser): FamilyOverview {
-        val (_, response, result) = http.get("/family/by-adult/$personId")
-            .asUser(user)
-            .responseString()
+    private fun fetchAndParseFamilyDetails(
+        personId: PersonId,
+        user: AuthenticatedUser = financeUser
+    ): FamilyOverview {
+        val (_, response, result) =
+            http.get("/family/by-adult/$personId").asUser(user).responseString()
 
         assertEquals(200, response.statusCode)
         return jsonMapper.readValue<FamilyOverview>(result.get())
     }
 
     private fun createTestFixture1plus1() {
-        val (from, to) = LocalDate.now().let {
-            listOf(it.minusYears(1), it.plusYears(1))
-        }
+        val (from, to) = LocalDate.now().let { listOf(it.minusYears(1), it.plusYears(1)) }
         db.transaction { it.createParentship(testChild_1.id, testAdult_1.id, from, to) }
     }
 
     private fun createTestFixture1plus2() {
-        val (from, to) = LocalDate.now().let {
-            listOf(it.minusYears(1), it.plusYears(1))
-        }
+        val (from, to) = LocalDate.now().let { listOf(it.minusYears(1), it.plusYears(1)) }
         db.transaction {
             it.createParentship(testChild_1.id, testAdult_1.id, from, to)
             it.createParentship(testChild_2.id, testAdult_1.id, from, to)
@@ -179,9 +146,7 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     private fun createTestFixture2plus2() {
-        val (from, to) = LocalDate.now().let {
-            listOf(it.minusYears(1), it.plusYears(1))
-        }
+        val (from, to) = LocalDate.now().let { listOf(it.minusYears(1), it.plusYears(1)) }
         db.transaction {
             it.createParentship(testChild_1.id, testAdult_1.id, from, to)
             it.createParentship(testChild_2.id, testAdult_1.id, from, to)
@@ -212,7 +177,15 @@ class FamilyOverviewTest : FullApplicationTest(resetDbBeforeEach = true) {
                 DevIncome(
                     personId = personId,
                     effect = IncomeEffect.INCOME,
-                    data = mapOf("MAIN_INCOME" to IncomeValue(incomeTotal, IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS, 1)),
+                    data =
+                        mapOf(
+                            "MAIN_INCOME" to
+                                IncomeValue(
+                                    incomeTotal,
+                                    IncomeCoefficient.MONTHLY_NO_HOLIDAY_BONUS,
+                                    1
+                                )
+                        ),
                     updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
                 )
             )

@@ -20,9 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/occupancy-coefficient")
-class StaffOccupancyCoefficientController(
-    private val ac: AccessControl
-) {
+class StaffOccupancyCoefficientController(private val ac: AccessControl) {
     @GetMapping
     fun getOccupancyCoefficients(
         db: Database,
@@ -31,9 +29,13 @@ class StaffOccupancyCoefficientController(
         @RequestParam unitId: DaycareId
     ): List<StaffOccupancyCoefficient> {
         ac.requirePermissionFor(user, clock, Action.Unit.READ_STAFF_OCCUPANCY_COEFFICIENTS, unitId)
-        return db.connect { dbc -> dbc.read { it.getOccupancyCoefficientsByUnit(unitId) } }.also {
-            Audit.StaffOccupancyCoefficientRead.log(targetId = unitId, args = mapOf("count" to it.size))
-        }
+        return db.connect { dbc -> dbc.read { it.getOccupancyCoefficientsByUnit(unitId) } }
+            .also {
+                Audit.StaffOccupancyCoefficientRead.log(
+                    targetId = unitId,
+                    args = mapOf("count" to it.size)
+                )
+            }
     }
 
     @PostMapping
@@ -43,8 +45,16 @@ class StaffOccupancyCoefficientController(
         clock: EvakaClock,
         @RequestBody body: OccupancyCoefficientUpsert
     ) {
-        ac.requirePermissionFor(user, clock, Action.Unit.UPSERT_STAFF_OCCUPANCY_COEFFICIENTS, body.unitId)
+        ac.requirePermissionFor(
+            user,
+            clock,
+            Action.Unit.UPSERT_STAFF_OCCUPANCY_COEFFICIENTS,
+            body.unitId
+        )
         val id = db.connect { dbc -> dbc.transaction { it.upsertOccupancyCoefficient(body) } }
-        Audit.StaffOccupancyCoefficientUpsert.log(targetId = listOf(body.unitId, body.employeeId), objectId = id)
+        Audit.StaffOccupancyCoefficientUpsert.log(
+            targetId = listOf(body.unitId, body.employeeId),
+            objectId = id
+        )
     }
 }

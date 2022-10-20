@@ -17,15 +17,15 @@ fun Database.Transaction.setSettings(settings: Map<SettingType, String>) {
     // language=SQL
     val deleteSql = "DELETE FROM setting WHERE key != ALL(:keys::setting_type[])"
 
-    createUpdate(deleteSql)
-        .bind("keys", settings.keys)
-        .execute()
+    createUpdate(deleteSql).bind("keys", settings.keys).execute()
 
     // language=SQL
-    val insertSql = """
+    val insertSql =
+        """
         INSERT INTO setting (key, value) VALUES (:key, :value)
         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value WHERE setting.value != EXCLUDED.value
-    """.trimIndent()
+    """
+            .trimIndent()
 
     val batch = prepareBatch(insertSql)
     settings.forEach { (key, value) ->

@@ -20,22 +20,21 @@ import fi.espoo.evaka.test.getValidDaycareApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val citizen = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
-    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker =
+        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
@@ -47,11 +46,24 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         // when
         val updatedApplication =
-            application.copy(form = application.form.copy(preferences = application.form.preferences.copy(urgent = false)))
-        val (_, res, _) = http.put("/v2/applications/${application.id}")
-            .jsonBody(jsonMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))))
-            .asUser(serviceWorker)
-            .responseString()
+            application.copy(
+                form =
+                    application.form.copy(
+                        preferences = application.form.preferences.copy(urgent = false)
+                    )
+            )
+        val (_, res, _) =
+            http
+                .put("/v2/applications/${application.id}")
+                .jsonBody(
+                    jsonMapper.writeValueAsString(
+                        ApplicationUpdate(
+                            form = ApplicationFormUpdate.from(updatedApplication.form)
+                        )
+                    )
+                )
+                .asUser(serviceWorker)
+                .responseString()
 
         // then
         assertEquals(200, res.statusCode)
@@ -68,11 +80,24 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         // when
         val updatedApplication =
-            application.copy(form = application.form.copy(preferences = application.form.preferences.copy(urgent = true)))
-        val (_, res, _) = http.put("/v2/applications/${application.id}")
-            .jsonBody(jsonMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))))
-            .asUser(serviceWorker)
-            .responseString()
+            application.copy(
+                form =
+                    application.form.copy(
+                        preferences = application.form.preferences.copy(urgent = true)
+                    )
+            )
+        val (_, res, _) =
+            http
+                .put("/v2/applications/${application.id}")
+                .jsonBody(
+                    jsonMapper.writeValueAsString(
+                        ApplicationUpdate(
+                            form = ApplicationFormUpdate.from(updatedApplication.form)
+                        )
+                    )
+                )
+                .asUser(serviceWorker)
+                .responseString()
 
         // then
         assertEquals(200, res.statusCode)
@@ -96,15 +121,25 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         uploadAttachment(applicationId = application.id, serviceWorker)
         db.transaction { tx ->
-            tx.createUpdate("UPDATE attachment SET received_at = :receivedAt WHERE application_id = :applicationId")
-                .bind("receivedAt", sentDate).bind("applicationId", application.id).execute()
+            tx.createUpdate(
+                    "UPDATE attachment SET received_at = :receivedAt WHERE application_id = :applicationId"
+                )
+                .bind("receivedAt", sentDate)
+                .bind("applicationId", application.id)
+                .execute()
         }
 
         // when
-        val (_, res, _) = http.put("/v2/applications/${application.id}")
-            .jsonBody(jsonMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(application.form))))
-            .asUser(serviceWorker)
-            .responseString()
+        val (_, res, _) =
+            http
+                .put("/v2/applications/${application.id}")
+                .jsonBody(
+                    jsonMapper.writeValueAsString(
+                        ApplicationUpdate(form = ApplicationFormUpdate.from(application.form))
+                    )
+                )
+                .asUser(serviceWorker)
+                .responseString()
 
         // then
         assertEquals(200, res.statusCode)
@@ -121,16 +156,33 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val manuallySetDueDate = HelsinkiDateTime.now().plusMonths(4).toLocalDate()
 
         // when
-        val (_, res, _) = http.put("/v2/applications/${application.id}")
-            .jsonBody(jsonMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(application.form), dueDate = manuallySetDueDate)))
-            .asUser(serviceWorker)
-            .responseString()
+        val (_, res, _) =
+            http
+                .put("/v2/applications/${application.id}")
+                .jsonBody(
+                    jsonMapper.writeValueAsString(
+                        ApplicationUpdate(
+                            form = ApplicationFormUpdate.from(application.form),
+                            dueDate = manuallySetDueDate
+                        )
+                    )
+                )
+                .asUser(serviceWorker)
+                .responseString()
 
         // then
         assertEquals(200, res.statusCode)
         val beforeSendingAttachment = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(manuallySetDueDate, beforeSendingAttachment!!.dueDate)
-        assertTrue(HelsinkiDateTime.now().durationSince(beforeSendingAttachment.dueDateSetManuallyAt ?: throw Error("dueDateSetManuallyAt should have been set")).seconds <= 5, "dueDateSetManuallyAt should have been about now")
+        assertTrue(
+            HelsinkiDateTime.now()
+                .durationSince(
+                    beforeSendingAttachment.dueDateSetManuallyAt
+                        ?: throw Error("dueDateSetManuallyAt should have been set")
+                )
+                .seconds <= 5,
+            "dueDateSetManuallyAt should have been about now"
+        )
 
         // when
         uploadAttachment(applicationId = application.id, serviceWorker)
@@ -146,8 +198,16 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val sentDate = LocalDate.of(2021, 1, 1)
         val originalDueDate = LocalDate.of(2021, 5, 1)
         val application = insertSentApplication(sentDate, originalDueDate, true, shiftCare = true)
-        uploadAttachment(applicationId = application.id, user = citizen, type = AttachmentType.URGENCY)
-        uploadAttachment(applicationId = application.id, user = citizen, type = AttachmentType.EXTENDED_CARE)
+        uploadAttachment(
+            applicationId = application.id,
+            user = citizen,
+            type = AttachmentType.URGENCY
+        )
+        uploadAttachment(
+            applicationId = application.id,
+            user = citizen,
+            type = AttachmentType.EXTENDED_CARE
+        )
 
         val beforeClearingUrgency = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(true, beforeClearingUrgency!!.form.preferences.urgent)
@@ -155,19 +215,38 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         // when
         val updatedApplication =
-            application.copy(form = application.form.copy(preferences = application.form.preferences.copy(urgent = false)))
-        val (_, res, _) = http.put("/citizen/applications/${application.id}")
-            .jsonBody(jsonMapper.writeValueAsString(ApplicationFormUpdate.from(updatedApplication.form)))
-            .asUser(citizen)
-            .responseString()
+            application.copy(
+                form =
+                    application.form.copy(
+                        preferences = application.form.preferences.copy(urgent = false)
+                    )
+            )
+        val (_, res, _) =
+            http
+                .put("/citizen/applications/${application.id}")
+                .jsonBody(
+                    jsonMapper.writeValueAsString(
+                        ApplicationFormUpdate.from(updatedApplication.form)
+                    )
+                )
+                .asUser(citizen)
+                .responseString()
 
         assertEquals(200, res.statusCode)
 
         // then
         val afterClearingUrgency = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(false, afterClearingUrgency!!.form.preferences.urgent)
-        assertEquals(0, afterClearingUrgency.attachments.filter { it.type === AttachmentType.URGENCY }.size)
-        assertEquals(1, afterClearingUrgency.attachments.filter { it.type === AttachmentType.EXTENDED_CARE }.size)
+        assertEquals(
+            0,
+            afterClearingUrgency.attachments.filter { it.type === AttachmentType.URGENCY }.size
+        )
+        assertEquals(
+            1,
+            afterClearingUrgency.attachments
+                .filter { it.type === AttachmentType.EXTENDED_CARE }
+                .size
+        )
     }
 
     @Test
@@ -175,9 +254,18 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         // given
         val sentDate = LocalDate.of(2021, 1, 1)
         val originalDueDate = LocalDate.of(2021, 5, 1)
-        val application = insertSentApplication(sentDate, originalDueDate, urgent = true, shiftCare = true)
-        uploadAttachment(applicationId = application.id, user = serviceWorker, type = AttachmentType.URGENCY)
-        uploadAttachment(applicationId = application.id, user = serviceWorker, type = AttachmentType.EXTENDED_CARE)
+        val application =
+            insertSentApplication(sentDate, originalDueDate, urgent = true, shiftCare = true)
+        uploadAttachment(
+            applicationId = application.id,
+            user = serviceWorker,
+            type = AttachmentType.URGENCY
+        )
+        uploadAttachment(
+            applicationId = application.id,
+            user = serviceWorker,
+            type = AttachmentType.EXTENDED_CARE
+        )
 
         val beforeClearingUrgency = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(true, beforeClearingUrgency!!.form.preferences.urgent)
@@ -185,19 +273,40 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         // when
         val updatedApplication =
-            application.copy(form = application.form.copy(preferences = application.form.preferences.copy(urgent = false)))
-        val (_, res, _) = http.put("/v2/applications/${application.id}")
-            .jsonBody(jsonMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))))
-            .asUser(serviceWorker)
-            .responseString()
+            application.copy(
+                form =
+                    application.form.copy(
+                        preferences = application.form.preferences.copy(urgent = false)
+                    )
+            )
+        val (_, res, _) =
+            http
+                .put("/v2/applications/${application.id}")
+                .jsonBody(
+                    jsonMapper.writeValueAsString(
+                        ApplicationUpdate(
+                            form = ApplicationFormUpdate.from(updatedApplication.form)
+                        )
+                    )
+                )
+                .asUser(serviceWorker)
+                .responseString()
 
         assertEquals(200, res.statusCode)
 
         // then
         val afterClearingUrgency = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(false, afterClearingUrgency!!.form.preferences.urgent)
-        assertEquals(0, afterClearingUrgency.attachments.filter { it.type === AttachmentType.URGENCY }.size)
-        assertEquals(1, afterClearingUrgency.attachments.filter { it.type === AttachmentType.EXTENDED_CARE }.size)
+        assertEquals(
+            0,
+            afterClearingUrgency.attachments.filter { it.type === AttachmentType.URGENCY }.size
+        )
+        assertEquals(
+            1,
+            afterClearingUrgency.attachments
+                .filter { it.type === AttachmentType.EXTENDED_CARE }
+                .size
+        )
     }
 
     @Test
@@ -205,9 +314,18 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         // given
         val sentDate = LocalDate.of(2021, 1, 1)
         val originalDueDate = LocalDate.of(2021, 5, 1)
-        val application = insertSentApplication(sentDate, originalDueDate, urgent = true, shiftCare = true)
-        uploadAttachment(applicationId = application.id, user = citizen, type = AttachmentType.URGENCY)
-        uploadAttachment(applicationId = application.id, user = citizen, type = AttachmentType.EXTENDED_CARE)
+        val application =
+            insertSentApplication(sentDate, originalDueDate, urgent = true, shiftCare = true)
+        uploadAttachment(
+            applicationId = application.id,
+            user = citizen,
+            type = AttachmentType.URGENCY
+        )
+        uploadAttachment(
+            applicationId = application.id,
+            user = citizen,
+            type = AttachmentType.EXTENDED_CARE
+        )
 
         val beforeClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(true, beforeClearingShiftCare!!.form.preferences.urgent)
@@ -216,22 +334,43 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         // when
         val updatedApplication =
             application.copy(
-                form = application.form.copy(
-                    preferences = application.form.preferences.copy(serviceNeed = application.form.preferences.serviceNeed!!.copy(shiftCare = false))
-                )
+                form =
+                    application.form.copy(
+                        preferences =
+                            application.form.preferences.copy(
+                                serviceNeed =
+                                    application.form.preferences.serviceNeed!!.copy(
+                                        shiftCare = false
+                                    )
+                            )
+                    )
             )
-        val (_, res, _) = http.put("/citizen/applications/${application.id}")
-            .jsonBody(jsonMapper.writeValueAsString(ApplicationFormUpdate.from(updatedApplication.form)))
-            .asUser(citizen)
-            .responseString()
+        val (_, res, _) =
+            http
+                .put("/citizen/applications/${application.id}")
+                .jsonBody(
+                    jsonMapper.writeValueAsString(
+                        ApplicationFormUpdate.from(updatedApplication.form)
+                    )
+                )
+                .asUser(citizen)
+                .responseString()
 
         assertEquals(200, res.statusCode)
 
         // then
         val afterClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(false, afterClearingShiftCare!!.form.preferences.serviceNeed!!.shiftCare)
-        assertEquals(1, afterClearingShiftCare.attachments.filter { it.type === AttachmentType.URGENCY }.size)
-        assertEquals(0, afterClearingShiftCare.attachments.filter { it.type === AttachmentType.EXTENDED_CARE }.size)
+        assertEquals(
+            1,
+            afterClearingShiftCare.attachments.filter { it.type === AttachmentType.URGENCY }.size
+        )
+        assertEquals(
+            0,
+            afterClearingShiftCare.attachments
+                .filter { it.type === AttachmentType.EXTENDED_CARE }
+                .size
+        )
     }
 
     @Test
@@ -239,9 +378,18 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         // given
         val sentDate = LocalDate.of(2021, 1, 1)
         val originalDueDate = LocalDate.of(2021, 5, 1)
-        val application = insertSentApplication(sentDate, originalDueDate, urgent = true, shiftCare = true)
-        uploadAttachment(applicationId = application.id, user = serviceWorker, type = AttachmentType.URGENCY)
-        uploadAttachment(applicationId = application.id, user = serviceWorker, type = AttachmentType.EXTENDED_CARE)
+        val application =
+            insertSentApplication(sentDate, originalDueDate, urgent = true, shiftCare = true)
+        uploadAttachment(
+            applicationId = application.id,
+            user = serviceWorker,
+            type = AttachmentType.URGENCY
+        )
+        uploadAttachment(
+            applicationId = application.id,
+            user = serviceWorker,
+            type = AttachmentType.EXTENDED_CARE
+        )
 
         val beforeClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(true, beforeClearingShiftCare!!.form.preferences.serviceNeed!!.shiftCare)
@@ -250,22 +398,45 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         // when
         val updatedApplication =
             application.copy(
-                form = application.form.copy(
-                    preferences = application.form.preferences.copy(serviceNeed = application.form.preferences.serviceNeed!!.copy(shiftCare = false))
-                )
+                form =
+                    application.form.copy(
+                        preferences =
+                            application.form.preferences.copy(
+                                serviceNeed =
+                                    application.form.preferences.serviceNeed!!.copy(
+                                        shiftCare = false
+                                    )
+                            )
+                    )
             )
-        val (_, res, _) = http.put("/v2/applications/${application.id}")
-            .jsonBody(jsonMapper.writeValueAsString(ApplicationUpdate(form = ApplicationFormUpdate.from(updatedApplication.form))))
-            .asUser(serviceWorker)
-            .responseString()
+        val (_, res, _) =
+            http
+                .put("/v2/applications/${application.id}")
+                .jsonBody(
+                    jsonMapper.writeValueAsString(
+                        ApplicationUpdate(
+                            form = ApplicationFormUpdate.from(updatedApplication.form)
+                        )
+                    )
+                )
+                .asUser(serviceWorker)
+                .responseString()
 
         assertEquals(200, res.statusCode)
 
         // then
         val afterClearingShiftCare = db.transaction { it.fetchApplicationDetails(application.id) }
         assertEquals(false, afterClearingShiftCare!!.form.preferences.serviceNeed!!.shiftCare)
-        assertEquals(1, afterClearingShiftCare.attachments.filter { it.type === AttachmentType.URGENCY }.size)
-        assertEquals(0, afterClearingShiftCare.attachments.filter { it.type === AttachmentType.EXTENDED_CARE }.size)
+        assertEquals(
+            1,
+            afterClearingShiftCare.attachments.filter { it.type === AttachmentType.URGENCY }.size
+        )
+        assertEquals(
+            0,
+            afterClearingShiftCare.attachments
+                .filter { it.type === AttachmentType.EXTENDED_CARE }
+                .size
+        )
     }
 
     private fun insertSentApplication(
@@ -273,10 +444,20 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         dueDate: LocalDate,
         urgent: Boolean,
         shiftCare: Boolean = false
-    ): ApplicationDetails = db.transaction { tx ->
-        val applicationId = tx.insertTestApplication(status = ApplicationStatus.SENT, sentDate = sentDate, dueDate = dueDate, childId = testChild_1.id, guardianId = testAdult_1.id, type = ApplicationType.DAYCARE)
-        val validDaycareForm = DaycareFormV0.fromApplication2(getValidDaycareApplication(shiftCare = shiftCare))
-        tx.insertTestApplicationForm(applicationId, validDaycareForm.copy(urgent = urgent))
-        tx.fetchApplicationDetails(applicationId)!!
-    }
+    ): ApplicationDetails =
+        db.transaction { tx ->
+            val applicationId =
+                tx.insertTestApplication(
+                    status = ApplicationStatus.SENT,
+                    sentDate = sentDate,
+                    dueDate = dueDate,
+                    childId = testChild_1.id,
+                    guardianId = testAdult_1.id,
+                    type = ApplicationType.DAYCARE
+                )
+            val validDaycareForm =
+                DaycareFormV0.fromApplication2(getValidDaycareApplication(shiftCare = shiftCare))
+            tx.insertTestApplicationForm(applicationId, validDaycareForm.copy(urgent = urgent))
+            tx.fetchApplicationDetails(applicationId)!!
+        }
 }

@@ -5,5 +5,7 @@
 package fi.espoo.evaka.decision
 
 enum class DecisionStatus {
-    PENDING, ACCEPTED, REJECTED
+    PENDING,
+    ACCEPTED,
+    REJECTED
 }

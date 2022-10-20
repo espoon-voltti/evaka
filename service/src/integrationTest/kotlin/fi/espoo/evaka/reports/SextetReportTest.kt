@@ -22,10 +22,10 @@ import fi.espoo.evaka.testChild_7
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testRoundTheClockDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
@@ -149,35 +149,52 @@ class SextetReportTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         }
 
-        val report1 = db.read {
-            it.sextetReport(
-                from = LocalDate.of(2021, 1, 1),
-                to = LocalDate.of(2021, 12, 31),
-                placementType = PlacementType.DAYCARE
-            )
-        }
+        val report1 =
+            db.read {
+                it.sextetReport(
+                    from = LocalDate.of(2021, 1, 1),
+                    to = LocalDate.of(2021, 12, 31),
+                    placementType = PlacementType.DAYCARE
+                )
+            }
 
         assertEquals(
             listOf(
                 SextetReportRow(testDaycare.id, testDaycare.name, PlacementType.DAYCARE, 10 + 9),
                 SextetReportRow(testDaycare2.id, testDaycare2.name, PlacementType.DAYCARE, 10),
-                SextetReportRow(testRoundTheClockDaycare.id, testRoundTheClockDaycare.name, PlacementType.DAYCARE, 15)
+                SextetReportRow(
+                    testRoundTheClockDaycare.id,
+                    testRoundTheClockDaycare.name,
+                    PlacementType.DAYCARE,
+                    15
+                )
             ),
             report1
         )
 
-        val report2 = db.read {
-            it.sextetReport(
-                from = LocalDate.of(2021, 1, 1),
-                to = LocalDate.of(2021, 12, 31),
-                placementType = PlacementType.PRESCHOOL_DAYCARE
-            )
-        }
+        val report2 =
+            db.read {
+                it.sextetReport(
+                    from = LocalDate.of(2021, 1, 1),
+                    to = LocalDate.of(2021, 12, 31),
+                    placementType = PlacementType.PRESCHOOL_DAYCARE
+                )
+            }
 
         assertEquals(
             listOf(
-                SextetReportRow(testDaycare.id, testDaycare.name, PlacementType.PRESCHOOL_DAYCARE, 9 + 5 + 10),
-                SextetReportRow(testDaycare2.id, testDaycare2.name, PlacementType.PRESCHOOL_DAYCARE, 5)
+                SextetReportRow(
+                    testDaycare.id,
+                    testDaycare.name,
+                    PlacementType.PRESCHOOL_DAYCARE,
+                    9 + 5 + 10
+                ),
+                SextetReportRow(
+                    testDaycare2.id,
+                    testDaycare2.name,
+                    PlacementType.PRESCHOOL_DAYCARE,
+                    5
+                )
             ),
             report2
         )

@@ -15,12 +15,12 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
-import java.time.temporal.TemporalAdjusters
 
 internal fun getMonthPeriod(date: LocalDate): DateRange {
     val from = date.with(TemporalAdjusters.firstDayOfMonth())
@@ -35,53 +35,55 @@ class InvoiceReportController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("date")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        date: LocalDate
+        @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): InvoiceReport {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_INVOICE_REPORT)
         return db.connect { dbc ->
-            dbc.read {
-                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.getInvoiceReportWithRows(getMonthPeriod(date))
+                dbc.read {
+                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    it.getInvoiceReportWithRows(getMonthPeriod(date))
+                }
             }
-        }.also {
-            Audit.InvoicesReportRead.log(args = mapOf("date" to date, "count" to it.reportRows.size))
-        }
+            .also {
+                Audit.InvoicesReportRead.log(
+                    args = mapOf("date" to date, "count" to it.reportRows.size)
+                )
+            }
     }
 }
 
 private fun Database.Read.getInvoiceReportWithRows(period: DateRange): InvoiceReport {
-    val invoices = searchInvoices(
-        statuses = listOf(InvoiceStatus.SENT),
-        sentAt = period
-    )
+    val invoices = searchInvoices(statuses = listOf(InvoiceStatus.SENT), sentAt = period)
 
-    val rows = invoices.groupBy { it.agreementType }
-        .map { (agreementType, invoices) ->
-            InvoiceReportRow(
-                areaCode = agreementType,
-                amountOfInvoices = invoices.size,
-                totalSumCents = invoices.sumOf { it.totalPrice },
-                amountWithoutSSN = invoices.count { it.headOfFamily.ssn.isNullOrBlank() },
-                amountWithoutAddress = invoices.count { withoutAddress(it) },
-                amountWithZeroPrice = invoices.count { it.totalPrice == 0 }
-            )
-        }
-        .sortedBy { it.areaCode }
+    val rows =
+        invoices
+            .groupBy { it.agreementType }
+            .map { (agreementType, invoices) ->
+                InvoiceReportRow(
+                    areaCode = agreementType,
+                    amountOfInvoices = invoices.size,
+                    totalSumCents = invoices.sumOf { it.totalPrice },
+                    amountWithoutSSN = invoices.count { it.headOfFamily.ssn.isNullOrBlank() },
+                    amountWithoutAddress = invoices.count { withoutAddress(it) },
+                    amountWithZeroPrice = invoices.count { it.totalPrice == 0 }
+                )
+            }
+            .sortedBy { it.areaCode }
 
     return InvoiceReport(reportRows = rows)
 }
 
-private fun withoutAddress(invoice: InvoiceDetailed): Boolean = !addressUsable(
-    invoice.headOfFamily.streetAddress,
-    invoice.headOfFamily.postalCode,
-    invoice.headOfFamily.postOffice
-) && !addressUsable(
-    invoice.headOfFamily.invoicingStreetAddress,
-    invoice.headOfFamily.invoicingPostalCode,
-    invoice.headOfFamily.invoicingPostOffice
-)
+private fun withoutAddress(invoice: InvoiceDetailed): Boolean =
+    !addressUsable(
+        invoice.headOfFamily.streetAddress,
+        invoice.headOfFamily.postalCode,
+        invoice.headOfFamily.postOffice
+    ) &&
+        !addressUsable(
+            invoice.headOfFamily.invoicingStreetAddress,
+            invoice.headOfFamily.invoicingPostalCode,
+            invoice.headOfFamily.invoicingPostOffice
+        )
 
 data class InvoiceReportRow(
     val areaCode: Int?,
@@ -92,9 +94,7 @@ data class InvoiceReportRow(
     val amountWithZeroPrice: Int
 )
 
-data class InvoiceReport(
-    val reportRows: List<InvoiceReportRow>
-) {
+data class InvoiceReport(val reportRows: List<InvoiceReportRow>) {
     val totalAmountOfInvoices: Int = reportRows.sumOf { it.amountOfInvoices }
     val totalSumCents: Int = reportRows.sumOf { it.totalSumCents }
     val totalAmountWithoutSSN: Int = reportRows.sumOf { it.amountWithoutSSN }

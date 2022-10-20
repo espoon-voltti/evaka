@@ -9,9 +9,14 @@ import com.fasterxml.jackson.databind.JsonSerializer
 import com.fasterxml.jackson.databind.SerializerProvider
 import fi.espoo.evaka.application.utils.exhaust
 
-// Custom serializer to avoid Jackson serializing "fields" that are actually helper functions (e.g. isAdmin)
+// Custom serializer to avoid Jackson serializing "fields" that are actually helper functions (e.g.
+// isAdmin)
 class AuthenticatedUserJsonSerializer : JsonSerializer<AuthenticatedUser>() {
-    override fun serialize(value: AuthenticatedUser, gen: JsonGenerator, serializers: SerializerProvider) {
+    override fun serialize(
+        value: AuthenticatedUser,
+        gen: JsonGenerator,
+        serializers: SerializerProvider
+    ) {
         gen.writeStartObject()
         gen.writeObjectField("type", value.type.toString())
         when (value) {
@@ -25,7 +30,9 @@ class AuthenticatedUserJsonSerializer : JsonSerializer<AuthenticatedUser>() {
             }
             is AuthenticatedUser.MobileDevice -> {
                 gen.writeObjectField("id", value.id.toString())
-                value.employeeId?.let { gen.writeObjectField("employeeId", value.employeeId.toString()) }
+                value.employeeId?.let {
+                    gen.writeObjectField("employeeId", value.employeeId.toString())
+                }
             }
             is AuthenticatedUser.Integration -> {}
             is AuthenticatedUser.SystemInternalUser -> {}

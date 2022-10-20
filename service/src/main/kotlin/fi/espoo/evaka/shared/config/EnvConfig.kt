@@ -27,54 +27,50 @@ import org.springframework.core.env.Environment
 @Configuration
 @Lazy
 class EnvConfig {
-    @Bean
-    fun evakaEnv(env: Environment) = EvakaEnv.fromEnvironment(env)
+    @Bean fun evakaEnv(env: Environment) = EvakaEnv.fromEnvironment(env)
 
     @Bean
-    fun koskiEnv(evakaEnv: EvakaEnv, env: Environment): KoskiEnv? = when (evakaEnv.koskiEnabled) {
-        true -> KoskiEnv.fromEnvironment(env)
-        false -> null
-    }
+    fun koskiEnv(evakaEnv: EvakaEnv, env: Environment): KoskiEnv? =
+        when (evakaEnv.koskiEnabled) {
+            true -> KoskiEnv.fromEnvironment(env)
+            false -> null
+        }
+
+    @Bean fun bucketEnv(env: Environment): BucketEnv = BucketEnv.fromEnvironment(env)
+
+    @Bean fun emailEnv(env: Environment): EmailEnv = EmailEnv.fromEnvironment(env)
+
+    @Bean fun vardaEnv(env: Environment): VardaEnv = VardaEnv.fromEnvironment(env)
+
+    @Bean fun databaseEnv(env: Environment): DatabaseEnv = DatabaseEnv.fromEnvironment(env)
+
+    @Bean fun redisEnv(env: Environment): RedisEnv = RedisEnv.fromEnvironment(env)
 
     @Bean
-    fun bucketEnv(env: Environment): BucketEnv = BucketEnv.fromEnvironment(env)
+    fun dvvModificationsEnv(env: Environment): DvvModificationsEnv =
+        DvvModificationsEnv.fromEnvironment(env)
 
-    @Bean
-    fun emailEnv(env: Environment): EmailEnv = EmailEnv.fromEnvironment(env)
-
-    @Bean
-    fun vardaEnv(env: Environment): VardaEnv = VardaEnv.fromEnvironment(env)
-
-    @Bean
-    fun databaseEnv(env: Environment): DatabaseEnv = DatabaseEnv.fromEnvironment(env)
-
-    @Bean
-    fun redisEnv(env: Environment): RedisEnv = RedisEnv.fromEnvironment(env)
-
-    @Bean
-    fun dvvModificationsEnv(env: Environment): DvvModificationsEnv = DvvModificationsEnv.fromEnvironment(env)
-
-    @Bean
-    fun jwtEnv(env: Environment): JwtEnv = JwtEnv.fromEnvironment(env)
+    @Bean fun jwtEnv(env: Environment): JwtEnv = JwtEnv.fromEnvironment(env)
 
     @Bean
     fun scheduledJobsEnv(env: Environment): ScheduledJobsEnv = ScheduledJobsEnv.fromEnvironment(env)
 
-    @Bean
-    fun vtjEnv(evakaEnv: EvakaEnv, env: Environment): VtjEnv = VtjEnv.fromEnvironment(env)
+    @Bean fun vtjEnv(evakaEnv: EvakaEnv, env: Environment): VtjEnv = VtjEnv.fromEnvironment(env)
 
     @Bean
-    fun vtjXroadEnv(evakaEnv: EvakaEnv, env: Environment): VtjXroadEnv = VtjXroadEnv.fromEnvironment(env)
+    fun vtjXroadEnv(evakaEnv: EvakaEnv, env: Environment): VtjXroadEnv =
+        VtjXroadEnv.fromEnvironment(env)
+
+    @Bean fun ophEnv(env: Environment): OphEnv? = OphEnv.fromEnvironment(env)
 
     @Bean
-    fun ophEnv(env: Environment): OphEnv? = OphEnv.fromEnvironment(env)
+    fun citizenCalendarEnv(env: Environment): CitizenCalendarEnv? =
+        CitizenCalendarEnv.fromEnvironment(env)
 
     @Bean
-    fun citizenCalendarEnv(env: Environment): CitizenCalendarEnv? = CitizenCalendarEnv.fromEnvironment(env)
-
-    @Bean
-    fun sfiEnv(evakaEnv: EvakaEnv, env: Environment): SfiEnv? = when (evakaEnv.sfiEnabled) {
-        true -> SfiEnv.fromEnvironment(env)
-        false -> null
-    }
+    fun sfiEnv(evakaEnv: EvakaEnv, env: Environment): SfiEnv? =
+        when (evakaEnv.sfiEnabled) {
+            true -> SfiEnv.fromEnvironment(env)
+            false -> null
+        }
 }

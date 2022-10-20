@@ -20,8 +20,8 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import org.jdbi.v3.core.result.RowView
 import java.time.LocalDate
+import org.jdbi.v3.core.result.RowView
 
 // language=SQL
 private val decisionSelector =
@@ -40,59 +40,74 @@ private val decisionSelector =
         INNER JOIN application ap on d.application_id = ap.id 
         INNER JOIN person c on ap.child_id = c.id
         LEFT JOIN unit_manager m on u.unit_manager_id = m.id
-    """.trimIndent()
+    """
+        .trimIndent()
 
-private fun decisionFromResultSet(row: RowView): Decision = Decision(
-    id = row.mapColumn("id"),
-    createdBy = row.mapColumn("created_by"),
-    type = row.mapColumn("type"),
-    startDate = row.mapColumn("start_date"),
-    endDate = row.mapColumn("end_date"),
-    documentKey = row.mapColumn("document_key"),
-    otherGuardianDocumentKey = row.mapColumn("other_guardian_document_key"),
-    decisionNumber = row.mapColumn("number"),
-    sentDate = row.mapColumn("sent_date"),
-    status = row.mapColumn("status"),
-    requestedStartDate = row.mapColumn("requested_start_date"),
-    resolved = row.mapColumn<HelsinkiDateTime?>("resolved")?.toLocalDate(),
-    unit = DecisionUnit(
-        id = row.mapColumn("unit_id"),
-        name = row.mapColumn("name"),
-        daycareDecisionName = row.mapColumn("decision_daycare_name"),
-        preschoolDecisionName = row.mapColumn("decision_preschool_name"),
-        manager = row.mapColumn("manager"),
-        streetAddress = row.mapColumn("street_address"),
-        postalCode = row.mapColumn("postal_code"),
-        postOffice = row.mapColumn("post_office"),
-        phone = row.mapColumn("phone"),
-        decisionHandler = row.mapColumn("decision_handler"),
-        decisionHandlerAddress = row.mapColumn("decision_handler_address"),
-        providerType = row.mapColumn("provider_type")
-    ),
-    applicationId = row.mapColumn("application_id"),
-    childId = row.mapColumn("child_id"),
-    childName = "${row.mapColumn<String>("child_last_name")} ${row.mapColumn<String>("child_first_name")}"
-)
+private fun decisionFromResultSet(row: RowView): Decision =
+    Decision(
+        id = row.mapColumn("id"),
+        createdBy = row.mapColumn("created_by"),
+        type = row.mapColumn("type"),
+        startDate = row.mapColumn("start_date"),
+        endDate = row.mapColumn("end_date"),
+        documentKey = row.mapColumn("document_key"),
+        otherGuardianDocumentKey = row.mapColumn("other_guardian_document_key"),
+        decisionNumber = row.mapColumn("number"),
+        sentDate = row.mapColumn("sent_date"),
+        status = row.mapColumn("status"),
+        requestedStartDate = row.mapColumn("requested_start_date"),
+        resolved = row.mapColumn<HelsinkiDateTime?>("resolved")?.toLocalDate(),
+        unit =
+            DecisionUnit(
+                id = row.mapColumn("unit_id"),
+                name = row.mapColumn("name"),
+                daycareDecisionName = row.mapColumn("decision_daycare_name"),
+                preschoolDecisionName = row.mapColumn("decision_preschool_name"),
+                manager = row.mapColumn("manager"),
+                streetAddress = row.mapColumn("street_address"),
+                postalCode = row.mapColumn("postal_code"),
+                postOffice = row.mapColumn("post_office"),
+                phone = row.mapColumn("phone"),
+                decisionHandler = row.mapColumn("decision_handler"),
+                decisionHandlerAddress = row.mapColumn("decision_handler_address"),
+                providerType = row.mapColumn("provider_type")
+            ),
+        applicationId = row.mapColumn("application_id"),
+        childId = row.mapColumn("child_id"),
+        childName =
+            "${row.mapColumn<String>("child_last_name")} ${row.mapColumn<String>("child_first_name")}"
+    )
 
 fun Database.Read.getDecision(decisionId: DecisionId): Decision? {
-    return createQuery("$decisionSelector WHERE d.id = :id").bind("id", decisionId)
-        .map(::decisionFromResultSet).first()
+    return createQuery("$decisionSelector WHERE d.id = :id")
+        .bind("id", decisionId)
+        .map(::decisionFromResultSet)
+        .first()
 }
 
 fun Database.Read.getSentDecision(decisionId: DecisionId): Decision? {
-    return createQuery("$decisionSelector WHERE d.id = :id AND d.sent_date IS NOT NULL").bind("id", decisionId)
-        .map(::decisionFromResultSet).first()
+    return createQuery("$decisionSelector WHERE d.id = :id AND d.sent_date IS NOT NULL")
+        .bind("id", decisionId)
+        .map(::decisionFromResultSet)
+        .first()
 }
 
-fun Database.Read.getDecisionsByChild(childId: ChildId, authorizedUnits: AclAuthorization): List<Decision> {
+fun Database.Read.getDecisionsByChild(
+    childId: ChildId,
+    authorizedUnits: AclAuthorization
+): List<Decision> {
     val units = authorizedUnits.ids
-    val sql = "$decisionSelector WHERE ap.child_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id = ANY(:units)" } ?: ""}"
+    val sql =
+        "$decisionSelector WHERE ap.child_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id = ANY(:units)" } ?: ""}"
     val query = createQuery(sql).bind("id", childId)
     units?.let { query.bind("units", units) }
     return query.map(::decisionFromResultSet).list()
 }
 
-fun Database.Read.getDecisionsByApplication(applicationId: ApplicationId, authorizedUnits: AclAuthorization): List<Decision> {
+fun Database.Read.getDecisionsByApplication(
+    applicationId: ApplicationId,
+    authorizedUnits: AclAuthorization
+): List<Decision> {
     val units = authorizedUnits.ids
     val sql =
         "$decisionSelector WHERE d.application_id = :id ${units?.let { " AND d.unit_id = ANY(:units)" } ?: ""}"
@@ -102,7 +117,10 @@ fun Database.Read.getDecisionsByApplication(applicationId: ApplicationId, author
     return query.map(::decisionFromResultSet).list()
 }
 
-fun Database.Read.getSentDecisionsByApplication(applicationId: ApplicationId, authorizedUnits: AclAuthorization): List<Decision> {
+fun Database.Read.getSentDecisionsByApplication(
+    applicationId: ApplicationId,
+    authorizedUnits: AclAuthorization
+): List<Decision> {
     val units = authorizedUnits.ids
     val sql =
         "$decisionSelector WHERE d.application_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id = ANY(:units)" } ?: ""}"
@@ -112,9 +130,13 @@ fun Database.Read.getSentDecisionsByApplication(applicationId: ApplicationId, au
     return query.map(::decisionFromResultSet).list()
 }
 
-fun Database.Read.getDecisionsByGuardian(guardianId: PersonId, authorizedUnits: AclAuthorization): List<Decision> {
+fun Database.Read.getDecisionsByGuardian(
+    guardianId: PersonId,
+    authorizedUnits: AclAuthorization
+): List<Decision> {
     val units = authorizedUnits.ids
-    val sql = "$decisionSelector WHERE ap.guardian_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id = ANY(:units)" } ?: ""}"
+    val sql =
+        "$decisionSelector WHERE ap.guardian_id = :id AND d.sent_date IS NOT NULL ${units?.let { " AND d.unit_id = ANY(:units)" } ?: ""}"
     val query = createQuery(sql).bind("id", guardianId)
     units?.let { query.bind("units", units) }
 
@@ -141,11 +163,10 @@ fun Database.Read.getOwnDecisions(guardianId: PersonId): List<ApplicationDecisio
         JOIN application a ON d.application_id = a.id
         JOIN person p ON a.child_id = p.id
         WHERE a.guardian_id = :guardianId AND d.sent_date IS NOT NULL AND a.status != 'WAITING_MAILING'::application_status_type
-        """.trimIndent()
+        """
+            .trimIndent()
 
-    val rows = createQuery(sql)
-        .bind("guardianId", guardianId)
-        .mapTo<ApplicationDecisionRow>()
+    val rows = createQuery(sql).bind("guardianId", guardianId).mapTo<ApplicationDecisionRow>()
 
     return rows
         .groupBy { it.applicationId }
@@ -154,7 +175,9 @@ fun Database.Read.getOwnDecisions(guardianId: PersonId): List<ApplicationDecisio
                 applicationId,
                 decisions.first().childId,
                 decisions.first().childName,
-                decisions.map { DecisionSummary(it.id, it.type, it.status, it.sentDate, it.resolved) }
+                decisions.map {
+                    DecisionSummary(it.id, it.type, it.status, it.sentDate, it.resolved)
+                }
             )
         }
 }
@@ -166,12 +189,10 @@ fun Database.Read.fetchDecisionDrafts(applicationId: ApplicationId): List<Decisi
             SELECT id, unit_id, type, start_date, end_date, planned
             FROM decision
             WHERE application_id = :applicationId AND sent_date IS NULL
-        """.trimIndent()
+        """
+            .trimIndent()
 
-    return createQuery(sql)
-        .bind("applicationId", applicationId)
-        .mapTo<DecisionDraft>()
-        .list()
+    return createQuery(sql).bind("applicationId", applicationId).mapTo<DecisionDraft>().list()
 }
 
 fun Database.Transaction.finalizeDecisions(
@@ -179,25 +200,32 @@ fun Database.Transaction.finalizeDecisions(
     today: LocalDate
 ): List<DecisionId> {
     // discard unplanned drafts
-    createUpdate("DELETE FROM decision WHERE sent_date IS NULL AND application_id = :applicationId AND planned = false")
+    createUpdate(
+            "DELETE FROM decision WHERE sent_date IS NULL AND application_id = :applicationId AND planned = false"
+        )
         .bind("applicationId", applicationId)
         .execute()
 
     // confirm planned drafts
-    return createQuery("UPDATE decision SET sent_date = :today WHERE application_id = :applicationId RETURNING id")
+    return createQuery(
+            "UPDATE decision SET sent_date = :today WHERE application_id = :applicationId RETURNING id"
+        )
         .bind("applicationId", applicationId)
         .bind("today", today)
         .mapTo<DecisionId>()
         .list()
 }
 
-fun Database.Transaction.markApplicationDecisionsSent(applicationId: ApplicationId, sentDate: LocalDate) {
+fun Database.Transaction.markApplicationDecisionsSent(
+    applicationId: ApplicationId,
+    sentDate: LocalDate
+) {
     createUpdate(
-        """
+            """
 UPDATE decision SET sent_date = :sentDate
 WHERE sent_date IS NULL AND application_id = :applicationId AND planned = true
 """
-    )
+        )
         .bind("applicationId", applicationId)
         .bind("sentDate", sentDate)
         .execute()
@@ -205,11 +233,11 @@ WHERE sent_date IS NULL AND application_id = :applicationId AND planned = true
 
 fun Database.Transaction.markDecisionSent(decisionId: DecisionId, sentDate: LocalDate) {
     createUpdate(
-        """
+            """
 UPDATE decision SET sent_date = :sentDate
 WHERE sent_date IS NULL AND id = :decisionId AND planned = true
 """
-    )
+        )
         .bind("decisionId", decisionId)
         .bind("sentDate", sentDate)
         .execute()
@@ -226,12 +254,13 @@ fun Database.Transaction.insertDecision(
     endDate: LocalDate
 ) {
     createUpdate(
-        //language=SQL
-        """
+            // language=SQL
+            """
             INSERT INTO decision (id, created_by, sent_date, unit_id, application_id, type, start_date, end_date) 
             VALUES (:id, :createdBy, :sentDate, :unitId, :applicationId, :type::decision_type, :startDate, :endDate)
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("id", decisionId)
         .bind("createdBy", userId)
         .bind("sentDate", sentDate)
@@ -243,7 +272,10 @@ fun Database.Transaction.insertDecision(
         .execute()
 }
 
-fun Database.Transaction.updateDecisionGuardianDocumentKey(decisionId: DecisionId, documentKey: String) {
+fun Database.Transaction.updateDecisionGuardianDocumentKey(
+    decisionId: DecisionId,
+    documentKey: String
+) {
     // language=SQL
     createUpdate("UPDATE decision SET document_key = :documentKey WHERE id = :id")
         .bind("id", decisionId)
@@ -251,7 +283,10 @@ fun Database.Transaction.updateDecisionGuardianDocumentKey(decisionId: DecisionI
         .execute()
 }
 
-fun Database.Transaction.updateDecisionOtherGuardianDocumentKey(decisionId: DecisionId, documentKey: String) {
+fun Database.Transaction.updateDecisionOtherGuardianDocumentKey(
+    decisionId: DecisionId,
+    documentKey: String
+) {
     // language=SQL
     createUpdate("UPDATE decision SET other_guardian_document_key = :documentKey WHERE id = :id")
         .bind("id", decisionId)
@@ -261,39 +296,49 @@ fun Database.Transaction.updateDecisionOtherGuardianDocumentKey(decisionId: Deci
 
 fun Database.Read.isDecisionBlocked(decisionId: DecisionId): Boolean {
     return createQuery(
-        // language=SQL
-        """
+            // language=SQL
+            """
 SELECT count(*) > 0 AS blocked
 FROM decision
 WHERE status = 'PENDING' AND type = 'PRESCHOOL' AND id != :id
 AND application_id = (SELECT application_id FROM decision WHERE id = :id)
 """
-    ).bind("id", decisionId)
-        .mapTo<Boolean>().first() ?: false
+        )
+        .bind("id", decisionId)
+        .mapTo<Boolean>()
+        .first()
+        ?: false
 }
 
 fun Database.Read.getDecisionLanguage(decisionId: DecisionId): DocumentLang {
     return createQuery(
-        //language=SQL
-        """
+            // language=SQL
+            """
             SELECT daycare.language
             FROM decision
                 INNER JOIN daycare ON unit_id = daycare.id
             WHERE decision.id = :id
-        """.trimIndent().trimIndent()
-    )
+        """
+                .trimIndent()
+                .trimIndent()
+        )
         .bind("id", decisionId)
         .mapTo<DocumentLang>()
         .first()
 }
 
-fun Database.Transaction.markDecisionAccepted(user: AuthenticatedUser, clock: EvakaClock, decisionId: DecisionId, requestedStartDate: LocalDate) {
+fun Database.Transaction.markDecisionAccepted(
+    user: AuthenticatedUser,
+    clock: EvakaClock,
+    decisionId: DecisionId,
+    requestedStartDate: LocalDate
+) {
     if (isDecisionBlocked(decisionId)) {
         throw BadRequest("Cannot accept decision that is blocked by a pending primary decision")
     }
     createUpdate(
-        // language=SQL
-        """
+            // language=SQL
+            """
 UPDATE decision
 SET
   status = 'ACCEPTED',
@@ -302,8 +347,9 @@ SET
   resolved = :now
 WHERE id = :id
 AND status = 'PENDING'
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("id", decisionId)
         .bind("now", clock.now())
         .bind("userId", user.evakaUserId)
@@ -311,13 +357,17 @@ AND status = 'PENDING'
         .execute()
 }
 
-fun Database.Transaction.markDecisionRejected(user: AuthenticatedUser, clock: EvakaClock, decisionId: DecisionId) {
+fun Database.Transaction.markDecisionRejected(
+    user: AuthenticatedUser,
+    clock: EvakaClock,
+    decisionId: DecisionId
+) {
     if (isDecisionBlocked(decisionId)) {
         throw BadRequest("Cannot reject decision that is blocked by a pending primary decision")
     }
     createUpdate(
-        // language=SQL
-        """
+            // language=SQL
+            """
 UPDATE decision
 SET
   status = 'REJECTED',
@@ -325,8 +375,9 @@ SET
   resolved = :now
 WHERE id = :id
 AND status = 'PENDING'
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("id", decisionId)
         .bind("now", clock.now())
         .bind("userId", user.evakaUserId)

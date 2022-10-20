@@ -20,7 +20,13 @@ data class PlacementPlanDraft(
     val guardianHasRestrictedDetails: Boolean
 )
 
-data class PlacementDraftChild(val id: ChildId, val firstName: String, val lastName: String, val dob: LocalDate)
+data class PlacementDraftChild(
+    val id: ChildId,
+    val firstName: String,
+    val lastName: String,
+    val dob: LocalDate
+)
+
 data class PlacementDraftUnit(val id: DaycareId, val name: String)
 
 data class PlacementDraftPlacement(

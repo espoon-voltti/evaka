@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -28,13 +29,10 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 @RequestMapping("/citizen/income-statements")
-class IncomeStatementControllerCitizen(
-    private val accessControl: AccessControl
-) {
+class IncomeStatementControllerCitizen(private val accessControl: AccessControl) {
     @GetMapping
     fun getIncomeStatements(
         db: Database,
@@ -43,15 +41,29 @@ class IncomeStatementControllerCitizen(
         @RequestParam page: Int,
         @RequestParam pageSize: Int
     ): Paged<IncomeStatement> {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_INCOME_STATEMENTS, user.id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.READ_INCOME_STATEMENTS,
+            user.id
+        )
 
         return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.readIncomeStatementsForPerson(user.id, includeEmployeeContent = false, page = page, pageSize = pageSize)
+                dbc.read { tx ->
+                    tx.readIncomeStatementsForPerson(
+                        user.id,
+                        includeEmployeeContent = false,
+                        page = page,
+                        pageSize = pageSize
+                    )
+                }
             }
-        }.also {
-            Audit.IncomeStatementsOfPerson.log(targetId = user.id, args = mapOf("total" to it.total))
-        }
+            .also {
+                Audit.IncomeStatementsOfPerson.log(
+                    targetId = user.id,
+                    args = mapOf("total" to it.total)
+                )
+            }
     }
 
     @GetMapping("/child/{childId}")
@@ -63,15 +75,29 @@ class IncomeStatementControllerCitizen(
         @RequestParam page: Int,
         @RequestParam pageSize: Int
     ): Paged<IncomeStatement> {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_INCOME_STATEMENTS, childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Child.READ_INCOME_STATEMENTS,
+            childId
+        )
 
         return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.readIncomeStatementsForPerson(childId, includeEmployeeContent = false, page = page, pageSize = pageSize)
+                dbc.read { tx ->
+                    tx.readIncomeStatementsForPerson(
+                        childId,
+                        includeEmployeeContent = false,
+                        page = page,
+                        pageSize = pageSize
+                    )
+                }
             }
-        }.also {
-            Audit.IncomeStatementsOfChild.log(targetId = childId, args = mapOf("total" to it.total))
-        }
+            .also {
+                Audit.IncomeStatementsOfChild.log(
+                    targetId = childId,
+                    args = mapOf("total" to it.total)
+                )
+            }
     }
 
     @GetMapping("/child/start-dates/{childId}")
@@ -81,11 +107,20 @@ class IncomeStatementControllerCitizen(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<LocalDate> {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_INCOME_STATEMENTS, childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Child.READ_INCOME_STATEMENTS,
+            childId
+        )
 
-        return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(childId) } }.also {
-            Audit.IncomeStatementStartDatesOfChild.log(targetId = childId, args = mapOf("count" to it.size))
-        }
+        return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(childId) } }
+            .also {
+                Audit.IncomeStatementStartDatesOfChild.log(
+                    targetId = childId,
+                    args = mapOf("count" to it.size)
+                )
+            }
     }
 
     @GetMapping("/start-dates/")
@@ -94,10 +129,19 @@ class IncomeStatementControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): List<LocalDate> {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_INCOME_STATEMENTS, user.id)
-        return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(user.id) } }.also {
-            Audit.IncomeStatementStartDates.log(targetId = user.id, args = mapOf("count" to it.size))
-        }
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.READ_INCOME_STATEMENTS,
+            user.id
+        )
+        return db.connect { dbc -> dbc.read { it.readIncomeStatementStartDates(user.id) } }
+            .also {
+                Audit.IncomeStatementStartDates.log(
+                    targetId = user.id,
+                    args = mapOf("count" to it.size)
+                )
+            }
     }
 
     @GetMapping("/{incomeStatementId}")
@@ -107,16 +151,24 @@ class IncomeStatementControllerCitizen(
         clock: EvakaClock,
         @PathVariable incomeStatementId: IncomeStatementId
     ): IncomeStatement {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.IncomeStatement.READ, incomeStatementId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.IncomeStatement.READ,
+            incomeStatementId
+        )
 
         return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.readIncomeStatementForPerson(user.id, incomeStatementId, includeEmployeeContent = false)
-                    ?: throw NotFound("No such income statement")
+                dbc.read { tx ->
+                    tx.readIncomeStatementForPerson(
+                        user.id,
+                        incomeStatementId,
+                        includeEmployeeContent = false
+                    )
+                        ?: throw NotFound("No such income statement")
+                }
             }
-        }.also {
-            Audit.IncomeStatementReadOfPerson.log(targetId = incomeStatementId)
-        }
+            .also { Audit.IncomeStatementReadOfPerson.log(targetId = incomeStatementId) }
     }
 
     @GetMapping("/child/{childId}/{incomeStatementId}")
@@ -127,16 +179,24 @@ class IncomeStatementControllerCitizen(
         @PathVariable childId: ChildId,
         @PathVariable incomeStatementId: IncomeStatementId
     ): IncomeStatement {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.IncomeStatement.READ, incomeStatementId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.IncomeStatement.READ,
+            incomeStatementId
+        )
 
         return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.readIncomeStatementForPerson(PersonId(childId.raw), incomeStatementId, includeEmployeeContent = false)
-                    ?: throw NotFound("No such child income statement")
+                dbc.read { tx ->
+                    tx.readIncomeStatementForPerson(
+                        PersonId(childId.raw),
+                        incomeStatementId,
+                        includeEmployeeContent = false
+                    )
+                        ?: throw NotFound("No such child income statement")
+                }
             }
-        }.also {
-            Audit.IncomeStatementReadOfChild.log(targetId = incomeStatementId)
-        }
+            .also { Audit.IncomeStatementReadOfChild.log(targetId = incomeStatementId) }
     }
 
     @PostMapping
@@ -146,7 +206,12 @@ class IncomeStatementControllerCitizen(
         clock: EvakaClock,
         @RequestBody body: IncomeStatementBody
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.CREATE_INCOME_STATEMENT, user.id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.CREATE_INCOME_STATEMENT,
+            user.id
+        )
         val id = db.connect { createIncomeStatement(it, user.id, user.id, body) }
         Audit.IncomeStatementCreate.log(targetId = user.id, objectId = id)
     }
@@ -159,7 +224,12 @@ class IncomeStatementControllerCitizen(
         @PathVariable childId: ChildId,
         @RequestBody body: IncomeStatementBody
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_INCOME_STATEMENT, childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Child.CREATE_INCOME_STATEMENT,
+            childId
+        )
         val id = db.connect { createIncomeStatement(it, childId, user.id, body) }
         Audit.IncomeStatementCreateForChild.log(user.id, objectId = id)
     }
@@ -172,24 +242,33 @@ class IncomeStatementControllerCitizen(
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: IncomeStatementBody
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.IncomeStatement.UPDATE, incomeStatementId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.IncomeStatement.UPDATE,
+            incomeStatementId
+        )
 
         if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid income statement body")
         db.connect { dbc ->
             dbc.transaction { tx ->
-                verifyIncomeStatementModificationsAllowed(tx, user.id, incomeStatementId)
-                tx.updateIncomeStatement(incomeStatementId, body).also { success ->
-                    if (success) {
-                        tx.dissociateAllPersonsAttachments(user.id, incomeStatementId)
-                        when (body) {
-                            is IncomeStatementBody.Income ->
-                                tx.associateAttachments(user.id, incomeStatementId, body.attachmentIds)
-                            else ->
-                                Unit
+                    verifyIncomeStatementModificationsAllowed(tx, user.id, incomeStatementId)
+                    tx.updateIncomeStatement(incomeStatementId, body).also { success ->
+                        if (success) {
+                            tx.dissociateAllPersonsAttachments(user.id, incomeStatementId)
+                            when (body) {
+                                is IncomeStatementBody.Income ->
+                                    tx.associateAttachments(
+                                        user.id,
+                                        incomeStatementId,
+                                        body.attachmentIds
+                                    )
+                                else -> Unit
+                            }
                         }
                     }
                 }
-            }.let { success -> if (!success) throw NotFound("Income statement not found") }
+                .let { success -> if (!success) throw NotFound("Income statement not found") }
         }
         Audit.IncomeStatementUpdate.log(targetId = incomeStatementId)
     }
@@ -203,25 +282,39 @@ class IncomeStatementControllerCitizen(
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: IncomeStatementBody
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.IncomeStatement.UPDATE, incomeStatementId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.IncomeStatement.UPDATE,
+            incomeStatementId
+        )
 
-        if (!validateIncomeStatementBody(body)) throw BadRequest("Invalid child income statement body")
+        if (!validateIncomeStatementBody(body))
+            throw BadRequest("Invalid child income statement body")
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                verifyIncomeStatementModificationsAllowed(tx, PersonId(childId.raw), incomeStatementId)
-                tx.updateIncomeStatement(incomeStatementId, body).also { success ->
-                    if (success) {
-                        tx.dissociateAllPersonsAttachments(user.id, incomeStatementId)
-                        when (body) {
-                            is IncomeStatementBody.ChildIncome ->
-                                tx.associateAttachments(user.id, incomeStatementId, body.attachmentIds)
-                            else ->
-                                Unit
+                    verifyIncomeStatementModificationsAllowed(
+                        tx,
+                        PersonId(childId.raw),
+                        incomeStatementId
+                    )
+                    tx.updateIncomeStatement(incomeStatementId, body).also { success ->
+                        if (success) {
+                            tx.dissociateAllPersonsAttachments(user.id, incomeStatementId)
+                            when (body) {
+                                is IncomeStatementBody.ChildIncome ->
+                                    tx.associateAttachments(
+                                        user.id,
+                                        incomeStatementId,
+                                        body.attachmentIds
+                                    )
+                                else -> Unit
+                            }
                         }
                     }
                 }
-            }.let { success -> if (!success) throw NotFound("Income statement not found") }
+                .let { success -> if (!success) throw NotFound("Income statement not found") }
         }
         Audit.IncomeStatementUpdateForChild.log(targetId = incomeStatementId)
     }
@@ -263,12 +356,22 @@ class IncomeStatementControllerCitizen(
     }
 
     @GetMapping("/children")
-    fun getIncomeStatementChildren(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock): List<ChildBasicInfo> {
+    fun getIncomeStatementChildren(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock
+    ): List<ChildBasicInfo> {
         val personId = user.id
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_CHILDREN, personId)
-        return db.connect { dbc -> dbc.read { it.getIncomeStatementChildrenByGuardian(personId) } }.also {
-            Audit.CitizenChildrenRead.log(targetId = personId, args = mapOf("count" to it.size))
-        }
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.READ_CHILDREN,
+            personId
+        )
+        return db.connect { dbc -> dbc.read { it.getIncomeStatementChildrenByGuardian(personId) } }
+            .also {
+                Audit.CitizenChildrenRead.log(targetId = personId, args = mapOf("count" to it.size))
+            }
     }
 
     private fun verifyIncomeStatementModificationsAllowed(
@@ -276,8 +379,9 @@ class IncomeStatementControllerCitizen(
         personId: PersonId,
         id: IncomeStatementId
     ) {
-        val incomeStatement = tx.readIncomeStatementForPerson(personId, id, includeEmployeeContent = false)
-            ?: throw NotFound("Income statement not found")
+        val incomeStatement =
+            tx.readIncomeStatementForPerson(personId, id, includeEmployeeContent = false)
+                ?: throw NotFound("Income statement not found")
         if (incomeStatement.handled) {
             throw Forbidden("Handled income statement cannot be modified or removed")
         }

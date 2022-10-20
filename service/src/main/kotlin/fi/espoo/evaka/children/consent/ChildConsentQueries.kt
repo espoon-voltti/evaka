@@ -17,7 +17,7 @@ import java.time.LocalDate
 
 fun Database.Read.getChildConsentsByChild(childId: ChildId): List<ChildConsent> =
     this.createQuery(
-        """
+            """
 SELECT cc.id, cc.child_id, cc.type, cc.given, cc.given_at,
        (p.first_name || ' ' || p.last_name) given_by_guardian,
        (e.first_name || ' ' || e.last_name) given_by_employee
@@ -25,8 +25,9 @@ FROM child_consent cc
 LEFT JOIN person p ON p.id = cc.given_by_guardian
 LEFT JOIN employee e ON e.id = cc.given_by_employee
 WHERE child_id = :childId
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("childId", childId)
         .mapTo<ChildConsent>()
         .list()
@@ -36,7 +37,7 @@ fun Database.Read.getCitizenChildConsentsForGuardian(
     today: LocalDate
 ): Map<ChildId, List<CitizenChildConsent>> =
     this.createQuery(
-        """
+            """
 SELECT g.child_id, cc.type, cc.given
 FROM guardian g
 LEFT JOIN child_consent cc ON cc.child_id = g.child_id
@@ -45,8 +46,9 @@ WHERE g.guardian_id = :guardianId AND EXISTS(
     WHERE daterange(p.start_date, p.end_date, '[]') @> :today
       AND p.child_id = g.child_id
 )
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("guardianId", guardianId)
         .bind("today", today)
         .map { row -> Pair(row.mapColumn<ChildId>("child_id"), row.mapRow<CitizenChildConsent?>()) }
@@ -62,13 +64,14 @@ fun Database.Transaction.upsertChildConsentEmployee(
     givenAt: HelsinkiDateTime
 ) {
     this.createUpdate(
-        """
+            """
 INSERT INTO child_consent (child_id, type, given, given_by_employee, given_at)
 VALUES (:childId, :type, :given, :givenBy, :givenAt)
 ON CONFLICT (child_id, type)
 DO UPDATE SET given = :given, given_by_guardian = NULL, given_by_employee = :givenBy, given_at = :now
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("now", clock.now())
         .bind("childId", childId)
         .bind("type", type)
@@ -78,16 +81,14 @@ DO UPDATE SET given = :given, given_by_guardian = NULL, given_by_employee = :giv
         .updateExactlyOne()
 }
 
-fun Database.Transaction.deleteChildConsentEmployee(
-    childId: ChildId,
-    type: ChildConsentType
-) {
+fun Database.Transaction.deleteChildConsentEmployee(childId: ChildId, type: ChildConsentType) {
     this.createUpdate(
-        """
+            """
 DELETE FROM child_consent
 WHERE child_id = :childId AND type = :type
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("childId", childId)
         .bind("type", type)
         .updateExactlyOne()
@@ -101,13 +102,14 @@ fun Database.Transaction.insertChildConsentCitizen(
     givenBy: PersonId
 ): Boolean =
     this.createQuery(
-        """
+            """
 INSERT INTO child_consent (child_id, type, given, given_by_guardian, given_at)
 VALUES (:childId, :type, :given, :givenBy, :now)
 ON CONFLICT DO NOTHING
 RETURNING id
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("now", clock.now())
         .bind("childId", childId)
         .bind("type", type)
@@ -121,7 +123,7 @@ fun Database.Read.getCitizenConsentedChildConsentTypes(
     today: LocalDate
 ): Map<ChildId, List<ChildConsentType>> =
     this.createQuery(
-        """
+            """
 SELECT g.child_id, cc.type
 FROM guardian g
 LEFT JOIN child_consent cc ON cc.child_id = g.child_id
@@ -130,10 +132,13 @@ WHERE g.guardian_id = :guardianId AND EXISTS(
     WHERE daterange(p.start_date, p.end_date, '[]') @> :today
       AND p.child_id = g.child_id
 )
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("guardianId", guardianId)
         .bind("today", today)
-        .map { row -> Pair(row.mapColumn<ChildId>("child_id"), row.mapColumn<ChildConsentType?>("type")) }
+        .map { row ->
+            Pair(row.mapColumn<ChildId>("child_id"), row.mapColumn<ChildConsentType?>("type"))
+        }
         .groupBy({ it.first }, { it.second })
         .mapValues { it.value.filterNotNull() }

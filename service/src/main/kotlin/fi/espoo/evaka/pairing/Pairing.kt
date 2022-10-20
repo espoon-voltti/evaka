@@ -23,7 +23,10 @@ data class Pairing(
 )
 
 enum class PairingStatus {
-    WAITING_CHALLENGE, WAITING_RESPONSE, READY, PAIRED
+    WAITING_CHALLENGE,
+    WAITING_RESPONSE,
+    READY,
+    PAIRED
 }
 
 data class MobileDeviceDetails(
@@ -34,9 +37,6 @@ data class MobileDeviceDetails(
     val personalDevice: Boolean
 )
 
-data class MobileDevice(
-    val id: MobileDeviceId,
-    val name: String
-)
+data class MobileDevice(val id: MobileDeviceId, val name: String)
 
 data class MobileDeviceIdentity(val id: MobileDeviceId, val longTermToken: UUID)

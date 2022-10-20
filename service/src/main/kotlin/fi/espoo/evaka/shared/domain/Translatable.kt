@@ -6,5 +6,4 @@ package fi.espoo.evaka.shared.domain
 
 import org.jdbi.v3.json.Json
 
-@Json
-data class Translatable(val fi: String, val sv: String, val en: String)
+@Json data class Translatable(val fi: String, val sv: String, val en: String)

@@ -39,11 +39,11 @@ import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val testDate = LocalDate.of(2020, 3, 1)
@@ -53,7 +53,9 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     fun beforeEach() {
         db.transaction {
             it.insertTestCareArea(testArea)
-            it.insertTestDaycare(DevDaycare(id = testUnit.id, name = testUnit.name, areaId = testArea.id))
+            it.insertTestDaycare(
+                DevDaycare(id = testUnit.id, name = testUnit.name, areaId = testArea.id)
+            )
         }
     }
 
@@ -80,10 +82,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         db.transaction { tx ->
             tx.insertPerson(testAdult_1)
             tx.insertPerson(testChild_1)
-            tx.insertTestParentship(
-                childId = testChild_1.id,
-                headOfChild = testAdult_1.id
-            )
+            tx.insertTestParentship(childId = testChild_1.id, headOfChild = testAdult_1.id)
         }
 
         assertCleanedUpPeople(testDate, setOf(testAdult_1.id, testChild_1.id))
@@ -94,10 +93,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         db.transaction { tx ->
             tx.insertPerson(testAdult_1)
             tx.insertPerson(testAdult_2)
-            tx.insertTestPartnership(
-                adult1 = testAdult_1.id,
-                adult2 = testAdult_2.id
-            )
+            tx.insertTestPartnership(adult1 = testAdult_1.id, adult2 = testAdult_2.id)
         }
 
         assertCleanedUpPeople(testDate, setOf(testAdult_1.id, testAdult_2.id))
@@ -138,14 +134,8 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         db.transaction { tx ->
             tx.insertPerson(testAdult_1)
             tx.insertChild(testChild_1)
-            tx.insertTestParentship(
-                headOfChild = testAdult_1.id,
-                childId = testChild_1.id
-            )
-            tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testUnit.id
-            )
+            tx.insertTestParentship(headOfChild = testAdult_1.id, childId = testChild_1.id)
+            tx.insertTestPlacement(childId = testChild_1.id, unitId = testUnit.id)
         }
 
         assertCleanedUpPeople(testDate, setOf())
@@ -157,18 +147,9 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insertPerson(testAdult_1)
             tx.insertChild(testChild_1)
             tx.insertChild(testChild_2)
-            tx.insertTestParentship(
-                headOfChild = testAdult_1.id,
-                childId = testChild_1.id
-            )
-            tx.insertTestParentship(
-                headOfChild = testAdult_1.id,
-                childId = testChild_2.id
-            )
-            tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testUnit.id
-            )
+            tx.insertTestParentship(headOfChild = testAdult_1.id, childId = testChild_1.id)
+            tx.insertTestParentship(headOfChild = testAdult_1.id, childId = testChild_2.id)
+            tx.insertTestPlacement(childId = testChild_1.id, unitId = testUnit.id)
         }
 
         assertCleanedUpPeople(testDate, setOf())
@@ -181,22 +162,10 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insertPerson(testAdult_2)
             tx.insertChild(testChild_1)
             tx.insertChild(testChild_2)
-            tx.insertTestPartnership(
-                adult1 = testAdult_1.id,
-                adult2 = testAdult_2.id
-            )
-            tx.insertTestParentship(
-                headOfChild = testAdult_1.id,
-                childId = testChild_1.id
-            )
-            tx.insertTestParentship(
-                headOfChild = testAdult_1.id,
-                childId = testChild_2.id
-            )
-            tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testUnit.id
-            )
+            tx.insertTestPartnership(adult1 = testAdult_1.id, adult2 = testAdult_2.id)
+            tx.insertTestParentship(headOfChild = testAdult_1.id, childId = testChild_1.id)
+            tx.insertTestParentship(headOfChild = testAdult_1.id, childId = testChild_2.id)
+            tx.insertTestPlacement(childId = testChild_1.id, unitId = testUnit.id)
         }
 
         assertCleanedUpPeople(testDate, setOf())
@@ -209,22 +178,10 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
             tx.insertPerson(testAdult_2)
             tx.insertChild(testChild_1)
             tx.insertChild(testChild_2)
-            tx.insertTestPartnership(
-                adult1 = testAdult_1.id,
-                adult2 = testAdult_2.id
-            )
-            tx.insertTestParentship(
-                headOfChild = testAdult_1.id,
-                childId = testChild_1.id
-            )
-            tx.insertTestParentship(
-                headOfChild = testAdult_2.id,
-                childId = testChild_2.id
-            )
-            tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testUnit.id
-            )
+            tx.insertTestPartnership(adult1 = testAdult_1.id, adult2 = testAdult_2.id)
+            tx.insertTestParentship(headOfChild = testAdult_1.id, childId = testChild_1.id)
+            tx.insertTestParentship(headOfChild = testAdult_2.id, childId = testChild_2.id)
+            tx.insertTestPlacement(childId = testChild_1.id, unitId = testUnit.id)
         }
 
         assertCleanedUpPeople(testDate, setOf())
@@ -252,15 +209,25 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     fun `adult with received messages is cleaned up`() {
         db.transaction { tx ->
             val supervisorId = EmployeeId(UUID.randomUUID())
-            tx.insertTestEmployee(DevEmployee(id = supervisorId, firstName = "Firstname", lastName = "Supervisor"))
+            tx.insertTestEmployee(
+                DevEmployee(id = supervisorId, firstName = "Firstname", lastName = "Supervisor")
+            )
             val employeeAccount = tx.upsertEmployeeMessageAccount(supervisorId)
 
             tx.insertPerson(testAdult_1)
             val personAccount = tx.createPersonMessageAccount(testAdult_1.id)
 
             val contentId = tx.insertMessageContent("content", employeeAccount)
-            val threadId = tx.insertThread(MessageType.MESSAGE, "title", urgent = false, isCopy = false)
-            val messageId = tx.insertMessage(RealEvakaClock().now(), contentId, threadId, employeeAccount, listOf("recipient name"))
+            val threadId =
+                tx.insertThread(MessageType.MESSAGE, "title", urgent = false, isCopy = false)
+            val messageId =
+                tx.insertMessage(
+                    RealEvakaClock().now(),
+                    contentId,
+                    threadId,
+                    employeeAccount,
+                    listOf("recipient name")
+                )
             tx.insertRecipients(setOf(personAccount), messageId)
         }
 
@@ -271,15 +238,25 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
     fun `adult with sent messages is not cleaned up`() {
         db.transaction { tx ->
             val supervisorId = EmployeeId(UUID.randomUUID())
-            tx.insertTestEmployee(DevEmployee(id = supervisorId, firstName = "Firstname", lastName = "Supervisor"))
+            tx.insertTestEmployee(
+                DevEmployee(id = supervisorId, firstName = "Firstname", lastName = "Supervisor")
+            )
             val employeeAccount = tx.upsertEmployeeMessageAccount(supervisorId)
 
             tx.insertPerson(testAdult_1)
             val personAccount = tx.createPersonMessageAccount(testAdult_1.id)
 
             val contentId = tx.insertMessageContent("content", personAccount)
-            val threadId = tx.insertThread(MessageType.MESSAGE, "title", urgent = false, isCopy = false)
-            val messageId = tx.insertMessage(RealEvakaClock().now(), contentId, threadId, personAccount, listOf("employee name"))
+            val threadId =
+                tx.insertThread(MessageType.MESSAGE, "title", urgent = false, isCopy = false)
+            val messageId =
+                tx.insertMessage(
+                    RealEvakaClock().now(),
+                    contentId,
+                    threadId,
+                    personAccount,
+                    listOf("employee name")
+                )
             tx.insertRecipients(setOf(employeeAccount), messageId)
         }
 
@@ -292,20 +269,21 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         assertEquals(cleanedUpPeople, result)
     }
 
-    private fun Database.Transaction.insertPerson(person: DevPerson) = insertTestPerson(
-        DevPerson(
-            id = person.id,
-            dateOfBirth = person.dateOfBirth,
-            ssn = person.ssn,
-            firstName = person.firstName,
-            lastName = person.lastName,
-            streetAddress = person.streetAddress,
-            postalCode = person.postalCode,
-            postOffice = person.postOffice,
-            email = person.email,
-            restrictedDetailsEnabled = person.restrictedDetailsEnabled
+    private fun Database.Transaction.insertPerson(person: DevPerson) =
+        insertTestPerson(
+            DevPerson(
+                id = person.id,
+                dateOfBirth = person.dateOfBirth,
+                ssn = person.ssn,
+                firstName = person.firstName,
+                lastName = person.lastName,
+                streetAddress = person.streetAddress,
+                postalCode = person.postalCode,
+                postOffice = person.postOffice,
+                email = person.email,
+                restrictedDetailsEnabled = person.restrictedDetailsEnabled
+            )
         )
-    )
 
     private fun Database.Transaction.insertChild(person: DevPerson) {
         insertPerson(person)

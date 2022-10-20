@@ -19,29 +19,28 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun setUp() {
         val legacyDataSql = this.javaClass.getResource("/legacy_db_data.sql").readText()
-        db.transaction {
-            it.execute(legacyDataSql)
-        }
+        db.transaction { it.execute(legacyDataSql) }
     }
 
     @Test
-    fun `creating an empty person sets their date of birth to current date`() = db.transaction { tx ->
-        val now = HelsinkiDateTime.of(LocalDate.of(2019, 1, 1), LocalTime.of(12, 0, 1))
-        val identity: PersonDTO = tx.createEmptyPerson(MockEvakaClock(now))
-        assertEquals(identity.dateOfBirth, now.toLocalDate())
-    }
+    fun `creating an empty person sets their date of birth to current date`() =
+        db.transaction { tx ->
+            val now = HelsinkiDateTime.of(LocalDate.of(2019, 1, 1), LocalTime.of(12, 0, 1))
+            val identity: PersonDTO = tx.createEmptyPerson(MockEvakaClock(now))
+            assertEquals(identity.dateOfBirth, now.toLocalDate())
+        }
 
     @Test
     fun `createPersonFromVtj creates person with correct data`() {
@@ -79,19 +78,18 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val beforeUpdate = db.transaction { it.createPersonFromVtj(originalPerson) }
 
-        val updated = beforeUpdate.copy(
-            firstName = "dfhjcn",
-            lastName = "bvxdafs",
-            language = "sv",
-            nationalities = listOf("087"),
-
-            streetAddress = "Muutie 8",
-            postalCode = "00001",
-            postOffice = "Muula",
-
-            restrictedDetailsEnabled = false,
-            restrictedDetailsEndDate = null
-        )
+        val updated =
+            beforeUpdate.copy(
+                firstName = "dfhjcn",
+                lastName = "bvxdafs",
+                language = "sv",
+                nationalities = listOf("087"),
+                streetAddress = "Muutie 8",
+                postalCode = "00001",
+                postOffice = "Muula",
+                restrictedDetailsEnabled = false,
+                restrictedDetailsEndDate = null
+            )
 
         val actual = db.transaction { it.updatePersonFromVtj(updated) }
 
@@ -114,22 +112,34 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(updated.restrictedDetailsEndDate, actual.restrictedDetailsEndDate)
     }
 
-    private val adminUser = AuthenticatedUser.Employee(id = EmployeeId(UUID.randomUUID()), roles = setOf(UserRole.ADMIN))
+    private val adminUser =
+        AuthenticatedUser.Employee(
+            id = EmployeeId(UUID.randomUUID()),
+            roles = setOf(UserRole.ADMIN)
+        )
 
     @Test
     fun `person can be found by ssn`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.searchPeople(adminUser, "010199-8137", "last_name", "ASC", false) }
+        val persons =
+            db.read { it.searchPeople(adminUser, "010199-8137", "last_name", "ASC", false) }
         assertEquals(1, persons.size)
-        assertEquals(persons[0].socialSecurityNumber, (created.identity as? ExternalIdentifier.SSN)?.ssn)
+        assertEquals(
+            persons[0].socialSecurityNumber,
+            (created.identity as? ExternalIdentifier.SSN)?.ssn
+        )
     }
 
     @Test
     fun `person can be found by case-insensitive ssn`() {
         val created = db.transaction { createVtjPerson(it, "230601A329J") }
-        val persons = db.read { it.searchPeople(adminUser, "230601a329J", "last_name", "ASC", false) }
+        val persons =
+            db.read { it.searchPeople(adminUser, "230601a329J", "last_name", "ASC", false) }
         assertEquals(1, persons.size)
-        assertEquals(persons[0].socialSecurityNumber, (created.identity as? ExternalIdentifier.SSN)?.ssn)
+        assertEquals(
+            persons[0].socialSecurityNumber,
+            (created.identity as? ExternalIdentifier.SSN)?.ssn
+        )
     }
 
     @Test
@@ -166,7 +176,19 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `restricted search cannot find a child without acl access`() {
         db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.searchPeople(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.UNIT_SUPERVISOR)), "Matti", "last_name", "ASC", true) }
+        val persons =
+            db.read {
+                it.searchPeople(
+                    AuthenticatedUser.Employee(
+                        EmployeeId(UUID.randomUUID()),
+                        setOf(UserRole.UNIT_SUPERVISOR)
+                    ),
+                    "Matti",
+                    "last_name",
+                    "ASC",
+                    true
+                )
+            }
 
         assertEquals(0, persons.size)
     }
@@ -174,7 +196,8 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `person with multiple first names can be found`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.searchPeople(adminUser, "Matti Jari-Ville", "last_name", "ASC", false) }
+        val persons =
+            db.read { it.searchPeople(adminUser, "Matti Jari-Ville", "last_name", "ASC", false) }
 
         assertEquals(persons[0].firstName, created.firstName)
     }
@@ -182,7 +205,8 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `person can be found with the full address`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.searchPeople(adminUser, "Jokutie 66", "last_name", "ASC", false) }
+        val persons =
+            db.read { it.searchPeople(adminUser, "Jokutie 66", "last_name", "ASC", false) }
 
         assertEquals(persons[0].streetAddress, created.streetAddress)
     }
@@ -238,10 +262,14 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `PostgreSQL text search operator characters are ignored in search terms`() {
         val created = db.transaction { createVtjPerson(it) }
-        val persons = db.read { it.searchPeople(adminUser, "'&Jokut!|&", "last_name", "ASC", false) }
+        val persons =
+            db.read { it.searchPeople(adminUser, "'&Jokut!|&", "last_name", "ASC", false) }
 
         assertEquals(1, persons.size)
-        assertEquals(persons[0].socialSecurityNumber, (created.identity as? ExternalIdentifier.SSN)?.ssn)
+        assertEquals(
+            persons[0].socialSecurityNumber,
+            (created.identity as? ExternalIdentifier.SSN)?.ssn
+        )
     }
 
     @Test
@@ -250,7 +278,10 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val persons = db.read { it.searchPeople(adminUser, "<Jokut>", "last_name", "ASC", false) }
 
         assertEquals(1, persons.size)
-        assertEquals(persons[0].socialSecurityNumber, (created.identity as? ExternalIdentifier.SSN)?.ssn)
+        assertEquals(
+            persons[0].socialSecurityNumber,
+            (created.identity as? ExternalIdentifier.SSN)?.ssn
+        )
     }
 
     @Test
@@ -259,10 +290,16 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val persons = db.read { it.searchPeople(adminUser, "'O'Brien", "last_name", "ASC", false) }
 
         assertEquals(1, persons.size)
-        assertEquals(persons[0].socialSecurityNumber, (created.identity as? ExternalIdentifier.SSN)?.ssn)
+        assertEquals(
+            persons[0].socialSecurityNumber,
+            (created.identity as? ExternalIdentifier.SSN)?.ssn
+        )
     }
 
-    private fun createVtjPerson(tx: Database.Transaction, validSSN: String = "010199-8137"): PersonDTO {
+    private fun createVtjPerson(
+        tx: Database.Transaction,
+        validSSN: String = "010199-8137"
+    ): PersonDTO {
         val inputPerson = testPerson(validSSN)
         return tx.createPersonFromVtj(inputPerson)
     }
@@ -281,12 +318,10 @@ class PersonQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             backupPhone = "",
             language = "fi",
             nationalities = listOf("248", "060"),
-
             streetAddress = "Jokutie 66",
             postalCode = "00000",
             postOffice = "Jokula",
             residenceCode = "",
-
             restrictedDetailsEnabled = true,
             restrictedDetailsEndDate = LocalDate.now().plusYears(1)
         )

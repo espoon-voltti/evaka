@@ -12,11 +12,11 @@ import fi.espoo.evaka.vtjclient.dto.RestrictedDetails
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.soap.VTJHenkiloVastaussanoma
 import fi.espoo.evaka.vtjclient.soap.VTJHenkiloVastaussanoma.Henkilo
-import mu.KotlinLogging
-import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
+import mu.KotlinLogging
+import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {}
 
@@ -25,44 +25,65 @@ class VtjHenkiloMapper {
     fun mapToVtjPerson(henkilo: Henkilo) = henkilo.mapToVtjPerson()
 }
 
-// As per https://stackoverflow.com/questions/1650249/how-to-make-generated-classes-contain-javadoc-from-xml-schema-documentation
+// As per
+// https://stackoverflow.com/questions/1650249/how-to-make-generated-classes-contain-javadoc-from-xml-schema-documentation
 // it might be possible to add documentation from schema into generated code
 
 fun rangeIncludesNow(from: String?, to: String?): Boolean {
     val validFrom = parseLocalDateFromString(from)
     val validTo = parseLocalDateFromString(to)
 
-    return LocalDate.now(europeHelsinki).let { validFrom != null && it >= validFrom && (validTo == null || it <= validTo) }
+    return LocalDate.now(europeHelsinki).let {
+        validFrom != null && it >= validFrom && (validTo == null || it <= validTo)
+    }
 }
 
 fun notAllBlanks(vararg s: String?): Boolean = listOf(*s).any { !it.isNullOrBlank() }
 
-fun parseMailAddress(mailAddress: VTJHenkiloVastaussanoma.Henkilo.KotimainenPostiosoite): PersonAddress? =
+fun parseMailAddress(
+    mailAddress: VTJHenkiloVastaussanoma.Henkilo.KotimainenPostiosoite
+): PersonAddress? =
     with(mailAddress) {
         val isValid =
-            rangeIncludesNow(postiosoiteAlkupvm, postiosoiteLoppupvm) && notAllBlanks(
-                postiosoiteS,
-                postinumero,
-                postitoimipaikkaS,
-                postiosoiteR,
-                postitoimipaikkaR
-            )
+            rangeIncludesNow(postiosoiteAlkupvm, postiosoiteLoppupvm) &&
+                notAllBlanks(
+                    postiosoiteS,
+                    postinumero,
+                    postitoimipaikkaS,
+                    postiosoiteR,
+                    postitoimipaikkaR
+                )
 
         if (!isValid) return null
 
-        PersonAddress(
-            postiosoiteS,
-            postinumero,
-            postitoimipaikkaS,
-            postiosoiteR,
-            postitoimipaikkaR
-        )
+        PersonAddress(postiosoiteS, postinumero, postitoimipaikkaS, postiosoiteR, postitoimipaikkaR)
     }
 
-fun parseTemporaryAddress(temporaryAddress: VTJHenkiloVastaussanoma.Henkilo.TilapainenKotimainenLahiosoite): PersonAddress? =
+fun parseTemporaryAddress(
+    temporaryAddress: VTJHenkiloVastaussanoma.Henkilo.TilapainenKotimainenLahiosoite
+): PersonAddress? =
     with(temporaryAddress) {
         val isValid =
-            rangeIncludesNow(asuminenAlkupvm, asuminenLoppupvm) && notAllBlanks(
+            rangeIncludesNow(asuminenAlkupvm, asuminenLoppupvm) &&
+                notAllBlanks(
+                    lahiosoiteS,
+                    postinumero,
+                    postitoimipaikkaS,
+                    lahiosoiteR,
+                    postitoimipaikkaR
+                )
+
+        if (!isValid) return null
+
+        PersonAddress(lahiosoiteS, postinumero, postitoimipaikkaS, lahiosoiteR, postitoimipaikkaR)
+    }
+
+fun parseRegularAddress(
+    regularAddress: VTJHenkiloVastaussanoma.Henkilo.VakinainenKotimainenLahiosoite
+): PersonAddress? =
+    with(regularAddress) {
+        val isValid =
+            notAllBlanks(
                 lahiosoiteS,
                 postinumero,
                 postitoimipaikkaS,
@@ -72,48 +93,28 @@ fun parseTemporaryAddress(temporaryAddress: VTJHenkiloVastaussanoma.Henkilo.Tila
 
         if (!isValid) return null
 
-        PersonAddress(
-            lahiosoiteS,
-            postinumero,
-            postitoimipaikkaS,
-            lahiosoiteR,
-            postitoimipaikkaR
-        )
-    }
-
-fun parseRegularAddress(regularAddress: VTJHenkiloVastaussanoma.Henkilo.VakinainenKotimainenLahiosoite): PersonAddress? =
-    with(regularAddress) {
-        val isValid = notAllBlanks(
-            lahiosoiteS,
-            postinumero,
-            postitoimipaikkaS,
-            lahiosoiteR,
-            postitoimipaikkaR
-        )
-
-        if (!isValid) return null
-
-        PersonAddress(
-            lahiosoiteS,
-            postinumero,
-            postitoimipaikkaS,
-            lahiosoiteR,
-            postitoimipaikkaR
-        )
+        PersonAddress(lahiosoiteS, postinumero, postitoimipaikkaS, lahiosoiteR, postitoimipaikkaR)
     }
 
 fun parseAddress(
     mailAddresses: List<Henkilo.KotimainenPostiosoite>,
     temporaryAddresses: List<Henkilo.TilapainenKotimainenLahiosoite>,
     regularAddress: Henkilo.VakinainenKotimainenLahiosoite
-) = listOfNotNull(
-    mailAddresses.mapNotNull { parseMailAddress(it) }.firstOrNull(),
-    temporaryAddresses.mapNotNull { parseTemporaryAddress(it) }.firstOrNull(),
-    parseRegularAddress(regularAddress)
-).firstOrNull()
+) =
+    listOfNotNull(
+            mailAddresses.mapNotNull { parseMailAddress(it) }.firstOrNull(),
+            temporaryAddresses.mapNotNull { parseTemporaryAddress(it) }.firstOrNull(),
+            parseRegularAddress(regularAddress)
+        )
+        .firstOrNull()
 
 fun Henkilo.mapToVtjPerson(): VtjPerson {
-    val address = parseAddress(kotimainenPostiosoite, tilapainenKotimainenLahiosoite, vakinainenKotimainenLahiosoite)
+    val address =
+        parseAddress(
+            kotimainenPostiosoite,
+            tilapainenKotimainenLahiosoite,
+            vakinainenKotimainenLahiosoite
+        )
 
     return VtjPerson(
         firstNames = nykyisetEtunimet.etunimet,
@@ -130,26 +131,28 @@ fun Henkilo.mapToVtjPerson(): VtjPerson {
     )
 }
 
-fun Henkilo.Huollettava.mapToPerson() = VtjPerson(
-    firstNames = nykyisetEtunimet.etunimet,
-    lastName = nykyinenSukunimi.sukunimi,
-    socialSecurityNumber = henkilotunnus,
-    restrictedDetails = null
-)
+fun Henkilo.Huollettava.mapToPerson() =
+    VtjPerson(
+        firstNames = nykyisetEtunimet.etunimet,
+        lastName = nykyinenSukunimi.sukunimi,
+        socialSecurityNumber = henkilotunnus,
+        restrictedDetails = null
+    )
 
-fun Henkilo.Huoltaja.mapToPerson() = VtjPerson(
-    firstNames = nykyisetEtunimet.etunimet,
-    lastName = nykyinenSukunimi.sukunimi,
-    socialSecurityNumber = henkilotunnus,
-    restrictedDetails = null
-)
+fun Henkilo.Huoltaja.mapToPerson() =
+    VtjPerson(
+        firstNames = nykyisetEtunimet.etunimet,
+        lastName = nykyinenSukunimi.sukunimi,
+        socialSecurityNumber = henkilotunnus,
+        restrictedDetails = null
+    )
 
 /*
-    kansalaisuuskoodi3: "ISO 3166-1-koodiston mukainen kolminumeroinen valtionimeen liittyva tunnus.
-                        Muoto 3 numeroa tai voi olla tyhja."
+   kansalaisuuskoodi3: "ISO 3166-1-koodiston mukainen kolminumeroinen valtionimeen liittyva tunnus.
+                       Muoto 3 numeroa tai voi olla tyhja."
 
-    kansalaisuusS:       "Valtion nimi selvakielisena (lyhyt muoto) 0-100 merkkia."
- */
+   kansalaisuusS:       "Valtion nimi selvakielisena (lyhyt muoto) 0-100 merkkia."
+*/
 fun Henkilo.mapNationalities() =
     kansalaisuus
         .filter { it.kansalaisuuskoodi3.isNotBlank() && it.kansalaisuusS.isNotBlank() }
@@ -162,12 +165,12 @@ fun Henkilo.mapGuardians() =
     huoltaja.filter { !it.henkilotunnus.isNullOrEmpty() }.map { it.mapToPerson() }
 
 /*
-    kieliS:     "Henkilon kielen nimi. Muoto 0-30 merkkia."
+   kieliS:     "Henkilon kielen nimi. Muoto 0-30 merkkia."
 
-    kielikoodi: "Aidinkielen osalta ISO 639-1:n mukainen kielikoodi, mahdolliset arvot: tyhja, pieni kirjain a-z
-                2 kertaa, 98=tieto selvakielisena, 99=tuntematon.
-                Asiointikielen osalta mahdolliset arvot: fi (suomi) ja sv (ruotsi)."
- */
+   kielikoodi: "Aidinkielen osalta ISO 639-1:n mukainen kielikoodi, mahdolliset arvot: tyhja, pieni kirjain a-z
+               2 kertaa, 98=tieto selvakielisena, 99=tuntematon.
+               Asiointikielen osalta mahdolliset arvot: fi (suomi) ja sv (ruotsi)."
+*/
 fun Henkilo.mapNativeLanguage(): NativeLanguage =
     aidinkieli.let { NativeLanguage(languageName = it.kieliS ?: "", code = it.kielikoodi ?: "") }
 

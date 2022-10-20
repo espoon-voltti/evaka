@@ -12,24 +12,27 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.jdbi.v3.json.Json
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 class DuplicatePeopleReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/duplicate-people")
-    fun getDuplicatePeopleReport(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<DuplicatePeopleReportRow> {
+    fun getDuplicatePeopleReport(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock
+    ): List<DuplicatePeopleReportRow> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_DUPLICATE_PEOPLE_REPORT)
         return db.connect { dbc ->
-            dbc.read {
-                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.getDuplicatePeople()
+                dbc.read {
+                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    it.getDuplicatePeople()
+                }
             }
-        }.also {
-            Audit.DuplicatePeopleReportRead.log(args = mapOf("count" to it.size))
-        }
+            .also { Audit.DuplicatePeopleReportRead.log(args = mapOf("count" to it.size)) }
     }
 }
 
@@ -107,16 +110,13 @@ private fun Database.Read.getDuplicatePeople(): List<DuplicatePeopleReportRow> {
         FROM duplicate_ids dups
         JOIN person p ON p.id = dups.id
             ORDER BY key, social_security_number, p.id;
-        """.trimIndent()
+        """
+            .trimIndent()
 
     return createQuery(sql).mapTo<DuplicatePeopleReportRow>().toList()
 }
 
-data class ReferenceCount(
-    val table: String,
-    val column: String,
-    val count: Int
-)
+data class ReferenceCount(val table: String, val column: String, val count: Int)
 
 data class DuplicatePeopleReportRow(
     val groupIndex: Int,
@@ -127,7 +127,5 @@ data class DuplicatePeopleReportRow(
     val socialSecurityNumber: String?,
     val dateOfBirth: LocalDate,
     val streetAddress: String?,
-
-    @Json
-    val referenceCounts: List<ReferenceCount>
+    @Json val referenceCounts: List<ReferenceCount>
 )

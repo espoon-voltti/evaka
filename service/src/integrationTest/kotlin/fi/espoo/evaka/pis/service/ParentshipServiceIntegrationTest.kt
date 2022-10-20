@@ -11,14 +11,13 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.RealEvakaClock
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class ParentshipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired
-    lateinit var parentshipService: ParentshipService
+    @Autowired lateinit var parentshipService: ParentshipService
 
     @Test
     fun `fetch child with two heads`() {
@@ -31,18 +30,35 @@ class ParentshipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         val endDate1 = startDate1.plusDays(50)
 
         db.transaction { tx ->
-            parentshipService.createParentship(tx, RealEvakaClock(), child.id, parent1.id, startDate1, endDate1)
+            parentshipService.createParentship(
+                tx,
+                RealEvakaClock(),
+                child.id,
+                parent1.id,
+                startDate1,
+                endDate1
+            )
 
             val startDate2 = endDate1.plusDays(1)
             val endDate2 = startDate2.plusDays(50)
 
-            parentshipService.createParentship(tx, RealEvakaClock(), child.id, parent2.id, startDate2, endDate2)
+            parentshipService.createParentship(
+                tx,
+                RealEvakaClock(),
+                child.id,
+                parent2.id,
+                startDate2,
+                endDate2
+            )
 
             val headsByChild = tx.getParentships(headOfChildId = null, childId = child.id)
 
             assertEquals(2, headsByChild.size)
 
-            val childByHeads = headsByChild.map { tx.getParentships(headOfChildId = it.headOfChildId, childId = null) }
+            val childByHeads =
+                headsByChild.map {
+                    tx.getParentships(headOfChildId = it.headOfChildId, childId = null)
+                }
 
             assertEquals(2, childByHeads.size)
         }
@@ -50,16 +66,17 @@ class ParentshipServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
         return db.transaction {
-            val id = it.insertTestPerson(
-                DevPerson(
-                    ssn = ssn,
-                    dateOfBirth = getDobFromSsn(ssn),
-                    firstName = firstName,
-                    lastName = "Meikäläinen",
-                    email = "",
-                    language = "fi"
+            val id =
+                it.insertTestPerson(
+                    DevPerson(
+                        ssn = ssn,
+                        dateOfBirth = getDobFromSsn(ssn),
+                        firstName = firstName,
+                        lastName = "Meikäläinen",
+                        email = "",
+                        language = "fi"
+                    )
                 )
-            )
             it.getPersonById(id)!!
         }
     }

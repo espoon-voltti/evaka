@@ -14,9 +14,9 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.NotFound
+import java.time.LocalDate
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
 import org.springframework.stereotype.Service
-import java.time.LocalDate
 
 @Service
 class PartnershipService {
@@ -40,8 +40,9 @@ class PartnershipService {
         startDate: LocalDate,
         endDate: LocalDate?
     ): Partnership {
-        val partnership = tx.getPartnership(partnershipId)
-            ?: throw NotFound("No partnership found with id $partnershipId")
+        val partnership =
+            tx.getPartnership(partnershipId)
+                ?: throw NotFound("No partnership found with id $partnershipId")
         try {
             val success = tx.updatePartnershipDuration(partnershipId, startDate, endDate)
             if (!success) throw NotFound("No partnership found with id $partnershipId")
@@ -63,9 +64,7 @@ class PartnershipService {
     }
 
     fun deletePartnership(tx: Database.Transaction, partnershipId: PartnershipId): Partnership? {
-        return tx.getPartnership(partnershipId)?.also {
-            tx.deletePartnership(partnershipId)
-        }
+        return tx.getPartnership(partnershipId)?.also { tx.deletePartnership(partnershipId) }
     }
 }
 

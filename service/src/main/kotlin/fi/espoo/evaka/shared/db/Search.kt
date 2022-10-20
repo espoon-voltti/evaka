@@ -41,35 +41,51 @@ fun freeTextSearchQuery(tables: List<String>, searchText: String): DBQuery {
             null
         }
 
-    val wholeQuery = listOfNotNull("true", freeTextQuery, ssnQuery, dateQuery)
-        .joinToString(" AND ")
+    val wholeQuery = listOfNotNull("true", freeTextQuery, ssnQuery, dateQuery).joinToString(" AND ")
 
-    val allParams = (
-        ssnParams.mapIndexed { index, param -> Binding.of(ssnParamName(index), param) } +
-            dateParams.mapIndexed { index, param -> Binding.of(dateParamName(index), param) } +
-            (Binding.of(freeTextParamName, freeTextParamsToTsQuery(freeTextString))).takeIf { freeTextString.isNotBlank() }
-        ).filterNotNull()
+    val allParams =
+        (ssnParams.mapIndexed { index, param -> Binding.of(ssnParamName(index), param) } +
+                dateParams.mapIndexed { index, param -> Binding.of(dateParamName(index), param) } +
+                (Binding.of(freeTextParamName, freeTextParamsToTsQuery(freeTextString))).takeIf {
+                    freeTextString.isNotBlank()
+                })
+            .filterNotNull()
 
     return DBQuery(wholeQuery, allParams)
 }
 
-fun freeTextSearchQueryForColumns(tables: List<String>, columns: List<String>, searchText: String): DBQuery {
-    val query = listOfNotNull(
-        "true",
-        freeTextQuery(tables, freeTextParamName, columns).takeIf { searchText.isNotBlank() }
-    )
-        .joinToString(" AND ")
+fun freeTextSearchQueryForColumns(
+    tables: List<String>,
+    columns: List<String>,
+    searchText: String
+): DBQuery {
+    val query =
+        listOfNotNull(
+                "true",
+                freeTextQuery(tables, freeTextParamName, columns).takeIf { searchText.isNotBlank() }
+            )
+            .joinToString(" AND ")
     val params =
-        listOfNotNull((Binding.of(freeTextParamName, freeTextParamsToTsQuery(searchText))).takeIf { searchText.isNotBlank() })
+        listOfNotNull(
+            (Binding.of(freeTextParamName, freeTextParamsToTsQuery(searchText))).takeIf {
+                searchText.isNotBlank()
+            }
+        )
     return DBQuery(query, params)
 }
 
-fun disjointNumberQuery(table: String, column: String, params: Collection<String>): Pair<String, List<Binding<String>>> {
+fun disjointNumberQuery(
+    table: String,
+    column: String,
+    params: Collection<String>
+): Pair<String, List<Binding<String>>> {
     val numberParamName = { index: Int -> "${table}_${column}_$index" }
-    val numberParams = params.mapIndexed { index, param -> Binding.of(numberParamName(index), param) }
-    val numberParamQuery = params.mapIndexed { index, _ ->
-        "$table.$column::text = :${numberParamName(index)}"
-    }.joinToString(" OR ", "(", ")")
+    val numberParams =
+        params.mapIndexed { index, param -> Binding.of(numberParamName(index), param) }
+    val numberParamQuery =
+        params
+            .mapIndexed { index, _ -> "$table.$column::text = :${numberParamName(index)}" }
+            .joinToString(" OR ", "(", ")")
 
     return numberParamQuery to numberParams
 }
@@ -77,11 +93,16 @@ fun disjointNumberQuery(table: String, column: String, params: Collection<String
 private val freeTextSearchColumns =
     listOf("first_name", "last_name", "street_address", "postal_code")
 
-private fun freeTextQuery(tables: List<String>, param: String, columns: List<String> = freeTextSearchColumns): String {
-    val tsVector = tables
-        .flatMap { table -> columns.map { column -> "$table.$column" } }
-        .map { column -> "to_tsvector('simple', coalesce(unaccent($column), ''))" }
-        .joinToString("\n|| ", "(", ")")
+private fun freeTextQuery(
+    tables: List<String>,
+    param: String,
+    columns: List<String> = freeTextSearchColumns
+): String {
+    val tsVector =
+        tables
+            .flatMap { table -> columns.map { column -> "$table.$column" } }
+            .map { column -> "to_tsvector('simple', coalesce(unaccent($column), ''))" }
+            .joinToString("\n|| ", "(", ")")
 
     val tsQuery = "to_tsquery('simple', :$param)"
 
@@ -89,40 +110,52 @@ private fun freeTextQuery(tables: List<String>, param: String, columns: List<Str
 }
 
 private fun freeTextComputedColumnQuery(tables: List<String>, param: String): String {
-    return "(" + tables.joinToString(" OR ") { table -> "$table.freetext_vec @@ to_tsquery('simple', :$param)" } + ")"
+    return "(" +
+        tables.joinToString(" OR ") { table ->
+            "$table.freetext_vec @@ to_tsquery('simple', :$param)"
+        } +
+        ")"
 }
 
 private fun findSsnParams(str: String) = splitSearchText(str).filter(SSN_PATTERN.toRegex()::matches)
+
 private val removeSsnParams: (String) -> String = { it.replace(SSN_PATTERN.toRegex(), "") }
 
 private fun ssnQuery(tablePrefixes: List<String>, params: Collection<String>): String {
     return params
         .mapIndexed { index, _ ->
             tablePrefixes
-                .map { table -> "lower($table.social_security_number) = lower(:${ssnParamName(index)})" }
+                .map { table ->
+                    "lower($table.social_security_number) = lower(:${ssnParamName(index)})"
+                }
                 .joinToString(" OR ", "(", ")")
         }
         .joinToString(" AND ", "(", ")")
 }
 
 private val dateRegex = "^\\d{6}$".toRegex()
+
 private fun findDateParams(str: String) = splitSearchText(str).filter(dateRegex::matches)
+
 private val removeDateParams: (String) -> String = { it.replace(dateRegex, "") }
 
 private fun dateQuery(tables: List<String>, params: Collection<String>): String {
     return params
         .mapIndexed { index, _ ->
             tables
-                .map { table -> "to_char($table.date_of_birth, 'DDMMYY') = :${dateParamName(index)}" }
+                .map { table ->
+                    "to_char($table.date_of_birth, 'DDMMYY') = :${dateParamName(index)}"
+                }
                 .joinToString(" OR ", "(", ")")
         }
         .joinToString(" AND ", "(", ")")
 }
 
-fun freeTextParamsToTsQuery(searchText: String): String = searchText
-    .let(stripAccent)
-    .let(stripNonAlphanumeric)
-    .let(splitSearchText)
-    .filter { it.isNotBlank() }
-    .map { param -> "$param:*" }
-    .joinToString(" & ")
+fun freeTextParamsToTsQuery(searchText: String): String =
+    searchText
+        .let(stripAccent)
+        .let(stripNonAlphanumeric)
+        .let(splitSearchText)
+        .filter { it.isNotBlank() }
+        .map { param -> "$param:*" }
+        .joinToString(" & ")

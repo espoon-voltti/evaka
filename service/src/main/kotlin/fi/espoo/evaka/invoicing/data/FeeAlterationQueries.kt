@@ -48,24 +48,25 @@ fun Database.Transaction.upsertFeeAlteration(clock: EvakaClock, feeAlteration: F
                 updated_at = :now
         """
 
-    val update = createUpdate(sql)
-        .bind("now", clock.now())
-        .bind("id", feeAlteration.id)
-        .bind("person_id", feeAlteration.personId)
-        .bind("type", feeAlteration.type.toString())
-        .bind("amount", feeAlteration.amount)
-        .bind("is_absolute", feeAlteration.isAbsolute)
-        .bind("valid_from", feeAlteration.validFrom)
-        .bind("valid_to", feeAlteration.validTo)
-        .bind("notes", feeAlteration.notes)
-        .bind("updated_by", feeAlteration.updatedBy)
+    val update =
+        createUpdate(sql)
+            .bind("now", clock.now())
+            .bind("id", feeAlteration.id)
+            .bind("person_id", feeAlteration.personId)
+            .bind("type", feeAlteration.type.toString())
+            .bind("amount", feeAlteration.amount)
+            .bind("is_absolute", feeAlteration.isAbsolute)
+            .bind("valid_from", feeAlteration.validFrom)
+            .bind("valid_to", feeAlteration.validTo)
+            .bind("notes", feeAlteration.notes)
+            .bind("updated_by", feeAlteration.updatedBy)
 
     handlingExceptions { update.execute() }
 }
 
 fun Database.Read.getFeeAlteration(id: FeeAlterationId): FeeAlteration? {
     return createQuery(
-        """
+            """
 SELECT
     id,
     person_id,
@@ -79,8 +80,9 @@ SELECT
     updated_by
 FROM fee_alteration
 WHERE id = :id
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("id", id)
         .mapTo<FeeAlteration>()
         .firstOrNull()
@@ -88,7 +90,7 @@ WHERE id = :id
 
 fun Database.Read.getFeeAlterationsForPerson(personId: PersonId): List<FeeAlteration> {
     return createQuery(
-        """
+            """
 SELECT
     id,
     person_id,
@@ -103,18 +105,22 @@ SELECT
 FROM fee_alteration
 WHERE person_id = :personId
 ORDER BY valid_from DESC, valid_to DESC
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("personId", personId)
         .mapTo<FeeAlteration>()
         .toList()
 }
 
-fun Database.Read.getFeeAlterationsFrom(personIds: List<ChildId>, from: LocalDate): List<FeeAlteration> {
+fun Database.Read.getFeeAlterationsFrom(
+    personIds: List<ChildId>,
+    from: LocalDate
+): List<FeeAlteration> {
     if (personIds.isEmpty()) return emptyList()
 
     return createQuery(
-        """
+            """
 SELECT
     id,
     person_id,
@@ -130,8 +136,9 @@ FROM fee_alteration
 WHERE
     person_id = ANY(:personIds)
     AND (valid_to IS NULL OR valid_to >= :from)
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("personIds", personIds)
         .bind("from", from)
         .mapTo<FeeAlteration>()
@@ -139,8 +146,7 @@ WHERE
 }
 
 fun Database.Transaction.deleteFeeAlteration(id: FeeAlterationId) {
-    val update = createUpdate("DELETE FROM fee_alteration WHERE id = :id")
-        .bind("id", id)
+    val update = createUpdate("DELETE FROM fee_alteration WHERE id = :id").bind("id", id)
 
     handlingExceptions { update.execute() }
 }

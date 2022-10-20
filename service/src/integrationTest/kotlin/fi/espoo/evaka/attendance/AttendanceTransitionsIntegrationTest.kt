@@ -27,8 +27,6 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -38,6 +36,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val mobileUser = AuthenticatedUser.MobileDevice(MobileDeviceId(UUID.randomUUID()))
@@ -51,7 +51,9 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     fun beforeEach() {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
-            tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName))
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName)
+            )
             tx.createMobileDeviceToUnit(mobileUser.id, testDaycare.id)
         }
     }
@@ -95,7 +97,11 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     @Test
     fun `post return to coming - happy case when absent`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
-        givenChildAbsent(AbsenceType.UNKNOWN_ABSENCE, AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE)
+        givenChildAbsent(
+            AbsenceType.UNKNOWN_ABSENCE,
+            AbsenceCategory.BILLABLE,
+            AbsenceCategory.NONBILLABLE
+        )
 
         val child = returnToComingAssertOkOneChild()
 
@@ -250,7 +256,10 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
-        assertEquals(departed, child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0))
+        assertEquals(
+            departed,
+            child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0)
+        )
         assertTrue(child.absences.isEmpty())
     }
 
@@ -265,7 +274,10 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
-        assertEquals(departed, child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0))
+        assertEquals(
+            departed,
+            child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0)
+        )
         assertContentEquals(listOf(AbsenceCategory.BILLABLE), child.absences.map { it.category })
     }
 
@@ -280,7 +292,10 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
-        assertEquals(departed, child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0))
+        assertEquals(
+            departed,
+            child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0)
+        )
         assertContentEquals(listOf(AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
     }
 
@@ -295,8 +310,14 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendance)
-        assertEquals(departed, child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0))
-        assertEquals(setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE), child.absences.map { it.category }.toSet())
+        assertEquals(
+            departed,
+            child.attendance?.departed?.toLocalTime()?.withSecond(0)?.withNano(0)
+        )
+        assertEquals(
+            setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE),
+            child.absences.map { it.category }.toSet()
+        )
     }
 
     @Test
@@ -361,7 +382,10 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         val child = markFullDayAbsenceAssertOkOneChild(AbsenceType.SICKLEAVE)
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
-        assertEquals(setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE), child.absences.map { it.category }.toSet())
+        assertEquals(
+            setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE),
+            child.absences.map { it.category }.toSet()
+        )
     }
 
     @Test
@@ -383,7 +407,10 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         val child = markFullDayAbsenceAssertOkOneChild(AbsenceType.SICKLEAVE)
 
         assertEquals(AttendanceStatus.ABSENT, child.status)
-        assertEquals(setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE), child.absences.map { it.category }.toSet())
+        assertEquals(
+            setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE),
+            child.absences.map { it.category }.toSet()
+        )
     }
 
     @Test
@@ -464,7 +491,10 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertEquals(AttendanceStatus.COMING, child.status)
     }
 
-    private fun givenChildPresent(arrived: LocalTime = roundedTimeNow().minusHours(1), date: LocalDate = LocalDate.now()) {
+    private fun givenChildPresent(
+        arrived: LocalTime = roundedTimeNow().minusHours(1),
+        date: LocalDate = LocalDate.now()
+    ) {
         db.transaction {
             it.insertTestChildAttendance(
                 childId = testChild_1.id,
@@ -496,15 +526,22 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     private fun givenChildAbsent(absenceType: AbsenceType, vararg categories: AbsenceCategory) {
         categories.forEach { category ->
             db.transaction {
-                it.insertTestAbsence(childId = testChild_1.id, absenceType = absenceType, category = category, date = LocalDate.now())
+                it.insertTestAbsence(
+                    childId = testChild_1.id,
+                    absenceType = absenceType,
+                    category = category,
+                    date = LocalDate.now()
+                )
             }
         }
     }
 
     private fun getAttendances(): AttendanceResponse {
-        val (_, res, result) = http.get("/attendances/units/${testDaycare.id}")
-            .asUser(mobileUser)
-            .responseObject<AttendanceResponse>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get("/attendances/units/${testDaycare.id}")
+                .asUser(mobileUser)
+                .responseObject<AttendanceResponse>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
@@ -512,10 +549,12 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
     private fun markArrivedAssertOkOneChild(arrived: LocalTime): Child {
         val time = arrived.format(DateTimeFormatter.ofPattern("HH:mm"))
-        val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/arrival")
-            .jsonBody("{\"arrived\": \"$time\"}") // test HH:mm deserialization
-            .asUser(mobileUser)
-            .response()
+        val (_, res, _) =
+            http
+                .post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/arrival")
+                .jsonBody("{\"arrived\": \"$time\"}") // test HH:mm deserialization
+                .asUser(mobileUser)
+                .response()
 
         assertEquals(200, res.statusCode)
         val response = getAttendances()
@@ -524,18 +563,26 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     private fun markArrivedAssertFail(arrived: LocalTime, status: Int) {
-        val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/arrival")
-            .jsonBody(jsonMapper.writeValueAsString(ChildAttendanceController.ArrivalRequest(arrived)))
-            .asUser(mobileUser)
-            .response()
+        val (_, res, _) =
+            http
+                .post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/arrival")
+                .jsonBody(
+                    jsonMapper.writeValueAsString(ChildAttendanceController.ArrivalRequest(arrived))
+                )
+                .asUser(mobileUser)
+                .response()
 
         assertEquals(status, res.statusCode)
     }
 
     private fun returnToComingAssertOkOneChild(): Child {
-        val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/return-to-coming")
-            .asUser(mobileUser)
-            .response()
+        val (_, res, _) =
+            http
+                .post(
+                    "/attendances/units/${testDaycare.id}/children/${testChild_1.id}/return-to-coming"
+                )
+                .asUser(mobileUser)
+                .response()
 
         assertEquals(200, res.statusCode)
         val response = getAttendances()
@@ -544,35 +591,52 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     private fun returnToComingAssertFail(status: Int) {
-        val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/return-to-coming")
-            .asUser(mobileUser)
-            .response()
+        val (_, res, _) =
+            http
+                .post(
+                    "/attendances/units/${testDaycare.id}/children/${testChild_1.id}/return-to-coming"
+                )
+                .asUser(mobileUser)
+                .response()
 
         assertEquals(status, res.statusCode)
     }
 
     private fun getDepartureInfoAssertOk(): List<AbsenceThreshold> {
-        val (_, res, result) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
-            .asUser(mobileUser)
-            .responseObject<List<AbsenceThreshold>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
+                .asUser(mobileUser)
+                .responseObject<List<AbsenceThreshold>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
         return result.get()
     }
 
     private fun getDepartureInfoAssertFail(status: Int) {
-        val (_, res, _) = http.get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
-            .asUser(mobileUser)
-            .responseObject<AbsenceThreshold>(jsonMapper)
+        val (_, res, _) =
+            http
+                .get("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
+                .asUser(mobileUser)
+                .responseObject<AbsenceThreshold>(jsonMapper)
 
         assertEquals(status, res.statusCode)
     }
 
-    private fun markDepartedAssertOkOneChild(departed: LocalTime, absenceType: AbsenceType?): Child {
-        val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
-            .jsonBody(jsonMapper.writeValueAsString(ChildAttendanceController.DepartureRequest(departed, absenceType)))
-            .asUser(mobileUser)
-            .response()
+    private fun markDepartedAssertOkOneChild(
+        departed: LocalTime,
+        absenceType: AbsenceType?
+    ): Child {
+        val (_, res, _) =
+            http
+                .post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
+                .jsonBody(
+                    jsonMapper.writeValueAsString(
+                        ChildAttendanceController.DepartureRequest(departed, absenceType)
+                    )
+                )
+                .asUser(mobileUser)
+                .response()
 
         assertEquals(200, res.statusCode)
         val response = getAttendances()
@@ -580,19 +644,33 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         return response.children.first()
     }
 
-    private fun markDepartedAssertFail(departed: LocalTime, absenceType: AbsenceType?, status: Int) {
-        val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
-            .jsonBody(jsonMapper.writeValueAsString(ChildAttendanceController.DepartureRequest(departed, absenceType)))
-            .asUser(mobileUser)
-            .response()
+    private fun markDepartedAssertFail(
+        departed: LocalTime,
+        absenceType: AbsenceType?,
+        status: Int
+    ) {
+        val (_, res, _) =
+            http
+                .post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/departure")
+                .jsonBody(
+                    jsonMapper.writeValueAsString(
+                        ChildAttendanceController.DepartureRequest(departed, absenceType)
+                    )
+                )
+                .asUser(mobileUser)
+                .response()
 
         assertEquals(status, res.statusCode)
     }
 
     private fun returnToPresentAssertOkOneChild(): Child {
-        val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/return-to-present")
-            .asUser(mobileUser)
-            .response()
+        val (_, res, _) =
+            http
+                .post(
+                    "/attendances/units/${testDaycare.id}/children/${testChild_1.id}/return-to-present"
+                )
+                .asUser(mobileUser)
+                .response()
 
         assertEquals(200, res.statusCode)
         val response = getAttendances()
@@ -601,18 +679,30 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     private fun returnToPresentAssertFail(status: Int) {
-        val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/return-to-present")
-            .asUser(mobileUser)
-            .response()
+        val (_, res, _) =
+            http
+                .post(
+                    "/attendances/units/${testDaycare.id}/children/${testChild_1.id}/return-to-present"
+                )
+                .asUser(mobileUser)
+                .response()
 
         assertEquals(status, res.statusCode)
     }
 
     private fun markFullDayAbsenceAssertOkOneChild(absenceType: AbsenceType): Child {
-        val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/full-day-absence")
-            .jsonBody(jsonMapper.writeValueAsString(ChildAttendanceController.FullDayAbsenceRequest(absenceType)))
-            .asUser(mobileUser)
-            .response()
+        val (_, res, _) =
+            http
+                .post(
+                    "/attendances/units/${testDaycare.id}/children/${testChild_1.id}/full-day-absence"
+                )
+                .jsonBody(
+                    jsonMapper.writeValueAsString(
+                        ChildAttendanceController.FullDayAbsenceRequest(absenceType)
+                    )
+                )
+                .asUser(mobileUser)
+                .response()
 
         assertEquals(200, res.statusCode)
         val response = getAttendances()
@@ -621,10 +711,18 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     private fun markFullDayAbsenceAssertFail(absenceType: AbsenceType, status: Int) {
-        val (_, res, _) = http.post("/attendances/units/${testDaycare.id}/children/${testChild_1.id}/full-day-absence")
-            .jsonBody(jsonMapper.writeValueAsString(ChildAttendanceController.FullDayAbsenceRequest(absenceType)))
-            .asUser(mobileUser)
-            .response()
+        val (_, res, _) =
+            http
+                .post(
+                    "/attendances/units/${testDaycare.id}/children/${testChild_1.id}/full-day-absence"
+                )
+                .jsonBody(
+                    jsonMapper.writeValueAsString(
+                        ChildAttendanceController.FullDayAbsenceRequest(absenceType)
+                    )
+                )
+                .asUser(mobileUser)
+                .response()
 
         assertEquals(status, res.statusCode)
     }

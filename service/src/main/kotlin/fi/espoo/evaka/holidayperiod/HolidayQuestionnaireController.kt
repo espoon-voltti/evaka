@@ -32,9 +32,8 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         clock: EvakaClock
     ): List<FixedPeriodQuestionnaire> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_QUESTIONNAIRES)
-        return db.connect { dbc -> dbc.read { it.getHolidayQuestionnaires() } }.also {
-            Audit.HolidayQuestionnairesList.log(args = mapOf("count" to it.size))
-        }
+        return db.connect { dbc -> dbc.read { it.getHolidayQuestionnaires() } }
+            .also { Audit.HolidayQuestionnairesList.log(args = mapOf("count" to it.size)) }
     }
 
     @GetMapping("/{id}")
@@ -45,9 +44,10 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         @PathVariable id: HolidayQuestionnaireId
     ): FixedPeriodQuestionnaire {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_QUESTIONNAIRE)
-        return db.connect { dbc -> dbc.read { it.getFixedPeriodQuestionnaire(id) ?: throw NotFound() } }.also {
-            Audit.HolidayQuestionnaireRead.log(targetId = id)
-        }
+        return db.connect { dbc ->
+                dbc.read { it.getFixedPeriodQuestionnaire(id) ?: throw NotFound() }
+            }
+            .also { Audit.HolidayQuestionnaireRead.log(targetId = id) }
     }
 
     @PostMapping
@@ -58,15 +58,16 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         @RequestBody body: FixedPeriodQuestionnaireBody
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_HOLIDAY_QUESTIONNAIRE)
-        val id = db.connect { dbc ->
-            dbc.transaction {
-                try {
-                    it.createFixedPeriodQuestionnaire(body)
-                } catch (e: Exception) {
-                    throw mapPSQLException(e)
+        val id =
+            db.connect { dbc ->
+                dbc.transaction {
+                    try {
+                        it.createFixedPeriodQuestionnaire(body)
+                    } catch (e: Exception) {
+                        throw mapPSQLException(e)
+                    }
                 }
             }
-        }
         Audit.HolidayQuestionnaireCreate.log(targetId = id)
     }
 

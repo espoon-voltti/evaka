@@ -36,7 +36,7 @@ class ChildImageController(
     private val documentClient: DocumentService,
     env: BucketEnv
 ) {
-    private val logger = KotlinLogging.logger { }
+    private val logger = KotlinLogging.logger {}
     private val bucket = env.data
 
     @PutMapping("/children/{childId}/image", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -57,7 +57,10 @@ class ChildImageController(
             throw BadRequest("Image size must not exceed $maxImageSize pixels")
         }
 
-        val imageId = db.connect { dbc -> replaceImage(dbc, documentClient, bucket, childId, file, contentType) }
+        val imageId =
+            db.connect { dbc ->
+                replaceImage(dbc, documentClient, bucket, childId, file, contentType)
+            }
         Audit.ChildImageUpload.log(
             targetId = childId,
             objectId = imageId,

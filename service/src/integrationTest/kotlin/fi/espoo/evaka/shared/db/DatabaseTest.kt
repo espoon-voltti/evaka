@@ -5,13 +5,13 @@
 package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.PureJdbiTest
-import org.jdbi.v3.core.statement.UnableToExecuteStatementException
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.jdbi.v3.core.statement.UnableToExecuteStatementException
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class DatabaseTest : PureJdbiTest(resetDbBeforeEach = true) {
     private class TestException : RuntimeException()
@@ -21,15 +21,15 @@ class DatabaseTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.execute("INSERT INTO holiday (date) VALUES ('2020-01-01')")
             assertThrows<UnableToExecuteStatementException> {
-                tx.subTransaction {
-                    tx.execute("INSERT INTO holiday (date) VALUES ('2020-01-01')")
-                }
+                tx.subTransaction { tx.execute("INSERT INTO holiday (date) VALUES ('2020-01-01')") }
             }
             tx.execute("INSERT INTO holiday (date) VALUES ('2020-01-02')")
         }
         assertEquals(
             listOf(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 2)),
-            db.read { it.createQuery("SELECT date FROM holiday ORDER BY date").mapTo<LocalDate>().toList() }
+            db.read {
+                it.createQuery("SELECT date FROM holiday ORDER BY date").mapTo<LocalDate>().toList()
+            }
         )
     }
 
@@ -46,7 +46,9 @@ class DatabaseTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
         assertEquals(
             listOf(LocalDate.of(2020, 1, 1)),
-            db.read { it.createQuery("SELECT date FROM holiday ORDER BY date").mapTo<LocalDate>().toList() }
+            db.read {
+                it.createQuery("SELECT date FROM holiday ORDER BY date").mapTo<LocalDate>().toList()
+            }
         )
     }
 
@@ -75,9 +77,7 @@ class DatabaseTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `exceptions thrown by afterCommit hooks are propagated`() {
         assertThrows<TestException> {
-            db.transaction { tx ->
-                tx.afterCommit { throw TestException() }
-            }
+            db.transaction { tx -> tx.afterCommit { throw TestException() } }
         }
     }
 }

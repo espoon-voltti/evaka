@@ -14,11 +14,11 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 class DecisionsReportController(private val accessControl: AccessControl) {
@@ -27,24 +27,23 @@ class DecisionsReportController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("from")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        from: LocalDate,
-        @RequestParam("to")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        to: LocalDate
+        @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
+        @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): List<DecisionsReportRow> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_DECISIONS_REPORT)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
         return db.connect { dbc ->
-            dbc.read {
-                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.getDecisionsRows(FiniteDateRange(from, to))
+                dbc.read {
+                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    it.getDecisionsRows(FiniteDateRange(from, to))
+                }
             }
-        }.also {
-            Audit.DecisionsReportRead.log(args = mapOf("from" to from, "to" to to, "count" to it.size))
-        }
+            .also {
+                Audit.DecisionsReportRead.log(
+                    args = mapOf("from" to from, "to" to to, "count" to it.size)
+                )
+            }
     }
 }
 
@@ -94,11 +93,9 @@ private fun Database.Read.getDecisionsRows(range: FiniteDateRange): List<Decisio
         FROM data
         GROUP BY care_area_name, unit_id, unit_name, provider_type
         ORDER BY care_area_name, unit_name
-        """.trimIndent()
-    return createQuery(sql)
-        .bind("range", range)
-        .mapTo<DecisionsReportRow>()
-        .toList()
+        """
+            .trimIndent()
+    return createQuery(sql).bind("range", range).mapTo<DecisionsReportRow>().toList()
 }
 
 data class DecisionsReportRow(

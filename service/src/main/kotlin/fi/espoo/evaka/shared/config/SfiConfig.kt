@@ -16,13 +16,18 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class SfiConfig {
-    private val logger = KotlinLogging.logger { }
+    private val logger = KotlinLogging.logger {}
 
     @Bean
-    fun sfiMessagesClient(env: ObjectProvider<SfiEnv>, documentClient: DocumentService): SfiMessagesClient = env.ifAvailable?.let {
-        logger.info { "Using real SOAP Suomi.fi Messages API client. Configuration: $it" }
-        SfiMessagesSoapClient(it, documentClient::get)
-    } ?: MockSfiMessagesClient().also {
-        logger.info { "Using mock Suomi.fi Messages API client" }
-    }
+    fun sfiMessagesClient(
+        env: ObjectProvider<SfiEnv>,
+        documentClient: DocumentService
+    ): SfiMessagesClient =
+        env.ifAvailable?.let {
+            logger.info { "Using real SOAP Suomi.fi Messages API client. Configuration: $it" }
+            SfiMessagesSoapClient(it, documentClient::get)
+        }
+            ?: MockSfiMessagesClient().also {
+                logger.info { "Using mock Suomi.fi Messages API client" }
+            }
 }

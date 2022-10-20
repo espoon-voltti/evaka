@@ -13,15 +13,28 @@ import fi.espoo.evaka.shared.PersonId
 import java.util.UUID
 
 class AuthenticatedUserJsonDeserializer : JsonDeserializer<AuthenticatedUser>() {
-    private data class AllFields(val type: AuthenticatedUserType, val id: UUID?, val globalRoles: Set<UserRole> = emptySet(), val allScopedRoles: Set<UserRole> = emptySet(), val employeeId: EmployeeId?)
+    private data class AllFields(
+        val type: AuthenticatedUserType,
+        val id: UUID?,
+        val globalRoles: Set<UserRole> = emptySet(),
+        val allScopedRoles: Set<UserRole> = emptySet(),
+        val employeeId: EmployeeId?
+    )
 
     override fun deserialize(p: JsonParser, ctx: DeserializationContext): AuthenticatedUser {
         val user = p.readValueAs(AllFields::class.java)
         return when (user.type) {
-            AuthenticatedUserType.citizen -> AuthenticatedUser.Citizen(PersonId(user.id!!), CitizenAuthLevel.STRONG)
-            AuthenticatedUserType.citizen_weak -> AuthenticatedUser.Citizen(PersonId(user.id!!), CitizenAuthLevel.WEAK)
-            AuthenticatedUserType.employee -> AuthenticatedUser.Employee(EmployeeId(user.id!!), user.globalRoles + user.allScopedRoles)
-            AuthenticatedUserType.mobile -> AuthenticatedUser.MobileDevice(MobileDeviceId(user.id!!), user.employeeId)
+            AuthenticatedUserType.citizen ->
+                AuthenticatedUser.Citizen(PersonId(user.id!!), CitizenAuthLevel.STRONG)
+            AuthenticatedUserType.citizen_weak ->
+                AuthenticatedUser.Citizen(PersonId(user.id!!), CitizenAuthLevel.WEAK)
+            AuthenticatedUserType.employee ->
+                AuthenticatedUser.Employee(
+                    EmployeeId(user.id!!),
+                    user.globalRoles + user.allScopedRoles
+                )
+            AuthenticatedUserType.mobile ->
+                AuthenticatedUser.MobileDevice(MobileDeviceId(user.id!!), user.employeeId)
             AuthenticatedUserType.integration -> AuthenticatedUser.Integration
             AuthenticatedUserType.system -> AuthenticatedUser.SystemInternalUser
         }

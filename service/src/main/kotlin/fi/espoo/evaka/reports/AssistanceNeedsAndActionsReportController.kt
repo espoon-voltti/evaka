@@ -20,37 +20,45 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
-class AssistanceNeedsAndActionsReportController(private val acl: AccessControlList, private val accessControl: AccessControl) {
+class AssistanceNeedsAndActionsReportController(
+    private val acl: AccessControlList,
+    private val accessControl: AccessControl
+) {
     @GetMapping("/reports/assistance-needs-and-actions")
     fun getAssistanceNeedReport(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("date")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        date: LocalDate
+        @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): AssistanceNeedsAndActionsReport {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Global.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT
+        )
         return db.connect { dbc ->
-            dbc.read {
-                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                AssistanceNeedsAndActionsReport(
-                    bases = it.getAssistanceBasisOptions(),
-                    actions = it.getAssistanceActionOptions(),
-                    rows = it.getReportRows(date, acl.getAuthorizedUnits(user))
+                dbc.read {
+                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    AssistanceNeedsAndActionsReport(
+                        bases = it.getAssistanceBasisOptions(),
+                        actions = it.getAssistanceActionOptions(),
+                        rows = it.getReportRows(date, acl.getAuthorizedUnits(user))
+                    )
+                }
+            }
+            .also {
+                Audit.AssistanceNeedsReportRead.log(
+                    args = mapOf("date" to date, "count" to it.rows.size)
                 )
             }
-        }.also {
-            Audit.AssistanceNeedsReportRead.log(args = mapOf("date" to date, "count" to it.rows.size))
-        }
     }
 
     data class AssistanceNeedsAndActionsReport(
@@ -67,24 +75,22 @@ class AssistanceNeedsAndActionsReportController(private val acl: AccessControlLi
         val groupName: String,
         val unitType: UnitType,
         val unitProviderType: ProviderType,
-        @Json
-        val basisCounts: Map<AssistanceBasisOptionValue, Int>,
+        @Json val basisCounts: Map<AssistanceBasisOptionValue, Int>,
         val noBasisCount: Int,
-        @Json
-        val actionCounts: Map<AssistanceActionOptionValue, Int>,
+        @Json val actionCounts: Map<AssistanceActionOptionValue, Int>,
         val otherActionCount: Int,
         val noActionCount: Int,
-        @Json
-        val measureCounts: Map<AssistanceMeasure, Int>
+        @Json val measureCounts: Map<AssistanceMeasure, Int>
     )
 }
 
 private typealias AssistanceBasisOptionValue = String
+
 private typealias AssistanceActionOptionValue = String
 
 private fun Database.Read.getReportRows(date: LocalDate, authorizedUnits: AclAuthorization) =
     createQuery(
-        """
+            """
 WITH basis_counts AS (
     SELECT
         daycare_group_id,
@@ -172,8 +178,9 @@ LEFT JOIN measure_counts ON g.id = measure_counts.daycare_group_id
 LEFT JOIN action_counts ON g.id = action_counts.daycare_group_id
 ${if (authorizedUnits != AclAuthorization.All) "WHERE u.id = ANY(:units)" else ""}
 ORDER BY ca.name, u.name, g.name
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("targetDate", date)
         .bind("units", authorizedUnits.ids)
         .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)

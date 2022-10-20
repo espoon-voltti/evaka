@@ -16,9 +16,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 
-class MessageService(
-    private val notificationEmailService: MessageNotificationEmailService
-) {
+class MessageService(private val notificationEmailService: MessageNotificationEmailService) {
     fun createMessageThreadsForRecipientGroups(
         tx: Database.Transaction,
         clock: EvakaClock,
@@ -33,14 +31,16 @@ class MessageService(
         staffCopyRecipients: Set<MessageAccountId>,
         accountIdsToChildIds: Map<MessageAccountId, ChildId>
     ) =
-        // for each recipient group, create a thread, message and message_recipients while re-using content
+        // for each recipient group, create a thread, message and message_recipients while re-using
+        // content
         tx.insertMessageContent(content, sender)
             .also { contentId -> tx.reAssociateMessageAttachments(attachmentIds, contentId) }
             .let { contentId ->
                 val now = clock.now()
                 recipientGroups.map { recipientIds ->
                     val threadId = tx.insertThread(type, title, urgent, isCopy = false)
-                    val childIds = recipientIds.mapNotNull { accId -> accountIdsToChildIds[accId] }.toSet()
+                    val childIds =
+                        recipientIds.mapNotNull { accId -> accountIdsToChildIds[accId] }.toSet()
                     tx.insertMessageThreadChildren(childIds, threadId)
                     tx.upsertThreadParticipants(threadId, sender, recipientIds, now)
                     val messageId =
@@ -82,25 +82,38 @@ class MessageService(
         recipientAccountIds: Set<MessageAccountId>,
         content: String
     ): ThreadReply {
-        val (threadId, type, isCopy, senders, recipients) = db.read { it.getThreadByMessageId(replyToMessageId) }
-            ?: throw NotFound("Message not found")
+        val (threadId, type, isCopy, senders, recipients) =
+            db.read { it.getThreadByMessageId(replyToMessageId) }
+                ?: throw NotFound("Message not found")
 
         if (isCopy) throw BadRequest("Message copies cannot be replied to")
-        if (type == MessageType.BULLETIN && !senders.contains(senderAccount)) throw Forbidden("Only the author can reply to bulletin")
+        if (type == MessageType.BULLETIN && !senders.contains(senderAccount))
+            throw Forbidden("Only the author can reply to bulletin")
 
         val previousParticipants = recipients + senders
-        if (!previousParticipants.contains(senderAccount)) throw Forbidden("Not authorized to post to message")
-        if (!previousParticipants.containsAll(recipientAccountIds)) throw Forbidden("Not authorized to widen the audience")
+        if (!previousParticipants.contains(senderAccount))
+            throw Forbidden("Not authorized to post to message")
+        if (!previousParticipants.containsAll(recipientAccountIds))
+            throw Forbidden("Not authorized to widen the audience")
 
-        val message = db.transaction { tx ->
-            tx.upsertThreadParticipants(threadId, senderAccount, recipientAccountIds, now)
-            val recipientNames = tx.getAccountNames(recipientAccountIds)
-            val contentId = tx.insertMessageContent(content, senderAccount)
-            val messageId = tx.insertMessage(now, contentId, threadId, senderAccount, repliesToMessageId = replyToMessageId, recipientNames = recipientNames)
-            tx.insertRecipients(recipientAccountIds, messageId)
-            notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)
-            tx.getSentMessage(senderAccount, messageId)
-        }
+        val message =
+            db.transaction { tx ->
+                tx.upsertThreadParticipants(threadId, senderAccount, recipientAccountIds, now)
+                val recipientNames = tx.getAccountNames(recipientAccountIds)
+                val contentId = tx.insertMessageContent(content, senderAccount)
+                val messageId =
+                    tx.insertMessage(
+                        now,
+                        contentId,
+                        threadId,
+                        senderAccount,
+                        repliesToMessageId = replyToMessageId,
+                        recipientNames = recipientNames
+                    )
+                tx.insertRecipients(recipientAccountIds, messageId)
+                notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)
+                tx.getSentMessage(senderAccount, messageId)
+            }
         return ThreadReply(threadId, message)
     }
 }

@@ -59,8 +59,6 @@ import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testRoundTheClockDaycare
 import fi.espoo.evaka.toFeeDecisionServiceNeed
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -69,6 +67,8 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val productProvider: InvoiceProductProvider = TestInvoiceProductProvider()
@@ -100,7 +100,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
-        db.transaction(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
+        db.transaction(
+            insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE)
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -115,7 +117,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(testDaycare.id, invoiceRow.unitId)
-                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
                 assertEquals(2900, invoiceRow.price)
@@ -128,7 +133,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
-        db.transaction(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY))
+        db.transaction(
+            insertPlacement(
+                testChild_1.id,
+                placementPeriod,
+                PlacementType.TEMPORARY_DAYCARE_PART_DAY
+            )
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -141,7 +152,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
                 assertEquals(1500, invoiceRow.price)
@@ -154,7 +168,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 4))
-        db.transaction(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
+        db.transaction(
+            insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE)
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -167,7 +183,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(3, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
                 assertEquals(8700, invoiceRow.price)
@@ -206,14 +225,20 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(2, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
                 assertEquals(5800, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
                 assertEquals(1500, invoiceRow.price)
@@ -226,10 +251,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
-        db.transaction(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
+        db.transaction(
+            insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE)
+        )
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
-        db.transaction(insertPlacement(testChild_2.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
+        db.transaction(
+            insertPlacement(testChild_2.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE)
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -242,14 +271,20 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
                 assertEquals(2900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_2.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
                 assertEquals(1500, invoiceRow.price)
@@ -262,10 +297,22 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
-        db.transaction(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY))
+        db.transaction(
+            insertPlacement(
+                testChild_1.id,
+                placementPeriod,
+                PlacementType.TEMPORARY_DAYCARE_PART_DAY
+            )
+        )
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
-        db.transaction(insertPlacement(testChild_2.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE_PART_DAY))
+        db.transaction(
+            insertPlacement(
+                testChild_2.id,
+                placementPeriod,
+                PlacementType.TEMPORARY_DAYCARE_PART_DAY
+            )
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -278,14 +325,20 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(1500, invoiceRow.unitPrice)
                 assertEquals(1500, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_2.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE_PART_DAY),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(800, invoiceRow.unitPrice)
                 assertEquals(800, invoiceRow.price)
@@ -297,7 +350,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation for child with a two day long temporary placement that changes head of family during placement`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 3))
-        db.transaction(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
+        db.transaction(
+            insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE)
+        )
 
         db.transaction(
             insertChildParentRelation(
@@ -325,7 +380,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
                 assertEquals(2900, invoiceRow.price)
@@ -337,7 +395,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
                 assertEquals(2900, invoiceRow.price)
@@ -349,7 +410,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation for child with a day long temporary placement that has no family configured`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         val placementPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 2))
-        db.transaction(insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE))
+        db.transaction(
+            insertPlacement(testChild_1.id, placementPeriod, PlacementType.TEMPORARY_DAYCARE)
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -363,7 +426,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         val temporaryPeriod = DateRange(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 3))
-        db.transaction(insertPlacement(testChild_1.id, temporaryPeriod, PlacementType.TEMPORARY_DAYCARE))
+        db.transaction(
+            insertPlacement(testChild_1.id, temporaryPeriod, PlacementType.TEMPORARY_DAYCARE)
+        )
         val nonTemporaryPeriod = DateRange(LocalDate.of(2019, 1, 4), LocalDate.of(2019, 1, 5))
         db.transaction(insertPlacement(testChild_1.id, nonTemporaryPeriod))
 
@@ -378,7 +443,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.TEMPORARY_DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(2, invoiceRow.amount)
                 assertEquals(2900, invoiceRow.unitPrice)
                 assertEquals(5800, invoiceRow.price)
@@ -392,26 +460,29 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation from two fee decision with same price results in one invoice row`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900
+                    )
                 )
             )
-        )
         insertDecisionsAndPlacements(
             listOf(
-                decision.copy(validDuring = decision.validDuring.copy(end = period.start.plusDays(7))),
+                decision.copy(
+                    validDuring = decision.validDuring.copy(end = period.start.plusDays(7))
+                ),
                 decision.copy(
                     id = FeeDecisionId(UUID.randomUUID()),
                     validDuring = decision.validDuring.copy(start = period.start.plusDays(8))
@@ -430,7 +501,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(1, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
@@ -442,34 +516,38 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation from two fee decision with same price and same fee alterations results in one invoice row`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900,
-                    feeAlterations = listOf(
-                        createFeeDecisionAlterationFixture(
-                            type = FeeAlteration.Type.DISCOUNT,
-                            amount = 20,
-                            isAbsolute = false,
-                            effect = -5780
-                        )
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations =
+                            listOf(
+                                createFeeDecisionAlterationFixture(
+                                    type = FeeAlteration.Type.DISCOUNT,
+                                    amount = 20,
+                                    isAbsolute = false,
+                                    effect = -5780
+                                )
+                            )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(
             listOf(
-                decision.copy(validDuring = decision.validDuring.copy(end = period.start.plusDays(7))),
+                decision.copy(
+                    validDuring = decision.validDuring.copy(end = period.start.plusDays(7))
+                ),
                 decision.copy(
                     id = FeeDecisionId(UUID.randomUUID()),
                     validDuring = decision.validDuring.copy(start = period.start.plusDays(8))
@@ -488,7 +566,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
@@ -514,40 +595,45 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900
-                )
-            )
-        )
-        insertDecisionsAndPlacements(
-            listOf(
-                decision.copy(validDuring = decision.validDuring.copy(end = period.start.plusDays(7))),
-                decision.copy(
-                    id = FeeDecisionId(UUID.randomUUID()),
-                    validDuring = decision.validDuring.copy(start = period.start.plusDays(8)),
-                    familySize = decision.familySize + 1,
-                    children = decision.children + createFeeDecisionChildFixture(
-                        childId = testChild_2.id,
-                        dateOfBirth = testChild_2.dateOfBirth,
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
                         placementUnitId = testDaycare.id,
                         placementType = PlacementType.DAYCARE,
                         serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
                         baseFee = 28900,
-                        siblingDiscount = 50,
-                        fee = 14500
+                        fee = 28900
                     )
+                )
+            )
+        insertDecisionsAndPlacements(
+            listOf(
+                decision.copy(
+                    validDuring = decision.validDuring.copy(end = period.start.plusDays(7))
+                ),
+                decision.copy(
+                    id = FeeDecisionId(UUID.randomUUID()),
+                    validDuring = decision.validDuring.copy(start = period.start.plusDays(8)),
+                    familySize = decision.familySize + 1,
+                    children =
+                        decision.children +
+                            createFeeDecisionChildFixture(
+                                childId = testChild_2.id,
+                                dateOfBirth = testChild_2.dateOfBirth,
+                                placementUnitId = testDaycare.id,
+                                placementType = PlacementType.DAYCARE,
+                                serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                                baseFee = 28900,
+                                siblingDiscount = 50,
+                                fee = 14500
+                            )
                 )
             )
         )
@@ -563,14 +649,20 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_2.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(17, invoiceRow.amount)
                 assertEquals(659, invoiceRow.unitPrice)
                 assertEquals(11203, invoiceRow.price)
@@ -583,42 +675,43 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // January 2019 has 22 operational days which results in daily price being rounded up
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decisions = listOf(
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                period.copy(end = period.start.plusDays(6)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 28900
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    period.copy(end = period.start.plusDays(6)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900
+                        )
                     )
-                )
-            ),
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                period.copy(start = period.start.plusDays(7)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare2.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 28900
+                ),
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    period.copy(start = period.start.plusDays(7)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare2.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900
+                        )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(decisions)
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -632,21 +725,30 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(4, invoiceRow.amount)
                 assertEquals(1314, invoiceRow.unitPrice)
                 assertEquals(5256, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(18, invoiceRow.amount)
                 assertEquals(1314, invoiceRow.unitPrice)
                 assertEquals(23652, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(-8, invoiceRow.unitPrice)
                 assertEquals(-8, invoiceRow.price)
@@ -659,42 +761,43 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // March 2019 has 21 operational days which results in daily price being rounded down
         val period = DateRange(LocalDate.of(2019, 3, 1), LocalDate.of(2019, 3, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decisions = listOf(
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                period.copy(end = period.start.plusDays(6)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 28900
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    period.copy(end = period.start.plusDays(6)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900
+                        )
                     )
-                )
-            ),
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                period.copy(start = period.start.plusDays(7)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare2.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 28900
+                ),
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    period.copy(start = period.start.plusDays(7)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare2.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900
+                        )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(decisions)
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -708,21 +811,30 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(5, invoiceRow.amount)
                 assertEquals(1376, invoiceRow.unitPrice)
                 assertEquals(6880, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(16, invoiceRow.amount)
                 assertEquals(1376, invoiceRow.unitPrice)
                 assertEquals(22016, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(4, invoiceRow.unitPrice)
                 assertEquals(4, invoiceRow.price)
@@ -735,42 +847,43 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // February 2019 has 20 operational days which results in daily price being split evenly
         val period = DateRange(LocalDate.of(2019, 2, 1), LocalDate.of(2019, 2, 28))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decisions = listOf(
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                period.copy(end = period.start.plusDays(6)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 28900
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    period.copy(end = period.start.plusDays(6)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900
+                        )
                     )
-                )
-            ),
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                period.copy(start = period.start.plusDays(7)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare2.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 28900
+                ),
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    period.copy(start = period.start.plusDays(7)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare2.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900
+                        )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(decisions)
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -784,14 +897,20 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(2, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(5, invoiceRow.amount)
                 assertEquals(1445, invoiceRow.unitPrice)
                 assertEquals(7225, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(15, invoiceRow.amount)
                 assertEquals(1445, invoiceRow.unitPrice)
                 assertEquals(21675, invoiceRow.price)
@@ -804,40 +923,47 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_2.id, period))
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900
-                ),
-                createFeeDecisionChildFixture(
-                    childId = testChild_2.id,
-                    dateOfBirth = testChild_2.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    siblingDiscount = 50,
-                    fee = 14500
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900
+                    ),
+                    createFeeDecisionChildFixture(
+                        childId = testChild_2.id,
+                        dateOfBirth = testChild_2.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        siblingDiscount = 50,
+                        fee = 14500
+                    )
                 )
             )
-        )
         insertDecisionsAndPlacements(
             listOf(
-                decision.copy(validDuring = decision.validDuring.copy(end = period.start.plusDays(7))),
+                decision.copy(
+                    validDuring = decision.validDuring.copy(end = period.start.plusDays(7))
+                ),
                 decision.copy(
                     id = FeeDecisionId(UUID.randomUUID()),
                     validDuring = decision.validDuring.copy(start = period.start.plusDays(8)),
-                    children = listOf(decision.children[0], decision.children[1].copy(fee = 10000, finalFee = 10000))
+                    children =
+                        listOf(
+                            decision.children[0],
+                            decision.children[1].copy(fee = 10000, finalFee = 10000)
+                        )
                 )
             )
         )
@@ -853,21 +979,30 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
                 assertEquals(testChild_2.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(5, invoiceRow.amount)
                 assertEquals(659, invoiceRow.unitPrice)
                 assertEquals(3295, invoiceRow.price)
             }
             invoice.rows[2].let { invoiceRow ->
                 assertEquals(testChild_2.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(17, invoiceRow.amount)
                 assertEquals(455, invoiceRow.unitPrice)
                 assertEquals(7735, invoiceRow.price)
@@ -879,31 +1014,33 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation from fee decision with one fee alteration creates additional invoice row`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900,
-                    feeAlterations = listOf(
-                        createFeeDecisionAlterationFixture(
-                            type = FeeAlteration.Type.DISCOUNT,
-                            amount = 20,
-                            isAbsolute = false,
-                            effect = -5780
-                        )
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations =
+                            listOf(
+                                createFeeDecisionAlterationFixture(
+                                    type = FeeAlteration.Type.DISCOUNT,
+                                    amount = 20,
+                                    isAbsolute = false,
+                                    effect = -5780
+                                )
+                            )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -917,7 +1054,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
@@ -942,37 +1082,39 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation from fee decision with multiple fee alterations creates additional invoice rows`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900,
-                    feeAlterations = listOf(
-                        createFeeDecisionAlterationFixture(
-                            type = FeeAlteration.Type.DISCOUNT,
-                            amount = 20,
-                            isAbsolute = false,
-                            effect = -5780
-                        ),
-                        createFeeDecisionAlterationFixture(
-                            type = FeeAlteration.Type.INCREASE,
-                            amount = 93,
-                            isAbsolute = false,
-                            effect = 9300
-                        )
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations =
+                            listOf(
+                                createFeeDecisionAlterationFixture(
+                                    type = FeeAlteration.Type.DISCOUNT,
+                                    amount = 20,
+                                    isAbsolute = false,
+                                    effect = -5780
+                                ),
+                                createFeeDecisionAlterationFixture(
+                                    type = FeeAlteration.Type.INCREASE,
+                                    amount = 93,
+                                    isAbsolute = false,
+                                    effect = 9300
+                                )
+                            )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -986,7 +1128,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(3, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
@@ -1025,31 +1170,33 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation from fee decision with a 95 percent discount fee alteration`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900,
-                    feeAlterations = listOf(
-                        createFeeDecisionAlterationFixture(
-                            type = FeeAlteration.Type.DISCOUNT,
-                            amount = 95,
-                            isAbsolute = false,
-                            effect = -27455
-                        )
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations =
+                            listOf(
+                                createFeeDecisionAlterationFixture(
+                                    type = FeeAlteration.Type.DISCOUNT,
+                                    amount = 95,
+                                    isAbsolute = false,
+                                    effect = -27455
+                                )
+                            )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -1063,7 +1210,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
@@ -1088,24 +1238,25 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `when two people have active fee decisions for the same child both are invoiced`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900,
-                    feeAlterations = listOf()
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations = listOf()
+                    )
                 )
             )
-        )
         db.transaction { tx ->
             tx.insertTestPlacement(
                 childId = testChild_1.id,
@@ -1114,7 +1265,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 endDate = period.end!!
             )
             tx.upsertFeeDecisions(
-                listOf(decision, decision.copy(id = FeeDecisionId(UUID.randomUUID()), headOfFamilyId = testAdult_2.id))
+                listOf(
+                    decision,
+                    decision.copy(
+                        id = FeeDecisionId(UUID.randomUUID()),
+                        headOfFamilyId = testAdult_2.id
+                    )
+                )
             )
         }
 
@@ -1123,28 +1280,38 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val result = db.read(getAllInvoices)
 
         assertEquals(2, result.size)
-        result.find { it.headOfFamily == testAdult_1.id }!!.let { invoice ->
-            assertEquals(28900, invoice.totalPrice)
-            assertEquals(1, invoice.rows.size)
-            invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
-                assertEquals(1, invoiceRow.amount)
-                assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price)
+        result
+            .find { it.headOfFamily == testAdult_1.id }!!
+            .let { invoice ->
+                assertEquals(28900, invoice.totalPrice)
+                assertEquals(1, invoice.rows.size)
+                invoice.rows.first().let { invoiceRow ->
+                    assertEquals(testChild_1.id, invoiceRow.child)
+                    assertEquals(
+                        productProvider.mapToProduct(PlacementType.DAYCARE),
+                        invoiceRow.product
+                    )
+                    assertEquals(1, invoiceRow.amount)
+                    assertEquals(28900, invoiceRow.unitPrice)
+                    assertEquals(28900, invoiceRow.price)
+                }
             }
-        }
-        result.find { it.headOfFamily == testAdult_2.id }!!.let { invoice ->
-            assertEquals(28900, invoice.totalPrice)
-            assertEquals(1, invoice.rows.size)
-            invoice.rows.first().let { invoiceRow ->
-                assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
-                assertEquals(1, invoiceRow.amount)
-                assertEquals(28900, invoiceRow.unitPrice)
-                assertEquals(28900, invoiceRow.price)
+        result
+            .find { it.headOfFamily == testAdult_2.id }!!
+            .let { invoice ->
+                assertEquals(28900, invoice.totalPrice)
+                assertEquals(1, invoice.rows.size)
+                invoice.rows.first().let { invoiceRow ->
+                    assertEquals(testChild_1.id, invoiceRow.child)
+                    assertEquals(
+                        productProvider.mapToProduct(PlacementType.DAYCARE),
+                        invoiceRow.product
+                    )
+                    assertEquals(1, invoiceRow.amount)
+                    assertEquals(28900, invoiceRow.unitPrice)
+                    assertEquals(28900, invoiceRow.price)
+                }
             }
-        }
     }
 
     @Test
@@ -1152,24 +1319,25 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         val placementPeriod = period.copy(end = period.start.plusDays(7))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900,
-                    feeAlterations = listOf()
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations = listOf()
+                    )
                 )
             )
-        )
         db.transaction { tx ->
             tx.insertTestPlacement(
                 childId = testChild_1.id,
@@ -1180,7 +1348,11 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.upsertFeeDecisions(
                 listOf(
                     decision.copy(validDuring = period.copy(end = period.start.plusDays(14))),
-                    decision.copy(id = FeeDecisionId(UUID.randomUUID()), headOfFamilyId = testAdult_2.id, validDuring = period.copy(start = period.start.plusDays(15)))
+                    decision.copy(
+                        id = FeeDecisionId(UUID.randomUUID()),
+                        headOfFamilyId = testAdult_2.id,
+                        validDuring = period.copy(start = period.start.plusDays(15))
+                    )
                 )
             )
         }
@@ -1198,7 +1370,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(testChild_1.id, invoiceRow.child)
                 assertEquals(placementPeriod.start, invoiceRow.periodStart)
                 assertEquals(placementPeriod.end, invoiceRow.periodEnd)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(5, invoiceRow.amount)
                 assertEquals(1314, invoiceRow.unitPrice)
                 assertEquals(6570, invoiceRow.price)
@@ -1210,8 +1385,7 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation with sick leave absences covering period`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = datesBetween(period.start, period.end)
-            .map { it to AbsenceType.SICKLEAVE }
+        val absenceDays = datesBetween(period.start, period.end).map { it to AbsenceType.SICKLEAVE }
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -1241,12 +1415,18 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `50 percent discount is generated with more than 11 sickleave absences`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = datesBetween(period.start, period.end)
-            .filter {
-                listOf(DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)
-                    .contains(it.dayOfWeek)
-            }
-            .map { it to AbsenceType.SICKLEAVE }
+        val absenceDays =
+            datesBetween(period.start, period.end)
+                .filter {
+                    listOf(
+                            DayOfWeek.TUESDAY,
+                            DayOfWeek.WEDNESDAY,
+                            DayOfWeek.THURSDAY,
+                            DayOfWeek.FRIDAY
+                        )
+                        .contains(it.dayOfWeek)
+                }
+                .map { it to AbsenceType.SICKLEAVE }
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -1278,13 +1458,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
         // 1 force majeure absence
-        val forceMajeure =
-            listOf(LocalDate.of(2019, 1, 16) to AbsenceType.FORCE_MAJEURE)
+        val forceMajeure = listOf(LocalDate.of(2019, 1, 16) to AbsenceType.FORCE_MAJEURE)
 
         // 11 sick leaves
         val sickLeave =
-            datesBetween(LocalDate.of(2019, 1, 17), LocalDate.of(2019, 1, 31))
-                .map { it to AbsenceType.SICKLEAVE }
+            datesBetween(LocalDate.of(2019, 1, 17), LocalDate.of(2019, 1, 31)).map {
+                it to AbsenceType.SICKLEAVE
+            }
 
         initDataForAbsences(listOf(period), forceMajeure + sickLeave)
 
@@ -1320,12 +1500,18 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation with some unknown absences`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = datesBetween(period.start, period.end)
-            .filter {
-                listOf(DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)
-                    .contains(it.dayOfWeek)
-            }
-            .map { it to AbsenceType.UNKNOWN_ABSENCE }
+        val absenceDays =
+            datesBetween(period.start, period.end)
+                .filter {
+                    listOf(
+                            DayOfWeek.TUESDAY,
+                            DayOfWeek.WEDNESDAY,
+                            DayOfWeek.THURSDAY,
+                            DayOfWeek.FRIDAY
+                        )
+                        .contains(it.dayOfWeek)
+                }
+                .map { it to AbsenceType.UNKNOWN_ABSENCE }
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -1349,8 +1535,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation with unknown absences covering period`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = datesBetween(period.start, period.end)
-            .map { it to AbsenceType.UNKNOWN_ABSENCE }
+        val absenceDays =
+            datesBetween(period.start, period.end).map { it to AbsenceType.UNKNOWN_ABSENCE }
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -1380,8 +1566,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation with some parentleave absences`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = datesBetween(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 4))
-            .map { it to AbsenceType.PARENTLEAVE }
+        val absenceDays =
+            datesBetween(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 4)).map {
+                it to AbsenceType.PARENTLEAVE
+            }
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -1413,15 +1601,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // 22 operational days
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = datesBetween(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 4))
-            .map { it to AbsenceType.PARENTLEAVE }
-            .plus(
-                datesBetween(
-                    LocalDate.of(2019, 1, 17),
-                    LocalDate.of(2019, 1, 31)
+        val absenceDays =
+            datesBetween(LocalDate.of(2019, 1, 2), LocalDate.of(2019, 1, 4))
+                .map { it to AbsenceType.PARENTLEAVE }
+                .plus(
+                    datesBetween(LocalDate.of(2019, 1, 17), LocalDate.of(2019, 1, 31)).map {
+                        it to AbsenceType.SICKLEAVE
+                    }
                 )
-                    .map { it to AbsenceType.SICKLEAVE }
-            )
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -1460,8 +1647,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `planned absences do not generate a discount on invoices`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = datesBetween(period.start, period.end!!.minusDays(1))
-            .map { it to AbsenceType.PLANNED_ABSENCE }
+        val absenceDays =
+            datesBetween(period.start, period.end!!.minusDays(1)).map {
+                it to AbsenceType.PLANNED_ABSENCE
+            }
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -1485,8 +1674,8 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `planned absences for the whole month generate a discount`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = datesBetween(period.start, period.end)
-            .map { it to AbsenceType.PLANNED_ABSENCE }
+        val absenceDays =
+            datesBetween(period.start, period.end).map { it to AbsenceType.PLANNED_ABSENCE }
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -1516,8 +1705,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation with some parentleave absences for a too old child`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 4))
-            .map { it to AbsenceType.PARENTLEAVE }
+        val absenceDays =
+            datesBetween(period.start, LocalDate.of(2019, 1, 4)).map {
+                it to AbsenceType.PARENTLEAVE
+            }
 
         initDataForAbsences(listOf(period), absenceDays, child = testChild_2)
 
@@ -1540,20 +1731,24 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with 2 decisions plus sick leave absences`() {
-        val periods = listOf(
-            DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 11)),
-            DateRange(LocalDate.of(2019, 1, 12), LocalDate.of(2019, 1, 31))
-        )
+        val periods =
+            listOf(
+                DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 11)),
+                DateRange(LocalDate.of(2019, 1, 12), LocalDate.of(2019, 1, 31))
+            )
 
-        val absenceDays = datesBetween(
-            LocalDate.of(2019, 1, 1),
-            LocalDate.of(2019, 1, 31)
-        )
-            .filter {
-                listOf(DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)
-                    .contains(it.dayOfWeek)
-            }
-            .map { it to AbsenceType.SICKLEAVE }
+        val absenceDays =
+            datesBetween(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+                .filter {
+                    listOf(
+                            DayOfWeek.TUESDAY,
+                            DayOfWeek.WEDNESDAY,
+                            DayOfWeek.THURSDAY,
+                            DayOfWeek.FRIDAY
+                        )
+                        .contains(it.dayOfWeek)
+                }
+                .map { it to AbsenceType.SICKLEAVE }
 
         initDataForAbsences(periods, absenceDays)
 
@@ -1612,17 +1807,19 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `invoice generation with 2 decisions plus parent leave and force majeure absences`() {
-        val periods = listOf(
-            DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 11)),
-            DateRange(LocalDate.of(2019, 1, 12), LocalDate.of(2019, 1, 31))
-        )
+        val periods =
+            listOf(
+                DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 11)),
+                DateRange(LocalDate.of(2019, 1, 12), LocalDate.of(2019, 1, 31))
+            )
 
-        val absenceDays = listOf(
-            LocalDate.of(2019, 1, 7) to AbsenceType.PARENTLEAVE,
-            LocalDate.of(2019, 1, 14) to AbsenceType.PARENTLEAVE,
-            LocalDate.of(2019, 1, 21) to AbsenceType.FORCE_MAJEURE,
-            LocalDate.of(2019, 1, 28) to AbsenceType.FORCE_MAJEURE
-        )
+        val absenceDays =
+            listOf(
+                LocalDate.of(2019, 1, 7) to AbsenceType.PARENTLEAVE,
+                LocalDate.of(2019, 1, 14) to AbsenceType.PARENTLEAVE,
+                LocalDate.of(2019, 1, 21) to AbsenceType.FORCE_MAJEURE,
+                LocalDate.of(2019, 1, 28) to AbsenceType.FORCE_MAJEURE
+            )
         initDataForAbsences(periods, absenceDays)
 
         db.transaction {
@@ -1685,14 +1882,17 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // 15 operational days first
         // then planned absences
-        val plannedAbsenceDays = datesBetween(
-            LocalDate.of(2019, 1, 23),
-            LocalDate.of(2019, 1, 29)
-        )
-            .map { it to AbsenceType.PLANNED_ABSENCE }
+        val plannedAbsenceDays =
+            datesBetween(LocalDate.of(2019, 1, 23), LocalDate.of(2019, 1, 29)).map {
+                it to AbsenceType.PLANNED_ABSENCE
+            }
         // then 2 more operational days
 
-        initDataForAbsences(listOf(period), plannedAbsenceDays, serviceNeed = snDaycareContractDays15)
+        initDataForAbsences(
+            listOf(period),
+            plannedAbsenceDays,
+            serviceNeed = snDaycareContractDays15
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -1723,17 +1923,22 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // 15 operational days first
         // then planned absences
-        val plannedAbsenceDays = datesBetween(
-            LocalDate.of(2019, 1, 23),
-            LocalDate.of(2019, 1, 29)
-        )
-            .map { it to AbsenceType.PLANNED_ABSENCE }
+        val plannedAbsenceDays =
+            datesBetween(LocalDate.of(2019, 1, 23), LocalDate.of(2019, 1, 29)).map {
+                it to AbsenceType.PLANNED_ABSENCE
+            }
         // then 2 more operational days
         // and one refunded day
-        val refundedDay = datesBetween(LocalDate.of(2019, 1, 31), LocalDate.of(2019, 1, 31))
-            .map { it to AbsenceType.FORCE_MAJEURE }
+        val refundedDay =
+            datesBetween(LocalDate.of(2019, 1, 31), LocalDate.of(2019, 1, 31)).map {
+                it to AbsenceType.FORCE_MAJEURE
+            }
 
-        initDataForAbsences(listOf(period), plannedAbsenceDays + refundedDay, serviceNeed = snDaycareContractDays15)
+        initDataForAbsences(
+            listOf(period),
+            plannedAbsenceDays + refundedDay,
+            serviceNeed = snDaycareContractDays15
+        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -1769,39 +1974,40 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 21700,
-                    feeAlterations = listOf(
-                        createFeeDecisionAlterationFixture(
-                            amount = -50,
-                            isAbsolute = false,
-                            effect = -10850
-                        )
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 21700,
+                        feeAlterations =
+                            listOf(
+                                createFeeDecisionAlterationFixture(
+                                    amount = -50,
+                                    isAbsolute = false,
+                                    effect = -10850
+                                )
+                            )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(listOf(decision))
 
         // 15 operational days first
         // then planned absences
-        val plannedAbsenceDays = datesBetween(
-            LocalDate.of(2019, 1, 23),
-            LocalDate.of(2019, 1, 29)
-        )
-            .map { it to AbsenceType.PLANNED_ABSENCE }
+        val plannedAbsenceDays =
+            datesBetween(LocalDate.of(2019, 1, 23), LocalDate.of(2019, 1, 29)).map {
+                it to AbsenceType.PLANNED_ABSENCE
+            }
         // then 2 more operational days
         insertAbsences(testChild_1.id, plannedAbsenceDays)
 
@@ -1848,11 +2054,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // then 1 other absence
         val otherAbsenceDays = listOf(LocalDate.of(2019, 1, 22) to AbsenceType.OTHER_ABSENCE)
         // then planned absences
-        val plannedAbsenceDays = datesBetween(
-            LocalDate.of(2019, 1, 23),
-            LocalDate.of(2019, 1, 29)
-        )
-            .map { it to AbsenceType.PLANNED_ABSENCE }
+        val plannedAbsenceDays =
+            datesBetween(LocalDate.of(2019, 1, 23), LocalDate.of(2019, 1, 29)).map {
+                it to AbsenceType.PLANNED_ABSENCE
+            }
         // then 2 more operational days
 
         initDataForAbsences(
@@ -1892,11 +2097,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // then 1 other absence
         val otherAbsenceDays = listOf(LocalDate.of(2019, 1, 22) to AbsenceType.OTHER_ABSENCE)
         // then planned absences
-        val plannedAbsenceDays = datesBetween(
-            LocalDate.of(2019, 1, 23),
-            LocalDate.of(2019, 1, 31)
-        )
-            .map { it to AbsenceType.PLANNED_ABSENCE }
+        val plannedAbsenceDays =
+            datesBetween(LocalDate.of(2019, 1, 23), LocalDate.of(2019, 1, 31)).map {
+                it to AbsenceType.PLANNED_ABSENCE
+            }
 
         initDataForAbsences(
             listOf(period),
@@ -1905,13 +2109,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 
         // Override to not count unplanned absences as contract surplus days
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(unplannedAbsencesAreContractSurplusDays = false),
-                DefaultInvoiceGenerationLogic
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(unplannedAbsencesAreContractSurplusDays = false),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -1934,38 +2139,38 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
-        val decisions = listOf(
-            DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 15)) to 15000,
-            DateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)) to 9000
-        ).map { (range, fee) ->
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                range,
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                        baseFee = fee,
-                        fee = fee,
-                        feeAlterations = listOf()
-                    )
+        val decisions =
+            listOf(
+                    DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 15)) to 15000,
+                    DateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)) to 9000
                 )
-            )
-        }
+                .map { (range, fee) ->
+                    createFeeDecisionFixture(
+                        FeeDecisionStatus.SENT,
+                        FeeDecisionType.NORMAL,
+                        range,
+                        testAdult_1.id,
+                        listOf(
+                            createFeeDecisionChildFixture(
+                                childId = testChild_1.id,
+                                dateOfBirth = testChild_1.dateOfBirth,
+                                placementUnitId = testDaycare.id,
+                                placementType = PlacementType.DAYCARE,
+                                serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                                baseFee = fee,
+                                fee = fee,
+                                feeAlterations = listOf()
+                            )
+                        )
+                    )
+                }
         insertDecisionsAndPlacements(decisions)
 
         // 17 operational days in total, the rest are planned absences
         insertAbsences(
             testChild_1.id,
-            (
-                datesBetween(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 4)) +
-                    datesBetween(LocalDate.of(2019, 1, 30), LocalDate.of(2019, 1, 31))
-                )
+            (datesBetween(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 4)) +
+                    datesBetween(LocalDate.of(2019, 1, 30), LocalDate.of(2019, 1, 31)))
                 .map { it to AbsenceType.PLANNED_ABSENCE }
         )
 
@@ -1983,7 +2188,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(7000, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(8, invoiceRow.amount)
                 assertEquals(600, invoiceRow.unitPrice) // 9000 / 15
                 assertEquals(4800, invoiceRow.price)
@@ -2001,13 +2209,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation with 15 contract days and 15 days of absences - half price`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val otherAbsenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 22)) // 15 operational days
-            .map { it to AbsenceType.OTHER_ABSENCE }
-        val plannedAbsenceDays = datesBetween(
-            LocalDate.of(2019, 1, 23),
-            LocalDate.of(2019, 1, 31)
-        )
-            .map { it to AbsenceType.PLANNED_ABSENCE }
+        val otherAbsenceDays =
+            datesBetween(period.start, LocalDate.of(2019, 1, 22)) // 15 operational days
+                .map { it to AbsenceType.OTHER_ABSENCE }
+        val plannedAbsenceDays =
+            datesBetween(LocalDate.of(2019, 1, 23), LocalDate.of(2019, 1, 31)).map {
+                it to AbsenceType.PLANNED_ABSENCE
+            }
 
         initDataForAbsences(
             listOf(period),
@@ -2041,14 +2249,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation with 15 contract days and 14 days of absences - full price`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val otherAbsenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 21)) // 14 operational days
-            .map { it to AbsenceType.OTHER_ABSENCE }
+        val otherAbsenceDays =
+            datesBetween(period.start, LocalDate.of(2019, 1, 21)) // 14 operational days
+                .map { it to AbsenceType.OTHER_ABSENCE }
         // No absence for 2019-01-22
-        val plannedAbsenceDays = datesBetween(
-            LocalDate.of(2019, 1, 23),
-            LocalDate.of(2019, 1, 31)
-        )
-            .map { it to AbsenceType.PLANNED_ABSENCE }
+        val plannedAbsenceDays =
+            datesBetween(LocalDate.of(2019, 1, 23), LocalDate.of(2019, 1, 31)).map {
+                it to AbsenceType.PLANNED_ABSENCE
+            }
 
         initDataForAbsences(
             listOf(period),
@@ -2081,7 +2289,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // No absence for 14 days
         // Planned absences for the rest of the month
         val plannedAbsenceDays =
-            datesBetween(LocalDate.of(2019, 1, 23), LocalDate.of(2019, 1, 31)).map { it to AbsenceType.PLANNED_ABSENCE }
+            datesBetween(LocalDate.of(2019, 1, 23), LocalDate.of(2019, 1, 31)).map {
+                it to AbsenceType.PLANNED_ABSENCE
+            }
 
         initDataForAbsences(
             listOf(period),
@@ -2119,31 +2329,31 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         db.transaction(insertPlacement(testChild_1.id, period))
 
-        val decisions = listOf(
-            DateRange(LocalDate.of(2021, 12, 1), LocalDate.of(2021, 12, 22)) to
-                0,
-            DateRange(LocalDate.of(2021, 12, 23), LocalDate.of(2021, 12, 31)) to
-                28900
-        ).map { (valid, fee) ->
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                valid,
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        baseFee = fee,
-                        fee = fee,
-                        feeAlterations = listOf()
-                    )
+        val decisions =
+            listOf(
+                    DateRange(LocalDate.of(2021, 12, 1), LocalDate.of(2021, 12, 22)) to 0,
+                    DateRange(LocalDate.of(2021, 12, 23), LocalDate.of(2021, 12, 31)) to 28900
                 )
-            )
-        }
+                .map { (valid, fee) ->
+                    createFeeDecisionFixture(
+                        FeeDecisionStatus.SENT,
+                        FeeDecisionType.NORMAL,
+                        valid,
+                        testAdult_1.id,
+                        listOf(
+                            createFeeDecisionChildFixture(
+                                childId = testChild_1.id,
+                                dateOfBirth = testChild_1.dateOfBirth,
+                                placementUnitId = testDaycare.id,
+                                placementType = PlacementType.DAYCARE,
+                                serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                                baseFee = fee,
+                                fee = fee,
+                                feeAlterations = listOf()
+                            )
+                        )
+                    )
+                }
         db.transaction { tx -> tx.upsertFeeDecisions(decisions) }
 
         insertAbsences(
@@ -2181,31 +2391,33 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         db.transaction(insertPlacement(testChild_1.id, period))
 
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900,
-                    feeAlterations = listOf(
-                        FeeAlterationWithEffect(
-                            type = FeeAlteration.Type.RELIEF,
-                            amount = 100,
-                            isAbsolute = false,
-                            effect = -28900
-                        )
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations =
+                            listOf(
+                                FeeAlterationWithEffect(
+                                    type = FeeAlteration.Type.RELIEF,
+                                    amount = 100,
+                                    isAbsolute = false,
+                                    effect = -28900
+                                )
+                            )
                     )
                 )
             )
-        )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2218,8 +2430,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation with full month of force majeure absences`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 31))
-            .map { it to AbsenceType.FORCE_MAJEURE }
+        val absenceDays =
+            datesBetween(period.start, LocalDate.of(2019, 1, 31)).map {
+                it to AbsenceType.FORCE_MAJEURE
+            }
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -2250,14 +2464,13 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation with 15 contract days and 15 days of force majeure absences`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val forceMajeureAbsenceDays = datesBetween(period.start, LocalDate.of(2019, 1, 22)) // 15 operational days
-            .map { it to AbsenceType.FORCE_MAJEURE }
+        val forceMajeureAbsenceDays =
+            datesBetween(period.start, LocalDate.of(2019, 1, 22)) // 15 operational days
+                .map { it to AbsenceType.FORCE_MAJEURE }
         val plannedAbsenceDays =
-            datesBetween(
-                LocalDate.of(2019, 1, 23),
-                LocalDate.of(2019, 1, 31)
-            )
-                .map { it to AbsenceType.PLANNED_ABSENCE }
+            datesBetween(LocalDate.of(2019, 1, 23), LocalDate.of(2019, 1, 31)).map {
+                it to AbsenceType.PLANNED_ABSENCE
+            }
 
         initDataForAbsences(
             listOf(period),
@@ -2291,10 +2504,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation with 15 contract days and full month of planned absences`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
-        val absenceDays = datesBetween(
-            LocalDate.of(2019, 1, 1),
-            LocalDate.of(2019, 1, 31)
-        ).map { it to AbsenceType.PLANNED_ABSENCE }
+        val absenceDays =
+            datesBetween(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)).map {
+                it to AbsenceType.PLANNED_ABSENCE
+            }
 
         initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
 
@@ -2326,11 +2539,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // 14 operational days, other are planned absences
         val absenceDays =
-            datesBetween(
-                LocalDate.of(2019, 1, 22),
-                LocalDate.of(2019, 1, 31)
-            )
-                .map { it to AbsenceType.PLANNED_ABSENCE }
+            datesBetween(LocalDate.of(2019, 1, 22), LocalDate.of(2019, 1, 31)).map {
+                it to AbsenceType.PLANNED_ABSENCE
+            }
 
         initDataForAbsences(listOf(period), absenceDays, serviceNeed = snDaycareContractDays15)
 
@@ -2356,55 +2567,55 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
-        val decisions = listOf(
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                // 11 attendance days
-                DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 16)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                        baseFee = 15000,
-                        fee = 15000,
-                        feeAlterations = listOf()
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    // 11 attendance days
+                    DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 16)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                            baseFee = 15000,
+                            fee = 15000,
+                            feeAlterations = listOf()
+                        )
                     )
-                )
-            ),
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                // 3 attendance days
-                DateRange(LocalDate.of(2019, 1, 17), LocalDate.of(2019, 1, 31)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                        baseFee = 9000,
-                        fee = 9000,
-                        feeAlterations = listOf()
+                ),
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    // 3 attendance days
+                    DateRange(LocalDate.of(2019, 1, 17), LocalDate.of(2019, 1, 31)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                            baseFee = 9000,
+                            fee = 9000,
+                            feeAlterations = listOf()
+                        )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(decisions)
 
         // 14 operational days, the rest are planned absences
         insertAbsences(
             testChild_1.id,
-            datesBetween(
-                LocalDate.of(2019, 1, 22),
-                LocalDate.of(2019, 1, 31)
-            ).map { it to AbsenceType.PLANNED_ABSENCE }
+            datesBetween(LocalDate.of(2019, 1, 22), LocalDate.of(2019, 1, 31)).map {
+                it to AbsenceType.PLANNED_ABSENCE
+            }
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2434,24 +2645,25 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2020, 5, 1), LocalDate.of(2020, 5, 31))
         val weekEnd = DateRange(LocalDate.of(2020, 5, 2), LocalDate.of(2020, 5, 3))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            weekEnd,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900,
-                    feeAlterations = listOf()
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                weekEnd,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations = listOf()
+                    )
                 )
             )
-        )
         insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2465,24 +2677,25 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
         val placementPeriod = DateRange(LocalDate.of(2021, 1, 18), LocalDate.of(2021, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            placementPeriod,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testRoundTheClockDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900,
-                    feeAlterations = listOf()
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                placementPeriod,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testRoundTheClockDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations = listOf()
+                    )
                 )
             )
-        )
         insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2505,24 +2718,25 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
         val placementPeriod = DateRange(LocalDate.of(2021, 1, 30), LocalDate.of(2021, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            placementPeriod,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testRoundTheClockDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900,
-                    feeAlterations = listOf()
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                placementPeriod,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testRoundTheClockDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations = listOf()
+                    )
                 )
             )
-        )
         insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2545,24 +2759,25 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
         val placementPeriod = DateRange(LocalDate.of(2021, 1, 2), LocalDate.of(2021, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            placementPeriod,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testRoundTheClockDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900,
-                    feeAlterations = listOf()
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                placementPeriod,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testRoundTheClockDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations = listOf()
+                    )
                 )
             )
-        )
         insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2585,24 +2800,25 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
         val placementPeriod = DateRange(LocalDate.of(2021, 1, 4), LocalDate.of(2021, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            placementPeriod,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testRoundTheClockDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900,
-                    feeAlterations = listOf()
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                placementPeriod,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testRoundTheClockDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations = listOf()
+                    )
                 )
             )
-        )
         insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2625,24 +2841,25 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
         val placementPeriod = DateRange(LocalDate.of(2021, 1, 4), LocalDate.of(2021, 1, 10))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            placementPeriod,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testRoundTheClockDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900,
-                    feeAlterations = listOf()
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                placementPeriod,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testRoundTheClockDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations = listOf()
+                    )
                 )
             )
-        )
         insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2665,27 +2882,28 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // 23 operational days
         val period = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decisions = listOf(
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                // 10 days of daycare
-                DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 12)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 28900,
-                        feeAlterations = listOf()
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    // 10 days of daycare
+                    DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 12)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900,
+                            feeAlterations = listOf()
+                        )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(decisions)
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2707,44 +2925,45 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation when is half a month in a round the clock unit and the rest in a regular unit`() {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decisions = listOf(
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 14)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testRoundTheClockDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 28900,
-                        feeAlterations = listOf()
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 14)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testRoundTheClockDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900,
+                            feeAlterations = listOf()
+                        )
                     )
-                )
-            ),
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                DateRange(LocalDate.of(2021, 1, 15), LocalDate.of(2021, 1, 31)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 28900,
-                        feeAlterations = listOf()
+                ),
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    DateRange(LocalDate.of(2021, 1, 15), LocalDate.of(2021, 1, 31)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900,
+                            feeAlterations = listOf()
+                        )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(decisions)
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2778,44 +2997,45 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val secondPeriod = DateRange(LocalDate.of(2021, 1, 15), LocalDate.of(2021, 1, 31))
         val period = firstPeriod.copy(end = secondPeriod.end)
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decisions = listOf(
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                firstPeriod,
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testRoundTheClockDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 28900,
-                        feeAlterations = listOf()
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    firstPeriod,
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testRoundTheClockDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900,
+                            feeAlterations = listOf()
+                        )
                     )
-                )
-            ),
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                secondPeriod,
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testRoundTheClockDaycare.id,
-                        placementType = PlacementType.DAYCARE_PART_TIME,
-                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 28900,
-                        feeAlterations = listOf()
+                ),
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    secondPeriod,
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testRoundTheClockDaycare.id,
+                            placementType = PlacementType.DAYCARE_PART_TIME,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900,
+                            feeAlterations = listOf()
+                        )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(decisions)
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -2847,24 +3067,25 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation for round the clock unit with a force majeure absence during the week`() {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testRoundTheClockDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900,
-                    feeAlterations = listOf()
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testRoundTheClockDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations = listOf()
+                    )
                 )
             )
-        )
         insertDecisionsAndPlacements(listOf(decision))
 
         insertAbsences(
@@ -2896,24 +3117,25 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation for round the clock unit with a force majeure absence during the weekend`() {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testRoundTheClockDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900,
-                    feeAlterations = listOf()
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testRoundTheClockDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations = listOf()
+                    )
                 )
             )
-        )
         insertDecisionsAndPlacements(listOf(decision))
 
         insertAbsences(
@@ -2945,24 +3167,25 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation for round the clock unit with force majeure absences for the whole month`() {
         val period = DateRange(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testRoundTheClockDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900,
-                    feeAlterations = listOf()
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testRoundTheClockDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900,
+                        feeAlterations = listOf()
+                    )
                 )
             )
-        )
         insertDecisionsAndPlacements(listOf(decision))
 
         insertAbsences(
@@ -2994,10 +3217,11 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice generation when fee decision is valid only during weekend and there are absences for the whole month`() {
         val period = DateRange(LocalDate.of(2020, 5, 1), LocalDate.of(2020, 5, 31))
         val weekEnd = DateRange(LocalDate.of(2020, 5, 2), LocalDate.of(2020, 5, 3))
-        val absenceDays = generateSequence(LocalDate.of(2020, 5, 1)) { date -> date.plusDays(1) }
-            .takeWhile { date -> date < LocalDate.of(2020, 6, 1) }
-            .map { date -> date to AbsenceType.SICKLEAVE }
-            .toList()
+        val absenceDays =
+            generateSequence(LocalDate.of(2020, 5, 1)) { date -> date.plusDays(1) }
+                .takeWhile { date -> date < LocalDate.of(2020, 6, 1) }
+                .map { date -> date to AbsenceType.SICKLEAVE }
+                .toList()
 
         initDataForAbsences(listOf(weekEnd), absenceDays)
 
@@ -3114,7 +3338,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `free july 2021 if child has been placed in preparatory with daycare all the time`() {
         initFreeJulyTestData(
             DateRange(LocalDate.of(2021, 7, 1), LocalDate.of(2021, 7, 31)),
-            listOf(PlacementType.PREPARATORY_DAYCARE to DateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31)))
+            listOf(
+                PlacementType.PREPARATORY_DAYCARE to
+                    DateRange(LocalDate.of(2018, 7, 1), LocalDate.of(2021, 7, 31))
+            )
         )
         val result = db.read(getAllInvoices)
         assertEquals(0, result.size)
@@ -3145,8 +3372,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initFreeJulyTestData(
             DateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
             listOf(
-                PlacementType.CLUB to DateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 5, 31)),
-                PlacementType.DAYCARE to DateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 7, 31))
+                PlacementType.CLUB to
+                    DateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 5, 31)),
+                PlacementType.DAYCARE to
+                    DateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 7, 31))
             )
         )
 
@@ -3159,8 +3388,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initFreeJulyTestData(
             DateRange(LocalDate.of(2020, 7, 1), LocalDate.of(2020, 7, 31)),
             listOf(
-                PlacementType.PRESCHOOL to DateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 5, 31)),
-                PlacementType.PRESCHOOL_DAYCARE to DateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 7, 31))
+                PlacementType.PRESCHOOL to
+                    DateRange(LocalDate.of(2019, 8, 1), LocalDate.of(2020, 5, 31)),
+                PlacementType.PRESCHOOL_DAYCARE to
+                    DateRange(LocalDate.of(2020, 6, 1), LocalDate.of(2020, 7, 31))
             )
         )
 
@@ -3292,18 +3523,20 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
         // Override to use 20 days instead when calculating a daily refund
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20),
-                DefaultInvoiceGenerationLogic
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
 
-        val absenceDays = listOf(
-            LocalDate.of(2019, 1, 2) to AbsenceType.FORCE_MAJEURE,
-            LocalDate.of(2019, 1, 3) to AbsenceType.FORCE_MAJEURE
-        )
+        val absenceDays =
+            listOf(
+                LocalDate.of(2019, 1, 2) to AbsenceType.FORCE_MAJEURE,
+                LocalDate.of(2019, 1, 3) to AbsenceType.FORCE_MAJEURE
+            )
 
         initDataForAbsences(listOf(period), absenceDays)
 
@@ -3335,28 +3568,29 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decisions = listOf(
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                // 12 operational days
-                DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        // 15 contract days
-                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 21700,
-                        feeAlterations = listOf()
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    // 12 operational days
+                    DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            // 15 contract days
+                            serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 21700,
+                            feeAlterations = listOf()
+                        )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(decisions)
 
         // 2 days of planned absences -> total 12 - 2 = 10 attendance days
@@ -3388,28 +3622,29 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decisions = listOf(
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                // 3 operational days
-                DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        // 15 contract days
-                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 28900,
-                        feeAlterations = listOf()
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    // 3 operational days
+                    DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            // 15 contract days
+                            serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900,
+                            feeAlterations = listOf()
+                        )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(decisions)
 
         // 3 other absences, rest are planned absences
@@ -3420,8 +3655,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 LocalDate.of(2021, 3, 17) to AbsenceType.OTHER_ABSENCE,
                 LocalDate.of(2021, 3, 18) to AbsenceType.OTHER_ABSENCE
             ) +
-                datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31))
-                    .map { date -> date to AbsenceType.PLANNED_ABSENCE }
+                datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31)).map { date ->
+                    date to AbsenceType.PLANNED_ABSENCE
+                }
         )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -3450,28 +3686,29 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decisions = listOf(
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                // 3 operational days
-                DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        // 15 contract days
-                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 28900,
-                        feeAlterations = listOf()
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    // 3 operational days
+                    DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            // 15 contract days
+                            serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900,
+                            feeAlterations = listOf()
+                        )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(decisions)
 
         // 3 sick leaves, rest are planned absences
@@ -3482,8 +3719,9 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 LocalDate.of(2021, 3, 17) to AbsenceType.SICKLEAVE,
                 LocalDate.of(2021, 3, 18) to AbsenceType.SICKLEAVE
             ) +
-                datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31))
-                    .map { date -> date to AbsenceType.PLANNED_ABSENCE }
+                datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31)).map { date ->
+                    date to AbsenceType.PLANNED_ABSENCE
+                }
         )
 
         // freeSickLeaveOnContractDays = false
@@ -3514,28 +3752,29 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decisions = listOf(
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                // 3 operational days
-                DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        // 15 contract days
-                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 28900,
-                        feeAlterations = listOf()
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    // 3 operational days
+                    DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            // 15 contract days
+                            serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900,
+                            feeAlterations = listOf()
+                        )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(decisions)
 
         // 3 sick leaves, rest are planned absences
@@ -3546,19 +3785,21 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 LocalDate.of(2021, 3, 17) to AbsenceType.SICKLEAVE,
                 LocalDate.of(2021, 3, 18) to AbsenceType.SICKLEAVE
             ) +
-                datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31))
-                    .map { date -> date to AbsenceType.PLANNED_ABSENCE }
+                datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31)).map { date ->
+                    date to AbsenceType.PLANNED_ABSENCE
+                }
         )
 
         // freeSickLeaveOnContractDays = true
         // ==> 100 % discount because this case is considered a full month of sick leaves
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(freeSickLeaveOnContractDays = true),
-                DefaultInvoiceGenerationLogic
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(freeSickLeaveOnContractDays = true),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
@@ -3586,38 +3827,40 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decisions = listOf(
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                // 12 operational days
-                DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        // 15 contract days
-                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 21700,
-                        feeAlterations = listOf()
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    // 12 operational days
+                    DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            // 15 contract days
+                            serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 21700,
+                            feeAlterations = listOf()
+                        )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(decisions)
 
         // Override useContractDaysAsDailyFeeDivisor
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(useContractDaysAsDailyFeeDivisor = false),
-                DefaultInvoiceGenerationLogic
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(useContractDaysAsDailyFeeDivisor = false),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -3640,28 +3883,29 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decisions = listOf(
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                // 12 operational days
-                DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        // 15 contract days
-                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 21700,
-                        feeAlterations = listOf()
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    // 12 operational days
+                    DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            // 15 contract days
+                            serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 21700,
+                            feeAlterations = listOf()
+                        )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(decisions)
 
         // 2 days of planned absences -> total 12 - 2 = 10 attendance days
@@ -3674,13 +3918,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 
         // Override useContractDaysAsDailyFeeDivisor
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(useContractDaysAsDailyFeeDivisor = false),
-                DefaultInvoiceGenerationLogic
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(useContractDaysAsDailyFeeDivisor = false),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
@@ -3701,28 +3946,29 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decisions = listOf(
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                // 3 operational days
-                DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        // 15 contract days
-                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 21700,
-                        feeAlterations = listOf()
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    // 3 operational days
+                    DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            // 15 contract days
+                            serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 21700,
+                            feeAlterations = listOf()
+                        )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(decisions)
 
         // 3 other absences, rest are planned absences
@@ -3733,18 +3979,20 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 LocalDate.of(2021, 3, 17) to AbsenceType.OTHER_ABSENCE,
                 LocalDate.of(2021, 3, 18) to AbsenceType.OTHER_ABSENCE
             ) +
-                datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31))
-                    .map { date -> date to AbsenceType.PLANNED_ABSENCE }
+                datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31)).map { date ->
+                    date to AbsenceType.PLANNED_ABSENCE
+                }
         )
 
         // Override useContractDaysAsDailyFeeDivisor
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(useContractDaysAsDailyFeeDivisor = false),
-                DefaultInvoiceGenerationLogic
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(useContractDaysAsDailyFeeDivisor = false),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
@@ -3770,28 +4018,29 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decisions = listOf(
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                // 3 operational days
-                DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        // 15 contract days
-                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 21700,
-                        feeAlterations = listOf()
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    // 3 operational days
+                    DateRange(LocalDate.of(2021, 3, 16), LocalDate.of(2021, 3, 31)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            // 15 contract days
+                            serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 21700,
+                            feeAlterations = listOf()
+                        )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(decisions)
 
         // 3 sick leaves, rest are planned absences
@@ -3802,18 +4051,20 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 LocalDate.of(2021, 3, 17) to AbsenceType.SICKLEAVE,
                 LocalDate.of(2021, 3, 18) to AbsenceType.SICKLEAVE
             ) +
-                datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31))
-                    .map { date -> date to AbsenceType.PLANNED_ABSENCE }
+                datesBetween(LocalDate.of(2021, 3, 19), LocalDate.of(2021, 3, 31)).map { date ->
+                    date to AbsenceType.PLANNED_ABSENCE
+                }
         )
 
         // Override useContractDaysAsDailyFeeDivisor
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(useContractDaysAsDailyFeeDivisor = false),
-                DefaultInvoiceGenerationLogic
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(useContractDaysAsDailyFeeDivisor = false),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
         // freeSickLeaveOnContractDays = false
         // ==> 50 % discount because this case is considered a normal full month of absences
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -3841,48 +4092,53 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
-        val decisions = listOf(
-            DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 15)) to 22000,
-            DateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)) to 11000
-        ).map { (range, fee) ->
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                range,
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                        baseFee = fee,
-                        fee = roundToEuros(BigDecimal(fee) * snDaycareContractDays15.feeCoefficient).toInt()
-                    )
+        val decisions =
+            listOf(
+                    DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 15)) to 22000,
+                    DateRange(LocalDate.of(2019, 1, 16), LocalDate.of(2019, 1, 31)) to 11000
                 )
-            )
-        }
+                .map { (range, fee) ->
+                    createFeeDecisionFixture(
+                        FeeDecisionStatus.SENT,
+                        FeeDecisionType.NORMAL,
+                        range,
+                        testAdult_1.id,
+                        listOf(
+                            createFeeDecisionChildFixture(
+                                childId = testChild_1.id,
+                                dateOfBirth = testChild_1.dateOfBirth,
+                                placementUnitId = testDaycare.id,
+                                placementType = PlacementType.DAYCARE,
+                                serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                                baseFee = fee,
+                                fee =
+                                    roundToEuros(
+                                            BigDecimal(fee) * snDaycareContractDays15.feeCoefficient
+                                        )
+                                        .toInt()
+                            )
+                        )
+                    )
+                }
         insertDecisionsAndPlacements(decisions)
 
         // 17 operational days in total, the rest are planned absences
         insertAbsences(
             testChild_1.id,
-            (
-                datesBetween(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 4)) +
-                    datesBetween(LocalDate.of(2019, 1, 30), LocalDate.of(2019, 1, 31))
-                )
+            (datesBetween(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 4)) +
+                    datesBetween(LocalDate.of(2019, 1, 30), LocalDate.of(2019, 1, 31)))
                 .map { it to AbsenceType.PLANNED_ABSENCE }
         )
 
         // Override useContractDaysAsDailyFeeDivisor
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(useContractDaysAsDailyFeeDivisor = false),
-                DefaultInvoiceGenerationLogic
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(useContractDaysAsDailyFeeDivisor = false),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
@@ -3892,13 +4148,19 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(13130, invoice.totalPrice)
             assertEquals(3, invoice.rows.size)
             invoice.rows[0].let { invoiceRow ->
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(10, invoiceRow.amount)
                 assertEquals(750, invoiceRow.unitPrice) // 16500 / 22
                 assertEquals(7500, invoiceRow.price)
             }
             invoice.rows[1].let { invoiceRow ->
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(12, invoiceRow.amount)
                 assertEquals(377, invoiceRow.unitPrice) // 8300 / 22
                 assertEquals(4524, invoiceRow.price)
@@ -3918,36 +4180,38 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
 
         // Override to use 20 days instead when calculating a daily fee
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20),
-                DefaultInvoiceGenerationLogic
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decisions = listOf(
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                // 10 days of daycare
-                DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 12)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 28900,
-                        feeAlterations = listOf()
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    // 10 days of daycare
+                    DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 12)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900,
+                            feeAlterations = listOf()
+                        )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(decisions)
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -3971,36 +4235,38 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 31))
 
         // Override to use 20 days instead when calculating a daily fee
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20),
-                DefaultInvoiceGenerationLogic
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
 
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decisions = listOf(
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                // 21 days of daycare
-                DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 29)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 28900,
-                        feeAlterations = listOf()
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    // 21 days of daycare
+                    DateRange(LocalDate.of(2021, 3, 1), LocalDate.of(2021, 3, 29)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900,
+                            feeAlterations = listOf()
+                        )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(decisions)
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -4036,13 +4302,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initDataForAbsences(listOf(period), listOf())
 
         // Override to use 20 as the daily fee divisor
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20),
-                DefaultInvoiceGenerationLogic
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
@@ -4072,20 +4339,19 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // 19 operational days
         val period = DateRange(LocalDate.of(2022, 4, 1), LocalDate.of(2022, 4, 30))
 
-        val absenceDays = listOf(
-            LocalDate.of(2022, 4, 1) to AbsenceType.FORCE_MAJEURE
-        )
+        val absenceDays = listOf(LocalDate.of(2022, 4, 1) to AbsenceType.FORCE_MAJEURE)
 
         initDataForAbsences(listOf(period), absenceDays)
 
         // Override to use 20 as the daily fee divisor
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20),
-                DefaultInvoiceGenerationLogic
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(dailyFeeDivisorOperationalDaysOverride = 20),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
@@ -4111,25 +4377,26 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `invoice corrections are applied to invoices when generation is done multiple times`() {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
-        val decisions = listOf(
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                period,
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 28900
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    period,
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900
+                        )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(decisions)
         db.transaction {
             it.insertTestInvoiceCorrection(
@@ -4155,14 +4422,20 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(2, invoice.rows.size)
                 invoice.rows[0].let { invoiceRow ->
                     assertEquals(testChild_1.id, invoiceRow.child)
-                    assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                    assertEquals(
+                        productProvider.mapToProduct(PlacementType.DAYCARE),
+                        invoiceRow.product
+                    )
                     assertEquals(1, invoiceRow.amount)
                     assertEquals(28900, invoiceRow.unitPrice)
                     assertEquals(28900, invoiceRow.price)
                 }
                 invoice.rows[1].let { invoiceRow ->
                     assertEquals(testChild_1.id, invoiceRow.child)
-                    assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                    assertEquals(
+                        productProvider.mapToProduct(PlacementType.DAYCARE),
+                        invoiceRow.product
+                    )
                     assertEquals(1, invoiceRow.amount)
                     assertEquals(-28900, invoiceRow.unitPrice)
                     assertEquals(-28900, invoiceRow.price)
@@ -4185,15 +4458,16 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         // then 1 sickleave
         val sickleaveDays = listOf(LocalDate.of(2019, 1, 22) to AbsenceType.SICKLEAVE)
         // then planned absences
-        val plannedAbsenceDays = listOf(
-            LocalDate.of(2019, 1, 23),
-            LocalDate.of(2019, 1, 24),
-            LocalDate.of(2019, 1, 25),
-            LocalDate.of(2019, 1, 28),
-            LocalDate.of(2019, 1, 29),
-            LocalDate.of(2019, 1, 30)
-        )
-            .map { it to AbsenceType.PLANNED_ABSENCE }
+        val plannedAbsenceDays =
+            listOf(
+                    LocalDate.of(2019, 1, 23),
+                    LocalDate.of(2019, 1, 24),
+                    LocalDate.of(2019, 1, 25),
+                    LocalDate.of(2019, 1, 28),
+                    LocalDate.of(2019, 1, 29),
+                    LocalDate.of(2019, 1, 30)
+                )
+                .map { it to AbsenceType.PLANNED_ABSENCE }
         // then 1 more operational days
 
         initDataForAbsences(
@@ -4230,34 +4504,36 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
         // 10 sickleaves
-        val sickleaveDays = listOf(
-            LocalDate.of(2019, 1, 2) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 3) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 4) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 7) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 8) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 9) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 10) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 11) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 14) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 15) to AbsenceType.SICKLEAVE
-        )
+        val sickleaveDays =
+            listOf(
+                LocalDate.of(2019, 1, 2) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 1, 3) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 1, 4) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 1, 7) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 1, 8) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 1, 9) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 1, 10) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 1, 11) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 1, 14) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 1, 15) to AbsenceType.SICKLEAVE
+            )
         // then 12 planned absences
-        val plannedAbsenceDays = listOf(
-            LocalDate.of(2019, 1, 16),
-            LocalDate.of(2019, 1, 17),
-            LocalDate.of(2019, 1, 18),
-            LocalDate.of(2019, 1, 21),
-            LocalDate.of(2019, 1, 22),
-            LocalDate.of(2019, 1, 23),
-            LocalDate.of(2019, 1, 24),
-            LocalDate.of(2019, 1, 25),
-            LocalDate.of(2019, 1, 28),
-            LocalDate.of(2019, 1, 29),
-            LocalDate.of(2019, 1, 30),
-            LocalDate.of(2019, 1, 31)
-        )
-            .map { it to AbsenceType.PLANNED_ABSENCE }
+        val plannedAbsenceDays =
+            listOf(
+                    LocalDate.of(2019, 1, 16),
+                    LocalDate.of(2019, 1, 17),
+                    LocalDate.of(2019, 1, 18),
+                    LocalDate.of(2019, 1, 21),
+                    LocalDate.of(2019, 1, 22),
+                    LocalDate.of(2019, 1, 23),
+                    LocalDate.of(2019, 1, 24),
+                    LocalDate.of(2019, 1, 25),
+                    LocalDate.of(2019, 1, 28),
+                    LocalDate.of(2019, 1, 29),
+                    LocalDate.of(2019, 1, 30),
+                    LocalDate.of(2019, 1, 31)
+                )
+                .map { it to AbsenceType.PLANNED_ABSENCE }
 
         initDataForAbsences(
             listOf(period),
@@ -4267,13 +4543,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // freeSickLeaveOnContractDays = true
         // ==> 100 % discount because this case is considered a full month of sick leaves
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(freeSickLeaveOnContractDays = true),
-                DefaultInvoiceGenerationLogic
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(freeSickLeaveOnContractDays = true),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -4304,33 +4581,35 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // 1 operational days first
         // then 11 sickleaves
-        val sickleaveDays = listOf(
-            LocalDate.of(2019, 1, 3) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 4) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 7) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 8) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 9) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 10) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 11) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 14) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 15) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 16) to AbsenceType.SICKLEAVE,
-            LocalDate.of(2019, 1, 17) to AbsenceType.SICKLEAVE
-        )
+        val sickleaveDays =
+            listOf(
+                LocalDate.of(2019, 1, 3) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 1, 4) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 1, 7) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 1, 8) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 1, 9) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 1, 10) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 1, 11) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 1, 14) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 1, 15) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 1, 16) to AbsenceType.SICKLEAVE,
+                LocalDate.of(2019, 1, 17) to AbsenceType.SICKLEAVE
+            )
         // then 10 planned absences
-        val plannedAbsenceDays = listOf(
-            LocalDate.of(2019, 1, 18),
-            LocalDate.of(2019, 1, 21),
-            LocalDate.of(2019, 1, 22),
-            LocalDate.of(2019, 1, 23),
-            LocalDate.of(2019, 1, 24),
-            LocalDate.of(2019, 1, 25),
-            LocalDate.of(2019, 1, 28),
-            LocalDate.of(2019, 1, 29),
-            LocalDate.of(2019, 1, 30),
-            LocalDate.of(2019, 1, 31)
-        )
-            .map { it to AbsenceType.PLANNED_ABSENCE }
+        val plannedAbsenceDays =
+            listOf(
+                    LocalDate.of(2019, 1, 18),
+                    LocalDate.of(2019, 1, 21),
+                    LocalDate.of(2019, 1, 22),
+                    LocalDate.of(2019, 1, 23),
+                    LocalDate.of(2019, 1, 24),
+                    LocalDate.of(2019, 1, 25),
+                    LocalDate.of(2019, 1, 28),
+                    LocalDate.of(2019, 1, 29),
+                    LocalDate.of(2019, 1, 30),
+                    LocalDate.of(2019, 1, 31)
+                )
+                .map { it to AbsenceType.PLANNED_ABSENCE }
 
         initDataForAbsences(
             listOf(period),
@@ -4401,25 +4680,26 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    siblingDiscount = 50,
-                    fee = 10900,
-                    feeAlterations = listOf()
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        siblingDiscount = 50,
+                        fee = 10900,
+                        feeAlterations = listOf()
+                    )
                 )
             )
-        )
         insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -4450,30 +4730,38 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 21700,
-                    feeAlterations = listOf(
-                        createFeeDecisionAlterationFixture(
-                            amount = 50,
-                            isAbsolute = false,
-                            effect = feeAlterationEffect(21700, FeeAlteration.Type.DISCOUNT, 50, false)
-                        )
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 21700,
+                        feeAlterations =
+                            listOf(
+                                createFeeDecisionAlterationFixture(
+                                    amount = 50,
+                                    isAbsolute = false,
+                                    effect =
+                                        feeAlterationEffect(
+                                            21700,
+                                            FeeAlteration.Type.DISCOUNT,
+                                            50,
+                                            false
+                                        )
+                                )
+                            )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -4517,26 +4805,32 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // 15 operational days first
         // then planned absences
-        val plannedAbsenceDays = listOf(
-            LocalDate.of(2019, 1, 23),
-            LocalDate.of(2019, 1, 24),
-            LocalDate.of(2019, 1, 25),
-            LocalDate.of(2019, 1, 28),
-            LocalDate.of(2019, 1, 29),
-            LocalDate.of(2019, 1, 30)
-        )
-            .map { it to AbsenceType.PLANNED_ABSENCE }
+        val plannedAbsenceDays =
+            listOf(
+                    LocalDate.of(2019, 1, 23),
+                    LocalDate.of(2019, 1, 24),
+                    LocalDate.of(2019, 1, 25),
+                    LocalDate.of(2019, 1, 28),
+                    LocalDate.of(2019, 1, 29),
+                    LocalDate.of(2019, 1, 30)
+                )
+                .map { it to AbsenceType.PLANNED_ABSENCE }
         // then 1 more operational day
-        initDataForAbsences(listOf(period), plannedAbsenceDays, serviceNeed = snDaycareContractDays15)
+        initDataForAbsences(
+            listOf(period),
+            plannedAbsenceDays,
+            serviceNeed = snDaycareContractDays15
+        )
 
         // Override maxContractDaySurplusThreshold feature config
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(maxContractDaySurplusThreshold = 16),
-                DefaultInvoiceGenerationLogic
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(maxContractDaySurplusThreshold = 16),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
@@ -4566,25 +4860,31 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // 15 operational days first
         // then planned absences
-        val plannedAbsenceDays = listOf(
-            LocalDate.of(2019, 1, 23),
-            LocalDate.of(2019, 1, 24),
-            LocalDate.of(2019, 1, 25),
-            LocalDate.of(2019, 1, 28),
-            LocalDate.of(2019, 1, 29)
-        )
-            .map { it to AbsenceType.PLANNED_ABSENCE }
+        val plannedAbsenceDays =
+            listOf(
+                    LocalDate.of(2019, 1, 23),
+                    LocalDate.of(2019, 1, 24),
+                    LocalDate.of(2019, 1, 25),
+                    LocalDate.of(2019, 1, 28),
+                    LocalDate.of(2019, 1, 29)
+                )
+                .map { it to AbsenceType.PLANNED_ABSENCE }
         // then 2 more operational days
-        initDataForAbsences(listOf(period), plannedAbsenceDays, serviceNeed = snDaycareContractDays15)
+        initDataForAbsences(
+            listOf(period),
+            plannedAbsenceDays,
+            serviceNeed = snDaycareContractDays15
+        )
 
         // Override maxContractDaySurplusThreshold feature config
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(maxContractDaySurplusThreshold = 16),
-                DefaultInvoiceGenerationLogic
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(maxContractDaySurplusThreshold = 16),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
@@ -4613,24 +4913,25 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
         // 20 operational days and no planned absences
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 29)),
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 21700,
-                    feeAlterations = listOf()
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 29)),
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 21700,
+                        feeAlterations = listOf()
+                    )
                 )
             )
-        )
         insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -4661,34 +4962,40 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
         // 18 operational days and no planned absences
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 25)),
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 21700,
-                    feeAlterations = listOf()
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 25)),
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 21700,
+                        feeAlterations = listOf()
+                    )
                 )
             )
-        )
         insertDecisionsAndPlacements(listOf(decision))
 
-        // Override useContractDaysAsDailyFeeDivisor and maxContractDaySurplusThreshold feature configs
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(useContractDaysAsDailyFeeDivisor = false, maxContractDaySurplusThreshold = 16),
-                DefaultInvoiceGenerationLogic
+        // Override useContractDaysAsDailyFeeDivisor and maxContractDaySurplusThreshold feature
+        // configs
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(
+                        useContractDaysAsDailyFeeDivisor = false,
+                        maxContractDaySurplusThreshold = 16
+                    ),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
@@ -4717,34 +5024,40 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
         // 18 operational days and no planned absences
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            DateRange(LocalDate.of(2019, 1, 8), LocalDate.of(2019, 1, 31)),
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 21700,
-                    feeAlterations = listOf()
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                DateRange(LocalDate.of(2019, 1, 8), LocalDate.of(2019, 1, 31)),
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 21700,
+                        feeAlterations = listOf()
+                    )
                 )
             )
-        )
         insertDecisionsAndPlacements(listOf(decision))
 
-        // Override useContractDaysAsDailyFeeDivisor and maxContractDaySurplusThreshold feature configs
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(useContractDaysAsDailyFeeDivisor = false, maxContractDaySurplusThreshold = 16),
-                DefaultInvoiceGenerationLogic
+        // Override useContractDaysAsDailyFeeDivisor and maxContractDaySurplusThreshold feature
+        // configs
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(
+                        useContractDaysAsDailyFeeDivisor = false,
+                        maxContractDaySurplusThreshold = 16
+                    ),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
@@ -4773,23 +5086,24 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 21700
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 21700
+                    )
                 )
             )
-        )
         insertDecisionsAndPlacements(
             listOf(
                 decision.copy(validDuring = period.copy(end = LocalDate.of(2019, 1, 15))),
@@ -4800,14 +5114,19 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
         )
 
-        // Override useContractDaysAsDailyFeeDivisor and maxContractDaySurplusThreshold feature configs
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(useContractDaysAsDailyFeeDivisor = false, maxContractDaySurplusThreshold = 16),
-                DefaultInvoiceGenerationLogic
+        // Override useContractDaysAsDailyFeeDivisor and maxContractDaySurplusThreshold feature
+        // configs
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(
+                        useContractDaysAsDailyFeeDivisor = false,
+                        maxContractDaySurplusThreshold = 16
+                    ),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
@@ -4836,53 +5155,59 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
 
-        val decisions = listOf(
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                period.copy(end = LocalDate.of(2019, 1, 15)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = 21700
+        val decisions =
+            listOf(
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    period.copy(end = LocalDate.of(2019, 1, 15)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 21700
+                        )
                     )
-                )
-            ),
-            createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                period.copy(start = LocalDate.of(2019, 1, 16)),
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = testChild_1.id,
-                        dateOfBirth = testChild_1.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        siblingDiscount = 50,
-                        fee = 10900
+                ),
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    period.copy(start = LocalDate.of(2019, 1, 16)),
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareContractDays15.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            siblingDiscount = 50,
+                            fee = 10900
+                        )
                     )
                 )
             )
-        )
         insertDecisionsAndPlacements(decisions)
 
-        // Override useContractDaysAsDailyFeeDivisor and maxContractDaySurplusThreshold feature configs
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(useContractDaysAsDailyFeeDivisor = false, maxContractDaySurplusThreshold = 16),
-                DefaultInvoiceGenerationLogic
+        // Override useContractDaysAsDailyFeeDivisor and maxContractDaySurplusThreshold feature
+        // configs
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(
+                        useContractDaysAsDailyFeeDivisor = false,
+                        maxContractDaySurplusThreshold = 16
+                    ),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
@@ -4904,7 +5229,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             invoice.rows[2].let { invoiceRow ->
                 assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
                 assertEquals(1, invoiceRow.amount)
-                assertEquals(5245, invoiceRow.unitPrice) // (10 * 28900 + 12 * 14500) (= 21045) / 22 - 9860 - 5940
+                assertEquals(
+                    5245,
+                    invoiceRow.unitPrice
+                ) // (10 * 28900 + 12 * 14500) (= 21045) / 22 - 9860 - 5940
                 assertEquals(5245, invoiceRow.price)
             }
         }
@@ -4916,12 +5244,10 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
 
         // 1 force majeure absence
-        val forceMajeure =
-            listOf(LocalDate.of(2019, 1, 16) to AbsenceType.FORCE_MAJEURE)
+        val forceMajeure = listOf(LocalDate.of(2019, 1, 16) to AbsenceType.FORCE_MAJEURE)
 
         // 1 free absence
-        val free =
-            listOf(LocalDate.of(2019, 1, 17) to AbsenceType.FREE_ABSENCE)
+        val free = listOf(LocalDate.of(2019, 1, 17) to AbsenceType.FREE_ABSENCE)
 
         initDataForAbsences(listOf(period), forceMajeure + free)
 
@@ -4956,13 +5282,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initDataForAbsences(listOf(period), free)
 
         // Override freeAbsenceGivesADailyRefund feature config
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(freeAbsenceGivesADailyRefund = false),
-                DefaultInvoiceGenerationLogic
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(freeAbsenceGivesADailyRefund = false),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
@@ -4993,13 +5320,14 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         initDataForAbsences(listOf(period), free, serviceNeed = snDaycareContractDays15)
 
         // Override freeAbsenceGivesADailyRefund feature config
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig.copy(freeAbsenceGivesADailyRefund = false),
-                DefaultInvoiceGenerationLogic
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig.copy(freeAbsenceGivesADailyRefund = false),
+                    DefaultInvoiceGenerationLogic
+                )
             )
-        )
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
         val result = db.read(getAllInvoices)
@@ -5026,16 +5354,21 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         initDataForAbsences(listOf(period), listOf())
 
-        val generator = InvoiceGenerator(
-            DraftInvoiceGenerator(
-                productProvider,
-                featureConfig,
-                object : InvoiceGenerationLogicChooser {
-                    override fun logicForMonth(tx: Database.Read, year: Int, month: Month, childId: ChildId) =
-                        InvoiceGenerationLogic.Free
-                }
+        val generator =
+            InvoiceGenerator(
+                DraftInvoiceGenerator(
+                    productProvider,
+                    featureConfig,
+                    object : InvoiceGenerationLogicChooser {
+                        override fun logicForMonth(
+                            tx: Database.Read,
+                            year: Int,
+                            month: Month,
+                            childId: ChildId
+                        ) = InvoiceGenerationLogic.Free
+                    }
+                )
             )
-        )
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
 
@@ -5048,34 +5381,36 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
         db.transaction(insertChildParentRelation(testAdult_2.id, testChild_2.id, period))
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            headOfFamilyId = testAdult_1.id,
-            partnerId = testAdult_2.id,
-            children = listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900
-                ),
-                createFeeDecisionChildFixture(
-                    childId = testChild_2.id,
-                    dateOfBirth = testChild_2.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    siblingDiscount = 50,
-                    fee = 14500
-                )
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                headOfFamilyId = testAdult_1.id,
+                partnerId = testAdult_2.id,
+                children =
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = testChild_1.id,
+                            dateOfBirth = testChild_1.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee = 28900
+                        ),
+                        createFeeDecisionChildFixture(
+                            childId = testChild_2.id,
+                            dateOfBirth = testChild_2.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            siblingDiscount = 50,
+                            fee = 14500
+                        )
+                    )
             )
-        )
         insertDecisionsAndPlacements(listOf(decision))
 
         db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
@@ -5089,14 +5424,20 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             assertEquals(2, invoice.rows.size)
             invoice.rows.first().let { invoiceRow ->
                 assertEquals(testChild_1.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(28900, invoiceRow.unitPrice)
                 assertEquals(28900, invoiceRow.price)
             }
             invoice.rows.last().let { invoiceRow ->
                 assertEquals(testChild_2.id, invoiceRow.child)
-                assertEquals(productProvider.mapToProduct(PlacementType.DAYCARE), invoiceRow.product)
+                assertEquals(
+                    productProvider.mapToProduct(PlacementType.DAYCARE),
+                    invoiceRow.product
+                )
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(14500, invoiceRow.unitPrice)
                 assertEquals(14500, invoiceRow.price)
@@ -5110,28 +5451,33 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         children: List<DevPerson> = listOf(testChild_1),
         partner: PersonId? = null
     ) {
-        children.forEach { child -> db.transaction(insertChildParentRelation(testAdult_1.id, child.id, period)) }
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            period,
-            testAdult_1.id,
-            children.map { child ->
-                createFeeDecisionChildFixture(
-                    childId = child.id,
-                    dateOfBirth = child.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = placementType,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900
-                )
-            },
-            partnerId = partner
-        )
+        children.forEach { child ->
+            db.transaction(insertChildParentRelation(testAdult_1.id, child.id, period))
+        }
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                children.map { child ->
+                    createFeeDecisionChildFixture(
+                        childId = child.id,
+                        dateOfBirth = child.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = placementType,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900
+                    )
+                },
+                partnerId = partner
+            )
         insertDecisionsAndPlacements(
             listOf(
-                decision.copy(validDuring = decision.validDuring.copy(end = period.start.plusDays(7))),
+                decision.copy(
+                    validDuring = decision.validDuring.copy(end = period.start.plusDays(7))
+                ),
                 decision.copy(
                     id = FeeDecisionId(UUID.randomUUID()),
                     validDuring = decision.validDuring.copy(start = period.start.plusDays(8))
@@ -5144,42 +5490,45 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         invoicingPeriod: DateRange,
         placementPeriods: List<DateRange>,
         placementType: PlacementType = PlacementType.DAYCARE
-    ) = initFreeJulyTestData(
-        invoicingPeriod,
-        placementPeriods.map { placementType to it }
-    )
+    ) = initFreeJulyTestData(invoicingPeriod, placementPeriods.map { placementType to it })
 
     private fun initFreeJulyTestData(
         invoicingPeriod: DateRange,
         placementPeriods: List<Pair<PlacementType, DateRange>>
     ) {
-        val decision = createFeeDecisionFixture(
-            FeeDecisionStatus.SENT,
-            FeeDecisionType.NORMAL,
-            invoicingPeriod,
-            testAdult_1.id,
-            listOf(
-                createFeeDecisionChildFixture(
-                    childId = testChild_1.id,
-                    dateOfBirth = testChild_1.dateOfBirth,
-                    placementUnitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
-                    baseFee = 28900,
-                    fee = 28900
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                invoicingPeriod,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toFeeDecisionServiceNeed(),
+                        baseFee = 28900,
+                        fee = 28900
+                    )
                 )
             )
-        )
         db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, invoicingPeriod))
         db.transaction { tx ->
             tx.upsertFeeDecisions(
                 listOf(
-                    decision.copy(validDuring = decision.validDuring.copy(end = invoicingPeriod.start.plusDays(7)))
+                    decision.copy(
+                        validDuring =
+                            decision.validDuring.copy(end = invoicingPeriod.start.plusDays(7))
+                    )
                 )
             )
         }
 
-        placementPeriods.forEach { (type, period) -> db.transaction(insertPlacement(testChild_1.id, period, type)) }
+        placementPeriods.forEach { (type, period) ->
+            db.transaction(insertPlacement(testChild_1.id, period, type))
+        }
         db.transaction { generator.createAndStoreAllDraftInvoices(it, invoicingPeriod) }
     }
 
@@ -5190,40 +5539,47 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         serviceNeed: ServiceNeedOption = snDaycareFullDay35
     ) {
         periods.forEachIndexed { index, period ->
-            val decision = createFeeDecisionFixture(
-                FeeDecisionStatus.SENT,
-                FeeDecisionType.NORMAL,
-                period,
-                testAdult_1.id,
-                listOf(
-                    createFeeDecisionChildFixture(
-                        childId = child.id,
-                        dateOfBirth = child.dateOfBirth,
-                        placementUnitId = testDaycare.id,
-                        placementType = PlacementType.DAYCARE,
-                        serviceNeed = serviceNeed.toFeeDecisionServiceNeed(),
-                        baseFee = 28900,
-                        fee = roundToEuros(serviceNeed.feeCoefficient * BigDecimal(28900)).toInt(),
-                        feeAlterations = if (index > 0) {
-                            listOf(
-                                createFeeDecisionAlterationFixture(
-                                    amount = -100,
-                                    isAbsolute = true,
-                                    effect = -10000
-                                )
-                            )
-                        } else {
-                            listOf()
-                        }
+            val decision =
+                createFeeDecisionFixture(
+                    FeeDecisionStatus.SENT,
+                    FeeDecisionType.NORMAL,
+                    period,
+                    testAdult_1.id,
+                    listOf(
+                        createFeeDecisionChildFixture(
+                            childId = child.id,
+                            dateOfBirth = child.dateOfBirth,
+                            placementUnitId = testDaycare.id,
+                            placementType = PlacementType.DAYCARE,
+                            serviceNeed = serviceNeed.toFeeDecisionServiceNeed(),
+                            baseFee = 28900,
+                            fee =
+                                roundToEuros(serviceNeed.feeCoefficient * BigDecimal(28900))
+                                    .toInt(),
+                            feeAlterations =
+                                if (index > 0) {
+                                    listOf(
+                                        createFeeDecisionAlterationFixture(
+                                            amount = -100,
+                                            isAbsolute = true,
+                                            effect = -10000
+                                        )
+                                    )
+                                } else {
+                                    listOf()
+                                }
+                        )
                     )
                 )
-            )
 
             db.transaction(insertChildParentRelation(testAdult_1.id, child.id, period))
             db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
 
             val placementId = db.transaction(insertPlacement(child.id, period))
-            val groupId = db.transaction { it.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id)) }
+            val groupId =
+                db.transaction {
+                    it.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id))
+                }
             db.transaction { tx ->
                 tx.insertTestDaycareGroupPlacement(
                     daycarePlacementId = placementId,
@@ -5253,49 +5609,57 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
     }
 
-    private fun insertDecisionsAndPlacements(feeDecisions: List<FeeDecision>) = db.transaction { tx ->
-        tx.upsertFeeDecisions(feeDecisions)
-        feeDecisions.forEach { decision ->
-            decision.children.forEach { part ->
-                tx.insertTestPlacement(
-                    childId = part.child.id,
-                    unitId = part.placement.unitId,
-                    startDate = decision.validFrom,
-                    endDate = decision.validTo!!,
-                    type = part.placement.type
-                )
+    private fun insertDecisionsAndPlacements(feeDecisions: List<FeeDecision>) =
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(feeDecisions)
+            feeDecisions.forEach { decision ->
+                decision.children.forEach { part ->
+                    tx.insertTestPlacement(
+                        childId = part.child.id,
+                        unitId = part.placement.unitId,
+                        startDate = decision.validFrom,
+                        endDate = decision.validTo!!,
+                        type = part.placement.type
+                    )
+                }
             }
         }
+
+    private fun insertPlacement(
+        childId: ChildId,
+        period: DateRange,
+        type: PlacementType = PlacementType.DAYCARE
+    ) = { tx: Database.Transaction ->
+        tx.insertTestPlacement(
+            childId = childId,
+            unitId = testDaycare.id,
+            startDate = period.start,
+            endDate = period.end!!,
+            type = type
+        )
     }
 
-    private fun insertPlacement(childId: ChildId, period: DateRange, type: PlacementType = PlacementType.DAYCARE) =
-        { tx: Database.Transaction ->
-            tx.insertTestPlacement(
-                childId = childId,
-                unitId = testDaycare.id,
-                startDate = period.start,
-                endDate = period.end!!,
-                type = type
-            )
-        }
-
-    private fun insertChildParentRelation(headOfFamilyId: PersonId, childId: ChildId, period: DateRange) =
-        { tx: Database.Transaction ->
-            tx.insertTestParentship(
-                headOfFamilyId,
-                childId,
-                startDate = period.start,
-                endDate = period.end!!
-            )
-        }
+    private fun insertChildParentRelation(
+        headOfFamilyId: PersonId,
+        childId: ChildId,
+        period: DateRange
+    ) = { tx: Database.Transaction ->
+        tx.insertTestParentship(
+            headOfFamilyId,
+            childId,
+            startDate = period.start,
+            endDate = period.end!!
+        )
+    }
 
     private val getAllInvoices: (Database.Read) -> List<Invoice> = { r ->
         r.createQuery(
-            """
+                """
             $invoiceQueryBase
             ORDER BY invoice.id, row.idx
-            """.trimIndent()
-        )
+            """
+                    .trimIndent()
+            )
             .map(toInvoice)
             .list()
             .let(::flatten)

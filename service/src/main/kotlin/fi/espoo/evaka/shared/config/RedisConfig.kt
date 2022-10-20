@@ -15,16 +15,17 @@ import redis.clients.jedis.Protocol
 @Configuration
 class RedisConfig {
     @Bean
-    fun redisPool(env: RedisEnv) = JedisPool(
-        GenericObjectPoolConfig<Jedis>().apply {
-            jmxEnabled = true
-            jmxNamePrefix = "jedis"
-        },
-        env.url,
-        env.port,
-        Protocol.DEFAULT_TIMEOUT,
-        env.password.value.ifEmpty { null },
-        Protocol.DEFAULT_DATABASE,
-        env.useSsl
-    )
+    fun redisPool(env: RedisEnv) =
+        JedisPool(
+            GenericObjectPoolConfig<Jedis>().apply {
+                jmxEnabled = true
+                jmxNamePrefix = "jedis"
+            },
+            env.url,
+            env.port,
+            Protocol.DEFAULT_TIMEOUT,
+            env.password.value.ifEmpty { null },
+            Protocol.DEFAULT_DATABASE,
+            env.useSsl
+        )
 }

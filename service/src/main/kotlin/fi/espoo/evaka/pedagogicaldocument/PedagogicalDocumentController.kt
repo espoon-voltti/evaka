@@ -37,16 +37,23 @@ class PedagogicalDocumentController(
         clock: EvakaClock,
         @RequestBody body: PedagogicalDocumentPostBody
     ): PedagogicalDocument {
-        accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_PEDAGOGICAL_DOCUMENT, body.childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Child.CREATE_PEDAGOGICAL_DOCUMENT,
+            body.childId
+        )
         return db.connect {
-            it.transaction { tx ->
-                tx.createDocument(user, body).also {
-                    pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(tx, it.id)
+                it.transaction { tx ->
+                    tx.createDocument(user, body).also {
+                        pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(
+                            tx,
+                            it.id
+                        )
+                    }
                 }
             }
-        }.also {
-            Audit.PedagogicalDocumentCreate.log(targetId = body.childId, objectId = it.id)
-        }
+            .also { Audit.PedagogicalDocumentCreate.log(targetId = body.childId, objectId = it.id) }
     }
 
     @PutMapping("/{documentId}")
@@ -57,16 +64,23 @@ class PedagogicalDocumentController(
         @PathVariable documentId: PedagogicalDocumentId,
         @RequestBody body: PedagogicalDocumentPostBody
     ): PedagogicalDocument {
-        accessControl.requirePermissionFor(user, clock, Action.PedagogicalDocument.UPDATE, documentId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.PedagogicalDocument.UPDATE,
+            documentId
+        )
         return db.connect {
-            it.transaction { tx ->
-                tx.updateDocument(user, body, documentId).also {
-                    pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(tx, it.id)
+                it.transaction { tx ->
+                    tx.updateDocument(user, body, documentId).also {
+                        pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(
+                            tx,
+                            it.id
+                        )
+                    }
                 }
             }
-        }.also {
-            Audit.PedagogicalDocumentUpdate.log(targetId = documentId)
-        }
+            .also { Audit.PedagogicalDocumentUpdate.log(targetId = documentId) }
     }
 
     @GetMapping("/child/{childId}")
@@ -76,14 +90,19 @@ class PedagogicalDocumentController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<PedagogicalDocument> {
-        accessControl.requirePermissionFor(user, clock, Action.Child.READ_PEDAGOGICAL_DOCUMENTS, childId)
-        return db.connect { dbc ->
-            dbc.read {
-                it.findPedagogicalDocumentsByChild(childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Child.READ_PEDAGOGICAL_DOCUMENTS,
+            childId
+        )
+        return db.connect { dbc -> dbc.read { it.findPedagogicalDocumentsByChild(childId) } }
+            .also {
+                Audit.PedagogicalDocumentRead.log(
+                    targetId = childId,
+                    args = mapOf("count" to it.size)
+                )
             }
-        }.also {
-            Audit.PedagogicalDocumentRead.log(targetId = childId, args = mapOf("count" to it.size))
-        }
     }
 
     @DeleteMapping("/{documentId}")
@@ -93,19 +112,19 @@ class PedagogicalDocumentController(
         clock: EvakaClock,
         @PathVariable documentId: PedagogicalDocumentId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.PedagogicalDocument.DELETE, documentId)
-        db.connect { dbc ->
-            dbc.transaction {
-                it.deleteDocument(documentId)
-            }
-        }
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.PedagogicalDocument.DELETE,
+            documentId
+        )
+        db.connect { dbc -> dbc.transaction { it.deleteDocument(documentId) } }
         Audit.PedagogicalDocumentUpdate.log(targetId = documentId)
     }
 }
 
 data class Attachment(
-    @PropagateNull
-    val id: AttachmentId,
+    @PropagateNull val id: AttachmentId,
     val name: String,
     val contentType: String
 )
@@ -119,22 +138,20 @@ data class PedagogicalDocument(
     val updated: HelsinkiDateTime
 )
 
-data class PedagogicalDocumentPostBody(
-    val childId: ChildId,
-    val description: String
-)
+data class PedagogicalDocumentPostBody(val childId: ChildId, val description: String)
 
 private fun Database.Transaction.createDocument(
     user: AuthenticatedUser,
     body: PedagogicalDocumentPostBody
 ): PedagogicalDocument {
     return this.createUpdate(
-        """
+            """
             INSERT INTO pedagogical_document(child_id, created_by, description)
             VALUES (:child_id, :created_by, :description)
             RETURNING *
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("child_id", body.childId)
         .bind("description", body.description)
         .bind("created_by", user.evakaUserId)
@@ -149,13 +166,14 @@ private fun Database.Transaction.updateDocument(
     documentId: PedagogicalDocumentId
 ): PedagogicalDocument {
     return this.createUpdate(
-        """
+            """
             UPDATE pedagogical_document
             SET description = :description, 
                 updated_by = :updated_by
             WHERE id = :id AND child_id = :child_id
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("id", documentId)
         .bind("child_id", body.childId)
         .bind("description", body.description)
@@ -169,7 +187,7 @@ private fun Database.Read.findPedagogicalDocumentsByChild(
     childId: ChildId
 ): List<PedagogicalDocument> {
     return this.createQuery(
-        """
+            """
             SELECT 
                 pd.id,
                 pd.child_id,
@@ -178,18 +196,19 @@ private fun Database.Read.findPedagogicalDocumentsByChild(
                 pd.updated
             FROM pedagogical_document pd
             WHERE child_id = :child_id
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("child_id", childId)
         .mapTo<PedagogicalDocument>()
         .list()
         .map { pd -> pd.copy(attachments = getPedagogicalDocumentAttachments(pd.id)) }
 }
 
-private fun Database.Transaction.deleteDocument(
-    documentId: PedagogicalDocumentId
-) {
-    this.createUpdate("DELETE FROM pedagogical_document_read WHERE pedagogical_document_id = :document_id")
+private fun Database.Transaction.deleteDocument(documentId: PedagogicalDocumentId) {
+    this.createUpdate(
+            "DELETE FROM pedagogical_document_read WHERE pedagogical_document_id = :document_id"
+        )
         .bind("document_id", documentId)
         .execute()
     this.createUpdate("DELETE FROM attachment WHERE pedagogical_document_id = :document_id")

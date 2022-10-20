@@ -25,101 +25,105 @@ import fi.espoo.evaka.test.validPreschoolApplication
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.voltti.pdfgen.PDFService
+import java.io.File
+import java.io.FileOutputStream
+import java.time.LocalDate
+import java.util.UUID
+import kotlin.test.assertNotNull
 import mu.KotlinLogging
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
-import java.io.File
-import java.io.FileOutputStream
-import java.time.LocalDate
-import java.util.UUID
-import kotlin.test.assertNotNull
 
-val logger = KotlinLogging.logger { }
+val logger = KotlinLogging.logger {}
 
 private val application = validPreschoolApplication
-private val transferApplication = application.copy(
-    transferApplication = true
-)
+private val transferApplication = application.copy(transferApplication = true)
 
 private val daycareTransferDecision =
     createValidDecision(applicationId = transferApplication.id, type = DecisionType.DAYCARE)
-private val daycareDecision = createValidDecision(applicationId = application.id, type = DecisionType.DAYCARE)
+private val daycareDecision =
+    createValidDecision(applicationId = application.id, type = DecisionType.DAYCARE)
 private val preschoolDaycareDecision =
     createValidDecision(applicationId = application.id, type = DecisionType.PRESCHOOL_DAYCARE)
 private val daycareDecisionPartTime =
     createValidDecision(applicationId = application.id, type = DecisionType.DAYCARE_PART_TIME)
-private val preschoolDecision = createValidDecision(applicationId = application.id, type = DecisionType.PRESCHOOL)
+private val preschoolDecision =
+    createValidDecision(applicationId = application.id, type = DecisionType.PRESCHOOL)
 private val preparatoryDecision =
     createValidDecision(applicationId = application.id, type = DecisionType.PREPARATORY_EDUCATION)
-private val clubDecision = createValidDecision(applicationId = application.id, type = DecisionType.CLUB)
+private val clubDecision =
+    createValidDecision(applicationId = application.id, type = DecisionType.CLUB)
 
-private val voucherDecision = daycareDecision.copy(
-    endDate = LocalDate.of(2019, 7, 31),
-    unit = DecisionUnit(
-        DaycareId(UUID.randomUUID()),
-        "Suomenniemen palvelusetelipäiväkoti",
-        "Suomenniemen palvelusetelipäiväkoti",
-        "Suomenniemen palvelusetelipäiväkodin esiopetus",
-        "Pirkko Sanelma Ullanlinna",
-        "Hyväntoivonniementie 13 B",
-        "02200",
-        "ESPOO",
-        "+35850 1234564",
-        "Suomenniemen palvelusetelipäiväkodin asiakaspalvelu",
-        "Kartanonkujanpää 565, 02210 Espoo",
-        providerType = ProviderType.PRIVATE_SERVICE_VOUCHER
+private val voucherDecision =
+    daycareDecision.copy(
+        endDate = LocalDate.of(2019, 7, 31),
+        unit =
+            DecisionUnit(
+                DaycareId(UUID.randomUUID()),
+                "Suomenniemen palvelusetelipäiväkoti",
+                "Suomenniemen palvelusetelipäiväkoti",
+                "Suomenniemen palvelusetelipäiväkodin esiopetus",
+                "Pirkko Sanelma Ullanlinna",
+                "Hyväntoivonniementie 13 B",
+                "02200",
+                "ESPOO",
+                "+35850 1234564",
+                "Suomenniemen palvelusetelipäiväkodin asiakaspalvelu",
+                "Kartanonkujanpää 565, 02210 Espoo",
+                providerType = ProviderType.PRIVATE_SERVICE_VOUCHER
+            )
     )
-)
 
 private val settings = mapOf<SettingType, String>()
-private val child = PersonDTO(
-    testChild_1.id,
-    ExternalIdentifier.SSN.getInstance(testChild_1.ssn!!),
-    false,
-    "Kullervo Kyöstinpoika",
-    "Pöysti",
-    "",
-    null,
-    "",
-    "",
-    null,
-    testChild_1.dateOfBirth,
-    null,
-    "Kuusikallionrinne 26 A 4",
-    "02270",
-    "Espoo",
-    ""
-)
-private val guardian = PersonDTO(
-    testAdult_1.id,
-    ExternalIdentifier.SSN.getInstance(testAdult_1.ssn!!),
-    false,
-    "Kyösti Taavetinpoika",
-    "Pöysti",
-    "",
-    "kyostipoysti@example.com",
-    "+358914822",
-    "+358914829",
-    null,
-    testAdult_1.dateOfBirth,
-    null,
-    "Kuusikallionrinne 26 A 4",
-    "02270",
-    "Espoo",
-    ""
-)
-private val manager = DaycareManager("Pirkko Päiväkodinjohtaja", "pirkko.paivakodinjohtaja@example.com", "0401231234")
+private val child =
+    PersonDTO(
+        testChild_1.id,
+        ExternalIdentifier.SSN.getInstance(testChild_1.ssn!!),
+        false,
+        "Kullervo Kyöstinpoika",
+        "Pöysti",
+        "",
+        null,
+        "",
+        "",
+        null,
+        testChild_1.dateOfBirth,
+        null,
+        "Kuusikallionrinne 26 A 4",
+        "02270",
+        "Espoo",
+        ""
+    )
+private val guardian =
+    PersonDTO(
+        testAdult_1.id,
+        ExternalIdentifier.SSN.getInstance(testAdult_1.ssn!!),
+        false,
+        "Kyösti Taavetinpoika",
+        "Pöysti",
+        "",
+        "kyostipoysti@example.com",
+        "+358914822",
+        "+358914829",
+        null,
+        testAdult_1.dateOfBirth,
+        null,
+        "Kuusikallionrinne 26 A 4",
+        "02270",
+        "Espoo",
+        ""
+    )
+private val manager =
+    DaycareManager("Pirkko Päiväkodinjohtaja", "pirkko.paivakodinjohtaja@example.com", "0401231234")
 
 @TestConfiguration
 class PDFServiceTestConfiguration {
-    @Bean
-    fun messageProvider(): IMessageProvider = EvakaMessageProvider()
+    @Bean fun messageProvider(): IMessageProvider = EvakaMessageProvider()
 
-    @Bean
-    fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
+    @Bean fun templateProvider(): ITemplateProvider = EvakaTemplateProvider()
 }
 
 @SpringBootTest(
@@ -128,8 +132,7 @@ class PDFServiceTestConfiguration {
 )
 class PDFServiceTest {
 
-    @Autowired
-    lateinit var pdfService: PDFService
+    @Autowired lateinit var pdfService: PDFService
 
     @Test
     fun createFinnishPDFs() {
@@ -155,7 +158,12 @@ class PDFServiceTest {
         createPDF(clubDecision, false, DocumentLang.SV)
     }
 
-    private fun createPDF(decision: Decision, isTransferApplication: Boolean, lang: DocumentLang, serviceNeed: ServiceNeed? = null) {
+    private fun createPDF(
+        decision: Decision,
+        isTransferApplication: Boolean,
+        lang: DocumentLang,
+        serviceNeed: ServiceNeed? = null
+    ) {
         val decisionPdfByteArray =
             createDecisionPdf(
                 EvakaMessageProvider(),
@@ -174,11 +182,11 @@ class PDFServiceTest {
         val file = File.createTempFile("decision_", ".pdf")
         assertNotNull(decisionPdfByteArray)
 
-        FileOutputStream(file).use {
-            it.write(decisionPdfByteArray)
-        }
+        FileOutputStream(file).use { it.write(decisionPdfByteArray) }
 
-        logger.debug { "Generated $lang ${decision.type} (${decision.unit.providerType}${if (isTransferApplication) ", transfer application" else ""}) decision PDF to ${file.absolutePath}" }
+        logger.debug {
+            "Generated $lang ${decision.type} (${decision.unit.providerType}${if (isTransferApplication) ", transfer application" else ""}) decision PDF to ${file.absolutePath}"
+        }
     }
 }
 
@@ -188,20 +196,21 @@ fun createValidDecision(
     type: DecisionType = DecisionType.DAYCARE,
     startDate: LocalDate = LocalDate.of(2019, 1, 1),
     endDate: LocalDate = LocalDate.of(2019, 12, 31),
-    unit: DecisionUnit = DecisionUnit(
-        DaycareId(UUID.randomUUID()),
-        "Kuusenkerkän päiväkoti",
-        "Kuusenkerkän päiväkoti",
-        "Kuusenkerkän päiväkodin esiopetus",
-        "Pirkko Päiväkodinjohtaja",
-        "Kuusernkerkänpolku 123",
-        "02200",
-        "ESPOO",
-        "+35850 1234564",
-        "Varhaiskasvatuksen palveluohjaus",
-        "Kamreerintie 2, 02200 Espoo",
-        providerType = ProviderType.MUNICIPAL
-    ),
+    unit: DecisionUnit =
+        DecisionUnit(
+            DaycareId(UUID.randomUUID()),
+            "Kuusenkerkän päiväkoti",
+            "Kuusenkerkän päiväkoti",
+            "Kuusenkerkän päiväkodin esiopetus",
+            "Pirkko Päiväkodinjohtaja",
+            "Kuusernkerkänpolku 123",
+            "02200",
+            "ESPOO",
+            "+35850 1234564",
+            "Varhaiskasvatuksen palveluohjaus",
+            "Kamreerintie 2, 02200 Espoo",
+            providerType = ProviderType.MUNICIPAL
+        ),
     applicationId: ApplicationId = ApplicationId(UUID.randomUUID()),
     childId: ChildId = ChildId(UUID.randomUUID()),
     documentKey: String? = null,

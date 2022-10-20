@@ -20,11 +20,11 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = true) {
 
@@ -32,9 +32,7 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
@@ -50,7 +48,11 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
 
     @Test
     fun `child with placement who is deceased is not shown`() {
-        db.transaction { it.createUpdate("UPDATE person set date_of_death = :dod").bind("dod", today.minusDays(1)).execute() }
+        db.transaction {
+            it.createUpdate("UPDATE person set date_of_death = :dod")
+                .bind("dod", today.minusDays(1))
+                .execute()
+        }
         insertPlacement(testChild_1.id, today, today)
         getAndAssert(today, today, listOf())
     }
@@ -71,21 +73,29 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
         getAndAssert(today, today, listOf())
     }
 
-    private val testUser = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+    private val testUser =
+        AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
 
-    private fun getAndAssert(from: LocalDate, to: LocalDate, expected: List<MissingHeadOfFamilyReportRow>) {
-        val (_, response, result) = http.get(
-            "/reports/missing-head-of-family",
-            listOf("from" to from, "to" to to)
-        )
-            .asUser(testUser)
-            .responseObject<List<MissingHeadOfFamilyReportRow>>(jsonMapper)
+    private fun getAndAssert(
+        from: LocalDate,
+        to: LocalDate,
+        expected: List<MissingHeadOfFamilyReportRow>
+    ) {
+        val (_, response, result) =
+            http
+                .get("/reports/missing-head-of-family", listOf("from" to from, "to" to to))
+                .asUser(testUser)
+                .responseObject<List<MissingHeadOfFamilyReportRow>>(jsonMapper)
 
         assertEquals(200, response.statusCode)
         assertEquals(expected, result.get())
     }
 
-    private fun insertPlacement(childId: ChildId, startDate: LocalDate, endDate: LocalDate = startDate.plusYears(1)) =
+    private fun insertPlacement(
+        childId: ChildId,
+        startDate: LocalDate,
+        endDate: LocalDate = startDate.plusYears(1)
+    ) =
         db.transaction { tx ->
             tx.insertTestPlacement(
                 childId = childId,
@@ -95,13 +105,14 @@ class MissingHeadOfFamilyReportTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         }
 
-    private fun toReportRow(child: DevPerson, daysWithoutHead: Int) = MissingHeadOfFamilyReportRow(
-        childId = child.id,
-        firstName = child.firstName,
-        lastName = child.lastName,
-        daysWithoutHead = daysWithoutHead,
-        careAreaName = testArea.name,
-        unitId = testDaycare.id,
-        unitName = testDaycare.name
-    )
+    private fun toReportRow(child: DevPerson, daysWithoutHead: Int) =
+        MissingHeadOfFamilyReportRow(
+            childId = child.id,
+            firstName = child.firstName,
+            lastName = child.lastName,
+            daysWithoutHead = daysWithoutHead,
+            careAreaName = testArea.name,
+            unitId = testDaycare.id,
+            unitName = testDaycare.name
+        )
 }

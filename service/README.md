@@ -67,14 +67,12 @@ Enable running flyway commands against integration test database in `gradle.prop
 Run linter autofix:
 
 ```sh
+./gradlew ktfmtFormat
 ./gradlew formatKotlin
 ```
 
-If you want to set ktlint formatter rules as your IDEA kotlin formatting rules, run:
-
-```sh
-./gradlew ktlintApplyToIdea
-```
+If you use IntelliJ IDEA, it's recommended to install and enable the `ktfmt`
+plugin, and set code style to Kotlinlang.
 
 ## Dev API
 

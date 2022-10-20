@@ -25,6 +25,7 @@ plugins {
 
     id("com.github.ben-manes.versions") version Version.GradlePlugin.versions
     id("org.jmailen.kotlinter") version Version.GradlePlugin.kotlinter
+    id("com.ncorti.ktfmt.gradle") version Version.GradlePlugin.ktfmt
     id("org.owasp.dependencycheck") version Version.GradlePlugin.owasp
 
     idea
@@ -242,4 +243,8 @@ tasks {
         }
         suppressionFile = "$projectDir/owasp-suppressions.xml"
     }
+}
+
+ktfmt {
+    kotlinLangStyle()
 }

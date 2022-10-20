@@ -20,10 +20,7 @@ class VardaController(
     private val vardaResetService: VardaResetService
 ) {
     @PostMapping("/run-update-all")
-    fun runFullVardaUpdate(
-        db: Database,
-        clock: EvakaClock
-    ) {
+    fun runFullVardaUpdate(db: Database, clock: EvakaClock) {
         db.connect { dbc -> vardaUpdateService.startVardaUpdate(dbc, clock) }
     }
 
@@ -34,7 +31,14 @@ class VardaController(
         @RequestParam(defaultValue = "true") addNewChildren: Boolean,
         @RequestParam(defaultValue = "1000") limit: Int
     ) {
-        db.connect { dbc -> vardaResetService.planVardaReset(dbc, clock, addNewChildren = addNewChildren, maxChildren = limit) }
+        db.connect { dbc ->
+            vardaResetService.planVardaReset(
+                dbc,
+                clock,
+                addNewChildren = addNewChildren,
+                maxChildren = limit
+            )
+        }
     }
 
     @PostMapping("/reset-by-report/{organizerId}")
@@ -44,14 +48,18 @@ class VardaController(
         @PathVariable organizerId: Long,
         @RequestParam(defaultValue = "1000") limit: Int
     ) {
-        db.connect { dbc -> vardaResetService.planResetByVardaChildrenErrorReport(dbc, clock, organizerId = organizerId, limit = limit) }
+        db.connect { dbc ->
+            vardaResetService.planResetByVardaChildrenErrorReport(
+                dbc,
+                clock,
+                organizerId = organizerId,
+                limit = limit
+            )
+        }
     }
 
     @PostMapping("/mark-child-for-reset/{childId}")
-    fun markChildForVardaReset(
-        db: Database,
-        @PathVariable childId: ChildId
-    ) {
+    fun markChildForVardaReset(db: Database, @PathVariable childId: ChildId) {
         db.connect { dbc -> dbc.transaction { it.resetChildResetTimestamp(childId) } }
     }
 }

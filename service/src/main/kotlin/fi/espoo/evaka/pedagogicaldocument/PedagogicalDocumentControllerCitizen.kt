@@ -15,18 +15,16 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 @RequestMapping("/citizen")
-class PedagogicalDocumentControllerCitizen(
-    private val accessControl: AccessControl
-) {
+class PedagogicalDocumentControllerCitizen(private val accessControl: AccessControl) {
     @GetMapping("/children/{childId}/pedagogical-documents")
     fun getPedagogicalDocumentsForChild(
         db: Database,
@@ -34,22 +32,34 @@ class PedagogicalDocumentControllerCitizen(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<PedagogicalDocumentCitizen> {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_PEDAGOGICAL_DOCUMENTS, childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Child.READ_PEDAGOGICAL_DOCUMENTS,
+            childId
+        )
         return db.connect { dbc ->
-            dbc.read {
-                val documents = it.getChildPedagogicalDocuments(childId, user.id).filter { pd ->
-                    pd.description.isNotEmpty() || pd.attachments.isNotEmpty()
-                }
+                dbc.read {
+                    val documents =
+                        it.getChildPedagogicalDocuments(childId, user.id).filter { pd ->
+                            pd.description.isNotEmpty() || pd.attachments.isNotEmpty()
+                        }
 
-                if (user.authLevel == CitizenAuthLevel.STRONG) {
-                    documents
-                } else {
-                    documents.map { it.copy(attachments = it.attachments.map { it.copy(name = "") }) }
+                    if (user.authLevel == CitizenAuthLevel.STRONG) {
+                        documents
+                    } else {
+                        documents.map {
+                            it.copy(attachments = it.attachments.map { it.copy(name = "") })
+                        }
+                    }
                 }
             }
-        }.also {
-            Audit.PedagogicalDocumentReadByGuardian.log(targetId = childId, args = mapOf("count" to it.size))
-        }
+            .also {
+                Audit.PedagogicalDocumentReadByGuardian.log(
+                    targetId = childId,
+                    args = mapOf("count" to it.size)
+                )
+            }
     }
 
     @PostMapping("/pedagogical-documents/{documentId}/mark-read")
@@ -59,7 +69,12 @@ class PedagogicalDocumentControllerCitizen(
         clock: EvakaClock,
         @PathVariable documentId: PedagogicalDocumentId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.PedagogicalDocument.READ, documentId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.PedagogicalDocument.READ,
+            documentId
+        )
         db.connect { dbc ->
             dbc.transaction { it.markDocumentReadByGuardian(clock, documentId, user.id) }
         }
@@ -72,31 +87,43 @@ class PedagogicalDocumentControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): Map<ChildId, Int> {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_PEDAGOGICAL_DOCUMENT_UNREAD_COUNTS, user.id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.READ_PEDAGOGICAL_DOCUMENT_UNREAD_COUNTS,
+            user.id
+        )
         return db.connect { dbc ->
-            dbc.transaction { it.countUnreadDocumentsByUser(clock.today(), user.id) }
-        }.also {
-            Audit.PedagogicalDocumentCountUnread.log(user.id)
-        }
+                dbc.transaction { it.countUnreadDocumentsByUser(clock.today(), user.id) }
+            }
+            .also { Audit.PedagogicalDocumentCountUnread.log(user.id) }
     }
 }
 
-private fun Database.Transaction.markDocumentReadByGuardian(clock: EvakaClock, documentId: PedagogicalDocumentId, guardianId: PersonId) =
+private fun Database.Transaction.markDocumentReadByGuardian(
+    clock: EvakaClock,
+    documentId: PedagogicalDocumentId,
+    guardianId: PersonId
+) =
     this.createUpdate(
-        """
+            """
             INSERT INTO pedagogical_document_read (pedagogical_document_id, person_id, read_at)
             VALUES (:documentId, :personId, :now)
             ON CONFLICT(pedagogical_document_id, person_id) DO NOTHING;
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("documentId", documentId)
         .bind("personId", guardianId)
         .bind("now", clock.now())
         .execute()
 
-private fun Database.Read.countUnreadDocumentsByUser(today: LocalDate, userId: PersonId): Map<ChildId, Int> =
+private fun Database.Read.countUnreadDocumentsByUser(
+    today: LocalDate,
+    userId: PersonId
+): Map<ChildId, Int> =
     this.createQuery(
-        """
+            """
 WITH children AS (
     SELECT child_id FROM guardian WHERE guardian_id = :userId
     UNION
@@ -116,7 +143,7 @@ WHERE NOT EXISTS (
 )
 GROUP BY d.child_id
 """
-    )
+        )
         .bind("today", today)
         .bind("userId", userId)
         .map { row -> row.mapColumn<ChildId>("child_id") to row.mapColumn<Int>("unread_count") }

@@ -30,14 +30,16 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
     ): List<Recipient> {
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_CHILD_RECIPIENTS, childId)
 
-        return db.connect { dbc -> dbc.read { it.fetchRecipients(childId) } }.also {
-            Audit.MessagingBlocklistRead.log(targetId = childId, args = mapOf("count" to it.size))
-        }
+        return db.connect { dbc -> dbc.read { it.fetchRecipients(childId) } }
+            .also {
+                Audit.MessagingBlocklistRead.log(
+                    targetId = childId,
+                    args = mapOf("count" to it.size)
+                )
+            }
     }
 
-    data class EditRecipientRequest(
-        val blocklisted: Boolean
-    )
+    data class EditRecipientRequest(val blocklisted: Boolean)
 
     @PutMapping("/child/{childId}/recipients/{personId}")
     fun editRecipient(
@@ -48,7 +50,12 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
         @PathVariable personId: PersonId,
         @RequestBody body: EditRecipientRequest
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Child.UPDATE_CHILD_RECIPIENT, childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Child.UPDATE_CHILD_RECIPIENT,
+            childId
+        )
 
         db.connect { dbc ->
             dbc.transaction { tx ->

@@ -42,9 +42,8 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
         clock: EvakaClock
     ): List<HolidayPeriod> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_PERIODS)
-        return db.connect { dbc -> dbc.read { it.getHolidayPeriods() } }.also {
-            Audit.HolidayPeriodsList.log(args = mapOf("count" to it.size))
-        }
+        return db.connect { dbc -> dbc.read { it.getHolidayPeriods() } }
+            .also { Audit.HolidayPeriodsList.log(args = mapOf("count" to it.size)) }
     }
 
     @GetMapping("/questionnaire")
@@ -53,36 +52,46 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): List<ActiveQuestionnaire> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_ACTIVE_HOLIDAY_QUESTIONNAIRES)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Global.READ_ACTIVE_HOLIDAY_QUESTIONNAIRES
+        )
         return db.connect { dbc ->
-            dbc.read { tx ->
-                val activeQuestionnaire = tx.getActiveFixedPeriodQuestionnaire(clock.today()) ?: return@read listOf()
+                dbc.read { tx ->
+                    val activeQuestionnaire =
+                        tx.getActiveFixedPeriodQuestionnaire(clock.today()) ?: return@read listOf()
 
-                val continuousPlacementPeriod = activeQuestionnaire.conditions.continuousPlacement
-                val eligibleChildren = if (continuousPlacementPeriod != null) {
-                    tx.getChildrenWithContinuousPlacement(
-                        clock.today(),
-                        user.id,
-                        continuousPlacementPeriod
-                    )
-                } else {
-                    tx.getUserChildIds(clock.today(), user.id)
-                }
-                if (eligibleChildren.isEmpty()) {
-                    listOf()
-                } else {
-                    listOf(
-                        ActiveQuestionnaire(
-                            questionnaire = activeQuestionnaire,
-                            eligibleChildren = eligibleChildren,
-                            previousAnswers = tx.getQuestionnaireAnswers(activeQuestionnaire.id, eligibleChildren)
+                    val continuousPlacementPeriod =
+                        activeQuestionnaire.conditions.continuousPlacement
+                    val eligibleChildren =
+                        if (continuousPlacementPeriod != null) {
+                            tx.getChildrenWithContinuousPlacement(
+                                clock.today(),
+                                user.id,
+                                continuousPlacementPeriod
+                            )
+                        } else {
+                            tx.getUserChildIds(clock.today(), user.id)
+                        }
+                    if (eligibleChildren.isEmpty()) {
+                        listOf()
+                    } else {
+                        listOf(
+                            ActiveQuestionnaire(
+                                questionnaire = activeQuestionnaire,
+                                eligibleChildren = eligibleChildren,
+                                previousAnswers =
+                                    tx.getQuestionnaireAnswers(
+                                        activeQuestionnaire.id,
+                                        eligibleChildren
+                                    )
+                            )
                         )
-                    )
+                    }
                 }
             }
-        }.also {
-            Audit.HolidayQuestionnairesList.log(args = mapOf("count" to it.size))
-        }
+            .also { Audit.HolidayQuestionnairesList.log(args = mapOf("count" to it.size)) }
     }
 
     @PostMapping("/questionnaire/fixed-period/{id}")
@@ -94,32 +103,46 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
         @RequestBody body: FixedPeriodsBody
     ) {
         val childIds = body.fixedPeriods.keys
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_HOLIDAY_ABSENCE, childIds)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Child.CREATE_HOLIDAY_ABSENCE,
+            childIds
+        )
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val questionnaire = tx.getFixedPeriodQuestionnaire(id)
-                    ?.also { if (!it.active.includes(clock.today())) throw BadRequest("Questionnaire is not open") }
-                    ?: throw BadRequest("Questionnaire not found")
+                val questionnaire =
+                    tx.getFixedPeriodQuestionnaire(id)?.also {
+                        if (!it.active.includes(clock.today()))
+                            throw BadRequest("Questionnaire is not open")
+                    }
+                        ?: throw BadRequest("Questionnaire not found")
                 if (questionnaire.conditions.continuousPlacement != null) {
-                    val eligibleChildren = tx.getChildrenWithContinuousPlacement(
-                        clock.today(),
-                        user.id,
-                        questionnaire.conditions.continuousPlacement
-                    )
-                    if (childIds.any { body.fixedPeriods[it] != null && !eligibleChildren.contains(it) }) {
+                    val eligibleChildren =
+                        tx.getChildrenWithContinuousPlacement(
+                            clock.today(),
+                            user.id,
+                            questionnaire.conditions.continuousPlacement
+                        )
+                    if (
+                        childIds.any {
+                            body.fixedPeriods[it] != null && !eligibleChildren.contains(it)
+                        }
+                    ) {
                         throw BadRequest("Some children are not eligible to answer")
                     }
                 }
 
-                val invalidPeriod = body.fixedPeriods.values.find { !questionnaire.periodOptions.contains(it) }
+                val invalidPeriod =
+                    body.fixedPeriods.values.find { !questionnaire.periodOptions.contains(it) }
 
                 if (invalidPeriod != null) {
                     throw BadRequest("Invalid option provided ($invalidPeriod)")
                 }
 
-                val absences = body.fixedPeriods.entries
-                    .flatMap { (childId, period) ->
+                val absences =
+                    body.fixedPeriods.entries.flatMap { (childId, period) ->
                         period?.dates()?.map {
                             AbsenceInsert(
                                 childId = childId,
@@ -127,13 +150,16 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                                 absenceType = questionnaire.absenceType,
                                 questionnaireId = questionnaire.id
                             )
-                        } ?: emptySequence()
+                        }
+                            ?: emptySequence()
                     }
 
-                absences.map { absence -> absence.childId to absence.date }.let {
-                    tx.clearOldReservations(it)
-                    tx.clearOldCitizenEditableAbsences(it)
-                }
+                absences
+                    .map { absence -> absence.childId to absence.date }
+                    .let {
+                        tx.clearOldReservations(it)
+                        tx.clearOldCitizenEditableAbsences(it)
+                    }
                 tx.deleteAbsencesCreatedFromQuestionnaire(questionnaire.id, childIds)
                 tx.insertAbsences(user.evakaUserId, absences)
                 tx.insertQuestionnaireAnswers(
@@ -148,6 +174,4 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
     }
 }
 
-data class FixedPeriodsBody(
-    val fixedPeriods: Map<ChildId, FiniteDateRange?>
-)
+data class FixedPeriodsBody(val fixedPeriods: Map<ChildId, FiniteDateRange?>)

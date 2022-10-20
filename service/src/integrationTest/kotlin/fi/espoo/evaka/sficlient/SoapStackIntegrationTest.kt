@@ -23,6 +23,18 @@ import fi.espoo.evaka.sficlient.soap.VastausWS2
 import fi.espoo.evaka.sficlient.soap.VastausWS2A
 import fi.espoo.evaka.sficlient.soap.Viranomainen
 import fi.espoo.evaka.sficlient.soap.Viranomaispalvelut
+import java.io.InputStream
+import java.net.ServerSocket
+import java.security.KeyStore
+import java.security.PrivateKey
+import java.security.cert.Certificate
+import java.util.concurrent.atomic.AtomicReference
+import javax.net.ssl.KeyManagerFactory
+import javax.net.ssl.SSLHandshakeException
+import javax.xml.namespace.QName
+import kotlin.reflect.KClass
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.apache.cxf.configuration.jsse.TLSServerParameters
 import org.apache.cxf.endpoint.Server
 import org.apache.cxf.jaxws.JaxWsServerFactoryBean
@@ -41,54 +53,46 @@ import org.slf4j.LoggerFactory
 import org.springframework.core.io.ClassPathResource
 import org.springframework.ws.client.WebServiceFaultException
 import org.springframework.ws.client.WebServiceIOException
-import java.io.InputStream
-import java.net.ServerSocket
-import java.security.KeyStore
-import java.security.PrivateKey
-import java.security.cert.Certificate
-import java.util.concurrent.atomic.AtomicReference
-import javax.net.ssl.KeyManagerFactory
-import javax.net.ssl.SSLHandshakeException
-import javax.xml.namespace.QName
-import kotlin.reflect.KClass
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SoapStackIntegrationTest {
     private lateinit var server: MockServer<MockViranomaisPalvelut>
 
-    private val message = SfiMessage(
-        messageId = "message-id",
-        documentId = "document-id",
-        documentBucket = "bucket",
-        documentKey = "key",
-        documentDisplayName = "document",
-        ssn = "ssn",
-        firstName = "first",
-        lastName = "last",
-        language = "fi",
-        streetAddress = "street",
-        postalCode = "01234",
-        postOffice = "Espoo",
-        countryCode = "FI",
-        messageHeader = "header",
-        messageContent = "content",
-        emailHeader = "email-header",
-        emailContent = "email-content"
-    )
-    private val clientKeystore = KeystoreEnv(
-        location = ClassPathResource("evaka-integration-test/sficlient/client.p12").uri,
-        password = Sensitive("client")
-    )
-    private val serverKeystore = KeystoreEnv(
-        location = ClassPathResource("evaka-integration-test/sficlient/server.p12").uri,
-        password = Sensitive("localhost")
-    )
-    private val untrustWorthyKeystore = KeystoreEnv(
-        location = ClassPathResource("evaka-integration-test/sficlient/untrustworthy.p12").uri,
-        password = Sensitive("untrustworthy")
-    )
+    private val message =
+        SfiMessage(
+            messageId = "message-id",
+            documentId = "document-id",
+            documentBucket = "bucket",
+            documentKey = "key",
+            documentDisplayName = "document",
+            ssn = "ssn",
+            firstName = "first",
+            lastName = "last",
+            language = "fi",
+            streetAddress = "street",
+            postalCode = "01234",
+            postOffice = "Espoo",
+            countryCode = "FI",
+            messageHeader = "header",
+            messageContent = "content",
+            emailHeader = "email-header",
+            emailContent = "email-content"
+        )
+    private val clientKeystore =
+        KeystoreEnv(
+            location = ClassPathResource("evaka-integration-test/sficlient/client.p12").uri,
+            password = Sensitive("client")
+        )
+    private val serverKeystore =
+        KeystoreEnv(
+            location = ClassPathResource("evaka-integration-test/sficlient/server.p12").uri,
+            password = Sensitive("localhost")
+        )
+    private val untrustWorthyKeystore =
+        KeystoreEnv(
+            location = ClassPathResource("evaka-integration-test/sficlient/untrustworthy.p12").uri,
+            password = Sensitive("untrustworthy")
+        )
     private val dummyContent = byteArrayOf(0x11, 0x22, 0x33, 0x44)
 
     private fun dummyGetDocument(bucketName: String, key: String): Document {
@@ -97,27 +101,30 @@ class SoapStackIntegrationTest {
         return Document("name", dummyContent, "text/plain")
     }
 
-    private fun defaultEnv() = SfiEnv(
-        address = "https://localhost:${server.port}",
-        trustStore = serverKeystore,
-        keyStore = null,
-        signingKeyAlias = "",
-        authorityIdentifier = "authority",
-        serviceIdentifier = "service",
-        certificateCommonName = "common-name",
-        printing = SfiPrintingEnv(
-            enabled = true,
-            forcePrintForElectronicUser = false,
-            printingProvider = "provider",
-            billingId = "billing-id",
-            billingPassword = Sensitive("billing-password")
-        ),
-        contactPerson = SfiContactPersonEnv(
-            name = "contact-name",
-            phone = "contact-phone",
-            email = "contact-email"
+    private fun defaultEnv() =
+        SfiEnv(
+            address = "https://localhost:${server.port}",
+            trustStore = serverKeystore,
+            keyStore = null,
+            signingKeyAlias = "",
+            authorityIdentifier = "authority",
+            serviceIdentifier = "service",
+            certificateCommonName = "common-name",
+            printing =
+                SfiPrintingEnv(
+                    enabled = true,
+                    forcePrintForElectronicUser = false,
+                    printingProvider = "provider",
+                    billingId = "billing-id",
+                    billingPassword = Sensitive("billing-password")
+                ),
+            contactPerson =
+                SfiContactPersonEnv(
+                    name = "contact-name",
+                    phone = "contact-phone",
+                    email = "contact-email"
+                )
         )
-    )
 
     @BeforeAll
     fun beforeAll() {
@@ -127,26 +134,21 @@ class SoapStackIntegrationTest {
 
     @BeforeEach
     fun beforeEach() {
-        val serverKeys = ClassPathResource("evaka-integration-test/sficlient/server.p12").inputStream.use {
-            CryptoKeys.load(
-                it,
-                password = "localhost",
-                alias = "localhost"
+        val serverKeys =
+            ClassPathResource("evaka-integration-test/sficlient/server.p12").inputStream.use {
+                CryptoKeys.load(it, password = "localhost", alias = "localhost")
+            }
+        val clientKeys =
+            ClassPathResource("evaka-integration-test/sficlient/client.p12").inputStream.use {
+                CryptoKeys.load(it, password = "client", alias = "client")
+            }
+        server =
+            MockServer.start(
+                clazz = Viranomaispalvelut::class,
+                service = MockViranomaisPalvelut(),
+                serverKeys = serverKeys,
+                clientKeys = clientKeys
             )
-        }
-        val clientKeys = ClassPathResource("evaka-integration-test/sficlient/client.p12").inputStream.use {
-            CryptoKeys.load(
-                it,
-                password = "client",
-                alias = "client"
-            )
-        }
-        server = MockServer.start(
-            clazz = Viranomaispalvelut::class,
-            service = MockViranomaisPalvelut(),
-            serverKeys = serverKeys,
-            clientKeys = clientKeys
-        )
     }
 
     @AfterEach
@@ -156,29 +158,33 @@ class SoapStackIntegrationTest {
 
     @Test
     fun `an incorrectly signed message fails`() {
-        val client = SfiMessagesSoapClient(
-            defaultEnv().copy(
-                keyStore = untrustWorthyKeystore,
-                signingKeyAlias = "untrustworthy"
-            ),
-            ::dummyGetDocument
-        )
+        val client =
+            SfiMessagesSoapClient(
+                defaultEnv()
+                    .copy(keyStore = untrustWorthyKeystore, signingKeyAlias = "untrustworthy"),
+                ::dummyGetDocument
+            )
         server.service.implementation.set { viranomainen, _ -> successResponse(viranomainen) }
         val exception = assertThrows<Exception> { client.send(message, null) }
         val cause = exception.cause as WebServiceFaultException
-        assertEquals(QName("http://ws.apache.org/wss4j", "SecurityError"), cause.webServiceMessage.faultCode)
+        assertEquals(
+            QName("http://ws.apache.org/wss4j", "SecurityError"),
+            cause.webServiceMessage.faultCode
+        )
     }
 
     @Test
     fun `an exception is thrown if the server is not trusted`() {
-        val client = SfiMessagesSoapClient(
-            defaultEnv().copy(
-                keyStore = clientKeystore,
-                signingKeyAlias = "client",
-                trustStore = untrustWorthyKeystore
-            ),
-            ::dummyGetDocument
-        )
+        val client =
+            SfiMessagesSoapClient(
+                defaultEnv()
+                    .copy(
+                        keyStore = clientKeystore,
+                        signingKeyAlias = "client",
+                        trustStore = untrustWorthyKeystore
+                    ),
+                ::dummyGetDocument
+            )
         server.service.implementation.set { viranomainen, _ -> successResponse(viranomainen) }
         val exception = assertThrows<Exception> { client.send(message, null) }
         val cause = exception.cause as WebServiceIOException
@@ -187,10 +193,7 @@ class SoapStackIntegrationTest {
 
     @Test
     fun `a correctly signed message is sent successfully`() {
-        val env = defaultEnv().copy(
-            keyStore = clientKeystore,
-            signingKeyAlias = "client"
-        )
+        val env = defaultEnv().copy(keyStore = clientKeystore, signingKeyAlias = "client")
         val client = SfiMessagesSoapClient(env, ::dummyGetDocument)
         server.service.implementation.set { viranomainen, request ->
             assertEquals(message.messageId, viranomainen.sanomaTunniste)
@@ -243,10 +246,11 @@ class SoapStackIntegrationTest {
 }
 
 data class CryptoKeys(val privateKey: PrivateKey, val publicCertificate: Certificate) {
-    fun toKeyStore(alias: String, keyPassword: String = ""): KeyStore = KeyStore.getInstance("pkcs12").apply {
-        load(null, null)
-        setKeyEntry(alias, privateKey, keyPassword.toCharArray(), arrayOf(publicCertificate))
-    }
+    fun toKeyStore(alias: String, keyPassword: String = ""): KeyStore =
+        KeyStore.getInstance("pkcs12").apply {
+            load(null, null)
+            setKeyEntry(alias, privateKey, keyPassword.toCharArray(), arrayOf(publicCertificate))
+        }
 
     companion object {
         /**
@@ -254,20 +258,22 @@ data class CryptoKeys(val privateKey: PrivateKey, val publicCertificate: Certifi
          *
          * The store password and key password are assumed to be the same.
          */
-        fun load(inputStream: InputStream, password: String, alias: String) = KeyStore.getInstance("pkcs12").apply {
-            load(inputStream, password.toCharArray())
-        }.let { keyStore ->
-            val publicCertificate = keyStore.getCertificate(alias)
-            val privateKey = keyStore.getKey(alias, password.toCharArray()) as PrivateKey
-            CryptoKeys(privateKey, publicCertificate)
-        }
+        fun load(inputStream: InputStream, password: String, alias: String) =
+            KeyStore.getInstance("pkcs12")
+                .apply { load(inputStream, password.toCharArray()) }
+                .let { keyStore ->
+                    val publicCertificate = keyStore.getCertificate(alias)
+                    val privateKey = keyStore.getKey(alias, password.toCharArray()) as PrivateKey
+                    CryptoKeys(privateKey, publicCertificate)
+                }
     }
 }
 
-private fun findFreePort(): Int = ServerSocket().use {
-    it.bind(null)
-    it.localPort
-}
+private fun findFreePort(): Int =
+    ServerSocket().use {
+        it.bind(null)
+        it.localPort
+    }
 
 private const val MOCK_SERVER_CRYPTO: String = "evaka.wss4j.crypto"
 
@@ -282,28 +288,38 @@ class MockServer<T>(val service: T, val port: Int, private val server: Server) :
             val port = findFreePort()
             val keyPassword = ""
             val keyStore = serverKeys.toKeyStore(alias = "localhost", keyPassword = keyPassword)
-            val server = JaxWsServerFactoryBean().apply {
-                serviceClass = clazz.java
-                address = "https://localhost:$port"
-                serviceBean = service
-            }.also {
-                val tlsParams = TLSServerParameters().apply {
-                    keyManagers = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm()).apply {
-                        init(keyStore, keyPassword.toCharArray())
-                    }.keyManagers
-                }
-                JettyHTTPServerEngineFactory().setTLSServerParametersForPort(port, tlsParams)
-            }.create()
-
-            val wss4j = WSS4JInInterceptor(
-                mapOf(
-                    ConfigurationConstants.ACTION to "${ConfigurationConstants.SIGNATURE} ${ConfigurationConstants.TIMESTAMP}",
-                    ConfigurationConstants.SIG_VER_PROP_REF_ID to MOCK_SERVER_CRYPTO,
-                    MOCK_SERVER_CRYPTO to Merlin().apply {
-                        trustStore = clientKeys.toKeyStore("client")
+            val server =
+                JaxWsServerFactoryBean()
+                    .apply {
+                        serviceClass = clazz.java
+                        address = "https://localhost:$port"
+                        serviceBean = service
                     }
+                    .also {
+                        val tlsParams =
+                            TLSServerParameters().apply {
+                                keyManagers =
+                                    KeyManagerFactory.getInstance(
+                                            KeyManagerFactory.getDefaultAlgorithm()
+                                        )
+                                        .apply { init(keyStore, keyPassword.toCharArray()) }
+                                        .keyManagers
+                            }
+                        JettyHTTPServerEngineFactory()
+                            .setTLSServerParametersForPort(port, tlsParams)
+                    }
+                    .create()
+
+            val wss4j =
+                WSS4JInInterceptor(
+                    mapOf(
+                        ConfigurationConstants.ACTION to
+                            "${ConfigurationConstants.SIGNATURE} ${ConfigurationConstants.TIMESTAMP}",
+                        ConfigurationConstants.SIG_VER_PROP_REF_ID to MOCK_SERVER_CRYPTO,
+                        MOCK_SERVER_CRYPTO to
+                            Merlin().apply { trustStore = clientKeys.toKeyStore("client") }
+                    )
                 )
-            )
 
             server.endpoint.inInterceptors += wss4j
             return MockServer(service, port, server)
@@ -316,21 +332,27 @@ class MockServer<T>(val service: T, val port: Int, private val server: Server) :
     }
 }
 
-private fun successResponse(viranomainen: Viranomainen): VastausWS2A = VastausWS2A().apply {
-    tilaKoodi = TilaKoodiWS().apply {
-        tilaKoodi = 202
-        tilaKoodiKuvaus = "Kysely on onnistunut"
-        sanomaTunniste = viranomainen.sanomaTunniste
+private fun successResponse(viranomainen: Viranomainen): VastausWS2A =
+    VastausWS2A().apply {
+        tilaKoodi =
+            TilaKoodiWS().apply {
+                tilaKoodi = 202
+                tilaKoodiKuvaus = "Kysely on onnistunut"
+                sanomaTunniste = viranomainen.sanomaTunniste
+            }
     }
-}
 
 class MockViranomaisPalvelut : Viranomaispalvelut {
-    val implementation: AtomicReference<(Viranomainen, KyselyWS2A) -> VastausWS2A> = AtomicReference()
+    val implementation: AtomicReference<(Viranomainen, KyselyWS2A) -> VastausWS2A> =
+        AtomicReference()
 
     override fun lahetaViesti(viranomainen: Viranomainen, kysely: KyselyWS2A): VastausWS2A =
         (implementation.get() ?: throw NotImplementedError()).invoke(viranomainen, kysely)
 
-    override fun haeTilaTieto(viranomainen: Viranomainen, kysely: KyselyWS10): VastausWS10 = throw NotImplementedError()
-    override fun haeAsiakkaita(viranomainen: Viranomainen, kysely: KyselyWS1): VastausWS1 = throw NotImplementedError()
-    override fun lisaaKohteita(viranomainen: Viranomainen, kysely: KyselyWS2): VastausWS2 = throw NotImplementedError()
+    override fun haeTilaTieto(viranomainen: Viranomainen, kysely: KyselyWS10): VastausWS10 =
+        throw NotImplementedError()
+    override fun haeAsiakkaita(viranomainen: Viranomainen, kysely: KyselyWS1): VastausWS1 =
+        throw NotImplementedError()
+    override fun lisaaKohteita(viranomainen: Viranomainen, kysely: KyselyWS2): VastausWS2 =
+        throw NotImplementedError()
 }

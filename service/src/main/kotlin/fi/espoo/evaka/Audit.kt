@@ -380,7 +380,9 @@ enum class Audit(
                     "securityLevel" to securityLevel,
                     "securityEvent" to securityEvent
                 )
-        ) { eventCode }
+        ) {
+            eventCode
+        }
     }
 }
 

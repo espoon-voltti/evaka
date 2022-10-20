@@ -12,23 +12,31 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import java.time.LocalDate
 
-fun Database.Read.getChildStickyNotesForChild(childId: ChildId): List<ChildStickyNote> = createQuery(
-    """
+fun Database.Read.getChildStickyNotesForChild(childId: ChildId): List<ChildStickyNote> =
+    createQuery(
+            """
     SELECT id, child_id, note, modified_at, expires
     FROM child_sticky_note
     WHERE child_id = :childId
     ORDER BY created DESC
-    """.trimIndent()
-)
-    .bind("childId", childId)
-    .mapTo<ChildStickyNote>()
-    .list()
+    """
+                .trimIndent()
+        )
+        .bind("childId", childId)
+        .mapTo<ChildStickyNote>()
+        .list()
 
-fun Database.Read.getChildStickyNotesForGroup(groupId: GroupId, today: LocalDate): List<ChildStickyNote> {
+fun Database.Read.getChildStickyNotesForGroup(
+    groupId: GroupId,
+    today: LocalDate
+): List<ChildStickyNote> {
     return getChildStickyNotesForGroups(listOf(groupId), today)
 }
 
-fun Database.Read.getChildStickyNotesForUnit(unitId: DaycareId, today: LocalDate): List<ChildStickyNote> {
+fun Database.Read.getChildStickyNotesForUnit(
+    unitId: DaycareId,
+    today: LocalDate
+): List<ChildStickyNote> {
     return createQuery("SELECT id FROM daycare_group WHERE daycare_id = :unitId")
         .bind("unitId", unitId)
         .mapTo<GroupId>()
@@ -36,8 +44,12 @@ fun Database.Read.getChildStickyNotesForUnit(unitId: DaycareId, today: LocalDate
         .let { groupIds -> getChildStickyNotesForGroups(groupIds, today) }
 }
 
-private fun Database.Read.getChildStickyNotesForGroups(groupIds: List<GroupId>, today: LocalDate): List<ChildStickyNote> = createQuery(
-    """
+private fun Database.Read.getChildStickyNotesForGroups(
+    groupIds: List<GroupId>,
+    today: LocalDate
+): List<ChildStickyNote> =
+    createQuery(
+            """
     SELECT id, child_id, note, modified_at, expires
     FROM child_sticky_note csn
     WHERE child_id IN (
@@ -52,21 +64,26 @@ private fun Database.Read.getChildStickyNotesForGroups(groupIds: List<GroupId>, 
         FROM backup_care bc
         WHERE bc.group_id = ANY(:groupIds) AND daterange(bc.start_date, bc.end_date, '[]') @> :today
     )
-    """.trimIndent()
-)
-    .bind("groupIds", groupIds)
-    .bind("today", today)
-    .mapTo<ChildStickyNote>()
-    .list()
+    """
+                .trimIndent()
+        )
+        .bind("groupIds", groupIds)
+        .bind("today", today)
+        .mapTo<ChildStickyNote>()
+        .list()
 
-fun Database.Transaction.createChildStickyNote(childId: ChildId, note: ChildStickyNoteBody): ChildStickyNoteId {
+fun Database.Transaction.createChildStickyNote(
+    childId: ChildId,
+    note: ChildStickyNoteBody
+): ChildStickyNoteId {
     return createUpdate(
-        """
+            """
 INSERT INTO child_sticky_note (child_id, note, expires)
 VALUES (:childId, :note, :expires)
 RETURNING id
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bindKotlin(note)
         .bind("childId", childId)
         .executeAndReturnGeneratedKeys()
@@ -74,17 +91,22 @@ RETURNING id
         .one()
 }
 
-fun Database.Transaction.updateChildStickyNote(clock: EvakaClock, id: ChildStickyNoteId, note: ChildStickyNoteBody): ChildStickyNote {
+fun Database.Transaction.updateChildStickyNote(
+    clock: EvakaClock,
+    id: ChildStickyNoteId,
+    note: ChildStickyNoteBody
+): ChildStickyNote {
     return createUpdate(
-        """
+            """
 UPDATE child_sticky_note SET
     note = :note,
     expires = :expires,
     modified_at = :now
 WHERE id = :id
 RETURNING *
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("id", id)
         .bind("now", clock.now())
         .bindKotlin(note)

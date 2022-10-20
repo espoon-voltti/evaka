@@ -27,21 +27,22 @@ fun Database.Read.getLastPaymentNumber(): Int? {
 }
 
 fun Database.Transaction.insertPaymentDrafts(payments: List<PaymentDraft>) {
-    val batch = prepareBatch(
-        """
+    val batch =
+        prepareBatch(
+            """
         INSERT INTO payment (unit_id, unit_name, period, amount, status)
         SELECT :unitId, d.name, :period, :amount, 'DRAFT'
         FROM daycare d
         WHERE d.id = :unitId
     """
-    )
+        )
     payments.forEach { batch.bindKotlin(it).add() }
     batch.execute()
 }
 
 fun Database.Read.readPaymentsByIdsWithFreshUnitData(ids: List<PaymentId>): List<Payment> {
     return createQuery(
-        """
+            """
         SELECT 
             p.id, p.created, p.updated, p.unit_id, 
             d.name AS unit_name, d.business_id AS unit_business_id, d.iban AS unit_iban, d.provider_id AS unit_provider_id,
@@ -50,7 +51,7 @@ fun Database.Read.readPaymentsByIdsWithFreshUnitData(ids: List<PaymentId>): List
         JOIN daycare d ON d.id = p.unit_id
         WHERE p.id = ANY(:ids)
         """
-    )
+        )
         .bind("ids", ids)
         .mapTo<Payment>()
         .list()
@@ -58,7 +59,7 @@ fun Database.Read.readPaymentsByIdsWithFreshUnitData(ids: List<PaymentId>): List
 
 fun Database.Read.readPayments(): List<Payment> {
     return createQuery(
-        """
+            """
             SELECT
                 id, created, updated,
                 unit_id, unit_name, unit_business_id, unit_iban, unit_provider_id,
@@ -66,24 +67,26 @@ fun Database.Read.readPayments(): List<Payment> {
             FROM payment
             ORDER BY period DESC, unit_name
         """
-    )
+        )
         .mapTo<Payment>()
         .list()
 }
 
 fun Database.Read.searchPayments(params: SearchPaymentsRequest): Paged<Payment> {
-    val orderBy = when (params.sortBy) {
-        PaymentSortParam.UNIT -> "lower(p.unit_name)"
-        PaymentSortParam.PERIOD -> "p.period"
-        PaymentSortParam.CREATED -> "p.created"
-        PaymentSortParam.NUMBER -> "p.number"
-        PaymentSortParam.AMOUNT -> "p.amount"
-    }
+    val orderBy =
+        when (params.sortBy) {
+            PaymentSortParam.UNIT -> "lower(p.unit_name)"
+            PaymentSortParam.PERIOD -> "p.period"
+            PaymentSortParam.CREATED -> "p.created"
+            PaymentSortParam.NUMBER -> "p.number"
+            PaymentSortParam.AMOUNT -> "p.amount"
+        }
     val ascDesc = params.sortDirection.name
-    val includeMissingDetails = params.distinctions.contains(PaymentDistinctiveParams.MISSING_PAYMENT_DETAILS)
+    val includeMissingDetails =
+        params.distinctions.contains(PaymentDistinctiveParams.MISSING_PAYMENT_DETAILS)
 
     return createQuery(
-        """
+            """
             SELECT
                 p.id, p.created, p.updated,
                 p.unit_id, p.unit_name,
@@ -108,7 +111,7 @@ fun Database.Read.searchPayments(params: SearchPaymentsRequest): Paged<Payment> 
             ORDER BY $orderBy $ascDesc
             LIMIT :pageSize OFFSET :pageSize * (:page - 1)
         """
-    )
+        )
         .bind("searchTerms", params.searchTerms)
         .bind("area", params.area)
         .bind("unit", params.unit)
@@ -126,8 +129,9 @@ fun Database.Read.getMaxPaymentNumber(): Long {
 }
 
 fun Database.Transaction.updatePaymentDraftsAsSent(payments: List<Payment>, now: HelsinkiDateTime) {
-    val batch = prepareBatch(
-        """
+    val batch =
+        prepareBatch(
+            """
         UPDATE payment SET
             status = 'SENT',
             number = :number,
@@ -141,9 +145,7 @@ fun Database.Transaction.updatePaymentDraftsAsSent(payments: List<Payment>, now:
             unit_provider_id = :unit.providerId
         WHERE id = :id
         """
-    )
-    payments.forEach {
-        batch.bind("now", now).bindKotlin(it).add()
-    }
+        )
+    payments.forEach { batch.bind("now", now).bindKotlin(it).add() }
     batch.execute()
 }

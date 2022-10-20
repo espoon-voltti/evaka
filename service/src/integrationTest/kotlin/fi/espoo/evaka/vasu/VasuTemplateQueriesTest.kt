@@ -6,9 +6,9 @@ package fi.espoo.evaka.vasu
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.Test
 
 class VasuTemplateQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
@@ -16,13 +16,14 @@ class VasuTemplateQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             // when a template is created
             val dateRangeNow = FiniteDateRange(LocalDate.now(), LocalDate.now())
-            val templateId = tx.insertVasuTemplate(
-                "foo",
-                dateRangeNow,
-                CurriculumType.DAYCARE,
-                VasuLanguage.FI,
-                VasuContent(sections = listOf())
-            )
+            val templateId =
+                tx.insertVasuTemplate(
+                    "foo",
+                    dateRangeNow,
+                    CurriculumType.DAYCARE,
+                    VasuLanguage.FI,
+                    VasuContent(sections = listOf())
+                )
             assertEquals(
                 VasuTemplate(
                     templateId,
@@ -38,13 +39,7 @@ class VasuTemplateQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
             // when a template is updated
             val modifiedDateRange = dateRangeNow.copy(start = LocalDate.now().minusYears(1))
-            tx.updateVasuTemplate(
-                templateId,
-                VasuTemplateUpdate(
-                    "bar",
-                    modifiedDateRange
-                )
-            )
+            tx.updateVasuTemplate(templateId, VasuTemplateUpdate("bar", modifiedDateRange))
             assertEquals(
                 VasuTemplate(
                     templateId,

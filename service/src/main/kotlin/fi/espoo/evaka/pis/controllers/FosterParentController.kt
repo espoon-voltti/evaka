@@ -38,7 +38,12 @@ class FosterParentController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable parentId: PersonId
     ): List<FosterParentRelationship> {
-        accessControl.requirePermissionFor(user, clock, Action.Person.READ_FOSTER_CHILDREN, parentId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Person.READ_FOSTER_CHILDREN,
+            parentId
+        )
 
         return db.connect { dbc -> dbc.read { tx -> tx.getFosterChildren(parentId) } }
             .also { Audit.FosterParentReadChildren.log(targetId = parentId) }
@@ -64,7 +69,12 @@ class FosterParentController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: CreateFosterParentRelationshipBody
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Person.CREATE_FOSTER_PARENT_RELATIONSHIP, body.parentId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Person.CREATE_FOSTER_PARENT_RELATIONSHIP,
+            body.parentId
+        )
 
         db.connect { dbc -> dbc.transaction { tx -> tx.createFosterParentRelationship(body) } }
             .also { id ->
@@ -86,8 +96,15 @@ class FosterParentController(private val accessControl: AccessControl) {
     ) {
         accessControl.requirePermissionFor(user, clock, Action.FosterParent.UPDATE, id)
 
-        db.connect { dbc -> dbc.transaction { tx -> tx.updateFosterParentRelationshipValidity(id, validDuring) } }
-            .also { Audit.FosterParentUpdateRelationship.log(targetId = id, args = mapOf("validDuring" to validDuring)) }
+        db.connect { dbc ->
+                dbc.transaction { tx -> tx.updateFosterParentRelationshipValidity(id, validDuring) }
+            }
+            .also {
+                Audit.FosterParentUpdateRelationship.log(
+                    targetId = id,
+                    args = mapOf("validDuring" to validDuring)
+                )
+            }
     }
 
     @DeleteMapping("/{id}")
@@ -106,10 +123,8 @@ class FosterParentController(private val accessControl: AccessControl) {
 
 data class FosterParentRelationship(
     val relationshipId: FosterParentId,
-    @Nested("child")
-    val child: PersonSummary,
-    @Nested("parent")
-    val parent: PersonSummary,
+    @Nested("child") val child: PersonSummary,
+    @Nested("parent") val parent: PersonSummary,
     val validDuring: DateRange
 )
 

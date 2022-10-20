@@ -18,11 +18,16 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapJsonColumn
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import java.time.LocalDate
 import org.jdbi.v3.core.result.RowView
 import org.postgresql.util.PGobject
-import java.time.LocalDate
 
-fun Database.Transaction.upsertIncome(clock: EvakaClock, mapper: JsonMapper, income: Income, updatedBy: EvakaUserId) {
+fun Database.Transaction.upsertIncome(
+    clock: EvakaClock,
+    mapper: JsonMapper,
+    income: Income,
+    updatedBy: EvakaUserId
+) {
     val sql =
         """
         INSERT INTO income (
@@ -64,32 +69,37 @@ fun Database.Transaction.upsertIncome(clock: EvakaClock, mapper: JsonMapper, inc
             application_id = :application_id
     """
 
-    val update = createUpdate(sql)
-        .bind("now", clock.now())
-        .bind("id", income.id)
-        .bind("person_id", income.personId)
-        .bind("effect", income.effect.toString())
-        .bind(
-            "data",
-            PGobject().apply {
-                type = "jsonb"
-                value = mapper.writeValueAsString(income.data)
-            }
-        )
-        .bind("is_entrepreneur", income.isEntrepreneur)
-        .bind("works_at_echa", income.worksAtECHA)
-        .bind("valid_from", income.validFrom)
-        .bind("valid_to", income.validTo)
-        .bind("notes", income.notes)
-        .bind("updated_by", updatedBy)
-        .bind("application_id", income.applicationId)
+    val update =
+        createUpdate(sql)
+            .bind("now", clock.now())
+            .bind("id", income.id)
+            .bind("person_id", income.personId)
+            .bind("effect", income.effect.toString())
+            .bind(
+                "data",
+                PGobject().apply {
+                    type = "jsonb"
+                    value = mapper.writeValueAsString(income.data)
+                }
+            )
+            .bind("is_entrepreneur", income.isEntrepreneur)
+            .bind("works_at_echa", income.worksAtECHA)
+            .bind("valid_from", income.validFrom)
+            .bind("valid_to", income.validTo)
+            .bind("notes", income.notes)
+            .bind("updated_by", updatedBy)
+            .bind("application_id", income.applicationId)
 
     handlingExceptions { update.execute() }
 }
 
-fun Database.Read.getIncome(mapper: JsonMapper, incomeTypesProvider: IncomeTypesProvider, id: IncomeId): Income? {
+fun Database.Read.getIncome(
+    mapper: JsonMapper,
+    incomeTypesProvider: IncomeTypesProvider,
+    id: IncomeId
+): Income? {
     return createQuery(
-        """
+            """
         SELECT income.*, evaka_user.name AS updated_by_name,
         (SELECT coalesce(jsonb_agg(json_build_object(
             'id', id,
@@ -104,8 +114,9 @@ fun Database.Read.getIncome(mapper: JsonMapper, incomeTypesProvider: IncomeTypes
         FROM income
         JOIN evaka_user ON income.updated_by = evaka_user.id
         WHERE income.id = :id
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("id", id)
         .map(toIncome(mapper, incomeTypesProvider.get()))
         .firstOrNull()
@@ -135,7 +146,8 @@ fun Database.Read.getIncomesForPerson(
         WHERE person_id = :personId
         AND (:validAt::timestamp IS NULL OR tsrange(valid_from, valid_to) @> :validAt::timestamp)
         ORDER BY valid_from DESC
-        """.trimIndent()
+        """
+            .trimIndent()
 
     return createQuery(sql)
         .bind("personId", personId)
@@ -168,8 +180,7 @@ fun Database.Read.getIncomesFrom(
 }
 
 fun Database.Transaction.deleteIncome(incomeId: IncomeId) {
-    val update = createUpdate("DELETE FROM income WHERE id = :id")
-        .bind("id", incomeId)
+    val update = createUpdate("DELETE FROM income WHERE id = :id").bind("id", incomeId)
 
     handlingExceptions { update.execute() }
 }
@@ -185,10 +196,11 @@ fun Database.Transaction.splitEarlierIncome(personId: PersonId, period: DateRang
             AND valid_to IS NULL
         """
 
-    val update = createUpdate(sql)
-        .bind("personId", personId)
-        .bind("newValidTo", period.start.minusDays(1))
-        .bind("from", period.start)
+    val update =
+        createUpdate(sql)
+            .bind("personId", personId)
+            .bind("newValidTo", period.start.minusDays(1))
+            .bind("from", period.start)
 
     handlingExceptions { update.execute() }
 }
@@ -216,8 +228,7 @@ fun parseIncomeDataJson(
     jsonMapper: JsonMapper,
     incomeTypes: Map<String, IncomeType>
 ): Map<String, IncomeValue> {
-    return jsonMapper.readValue<Map<String, IncomeValue>>(json)
-        .mapValues { (type, value) ->
-            value.copy(multiplier = incomeTypes[type]?.multiplier ?: error("Unknown income type $type"))
-        }
+    return jsonMapper.readValue<Map<String, IncomeValue>>(json).mapValues { (type, value) ->
+        value.copy(multiplier = incomeTypes[type]?.multiplier ?: error("Unknown income type $type"))
+    }
 }

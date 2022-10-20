@@ -10,28 +10,40 @@ import fi.espoo.evaka.invoicing.service.DocumentLang
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.message.IMessageProvider
 
-private fun addressIsUnusable(streetAddress: String?, postalCode: String?, postOffice: String?): Boolean {
+private fun addressIsUnusable(
+    streetAddress: String?,
+    postalCode: String?,
+    postOffice: String?
+): Boolean {
     return streetAddress.isNullOrBlank() || postalCode.isNullOrBlank() || postOffice.isNullOrBlank()
 }
 
-fun getSendAddress(messageProvider: IMessageProvider, guardian: PersonDTO, lang: DocumentLang): DecisionSendAddress {
+fun getSendAddress(
+    messageProvider: IMessageProvider,
+    guardian: PersonDTO,
+    lang: DocumentLang
+): DecisionSendAddress {
     val logMissingAddress = {
-        logger.warn("Cannot deliver daycare decision to guardian ${guardian.id} with incomplete address. Using default decision address.")
+        logger.warn(
+            "Cannot deliver daycare decision to guardian ${guardian.id} with incomplete address. Using default decision address."
+        )
     }
     return when {
-        guardian.restrictedDetailsEnabled -> messageProvider.getDefaultDecisionAddress(lang.messageLang)
+        guardian.restrictedDetailsEnabled ->
+            messageProvider.getDefaultDecisionAddress(lang.messageLang)
         addressIsUnusable(guardian.streetAddress, guardian.postalCode, guardian.postOffice) -> {
             logMissingAddress()
             messageProvider.getDefaultDecisionAddress(lang.messageLang)
         }
-        else -> DecisionSendAddress(
-            street = guardian.streetAddress,
-            postalCode = guardian.postalCode,
-            postOffice = guardian.postOffice,
-            row1 = guardian.streetAddress,
-            row2 = "${guardian.postalCode} ${guardian.postOffice}",
-            row3 = ""
-        )
+        else ->
+            DecisionSendAddress(
+                street = guardian.streetAddress,
+                postalCode = guardian.postalCode,
+                postOffice = guardian.postOffice,
+                row1 = guardian.streetAddress,
+                row2 = "${guardian.postalCode} ${guardian.postOffice}",
+                row3 = ""
+            )
     }
 }
 

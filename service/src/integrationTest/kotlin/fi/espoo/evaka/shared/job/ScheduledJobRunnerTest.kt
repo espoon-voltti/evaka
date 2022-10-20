@@ -11,29 +11,27 @@ import fi.espoo.evaka.shared.async.AsyncJobRunnerConfig
 import fi.espoo.evaka.shared.config.getTestDataSource
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.europeHelsinki
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalTime
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class ScheduledJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     private val testTime = LocalTime.of(1, 0)
-    private val testSchedule = object : JobSchedule {
-        override fun getSettingsForJob(job: ScheduledJob): ScheduledJobSettings? =
-            if (job == ScheduledJob.EndOfDayAttendanceUpkeep) {
-                ScheduledJobSettings(
-                    enabled = true,
-                    schedule = JobSchedule.daily(testTime)
-                )
-            } else {
-                null
-            }
-    }
+    private val testSchedule =
+        object : JobSchedule {
+            override fun getSettingsForJob(job: ScheduledJob): ScheduledJobSettings? =
+                if (job == ScheduledJob.EndOfDayAttendanceUpkeep) {
+                    ScheduledJobSettings(enabled = true, schedule = JobSchedule.daily(testTime))
+                } else {
+                    null
+                }
+        }
 
     @BeforeEach
     fun beforeEach() {
@@ -49,7 +47,10 @@ class ScheduledJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
         ScheduledJobRunner(jdbi, asyncJobRunner, getTestDataSource(), testSchedule).use { runner ->
             runner.scheduler.start()
-            val exec = runner.getScheduledExecutionsForTask(ScheduledJob.EndOfDayAttendanceUpkeep).singleOrNull()!!
+            val exec =
+                runner
+                    .getScheduledExecutionsForTask(ScheduledJob.EndOfDayAttendanceUpkeep)
+                    .singleOrNull()!!
             assertEquals(exec.executionTime.atZone(europeHelsinki).toLocalTime(), testTime)
 
             runner.scheduler.reschedule(exec.taskInstance, Instant.EPOCH)

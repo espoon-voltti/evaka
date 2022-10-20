@@ -12,10 +12,10 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import org.jdbi.v3.json.Json
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
+import org.jdbi.v3.json.Json
 
 @ExcludeCodeGen
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -32,8 +32,7 @@ data class Income(
     val updatedAt: HelsinkiDateTime? = null,
     val updatedBy: String? = null,
     val applicationId: ApplicationId? = null,
-    @Json
-    val attachments: List<IncomeAttachment> = listOf()
+    @Json val attachments: List<IncomeAttachment> = listOf()
 ) {
     @JsonProperty("totalIncome")
     fun totalIncome(): Int =
@@ -47,17 +46,17 @@ data class Income(
             .filter { (_, value) -> value.multiplier < 0 }
             .sumOf { (_, value) -> -1 * value.multiplier * value.monthlyAmount() }
 
-    @JsonProperty("total")
-    fun total(): Int = incomeTotal(data)
+    @JsonProperty("total") fun total(): Int = incomeTotal(data)
 
-    fun toDecisionIncome() = DecisionIncome(
-        effect = effect,
-        data = data.mapValues { (_, value) -> value.monthlyAmount() },
-        totalIncome = totalIncome(),
-        totalExpenses = totalExpenses(),
-        total = total(),
-        worksAtECHA = worksAtECHA
-    )
+    fun toDecisionIncome() =
+        DecisionIncome(
+            effect = effect,
+            data = data.mapValues { (_, value) -> value.monthlyAmount() },
+            totalIncome = totalIncome(),
+            totalExpenses = totalExpenses(),
+            total = total(),
+            worksAtECHA = worksAtECHA
+        )
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -70,13 +69,14 @@ data class DecisionIncome(
     val worksAtECHA: Boolean
 )
 
-fun incomeTotal(data: Map<String, IncomeValue>) = data.entries
-    .sumOf { (_, value) -> value.multiplier * value.monthlyAmount() }
+fun incomeTotal(data: Map<String, IncomeValue>) =
+    data.entries.sumOf { (_, value) -> value.multiplier * value.monthlyAmount() }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class IncomeValue(val amount: Int, val coefficient: IncomeCoefficient, val multiplier: Int) {
     @JsonProperty("monthlyAmount")
-    fun monthlyAmount(): Int = (BigDecimal(amount) * coefficient.multiplier()).setScale(0, RoundingMode.HALF_UP).toInt()
+    fun monthlyAmount(): Int =
+        (BigDecimal(amount) * coefficient.multiplier()).setScale(0, RoundingMode.HALF_UP).toInt()
 }
 
 enum class IncomeEffect {
@@ -107,13 +107,14 @@ enum class IncomeCoefficient {
     }
 
     // values are taken from Effica
-    fun multiplier(): BigDecimal = when (this) {
-        MONTHLY_WITH_HOLIDAY_BONUS -> BigDecimal("1.0417") // = 12.5 / 12
-        MONTHLY_NO_HOLIDAY_BONUS -> BigDecimal("1.0000") // = 12 / 12
-        BI_WEEKLY_WITH_HOLIDAY_BONUS -> BigDecimal("2.2323") // = ???
-        BI_WEEKLY_NO_HOLIDAY_BONUS -> BigDecimal("2.1429") // = ???
-        DAILY_ALLOWANCE_21_5 -> BigDecimal("21.5")
-        DAILY_ALLOWANCE_25 -> BigDecimal("25")
-        YEARLY -> BigDecimal("0.0833") // 1 / 12
-    }
+    fun multiplier(): BigDecimal =
+        when (this) {
+            MONTHLY_WITH_HOLIDAY_BONUS -> BigDecimal("1.0417") // = 12.5 / 12
+            MONTHLY_NO_HOLIDAY_BONUS -> BigDecimal("1.0000") // = 12 / 12
+            BI_WEEKLY_WITH_HOLIDAY_BONUS -> BigDecimal("2.2323") // = ???
+            BI_WEEKLY_NO_HOLIDAY_BONUS -> BigDecimal("2.1429") // = ???
+            DAILY_ALLOWANCE_21_5 -> BigDecimal("21.5")
+            DAILY_ALLOWANCE_25 -> BigDecimal("25")
+            YEARLY -> BigDecimal("0.0833") // 1 / 12
+        }
 }

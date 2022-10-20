@@ -19,18 +19,16 @@ import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testVoucherDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
@@ -101,7 +99,11 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
         val date = LocalDate.of(2019, 1, 1)
         val placementStart = date
         insertPlacement(testChild_1.id, placementStart, placementStart.plusMonths(1))
-        insertPlacement(testChild_1.id, placementStart.plusMonths(1).plusDays(1), placementStart.plusMonths(2))
+        insertPlacement(
+            testChild_1.id,
+            placementStart.plusMonths(1).plusDays(1),
+            placementStart.plusMonths(2)
+        )
 
         getAndAssert(date, listOf(toReportRow(testChild_1, placementStart)))
     }
@@ -114,21 +116,29 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
         getAndAssert(date, listOf(toReportRow(testChild_1, placementStart, "palvelusetelialue")))
     }
 
-    private val testUser = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+    private val testUser =
+        AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
 
     private fun getAndAssert(date: LocalDate, expected: List<StartingPlacementsRow>) {
-        val (_, response, result) = http.get(
-            "/reports/starting-placements",
-            listOf("year" to date.year, "month" to date.monthValue)
-        )
-            .asUser(testUser)
-            .responseObject<List<StartingPlacementsRow>>(jsonMapper)
+        val (_, response, result) =
+            http
+                .get(
+                    "/reports/starting-placements",
+                    listOf("year" to date.year, "month" to date.monthValue)
+                )
+                .asUser(testUser)
+                .responseObject<List<StartingPlacementsRow>>(jsonMapper)
 
         assertEquals(200, response.statusCode)
         assertEquals(expected, result.get())
     }
 
-    private fun insertPlacement(childId: ChildId, startDate: LocalDate, endDate: LocalDate = startDate.plusYears(1), daycare: DevDaycare = testDaycare) =
+    private fun insertPlacement(
+        childId: ChildId,
+        startDate: LocalDate,
+        endDate: LocalDate = startDate.plusYears(1),
+        daycare: DevDaycare = testDaycare
+    ) =
         db.transaction { tx ->
             tx.insertTestPlacement(
                 childId = childId,
@@ -138,13 +148,18 @@ class StartingPlacementsReportTest : FullApplicationTest(resetDbBeforeEach = tru
             )
         }
 
-    private fun toReportRow(child: DevPerson, startDate: LocalDate, careAreaName: String = testArea.name) = StartingPlacementsRow(
-        childId = child.id,
-        firstName = child.firstName,
-        lastName = child.lastName,
-        dateOfBirth = child.dateOfBirth,
-        ssn = child.ssn,
-        placementStart = startDate,
-        careAreaName = careAreaName
-    )
+    private fun toReportRow(
+        child: DevPerson,
+        startDate: LocalDate,
+        careAreaName: String = testArea.name
+    ) =
+        StartingPlacementsRow(
+            childId = child.id,
+            firstName = child.firstName,
+            lastName = child.lastName,
+            dateOfBirth = child.dateOfBirth,
+            ssn = child.ssn,
+            placementStart = startDate,
+            careAreaName = careAreaName
+        )
 }

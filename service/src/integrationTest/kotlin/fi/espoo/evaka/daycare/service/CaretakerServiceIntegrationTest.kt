@@ -14,12 +14,12 @@ import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val daycareId = testDaycare.id
@@ -31,11 +31,7 @@ class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.insertGeneralTestFixtures()
             tx.insertTestDaycareGroup(
-                DevDaycareGroup(
-                    id = groupId,
-                    daycareId = daycareId,
-                    startDate = groupStart
-                )
+                DevDaycareGroup(id = groupId, daycareId = daycareId, startDate = groupStart)
             )
             tx.execute(
                 "INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) VALUES (?, ?, NULL, 3)",
@@ -58,16 +54,17 @@ class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `inserting caretaker row`() {
         val start2 = LocalDate.of(2000, 6, 1)
-        val caretakers = db.transaction { tx ->
-            insertCaretakers(
-                tx,
-                groupId = groupId,
-                startDate = start2,
-                endDate = null,
-                amount = 5.0
-            )
-            getCaretakers(tx, groupId)
-        }
+        val caretakers =
+            db.transaction { tx ->
+                insertCaretakers(
+                    tx,
+                    groupId = groupId,
+                    startDate = start2,
+                    endDate = null,
+                    amount = 5.0
+                )
+                getCaretakers(tx, groupId)
+            }
         assertEquals(2, caretakers.size)
 
         assertEquals(start2, caretakers[0].startDate)
@@ -81,19 +78,20 @@ class CaretakerServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `updating caretaker row`() {
-        val rows = db.transaction { tx ->
-            val id = getCaretakers(tx, groupId).first().id
-            updateCaretakers(
-                tx,
-                groupId = groupId,
-                id = id,
-                startDate = LocalDate.of(2000, 7, 1),
-                endDate = LocalDate.of(2000, 8, 1),
-                amount = 2.0
-            )
+        val rows =
+            db.transaction { tx ->
+                val id = getCaretakers(tx, groupId).first().id
+                updateCaretakers(
+                    tx,
+                    groupId = groupId,
+                    id = id,
+                    startDate = LocalDate.of(2000, 7, 1),
+                    endDate = LocalDate.of(2000, 8, 1),
+                    amount = 2.0
+                )
 
-            getCaretakers(tx, groupId)
-        }
+                getCaretakers(tx, groupId)
+            }
         assertEquals(1, rows.size)
         val updated = rows.first()
         assertEquals(LocalDate.of(2000, 7, 1), updated.startDate)

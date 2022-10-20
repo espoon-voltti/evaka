@@ -12,10 +12,10 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 class SextetReportController(private val accessControl: AccessControl) {
@@ -30,29 +30,31 @@ class SextetReportController(private val accessControl: AccessControl) {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_SEXTET_REPORT)
 
         return db.connect { dbc ->
-            dbc.read {
-                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.sextetReport(
-                    LocalDate.of(year, 1, 1),
-                    LocalDate.of(year, 12, 31),
-                    placementType
+                dbc.read {
+                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    it.sextetReport(
+                        LocalDate.of(year, 1, 1),
+                        LocalDate.of(year, 12, 31),
+                        placementType
+                    )
+                }
+            }
+            .also {
+                Audit.SextetReportRead.log(
+                    args =
+                        mapOf("year" to year, "placementType" to placementType, "count" to it.size)
                 )
             }
-        }.also {
-            Audit.SextetReportRead.log(
-                args = mapOf(
-                    "year" to year,
-                    "placementType" to placementType,
-                    "count" to it.size
-                )
-            )
-        }
     }
 }
 
-fun Database.Read.sextetReport(from: LocalDate, to: LocalDate, placementType: PlacementType): List<SextetReportRow> {
+fun Database.Read.sextetReport(
+    from: LocalDate,
+    to: LocalDate,
+    placementType: PlacementType
+): List<SextetReportRow> {
     return createQuery(
-        """
+            """
 WITH operational_days AS (
     SELECT daycare.id AS unit_id, date
     FROM generate_series(:from, :to, '1 day'::interval) date
@@ -102,7 +104,7 @@ AND ep.placement_type = :placementType
 GROUP BY ep.unit_id, d.name, ep.placement_type
 ORDER BY d.name
     """
-    )
+        )
         .bind("from", from)
         .bind("to", to)
         .bind("placementType", placementType)

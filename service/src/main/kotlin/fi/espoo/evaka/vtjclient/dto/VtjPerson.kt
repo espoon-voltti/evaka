@@ -22,26 +22,27 @@ data class VtjPerson(
     var residenceCode: String? = null
 ) {
 
-    fun mapToDto(): VtjPersonDTO = VtjPersonDTO(
-        firstName = firstNames,
-        lastName = lastName,
-        id = UUID.fromString(PLACEHOLDER),
-        socialSecurityNumber = socialSecurityNumber,
-        children = dependants.map { it.mapToDto() } as MutableList<VtjPersonDTO>,
-        guardians = guardians.map { it.mapToDto() } as MutableList<VtjPersonDTO>,
-        streetAddress = address?.streetAddress ?: "",
-        postalCode = address?.postalCode ?: "",
-        city = address?.postOffice ?: "",
-        streetAddressSe = address?.streetAddressSe ?: "",
-        residenceCode = residenceCode ?: "",
-        citySe = address?.postOfficeSe ?: "",
-        nationalities = nationalities,
-        nativeLanguage = nativeLanguage,
-        restrictedDetailsEndDate = restrictedDetails?.endDate,
-        restrictedDetailsEnabled = restrictedDetails?.enabled ?: false,
-        dateOfBirth = getDobFromSsn(socialSecurityNumber),
-        dateOfDeath = dateOfDeath
-    )
+    fun mapToDto(): VtjPersonDTO =
+        VtjPersonDTO(
+            firstName = firstNames,
+            lastName = lastName,
+            id = UUID.fromString(PLACEHOLDER),
+            socialSecurityNumber = socialSecurityNumber,
+            children = dependants.map { it.mapToDto() } as MutableList<VtjPersonDTO>,
+            guardians = guardians.map { it.mapToDto() } as MutableList<VtjPersonDTO>,
+            streetAddress = address?.streetAddress ?: "",
+            postalCode = address?.postalCode ?: "",
+            city = address?.postOffice ?: "",
+            streetAddressSe = address?.streetAddressSe ?: "",
+            residenceCode = residenceCode ?: "",
+            citySe = address?.postOfficeSe ?: "",
+            nationalities = nationalities,
+            nativeLanguage = nativeLanguage,
+            restrictedDetailsEndDate = restrictedDetails?.endDate,
+            restrictedDetailsEnabled = restrictedDetails?.enabled ?: false,
+            dateOfBirth = getDobFromSsn(socialSecurityNumber),
+            dateOfDeath = dateOfDeath
+        )
 
     companion object {
         const val PLACEHOLDER = "00000000-0000-0000-0000-00000000000"

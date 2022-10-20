@@ -18,15 +18,18 @@ class PatuAsyncJobProcessor(
     private val patuIntegrationClient: PatuIntegrationClient
 ) {
     init {
-        asyncJobRunner.registerHandler { db, _, msg: AsyncJob.SendPatuReport -> runSendPatuReport(db, msg) }
+        asyncJobRunner.registerHandler { db, _, msg: AsyncJob.SendPatuReport ->
+            runSendPatuReport(db, msg)
+        }
     }
 
     fun runSendPatuReport(dbc: Database.Connection, msg: AsyncJob.SendPatuReport) {
         logger.info("Running patu report job ${msg.dateRange}")
-        val rows = dbc.read {
-            it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-            it.getRawRows(msg.dateRange.start, msg.dateRange.end ?: msg.dateRange.start)
-        }
+        val rows =
+            dbc.read {
+                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                it.getRawRows(msg.dateRange.start, msg.dateRange.end ?: msg.dateRange.start)
+            }
         patuIntegrationClient.send(rows)
     }
 }

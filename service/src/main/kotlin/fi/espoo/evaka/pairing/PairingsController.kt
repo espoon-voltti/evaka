@@ -32,7 +32,8 @@ class PairingsController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     /**
-     * Unit supervisor calls this endpoint as an authorized desktop user to start a new pairing process.
+     * Unit supervisor calls this endpoint as an authorized desktop user to start a new pairing
+     * process.
      *
      * Endpoint returns a Pairing with an id and challengeKey.
      *
@@ -53,42 +54,50 @@ class PairingsController(
     ): Pairing {
         when (body) {
             is PostPairingReq.Unit ->
-                accessControl.requirePermissionFor(user, clock, Action.Unit.CREATE_MOBILE_DEVICE_PAIRING, body.unitId)
+                accessControl.requirePermissionFor(
+                    user,
+                    clock,
+                    Action.Unit.CREATE_MOBILE_DEVICE_PAIRING,
+                    body.unitId
+                )
             is PostPairingReq.Employee -> {
-                accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_PERSONAL_MOBILE_DEVICE_PAIRING)
+                accessControl.requirePermissionFor(
+                    user,
+                    clock,
+                    Action.Global.CREATE_PERSONAL_MOBILE_DEVICE_PAIRING
+                )
                 if (user.id != body.employeeId) throw Forbidden()
             }
         }
 
         return db.connect { dbc ->
-            dbc.transaction { tx ->
-                when (body) {
-                    is PostPairingReq.Unit -> tx.initPairing(clock, unitId = body.unitId)
-                    is PostPairingReq.Employee -> tx.initPairing(clock, employeeId = body.employeeId)
-                }.also {
-                    asyncJobRunner.plan(
-                        tx = tx,
-                        payloads = listOf(AsyncJob.GarbageCollectPairing(pairingId = it.id)),
-                        runAt = it.expires.plusDays(1)
-                    )
+                dbc.transaction { tx ->
+                    when (body) {
+                        is PostPairingReq.Unit -> tx.initPairing(clock, unitId = body.unitId)
+                        is PostPairingReq.Employee ->
+                            tx.initPairing(clock, employeeId = body.employeeId)
+                    }.also {
+                        asyncJobRunner.plan(
+                            tx = tx,
+                            payloads = listOf(AsyncJob.GarbageCollectPairing(pairingId = it.id)),
+                            runAt = it.expires.plusDays(1)
+                        )
+                    }
                 }
             }
-        }.also {
-            Audit.PairingInit.log(targetId = body.id, objectId = it.id)
-        }
+            .also { Audit.PairingInit.log(targetId = body.id, objectId = it.id) }
     }
 
     /**
-     * Unit supervisor calls this endpoint as an unauthenticated mobile user to start a pairing challenge phase.
+     * Unit supervisor calls this endpoint as an unauthenticated mobile user to start a pairing
+     * challenge phase.
      *
-     * Endpoint takes in the challengeKey previously shown on desktop and returns a Pairing with an id,
-     * challengeKey and responseKey.
+     * Endpoint takes in the challengeKey previously shown on desktop and returns a Pairing with an
+     * id, challengeKey and responseKey.
      *
      * Pairing status changes from WAITING_CHALLENGE to WAITING_RESPONSE.
      */
-    data class PostPairingChallengeReq(
-        val challengeKey: String
-    )
+    data class PostPairingChallengeReq(val challengeKey: String)
 
     @PostMapping("/public/pairings/challenge")
     fun postPairingChallenge(
@@ -96,22 +105,26 @@ class PairingsController(
         clock: EvakaClock,
         @RequestBody body: PostPairingChallengeReq
     ): Pairing {
-        return db.connect { dbc -> dbc.transaction { it.challengePairing(clock, body.challengeKey) } }.also {
-            Audit.PairingChallenge.log(targetId = it.id, args = mapOf("challengeKey" to body.challengeKey))
-        }
+        return db.connect { dbc ->
+                dbc.transaction { it.challengePairing(clock, body.challengeKey) }
+            }
+            .also {
+                Audit.PairingChallenge.log(
+                    targetId = it.id,
+                    args = mapOf("challengeKey" to body.challengeKey)
+                )
+            }
     }
 
     /**
      * Unit supervisor calls this endpoint as an authorized desktop user to respond to challenge.
      *
-     * Endpoint takes in the previously received id and challengeKey, as well as the responseKey shown on mobile.
+     * Endpoint takes in the previously received id and challengeKey, as well as the responseKey
+     * shown on mobile.
      *
      * Pairing status changes from WAITING_RESPONSE to READY.
      */
-    data class PostPairingResponseReq(
-        val challengeKey: String,
-        val responseKey: String
-    )
+    data class PostPairingResponseReq(val challengeKey: String, val responseKey: String)
 
     @PostMapping("/pairings/{id}/response")
     fun postPairingResponse(
@@ -122,28 +135,38 @@ class PairingsController(
         @RequestBody body: PostPairingResponseReq
     ): Pairing {
         return db.connect { dbc ->
-            val (unitId, employeeId) = dbc.read { it.fetchPairingReferenceIds(id) }
-            try {
-                when {
-                    unitId != null -> accessControl.requirePermissionFor(user, clock, Action.Pairing.POST_RESPONSE, id)
-                    employeeId != null ->
-                        if (user.id != employeeId) throw Forbidden()
-                    else -> error("Pairing unitId and employeeId were null")
+                val (unitId, employeeId) = dbc.read { it.fetchPairingReferenceIds(id) }
+                try {
+                    when {
+                        unitId != null ->
+                            accessControl.requirePermissionFor(
+                                user,
+                                clock,
+                                Action.Pairing.POST_RESPONSE,
+                                id
+                            )
+                        employeeId != null -> if (user.id != employeeId) throw Forbidden()
+                        else -> error("Pairing unitId and employeeId were null")
+                    }
+                } catch (e: Forbidden) {
+                    throw NotFound("Pairing not found or not authorized")
                 }
-            } catch (e: Forbidden) {
-                throw NotFound("Pairing not found or not authorized")
-            }
-            dbc.transaction { it.incrementAttempts(id, body.challengeKey) }
+                dbc.transaction { it.incrementAttempts(id, body.challengeKey) }
 
-            dbc.transaction {
-                it.respondPairingChallengeCreateDevice(id, body.challengeKey, body.responseKey)
+                dbc.transaction {
+                    it.respondPairingChallengeCreateDevice(id, body.challengeKey, body.responseKey)
+                }
             }
-        }.also {
-            Audit.PairingResponse.log(
-                targetId = id,
-                args = mapOf("challengeKey" to body.challengeKey, "responseKey" to body.responseKey)
-            )
-        }
+            .also {
+                Audit.PairingResponse.log(
+                    targetId = id,
+                    args =
+                        mapOf(
+                            "challengeKey" to body.challengeKey,
+                            "responseKey" to body.responseKey
+                        )
+                )
+            }
     }
 
     /**
@@ -153,10 +176,7 @@ class PairingsController(
      *
      * Pairing status changes from READY to PAIRED.
      */
-    data class PostPairingValidationReq(
-        val challengeKey: String,
-        val responseKey: String
-    )
+    data class PostPairingValidationReq(val challengeKey: String, val responseKey: String)
 
     @PostMapping("/system/pairings/{id}/validation")
     fun postPairingValidation(
@@ -165,39 +185,39 @@ class PairingsController(
         @RequestBody body: PostPairingValidationReq
     ): MobileDeviceIdentity {
         return db.connect { dbc ->
-            dbc.transaction { it.incrementAttempts(id, body.challengeKey) }
-            dbc.transaction { tx ->
-                tx.validatePairing(id, body.challengeKey, body.responseKey).also {
-                    tx.upsertMobileDeviceUser(it.id)
+                dbc.transaction { it.incrementAttempts(id, body.challengeKey) }
+                dbc.transaction { tx ->
+                    tx.validatePairing(id, body.challengeKey, body.responseKey).also {
+                        tx.upsertMobileDeviceUser(it.id)
+                    }
                 }
             }
-        }.also {
-            Audit.PairingValidation.log(
-                targetId = id,
-                args = mapOf("challengeKey" to body.challengeKey, "responseKey" to body.responseKey)
-            )
-        }
+            .also {
+                Audit.PairingValidation.log(
+                    targetId = id,
+                    args =
+                        mapOf(
+                            "challengeKey" to body.challengeKey,
+                            "responseKey" to body.responseKey
+                        )
+                )
+            }
     }
 
     /**
-     * Unit supervisor calls this endpoint in a polling fashion either as an authorized desktop user or
-     * as an unauthenticated mobile user in order to monitor the progress of the async pairing process.
+     * Unit supervisor calls this endpoint in a polling fashion either as an authorized desktop user
+     * or as an unauthenticated mobile user in order to monitor the progress of the async pairing
+     * process.
      *
      * Endpoint takes in the previously received pairing id and returns the pairing status.
      */
-    data class PairingStatusRes(
-        val status: PairingStatus
-    )
+    data class PairingStatusRes(val status: PairingStatus)
 
     @GetMapping("/public/pairings/{id}/status")
-    fun getPairingStatus(
-        db: Database,
-        @PathVariable id: PairingId
-    ): PairingStatusRes {
+    fun getPairingStatus(db: Database, @PathVariable id: PairingId): PairingStatusRes {
         return PairingStatusRes(
-            db.connect { dbc -> dbc.read { it.fetchPairingStatus(id) } }.also {
-                Audit.PairingStatusRead.log(targetId = id, args = mapOf("status" to it))
-            }
+            db.connect { dbc -> dbc.read { it.fetchPairingStatus(id) } }
+                .also { Audit.PairingStatusRead.log(targetId = id, args = mapOf("status" to it)) }
         )
     }
 }

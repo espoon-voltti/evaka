@@ -32,9 +32,8 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
         clock: EvakaClock
     ): List<HolidayPeriod> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_PERIODS)
-        return db.connect { dbc -> dbc.read { it.getHolidayPeriods() } }.also {
-            Audit.HolidayPeriodsList.log(args = mapOf("count" to it.size))
-        }
+        return db.connect { dbc -> dbc.read { it.getHolidayPeriods() } }
+            .also { Audit.HolidayPeriodsList.log(args = mapOf("count" to it.size)) }
     }
 
     @GetMapping("/{id}")
@@ -45,9 +44,8 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
         @PathVariable id: HolidayPeriodId
     ): HolidayPeriod {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_PERIOD)
-        return db.connect { dbc -> dbc.read { it.getHolidayPeriod(id) } ?: throw NotFound() }.also {
-            Audit.HolidayPeriodRead.log(targetId = id)
-        }
+        return db.connect { dbc -> dbc.read { it.getHolidayPeriod(id) } ?: throw NotFound() }
+            .also { Audit.HolidayPeriodRead.log(targetId = id) }
     }
 
     @PostMapping
@@ -59,16 +57,15 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
     ): HolidayPeriod {
         accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_HOLIDAY_PERIOD)
         return db.connect { dbc ->
-            dbc.transaction {
-                try {
-                    it.createHolidayPeriod(body)
-                } catch (e: Exception) {
-                    throw mapPSQLException(e)
+                dbc.transaction {
+                    try {
+                        it.createHolidayPeriod(body)
+                    } catch (e: Exception) {
+                        throw mapPSQLException(e)
+                    }
                 }
             }
-        }.also { holidayPeriod ->
-            Audit.HolidayPeriodCreate.log(targetId = holidayPeriod.id)
-        }
+            .also { holidayPeriod -> Audit.HolidayPeriodCreate.log(targetId = holidayPeriod.id) }
     }
 
     @PutMapping("/{id}")

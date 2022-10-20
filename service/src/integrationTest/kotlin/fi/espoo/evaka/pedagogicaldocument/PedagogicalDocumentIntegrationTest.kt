@@ -35,13 +35,13 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.io.File
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val employeeId = EmployeeId(UUID.randomUUID())
@@ -60,10 +60,13 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     val groupId = GroupId(UUID.randomUUID())
 
-    private fun deserializeGetResult(json: String) = jsonMapper.readValue<List<PedagogicalDocument>>(json)
-    private fun deserializeGetResultCitizen(json: String) = jsonMapper.readValue<List<PedagogicalDocumentCitizen>>(json)
+    private fun deserializeGetResult(json: String) =
+        jsonMapper.readValue<List<PedagogicalDocument>>(json)
+    private fun deserializeGetResultCitizen(json: String) =
+        jsonMapper.readValue<List<PedagogicalDocumentCitizen>>(json)
     private fun deserializePutResult(json: String) = jsonMapper.readValue<PedagogicalDocument>(json)
-    private fun deserializePostResult(json: String) = jsonMapper.readValue<PedagogicalDocument>(json)
+    private fun deserializePostResult(json: String) =
+        jsonMapper.readValue<PedagogicalDocument>(json)
 
     @BeforeEach
     fun beforeEach() {
@@ -82,7 +85,12 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
             tx.insertTestDaycareGroup(DevDaycareGroup(groupId, testDaycare.id))
             tx.insertEmployeeToDaycareGroupAcl(groupId, groupStaffId)
 
-            val placementId = tx.insertTestPlacement(childId = testChild_1.id, unitId = testDaycare.id, endDate = LocalDate.MAX)
+            val placementId =
+                tx.insertTestPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    endDate = LocalDate.MAX
+                )
             tx.insertTestDaycareGroupPlacement(
                 daycarePlacementId = placementId,
                 groupId = groupId,
@@ -93,55 +101,63 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         }
     }
 
-    private fun createDocumentAsUser(childId: ChildId, user: AuthenticatedUser) = http.post("/pedagogical-document")
-        .jsonBody("""{"childId": "$childId", "description": ""}""")
-        .asUser(user)
-        .responseString()
-        .third
+    private fun createDocumentAsUser(childId: ChildId, user: AuthenticatedUser) =
+        http
+            .post("/pedagogical-document")
+            .jsonBody("""{"childId": "$childId", "description": ""}""")
+            .asUser(user)
+            .responseString()
+            .third
 
-    private fun getAttachmentAsUser(attachmentId: AttachmentId, user: AuthenticatedUser, requestedFilename: String = "evaka-logo.png") =
-        http.get("/attachments/$attachmentId/download/$requestedFilename")
+    private fun getAttachmentAsUser(
+        attachmentId: AttachmentId,
+        user: AuthenticatedUser,
+        requestedFilename: String = "evaka-logo.png"
+    ) =
+        http
+            .get("/attachments/$attachmentId/download/$requestedFilename")
             .asUser(user)
             .responseString()
             .second
 
-    private fun getPedagogicalDocumentAsUser(childId: ChildId, user: AuthenticatedUser) = http.get("/pedagogical-document/child/$childId")
-        .asUser(user)
-        .responseString()
+    private fun getPedagogicalDocumentAsUser(childId: ChildId, user: AuthenticatedUser) =
+        http.get("/pedagogical-document/child/$childId").asUser(user).responseString()
 
-    private fun getPedagogicalDocumentsAsCitizen(user: AuthenticatedUser.Citizen, childId: ChildId) =
-        http.get("/citizen/children/$childId/pedagogical-documents")
+    private fun getPedagogicalDocumentsAsCitizen(
+        user: AuthenticatedUser.Citizen,
+        childId: ChildId
+    ) = http.get("/citizen/children/$childId/pedagogical-documents").asUser(user).responseString()
+
+    private fun getUnreadCount(user: AuthenticatedUser.Citizen) =
+        http
+            .get("/citizen/pedagogical-documents/unread-count")
             .asUser(user)
-            .responseString()
-
-    private fun getUnreadCount(user: AuthenticatedUser.Citizen) = http.get("/citizen/pedagogical-documents/unread-count")
-        .asUser(user)
-        .responseObject<Map<ChildId, Int>>(jsonMapper).third.get()
+            .responseObject<Map<ChildId, Int>>(jsonMapper)
+            .third
+            .get()
 
     @Test
     fun `creating new document`() {
         val result = createDocumentAsUser(testChild_1.id, employee)
 
         assertNotNull(deserializePostResult(result.get()).id)
-        assertEquals(
-            testChild_1.id,
-            deserializePostResult(result.get()).childId
-        )
+        assertEquals(testChild_1.id, deserializePostResult(result.get()).childId)
     }
 
     @Test
     fun `updating document`() {
         val id = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
 
-        val (_, _, result) = http.put("/pedagogical-document/$id")
-            .jsonBody("""{"id": "$id", "childId": "${testChild_1.id}", "description": "foobar", "attachmentId": null}""")
-            .asUser(employee)
-            .responseString()
+        val (_, _, result) =
+            http
+                .put("/pedagogical-document/$id")
+                .jsonBody(
+                    """{"id": "$id", "childId": "${testChild_1.id}", "description": "foobar", "attachmentId": null}"""
+                )
+                .asUser(employee)
+                .responseString()
 
-        assertEquals(
-            "foobar",
-            deserializePutResult(result.get()).description
-        )
+        assertEquals("foobar", deserializePutResult(result.get()).description)
     }
 
     @Test
@@ -149,18 +165,19 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val id = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
 
         val testDescription = "foobar"
-        http.put("/pedagogical-document/$id")
-            .jsonBody("""{"id": "$id", "childId": "${testChild_1.id}", "description": "$testDescription", "attachmentId": null}""")
+        http
+            .put("/pedagogical-document/$id")
+            .jsonBody(
+                """{"id": "$id", "childId": "${testChild_1.id}", "description": "$testDescription", "attachmentId": null}"""
+            )
             .asUser(employee)
             .responseString()
 
-        val parsed = deserializeGetResult(getPedagogicalDocumentAsUser(testChild_1.id, employee).third.get())
+        val parsed =
+            deserializeGetResult(getPedagogicalDocumentAsUser(testChild_1.id, employee).third.get())
 
         assertEquals(1, parsed.size)
-        assertEquals(
-            testDescription,
-            parsed.first().description
-        )
+        assertEquals(testDescription, parsed.first().description)
     }
 
     @Test
@@ -170,15 +187,13 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val id = deserializePostResult(res.get()).id
         val attachmentId = uploadAttachment(id)
 
-        val parsed = deserializeGetResult(getPedagogicalDocumentAsUser(testChild_1.id, employee).third.get())
+        val parsed =
+            deserializeGetResult(getPedagogicalDocumentAsUser(testChild_1.id, employee).third.get())
         assertEquals(1, parsed.size)
 
         val attachment = parsed.first().attachments.get(0)
         assertNotNull(attachment)
-        assertEquals(
-            attachmentId,
-            attachment.id
-        )
+        assertEquals(attachmentId, attachment.id)
     }
 
     @Test
@@ -195,10 +210,7 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         val attachment = parsed.first().attachments.get(0)
         assertNotNull(attachment)
-        assertEquals(
-            attachmentId,
-            attachment.id
-        )
+        assertEquals(attachmentId, attachment.id)
 
         val res2 = getAttachmentAsUser(attachmentId, supervisor, attachment.name)
         assertEquals(200, res2.statusCode)
@@ -207,7 +219,11 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `supervisor can't read pedagogical document or attachment if child is in another unit`() {
         db.transaction {
-            it.insertTestPlacement(childId = testChild_2.id, unitId = testDaycare2.id, endDate = LocalDate.MAX)
+            it.insertTestPlacement(
+                childId = testChild_2.id,
+                unitId = testDaycare2.id,
+                endDate = LocalDate.MAX
+            )
         }
 
         createDocumentAsUser(testChild_2.id, employee)
@@ -215,7 +231,10 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val id = deserializePostResult(createDocumentAsUser(testChild_2.id, employee).get()).id
         val attachmentId = uploadAttachment(id)
 
-        assertEquals(403, getPedagogicalDocumentAsUser(testChild_2.id, supervisor).second.statusCode)
+        assertEquals(
+            403,
+            getPedagogicalDocumentAsUser(testChild_2.id, supervisor).second.statusCode
+        )
         assertEquals(403, getAttachmentAsUser(attachmentId, supervisor).statusCode)
     }
 
@@ -226,16 +245,14 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val id = deserializePostResult(res.get()).id
         val attachmentId = uploadAttachment(id)
 
-        val parsed = deserializeGetResult(getPedagogicalDocumentAsUser(testChild_1.id, staff).third.get())
+        val parsed =
+            deserializeGetResult(getPedagogicalDocumentAsUser(testChild_1.id, staff).third.get())
 
         assertEquals(1, parsed.size)
 
         val attachment = parsed.first().attachments.get(0)
         assertNotNull(attachment)
-        assertEquals(
-            attachmentId,
-            attachment.id
-        )
+        assertEquals(attachmentId, attachment.id)
 
         assertEquals(200, getAttachmentAsUser(attachment.id, staff, attachment.name).statusCode)
     }
@@ -247,17 +264,20 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val id = deserializePostResult(res.get()).id
         val attachmentId = uploadAttachment(id)
 
-        val parsed = deserializeGetResult(getPedagogicalDocumentAsUser(testChild_1.id, groupStaff).third.get())
+        val parsed =
+            deserializeGetResult(
+                getPedagogicalDocumentAsUser(testChild_1.id, groupStaff).third.get()
+            )
         assertEquals(1, parsed.size)
 
         val attachment = parsed.first().attachments.get(0)
         assertNotNull(attachment)
-        assertEquals(
-            attachmentId,
-            attachment.id
-        )
+        assertEquals(attachmentId, attachment.id)
 
-        assertEquals(200, getAttachmentAsUser(attachment.id, groupStaff, attachment.name).statusCode)
+        assertEquals(
+            200,
+            getAttachmentAsUser(attachment.id, groupStaff, attachment.name).statusCode
+        )
     }
 
     @Test
@@ -306,15 +326,15 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val id = deserializePostResult(res.get()).id
         val attachmentId = uploadAttachment(id)
 
-        val parsed = deserializeGetResultCitizen(getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get())
+        val parsed =
+            deserializeGetResultCitizen(
+                getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()
+            )
         assertEquals(1, parsed.size)
 
         val attachment = parsed.first().attachments.get(0)
         assertNotNull(attachment)
-        assertEquals(
-            attachmentId,
-            attachment.id
-        )
+        assertEquals(attachmentId, attachment.id)
 
         assertEquals(200, getAttachmentAsUser(attachment.id, guardian, attachment.name).statusCode)
     }
@@ -323,24 +343,48 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `guardian finds new document only when it has attachment or description`() {
         val id1 = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
 
-        assertEquals(emptyList(), deserializeGetResultCitizen(getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()))
+        assertEquals(
+            emptyList(),
+            deserializeGetResultCitizen(
+                getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()
+            )
+        )
         assertEquals(0, getUnreadCount(guardian).values.sum())
 
         uploadAttachment(id1)
 
-        assertEquals(1, deserializeGetResultCitizen(getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()).size)
+        assertEquals(
+            1,
+            deserializeGetResultCitizen(
+                    getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()
+                )
+                .size
+        )
         assertEquals(1, getUnreadCount(guardian).values.sum())
 
         val id2 = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
 
-        assertEquals(1, deserializeGetResultCitizen(getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()).size)
+        assertEquals(
+            1,
+            deserializeGetResultCitizen(
+                    getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()
+                )
+                .size
+        )
 
-        http.put("/pedagogical-document/$id2")
+        http
+            .put("/pedagogical-document/$id2")
             .jsonBody("""{"id": "$id2", "childId": "${testChild_1.id}", "description": "123123"}""")
             .asUser(employee)
             .responseString()
 
-        assertEquals(2, deserializeGetResultCitizen(getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()).size)
+        assertEquals(
+            2,
+            deserializeGetResultCitizen(
+                    getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()
+                )
+                .size
+        )
         assertEquals(2, getUnreadCount(guardian).values.sum())
     }
 
@@ -348,16 +392,15 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `marking document read works`() {
         val id1 = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
 
-        http.put("/pedagogical-document/$id1")
+        http
+            .put("/pedagogical-document/$id1")
             .jsonBody("""{"id": "$id1", "childId": "${testChild_1.id}", "description": "123123"}""")
             .asUser(employee)
             .responseString()
 
         assertEquals(1, getUnreadCount(guardian).values.sum())
 
-        http.post("/citizen/pedagogical-documents/$id1/mark-read")
-            .asUser(guardian)
-            .responseString()
+        http.post("/citizen/pedagogical-documents/$id1/mark-read").asUser(guardian).responseString()
 
         assertEquals(0, getUnreadCount(guardian).values.sum())
     }
@@ -367,27 +410,39 @@ class PedagogicalDocumentIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val id = deserializePostResult(createDocumentAsUser(testChild_1.id, employee).get()).id
         uploadAttachment(id)
 
-        http.post("/pedagogical-document/$id/mark-read")
-            .asUser(employee)
-            .responseString()
+        http.post("/pedagogical-document/$id/mark-read").asUser(employee).responseString()
 
-        assertEquals(1, deserializeGetResult(getPedagogicalDocumentAsUser(testChild_1.id, employee).third.get()).size)
+        assertEquals(
+            1,
+            deserializeGetResult(getPedagogicalDocumentAsUser(testChild_1.id, employee).third.get())
+                .size
+        )
         assertEquals(1, getUnreadCount(guardian).values.sum())
 
-        val (_, res, _) = http.delete("/pedagogical-document/$id")
-            .asUser(employee)
-            .responseString()
+        val (_, res, _) = http.delete("/pedagogical-document/$id").asUser(employee).responseString()
 
         assertEquals(200, res.statusCode)
-        assertEquals(0, deserializeGetResult(getPedagogicalDocumentAsUser(testChild_1.id, employee).third.get()).size)
-        assertEquals(0, deserializeGetResultCitizen(getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()).size)
+        assertEquals(
+            0,
+            deserializeGetResult(getPedagogicalDocumentAsUser(testChild_1.id, employee).third.get())
+                .size
+        )
+        assertEquals(
+            0,
+            deserializeGetResultCitizen(
+                    getPedagogicalDocumentsAsCitizen(guardian, testChild_1.id).third.get()
+                )
+                .size
+        )
     }
 
     private fun uploadAttachment(id: PedagogicalDocumentId): AttachmentId {
-        val (_, _, result) = http.upload("/attachments/pedagogical-documents/$id")
-            .add(FileDataPart(File(pngFile.toURI()), name = "file"))
-            .asUser(employee)
-            .responseObject<AttachmentId>(jsonMapper)
+        val (_, _, result) =
+            http
+                .upload("/attachments/pedagogical-documents/$id")
+                .add(FileDataPart(File(pngFile.toURI()), name = "file"))
+                .asUser(employee)
+                .responseObject<AttachmentId>(jsonMapper)
 
         return result.get()
     }

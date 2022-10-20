@@ -12,6 +12,8 @@ interface ActionRuleMapping {
 }
 
 class DefaultActionRuleMapping : ActionRuleMapping {
-    override fun rulesOf(action: Action.UnscopedAction): Sequence<UnscopedActionRule> = action.defaultRules.asSequence()
-    override fun <T> rulesOf(action: Action.ScopedAction<in T>): Sequence<ScopedActionRule<in T>> = action.defaultRules.asSequence()
+    override fun rulesOf(action: Action.UnscopedAction): Sequence<UnscopedActionRule> =
+        action.defaultRules.asSequence()
+    override fun <T> rulesOf(action: Action.ScopedAction<in T>): Sequence<ScopedActionRule<in T>> =
+        action.defaultRules.asSequence()
 }

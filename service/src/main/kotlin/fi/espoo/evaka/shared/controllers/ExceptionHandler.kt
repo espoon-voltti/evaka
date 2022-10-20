@@ -9,6 +9,9 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.Unauthorized
+import java.io.IOException
+import java.time.Instant
+import javax.servlet.http.HttpServletRequest
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
@@ -17,9 +20,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.multipart.MaxUploadSizeExceededException
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
-import java.io.IOException
-import java.time.Instant
-import javax.servlet.http.HttpServletRequest
 
 data class ErrorResponse(
     val errorCode: String? = null,
@@ -32,59 +32,45 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(value = [BadRequest::class])
     fun badRequest(req: HttpServletRequest, ex: BadRequest): ResponseEntity<ErrorResponse> {
         logger.warn("Bad request (${ex.message})", ex)
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-            ErrorResponse(
-                errorCode = ex.errorCode
-            )
-        )
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse(errorCode = ex.errorCode))
     }
 
     @ExceptionHandler(value = [NotFound::class])
     fun notFound(req: HttpServletRequest, ex: NotFound): ResponseEntity<ErrorResponse> {
         logger.warn("Not found (${ex.message})", ex)
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-            ErrorResponse(
-                errorCode = ex.errorCode
-            )
-        )
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(ErrorResponse(errorCode = ex.errorCode))
     }
 
     @ExceptionHandler(value = [Conflict::class])
     fun conflict(req: HttpServletRequest, ex: Conflict): ResponseEntity<ErrorResponse> {
         logger.warn("Conflict (${ex.message})", ex)
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(
-            ErrorResponse(
-                errorCode = ex.errorCode
-            )
-        )
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(ErrorResponse(errorCode = ex.errorCode))
     }
 
     @ExceptionHandler(value = [Unauthorized::class])
     fun unauthorized(req: HttpServletRequest, ex: Unauthorized): ResponseEntity<ErrorResponse> {
         logger.warn("Unauthorized (${ex.message})", ex)
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-            ErrorResponse(
-                errorCode = ex.errorCode
-            )
-        )
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(ErrorResponse(errorCode = ex.errorCode))
     }
 
     @ExceptionHandler(value = [Forbidden::class])
     fun forbidden(req: HttpServletRequest, ex: Forbidden): ResponseEntity<ErrorResponse> {
         logger.warn("Forbidden (${ex.message})", ex)
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-            ErrorResponse(
-                errorCode = ex.errorCode
-            )
-        )
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(ErrorResponse(errorCode = ex.errorCode))
     }
 
     @ExceptionHandler(value = [MaxUploadSizeExceededException::class])
-    fun maxUploadSizeExceeded(req: HttpServletRequest, ex: MaxUploadSizeExceededException): ResponseEntity<ErrorResponse> {
+    fun maxUploadSizeExceeded(
+        req: HttpServletRequest,
+        ex: MaxUploadSizeExceededException
+    ): ResponseEntity<ErrorResponse> {
         logger.warn("Max upload size exceeded (${ex.message})", ex)
-        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(
-            ErrorResponse()
-        )
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(ErrorResponse())
     }
 
     // We don't want alerts from ClientAbortExceptions or return any http responses to them
@@ -95,17 +81,13 @@ class ExceptionHandler : ResponseEntityExceptionHandler() {
             return null
         }
         logger.error("IOException", ex)
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-            ErrorResponse()
-        )
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ErrorResponse())
     }
 
     @ExceptionHandler(value = [Throwable::class])
     fun unexpectedError(req: HttpServletRequest, ex: Throwable): ResponseEntity<ErrorResponse> {
         val message = "Unexpected error (${ex.message})"
         logger.error(message, ex)
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-            ErrorResponse()
-        )
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ErrorResponse())
     }
 }

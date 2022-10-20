@@ -13,24 +13,24 @@ import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfigu
 import org.springframework.boot.builder.SpringApplicationBuilder
 
 @SpringBootApplication(
-    exclude = [
-        DataSourceAutoConfiguration::class,
-        FlywayAutoConfiguration::class,
-        SecurityAutoConfiguration::class,
-        SecurityFilterAutoConfiguration::class,
-        TransactionAutoConfiguration::class
-    ]
+    exclude =
+        [
+            DataSourceAutoConfiguration::class,
+            FlywayAutoConfiguration::class,
+            SecurityAutoConfiguration::class,
+            SecurityFilterAutoConfiguration::class,
+            TransactionAutoConfiguration::class
+        ]
 )
 class Main
 
 fun main(args: Array<String>) {
-    val profiles = when (System.getenv("VOLTTI_ENV")) {
-        "dev", "test" -> arrayOf("espoo_evaka", "enable_dev_api")
-        else -> arrayOf("espoo_evaka")
-    }
+    val profiles =
+        when (System.getenv("VOLTTI_ENV")) {
+            "dev",
+            "test" -> arrayOf("espoo_evaka", "enable_dev_api")
+            else -> arrayOf("espoo_evaka")
+        }
 
-    SpringApplicationBuilder()
-        .profiles(*profiles)
-        .sources(Main::class.java)
-        .run(*args)
+    SpringApplicationBuilder().profiles(*profiles).sources(Main::class.java).run(*args)
 }

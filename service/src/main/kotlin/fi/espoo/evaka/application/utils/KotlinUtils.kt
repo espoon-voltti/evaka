@@ -10,5 +10,6 @@ package fi.espoo.evaka.application.utils
  * when(sealed) {
  *  is Sealed.Class -> doSomething()
  * }.exhaust()
+ * ```
  */
 fun <T> T.exhaust(): T = this
