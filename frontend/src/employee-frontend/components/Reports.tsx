@@ -6,6 +6,7 @@ import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { useApiState } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
 import { Container, ContentArea } from 'lib-components/layout/Container'
@@ -33,9 +34,10 @@ import {
   faUsers
 } from 'lib-icons'
 
+import { getPermittedReports } from '../api/reports'
 import { useTranslation } from '../state/i18n'
-import { UserContext } from '../state/user'
 
+import { renderResult } from './async-rendering'
 import { AssistanceNeedDecisionReportContext } from './reports/AssistanceNeedDecisionReportContext'
 
 const ReportItems = styled.div`
@@ -81,436 +83,257 @@ const UnreadCount = styled.span`
   height: ${defaultMargins.m};
 `
 
+const Report = React.memo(function Report(props: {
+  path: string
+  color: string
+  icon: IconDefinition
+  i18n: {
+    title: string
+    description: string
+  }
+  'data-qa'?: string
+  children?: React.ReactNode
+}) {
+  return (
+    <ReportItem>
+      <TitleRow>
+        <RoundIcon size="L" color={props.color} content={props.icon} />
+        <LinkTitle to={props.path} data-qa={props['data-qa']}>
+          {props.i18n.title}
+        </LinkTitle>
+        {props.children}
+      </TitleRow>
+      <Description>{props.i18n.description}</Description>
+    </ReportItem>
+  )
+})
+
 export default React.memo(function Reports() {
   const { i18n } = useTranslation()
-  const { user } = useContext(UserContext)
   const { assistanceNeedDecisionCounts } = useContext(
     AssistanceNeedDecisionReportContext
   )
+
+  const [permittedReports] = useApiState(getPermittedReports, [])
 
   return (
     <Container>
       <ContentArea opaque>
         <Title size={1}>{i18n.reports.title}</Title>
-        <ReportItems>
-          {user?.permittedGlobalActions.has('READ_DUPLICATE_PEOPLE_REPORT') && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
+        {renderResult(permittedReports, (reports) => {
+          return (
+            <ReportItems>
+              {reports.has('DUPLICATE_PEOPLE') && (
+                <Report
+                  path="/reports/duplicate-people"
                   color={colors.status.warning}
-                  content={faCopy}
+                  icon={faCopy}
+                  i18n={i18n.reports.duplicatePeople}
                 />
-                <LinkTitle to="/reports/duplicate-people">
-                  {i18n.reports.duplicatePeople.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>
-                {i18n.reports.duplicatePeople.description}
-              </Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has('READ_FAMILY_CONFLICT_REPORT') && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
+              )}
+              {reports.has('FAMILY_CONFLICT') && (
+                <Report
+                  path="/reports/family-conflicts"
                   color={colors.status.warning}
-                  content={faUsers}
+                  icon={faUsers}
+                  i18n={i18n.reports.familyConflicts}
                 />
-                <LinkTitle to="/reports/family-conflicts">
-                  {i18n.reports.familyConflicts.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>
-                {i18n.reports.familyConflicts.description}
-              </Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has(
-            'READ_MISSING_HEAD_OF_FAMILY_REPORT'
-          ) && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
+              )}
+              {reports.has('MISSING_HEAD_OF_FAMILY') && (
+                <Report
+                  path="/reports/missing-head-of-family"
                   color={colors.status.warning}
-                  content={faUserAltSlash}
+                  icon={faUserAltSlash}
+                  i18n={i18n.reports.missingHeadOfFamily}
                 />
-                <LinkTitle to="/reports/missing-head-of-family">
-                  {i18n.reports.missingHeadOfFamily.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>
-                {i18n.reports.missingHeadOfFamily.description}
-              </Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has(
-            'READ_MISSING_SERVICE_NEED_REPORT'
-          ) && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
+              )}
+              {reports.has('MISSING_SERVICE_NEED') && (
+                <Report
+                  path="/reports/missing-service-need"
                   color={colors.status.warning}
-                  content={faClock}
+                  icon={faClock}
+                  i18n={i18n.reports.missingServiceNeed}
                 />
-                <LinkTitle to="/reports/missing-service-need">
-                  {i18n.reports.missingServiceNeed.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>
-                {i18n.reports.missingServiceNeed.description}
-              </Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has(
-            'READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT'
-          ) && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
+              )}
+              {reports.has('PARTNERS_IN_DIFFERENT_ADDRESS') && (
+                <Report
+                  path="/reports/partners-in-different-address"
                   color={colors.status.warning}
-                  content={faHome}
+                  icon={faHome}
+                  i18n={i18n.reports.partnersInDifferentAddress}
                 />
-                <LinkTitle to="/reports/partners-in-different-address">
-                  {i18n.reports.partnersInDifferentAddress.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>
-                {i18n.reports.partnersInDifferentAddress.description}
-              </Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has(
-            'READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT'
-          ) && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
+              )}
+              {reports.has('CHILDREN_IN_DIFFERENT_ADDRESS') && (
+                <Report
+                  path="/reports/children-in-different-address"
                   color={colors.accents.a5orangeLight}
-                  content={faHome}
+                  icon={faHome}
+                  i18n={i18n.reports.childrenInDifferentAddress}
                 />
-                <LinkTitle to="/reports/children-in-different-address">
-                  {i18n.reports.childrenInDifferentAddress.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>
-                {i18n.reports.childrenInDifferentAddress.description}
-              </Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has('READ_APPLICATIONS_REPORT') && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
+              )}
+              {reports.has('APPLICATIONS') && (
+                <Report
+                  path="/reports/applications"
                   color={colors.main.m2}
-                  content={faFileAlt}
-                />
-                <LinkTitle
+                  icon={faFileAlt}
+                  i18n={i18n.reports.applications}
                   data-qa="report-applications"
-                  to="/reports/applications"
-                >
-                  {i18n.reports.applications.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>{i18n.reports.applications.description}</Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has('READ_DECISIONS_REPORT') && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon size="L" color={colors.main.m2} content={faGavel} />
-                <LinkTitle data-qa="report-decisions" to="/reports/decisions">
-                  {i18n.reports.decisions.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>{i18n.reports.decisions.description}</Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has('READ_OCCUPANCY_REPORT') && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
-                  color={colors.main.m2}
-                  content={faPercentage}
                 />
-                <LinkTitle to="/reports/occupancies">
-                  {i18n.reports.occupancies.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>{i18n.reports.occupancies.description}</Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has(
-            'READ_CHILD_AGE_AND_LANGUAGE_REPORT'
-          ) && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon size="L" color={colors.main.m2} content={faChild} />
-                <LinkTitle to="/reports/child-age-language">
-                  {i18n.reports.childAgeLanguage.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>
-                {i18n.reports.childAgeLanguage.description}
-              </Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has('READ_SERVICE_NEED_REPORT') && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon size="L" color={colors.main.m2} content={faChild} />
-                <LinkTitle to="/reports/service-needs">
-                  {i18n.reports.serviceNeeds.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>{i18n.reports.serviceNeeds.description}</Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has(
-            'READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT'
-          ) && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
+              )}
+              {reports.has('DECISIONS') && (
+                <Report
+                  path="/reports/decisions"
                   color={colors.main.m2}
-                  content={faHandHolding}
+                  icon={faGavel}
+                  i18n={i18n.reports.decisions}
+                  data-qa="report-decisions"
                 />
-                <LinkTitle to="/reports/assistance-needs-and-actions">
-                  {i18n.reports.assistanceNeedsAndActions.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>
-                {i18n.reports.assistanceNeedsAndActions.description}
-              </Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has('READ_INVOICE_REPORT') && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
+              )}
+              {reports.has('OCCUPANCY') && (
+                <Report
+                  path="/reports/occupancies"
                   color={colors.main.m2}
-                  content={faEuroSign}
+                  icon={faPercentage}
+                  i18n={i18n.reports.occupancies}
                 />
-                <LinkTitle to="/reports/invoices">
-                  {i18n.reports.invoices.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>{i18n.reports.invoices.description}</Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has(
-            'READ_STARTING_PLACEMENTS_REPORT'
-          ) && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
+              )}
+              {reports.has('CHILD_AGE_LANGUAGE') && (
+                <Report
+                  path="/reports/child-age-language"
                   color={colors.main.m2}
-                  content={faHourglassStart}
+                  icon={faChild}
+                  i18n={i18n.reports.childAgeLanguage}
                 />
-                <LinkTitle to="/reports/starting-placements">
-                  {i18n.reports.startingPlacements.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>
-                {i18n.reports.startingPlacements.description}
-              </Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has('READ_ENDED_PLACEMENTS_REPORT') && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
+              )}
+              {reports.has('SERVICE_NEED') && (
+                <Report
+                  path="/reports/service-needs"
                   color={colors.main.m2}
-                  content={faHourglassEnd}
+                  icon={faChild}
+                  i18n={i18n.reports.serviceNeeds}
                 />
-                <LinkTitle to="/reports/ended-placements">
-                  {i18n.reports.endedPlacements.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>
-                {i18n.reports.endedPlacements.description}
-              </Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has('READ_PRESENCE_REPORT') && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
+              )}
+              {reports.has('ASSISTANCE_NEEDS_AND_ACTIONS') && (
+                <Report
+                  path="/reports/assistance-needs-and-actions"
                   color={colors.main.m2}
-                  content={faDiagnoses}
+                  icon={faHandHolding}
+                  i18n={i18n.reports.assistanceNeedsAndActions}
                 />
-                <LinkTitle to="/reports/presences">
-                  {i18n.reports.presence.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>{i18n.reports.presence.description}</Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has('READ_SERVICE_VOUCHER_REPORT') && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
+              )}
+              {reports.has('INVOICE') && (
+                <Report
+                  path="/reports/invoices"
                   color={colors.main.m2}
-                  content={faMoneyBillWave}
+                  icon={faEuroSign}
+                  i18n={i18n.reports.invoices}
                 />
-                <LinkTitle
+              )}
+              {reports.has('STARTING_PLACEMENTS') && (
+                <Report
+                  path="/reports/starting-placements"
+                  color={colors.main.m2}
+                  icon={faHourglassStart}
+                  i18n={i18n.reports.startingPlacements}
+                />
+              )}
+              {reports.has('ENDED_PLACEMENTS') && (
+                <Report
+                  path="/reports/missing-service-need"
+                  color={colors.main.m2}
+                  icon={faHourglassEnd}
+                  i18n={i18n.reports.endedPlacements}
+                />
+              )}
+              {reports.has('PRESENCE') && (
+                <Report
+                  path="/reports/presences"
+                  color={colors.main.m2}
+                  icon={faDiagnoses}
+                  i18n={i18n.reports.presence}
+                />
+              )}
+              {reports.has('SERVICE_VOUCHER_VALUE') && (
+                <Report
+                  path="/reports/voucher-service-providers"
+                  color={colors.main.m2}
+                  icon={faMoneyBillWave}
+                  i18n={i18n.reports.voucherServiceProviders}
                   data-qa="report-voucher-service-providers"
-                  to="/reports/voucher-service-providers"
-                >
-                  {i18n.reports.voucherServiceProviders.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>
-                {i18n.reports.voucherServiceProviders.description}
-              </Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has(
-            'READ_ATTENDANCE_RESERVATION_REPORT'
-          ) && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon size="L" color={colors.main.m2} content={faCar} />
-                <LinkTitle
-                  to="/reports/attendance-reservation"
+                />
+              )}
+              {reports.has('ATTENDANCE_RESERVATION') && (
+                <Report
+                  path="/reports/attendance-reservation"
+                  color={colors.main.m2}
+                  icon={faCar}
+                  i18n={i18n.reports.attendanceReservation}
                   data-qa="report-attendance-reservation"
-                >
-                  {i18n.reports.attendanceReservation.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>
-                {i18n.reports.attendanceReservation.description}
-              </Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has(
-            'READ_ATTENDANCE_RESERVATION_REPORT'
-          ) && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon size="L" color={colors.main.m2} content={faCar} />
-                <LinkTitle
-                  to="/reports/attendance-reservation-by-child"
+                />
+              )}
+              {reports.has('ATTENDANCE_RESERVATION') && (
+                <Report
+                  path="/reports/attendance-reservation-by-child"
+                  color={colors.main.m2}
+                  icon={faCar}
+                  i18n={i18n.reports.attendanceReservationByChild}
                   data-qa="report-attendance-reservation-by-child"
-                >
-                  {i18n.reports.attendanceReservationByChild.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>
-                {i18n.reports.attendanceReservationByChild.description}
-              </Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has('READ_SEXTET_REPORT') && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
-                  color={colors.main.m2}
-                  content={faDiagnoses}
                 />
-                <LinkTitle data-qa="report-sextet" to="/reports/sextet">
-                  {i18n.reports.sextet.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>{i18n.reports.sextet.description}</Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has('READ_RAW_REPORT') && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
+              )}
+              {reports.has('SEXTET') && (
+                <Report
+                  path="/reports/sextet"
                   color={colors.main.m2}
-                  content={faDatabase}
+                  icon={faDiagnoses}
+                  i18n={i18n.reports.sextet}
+                  data-qa="report-sextet"
                 />
-                <LinkTitle to="/reports/raw">
-                  {i18n.reports.raw.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>{i18n.reports.raw.description}</Description>
-            </ReportItem>
-          )}
-          {featureFlags.experimental?.assistanceNeedDecisions &&
-            user?.permittedGlobalActions.has(
-              'READ_ASSISTANCE_NEED_DECISIONS_REPORT'
-            ) && (
-              <ReportItem>
-                <TitleRow>
-                  <RoundIcon
-                    size="L"
+              )}
+              {reports.has('RAW') && (
+                <Report
+                  path="/reports/raw"
+                  color={colors.main.m2}
+                  icon={faDatabase}
+                  i18n={i18n.reports.raw}
+                />
+              )}
+              {featureFlags.experimental?.assistanceNeedDecisions &&
+                reports.has('ASSISTANCE_NEED_DECISIONS') && (
+                  <Report
+                    path="/reports/assistance-need-decisions"
                     color={colors.main.m2}
-                    content={faHandHolding}
-                  />
-                  <LinkTitle to="/reports/assistance-need-decisions">
-                    {i18n.reports.assistanceNeedDecisions.title}
-                  </LinkTitle>
-                  {assistanceNeedDecisionCounts
-                    .map(
-                      (unread) =>
-                        unread > 0 && <UnreadCount>{unread}</UnreadCount>
-                    )
-                    .getOrElse(null)}
-                </TitleRow>
-                <Description>
-                  {i18n.reports.assistanceNeedDecisions.description}
-                </Description>
-              </ReportItem>
-            )}
-          {user?.permittedGlobalActions.has(
-            'READ_PLACEMENT_SKETCHING_REPORT'
-          ) && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
+                    icon={faHandHolding}
+                    i18n={i18n.reports.assistanceNeedDecisions}
+                  >
+                    {assistanceNeedDecisionCounts
+                      .map(
+                        (unread) =>
+                          unread > 0 && <UnreadCount>{unread}</UnreadCount>
+                      )
+                      .getOrElse(null)}
+                  </Report>
+                )}
+              {reports.has('PLACEMENT_SKETCHING') && (
+                <Report
+                  path="/reports/placement-sketching"
                   color={colors.status.warning}
-                  content={faUsers}
-                />
-                <LinkTitle
-                  to="/reports/placement-sketching"
+                  icon={faUsers}
+                  i18n={i18n.reports.placementSketching}
                   data-qa="report-placement-sketching"
-                >
-                  {i18n.reports.placementSketching.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>
-                {i18n.reports.placementSketching.description}
-              </Description>
-            </ReportItem>
-          )}
-          {user?.permittedGlobalActions.has('READ_VARDA_REPORT') && (
-            <ReportItem>
-              <TitleRow>
-                <RoundIcon
-                  size="L"
-                  color={colors.status.warning}
-                  content={faDiagnoses}
                 />
-                <LinkTitle
-                  to="/reports/varda-errors"
+              )}
+              {reports.has('VARDA_ERRORS') && (
+                <Report
                   data-qa="report-varda-errors"
-                >
-                  {i18n.reports.vardaErrors.title}
-                </LinkTitle>
-              </TitleRow>
-              <Description>{i18n.reports.vardaErrors.description}</Description>
-            </ReportItem>
-          )}
-        </ReportItems>
+                  path="/reports/varda-errors"
+                  color={colors.status.warning}
+                  icon={faDiagnoses}
+                  i18n={i18n.reports.vardaErrors}
+                />
+              )}
+            </ReportItems>
+          )
+        })}
       </ContentArea>
     </Container>
   )

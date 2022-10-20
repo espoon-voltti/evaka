@@ -28,6 +28,7 @@ import {
   PlacementSketchingReportRow,
   PresenceReportRow,
   RawReportRow,
+  Report,
   ServiceNeedReportRow,
   ServiceVoucherReport,
   ServiceVoucherUnitReport,
@@ -46,6 +47,13 @@ import { client } from './client'
 export interface PeriodFilters {
   from: LocalDate
   to: LocalDate
+}
+
+export async function getPermittedReports(): Promise<Result<Set<Report>>> {
+  return client
+    .get<JsonOf<Report[]>>('/reports')
+    .then((res) => Success.of(new Set(res.data)))
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function getApplicationsReport(
