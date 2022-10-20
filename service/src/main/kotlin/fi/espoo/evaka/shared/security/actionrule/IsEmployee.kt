@@ -21,7 +21,14 @@ import fi.espoo.evaka.shared.security.AccessControlDecision
 private typealias FilterByEmployee<T> =
     QuerySql.Builder<T>.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql<T>
 
-object IsEmployee {
+object IsEmployee : DatabaseActionRule.Params {
+    override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
+        when (ctx.user) {
+            is AuthenticatedUser.Employee -> true
+            else -> false
+        }
+    override fun equals(other: Any?): Boolean = other?.javaClass == this.javaClass
+    override fun hashCode(): Int = this.javaClass.hashCode()
     private fun <T : Id<*>> rule(
         filter: FilterByEmployee<T>
     ): DatabaseActionRule.Scoped<T, IsEmployee> =

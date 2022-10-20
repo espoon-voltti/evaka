@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.DatabaseActionRule
+import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
 import fi.espoo.evaka.shared.security.actionrule.StaticActionRule
 import fi.espoo.evaka.shared.security.actionrule.UnscopedActionRule
 import java.util.EnumSet
@@ -89,6 +90,53 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping) {
             val rules =
                 actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }
             if (rules.any { isPermitted(it) }) {
+                permittedActions += action
+            }
+        }
+        return permittedActions
+    }
+
+    inline fun <reified A> isPermittedForSomeTarget(
+        tx: Database.Read,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        action: A
+    ): Boolean where A : Action.ScopedAction<*>, A : Enum<A> =
+        getPermittedActionsForSomeTarget(tx, user, clock, A::class.java).contains(action)
+    inline fun <reified A> getPermittedActionsForSomeTarget(
+        tx: Database.Read,
+        user: AuthenticatedUser,
+        clock: EvakaClock
+    ): Set<A> where A : Action.ScopedAction<*>, A : Enum<A> =
+        getPermittedActionsForSomeTarget(tx, user, clock, A::class.java)
+    fun <A> getPermittedActionsForSomeTarget(
+        tx: Database.Read,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        actionClass: Class<A>
+    ): Set<A> where A : Action.ScopedAction<*>, A : Enum<A> {
+        val allActions = EnumSet.allOf(actionClass)
+        if (user.isAdmin) {
+            return allActions
+        }
+        val queryCtx = DatabaseActionRule.QueryContext(tx, user, clock.now())
+        val unscopedEvaluator = UnscopedEvaluator(queryCtx)
+        val scopedCache = mutableMapOf<DatabaseActionRule.Params, Boolean>()
+        val permittedActions = mutableSetOf<A>()
+        fun isPermittedForSomeTarget(rule: ScopedActionRule<*>): Boolean =
+            when (rule) {
+                is StaticActionRule -> rule.evaluate(user).isPermitted()
+                is DatabaseActionRule.Unscoped<*> -> unscopedEvaluator.evaluate(rule).isPermitted()
+                is DatabaseActionRule.Scoped<*, *> ->
+                    scopedCache.getOrPut(rule.params) {
+                        rule.params.isPermittedForSomeTarget(queryCtx)
+                    }
+            }
+
+        for (action in allActions) {
+            val rules =
+                actionRuleMapping.rulesOf(action).sortedByDescending { it is StaticActionRule }
+            if (rules.any { isPermittedForSomeTarget(it) }) {
                 permittedActions += action
             }
         }

@@ -48,13 +48,38 @@ private typealias GetUnitRoles =
         user: AuthenticatedUser.Employee, now: HelsinkiDateTime
     ) -> QuerySql<IdRoleFeatures>
 
-data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<PilotFeature>) {
+data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<PilotFeature>) :
+    DatabaseActionRule.Params {
     init {
         oneOf.forEach { check(it.isUnitScopedRole()) { "Expected a unit-scoped role, got $it" } }
     }
     constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet(), emptyEnumSet())
 
     fun withUnitFeatures(vararg allOf: PilotFeature) = copy(unitFeatures = allOf.toEnumSet())
+
+    override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
+        when (ctx.user) {
+            is AuthenticatedUser.Employee ->
+                ctx.tx
+                    .createQuery<Boolean> {
+                        sql(
+                            """
+SELECT EXISTS (
+    SELECT 1
+    FROM daycare
+    JOIN daycare_acl acl ON daycare.id = acl.daycare_id
+    WHERE acl.employee_id = ${bind(ctx.user.id)}
+    AND role = ANY(${bind(oneOf.toSet())})
+    AND daycare.enabled_pilot_features @> ${bind(unitFeatures.toSet())}
+)
+                """
+                                .trimIndent()
+                        )
+                    }
+                    .mapTo<Boolean>()
+                    .single()
+            else -> false
+        }
 
     private fun <T : Id<*>> rule(
         getUnitRoles: GetUnitRoles

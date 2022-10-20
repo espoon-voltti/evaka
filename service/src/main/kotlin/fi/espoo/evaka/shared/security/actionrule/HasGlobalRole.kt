@@ -20,7 +20,8 @@ import java.util.EnumSet
 private typealias Filter<T> =
     QuerySql.Builder<T>.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql<T>
 
-data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule {
+data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
+    StaticActionRule, DatabaseActionRule.Params {
     init {
         oneOf.forEach { check(it.isGlobalRole()) { "Expected a global role, got $it" } }
     }
@@ -34,6 +35,9 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) : StaticActionRule {
         } else {
             AccessControlDecision.None
         }
+
+    override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
+        evaluate(ctx.user).isPermitted()
 
     private fun <T : Id<*>> rule(filter: Filter<T>): DatabaseActionRule.Scoped<T, HasGlobalRole> =
         DatabaseActionRule.Scoped.Simple(this, Query(filter))

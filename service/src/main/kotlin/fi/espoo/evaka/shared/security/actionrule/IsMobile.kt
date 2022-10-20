@@ -23,11 +23,17 @@ import fi.espoo.evaka.shared.security.AccessControlDecision
 private typealias FilterByMobile<T> =
     QuerySql.Builder<T>.(mobileId: MobileDeviceId, now: HelsinkiDateTime) -> QuerySql<T>
 
-data class IsMobile(val requirePinLogin: Boolean) {
+data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
     fun isPermittedAuthLevel(authLevel: MobileAuthLevel) =
         when (authLevel) {
             MobileAuthLevel.PIN_LOGIN -> true
             MobileAuthLevel.DEFAULT -> !requirePinLogin
+        }
+
+    override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
+        when (ctx.user) {
+            is AuthenticatedUser.MobileDevice -> isPermittedAuthLevel(ctx.user.authLevel)
+            else -> false
         }
 
     private fun <T : Id<*>> rule(

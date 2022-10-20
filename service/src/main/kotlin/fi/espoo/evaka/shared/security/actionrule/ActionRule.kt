@@ -84,7 +84,13 @@ object DatabaseActionRule {
         fun evaluate(params: P): AccessControlDecision
     }
 
-    interface Scoped<T, P : Any> : ScopedActionRule<T> {
+    interface Params {
+        fun isPermittedForSomeTarget(ctx: QueryContext): Boolean
+        override fun hashCode(): Int
+        override fun equals(other: Any?): Boolean
+    }
+
+    interface Scoped<T, P : Params> : ScopedActionRule<T> {
         val params: P
         val query: Query<T, P>
 
@@ -94,7 +100,7 @@ object DatabaseActionRule {
             override fun hashCode(): Int
             override fun equals(other: Any?): Boolean
         }
-        data class Simple<T, P : Any>(override val params: P, override val query: Query<T, P>) :
+        data class Simple<T, P : Params>(override val params: P, override val query: Query<T, P>) :
             Scoped<T, P>
     }
 
