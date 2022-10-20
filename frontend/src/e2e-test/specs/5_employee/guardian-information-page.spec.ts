@@ -5,6 +5,7 @@
 import LocalDate from 'lib-common/local-date'
 
 import {
+  deleteDaycareCostCenter,
   insertApplications,
   insertDaycareGroupFixtures,
   insertDaycarePlacementFixtures,
@@ -123,5 +124,39 @@ describe('Employee - Guardian Information', () => {
     const invoiceSection = await guardianPage.openCollapsible('invoices')
     await invoiceSection.assertInvoiceCount(1)
     await invoiceSection.assertInvoice(0, '01.01.2020', '31.01.2020', 'Luonnos')
+  })
+
+  test('Invoice corrections show only units with cost center', async () => {
+    await Fixture.fridgeChild()
+      .with({
+        headOfChild: fixtures.enduserGuardianFixture.id,
+        childId: fixtures.enduserChildFixtureJari.id,
+        startDate: LocalDate.of(2020, 1, 1),
+        endDate: LocalDate.of(2020, 12, 31)
+      })
+      .save()
+
+    const guardianPage = new GuardianInformationPage(page)
+    await guardianPage.navigateToGuardian(fixtures.enduserGuardianFixture.id)
+
+    const invoiceCorrectionsSection = await guardianPage.openCollapsible(
+      'invoiceCorrections'
+    )
+    await invoiceCorrectionsSection.assertInvoiceCorrectionsCount(0)
+    await invoiceCorrectionsSection.createInvoiceCorrection()
+    await invoiceCorrectionsSection.clickAndAssertUnitVisibility(
+      daycareFixture.name,
+      true
+    )
+
+    await deleteDaycareCostCenter(daycareFixture.id)
+    await guardianPage.navigateToGuardian(fixtures.enduserGuardianFixture.id)
+    await guardianPage.openCollapsible('invoiceCorrections')
+    await invoiceCorrectionsSection.assertInvoiceCorrectionsCount(0)
+    await invoiceCorrectionsSection.createInvoiceCorrection()
+    await invoiceCorrectionsSection.clickAndAssertUnitVisibility(
+      daycareFixture.name,
+      false
+    )
   })
 })

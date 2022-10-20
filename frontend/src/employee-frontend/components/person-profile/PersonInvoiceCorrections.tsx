@@ -340,6 +340,7 @@ const ChildSection = React.memo(function ChildSection({
             onClick={() => addNewRow(child.id)}
             text={i18n.invoiceCorrections.addRow}
             disabled={!!editState}
+            data-qa="create-invoice-correction"
           />
         )}
         {editState?.childId === child.id && (

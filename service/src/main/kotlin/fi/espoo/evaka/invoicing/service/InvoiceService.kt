@@ -98,6 +98,7 @@ class InvoiceService(
             """
         SELECT daycare.id, daycare.name, cost_center
         FROM daycare
+        WHERE cost_center IS NOT NULL
         ORDER BY name
             """.trimIndent()
         ).mapTo<InvoiceDaycare>().list()
