@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import sortBy from 'lodash/sortBy'
 import React, {
   useCallback,
   useContext,
@@ -13,7 +14,8 @@ import React, {
 import styled from 'styled-components'
 
 import { UserContext } from 'employee-frontend/state/user'
-import { combine, isLoading, Result } from 'lib-common/api'
+import { combine, isLoading } from 'lib-common/api'
+import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -31,12 +33,13 @@ import { H3, H4, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faChevronLeft, faChevronRight, faCalendarAlt } from 'lib-icons'
 
-import { getDaycareGroups, UnitData } from '../../api/unit'
+import { getDaycareGroups, UnitData, UnitResponse } from '../../api/unit'
 import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
 import { DayOfWeek } from '../../types'
+import { DaycareGroup } from '../../types/unit'
+import { UnitFilters } from '../../utils/UnitFilters'
 import { requireRole } from '../../utils/roles'
-import { UUID_REGEX } from '../../utils/validation/validations'
 import Absences from '../absences/Absences'
 import { renderResult } from '../async-rendering'
 import { DataList } from '../common/DataList'
@@ -49,12 +52,7 @@ import UnitAttendanceReservationsView from './unit-reservations/UnitAttendanceRe
 
 type CalendarMode = 'week' | 'month'
 type GroupId = UUID
-export type AttendanceGroupFilter =
-  | GroupId
-  | 'no-group'
-  | 'staff'
-  | 'all'
-  | null
+export type AttendanceGroupFilter = GroupId | 'no-group' | 'staff' | 'all'
 
 const GroupSelectorWrapper = styled.div`
   min-width: 320px;
@@ -88,11 +86,42 @@ const getWeekDateRange = (date: LocalDate, operationalDays: DayOfWeek[]) => {
   )
 }
 
-const getDefaultGroup = (groupParam: string): AttendanceGroupFilter | null =>
-  ['no-group', 'staff', 'all'].includes(groupParam) ||
-  UUID_REGEX.test(groupParam)
-    ? groupParam
-    : null
+function getDefaultGroup(
+  groupParam: string | null,
+  groups: DaycareGroup[]
+): AttendanceGroupFilter {
+  if (groupParam !== null) {
+    if (['no-group', 'staff', 'all'].includes(groupParam)) return groupParam
+    if (groups.some((g) => g.id === groupParam)) return groupParam
+  }
+  return (
+    sortBy(groups, [(g) => g.name.toLowerCase()]).find((group) =>
+      new DateRange(group.startDate, group.endDate).includes(
+        LocalDate.todayInSystemTz()
+      )
+    )?.id ?? 'no-group'
+  )
+}
+
+export default React.memo(function TabCalendar() {
+  const { id: unitId } = useNonNullableParams<{ id: UUID }>()
+  const { unitInformation, unitData, filters, setFilters } =
+    useContext(UnitContext)
+
+  const [groups] = useApiState(() => getDaycareGroups(unitId), [unitId])
+
+  const combinedResult = combine(unitInformation, unitData, groups)
+  return renderResult(combinedResult, ([unitInformation, unitData, groups]) => (
+    <TabContent
+      unitInformation={unitInformation}
+      unitData={unitData}
+      isUnitLoading={isLoading(combinedResult)}
+      filters={filters}
+      setFilters={setFilters}
+      groups={groups}
+    />
+  ))
+})
 
 export interface WeekData {
   dateRange: FiniteDateRange
@@ -102,11 +131,26 @@ export interface WeekData {
 
 export type WeekSavingFns = Map<string, () => Promise<void>>
 
-export default React.memo(function TabCalendar() {
+interface TabContentProps {
+  unitInformation: UnitResponse
+  unitData: UnitData
+  isUnitLoading: boolean
+  filters: UnitFilters
+  setFilters: React.Dispatch<React.SetStateAction<UnitFilters>>
+  groups: DaycareGroup[]
+}
+
+const TabContent = React.memo(function TabContent({
+  unitInformation,
+  unitData,
+  isUnitLoading,
+  filters,
+  setFilters,
+  groups
+}: TabContentProps) {
   const { i18n } = useTranslation()
-  const { id: unitId } = useNonNullableParams<{ id: UUID }>()
-  const { unitInformation, unitData, filters, setFilters } =
-    useContext(UnitContext)
+  const unitId = unitInformation.daycare.id
+
   const { roles } = useContext(UserContext)
 
   const query = useQuery()
@@ -127,7 +171,7 @@ export default React.memo(function TabCalendar() {
 
   const groupParam = query.get('group')
   const [groupId, setGroupId] = useState<AttendanceGroupFilter>(() =>
-    groupParam ? getDefaultGroup(groupParam) : null
+    getDefaultGroup(groupParam, groups)
   )
 
   useSyncQueryParams({
@@ -135,13 +179,10 @@ export default React.memo(function TabCalendar() {
     date: selectedDate.toString(),
     mode
   })
-
   const operationalDays = useMemo((): DayOfWeek[] => {
-    const days = unitInformation
-      .map(({ daycare }) => daycare.operationDays)
-      .getOrElse([])
+    const days = unitInformation.daycare.operationDays
     return days.length === 0 ? [1, 2, 3, 4, 5] : days
-  }, [unitInformation])
+  }, [unitInformation.daycare.operationDays])
 
   // Before changing the week, the current week's data should be saved
   // because it is possible the user has started adding an overnight
@@ -187,23 +228,18 @@ export default React.memo(function TabCalendar() {
     }
   }, [selectedDate, operationalDays])
 
-  const [groups] = useApiState(() => getDaycareGroups(unitId), [unitId])
+  const { enabledPilotFeatures } = unitInformation.daycare
+  const reservationEnabled = enabledPilotFeatures.includes('RESERVATIONS')
+  const realtimeStaffAttendanceEnabled = enabledPilotFeatures.includes(
+    'REALTIME_STAFF_ATTENDANCE'
+  )
 
-  const reservationEnabled = unitInformation
-    .map((u) => u.daycare.enabledPilotFeatures.includes('RESERVATIONS'))
-    .getOrElse(false)
-
-  const realtimeStaffAttendanceEnabled = unitInformation
-    .map((u) =>
-      u.daycare.enabledPilotFeatures.includes('REALTIME_STAFF_ATTENDANCE')
-    )
-    .getOrElse(false)
-
+  // TODO: You might not need an effect
   useEffect(() => {
     if (realtimeStaffAttendanceEnabled) {
       setMode('week')
     }
-  }, [realtimeStaffAttendanceEnabled])
+  }, [realtimeStaffAttendanceEnabled, setMode])
 
   const onlyShowWeeklyView =
     groupId === 'staff' || groupId === 'no-group' || groupId === 'all'
@@ -221,7 +257,7 @@ export default React.memo(function TabCalendar() {
         toggleOpen={() => setOccupanciesOpen(!occupanciesOpen)}
         opaque
         data-qa="unit-attendances"
-        data-isloading={isLoading(unitData)}
+        data-isloading={isUnitLoading}
       >
         <FixedSpaceRow alignItems="center">
           <Label>{i18n.unit.filters.title}</Label>
@@ -248,18 +284,14 @@ export default React.memo(function TabCalendar() {
           </div>
         </DataList>
         <Gap />
-        {renderResult(
-          combine(unitData, unitInformation),
-          ([unitData, unitInformation]) =>
-            unitData.unitOccupancies ? (
-              <Occupancy
-                filters={filters}
-                occupancies={unitData.unitOccupancies}
-                realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
-                shiftCareUnit={unitInformation.daycare.roundTheClock}
-              />
-            ) : null
-        )}
+        {unitData.unitOccupancies ? (
+          <Occupancy
+            filters={filters}
+            occupancies={unitData.unitOccupancies}
+            realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
+            shiftCareUnit={unitInformation.daycare.roundTheClock}
+          />
+        ) : null}
       </CollapsibleContentArea>
 
       <Gap size="s" />
@@ -331,9 +363,7 @@ export default React.memo(function TabCalendar() {
               groupId={groupId}
               selectedDate={selectedDate}
               setSelectedDate={setSelectedDate}
-              isShiftCareUnit={unitInformation
-                .map(({ daycare }) => daycare.roundTheClock)
-                .getOrElse(false)}
+              isShiftCareUnit={unitInformation.daycare.roundTheClock}
               operationalDays={operationalDays}
               realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
               groups={groups}
@@ -373,27 +403,23 @@ export default React.memo(function TabCalendar() {
 const Caretakers = React.memo(function Caretakers({
   unitData
 }: {
-  unitData: Result<UnitData>
+  unitData: UnitData
 }) {
   const { i18n } = useTranslation()
 
   const formatNumber = (num: number) =>
     parseFloat(num.toFixed(2)).toLocaleString()
 
-  return unitData
-    .map((unitData) => {
-      const min = formatNumber(unitData.caretakers.unitCaretakers.minimum)
-      const max = formatNumber(unitData.caretakers.unitCaretakers.maximum)
+  const min = formatNumber(unitData.caretakers.unitCaretakers.minimum)
+  const max = formatNumber(unitData.caretakers.unitCaretakers.maximum)
 
-      return min === max ? (
-        <span>
-          {min} {i18n.unit.info.caretakers.unitOfValue}
-        </span>
-      ) : (
-        <span>{`${min} - ${max} ${i18n.unit.info.caretakers.unitOfValue}`}</span>
-      )
-    })
-    .getOrElse(null)
+  return min === max ? (
+    <span>
+      {min} {i18n.unit.info.caretakers.unitOfValue}
+    </span>
+  ) : (
+    <span>{`${min} - ${max} ${i18n.unit.info.caretakers.unitOfValue}`}</span>
+  )
 })
 
 type ActiveDateRangeSelectorProps = {

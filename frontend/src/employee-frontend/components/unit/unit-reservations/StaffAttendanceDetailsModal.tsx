@@ -18,7 +18,6 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
 import { ErrorKey } from 'lib-common/form-validation'
 import {
   EmployeeAttendance,
@@ -72,7 +71,7 @@ interface Props {
   attendances: EmployeeAttendance[]
   close: () => void
   reloadStaffAttendances: () => void
-  groups: Result<DaycareGroup[]>
+  groups: DaycareGroup[]
   onPreviousDate: () => Promise<void>
   onNextDate: () => Promise<void>
 }
@@ -409,12 +408,7 @@ export default React.memo(function StaffAttendanceDetailsModal({
                 <GroupIndicator data-qa="group-indicator">
                   {groupId === null ? (
                     <Select
-                      items={[
-                        null,
-                        ...groups
-                          .map((gs) => gs.map(({ id }) => id))
-                          .getOrElse([])
-                      ]}
+                      items={[null, ...groups.map(({ id }) => id)]}
                       selectedItem={groupId}
                       onChange={(value) =>
                         updateAttendance(index, {
@@ -425,20 +419,14 @@ export default React.memo(function StaffAttendanceDetailsModal({
                         })
                       }
                       getItemLabel={(item) =>
-                        groups
-                          .map((gs) => gs.find(({ id }) => id === item)?.name)
-                          .getOrElse(undefined) ??
+                        groups.find(({ id }) => id === item)?.name ??
                         i18n.unit.staffAttendance.noGroup
                       }
                       data-qa="attendance-group-select"
                     />
                   ) : (
                     <InlineButton
-                      text={
-                        groups
-                          .map((gs) => gs.find((g) => g.id === groupId)?.name)
-                          .getOrElse(undefined) ?? '-'
-                      }
+                      text={groups.find((g) => g.id === groupId)?.name ?? '-'}
                       onClick={() =>
                         updateAttendance(index, {
                           arrived,

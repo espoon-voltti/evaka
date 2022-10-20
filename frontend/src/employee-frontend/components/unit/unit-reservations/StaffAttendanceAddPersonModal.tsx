@@ -10,7 +10,7 @@ import styled from 'styled-components'
 import { postStaffAndExternalAttendances } from 'employee-frontend/api/staff-attendance'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { isTimeValid } from 'employee-frontend/utils/validation/validations'
-import { Failure, Result } from 'lib-common/api'
+import { Failure } from 'lib-common/api'
 import { ErrorsOf, getErrorCount } from 'lib-common/form-validation'
 import { UpsertStaffAndExternalAttendanceRequest } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
@@ -41,10 +41,10 @@ type PersonArrivalData = {
   arrivalDate: LocalDate | null
   arrivalTime: string
   name: string
-  groupId: UUID | null
+  groupId: UUID
 }
 
-const defaultPersonArrival = (groupId: UUID | null): PersonArrivalData => ({
+const defaultPersonArrival = (groupId: UUID): PersonArrivalData => ({
   arrivalDate: LocalDate.todayInHelsinkiTz(),
   arrivalTime: LocalTime.nowInHelsinkiTz().format('HH:mm'),
   name: '',
@@ -83,8 +83,7 @@ const validateForm = (
             LocalTime.parse(formData.arrivalTime, 'HH:mm')
           ),
           name: formData.name,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          groupId: formData.groupId!
+          groupId: formData.groupId
         }
       ],
       staffAttendances: []
@@ -96,8 +95,8 @@ type AddPersonModalProps = {
   onClose: () => void
   onSave: () => void
   unitId: UUID
-  groups: Result<DaycareGroup[]>
-  defaultGroupId: UUID | null
+  groups: DaycareGroup[]
+  defaultGroupId: UUID
 }
 
 export const AddPersonModal = React.memo(function AddPersonModal({

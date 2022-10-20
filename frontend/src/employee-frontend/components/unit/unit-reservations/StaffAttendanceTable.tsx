@@ -92,9 +92,9 @@ interface Props {
     externalStaffAttendanceIds: UUID[]
   ) => Promise<Result<void>[]>
   reloadStaffAttendances: () => Promise<Result<unknown>>
-  groups: Result<DaycareGroup[]>
+  groups: DaycareGroup[]
   groupFilter: (id: UUID) => boolean
-  selectedGroup: UUID | null
+  defaultGroup: UUID | null
   weekSavingFns: MutableRefObject<Map<string, () => Promise<void>>>
 }
 
@@ -108,7 +108,7 @@ export default React.memo(function StaffAttendanceTable({
   reloadStaffAttendances,
   groups,
   groupFilter,
-  selectedGroup,
+  defaultGroup,
   weekSavingFns
 }: Props) {
   const { i18n } = useTranslation()
@@ -313,7 +313,7 @@ export default React.memo(function StaffAttendanceTable({
                   : undefined
               }
               groupFilter={groupFilter}
-              selectedGroup={selectedGroup}
+              defaultGroup={defaultGroup}
               weekSavingFns={weekSavingFns}
               hasFutureAttendances={row.hasFutureAttendances}
               plannedAttendances={row.plannedAttendances}
@@ -333,7 +333,7 @@ export default React.memo(function StaffAttendanceTable({
               deleteAttendances={deleteAttendances}
               reloadStaffAttendances={reloadStaffAttendances}
               groupFilter={groupFilter}
-              selectedGroup={selectedGroup}
+              defaultGroup={defaultGroup}
               weekSavingFns={weekSavingFns}
               hasFutureAttendances={row.attendances[0].hasFutureAttendances}
             />
@@ -356,12 +356,14 @@ export default React.memo(function StaffAttendanceTable({
           </BottomSumTr>
         </tfoot>
       </Table>
-      <AddButton
-        text={i18n.unit.staffAttendance.addPerson}
-        aria-label={i18n.unit.staffAttendance.addPerson}
-        data-qa="add-person-button"
-        onClick={toggleAddPersonModal}
-      />
+      {groups.length > 0 ? (
+        <AddButton
+          text={i18n.unit.staffAttendance.addPerson}
+          aria-label={i18n.unit.staffAttendance.addPerson}
+          data-qa="add-person-button"
+          onClick={toggleAddPersonModal}
+        />
+      ) : null}
       {detailsModal && (
         <StaffAttendanceDetailsModal
           unitId={unitId}
@@ -410,7 +412,7 @@ export default React.memo(function StaffAttendanceTable({
           }}
           unitId={unitId}
           groups={groups}
-          defaultGroupId={selectedGroup}
+          defaultGroupId={defaultGroup ?? groups[0].id}
         />
       )}
     </>
@@ -529,7 +531,7 @@ interface AttendanceRowProps extends BaseProps {
   reloadStaffAttendances: () => Promise<Result<unknown>>
   openDetails?: (v: { employeeId: string; date: LocalDate }) => void
   groupFilter: (id: UUID) => boolean
-  selectedGroup: UUID | null // for new attendances
+  defaultGroup: UUID | null // for new attendances
   weekSavingFns: MutableRefObject<Map<string, () => void>>
   hasFutureAttendances: boolean
   plannedAttendances?: PlannedStaffAttendance[]
@@ -591,7 +593,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
   reloadStaffAttendances,
   openDetails,
   groupFilter,
-  selectedGroup,
+  defaultGroup,
   weekSavingFns,
   hasFutureAttendances: _hasFutureAttendances,
   plannedAttendances
@@ -1003,7 +1005,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
         ?.map((row) => ({
           attendanceId: row.attendance.attendanceId,
           type: 'PRESENT',
-          groupId: row.attendance.groupId ?? selectedGroup,
+          groupId: row.attendance.groupId ?? defaultGroup,
           arrived: HelsinkiDateTime.fromLocal(
             row.attendance.arrivalDate,
             row.parsedTimes.startTime
@@ -1020,7 +1022,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
           (row): row is Omit<UpsertStaffAttendance, 'employeeId'> =>
             !!row.groupId
         ),
-    [selectedGroup, validatedForm]
+    [defaultGroup, validatedForm]
   )
 
   const [lastSavedForm, setLastSavedForm] = useState<{
@@ -1245,7 +1247,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
                 <AttendanceTimes data-qa="attendance-day">
                   {attendances.map((attendance, i) => (
                     <AttendanceCell key={i}>
-                      {editing && (attendance.groupId || selectedGroup) ? (
+                      {editing && (attendance.groupId || defaultGroup) ? (
                         <OvernightAwareTimeRangeEditor
                           attendance={attendance}
                           date={date}

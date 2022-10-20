@@ -61,7 +61,7 @@ interface Props {
   isShiftCareUnit: boolean
   realtimeStaffAttendanceEnabled: boolean
   operationalDays: number[]
-  groups: Result<DaycareGroup[]>
+  groups: DaycareGroup[]
   week: WeekData
   weekSavingFns: MutableRefObject<WeekSavingFns>
 }
@@ -172,19 +172,21 @@ export default React.memo(function UnitAttendanceReservationsView({
 
       <FixedSpaceColumn spacing="L">
         {groupId === 'staff' ? (
-          <StaffAttendanceTable
-            unitId={unitId}
-            operationalDays={childData.operationalDays}
-            staffAttendances={staffData.staff}
-            extraAttendances={staffData.extraAttendances}
-            saveAttendances={saveAttendances}
-            deleteAttendances={deleteAttendances}
-            reloadStaffAttendances={reloadStaffAttendances}
-            groups={groups}
-            groupFilter={noFilter}
-            selectedGroup={null}
-            weekSavingFns={weekSavingFns}
-          />
+          groups.length > 0 ? (
+            <StaffAttendanceTable
+              unitId={unitId}
+              operationalDays={childData.operationalDays}
+              staffAttendances={staffData.staff}
+              extraAttendances={staffData.extraAttendances}
+              saveAttendances={saveAttendances}
+              deleteAttendances={deleteAttendances}
+              reloadStaffAttendances={reloadStaffAttendances}
+              groups={groups}
+              groupFilter={noFilter}
+              defaultGroup={null}
+              weekSavingFns={weekSavingFns}
+            />
+          ) : null
         ) : (
           <>
             {realtimeStaffAttendanceEnabled && (
@@ -208,7 +210,7 @@ export default React.memo(function UnitAttendanceReservationsView({
                 reloadStaffAttendances={reloadStaffAttendances}
                 groups={groups}
                 groupFilter={groupFilter}
-                selectedGroup={groupId}
+                defaultGroup={groupId}
                 weekSavingFns={weekSavingFns}
               />
             )}
