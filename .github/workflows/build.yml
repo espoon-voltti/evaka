@@ -448,32 +448,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Build Evaka Service builder image
-        if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-s3@master
-        id: build-builder
-        with:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
-          registry: ${{ env.ECR_REGISTRY }}
-          name: evaka/service-builder
-          target: builder
-          path: .
-          dockerfile: service/Dockerfile
-          push: true
-          build-args: |
-            build=${{ github.run_number }}
-            commit=${{ github.event.pull_request.head.sha || github.sha }}
-            BASE_IMAGE=${{ needs.java.outputs.image }}
-          cache_from_images: |
-            ${{ needs.base.outputs.image_name }}
-            ${{ needs.java.outputs.image_name }}
-            ${{ needs.service.outputs.image_name }}
-
       - name: Build Evaka Service test image
         if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
@@ -494,7 +468,7 @@ jobs:
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-            BASE_IMAGE=${{ steps.build-builder.outputs.image }}
+            BASE_IMAGE=${{ needs.service.outputs.image }}
           cache_from_images: |
             ${{ needs.base.outputs.image_name }}
             ${{ needs.java.outputs.image_name }}
@@ -523,32 +497,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Build Evaka Service builder image
-        if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-s3@master
-        id: build
-        with:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
-          registry: ${{ env.ECR_REGISTRY }}
-          name: evaka/service-builder
-          target: builder
-          path: .
-          dockerfile: service/Dockerfile
-          push: false
-          load: true
-          build-args: |
-            build=${{ github.run_number }}
-            commit=${{ github.event.pull_request.head.sha || github.sha }}
-            BASE_IMAGE=${{ needs.java.outputs.image }}
-          cache_from_images: |
-            ${{ needs.base.outputs.image_name }}
-            ${{ needs.java.outputs.image_name }}
-            ${{ needs.service.outputs.image_name }}
 
       - name: Configure AWS credentials
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -572,7 +520,7 @@ jobs:
         run: |
           export "EVAKA_KEYCLOAK_IMAGE=${{ needs.keycloak.outputs.image }}"
           export "JAVA_BASE_IMAGE=${{ needs.java.outputs.image }}"
-          export "EVAKA_SERVICE_BUILDER_IMAGE=${{ steps.build.outputs.image }}"
+          export "EVAKA_SERVICE_BUILDER_IMAGE=${{ needs.service.outputs.image }}"
           cd ./compose
           docker-compose pull
 
@@ -582,7 +530,7 @@ jobs:
         run: |
           export "EVAKA_KEYCLOAK_IMAGE=${{ needs.keycloak.outputs.image }}"
           export "JAVA_BASE_IMAGE=${{ needs.java.outputs.image }}"
-          export "EVAKA_SERVICE_BUILDER_IMAGE=${{ steps.build.outputs.image }}"
+          export "EVAKA_SERVICE_BUILDER_IMAGE=${{ needs.service.outputs.image }}"
           cd ./compose
           ./compose-integration run integration-test
 
