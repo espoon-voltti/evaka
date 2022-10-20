@@ -133,6 +133,20 @@ describe('Sending and receiving messages', () => {
         await Promise.all([initStaffPage(), configuration.init()])
       })
 
+      const sendMessageAsStaff = async () => {
+        await staffPage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(staffPage)
+        await messagesPage.sendNewMessage(defaultMessage)
+      }
+
+      const replyToMessageAsCitizen = async () => {
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        await citizenMessagesPage.assertThreadContent(defaultMessage)
+        await citizenMessagesPage.replyToFirstThread(defaultReply)
+        await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
+      }
+
       test('Staff sends message and citizen replies', async () => {
         await staffPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(staffPage)
@@ -142,11 +156,22 @@ describe('Sending and receiving messages', () => {
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
-        await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
 
+        await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
         await staffPage.goto(`${config.employeeUrl}/messages`)
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
         await messagesPage.assertMessageContent(1, defaultReply)
+      })
+
+      test('Staff can archive a message', async () => {
+        await sendMessageAsStaff()
+        await replyToMessageAsCitizen()
+
+        await staffPage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(staffPage)
+        await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+        await messagesPage.deleteFirstThread()
+        await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 0)
       })
     })
   }

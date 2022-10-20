@@ -436,6 +436,20 @@ describe('Sending and receiving messages', () => {
         await citizenMessagesPage.openFirstThreadReplyEditor()
         await citizenMessagesPage.assertReplyContentIsEmpty()
       })
+
+      describe('Messages can be deleted / archived', () => {
+        test('Unit supervisor sends message and citizen deletes the message', async () => {
+          await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+          const messagesPage = new MessagesPage(unitSupervisorPage)
+          await messagesPage.sendNewMessage(defaultMessage)
+
+          await citizenPage.goto(config.enduserMessagesUrl)
+          const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+          await citizenMessagesPage.assertThreadContent(defaultMessage)
+          await citizenMessagesPage.deleteFirstThread()
+          await citizenMessagesPage.assertInboxIsEmpty()
+        })
+      })
     })
 
     describe('Drafts', () => {

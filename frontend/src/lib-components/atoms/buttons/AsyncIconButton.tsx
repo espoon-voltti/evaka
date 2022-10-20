@@ -2,31 +2,30 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useState } from 'react'
+import React from 'react'
+import styled from 'styled-components'
 
-import { OmitInUnion } from 'lib-common/types'
+import AsyncButton, { AsyncButtonProps } from './AsyncButton'
 
-import IconButton, { IconButtonProps } from './IconButton'
+type AsyncIconButtonProps<T> = Omit<AsyncButtonProps<T>, 'text'>
 
-export type AsyncIconButtonProps = OmitInUnion<IconButtonProps, 'onClick'> & {
-  onClick: (e: React.MouseEvent<HTMLButtonElement>) => Promise<void>
-}
+const Wrapper = styled.div`
+  .async-icon-button {
+    border: none;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    background-color: transparent;
+  }
+`
 
-export default React.memo(function AsyncIconButton({
-  onClick,
+export default React.memo(function AsyncIconButton<T>({
+  className,
   ...props
-}: AsyncIconButtonProps) {
-  const [disabled, setDisabled] = useState(false)
-
+}: AsyncIconButtonProps<T>) {
   return (
-    <IconButton
-      onClick={async (e) => {
-        setDisabled(true)
-        await onClick(e)
-        setDisabled(false)
-      }}
-      disabled={disabled || props.disabled}
-      {...props}
-    />
+    <Wrapper className={className}>
+      <AsyncButton text="" {...props} className="async-icon-button" />
+    </Wrapper>
   )
 })

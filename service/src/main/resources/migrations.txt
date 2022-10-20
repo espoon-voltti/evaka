@@ -281,3 +281,4 @@ V281__add_municipal_message_account_type.sql
 V282__municipal_message_account.sql
 V283__add_messaging_user_role.sql
 V284__update_employee_role_check.sql
+V285__message_thread_folder.sql

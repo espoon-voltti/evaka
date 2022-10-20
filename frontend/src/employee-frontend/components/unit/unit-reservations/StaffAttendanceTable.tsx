@@ -14,7 +14,7 @@ import styled from 'styled-components'
 
 import { getStaffAttendances } from 'employee-frontend/api/staff-attendance'
 import { getUnitAttendanceReservations } from 'employee-frontend/api/unit'
-import { Loading, Result } from 'lib-common/api'
+import { Loading, Result, Success } from 'lib-common/api'
 import {
   OperationalDay,
   UnitAttendanceReservations
@@ -149,7 +149,7 @@ export default React.memo(function StaffAttendanceTable({
 
   const changeDate = useCallback(
     async (getNearestDay: GetNearestDayFn, newStartOfWeek: LocalDate) => {
-      if (!detailsModal) return
+      if (!detailsModal) return Loading.of()
 
       const nearestNextDate =
         (modalOperationalDays &&
@@ -170,26 +170,27 @@ export default React.memo(function StaffAttendanceTable({
         const newOperationalDays =
           attendance.getOrElse(undefined)?.operationalDays
 
-        if (!newOperationalDays) return
+        if (!newOperationalDays) return Loading.of()
 
         const newPreviousDay = getNearestDay(
           newOperationalDays,
           detailsModal.date
         )
 
-        if (!newPreviousDay) return
+        if (!newPreviousDay) return Loading.of()
 
         setDetailsModal({
           ...detailsModal,
           date: newPreviousDay.date
         })
-        return
+        return Success.of()
       }
 
       setDetailsModal({
         ...detailsModal,
         date: nearestNextDate.date
       })
+      return Success.of()
     },
     [
       detailsModal,

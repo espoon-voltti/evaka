@@ -137,6 +137,40 @@ class MessageController(
             }
     }
 
+    @GetMapping("/{accountId}/archived")
+    fun getArchivedMessages(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @RequestParam pageSize: Int,
+        @RequestParam page: Int,
+    ): Paged<MessageThread> {
+        return db.connect { dbc ->
+                requireMessageAccountAccess(dbc, user, clock, accountId)
+                dbc.read {
+                    val archiveFolderId = it.getArchiveFolderId(accountId)
+                    if (archiveFolderId == null) {
+                        Paged(emptyList(), 0, 0)
+                    } else {
+                        it.getReceivedThreads(
+                            accountId,
+                            pageSize,
+                            page,
+                            featureConfig.municipalMessageAccountName,
+                            archiveFolderId
+                        )
+                    }
+                }
+            }
+            .also {
+                Audit.MessagingMessagesInFolderRead.log(
+                    targetId = accountId,
+                    args = mapOf("total" to it.total)
+                )
+            }
+    }
+
     @GetMapping("/{accountId}/copies")
     fun getMessageCopies(
         db: Database,
@@ -416,6 +450,21 @@ class MessageController(
             dbc.transaction { it.markThreadRead(clock, accountId, threadId) }
         }
         Audit.MessagingMarkMessagesReadWrite.log(targetId = accountId, objectId = threadId)
+    }
+
+    @PutMapping("/{accountId}/threads/{threadId}/archive")
+    fun archiveThread(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable threadId: MessageThreadId,
+    ) {
+        db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, clock, accountId)
+            dbc.transaction { it.archiveThread(accountId, threadId) }
+        }
+        Audit.MessagingArchiveMessageWrite.log(targetId = accountId, objectId = threadId)
     }
 
     @GetMapping("/receivers")

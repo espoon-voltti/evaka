@@ -84,9 +84,17 @@ class MergeService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
             UPDATE message_content SET author_id = (SELECT id FROM message_account WHERE person_id = :id_master) WHERE author_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
             UPDATE message_recipients SET recipient_id = (SELECT id FROM message_account WHERE person_id = :id_master) WHERE recipient_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
             UPDATE message_draft SET account_id = (SELECT id FROM message_account WHERE person_id = :id_master) WHERE account_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
+            
+            UPDATE message_thread_participant SET folder_id = (SELECT id FROM message_thread_folder WHERE owner_id = (SELECT id FROM message_account WHERE person_id = :id_master))
+            WHERE 
+                (SELECT id FROM message_thread_folder WHERE owner_id = (SELECT id FROM message_account WHERE person_id = :id_master)) IS NOT NULL
+                AND folder_id = (SELECT id FROM message_thread_folder WHERE owner_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate))
+                AND participant_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
+                    
+            UPDATE message_thread_folder SET owner_id = (SELECT id FROM message_account WHERE person_id = :id_master) WHERE owner_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate);
 
-            INSERT INTO message_thread_participant AS mtp_new (thread_id, participant_id, last_message_timestamp, last_received_timestamp, last_sent_timestamp)
-            SELECT thread_id, (SELECT id FROM message_account WHERE person_id = :id_master), last_message_timestamp, last_received_timestamp, last_sent_timestamp
+            INSERT INTO message_thread_participant AS mtp_new (thread_id, participant_id, last_message_timestamp, last_received_timestamp, last_sent_timestamp, folder_id)
+            SELECT thread_id, (SELECT id FROM message_account WHERE person_id = :id_master), last_message_timestamp, last_received_timestamp, last_sent_timestamp, folder_id
             FROM message_thread_participant mtp_old
             WHERE mtp_old.participant_id = (SELECT id FROM message_account WHERE person_id = :id_duplicate)
             ON CONFLICT (thread_id, participant_id) DO UPDATE SET

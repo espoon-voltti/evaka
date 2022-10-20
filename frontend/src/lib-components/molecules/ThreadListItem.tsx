@@ -48,6 +48,16 @@ export const Container = styled.div<{ isRead: boolean; active: boolean }>`
     padding: calc(${defaultMargins.s} - 1px) calc(${defaultMargins.m} - 1px);
   }
 
+  .delete-btn {
+    opacity: 0;
+  }
+
+  &:hover {
+    .delete-btn {
+      opacity: 1;
+    }
+  }
+
   ${(p) =>
     !p.isRead
       ? `

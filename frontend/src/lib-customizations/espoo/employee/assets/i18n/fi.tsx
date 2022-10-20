@@ -55,6 +55,7 @@ export const fi = {
     create: 'Luo',
     remove: 'Poista',
     doNotRemove: 'Älä poista',
+    archive: 'Arkistoi',
     cancel: 'Peruuta',
     goBack: 'Palaa',
     confirm: 'Vahvista',
@@ -3430,7 +3431,8 @@ export const fi = {
         RECEIVED: 'Saapuneet',
         SENT: 'Lähetetyt',
         DRAFTS: 'Luonnokset',
-        COPIES: 'Johtajan/kunnan tiedotteet'
+        COPIES: 'Johtajan/kunnan tiedotteet',
+        ARCHIVE: 'Arkisto'
       },
       receivers: 'Vastaanottajat',
       newMessage: 'Uusi viesti'
@@ -3440,7 +3442,8 @@ export const fi = {
         RECEIVED: 'Saapuneet viestit',
         SENT: 'Lähetetyt viestit',
         DRAFTS: 'Luonnokset',
-        COPIES: 'Johtajan/kunnan tiedotteet'
+        COPIES: 'Johtajan/kunnan tiedotteet',
+        ARCHIVE: 'Arkisto'
       }
     },
     types: {

@@ -23,12 +23,15 @@ import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Linkify from 'lib-components/atoms/Linkify'
+import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { desktopMin } from 'lib-components/breakpoints'
 import {
   FixedSpaceColumn,
-  FixedSpaceFlexWrap
+  FixedSpaceFlexWrap,
+  FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
+import { MobileOnly } from 'lib-components/layout/responsive-layout'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
 import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
@@ -36,12 +39,14 @@ import { fontWeights, H2, InformationText } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { theme } from 'lib-customizations/common'
+import { faTrash } from 'lib-icons'
 
 import { getAttachmentUrl } from '../attachments'
 import { useTranslation } from '../localization'
 
 import { MessageCharacteristics } from './MessageCharacteristics'
 import { MessageContainer } from './MessageComponents'
+import { archiveThread } from './api'
 import { MessageContext } from './state'
 
 const TitleRow = styled.div`
@@ -84,8 +89,21 @@ const MessageContent = styled.div`
   white-space: pre-line;
 `
 
+const ActionRow = styled(FixedSpaceRow)`
+  margin: 0 28px 0 28px;
+`
+
 const ReplyToThreadButton = styled(InlineButton)`
-  margin-left: 28px;
+  align-self: flex-start;
+`
+
+const DeleteThreadButton = styled(AsyncButton)`
+  align-self: flex-end;
+  padding: 0;
+  min-width: 0;
+  min-height: 0;
+  border: none;
+  background-color: transparent;
 `
 
 const SingleMessage = React.memo(function SingleMessage({
@@ -140,11 +158,13 @@ const AutoScrollPositionSpan = styled.span<{ top: string }>`
 interface Props {
   accountId: UUID
   thread: MessageThread
+  onThreadDeleted: () => void
 }
 
 export default React.memo(function ThreadView({
   accountId,
-  thread: { id: threadId, messages, title, type, urgent, children }
+  thread: { id: threadId, messages, title, type, urgent, children },
+  onThreadDeleted
 }: Props) {
   const i18n = useTranslation()
   const { sendReply, replyState, setReplyContent, getReplyContent } =
@@ -256,13 +276,26 @@ export default React.memo(function ThreadView({
         ) : (
           <>
             <Gap size="s" />
-            <ReplyToThreadButton
-              icon={faReply}
-              onClick={() => setReplyEditorVisible(true)}
-              data-qa="message-reply-editor-btn"
-              text={i18n.messages.replyToThread}
-              ref={autoFocusRef}
-            />
+            <ActionRow justifyContent="space-between">
+              <ReplyToThreadButton
+                icon={faReply}
+                onClick={() => setReplyEditorVisible(true)}
+                data-qa="message-reply-editor-btn"
+                text={i18n.messages.replyToThread}
+                ref={autoFocusRef}
+              />
+              <MobileOnly>
+                <DeleteThreadButton
+                  icon={faTrash}
+                  aria-label={i18n.common.delete}
+                  data-qa="delete-thread-btn"
+                  className="delete-btn"
+                  onClick={() => archiveThread(threadId)}
+                  onSuccess={onThreadDeleted}
+                  text={i18n.messages.deleteThread}
+                />
+              </MobileOnly>
+            </ActionRow>
             <Gap size="m" />
           </>
         ))}

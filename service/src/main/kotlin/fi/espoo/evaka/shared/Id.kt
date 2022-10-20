@@ -62,6 +62,7 @@ sealed interface DatabaseTable {
     sealed class MessageDraft : DatabaseTable
     sealed class MessageRecipients : DatabaseTable
     sealed class MessageThread : DatabaseTable
+    sealed class MessageThreadFolder : DatabaseTable
     sealed class MobileDevice : DatabaseTable
     sealed class Pairing : DatabaseTable
     sealed class Parentship : DatabaseTable
@@ -187,6 +188,8 @@ typealias MessageDraftId = Id<DatabaseTable.MessageDraft>
 typealias MessageRecipientId = Id<DatabaseTable.MessageRecipients>
 
 typealias MessageThreadId = Id<DatabaseTable.MessageThread>
+
+typealias MessageThreadFolderId = Id<DatabaseTable.MessageThreadFolder>
 
 typealias MobileDeviceId = Id<DatabaseTable.MobileDevice>
 

@@ -8,7 +8,11 @@ import { Result } from 'lib-common/api'
 import { MessageType } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
+import AsyncIconButton from 'lib-components/atoms/buttons/AsyncIconButton'
+import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { faTrash } from 'lib-icons'
 
+import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
 
 import { MessageCharacteristics } from './MessageCharacteristics'
@@ -22,6 +26,7 @@ import {
   Truncated,
   TypeAndDate
 } from './MessageComponents'
+import { archiveThread } from './api'
 
 export type ThreadListItem = {
   id: UUID
@@ -39,9 +44,13 @@ export type ThreadListItem = {
 
 interface Props {
   items: Result<ThreadListItem[]>
+  accountId: UUID
+  onArchived?: () => void
 }
 
-export function ThreadList({ items: messages }: Props) {
+export function ThreadList({ items: messages, accountId, onArchived }: Props) {
+  const { i18n } = useTranslation()
+
   return renderResult(messages, (threads) => (
     <>
       {threads.map((item) => (
@@ -66,10 +75,22 @@ export function ThreadList({ items: messages }: Props) {
               <span data-qa="thread-list-item-content">{item.content}</span>
             </Truncated>
           </ParticipantsAndPreview>
-          <TypeAndDate>
-            <MessageCharacteristics type={item.type} urgent={item.urgent} />
-            {item.timestamp && <Timestamp date={item.timestamp} />}
-          </TypeAndDate>
+          <FixedSpaceRow>
+            {onArchived && (
+              <AsyncIconButton
+                icon={faTrash}
+                aria-label={i18n.common.archive}
+                data-qa="delete-thread-btn"
+                className="delete-btn"
+                onClick={() => archiveThread(accountId, item.id)}
+                onSuccess={onArchived}
+              />
+            )}
+            <TypeAndDate>
+              <MessageCharacteristics type={item.type} urgent={item.urgent} />
+              {item.timestamp && <Timestamp date={item.timestamp} />}
+            </TypeAndDate>
+          </FixedSpaceRow>
         </MessageRow>
       ))}
     </>

@@ -49,7 +49,9 @@ export default React.memo(function ThreadList({
     setSelectedThread,
     threads,
     threadLoadingResult,
-    loadMoreThreads
+    loadMoreThreads,
+    refreshThreads,
+    refreshUnreadMessagesCount
   } = useContext(MessageContext)
 
   useEffect(() => {
@@ -66,6 +68,11 @@ export default React.memo(function ThreadList({
     },
     [navigate]
   )
+
+  const refreshEverything = useCallback(() => {
+    refreshThreads()
+    refreshUnreadMessagesCount()
+  }, [refreshThreads, refreshUnreadMessagesCount])
 
   return (
     <>
@@ -130,6 +137,7 @@ export default React.memo(function ThreadList({
               <ThreadListItem
                 thread={thread}
                 onClick={() => selectThread(thread.id)}
+                onDeleted={refreshEverything}
                 active={selectedThread?.id === thread.id}
                 hasUnreadMessages={hasUnreadMessages(thread, accountId)}
               />

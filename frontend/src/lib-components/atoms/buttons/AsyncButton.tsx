@@ -38,7 +38,7 @@ const failure: ButtonState<any> = { state: 'failure' }
 
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-export interface Props<T> {
+export interface AsyncButtonProps<T> {
   text: string
   textInProgress?: string
   textDone?: string
@@ -55,6 +55,7 @@ export interface Props<T> {
   className?: string
   'data-qa'?: string
   hideSuccess?: boolean
+  icon?: IconDefinition
 }
 
 function AsyncButton<T>({
@@ -70,8 +71,9 @@ function AsyncButton<T>({
   onSuccess,
   onFailure,
   hideSuccess = false,
+  icon,
   ...props
-}: Props<T>) {
+}: AsyncButtonProps<T>) {
   const { colors } = useTheme()
   const [buttonState, setButtonState] = useState<ButtonState<T>>(idle)
   const onSuccessRef = useRef(onSuccess)
@@ -188,7 +190,10 @@ function AsyncButton<T>({
   const showIcon = buttonState.state !== 'idle'
 
   const container = useSpring<{ x: number }>({
-    x: (!hideSuccess || !isSuccess) && showIcon ? 1 : 0
+    x: ((!hideSuccess || !isSuccess) && showIcon) || icon ? 1 : 0
+  })
+  const iconSpring = useSpring<{ opacity: number }>({
+    opacity: icon && !showIcon ? 1 : 0
   })
   const spinner = useSpring<{ opacity: number }>({
     opacity: isInProgress ? 1 : 0
@@ -230,6 +235,16 @@ function AsyncButton<T>({
             paddingRight: container.x.to((x) => `${8 * x}px`)
           }}
         >
+          {icon && (
+            <IconWrapper
+              style={{
+                opacity: iconSpring.opacity,
+                transform: iconSpring.opacity.to((x) => `scale(${x ?? 0})`)
+              }}
+            >
+              <FontAwesomeIcon icon={icon} color={colors.main.m2} />
+            </IconWrapper>
+          )}
           <Spinner style={spinner} />
           <IconWrapper
             style={{

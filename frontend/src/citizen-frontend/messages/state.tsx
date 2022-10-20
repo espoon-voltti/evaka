@@ -197,7 +197,7 @@ export const MessageContextProvider = React.memo(
     const setUnreadResult = useCallback(
       (res: Result<UnreadCountByAccount[]>) => {
         if (res.isSuccess) {
-          setUnreadMessagesCount(res.value[0].unreadCount)
+          setUnreadMessagesCount(res.value[0]?.unreadCount ?? 0)
         }
       },
       []

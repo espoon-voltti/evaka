@@ -350,6 +350,7 @@ export default {
       BULLETIN: 'Tiedote'
     },
     replyToThread: 'Vastaa viestiin',
+    deleteThread: 'Poista viestiketju',
     staffAnnotation: 'Henkilökunta',
     messageEditor: {
       newMessage: 'Uusi viesti',

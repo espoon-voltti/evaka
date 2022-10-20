@@ -12,6 +12,7 @@ import uniqBy from 'lodash/uniqBy'
 import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
+import { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { ErrorKey } from 'lib-common/form-validation'
 import {
@@ -61,7 +62,7 @@ import { postSingleDayStaffAttendances } from '../../../api/staff-attendance'
 import { useTranslation } from '../../../state/i18n'
 import { errorToInputInfo } from '../../../utils/validation/input-info-helper'
 
-interface Props {
+interface Props<T> {
   unitId: UUID
   employeeId: UUID
   date: LocalDate
@@ -69,8 +70,8 @@ interface Props {
   close: () => void
   reloadStaffAttendances: () => void
   groups: DaycareGroup[]
-  onPreviousDate: () => Promise<void>
-  onNextDate: () => Promise<void>
+  onPreviousDate: () => Promise<Result<T>>
+  onNextDate: () => Promise<Result<T>>
 }
 
 interface EditedAttendance {
@@ -81,7 +82,7 @@ interface EditedAttendance {
   type: StaffAttendanceType
 }
 
-export default React.memo(function StaffAttendanceDetailsModal({
+export default React.memo(function StaffAttendanceDetailsModal<T>({
   unitId,
   employeeId,
   date,
@@ -91,7 +92,7 @@ export default React.memo(function StaffAttendanceDetailsModal({
   groups,
   onPreviousDate,
   onNextDate
-}: Props) {
+}: Props<T>) {
   const { i18n } = useTranslation()
   const [startOfDay, endOfDay] = useMemo(
     () => [
@@ -321,12 +322,14 @@ export default React.memo(function StaffAttendanceDetailsModal({
           <AsyncIconButton
             icon={faChevronLeft}
             onClick={onPreviousDate}
+            onSuccess={() => undefined}
             aria-label={i18n.unit.staffAttendance.previousDay}
           />
           <H1 noMargin>{date.formatExotic('EEEEEE d.M.yyyy')}</H1>
           <AsyncIconButton
             icon={faChevronRight}
             onClick={onNextDate}
+            onSuccess={() => undefined}
             aria-label={i18n.unit.staffAttendance.nextDay}
           />
         </FixedSpaceRow>
