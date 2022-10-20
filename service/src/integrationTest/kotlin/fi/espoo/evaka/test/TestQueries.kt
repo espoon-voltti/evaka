@@ -22,16 +22,18 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import java.time.Instant
 import java.time.LocalDate
 
-fun Database.Read.getApplicationStatus(applicationId: ApplicationId): ApplicationStatus = createQuery(
-    // language=SQL
-    """
+fun Database.Read.getApplicationStatus(applicationId: ApplicationId): ApplicationStatus =
+    createQuery(
+            // language=SQL
+            """
 SELECT status
 FROM application
 WHERE id = :applicationId
 """
-).bind("applicationId", applicationId)
-    .mapTo<ApplicationStatus>()
-    .one()
+        )
+        .bind("applicationId", applicationId)
+        .mapTo<ApplicationStatus>()
+        .one()
 
 data class DecisionTableRow(
     val id: DecisionId,
@@ -52,15 +54,21 @@ data class DecisionTableRow(
     fun period() = FiniteDateRange(startDate, endDate)
 }
 
-fun Database.Read.getDecisionRowsByApplication(applicationId: ApplicationId) = createQuery(
-    // language=SQL
-    "SELECT * FROM decision WHERE application_id = :applicationId ORDER BY type"
-).bind("applicationId", applicationId).mapTo<DecisionTableRow>()
+fun Database.Read.getDecisionRowsByApplication(applicationId: ApplicationId) =
+    createQuery(
+            // language=SQL
+            "SELECT * FROM decision WHERE application_id = :applicationId ORDER BY type"
+        )
+        .bind("applicationId", applicationId)
+        .mapTo<DecisionTableRow>()
 
-fun Database.Read.getDecisionRowById(id: DecisionId) = createQuery(
-    // language=SQL
-    "SELECT * FROM decision WHERE id = :id"
-).bind("id", id).mapTo<DecisionTableRow>()
+fun Database.Read.getDecisionRowById(id: DecisionId) =
+    createQuery(
+            // language=SQL
+            "SELECT * FROM decision WHERE id = :id"
+        )
+        .bind("id", id)
+        .mapTo<DecisionTableRow>()
 
 data class PlacementTableRow(
     val id: PlacementId,
@@ -73,10 +81,13 @@ data class PlacementTableRow(
     fun period() = FiniteDateRange(startDate, endDate)
 }
 
-fun Database.Read.getPlacementRowsByChild(childId: ChildId) = createQuery(
-    // language=SQL
-    "SELECT * FROM placement WHERE child_id = :childId ORDER BY start_date"
-).bind("childId", childId).mapTo<PlacementTableRow>()
+fun Database.Read.getPlacementRowsByChild(childId: ChildId) =
+    createQuery(
+            // language=SQL
+            "SELECT * FROM placement WHERE child_id = :childId ORDER BY start_date"
+        )
+        .bind("childId", childId)
+        .mapTo<PlacementTableRow>()
 
 data class PlacementPlanTableRow(
     val id: PlacementPlanId,
@@ -94,19 +105,19 @@ data class PlacementPlanTableRow(
     fun period() = FiniteDateRange(startDate, endDate)
     fun preschoolDaycarePeriod() =
         if (preschoolDaycareStartDate != null && preschoolDaycareEndDate != null) {
-            FiniteDateRange(
-                preschoolDaycareStartDate,
-                preschoolDaycareEndDate
-            )
+            FiniteDateRange(preschoolDaycareStartDate, preschoolDaycareEndDate)
         } else {
             null
         }
 }
 
-fun Database.Read.getPlacementPlanRowByApplication(applicationId: ApplicationId) = createQuery(
-    // language=SQL
-    "SELECT * FROM placement_plan WHERE application_id = :applicationId"
-).bind("applicationId", applicationId).mapTo<PlacementPlanTableRow>()
+fun Database.Read.getPlacementPlanRowByApplication(applicationId: ApplicationId) =
+    createQuery(
+            // language=SQL
+            "SELECT * FROM placement_plan WHERE application_id = :applicationId"
+        )
+        .bind("applicationId", applicationId)
+        .mapTo<PlacementPlanTableRow>()
 
 data class BackupCareTableRow(
     val id: BackupCareId,
@@ -119,12 +130,18 @@ data class BackupCareTableRow(
     fun period() = FiniteDateRange(startDate, endDate)
 }
 
-fun Database.Read.getBackupCareRowById(id: BackupCareId) = createQuery(
-    // language=SQL
-    "SELECT * FROM backup_care WHERE id = :id"
-).bind("id", id).mapTo<BackupCareTableRow>()
+fun Database.Read.getBackupCareRowById(id: BackupCareId) =
+    createQuery(
+            // language=SQL
+            "SELECT * FROM backup_care WHERE id = :id"
+        )
+        .bind("id", id)
+        .mapTo<BackupCareTableRow>()
 
-fun Database.Read.getBackupCareRowsByChild(childId: ChildId) = createQuery(
-    // language=SQL
-    "SELECT * FROM backup_care WHERE child_id = :childId ORDER BY start_date"
-).bind("childId", childId).mapTo<BackupCareTableRow>()
+fun Database.Read.getBackupCareRowsByChild(childId: ChildId) =
+    createQuery(
+            // language=SQL
+            "SELECT * FROM backup_care WHERE child_id = :childId ORDER BY start_date"
+        )
+        .bind("childId", childId)
+        .mapTo<BackupCareTableRow>()

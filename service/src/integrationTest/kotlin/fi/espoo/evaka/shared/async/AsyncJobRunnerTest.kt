@@ -9,11 +9,6 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.voltti.logging.MdcKey
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertThrows
 import java.time.Duration
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
@@ -24,6 +19,11 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.assertThrows
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
@@ -47,16 +47,18 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun clean() {
         asyncJobRunner = AsyncJobRunner(TestJob::class, jdbi, AsyncJobRunnerConfig())
-        asyncJobRunner.registerHandler { _, _, msg: TestJob ->
-            currentCallback.get()(msg)
-        }
+        asyncJobRunner.registerHandler { _, _, msg: TestJob -> currentCallback.get()(msg) }
     }
 
     @Test
     fun `planned jobs are not saved if the transaction gets rolled back`() {
         assertThrows<LetsRollbackException> {
             db.transaction { tx ->
-                asyncJobRunner.plan(tx, listOf(TestJob(UUID.randomUUID())), runAt = HelsinkiDateTime.now())
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(TestJob(UUID.randomUUID())),
+                    runAt = HelsinkiDateTime.now()
+                )
                 throw LetsRollbackException()
             }
         }
@@ -66,15 +68,22 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `logging MDC keys are set during job execution`() {
         val job = TestJob(user = AuthenticatedUser.SystemInternalUser)
-        val future = this.setAsyncJobCallback {
-            assertEquals(job, it)
-            val traceId = MdcKey.TRACE_ID.get()
-            val spanId = MdcKey.SPAN_ID.get()
-            assertNotNull(traceId)
-            assertEquals(traceId, spanId)
-            assertEquals(AuthenticatedUser.SystemInternalUser.rawId().toString(), MdcKey.USER_ID.get())
-            assertEquals(AuthenticatedUser.SystemInternalUser.rawIdHash.toString(), MdcKey.USER_ID_HASH.get())
-        }
+        val future =
+            this.setAsyncJobCallback {
+                assertEquals(job, it)
+                val traceId = MdcKey.TRACE_ID.get()
+                val spanId = MdcKey.SPAN_ID.get()
+                assertNotNull(traceId)
+                assertEquals(traceId, spanId)
+                assertEquals(
+                    AuthenticatedUser.SystemInternalUser.rawId().toString(),
+                    MdcKey.USER_ID.get()
+                )
+                assertEquals(
+                    AuthenticatedUser.SystemInternalUser.rawIdHash.toString(),
+                    MdcKey.USER_ID_HASH.get()
+                )
+            }
         db.transaction { asyncJobRunner.plan(it, listOf(job), runAt = HelsinkiDateTime.now()) }
         asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1)
         future.get(0, TimeUnit.SECONDS)
@@ -112,7 +121,9 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `failed jobs get retried`() {
         val job = TestJob()
         val failingFuture = this.setAsyncJobCallback { throw LetsRollbackException() }
-        db.transaction { asyncJobRunner.plan(it, listOf(job), 20, Duration.ZERO, runAt = HelsinkiDateTime.now()) }
+        db.transaction {
+            asyncJobRunner.plan(it, listOf(job), 20, Duration.ZERO, runAt = HelsinkiDateTime.now())
+        }
         asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1)
 
         val exception = assertThrows<ExecutionException> { failingFuture.get(10, TimeUnit.SECONDS) }

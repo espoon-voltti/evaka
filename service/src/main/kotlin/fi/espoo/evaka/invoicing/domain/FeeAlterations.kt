@@ -30,6 +30,6 @@ data class FeeAlteration(
     enum class Type {
         DISCOUNT,
         INCREASE,
-        RELIEF;
+        RELIEF
     }
 }

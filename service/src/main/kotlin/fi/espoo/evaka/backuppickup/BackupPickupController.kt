@@ -32,13 +32,10 @@ class BackupPickupController(private val accessControl: AccessControl) {
     ): ChildBackupPickupCreateResponse {
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_BACKUP_PICKUP, childId)
         return ChildBackupPickupCreateResponse(
-            db.connect { dbc ->
-                dbc.transaction { tx ->
-                    tx.createBackupPickup(childId, body)
+            db.connect { dbc -> dbc.transaction { tx -> tx.createBackupPickup(childId, body) } }
+                .also { backupPickupId ->
+                    Audit.ChildBackupPickupCreate.log(targetId = childId, objectId = backupPickupId)
                 }
-            }.also { backupPickupId ->
-                Audit.ChildBackupPickupCreate.log(targetId = childId, objectId = backupPickupId)
-            }
         )
     }
 
@@ -50,9 +47,13 @@ class BackupPickupController(private val accessControl: AccessControl) {
         @PathVariable("childId") childId: ChildId
     ): List<ChildBackupPickup> {
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_BACKUP_PICKUP, childId)
-        return db.connect { dbc -> dbc.transaction { tx -> tx.getBackupPickupsForChild(childId) } }.also {
-            Audit.ChildBackupPickupRead.log(targetId = childId, args = mapOf("count" to it.size))
-        }
+        return db.connect { dbc -> dbc.transaction { tx -> tx.getBackupPickupsForChild(childId) } }
+            .also {
+                Audit.ChildBackupPickupRead.log(
+                    targetId = childId,
+                    args = mapOf("count" to it.size)
+                )
+            }
     }
 
     @PutMapping("/backup-pickups/{id}")
@@ -86,11 +87,13 @@ fun Database.Transaction.createBackupPickup(
     data: ChildBackupPickupContent
 ): BackupPickupId {
     // language=sql
-    val sql = """
+    val sql =
+        """
         INSERT INTO backup_pickup (child_id, name, phone)
         VALUES (:childId, :name, :phone)
         RETURNING id
-    """.trimIndent()
+    """
+            .trimIndent()
 
     return this.createQuery(sql)
         .bind("childId", childId)
@@ -107,16 +110,15 @@ fun Database.Read.getBackupPickupsForChild(childId: ChildId): List<ChildBackupPi
         .list()
 }
 
-fun Database.Transaction.updateBackupPickup(
-    id: BackupPickupId,
-    data: ChildBackupPickupContent
-) {
+fun Database.Transaction.updateBackupPickup(id: BackupPickupId, data: ChildBackupPickupContent) {
     // language=sql
-    val sql = """
+    val sql =
+        """
         UPDATE backup_pickup
         SET name = :name, phone = :phone
         WHERE id  = :id
-    """.trimIndent()
+    """
+            .trimIndent()
 
     this.createUpdate(sql)
         .bind("id", id)
@@ -125,18 +127,11 @@ fun Database.Transaction.updateBackupPickup(
         .updateExactlyOne()
 }
 
-fun Database.Transaction.deleteBackupPickup(
-    id: BackupPickupId
-) {
-    this.createUpdate("DELETE FROM backup_pickup WHERE id = :id")
-        .bind("id", id)
-        .updateExactlyOne()
+fun Database.Transaction.deleteBackupPickup(id: BackupPickupId) {
+    this.createUpdate("DELETE FROM backup_pickup WHERE id = :id").bind("id", id).updateExactlyOne()
 }
 
-data class ChildBackupPickupContent(
-    val name: String,
-    val phone: String
-)
+data class ChildBackupPickupContent(val name: String, val phone: String)
 
 data class ChildBackupPickup(
     val id: BackupPickupId,

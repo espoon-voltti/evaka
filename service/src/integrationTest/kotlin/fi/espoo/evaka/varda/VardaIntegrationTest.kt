@@ -13,15 +13,14 @@ import fi.espoo.evaka.varda.integration.VardaTokenProvider
 import org.junit.jupiter.api.BeforeAll
 import org.springframework.beans.factory.annotation.Autowired
 
-abstract class VardaIntegrationTest(resetDbBeforeEach: Boolean) : FullApplicationTest(resetDbBeforeEach = resetDbBeforeEach) {
+abstract class VardaIntegrationTest(resetDbBeforeEach: Boolean) :
+    FullApplicationTest(resetDbBeforeEach = resetDbBeforeEach) {
     protected lateinit var vardaTokenProvider: VardaTokenProvider
     protected lateinit var vardaClient: VardaClient
 
-    @Autowired
-    protected lateinit var vardaEnv: VardaEnv
+    @Autowired protected lateinit var vardaEnv: VardaEnv
 
-    @Autowired
-    protected lateinit var ophEnv: OphEnv
+    @Autowired protected lateinit var ophEnv: OphEnv
 
     @BeforeAll
     override fun beforeAll() {

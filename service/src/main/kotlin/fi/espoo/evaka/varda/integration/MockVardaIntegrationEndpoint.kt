@@ -11,6 +11,9 @@ import fi.espoo.evaka.varda.VardaFeeData
 import fi.espoo.evaka.varda.VardaPersonRequest
 import fi.espoo.evaka.varda.VardaPlacement
 import fi.espoo.evaka.varda.VardaUnitRequest
+import java.time.LocalDate
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 import mu.KotlinLogging
 import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
@@ -23,9 +26,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
 
 private val logger = KotlinLogging.logger {}
 
@@ -70,169 +70,202 @@ class MockVardaIntegrationEndpoint {
     }
 
     @GetMapping("/user/apikey/")
-    fun getApiKey(): String = lock.withLock {
-        logger.info { "Mock varda integration endpoint GET /users/apiKey called" }
-        "{\"token\": \"49921df1b823e6fbaeb14dc23fd42325213187ad\"}"
-    }
+    fun getApiKey(): String =
+        lock.withLock {
+            logger.info { "Mock varda integration endpoint GET /users/apiKey called" }
+            "{\"token\": \"49921df1b823e6fbaeb14dc23fd42325213187ad\"}"
+        }
 
     @PostMapping("/v1/toimipaikat/")
     fun createUnit(
         @RequestBody unit: VardaUnitRequest,
         @RequestHeader(name = "Authorization") auth: String
-    ): String = lock.withLock {
-        logger.info { "Mock varda integration endpoint POST /toimipaikat received body: $unit" }
-        unitId = unitId.inc()
-        units[unitId] = unit
-        getMockUnitResponse(unitId)
-    }
+    ): String =
+        lock.withLock {
+            logger.info { "Mock varda integration endpoint POST /toimipaikat received body: $unit" }
+            unitId = unitId.inc()
+            units[unitId] = unit
+            getMockUnitResponse(unitId)
+        }
 
     @PutMapping("/v1/toimipaikat/{vardaId}/")
     fun updateUnit(
         @PathVariable("vardaId") vardaId: Long?,
         @RequestBody unit: VardaUnitRequest,
         @RequestHeader(name = "Authorization") auth: String
-    ): String = lock.withLock {
-        logger.info { "Mock varda integration endpoint PUT /toimipaikat/$vardaId received body: $unit" }
-        val id = if (vardaId == null) {
-            unitId = unitId.inc()
-            unitId
-        } else {
-            vardaId
+    ): String =
+        lock.withLock {
+            logger.info {
+                "Mock varda integration endpoint PUT /toimipaikat/$vardaId received body: $unit"
+            }
+            val id =
+                if (vardaId == null) {
+                    unitId = unitId.inc()
+                    unitId
+                } else {
+                    vardaId
+                }
+            units.replace(id, unit)
+            getMockUnitResponse(id)
         }
-        units.replace(id, unit)
-        getMockUnitResponse(id)
-    }
 
     @PostMapping("/v1/henkilot/")
     fun createPerson(
         @RequestBody body: VardaPersonRequest,
         @RequestHeader(name = "Authorization") auth: String
-    ): String = lock.withLock {
-        logger.info { "Mock varda integration endpoint POST /henkilot received body: $body" }
-        personId = personId.inc()
-        people[personId] = body
-        getMockPersonResponse(personId)
-    }
+    ): String =
+        lock.withLock {
+            logger.info { "Mock varda integration endpoint POST /henkilot received body: $body" }
+            personId = personId.inc()
+            people[personId] = body
+            getMockPersonResponse(personId)
+        }
 
     @PostMapping("/v1/lapset/")
     fun createChild(
         @RequestBody body: VardaChildRequest,
         @RequestHeader(name = "Authorization") auth: String
-    ): String = lock.withLock {
-        logger.info { "Mock varda integration endpoint POST /lapset received body: $body" }
-        childId = childId.inc()
-        this.children[childId] = body
-        getMockChildResponse(childId)
-    }
+    ): String =
+        lock.withLock {
+            logger.info { "Mock varda integration endpoint POST /lapset received body: $body" }
+            childId = childId.inc()
+            this.children[childId] = body
+            getMockChildResponse(childId)
+        }
 
     @PostMapping("/v1/varhaiskasvatuspaatokset/")
     fun createDecision(
         @RequestBody body: VardaDecision,
         @RequestHeader(name = "Authorization") auth: String
-    ): ResponseEntity<String> = lock.withLock {
-        logger.info { "Mock varda integration endpoint POST /varhaiskasvatuspaatokset received body: $body" }
+    ): ResponseEntity<String> =
+        lock.withLock {
+            logger.info {
+                "Mock varda integration endpoint POST /varhaiskasvatuspaatokset received body: $body"
+            }
 
-        if (shouldFailRequest(VardaCallType.DECISION)) return failRequest()
+            if (shouldFailRequest(VardaCallType.DECISION)) return failRequest()
 
-        decisionId = decisionId.inc()
-        decisions[decisionId] = body
-        ResponseEntity.ok(getMockDecisionResponse(decisionId))
-    }
+            decisionId = decisionId.inc()
+            decisions[decisionId] = body
+            ResponseEntity.ok(getMockDecisionResponse(decisionId))
+        }
 
     @PutMapping("/v1/varhaiskasvatuspaatokset/{vardaId}/")
     fun updateDecision(
         @PathVariable vardaId: Long,
         @RequestBody body: VardaDecision,
         @RequestHeader(name = "Authorization") auth: String
-    ): ResponseEntity<String> = lock.withLock {
-        logger.info { "Mock varda integration endpoint PUT /varhaiskasvatuspaatokset/$vardaId/ received body: $body" }
+    ): ResponseEntity<String> =
+        lock.withLock {
+            logger.info {
+                "Mock varda integration endpoint PUT /varhaiskasvatuspaatokset/$vardaId/ received body: $body"
+            }
 
-        if (shouldFailRequest(VardaCallType.DECISION)) return failRequest()
+            if (shouldFailRequest(VardaCallType.DECISION)) return failRequest()
 
-        decisions.replace(vardaId, body)
-        ResponseEntity.ok(getMockDecisionResponse(vardaId))
-    }
+            decisions.replace(vardaId, body)
+            ResponseEntity.ok(getMockDecisionResponse(vardaId))
+        }
 
     @DeleteMapping("/v1/varhaiskasvatuspaatokset/{vardaId}/")
     fun deleteDecision(
         @PathVariable vardaId: Long,
         @RequestHeader(name = "Authorization") auth: String
-    ) = lock.withLock {
-        logger.info { "Mock varda integration endpoint DELETE /varhaiskasvatuspaatokset/$vardaId/ called" }
-        decisions.remove(vardaId)
-    }
+    ) =
+        lock.withLock {
+            logger.info {
+                "Mock varda integration endpoint DELETE /varhaiskasvatuspaatokset/$vardaId/ called"
+            }
+            decisions.remove(vardaId)
+        }
 
     @PostMapping("/v1/varhaiskasvatussuhteet/")
     fun createPlacement(
         @RequestBody body: VardaPlacement,
         @RequestHeader(name = "Authorization") auth: String
-    ): String = lock.withLock {
-        logger.info { "Mock varda integration endpoint POST /varhaiskasvatussuhteet received body: $body" }
-        placementId = placementId.inc()
-        placements[placementId] = body
-        getMockPlacementResponse(placementId)
-    }
+    ): String =
+        lock.withLock {
+            logger.info {
+                "Mock varda integration endpoint POST /varhaiskasvatussuhteet received body: $body"
+            }
+            placementId = placementId.inc()
+            placements[placementId] = body
+            getMockPlacementResponse(placementId)
+        }
 
     @PutMapping("/v1/varhaiskasvatussuhteet/{vardaId}/")
     fun updatePlacement(
         @PathVariable vardaId: Long,
         @RequestBody body: VardaPlacement,
         @RequestHeader(name = "Authorization") auth: String
-    ): String = lock.withLock {
-        logger.info { "Mock varda integration endpoint PUT /varhaiskasvatussuhteet/$vardaId/ received body: $body" }
-        placements.replace(vardaId, body)
-        getMockPlacementResponse(vardaId)
-    }
+    ): String =
+        lock.withLock {
+            logger.info {
+                "Mock varda integration endpoint PUT /varhaiskasvatussuhteet/$vardaId/ received body: $body"
+            }
+            placements.replace(vardaId, body)
+            getMockPlacementResponse(vardaId)
+        }
 
     @DeleteMapping("/v1/varhaiskasvatussuhteet/{vardaId}/")
     fun deletePlacement(
         @PathVariable vardaId: Long,
         @RequestHeader(name = "Authorization") auth: String
-    ) = lock.withLock {
-        logger.info { "Mock varda integration endpoint DELETE /varhaiskasvatussuhteet/$vardaId/ called" }
-        placements.remove(vardaId)
-    }
+    ) =
+        lock.withLock {
+            logger.info {
+                "Mock varda integration endpoint DELETE /varhaiskasvatussuhteet/$vardaId/ called"
+            }
+            placements.remove(vardaId)
+        }
 
     @PostMapping("/v1/maksutiedot/")
     fun createFeeData(
         @RequestBody body: VardaFeeData,
         @RequestHeader(name = "Authorization") auth: String
-    ): ResponseEntity<String> = lock.withLock {
-        if (shouldFailRequest(VardaCallType.FEE_DATA)) return failRequest()
+    ): ResponseEntity<String> =
+        lock.withLock {
+            if (shouldFailRequest(VardaCallType.FEE_DATA)) return failRequest()
 
-        this.feeDataId = feeDataId.inc()
-        this.feeData[feeDataId] = body
-        this.feeDataCalls += 1
-        logger.info { "Mock varda integration endpoint POST /maksutiedot received body: $body" }
-        ResponseEntity.ok(getMockFeeDataResponse(feeDataId, body))
-    }
+            this.feeDataId = feeDataId.inc()
+            this.feeData[feeDataId] = body
+            this.feeDataCalls += 1
+            logger.info { "Mock varda integration endpoint POST /maksutiedot received body: $body" }
+            ResponseEntity.ok(getMockFeeDataResponse(feeDataId, body))
+        }
 
     @PutMapping("/v1/maksutiedot/{vardaId}")
     fun updateFeeData(
         @PathVariable vardaId: Long,
         @RequestBody body: VardaFeeData,
         @RequestHeader(name = "Authorization") auth: String
-    ): ResponseEntity<String> = lock.withLock {
-        logger.info { "Mock varda integration endpoint PUT /maksutiedot/$vardaId received body: $body" }
+    ): ResponseEntity<String> =
+        lock.withLock {
+            logger.info {
+                "Mock varda integration endpoint PUT /maksutiedot/$vardaId received body: $body"
+            }
 
-        if (shouldFailRequest(VardaCallType.FEE_DATA)) return failRequest()
+            if (shouldFailRequest(VardaCallType.FEE_DATA)) return failRequest()
 
-        this.feeData.replace(vardaId, body)
-        ResponseEntity.ok(getMockFeeDataResponse(vardaId, body))
-    }
+            this.feeData.replace(vardaId, body)
+            ResponseEntity.ok(getMockFeeDataResponse(vardaId, body))
+        }
 
     @DeleteMapping("/v1/maksutiedot/{vardaId}/")
     fun deleteFeeData(
         @PathVariable vardaId: Long,
         @RequestHeader(name = "Authorization") auth: String
-    ): ResponseEntity<String> = lock.withLock {
-        logger.info { "Mock varda integration endpoint DELETE /maksutiedot received id: $vardaId" }
+    ): ResponseEntity<String> =
+        lock.withLock {
+            logger.info {
+                "Mock varda integration endpoint DELETE /maksutiedot received id: $vardaId"
+            }
 
-        if (shouldFailRequest(VardaCallType.FEE_DATA)) return failRequest()
+            if (shouldFailRequest(VardaCallType.FEE_DATA)) return failRequest()
 
-        this.feeData.remove(vardaId)
-        ResponseEntity.noContent().build()
-    }
+            this.feeData.remove(vardaId)
+            ResponseEntity.noContent().build()
+        }
 
     @DeleteMapping("/v1/lapset/{vardaId}/")
     fun deleteChild(
@@ -253,19 +286,25 @@ class MockVardaIntegrationEndpoint {
     )
 
     @GetMapping("/v1/lapset/{childId}/varhaiskasvatuspaatokset/")
-    fun getChildDecisions(@PathVariable childId: Long): VardaClient.PaginatedResponse<DecisionPeriod> =
+    fun getChildDecisions(
+        @PathVariable childId: Long
+    ): VardaClient.PaginatedResponse<DecisionPeriod> =
         lock.withLock {
-            logger.info { "Mock varda integration endpoint GET /lapset/$childId/varhaiskasvatuspaatokset received id: $childId" }
-            val childDecisions = decisions.entries.filter { (_, decision) ->
-                decision.lapsi.contains("/lapset/$childId/")
+            logger.info {
+                "Mock varda integration endpoint GET /lapset/$childId/varhaiskasvatuspaatokset received id: $childId"
             }
+            val childDecisions =
+                decisions.entries.filter { (_, decision) ->
+                    decision.lapsi.contains("/lapset/$childId/")
+                }
             VardaClient.PaginatedResponse(
                 count = childDecisions.size,
                 next = null,
                 previous = null,
-                results = childDecisions.map { (vardaId, decision) ->
-                    DecisionPeriod(vardaId, decision.alkamis_pvm, decision.paattymis_pvm)
-                }
+                results =
+                    childDecisions.map { (vardaId, decision) ->
+                        DecisionPeriod(vardaId, decision.alkamis_pvm, decision.paattymis_pvm)
+                    }
             )
         }
 
@@ -302,7 +341,8 @@ class MockVardaIntegrationEndpoint {
             "paattymis_pvm": null,
             "muutos_pvm": "2019-11-04T11:31:36.218854Z"
             }
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     private fun getMockOrganizerResponse(id: Long): String {
@@ -332,7 +372,8 @@ class MockVardaIntegrationEndpoint {
               "ipv6_osoitteet": null,
               "puhelinnumero": "+358400132233"
             }
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     private fun getMockChildResponse(id: Long): String {
@@ -350,7 +391,8 @@ class MockVardaIntegrationEndpoint {
               "varhaiskasvatuspaatokset_top": [],
               "muutos_pvm": "2020-04-15T08:22:02.364895Z"
             }
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     private fun getMockPersonResponse(id: Long): String {
@@ -365,7 +407,8 @@ class MockVardaIntegrationEndpoint {
               "syntyma_pvm": null,
               "lapsi": []
             }
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     private fun getMockFeeDataResponse(id: Long, feeData: VardaFeeData): String {
@@ -390,7 +433,8 @@ class MockVardaIntegrationEndpoint {
           "tallennetut_huoltajat_count": ${feeData.huoltajat.size},
           "ei_tallennetut_huoltajat_count": 0
         }
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     fun getMockErrorResponseForFeeData() =
@@ -415,19 +459,25 @@ class MockVardaIntegrationEndpoint {
         }
         """
 
-    fun getMockErrorResponses() = mapOf(
-        "DY004" to """{"tuntimaara_viikossa":[{"error_code":"DY004","description":"Ensure this value is greater than or equal to 1.","translations":[{"language":"SV","description":"Värdet ska vara större eller lika stort som {{}}."},{"language":"FI","description":"Arvon pitää olla suurempi tai yhtäsuuri kuin {{}}."}]}]}""",
-        "VS009" to """{"errors":[{"error_code":"VS009","description":"Varhaiskasvatussuhde alkamis_pvm cannot be after Toimipaikka paattymis_pvm.","translations":[{"language":"FI","description":"Varhaiskasvatussuhteen alkamispäivämäärä ei voi olla toimipaikan päättymispäivämäärän jälkeen."},{"language":"SV","description":"Begynnelsedatumet för deltagande i småbarnspedagogik kan inte vara senare än verksamhetsställets slutdatum."}]}]}""",
-        "MA003" to """{"huoltajat":[{"error_code":"MA003","description":"No matching huoltaja found.","translations":[{"language":"FI","description":"Väestötietojärjestelmästä ei löydy lapsen ilmoitettua huoltajaa."},{"language":"SV","description":"Det gick inte att hitta vårdnadshavaren till barnet i Befolkningsdatasystemet."}]}]}""",
-        "HE012" to """{"huoltajat":{"1":{"etunimet":[{"error_code":"HE012","description":"Name has disallowed characters.","translations":[{"language":"SV","description":"Namnet innehåller förbjudna tecken. "},{"language":"FI","description":"Nimessä on merkkejä, jotka eivät ole sallittuja."}]}]}}}"""
-    )
+    fun getMockErrorResponses() =
+        mapOf(
+            "DY004" to
+                """{"tuntimaara_viikossa":[{"error_code":"DY004","description":"Ensure this value is greater than or equal to 1.","translations":[{"language":"SV","description":"Värdet ska vara större eller lika stort som {{}}."},{"language":"FI","description":"Arvon pitää olla suurempi tai yhtäsuuri kuin {{}}."}]}]}""",
+            "VS009" to
+                """{"errors":[{"error_code":"VS009","description":"Varhaiskasvatussuhde alkamis_pvm cannot be after Toimipaikka paattymis_pvm.","translations":[{"language":"FI","description":"Varhaiskasvatussuhteen alkamispäivämäärä ei voi olla toimipaikan päättymispäivämäärän jälkeen."},{"language":"SV","description":"Begynnelsedatumet för deltagande i småbarnspedagogik kan inte vara senare än verksamhetsställets slutdatum."}]}]}""",
+            "MA003" to
+                """{"huoltajat":[{"error_code":"MA003","description":"No matching huoltaja found.","translations":[{"language":"FI","description":"Väestötietojärjestelmästä ei löydy lapsen ilmoitettua huoltajaa."},{"language":"SV","description":"Det gick inte att hitta vårdnadshavaren till barnet i Befolkningsdatasystemet."}]}]}""",
+            "HE012" to
+                """{"huoltajat":{"1":{"etunimet":[{"error_code":"HE012","description":"Name has disallowed characters.","translations":[{"language":"SV","description":"Namnet innehåller förbjudna tecken. "},{"language":"FI","description":"Nimessä on merkkejä, jotka eivät ole sallittuja."}]}]}}}"""
+        )
 
     private fun getMockDecisionResponse(id: Long): String {
         return """
 {
     "id": $id
 }
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     private fun getMockPlacementResponse(id: Long): String {
@@ -435,7 +485,8 @@ class MockVardaIntegrationEndpoint {
 {
     "id": $id
 }
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     enum class VardaCallType {
@@ -456,7 +507,9 @@ class MockVardaIntegrationEndpoint {
     private fun shouldFailRequest(type: VardaCallType) = type == failNextRequest
 
     private fun failRequest(): ResponseEntity<String> {
-        logger.info("MockVardaIntegrationEndpoint: failing $failNextRequest varda call as requested with $failResponseCode")
+        logger.info(
+            "MockVardaIntegrationEndpoint: failing $failNextRequest varda call as requested with $failResponseCode"
+        )
         failNextRequest = null
         return ResponseEntity.status(failResponseCode).body(failResponseMessage)
     }

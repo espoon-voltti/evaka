@@ -4,10 +4,10 @@
 
 package fi.espoo.evaka.reports
 
-import org.jdbi.v3.core.mapper.ColumnMapper
-import org.jdbi.v3.core.statement.StatementContext
 import java.sql.ResultSet
 import java.time.Duration
+import org.jdbi.v3.core.mapper.ColumnMapper
+import org.jdbi.v3.core.statement.StatementContext
 
 val REPORT_STATEMENT_TIMEOUT: Duration = Duration.ofMinutes(10)
 
@@ -26,9 +26,13 @@ enum class UnitType {
     CLUB;
 
     companion object {
-        val JDBI_COLUMN_MAPPER: ColumnMapper<UnitType> = ColumnMapper<UnitType> { rs: ResultSet, columnNumber: Int, _: StatementContext ->
-            @Suppress("UNCHECKED_CAST")
-            (rs.getArray(columnNumber).array as Array<out Any>).map { it.toString() }.toSet().let(::getPrimaryUnitType)
-        }
+        val JDBI_COLUMN_MAPPER: ColumnMapper<UnitType> =
+            ColumnMapper<UnitType> { rs: ResultSet, columnNumber: Int, _: StatementContext ->
+                @Suppress("UNCHECKED_CAST")
+                (rs.getArray(columnNumber).array as Array<out Any>)
+                    .map { it.toString() }
+                    .toSet()
+                    .let(::getPrimaryUnitType)
+            }
     }
 }

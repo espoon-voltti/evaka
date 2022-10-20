@@ -27,6 +27,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -37,7 +38,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 @RequestMapping("/citizen")
@@ -55,28 +55,41 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): List<ApplicationsOfChild> {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_APPLICATIONS, user.id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.READ_APPLICATIONS,
+            user.id
+        )
         return db.connect { dbc ->
-            dbc.read { tx ->
-                val existingApplicationsByChild = tx.fetchApplicationSummariesForCitizen(user.id)
-                    .groupBy { it.childId }
-                    .map { ApplicationsOfChild(it.key, it.value.first().childName ?: "", it.value) }
+                dbc.read { tx ->
+                    val existingApplicationsByChild =
+                        tx.fetchApplicationSummariesForCitizen(user.id)
+                            .groupBy { it.childId }
+                            .map {
+                                ApplicationsOfChild(
+                                    it.key,
+                                    it.value.first().childName ?: "",
+                                    it.value
+                                )
+                            }
 
-                // Some children might not have applications, so add 0 application children
-                tx.getCitizenChildren(clock.today(), user.id).map { citizenChild ->
-                    val childApplications =
-                        existingApplicationsByChild.findLast { it.childId == citizenChild.id }?.applicationSummaries
-                            ?: emptyList()
-                    ApplicationsOfChild(
-                        childId = citizenChild.id,
-                        childName = "${citizenChild.firstName} ${citizenChild.lastName}",
-                        applicationSummaries = childApplications
-                    )
+                    // Some children might not have applications, so add 0 application children
+                    tx.getCitizenChildren(clock.today(), user.id).map { citizenChild ->
+                        val childApplications =
+                            existingApplicationsByChild
+                                .findLast { it.childId == citizenChild.id }
+                                ?.applicationSummaries
+                                ?: emptyList()
+                        ApplicationsOfChild(
+                            childId = citizenChild.id,
+                            childName = "${citizenChild.firstName} ${citizenChild.lastName}",
+                            applicationSummaries = childApplications
+                        )
+                    }
                 }
             }
-        }.also {
-            Audit.ApplicationRead.log(targetId = user.id)
-        }
+            .also { Audit.ApplicationRead.log(targetId = user.id) }
     }
 
     @GetMapping("/applications/children")
@@ -85,8 +98,15 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): List<CitizenChildren> {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_APPLICATION_CHILDREN, user.id)
-        return db.connect { dbc -> dbc.read { tx -> tx.getCitizenChildren(clock.today(), user.id) } }
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.READ_APPLICATION_CHILDREN,
+            user.id
+        )
+        return db.connect { dbc ->
+                dbc.read { tx -> tx.getCitizenChildren(clock.today(), user.id) }
+            }
             .also { Audit.ApplicationRead.log(targetId = user.id) }
     }
 
@@ -97,13 +117,24 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ): ApplicationDetails {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Application.READ, applicationId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Application.READ,
+            applicationId
+        )
 
-        val application = db.connect { dbc ->
-            dbc.transaction { tx ->
-                fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(user, tx, personService, applicationId)
+        val application =
+            db.connect { dbc ->
+                dbc.transaction { tx ->
+                    fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(
+                        user,
+                        tx,
+                        personService,
+                        applicationId
+                    )
+                }
             }
-        }
         Audit.ApplicationRead.log(targetId = applicationId)
 
         return if (application?.guardianId == user.id && !application.hideFromGuardian) {
@@ -120,39 +151,60 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @RequestBody body: CreateApplicationBody
     ): ApplicationId {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.CREATE_APPLICATION, body.childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Child.CREATE_APPLICATION,
+            body.childId
+        )
 
         return db.connect { dbc ->
-            dbc.transaction { tx ->
-                if (
-                    body.type != ApplicationType.CLUB &&
-                    tx.duplicateApplicationExists(guardianId = user.id, childId = body.childId, type = body.type)
-                ) {
-                    throw BadRequest("Duplicate application")
-                }
+                dbc.transaction { tx ->
+                    if (
+                        body.type != ApplicationType.CLUB &&
+                            tx.duplicateApplicationExists(
+                                guardianId = user.id,
+                                childId = body.childId,
+                                type = body.type
+                            )
+                    ) {
+                        throw BadRequest("Duplicate application")
+                    }
 
-                val guardian = tx.getPersonById(user.id)
-                    ?: throw IllegalStateException("Guardian not found")
+                    val guardian =
+                        tx.getPersonById(user.id)
+                            ?: throw IllegalStateException("Guardian not found")
 
-                val child = tx.getPersonById(body.childId)
-                    ?: throw IllegalStateException("Child not found")
+                    val child =
+                        tx.getPersonById(body.childId)
+                            ?: throw IllegalStateException("Child not found")
 
-                tx.insertApplication(
-                    type = body.type,
-                    guardianId = user.id,
-                    childId = body.childId,
-                    origin = ApplicationOrigin.ELECTRONIC
-                ).also {
-                    applicationStateService.initializeApplicationForm(tx, user, clock.today(), it, body.type, guardian, child)
+                    tx.insertApplication(
+                            type = body.type,
+                            guardianId = user.id,
+                            childId = body.childId,
+                            origin = ApplicationOrigin.ELECTRONIC
+                        )
+                        .also {
+                            applicationStateService.initializeApplicationForm(
+                                tx,
+                                user,
+                                clock.today(),
+                                it,
+                                body.type,
+                                guardian,
+                                child
+                            )
+                        }
                 }
             }
-        }.also { applicationId ->
-            Audit.ApplicationCreate.log(
-                targetId = body.childId,
-                objectId = applicationId,
-                mapOf("guardianId" to user.id, "applicationType" to body.type)
-            )
-        }
+            .also { applicationId ->
+                Audit.ApplicationCreate.log(
+                    targetId = body.childId,
+                    objectId = applicationId,
+                    mapOf("guardianId" to user.id, "applicationType" to body.type)
+                )
+            }
     }
 
     @GetMapping("/applications/duplicates/{childId}")
@@ -162,22 +214,29 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): Map<ApplicationType, Boolean> {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_DUPLICATE_APPLICATIONS, childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Child.READ_DUPLICATE_APPLICATIONS,
+            childId
+        )
 
         return db.connect { dbc ->
-            dbc.read { tx ->
-                ApplicationType.values()
-                    .map { type ->
-                        type to (
-                            type != ApplicationType.CLUB &&
-                                tx.duplicateApplicationExists(guardianId = user.id, childId = childId, type = type)
-                            )
-                    }
-                    .toMap()
+                dbc.read { tx ->
+                    ApplicationType.values()
+                        .map { type ->
+                            type to
+                                (type != ApplicationType.CLUB &&
+                                    tx.duplicateApplicationExists(
+                                        guardianId = user.id,
+                                        childId = childId,
+                                        type = type
+                                    ))
+                        }
+                        .toMap()
+                }
             }
-        }.also {
-            Audit.ApplicationReadDuplicates.log(targetId = user.id, objectId = childId)
-        }
+            .also { Audit.ApplicationReadDuplicates.log(targetId = user.id, objectId = childId) }
     }
 
     @GetMapping("/applications/active-placements/{childId}")
@@ -187,19 +246,28 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): Map<ApplicationType, Boolean> {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_PLACEMENT_STATUS_BY_APPLICATION_TYPE, childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Child.READ_PLACEMENT_STATUS_BY_APPLICATION_TYPE,
+            childId
+        )
 
         return db.connect { dbc ->
-            dbc.read { tx ->
-                ApplicationType.values()
-                    .map { type ->
-                        type to tx.activePlacementExists(childId = childId, type = type, today = clock.today())
-                    }
-                    .toMap()
+                dbc.read { tx ->
+                    ApplicationType.values()
+                        .map { type ->
+                            type to
+                                tx.activePlacementExists(
+                                    childId = childId,
+                                    type = type,
+                                    today = clock.today()
+                                )
+                        }
+                        .toMap()
+                }
             }
-        }.also {
-            Audit.ApplicationReadActivePlacementsByType.log(targetId = childId)
-        }
+            .also { Audit.ApplicationReadActivePlacementsByType.log(targetId = childId) }
     }
 
     @PutMapping("/applications/{applicationId}")
@@ -210,7 +278,12 @@ class ApplicationControllerCitizen(
         @PathVariable applicationId: ApplicationId,
         @RequestBody applicationForm: ApplicationFormUpdate
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Application.UPDATE, applicationId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Application.UPDATE,
+            applicationId
+        )
 
         db.connect { dbc ->
             dbc.transaction {
@@ -234,7 +307,12 @@ class ApplicationControllerCitizen(
         @PathVariable applicationId: ApplicationId,
         @RequestBody applicationForm: ApplicationFormUpdate
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Application.UPDATE, applicationId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Application.UPDATE,
+            applicationId
+        )
 
         db.connect { dbc ->
             dbc.transaction {
@@ -258,15 +336,28 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Application.DELETE, applicationId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Application.DELETE,
+            applicationId
+        )
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val application = tx.fetchApplicationDetails(applicationId)
-                    ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
+                val application =
+                    tx.fetchApplicationDetails(applicationId)
+                        ?: throw NotFound(
+                            "Application $applicationId of guardian ${user.id} not found"
+                        )
 
-                if (application.status != ApplicationStatus.CREATED && application.status != ApplicationStatus.SENT) {
-                    throw BadRequest("Only applications which are not yet being processed can be deleted")
+                if (
+                    application.status != ApplicationStatus.CREATED &&
+                        application.status != ApplicationStatus.SENT
+                ) {
+                    throw BadRequest(
+                        "Only applications which are not yet being processed can be deleted"
+                    )
                 }
 
                 tx.deleteApplication(applicationId)
@@ -282,15 +373,27 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ) {
-        db.connect { dbc -> dbc.transaction { applicationStateService.sendApplication(it, user, clock, applicationId) } }
+        db.connect { dbc ->
+            dbc.transaction {
+                applicationStateService.sendApplication(it, user, clock, applicationId)
+            }
+        }
     }
 
     @GetMapping("/decisions")
-    fun getDecisions(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock): List<ApplicationDecisions> {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_DECISIONS, user.id)
-        return db.connect { dbc -> dbc.read { it.getOwnDecisions(user.id) } }.also {
-            Audit.DecisionRead.log(targetId = user.id, args = mapOf("count" to it.size))
-        }
+    fun getDecisions(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock
+    ): List<ApplicationDecisions> {
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.READ_DECISIONS,
+            user.id
+        )
+        return db.connect { dbc -> dbc.read { it.getOwnDecisions(user.id) } }
+            .also { Audit.DecisionRead.log(targetId = user.id, args = mapOf("count" to it.size)) }
     }
 
     data class DecisionWithValidStartDatePeriod(
@@ -305,18 +408,31 @@ class ApplicationControllerCitizen(
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId
     ): List<DecisionWithValidStartDatePeriod> {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Application.READ_DECISIONS, applicationId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Application.READ_DECISIONS,
+            applicationId
+        )
 
         return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.fetchApplicationDetails(applicationId) ?: throw NotFound("Application not found")
-                tx.getSentDecisionsByApplication(applicationId, AclAuthorization.All).map {
-                    DecisionWithValidStartDatePeriod(it, it.validRequestedStartDatePeriod(featureConfig))
+                dbc.read { tx ->
+                    tx.fetchApplicationDetails(applicationId)
+                        ?: throw NotFound("Application not found")
+                    tx.getSentDecisionsByApplication(applicationId, AclAuthorization.All).map {
+                        DecisionWithValidStartDatePeriod(
+                            it,
+                            it.validRequestedStartDatePeriod(featureConfig)
+                        )
+                    }
                 }
             }
-        }.also {
-            Audit.DecisionReadByApplication.log(targetId = applicationId, args = mapOf("count" to it.size))
-        }
+            .also {
+                Audit.DecisionReadByApplication.log(
+                    targetId = applicationId,
+                    args = mapOf("count" to it.size)
+                )
+            }
     }
 
     @PostMapping("/applications/{applicationId}/actions/accept-decision")
@@ -353,7 +469,13 @@ class ApplicationControllerCitizen(
         // note: applicationStateService handles logging and authorization
         db.connect { dbc ->
             dbc.transaction {
-                applicationStateService.rejectDecision(it, user, clock, applicationId, body.decisionId)
+                applicationStateService.rejectDecision(
+                    it,
+                    user,
+                    clock,
+                    applicationId,
+                    body.decisionId
+                )
             }
         }
     }
@@ -368,11 +490,12 @@ class ApplicationControllerCitizen(
         accessControl.requirePermissionFor(user, clock, Action.Citizen.Decision.DOWNLOAD_PDF, id)
 
         return db.connect { dbc ->
-            val decision = dbc.transaction { tx -> tx.getSentDecision(id) } ?: throw NotFound("Decision $id does not exist")
-            decisionService.getDecisionPdf(dbc, decision)
-        }.also {
-            Audit.DecisionDownloadPdf.log(targetId = id)
-        }
+                val decision =
+                    dbc.transaction { tx -> tx.getSentDecision(id) }
+                        ?: throw NotFound("Decision $id does not exist")
+                decisionService.getDecisionPdf(dbc, decision)
+            }
+            .also { Audit.DecisionDownloadPdf.log(targetId = id) }
     }
 
     @GetMapping("/applications/by-guardian/notifications")
@@ -381,14 +504,16 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): Int {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_APPLICATION_NOTIFICATIONS, user.id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.READ_APPLICATION_NOTIFICATIONS,
+            user.id
+        )
         return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.fetchApplicationNotificationCountForCitizen(user.id)
+                dbc.read { tx -> tx.fetchApplicationNotificationCountForCitizen(user.id) }
             }
-        }.also {
-            Audit.ApplicationReadNotifications.log(targetId = user.id)
-        }
+            .also { Audit.ApplicationReadNotifications.log(targetId = user.id) }
     }
 }
 
@@ -398,10 +523,7 @@ data class ApplicationsOfChild(
     val applicationSummaries: List<CitizenApplicationSummary>
 )
 
-data class CreateApplicationBody(
-    val childId: ChildId,
-    val type: ApplicationType
-)
+data class CreateApplicationBody(val childId: ChildId, val type: ApplicationType)
 
 data class ApplicationDecisions(
     val applicationId: ApplicationId,

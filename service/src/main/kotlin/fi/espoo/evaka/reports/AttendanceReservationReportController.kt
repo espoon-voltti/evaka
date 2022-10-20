@@ -17,81 +17,97 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
+import java.time.LocalTime
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
-import java.time.LocalTime
 
 @RestController
 class AttendanceReservationReportController(private val accessControl: AccessControl) {
 
     @GetMapping("/reports/attendance-reservation/{unitId}")
     fun getAttendanceReservationReportByUnit(
-        @RequestParam
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        start: LocalDate,
-        @RequestParam
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        end: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
         @PathVariable unitId: DaycareId,
         @RequestParam(required = false) groupIds: List<GroupId>?,
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock
     ): List<AttendanceReservationReportRow> {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_ATTENDANCE_RESERVATION_REPORT, unitId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Unit.READ_ATTENDANCE_RESERVATION_REPORT,
+            unitId
+        )
         return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                tx.getAttendanceReservationReport(start, end, unitId, groupIds?.ifEmpty { null })
+                dbc.read { tx ->
+                    tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    tx.getAttendanceReservationReport(
+                        start,
+                        end,
+                        unitId,
+                        groupIds?.ifEmpty { null }
+                    )
+                }
             }
-        }.also {
-            Audit.AttendanceReservationReportRead.log(
-                targetId = unitId,
-                args = mapOf(
-                    "groupIds" to groupIds,
-                    "start" to start,
-                    "end" to end,
-                    "count" to it.size
+            .also {
+                Audit.AttendanceReservationReportRead.log(
+                    targetId = unitId,
+                    args =
+                        mapOf(
+                            "groupIds" to groupIds,
+                            "start" to start,
+                            "end" to end,
+                            "count" to it.size
+                        )
                 )
-            )
-        }
+            }
     }
 
     @GetMapping("/reports/attendance-reservation/{unitId}/by-child")
     fun getAttendanceReservationReportByUnitAndChild(
-        @RequestParam
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        start: LocalDate,
-        @RequestParam
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        end: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) start: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate,
         @PathVariable unitId: DaycareId,
         @RequestParam(required = false) groupIds: List<GroupId>?,
         db: Database,
         clock: EvakaClock,
         user: AuthenticatedUser
     ): List<AttendanceReservationReportByChildRow> {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_ATTENDANCE_RESERVATION_REPORT, unitId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Unit.READ_ATTENDANCE_RESERVATION_REPORT,
+            unitId
+        )
         return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                tx.getAttendanceReservationReportByChild(start, end, unitId, groupIds?.ifEmpty { null })
+                dbc.read { tx ->
+                    tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    tx.getAttendanceReservationReportByChild(
+                        start,
+                        end,
+                        unitId,
+                        groupIds?.ifEmpty { null }
+                    )
+                }
             }
-        }.also {
-            Audit.AttendanceReservationReportRead.log(
-                targetId = unitId,
-                args = mapOf(
-                    "groupIds" to groupIds,
-                    "start" to start,
-                    "end" to end,
-                    "count" to it.size
+            .also {
+                Audit.AttendanceReservationReportRead.log(
+                    targetId = unitId,
+                    args =
+                        mapOf(
+                            "groupIds" to groupIds,
+                            "start" to start,
+                            "end" to end,
+                            "count" to it.size
+                        )
                 )
-            )
-        }
+            }
     }
 }
 
@@ -101,7 +117,8 @@ private fun Database.Read.getAttendanceReservationReport(
     unitId: DaycareId,
     groupIds: List<GroupId>?
 ): List<AttendanceReservationReportRow> {
-    val sql = """
+    val sql =
+        """
         WITH reservations AS (
           SELECT
             CASE WHEN bc.id IS NOT NULL THEN bc.group_id ELSE dgp.daycare_group_id END AS group_id,
@@ -157,7 +174,8 @@ private fun Database.Read.getAttendanceReservationReport(
           AND (:groupIds::uuid[] IS NULL OR g.id = ANY(:groupIds))
         GROUP BY 1, 2, 3
         ORDER BY 2, 3
-    """.trimIndent()
+    """
+            .trimIndent()
     return createQuery(sql)
         .bind("start", start)
         .bind("end", end)
@@ -184,7 +202,8 @@ private fun Database.Read.getAttendanceReservationReportByChild(
     unitId: DaycareId,
     groupIds: List<GroupId>?
 ): List<AttendanceReservationReportByChildRow> {
-    val sql = """
+    val sql =
+        """
         WITH reservations AS (
           SELECT
             CASE WHEN bc.id IS NOT NULL THEN bc.group_id ELSE dgp.daycare_group_id END AS group_id,
@@ -227,7 +246,8 @@ private fun Database.Read.getAttendanceReservationReportByChild(
         FROM groups g
         JOIN reservations r ON (r.group_id IS NULL AND g.id IS NULL OR r.group_id = g.id)
         WHERE (:groupIds::uuid[] IS NULL OR g.id = ANY(:groupIds))
-    """.trimIndent()
+    """
+            .trimIndent()
     return createQuery(sql)
         .bind("start", start)
         .bind("end", end)

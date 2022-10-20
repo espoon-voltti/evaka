@@ -18,41 +18,49 @@ import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
-    private val testInvoices = listOf(
-        createInvoiceFixture(
-            status = InvoiceStatus.DRAFT,
-            headOfFamilyId = testAdult_1.id,
-            areaId = testArea.id,
-            rows = listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id))
-        ),
-        createInvoiceFixture(
-            status = InvoiceStatus.SENT,
-            headOfFamilyId = testAdult_1.id,
-            areaId = testArea.id,
-            number = 5000000001L,
-            rows = listOf(createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare.id))
-        ),
-        createInvoiceFixture(
-            status = InvoiceStatus.DRAFT,
-            headOfFamilyId = testAdult_1.id,
-            areaId = testArea.id,
-            period = FiniteDateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 31)),
-            rows = listOf(createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare.id))
+    private val testInvoices =
+        listOf(
+            createInvoiceFixture(
+                status = InvoiceStatus.DRAFT,
+                headOfFamilyId = testAdult_1.id,
+                areaId = testArea.id,
+                rows =
+                    listOf(
+                        createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id)
+                    )
+            ),
+            createInvoiceFixture(
+                status = InvoiceStatus.SENT,
+                headOfFamilyId = testAdult_1.id,
+                areaId = testArea.id,
+                number = 5000000001L,
+                rows =
+                    listOf(
+                        createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare.id)
+                    )
+            ),
+            createInvoiceFixture(
+                status = InvoiceStatus.DRAFT,
+                headOfFamilyId = testAdult_1.id,
+                areaId = testArea.id,
+                period = FiniteDateRange(LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 31)),
+                rows =
+                    listOf(
+                        createInvoiceRowFixture(childId = testChild_2.id, unitId = testDaycare.id)
+                    )
+            )
         )
-    )
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
@@ -130,7 +138,8 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         headOfFamilyId = testAdult_1.id,
                         areaId = testArea.id,
                         number = 5000000123L,
-                        rows = listOf(createInvoiceRowFixture(testChild_1.id, unitId = testDaycare.id))
+                        rows =
+                            listOf(createInvoiceRowFixture(testChild_1.id, unitId = testDaycare.id))
                     )
                 )
             )
@@ -151,7 +160,8 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         headOfFamilyId = testAdult_1.id,
                         areaId = testArea.id,
                         number = it,
-                        rows = listOf(createInvoiceRowFixture(testChild_1.id, unitId = testDaycare.id))
+                        rows =
+                            listOf(createInvoiceRowFixture(testChild_1.id, unitId = testDaycare.id))
                     )
                 }
                 .let { invoices -> tx.upsertInvoices(invoices) }
@@ -167,7 +177,10 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.upsertInvoices(testInvoices)
 
-            val result = tx.getInvoicedHeadsOfFamily(DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31)))
+            val result =
+                tx.getInvoicedHeadsOfFamily(
+                    DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+                )
             assertEquals(1, result.size)
             assertEquals(listOf(testInvoices[0].headOfFamily), result)
         }
@@ -178,7 +191,10 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.upsertInvoices(testInvoices)
 
-            val result = tx.getInvoicedHeadsOfFamily(DateRange(LocalDate.of(2019, 6, 1), LocalDate.of(2019, 6, 30)))
+            val result =
+                tx.getInvoicedHeadsOfFamily(
+                    DateRange(LocalDate.of(2019, 6, 1), LocalDate.of(2019, 6, 30))
+                )
             assertEquals(0, result.size)
         }
     }
@@ -216,7 +232,13 @@ class InvoiceQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         status = InvoiceStatus.DRAFT,
                         headOfFamilyId = testAdult_2.id,
                         areaId = testArea.id,
-                        rows = listOf(createInvoiceRowFixture(childId = testChild_1.id, unitId = testDaycare.id))
+                        rows =
+                            listOf(
+                                createInvoiceRowFixture(
+                                    childId = testChild_1.id,
+                                    unitId = testDaycare.id
+                                )
+                            )
                     )
                 )
             )

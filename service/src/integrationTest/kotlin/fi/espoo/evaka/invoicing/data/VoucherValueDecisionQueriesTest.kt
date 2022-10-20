@@ -36,13 +36,13 @@ import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.toValueDecisionServiceNeed
+import java.time.LocalDate
+import java.time.LocalTime
+import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
-import java.time.LocalTime
-import java.util.UUID
 
 internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
@@ -50,95 +50,107 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
     fun `search with max fee accepted`() {
-        val decisions = db.transaction { tx ->
-            val baseDecision = { child: DevPerson ->
-                createVoucherValueDecisionFixture(
-                    status = VoucherValueDecisionStatus.DRAFT,
-                    validFrom = testPeriod.start,
-                    validTo = testPeriod.end,
-                    headOfFamilyId = PersonId(UUID.randomUUID()),
-                    childId = child.id,
-                    dateOfBirth = child.dateOfBirth,
-                    unitId = testDaycare.id,
-                    placementType = PlacementType.DAYCARE,
-                    serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed()
-                )
-            }
-            tx.upsertValueDecisions(
-                listOf(
-                    baseDecision(testChild_1).copy(
-                        headOfFamilyId = testAdult_1.id,
-                        headOfFamilyIncome = null
-                    ),
-                    baseDecision(testChild_2).copy(
-                        headOfFamilyId = testAdult_2.id,
-                        headOfFamilyIncome = DecisionIncome(
-                            effect = IncomeEffect.MAX_FEE_ACCEPTED,
-                            emptyMap(),
-                            totalIncome = 0,
-                            totalExpenses = 0,
-                            total = 0,
-                            worksAtECHA = false
-                        )
-                    ),
-                    baseDecision(testChild_3).copy(
-                        headOfFamilyId = testAdult_3.id,
-                        headOfFamilyIncome = null,
-                        partnerId = testAdult_4.id,
-                        partnerIncome = DecisionIncome(
-                            effect = IncomeEffect.MAX_FEE_ACCEPTED,
-                            emptyMap(),
-                            totalIncome = 0,
-                            totalExpenses = 0,
-                            total = 0,
-                            worksAtECHA = false
-                        )
-                    ),
-                    baseDecision(testChild_4).copy(
-                        headOfFamilyId = testAdult_5.id,
-                        headOfFamilyIncome = DecisionIncome(
-                            effect = IncomeEffect.INCOME,
-                            emptyMap(),
-                            totalIncome = 200000,
-                            totalExpenses = 0,
-                            total = 200000,
-                            worksAtECHA = false
-                        )
-                    ),
-                    baseDecision(testChild_5).copy(
-                        headOfFamilyId = testAdult_6.id,
-                        headOfFamilyIncome = DecisionIncome(
-                            effect = IncomeEffect.INCOME,
-                            emptyMap(),
-                            totalIncome = 200000,
-                            totalExpenses = 0,
-                            total = 200000,
-                            worksAtECHA = false
-                        ),
-                        partnerId = testAdult_7.id,
-                        partnerIncome = DecisionIncome(
-                            effect = IncomeEffect.MAX_FEE_ACCEPTED,
-                            emptyMap(),
-                            totalIncome = 0,
-                            totalExpenses = 0,
-                            total = 0,
-                            worksAtECHA = false
-                        )
+        val decisions =
+            db.transaction { tx ->
+                val baseDecision = { child: DevPerson ->
+                    createVoucherValueDecisionFixture(
+                        status = VoucherValueDecisionStatus.DRAFT,
+                        validFrom = testPeriod.start,
+                        validTo = testPeriod.end,
+                        headOfFamilyId = PersonId(UUID.randomUUID()),
+                        childId = child.id,
+                        dateOfBirth = child.dateOfBirth,
+                        unitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed()
+                    )
+                }
+                tx.upsertValueDecisions(
+                    listOf(
+                        baseDecision(testChild_1)
+                            .copy(headOfFamilyId = testAdult_1.id, headOfFamilyIncome = null),
+                        baseDecision(testChild_2)
+                            .copy(
+                                headOfFamilyId = testAdult_2.id,
+                                headOfFamilyIncome =
+                                    DecisionIncome(
+                                        effect = IncomeEffect.MAX_FEE_ACCEPTED,
+                                        emptyMap(),
+                                        totalIncome = 0,
+                                        totalExpenses = 0,
+                                        total = 0,
+                                        worksAtECHA = false
+                                    )
+                            ),
+                        baseDecision(testChild_3)
+                            .copy(
+                                headOfFamilyId = testAdult_3.id,
+                                headOfFamilyIncome = null,
+                                partnerId = testAdult_4.id,
+                                partnerIncome =
+                                    DecisionIncome(
+                                        effect = IncomeEffect.MAX_FEE_ACCEPTED,
+                                        emptyMap(),
+                                        totalIncome = 0,
+                                        totalExpenses = 0,
+                                        total = 0,
+                                        worksAtECHA = false
+                                    )
+                            ),
+                        baseDecision(testChild_4)
+                            .copy(
+                                headOfFamilyId = testAdult_5.id,
+                                headOfFamilyIncome =
+                                    DecisionIncome(
+                                        effect = IncomeEffect.INCOME,
+                                        emptyMap(),
+                                        totalIncome = 200000,
+                                        totalExpenses = 0,
+                                        total = 200000,
+                                        worksAtECHA = false
+                                    )
+                            ),
+                        baseDecision(testChild_5)
+                            .copy(
+                                headOfFamilyId = testAdult_6.id,
+                                headOfFamilyIncome =
+                                    DecisionIncome(
+                                        effect = IncomeEffect.INCOME,
+                                        emptyMap(),
+                                        totalIncome = 200000,
+                                        totalExpenses = 0,
+                                        total = 200000,
+                                        worksAtECHA = false
+                                    ),
+                                partnerId = testAdult_7.id,
+                                partnerIncome =
+                                    DecisionIncome(
+                                        effect = IncomeEffect.MAX_FEE_ACCEPTED,
+                                        emptyMap(),
+                                        totalIncome = 0,
+                                        totalExpenses = 0,
+                                        total = 0,
+                                        worksAtECHA = false
+                                    )
+                            )
                     )
                 )
-            )
-            val ids = tx.createQuery("SELECT id FROM voucher_value_decision").mapTo<VoucherValueDecisionId>()
-            ids.map { id -> tx.getVoucherValueDecision(id)!! }
-        }
+                val ids =
+                    tx.createQuery("SELECT id FROM voucher_value_decision")
+                        .mapTo<VoucherValueDecisionId>()
+                ids.map { id -> tx.getVoucherValueDecision(id)!! }
+            }
         assertThat(decisions)
-            .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName }, { it.incomeEffect })
+            .extracting(
+                { it.headOfFamily.lastName },
+                { it.headOfFamily.firstName },
+                { it.incomeEffect }
+            )
             .containsExactlyInAnyOrder(
                 Tuple(testAdult_1.lastName, testAdult_1.firstName, IncomeEffect.NOT_AVAILABLE),
                 Tuple(testAdult_2.lastName, testAdult_2.firstName, IncomeEffect.MAX_FEE_ACCEPTED),
@@ -147,23 +159,26 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 Tuple(testAdult_6.lastName, testAdult_6.firstName, IncomeEffect.MAX_FEE_ACCEPTED)
             )
 
-        val result = db.read { tx ->
-            tx.searchValueDecisions(
-                evakaClock = MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(13, 37))),
-                page = 0,
-                pageSize = 100,
-                sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
-                sortDirection = SortDirection.ASC,
-                status = VoucherValueDecisionStatus.DRAFT,
-                areas = emptyList(),
-                unit = null,
-                startDate = null,
-                endDate = null,
-                financeDecisionHandlerId = null,
-                difference = emptySet(),
-                distinctiveParams = listOf(VoucherValueDecisionDistinctiveParams.MAX_FEE_ACCEPTED)
-            )
-        }
+        val result =
+            db.read { tx ->
+                tx.searchValueDecisions(
+                    evakaClock =
+                        MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(13, 37))),
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                    sortDirection = SortDirection.ASC,
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    financeDecisionHandlerId = null,
+                    difference = emptySet(),
+                    distinctiveParams =
+                        listOf(VoucherValueDecisionDistinctiveParams.MAX_FEE_ACCEPTED)
+                )
+            }
 
         assertThat(result.data)
             .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName })
@@ -192,51 +207,63 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
             }
             tx.upsertValueDecisions(
                 listOf(
-                    baseDecision(testChild_1).copy(
-                        headOfFamilyId = testAdult_1.id,
-                        difference = emptySet()
-                    ),
-                    baseDecision(testChild_2).copy(
-                        headOfFamilyId = testAdult_2.id,
-                        difference = setOf(VoucherValueDecisionDifference.INCOME)
-                    ),
-                    baseDecision(testChild_3).copy(
-                        headOfFamilyId = testAdult_3.id,
-                        difference = setOf(
-                            VoucherValueDecisionDifference.INCOME,
-                            VoucherValueDecisionDifference.FAMILY_SIZE
+                    baseDecision(testChild_1)
+                        .copy(headOfFamilyId = testAdult_1.id, difference = emptySet()),
+                    baseDecision(testChild_2)
+                        .copy(
+                            headOfFamilyId = testAdult_2.id,
+                            difference = setOf(VoucherValueDecisionDifference.INCOME)
+                        ),
+                    baseDecision(testChild_3)
+                        .copy(
+                            headOfFamilyId = testAdult_3.id,
+                            difference =
+                                setOf(
+                                    VoucherValueDecisionDifference.INCOME,
+                                    VoucherValueDecisionDifference.FAMILY_SIZE
+                                )
+                        ),
+                    baseDecision(testChild_4)
+                        .copy(
+                            headOfFamilyId = testAdult_4.id,
+                            difference = setOf(VoucherValueDecisionDifference.PLACEMENT)
                         )
-                    ),
-                    baseDecision(testChild_4).copy(
-                        headOfFamilyId = testAdult_4.id,
-                        difference = setOf(VoucherValueDecisionDifference.PLACEMENT)
-                    )
                 )
             )
         }
 
-        val result = db.read { tx ->
-            tx.searchValueDecisions(
-                evakaClock = MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
-                page = 0,
-                pageSize = 100,
-                sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
-                sortDirection = SortDirection.ASC,
-                status = VoucherValueDecisionStatus.DRAFT,
-                areas = emptyList(),
-                unit = null,
-                startDate = null,
-                endDate = null,
-                financeDecisionHandlerId = null,
-                difference = setOf(VoucherValueDecisionDifference.INCOME),
-                distinctiveParams = emptyList()
-            )
-        }
+        val result =
+            db.read { tx ->
+                tx.searchValueDecisions(
+                    evakaClock =
+                        MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                    sortDirection = SortDirection.ASC,
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    financeDecisionHandlerId = null,
+                    difference = setOf(VoucherValueDecisionDifference.INCOME),
+                    distinctiveParams = emptyList()
+                )
+            }
 
         assertThat(result.data)
-            .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName }, { it.difference })
+            .extracting(
+                { it.headOfFamily.lastName },
+                { it.headOfFamily.firstName },
+                { it.difference }
+            )
             .containsExactly(
-                Tuple(testAdult_2.lastName, testAdult_2.firstName, setOf(VoucherValueDecisionDifference.INCOME)),
+                Tuple(
+                    testAdult_2.lastName,
+                    testAdult_2.firstName,
+                    setOf(VoucherValueDecisionDifference.INCOME)
+                ),
                 Tuple(
                     testAdult_3.lastName,
                     testAdult_3.firstName,
@@ -276,7 +303,11 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
         val decisions = db.read { tx -> tx.getHeadOfFamilyVoucherValueDecisions(testAdult_1.id) }
 
         assertThat(decisions)
-            .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName }, { it.child.dateOfBirth })
+            .extracting(
+                { it.headOfFamily.lastName },
+                { it.headOfFamily.firstName },
+                { it.child.dateOfBirth }
+            )
             .containsExactlyInAnyOrder(
                 Tuple(testAdult_1.lastName, testAdult_1.firstName, testChild_1.dateOfBirth),
                 Tuple(testAdult_1.lastName, testAdult_1.firstName, testChild_2.dateOfBirth)

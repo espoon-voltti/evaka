@@ -18,15 +18,18 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 @RequestMapping("/payments")
-class PaymentController(private val accessControl: AccessControl, private val paymentService: PaymentService) {
+class PaymentController(
+    private val accessControl: AccessControl,
+    private val paymentService: PaymentService
+) {
     @PostMapping("/search")
     fun searchPayments(
         db: Database,
@@ -59,7 +62,14 @@ class PaymentController(private val accessControl: AccessControl, private val pa
         accessControl.requirePermissionFor(user, clock, Action.Payment.SEND, body.paymentIds)
         db.connect { dbc ->
             dbc.transaction { tx ->
-                paymentService.sendPayments(tx, clock.now(), user, body.paymentIds, body.paymentDate, body.dueDate)
+                paymentService.sendPayments(
+                    tx,
+                    clock.now(),
+                    user,
+                    body.paymentIds,
+                    body.paymentDate,
+                    body.dueDate
+                )
             }
         }
         Audit.PaymentsSend.log(targetId = body.paymentIds)
@@ -71,7 +81,6 @@ data class SearchPaymentsRequest(
     val pageSize: Int,
     val sortBy: PaymentSortParam,
     val sortDirection: SortDirection,
-
     val searchTerms: String,
     val area: List<String>,
     val unit: DaycareId?,

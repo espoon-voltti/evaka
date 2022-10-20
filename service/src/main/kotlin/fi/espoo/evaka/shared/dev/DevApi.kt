@@ -160,6 +160,13 @@ import fi.espoo.evaka.vasu.publishVasuDocument
 import fi.espoo.evaka.vasu.revokeVasuGuardianHasGivenPermissionToShare
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
+import java.math.BigDecimal
+import java.time.Duration
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalTime
+import java.util.UUID
+import java.util.concurrent.TimeUnit
 import mu.KotlinLogging
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
@@ -176,18 +183,12 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
-import java.math.BigDecimal
-import java.time.Duration
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalTime
-import java.util.UUID
-import java.util.concurrent.TimeUnit
 
-private val fakeAdmin = AuthenticatedUser.Employee(
-    id = EmployeeId(UUID.fromString("00000000-0000-0000-0000-000000000001")),
-    roles = setOf(UserRole.ADMIN)
-)
+private val fakeAdmin =
+    AuthenticatedUser.Employee(
+        id = EmployeeId(UUID.fromString("00000000-0000-0000-0000-000000000001")),
+        roles = setOf(UserRole.ADMIN)
+    )
 
 private val logger = KotlinLogging.logger {}
 
@@ -245,12 +246,16 @@ class DevApi(
 
     @PostMapping("/care-areas")
     fun createCareAreas(db: Database, @RequestBody careAreas: List<DevCareArea>) {
-        db.connect { dbc -> dbc.transaction { careAreas.forEach { careArea -> it.insertTestCareArea(careArea) } } }
+        db.connect { dbc ->
+            dbc.transaction { careAreas.forEach { careArea -> it.insertTestCareArea(careArea) } }
+        }
     }
 
     @PostMapping("/daycares")
     fun createDaycares(db: Database, @RequestBody daycares: List<DevDaycare>) {
-        db.connect { dbc -> dbc.transaction { daycares.forEach { daycare -> it.insertTestDaycare(daycare) } } }
+        db.connect { dbc ->
+            dbc.transaction { daycares.forEach { daycare -> it.insertTestDaycare(daycare) } }
+        }
     }
 
     @PutMapping("/daycares/{daycareId}/acl")
@@ -261,22 +266,26 @@ class DevApi(
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.updateDaycareAcl(daycareId, body.externalId, body.role ?: UserRole.UNIT_SUPERVISOR)
+                tx.updateDaycareAcl(
+                    daycareId,
+                    body.externalId,
+                    body.role ?: UserRole.UNIT_SUPERVISOR
+                )
             }
         }
     }
 
     @PostMapping("/daycare-group-acl")
     fun createDaycareGroupAclRows(db: Database, @RequestBody rows: List<DevDaycareGroupAcl>) {
-        db.connect { dbc -> dbc.transaction { tx -> rows.forEach { tx.insertTestDaycareGroupAcl(it) } } }
+        db.connect { dbc ->
+            dbc.transaction { tx -> rows.forEach { tx.insertTestDaycareGroupAcl(it) } }
+        }
     }
 
     @PostMapping("/daycare-groups")
     fun createDaycareGroups(db: Database, @RequestBody groups: List<DevDaycareGroup>) {
         db.connect { dbc ->
-            dbc.transaction {
-                groups.forEach { group -> it.insertTestDaycareGroup(group) }
-            }
+            dbc.transaction { groups.forEach { group -> it.insertTestDaycareGroup(group) } }
         }
     }
 
@@ -325,18 +334,16 @@ class DevApi(
 
     @PostMapping("/children")
     fun createChildren(db: Database, @RequestBody children: List<DevChild>) {
-        db.connect { dbc ->
-            dbc.transaction { tx ->
-                children.forEach {
-                    tx.insertTestChild(it)
-                }
-            }
-        }
+        db.connect { dbc -> dbc.transaction { tx -> children.forEach { tx.insertTestChild(it) } } }
     }
 
     @PostMapping("/daycare-placements")
     fun createDaycarePlacements(db: Database, @RequestBody placements: List<DevPlacement>) {
-        db.connect { dbc -> dbc.transaction { placements.forEach { placement -> it.insertTestPlacement(placement) } } }
+        db.connect { dbc ->
+            dbc.transaction {
+                placements.forEach { placement -> it.insertTestPlacement(placement) }
+            }
+        }
     }
 
     data class DevTerminatePlacementRequest(
@@ -347,9 +354,16 @@ class DevApi(
     )
 
     @PostMapping("/placement/terminate")
-    fun terminatePlacement(db: Database, @RequestBody terminationRequest: DevTerminatePlacementRequest) {
+    fun terminatePlacement(
+        db: Database,
+        @RequestBody terminationRequest: DevTerminatePlacementRequest
+    ) {
         db.connect { dbc ->
-            dbc.transaction { it.createUpdate("UPDATE placement SET end_date = :endDate, termination_requested_date = :terminationRequestedDate, terminated_by = :terminatedBy WHERE id = :placementId ") }
+            dbc.transaction {
+                    it.createUpdate(
+                        "UPDATE placement SET end_date = :endDate, termination_requested_date = :terminationRequestedDate, terminated_by = :terminatedBy WHERE id = :placementId "
+                    )
+                }
                 .bindKotlin(terminationRequest)
                 .execute()
         }
@@ -366,7 +380,11 @@ class DevApi(
     )
 
     @PostMapping("/decisions")
-    fun createDecisions(db: Database, evakaClock: EvakaClock, @RequestBody decisions: List<DecisionRequest>) {
+    fun createDecisions(
+        db: Database,
+        evakaClock: EvakaClock,
+        @RequestBody decisions: List<DecisionRequest>
+    ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 decisions.forEach { decision ->
@@ -387,20 +405,19 @@ class DevApi(
 
     @PostMapping("/decisions/{id}/actions/create-pdf")
     fun createDecisionPdf(db: Database, @PathVariable id: DecisionId) {
-        db.connect { dbc -> dbc.transaction { decisionService.createDecisionPdfs(it, fakeAdmin, id) } }
+        db.connect { dbc ->
+            dbc.transaction { decisionService.createDecisionPdfs(it, fakeAdmin, id) }
+        }
     }
 
     @PostMapping("/decisions/{id}/actions/reject-by-citizen")
-    fun rejectDecisionByCitizen(
-        db: Database,
-        clock: EvakaClock,
-        @PathVariable id: DecisionId
-    ) {
+    fun rejectDecisionByCitizen(db: Database, clock: EvakaClock, @PathVariable id: DecisionId) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val decision = tx.getDecision(id) ?: throw NotFound("decision not found")
                 val application =
-                    tx.fetchApplicationDetails(decision.applicationId) ?: throw NotFound("application not found")
+                    tx.fetchApplicationDetails(decision.applicationId)
+                        ?: throw NotFound("application not found")
                 applicationStateService.rejectDecision(
                     tx,
                     AuthenticatedUser.Citizen(application.guardianId, CitizenAuthLevel.STRONG),
@@ -417,11 +434,8 @@ class DevApi(
         db: Database,
         @PathVariable applicationId: ApplicationId
     ): ApplicationDetails {
-        return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.fetchApplicationDetails(applicationId)
-            }
-        } ?: throw NotFound("application not found")
+        return db.connect { dbc -> dbc.read { tx -> tx.fetchApplicationDetails(applicationId) } }
+            ?: throw NotFound("application not found")
     }
 
     @GetMapping("/applications/{applicationId}/decisions")
@@ -430,9 +444,7 @@ class DevApi(
         @PathVariable applicationId: ApplicationId
     ): List<Decision> {
         return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
-            }
+            dbc.read { tx -> tx.getDecisionsByApplication(applicationId, AclAuthorization.All) }
         }
     }
 
@@ -473,20 +485,21 @@ class DevApi(
     }
 
     @PostMapping("/fee-thresholds")
-    fun createFeeThresholds(db: Database, @RequestBody feeThresholds: FeeThresholds): FeeThresholdsId =
+    fun createFeeThresholds(
+        db: Database,
+        @RequestBody feeThresholds: FeeThresholds
+    ): FeeThresholdsId =
         db.connect { dbc -> dbc.transaction { it.insertTestFeeThresholds(feeThresholds) } }
-    data class DevCreateIncomeStatements(val personId: PersonId, val data: List<IncomeStatementBody>)
+    data class DevCreateIncomeStatements(
+        val personId: PersonId,
+        val data: List<IncomeStatementBody>
+    )
 
     @PostMapping("/income-statements")
     fun createIncomeStatements(db: Database, @RequestBody body: DevCreateIncomeStatements) =
         db.connect { dbc ->
             dbc.transaction { tx ->
-                body.data.forEach {
-                    tx.createIncomeStatement(
-                        body.personId,
-                        it
-                    )
-                }
+                body.data.forEach { tx.createIncomeStatement(body.personId, it) }
             }
         }
 
@@ -539,7 +552,9 @@ class DevApi(
         db: Database,
         @RequestBody parentships: List<DevParentship>
     ): List<DevParentship> {
-        return db.connect { dbc -> dbc.transaction { tx -> parentships.map { tx.insertTestParentship(it) } } }
+        return db.connect { dbc ->
+            dbc.transaction { tx -> parentships.map { tx.insertTestParentship(it) } }
+        }
     }
 
     @GetMapping("/employee")
@@ -554,12 +569,16 @@ class DevApi(
 
     @GetMapping("/employee/external-id/{id}")
     fun getEmployee(db: Database, @PathVariable id: ExternalId): Employee {
-        return db.connect { dbc -> dbc.transaction { tx -> tx.getEmployeeByExternalId(id) ?: throw NotFound() } }
+        return db.connect { dbc ->
+            dbc.transaction { tx -> tx.getEmployeeByExternalId(id) ?: throw NotFound() }
+        }
     }
 
     @DeleteMapping("/employee/external-id/{externalId}")
     fun deleteEmployeeByExternalId(db: Database, @PathVariable externalId: ExternalId) {
-        db.connect { dbc -> dbc.transaction { it.deleteAndCascadeEmployeeByExternalId(externalId) } }
+        db.connect { dbc ->
+            dbc.transaction { it.deleteAndCascadeEmployeeByExternalId(externalId) }
+        }
     }
 
     @PostMapping("/employee/external-id/{externalId}")
@@ -567,10 +586,11 @@ class DevApi(
         db: Database,
         @PathVariable externalId: ExternalId,
         @RequestBody employee: DevEmployee
-    ): EmployeeId = db.connect { dbc ->
-        dbc.transaction {
-            it.createUpdate(
-                """
+    ): EmployeeId =
+        db.connect { dbc ->
+            dbc.transaction {
+                it.createUpdate(
+                        """
 INSERT INTO employee (first_name, last_name, email, external_id, roles)
 VALUES (:firstName, :lastName, :email, :externalId, :roles::user_role[])
 ON CONFLICT (external_id) DO UPDATE SET
@@ -580,18 +600,15 @@ ON CONFLICT (external_id) DO UPDATE SET
     roles = excluded.roles
 RETURNING id
 """
-            )
-                .bindKotlin(employee)
-                .executeAndReturnGeneratedKeys()
-                .mapTo<EmployeeId>()
-                .single()
+                    )
+                    .bindKotlin(employee)
+                    .executeAndReturnGeneratedKeys()
+                    .mapTo<EmployeeId>()
+                    .single()
+            }
         }
-    }
 
-    data class DevGuardian(
-        val guardianId: PersonId,
-        val childId: ChildId
-    )
+    data class DevGuardian(val guardianId: PersonId, val childId: ChildId)
 
     @PostMapping("/guardian")
     fun insertGuardians(db: Database, @RequestBody guardians: List<DevGuardian>) {
@@ -599,10 +616,11 @@ RETURNING id
             dbc.transaction {
                 guardians.forEach { guardian ->
                     it.createUpdate(
-                        """
+                            """
 INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON CONFLICT (guardian_id, child_id) DO NOTHING
-                        """.trimIndent()
-                    )
+                        """
+                                .trimIndent()
+                        )
                         .bindKotlin(guardian)
                         .execute()
                 }
@@ -611,38 +629,48 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
     }
 
     @PostMapping("/child")
-    fun insertChild(db: Database, @RequestBody body: DevPerson): ChildId = db.connect { dbc ->
-        dbc.transaction {
-            it.insertTestPerson(
-                DevPerson(
-                    id = body.id,
-                    dateOfBirth = body.dateOfBirth,
-                    firstName = body.firstName,
-                    lastName = body.lastName,
-                    ssn = body.ssn,
-                    streetAddress = body.streetAddress,
-                    postalCode = body.postalCode,
-                    postOffice = body.postOffice,
-                    restrictedDetailsEnabled = body.restrictedDetailsEnabled
-                )
-            ).also { id -> it.insertTestChild(DevChild(id = id)) }
+    fun insertChild(db: Database, @RequestBody body: DevPerson): ChildId =
+        db.connect { dbc ->
+            dbc.transaction {
+                it.insertTestPerson(
+                        DevPerson(
+                            id = body.id,
+                            dateOfBirth = body.dateOfBirth,
+                            firstName = body.firstName,
+                            lastName = body.lastName,
+                            ssn = body.ssn,
+                            streetAddress = body.streetAddress,
+                            postalCode = body.postalCode,
+                            postOffice = body.postOffice,
+                            restrictedDetailsEnabled = body.restrictedDetailsEnabled
+                        )
+                    )
+                    .also { id -> it.insertTestChild(DevChild(id = id)) }
+            }
         }
-    }
 
     @PostMapping("/message-account/upsert-all")
     fun createMessageAccounts(db: Database) {
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.execute("INSERT INTO message_account (daycare_group_id) SELECT id FROM daycare_group ON CONFLICT DO NOTHING")
-                tx.execute("INSERT INTO message_account (person_id) SELECT id FROM person ON CONFLICT DO NOTHING")
-                tx.execute("INSERT INTO message_account (employee_id) SELECT employee_id FROM daycare_acl WHERE role = 'UNIT_SUPERVISOR' ON CONFLICT DO NOTHING")
+                tx.execute(
+                    "INSERT INTO message_account (daycare_group_id) SELECT id FROM daycare_group ON CONFLICT DO NOTHING"
+                )
+                tx.execute(
+                    "INSERT INTO message_account (person_id) SELECT id FROM person ON CONFLICT DO NOTHING"
+                )
+                tx.execute(
+                    "INSERT INTO message_account (employee_id) SELECT employee_id FROM daycare_acl WHERE role = 'UNIT_SUPERVISOR' ON CONFLICT DO NOTHING"
+                )
             }
         }
     }
 
     @PostMapping("/backup-cares")
     fun createBackupCares(db: Database, @RequestBody backupCares: List<DevBackupCare>) {
-        db.connect { dbc -> dbc.transaction { tx -> backupCares.forEach { tx.insertTestBackupCare(it) } } }
+        db.connect { dbc ->
+            dbc.transaction { tx -> backupCares.forEach { tx.insertTestBackupCare(it) } }
+        }
     }
 
     @PostMapping("/applications")
@@ -658,7 +686,13 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
                         DevApplicationForm(
                             applicationId = id,
                             revision = 1,
-                            document = DaycareFormV0.fromForm2(application.form, application.type, false, false)
+                            document =
+                                DaycareFormV0.fromForm2(
+                                    application.form,
+                                    application.type,
+                                    false,
+                                    false
+                                )
                         )
                     )
                     id
@@ -674,16 +708,18 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
     ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val application = tx.fetchApplicationDetails(applicationId)
-                    ?: throw NotFound("application $applicationId not found")
-                val preschoolDaycarePeriod = if (placementPlan.preschoolDaycarePeriodStart != null) {
-                    FiniteDateRange(
-                        placementPlan.preschoolDaycarePeriodStart,
-                        placementPlan.preschoolDaycarePeriodEnd!!
-                    )
-                } else {
-                    null
-                }
+                val application =
+                    tx.fetchApplicationDetails(applicationId)
+                        ?: throw NotFound("application $applicationId not found")
+                val preschoolDaycarePeriod =
+                    if (placementPlan.preschoolDaycarePeriodStart != null) {
+                        FiniteDateRange(
+                            placementPlan.preschoolDaycarePeriodStart,
+                            placementPlan.preschoolDaycarePeriodEnd!!
+                        )
+                    } else {
+                        null
+                    }
 
                 placementPlanService.createPlacementPlan(
                     tx,
@@ -713,14 +749,19 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         MockPersonDetailsService.upsertPerson(person)
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val uuid = tx.createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
-                    .bind("ssn", person.socialSecurityNumber)
-                    .mapTo<PersonId>()
-                    .firstOrNull()
+                val uuid =
+                    tx.createQuery("SELECT id FROM person WHERE social_security_number = :ssn")
+                        .bind("ssn", person.socialSecurityNumber)
+                        .mapTo<PersonId>()
+                        .firstOrNull()
 
                 uuid?.let {
                     // Refresh Pis data by forcing refresh from VTJ
-                    personService.getUpToDatePersonFromVtj(tx, AuthenticatedUser.SystemInternalUser, it)
+                    personService.getUpToDatePersonFromVtj(
+                        tx,
+                        AuthenticatedUser.SystemInternalUser,
+                        it
+                    )
                 }
             }
         }
@@ -744,15 +785,17 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         @PathVariable applicationId: ApplicationId,
         @PathVariable action: String
     ) {
-        val simpleActions = mapOf(
-            "move-to-waiting-placement" to applicationStateService::moveToWaitingPlacement,
-            "cancel-application" to applicationStateService::cancelApplication,
-            "set-verified" to applicationStateService::setVerified,
-            "set-unverified" to applicationStateService::setUnverified,
-            "send-decisions-without-proposal" to applicationStateService::sendDecisionsWithoutProposal,
-            "send-placement-proposal" to applicationStateService::sendPlacementProposal,
-            "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed
-        )
+        val simpleActions =
+            mapOf(
+                "move-to-waiting-placement" to applicationStateService::moveToWaitingPlacement,
+                "cancel-application" to applicationStateService::cancelApplication,
+                "set-verified" to applicationStateService::setVerified,
+                "set-unverified" to applicationStateService::setUnverified,
+                "send-decisions-without-proposal" to
+                    applicationStateService::sendDecisionsWithoutProposal,
+                "send-placement-proposal" to applicationStateService::sendPlacementProposal,
+                "confirm-decision-mailed" to applicationStateService::confirmDecisionMailed
+            )
 
         val actionFn = simpleActions[action] ?: throw NotFound("Action not recognized")
         db.connect { dbc ->
@@ -779,14 +822,12 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
     }
 
     @PostMapping("/applications/{applicationId}/actions/create-default-placement-plan")
-    fun createDefaultPlacementPlan(
-        db: Database,
-        @PathVariable applicationId: ApplicationId
-    ) {
+    fun createDefaultPlacementPlan(db: Database, @PathVariable applicationId: ApplicationId) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.ensureFakeAdminExists()
-                placementPlanService.getPlacementPlanDraft(tx, applicationId)
+                placementPlanService
+                    .getPlacementPlanDraft(tx, applicationId)
                     .let {
                         DaycarePlacementPlan(
                             unitId = it.preferredUnits.first().id,
@@ -794,7 +835,14 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
                             preschoolDaycarePeriod = it.preschoolDaycarePeriod
                         )
                     }
-                    .let { applicationStateService.createPlacementPlan(tx, fakeAdmin, applicationId, it) }
+                    .let {
+                        applicationStateService.createPlacementPlan(
+                            tx,
+                            fakeAdmin,
+                            applicationId,
+                            it
+                        )
+                    }
             }
         }
     }
@@ -805,7 +853,9 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         clock: EvakaClock,
         @RequestBody body: PairingsController.PostPairingChallengeReq
     ): Pairing {
-        return db.connect { dbc -> dbc.transaction { it.challengePairing(clock, body.challengeKey) } }
+        return db.connect { dbc ->
+            dbc.transaction { it.challengePairing(clock, body.challengeKey) }
+        }
     }
 
     @PostMapping("/mobile/pairings/{id}/response")
@@ -816,7 +866,9 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
     ): Pairing {
         return db.connect { dbc ->
             dbc.transaction { it.incrementAttempts(id, body.challengeKey) }
-            dbc.transaction { it.respondPairingChallengeCreateDevice(id, body.challengeKey, body.responseKey) }
+            dbc.transaction {
+                it.respondPairingChallengeCreateDevice(id, body.challengeKey, body.responseKey)
+            }
         }
     }
 
@@ -829,35 +881,23 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         return db.connect { dbc ->
             dbc.transaction {
                 when (body) {
-                    is PairingsController.PostPairingReq.Unit -> it.initPairing(clock, unitId = body.unitId)
-                    is PairingsController.PostPairingReq.Employee -> it.initPairing(clock, employeeId = body.employeeId)
+                    is PairingsController.PostPairingReq.Unit ->
+                        it.initPairing(clock, unitId = body.unitId)
+                    is PairingsController.PostPairingReq.Employee ->
+                        it.initPairing(clock, employeeId = body.employeeId)
                 }
             }
         }
     }
 
     @PostMapping("/mobile/devices")
-    fun postMobileDevice(
-        db: Database,
-        @RequestBody body: DevMobileDevice
-    ) {
-        db.connect { dbc ->
-            dbc.transaction {
-                it.insertTestMobileDevice(body)
-            }
-        }
+    fun postMobileDevice(db: Database, @RequestBody body: DevMobileDevice) {
+        db.connect { dbc -> dbc.transaction { it.insertTestMobileDevice(body) } }
     }
 
     @PostMapping("/mobile/personal-devices")
-    fun postPersonalMobileDevice(
-        db: Database,
-        @RequestBody body: DevPersonalMobileDevice
-    ) {
-        db.connect { dbc ->
-            dbc.transaction {
-                it.insertTestPersonalMobileDevice(body)
-            }
-        }
+    fun postPersonalMobileDevice(db: Database, @RequestBody body: DevPersonalMobileDevice) {
+        db.connect { dbc -> dbc.transaction { it.insertTestPersonalMobileDevice(body) } }
     }
 
     @PostMapping("/holiday-period/{id}")
@@ -887,7 +927,9 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.createFixedPeriodQuestionnaire(body).let {
-                    tx.createUpdate("UPDATE holiday_period_questionnaire SET id = :id WHERE id = :prevId")
+                    tx.createUpdate(
+                            "UPDATE holiday_period_questionnaire SET id = :id WHERE id = :prevId"
+                        )
                         .bind("id", id)
                         .bind("prevId", it)
                         .execute()
@@ -897,10 +939,7 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
     }
 
     @PostMapping("/reservations")
-    fun postReservations(
-        db: Database,
-        @RequestBody body: List<DailyReservationRequest>
-    ) {
+    fun postReservations(db: Database, @RequestBody body: List<DailyReservationRequest>) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.ensureFakeAdminExists()
@@ -916,12 +955,7 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         @RequestBody body: ChildDailyNoteBody
     ): ChildDailyNoteId {
         return db.connect { dbc ->
-            dbc.transaction {
-                it.createChildDailyNote(
-                    childId = childId,
-                    note = body
-                )
-            }
+            dbc.transaction { it.createChildDailyNote(childId = childId, note = body) }
         }
     }
 
@@ -932,12 +966,7 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         @RequestBody body: ChildStickyNoteBody
     ): ChildStickyNoteId {
         return db.connect { dbc ->
-            dbc.transaction {
-                it.createChildStickyNote(
-                    childId = childId,
-                    note = body
-                )
-            }
+            dbc.transaction { it.createChildStickyNote(childId = childId, note = body) }
         }
     }
 
@@ -948,12 +977,7 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         @RequestBody body: GroupNoteBody
     ): GroupNoteId {
         return db.connect { dbc ->
-            dbc.transaction {
-                it.createGroupNote(
-                    groupId = groupId,
-                    note = body
-                )
-            }
+            dbc.transaction { it.createGroupNote(groupId = groupId, note = body) }
         }
     }
 
@@ -966,27 +990,41 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
 
     @PostMapping("/family-contact")
     fun createFamilyContact(db: Database, @RequestBody contacts: List<DevFamilyContact>) {
-        db.connect { dbc -> dbc.transaction { contacts.forEach { contact -> it.insertFamilyContact(contact) } } }
+        db.connect { dbc ->
+            dbc.transaction { contacts.forEach { contact -> it.insertFamilyContact(contact) } }
+        }
     }
 
     @PostMapping("/backup-pickup")
     fun createBackupPickup(db: Database, @RequestBody backupPickups: List<DevBackupPickup>) {
-        db.connect { dbc -> dbc.transaction { backupPickups.forEach { backupPickup -> it.insertBackupPickup(backupPickup) } } }
+        db.connect { dbc ->
+            dbc.transaction {
+                backupPickups.forEach { backupPickup -> it.insertBackupPickup(backupPickup) }
+            }
+        }
     }
 
     @PostMapping("/fridge-child")
     fun createFridgeChild(db: Database, @RequestBody fridgeChildren: List<DevFridgeChild>) {
-        db.connect { dbc -> dbc.transaction { fridgeChildren.forEach { child -> it.insertFridgeChild(child) } } }
+        db.connect { dbc ->
+            dbc.transaction { fridgeChildren.forEach { child -> it.insertFridgeChild(child) } }
+        }
     }
 
     @PostMapping("/fridge-partner")
     fun createFridgePartner(db: Database, @RequestBody fridgePartners: List<DevFridgePartner>) {
-        db.connect { dbc -> dbc.transaction { fridgePartners.forEach { partner -> it.insertFridgePartner(partner) } } }
+        db.connect { dbc ->
+            dbc.transaction {
+                fridgePartners.forEach { partner -> it.insertFridgePartner(partner) }
+            }
+        }
     }
 
     @PostMapping("/foster-parent")
     fun createFosterParent(db: Database, @RequestBody fosterParents: List<DevFosterParent>) {
-        db.connect { dbc -> dbc.transaction { tx -> fosterParents.forEach { tx.insertFosterParent(it) } } }
+        db.connect { dbc ->
+            dbc.transaction { tx -> fosterParents.forEach { tx.insertFosterParent(it) } }
+        }
     }
 
     @PostMapping("/employee-pin")
@@ -998,11 +1036,11 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
                         if (employeePin.userId != null) {
                             employeePin.userId
                         } else if (!employeePin.employeeExternalId.isNullOrBlank()) {
-                            it.getEmployeeIdByExternalId(
-                                employeePin.employeeExternalId
-                            )
+                            it.getEmployeeIdByExternalId(employeePin.employeeExternalId)
                         } else {
-                            throw Error("Cannot create dev employee pin: user id and external user id missing")
+                            throw Error(
+                                "Cannot create dev employee pin: user id and external user id missing"
+                            )
                         }
 
                     it.insertEmployeePin(employeePin.copy(userId = userId))
@@ -1012,7 +1050,10 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
     }
 
     @PostMapping("/pedagogical-document")
-    fun createPedagogicalDocuments(db: Database, @RequestBody pedagogicalDocuments: List<DevPedagogicalDocument>) {
+    fun createPedagogicalDocuments(
+        db: Database,
+        @RequestBody pedagogicalDocuments: List<DevPedagogicalDocument>
+    ) {
         db.connect { dbc ->
             dbc.transaction {
                 pedagogicalDocuments.forEach { pedagogicalDocument ->
@@ -1030,37 +1071,42 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         @RequestPart("file") file: MultipartFile
     ): String {
         return db.connect { dbc ->
-            dbc.transaction { tx ->
-                val id = UUID.randomUUID()
-                tx.insertAttachment(
-                    AuthenticatedUser.Employee(employeeId, emptySet()),
-                    AttachmentId(id),
-                    file.name,
-                    file.contentType ?: "image/jpeg",
-                    AttachmentParent.PedagogicalDocument(pedagogicalDocumentId),
-                    type = null
-                )
-                documentClient.upload(
-                    filesBucket,
-                    Document(
-                        name = id.toString(),
-                        bytes = file.bytes,
-                        contentType = file.contentType ?: "image/jpeg"
+                dbc.transaction { tx ->
+                    val id = UUID.randomUUID()
+                    tx.insertAttachment(
+                        AuthenticatedUser.Employee(employeeId, emptySet()),
+                        AttachmentId(id),
+                        file.name,
+                        file.contentType ?: "image/jpeg",
+                        AttachmentParent.PedagogicalDocument(pedagogicalDocumentId),
+                        type = null
                     )
-                )
+                    documentClient.upload(
+                        filesBucket,
+                        Document(
+                            name = id.toString(),
+                            bytes = file.bytes,
+                            contentType = file.contentType ?: "image/jpeg"
+                        )
+                    )
+                }
             }
-        }.key
+            .key
     }
 
     data class CreateVasuTemplateBody(
         val name: String = "testipohja",
-        val valid: FiniteDateRange = FiniteDateRange(LocalDate.ofYearDay(2020, 1), LocalDate.ofYearDay(2200, 1)),
+        val valid: FiniteDateRange =
+            FiniteDateRange(LocalDate.ofYearDay(2020, 1), LocalDate.ofYearDay(2200, 1)),
         val type: CurriculumType = CurriculumType.DAYCARE,
         val language: VasuLanguage = VasuLanguage.FI
     )
 
     @PostMapping("/vasu/template")
-    fun createVasuTemplate(db: Database, @RequestBody body: CreateVasuTemplateBody): VasuTemplateId {
+    fun createVasuTemplate(
+        db: Database,
+        @RequestBody body: CreateVasuTemplateBody
+    ): VasuTemplateId {
         return db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.insertVasuTemplate(
@@ -1077,34 +1123,41 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
     @PostMapping("/vasu/revokeSharingPermission/{docId}")
     fun revokeSharingPermission(db: Database, @PathVariable docId: VasuDocumentId) {
         return db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.revokeVasuGuardianHasGivenPermissionToShare(docId)
-            }
+            dbc.transaction { tx -> tx.revokeVasuGuardianHasGivenPermissionToShare(docId) }
         }
     }
 
     @DeleteMapping("/vasu/templates")
     fun deleteVasuTemplates(db: Database) {
-        db.connect { dbc -> dbc.transaction { it.createUpdate("DELETE FROM curriculum_template").execute() } }
+        db.connect { dbc ->
+            dbc.transaction { it.createUpdate("DELETE FROM curriculum_template").execute() }
+        }
     }
 
     @PostMapping("/vasu/doc")
-    fun createVasuDocument(db: Database, clock: EvakaClock, @RequestBody body: PostVasuDocBody): VasuDocumentId {
+    fun createVasuDocument(
+        db: Database,
+        clock: EvakaClock,
+        @RequestBody body: PostVasuDocBody
+    ): VasuDocumentId {
         return db.connect { dbc ->
             dbc.transaction { tx ->
-                val template = tx.getVasuTemplate(body.templateId)
-                    ?: throw NotFound("Template with id ${body.templateId} not found")
+                val template =
+                    tx.getVasuTemplate(body.templateId)
+                        ?: throw NotFound("Template with id ${body.templateId} not found")
                 tx.insertVasuDocument(clock, body.childId, template)
             }
         }
     }
 
     @PostMapping("/vasu/doc/publish/{documentId}")
-    fun publishVasuDocument(db: Database, clock: EvakaClock, @PathVariable documentId: VasuDocumentId) {
+    fun publishVasuDocument(
+        db: Database,
+        clock: EvakaClock,
+        @PathVariable documentId: VasuDocumentId
+    ) {
         return db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.publishVasuDocument(clock, documentId)
-            }
+            dbc.transaction { tx -> tx.publishVasuDocument(clock, documentId) }
         }
     }
 
@@ -1127,7 +1180,10 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
     }
 
     @PostMapping("/service-need-option")
-    fun createServiceNeedOption(db: Database, @RequestBody serviceNeedOptions: List<ServiceNeedOption>) {
+    fun createServiceNeedOption(
+        db: Database,
+        @RequestBody serviceNeedOptions: List<ServiceNeedOption>
+    ) {
         db.connect { dbc ->
             dbc.transaction {
                 serviceNeedOptions.forEach { option -> it.insertServiceNeedOption(option) }
@@ -1148,16 +1204,15 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
     @PostMapping("/assistance-needs")
     fun createAssistanceNeeds(db: Database, @RequestBody assistanceNeeds: List<DevAssistanceNeed>) {
         db.connect { dbc ->
-            dbc.transaction { tx ->
-                assistanceNeeds.forEach {
-                    tx.insertTestAssistanceNeed(it)
-                }
-            }
+            dbc.transaction { tx -> assistanceNeeds.forEach { tx.insertTestAssistanceNeed(it) } }
         }
     }
 
     @PostMapping("/assistance-need-decisions")
-    fun createAssistanceNeedDecisions(db: Database, @RequestBody assistanceNeedDecisions: List<DevAssistanceNeedDecision>) {
+    fun createAssistanceNeedDecisions(
+        db: Database,
+        @RequestBody assistanceNeedDecisions: List<DevAssistanceNeedDecision>
+    ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 assistanceNeedDecisions.forEach {
@@ -1168,34 +1223,29 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
     }
 
     @PostMapping("/attendances")
-    fun postAttendances(
-        db: Database,
-        @RequestBody attendances: List<DevChildAttendance>
-    ) = db.connect { dbc ->
-        dbc.transaction { tx ->
-            attendances.forEach {
-                tx.insertTestChildAttendance(
-                    childId = it.childId,
-                    unitId = it.unitId,
-                    arrived = it.arrived,
-                    departed = it.departed
-                )
+    fun postAttendances(db: Database, @RequestBody attendances: List<DevChildAttendance>) =
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                attendances.forEach {
+                    tx.insertTestChildAttendance(
+                        childId = it.childId,
+                        unitId = it.unitId,
+                        arrived = it.arrived,
+                        departed = it.departed
+                    )
+                }
             }
         }
-    }
 
-    data class DevVardaReset(
-        val evakaChildId: ChildId,
-        val resetTimestamp: Instant?
-    )
+    data class DevVardaReset(val evakaChildId: ChildId, val resetTimestamp: Instant?)
 
     @PostMapping("/varda/reset-child")
     fun createVardaReset(db: Database, @RequestBody body: DevVardaReset) {
         db.connect { dbc ->
             dbc.transaction {
                 it.createUpdate(
-                    "INSERT INTO varda_reset_child(evaka_child_id, reset_timestamp) VALUES (:evakaChildId, :resetTimestamp)"
-                )
+                        "INSERT INTO varda_reset_child(evaka_child_id, reset_timestamp) VALUES (:evakaChildId, :resetTimestamp)"
+                    )
                     .bindKotlin(body)
                     .execute()
             }
@@ -1215,9 +1265,9 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         db.connect { dbc ->
             dbc.transaction {
                 it.createUpdate(
-                    "INSERT INTO varda_service_need(evaka_service_need_id, evaka_service_need_updated, evaka_child_id, update_failed, errors) " +
-                        "VALUES (:evakaServiceNeedId, :evakaServiceNeedUpdated, :evakaChildId, :updateFailed, :errors)"
-                )
+                        "INSERT INTO varda_service_need(evaka_service_need_id, evaka_service_need_updated, evaka_child_id, update_failed, errors) " +
+                            "VALUES (:evakaServiceNeedId, :evakaServiceNeedUpdated, :evakaChildId, :updateFailed, :errors)"
+                    )
                     .bindKotlin(body)
                     .execute()
             }
@@ -1225,16 +1275,20 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
     }
 
     @PostMapping("/occupancy-coefficient")
-    fun upsertStaffOccupancyCoefficient(db: Database, @RequestBody body: DevUpsertStaffOccupancyCoefficient) {
+    fun upsertStaffOccupancyCoefficient(
+        db: Database,
+        @RequestBody body: DevUpsertStaffOccupancyCoefficient
+    ) {
         db.connect { dbc ->
             dbc.transaction {
                 it.createUpdate(
-                    """
+                        """
                     INSERT INTO staff_occupancy_coefficient (daycare_id, employee_id, coefficient)
                     VALUES (:unitId, :employeeId, :coefficient)
                     ON CONFLICT (daycare_id, employee_id) DO UPDATE SET coefficient = EXCLUDED.coefficient
-                    """.trimIndent()
-                )
+                    """
+                            .trimIndent()
+                    )
                     .bindKotlin(body)
                     .execute()
             }
@@ -1246,11 +1300,12 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         db.connect { dbc ->
             dbc.transaction {
                 it.createUpdate(
-                    """
+                        """
                     INSERT INTO staff_attendance_realtime (id, employee_id, group_id, arrived, departed, occupancy_coefficient, type)
                     VALUES (:id, :employeeId, :groupId, :arrived, :departed, :occupancyCoefficient, :type)
-                    """.trimIndent()
-                )
+                    """
+                            .trimIndent()
+                    )
                     .bindKotlin(body)
                     .execute()
             }
@@ -1258,30 +1313,26 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
 
     @PostMapping("/staff-attendance-plan")
     fun addStaffAttendancePlan(db: Database, @RequestBody body: DevStaffAttendancePlan) =
-        db.connect { dbc ->
-            dbc.transaction {
-                it.insertTestStaffAttendancePlan(body)
-            }
-        }
+        db.connect { dbc -> dbc.transaction { it.insertTestStaffAttendancePlan(body) } }
 
     @PostMapping("/daily-service-time")
     fun addDailyServiceTime(db: Database, @RequestBody body: DevDailyServiceTimes) =
-        db.connect { dbc ->
-            dbc.transaction {
-                it.insertTestDailyServiceTimes(body)
-            }
-        }
+        db.connect { dbc -> dbc.transaction { it.insertTestDailyServiceTimes(body) } }
 
     @PostMapping("/daily-service-time-notification")
-    fun addDailyServiceTimeNotification(db: Database, @RequestBody body: DevDailyServiceTimeNotification) =
+    fun addDailyServiceTimeNotification(
+        db: Database,
+        @RequestBody body: DevDailyServiceTimeNotification
+    ) =
         db.connect { dbc ->
             dbc.transaction {
                 it.createUpdate(
-                    """
+                        """
                     INSERT INTO daily_service_time_notification (id, guardian_id, daily_service_time_id, date_from, has_deleted_reservations)
                     VALUES (:id, :guardianId, :dailyServiceTimeId, :dateFrom, :hasDeletedReservations)
-                    """.trimIndent()
-                )
+                    """
+                            .trimIndent()
+                    )
                     .bindKotlin(body)
                     .execute()
             }
@@ -1292,51 +1343,53 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
         db.connect { dbc ->
             dbc.transaction {
                 it.createUpdate(
-                    """
+                        """
                     INSERT INTO child_consent (given_by_guardian, given, type, child_id)
                     VALUES (:guardianId, :given, :type, :childId)
-                    """.trimIndent()
-                )
+                    """
+                            .trimIndent()
+                    )
                     .bindKotlin(body)
                     .execute()
             }
         }
 
     @PostMapping("/payments")
-    fun addPayment(db: Database, @RequestBody body: DevPayment) = db.connect { dbc ->
-        dbc.transaction { it.insertDevPayment(body) }
-    }
+    fun addPayment(db: Database, @RequestBody body: DevPayment) =
+        db.connect { dbc -> dbc.transaction { it.insertDevPayment(body) } }
 
     @PostMapping("/calendar-event")
-    fun addPayment(db: Database, @RequestBody body: DevCalendarEvent) = db.connect { dbc ->
-        dbc.transaction { it.insertCalendarEvent(body) }
-    }
+    fun addPayment(db: Database, @RequestBody body: DevCalendarEvent) =
+        db.connect { dbc -> dbc.transaction { it.insertCalendarEvent(body) } }
 
     @PostMapping("/calendar-event-attendee")
-    fun addPayment(db: Database, @RequestBody body: DevCalendarEventAttendee) = db.connect { dbc ->
-        dbc.transaction { it.insertCalendarEventAttendee(body) }
-    }
+    fun addPayment(db: Database, @RequestBody body: DevCalendarEventAttendee) =
+        db.connect { dbc -> dbc.transaction { it.insertCalendarEventAttendee(body) } }
 
     @PostMapping("/absence")
-    fun addAbsence(db: Database, @RequestBody body: DevAbsenceBody) = db.connect { dbc ->
-        dbc.transaction {
-            it.createUpdate(
-                """
+    fun addAbsence(db: Database, @RequestBody body: DevAbsenceBody) =
+        db.connect { dbc ->
+            dbc.transaction {
+                it.createUpdate(
+                        """
             INSERT INTO absence (child_id, date, absence_type, modified_by, category)
             VALUES (:childId, :date, :absenceType, :modifiedBy, :absenceCategory)
             """
-            )
-                .bindKotlin(body)
-                .execute()
+                    )
+                    .bindKotlin(body)
+                    .execute()
+            }
         }
-    }
 }
 
 // https://www.postgresql.org/docs/14/errcodes-appendix.html
 // Class 55 — Object Not In Prerequisite State: lock_not_available
 private const val LOCK_NOT_AVAILABLE: String = "55P03"
 
-private fun <T> Database.Connection.withLockedDatabase(timeout: Duration, f: (tx: Database.Transaction) -> T): T {
+private fun <T> Database.Connection.withLockedDatabase(
+    timeout: Duration,
+    f: (tx: Database.Transaction) -> T
+): T {
     val start = Instant.now()
     do {
         try {
@@ -1376,13 +1429,17 @@ private fun Database.Connection.waitUntilNoQueriesRunning(timeout: Duration) {
     error("Timed out while waiting for database activity to finish: $connections")
 }
 
-private fun Database.Read.getActiveConnections(): List<ActiveConnection> = createQuery(
-    """
+private fun Database.Read.getActiveConnections(): List<ActiveConnection> =
+    createQuery(
+            """
 SELECT state, xact_start, query_start, left(query, 100) AS query FROM pg_stat_activity
 WHERE pid <> pg_backend_pid() AND datname = current_database() AND usename = current_user AND backend_type = 'client backend'
 AND state != 'idle'
-    """.trimIndent()
-).mapTo<ActiveConnection>().list()
+    """
+                .trimIndent()
+        )
+        .mapTo<ActiveConnection>()
+        .list()
 
 fun Database.Transaction.ensureFakeAdminExists() {
     // language=sql
@@ -1391,7 +1448,8 @@ fun Database.Transaction.ensureFakeAdminExists() {
         INSERT INTO employee (id, first_name, last_name, email, external_id, roles)
         VALUES (:id, 'Dev', 'API', 'dev.api@espoo.fi', 'espoo-ad:' || :id, '{ADMIN, SERVICE_WORKER}'::user_role[])
         ON CONFLICT DO NOTHING
-        """.trimIndent()
+        """
+            .trimIndent()
 
     createUpdate(sql).bind("id", fakeAdmin.id).execute()
     upsertEmployeeUser(fakeAdmin.id)
@@ -1404,10 +1462,11 @@ fun Database.Transaction.deleteAndCascadeEmployee(id: EmployeeId) {
 }
 
 fun Database.Transaction.deleteAndCascadeEmployeeByExternalId(externalId: ExternalId) {
-    val employeeId = createQuery("SELECT id FROM employee WHERE external_id = :externalId")
-        .bind("externalId", externalId)
-        .mapTo<EmployeeId>()
-        .findOne()
+    val employeeId =
+        createQuery("SELECT id FROM employee WHERE external_id = :externalId")
+            .bind("externalId", externalId)
+            .mapTo<EmployeeId>()
+            .findOne()
     if (employeeId.isPresent) {
         deleteAndCascadeEmployee(employeeId.get())
     }
@@ -1451,14 +1510,16 @@ INSERT INTO service_need_option_voucher_value (service_need_option_id, validity,
     )
 }
 
-fun Database.Transaction.updateFeeDecisionSentAt(feeDecision: FeeDecision) = createUpdate(
-    """
+fun Database.Transaction.updateFeeDecisionSentAt(feeDecision: FeeDecision) =
+    createUpdate(
+            """
 UPDATE fee_decision SET sent_at = :sentAt WHERE id = :id    
-    """.trimIndent()
-)
-    .bind("id", feeDecision.id)
-    .bind("sentAt", feeDecision.sentAt)
-    .execute()
+    """
+                .trimIndent()
+        )
+        .bind("id", feeDecision.id)
+        .bind("sentAt", feeDecision.sentAt)
+        .execute()
 
 data class DevCareArea(
     val id: AreaId = AreaId(UUID.randomUUID()),
@@ -1490,7 +1551,8 @@ data class DevDaycare(
     val openingDate: LocalDate? = null,
     val closingDate: LocalDate? = null,
     val areaId: AreaId,
-    val type: Set<CareType> = setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION),
+    val type: Set<CareType> =
+        setOf(CareType.CENTRE, CareType.PRESCHOOL, CareType.PREPARATORY_EDUCATION),
     val daycareApplyPeriod: DateRange? = DateRange(LocalDate.of(2020, 3, 1), null),
     val preschoolApplyPeriod: DateRange? = DateRange(LocalDate.of(2020, 3, 1), null),
     val clubApplyPeriod: DateRange? = null,
@@ -1507,24 +1569,18 @@ data class DevDaycare(
     val phone: String? = null,
     val email: String? = null,
     val url: String? = null,
-    val visitingAddress: VisitingAddress = VisitingAddress(
-        streetAddress = "Joku katu 9",
-        postalCode = "02100",
-        postOffice = "ESPOO"
-    ),
+    val visitingAddress: VisitingAddress =
+        VisitingAddress(streetAddress = "Joku katu 9", postalCode = "02100", postOffice = "ESPOO"),
     val location: Coordinate? = null,
     val mailingAddress: MailingAddress = MailingAddress(),
-    val unitManager: UnitManager = UnitManager(
-        name = "Unit Manager",
-        phone = null,
-        email = null
-    ),
-    val decisionCustomization: DaycareDecisionCustomization = DaycareDecisionCustomization(
-        daycareName = name,
-        preschoolName = name,
-        handler = "Decision Handler",
-        handlerAddress = "Decision Handler Street 1"
-    ),
+    val unitManager: UnitManager = UnitManager(name = "Unit Manager", phone = null, email = null),
+    val decisionCustomization: DaycareDecisionCustomization =
+        DaycareDecisionCustomization(
+            daycareName = name,
+            preschoolName = name,
+            handler = "Decision Handler",
+            handlerAddress = "Decision Handler Street 1"
+        ),
     val ophUnitOid: String? = "1.2.3.4.5",
     val ophOrganizerOid: String? = "1.2.3.4.5",
     val roundTheClock: Boolean? = false,
@@ -1568,38 +1624,28 @@ data class DevAssistanceNeedDecision(
     val childId: ChildId,
     val validityPeriod: DateRange,
     val status: AssistanceNeedDecisionStatus,
-
     val language: AssistanceNeedDecisionLanguage,
     val decisionMade: LocalDate?,
     val sentForDecision: LocalDate?,
-    @Nested("selected_unit")
-    val selectedUnit: UnitInfo?,
-    @Nested("preparer_1")
-    val preparedBy1: AssistanceNeedDecisionEmployee?,
-    @Nested("preparer_2")
-    val preparedBy2: AssistanceNeedDecisionEmployee?,
-    @Nested("decision_maker")
-    val decisionMaker: AssistanceNeedDecisionEmployee?,
-
+    @Nested("selected_unit") val selectedUnit: UnitInfo?,
+    @Nested("preparer_1") val preparedBy1: AssistanceNeedDecisionEmployee?,
+    @Nested("preparer_2") val preparedBy2: AssistanceNeedDecisionEmployee?,
+    @Nested("decision_maker") val decisionMaker: AssistanceNeedDecisionEmployee?,
     val pedagogicalMotivation: String?,
     @Nested("structural_motivation_opt")
     val structuralMotivationOptions: StructuralMotivationOptions,
     val structuralMotivationDescription: String?,
     val careMotivation: String?,
-    @Nested("service_opt")
-    val serviceOptions: ServiceOptions,
+    @Nested("service_opt") val serviceOptions: ServiceOptions,
     val servicesMotivation: String?,
     val expertResponsibilities: String?,
     val guardiansHeardOn: LocalDate?,
-    @Json
-    val guardianInfo: Set<AssistanceNeedDecisionGuardian>,
+    @Json val guardianInfo: Set<AssistanceNeedDecisionGuardian>,
     val viewOfGuardians: String?,
     val otherRepresentativeHeard: Boolean,
     val otherRepresentativeDetails: String?,
-
     val assistanceLevels: Set<AssistanceLevel>,
     val motivationForDecision: String?,
-
     val unreadGuardianIds: List<PersonId>?
 )
 
@@ -1662,31 +1708,33 @@ data class DevPerson(
     val updatedFromVtj: HelsinkiDateTime? = null,
     val ophPersonOid: String = ""
 ) {
-    fun toPersonDTO() = PersonDTO(
-        id = this.id,
-        identity = this.ssn?.let { ExternalIdentifier.SSN.getInstance(it) } ?: ExternalIdentifier.NoID,
-        ssnAddingDisabled = this.ssnAddingDisabled ?: false,
-        firstName = this.firstName,
-        lastName = this.lastName,
-        preferredName = this.preferredName,
-        email = this.email,
-        phone = this.phone,
-        backupPhone = this.backupPhone,
-        language = this.language,
-        dateOfBirth = this.dateOfBirth,
-        dateOfDeath = this.dateOfDeath,
-        streetAddress = this.streetAddress,
-        postalCode = this.postalCode,
-        postOffice = this.postOffice,
-        residenceCode = this.residenceCode,
-        nationalities = this.nationalities,
-        restrictedDetailsEnabled = this.restrictedDetailsEnabled,
-        restrictedDetailsEndDate = this.restrictedDetailsEndDate,
-        invoicingStreetAddress = this.invoicingStreetAddress,
-        invoicingPostalCode = this.invoicingPostalCode,
-        invoicingPostOffice = this.invoicingPostOffice,
-        ophPersonOid = this.ophPersonOid
-    )
+    fun toPersonDTO() =
+        PersonDTO(
+            id = this.id,
+            identity = this.ssn?.let { ExternalIdentifier.SSN.getInstance(it) }
+                    ?: ExternalIdentifier.NoID,
+            ssnAddingDisabled = this.ssnAddingDisabled ?: false,
+            firstName = this.firstName,
+            lastName = this.lastName,
+            preferredName = this.preferredName,
+            email = this.email,
+            phone = this.phone,
+            backupPhone = this.backupPhone,
+            language = this.language,
+            dateOfBirth = this.dateOfBirth,
+            dateOfDeath = this.dateOfDeath,
+            streetAddress = this.streetAddress,
+            postalCode = this.postalCode,
+            postOffice = this.postOffice,
+            residenceCode = this.residenceCode,
+            nationalities = this.nationalities,
+            restrictedDetailsEnabled = this.restrictedDetailsEnabled,
+            restrictedDetailsEndDate = this.restrictedDetailsEndDate,
+            invoicingStreetAddress = this.invoicingStreetAddress,
+            invoicingPostalCode = this.invoicingPostalCode,
+            invoicingPostOffice = this.invoicingPostOffice,
+            ophPersonOid = this.ophPersonOid
+        )
 }
 
 data class DevParentship(
@@ -1722,10 +1770,7 @@ data class DevPersonalMobileDevice(
     val longTermToken: UUID? = null
 )
 
-data class DaycareAclInsert(
-    val externalId: ExternalId,
-    val role: UserRole?
-)
+data class DaycareAclInsert(val externalId: ExternalId, val role: UserRole?)
 
 data class PlacementPlan(
     val unitId: DaycareId,
@@ -1775,10 +1820,7 @@ data class DevServiceNeed(
     val confirmedAt: LocalDate? = null
 )
 
-data class PostVasuDocBody(
-    val childId: ChildId,
-    val templateId: VasuTemplateId
-)
+data class PostVasuDocBody(val childId: ChildId, val templateId: VasuTemplateId)
 
 data class DevGuardianBlocklistEntry(val guardianId: PersonId, val childId: ChildId)
 
@@ -1797,6 +1839,7 @@ data class DevStaffAttendance(
     val occupancyCoefficient: BigDecimal,
     val type: StaffAttendanceType
 )
+
 data class DevDailyServiceTimes(
     val id: DailyServiceTimesId = DailyServiceTimesId(UUID.randomUUID()),
     val childId: ChildId,

@@ -48,10 +48,11 @@ class VasuNotificationService(
         )
     }
 
-    private fun getFromAddress(language: Language) = when (language) {
-        Language.sv -> "$senderNameSv <$senderAddress>"
-        else -> "$senderNameFi <$senderAddress>"
-    }
+    private fun getFromAddress(language: Language) =
+        when (language) {
+            Language.sv -> "$senderNameSv <$senderAddress>"
+            else -> "$senderNameFi <$senderAddress>"
+        }
 
     private fun getLanguage(languageStr: String?): Language {
         return when (languageStr?.lowercase()) {
@@ -66,7 +67,7 @@ class VasuNotificationService(
         vasuDocumentId: VasuDocumentId
     ): List<AsyncJob.SendVasuNotificationEmail> {
         return tx.createQuery(
-            """
+                """
 SELECT 
     doc.id AS vasu_document_id,
     child.id AS child_id,
@@ -79,8 +80,9 @@ FROM curriculum_document doc
 WHERE
     doc.id = :id
     AND parent.email IS NOT NULL AND parent.email != ''
-            """.trimIndent()
-        )
+            """
+                    .trimIndent()
+            )
             .bind("id", vasuDocumentId)
             .map { row ->
                 AsyncJob.SendVasuNotificationEmail(
@@ -93,8 +95,14 @@ WHERE
             .toList()
     }
 
-    fun sendVasuNotificationEmail(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.SendVasuNotificationEmail) {
-        logger.info("Sending vasu/leops notification email for document ${msg.vasuDocumentId} to ${msg.recipientEmail}")
+    fun sendVasuNotificationEmail(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.SendVasuNotificationEmail
+    ) {
+        logger.info(
+            "Sending vasu/leops notification email for document ${msg.vasuDocumentId} to ${msg.recipientEmail}"
+        )
 
         emailClient.sendEmail(
             traceId = msg.vasuDocumentId.toString(),
@@ -107,15 +115,17 @@ WHERE
     }
 
     private fun getSubject(): String {
-        val postfix = if (System.getenv("VOLTTI_ENV") == "prod") "" else " [${System.getenv("VOLTTI_ENV")}]"
+        val postfix =
+            if (System.getenv("VOLTTI_ENV") == "prod") "" else " [${System.getenv("VOLTTI_ENV")}]"
         return "Uusi dokumentti eVakassa / Nytt dokument i eVaka / New document in eVaka$postfix"
     }
 
     private fun getDocumentsUrl(childId: ChildId, lang: Language): String {
-        val base = when (lang) {
-            Language.sv -> baseUrlSv
-            else -> baseUrl
-        }
+        val base =
+            when (lang) {
+                Language.sv -> baseUrlSv
+                else -> baseUrl
+            }
         return "$base/children/$childId"
     }
 
@@ -134,7 +144,8 @@ WHERE
                 
                 <p>You have received a new eVaka document. Read the document here: <a href="$documentsUrl">$documentsUrl</a></p>
                 <p>This is an automatic message from the eVaka system. Do not reply to this message.</p>       
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     private fun getText(childId: ChildId, language: Language): String {
@@ -155,6 +166,7 @@ WHERE
                 You have received a new eVaka document. Read the document here: $documentsUrl
                 
                 This is an automatic message from the eVaka system. Do not reply to this message.  
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 }

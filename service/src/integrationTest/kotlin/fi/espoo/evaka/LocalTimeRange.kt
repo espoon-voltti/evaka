@@ -11,14 +11,15 @@ class LocalTimeRange(
     override val start: LocalTime,
     override val endInclusive: LocalTime,
     private val step: Duration = Duration.ofMinutes(1)
-) :
-    Iterable<LocalTime>,
-    ClosedRange<LocalTime> {
+) : Iterable<LocalTime>, ClosedRange<LocalTime> {
     override fun iterator(): Iterator<LocalTime> = LocalTimeIterator(start, endInclusive, step)
 }
 
-class LocalTimeIterator(start: LocalTime, private val endInclusive: LocalTime, private val step: Duration) :
-    Iterator<LocalTime> {
+class LocalTimeIterator(
+    start: LocalTime,
+    private val endInclusive: LocalTime,
+    private val step: Duration
+) : Iterator<LocalTime> {
     private var current = start
     override fun hasNext(): Boolean = current <= endInclusive
 

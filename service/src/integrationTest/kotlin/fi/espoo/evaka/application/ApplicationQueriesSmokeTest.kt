@@ -22,10 +22,10 @@ import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.snDefaultDaycare
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 
 class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
     private lateinit var daycareId: DaycareId
@@ -39,25 +39,28 @@ class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
             val childId = tx.insertTestPerson(DevPerson())
             val guardianId = tx.insertTestPerson(DevPerson())
             daycareId = tx.insertTestDaycare(DevDaycare(areaId = areaId))
-            applicationId = tx.insertTestApplication(childId = childId, guardianId = guardianId, type = ApplicationType.DAYCARE)
+            applicationId =
+                tx.insertTestApplication(
+                    childId = childId,
+                    guardianId = guardianId,
+                    type = ApplicationType.DAYCARE
+                )
         }
-        form = DaycareFormV0(
-            type = ApplicationType.DAYCARE,
-            child = Child(
-                dateOfBirth = LocalDate.of(2020, 1, 1)
-            ),
-            guardian = Adult(),
-            apply = Apply(
-                preferredUnits = listOf(daycareId)
-            ),
-            preferredStartDate = LocalDate.of(2022, 1, 1),
-            serviceNeedOption = ServiceNeedOption(
-                id = snDefaultDaycare.id,
-                nameFi = snDefaultDaycare.nameFi,
-                nameEn = snDefaultDaycare.nameEn,
-                nameSv = snDefaultDaycare.nameSv
+        form =
+            DaycareFormV0(
+                type = ApplicationType.DAYCARE,
+                child = Child(dateOfBirth = LocalDate.of(2020, 1, 1)),
+                guardian = Adult(),
+                apply = Apply(preferredUnits = listOf(daycareId)),
+                preferredStartDate = LocalDate.of(2022, 1, 1),
+                serviceNeedOption =
+                    ServiceNeedOption(
+                        id = snDefaultDaycare.id,
+                        nameFi = snDefaultDaycare.nameFi,
+                        nameEn = snDefaultDaycare.nameEn,
+                        nameSv = snDefaultDaycare.nameSv
+                    )
             )
-        )
         db.transaction {
             it.insertServiceNeedOptions()
             it.insertTestApplicationForm(applicationId, form)
@@ -66,30 +69,31 @@ class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
 
     @Test
     fun `fetchApplicationSummaries returns service need information from applications correctly`() {
-        val applications = db.read {
-            it.fetchApplicationSummaries(
-                today = LocalDate.of(2022, 1, 1),
-                page = 1,
-                pageSize = 10,
-                sortBy = ApplicationSortColumn.STATUS,
-                sortDir = ApplicationSortDirection.ASC,
-                areas = emptyList(),
-                units = emptyList(),
-                basis = emptyList(),
-                type = ApplicationTypeToggle.ALL,
-                preschoolType = emptyList(),
-                statuses = ApplicationStatusOption.values().toList(),
-                dateType = emptyList(),
-                distinctions = emptyList(),
-                periodStart = null,
-                periodEnd = null,
-                transferApplications = TransferApplicationFilter.ALL,
-                voucherApplications = null,
-                authorizedUnitsForApplicationsWithAssistanceNeed = AclAuthorization.All,
-                authorizedUnitsForApplicationsWithoutAssistanceNeed = AclAuthorization.All,
-                canReadServiceWorkerNotes = true
-            )
-        }
+        val applications =
+            db.read {
+                it.fetchApplicationSummaries(
+                    today = LocalDate.of(2022, 1, 1),
+                    page = 1,
+                    pageSize = 10,
+                    sortBy = ApplicationSortColumn.STATUS,
+                    sortDir = ApplicationSortDirection.ASC,
+                    areas = emptyList(),
+                    units = emptyList(),
+                    basis = emptyList(),
+                    type = ApplicationTypeToggle.ALL,
+                    preschoolType = emptyList(),
+                    statuses = ApplicationStatusOption.values().toList(),
+                    dateType = emptyList(),
+                    distinctions = emptyList(),
+                    periodStart = null,
+                    periodEnd = null,
+                    transferApplications = TransferApplicationFilter.ALL,
+                    voucherApplications = null,
+                    authorizedUnitsForApplicationsWithAssistanceNeed = AclAuthorization.All,
+                    authorizedUnitsForApplicationsWithoutAssistanceNeed = AclAuthorization.All,
+                    canReadServiceWorkerNotes = true
+                )
+            }
         val application = applications.data.single()
         assertEquals(form.serviceNeedOption, application.serviceNeed)
     }

@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -30,7 +31,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 @RequestMapping("/absences")
@@ -45,12 +45,12 @@ class AbsenceController(private val accessControl: AccessControl) {
         @PathVariable groupId: GroupId
     ): AbsenceGroup {
         accessControl.requirePermissionFor(user, clock, Action.Group.READ_ABSENCES, groupId)
-        return db.connect { dbc -> dbc.read { getAbsencesInGroupByMonth(it, groupId, year, month) } }.also {
-            Audit.AbsenceRead.log(
-                targetId = groupId,
-                mapOf("year" to year, "month" to month)
-            )
-        }
+        return db.connect { dbc ->
+                dbc.read { getAbsencesInGroupByMonth(it, groupId, year, month) }
+            }
+            .also {
+                Audit.AbsenceRead.log(targetId = groupId, mapOf("year" to year, "month" to month))
+            }
     }
 
     @PostMapping("/{groupId}")
@@ -65,7 +65,10 @@ class AbsenceController(private val accessControl: AccessControl) {
         accessControl.requirePermissionFor(user, clock, Action.Group.CREATE_ABSENCES, groupId)
         accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_ABSENCE, children)
 
-        val upserted = db.connect { dbc -> dbc.transaction { it.upsertAbsences(clock.now(), user.evakaUserId, absences) } }
+        val upserted =
+            db.connect { dbc ->
+                dbc.transaction { it.upsertAbsences(clock.now(), user.evakaUserId, absences) }
+            }
         Audit.AbsenceUpsert.log(
             targetId = groupId,
             objectId = upserted,
@@ -104,12 +107,9 @@ class AbsenceController(private val accessControl: AccessControl) {
         @RequestBody body: DeleteChildAbsenceBody
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Child.DELETE_ABSENCE, childId)
-        val deleted = db.connect { dbc -> dbc.transaction { it.deleteChildAbsences(childId, body.date) } }
-        Audit.AbsenceDelete.log(
-            targetId = childId,
-            objectId = deleted,
-            mapOf("date" to body.date)
-        )
+        val deleted =
+            db.connect { dbc -> dbc.transaction { it.deleteChildAbsences(childId, body.date) } }
+        Audit.AbsenceDelete.log(targetId = childId, objectId = deleted, mapOf("date" to body.date))
     }
 
     @GetMapping("/by-child/{childId}")
@@ -122,12 +122,12 @@ class AbsenceController(private val accessControl: AccessControl) {
         @RequestParam month: Int
     ): List<Absence> {
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_ABSENCES, childId)
-        return db.connect { dbc -> dbc.read { getAbsencesOfChildByMonth(it, childId, year, month) } }.also {
-            Audit.AbsenceRead.log(
-                targetId = childId,
-                mapOf("year" to year, "month" to month)
-            )
-        }
+        return db.connect { dbc ->
+                dbc.read { getAbsencesOfChildByMonth(it, childId, year, month) }
+            }
+            .also {
+                Audit.AbsenceRead.log(targetId = childId, mapOf("year" to year, "month" to month))
+            }
     }
 
     @GetMapping("/by-child/{childId}/future")
@@ -138,8 +138,7 @@ class AbsenceController(private val accessControl: AccessControl) {
         @PathVariable childId: ChildId
     ): List<Absence> {
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_FUTURE_ABSENCES, childId)
-        return db.connect { dbc -> dbc.read { getFutureAbsencesOfChild(it, clock, childId) } }.also {
-            Audit.AbsenceRead.log(targetId = childId)
-        }
+        return db.connect { dbc -> dbc.read { getFutureAbsencesOfChild(it, clock, childId) } }
+            .also { Audit.AbsenceRead.log(targetId = childId) }
     }
 }

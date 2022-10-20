@@ -22,9 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class NotesController(
-    private val ac: AccessControl
-) {
+class NotesController(private val ac: AccessControl) {
     data class NotesByGroupResponse(
         val childDailyNotes: List<ChildDailyNote>,
         val childStickyNotes: List<ChildStickyNote>,
@@ -41,22 +39,24 @@ class NotesController(
         ac.requirePermissionFor(user, clock, Action.Group.READ_NOTES, groupId)
 
         return db.connect { dbc ->
-            dbc.read {
-                NotesByGroupResponse(
-                    childDailyNotes = it.getChildDailyNotesInGroup(groupId, clock.today()),
-                    childStickyNotes = it.getChildStickyNotesForGroup(groupId, clock.today()),
-                    groupNotes = it.getGroupNotesForGroup(groupId)
+                dbc.read {
+                    NotesByGroupResponse(
+                        childDailyNotes = it.getChildDailyNotesInGroup(groupId, clock.today()),
+                        childStickyNotes = it.getChildStickyNotesForGroup(groupId, clock.today()),
+                        groupNotes = it.getGroupNotesForGroup(groupId)
+                    )
+                }
+            }
+            .also {
+                Audit.NotesByGroupRead.log(
+                    targetId = groupId,
+                    args =
+                        mapOf(
+                            "childDailyNoteCount" to it.childDailyNotes.size,
+                            "childStickyNoteCount" to it.childStickyNotes.size,
+                            "groupNoteCount" to it.groupNotes.size
+                        )
                 )
             }
-        }.also {
-            Audit.NotesByGroupRead.log(
-                targetId = groupId,
-                args = mapOf(
-                    "childDailyNoteCount" to it.childDailyNotes.size,
-                    "childStickyNoteCount" to it.childStickyNotes.size,
-                    "groupNoteCount" to it.groupNotes.size
-                )
-            )
-        }
     }
 }

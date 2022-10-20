@@ -15,9 +15,9 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.toPredicate
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
@@ -28,19 +28,19 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
         clock: EvakaClock
     ): List<AssistanceNeedDecisionsReportRow> {
         return db.connect { dbc ->
-            dbc.read {
-                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                val filter = accessControl.requireAuthorizationFilter(
-                    it,
-                    user,
-                    clock,
-                    Action.AssistanceNeedDecision.READ_IN_REPORT
-                )
-                it.getDecisionRows(user.evakaUserId, filter)
+                dbc.read {
+                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.AssistanceNeedDecision.READ_IN_REPORT
+                        )
+                    it.getDecisionRows(user.evakaUserId, filter)
+                }
             }
-        }.also {
-            Audit.AssistanceNeedDecisionsReportRead.log(args = mapOf("count" to it.size))
-        }
+            .also { Audit.AssistanceNeedDecisionsReportRead.log(args = mapOf("count" to it.size)) }
     }
 
     @GetMapping("/reports/assistance-need-decisions/unread-count")
@@ -49,24 +49,24 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock
     ): Int {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_ASSISTANCE_NEED_DECISIONS_REPORT)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Global.READ_ASSISTANCE_NEED_DECISIONS_REPORT
+        )
 
-        return db.connect { dbc ->
-            dbc.read {
-                it.getDecisionMakerUnreadCount(user.evakaUserId)
-            }
-        }.also {
-            Audit.AssistanceNeedDecisionsReportUnreadCount.log()
-        }
+        return db.connect { dbc -> dbc.read { it.getDecisionMakerUnreadCount(user.evakaUserId) } }
+            .also { Audit.AssistanceNeedDecisionsReportUnreadCount.log() }
     }
 }
 
 private fun Database.Read.getDecisionRows(
     userId: EvakaUserId,
     idFilter: AccessControlFilter<AssistanceNeedDecisionId>
-): List<AssistanceNeedDecisionsReportRow> = createQuery {
-    sql(
-        """
+): List<AssistanceNeedDecisionsReportRow> =
+    createQuery {
+            sql(
+                """
 SELECT ad.id, sent_for_decision, concat(child.last_name, ' ', child.first_name) child_name,
     care_area.name care_area_name, daycare.name unit_name, decision_made, status,
     (CASE WHEN decision_maker_employee_id = ${bind(userId)} THEN decision_maker_has_opened ELSE NULL END) is_opened
@@ -76,11 +76,12 @@ JOIN daycare ON daycare.id = ad.selected_unit
 JOIN care_area ON care_area.id = daycare.care_area_id
 WHERE sent_for_decision IS NOT NULL
 AND (${tablePredicate("ad", idFilter.toPredicate())})
-        """.trimIndent()
-    )
-}
-    .mapTo<AssistanceNeedDecisionsReportRow>()
-    .toList()
+        """
+                    .trimIndent()
+            )
+        }
+        .mapTo<AssistanceNeedDecisionsReportRow>()
+        .toList()
 
 data class AssistanceNeedDecisionsReportRow(
     val id: AssistanceNeedDecisionId,
@@ -102,9 +103,7 @@ private fun Database.Read.getDecisionMakerUnreadCount(userId: EvakaUserId): Int 
         WHERE sent_for_decision IS NOT NULL
           AND decision_maker_employee_id = :employeeId
           AND NOT decision_maker_has_opened
-        """.trimIndent()
-    return createQuery(sql)
-        .bind("employeeId", userId)
-        .mapTo<Int>()
-        .first()
+        """
+            .trimIndent()
+    return createQuery(sql).bind("employeeId", userId).mapTo<Int>().first()
 }

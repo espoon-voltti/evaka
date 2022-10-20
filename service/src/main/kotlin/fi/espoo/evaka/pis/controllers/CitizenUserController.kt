@@ -36,27 +36,37 @@ class CitizenUserController(
         clock: EvakaClock,
         @PathVariable(value = "personId") personId: PersonId
     ): UserDetailsResponse {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_VTJ_DETAILS, personId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.READ_VTJ_DETAILS,
+            personId
+        )
         val notFound = { throw NotFound("Person not found") }
         if (user.id != personId) {
             notFound()
         }
 
         return db.connect { dbc ->
-            dbc.transaction { tx ->
-                val person = tx.getPersonById(personId) ?: notFound()
-                val userDetails =
-                    CitizenUserDetails.from(person, accessControlCitizen.getPermittedFeatures(tx, user, clock))
+                dbc.transaction { tx ->
+                    val person = tx.getPersonById(personId) ?: notFound()
+                    val userDetails =
+                        CitizenUserDetails.from(
+                            person,
+                            accessControlCitizen.getPermittedFeatures(tx, user, clock)
+                        )
 
-                if (user.authLevel == CitizenAuthLevel.STRONG) {
-                    UserDetailsResponse.Strong(userDetails, (person.identity as? ExternalIdentifier.SSN)?.ssn ?: "")
-                } else {
-                    UserDetailsResponse.Weak(userDetails)
+                    if (user.authLevel == CitizenAuthLevel.STRONG) {
+                        UserDetailsResponse.Strong(
+                            userDetails,
+                            (person.identity as? ExternalIdentifier.SSN)?.ssn ?: ""
+                        )
+                    } else {
+                        UserDetailsResponse.Weak(userDetails)
+                    }
                 }
             }
-        }.also {
-            Audit.VtjRequest.log(targetId = personId)
-        }
+            .also { Audit.VtjRequest.log(targetId = personId) }
     }
 
     internal data class CitizenUserDetails(
@@ -73,19 +83,20 @@ class CitizenUserController(
         val accessibleFeatures: CitizenFeatures
     ) {
         companion object {
-            fun from(person: PersonDTO, accessibleFeatures: CitizenFeatures): CitizenUserDetails = CitizenUserDetails(
-                id = person.id,
-                firstName = person.firstName,
-                lastName = person.lastName,
-                preferredName = person.preferredName,
-                streetAddress = person.streetAddress,
-                postalCode = person.postalCode,
-                postOffice = person.postOffice,
-                phone = person.phone,
-                backupPhone = person.backupPhone,
-                email = person.email,
-                accessibleFeatures = accessibleFeatures
-            )
+            fun from(person: PersonDTO, accessibleFeatures: CitizenFeatures): CitizenUserDetails =
+                CitizenUserDetails(
+                    id = person.id,
+                    firstName = person.firstName,
+                    lastName = person.lastName,
+                    preferredName = person.preferredName,
+                    streetAddress = person.streetAddress,
+                    postalCode = person.postalCode,
+                    postOffice = person.postOffice,
+                    phone = person.phone,
+                    backupPhone = person.backupPhone,
+                    email = person.email,
+                    accessibleFeatures = accessibleFeatures
+                )
         }
     }
 
@@ -98,8 +109,7 @@ class CitizenUserController(
             val socialSecurityNumber: String
         ) : UserDetailsResponse(details, CitizenAuthLevel.STRONG)
 
-        internal class Weak(
-            override val details: CitizenUserDetails
-        ) : UserDetailsResponse(details, CitizenAuthLevel.WEAK)
+        internal class Weak(override val details: CitizenUserDetails) :
+            UserDetailsResponse(details, CitizenAuthLevel.WEAK)
     }
 }

@@ -38,38 +38,75 @@ class FamilyInitializerService(
         asyncJobRunner.registerHandler(::handleInitializeFamilyFromApplication)
     }
 
-    fun handleInitializeFamilyFromApplication(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.InitializeFamilyFromApplication) {
+    fun handleInitializeFamilyFromApplication(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.InitializeFamilyFromApplication
+    ) {
         val user = msg.user
-        val application = db.read { it.fetchApplicationDetails(msg.applicationId) }
-            ?: error("Could not initialize family, application ${msg.applicationId} not found")
+        val application =
+            db.read { it.fetchApplicationDetails(msg.applicationId) }
+                ?: error("Could not initialize family, application ${msg.applicationId} not found")
 
-        val members = db.transaction { parseFridgeFamilyMembersFromApplication(it, clock, user, application) }
+        val members =
+            db.transaction { parseFridgeFamilyMembersFromApplication(it, clock, user, application) }
         db.transaction { initFamilyFromApplication(it, clock, members) }
     }
 
-    private fun initFamilyFromApplication(tx: Database.Transaction, evakaClock: EvakaClock, familyFromApplication: FridgeFamilyMembers) {
+    private fun initFamilyFromApplication(
+        tx: Database.Transaction,
+        evakaClock: EvakaClock,
+        familyFromApplication: FridgeFamilyMembers
+    ) {
         // If head of family already has a family today, use it OR
         // if application has other partner in same address, and she has a family, use it OR
         // if child has other guardian living in same address and she has a family, use her
-        val headOfFamily = if (
-            !tx.personIsHeadOfFamily(familyFromApplication.headOfFamily.id, evakaClock.today()) &&
-            familyFromApplication.fridgePartner != null &&
-            tx.personIsHeadOfFamily(familyFromApplication.fridgePartner.id, evakaClock.today()) &&
-            personService.personsLiveInTheSameAddress(tx, familyFromApplication.fridgePartner.id, familyFromApplication.headOfFamily.id)
-        ) {
-            familyFromApplication.fridgePartner
-        } else {
-            familyFromApplication.headOfFamily
+        val headOfFamily =
+            if (
+                !tx.personIsHeadOfFamily(
+                    familyFromApplication.headOfFamily.id,
+                    evakaClock.today()
+                ) &&
+                    familyFromApplication.fridgePartner != null &&
+                    tx.personIsHeadOfFamily(
+                        familyFromApplication.fridgePartner.id,
+                        evakaClock.today()
+                    ) &&
+                    personService.personsLiveInTheSameAddress(
+                        tx,
+                        familyFromApplication.fridgePartner.id,
+                        familyFromApplication.headOfFamily.id
+                    )
+            ) {
+                familyFromApplication.fridgePartner
+            } else {
+                familyFromApplication.headOfFamily
+            }
+
+        tx.subTransaction {
+            createParentship(
+                tx,
+                evakaClock,
+                child = familyFromApplication.fridgeChild,
+                headOfChildId = headOfFamily.id
+            )
         }
 
-        tx.subTransaction { createParentship(tx, evakaClock, child = familyFromApplication.fridgeChild, headOfChildId = headOfFamily.id) }
-
         if (familyFromApplication.fridgePartner != null) {
-            tx.subTransaction { createPartnership(tx, evakaClock, familyFromApplication.headOfFamily.id, familyFromApplication.fridgePartner.id) }
+            tx.subTransaction {
+                createPartnership(
+                    tx,
+                    evakaClock,
+                    familyFromApplication.headOfFamily.id,
+                    familyFromApplication.fridgePartner.id
+                )
+            }
         }
 
         familyFromApplication.fridgeSiblings.forEach { sibling ->
-            tx.subTransaction { createParentship(tx, evakaClock, child = sibling, headOfChildId = headOfFamily.id) }
+            tx.subTransaction {
+                createParentship(tx, evakaClock, child = sibling, headOfChildId = headOfFamily.id)
+            }
         }
     }
 
@@ -86,51 +123,84 @@ class FamilyInitializerService(
         user: AuthenticatedUser,
         application: ApplicationDetails
     ): FridgeFamilyMembers {
-        val headOfFamily = tx.getPersonById(application.guardianId)
-            ?: error("Application guardian not found with id ${application.guardianId}")
-        val child = tx.getPersonById(application.childId)
-            ?: error("Application child not found with id ${application.childId}")
+        val headOfFamily =
+            tx.getPersonById(application.guardianId)
+                ?: error("Application guardian not found with id ${application.guardianId}")
+        val child =
+            tx.getPersonById(application.childId)
+                ?: error("Application child not found with id ${application.childId}")
 
-        val otherGuardian = personService.getGuardians(tx, user, application.childId)
-            .firstOrNull { it.id != application.guardianId }
-            ?.takeIf { otherGuardian -> personService.personsLiveInTheSameAddress(headOfFamily, otherGuardian) }
-
-        val fridgePartnerSSN = application.form.otherPartner?.socialSecurityNumber
-            ?: (otherGuardian?.identity as? SSN)?.ssn
-
-        val existingFridgePartnerInSameAddressAsGuardianSSN = if (otherGuardian != null || fridgePartnerSSN != null) {
-            null
-        } else {
-            tx.getPartnershipsForPerson(application.guardianId, false).filter {
-                DateRange(it.startDate, it.endDate).includes(clock.today()) &&
-                    it.partners.any { partner -> partner.id != application.guardianId && personService.personsLiveInTheSameAddress(tx, partner.id, application.guardianId) }
-            }.map {
-                it.partners.first { partner -> partner.id != application.guardianId && personService.personsLiveInTheSameAddress(tx, partner.id, application.guardianId) }.socialSecurityNumber
-            }.firstOrNull()
-        }
-
-        val fridgePartner = (fridgePartnerSSN ?: existingFridgePartnerInSameAddressAsGuardianSSN)
-            ?.let { stringToSSN(it) }
-            ?.let {
-                try {
-                    personService.getOrCreatePerson(tx, user, it)
-                } catch (e: NotFound) {
-                    logger.error(e) { "Family initialization failed for application ${application.id} partner with a valid SSN that cannot be found in VTJ" }
-                    null
+        val otherGuardian =
+            personService
+                .getGuardians(tx, user, application.childId)
+                .firstOrNull { it.id != application.guardianId }
+                ?.takeIf { otherGuardian ->
+                    personService.personsLiveInTheSameAddress(headOfFamily, otherGuardian)
                 }
+
+        val fridgePartnerSSN =
+            application.form.otherPartner?.socialSecurityNumber
+                ?: (otherGuardian?.identity as? SSN)?.ssn
+
+        val existingFridgePartnerInSameAddressAsGuardianSSN =
+            if (otherGuardian != null || fridgePartnerSSN != null) {
+                null
+            } else {
+                tx.getPartnershipsForPerson(application.guardianId, false)
+                    .filter {
+                        DateRange(it.startDate, it.endDate).includes(clock.today()) &&
+                            it.partners.any { partner ->
+                                partner.id != application.guardianId &&
+                                    personService.personsLiveInTheSameAddress(
+                                        tx,
+                                        partner.id,
+                                        application.guardianId
+                                    )
+                            }
+                    }
+                    .map {
+                        it.partners
+                            .first { partner ->
+                                partner.id != application.guardianId &&
+                                    personService.personsLiveInTheSameAddress(
+                                        tx,
+                                        partner.id,
+                                        application.guardianId
+                                    )
+                            }
+                            .socialSecurityNumber
+                    }
+                    .firstOrNull()
             }
 
-        val fridgeSiblings = application.form.otherChildren
-            .mapNotNull { it.socialSecurityNumber }
-            .mapNotNull { stringToSSN(it) }
-            .mapNotNull {
-                try {
-                    personService.getOrCreatePerson(tx, user, it)
-                } catch (e: NotFound) {
-                    logger.error(e) { "Family initialization failed for application ${application.id} other child with a valid SSN that cannot be found in VTJ" }
-                    null
+        val fridgePartner =
+            (fridgePartnerSSN ?: existingFridgePartnerInSameAddressAsGuardianSSN)
+                ?.let { stringToSSN(it) }
+                ?.let {
+                    try {
+                        personService.getOrCreatePerson(tx, user, it)
+                    } catch (e: NotFound) {
+                        logger.error(e) {
+                            "Family initialization failed for application ${application.id} partner with a valid SSN that cannot be found in VTJ"
+                        }
+                        null
+                    }
                 }
-            }
+
+        val fridgeSiblings =
+            application.form.otherChildren
+                .mapNotNull { it.socialSecurityNumber }
+                .mapNotNull { stringToSSN(it) }
+                .mapNotNull {
+                    try {
+                        personService.getOrCreatePerson(tx, user, it)
+                    } catch (e: NotFound) {
+                        logger.error(e) {
+                            "Family initialization failed for application ${application.id} other child with a valid SSN that cannot be found in VTJ"
+                        }
+                        null
+                    }
+                }
 
         return FridgeFamilyMembers(headOfFamily, fridgePartner, child, fridgeSiblings)
     }
@@ -143,17 +213,23 @@ class FamilyInitializerService(
         }
     }
 
-    private fun createParentship(tx: Database.Transaction, evakaClock: EvakaClock, child: PersonDTO, headOfChildId: PersonId) {
+    private fun createParentship(
+        tx: Database.Transaction,
+        evakaClock: EvakaClock,
+        child: PersonDTO,
+        headOfChildId: PersonId
+    ) {
         val startDate = evakaClock.today()
-        val alreadyExists = tx.getParentships(
-            headOfChildId = headOfChildId,
-            childId = child.id,
-            includeConflicts = true
-        )
-            .any {
-                (it.startDate.isBefore(startDate) || it.startDate.isEqual(startDate)) &&
-                    (it.endDate.isAfter(startDate))
-            }
+        val alreadyExists =
+            tx.getParentships(
+                    headOfChildId = headOfChildId,
+                    childId = child.id,
+                    includeConflicts = true
+                )
+                .any {
+                    (it.startDate.isBefore(startDate) || it.startDate.isEqual(startDate)) &&
+                        (it.endDate.isAfter(startDate))
+                }
         if (alreadyExists) {
             logger.debug("Similar parentship already exists between $headOfChildId and ${child.id}")
         } else {
@@ -174,9 +250,12 @@ class FamilyInitializerService(
                 }
             } catch (e: UnableToExecuteStatementException) {
                 when (e.psqlCause()?.sqlState) {
-                    PSQLState.UNIQUE_VIOLATION.state, PSQLState.EXCLUSION_VIOLATION.state -> {
+                    PSQLState.UNIQUE_VIOLATION.state,
+                    PSQLState.EXCLUSION_VIOLATION.state -> {
                         val constraint = e.psqlCause()?.serverErrorMessage?.constraint ?: "-"
-                        logger.warn("Creating conflict parentship between $headOfChildId and ${child.id} (conflicting constraint is $constraint)")
+                        logger.warn(
+                            "Creating conflict parentship between $headOfChildId and ${child.id} (conflicting constraint is $constraint)"
+                        )
                         tx.createParentship(
                             childId = child.id,
                             headOfChildId = headOfChildId,
@@ -191,15 +270,21 @@ class FamilyInitializerService(
         }
     }
 
-    private fun createPartnership(tx: Database.Transaction, evakaClock: EvakaClock, personId1: PersonId, personId2: PersonId) {
+    private fun createPartnership(
+        tx: Database.Transaction,
+        evakaClock: EvakaClock,
+        personId1: PersonId,
+        personId2: PersonId
+    ) {
         val startDate = evakaClock.today()
         val alreadyExists =
-            tx.getPartnershipsForPerson(personId = personId1, includeConflicts = true)
-                .any { partnership ->
-                    partnership.partners.any { partner -> partner.id == personId2 } &&
-                        (partnership.startDate.isBefore(startDate) || partnership.startDate.isEqual(startDate)) &&
-                        (partnership.endDate == null || partnership.endDate.isAfter(startDate))
-                }
+            tx.getPartnershipsForPerson(personId = personId1, includeConflicts = true).any {
+                partnership ->
+                partnership.partners.any { partner -> partner.id == personId2 } &&
+                    (partnership.startDate.isBefore(startDate) ||
+                        partnership.startDate.isEqual(startDate)) &&
+                    (partnership.endDate == null || partnership.endDate.isAfter(startDate))
+            }
         if (alreadyExists) {
             logger.debug("Similar partnership already exists between $personId1 and $personId2")
         } else {
@@ -215,9 +300,12 @@ class FamilyInitializerService(
                 }
             } catch (e: UnableToExecuteStatementException) {
                 when (e.psqlCause()?.sqlState) {
-                    PSQLState.UNIQUE_VIOLATION.state, PSQLState.EXCLUSION_VIOLATION.state -> {
+                    PSQLState.UNIQUE_VIOLATION.state,
+                    PSQLState.EXCLUSION_VIOLATION.state -> {
                         val constraint = e.psqlCause()?.serverErrorMessage?.constraint ?: "-"
-                        logger.warn("Creating conflict partnership between $personId1 and $personId2 (conflicting constraint is $constraint)")
+                        logger.warn(
+                            "Creating conflict partnership between $personId1 and $personId2 (conflicting constraint is $constraint)"
+                        )
                         tx.createPartnership(
                             personId1 = personId1,
                             personId2 = personId2,

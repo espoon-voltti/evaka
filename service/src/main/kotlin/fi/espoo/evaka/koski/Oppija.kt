@@ -28,8 +28,7 @@ data class OpiskeluoikeusjaksonTila(override val koodiarvo: Opiskeluoikeusjakson
     Koodistokoodiviite<OpiskeluoikeusjaksonTilaKoodi>("koskiopiskeluoikeudentila")
 
 // https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/kieli/latest
-data class Suorituskieli(override val koodiarvo: String) :
-    Koodistokoodiviite<String>("kieli")
+data class Suorituskieli(override val koodiarvo: String) : Koodistokoodiviite<String>("kieli")
 
 // https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/lahdejarjestelma/latest
 data class Lähdejärjestelmä(override val koodiarvo: String) :
@@ -46,79 +45,47 @@ abstract class Koodistokoodiviite<T>(val koodistoUri: String) {
 
 // https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/vardajarjestamismuoto/latest
 enum class JärjestämismuotoKoodi {
-    @JsonProperty("JM02")
-    PURCHASED,
-
-    @JsonProperty("JM03")
-    PRIVATE_SERVICE_VOUCHER
+    @JsonProperty("JM02") PURCHASED,
+    @JsonProperty("JM03") PRIVATE_SERVICE_VOUCHER
 }
 
 // https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/koulutus/latest
 enum class KoulutusmoduulinTunnisteKoodi {
     @JsonProperty("001102") // "Päiväkodin esiopetus"
     PRESCHOOL,
-
-    @JsonProperty("999905")
-    PREPARATORY
+    @JsonProperty("999905") PREPARATORY
 }
 
 // https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/koskiopiskeluoikeudentila/latest
 enum class OpiskeluoikeusjaksonTilaKoodi {
-    @JsonProperty("lasna")
-    PRESENT,
-
-    @JsonProperty("valmistunut")
-    QUALIFIED,
-
-    @JsonProperty("eronnut")
-    RESIGNED,
-
-    @JsonProperty("mitatoity")
-    VOIDED,
-
-    @JsonProperty("valiaikaisestikeskeytynyt")
-    INTERRUPTED,
-
-    @JsonProperty("loma")
-    HOLIDAY
+    @JsonProperty("lasna") PRESENT,
+    @JsonProperty("valmistunut") QUALIFIED,
+    @JsonProperty("eronnut") RESIGNED,
+    @JsonProperty("mitatoity") VOIDED,
+    @JsonProperty("valiaikaisestikeskeytynyt") INTERRUPTED,
+    @JsonProperty("loma") HOLIDAY
 }
 
 // https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/opiskeluoikeudentyyppi/latest
 enum class OpiskeluoikeudenTyyppiKoodi {
-    @JsonProperty("esiopetus")
-    PRESCHOOL,
-
-    @JsonProperty("perusopetukseenvalmistavaopetus")
-    PREPARATORY
+    @JsonProperty("esiopetus") PRESCHOOL,
+    @JsonProperty("perusopetukseenvalmistavaopetus") PREPARATORY
 }
 
 // https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/suorituksentyyppi/latest
 enum class SuorituksenTyyppiKoodi {
-    @JsonProperty("esiopetuksensuoritus")
-    PRESCHOOL,
-
-    @JsonProperty("perusopetukseenvalmistavaopetus")
-    PREPARATORY,
-
-    @JsonProperty("perusopetukseenvalmistavanopetuksenoppiaine")
-    PREPARATORY_SUBJECT
+    @JsonProperty("esiopetuksensuoritus") PRESCHOOL,
+    @JsonProperty("perusopetukseenvalmistavaopetus") PREPARATORY,
+    @JsonProperty("perusopetukseenvalmistavanopetuksenoppiaine") PREPARATORY_SUBJECT
 }
 
 // https://github.com/Opetushallitus/koski/blob/d7abc79acca44d2d1265c14be4a631bd8ee91297/src/main/scala/fi/oph/koski/schema/Oppija.scala#L6
-data class Oppija(
-    val henkilö: Henkilö,
-    val opiskeluoikeudet: List<Opiskeluoikeus>
-)
+data class Oppija(val henkilö: Henkilö, val opiskeluoikeudet: List<Opiskeluoikeus>)
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
-sealed class Henkilö
+@JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION) sealed class Henkilö
 
 // https://github.com/Opetushallitus/koski/blob/1f1d05bb80cbac46cd873419975ed421370b5035/src/main/scala/fi/oph/koski/schema/Henkilo.scala#L56
-data class UusiHenkilö(
-    val hetu: String,
-    val etunimet: String,
-    val sukunimi: String
-) : Henkilö()
+data class UusiHenkilö(val hetu: String, val etunimet: String, val sukunimi: String) : Henkilö()
 
 // https://github.com/Opetushallitus/koski/blob/1f1d05bb80cbac46cd873419975ed421370b5035/src/main/scala/fi/oph/koski/schema/Henkilo.scala#L65
 data class OidHenkilö(val oid: String) : Henkilö()
@@ -130,8 +97,7 @@ data class Opiskeluoikeus(
     val tyyppi: OpiskeluoikeudenTyyppi,
     val lähdejärjestelmänId: LähdejärjestelmäId,
     val lisätiedot: Lisätiedot?,
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    val järjestämismuoto: Järjestämismuoto?
+    @JsonInclude(JsonInclude.Include.NON_NULL) val järjestämismuoto: Järjestämismuoto?
 )
 
 // https://github.com/Opetushallitus/koski/blob/1f1d05bb80cbac46cd873419975ed421370b5035/src/main/scala/fi/oph/koski/schema/Opiskeluoikeus.scala#L226
@@ -140,44 +106,45 @@ data class LähdejärjestelmäId(
     val lähdejärjestelmä: Lähdejärjestelmä
 )
 
-data class OpiskeluoikeudenTila(
-    val opiskeluoikeusjaksot: List<Opiskeluoikeusjakso>
-)
+data class OpiskeluoikeudenTila(val opiskeluoikeusjaksot: List<Opiskeluoikeusjakso>)
 
-data class Opiskeluoikeusjakso(
-    val alku: LocalDate,
-    val tila: OpiskeluoikeusjaksonTila
-) {
+data class Opiskeluoikeusjakso(val alku: LocalDate, val tila: OpiskeluoikeusjaksonTila) {
     companion object {
-        fun läsnä(alku: LocalDate) = Opiskeluoikeusjakso(
-            alku = alku,
-            tila = OpiskeluoikeusjaksonTila(OpiskeluoikeusjaksonTilaKoodi.PRESENT)
-        )
+        fun läsnä(alku: LocalDate) =
+            Opiskeluoikeusjakso(
+                alku = alku,
+                tila = OpiskeluoikeusjaksonTila(OpiskeluoikeusjaksonTilaKoodi.PRESENT)
+            )
 
-        fun valmistunut(alku: LocalDate) = Opiskeluoikeusjakso(
-            alku = alku,
-            tila = OpiskeluoikeusjaksonTila(OpiskeluoikeusjaksonTilaKoodi.QUALIFIED)
-        )
+        fun valmistunut(alku: LocalDate) =
+            Opiskeluoikeusjakso(
+                alku = alku,
+                tila = OpiskeluoikeusjaksonTila(OpiskeluoikeusjaksonTilaKoodi.QUALIFIED)
+            )
 
-        fun eronnut(alku: LocalDate) = Opiskeluoikeusjakso(
-            alku = alku,
-            tila = OpiskeluoikeusjaksonTila(OpiskeluoikeusjaksonTilaKoodi.RESIGNED)
-        )
+        fun eronnut(alku: LocalDate) =
+            Opiskeluoikeusjakso(
+                alku = alku,
+                tila = OpiskeluoikeusjaksonTila(OpiskeluoikeusjaksonTilaKoodi.RESIGNED)
+            )
 
-        fun mitätöity(alku: LocalDate) = Opiskeluoikeusjakso(
-            alku = alku,
-            tila = OpiskeluoikeusjaksonTila(OpiskeluoikeusjaksonTilaKoodi.VOIDED)
-        )
+        fun mitätöity(alku: LocalDate) =
+            Opiskeluoikeusjakso(
+                alku = alku,
+                tila = OpiskeluoikeusjaksonTila(OpiskeluoikeusjaksonTilaKoodi.VOIDED)
+            )
 
-        fun väliaikaisestiKeskeytynyt(alku: LocalDate) = Opiskeluoikeusjakso(
-            alku = alku,
-            tila = OpiskeluoikeusjaksonTila(OpiskeluoikeusjaksonTilaKoodi.INTERRUPTED)
-        )
+        fun väliaikaisestiKeskeytynyt(alku: LocalDate) =
+            Opiskeluoikeusjakso(
+                alku = alku,
+                tila = OpiskeluoikeusjaksonTila(OpiskeluoikeusjaksonTilaKoodi.INTERRUPTED)
+            )
 
-        fun loma(alku: LocalDate) = Opiskeluoikeusjakso(
-            alku = alku,
-            tila = OpiskeluoikeusjaksonTila(OpiskeluoikeusjaksonTilaKoodi.HOLIDAY)
-        )
+        fun loma(alku: LocalDate) =
+            Opiskeluoikeusjakso(
+                alku = alku,
+                tila = OpiskeluoikeusjaksonTila(OpiskeluoikeusjaksonTilaKoodi.HOLIDAY)
+            )
     }
 }
 
@@ -186,9 +153,7 @@ data class Koulutusmoduuli(
     val tunniste: KoulutusmoduulinTunniste
 )
 
-data class Toimipiste(
-    val oid: String
-)
+data class Toimipiste(val oid: String)
 
 data class Suoritus(
     val koulutusmoduuli: Koulutusmoduuli,
@@ -206,14 +171,10 @@ data class Osasuoritus(
     val vahvistus: Vahvistus? = null
 )
 
-data class Arviointi(
-    val arvosana: Arvosana,
-    val kuvaus: LokalisoituTeksti
-)
+data class Arviointi(val arvosana: Arvosana, val kuvaus: LokalisoituTeksti)
 
 enum class ArvosanaKoodiarvo {
-    @JsonProperty("O")
-    OSALLISTUNUT
+    @JsonProperty("O") OSALLISTUNUT
 }
 
 data class Arvosana(
@@ -226,19 +187,12 @@ data class OsasuorituksenKoulutusmoduuli(
     val laajuus: OsasuorituksenLaajuus
 )
 
-data class OsasuorituksenTunniste(
-    val koodiarvo: String,
-    val nimi: LokalisoituTeksti
-)
+data class OsasuorituksenTunniste(val koodiarvo: String, val nimi: LokalisoituTeksti)
 
-data class OsasuorituksenLaajuus(
-    val arvo: Int,
-    val yksikkö: Laajuusyksikkö
-)
+data class OsasuorituksenLaajuus(val arvo: Int, val yksikkö: Laajuusyksikkö)
 
 enum class LaajuusyksikköKoodiarvo {
-    @JsonProperty("3")
-    VUOSIVIIKKOTUNTI
+    @JsonProperty("3") VUOSIVIIKKOTUNTI
 }
 
 data class Laajuusyksikkö(
@@ -246,9 +200,7 @@ data class Laajuusyksikkö(
     val koodistoUri: String = "opintojenlaajuusyksikko"
 )
 
-data class LokalisoituTeksti(
-    val fi: String
-)
+data class LokalisoituTeksti(val fi: String)
 
 data class Vahvistus(
     val päivä: LocalDate,
@@ -257,14 +209,9 @@ data class Vahvistus(
     val myöntäjäHenkilöt: List<MyöntäjäHenkilö>
 )
 
-data class VahvistusPaikkakunta(
-    val koodiarvo: String,
-    val koodistoUri: String = "kunta"
-)
+data class VahvistusPaikkakunta(val koodiarvo: String, val koodistoUri: String = "kunta")
 
-data class MyöntäjäOrganisaatio(
-    val oid: String
-)
+data class MyöntäjäOrganisaatio(val oid: String)
 
 data class MyöntäjäHenkilö(
     val nimi: String,
@@ -272,9 +219,7 @@ data class MyöntäjäHenkilö(
     val organisaatio: MyöntäjäOrganisaatio
 )
 
-data class MyöntäjäHenkilönTitteli(
-    val fi: String
-)
+data class MyöntäjäHenkilönTitteli(val fi: String)
 
 data class Lisätiedot(
     val vammainen: List<Aikajakso>?,
@@ -291,12 +236,13 @@ data class ErityisenTuenPäätös(
     val erityisryhmässä: Boolean
 ) {
     companion object {
-        fun from(aikajakso: FiniteDateRange, erityisryhmässä: Boolean) = ErityisenTuenPäätös(
-            alku = aikajakso.start,
-            loppu = aikajakso.end,
-            opiskeleeToimintaAlueittain = false, // not used in Espoo
-            erityisryhmässä = erityisryhmässä
-        )
+        fun from(aikajakso: FiniteDateRange, erityisryhmässä: Boolean) =
+            ErityisenTuenPäätös(
+                alku = aikajakso.start,
+                loppu = aikajakso.end,
+                opiskeleeToimintaAlueittain = false, // not used in Espoo
+                erityisryhmässä = erityisryhmässä
+            )
     }
 }
 
@@ -307,15 +253,23 @@ data class Aikajakso(val alku: LocalDate, val loppu: LocalDate?) {
 }
 
 enum class PerusteenDiaarinumero {
-    @JsonProperty("102/011/2014") // "Esiopetuksen opetussuunnitelman perusteet 2014" https://eperusteet.opintopolku.fi/#/en/esiopetus/419551/tiedot
-    PRESCHOOL,
+    // "Esiopetuksen opetussuunnitelman perusteet 2014"
+    // https://eperusteet.opintopolku.fi/#/en/esiopetus/419551/tiedot
+    @JsonProperty("102/011/2014") PRESCHOOL,
 
-    @JsonProperty("57/011/2015") // https://eperusteet.opintopolku.fi/#/fi/pvalmistava/1541511/tiedot
-    PREPARATORY
+    // https://eperusteet.opintopolku.fi/#/fi/pvalmistava/1541511/tiedot
+    @JsonProperty("57/011/2015") PREPARATORY
 }
 
 // https://github.com/Opetushallitus/koski/blob/d7abc79acca44d2d1265c14be4a631bd8ee91297/src/main/scala/fi/oph/koski/oppija/KoskiOppijaFacade.scala#L278
-data class HenkilönOpiskeluoikeusVersiot(val henkilö: OidHenkilö, val opiskeluoikeudet: List<OpiskeluoikeusVersio>)
+data class HenkilönOpiskeluoikeusVersiot(
+    val henkilö: OidHenkilö,
+    val opiskeluoikeudet: List<OpiskeluoikeusVersio>
+)
 
 // https://github.com/Opetushallitus/koski/blob/d7abc79acca44d2d1265c14be4a631bd8ee91297/src/main/scala/fi/oph/koski/oppija/KoskiOppijaFacade.scala#L279
-data class OpiskeluoikeusVersio(val oid: String, val versionumero: Int, val lähdejärjestelmänId: LähdejärjestelmäId)
+data class OpiskeluoikeusVersio(
+    val oid: String,
+    val versionumero: Int,
+    val lähdejärjestelmänId: LähdejärjestelmäId
+)

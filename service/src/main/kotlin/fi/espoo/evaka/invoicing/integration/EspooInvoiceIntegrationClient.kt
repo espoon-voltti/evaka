@@ -15,8 +15,8 @@ import fi.espoo.evaka.invoicing.service.EspooInvoiceProducts
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.voltti.logging.loggers.error
-import mu.KotlinLogging
 import java.time.LocalDate
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -25,21 +25,27 @@ class EspooInvoiceIntegrationClient(
     private val jsonMapper: JsonMapper
 ) : InvoiceIntegrationClient {
     override fun send(invoices: List<InvoiceDetailed>): InvoiceIntegrationClient.SendResult {
-        val (withSSN, withoutSSN) = invoices.partition { invoice -> invoice.headOfFamily.ssn != null }
+        val (withSSN, withoutSSN) =
+            invoices.partition { invoice -> invoice.headOfFamily.ssn != null }
 
         return withSSN
             .groupBy { it.agreementType }
             .map { (agreementType, invoices) ->
-                val success = if (agreementType != null) {
-                    sendBatch(invoices, agreementType)
-                } else {
-                    val areaIds = invoices.asSequence().map { it.areaId }.distinct().sorted()
-                    logger.error("Failed to send ${invoices.size} invoices due to missing areaCode in the following areas: ${areaIds.joinToString()}")
-                    false
-                }
+                val success =
+                    if (agreementType != null) {
+                        sendBatch(invoices, agreementType)
+                    } else {
+                        val areaIds = invoices.asSequence().map { it.areaId }.distinct().sorted()
+                        logger.error(
+                            "Failed to send ${invoices.size} invoices due to missing areaCode in the following areas: ${areaIds.joinToString()}"
+                        )
+                        false
+                    }
                 success to invoices
             }
-            .fold(InvoiceIntegrationClient.SendResult(manuallySent = withoutSSN)) { result, (success, invoices) ->
+            .fold(InvoiceIntegrationClient.SendResult(manuallySent = withoutSSN)) {
+                result,
+                (success, invoices) ->
                 if (success) {
                     result.copy(succeeded = result.succeeded + invoices)
                 } else {
@@ -52,10 +58,12 @@ class EspooInvoiceIntegrationClient(
         val batch = createBatchExports(invoices, agreementType, sendCodebtor = env.sendCodebtor)
         val payload = jsonMapper.writeValueAsString(batch)
         logger.debug("Sending invoice batch ${batch.batchNumber} to integration, payload: $payload")
-        val (_, _, result) = Fuel.post("${env.url}/invoice-batches")
-            .authentication().basic(env.username, env.password.value)
-            .jsonBody(payload)
-            .responseString()
+        val (_, _, result) =
+            Fuel.post("${env.url}/invoice-batches")
+                .authentication()
+                .basic(env.username, env.password.value)
+                .jsonBody(payload)
+                .responseString()
 
         return result.fold(
             { true },
@@ -75,66 +83,78 @@ class EspooInvoiceIntegrationClient(
         ): EspooInvoiceBatch {
             require(agType <= 999) { "Agreement type can be at most 3 digits long, was '$agType'" }
             return batchInvoices
-                // Do not send negative or very small invoices as refunds are handled manually outside evaka
+                // Do not send negative or very small invoices as refunds are handled manually
+                // outside evaka
                 .filter { it.totalPrice > 0.1 }
                 .let { invoices ->
                     EspooInvoiceBatch(
                         agreementType = agType,
                         batchDate = LocalDate.now(europeHelsinki),
                         batchNumber = agType,
-                        invoices = invoices.map { invoice ->
-                            val lang =
-                                if (invoice.headOfFamily.language == "sv") {
-                                    EspooLang.SV
-                                } else {
-                                    EspooLang.FI
-                                }
-
-                            val integrtionInvoice = EspooInvoice(
-                                invoiceNumber = invoice.number!!,
-                                date = invoice.invoiceDate,
-                                dueDate = invoice.dueDate,
-                                client = asClient(invoice.headOfFamily, lang),
-                                recipient = asRecipient(invoice.headOfFamily),
-                                rows = invoice.rows
-                                    .groupBy { it.child }
-                                    .toList()
-                                    .sortedByDescending { (child) -> child.dateOfBirth }
-                                    .flatMap { (child, rows) ->
-                                        val nameRow = emptyRow(
-                                            "${child.lastName.take(communityLastNameMaxLength)} ${child.firstName}"
-                                        )
-                                        val rowsWithContent = rows.map { row ->
-                                            invoiceRow(
-                                                lang,
-                                                agType,
-                                                invoice.account,
-                                                row.product,
-                                                row.periodStart,
-                                                row.periodEnd,
-                                                row.amount,
-                                                row.unitPrice,
-                                                row.price,
-                                                row.description.trim(),
-                                                row.costCenter.trim(),
-                                                row.subCostCenter?.trim()
-                                            )
-                                        }
-                                        listOf(nameRow) + rowsWithContent + listOf(emptyRow())
+                        invoices =
+                            invoices.map { invoice ->
+                                val lang =
+                                    if (invoice.headOfFamily.language == "sv") {
+                                        EspooLang.SV
+                                    } else {
+                                        EspooLang.FI
                                     }
-                            )
 
-                            if (sendCodebtor) {
-                                integrtionInvoice.withCodebtor(asCodebtor(invoice.codebtor))
-                            } else {
-                                integrtionInvoice
+                                val integrtionInvoice =
+                                    EspooInvoice(
+                                        invoiceNumber = invoice.number!!,
+                                        date = invoice.invoiceDate,
+                                        dueDate = invoice.dueDate,
+                                        client = asClient(invoice.headOfFamily, lang),
+                                        recipient = asRecipient(invoice.headOfFamily),
+                                        rows =
+                                            invoice.rows
+                                                .groupBy { it.child }
+                                                .toList()
+                                                .sortedByDescending { (child) -> child.dateOfBirth }
+                                                .flatMap { (child, rows) ->
+                                                    val nameRow =
+                                                        emptyRow(
+                                                            "${child.lastName.take(communityLastNameMaxLength)} ${child.firstName}"
+                                                        )
+                                                    val rowsWithContent =
+                                                        rows.map { row ->
+                                                            invoiceRow(
+                                                                lang,
+                                                                agType,
+                                                                invoice.account,
+                                                                row.product,
+                                                                row.periodStart,
+                                                                row.periodEnd,
+                                                                row.amount,
+                                                                row.unitPrice,
+                                                                row.price,
+                                                                row.description.trim(),
+                                                                row.costCenter.trim(),
+                                                                row.subCostCenter?.trim()
+                                                            )
+                                                        }
+                                                    listOf(nameRow) +
+                                                        rowsWithContent +
+                                                        listOf(emptyRow())
+                                                }
+                                    )
+
+                                if (sendCodebtor) {
+                                    integrtionInvoice.withCodebtor(asCodebtor(invoice.codebtor))
+                                } else {
+                                    integrtionInvoice
+                                }
                             }
-                        }
                     )
                 }
         }
 
-        private fun addressIsValid(streetAddress: String, postalCode: String, postOffice: String): Boolean {
+        private fun addressIsValid(
+            streetAddress: String,
+            postalCode: String,
+            postOffice: String
+        ): Boolean {
             // some part of address information is empty
             if (streetAddress.isBlank() || postalCode.isBlank() || postOffice.isBlank()) {
                 return false
@@ -142,7 +162,9 @@ class EspooInvoiceIntegrationClient(
 
             // some part of address does not fit string length limitations
             if (streetAddress.length > 36 || postalCode.length > 5 || postOffice.length > 40) {
-                logger.warn("Invoice recipient address was non-empty, but some part of it was too long for invoice integration, streetAddress: '$streetAddress', postalCode: '$postalCode', postOffice: '$postOffice'")
+                logger.warn(
+                    "Invoice recipient address was non-empty, but some part of it was too long for invoice integration, streetAddress: '$streetAddress', postalCode: '$postalCode', postOffice: '$postOffice'"
+                )
                 return false
             }
 
@@ -158,11 +180,12 @@ class EspooInvoiceIntegrationClient(
         const val fallbackPostOffice = "ESPOON KAUPUNKI"
 
         private fun asClient(headOfFamily: PersonDetailed, lang: EspooLang): EspooClient {
-            val (streetAddress, postalCode, postOffice) = Triple(
-                headOfFamily.streetAddress.trim(),
-                headOfFamily.postalCode.trim(),
-                headOfFamily.postOffice.trim()
-            )
+            val (streetAddress, postalCode, postOffice) =
+                Triple(
+                    headOfFamily.streetAddress.trim(),
+                    headOfFamily.postalCode.trim(),
+                    headOfFamily.postOffice.trim()
+                )
             val addressIsUseable = addressIsValid(streetAddress, postalCode, postOffice)
             return EspooClient(
                 ssn = headOfFamily.ssn!!,
@@ -183,28 +206,37 @@ class EspooInvoiceIntegrationClient(
                     headOfFamily.lastName to headOfFamily.firstName
                 }
 
-            val address = Triple(
-                headOfFamily.streetAddress.trim(),
-                headOfFamily.postalCode.trim(),
-                headOfFamily.postOffice.trim()
-            )
-            val invoiceAddress = Triple(
-                headOfFamily.invoicingStreetAddress.trim(),
-                headOfFamily.invoicingPostalCode.trim(),
-                headOfFamily.invoicingPostOffice.trim()
-            )
-
-            val (street, postalCode, post) = when {
-                addressIsValid(invoiceAddress.first, invoiceAddress.second, invoiceAddress.third) -> invoiceAddress
-                addressIsValid(address.first, address.second, address.third) -> address
-                else -> Triple(
-                    fallbackStreetAddress,
-                    fallbackPostalCode,
-                    fallbackPostOffice
+            val address =
+                Triple(
+                    headOfFamily.streetAddress.trim(),
+                    headOfFamily.postalCode.trim(),
+                    headOfFamily.postOffice.trim()
                 )
-            }
+            val invoiceAddress =
+                Triple(
+                    headOfFamily.invoicingStreetAddress.trim(),
+                    headOfFamily.invoicingPostalCode.trim(),
+                    headOfFamily.invoicingPostOffice.trim()
+                )
 
-            return EspooRecipient(lastname.take(communityLastNameMaxLength), firstnames.take(communityFirstNameMaxLength), street, post, postalCode)
+            val (street, postalCode, post) =
+                when {
+                    addressIsValid(
+                        invoiceAddress.first,
+                        invoiceAddress.second,
+                        invoiceAddress.third
+                    ) -> invoiceAddress
+                    addressIsValid(address.first, address.second, address.third) -> address
+                    else -> Triple(fallbackStreetAddress, fallbackPostalCode, fallbackPostOffice)
+                }
+
+            return EspooRecipient(
+                lastname.take(communityLastNameMaxLength),
+                firstnames.take(communityFirstNameMaxLength),
+                street,
+                post,
+                postalCode
+            )
         }
 
         private fun asCodebtor(codebtor: PersonDetailed?): EspooCodebtor? {
@@ -256,37 +288,39 @@ class EspooInvoiceIntegrationClient(
                 unitCount = 100 * n,
                 unitPrice = unitP,
                 amount = price,
-                description = desc
-                    .ifBlank {
-                        when (lang) {
-                            EspooLang.FI -> espooProduct.nameOnInvoiceFi
-                            EspooLang.SV -> espooProduct.nameOnInvoiceSv
+                description =
+                    desc
+                        .ifBlank {
+                            when (lang) {
+                                EspooLang.FI -> espooProduct.nameOnInvoiceFi
+                                EspooLang.SV -> espooProduct.nameOnInvoiceSv
+                            }
                         }
-                    }
-                    .take(communityDescriptionMaxLength),
+                        .take(communityDescriptionMaxLength),
                 account = acc,
                 costCenter = costC,
                 subCostCenter1 =
-                if (subCostC.isNullOrBlank()) {
-                    null
-                } else {
-                    subCostC.padStart(communitySubCostCenterLength, '0')
-                }
+                    if (subCostC.isNullOrBlank()) {
+                        null
+                    } else {
+                        subCostC.padStart(communitySubCostCenterLength, '0')
+                    }
             )
         }
 
-        private fun emptyRow(desc: String = ""): EspooInvoiceRow = EspooInvoiceRow(
-            productGroup = "",
-            periodStartDate = null,
-            periodEndDate = null,
-            unitCount = 0,
-            unitPrice = 0,
-            amount = 0,
-            description = desc.take(communityDescriptionMaxLength),
-            account = 0,
-            costCenter = "",
-            subCostCenter1 = null
-        )
+        private fun emptyRow(desc: String = ""): EspooInvoiceRow =
+            EspooInvoiceRow(
+                productGroup = "",
+                periodStartDate = null,
+                periodEndDate = null,
+                unitCount = 0,
+                unitPrice = 0,
+                amount = 0,
+                description = desc.take(communityDescriptionMaxLength),
+                account = 0,
+                costCenter = "",
+                subCostCenter1 = null
+            )
 
         data class EspooInvoiceBatch(
             val agreementType: Int,
@@ -321,15 +355,16 @@ class EspooInvoiceIntegrationClient(
             override val useInvoiceNumber = false
             override val printDate = null
 
-            fun withCodebtor(codebtor: EspooCodebtor?) = EspooInvoiceWithCodebtor(
-                invoiceNumber = this.invoiceNumber,
-                date = this.date,
-                dueDate = this.dueDate,
-                client = this.client,
-                recipient = this.recipient,
-                rows = this.rows,
-                codebtor = codebtor
-            )
+            fun withCodebtor(codebtor: EspooCodebtor?) =
+                EspooInvoiceWithCodebtor(
+                    invoiceNumber = this.invoiceNumber,
+                    date = this.date,
+                    dueDate = this.dueDate,
+                    client = this.client,
+                    recipient = this.recipient,
+                    rows = this.rows,
+                    codebtor = codebtor
+                )
         }
 
         data class EspooInvoiceWithCodebtor(

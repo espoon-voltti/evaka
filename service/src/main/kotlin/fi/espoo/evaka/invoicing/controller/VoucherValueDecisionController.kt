@@ -53,6 +53,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -60,7 +61,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 @RequestMapping("/value-decisions")
@@ -79,32 +79,35 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @RequestBody body: SearchVoucherValueDecisionRequest
     ): Paged<VoucherValueDecisionSummary> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.SEARCH_VOUCHER_VALUE_DECISIONS)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Global.SEARCH_VOUCHER_VALUE_DECISIONS
+        )
         val maxPageSize = 5000
         if (body.pageSize > maxPageSize) throw BadRequest("Maximum page size is $maxPageSize")
         return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.searchValueDecisions(
-                    clock,
-                    body.page,
-                    body.pageSize,
-                    body.sortBy ?: VoucherValueDecisionSortParam.STATUS,
-                    body.sortDirection ?: SortDirection.DESC,
-                    body.status,
-                    body.area ?: emptyList(),
-                    body.unit,
-                    body.searchTerms ?: "",
-                    body.startDate,
-                    body.endDate,
-                    body.searchByStartDate,
-                    body.financeDecisionHandlerId,
-                    body.difference ?: emptySet(),
-                    body.distinctions ?: emptyList()
-                )
+                dbc.read { tx ->
+                    tx.searchValueDecisions(
+                        clock,
+                        body.page,
+                        body.pageSize,
+                        body.sortBy ?: VoucherValueDecisionSortParam.STATUS,
+                        body.sortDirection ?: SortDirection.DESC,
+                        body.status,
+                        body.area ?: emptyList(),
+                        body.unit,
+                        body.searchTerms ?: "",
+                        body.startDate,
+                        body.endDate,
+                        body.searchByStartDate,
+                        body.financeDecisionHandlerId,
+                        body.difference ?: emptySet(),
+                        body.distinctions ?: emptyList()
+                    )
+                }
             }
-        }.also {
-            Audit.VoucherValueDecisionSearch.log(args = mapOf("total" to it.total))
-        }
+            .also { Audit.VoucherValueDecisionSearch.log(args = mapOf("total" to it.total)) }
     }
 
     @GetMapping("/{id}")
@@ -115,8 +118,9 @@ class VoucherValueDecisionController(
         @PathVariable id: VoucherValueDecisionId
     ): Wrapper<VoucherValueDecisionDetailed> {
         accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.READ, id)
-        val res = db.connect { dbc -> dbc.read { it.getVoucherValueDecision(id) } }
-            ?: throw NotFound("No voucher value decision found with given ID ($id)")
+        val res =
+            db.connect { dbc -> dbc.read { it.getVoucherValueDecision(id) } }
+                ?: throw NotFound("No voucher value decision found with given ID ($id)")
         Audit.VoucherValueDecisionRead.log(targetId = id)
         return Wrapper(res)
     }
@@ -128,10 +132,16 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @PathVariable headOfFamilyId: PersonId
     ): List<VoucherValueDecisionSummary> {
-        accessControl.requirePermissionFor(user, clock, Action.Person.READ_VOUCHER_VALUE_DECISIONS, headOfFamilyId)
-        return db.connect { dbc -> dbc.read { it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId) } }.also {
-            Audit.VoucherValueDecisionHeadOfFamilyRead.log(targetId = headOfFamilyId)
-        }
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Person.READ_VOUCHER_VALUE_DECISIONS,
+            headOfFamilyId
+        )
+        return db.connect { dbc ->
+                dbc.read { it.getHeadOfFamilyVoucherValueDecisions(headOfFamilyId) }
+            }
+            .also { Audit.VoucherValueDecisionHeadOfFamilyRead.log(targetId = headOfFamilyId) }
     }
 
     @PostMapping("/send")
@@ -141,7 +151,12 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @RequestBody decisionIds: List<VoucherValueDecisionId>
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.UPDATE, decisionIds)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.VoucherValueDecision.UPDATE,
+            decisionIds
+        )
         db.connect { dbc ->
             dbc.transaction {
                 sendVoucherValueDecisions(
@@ -185,29 +200,39 @@ class VoucherValueDecisionController(
         clock: EvakaClock,
         @PathVariable decisionId: VoucherValueDecisionId
     ): ResponseEntity<Any> {
-        accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.READ, decisionId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.VoucherValueDecision.READ,
+            decisionId
+        )
 
         return db.connect { dbc ->
-            dbc.read { tx ->
-                val decision = tx.getVoucherValueDecision(decisionId) ?: error("Cannot find voucher value decision $decisionId")
+                dbc.read { tx ->
+                    val decision =
+                        tx.getVoucherValueDecision(decisionId)
+                            ?: error("Cannot find voucher value decision $decisionId")
 
-                val personIds = listOfNotNull(
-                    decision.headOfFamily.id,
-                    decision.partner?.id,
-                    decision.child.id
-                )
-                val restrictedDetails = personIds.any { personId ->
-                    tx.getPersonById(personId)?.restrictedDetailsEnabled ?: false
+                    val personIds =
+                        listOfNotNull(
+                            decision.headOfFamily.id,
+                            decision.partner?.id,
+                            decision.child.id
+                        )
+                    val restrictedDetails =
+                        personIds.any { personId ->
+                            tx.getPersonById(personId)?.restrictedDetailsEnabled ?: false
+                        }
+                    if (restrictedDetails && !user.isAdmin) {
+                        throw Forbidden(
+                            "Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen."
+                        )
+                    }
                 }
-                if (restrictedDetails && !user.isAdmin) {
-                    throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
-                }
+
+                valueDecisionService.getDecisionPdfResponse(dbc, decisionId)
             }
-
-            valueDecisionService.getDecisionPdfResponse(dbc, decisionId)
-        }.also {
-            Audit.VoucherValueDecisionPdfRead.log(targetId = decisionId)
-        }
+            .also { Audit.VoucherValueDecisionPdfRead.log(targetId = decisionId) }
     }
 
     @PostMapping("/set-type/{uuid}")
@@ -219,7 +244,9 @@ class VoucherValueDecisionController(
         @RequestBody request: VoucherValueDecisionTypeRequest
     ) {
         accessControl.requirePermissionFor(user, clock, Action.VoucherValueDecision.UPDATE, uuid)
-        db.connect { dbc -> dbc.transaction { valueDecisionService.setType(it, uuid, request.type) } }
+        db.connect { dbc ->
+            dbc.transaction { valueDecisionService.setType(it, uuid, request.type) }
+        }
         Audit.VoucherValueDecisionSetType.log(targetId = uuid)
     }
 
@@ -231,8 +258,15 @@ class VoucherValueDecisionController(
         @PathVariable id: PersonId,
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Person.GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS, id)
-        db.connect { dbc -> dbc.transaction { generator.createRetroactiveValueDecisions(it, clock, id, body.from) } }
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Person.GENERATE_RETROACTIVE_VOUCHER_VALUE_DECISIONS,
+            id
+        )
+        db.connect { dbc ->
+            dbc.transaction { generator.createRetroactiveValueDecisions(it, clock, id, body.from) }
+        }
         Audit.VoucherValueDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
     }
 }
@@ -255,7 +289,8 @@ fun sendVoucherValueDecisions(
     }
 
     val today = now.toLocalDate()
-    val lastPossibleDecisionValidFromDate = today.plusDays(evakaEnv.nrOfDaysVoucherValueDecisionCanBeSentInAdvance)
+    val lastPossibleDecisionValidFromDate =
+        today.plusDays(evakaEnv.nrOfDaysVoucherValueDecisionCanBeSentInAdvance)
     if (decisions.any { it.validFrom > lastPossibleDecisionValidFromDate }) {
         throw BadRequest(
             "Some of the voucher value decisions are not valid yet",
@@ -263,17 +298,18 @@ fun sendVoucherValueDecisions(
         )
     }
 
-    val conflicts = decisions
-        .flatMap {
-            tx.lockValueDecisionsForChild(it.child.id)
-            tx.findValueDecisionsForChild(
-                it.child.id,
-                DateRange(it.validFrom, it.validTo),
-                listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
-            )
-        }
-        .distinctBy { it.id }
-        .filter { !ids.contains(it.id) }
+    val conflicts =
+        decisions
+            .flatMap {
+                tx.lockValueDecisionsForChild(it.child.id)
+                tx.findValueDecisionsForChild(
+                    it.child.id,
+                    DateRange(it.validFrom, it.validTo),
+                    listOf(WAITING_FOR_SENDING, WAITING_FOR_MANUAL_SENDING, SENT)
+                )
+            }
+            .distinctBy { it.id }
+            .filter { !ids.contains(it.id) }
 
     if (conflicts.any { it.status == WAITING_FOR_MANUAL_SENDING }) {
         throw Conflict(
@@ -282,18 +318,30 @@ fun sendVoucherValueDecisions(
         )
     }
 
-    if (conflicts.any { it.status == WAITING_FOR_SENDING }) error("Some children have overlapping value decisions still waiting for sending")
+    if (conflicts.any { it.status == WAITING_FOR_SENDING })
+        error("Some children have overlapping value decisions still waiting for sending")
 
-    val (annulled, updatedDates) = updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts)
-        .partition { it.status == ANNULLED }
+    val (annulled, updatedDates) =
+        updateEndDatesOrAnnulConflictingDecisions(decisions, conflicts).partition {
+            it.status == ANNULLED
+        }
     tx.annulVoucherValueDecisions(annulled.map { it.id }, now)
     tx.updateVoucherValueDecisionEndDates(updatedDates, now)
 
     val (emptyDecisions, validDecisions) = decisions.partition { it.isEmpty() }
     tx.deleteValueDecisions(emptyDecisions.map { it.id })
     val validIds = validDecisions.map { it.id }
-    tx.approveValueDecisionDraftsForSending(validIds, user.id, now, alwaysUseDaycareFinanceDecisionHandler)
-    asyncJobRunner.plan(tx, validIds.map { AsyncJob.NotifyVoucherValueDecisionApproved(it) }, runAt = now)
+    tx.approveValueDecisionDraftsForSending(
+        validIds,
+        user.id,
+        now,
+        alwaysUseDaycareFinanceDecisionHandler
+    )
+    asyncJobRunner.plan(
+        tx,
+        validIds.map { AsyncJob.NotifyVoucherValueDecisionApproved(it) },
+        runAt = now
+    )
 }
 
 enum class VoucherValueDecisionSortParam {
@@ -324,6 +372,4 @@ data class SearchVoucherValueDecisionRequest(
     val searchByStartDate: Boolean = false
 )
 
-data class VoucherValueDecisionTypeRequest(
-    val type: VoucherValueDecisionType
-)
+data class VoucherValueDecisionTypeRequest(val type: VoucherValueDecisionType)

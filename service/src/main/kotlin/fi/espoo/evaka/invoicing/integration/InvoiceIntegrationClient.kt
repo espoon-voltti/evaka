@@ -21,8 +21,11 @@ interface InvoiceIntegrationClient {
 
     class MockClient(private val jsonMapper: JsonMapper) : InvoiceIntegrationClient {
         override fun send(invoices: List<InvoiceDetailed>): SendResult {
-            logger.info("Mock invoice integration client got invoices ${jsonMapper.writeValueAsString(invoices)}")
-            val (withSSN, withoutSSN) = invoices.partition { invoice -> invoice.headOfFamily.ssn != null }
+            logger.info(
+                "Mock invoice integration client got invoices ${jsonMapper.writeValueAsString(invoices)}"
+            )
+            val (withSSN, withoutSSN) =
+                invoices.partition { invoice -> invoice.headOfFamily.ssn != null }
             return SendResult(succeeded = withSSN, manuallySent = withoutSSN)
         }
     }

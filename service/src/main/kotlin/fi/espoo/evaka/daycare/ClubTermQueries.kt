@@ -24,5 +24,6 @@ fun Database.Read.getClubTerms(): List<ClubTerm> {
 fun Database.Read.getActiveClubTermAt(date: LocalDate): ClubTerm? {
     return createQuery("SELECT term, application_period FROM club_term WHERE term @> :date LIMIT 1")
         .bind("date", date)
-        .mapTo<ClubTerm>().firstOrNull()
+        .mapTo<ClubTerm>()
+        .firstOrNull()
 }

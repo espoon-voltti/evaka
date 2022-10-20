@@ -7,24 +7,20 @@ package fi.espoo.evaka.vtjclient.service
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.cache.VtjCache
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import redis.clients.jedis.JedisPool
-import kotlin.test.assertEquals
 
 class VtjCacheIntegrationTest : FullApplicationTest(resetDbBeforeEach = false) {
-    @Autowired
-    lateinit var service: VtjCache
+    @Autowired lateinit var service: VtjCache
 
-    @Autowired
-    lateinit var redisPool: JedisPool
+    @Autowired lateinit var redisPool: JedisPool
 
     @BeforeEach
     fun beforeEach() {
-        redisPool.resource.use {
-            it.flushDB()
-        }
+        redisPool.resource.use { it.flushDB() }
     }
 
     @Test
@@ -32,23 +28,21 @@ class VtjCacheIntegrationTest : FullApplicationTest(resetDbBeforeEach = false) {
         var savedPerson = service.getPerson(vtjPerson.socialSecurityNumber)
         assertEquals(null, savedPerson)
 
-        service.save(
-            vtjPerson.socialSecurityNumber,
-            vtjPerson
-        )
+        service.save(vtjPerson.socialSecurityNumber, vtjPerson)
 
         savedPerson = service.getPerson(vtjPerson.socialSecurityNumber)
         assertEquals(vtjPerson, savedPerson)
     }
 }
 
-val vtjPerson = VtjPerson(
-    firstNames = "etunimi",
-    lastName = "sukunimi",
-    socialSecurityNumber = "010101-010A",
-    address = null,
-    dependants = emptyList(),
-    nationalities = emptyList(),
-    nativeLanguage = null,
-    restrictedDetails = null
-)
+val vtjPerson =
+    VtjPerson(
+        firstNames = "etunimi",
+        lastName = "sukunimi",
+        socialSecurityNumber = "010101-010A",
+        address = null,
+        dependants = emptyList(),
+        nationalities = emptyList(),
+        nativeLanguage = null,
+        restrictedDetails = null
+    )

@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.maxEndDate
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.util.UUID
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -30,29 +31,42 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 @RequestMapping("/fee-alterations")
-class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>, private val accessControl: AccessControl) {
+class FeeAlterationController(
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val accessControl: AccessControl
+) {
     @GetMapping
-    fun getFeeAlterations(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestParam personId: PersonId): List<FeeAlterationWithPermittedActions> {
+    fun getFeeAlterations(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestParam personId: PersonId
+    ): List<FeeAlterationWithPermittedActions> {
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_FEE_ALTERATIONS, personId)
         return db.connect { dbc ->
-            dbc.read { tx ->
-                val feeAlterations = tx.getFeeAlterationsForPerson(personId)
-                val permittedActions =
-                    accessControl.getPermittedActions<FeeAlterationId, Action.FeeAlteration>(
-                        tx,
-                        user,
-                        clock,
-                        feeAlterations.mapNotNull { it.id }
-                    )
-                feeAlterations.map { FeeAlterationWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
+                dbc.read { tx ->
+                    val feeAlterations = tx.getFeeAlterationsForPerson(personId)
+                    val permittedActions =
+                        accessControl.getPermittedActions<FeeAlterationId, Action.FeeAlteration>(
+                            tx,
+                            user,
+                            clock,
+                            feeAlterations.mapNotNull { it.id }
+                        )
+                    feeAlterations.map {
+                        FeeAlterationWithPermittedActions(it, permittedActions[it.id] ?: emptySet())
+                    }
+                }
             }
-        }.also {
-            Audit.ChildFeeAlterationsRead.log(targetId = personId, args = mapOf("count" to it.size))
-        }
+            .also {
+                Audit.ChildFeeAlterationsRead.log(
+                    targetId = personId,
+                    args = mapOf("count" to it.size)
+                )
+            }
     }
 
     data class FeeAlterationWithPermittedActions(
@@ -61,12 +75,25 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
     )
 
     @PostMapping
-    fun createFeeAlteration(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody feeAlteration: FeeAlteration) {
-        accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_FEE_ALTERATION, feeAlteration.personId)
+    fun createFeeAlteration(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestBody feeAlteration: FeeAlteration
+    ) {
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Child.CREATE_FEE_ALTERATION,
+            feeAlteration.personId
+        )
         val id = FeeAlterationId(UUID.randomUUID())
         db.connect { dbc ->
             dbc.transaction { tx ->
-                tx.upsertFeeAlteration(clock, feeAlteration.copy(id = id, updatedBy = user.evakaUserId))
+                tx.upsertFeeAlteration(
+                    clock,
+                    feeAlteration.copy(id = id, updatedBy = user.evakaUserId)
+                )
                 asyncJobRunner.plan(
                     tx,
                     listOf(
@@ -83,26 +110,64 @@ class FeeAlterationController(private val asyncJobRunner: AsyncJobRunner<AsyncJo
     }
 
     @PutMapping("/{feeAlterationId}")
-    fun updateFeeAlteration(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable feeAlterationId: FeeAlterationId, @RequestBody feeAlteration: FeeAlteration) {
-        accessControl.requirePermissionFor(user, clock, Action.FeeAlteration.UPDATE, feeAlterationId)
+    fun updateFeeAlteration(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable feeAlterationId: FeeAlterationId,
+        @RequestBody feeAlteration: FeeAlteration
+    ) {
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.FeeAlteration.UPDATE,
+            feeAlterationId
+        )
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val existing = tx.getFeeAlteration(feeAlterationId)
-                tx.upsertFeeAlteration(clock, feeAlteration.copy(id = feeAlterationId, updatedBy = user.evakaUserId))
+                tx.upsertFeeAlteration(
+                    clock,
+                    feeAlteration.copy(id = feeAlterationId, updatedBy = user.evakaUserId)
+                )
 
-                val expandedPeriod = existing?.let {
-                    DateRange(minOf(it.validFrom, feeAlteration.validFrom), maxEndDate(it.validTo, feeAlteration.validTo))
-                } ?: DateRange(feeAlteration.validFrom, feeAlteration.validTo)
+                val expandedPeriod =
+                    existing?.let {
+                        DateRange(
+                            minOf(it.validFrom, feeAlteration.validFrom),
+                            maxEndDate(it.validTo, feeAlteration.validTo)
+                        )
+                    }
+                        ?: DateRange(feeAlteration.validFrom, feeAlteration.validTo)
 
-                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(feeAlteration.personId, expandedPeriod)), runAt = clock.now())
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(
+                        AsyncJob.GenerateFinanceDecisions.forChild(
+                            feeAlteration.personId,
+                            expandedPeriod
+                        )
+                    ),
+                    runAt = clock.now()
+                )
             }
         }
         Audit.ChildFeeAlterationsUpdate.log(targetId = feeAlterationId)
     }
 
     @DeleteMapping("/{feeAlterationId}")
-    fun deleteFeeAlteration(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable feeAlterationId: FeeAlterationId) {
-        accessControl.requirePermissionFor(user, clock, Action.FeeAlteration.DELETE, feeAlterationId)
+    fun deleteFeeAlteration(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable feeAlterationId: FeeAlterationId
+    ) {
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.FeeAlteration.DELETE,
+            feeAlterationId
+        )
         db.connect { dbc ->
             dbc.transaction { tx ->
                 val existing = tx.getFeeAlteration(feeAlterationId)

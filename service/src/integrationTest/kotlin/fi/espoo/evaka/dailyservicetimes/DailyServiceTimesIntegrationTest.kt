@@ -37,12 +37,12 @@ import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.withMockedTime
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val admin = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.ADMIN))
@@ -64,7 +64,9 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             tx.insertGeneralTestFixtures()
             tx.insertGuardian(testAdult_1.id, testChild_1.id)
             tx.insertGuardian(testAdult_2.id, testChild_1.id)
-            tx.insertTestDaycareGroup(DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = ""))
+            tx.insertTestDaycareGroup(
+                DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = "")
+            )
             tx.insertTestPlacement(
                 id = daycarePlacementId,
                 childId = testChild_1.id,
@@ -135,24 +137,12 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         }
 
         // Set to future
-        setDailyServiceTimesEndDate(
-            idFuture,
-            now.toLocalDate().plusDays(1),
-            200
-        )
+        setDailyServiceTimesEndDate(idFuture, now.toLocalDate().plusDays(1), 200)
         // Set to past -> not allowed
-        setDailyServiceTimesEndDate(
-            idFuture,
-            now.toLocalDate(),
-            400
-        )
+        setDailyServiceTimesEndDate(idFuture, now.toLocalDate(), 400)
 
         // Already in the past -> not allowed
-        setDailyServiceTimesEndDate(
-            past,
-            now.toLocalDate().plusDays(1),
-            400
-        )
+        setDailyServiceTimesEndDate(past, now.toLocalDate().plusDays(1), 400)
     }
 
     @Test
@@ -160,7 +150,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         createDailyServiceTimes(
             testChild_1.id,
             DailyServiceTimesValue.RegularTimes(
-                validityPeriod = DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(100)),
+                validityPeriod =
+                    DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(100)),
                 regularTimes = tenToNoonRange
             )
         )
@@ -169,7 +160,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         createDailyServiceTimes(
             testChild_1.id,
             DailyServiceTimesValue.RegularTimes(
-                validityPeriod = DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(10)),
+                validityPeriod =
+                    DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(10)),
                 regularTimes = tenToNoonRange
             )
         )
@@ -178,7 +170,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         createDailyServiceTimes(
             testChild_1.id,
             DailyServiceTimesValue.RegularTimes(
-                validityPeriod = DateRange(now.toLocalDate().plusDays(30), now.toLocalDate().plusDays(50)),
+                validityPeriod =
+                    DateRange(now.toLocalDate().plusDays(30), now.toLocalDate().plusDays(50)),
                 regularTimes = tenToNoonRange
             ),
             409
@@ -197,26 +190,27 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         createDailyServiceTimes(
             testChild_1.id,
             DailyServiceTimesValue.RegularTimes(
-                validityPeriod = DateRange(now.toLocalDate().plusDays(100), now.toLocalDate().plusDays(120)),
+                validityPeriod =
+                    DateRange(now.toLocalDate().plusDays(100), now.toLocalDate().plusDays(120)),
                 regularTimes = tenToNoonRange
             )
         )
 
         run {
-            val expectedRanges = listOf(
-                100L to 120L,
-                90L to 99L,
-                11L to 89L,
-                1L to 10L
-            )
+            val expectedRanges = listOf(100L to 120L, 90L to 99L, 11L to 89L, 1L to 10L)
             val dailyServiceTimes = getDailyServiceTimes(testChild_1.id)
             assertEquals(expectedRanges.size, dailyServiceTimes.size)
             expectedRanges.zip(dailyServiceTimes).forEachIndexed { i, (expected, actual) ->
-                val expectedValidity = DateRange(
-                    now.toLocalDate().plusDays(expected.first),
-                    now.toLocalDate().plusDays(expected.second)
+                val expectedValidity =
+                    DateRange(
+                        now.toLocalDate().plusDays(expected.first),
+                        now.toLocalDate().plusDays(expected.second)
+                    )
+                assertEquals(
+                    expectedValidity,
+                    actual.dailyServiceTimes.times.validityPeriod,
+                    "Index $i"
                 )
-                assertEquals(expectedValidity, actual.dailyServiceTimes.times.validityPeriod, "Index $i")
             }
         }
 
@@ -248,7 +242,8 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
                 DevDailyServiceTimes(
                     id = id,
                     childId = testChild_1.id,
-                    validityPeriod = DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(10))
+                    validityPeriod =
+                        DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(10))
                 )
             )
             tx.insertTestDailyServiceTimes(
@@ -264,17 +259,14 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         updateDailyServiceTimes(
             id,
             DailyServiceTimesValue.RegularTimes(
-                validityPeriod = DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(11)),
+                validityPeriod =
+                    DateRange(now.toLocalDate().plusDays(1), now.toLocalDate().plusDays(11)),
                 regularTimes = tenToNoonRange
             ),
             400
         )
 
-        setDailyServiceTimesEndDate(
-            id,
-            now.toLocalDate().plusDays(11),
-            400
-        )
+        setDailyServiceTimesEndDate(id, now.toLocalDate().plusDays(11), 400)
     }
 
     @Test
@@ -387,10 +379,7 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
 
         val times = this.getDailyServiceTimes(testChild_1.id)
         assertEquals(1, times.size)
-        setDailyServiceTimesEndDate(
-            times[0].dailyServiceTimes.id,
-            LocalDate.now().plusDays(102)
-        )
+        setDailyServiceTimesEndDate(times[0].dailyServiceTimes.id, LocalDate.now().plusDays(102))
 
         val newGuardian1Notifications = this.getDailyServiceTimeNotifications(guardian1)
         assertEquals(1, newGuardian1Notifications.size)
@@ -413,9 +402,10 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             )
         )
 
-        val absences = db.transaction { tx ->
-            tx.getAbsencesOfChildByRange(testChild_1.id, DateRange(now.toLocalDate(), null))
-        }
+        val absences =
+            db.transaction { tx ->
+                tx.getAbsencesOfChildByRange(testChild_1.id, DateRange(now.toLocalDate(), null))
+            }
         assert(absences.isNotEmpty())
     }
 
@@ -424,11 +414,13 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         dailyServiceTime: DailyServiceTimesValue,
         expectedStatus: Int = 200
     ) {
-        val (_, res, _) = http.post("/children/$childId/daily-service-times")
-            .jsonBody(jsonMapper.writeValueAsString(dailyServiceTime))
-            .asUser(admin)
-            .withMockedTime(now)
-            .response()
+        val (_, res, _) =
+            http
+                .post("/children/$childId/daily-service-times")
+                .jsonBody(jsonMapper.writeValueAsString(dailyServiceTime))
+                .asUser(admin)
+                .withMockedTime(now)
+                .response()
 
         assertEquals(expectedStatus, res.statusCode)
     }
@@ -438,11 +430,13 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         dailyServiceTime: DailyServiceTimesValue,
         expectedStatus: Int = 200
     ) {
-        val (_, res, _) = http.put("/daily-service-times/$id")
-            .jsonBody(jsonMapper.writeValueAsString(dailyServiceTime))
-            .asUser(admin)
-            .withMockedTime(now)
-            .response()
+        val (_, res, _) =
+            http
+                .put("/daily-service-times/$id")
+                .jsonBody(jsonMapper.writeValueAsString(dailyServiceTime))
+                .asUser(admin)
+                .withMockedTime(now)
+                .response()
 
         assertEquals(expectedStatus, res.statusCode)
     }
@@ -452,40 +446,54 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         endDate: LocalDate,
         expectedStatus: Int = 200
     ) {
-        val (_, res, _) = http.put("/daily-service-times/$id/end")
-            .jsonBody(jsonMapper.writeValueAsString(DailyServiceTimesController.DailyServiceTimesEndDate(endDate)))
-            .asUser(admin)
-            .withMockedTime(now)
-            .response()
+        val (_, res, _) =
+            http
+                .put("/daily-service-times/$id/end")
+                .jsonBody(
+                    jsonMapper.writeValueAsString(
+                        DailyServiceTimesController.DailyServiceTimesEndDate(endDate)
+                    )
+                )
+                .asUser(admin)
+                .withMockedTime(now)
+                .response()
 
         assertEquals(expectedStatus, res.statusCode)
     }
 
     private fun deleteDailyServiceTimes(id: DailyServiceTimesId, expectedStatus: Int = 200) {
-        val (_, res, _) = http.delete("/daily-service-times/$id")
-            .asUser(admin)
-            .withMockedTime(now)
-            .response()
+        val (_, res, _) =
+            http.delete("/daily-service-times/$id").asUser(admin).withMockedTime(now).response()
 
         assertEquals(expectedStatus, res.statusCode)
     }
 
-    private fun getDailyServiceTimes(childId: ChildId): List<DailyServiceTimesController.DailyServiceTimesResponse> {
-        val (_, res, result) = http.get("/children/$childId/daily-service-times")
-            .asUser(admin)
-            .withMockedTime(now)
-            .responseObject<List<DailyServiceTimesController.DailyServiceTimesResponse>>(jsonMapper)
+    private fun getDailyServiceTimes(
+        childId: ChildId
+    ): List<DailyServiceTimesController.DailyServiceTimesResponse> {
+        val (_, res, result) =
+            http
+                .get("/children/$childId/daily-service-times")
+                .asUser(admin)
+                .withMockedTime(now)
+                .responseObject<List<DailyServiceTimesController.DailyServiceTimesResponse>>(
+                    jsonMapper
+                )
 
         assertEquals(200, res.statusCode)
 
         return result.get()
     }
 
-    private fun getDailyServiceTimeNotifications(user: AuthenticatedUser.Citizen): List<DailyServiceTimeNotification> {
-        val (_, res, result) = http.get("/citizen/daily-service-time-notifications")
-            .asUser(user)
-            .withMockedTime(now)
-            .responseObject<List<DailyServiceTimeNotification>>(jsonMapper)
+    private fun getDailyServiceTimeNotifications(
+        user: AuthenticatedUser.Citizen
+    ): List<DailyServiceTimeNotification> {
+        val (_, res, result) =
+            http
+                .get("/citizen/daily-service-time-notifications")
+                .asUser(user)
+                .withMockedTime(now)
+                .responseObject<List<DailyServiceTimeNotification>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
 
@@ -496,21 +504,25 @@ class DailyServiceTimesIntegrationTest : FullApplicationTest(resetDbBeforeEach =
         user: AuthenticatedUser.Citizen,
         notificationId: DailyServiceTimeNotificationId
     ) {
-        val (_, res, _) = http.post("/citizen/daily-service-time-notifications/dismiss")
-            .jsonBody(jsonMapper.writeValueAsString(listOf(notificationId)))
-            .asUser(user)
-            .withMockedTime(now)
-            .response()
+        val (_, res, _) =
+            http
+                .post("/citizen/daily-service-time-notifications/dismiss")
+                .jsonBody(jsonMapper.writeValueAsString(listOf(notificationId)))
+                .asUser(user)
+                .withMockedTime(now)
+                .response()
 
         assertEquals(200, res.statusCode)
     }
 
     private fun postReservations(request: List<DailyReservationRequest>) {
-        val (_, res, _) = http.post("/citizen/reservations")
-            .jsonBody(jsonMapper.writeValueAsString(request))
-            .asUser(AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG))
-            .withMockedTime(now)
-            .response()
+        val (_, res, _) =
+            http
+                .post("/citizen/reservations")
+                .jsonBody(jsonMapper.writeValueAsString(request))
+                .asUser(AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG))
+                .withMockedTime(now)
+                .response()
 
         assertEquals(200, res.statusCode)
     }

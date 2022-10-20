@@ -12,7 +12,8 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 
 fun Database.Read.getDaycareGroupMessageAccount(daycareGroupId: GroupId): MessageAccountId {
-    val sql = """
+    val sql =
+        """
 SELECT acc.id FROM message_account acc
 WHERE acc.daycare_group_id = :daycareGroupId AND acc.active = true
 """
@@ -23,27 +24,30 @@ WHERE acc.daycare_group_id = :daycareGroupId AND acc.active = true
 }
 
 fun Database.Read.getCitizenMessageAccount(personId: PersonId): MessageAccountId {
-    val sql = """
+    val sql =
+        """
 SELECT acc.id FROM message_account acc
 WHERE acc.person_id = :personId AND acc.active = true
 """
-    return this.createQuery(sql)
-        .bind("personId", personId)
-        .mapTo<MessageAccountId>()
-        .one()
+    return this.createQuery(sql).bind("personId", personId).mapTo<MessageAccountId>().one()
 }
 
 fun Database.Read.getEmployeeMessageAccountIds(employeeId: EmployeeId): Set<MessageAccountId> {
-    return this.createQuery("SELECT account_id FROM message_account_access_view WHERE employee_id = :employeeId")
+    return this.createQuery(
+            "SELECT account_id FROM message_account_access_view WHERE employee_id = :employeeId"
+        )
         .bind("employeeId", employeeId)
         .mapTo<MessageAccountId>()
         .toSet()
 }
 
-fun Database.Read.getAuthorizedMessageAccountsForEmployee(employeeId: EmployeeId): Set<AuthorizedMessageAccount> {
+fun Database.Read.getAuthorizedMessageAccountsForEmployee(
+    employeeId: EmployeeId
+): Set<AuthorizedMessageAccount> {
     val accountIds = getEmployeeMessageAccountIds(employeeId)
 
-    val sql = """
+    val sql =
+        """
 SELECT acc.id AS account_id,
        name_view.account_name AS account_name,
        acc.type               AS account_type,
@@ -70,81 +74,82 @@ AND (
 }
 
 fun Database.Read.getAccountNames(accountIds: Set<MessageAccountId>): List<String> {
-    val sql = """
+    val sql =
+        """
         SELECT account_name
         FROM message_account_name_view
         WHERE id = ANY(:ids)
-    """.trimIndent()
+    """
+            .trimIndent()
 
-    return this.createQuery(sql)
-        .bind("ids", accountIds)
-        .mapTo<String>()
-        .list()
+    return this.createQuery(sql).bind("ids", accountIds).mapTo<String>().list()
 }
 
-fun Database.Transaction.createDaycareGroupMessageAccount(daycareGroupId: GroupId): MessageAccountId {
+fun Database.Transaction.createDaycareGroupMessageAccount(
+    daycareGroupId: GroupId
+): MessageAccountId {
     // language=SQL
-    val sql = """
+    val sql =
+        """
         INSERT INTO message_account (daycare_group_id) VALUES (:daycareGroupId)
         RETURNING id
-    """.trimIndent()
-    return createQuery(sql)
-        .bind("daycareGroupId", daycareGroupId)
-        .mapTo<MessageAccountId>()
-        .one()
+    """
+            .trimIndent()
+    return createQuery(sql).bind("daycareGroupId", daycareGroupId).mapTo<MessageAccountId>().one()
 }
 
 fun Database.Transaction.deleteDaycareGroupMessageAccount(daycareGroupId: GroupId) {
     // language=SQL
-    val sql = """
+    val sql =
+        """
         DELETE FROM message_account WHERE daycare_group_id = :daycareGroupId
-    """.trimIndent()
-    createUpdate(sql)
-        .bind("daycareGroupId", daycareGroupId)
-        .execute()
+    """
+            .trimIndent()
+    createUpdate(sql).bind("daycareGroupId", daycareGroupId).execute()
 }
 
 fun Database.Transaction.createPersonMessageAccount(personId: PersonId): MessageAccountId {
     // language=SQL
-    val sql = """
+    val sql =
+        """
         INSERT INTO message_account (person_id) VALUES (:personId)
         RETURNING id
-    """.trimIndent()
-    return createQuery(sql)
-        .bind("personId", personId)
-        .mapTo<MessageAccountId>()
-        .one()
+    """
+            .trimIndent()
+    return createQuery(sql).bind("personId", personId).mapTo<MessageAccountId>().one()
 }
 
 fun Database.Transaction.upsertEmployeeMessageAccount(employeeId: EmployeeId): MessageAccountId {
     // language=SQL
-    val sql = """
+    val sql =
+        """
         INSERT INTO message_account (employee_id) VALUES (:employeeId)
         ON CONFLICT (employee_id) WHERE employee_id IS NOT NULL DO UPDATE SET active = true
         RETURNING id
-    """.trimIndent()
-    return createQuery(sql)
-        .bind("employeeId", employeeId)
-        .mapTo<MessageAccountId>()
-        .one()
+    """
+            .trimIndent()
+    return createQuery(sql).bind("employeeId", employeeId).mapTo<MessageAccountId>().one()
 }
 
 fun Database.Transaction.deactivateEmployeeMessageAccount(employeeId: EmployeeId) {
     // language=SQL
-    val sql = """
+    val sql =
+        """
         UPDATE message_account SET active = false
         WHERE employee_id = :employeeId
-    """.trimIndent()
-    createUpdate(sql)
-        .bind("employeeId", employeeId)
-        .execute()
+    """
+            .trimIndent()
+    createUpdate(sql).bind("employeeId", employeeId).execute()
 }
 
-fun Database.Read.groupRecipientAccountsByGuardianship(accountIds: Set<MessageAccountId>): Set<Set<MessageAccountId>> {
+fun Database.Read.groupRecipientAccountsByGuardianship(
+    accountIds: Set<MessageAccountId>
+): Set<Set<MessageAccountId>> {
     data class AccountToChild(val id: MessageAccountId, val childId: ChildId? = null)
 
-    val accountsWithCommonChildren = createQuery(
-        """     
+    val accountsWithCommonChildren =
+        createQuery(
+                """     
 WITH person_accounts AS (
     SELECT id, person_id from message_account WHERE id = ANY(:accountIds) AND person_id IS NOT NULL
 ), 
@@ -161,18 +166,20 @@ common_guardians AS (
     )
 )
 SELECT id, child_id FROM common_guardians
-        """.trimIndent()
-    )
-        .bind("accountIds", accountIds)
-        .mapTo<AccountToChild>()
-        .list()
+        """
+                    .trimIndent()
+            )
+            .bind("accountIds", accountIds)
+            .mapTo<AccountToChild>()
+            .list()
 
     // For each account that share children, create a recipient group
-    val distinctSetsOfAccountsWithCommonChildren = accountsWithCommonChildren
-        .groupBy { it.childId }
-        .values
-        .map { row -> row.map { it.id }.toSet() }
-        .toSet()
+    val distinctSetsOfAccountsWithCommonChildren =
+        accountsWithCommonChildren
+            .groupBy { it.childId }
+            .values
+            .map { row -> row.map { it.id }.toSet() }
+            .toSet()
 
     // all accounts that do not have common children get their own threads
     val singleRecipients = (accountIds - accountsWithCommonChildren.map { it.id }).map { setOf(it) }

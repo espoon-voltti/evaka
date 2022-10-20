@@ -23,13 +23,16 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
-class OccupancyReportController(private val accessControl: AccessControl, private val acl: AccessControlList) {
+class OccupancyReportController(
+    private val accessControl: AccessControl,
+    private val acl: AccessControlList
+) {
     @GetMapping("/reports/occupancy-by-unit")
     fun getOccupancyUnitReport(
         db: Database,
@@ -47,30 +50,32 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
         val to = from.plusMonths(1).minusDays(1)
 
         return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                tx.calculateUnitOccupancyReport(
-                    clock.today(),
-                    careAreaId,
-                    providerType,
-                    unitTypes,
-                    FiniteDateRange(from, to),
-                    type,
-                    acl.getAuthorizedUnits(user)
+                dbc.read { tx ->
+                    tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    tx.calculateUnitOccupancyReport(
+                        clock.today(),
+                        careAreaId,
+                        providerType,
+                        unitTypes,
+                        FiniteDateRange(from, to),
+                        type,
+                        acl.getAuthorizedUnits(user)
+                    )
+                }
+            }
+            .also {
+                Audit.OccupancyReportRead.log(
+                    args =
+                        mapOf(
+                            "careAreaId" to careAreaId,
+                            "providerType" to providerType,
+                            "unitTypes" to unitTypes,
+                            "year" to year,
+                            "month" to month,
+                            "count" to it.size
+                        )
                 )
             }
-        }.also {
-            Audit.OccupancyReportRead.log(
-                args = mapOf(
-                    "careAreaId" to careAreaId,
-                    "providerType" to providerType,
-                    "unitTypes" to unitTypes,
-                    "year" to year,
-                    "month" to month,
-                    "count" to it.size
-                )
-            )
-        }
     }
 
     @GetMapping("/reports/occupancy-by-group")
@@ -90,29 +95,31 @@ class OccupancyReportController(private val accessControl: AccessControl, privat
         val to = from.plusMonths(1).minusDays(1)
 
         return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.calculateGroupOccupancyReport(
-                    clock.today(),
-                    careAreaId,
-                    providerType,
-                    unitTypes,
-                    FiniteDateRange(from, to),
-                    type,
-                    acl.getAuthorizedUnits(user)
+                dbc.read { tx ->
+                    tx.calculateGroupOccupancyReport(
+                        clock.today(),
+                        careAreaId,
+                        providerType,
+                        unitTypes,
+                        FiniteDateRange(from, to),
+                        type,
+                        acl.getAuthorizedUnits(user)
+                    )
+                }
+            }
+            .also {
+                Audit.OccupancyGroupReportRead.log(
+                    args =
+                        mapOf(
+                            "careAreaId" to careAreaId,
+                            "providerType" to providerType,
+                            "unitTypes" to unitTypes,
+                            "year" to year,
+                            "month" to month,
+                            "count" to it.size
+                        )
                 )
             }
-        }.also {
-            Audit.OccupancyGroupReportRead.log(
-                args = mapOf(
-                    "careAreaId" to careAreaId,
-                    "providerType" to providerType,
-                    "unitTypes" to unitTypes,
-                    "year" to year,
-                    "month" to month,
-                    "count" to it.size
-                )
-            )
-        }
     }
 }
 
@@ -143,7 +150,15 @@ private fun Database.Read.calculateUnitOccupancyReport(
     type: OccupancyType,
     aclAuth: AclAuthorization
 ): List<OccupancyUnitReportResultRow> {
-    return calculateDailyUnitOccupancyValues(today, queryPeriod, type, aclAuth, areaId = areaId, providerType = providerType, unitTypes = unitTypes)
+    return calculateDailyUnitOccupancyValues(
+            today,
+            queryPeriod,
+            type,
+            aclAuth,
+            areaId = areaId,
+            providerType = providerType,
+            unitTypes = unitTypes
+        )
         .map { (key, occupancies) ->
             OccupancyUnitReportResultRow(
                 areaId = key.areaId,
@@ -165,9 +180,18 @@ private fun Database.Read.calculateGroupOccupancyReport(
     type: OccupancyType,
     aclAuth: AclAuthorization
 ): List<OccupancyGroupReportResultRow> {
-    if (type == OccupancyType.PLANNED) throw BadRequest("Unable to calculate planned occupancy at group level")
+    if (type == OccupancyType.PLANNED)
+        throw BadRequest("Unable to calculate planned occupancy at group level")
 
-    return calculateDailyGroupOccupancyValues(today, queryPeriod, type, aclAuth, areaId = areaId, providerType = providerType, unitTypes = unitTypes)
+    return calculateDailyGroupOccupancyValues(
+            today,
+            queryPeriod,
+            type,
+            aclAuth,
+            areaId = areaId,
+            providerType = providerType,
+            unitTypes = unitTypes
+        )
         .map { (key, occupancies) ->
             OccupancyGroupReportResultRow(
                 areaId = key.areaId,

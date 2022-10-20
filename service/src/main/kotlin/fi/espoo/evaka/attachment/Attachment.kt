@@ -18,7 +18,8 @@ sealed class AttachmentParent {
     data class Income(val incomeId: IncomeId) : AttachmentParent()
     data class MessageDraft(val draftId: MessageDraftId) : AttachmentParent()
     data class MessageContent(val messageContentId: MessageContentId) : AttachmentParent()
-    data class PedagogicalDocument(val pedagogicalDocumentId: PedagogicalDocumentId) : AttachmentParent()
+    data class PedagogicalDocument(val pedagogicalDocumentId: PedagogicalDocumentId) :
+        AttachmentParent()
     object None : AttachmentParent()
 }
 
@@ -29,17 +30,9 @@ data class Attachment(
     val attachedTo: AttachmentParent
 )
 
-data class IncomeAttachment(
-    val id: AttachmentId,
-    val name: String,
-    val contentType: String
-)
+data class IncomeAttachment(val id: AttachmentId, val name: String, val contentType: String)
 
-data class MessageAttachment(
-    val id: AttachmentId,
-    val name: String,
-    val contentType: String
-)
+data class MessageAttachment(val id: AttachmentId, val name: String, val contentType: String)
 
 enum class AttachmentType {
     URGENCY,

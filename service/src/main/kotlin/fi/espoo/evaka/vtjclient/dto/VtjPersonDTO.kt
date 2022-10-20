@@ -14,26 +14,20 @@ data class VtjPersonDTO(
     val firstName: String,
     val lastName: String,
     val socialSecurityNumber: String,
-
     val nationalities: List<Nationality> = emptyList(),
     val nativeLanguage: NativeLanguage? = null,
-
     val restrictedDetailsEnabled: Boolean = false,
     val restrictedDetailsEndDate: LocalDate?,
-
     val streetAddress: String,
     val postalCode: String,
 
     // TODO: this should be postOffice
     val city: String,
     val residenceCode: String,
-
     val children: List<VtjPersonDTO> = listOf(),
     val guardians: List<VtjPersonDTO> = listOf(),
-
     val dateOfBirth: LocalDate,
     val dateOfDeath: LocalDate? = null,
-
     val streetAddressSe: String,
     val citySe: String
 )

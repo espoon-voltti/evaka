@@ -11,9 +11,9 @@ import fi.espoo.evaka.shared.db.mapPSQLException
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.NotFound
+import java.time.LocalDate
 import org.postgresql.util.PSQLException
 import org.postgresql.util.PSQLState
-import java.time.LocalDate
 
 fun getCaretakers(tx: Database.Read, groupId: GroupId): List<CaretakerAmount> {
     // language=sql
@@ -23,24 +23,28 @@ fun getCaretakers(tx: Database.Read, groupId: GroupId): List<CaretakerAmount> {
             FROM daycare_caretaker
             WHERE group_id = :groupId
             ORDER BY start_date DESC
-        """.trimIndent()
+        """
+            .trimIndent()
 
-    return tx.createQuery(sql)
-        .bind("groupId", groupId)
-        .mapTo<CaretakerAmount>()
-        .toList()
+    return tx.createQuery(sql).bind("groupId", groupId).mapTo<CaretakerAmount>().toList()
 }
 
-fun insertCaretakers(tx: Database.Transaction, groupId: GroupId, startDate: LocalDate, endDate: LocalDate?, amount: Double): DaycareCaretakerId {
-    if (endDate != null && endDate.isBefore(startDate)) throw BadRequest("End date cannot be before start")
+fun insertCaretakers(
+    tx: Database.Transaction,
+    groupId: GroupId,
+    startDate: LocalDate,
+    endDate: LocalDate?,
+    amount: Double
+): DaycareCaretakerId {
+    if (endDate != null && endDate.isBefore(startDate))
+        throw BadRequest("End date cannot be before start")
 
     try {
         tx.endPreviousRow(groupId, startDate)
     } catch (e: Exception) {
         throw if (e.cause is PSQLException) {
             when ((e.cause as PSQLException).sqlState) {
-                PSQLState.CHECK_VIOLATION.state ->
-                    Conflict("Non-unique start date")
+                PSQLState.CHECK_VIOLATION.state -> Conflict("Non-unique start date")
                 else -> e
             }
         } else {
@@ -50,12 +54,12 @@ fun insertCaretakers(tx: Database.Transaction, groupId: GroupId, startDate: Loca
 
     try {
         return tx.createUpdate(
-            """
+                """
             INSERT INTO daycare_caretaker (group_id, start_date, end_date, amount) 
             VALUES (:groupId, :start, :end, :amount)
             RETURNING id
             """
-        )
+            )
             .bind("groupId", groupId)
             .bind("start", startDate)
             .bind("end", endDate)
@@ -75,7 +79,8 @@ private fun Database.Transaction.endPreviousRow(groupId: GroupId, startDate: Loc
             UPDATE daycare_caretaker
             SET end_date = :start - interval '1 day'
             WHERE group_id = :groupId AND daterange(start_date, end_date, '[]') @> :start
-        """.trimIndent()
+        """
+            .trimIndent()
 
     createUpdate(sql).bind("groupId", groupId).bind("start", startDate).execute()
 }
@@ -88,7 +93,8 @@ fun updateCaretakers(
     endDate: LocalDate?,
     amount: Double
 ) {
-    if (endDate != null && endDate.isBefore(startDate)) throw BadRequest("End date cannot be before start")
+    if (endDate != null && endDate.isBefore(startDate))
+        throw BadRequest("End date cannot be before start")
 
     // language=sql
     val sql =
@@ -96,7 +102,8 @@ fun updateCaretakers(
             UPDATE daycare_caretaker
             SET start_date = :start, end_date = :end, amount = :amount
             WHERE id = :id AND group_id = :groupId
-        """.trimIndent()
+        """
+            .trimIndent()
 
     try {
         tx.createUpdate(sql)

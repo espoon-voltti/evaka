@@ -6,8 +6,8 @@ package fi.espoo.evaka.identity
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import fi.espoo.evaka.shared.config.defaultJsonMapper
-import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.Test
 
 class ExternalIdTest {
     private val jsonMapper = defaultJsonMapper()

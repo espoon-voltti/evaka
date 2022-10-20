@@ -21,6 +21,8 @@ import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.vtjclient.VtjIntegrationTestConfig
+import java.io.File
+import java.net.URL
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -30,8 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.core.env.Environment
-import java.io.File
-import java.net.URL
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(
@@ -39,30 +39,25 @@ import java.net.URL
     classes = [SharedIntegrationTestConfig::class, VtjIntegrationTestConfig::class]
 )
 abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
-    @LocalServerPort
-    protected var httpPort: Int = 0
+    @LocalServerPort protected var httpPort: Int = 0
 
     protected val jsonMapper: JsonMapper = defaultJsonMapper()
 
     protected lateinit var jdbi: Jdbi
 
-    /**
-     * HTTP client for testing the application
-     */
-    @Autowired
-    protected lateinit var http: FuelManager
+    /** HTTP client for testing the application */
+    @Autowired protected lateinit var http: FuelManager
 
-    @Autowired
-    protected lateinit var env: Environment
+    @Autowired protected lateinit var env: Environment
 
-    @Autowired
-    protected lateinit var evakaEnv: EvakaEnv
+    @Autowired protected lateinit var evakaEnv: EvakaEnv
 
     protected lateinit var db: Database.Connection
 
     protected fun dbInstance(): Database = Database(jdbi)
 
-    protected val pngFile = this::class.java.getResource("/attachments-fixtures/evaka-logo.png") as URL
+    protected val pngFile =
+        this::class.java.getResource("/attachments-fixtures/evaka-logo.png") as URL
 
     @BeforeAll
     fun beforeAll() {
@@ -88,15 +83,25 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
         db.close()
     }
 
-    fun uploadAttachment(applicationId: ApplicationId, user: AuthenticatedUser, type: AttachmentType = AttachmentType.URGENCY): Boolean {
-        val path = if (user is AuthenticatedUser.Citizen) "/attachments/citizen/applications/$applicationId" else "/attachments/applications/$applicationId"
-        val (_, res, _) = http.upload(path, parameters = listOf("type" to type))
-            .add(FileDataPart(File(pngFile.toURI()), name = "file"))
-            .asUser(user)
-            .response()
+    fun uploadAttachment(
+        applicationId: ApplicationId,
+        user: AuthenticatedUser,
+        type: AttachmentType = AttachmentType.URGENCY
+    ): Boolean {
+        val path =
+            if (user is AuthenticatedUser.Citizen)
+                "/attachments/citizen/applications/$applicationId"
+            else "/attachments/applications/$applicationId"
+        val (_, res, _) =
+            http
+                .upload(path, parameters = listOf("type" to type))
+                .add(FileDataPart(File(pngFile.toURI()), name = "file"))
+                .asUser(user)
+                .response()
 
         return res.isSuccessful
     }
 }
 
-fun Request.withMockedTime(time: HelsinkiDateTime) = this.header("EvakaMockedTime", time.toZonedDateTime())
+fun Request.withMockedTime(time: HelsinkiDateTime) =
+    this.header("EvakaMockedTime", time.toZonedDateTime())

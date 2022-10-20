@@ -12,11 +12,11 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 const val MAX_NUMBER_OF_DAYS = 14
 
@@ -27,25 +27,25 @@ class PresenceReportController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("from")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        from: LocalDate,
-        @RequestParam("to")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        to: LocalDate
+        @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
+        @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): List<PresenceReportRow> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_PRESENCE_REPORT)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
-        if (to.isAfter(from.plusDays(MAX_NUMBER_OF_DAYS.toLong()))) throw BadRequest("Period is too long. Use maximum of $MAX_NUMBER_OF_DAYS days")
+        if (to.isAfter(from.plusDays(MAX_NUMBER_OF_DAYS.toLong())))
+            throw BadRequest("Period is too long. Use maximum of $MAX_NUMBER_OF_DAYS days")
 
         return db.connect { dbc ->
-            dbc.read {
-                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.getPresenceRows(from, to)
+                dbc.read {
+                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    it.getPresenceRows(from, to)
+                }
             }
-        }.also {
-            Audit.PresenceReportRead.log(args = mapOf("from" to from, "to" to to, "count" to it.size))
-        }
+            .also {
+                Audit.PresenceReportRead.log(
+                    args = mapOf("from" to from, "to" to to, "count" to it.size)
+                )
+            }
     }
 }
 
@@ -75,12 +75,9 @@ fun Database.Read.getPresenceRows(from: LocalDate, to: LocalDate): List<Presence
         WHERE dw = ANY(daycare.operation_days) AND
           (h.date IS NULL OR daycare.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7]) AND
           (daycare.provider_type = 'MUNICIPAL' OR daycare.id IS NULL);
-        """.trimIndent()
-    return createQuery(sql)
-        .bind("from", from)
-        .bind("to", to)
-        .mapTo<PresenceReportRow>()
-        .toList()
+        """
+            .trimIndent()
+    return createQuery(sql).bind("from", from).bind("to", to).mapTo<PresenceReportRow>().toList()
 }
 
 data class PresenceReportRow(

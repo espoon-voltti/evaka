@@ -49,17 +49,16 @@ import fi.espoo.evaka.testVoucherDaycare
 import fi.espoo.evaka.testVoucherDaycare2
 import fi.espoo.evaka.toValueDecisionServiceNeed
 import fi.espoo.evaka.withMockedTime
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired
-    lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val janFirst = LocalDate.of(2020, 1, 1)
     private val janLast = LocalDate.of(2020, 1, 31)
@@ -71,9 +70,7 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction {
-            it.insertGeneralTestFixtures()
-        }
+        db.transaction { it.insertGeneralTestFixtures() }
     }
 
     @Test
@@ -99,7 +96,11 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val (_, _, _, _, draftId3) = createSearchTestData()
 
         val result =
-            searchPayments(defaultSearchParams.copy(distinctions = listOf(PaymentDistinctiveParams.MISSING_PAYMENT_DETAILS)))
+            searchPayments(
+                defaultSearchParams.copy(
+                    distinctions = listOf(PaymentDistinctiveParams.MISSING_PAYMENT_DETAILS)
+                )
+            )
         assertEquals(1, result.total)
         assertEquals(listOf(draftId3), result.data.map { it.id })
     }
@@ -108,7 +109,10 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `search payments by number`() {
         createSearchTestData()
 
-        val result = searchPayments(defaultSearchParams.copy(status = PaymentStatus.SENT, searchTerms = "9000000000"))
+        val result =
+            searchPayments(
+                defaultSearchParams.copy(status = PaymentStatus.SENT, searchTerms = "9000000000")
+            )
         assertEquals(1, result.total)
         assertNotNull(result.data.find { it.number == 9000000000 })
     }
@@ -117,7 +121,10 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `search payments by unit`() {
         val (sentId1, _, _, _) = createSearchTestData()
 
-        val result = searchPayments(defaultSearchParams.copy(unit = testVoucherDaycare.id, status = PaymentStatus.SENT))
+        val result =
+            searchPayments(
+                defaultSearchParams.copy(unit = testVoucherDaycare.id, status = PaymentStatus.SENT)
+            )
         assertEquals(1, result.total)
         assertEquals(listOf(sentId1), result.data.map { it.id })
     }
@@ -145,7 +152,9 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             value = 134850,
             coPayment = 28800
         )
-        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
+        db.transaction {
+            freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
+        }
 
         createPaymentDrafts(janLast)
 
@@ -185,10 +194,17 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             value = 87000,
             coPayment = 28800
         )
-        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
+        db.transaction {
+            freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
+        }
         val paymentDraftIds = createPaymentDrafts(janLast)
 
-        sendPayments(today = febFirst, paymentDate = febSecond, dueDate = febLast, paymentIds = paymentDraftIds)
+        sendPayments(
+            today = febFirst,
+            paymentDate = febSecond,
+            dueDate = febLast,
+            paymentIds = paymentDraftIds
+        )
 
         val payments = db.read { it.readPayments() }
         assertEquals(2, payments.size)
@@ -214,20 +230,20 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 
-    private val defaultSearchParams = SearchPaymentsRequest(
-        searchTerms = "",
-        area = listOf(),
-        unit = null,
-        distinctions = listOf(),
-        status = PaymentStatus.DRAFT,
-        paymentDateStart = null,
-        paymentDateEnd = null,
-
-        page = 1,
-        pageSize = 50,
-        sortBy = PaymentSortParam.AMOUNT,
-        sortDirection = SortDirection.ASC
-    )
+    private val defaultSearchParams =
+        SearchPaymentsRequest(
+            searchTerms = "",
+            area = listOf(),
+            unit = null,
+            distinctions = listOf(),
+            status = PaymentStatus.DRAFT,
+            paymentDateStart = null,
+            paymentDateEnd = null,
+            page = 1,
+            pageSize = 50,
+            sortBy = PaymentSortParam.AMOUNT,
+            sortDirection = SortDirection.ASC
+        )
 
     private fun createSearchTestData(): List<PaymentId> {
         createVoucherDecision(
@@ -255,19 +271,31 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             value = 134850,
             coPayment = 0
         )
-        db.transaction { freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze) }
+        db.transaction {
+            freezeVoucherValueReportRows(it, janFirst.year, janFirst.monthValue, janFreeze)
+        }
         val paymentDraftIds1 = createPaymentDrafts(janLast)
 
-        sendPayments(today = febFirst, paymentDate = febSecond, dueDate = febLast, paymentIds = paymentDraftIds1)
+        sendPayments(
+            today = febFirst,
+            paymentDate = febSecond,
+            dueDate = febLast,
+            paymentIds = paymentDraftIds1
+        )
 
-        db.transaction { freezeVoucherValueReportRows(it, febFirst.year, febFirst.monthValue, febFreeze) }
+        db.transaction {
+            freezeVoucherValueReportRows(it, febFirst.year, febFirst.monthValue, febFreeze)
+        }
         val paymentDraftIds2 = createPaymentDrafts(febLast)
 
         return paymentDraftIds1 + paymentDraftIds2
     }
 
     private val financeUser =
-        AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.FINANCE_ADMIN))
+        AuthenticatedUser.Employee(
+            id = testDecisionMaker_1.id,
+            roles = setOf(UserRole.FINANCE_ADMIN)
+        )
 
     private fun createVoucherDecision(
         validFrom: LocalDate,
@@ -281,20 +309,21 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         feeAlterations: List<FeeAlterationWithEffect> = listOf()
     ) {
         db.transaction {
-            val decision = createVoucherValueDecisionFixture(
-                status = VoucherValueDecisionStatus.DRAFT,
-                validFrom = validFrom,
-                validTo = null,
-                headOfFamilyId = headOfFamilyId,
-                childId = childId,
-                dateOfBirth = testChild_1.dateOfBirth,
-                unitId = unitId,
-                value = value,
-                coPayment = coPayment,
-                placementType = PlacementType.DAYCARE,
-                serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
-                feeAlterations = feeAlterations
-            )
+            val decision =
+                createVoucherValueDecisionFixture(
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    validFrom = validFrom,
+                    validTo = null,
+                    headOfFamilyId = headOfFamilyId,
+                    childId = childId,
+                    dateOfBirth = testChild_1.dateOfBirth,
+                    unitId = unitId,
+                    value = value,
+                    coPayment = coPayment,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed(),
+                    feeAlterations = feeAlterations
+                )
             it.upsertValueDecisions(listOf(decision))
 
             sendVoucherValueDecisions(
@@ -312,23 +341,28 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     private fun searchPayments(params: SearchPaymentsRequest): Paged<Payment> {
-        val (_, response, result) = http.post("/payments/search")
-            .asUser(financeUser)
-            .jsonBody(jsonMapper.writeValueAsString(params))
-            .responseObject<Paged<Payment>>(jsonMapper)
+        val (_, response, result) =
+            http
+                .post("/payments/search")
+                .asUser(financeUser)
+                .jsonBody(jsonMapper.writeValueAsString(params))
+                .responseObject<Paged<Payment>>(jsonMapper)
         assertEquals(200, response.statusCode)
         return result.get()
     }
 
     private fun createPaymentDrafts(today: LocalDate, expectedStatus: Int = 200): List<PaymentId> {
-        val (_, response, _) = http.post("/payments/create-drafts")
-            .asUser(financeUser)
-            .withMockedTime(HelsinkiDateTime.of(today, LocalTime.of(10, 0)))
-            .response()
+        val (_, response, _) =
+            http
+                .post("/payments/create-drafts")
+                .asUser(financeUser)
+                .withMockedTime(HelsinkiDateTime.of(today, LocalTime.of(10, 0)))
+                .response()
         assertEquals(expectedStatus, response.statusCode)
 
         return db.read { tx ->
-            tx.createQuery("""SELECT id FROM payment WHERE status = 'DRAFT' ORDER BY amount""").mapTo<PaymentId>()
+            tx.createQuery("""SELECT id FROM payment WHERE status = 'DRAFT' ORDER BY amount""")
+                .mapTo<PaymentId>()
                 .list()
         }
     }
@@ -340,19 +374,17 @@ class PaymentsIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         paymentIds: List<PaymentId>,
         expectedStatus: Int = 200
     ) {
-        val (_, response, _) = http.post("/payments/send")
-            .asUser(financeUser)
-            .withMockedTime(HelsinkiDateTime.of(today, LocalTime.of(10, 0)))
-            .jsonBody(
-                jsonMapper.writeValueAsString(
-                    PaymentController.SendPaymentsRequest(
-                        paymentDate,
-                        dueDate,
-                        paymentIds
+        val (_, response, _) =
+            http
+                .post("/payments/send")
+                .asUser(financeUser)
+                .withMockedTime(HelsinkiDateTime.of(today, LocalTime.of(10, 0)))
+                .jsonBody(
+                    jsonMapper.writeValueAsString(
+                        PaymentController.SendPaymentsRequest(paymentDate, dueDate, paymentIds)
                     )
                 )
-            )
-            .response()
+                .response()
         assertEquals(expectedStatus, response.statusCode)
     }
 }

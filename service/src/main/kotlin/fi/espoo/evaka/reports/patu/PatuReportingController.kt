@@ -14,31 +14,30 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import mu.KotlinLogging
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/patu-report")
-class PatuReportingController(private val asyncJobRunner: AsyncJobRunner<AsyncJob>, private val accessControl: AccessControl) {
+class PatuReportingController(
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    private val accessControl: AccessControl
+) {
 
     @PostMapping
     fun sendPatuReport(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("from")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        from: LocalDate,
-        @RequestParam("to")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        to: LocalDate
+        @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
+        @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Global.SEND_PATU_REPORT)
         db.connect { dbc ->

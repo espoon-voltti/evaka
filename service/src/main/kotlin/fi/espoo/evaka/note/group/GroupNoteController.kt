@@ -20,9 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class GroupNoteController(
-    private val ac: AccessControl
-) {
+class GroupNoteController(private val ac: AccessControl) {
     @PostMapping("/daycare-groups/{groupId}/group-notes")
     fun createGroupNote(
         db: Database,
@@ -33,9 +31,8 @@ class GroupNoteController(
     ): GroupNoteId {
         ac.requirePermissionFor(user, clock, Action.Group.CREATE_NOTE, groupId)
 
-        return db.connect { dbc -> dbc.transaction { it.createGroupNote(groupId, body) } }.also { noteId ->
-            Audit.GroupNoteCreate.log(targetId = groupId, objectId = noteId)
-        }
+        return db.connect { dbc -> dbc.transaction { it.createGroupNote(groupId, body) } }
+            .also { noteId -> Audit.GroupNoteCreate.log(targetId = groupId, objectId = noteId) }
     }
 
     @PutMapping("/group-notes/{noteId}")
@@ -48,9 +45,8 @@ class GroupNoteController(
     ): GroupNote {
         ac.requirePermissionFor(user, clock, Action.GroupNote.UPDATE, noteId)
 
-        return db.connect { dbc -> dbc.transaction { it.updateGroupNote(clock, noteId, body) } }.also {
-            Audit.GroupNoteUpdate.log(targetId = noteId)
-        }
+        return db.connect { dbc -> dbc.transaction { it.updateGroupNote(clock, noteId, body) } }
+            .also { Audit.GroupNoteUpdate.log(targetId = noteId) }
     }
 
     @DeleteMapping("/group-notes/{noteId}")
@@ -62,8 +58,7 @@ class GroupNoteController(
     ) {
         ac.requirePermissionFor(user, clock, Action.GroupNote.DELETE, noteId)
 
-        return db.connect { dbc -> dbc.transaction { it.deleteGroupNote(noteId) } }.also {
-            Audit.GroupNoteDelete.log(targetId = noteId)
-        }
+        return db.connect { dbc -> dbc.transaction { it.deleteGroupNote(noteId) } }
+            .also { Audit.GroupNoteDelete.log(targetId = noteId) }
     }
 }

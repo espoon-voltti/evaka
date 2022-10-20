@@ -30,12 +30,15 @@ class AwsConfig {
     @Bean
     @Profile("local")
     fun amazonS3Local(env: BucketEnv, credentialsProvider: AwsCredentialsProvider): S3Client {
-        val client = S3Client.builder()
-            .region(Region.US_EAST_1)
-            .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
-            .endpointOverride(env.s3MockUrl)
-            .credentialsProvider(credentialsProvider)
-            .build()
+        val client =
+            S3Client.builder()
+                .region(Region.US_EAST_1)
+                .serviceConfiguration(
+                    S3Configuration.builder().pathStyleAccessEnabled(true).build()
+                )
+                .endpointOverride(env.s3MockUrl)
+                .credentialsProvider(credentialsProvider)
+                .build()
 
         val existingBuckets = client.listBuckets().buckets().map { it.name()!! }
         for (bucket in env.allBuckets().filterNot { existingBuckets.contains(it) }) {
@@ -47,7 +50,10 @@ class AwsConfig {
 
     @Bean
     @Profile("local")
-    fun amazonS3PresignerLocal(env: BucketEnv, credentialsProvider: AwsCredentialsProvider): S3Presigner =
+    fun amazonS3PresignerLocal(
+        env: BucketEnv,
+        credentialsProvider: AwsCredentialsProvider
+    ): S3Presigner =
         S3Presigner.builder()
             .region(Region.US_EAST_1)
             .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
@@ -61,22 +67,21 @@ class AwsConfig {
 
     @Bean
     @Profile("production")
-    fun amazonS3Prod(env: EvakaEnv, credentialsProvider: AwsCredentialsProvider): S3Client = S3Client.builder()
-        .region(env.awsRegion)
-        .credentialsProvider(credentialsProvider)
-        .build()
+    fun amazonS3Prod(env: EvakaEnv, credentialsProvider: AwsCredentialsProvider): S3Client =
+        S3Client.builder().region(env.awsRegion).credentialsProvider(credentialsProvider).build()
 
     @Bean
     @Profile("production")
-    fun amazonS3PresignerProd(env: EvakaEnv, credentialsProvider: AwsCredentialsProvider): S3Presigner =
-        S3Presigner.builder()
-            .region(env.awsRegion)
-            .credentialsProvider(credentialsProvider)
-            .build()
+    fun amazonS3PresignerProd(
+        env: EvakaEnv,
+        credentialsProvider: AwsCredentialsProvider
+    ): S3Presigner =
+        S3Presigner.builder().region(env.awsRegion).credentialsProvider(credentialsProvider).build()
 
     @Bean
-    fun amazonSES(env: EvakaEnv, awsCredentialsProvider: AwsCredentialsProvider?): SesClient = SesClient.builder()
-        .credentialsProvider(awsCredentialsProvider)
-        .region(env.awsRegion)
-        .build()
+    fun amazonSES(env: EvakaEnv, awsCredentialsProvider: AwsCredentialsProvider?): SesClient =
+        SesClient.builder()
+            .credentialsProvider(awsCredentialsProvider)
+            .region(env.awsRegion)
+            .build()
 }

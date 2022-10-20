@@ -21,12 +21,12 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 class PlacementControllerCitizen(
@@ -34,9 +34,7 @@ class PlacementControllerCitizen(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
 
-    data class ChildPlacementResponse(
-        val placements: List<TerminatablePlacementGroup>
-    )
+    data class ChildPlacementResponse(val placements: List<TerminatablePlacementGroup>)
 
     @GetMapping("/citizen/children/{childId}/placements")
     fun getPlacements(
@@ -45,23 +43,28 @@ class PlacementControllerCitizen(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): ChildPlacementResponse {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Child.READ_PLACEMENT, childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Child.READ_PLACEMENT,
+            childId
+        )
 
         return db.connect { dbc ->
-            ChildPlacementResponse(
-                placements = mapToTerminatablePlacements(
-                    dbc.read {
-                        it.getCitizenChildPlacements(
-                            clock.today(),
-                            childId
+                ChildPlacementResponse(
+                    placements =
+                        mapToTerminatablePlacements(
+                            dbc.read { it.getCitizenChildPlacements(clock.today(), childId) },
+                            clock.today()
                         )
-                    },
-                    clock.today()
                 )
-            )
-        }.also {
-            Audit.PlacementSearch.log(targetId = childId, args = mapOf("count" to it.placements.size))
-        }
+            }
+            .also {
+                Audit.PlacementSearch.log(
+                    targetId = childId,
+                    args = mapOf("count" to it.placements.size)
+                )
+            }
     }
 
     data class PlacementTerminationRequestBody(
@@ -79,18 +82,34 @@ class PlacementControllerCitizen(
         @PathVariable childId: ChildId,
         @RequestBody body: PlacementTerminationRequestBody
     ) {
-        val terminationDate = body.terminationDate.also { if (it.isBefore(clock.today())) throw BadRequest("Invalid terminationDate") }
-        db.connect { dbc ->
-            if (dbc.read { it.getUnitFeatures(body.unitId) }?.features?.contains(PilotFeature.PLACEMENT_TERMINATION) != true) {
-                throw Forbidden("Placement termination not enabled for unit", "PLACEMENT_TERMINATION_DISABLED")
+        val terminationDate =
+            body.terminationDate.also {
+                if (it.isBefore(clock.today())) throw BadRequest("Invalid terminationDate")
             }
-            val terminatablePlacementGroup = dbc.read { it.getCitizenChildPlacements(clock.today(), childId) }
-                .also { placements ->
-                    accessControl.requirePermissionFor(user, clock, Action.Citizen.Placement.TERMINATE, placements.map { it.id })
-                }
-                .let { mapToTerminatablePlacements(it, clock.today()) }
-                .find { it.unitId == body.unitId && it.type == body.type }
-                ?: throw NotFound("Matching placement type not found")
+        db.connect { dbc ->
+            if (
+                dbc.read { it.getUnitFeatures(body.unitId) }
+                    ?.features
+                    ?.contains(PilotFeature.PLACEMENT_TERMINATION) != true
+            ) {
+                throw Forbidden(
+                    "Placement termination not enabled for unit",
+                    "PLACEMENT_TERMINATION_DISABLED"
+                )
+            }
+            val terminatablePlacementGroup =
+                dbc.read { it.getCitizenChildPlacements(clock.today(), childId) }
+                    .also { placements ->
+                        accessControl.requirePermissionFor(
+                            user,
+                            clock,
+                            Action.Citizen.Placement.TERMINATE,
+                            placements.map { it.id }
+                        )
+                    }
+                    .let { mapToTerminatablePlacements(it, clock.today()) }
+                    .find { it.unitId == body.unitId && it.type == body.type }
+                    ?: throw NotFound("Matching placement type not found")
 
             dbc.transaction { tx ->
                 if (body.terminateDaycareOnly == true) {
@@ -108,11 +127,22 @@ class PlacementControllerCitizen(
                     terminatablePlacementGroup
                         .let { it.placements + it.additionalPlacements }
                         .filter { it.endDate.isAfter(terminationDate) }
-                        .forEach { cancelOrTerminatePlacement(tx, clock.today(), it, terminationDate, user) }
+                        .forEach {
+                            cancelOrTerminatePlacement(tx, clock.today(), it, terminationDate, user)
+                        }
                 }
 
                 tx.cancelAllActiveTransferApplicationsAfterDate(childId, terminationDate)
-                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(childId, DateRange(terminationDate, null))), runAt = clock.now())
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(
+                        AsyncJob.GenerateFinanceDecisions.forChild(
+                            childId,
+                            DateRange(terminationDate, null)
+                        )
+                    ),
+                    runAt = clock.now()
+                )
             }
         }
         Audit.PlacementTerminate.log(body.unitId, body.type)

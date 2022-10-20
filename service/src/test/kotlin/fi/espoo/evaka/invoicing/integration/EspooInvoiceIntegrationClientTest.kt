@@ -15,11 +15,11 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.InvoiceId
 import fi.espoo.evaka.shared.InvoiceRowId
 import fi.espoo.evaka.shared.PersonId
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import org.junit.jupiter.api.Test
 
 class EspooInvoiceIntegrationClientTest {
     private val agreementType = 100
@@ -27,7 +27,12 @@ class EspooInvoiceIntegrationClientTest {
     @Test
     fun `sending an invoice uses the recipient's actual address if it's valid`() {
         val testInvoice = testInvoice()
-        val batch = EspooInvoiceIntegrationClient.createBatchExports(listOf(testInvoice), agreementType, true)
+        val batch =
+            EspooInvoiceIntegrationClient.createBatchExports(
+                listOf(testInvoice),
+                agreementType,
+                true
+            )
         assertEquals(1, batch.invoices.size)
         batch.invoices.first().let { invoice ->
             assertEquals(testInvoice.headOfFamily.streetAddress, invoice.client.street)
@@ -42,8 +47,14 @@ class EspooInvoiceIntegrationClientTest {
     @Test
     fun `sending an invoice trims whitespace from recipient's address`() {
         val postalCodeWithWhiteSpace = " 12345 "
-        val testInvoice = testInvoice(headOfFamily = testPerson(postalCode = postalCodeWithWhiteSpace))
-        val batch = EspooInvoiceIntegrationClient.createBatchExports(listOf(testInvoice), agreementType, true)
+        val testInvoice =
+            testInvoice(headOfFamily = testPerson(postalCode = postalCodeWithWhiteSpace))
+        val batch =
+            EspooInvoiceIntegrationClient.createBatchExports(
+                listOf(testInvoice),
+                agreementType,
+                true
+            )
         assertEquals(1, batch.invoices.size)
         batch.invoices.first().let { invoice ->
             assertEquals(testInvoice.headOfFamily.streetAddress, invoice.client.street)
@@ -60,14 +71,25 @@ class EspooInvoiceIntegrationClientTest {
     @Test
     fun `sending an invoice uses a fallback address when the recipient's actual address is partially incomplete`() {
         val testInvoice = testInvoice(headOfFamily = testPerson(streetAddress = ""))
-        val batch = EspooInvoiceIntegrationClient.createBatchExports(listOf(testInvoice), agreementType, true)
+        val batch =
+            EspooInvoiceIntegrationClient.createBatchExports(
+                listOf(testInvoice),
+                agreementType,
+                true
+            )
         assertEquals(1, batch.invoices.size)
         batch.invoices.first().let { invoice ->
             assertEquals(null, invoice.client.street)
             assertEquals(null, invoice.client.postalCode)
             assertEquals(null, invoice.client.post)
-            assertEquals(EspooInvoiceIntegrationClient.fallbackStreetAddress, invoice.recipient.street)
-            assertEquals(EspooInvoiceIntegrationClient.fallbackPostalCode, invoice.recipient.postalCode)
+            assertEquals(
+                EspooInvoiceIntegrationClient.fallbackStreetAddress,
+                invoice.recipient.street
+            )
+            assertEquals(
+                EspooInvoiceIntegrationClient.fallbackPostalCode,
+                invoice.recipient.postalCode
+            )
             assertEquals(EspooInvoiceIntegrationClient.fallbackPostOffice, invoice.recipient.post)
         }
     }
@@ -77,14 +99,21 @@ class EspooInvoiceIntegrationClientTest {
         val invoicingStreetAddress = "Testikatu 1"
         val invoicingPostalCode = "00100"
         val invoicingPostOffice = "Helsinki"
-        val testInvoice = testInvoice(
-            headOfFamily = testPerson(
-                invoicingStreetAddress = invoicingStreetAddress,
-                invoicingPostalCode = invoicingPostalCode,
-                invoicingPostOffice = invoicingPostOffice
+        val testInvoice =
+            testInvoice(
+                headOfFamily =
+                    testPerson(
+                        invoicingStreetAddress = invoicingStreetAddress,
+                        invoicingPostalCode = invoicingPostalCode,
+                        invoicingPostOffice = invoicingPostOffice
+                    )
             )
-        )
-        val batch = EspooInvoiceIntegrationClient.createBatchExports(listOf(testInvoice), agreementType, true)
+        val batch =
+            EspooInvoiceIntegrationClient.createBatchExports(
+                listOf(testInvoice),
+                agreementType,
+                true
+            )
         assertEquals(1, batch.invoices.size)
         batch.invoices.first().let { invoice ->
             assertEquals(testInvoice.headOfFamily.streetAddress, invoice.client.street)
@@ -98,23 +127,42 @@ class EspooInvoiceIntegrationClientTest {
 
     @Test
     fun `invoice sent to Community has the rows grouped by child`() {
-        val firstChild = testPerson(firstName = "First", lastName = "Child", dateOfBirth = LocalDate.now().minusDays(1))
-        val secondChild = testPerson(firstName = "Second", lastName = "Child", dateOfBirth = LocalDate.now())
-        val testInvoice = testInvoice(
-            rows = listOf(
-                testInvoiceRow(child = firstChild),
-                testInvoiceRow(child = secondChild),
-                testInvoiceRow(child = firstChild)
+        val firstChild =
+            testPerson(
+                firstName = "First",
+                lastName = "Child",
+                dateOfBirth = LocalDate.now().minusDays(1)
             )
-        )
-        val batch = EspooInvoiceIntegrationClient.createBatchExports(listOf(testInvoice), agreementType, true)
+        val secondChild =
+            testPerson(firstName = "Second", lastName = "Child", dateOfBirth = LocalDate.now())
+        val testInvoice =
+            testInvoice(
+                rows =
+                    listOf(
+                        testInvoiceRow(child = firstChild),
+                        testInvoiceRow(child = secondChild),
+                        testInvoiceRow(child = firstChild)
+                    )
+            )
+        val batch =
+            EspooInvoiceIntegrationClient.createBatchExports(
+                listOf(testInvoice),
+                agreementType,
+                true
+            )
         assertEquals(1, batch.invoices.size)
         batch.invoices.first().let { invoice ->
             assertEquals(7, invoice.rows.size)
-            assertEquals("${secondChild.lastName} ${secondChild.firstName}", invoice.rows[0].description)
+            assertEquals(
+                "${secondChild.lastName} ${secondChild.firstName}",
+                invoice.rows[0].description
+            )
             assertEquals("Varhaiskasvatus", invoice.rows[1].description)
             assertEquals("", invoice.rows[2].description)
-            assertEquals("${firstChild.lastName} ${firstChild.firstName}", invoice.rows[3].description)
+            assertEquals(
+                "${firstChild.lastName} ${firstChild.firstName}",
+                invoice.rows[3].description
+            )
             assertEquals("Varhaiskasvatus", invoice.rows[4].description)
             assertEquals("Varhaiskasvatus", invoice.rows[5].description)
             assertEquals("", invoice.rows[6].description)
@@ -125,40 +173,42 @@ class EspooInvoiceIntegrationClientTest {
         headOfFamily: PersonDetailed = testPerson(),
         codebtor: PersonDetailed? = null,
         rows: List<InvoiceRowDetailed> = listOf(testInvoiceRow())
-    ) = InvoiceDetailed(
-        id = InvoiceId(UUID.randomUUID()),
-        status = InvoiceStatus.DRAFT,
-        periodStart = LocalDate.of(2020, 1, 1),
-        periodEnd = LocalDate.of(2020, 1, 31),
-        dueDate = LocalDate.of(2020, 2, 28),
-        invoiceDate = LocalDate.of(2020, 2, 14),
-        agreementType = agreementType,
-        areaId = AreaId(UUID.randomUUID()),
-        headOfFamily = headOfFamily,
-        codebtor = codebtor,
-        number = 1L,
-        sentBy = null,
-        sentAt = null,
-        rows = rows
-    )
+    ) =
+        InvoiceDetailed(
+            id = InvoiceId(UUID.randomUUID()),
+            status = InvoiceStatus.DRAFT,
+            periodStart = LocalDate.of(2020, 1, 1),
+            periodEnd = LocalDate.of(2020, 1, 31),
+            dueDate = LocalDate.of(2020, 2, 28),
+            invoiceDate = LocalDate.of(2020, 2, 14),
+            agreementType = agreementType,
+            areaId = AreaId(UUID.randomUUID()),
+            headOfFamily = headOfFamily,
+            codebtor = codebtor,
+            number = 1L,
+            sentBy = null,
+            sentAt = null,
+            rows = rows
+        )
 
-    private fun testInvoiceRow(child: PersonDetailed = testPerson()) = InvoiceRowDetailed(
-        id = InvoiceRowId(UUID.randomUUID()),
-        child = child,
-        amount = 1,
-        unitPrice = 10000,
-        periodStart = LocalDate.of(2020, 1, 1),
-        periodEnd = LocalDate.of(2020, 1, 31),
-        product = EspooInvoiceProducts.Product.DAYCARE.key,
-        unitId = DaycareId(UUID.randomUUID()),
-        daycareType = setOf(CareType.CENTRE),
-        costCenter = "12345",
-        subCostCenter = "01",
-        savedCostCenter = "12345",
-        description = "",
-        correctionId = null,
-        note = null
-    )
+    private fun testInvoiceRow(child: PersonDetailed = testPerson()) =
+        InvoiceRowDetailed(
+            id = InvoiceRowId(UUID.randomUUID()),
+            child = child,
+            amount = 1,
+            unitPrice = 10000,
+            periodStart = LocalDate.of(2020, 1, 1),
+            periodEnd = LocalDate.of(2020, 1, 31),
+            product = EspooInvoiceProducts.Product.DAYCARE.key,
+            unitId = DaycareId(UUID.randomUUID()),
+            daycareType = setOf(CareType.CENTRE),
+            costCenter = "12345",
+            subCostCenter = "01",
+            savedCostCenter = "12345",
+            description = "",
+            correctionId = null,
+            note = null
+        )
 
     private fun testPerson(
         dateOfBirth: LocalDate = LocalDate.of(2000, 1, 1),
@@ -170,25 +220,26 @@ class EspooInvoiceIntegrationClientTest {
         invoicingStreetAddress: String = "",
         invoicingPostalCode: String = "",
         invoicingPostOffice: String = ""
-    ) = PersonDetailed(
-        id = PersonId(UUID.randomUUID()),
-        dateOfBirth = dateOfBirth,
-        dateOfDeath = null,
-        firstName = firstName,
-        lastName = lastName,
-        ssn = "ssn",
-        streetAddress = streetAddress,
-        postalCode = postalCode,
-        postOffice = postOffice,
-        residenceCode = "address_123",
-        email = "email@evaka.test",
-        phone = "123456",
-        language = "fi",
-        invoiceRecipientName = "",
-        invoicingStreetAddress = invoicingStreetAddress,
-        invoicingPostalCode = invoicingPostalCode,
-        invoicingPostOffice = invoicingPostOffice,
-        restrictedDetailsEnabled = false,
-        forceManualFeeDecisions = false
-    )
+    ) =
+        PersonDetailed(
+            id = PersonId(UUID.randomUUID()),
+            dateOfBirth = dateOfBirth,
+            dateOfDeath = null,
+            firstName = firstName,
+            lastName = lastName,
+            ssn = "ssn",
+            streetAddress = streetAddress,
+            postalCode = postalCode,
+            postOffice = postOffice,
+            residenceCode = "address_123",
+            email = "email@evaka.test",
+            phone = "123456",
+            language = "fi",
+            invoiceRecipientName = "",
+            invoicingStreetAddress = invoicingStreetAddress,
+            invoicingPostalCode = invoicingPostalCode,
+            invoicingPostOffice = invoicingPostOffice,
+            restrictedDetailsEnabled = false,
+            forceManualFeeDecisions = false
+        )
 }

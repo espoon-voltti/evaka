@@ -12,11 +12,8 @@ import org.springframework.stereotype.Service
 import redis.clients.jedis.JedisPool
 
 @Service
-class VtjCache(
-    private val jsonMapper: JsonMapper,
-    private val redisPool: JedisPool
-) {
-    private val logger = KotlinLogging.logger { }
+class VtjCache(private val jsonMapper: JsonMapper, private val redisPool: JedisPool) {
+    private val logger = KotlinLogging.logger {}
     private val timeToLive = 60 * 60 * 12L // in seconds
 
     fun getPerson(ssn: String): VtjPerson? {

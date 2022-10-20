@@ -19,7 +19,10 @@ class ServiceNeedConfirmationDeserializer :
         val at: HelsinkiDateTime?
     )
 
-    override fun deserialize(jp: JsonParser, ctxt: DeserializationContext): ServiceNeedConfirmation? {
+    override fun deserialize(
+        jp: JsonParser,
+        ctxt: DeserializationContext
+    ): ServiceNeedConfirmation? {
         val confirmed = jp.readValueAs(ServiceNeedConfirmationNullableFields::class.java)
         if (confirmed.userId == null) {
             return null

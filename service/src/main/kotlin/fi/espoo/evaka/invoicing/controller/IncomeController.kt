@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.maxEndDate
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.util.UUID
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -43,7 +44,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 @RequestMapping("/incomes")
@@ -66,51 +66,84 @@ class IncomeController(
     ): Wrapper<List<IncomeWithPermittedActions>> {
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_INCOME, personId)
 
-        val incomes = db.connect { dbc ->
-            dbc.read { tx ->
-                val incomes = tx.getIncomesForPerson(mapper, incomeTypesProvider, personId)
-                val permittedActions = accessControl.getPermittedActions<IncomeId, Action.Income>(
-                    tx,
-                    user,
-                    clock,
-                    incomes.mapNotNull { it.id }
-                )
-                incomes.map { IncomeWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
+        val incomes =
+            db.connect { dbc ->
+                dbc.read { tx ->
+                    val incomes = tx.getIncomesForPerson(mapper, incomeTypesProvider, personId)
+                    val permittedActions =
+                        accessControl.getPermittedActions<IncomeId, Action.Income>(
+                            tx,
+                            user,
+                            clock,
+                            incomes.mapNotNull { it.id }
+                        )
+                    incomes.map {
+                        IncomeWithPermittedActions(it, permittedActions[it.id] ?: emptySet())
+                    }
+                }
             }
-        }
         Audit.PersonIncomeRead.log(targetId = personId, args = mapOf("count" to incomes.size))
         return Wrapper(incomes)
     }
 
     @ExcludeCodeGen
-    data class IncomeWithPermittedActions(val data: Income, val permittedActions: Set<Action.Income>)
+    data class IncomeWithPermittedActions(
+        val data: Income,
+        val permittedActions: Set<Action.Income>
+    )
 
     @PostMapping
-    fun createIncome(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody income: Income): IncomeId {
-        accessControl.requirePermissionFor(user, clock, Action.Person.CREATE_INCOME, income.personId)
-        val period = try {
-            DateRange(income.validFrom, income.validTo)
-        } catch (e: Exception) {
-            with(income) {
-                throw BadRequest("Invalid period from $validFrom to $validTo")
+    fun createIncome(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestBody income: Income
+    ): IncomeId {
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Person.CREATE_INCOME,
+            income.personId
+        )
+        val period =
+            try {
+                DateRange(income.validFrom, income.validTo)
+            } catch (e: Exception) {
+                with(income) { throw BadRequest("Invalid period from $validFrom to $validTo") }
             }
-        }
 
         return db.connect { dbc ->
-            dbc.transaction { tx ->
-                val id = IncomeId(UUID.randomUUID())
-                val incomeTypes = incomeTypesProvider.get()
-                val validIncome = validateIncome(income.copy(id = id), incomeTypes)
-                tx.splitEarlierIncome(validIncome.personId, period)
-                tx.upsertIncome(clock, mapper, validIncome, user.evakaUserId)
-                tx.associateIncomeAttachments(user.evakaUserId, id, income.attachments.map { it.id })
-                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)), runAt = clock.now())
-                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(validIncome.personId, period)), runAt = clock.now())
-                id
+                dbc.transaction { tx ->
+                    val id = IncomeId(UUID.randomUUID())
+                    val incomeTypes = incomeTypesProvider.get()
+                    val validIncome = validateIncome(income.copy(id = id), incomeTypes)
+                    tx.splitEarlierIncome(validIncome.personId, period)
+                    tx.upsertIncome(clock, mapper, validIncome, user.evakaUserId)
+                    tx.associateIncomeAttachments(
+                        user.evakaUserId,
+                        id,
+                        income.attachments.map { it.id }
+                    )
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(
+                            AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)
+                        ),
+                        runAt = clock.now()
+                    )
+                    asyncJobRunner.plan(
+                        tx,
+                        listOf(
+                            AsyncJob.GenerateFinanceDecisions.forChild(validIncome.personId, period)
+                        ),
+                        runAt = clock.now()
+                    )
+                    id
+                }
             }
-        }.also { incomeId ->
-            Audit.PersonIncomeCreate.log(targetId = income.personId, objectId = incomeId)
-        }
+            .also { incomeId ->
+                Audit.PersonIncomeCreate.log(targetId = income.personId, objectId = incomeId)
+            }
     }
 
     @PutMapping("/{incomeId}")
@@ -127,28 +160,58 @@ class IncomeController(
             dbc.transaction { tx ->
                 val existing = tx.getIncome(mapper, incomeTypesProvider, incomeId)
                 val incomeTypes = incomeTypesProvider.get()
-                val validIncome = validateIncome(income.copy(id = incomeId, applicationId = null), incomeTypes)
+                val validIncome =
+                    validateIncome(income.copy(id = incomeId, applicationId = null), incomeTypes)
                 tx.upsertIncome(clock, mapper, validIncome, user.evakaUserId)
 
-                val expandedPeriod = existing?.let {
-                    DateRange(minOf(it.validFrom, income.validFrom), maxEndDate(it.validTo, income.validTo))
-                } ?: DateRange(income.validFrom, income.validTo)
+                val expandedPeriod =
+                    existing?.let {
+                        DateRange(
+                            minOf(it.validFrom, income.validFrom),
+                            maxEndDate(it.validTo, income.validTo)
+                        )
+                    }
+                        ?: DateRange(income.validFrom, income.validTo)
 
-                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, expandedPeriod)), runAt = clock.now())
-                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(validIncome.personId, expandedPeriod)), runAt = clock.now())
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(
+                        AsyncJob.GenerateFinanceDecisions.forAdult(
+                            validIncome.personId,
+                            expandedPeriod
+                        )
+                    ),
+                    runAt = clock.now()
+                )
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(
+                        AsyncJob.GenerateFinanceDecisions.forChild(
+                            validIncome.personId,
+                            expandedPeriod
+                        )
+                    ),
+                    runAt = clock.now()
+                )
             }
         }
         Audit.PersonIncomeUpdate.log(targetId = incomeId)
     }
 
     @DeleteMapping("/{incomeId}")
-    fun deleteIncome(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable incomeId: IncomeId) {
+    fun deleteIncome(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable incomeId: IncomeId
+    ) {
         accessControl.requirePermissionFor(user, clock, Action.Income.DELETE, incomeId)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val existing = tx.getIncome(mapper, incomeTypesProvider, incomeId)
-                    ?: throw BadRequest("Income not found")
+                val existing =
+                    tx.getIncome(mapper, incomeTypesProvider, incomeId)
+                        ?: throw BadRequest("Income not found")
                 val period = DateRange(existing.validFrom, existing.validTo)
 
                 existing.attachments.map {
@@ -157,8 +220,16 @@ class IncomeController(
                 }
                 tx.deleteIncome(incomeId)
 
-                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forAdult(existing.personId, period)), runAt = clock.now())
-                asyncJobRunner.plan(tx, listOf(AsyncJob.GenerateFinanceDecisions.forChild(existing.personId, period)), runAt = clock.now())
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(AsyncJob.GenerateFinanceDecisions.forAdult(existing.personId, period)),
+                    runAt = clock.now()
+                )
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(AsyncJob.GenerateFinanceDecisions.forChild(existing.personId, period)),
+                    runAt = clock.now()
+                )
             }
         }
         Audit.PersonIncomeDelete.log(targetId = incomeId)
@@ -174,17 +245,19 @@ class IncomeController(
 fun validateIncome(income: Income, incomeTypes: Map<String, IncomeType>): Income {
     return if (income.effect == IncomeEffect.INCOME) {
         income.copy(
-            data = income.data.mapValues { (type, value) ->
-                val incomeType = incomeTypes[type] ?: throw BadRequest("Invalid income type: $type")
-                if (incomeType.withCoefficient) {
-                    value.copy(multiplier = incomeType.multiplier)
-                } else {
-                    value.copy(
-                        multiplier = incomeType.multiplier,
-                        coefficient = IncomeCoefficient.default()
-                    )
+            data =
+                income.data.mapValues { (type, value) ->
+                    val incomeType =
+                        incomeTypes[type] ?: throw BadRequest("Invalid income type: $type")
+                    if (incomeType.withCoefficient) {
+                        value.copy(multiplier = incomeType.multiplier)
+                    } else {
+                        value.copy(
+                            multiplier = incomeType.multiplier,
+                            coefficient = IncomeCoefficient.default()
+                        )
+                    }
                 }
-            }
         )
     } else {
         income.copy(data = mapOf())

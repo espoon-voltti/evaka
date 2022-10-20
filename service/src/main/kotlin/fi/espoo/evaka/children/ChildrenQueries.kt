@@ -10,7 +10,7 @@ import java.time.LocalDate
 
 fun Database.Read.getChildrenByParent(id: PersonId, today: LocalDate): List<Child> =
     this.createQuery(
-        """
+            """
 WITH children AS (
     SELECT child_id FROM guardian WHERE guardian_id = :userId
     UNION
@@ -34,8 +34,9 @@ LEFT JOIN placement pl ON pl.child_id = p.id AND daterange(pl.start_date, pl.end
 LEFT JOIN daycare_group_placement dgp ON pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') @> :today::date
 LEFT JOIN daycare_group dg ON dgp.daycare_group_id = dg.id
 ORDER BY p.date_of_birth, p.last_name, p.first_name
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("today", today)
         .bind("userId", id)
         .mapTo<Child>()

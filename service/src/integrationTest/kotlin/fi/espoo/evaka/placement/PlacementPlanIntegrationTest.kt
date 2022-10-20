@@ -35,30 +35,30 @@ import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testSvebiDaycare
 import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val serviceWorker = AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker =
+        AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
     fun testDaycareFullTime() {
         val preferredStartDate = LocalDate.of(2020, 3, 17)
-        val applicationId = insertInitialData(
-            status = ApplicationStatus.WAITING_PLACEMENT,
-            type = ApplicationType.DAYCARE,
-            preferredStartDate = preferredStartDate
-        )
+        val applicationId =
+            insertInitialData(
+                status = ApplicationStatus.WAITING_PLACEMENT,
+                type = ApplicationType.DAYCARE,
+                preferredStartDate = preferredStartDate
+            )
         val defaultEndDate = LocalDate.of(2023, 7, 31)
         checkPlacementPlanDraft(
             applicationId,
@@ -70,7 +70,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             PlacementType.DAYCARE,
             DaycarePlacementPlan(
                 unitId = testDaycare.id,
-                period = FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
+                period =
+                    FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
             )
         )
     }
@@ -78,12 +79,13 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     @Test
     fun testDaycareFullTimeWithRestrictedDetails() {
         val preferredStartDate = LocalDate.of(2020, 3, 17)
-        val applicationId = insertInitialData(
-            status = ApplicationStatus.WAITING_PLACEMENT,
-            type = ApplicationType.DAYCARE,
-            preferredStartDate = preferredStartDate,
-            adult = testAdult_7
-        )
+        val applicationId =
+            insertInitialData(
+                status = ApplicationStatus.WAITING_PLACEMENT,
+                type = ApplicationType.DAYCARE,
+                preferredStartDate = preferredStartDate,
+                adult = testAdult_7
+            )
         val defaultEndDate = LocalDate.of(2023, 7, 31)
         checkPlacementPlanDraft(
             applicationId,
@@ -96,7 +98,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             PlacementType.DAYCARE,
             DaycarePlacementPlan(
                 unitId = testDaycare.id,
-                period = FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
+                period =
+                    FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
             )
         )
     }
@@ -104,12 +107,13 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     @Test
     fun testDaycarePartTime() {
         val preferredStartDate = LocalDate.of(2022, 11, 30)
-        val applicationId = insertInitialData(
-            status = ApplicationStatus.WAITING_PLACEMENT,
-            type = ApplicationType.DAYCARE,
-            partTime = true,
-            preferredStartDate = preferredStartDate
-        )
+        val applicationId =
+            insertInitialData(
+                status = ApplicationStatus.WAITING_PLACEMENT,
+                type = ApplicationType.DAYCARE,
+                partTime = true,
+                preferredStartDate = preferredStartDate
+            )
         val defaultEndDate = LocalDate.of(2023, 7, 31)
         checkPlacementPlanDraft(
             applicationId,
@@ -121,7 +125,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             PlacementType.DAYCARE_PART_TIME,
             DaycarePlacementPlan(
                 unitId = testDaycare.id,
-                period = FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
+                period =
+                    FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
             )
         )
     }
@@ -129,11 +134,12 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     @Test
     fun testPreschoolOnly() {
         val preferredStartDate = LocalDate.of(2023, 8, 1)
-        val applicationId = insertInitialData(
-            status = ApplicationStatus.WAITING_PLACEMENT,
-            type = ApplicationType.PRESCHOOL,
-            preferredStartDate = preferredStartDate
-        )
+        val applicationId =
+            insertInitialData(
+                status = ApplicationStatus.WAITING_PLACEMENT,
+                type = ApplicationType.PRESCHOOL,
+                preferredStartDate = preferredStartDate
+            )
         val defaultEndDate = LocalDate.of(2024, 6, 3)
         checkPlacementPlanDraft(
             applicationId,
@@ -145,7 +151,8 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             PlacementType.PRESCHOOL,
             DaycarePlacementPlan(
                 unitId = testDaycare.id,
-                period = FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
+                period =
+                    FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
             )
         )
     }
@@ -153,12 +160,13 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     @Test
     fun testPreschoolWithDaycare() {
         val preferredStartDate = LocalDate.of(2023, 8, 1)
-        val applicationId = insertInitialData(
-            status = ApplicationStatus.WAITING_PLACEMENT,
-            type = ApplicationType.PRESCHOOL,
-            preschoolDaycare = true,
-            preferredStartDate = preferredStartDate
-        )
+        val applicationId =
+            insertInitialData(
+                status = ApplicationStatus.WAITING_PLACEMENT,
+                type = ApplicationType.PRESCHOOL,
+                preschoolDaycare = true,
+                preferredStartDate = preferredStartDate
+            )
         val defaultEndDate = LocalDate.of(2024, 6, 3)
         val defaultDaycareEndDate = LocalDate.of(2024, 7, 31)
         checkPlacementPlanDraft(
@@ -172,11 +180,13 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             PlacementType.PRESCHOOL_DAYCARE,
             DaycarePlacementPlan(
                 unitId = testDaycare.id,
-                period = FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1)),
-                preschoolDaycarePeriod = FiniteDateRange(
-                    preferredStartDate.minusDays(1),
-                    defaultDaycareEndDate.plusDays(1)
-                )
+                period =
+                    FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1)),
+                preschoolDaycarePeriod =
+                    FiniteDateRange(
+                        preferredStartDate.minusDays(1),
+                        defaultDaycareEndDate.plusDays(1)
+                    )
             )
         )
     }
@@ -184,13 +194,14 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     @Test
     fun testPreschoolWithSvebiDaycare() {
         val preferredStartDate = LocalDate.of(2023, 8, 1)
-        val applicationId = insertInitialData(
-            status = ApplicationStatus.WAITING_PLACEMENT,
-            type = ApplicationType.PRESCHOOL,
-            preschoolDaycare = true,
-            preferredStartDate = preferredStartDate,
-            preferredUnits = listOf(testSvebiDaycare)
-        )
+        val applicationId =
+            insertInitialData(
+                status = ApplicationStatus.WAITING_PLACEMENT,
+                type = ApplicationType.PRESCHOOL,
+                preschoolDaycare = true,
+                preferredStartDate = preferredStartDate,
+                preferredUnits = listOf(testSvebiDaycare)
+            )
         val svebiEndDate = LocalDate.of(2024, 6, 6)
         val defaultDaycareEndDate = LocalDate.of(2024, 7, 31)
         checkPlacementPlanDraft(
@@ -206,10 +217,11 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             DaycarePlacementPlan(
                 unitId = testSvebiDaycare.id,
                 period = FiniteDateRange(preferredStartDate.plusDays(1), svebiEndDate.minusDays(1)),
-                preschoolDaycarePeriod = FiniteDateRange(
-                    preferredStartDate.minusDays(1),
-                    defaultDaycareEndDate.plusDays(1)
-                )
+                preschoolDaycarePeriod =
+                    FiniteDateRange(
+                        preferredStartDate.minusDays(1),
+                        defaultDaycareEndDate.plusDays(1)
+                    )
             )
         )
     }
@@ -217,12 +229,13 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     @Test
     fun testPreschoolWithPreparatory() {
         val preferredStartDate = LocalDate.of(2023, 8, 1)
-        val applicationId = insertInitialData(
-            status = ApplicationStatus.WAITING_PLACEMENT,
-            type = ApplicationType.PRESCHOOL,
-            preferredStartDate = preferredStartDate,
-            preparatory = true
-        )
+        val applicationId =
+            insertInitialData(
+                status = ApplicationStatus.WAITING_PLACEMENT,
+                type = ApplicationType.PRESCHOOL,
+                preferredStartDate = preferredStartDate,
+                preparatory = true
+            )
         val defaultEndDate = LocalDate.of(2024, 6, 3)
         checkPlacementPlanDraft(
             applicationId,
@@ -234,39 +247,47 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             PlacementType.PREPARATORY,
             DaycarePlacementPlan(
                 unitId = testDaycare.id,
-                period = FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
+                period =
+                    FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1))
             )
         )
     }
 
     @Test
     fun testEndpointSecurity() {
-        val applicationId = insertInitialData(
-            status = ApplicationStatus.WAITING_PLACEMENT,
-            type = ApplicationType.DAYCARE,
-            preferredStartDate = LocalDate.of(2020, 3, 17)
-        )
-        val invalidRoleLists = listOf(
-            setOf(UserRole.UNIT_SUPERVISOR),
-            setOf(UserRole.FINANCE_ADMIN),
-            setOf(UserRole.END_USER),
-            setOf()
-        )
+        val applicationId =
+            insertInitialData(
+                status = ApplicationStatus.WAITING_PLACEMENT,
+                type = ApplicationType.DAYCARE,
+                preferredStartDate = LocalDate.of(2020, 3, 17)
+            )
+        val invalidRoleLists =
+            listOf(
+                setOf(UserRole.UNIT_SUPERVISOR),
+                setOf(UserRole.FINANCE_ADMIN),
+                setOf(UserRole.END_USER),
+                setOf()
+            )
         invalidRoleLists.forEach { roles ->
-            val (_, res, _) = http.get("/v2/applications/$applicationId/placement-draft")
-                .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, roles))
-                .response()
+            val (_, res, _) =
+                http
+                    .get("/v2/applications/$applicationId/placement-draft")
+                    .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, roles))
+                    .response()
             assertEquals(403, res.statusCode)
         }
-        val proposal = DaycarePlacementPlan(
-            unitId = testDaycare.id,
-            period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2020, 6, 1))
-        )
+        val proposal =
+            DaycarePlacementPlan(
+                unitId = testDaycare.id,
+                period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2020, 6, 1))
+            )
         invalidRoleLists.forEach { roles ->
-            val (_, res, _) = http.post("/v2/applications/$applicationId/actions/create-placement-plan")
-                .jsonBody(jsonMapper.writeValueAsString(proposal))
-                .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, roles))
-                .response()
+            val (_, res, _) =
+                http
+                    .post("/v2/applications/$applicationId/actions/create-placement-plan")
+                    .jsonBody(jsonMapper.writeValueAsString(proposal))
+                    .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, roles))
+                    .response()
             assertEquals(403, res.statusCode)
         }
     }
@@ -281,24 +302,23 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         placements: List<PlacementDraftPlacement> = emptyList(),
         guardianHasRestrictedDetails: Boolean = false
     ) {
-        val (_, _, body) = http.get("/v2/applications/$applicationId/placement-draft")
-            .asUser(serviceWorker)
-            .responseObject<PlacementPlanDraft>(jsonMapper)
+        val (_, _, body) =
+            http
+                .get("/v2/applications/$applicationId/placement-draft")
+                .asUser(serviceWorker)
+                .responseObject<PlacementPlanDraft>(jsonMapper)
         assertEquals(
             PlacementPlanDraft(
                 type = type,
-                child = PlacementDraftChild(
-                    id = child.id,
-                    firstName = child.firstName,
-                    lastName = child.lastName,
-                    dob = child.dateOfBirth
-                ),
-                preferredUnits = preferredUnits.map {
-                    PlacementDraftUnit(
-                        id = it.id,
-                        name = it.name
-                    )
-                },
+                child =
+                    PlacementDraftChild(
+                        id = child.id,
+                        firstName = child.firstName,
+                        lastName = child.lastName,
+                        dob = child.dateOfBirth
+                    ),
+                preferredUnits =
+                    preferredUnits.map { PlacementDraftUnit(id = it.id, name = it.name) },
                 period = period,
                 preschoolDaycarePeriod = preschoolDaycarePeriod,
                 placements = placements,
@@ -313,10 +333,12 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         type: PlacementType,
         proposal: DaycarePlacementPlan
     ) {
-        val (_, res, _) = http.post("/v2/applications/$applicationId/actions/create-placement-plan")
-            .jsonBody(jsonMapper.writeValueAsString(proposal))
-            .asUser(serviceWorker)
-            .response()
+        val (_, res, _) =
+            http
+                .post("/v2/applications/$applicationId/actions/create-placement-plan")
+                .jsonBody(jsonMapper.writeValueAsString(proposal))
+                .asUser(serviceWorker)
+                .response()
         assertTrue(res.isSuccessful)
 
         db.read { r ->
@@ -340,29 +362,31 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         preschoolDaycare: Boolean = false,
         preferredUnits: List<DevDaycare> = listOf(testDaycare, testDaycare2),
         preparatory: Boolean = false
-    ): ApplicationId = db.transaction { tx ->
-        val applicationId = tx.insertTestApplication(
-            status = status,
-            guardianId = adult.id,
-            childId = child.id,
-            type = type
-        )
-        val careDetails = if (preparatory) CareDetails(preparatory = true) else CareDetails()
-        tx.insertTestApplicationForm(
-            applicationId,
-            DaycareFormV0(
-                type = type,
-                partTime = partTime,
-                connectedDaycare = preschoolDaycare,
-                serviceStart = "08:00".takeIf { preschoolDaycare },
-                serviceEnd = "16:00".takeIf { preschoolDaycare },
-                child = child.toDaycareFormChild(),
-                guardian = adult.toDaycareFormAdult(adult.restrictedDetailsEnabled),
-                apply = Apply(preferredUnits = preferredUnits.map { it.id }),
-                preferredStartDate = preferredStartDate,
-                careDetails = careDetails
+    ): ApplicationId =
+        db.transaction { tx ->
+            val applicationId =
+                tx.insertTestApplication(
+                    status = status,
+                    guardianId = adult.id,
+                    childId = child.id,
+                    type = type
+                )
+            val careDetails = if (preparatory) CareDetails(preparatory = true) else CareDetails()
+            tx.insertTestApplicationForm(
+                applicationId,
+                DaycareFormV0(
+                    type = type,
+                    partTime = partTime,
+                    connectedDaycare = preschoolDaycare,
+                    serviceStart = "08:00".takeIf { preschoolDaycare },
+                    serviceEnd = "16:00".takeIf { preschoolDaycare },
+                    child = child.toDaycareFormChild(),
+                    guardian = adult.toDaycareFormAdult(adult.restrictedDetailsEnabled),
+                    apply = Apply(preferredUnits = preferredUnits.map { it.id }),
+                    preferredStartDate = preferredStartDate,
+                    careDetails = careDetails
+                )
             )
-        )
-        applicationId
-    }
+            applicationId
+        }
 }

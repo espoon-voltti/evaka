@@ -13,36 +13,41 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
-class ServiceNeedReport(private val acl: AccessControlList, private val accessControl: AccessControl) {
+class ServiceNeedReport(
+    private val acl: AccessControlList,
+    private val accessControl: AccessControl
+) {
     @GetMapping("/reports/service-need")
     fun getServiceNeedReport(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("date")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        date: LocalDate
+        @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): List<ServiceNeedReportRow> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_SERVICE_NEED_REPORT)
         return db.connect { dbc ->
-            dbc.read {
-                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.getServiceNeedRows(date, acl.getAuthorizedUnits(user))
+                dbc.read {
+                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    it.getServiceNeedRows(date, acl.getAuthorizedUnits(user))
+                }
             }
-        }.also {
-            Audit.ServiceNeedReportRead.log(args = mapOf("date" to date, "count" to it.size))
-        }
+            .also {
+                Audit.ServiceNeedReportRead.log(args = mapOf("date" to date, "count" to it.size))
+            }
     }
 }
 
-private fun Database.Read.getServiceNeedRows(date: LocalDate, authorizedUnits: AclAuthorization): List<ServiceNeedReportRow> {
+private fun Database.Read.getServiceNeedRows(
+    date: LocalDate,
+    authorizedUnits: AclAuthorization
+): List<ServiceNeedReportRow> {
     // language=sql
     val sql =
         """
@@ -71,7 +76,8 @@ private fun Database.Read.getServiceNeedRows(date: LocalDate, authorizedUnits: A
         ${if (authorizedUnits != AclAuthorization.All) "WHERE d.id = ANY(:units :: uuid[])" else ""}
         GROUP BY care_area_name, ages.age, unit_name, unit_provider_type, unit_type
         ORDER BY care_area_name, unit_name, ages.age
-        """.trimIndent()
+        """
+            .trimIndent()
 
     return createQuery(sql)
         .bind("target_date", date)

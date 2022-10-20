@@ -5,18 +5,19 @@
 package fi.espoo.voltti.pdfgen
 
 import com.lowagie.text.pdf.BaseFont
-import org.springframework.stereotype.Component
-import org.thymeleaf.ITemplateEngine
-import org.thymeleaf.context.Context
-import org.xhtmlrenderer.pdf.ITextFontResolver
-import org.xhtmlrenderer.pdf.ITextRenderer
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.OutputStream
 import java.nio.file.Paths
 import java.util.Locale
+import org.springframework.stereotype.Component
+import org.thymeleaf.ITemplateEngine
+import org.thymeleaf.context.Context
+import org.xhtmlrenderer.pdf.ITextFontResolver
+import org.xhtmlrenderer.pdf.ITextRenderer
 
 class Template(val value: String)
+
 class Page(val template: Template, val context: Context)
 
 fun ITemplateEngine.process(page: Page): String = this.process(page.template.value, page.context)
@@ -46,14 +47,13 @@ class PDFService(private val templateEngine: ITemplateEngine) {
     }
 }
 
-/**
- * mostly copy from [ITextFontResolver.addFontDirectory] to add encoding support
- */
+/** mostly copy from [ITextFontResolver.addFontDirectory] to add encoding support */
 fun ITextFontResolver.addFontDirectory(f: File, encoding: String, embedded: Boolean) {
     if (f.isDirectory) {
         f.listFiles { _, name ->
-            val lower = name.lowercase(Locale.getDefault())
-            lower.endsWith(".otf") || lower.endsWith(".ttf")
-        }.forEach { file -> addFont(file.absolutePath, encoding, embedded) }
+                val lower = name.lowercase(Locale.getDefault())
+                lower.endsWith(".otf") || lower.endsWith(".ttf")
+            }
+            .forEach { file -> addFont(file.absolutePath, encoding, embedded) }
     }
 }

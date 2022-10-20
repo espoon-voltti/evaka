@@ -9,19 +9,19 @@ import fi.espoo.evaka.DvvModificationsEnv
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import org.junit.jupiter.api.BeforeEach
-import org.mockito.kotlin.mock
-import org.springframework.beans.factory.annotation.Autowired
 import java.security.cert.X509Certificate
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
+import org.junit.jupiter.api.BeforeEach
+import org.mockito.kotlin.mock
+import org.springframework.beans.factory.annotation.Autowired
 
-class DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach: Boolean) : FullApplicationTest(resetDbBeforeEach = resetDbBeforeEach) {
+class DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach: Boolean) :
+    FullApplicationTest(resetDbBeforeEach = resetDbBeforeEach) {
 
-    @Autowired
-    protected lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired protected lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     protected lateinit var dvvModificationsServiceClient: DvvModificationsServiceClient
     protected lateinit var dvvModificationsService: DvvModificationsService
@@ -32,21 +32,39 @@ class DvvModificationsServiceIntegrationTestBase(resetDbBeforeEach: Boolean) : F
         assert(httpPort > 0)
         val mockDvvBaseUrl = "http://localhost:$httpPort/mock-integration/dvv/api/v1"
         requestCustomizerMock = mock()
-        dvvModificationsServiceClient = DvvModificationsServiceClient(jsonMapper, noCertCheckFuelManager(), listOf(requestCustomizerMock), DvvModificationsEnv.fromEnvironment(env).copy(url = mockDvvBaseUrl))
-        dvvModificationsService = DvvModificationsService(dvvModificationsServiceClient, asyncJobRunner)
+        dvvModificationsServiceClient =
+            DvvModificationsServiceClient(
+                jsonMapper,
+                noCertCheckFuelManager(),
+                listOf(requestCustomizerMock),
+                DvvModificationsEnv.fromEnvironment(env).copy(url = mockDvvBaseUrl)
+            )
+        dvvModificationsService =
+            DvvModificationsService(dvvModificationsServiceClient, asyncJobRunner)
     }
 
-    fun noCertCheckFuelManager() = FuelManager().apply {
-        val trustAllCerts = arrayOf<TrustManager>(object : X509TrustManager {
-            override fun getAcceptedIssuers(): Array<X509Certificate>? = null
-            override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) = Unit
-            override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) = Unit
-        })
+    fun noCertCheckFuelManager() =
+        FuelManager().apply {
+            val trustAllCerts =
+                arrayOf<TrustManager>(
+                    object : X509TrustManager {
+                        override fun getAcceptedIssuers(): Array<X509Certificate>? = null
+                        override fun checkClientTrusted(
+                            chain: Array<X509Certificate>,
+                            authType: String
+                        ) = Unit
+                        override fun checkServerTrusted(
+                            chain: Array<X509Certificate>,
+                            authType: String
+                        ) = Unit
+                    }
+                )
 
-        socketFactory = SSLContext.getInstance("SSL").apply {
-            init(null, trustAllCerts, java.security.SecureRandom())
-        }.socketFactory
+            socketFactory =
+                SSLContext.getInstance("SSL")
+                    .apply { init(null, trustAllCerts, java.security.SecureRandom()) }
+                    .socketFactory
 
-        hostnameVerifier = HostnameVerifier { _, _ -> true }
-    }
+            hostnameVerifier = HostnameVerifier { _, _ -> true }
+        }
 }

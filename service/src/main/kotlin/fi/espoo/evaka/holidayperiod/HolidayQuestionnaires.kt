@@ -13,12 +13,11 @@ import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 
 enum class QuestionnaireType {
-    FIXED_PERIOD, OPEN_RANGES
+    FIXED_PERIOD,
+    OPEN_RANGES
 }
 
-data class QuestionnaireConditions(
-    val continuousPlacement: FiniteDateRange? = null
-)
+data class QuestionnaireConditions(val continuousPlacement: FiniteDateRange? = null)
 
 // TODO use sealed class when OPEN_RANGES is implemented
 data class FixedPeriodQuestionnaire(
@@ -27,36 +26,30 @@ data class FixedPeriodQuestionnaire(
     val absenceType: AbsenceType,
     val requiresStrongAuth: Boolean,
     val active: FiniteDateRange,
-    @Json
-    val title: Translatable,
-    @Json
-    val description: Translatable,
-    @Json
-    val descriptionLink: Translatable,
-    /**  Conditions are optional and will prevent the questionnaire from being shown unless all conditions are satisfied. */
-    @Nested("condition")
-    val conditions: QuestionnaireConditions,
+    @Json val title: Translatable,
+    @Json val description: Translatable,
+    @Json val descriptionLink: Translatable,
+    /**
+     * Conditions are optional and will prevent the questionnaire from being shown unless all
+     * conditions are satisfied.
+     */
+    @Nested("condition") val conditions: QuestionnaireConditions,
 
     // fixed period specific
     val periodOptions: List<FiniteDateRange>,
-    @Json
-    val periodOptionLabel: Translatable
+    @Json val periodOptionLabel: Translatable
 )
 
 data class FixedPeriodQuestionnaireBody(
     val absenceType: AbsenceType,
     val requiresStrongAuth: Boolean,
     val active: FiniteDateRange,
-    @Json
-    val title: Translatable,
-    @Json
-    val description: Translatable,
-    @Json
-    val descriptionLink: Translatable,
+    @Json val title: Translatable,
+    @Json val description: Translatable,
+    @Json val descriptionLink: Translatable,
     val conditions: QuestionnaireConditions,
     val periodOptions: List<FiniteDateRange>,
-    @Json
-    val periodOptionLabel: Translatable
+    @Json val periodOptionLabel: Translatable
 )
 
 data class HolidayQuestionnaireAnswer(

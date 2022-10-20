@@ -4,50 +4,28 @@
 
 package fi.espoo.evaka
 
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.time.LocalTime
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
 
 class LocalTimeRangeTest {
 
     @Test
     fun `start is inclusive`() {
-        assertThat(
-            LocalTimeRange(
-                LocalTime.of(8, 5),
-                LocalTime.of(8, 5)
-            )
-        ).containsExactly(
-            LocalTime.of(8, 5)
-        )
+        assertThat(LocalTimeRange(LocalTime.of(8, 5), LocalTime.of(8, 5)))
+            .containsExactly(LocalTime.of(8, 5))
     }
 
     @Test
     fun `end is inclusive`() {
-        assertThat(
-            LocalTimeRange(
-                LocalTime.of(8, 5),
-                LocalTime.of(8, 6)
-            )
-        ).containsExactly(
-            LocalTime.of(8, 5),
-            LocalTime.of(8, 6)
-        )
+        assertThat(LocalTimeRange(LocalTime.of(8, 5), LocalTime.of(8, 6)))
+            .containsExactly(LocalTime.of(8, 5), LocalTime.of(8, 6))
     }
 
     @Test
     fun `works with 30 minutes duration`() {
-        assertThat(
-            LocalTimeRange(
-                LocalTime.of(8, 5),
-                LocalTime.of(9, 22),
-                Duration.ofMinutes(30)
-            )
-        ).containsExactly(
-            LocalTime.of(8, 5),
-            LocalTime.of(8, 35),
-            LocalTime.of(9, 5)
-        )
+        assertThat(LocalTimeRange(LocalTime.of(8, 5), LocalTime.of(9, 22), Duration.ofMinutes(30)))
+            .containsExactly(LocalTime.of(8, 5), LocalTime.of(8, 35), LocalTime.of(9, 5))
     }
 }

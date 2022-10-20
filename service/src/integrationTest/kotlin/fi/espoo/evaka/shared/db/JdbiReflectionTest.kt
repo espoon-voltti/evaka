@@ -5,21 +5,23 @@
 package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.PureJdbiTest
-import org.intellij.lang.annotations.Language
-import org.junit.jupiter.api.Test
 import kotlin.reflect.KClass
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.intellij.lang.annotations.Language
+import org.junit.jupiter.api.Test
 
 class JdbiReflectionTest : PureJdbiTest(resetDbBeforeEach = false) {
-    private inline fun <reified T> mapOneValue(@Language("sql") query: String, vararg annotations: KClass<out Annotation>) = db.read { tx ->
-        tx.createQuery(query)
-            .map { row -> row.mapColumn<T>("result", *annotations) }
-            .single()
-    }
+    private inline fun <reified T> mapOneValue(
+        @Language("sql") query: String,
+        vararg annotations: KClass<out Annotation>
+    ) =
+        db.read { tx ->
+            tx.createQuery(query).map { row -> row.mapColumn<T>("result", *annotations) }.single()
+        }
 
     @Test
     fun `mapColumn works with primitive arrays`() {

@@ -40,11 +40,17 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable personId: PersonId
     ): List<InvoiceCorrectionWithPermittedActions> {
-        accessControl.requirePermissionFor(user, clock, Action.Person.READ_INVOICE_CORRECTIONS, personId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Person.READ_INVOICE_CORRECTIONS,
+            personId
+        )
         return db.connect { dbc ->
-            dbc.read { tx ->
-                val invoiceCorrections = tx.createQuery(
-                    """
+                dbc.read { tx ->
+                    val invoiceCorrections =
+                        tx.createQuery(
+                                """
 SELECT c.id, c.head_of_family_id, c.child_id, c.unit_id, c.product, c.period, c.amount, c.unit_price, c.description, c.note,
     i.id AS invoice_id,
     i.status AS invoice_status
@@ -59,19 +65,39 @@ LEFT JOIN LATERAL (
 ) i ON true
 WHERE c.head_of_family_id = :personId AND NOT applied_completely
 """
-                )
-                    .bind("personId", personId)
-                    .mapTo<InvoiceCorrection>()
-                    .toList()
-                val permittedActions = accessControl.getPermittedActions<InvoiceCorrectionId, Action.InvoiceCorrection>(tx, user, clock, invoiceCorrections.map { it.id })
-                invoiceCorrections.map { InvoiceCorrectionWithPermittedActions(it, permittedActions[it.id] ?: emptySet()) }
+                            )
+                            .bind("personId", personId)
+                            .mapTo<InvoiceCorrection>()
+                            .toList()
+                    val permittedActions =
+                        accessControl.getPermittedActions<
+                            InvoiceCorrectionId, Action.InvoiceCorrection
+                        >(
+                            tx,
+                            user,
+                            clock,
+                            invoiceCorrections.map { it.id }
+                        )
+                    invoiceCorrections.map {
+                        InvoiceCorrectionWithPermittedActions(
+                            it,
+                            permittedActions[it.id] ?: emptySet()
+                        )
+                    }
+                }
             }
-        }.also {
-            Audit.InvoiceCorrectionsRead.log(targetId = personId, args = mapOf("count" to it.size))
-        }
+            .also {
+                Audit.InvoiceCorrectionsRead.log(
+                    targetId = personId,
+                    args = mapOf("count" to it.size)
+                )
+            }
     }
 
-    data class InvoiceCorrectionWithPermittedActions(val data: InvoiceCorrection, val permittedActions: Set<Action.InvoiceCorrection>)
+    data class InvoiceCorrectionWithPermittedActions(
+        val data: InvoiceCorrection,
+        val permittedActions: Set<Action.InvoiceCorrection>
+    )
 
     @PostMapping
     fun createInvoiceCorrection(
@@ -80,23 +106,32 @@ WHERE c.head_of_family_id = :personId AND NOT applied_completely
         clock: EvakaClock,
         @RequestBody body: NewInvoiceCorrection
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Person.CREATE_INVOICE_CORRECTION, body.headOfFamilyId)
-        val invoiceCorrectionId = db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.createUpdate(
-                    """
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Person.CREATE_INVOICE_CORRECTION,
+            body.headOfFamilyId
+        )
+        val invoiceCorrectionId =
+            db.connect { dbc ->
+                dbc.transaction { tx ->
+                    tx.createUpdate(
+                            """
 INSERT INTO invoice_correction (head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note)
 VALUES (:headOfFamilyId, :childId, :unitId, :product, :period, :amount, :unitPrice, :description, :note)
 RETURNING id
 """
-                )
-                    .bindKotlin(body)
-                    .executeAndReturnGeneratedKeys()
-                    .mapTo<InvoiceCorrectionId>()
-                    .single()
+                        )
+                        .bindKotlin(body)
+                        .executeAndReturnGeneratedKeys()
+                        .mapTo<InvoiceCorrectionId>()
+                        .single()
+                }
             }
-        }
-        Audit.InvoiceCorrectionsCreate.log(targetId = listOf(body.headOfFamilyId, body.childId), objectId = invoiceCorrectionId)
+        Audit.InvoiceCorrectionsCreate.log(
+            targetId = listOf(body.headOfFamilyId, body.childId),
+            objectId = invoiceCorrectionId
+        )
     }
 
     @DeleteMapping("/{id}")
@@ -111,18 +146,22 @@ RETURNING id
             dbc.transaction { tx ->
                 try {
                     tx.createUpdate(
-                        """
+                            """
 WITH deleted_invoice_row AS (
     DELETE FROM invoice_row r USING invoice i WHERE r.correction_id = :id AND r.invoice_id = i.id AND i.status = 'DRAFT'
 )
 DELETE FROM invoice_correction WHERE id = :id RETURNING id
 """
-                    )
+                        )
                         .bind("id", id)
                         .execute()
                 } catch (e: JdbiException) {
                     when (e.psqlCause()?.sqlState) {
-                        PSQLState.FOREIGN_KEY_VIOLATION.state -> throw BadRequest("Cannot delete an already invoiced correction", cause = e)
+                        PSQLState.FOREIGN_KEY_VIOLATION.state ->
+                            throw BadRequest(
+                                "Cannot delete an already invoiced correction",
+                                cause = e
+                            )
                         else -> throw e
                     }
                 }

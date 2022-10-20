@@ -8,6 +8,8 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import fi.espoo.evaka.DatabaseEnv
 import fi.espoo.evaka.shared.db.configureJdbi
+import java.util.concurrent.TimeUnit
+import javax.sql.DataSource
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.internal.database.postgresql.PostgreSQLConfigurationExtension
 import org.jdbi.v3.core.Jdbi
@@ -15,38 +17,35 @@ import org.jdbi.v3.core.statement.Slf4JSqlLogger
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import java.util.concurrent.TimeUnit
-import javax.sql.DataSource
 
 @Configuration
 class DatabaseConfig {
     @Bean
-    fun jdbi(dataSource: DataSource, env: DatabaseEnv) = configureJdbi(Jdbi.create(dataSource)).apply {
-        if (env.logSql) {
-            setSqlLogger(Slf4JSqlLogger(LoggerFactory.getLogger("fi.espoo.evaka.sql")))
+    fun jdbi(dataSource: DataSource, env: DatabaseEnv) =
+        configureJdbi(Jdbi.create(dataSource)).apply {
+            if (env.logSql) {
+                setSqlLogger(Slf4JSqlLogger(LoggerFactory.getLogger("fi.espoo.evaka.sql")))
+            }
         }
-    }
 
     @Bean
     fun dataSource(env: DatabaseEnv): DataSource {
         Flyway.configure()
             .apply {
-                pluginRegister.getPlugin(PostgreSQLConfigurationExtension::class.java).isTransactionalLock = false
+                pluginRegister
+                    .getPlugin(PostgreSQLConfigurationExtension::class.java)
+                    .isTransactionalLock = false
             }
             .dataSource(env.url, env.flywayUsername, env.flywayPassword.value)
             .placeholders(
-                mapOf(
-                    "application_user" to env.username,
-                    "migration_user" to env.flywayUsername
-                )
+                mapOf("application_user" to env.username, "migration_user" to env.flywayUsername)
             )
             .load()
-            .run {
-                migrate()
-            }
+            .run { migrate() }
         return HikariDataSource(
             HikariConfig().apply {
-                connectionInitSql = "SET SESSION statement_timeout = '${env.defaultStatementTimeout.toMillis()}ms'"
+                connectionInitSql =
+                    "SET SESSION statement_timeout = '${env.defaultStatementTimeout.toMillis()}ms'"
                 jdbcUrl = env.url
                 username = env.username
                 password = env.password.value
@@ -54,7 +53,10 @@ class DatabaseConfig {
                 leakDetectionThreshold = env.leakDetectionThreshold
                 isRegisterMbeans = true
                 poolName = "evaka-service"
-                addDataSourceProperty("socketTimeout", TimeUnit.SECONDS.convert(15, TimeUnit.MINUTES).toInt())
+                addDataSourceProperty(
+                    "socketTimeout",
+                    TimeUnit.SECONDS.convert(15, TimeUnit.MINUTES).toInt()
+                )
             }
         )
     }

@@ -62,16 +62,27 @@ class ScheduledJobTriggerController(
         </script>
     </body>
 </html>
-        """.trimIndent()
+        """
+            .trimIndent()
     }
 
     @PostMapping
-    fun trigger(user: AuthenticatedUser, db: Database, clock: EvakaClock, @RequestBody body: TriggerBody) {
+    fun trigger(
+        user: AuthenticatedUser,
+        db: Database,
+        clock: EvakaClock,
+        @RequestBody body: TriggerBody
+    ) {
         accessControl.requirePermissionFor(user, clock, Action.Global.TRIGGER_SCHEDULED_JOBS)
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                asyncJobRunner.plan(tx, listOf(AsyncJob.RunScheduledJob(body.type)), retryCount = 1, runAt = clock.now())
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(AsyncJob.RunScheduledJob(body.type)),
+                    retryCount = 1,
+                    runAt = clock.now()
+                )
             }
         }
     }
@@ -87,5 +98,6 @@ private fun jobRadio(job: ScheduledJob): String {
     <input type='radio' id='$name' name='type' value='$name'>
     <label for='$name'>$name</label>
 </div>
-    """.trimIndent()
+    """
+        .trimIndent()
 }

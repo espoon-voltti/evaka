@@ -43,16 +43,16 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.EnumSource
 import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 
 class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
     private lateinit var employeeId: EmployeeId
@@ -82,20 +82,39 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
             childId = it.insertTestPerson(DevPerson())
             it.insertTestChild(DevChild(id = childId))
             fridgeParentId = it.insertTestPerson(DevPerson())
-            it.insertFridgeChild(DevFridgeChild(childId = childId, headOfChild = fridgeParentId, startDate = LocalDate.of(2019, 1, 1), endDate = LocalDate.of(2030, 1, 1)))
+            it.insertFridgeChild(
+                DevFridgeChild(
+                    childId = childId,
+                    headOfChild = fridgeParentId,
+                    startDate = LocalDate.of(2019, 1, 1),
+                    endDate = LocalDate.of(2030, 1, 1)
+                )
+            )
             it.insertGuardian(guardianId, childId)
-            applicationId = it.insertTestApplication(childId = childId, guardianId = guardianId, type = ApplicationType.DAYCARE)
-            decisionId = it.insertTestDecision(
-                TestDecision(
-                    createdBy = EvakaUserId(employeeId.raw),
+            applicationId =
+                it.insertTestApplication(
+                    childId = childId,
+                    guardianId = guardianId,
+                    type = ApplicationType.DAYCARE
+                )
+            decisionId =
+                it.insertTestDecision(
+                    TestDecision(
+                        createdBy = EvakaUserId(employeeId.raw),
+                        unitId = daycareId,
+                        applicationId = applicationId,
+                        type = DecisionType.DAYCARE,
+                        startDate = LocalDate.of(2019, 1, 1),
+                        endDate = LocalDate.of(2100, 1, 1)
+                    )
+                )
+            placementId =
+                it.insertTestPlacement(
+                    childId = childId,
                     unitId = daycareId,
-                    applicationId = applicationId,
-                    type = DecisionType.DAYCARE,
                     startDate = LocalDate.of(2019, 1, 1),
                     endDate = LocalDate.of(2100, 1, 1)
                 )
-            )
-            placementId = it.insertTestPlacement(childId = childId, unitId = daycareId, startDate = LocalDate.of(2019, 1, 1), endDate = LocalDate.of(2100, 1, 1))
             mobileId = it.insertTestMobileDevice(DevMobileDevice(unitId = daycareId))
         }
         acl = AccessControlList(jdbi)

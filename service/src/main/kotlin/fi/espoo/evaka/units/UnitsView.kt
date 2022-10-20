@@ -49,14 +49,14 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
+import java.time.LocalTime
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
-import java.time.LocalTime
 
 @RestController
 @RequestMapping("/views/units")
@@ -69,13 +69,8 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId,
-        @RequestParam
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        from: LocalDate,
-        @RequestParam(
-            value = "to",
-            required = false
-        )
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
+        @RequestParam(value = "to", required = false)
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         to: LocalDate
     ): UnitDataResponse {
@@ -83,122 +78,169 @@ class UnitsView(private val accessControl: AccessControl, private val acl: Acces
 
         val period = FiniteDateRange(from, to)
         return db.connect { dbc ->
-            dbc.read { tx ->
-                val groups = tx.getDaycareGroups(unitId, from, to)
-                val placements = tx.getDetailedDaycarePlacements(unitId, null, from, to).toList()
-                val backupCares = tx.getBackupCaresForDaycare(unitId, period)
-                val missingGroupPlacements = if (accessControl.hasPermissionFor(
-                        user,
-                        clock,
-                        Action.Unit.READ_MISSING_GROUP_PLACEMENTS,
-                        unitId
-                    )
-                ) {
-                    getMissingGroupPlacements(tx, unitId)
-                } else {
-                    emptyList()
-                }
-                val recentlyTerminatedPlacements = if (accessControl.hasPermissionFor(
-                        user,
-                        clock,
-                        Action.Unit.READ_TERMINATED_PLACEMENTS,
-                        unitId
-                    )
-                ) {
-                    tx.getTerminatedPlacements(
-                        clock.today(),
-                        unitId,
-                        clock.today().minusWeeks(terminatedPlacementsViewWeeks),
-                        clock.today()
-                    )
-                } else {
-                    emptyList()
-                }
-                val caretakers = Caretakers(
-                    unitCaretakers = tx.getUnitStats(unitId, from, to),
-                    groupCaretakers = tx.getGroupStats(unitId, from, to)
-                )
-                val backupCareIds = backupCares.map { it.id }.toSet() +
-                    missingGroupPlacements.mapNotNull {
-                        if (it.backup) {
-                            BackupCareId(it.placementId.raw)
+                dbc.read { tx ->
+                    val groups = tx.getDaycareGroups(unitId, from, to)
+                    val placements =
+                        tx.getDetailedDaycarePlacements(unitId, null, from, to).toList()
+                    val backupCares = tx.getBackupCaresForDaycare(unitId, period)
+                    val missingGroupPlacements =
+                        if (
+                            accessControl.hasPermissionFor(
+                                user,
+                                clock,
+                                Action.Unit.READ_MISSING_GROUP_PLACEMENTS,
+                                unitId
+                            )
+                        ) {
+                            getMissingGroupPlacements(tx, unitId)
                         } else {
-                            null
+                            emptyList()
                         }
-                    }.toSet()
-                val placementIds = placements.map { it.id }.toSet() +
-                    missingGroupPlacements.mapNotNull {
-                        if (!it.backup) {
-                            it.placementId
+                    val recentlyTerminatedPlacements =
+                        if (
+                            accessControl.hasPermissionFor(
+                                user,
+                                clock,
+                                Action.Unit.READ_TERMINATED_PLACEMENTS,
+                                unitId
+                            )
+                        ) {
+                            tx.getTerminatedPlacements(
+                                clock.today(),
+                                unitId,
+                                clock.today().minusWeeks(terminatedPlacementsViewWeeks),
+                                clock.today()
+                            )
                         } else {
-                            null
+                            emptyList()
                         }
-                    }.toSet()
-
-                val capacities =
-                    if (accessControl.hasPermissionFor(user, clock, Action.Unit.READ_CHILD_CAPACITY_FACTORS, unitId)) {
-                        tx.getUnitChildrenCapacities(unitId, from)
-                    } else {
-                        listOf()
-                    }
-
-                val basicData = UnitDataResponse(
-                    groups = groups,
-                    placements = placements,
-                    backupCares = backupCares,
-                    missingGroupPlacements = missingGroupPlacements,
-                    recentlyTerminatedPlacements = recentlyTerminatedPlacements,
-                    caretakers = caretakers,
-                    permittedBackupCareActions = accessControl.getPermittedActions(tx, user, clock, backupCareIds),
-                    permittedPlacementActions = accessControl.getPermittedActions(tx, user, clock, placementIds),
-                    permittedGroupPlacementActions = accessControl.getPermittedActions(
-                        tx,
-                        user,
-                        clock,
-                        placements.flatMap { placement ->
-                            placement.groupPlacements.mapNotNull { groupPlacement -> groupPlacement.id }
-                        }
-                    ),
-                    unitChildrenCapacityFactors = capacities
-                )
-
-                if (accessControl.hasPermissionFor(user, clock, Action.Unit.READ_DETAILED, unitId)) {
-                    val unitOccupancies = getUnitOccupancies(tx, clock.now(), unitId, period, acl.getAuthorizedUnits(user))
-                    val groupOccupancies = getGroupOccupancies(tx, clock.today(), unitId, period, acl.getAuthorizedUnits(user))
-                    val placementProposals = tx.getPlacementPlans(
-                        clock.today(),
-                        unitId,
-                        null,
-                        null,
-                        listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION)
-                    )
-                    val placementPlans = tx.getPlacementPlans(
-                        clock.today(),
-                        unitId,
-                        null,
-                        null,
-                        listOf(
-                            ApplicationStatus.WAITING_CONFIRMATION,
-                            ApplicationStatus.WAITING_MAILING,
-                            ApplicationStatus.REJECTED
+                    val caretakers =
+                        Caretakers(
+                            unitCaretakers = tx.getUnitStats(unitId, from, to),
+                            groupCaretakers = tx.getGroupStats(unitId, from, to)
                         )
-                    )
-                    val applications = tx.getApplicationUnitSummaries(unitId)
+                    val backupCareIds =
+                        backupCares.map { it.id }.toSet() +
+                            missingGroupPlacements
+                                .mapNotNull {
+                                    if (it.backup) {
+                                        BackupCareId(it.placementId.raw)
+                                    } else {
+                                        null
+                                    }
+                                }
+                                .toSet()
+                    val placementIds =
+                        placements.map { it.id }.toSet() +
+                            missingGroupPlacements
+                                .mapNotNull {
+                                    if (!it.backup) {
+                                        it.placementId
+                                    } else {
+                                        null
+                                    }
+                                }
+                                .toSet()
 
-                    basicData.copy(
-                        unitOccupancies = unitOccupancies,
-                        groupOccupancies = groupOccupancies,
-                        placementProposals = placementProposals,
-                        placementPlans = placementPlans,
-                        applications = applications
-                    )
-                } else {
-                    basicData
+                    val capacities =
+                        if (
+                            accessControl.hasPermissionFor(
+                                user,
+                                clock,
+                                Action.Unit.READ_CHILD_CAPACITY_FACTORS,
+                                unitId
+                            )
+                        ) {
+                            tx.getUnitChildrenCapacities(unitId, from)
+                        } else {
+                            listOf()
+                        }
+
+                    val basicData =
+                        UnitDataResponse(
+                            groups = groups,
+                            placements = placements,
+                            backupCares = backupCares,
+                            missingGroupPlacements = missingGroupPlacements,
+                            recentlyTerminatedPlacements = recentlyTerminatedPlacements,
+                            caretakers = caretakers,
+                            permittedBackupCareActions =
+                                accessControl.getPermittedActions(tx, user, clock, backupCareIds),
+                            permittedPlacementActions =
+                                accessControl.getPermittedActions(tx, user, clock, placementIds),
+                            permittedGroupPlacementActions =
+                                accessControl.getPermittedActions(
+                                    tx,
+                                    user,
+                                    clock,
+                                    placements.flatMap { placement ->
+                                        placement.groupPlacements.mapNotNull { groupPlacement ->
+                                            groupPlacement.id
+                                        }
+                                    }
+                                ),
+                            unitChildrenCapacityFactors = capacities
+                        )
+
+                    if (
+                        accessControl.hasPermissionFor(
+                            user,
+                            clock,
+                            Action.Unit.READ_DETAILED,
+                            unitId
+                        )
+                    ) {
+                        val unitOccupancies =
+                            getUnitOccupancies(
+                                tx,
+                                clock.now(),
+                                unitId,
+                                period,
+                                acl.getAuthorizedUnits(user)
+                            )
+                        val groupOccupancies =
+                            getGroupOccupancies(
+                                tx,
+                                clock.today(),
+                                unitId,
+                                period,
+                                acl.getAuthorizedUnits(user)
+                            )
+                        val placementProposals =
+                            tx.getPlacementPlans(
+                                clock.today(),
+                                unitId,
+                                null,
+                                null,
+                                listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION)
+                            )
+                        val placementPlans =
+                            tx.getPlacementPlans(
+                                clock.today(),
+                                unitId,
+                                null,
+                                null,
+                                listOf(
+                                    ApplicationStatus.WAITING_CONFIRMATION,
+                                    ApplicationStatus.WAITING_MAILING,
+                                    ApplicationStatus.REJECTED
+                                )
+                            )
+                        val applications = tx.getApplicationUnitSummaries(unitId)
+
+                        basicData.copy(
+                            unitOccupancies = unitOccupancies,
+                            groupOccupancies = groupOccupancies,
+                            placementProposals = placementProposals,
+                            placementPlans = placementPlans,
+                            applications = applications
+                        )
+                    } else {
+                        basicData
+                    }
                 }
             }
-        }.also {
-            Audit.UnitView.log(targetId = unitId)
-        }
+            .also { Audit.UnitView.log(targetId = unitId) }
     }
 }
 
@@ -220,10 +262,7 @@ data class UnitDataResponse(
     val unitChildrenCapacityFactors: List<UnitChildrenCapacityFactors>
 )
 
-data class Caretakers(
-    val unitCaretakers: Stats,
-    val groupCaretakers: Map<GroupId, Stats>
-)
+data class Caretakers(val unitCaretakers: Stats, val groupCaretakers: Map<GroupId, Stats>)
 
 data class UnitOccupancies(
     val planned: OccupancyResponse,
@@ -240,33 +279,54 @@ private fun getUnitOccupancies(
     aclAuth: AclAuthorization
 ): UnitOccupancies {
     return UnitOccupancies(
-        planned = getOccupancyResponse(tx.calculateOccupancyPeriods(now.toLocalDate(), unitId, period, OccupancyType.PLANNED, aclAuth)),
-        confirmed = getOccupancyResponse(
-            tx.calculateOccupancyPeriods(
-                now.toLocalDate(),
-                unitId,
-                period,
-                OccupancyType.CONFIRMED,
-                aclAuth
-            )
-        ),
-        realized = getOccupancyResponse(tx.calculateOccupancyPeriods(now.toLocalDate(), unitId, period, OccupancyType.REALIZED, aclAuth)),
-        realtime = if (period.start == period.end) {
-            val queryTimeRange = if (period.start == now.toLocalDate()) {
-                HelsinkiDateTimeRange(now.minusHours(16), now)
-            } else {
-                HelsinkiDateTimeRange(
-                    HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)),
-                    HelsinkiDateTime.of(period.start.plusDays(1), LocalTime.of(0, 0))
+        planned =
+            getOccupancyResponse(
+                tx.calculateOccupancyPeriods(
+                    now.toLocalDate(),
+                    unitId,
+                    period,
+                    OccupancyType.PLANNED,
+                    aclAuth
                 )
+            ),
+        confirmed =
+            getOccupancyResponse(
+                tx.calculateOccupancyPeriods(
+                    now.toLocalDate(),
+                    unitId,
+                    period,
+                    OccupancyType.CONFIRMED,
+                    aclAuth
+                )
+            ),
+        realized =
+            getOccupancyResponse(
+                tx.calculateOccupancyPeriods(
+                    now.toLocalDate(),
+                    unitId,
+                    period,
+                    OccupancyType.REALIZED,
+                    aclAuth
+                )
+            ),
+        realtime =
+            if (period.start == period.end) {
+                val queryTimeRange =
+                    if (period.start == now.toLocalDate()) {
+                        HelsinkiDateTimeRange(now.minusHours(16), now)
+                    } else {
+                        HelsinkiDateTimeRange(
+                            HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)),
+                            HelsinkiDateTime.of(period.start.plusDays(1), LocalTime.of(0, 0))
+                        )
+                    }
+                RealtimeOccupancy(
+                    childAttendances = tx.getChildOccupancyAttendances(unitId, queryTimeRange),
+                    staffAttendances = tx.getStaffOccupancyAttendances(unitId, queryTimeRange)
+                )
+            } else {
+                null
             }
-            RealtimeOccupancy(
-                childAttendances = tx.getChildOccupancyAttendances(unitId, queryTimeRange),
-                staffAttendances = tx.getStaffOccupancyAttendances(unitId, queryTimeRange)
-            )
-        } else {
-            null
-        }
     )
 }
 
@@ -291,45 +351,56 @@ private fun getGroupOccupancies(
     aclAuth: AclAuthorization
 ): GroupOccupancies {
     return GroupOccupancies(
-        confirmed = getGroupOccupancyResponses(
-            tx.calculateOccupancyPeriodsGroupLevel(
-                today,
-                unitId,
-                period,
-                OccupancyType.CONFIRMED,
-                aclAuth
+        confirmed =
+            getGroupOccupancyResponses(
+                tx.calculateOccupancyPeriodsGroupLevel(
+                    today,
+                    unitId,
+                    period,
+                    OccupancyType.CONFIRMED,
+                    aclAuth
+                )
+            ),
+        realized =
+            getGroupOccupancyResponses(
+                tx.calculateOccupancyPeriodsGroupLevel(
+                    today,
+                    unitId,
+                    period,
+                    OccupancyType.REALIZED,
+                    aclAuth
+                )
             )
-        ),
-        realized = getGroupOccupancyResponses(
-            tx.calculateOccupancyPeriodsGroupLevel(
-                today,
-                unitId,
-                period,
-                OccupancyType.REALIZED,
-                aclAuth
-            )
-        )
     )
 }
 
-private fun getGroupOccupancyResponses(occupancies: List<OccupancyPeriodGroupLevel>): Map<GroupId, OccupancyResponse> {
+private fun getGroupOccupancyResponses(
+    occupancies: List<OccupancyPeriodGroupLevel>
+): Map<GroupId, OccupancyResponse> {
     return occupancies
         .groupBy { it.groupId }
         .mapValues { (_, value) ->
-            val occupancyPeriods = value.map {
-                OccupancyPeriod(
-                    period = it.period,
-                    sum = it.sum,
-                    headcount = it.headcount,
-                    caretakers = it.caretakers,
-                    percentage = it.percentage
-                )
-            }
+            val occupancyPeriods =
+                value.map {
+                    OccupancyPeriod(
+                        period = it.period,
+                        sum = it.sum,
+                        headcount = it.headcount,
+                        caretakers = it.caretakers,
+                        percentage = it.percentage
+                    )
+                }
 
             OccupancyResponse(
                 occupancies = occupancyPeriods,
-                max = occupancyPeriods.filter { it.percentage != null }.maxByOrNull { it.percentage!! },
-                min = occupancyPeriods.filter { it.percentage != null }.minByOrNull { it.percentage!! }
+                max =
+                    occupancyPeriods
+                        .filter { it.percentage != null }
+                        .maxByOrNull { it.percentage!! },
+                min =
+                    occupancyPeriods
+                        .filter { it.percentage != null }
+                        .minByOrNull { it.percentage!! }
             )
         }
 }

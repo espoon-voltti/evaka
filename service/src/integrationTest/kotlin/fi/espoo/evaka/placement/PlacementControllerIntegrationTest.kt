@@ -28,12 +28,12 @@ import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testDecisionMaker_2
-import org.assertj.core.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     final val childId = testChild_1.id
@@ -47,7 +47,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     private val unitSupervisor = AuthenticatedUser.Employee(testDecisionMaker_1.id, emptySet())
     private val staff = AuthenticatedUser.Employee(testDecisionMaker_2.id, emptySet())
-    private val serviceWorker = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker =
+        AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER))
 
     @BeforeEach
     fun setUp() {
@@ -67,9 +68,11 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `get placements works with daycareId and without dates`() {
-        val (_, res, result) = http.get("/placements?daycareId=$daycareId")
-            .asUser(serviceWorker)
-            .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get("/placements?daycareId=$daycareId")
+                .asUser(serviceWorker)
+                .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
 
@@ -92,11 +95,13 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `get placements works with with daycareId and matching dates`() {
-        val (_, res, result) = http.get(
-            "/placements?daycareId=$daycareId&from=$placementStart&to=${placementStart.plusDays(900)}"
-        )
-            .asUser(serviceWorker)
-            .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/placements?daycareId=$daycareId&from=$placementStart&to=${placementStart.plusDays(900)}"
+                )
+                .asUser(serviceWorker)
+                .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
         Assertions.assertThat(result.get()).hasSize(1)
@@ -104,11 +109,13 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `get placements works with with daycareId and non-matching dates`() {
-        val (_, res, result) = http.get(
-            "/placements?daycareId=$daycareId&from=${placementStart.minusDays(900)}&to=${placementEnd.minusDays(300)}"
-        )
-            .asUser(serviceWorker)
-            .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/placements?daycareId=$daycareId&from=${placementStart.minusDays(900)}&to=${placementEnd.minusDays(300)}"
+                )
+                .asUser(serviceWorker)
+                .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
         Assertions.assertThat(result.get()).hasSize(0)
@@ -116,9 +123,11 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `get placements returns an empty list if daycare is not found`() {
-        val (_, res, result) = http.get("/placements?daycareId=${UUID.randomUUID()}")
-            .asUser(serviceWorker)
-            .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get("/placements?daycareId=${UUID.randomUUID()}")
+                .asUser(serviceWorker)
+                .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
         Assertions.assertThat(result.get()).isEqualTo(setOf<DaycarePlacementWithDetails>())
@@ -126,9 +135,11 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `get placements works with childId and without dates`() {
-        val (_, res, result) = http.get("/placements?childId=$childId")
-            .asUser(serviceWorker)
-            .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get("/placements?childId=$childId")
+                .asUser(serviceWorker)
+                .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
 
@@ -145,11 +156,13 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `get placements works with with childId and matching dates`() {
-        val (_, res, result) = http.get(
-            "/placements?childId=$childId&from=$placementStart&to=${placementStart.plusDays(900)}"
-        )
-            .asUser(serviceWorker)
-            .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/placements?childId=$childId&from=$placementStart&to=${placementStart.plusDays(900)}"
+                )
+                .asUser(serviceWorker)
+                .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
         Assertions.assertThat(result.get()).hasSize(1)
@@ -157,11 +170,13 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `get placements works with with childId and non-matching dates`() {
-        val (_, res, result) = http.get(
-            "/placements?childId=$childId&from=${placementStart.minusDays(900)}&to=${placementStart.minusDays(300)}"
-        )
-            .asUser(serviceWorker)
-            .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/placements?childId=$childId&from=${placementStart.minusDays(900)}&to=${placementStart.minusDays(300)}"
+                )
+                .asUser(serviceWorker)
+                .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
         Assertions.assertThat(result.get()).hasSize(0)
@@ -169,9 +184,7 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `get placements throws BadRequest if daycare id and child id is not given`() {
-        val (_, res, _) = http.get("/placements")
-            .asUser(serviceWorker)
-            .response()
+        val (_, res, _) = http.get("/placements").asUser(serviceWorker).response()
 
         Assertions.assertThat(res.statusCode).isEqualTo(400)
     }
@@ -180,15 +193,17 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `creating group placement works with valid data`() {
         val groupPlacementStart = placementStart.plusDays(1)
         val groupPlacementEnd = placementEnd.minusDays(1)
-        val (_, res, _) = createGroupPlacement(
-            testPlacement.id,
-            GroupPlacementRequestBody(groupId, groupPlacementStart, groupPlacementEnd)
-        )
+        val (_, res, _) =
+            createGroupPlacement(
+                testPlacement.id,
+                GroupPlacementRequestBody(groupId, groupPlacementStart, groupPlacementEnd)
+            )
         Assertions.assertThat(res.statusCode).isEqualTo(200)
 
         val groupPlacements = getGroupPlacements(childId, daycareId)
         Assertions.assertThat(groupPlacements.size).isEqualTo(1)
-        Assertions.assertThat(groupPlacements.first().daycarePlacementId).isEqualTo(testPlacement.id)
+        Assertions.assertThat(groupPlacements.first().daycarePlacementId)
+            .isEqualTo(testPlacement.id)
         Assertions.assertThat(groupPlacements.first().groupId).isEqualTo(groupId)
         Assertions.assertThat(groupPlacements.first().startDate).isEqualTo(groupPlacementStart)
         Assertions.assertThat(groupPlacements.first().endDate).isEqualTo(groupPlacementEnd)
@@ -198,24 +213,17 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `creating group placement right after another merges them`() {
         createGroupPlacement(
             testPlacement.id,
-            GroupPlacementRequestBody(
-                groupId,
-                placementStart,
-                placementStart.plusDays(3)
-            )
+            GroupPlacementRequestBody(groupId, placementStart, placementStart.plusDays(3))
         )
         createGroupPlacement(
             testPlacement.id,
-            GroupPlacementRequestBody(
-                groupId,
-                placementStart.plusDays(4),
-                placementEnd
-            )
+            GroupPlacementRequestBody(groupId, placementStart.plusDays(4), placementEnd)
         )
 
         val groupPlacements = getGroupPlacements(childId, daycareId)
         Assertions.assertThat(groupPlacements.size).isEqualTo(1)
-        Assertions.assertThat(groupPlacements.first().daycarePlacementId).isEqualTo(testPlacement.id)
+        Assertions.assertThat(groupPlacements.first().daycarePlacementId)
+            .isEqualTo(testPlacement.id)
         Assertions.assertThat(groupPlacements.first().groupId).isEqualTo(groupId)
         Assertions.assertThat(groupPlacements.first().startDate).isEqualTo(placementStart)
         Assertions.assertThat(groupPlacements.first().endDate).isEqualTo(placementEnd)
@@ -225,24 +233,17 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `creating group placement right before another merges them`() {
         createGroupPlacement(
             testPlacement.id,
-            GroupPlacementRequestBody(
-                groupId,
-                placementEnd.minusDays(3),
-                placementEnd
-            )
+            GroupPlacementRequestBody(groupId, placementEnd.minusDays(3), placementEnd)
         )
         createGroupPlacement(
             testPlacement.id,
-            GroupPlacementRequestBody(
-                groupId,
-                placementStart,
-                placementEnd.minusDays(4)
-            )
+            GroupPlacementRequestBody(groupId, placementStart, placementEnd.minusDays(4))
         )
 
         val groupPlacements = getGroupPlacements(childId, daycareId)
         Assertions.assertThat(groupPlacements.size).isEqualTo(1)
-        Assertions.assertThat(groupPlacements.first().daycarePlacementId).isEqualTo(testPlacement.id)
+        Assertions.assertThat(groupPlacements.first().daycarePlacementId)
+            .isEqualTo(testPlacement.id)
         Assertions.assertThat(groupPlacements.first().groupId).isEqualTo(groupId)
         Assertions.assertThat(groupPlacements.first().startDate).isEqualTo(placementStart)
         Assertions.assertThat(groupPlacements.first().endDate).isEqualTo(placementEnd)
@@ -252,19 +253,11 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `creating group placement between two merges them`() {
         createGroupPlacement(
             testPlacement.id,
-            GroupPlacementRequestBody(
-                groupId,
-                placementStart,
-                placementStart.plusDays(2)
-            )
+            GroupPlacementRequestBody(groupId, placementStart, placementStart.plusDays(2))
         )
         createGroupPlacement(
             testPlacement.id,
-            GroupPlacementRequestBody(
-                groupId,
-                placementEnd.minusDays(2),
-                placementEnd
-            )
+            GroupPlacementRequestBody(groupId, placementEnd.minusDays(2), placementEnd)
         )
         createGroupPlacement(
             testPlacement.id,
@@ -277,7 +270,8 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
         val groupPlacements = getGroupPlacements(childId, daycareId)
         Assertions.assertThat(groupPlacements.size).isEqualTo(1)
-        Assertions.assertThat(groupPlacements.first().daycarePlacementId).isEqualTo(testPlacement.id)
+        Assertions.assertThat(groupPlacements.first().daycarePlacementId)
+            .isEqualTo(testPlacement.id)
         Assertions.assertThat(groupPlacements.first().groupId).isEqualTo(groupId)
         Assertions.assertThat(groupPlacements.first().startDate).isEqualTo(placementStart)
         Assertions.assertThat(groupPlacements.first().endDate).isEqualTo(placementEnd)
@@ -287,19 +281,11 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     fun `group placements are not merged if they have gap between`() {
         createGroupPlacement(
             testPlacement.id,
-            GroupPlacementRequestBody(
-                groupId,
-                placementStart,
-                placementStart.plusDays(2)
-            )
+            GroupPlacementRequestBody(groupId, placementStart, placementStart.plusDays(2))
         )
         createGroupPlacement(
             testPlacement.id,
-            GroupPlacementRequestBody(
-                groupId,
-                placementEnd.minusDays(2),
-                placementEnd
-            )
+            GroupPlacementRequestBody(groupId, placementEnd.minusDays(2), placementEnd)
         )
         createGroupPlacement(
             testPlacement.id,
@@ -316,75 +302,73 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `creating group placement throws NotFound if group does not exist`() {
-        val (_, res, _) = createGroupPlacement(
-            testPlacement.id,
-            GroupPlacementRequestBody(
-                GroupId(UUID.randomUUID()),
-                placementStart,
-                placementEnd
+        val (_, res, _) =
+            createGroupPlacement(
+                testPlacement.id,
+                GroupPlacementRequestBody(GroupId(UUID.randomUUID()), placementStart, placementEnd)
             )
-        )
 
         Assertions.assertThat(res.statusCode).isEqualTo(404)
     }
 
     @Test
     fun `creating group placement works with the full duration`() {
-        val (_, res, _) = createGroupPlacement(
-            testPlacement.id,
-            GroupPlacementRequestBody(
-                groupId,
-                placementStart,
-                placementEnd
+        val (_, res, _) =
+            createGroupPlacement(
+                testPlacement.id,
+                GroupPlacementRequestBody(groupId, placementStart, placementEnd)
             )
-        )
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
     }
 
     @Test
     fun `creating group placement throws BadRequest if group placement starts before the daycare placements`() {
-        val (_, res, _) = createGroupPlacement(
-            testPlacement.id,
-            GroupPlacementRequestBody(
-                GroupId(UUID.randomUUID()),
-                placementStart.minusDays(1),
-                placementEnd
+        val (_, res, _) =
+            createGroupPlacement(
+                testPlacement.id,
+                GroupPlacementRequestBody(
+                    GroupId(UUID.randomUUID()),
+                    placementStart.minusDays(1),
+                    placementEnd
+                )
             )
-        )
 
         Assertions.assertThat(res.statusCode).isEqualTo(400)
     }
 
     @Test
     fun `creating group placement throws BadRequest if group placement ends after the daycare placements`() {
-        val (_, res, _) = createGroupPlacement(
-            testPlacement.id,
-            GroupPlacementRequestBody(
-                GroupId(UUID.randomUUID()),
-                placementStart,
-                placementEnd.plusDays(1)
+        val (_, res, _) =
+            createGroupPlacement(
+                testPlacement.id,
+                GroupPlacementRequestBody(
+                    GroupId(UUID.randomUUID()),
+                    placementStart,
+                    placementEnd.plusDays(1)
+                )
             )
-        )
 
         Assertions.assertThat(res.statusCode).isEqualTo(400)
     }
 
     @Test
     fun `deleting group placement works`() {
-        val groupPlacementId = db.transaction { tx ->
-            tx.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd)
-        }
+        val groupPlacementId =
+            db.transaction { tx ->
+                tx.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd)
+            }
 
-        val (_, res, _) = http.delete("/group-placements/$groupPlacementId")
-            .asUser(unitSupervisor)
-            .response()
+        val (_, res, _) =
+            http.delete("/group-placements/$groupPlacementId").asUser(unitSupervisor).response()
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
 
-        val (_, _, result) = http.get("/placements?daycareId=$daycareId")
-            .asUser(unitSupervisor)
-            .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
+        val (_, _, result) =
+            http
+                .get("/placements?daycareId=$daycareId")
+                .asUser(unitSupervisor)
+                .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
 
         val groupPlacementsAfter = result.get().toList()[0].groupPlacements
         Assertions.assertThat(groupPlacementsAfter).hasSize(1)
@@ -393,27 +377,31 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
 
     @Test
     fun `unit supervisor sees placements to her unit only`() {
-        val allowedId = db.transaction { tx ->
-            tx.insertTestPlacement(
-                childId = childId,
-                unitId = daycareId,
-                startDate = LocalDate.now(),
-                endDate = LocalDate.now().plusDays(1)
-            )
-        }
+        val allowedId =
+            db.transaction { tx ->
+                tx.insertTestPlacement(
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = LocalDate.now(),
+                    endDate = LocalDate.now().plusDays(1)
+                )
+            }
 
-        val restrictedId = db.transaction { tx ->
-            tx.insertTestPlacement(
-                childId = childId,
-                unitId = testDaycare2.id,
-                startDate = LocalDate.now().minusDays(2),
-                endDate = LocalDate.now().minusDays(1)
-            )
-        }
+        val restrictedId =
+            db.transaction { tx ->
+                tx.insertTestPlacement(
+                    childId = childId,
+                    unitId = testDaycare2.id,
+                    startDate = LocalDate.now().minusDays(2),
+                    endDate = LocalDate.now().minusDays(1)
+                )
+            }
 
-        val (_, res, result) = http.get("/placements?childId=$childId")
-            .asUser(unitSupervisor)
-            .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get("/placements?childId=$childId")
+                .asUser(unitSupervisor)
+                .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
 
         org.junit.jupiter.api.Assertions.assertEquals(200, res.statusCode)
 
@@ -430,27 +418,32 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val newStart = placementStart.plusDays(1)
         val newEnd = placementEnd.minusDays(2)
         val allowedId = testPlacement.id
-        val restrictedId = db.transaction { tx ->
-            tx.insertTestPlacement(
-                childId = childId,
-                unitId = testDaycare2.id,
-                startDate = placementEnd.plusDays(1),
-                endDate = placementEnd.plusMonths(2)
-            )
-        }
+        val restrictedId =
+            db.transaction { tx ->
+                tx.insertTestPlacement(
+                    childId = childId,
+                    unitId = testDaycare2.id,
+                    startDate = placementEnd.plusDays(1),
+                    endDate = placementEnd.plusMonths(2)
+                )
+            }
         val body = PlacementUpdateRequestBody(startDate = newStart, endDate = newEnd)
 
-        val (_, forbidden, _) = http.put("/placements/$restrictedId")
-            .objectBody(bodyObject = body, mapper = jsonMapper)
-            .asUser(unitSupervisor)
-            .response()
+        val (_, forbidden, _) =
+            http
+                .put("/placements/$restrictedId")
+                .objectBody(bodyObject = body, mapper = jsonMapper)
+                .asUser(unitSupervisor)
+                .response()
 
         org.junit.jupiter.api.Assertions.assertEquals(403, forbidden.statusCode)
 
-        val (_, allowed, _) = http.put("/placements/$allowedId")
-            .objectBody(bodyObject = body, mapper = jsonMapper)
-            .asUser(unitSupervisor)
-            .response()
+        val (_, allowed, _) =
+            http
+                .put("/placements/$allowedId")
+                .objectBody(bodyObject = body, mapper = jsonMapper)
+                .asUser(unitSupervisor)
+                .response()
 
         org.junit.jupiter.api.Assertions.assertEquals(200, allowed.statusCode)
 
@@ -473,15 +466,18 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 endDate = newEnd.plusMonths(2)
             )
         }
-        val body = PlacementUpdateRequestBody(
-            startDate = placementStart,
-            endDate = newEnd
-        ) // endDate overlaps with another placement
+        val body =
+            PlacementUpdateRequestBody(
+                startDate = placementStart,
+                endDate = newEnd
+            ) // endDate overlaps with another placement
 
-        val (_, res, _) = http.put("/placements/$allowedId")
-            .objectBody(bodyObject = body, mapper = jsonMapper)
-            .asUser(unitSupervisor)
-            .response()
+        val (_, res, _) =
+            http
+                .put("/placements/$allowedId")
+                .objectBody(bodyObject = body, mapper = jsonMapper)
+                .asUser(unitSupervisor)
+                .response()
 
         org.junit.jupiter.api.Assertions.assertEquals(409, res.statusCode)
     }
@@ -489,31 +485,38 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `unit supervisor can modify placement if it overlaps with another that supervisor has the rights to`() {
         val newEnd = placementEnd.plusDays(1)
-        val secondPlacement = db.transaction { tx ->
-            tx.insertTestPlacement(
-                childId = childId,
-                unitId = testDaycare2.id,
-                startDate = newEnd,
-                endDate = newEnd.plusMonths(2)
-            ).also {
-                tx.updateDaycareAclWithEmployee(testDaycare2.id, unitSupervisor.id, UserRole.UNIT_SUPERVISOR)
+        val secondPlacement =
+            db.transaction { tx ->
+                tx.insertTestPlacement(
+                        childId = childId,
+                        unitId = testDaycare2.id,
+                        startDate = newEnd,
+                        endDate = newEnd.plusMonths(2)
+                    )
+                    .also {
+                        tx.updateDaycareAclWithEmployee(
+                            testDaycare2.id,
+                            unitSupervisor.id,
+                            UserRole.UNIT_SUPERVISOR
+                        )
+                    }
             }
-        }
 
-        val body = PlacementUpdateRequestBody(
-            startDate = placementStart,
-            endDate = newEnd
-        ) // endDate overlaps with another placement
-        val (_, res, _) = http.put("/placements/${testPlacement.id}")
-            .objectBody(bodyObject = body, mapper = jsonMapper)
-            .asUser(unitSupervisor)
-            .response()
+        val body =
+            PlacementUpdateRequestBody(
+                startDate = placementStart,
+                endDate = newEnd
+            ) // endDate overlaps with another placement
+        val (_, res, _) =
+            http
+                .put("/placements/${testPlacement.id}")
+                .objectBody(bodyObject = body, mapper = jsonMapper)
+                .asUser(unitSupervisor)
+                .response()
 
         org.junit.jupiter.api.Assertions.assertEquals(200, res.statusCode)
 
-        val placements = db.read { r ->
-            r.getPlacementsForChild(childId)
-        }
+        val placements = db.read { r -> r.getPlacementsForChild(childId) }
         val first = placements.find { it.id == testPlacement.id }!!
         val second = placements.find { it.id == secondPlacement }!!
 
@@ -530,23 +533,25 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         val newEnd = placementEnd.minusDays(2)
         val body = PlacementUpdateRequestBody(startDate = newStart, endDate = newEnd)
 
-        val (_, res, _) = http.put("/placements/$daycareId")
-            .objectBody(bodyObject = body, mapper = jsonMapper)
-            .asUser(unitSupervisor)
-            .response()
+        val (_, res, _) =
+            http
+                .put("/placements/$daycareId")
+                .objectBody(bodyObject = body, mapper = jsonMapper)
+                .asUser(unitSupervisor)
+                .response()
 
         org.junit.jupiter.api.Assertions.assertEquals(403, res.statusCode)
     }
 
     @Test
     fun `service worker cannot remove placements`() {
-        val groupPlacementId = db.transaction { tx ->
-            tx.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd)
-        }
+        val groupPlacementId =
+            db.transaction { tx ->
+                tx.createGroupPlacement(testPlacement.id, groupId, placementStart, placementEnd)
+            }
 
-        val (_, res, _) = http.delete("/group-placements/$groupPlacementId")
-            .asUser(serviceWorker)
-            .response()
+        val (_, res, _) =
+            http.delete("/group-placements/$groupPlacementId").asUser(serviceWorker).response()
 
         Assertions.assertThat(res.statusCode).isEqualTo(403)
     }
@@ -554,19 +559,23 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `moving placement end date moves backup care end date`() {
         db.transaction { tx ->
-            tx.insertTestBackUpCare(childId, testDaycare2.id, placementEnd.minusDays(5), placementEnd.minusDays(1))
+            tx.insertTestBackUpCare(
+                childId,
+                testDaycare2.id,
+                placementEnd.minusDays(5),
+                placementEnd.minusDays(1)
+            )
         }
 
         val newEnd = placementEnd.minusDays(1)
 
-        val body = PlacementUpdateRequestBody(
-            startDate = placementStart,
-            endDate = newEnd
-        )
-        val (_, res, _) = http.put("/placements/${testPlacement.id}")
-            .objectBody(bodyObject = body, mapper = jsonMapper)
-            .asUser(unitSupervisor)
-            .response()
+        val body = PlacementUpdateRequestBody(startDate = placementStart, endDate = newEnd)
+        val (_, res, _) =
+            http
+                .put("/placements/${testPlacement.id}")
+                .objectBody(bodyObject = body, mapper = jsonMapper)
+                .asUser(unitSupervisor)
+                .response()
 
         assertEquals(200, res.statusCode)
 
@@ -578,19 +587,23 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `moving placement start date moves backup care start date`() {
         db.transaction { tx ->
-            tx.insertTestBackUpCare(childId, testDaycare2.id, placementStart, placementStart.plusDays(4))
+            tx.insertTestBackUpCare(
+                childId,
+                testDaycare2.id,
+                placementStart,
+                placementStart.plusDays(4)
+            )
         }
 
         val newStart = placementStart.plusDays(2)
 
-        val body = PlacementUpdateRequestBody(
-            startDate = newStart,
-            endDate = placementEnd
-        )
-        val (_, res, _) = http.put("/placements/${testPlacement.id}")
-            .objectBody(bodyObject = body, mapper = jsonMapper)
-            .asUser(unitSupervisor)
-            .response()
+        val body = PlacementUpdateRequestBody(startDate = newStart, endDate = placementEnd)
+        val (_, res, _) =
+            http
+                .put("/placements/${testPlacement.id}")
+                .objectBody(bodyObject = body, mapper = jsonMapper)
+                .asUser(unitSupervisor)
+                .response()
 
         assertEquals(200, res.statusCode)
 
@@ -608,19 +621,23 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                 startDate = placementStart.minusDays(10),
                 endDate = placementStart.minusDays(1)
             )
-            tx.insertTestBackUpCare(childId, testDaycare2.id, placementStart.minusDays(8), placementStart.plusDays(4))
+            tx.insertTestBackUpCare(
+                childId,
+                testDaycare2.id,
+                placementStart.minusDays(8),
+                placementStart.plusDays(4)
+            )
         }
 
         val newEnd = placementStart.plusDays(2)
 
-        val body = PlacementUpdateRequestBody(
-            startDate = placementStart,
-            endDate = newEnd
-        )
-        val (_, res, _) = http.put("/placements/${testPlacement.id}")
-            .objectBody(bodyObject = body, mapper = jsonMapper)
-            .asUser(unitSupervisor)
-            .response()
+        val body = PlacementUpdateRequestBody(startDate = placementStart, endDate = newEnd)
+        val (_, res, _) =
+            http
+                .put("/placements/${testPlacement.id}")
+                .objectBody(bodyObject = body, mapper = jsonMapper)
+                .asUser(unitSupervisor)
+                .response()
 
         assertEquals(200, res.statusCode)
 
@@ -632,12 +649,16 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
     @Test
     fun `deleting placement deletes backup care`() {
         db.transaction { tx ->
-            tx.insertTestBackUpCare(childId, testDaycare2.id, placementStart.plusDays(1), placementStart.plusDays(5))
+            tx.insertTestBackUpCare(
+                childId,
+                testDaycare2.id,
+                placementStart.plusDays(1),
+                placementStart.plusDays(5)
+            )
         }
 
-        val (_, res, _) = http.delete("/placements/${testPlacement.id}")
-            .asUser(serviceWorker)
-            .response()
+        val (_, res, _) =
+            http.delete("/placements/${testPlacement.id}").asUser(serviceWorker).response()
 
         assertEquals(200, res.statusCode)
 
@@ -649,14 +670,19 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         placementId: PlacementId,
         groupPlacement: GroupPlacementRequestBody
     ): ResponseResultOf<ByteArray> {
-        return http.post("/placements/$placementId/group-placements")
+        return http
+            .post("/placements/$placementId/group-placements")
             .asUser(unitSupervisor)
             .objectBody(bodyObject = groupPlacement, mapper = jsonMapper)
             .response()
     }
 
-    private fun getGroupPlacements(childId: ChildId, daycareId: DaycareId): List<DaycareGroupPlacement> {
-        return http.get("/placements?childId=$childId&daycareId=$daycareId")
+    private fun getGroupPlacements(
+        childId: ChildId,
+        daycareId: DaycareId
+    ): List<DaycareGroupPlacement> {
+        return http
+            .get("/placements?childId=$childId&daycareId=$daycareId")
             .asUser(serviceWorker)
             .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
             .third

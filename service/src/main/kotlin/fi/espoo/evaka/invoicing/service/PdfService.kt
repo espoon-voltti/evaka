@@ -19,10 +19,6 @@ import fi.espoo.evaka.shared.message.IMessageProvider
 import fi.espoo.evaka.shared.message.MessageLanguage
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.voltti.pdfgen.addFontDirectory
-import org.springframework.stereotype.Component
-import org.thymeleaf.ITemplateEngine
-import org.thymeleaf.context.Context
-import org.xhtmlrenderer.pdf.ITextRenderer
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.OutputStream
@@ -33,8 +29,13 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.abs
+import org.springframework.stereotype.Component
+import org.thymeleaf.ITemplateEngine
+import org.thymeleaf.context.Context
+import org.xhtmlrenderer.pdf.ITextRenderer
 
 class Template(val value: String)
+
 class Page(val template: Template, val context: Context)
 
 data class FeeDecisionPdfData(
@@ -53,26 +54,25 @@ enum class DocumentLang(val langCode: String) {
     FI("fi"),
     SV("sv");
 
-    val messageLang: MessageLanguage get() = when (this) {
-        FI -> MessageLanguage.FI
-        SV -> MessageLanguage.SV
-    }
+    val messageLang: MessageLanguage
+        get() =
+            when (this) {
+                FI -> MessageLanguage.FI
+                SV -> MessageLanguage.SV
+            }
 }
 
 fun BigDecimal.toDecimalString(): String = this.toString().replace('.', ',')
 
 fun formatCents(amountInCents: Int?): String? =
     if (amountInCents != null) {
-        BigDecimal(amountInCents).divide(
-            BigDecimal(100),
-            2,
-            RoundingMode.HALF_UP
-        ).toDecimalString()
+        BigDecimal(amountInCents).divide(BigDecimal(100), 2, RoundingMode.HALF_UP).toDecimalString()
     } else {
         null
     }
 
-fun dateFmt(date: LocalDate?): String = date?.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) ?: ""
+fun dateFmt(date: LocalDate?): String =
+    date?.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) ?: ""
 
 @Component
 class PDFService(
@@ -96,7 +96,11 @@ class PDFService(
 
     private fun renderHtmlPages(pages: String, os: OutputStream) {
         val textRenderer = ITextRenderer()
-        textRenderer.fontResolver.addFontDirectory(getResourceFile("ttf"), BaseFont.IDENTITY_H, true)
+        textRenderer.fontResolver.addFontDirectory(
+            getResourceFile("ttf"),
+            BaseFont.IDENTITY_H,
+            true
+        )
         textRenderer.setDocumentFromString(pages)
         textRenderer.layout()
         textRenderer.createPDF(os, false)
@@ -131,16 +135,27 @@ class PDFService(
         val effectFormatted: String
     )
 
-    private fun getVoucherValueDecisionPdfVariables(data: VoucherValueDecisionPdfData): Map<String, Any?> {
+    private fun getVoucherValueDecisionPdfVariables(
+        data: VoucherValueDecisionPdfData
+    ): Map<String, Any?> {
         val (decision, settings, lang) = data
 
-        val totalIncome = listOfNotNull(decision.headOfFamilyIncome?.total, decision.partnerIncome?.total, decision.childIncome?.total).sum()
+        val totalIncome =
+            listOfNotNull(
+                    decision.headOfFamilyIncome?.total,
+                    decision.partnerIncome?.total,
+                    decision.childIncome?.total
+                )
+                .sum()
         val hideTotalIncome =
-            (decision.headOfFamilyIncome == null || decision.headOfFamilyIncome.effect != IncomeEffect.INCOME) ||
-                (decision.partnerIncome != null && decision.partnerIncome.effect != IncomeEffect.INCOME)
+            (decision.headOfFamilyIncome == null ||
+                decision.headOfFamilyIncome.effect != IncomeEffect.INCOME) ||
+                (decision.partnerIncome != null &&
+                    decision.partnerIncome.effect != IncomeEffect.INCOME)
 
-        val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily)
-            ?: messageProvider.getDefaultFinancialDecisionAddress(lang.messageLang)
+        val sendAddress =
+            DecisionSendAddress.fromPerson(decision.headOfFamily)
+                ?: messageProvider.getDefaultFinancialDecisionAddress(lang.messageLang)
 
         val isReliefDecision = decision.decisionType !== VoucherValueDecisionType.NORMAL
 
@@ -155,23 +170,32 @@ class PDFService(
             "placementType" to decision.placement.type,
             "familySize" to decision.familySize,
             "value" to formatCents(decision.voucherValue),
-            "voucherValueDescription" to when (lang) {
-                DocumentLang.FI -> decision.serviceNeed.voucherValueDescriptionFi
-                DocumentLang.SV -> decision.serviceNeed.voucherValueDescriptionSv
-            },
+            "voucherValueDescription" to
+                when (lang) {
+                    DocumentLang.FI -> decision.serviceNeed.voucherValueDescriptionFi
+                    DocumentLang.SV -> decision.serviceNeed.voucherValueDescriptionSv
+                },
             "headIncomeTotal" to formatCents(decision.headOfFamilyIncome?.total),
-            "headIncomeEffect" to (decision.headOfFamilyIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
+            "headIncomeEffect" to
+                (decision.headOfFamilyIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
             "hasPartner" to (decision.partner != null),
             "partner" to decision.partner,
             "partnerFullName" to decision.partner?.let { "${it.firstName} ${it.lastName}" },
             "partnerIsCodebtor" to (decision.partner != null && decision.partnerIsCodebtor == true),
-            "partnerIncomeEffect" to (decision.partnerIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
+            "partnerIncomeEffect" to
+                (decision.partnerIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
             "partnerIncomeTotal" to formatCents(decision.partnerIncome?.total),
             "totalIncome" to formatCents(totalIncome),
             "showTotalIncome" to !hideTotalIncome,
-            "feeAlterations" to decision.feeAlterations.map { fa ->
-                FeeAlterationPdfPart(fa.type, fa.amount, fa.isAbsolute, formatCents(abs(fa.effect))!!)
-            },
+            "feeAlterations" to
+                decision.feeAlterations.map { fa ->
+                    FeeAlterationPdfPart(
+                        fa.type,
+                        fa.amount,
+                        fa.isAbsolute,
+                        formatCents(abs(fa.effect))!!
+                    )
+                },
             "coPayment" to formatCents(decision.finalCoPayment),
             "decisionNumber" to decision.decisionNumber,
             "isReliefDecision" to isReliefDecision,
@@ -179,30 +203,24 @@ class PDFService(
             "sendAddress" to sendAddress,
             "headFullName" to with(decision.headOfFamily) { "$firstName $lastName" },
             "serviceProviderValue" to formatCents(decision.voucherValue - decision.finalCoPayment),
-            "showValidTo" to (
-                (isReliefDecision && decision.validTo != null) ||
-                    (decision.validTo?.isBefore(LocalDate.now(europeHelsinki)) ?: false)
-                ),
-            "approverFirstName" to (
-                decision.financeDecisionHandlerFirstName ?: decision.approvedBy?.firstName
-                ),
-            "approverLastName" to (
-                decision.financeDecisionHandlerLastName ?: decision.approvedBy?.lastName
-                ),
+            "showValidTo" to
+                ((isReliefDecision && decision.validTo != null) ||
+                    (decision.validTo?.isBefore(LocalDate.now(europeHelsinki)) ?: false)),
+            "approverFirstName" to
+                (decision.financeDecisionHandlerFirstName ?: decision.approvedBy?.firstName),
+            "approverLastName" to
+                (decision.financeDecisionHandlerLastName ?: decision.approvedBy?.lastName),
             "decisionMakerName" to settings[SettingType.DECISION_MAKER_NAME],
             "decisionMakerTitle" to settings[SettingType.DECISION_MAKER_TITLE],
             "hasChildIncome" to hasChildIncome,
             "childIncomeTotal" to formatCents(decision.childIncome?.total),
             "childFullName" to with(decision.child) { "$firstName $lastName" },
-            "childIncomeEffect" to (decision.childIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name)
-
+            "childIncomeEffect" to
+                (decision.childIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name)
         )
     }
 
-    private fun createFeeDecisionPdfContext(
-        data: FeeDecisionPdfData
-
-    ): Context {
+    private fun createFeeDecisionPdfContext(data: FeeDecisionPdfData): Context {
         return Context().apply {
             locale = Locale.Builder().setLanguage(data.lang.langCode).build()
             setVariables(getFeeDecisionPdfVariables(data))
@@ -225,75 +243,91 @@ class PDFService(
 
         val (decision, settings, lang) = data
 
-        val totalIncome = listOfNotNull(decision.headOfFamilyIncome?.total, decision.partnerIncome?.total).sum()
+        val totalIncome =
+            listOfNotNull(decision.headOfFamilyIncome?.total, decision.partnerIncome?.total).sum()
 
-        val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily)
-            ?: messageProvider.getDefaultFinancialDecisionAddress(lang.messageLang)
+        val sendAddress =
+            DecisionSendAddress.fromPerson(decision.headOfFamily)
+                ?: messageProvider.getDefaultFinancialDecisionAddress(lang.messageLang)
 
         val hideTotalIncome =
-            (decision.headOfFamilyIncome == null || decision.headOfFamilyIncome.effect != IncomeEffect.INCOME) ||
-                (decision.partnerIncome != null && decision.partnerIncome.effect != IncomeEffect.INCOME)
+            (decision.headOfFamilyIncome == null ||
+                decision.headOfFamilyIncome.effect != IncomeEffect.INCOME) ||
+                (decision.partnerIncome != null &&
+                    decision.partnerIncome.effect != IncomeEffect.INCOME)
 
         val isReliefDecision = decision.decisionType !== FeeDecisionType.NORMAL
 
-        val hasChildIncome = decision.children.any { it.childIncome != null && it.childIncome.total > 0 }
+        val hasChildIncome =
+            decision.children.any { it.childIncome != null && it.childIncome.total > 0 }
 
         return mapOf(
-            "approvedAt" to dateFmt(decision.approvedAt?.toLocalDate()),
-            "decisionNumber" to decision.decisionNumber,
-            "isReliefDecision" to isReliefDecision,
-            "decisionType" to decision.decisionType.toString(),
-            "hasPartner" to (decision.partner != null),
-            "partnerIsCodebtor" to (decision.partner != null && decision.partnerIsCodebtor == true),
-            "headFullName" to with(decision.headOfFamily) { "$firstName $lastName" },
-            "headIncomeEffect" to (decision.headOfFamilyIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
-            "headIncomeTotal" to formatCents(decision.headOfFamilyIncome?.total),
-            "partnerFullName" to decision.partner?.let { "${it.firstName} ${it.lastName}" },
-            "partnerIncomeEffect" to (decision.partnerIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
-            "partnerIncomeTotal" to formatCents(decision.partnerIncome?.total),
-            "parts" to decision.children.map {
-                FeeDecisionPdfPart(
-                    "${it.child.firstName} ${it.child.lastName}",
-                    it.placementType,
-                    if (lang == DocumentLang.SV) it.serviceNeedDescriptionSv else it.serviceNeedDescriptionFi,
-                    it.feeAlterations.map { fa ->
-                        FeeAlterationPdfPart(fa.type, fa.amount, fa.isAbsolute, formatCents(fa.effect)!!)
+                "approvedAt" to dateFmt(decision.approvedAt?.toLocalDate()),
+                "decisionNumber" to decision.decisionNumber,
+                "isReliefDecision" to isReliefDecision,
+                "decisionType" to decision.decisionType.toString(),
+                "hasPartner" to (decision.partner != null),
+                "partnerIsCodebtor" to
+                    (decision.partner != null && decision.partnerIsCodebtor == true),
+                "headFullName" to with(decision.headOfFamily) { "$firstName $lastName" },
+                "headIncomeEffect" to
+                    (decision.headOfFamilyIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
+                "headIncomeTotal" to formatCents(decision.headOfFamilyIncome?.total),
+                "partnerFullName" to decision.partner?.let { "${it.firstName} ${it.lastName}" },
+                "partnerIncomeEffect" to
+                    (decision.partnerIncome?.effect?.name ?: IncomeEffect.NOT_AVAILABLE.name),
+                "partnerIncomeTotal" to formatCents(decision.partnerIncome?.total),
+                "parts" to
+                    decision.children.map {
+                        FeeDecisionPdfPart(
+                            "${it.child.firstName} ${it.child.lastName}",
+                            it.placementType,
+                            if (lang == DocumentLang.SV) it.serviceNeedDescriptionSv
+                            else it.serviceNeedDescriptionFi,
+                            it.feeAlterations.map { fa ->
+                                FeeAlterationPdfPart(
+                                    fa.type,
+                                    fa.amount,
+                                    fa.isAbsolute,
+                                    formatCents(fa.effect)!!
+                                )
+                            },
+                            formatCents(it.finalFee)!!,
+                            formatCents(it.fee)!!,
+                            it.siblingDiscount,
+                            formatCents(totalIncome + (it.childIncome?.total ?: 0)),
+                            formatCents(it.childIncome?.total),
+                            it.childIncome != null && it.childIncome.total > 0
+                        )
                     },
-                    formatCents(it.finalFee)!!,
-                    formatCents(it.fee)!!,
-                    it.siblingDiscount,
-                    formatCents(totalIncome + (it.childIncome?.total ?: 0)),
-                    formatCents(it.childIncome?.total),
-                    it.childIncome != null && it.childIncome.total > 0
-                )
-            },
-            "sendAddress" to sendAddress,
-            "totalFee" to formatCents(decision.totalFee),
-            "totalIncome" to formatCents(totalIncome),
-            "showTotalIncome" to !hideTotalIncome,
-            "validFor" to with(decision) { "${dateFmt(validDuring.start)} - ${dateFmt(validDuring.end)}" },
-            "validFrom" to dateFmt(decision.validDuring.start),
-            "validTo" to dateFmt(decision.validDuring.end),
-            "feePercent" to (decision.feeThresholds.incomeMultiplier * BigDecimal(100))
-                .setScale(1, RoundingMode.HALF_UP)
-                .toDecimalString(),
-            "incomeMinThreshold" to formatCents(-1 * decision.feeThresholds.minIncomeThreshold),
-            "familySize" to decision.familySize,
-            "showValidTo" to (
-                (isReliefDecision && decision.validDuring.end != null) ||
-                    (decision.validDuring.end?.isBefore(LocalDate.now(europeHelsinki)) ?: false)
-                ),
-            "approverFirstName" to (
-                decision.financeDecisionHandlerFirstName ?: decision.approvedBy?.firstName
-                ),
-            "approverLastName" to (
-                decision.financeDecisionHandlerLastName ?: decision.approvedBy?.lastName
-                ),
-            "decisionMakerName" to settings[SettingType.DECISION_MAKER_NAME],
-            "decisionMakerTitle" to settings[SettingType.DECISION_MAKER_TITLE],
-            "hasChildIncome" to hasChildIncome
-        ).mapValues {
-            it.value ?: ""
-        }
+                "sendAddress" to sendAddress,
+                "totalFee" to formatCents(decision.totalFee),
+                "totalIncome" to formatCents(totalIncome),
+                "showTotalIncome" to !hideTotalIncome,
+                "validFor" to
+                    with(decision) {
+                        "${dateFmt(validDuring.start)} - ${dateFmt(validDuring.end)}"
+                    },
+                "validFrom" to dateFmt(decision.validDuring.start),
+                "validTo" to dateFmt(decision.validDuring.end),
+                "feePercent" to
+                    (decision.feeThresholds.incomeMultiplier * BigDecimal(100))
+                        .setScale(1, RoundingMode.HALF_UP)
+                        .toDecimalString(),
+                "incomeMinThreshold" to formatCents(-1 * decision.feeThresholds.minIncomeThreshold),
+                "familySize" to decision.familySize,
+                "showValidTo" to
+                    ((isReliefDecision && decision.validDuring.end != null) ||
+                        (decision.validDuring.end?.isBefore(LocalDate.now(europeHelsinki))
+                            ?: false)),
+                "approverFirstName" to
+                    (decision.financeDecisionHandlerFirstName ?: decision.approvedBy?.firstName),
+                "approverLastName" to
+                    (decision.financeDecisionHandlerLastName ?: decision.approvedBy?.lastName),
+                "decisionMakerName" to settings[SettingType.DECISION_MAKER_NAME],
+                "decisionMakerTitle" to settings[SettingType.DECISION_MAKER_TITLE],
+                "hasChildIncome" to hasChildIncome
+            )
+            .mapValues { it.value ?: "" }
     }
 }

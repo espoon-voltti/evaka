@@ -27,18 +27,17 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
 
 class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired
-    lateinit var controller: ParentshipController
+    @Autowired lateinit var controller: ParentshipController
 
     private val parent = testAdult_1
     private val child = testChild_1
@@ -56,14 +55,19 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 employeeId = unitSupervisorId,
                 role = UserRole.UNIT_SUPERVISOR
             )
-            it.insertTestPlacement(DevPlacement(childId = child.id, unitId = testDaycare.id, endDate = LocalDate.now()))
+            it.insertTestPlacement(
+                DevPlacement(childId = child.id, unitId = testDaycare.id, endDate = LocalDate.now())
+            )
         }
     }
 
     @Test
     fun `service worker can create and fetch parentships`() {
         `can create and fetch parentships`(
-            AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER))
+            AuthenticatedUser.Employee(
+                EmployeeId(UUID.randomUUID()),
+                setOf(UserRole.SERVICE_WORKER)
+            )
         )
     }
 
@@ -76,7 +80,9 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `finance admin can create and fetch parentships`() {
-        `can create and fetch parentships`(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN)))
+        `can create and fetch parentships`(
+            AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN))
+        )
     }
 
     fun `can create and fetch parentships`(user: AuthenticatedUser) {
@@ -86,7 +92,8 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             ParentshipController.ParentshipRequest(parent.id, child.id, startDate, endDate)
         controller.createParentship(Database(jdbi), user, clock, reqBody)
 
-        val getResponse = controller.getParentships(Database(jdbi), user, clock, headOfChildId = parent.id)
+        val getResponse =
+            controller.getParentships(Database(jdbi), user, clock, headOfChildId = parent.id)
         with(getResponse.first().data) {
             assertNotNull(this.id)
             assertEquals(parent.id, this.headOfChildId)
@@ -95,12 +102,20 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             assertEquals(endDate, this.endDate)
         }
 
-        assertEquals(0, controller.getParentships(Database(jdbi), user, clock, headOfChildId = child.id).size)
+        assertEquals(
+            0,
+            controller.getParentships(Database(jdbi), user, clock, headOfChildId = child.id).size
+        )
     }
 
     fun `can add a sibling parentship and fetch parentships`(user: AuthenticatedUser) {
         db.transaction { tx ->
-            tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
+            tx.createParentship(
+                child.id,
+                parent.id,
+                child.dateOfBirth,
+                child.dateOfBirth.plusDays(200)
+            )
         }
 
         val sibling = testChild_2
@@ -110,7 +125,8 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
             ParentshipController.ParentshipRequest(parent.id, sibling.id, startDate, endDate)
         controller.createParentship(Database(jdbi), user, clock, reqBody)
 
-        val getResponse = controller.getParentships(Database(jdbi), user, clock, headOfChildId = parent.id)
+        val getResponse =
+            controller.getParentships(Database(jdbi), user, clock, headOfChildId = parent.id)
         assertEquals(2, getResponse.size)
         getResponse
             .map { it.data }
@@ -124,12 +140,20 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 assertEquals(endDate, it.endDate)
             }
 
-        assertEquals(0, controller.getParentships(Database(jdbi), user, clock, headOfChildId = child.id).size)
+        assertEquals(
+            0,
+            controller.getParentships(Database(jdbi), user, clock, headOfChildId = child.id).size
+        )
     }
 
     @Test
     fun `service worker can update parentships`() {
-        `can update parentship duration`(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER)))
+        `can update parentship duration`(
+            AuthenticatedUser.Employee(
+                EmployeeId(UUID.randomUUID()),
+                setOf(UserRole.SERVICE_WORKER)
+            )
+        )
     }
 
     @Test
@@ -139,14 +163,27 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `finance admin can update parentships`() {
-        `can update parentship duration`(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN)))
+        `can update parentship duration`(
+            AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN))
+        )
     }
 
     fun `can update parentship duration`(user: AuthenticatedUser) {
-        val parentship = db.transaction { tx ->
-            tx.createParentship(child.id, parent.id, child.dateOfBirth.plusDays(500), child.dateOfBirth.plusDays(700))
-            tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
-        }
+        val parentship =
+            db.transaction { tx ->
+                tx.createParentship(
+                    child.id,
+                    parent.id,
+                    child.dateOfBirth.plusDays(500),
+                    child.dateOfBirth.plusDays(700)
+                )
+                tx.createParentship(
+                    child.id,
+                    parent.id,
+                    child.dateOfBirth,
+                    child.dateOfBirth.plusDays(200)
+                )
+            }
         val newStartDate = child.dateOfBirth.plusDays(100)
         val newEndDate = child.dateOfBirth.plusDays(300)
         val requestBody = ParentshipController.ParentshipUpdateRequest(newStartDate, newEndDate)
@@ -160,7 +197,12 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `service worker cannot delete parentships`() {
-        `cannot delete parentship`(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER)))
+        `cannot delete parentship`(
+            AuthenticatedUser.Employee(
+                EmployeeId(UUID.randomUUID()),
+                setOf(UserRole.SERVICE_WORKER)
+            )
+        )
     }
 
     @Test
@@ -170,21 +212,33 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
 
     @Test
     fun `finance admin can delete parentships`() {
-        `can delete parentship`(AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN)))
+        `can delete parentship`(
+            AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.FINANCE_ADMIN))
+        )
     }
 
     fun `can delete parentship`(user: AuthenticatedUser) {
-        val parentship = db.transaction { tx ->
-            tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(100)).also {
+        val parentship =
+            db.transaction { tx ->
                 tx.createParentship(
-                    child.id,
-                    parent.id,
-                    child.dateOfBirth.plusDays(200),
-                    child.dateOfBirth.plusDays(300)
-                )
-                assertEquals(2, tx.getParentships(headOfChildId = parent.id, childId = null).size)
+                        child.id,
+                        parent.id,
+                        child.dateOfBirth,
+                        child.dateOfBirth.plusDays(100)
+                    )
+                    .also {
+                        tx.createParentship(
+                            child.id,
+                            parent.id,
+                            child.dateOfBirth.plusDays(200),
+                            child.dateOfBirth.plusDays(300)
+                        )
+                        assertEquals(
+                            2,
+                            tx.getParentships(headOfChildId = parent.id, childId = null).size
+                        )
+                    }
             }
-        }
 
         controller.deleteParentship(Database(jdbi), user, clock, parentship.id)
         db.read { r ->
@@ -193,71 +247,120 @@ class ParentshipControllerIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     fun `cannot delete parentship`(user: AuthenticatedUser) {
-        val parentship = db.transaction { tx ->
-            tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(100)).also {
+        val parentship =
+            db.transaction { tx ->
                 tx.createParentship(
-                    child.id,
-                    parent.id,
-                    child.dateOfBirth.plusDays(200),
-                    child.dateOfBirth.plusDays(300)
-                )
-                assertEquals(2, tx.getParentships(headOfChildId = parent.id, childId = null).size)
+                        child.id,
+                        parent.id,
+                        child.dateOfBirth,
+                        child.dateOfBirth.plusDays(100)
+                    )
+                    .also {
+                        tx.createParentship(
+                            child.id,
+                            parent.id,
+                            child.dateOfBirth.plusDays(200),
+                            child.dateOfBirth.plusDays(300)
+                        )
+                        assertEquals(
+                            2,
+                            tx.getParentships(headOfChildId = parent.id, childId = null).size
+                        )
+                    }
             }
+        assertThrows<Forbidden> {
+            controller.deleteParentship(Database(jdbi), user, clock, parentship.id)
         }
-        assertThrows<Forbidden> { controller.deleteParentship(Database(jdbi), user, clock, parentship.id) }
     }
 
     @Test
     fun `error is thrown if enduser tries to get parentships`() {
         val user = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
         db.transaction { tx ->
-            tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
+            tx.createParentship(
+                child.id,
+                parent.id,
+                child.dateOfBirth,
+                child.dateOfBirth.plusDays(200)
+            )
         }
-        assertThrows<Forbidden> { controller.getParentships(Database(jdbi), user, clock, headOfChildId = parent.id) }
+        assertThrows<Forbidden> {
+            controller.getParentships(Database(jdbi), user, clock, headOfChildId = parent.id)
+        }
     }
 
     @Test
     fun `error is thrown if enduser tries to update parentship`() {
         val user = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
-        val parentship = db.transaction { tx ->
-            tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
-        }
+        val parentship =
+            db.transaction { tx ->
+                tx.createParentship(
+                    child.id,
+                    parent.id,
+                    child.dateOfBirth,
+                    child.dateOfBirth.plusDays(200)
+                )
+            }
         val newStartDate = child.dateOfBirth.plusDays(100)
         val newEndDate = child.dateOfBirth.plusDays(300)
         val requestBody = ParentshipController.ParentshipUpdateRequest(newStartDate, newEndDate)
-        assertThrows<Forbidden> { controller.updateParentship(Database(jdbi), user, clock, parentship.id, requestBody) }
+        assertThrows<Forbidden> {
+            controller.updateParentship(Database(jdbi), user, clock, parentship.id, requestBody)
+        }
     }
 
     @Test
     fun `error is thrown if enduser tries to delete parentship`() {
         val user = AuthenticatedUser.Citizen(PersonId(UUID.randomUUID()), CitizenAuthLevel.STRONG)
-        val parentship = db.transaction { tx ->
-            tx.createParentship(child.id, parent.id, child.dateOfBirth, child.dateOfBirth.plusDays(200))
+        val parentship =
+            db.transaction { tx ->
+                tx.createParentship(
+                    child.id,
+                    parent.id,
+                    child.dateOfBirth,
+                    child.dateOfBirth.plusDays(200)
+                )
+            }
+        assertThrows<Forbidden> {
+            controller.deleteParentship(Database(jdbi), user, clock, parentship.id)
         }
-        assertThrows<Forbidden> { controller.deleteParentship(Database(jdbi), user, clock, parentship.id) }
     }
 
     @Test
     fun `error is thrown if service worker tries to create a partnership with a start date before child's date of birth`() {
-        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER))
-        val request = ParentshipController.ParentshipRequest(
-            parent.id,
-            child.id,
-            child.dateOfBirth.minusDays(1),
-            child.dateOfBirth.plusYears(1)
-        )
-        assertThrows<BadRequest> { controller.createParentship(Database(jdbi), user, clock, request) }
+        val user =
+            AuthenticatedUser.Employee(
+                EmployeeId(UUID.randomUUID()),
+                setOf(UserRole.SERVICE_WORKER)
+            )
+        val request =
+            ParentshipController.ParentshipRequest(
+                parent.id,
+                child.id,
+                child.dateOfBirth.minusDays(1),
+                child.dateOfBirth.plusYears(1)
+            )
+        assertThrows<BadRequest> {
+            controller.createParentship(Database(jdbi), user, clock, request)
+        }
     }
 
     @Test
     fun `error is thrown if service worker tries to create a partnership with a end date after child's 18th birthday`() {
-        val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.SERVICE_WORKER))
-        val request = ParentshipController.ParentshipRequest(
-            parent.id,
-            child.id,
-            child.dateOfBirth,
-            child.dateOfBirth.plusYears(18)
-        )
-        assertThrows<BadRequest> { controller.createParentship(Database(jdbi), user, clock, request) }
+        val user =
+            AuthenticatedUser.Employee(
+                EmployeeId(UUID.randomUUID()),
+                setOf(UserRole.SERVICE_WORKER)
+            )
+        val request =
+            ParentshipController.ParentshipRequest(
+                parent.id,
+                child.id,
+                child.dateOfBirth,
+                child.dateOfBirth.plusYears(18)
+            )
+        assertThrows<BadRequest> {
+            controller.createParentship(Database(jdbi), user, clock, request)
+        }
     }
 }

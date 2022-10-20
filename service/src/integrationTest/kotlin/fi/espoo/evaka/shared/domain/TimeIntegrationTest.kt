@@ -12,18 +12,16 @@ import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.Month
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class TimeIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
@@ -37,7 +35,9 @@ class TimeIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
     fun `operational days with no holidays and a round the clock unit in database`() {
         db.transaction { tx ->
-            tx.createUpdate("UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = :id")
+            tx.createUpdate(
+                    "UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = :id"
+                )
                 .bind("id", testDaycare.id)
                 .execute()
         }
@@ -54,9 +54,17 @@ class TimeIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         var secondUnitId: DaycareId? = null
         var thirdUnitId: DaycareId? = null
         db.transaction { tx ->
-            secondUnitId = tx.insertTestDaycare(DevDaycare(areaId = testArea.id, name = "second round the clock unit"))
-            thirdUnitId = tx.insertTestDaycare(DevDaycare(areaId = testArea.id, name = "third round the clock unit"))
-            tx.createUpdate("UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = ANY(:ids)")
+            secondUnitId =
+                tx.insertTestDaycare(
+                    DevDaycare(areaId = testArea.id, name = "second round the clock unit")
+                )
+            thirdUnitId =
+                tx.insertTestDaycare(
+                    DevDaycare(areaId = testArea.id, name = "third round the clock unit")
+                )
+            tx.createUpdate(
+                    "UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = ANY(:ids)"
+                )
                 .bind("ids", arrayOf(secondUnitId, thirdUnitId))
                 .execute()
         }
@@ -128,7 +136,9 @@ class TimeIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .bind("date2", epiphany)
                 .execute()
 
-            tx.createUpdate("UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = :id")
+            tx.createUpdate(
+                    "UPDATE daycare SET operation_days = '{1, 2, 3, 4, 5, 6, 7}' WHERE id = :id"
+                )
                 .bind("id", testDaycare.id)
                 .execute()
         }
@@ -141,63 +151,65 @@ class TimeIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(january2020Days, result.forUnit(testDaycare.id))
     }
 
-    private val january2020Days = listOf(
-        LocalDate.of(2020, 1, 1),
-        LocalDate.of(2020, 1, 2),
-        LocalDate.of(2020, 1, 3),
-        LocalDate.of(2020, 1, 4),
-        LocalDate.of(2020, 1, 5),
-        LocalDate.of(2020, 1, 6),
-        LocalDate.of(2020, 1, 7),
-        LocalDate.of(2020, 1, 8),
-        LocalDate.of(2020, 1, 9),
-        LocalDate.of(2020, 1, 10),
-        LocalDate.of(2020, 1, 11),
-        LocalDate.of(2020, 1, 12),
-        LocalDate.of(2020, 1, 13),
-        LocalDate.of(2020, 1, 14),
-        LocalDate.of(2020, 1, 15),
-        LocalDate.of(2020, 1, 16),
-        LocalDate.of(2020, 1, 17),
-        LocalDate.of(2020, 1, 18),
-        LocalDate.of(2020, 1, 19),
-        LocalDate.of(2020, 1, 20),
-        LocalDate.of(2020, 1, 21),
-        LocalDate.of(2020, 1, 22),
-        LocalDate.of(2020, 1, 23),
-        LocalDate.of(2020, 1, 24),
-        LocalDate.of(2020, 1, 25),
-        LocalDate.of(2020, 1, 26),
-        LocalDate.of(2020, 1, 27),
-        LocalDate.of(2020, 1, 28),
-        LocalDate.of(2020, 1, 29),
-        LocalDate.of(2020, 1, 30),
-        LocalDate.of(2020, 1, 31)
-    )
+    private val january2020Days =
+        listOf(
+            LocalDate.of(2020, 1, 1),
+            LocalDate.of(2020, 1, 2),
+            LocalDate.of(2020, 1, 3),
+            LocalDate.of(2020, 1, 4),
+            LocalDate.of(2020, 1, 5),
+            LocalDate.of(2020, 1, 6),
+            LocalDate.of(2020, 1, 7),
+            LocalDate.of(2020, 1, 8),
+            LocalDate.of(2020, 1, 9),
+            LocalDate.of(2020, 1, 10),
+            LocalDate.of(2020, 1, 11),
+            LocalDate.of(2020, 1, 12),
+            LocalDate.of(2020, 1, 13),
+            LocalDate.of(2020, 1, 14),
+            LocalDate.of(2020, 1, 15),
+            LocalDate.of(2020, 1, 16),
+            LocalDate.of(2020, 1, 17),
+            LocalDate.of(2020, 1, 18),
+            LocalDate.of(2020, 1, 19),
+            LocalDate.of(2020, 1, 20),
+            LocalDate.of(2020, 1, 21),
+            LocalDate.of(2020, 1, 22),
+            LocalDate.of(2020, 1, 23),
+            LocalDate.of(2020, 1, 24),
+            LocalDate.of(2020, 1, 25),
+            LocalDate.of(2020, 1, 26),
+            LocalDate.of(2020, 1, 27),
+            LocalDate.of(2020, 1, 28),
+            LocalDate.of(2020, 1, 29),
+            LocalDate.of(2020, 1, 30),
+            LocalDate.of(2020, 1, 31)
+        )
 
-    private val january2020Weekdays = listOf(
-        LocalDate.of(2020, 1, 1),
-        LocalDate.of(2020, 1, 2),
-        LocalDate.of(2020, 1, 3),
-        LocalDate.of(2020, 1, 6),
-        LocalDate.of(2020, 1, 7),
-        LocalDate.of(2020, 1, 8),
-        LocalDate.of(2020, 1, 9),
-        LocalDate.of(2020, 1, 10),
-        LocalDate.of(2020, 1, 13),
-        LocalDate.of(2020, 1, 14),
-        LocalDate.of(2020, 1, 15),
-        LocalDate.of(2020, 1, 16),
-        LocalDate.of(2020, 1, 17),
-        LocalDate.of(2020, 1, 20),
-        LocalDate.of(2020, 1, 21),
-        LocalDate.of(2020, 1, 22),
-        LocalDate.of(2020, 1, 23),
-        LocalDate.of(2020, 1, 24),
-        LocalDate.of(2020, 1, 27),
-        LocalDate.of(2020, 1, 28),
-        LocalDate.of(2020, 1, 29),
-        LocalDate.of(2020, 1, 30),
-        LocalDate.of(2020, 1, 31)
-    )
+    private val january2020Weekdays =
+        listOf(
+            LocalDate.of(2020, 1, 1),
+            LocalDate.of(2020, 1, 2),
+            LocalDate.of(2020, 1, 3),
+            LocalDate.of(2020, 1, 6),
+            LocalDate.of(2020, 1, 7),
+            LocalDate.of(2020, 1, 8),
+            LocalDate.of(2020, 1, 9),
+            LocalDate.of(2020, 1, 10),
+            LocalDate.of(2020, 1, 13),
+            LocalDate.of(2020, 1, 14),
+            LocalDate.of(2020, 1, 15),
+            LocalDate.of(2020, 1, 16),
+            LocalDate.of(2020, 1, 17),
+            LocalDate.of(2020, 1, 20),
+            LocalDate.of(2020, 1, 21),
+            LocalDate.of(2020, 1, 22),
+            LocalDate.of(2020, 1, 23),
+            LocalDate.of(2020, 1, 24),
+            LocalDate.of(2020, 1, 27),
+            LocalDate.of(2020, 1, 28),
+            LocalDate.of(2020, 1, 29),
+            LocalDate.of(2020, 1, 30),
+            LocalDate.of(2020, 1, 31)
+        )
 }

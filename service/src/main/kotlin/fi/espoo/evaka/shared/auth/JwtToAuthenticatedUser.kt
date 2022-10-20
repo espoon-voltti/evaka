@@ -13,11 +13,17 @@ import javax.servlet.http.HttpServletResponse
 
 private const val ATTR_USER = "evaka.user"
 
-fun HttpServletRequest.getAuthenticatedUser(): AuthenticatedUser? = getAttribute(ATTR_USER) as AuthenticatedUser?
+fun HttpServletRequest.getAuthenticatedUser(): AuthenticatedUser? =
+    getAttribute(ATTR_USER) as AuthenticatedUser?
+
 fun HttpServletRequest.setAuthenticatedUser(user: AuthenticatedUser) = setAttribute(ATTR_USER, user)
 
 class JwtToAuthenticatedUser : HttpFilter() {
-    override fun doFilter(request: HttpServletRequest, response: HttpServletResponse, chain: FilterChain) {
+    override fun doFilter(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        chain: FilterChain
+    ) {
         val user = request.getDecodedJwt()?.toAuthenticatedUser()
 
         if (user != null) {

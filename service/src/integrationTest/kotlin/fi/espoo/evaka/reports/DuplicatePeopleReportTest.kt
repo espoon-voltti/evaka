@@ -13,14 +13,18 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.Test
 
 class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val adminUser = AuthenticatedUser.Employee(id = EmployeeId(UUID.randomUUID()), roles = setOf(UserRole.ADMIN))
+    private val adminUser =
+        AuthenticatedUser.Employee(
+            id = EmployeeId(UUID.randomUUID()),
+            roles = setOf(UserRole.ADMIN)
+        )
 
     @Test
     fun `two people with identical names and dates of birth are matched`() {
@@ -28,21 +32,24 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
         val lastName = "Person"
         val dateOfBirth = LocalDate.of(1970, 1, 1)
         val ssn = "010170-1113"
-        val personWithSsn = DevPerson(
-            firstName = firstName,
-            lastName = lastName,
-            dateOfBirth = dateOfBirth,
-            ssn = ssn
-        )
+        val personWithSsn =
+            DevPerson(
+                firstName = firstName,
+                lastName = lastName,
+                dateOfBirth = dateOfBirth,
+                ssn = ssn
+            )
         val personWithoutSsn = personWithSsn.copy(id = PersonId(UUID.randomUUID()), ssn = null)
         db.transaction {
             it.insertTestPerson(personWithSsn)
             it.insertTestPerson(personWithoutSsn)
         }
 
-        val (_, _, result) = http.get("/reports/duplicate-people")
-            .asUser(adminUser)
-            .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
+        val (_, _, result) =
+            http
+                .get("/reports/duplicate-people")
+                .asUser(adminUser)
+                .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
 
         assertEquals(2, result.get().size)
         assertTrue(result.get().all { it.id == personWithSsn.id || it.id == personWithoutSsn.id })
@@ -54,22 +61,30 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
         val lastName = "Person"
         val dateOfBirth = LocalDate.of(1970, 1, 1)
         val ssn = "010170-1113"
-        val personWithSsn = DevPerson(
-            firstName = firstName,
-            lastName = lastName,
-            dateOfBirth = dateOfBirth,
-            ssn = ssn
-        )
+        val personWithSsn =
+            DevPerson(
+                firstName = firstName,
+                lastName = lastName,
+                dateOfBirth = dateOfBirth,
+                ssn = ssn
+            )
         val personWithoutSsn =
-            personWithSsn.copy(id = PersonId(UUID.randomUUID()), firstName = firstName.split(" ")[0] + " ", ssn = null, lastName = " " + lastName)
+            personWithSsn.copy(
+                id = PersonId(UUID.randomUUID()),
+                firstName = firstName.split(" ")[0] + " ",
+                ssn = null,
+                lastName = " " + lastName
+            )
         db.transaction {
             it.insertTestPerson(personWithSsn)
             it.insertTestPerson(personWithoutSsn)
         }
 
-        val (_, _, result) = http.get("/reports/duplicate-people")
-            .asUser(adminUser)
-            .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
+        val (_, _, result) =
+            http
+                .get("/reports/duplicate-people")
+                .asUser(adminUser)
+                .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
 
         assertEquals(2, result.get().size)
         assertTrue(result.get().all { it.id == personWithSsn.id || it.id == personWithoutSsn.id })
@@ -81,22 +96,29 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
         val lastName = "Person"
         val dateOfBirth = LocalDate.of(1970, 1, 1)
         val ssn = "010170-1113"
-        val personWithSsn = DevPerson(
-            firstName = firstName,
-            lastName = lastName,
-            dateOfBirth = dateOfBirth,
-            ssn = ssn
-        )
+        val personWithSsn =
+            DevPerson(
+                firstName = firstName,
+                lastName = lastName,
+                dateOfBirth = dateOfBirth,
+                ssn = ssn
+            )
         val personWithoutSsn =
-            personWithSsn.copy(id = PersonId(UUID.randomUUID()), ssn = null, dateOfBirth = dateOfBirth.plusDays(1))
+            personWithSsn.copy(
+                id = PersonId(UUID.randomUUID()),
+                ssn = null,
+                dateOfBirth = dateOfBirth.plusDays(1)
+            )
         db.transaction {
             it.insertTestPerson(personWithSsn)
             it.insertTestPerson(personWithoutSsn)
         }
 
-        val (_, _, result) = http.get("/reports/duplicate-people")
-            .asUser(adminUser)
-            .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
+        val (_, _, result) =
+            http
+                .get("/reports/duplicate-people")
+                .asUser(adminUser)
+                .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
 
         assertEquals(0, result.get().size)
     }
@@ -107,12 +129,13 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
         val lastName = "Person"
         val dateOfBirth = LocalDate.of(1970, 1, 1)
         val ssn1 = "010170-1113"
-        val personWithSsn1 = DevPerson(
-            firstName = firstName,
-            lastName = lastName,
-            dateOfBirth = dateOfBirth,
-            ssn = ssn1
-        )
+        val personWithSsn1 =
+            DevPerson(
+                firstName = firstName,
+                lastName = lastName,
+                dateOfBirth = dateOfBirth,
+                ssn = ssn1
+            )
         val ssn2 = "010170-1124"
         val personWithSsn2 = personWithSsn1.copy(id = PersonId(UUID.randomUUID()), ssn = ssn2)
         db.transaction {
@@ -120,9 +143,11 @@ class DuplicatePeopleReportTest : FullApplicationTest(resetDbBeforeEach = true) 
             it.insertTestPerson(personWithSsn2)
         }
 
-        val (_, _, result) = http.get("/reports/duplicate-people")
-            .asUser(adminUser)
-            .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
+        val (_, _, result) =
+            http
+                .get("/reports/duplicate-people")
+                .asUser(adminUser)
+                .responseObject<List<DuplicatePeopleReportRow>>(jsonMapper)
 
         assertEquals(0, result.get().size)
     }

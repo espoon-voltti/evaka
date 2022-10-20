@@ -21,8 +21,4 @@ data class ChildConsent(
     val givenAt: HelsinkiDateTime?
 )
 
-data class CitizenChildConsent(
-    @PropagateNull
-    val type: ChildConsentType,
-    val given: Boolean?
-)
+data class CitizenChildConsent(@PropagateNull val type: ChildConsentType, val given: Boolean?)

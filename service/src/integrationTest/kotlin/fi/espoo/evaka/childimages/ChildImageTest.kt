@@ -18,8 +18,6 @@ import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.testChild_1
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.util.UUID
@@ -27,6 +25,8 @@ import javax.imageio.ImageIO
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
     private final val adminId = EmployeeId(UUID.randomUUID())
@@ -44,9 +44,8 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `image round trip`() {
         uploadImage(testChild_1.id, imageName1, imageData1)
 
-        val images = db.read {
-            it.createQuery("SELECT * FROM child_images").mapTo<ChildImage>().list()
-        }
+        val images =
+            db.read { it.createQuery("SELECT * FROM child_images").mapTo<ChildImage>().list() }
         assertEquals(1, images.size)
 
         val receivedData = downloadImage(images.first().id)
@@ -56,15 +55,13 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `replacing image`() {
         uploadImage(testChild_1.id, imageName1, imageData1)
-        val oldImage = db.read {
-            it.createQuery("SELECT * FROM child_images").mapTo<ChildImage>().one()
-        }
+        val oldImage =
+            db.read { it.createQuery("SELECT * FROM child_images").mapTo<ChildImage>().one() }
 
         uploadImage(testChild_1.id, imageName2, imageData2)
 
-        val newImage = db.read {
-            it.createQuery("SELECT * FROM child_images").mapTo<ChildImage>().one()
-        }
+        val newImage =
+            db.read { it.createQuery("SELECT * FROM child_images").mapTo<ChildImage>().one() }
         assertNotEquals(oldImage.id, newImage.id)
 
         val receivedData = downloadImage(newImage.id)
@@ -76,9 +73,8 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
         uploadImage(testChild_1.id, imageName1, imageData1)
         deleteImage(testChild_1.id)
 
-        val newImages = db.read {
-            it.createQuery("SELECT * FROM child_images").mapTo<ChildImage>().list()
-        }
+        val newImages =
+            db.read { it.createQuery("SELECT * FROM child_images").mapTo<ChildImage>().list() }
 
         assertEquals(0, newImages.size)
     }
@@ -92,7 +88,8 @@ class ChildImageTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     private val imageName1 = "test1.jpg"
-    private val imageData1 = """
+    private val imageData1 =
+        """
 FF D8 FF E0 00 10 4A 46 49 46 00 01 01 01 00 48 00 48 00 00
 FF DB 00 43 00 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
@@ -100,10 +97,12 @@ FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
 FF FF FF FF FF FF FF FF FF FF C2 00 0B 08 00 01 00 01 01 01
 11 00 FF C4 00 14 10 01 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 FF DA 00 08 01 01 00 01 3F 10
-""".decodeHex()
+"""
+            .decodeHex()
 
     private val imageName2 = "test2.jpg"
-    private val imageData2 = """
+    private val imageData2 =
+        """
 FF D8 FF E0 00 10 4A 46 49 46 00 01 01 01 00 48 00 48 00 00
 FF DB 00 43 00 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
@@ -111,27 +110,31 @@ FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
 FF FF FF FF FF FF FF FF FF FF C2 00 0B 08 00 01 00 01 01 01
 11 00 FF C4 00 14 10 01 00 00 00 00 00 00 00 00 00 00 00 00
 00 00 00 00 FF DA 00 08 01 01 00 01 3F 01
-""".decodeHex()
+"""
+            .decodeHex()
 
-    private fun uploadImage(childId: ChildId, fileName: String, fileData: ByteArray, statusCode: Int = 200) {
-        val (_, response, _) = http.upload("/children/$childId/image", Method.PUT)
-            .add(BlobDataPart(fileData.inputStream(), "file", fileName))
-            .asUser(admin)
-            .response()
+    private fun uploadImage(
+        childId: ChildId,
+        fileName: String,
+        fileData: ByteArray,
+        statusCode: Int = 200
+    ) {
+        val (_, response, _) =
+            http
+                .upload("/children/$childId/image", Method.PUT)
+                .add(BlobDataPart(fileData.inputStream(), "file", fileName))
+                .asUser(admin)
+                .response()
         assertEquals(statusCode, response.statusCode)
     }
 
     private fun deleteImage(childId: ChildId) {
-        val (_, response, _) = http.delete("/children/$childId/image")
-            .asUser(admin)
-            .response()
+        val (_, response, _) = http.delete("/children/$childId/image").asUser(admin).response()
         assertEquals(200, response.statusCode)
     }
 
     private fun downloadImage(imageId: ChildImageId): ByteArray {
-        val (_, response, _) = http.get("/child-images/$imageId")
-            .asUser(admin)
-            .response()
+        val (_, response, _) = http.get("/child-images/$imageId").asUser(admin).response()
         assertEquals(200, response.statusCode)
 
         val (_, _, data) = http.get(fuelResponseToS3URL(response)).response()
@@ -140,8 +143,5 @@ FF FF FF FF FF FF FF FF FF FF C2 00 0B 08 00 01 00 01 01 01
 }
 
 private fun String.decodeHex(): ByteArray {
-    return filterNot { it.isWhitespace() }
-        .chunked(2)
-        .map { it.toInt(16).toByte() }
-        .toByteArray()
+    return filterNot { it.isWhitespace() }.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 }

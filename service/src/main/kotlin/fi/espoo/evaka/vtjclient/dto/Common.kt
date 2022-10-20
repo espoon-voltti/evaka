@@ -12,12 +12,6 @@ data class PersonAddress(
     val postOfficeSe: String?
 )
 
-data class Nationality(
-    val countryName: String = "",
-    val countryCode: String
-)
+data class Nationality(val countryName: String = "", val countryCode: String)
 
-data class NativeLanguage(
-    val languageName: String = "",
-    val code: String
-)
+data class NativeLanguage(val languageName: String = "", val code: String)

@@ -6,11 +6,8 @@ package fi.espoo.evaka
 
 import kotlin.reflect.KClass
 
-@Target(AnnotationTarget.CLASS)
-annotation class ExcludeCodeGen
+@Target(AnnotationTarget.CLASS) annotation class ExcludeCodeGen
 
-@Target(AnnotationTarget.CLASS)
-annotation class ConstList(val name: String)
+@Target(AnnotationTarget.CLASS) annotation class ConstList(val name: String)
 
-@Target(AnnotationTarget.FIELD)
-annotation class ForceCodeGenType(val type: KClass<*>)
+@Target(AnnotationTarget.FIELD) annotation class ForceCodeGenType(val type: KClass<*>)

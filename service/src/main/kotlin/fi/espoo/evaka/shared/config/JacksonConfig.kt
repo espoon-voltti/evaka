@@ -16,17 +16,21 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
-fun defaultJsonMapper(): JsonMapper = jacksonMapperBuilder()
-    .addModules(JavaTimeModule(), JaxbAnnotationModule(), Jdk8Module(), ParameterNamesModule())
-    .disable(MapperFeature.DEFAULT_VIEW_INCLUSION) // Disabled by default in Spring Boot autoconfig
-    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) // Disabled by default in Spring Boot autoconfig
-    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-    .enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE)
-    .build()
+fun defaultJsonMapper(): JsonMapper =
+    jacksonMapperBuilder()
+        .addModules(JavaTimeModule(), JaxbAnnotationModule(), Jdk8Module(), ParameterNamesModule())
+        .disable(
+            MapperFeature.DEFAULT_VIEW_INCLUSION
+        ) // Disabled by default in Spring Boot autoconfig
+        .disable(
+            DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES
+        ) // Disabled by default in Spring Boot autoconfig
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        .enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE)
+        .build()
 
 @Configuration
 class JacksonConfig {
     // This replaces default JsonMapper provided by Spring Boot autoconfiguration
-    @Bean
-    fun jsonMapper() = defaultJsonMapper()
+    @Bean fun jsonMapper() = defaultJsonMapper()
 }

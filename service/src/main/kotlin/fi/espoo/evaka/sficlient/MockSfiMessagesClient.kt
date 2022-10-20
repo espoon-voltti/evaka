@@ -4,15 +4,15 @@
 
 package fi.espoo.evaka.sficlient
 
-import mu.KotlinLogging
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
+import mu.KotlinLogging
 
 private typealias MessageId = String
 
 class MockSfiMessagesClient : SfiMessagesClient {
-    private val logger = KotlinLogging.logger { }
+    private val logger = KotlinLogging.logger {}
 
     override fun send(msg: SfiMessage, bytes: ByteArray?) {
         logger.info("Mock message client got $msg")
@@ -29,11 +29,8 @@ class MockSfiMessagesClient : SfiMessagesClient {
         private val dataBytes = mutableMapOf<MessageId, ByteArray?>()
         private val lock = ReentrantReadWriteLock()
 
-        fun getMessages() = lock.read {
-            data.values.toList().map { Pair(it, dataBytes[it.messageId]) }
-        }
-        fun clearMessages() = lock.write {
-            data.clear()
-        }
+        fun getMessages() =
+            lock.read { data.values.toList().map { Pair(it, dataBytes[it.messageId]) } }
+        fun clearMessages() = lock.write { data.clear() }
     }
 }

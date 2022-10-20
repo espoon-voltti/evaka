@@ -30,15 +30,16 @@ import fi.espoo.evaka.testChild_8
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter.ISO_DATE
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter.ISO_DATE
 
-internal class AttendanceReservationReportByChildTest : FullApplicationTest(resetDbBeforeEach = true) {
+internal class AttendanceReservationReportByChildTest :
+    FullApplicationTest(resetDbBeforeEach = true) {
     private val admin =
         AuthenticatedUser.Employee(unitSupervisorOfTestDaycare.id, setOf(UserRole.ADMIN))
 
@@ -71,12 +72,14 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
             }
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}/by-child",
-            listOf("start" to startDate.format(ISO_DATE), "end" to endDate.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
+                    listOf("start" to startDate.format(ISO_DATE), "end" to endDate.format(ISO_DATE))
+                )
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
 
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get())
@@ -110,19 +113,19 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}/by-child",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
+                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
+                )
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
 
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get())
             .extracting({ it.childId }, { it.reservationDate })
-            .containsExactlyInAnyOrder(
-                Tuple(testChild_1.id, LocalDate.of(2022, 9, 2))
-            )
+            .containsExactlyInAnyOrder(Tuple(testChild_1.id, LocalDate.of(2022, 9, 2)))
     }
 
     @Test
@@ -140,12 +143,14 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}/by-child",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
+                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
+                )
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
 
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get()).isEmpty()
@@ -172,12 +177,14 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}/by-child",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
+                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
+                )
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
 
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get()).isEmpty()
@@ -187,20 +194,18 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
     fun `backup care is supported`() {
         val date = LocalDate.of(2020, 5, 28)
         db.transaction { tx ->
-            val groupId = tx.insertTestDaycareGroup(
-                DevDaycareGroup(
-                    daycareId = testDaycare2.id,
-                    startDate = date,
-                    endDate = date
+            val groupId =
+                tx.insertTestDaycareGroup(
+                    DevDaycareGroup(daycareId = testDaycare2.id, startDate = date, endDate = date)
                 )
-            )
             tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = tx.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare2.id,
-                    startDate = date,
-                    endDate = date
-                ),
+                daycarePlacementId =
+                    tx.insertTestPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare2.id,
+                        startDate = date,
+                        endDate = date
+                    ),
                 groupId = groupId,
                 startDate = date,
                 endDate = date
@@ -237,12 +242,14 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}/by-child",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
+                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
+                )
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
 
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get())
@@ -258,15 +265,15 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
         val date = LocalDate.of(2020, 5, 28)
         db.transaction { tx ->
             listOf(
-                testChild_1,
-                testChild_2,
-                testChild_3,
-                testChild_4,
-                testChild_5,
-                testChild_6,
-                testChild_7,
-                testChild_8
-            )
+                    testChild_1,
+                    testChild_2,
+                    testChild_3,
+                    testChild_4,
+                    testChild_5,
+                    testChild_6,
+                    testChild_7,
+                    testChild_8
+                )
                 .forEach { testChild ->
                     tx.insertTestPlacement(
                         childId = testChild.id,
@@ -286,12 +293,14 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
                 }
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}/by-child",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
+                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
+                )
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
 
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get())
@@ -311,30 +320,29 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
     @Test
     fun `group ids filter works`() {
         val date = LocalDate.of(2020, 5, 28)
-        val group1 = db.transaction { tx ->
-            tx.insertTestDaycareGroup(
-                DevDaycareGroup(
-                    daycareId = testDaycare.id,
-                    name = "Testiläiset 1"
-                )
-            ).let { Group(it, "Testiläiset 1") }
-        }
-        val group2 = db.transaction { tx ->
-            tx.insertTestDaycareGroup(
-                DevDaycareGroup(
-                    daycareId = testDaycare.id,
-                    name = "Testiläiset 2"
-                )
-            ).let { Group(it, "Testiläiset 2") }
-        }
+        val group1 =
+            db.transaction { tx ->
+                tx.insertTestDaycareGroup(
+                        DevDaycareGroup(daycareId = testDaycare.id, name = "Testiläiset 1")
+                    )
+                    .let { Group(it, "Testiläiset 1") }
+            }
+        val group2 =
+            db.transaction { tx ->
+                tx.insertTestDaycareGroup(
+                        DevDaycareGroup(daycareId = testDaycare.id, name = "Testiläiset 2")
+                    )
+                    .let { Group(it, "Testiläiset 2") }
+            }
         db.transaction { tx ->
             tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = tx.insertTestPlacement(
-                    childId = testChild_1.id,
-                    unitId = testDaycare.id,
-                    startDate = date,
-                    endDate = date
-                ),
+                daycarePlacementId =
+                    tx.insertTestPlacement(
+                        childId = testChild_1.id,
+                        unitId = testDaycare.id,
+                        startDate = date,
+                        endDate = date
+                    ),
                 groupId = group1.id,
                 startDate = date,
                 endDate = date
@@ -349,12 +357,13 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
                 )
             )
             tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = tx.insertTestPlacement(
-                    childId = testChild_2.id,
-                    unitId = testDaycare.id,
-                    startDate = date,
-                    endDate = date
-                ),
+                daycarePlacementId =
+                    tx.insertTestPlacement(
+                        childId = testChild_2.id,
+                        unitId = testDaycare.id,
+                        startDate = date,
+                        endDate = date
+                    ),
                 groupId = group1.id,
                 startDate = date,
                 endDate = date
@@ -369,12 +378,13 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
                 )
             )
             tx.insertTestDaycareGroupPlacement(
-                daycarePlacementId = tx.insertTestPlacement(
-                    childId = testChild_3.id,
-                    unitId = testDaycare.id,
-                    startDate = date,
-                    endDate = date
-                ),
+                daycarePlacementId =
+                    tx.insertTestPlacement(
+                        childId = testChild_3.id,
+                        unitId = testDaycare.id,
+                        startDate = date,
+                        endDate = date
+                    ),
                 groupId = group2.id,
                 startDate = date,
                 endDate = date
@@ -405,16 +415,18 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}/by-child",
-            listOf(
-                "start" to date.format(ISO_DATE),
-                "end" to date.format(ISO_DATE),
-                "groupIds" to "${group1.id},${group2.id}"
-            )
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
+                    listOf(
+                        "start" to date.format(ISO_DATE),
+                        "end" to date.format(ISO_DATE),
+                        "groupIds" to "${group1.id},${group2.id}"
+                    )
+                )
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
 
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get())
@@ -430,19 +442,17 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
     fun `group placement without group ids filter works`() {
         val date = LocalDate.of(2020, 5, 28)
         db.transaction { tx ->
-            val placementId = tx.insertTestPlacement(
-                childId = testChild_1.id,
-                unitId = testDaycare.id,
-                startDate = date,
-                endDate = date
-            )
-            val groupId = tx.insertTestDaycareGroup(
-                DevDaycareGroup(
-                    daycareId = testDaycare.id,
+            val placementId =
+                tx.insertTestPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
                     startDate = date,
                     endDate = date
                 )
-            )
+            val groupId =
+                tx.insertTestDaycareGroup(
+                    DevDaycareGroup(daycareId = testDaycare.id, startDate = date, endDate = date)
+                )
             tx.insertTestDaycareGroupPlacement(
                 daycarePlacementId = placementId,
                 groupId = groupId,
@@ -460,19 +470,19 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}/by-child",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
+                    listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE))
+                )
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
 
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get())
             .extracting({ it.groupId }, { it.childId })
-            .containsExactlyInAnyOrder(
-                Tuple(null, testChild_1.id)
-            )
+            .containsExactlyInAnyOrder(Tuple(null, testChild_1.id))
     }
 
     @Test
@@ -496,18 +506,22 @@ internal class AttendanceReservationReportByChildTest : FullApplicationTest(rese
             )
         }
 
-        val (_, res, result) = http.get(
-            "/reports/attendance-reservation/${testDaycare.id}/by-child",
-            listOf("start" to date.format(ISO_DATE), "end" to date.format(ISO_DATE), "groupIds" to "")
-        )
-            .asUser(admin)
-            .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
+                    listOf(
+                        "start" to date.format(ISO_DATE),
+                        "end" to date.format(ISO_DATE),
+                        "groupIds" to ""
+                    )
+                )
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
 
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get())
             .extracting({ it.groupId }, { it.childId })
-            .containsExactlyInAnyOrder(
-                Tuple(null, testChild_1.id)
-            )
+            .containsExactlyInAnyOrder(Tuple(null, testChild_1.id))
     }
 }

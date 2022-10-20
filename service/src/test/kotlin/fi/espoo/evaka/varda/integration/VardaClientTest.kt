@@ -12,6 +12,9 @@ import com.github.kittinunf.fuel.core.requests.DefaultBody
 import fi.espoo.evaka.Sensitive
 import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.shared.config.defaultJsonMapper
+import java.io.ByteArrayInputStream
+import java.net.URL
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -21,9 +24,6 @@ import org.mockito.kotlin.argThat
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import java.io.ByteArrayInputStream
-import java.net.URL
-import kotlin.test.assertTrue
 
 class MockVardaTokenProvider : VardaTokenProvider {
     override fun <T> withToken(action: (token: String, refresh: () -> String) -> T): T =
@@ -50,31 +50,35 @@ class VardaClientTest {
                 Response(
                     statusCode = 403,
                     url = URL("https://example.com"),
-                    body = DefaultBody.from(
-                        { ByteArrayInputStream("""{ "errors": [{ "error_code": "PE007" }] }""".toByteArray()) },
-                        null
-                    )
+                    body =
+                        DefaultBody.from(
+                            {
+                                ByteArrayInputStream(
+                                    """{ "errors": [{ "error_code": "PE007" }] }""".toByteArray()
+                                )
+                            },
+                            null
+                        )
                 ) // This should trigger the token refresh
             )
             .thenReturn(Response(statusCode = 204, url = URL("https://example.com")))
 
-        val client = VardaClient(
-            mockTokenProvider,
-            fuel,
-            jsonMapper,
-            VardaEnv(
-                url = "https://example.com/mock-integration/varda/api",
-                basicAuth = Sensitive(""),
-                sourceSystem = "SourceSystemVarda"
+        val client =
+            VardaClient(
+                mockTokenProvider,
+                fuel,
+                jsonMapper,
+                VardaEnv(
+                    url = "https://example.com/mock-integration/varda/api",
+                    basicAuth = Sensitive(""),
+                    sourceSystem = "SourceSystemVarda"
+                )
             )
-        )
 
         assertTrue(client.deleteFeeData(0))
         // NOTE: As the original Request is modified instead of replaced in a retry
         // the _new_ authorization header appears to be used twice.
-        verify(
-            fuel.client,
-            times(2)
-        ).executeRequest(argThat { this[Headers.AUTHORIZATION].first() == "Token refreshed" })
+        verify(fuel.client, times(2))
+            .executeRequest(argThat { this[Headers.AUTHORIZATION].first() == "Token refreshed" })
     }
 }

@@ -17,7 +17,10 @@ import fi.espoo.evaka.shared.utils.emptyEnumSet
 import fi.espoo.evaka.shared.utils.toEnumSet
 import java.util.EnumSet
 
-private typealias GetGroupRoles = QuerySql.Builder<IdRoleFeatures>.(user: AuthenticatedUser.Employee, now: HelsinkiDateTime) -> QuerySql<IdRoleFeatures>
+private typealias GetGroupRoles =
+    QuerySql.Builder<IdRoleFeatures>.(
+        user: AuthenticatedUser.Employee, now: HelsinkiDateTime
+    ) -> QuerySql<IdRoleFeatures>
 
 data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<PilotFeature>) {
     init {
@@ -27,77 +30,100 @@ data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<Pilo
 
     fun withUnitFeatures(vararg allOf: PilotFeature) = copy(unitFeatures = allOf.toEnumSet())
 
-    private fun <T : Id<*>> rule(getGroupRoles: GetGroupRoles): DatabaseActionRule.Scoped<T, HasGroupRole> =
+    private fun <T : Id<*>> rule(
+        getGroupRoles: GetGroupRoles
+    ): DatabaseActionRule.Scoped<T, HasGroupRole> =
         DatabaseActionRule.Scoped.Simple(this, Query(getGroupRoles))
-    private data class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles) : DatabaseActionRule.Scoped.Query<T, HasGroupRole> {
+    private data class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles) :
+        DatabaseActionRule.Scoped.Query<T, HasGroupRole> {
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
-        ): Map<T, DatabaseActionRule.Deferred<HasGroupRole>> = when (ctx.user) {
-            is AuthenticatedUser.Employee -> ctx.tx.createQuery<T> {
-                sql(
-                    """
+        ): Map<T, DatabaseActionRule.Deferred<HasGroupRole>> =
+            when (ctx.user) {
+                is AuthenticatedUser.Employee ->
+                    ctx.tx
+                        .createQuery<T> {
+                            sql(
+                                """
                     SELECT id, role, unit_features
                     FROM (${subquery { getGroupRoles(ctx.user, ctx.now) } }) fragment
                     WHERE id = ANY(${bind(targets.map { it.raw })})
-                    """.trimIndent()
-                )
+                    """
+                                    .trimIndent()
+                            )
+                        }
+                        .mapTo<IdRoleFeatures>()
+                        .fold(
+                            targets.associateTo(linkedMapOf()) {
+                                (it to mutableSetOf<RoleAndFeatures>())
+                            }
+                        ) { acc, (target, result) ->
+                            acc[target]?.plusAssign(result)
+                            acc
+                        }
+                        .mapValues { (_, queryResult) -> Deferred(queryResult) }
+                else -> emptyMap()
             }
-                .mapTo<IdRoleFeatures>()
-                .fold(targets.associateTo(linkedMapOf()) { (it to mutableSetOf<RoleAndFeatures>()) }) { acc, (target, result) ->
-                    acc[target]?.plusAssign(result)
-                    acc
-                }
-                .mapValues { (_, queryResult) -> Deferred(queryResult) }
-            else -> emptyMap()
-        }
         override fun queryWithParams(
             ctx: DatabaseActionRule.QueryContext,
             params: HasGroupRole
-        ): QuerySql<T>? = when (ctx.user) {
-            is AuthenticatedUser.Employee ->
-                QuerySql.of {
-                    sql(
-                        """
+        ): QuerySql<T>? =
+            when (ctx.user) {
+                is AuthenticatedUser.Employee ->
+                    QuerySql.of {
+                        sql(
+                            """
                     SELECT id
                     FROM (${subquery { getGroupRoles(ctx.user, ctx.now) } }) fragment
                     WHERE role = ANY(${bind(params.oneOf.toSet())})
                     AND unit_features @> ${bind(params.unitFeatures.toSet())}
-                        """.trimIndent()
-                    )
-                }
-            else -> null
-        }
+                        """
+                                .trimIndent()
+                        )
+                    }
+                else -> null
+            }
     }
-    private data class Deferred(private val queryResult: Set<RoleAndFeatures>) : DatabaseActionRule.Deferred<HasGroupRole> {
+    private data class Deferred(private val queryResult: Set<RoleAndFeatures>) :
+        DatabaseActionRule.Deferred<HasGroupRole> {
         override fun evaluate(params: HasGroupRole): AccessControlDecision =
-            if (queryResult.any { params.oneOf.contains(it.role) && it.unitFeatures.containsAll(params.unitFeatures) }) {
+            if (
+                queryResult.any {
+                    params.oneOf.contains(it.role) &&
+                        it.unitFeatures.containsAll(params.unitFeatures)
+                }
+            ) {
                 AccessControlDecision.Permitted(params)
             } else {
                 AccessControlDecision.None
             }
     }
 
-    fun inPlacementGroupOfChild() = rule<ChildId> { user, now ->
-        sql(
-            """
+    fun inPlacementGroupOfChild() =
+        rule<ChildId> { user, now ->
+            sql(
+                """
 SELECT child_id AS id, role, enabled_pilot_features AS unit_features
 FROM employee_child_group_acl(${bind(now.toLocalDate())}) acl
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
-            """.trimIndent()
-        )
-    }
-
-    fun inPlacementGroupOfChildOfVasuDocument() = rule<VasuDocumentId> { user, now ->
-        sql(
             """
+                    .trimIndent()
+            )
+        }
+
+    fun inPlacementGroupOfChildOfVasuDocument() =
+        rule<VasuDocumentId> { user, now ->
+            sql(
+                """
 SELECT curriculum_document.id AS id, role, enabled_pilot_features AS unit_features
 FROM curriculum_document
 JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
-            """.trimIndent()
-        )
-    }
+            """
+                    .trimIndent()
+            )
+        }
 }

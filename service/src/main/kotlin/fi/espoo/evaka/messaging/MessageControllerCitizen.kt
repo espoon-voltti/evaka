@@ -32,21 +32,13 @@ data class CitizenMessageBody(
 
 @RestController
 @RequestMapping("/citizen/messages")
-class MessageControllerCitizen(
-    messageNotificationEmailService: MessageNotificationEmailService
-) {
+class MessageControllerCitizen(messageNotificationEmailService: MessageNotificationEmailService) {
     private val messageService = MessageService(messageNotificationEmailService)
 
     @GetMapping("/my-account")
-    fun getMyAccount(
-        db: Database,
-        user: AuthenticatedUser.Citizen
-    ): MessageAccountId {
-        return db.connect { dbc ->
-            dbc.read { it.getCitizenMessageAccount(user.id) }
-        }.also {
-            Audit.MessagingMyAccountsRead.log(targetId = user.id, objectId = it)
-        }
+    fun getMyAccount(db: Database, user: AuthenticatedUser.Citizen): MessageAccountId {
+        return db.connect { dbc -> dbc.read { it.getCitizenMessageAccount(user.id) } }
+            .also { Audit.MessagingMyAccountsRead.log(targetId = user.id, objectId = it) }
     }
 
     @GetMapping("/unread-count")
@@ -55,11 +47,15 @@ class MessageControllerCitizen(
         user: AuthenticatedUser.Citizen
     ): Set<UnreadCountByAccount> {
         return db.connect { dbc ->
-            val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
-            dbc.read { it.getUnreadMessagesCounts(setOf(accountId)) }
-        }.also {
-            Audit.MessagingUnreadMessagesRead.log(targetId = user.id, args = mapOf("count" to it.size))
-        }
+                val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
+                dbc.read { it.getUnreadMessagesCounts(setOf(accountId)) }
+            }
+            .also {
+                Audit.MessagingUnreadMessagesRead.log(
+                    targetId = user.id,
+                    args = mapOf("count" to it.size)
+                )
+            }
     }
 
     @PutMapping("/threads/{threadId}/read")
@@ -84,11 +80,10 @@ class MessageControllerCitizen(
         @RequestParam page: Int
     ): Paged<MessageThread> {
         return db.connect { dbc ->
-            val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
-            dbc.read { it.getThreads(accountId, pageSize, page) }
-        }.also {
-            Audit.MessagingReceivedMessagesRead.log(args = mapOf("total" to it.total))
-        }
+                val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
+                dbc.read { it.getThreads(accountId, pageSize, page) }
+            }
+            .also { Audit.MessagingReceivedMessagesRead.log(args = mapOf("total" to it.total)) }
     }
 
     data class GetReceiversResponse(
@@ -103,15 +98,19 @@ class MessageControllerCitizen(
         evakaClock: EvakaClock
     ): GetReceiversResponse {
         return db.connect { dbc ->
-            val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
-            val accountsToChildIds = (dbc.read { it.getCitizenReceivers(evakaClock.today(), accountId) })
-            GetReceiversResponse(
-                messageAccounts = accountsToChildIds.keys,
-                messageAccountsToChildren = accountsToChildIds.mapKeys { it.key.id }
-            )
-        }.also {
-            Audit.MessagingCitizenFetchReceiversForAccount.log(args = mapOf("count" to it.messageAccounts))
-        }
+                val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
+                val accountsToChildIds =
+                    (dbc.read { it.getCitizenReceivers(evakaClock.today(), accountId) })
+                GetReceiversResponse(
+                    messageAccounts = accountsToChildIds.keys,
+                    messageAccountsToChildren = accountsToChildIds.mapKeys { it.key.id }
+                )
+            }
+            .also {
+                Audit.MessagingCitizenFetchReceiversForAccount.log(
+                    args = mapOf("count" to it.messageAccounts)
+                )
+            }
     }
 
     @PostMapping("/{messageId}/reply")
@@ -123,19 +122,18 @@ class MessageControllerCitizen(
         @RequestBody body: ReplyToMessageBody
     ): MessageService.ThreadReply {
         return db.connect { dbc ->
-            val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
+                val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
 
-            messageService.replyToThread(
-                db = dbc,
-                now = clock.now(),
-                replyToMessageId = messageId,
-                senderAccount = accountId,
-                recipientAccountIds = body.recipientAccountIds,
-                content = body.content
-            )
-        }.also {
-            Audit.MessagingReplyToMessageWrite.log(targetId = messageId)
-        }
+                messageService.replyToThread(
+                    db = dbc,
+                    now = clock.now(),
+                    replyToMessageId = messageId,
+                    senderAccount = accountId,
+                    recipientAccountIds = body.recipientAccountIds,
+                    content = body.content
+                )
+            }
+            .also { Audit.MessagingReplyToMessageWrite.log(targetId = messageId) }
     }
 
     @PostMapping
@@ -149,33 +147,42 @@ class MessageControllerCitizen(
         val today = now.toLocalDate()
 
         return db.connect { dbc ->
-            val senderId = dbc.read { it.getCitizenMessageAccount(user.id) }
-            val validReceivers = dbc.read { it.getCitizenReceivers(today, senderId).keys }
-            val allReceiversValid =
-                body.recipients.all { validReceivers.map { receiver -> receiver.id }.contains(it.id) }
-            if (allReceiversValid) {
-                val recipientIds = body.recipients.map { it.id }.toSet()
-                dbc.transaction { tx ->
-                    val contentId = tx.insertMessageContent(body.content, senderId)
-                    val threadId = tx.insertThread(MessageType.MESSAGE, body.title, urgent = false, isCopy = false)
-                    tx.upsertThreadParticipants(threadId, senderId, recipientIds, now)
-                    val messageId =
-                        tx.insertMessage(
-                            now = clock.now(),
-                            contentId = contentId,
-                            threadId = threadId,
-                            sender = senderId,
-                            recipientNames = body.recipients.map { it.name }
-                        )
-                    tx.insertMessageThreadChildren(body.children, threadId)
-                    tx.insertRecipients(recipientIds, messageId)
-                    threadId
+                val senderId = dbc.read { it.getCitizenMessageAccount(user.id) }
+                val validReceivers = dbc.read { it.getCitizenReceivers(today, senderId).keys }
+                val allReceiversValid =
+                    body.recipients.all {
+                        validReceivers.map { receiver -> receiver.id }.contains(it.id)
+                    }
+                if (allReceiversValid) {
+                    val recipientIds = body.recipients.map { it.id }.toSet()
+                    dbc.transaction { tx ->
+                        val contentId = tx.insertMessageContent(body.content, senderId)
+                        val threadId =
+                            tx.insertThread(
+                                MessageType.MESSAGE,
+                                body.title,
+                                urgent = false,
+                                isCopy = false
+                            )
+                        tx.upsertThreadParticipants(threadId, senderId, recipientIds, now)
+                        val messageId =
+                            tx.insertMessage(
+                                now = clock.now(),
+                                contentId = contentId,
+                                threadId = threadId,
+                                sender = senderId,
+                                recipientNames = body.recipients.map { it.name }
+                            )
+                        tx.insertMessageThreadChildren(body.children, threadId)
+                        tx.insertRecipients(recipientIds, messageId)
+                        threadId
+                    }
+                } else {
+                    throw Forbidden("Permission denied.")
                 }
-            } else {
-                throw Forbidden("Permission denied.")
             }
-        }.also { messageThreadId ->
-            Audit.MessagingCitizenSendMessage.log(targetId = messageThreadId)
-        }
+            .also { messageThreadId ->
+                Audit.MessagingCitizenSendMessage.log(targetId = messageThreadId)
+            }
     }
 }

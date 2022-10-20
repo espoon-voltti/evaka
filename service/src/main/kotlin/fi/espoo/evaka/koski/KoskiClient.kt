@@ -25,10 +25,10 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.voltti.logging.loggers.error
-import mu.KotlinLogging
 import java.time.LocalDate
+import mu.KotlinLogging
 
-private val logger = KotlinLogging.logger { }
+private val logger = KotlinLogging.logger {}
 
 class KoskiClient(
     private val env: KoskiEnv,
@@ -36,13 +36,20 @@ class KoskiClient(
     private val fuel: FuelManager,
     asyncJobRunner: AsyncJobRunner<AsyncJob>?
 ) {
-    // Use a local Jackson instance so the configuration doesn't get changed accidentally if the global defaults change.
+    // Use a local Jackson instance so the configuration doesn't get changed accidentally if the
+    // global defaults change.
     // This is important, because our payload diffing mechanism relies on the serialization format
-    private val jsonMapper = jacksonMapperBuilder()
-        .addModules(JavaTimeModule(), JaxbAnnotationModule(), Jdk8Module(), ParameterNamesModule())
-        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        .build()
+    private val jsonMapper =
+        jacksonMapperBuilder()
+            .addModules(
+                JavaTimeModule(),
+                JaxbAnnotationModule(),
+                Jdk8Module(),
+                ParameterNamesModule()
+            )
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .build()
 
     init {
         asyncJobRunner?.registerHandler { db, clock, msg: AsyncJob.UploadToKoski ->
@@ -53,76 +60,102 @@ class KoskiClient(
     data class Error(val key: String, val message: String) {
         fun isNotFound() = key == "notFound.opiskeluoikeuttaEiLöydyTaiEiOikeuksia"
     }
-    fun uploadToKoski(db: Database.Connection, msg: AsyncJob.UploadToKoski, today: LocalDate) = db.transaction { tx ->
-        logger.info { "Koski upload ${msg.key}: starting" }
-        val data = tx.beginKoskiUpload(env.sourceSystem, ophEnv.organizerOid, ophEnv.municipalityCode, msg.key, today)
-        if (data == null) {
-            logger.info { "Koski upload ${msg.key}: no data -> skipping" }
-            return@transaction
-        }
-        val payload = jsonMapper.writeValueAsString(data.oppija)
-        if (!tx.isPayloadChanged(msg.key, payload)) {
-            logger.info { "Koski upload ${msg.key} ${data.operation}: no change in payload -> skipping" }
-        } else {
-            val (request, _, result) = fuel.request(
-                method = if (data.operation == KoskiOperation.CREATE) Method.POST else Method.PUT,
-                path = "${env.url}/oppija"
-            )
-                .authentication()
-                .basic(env.user, env.secret.value)
-                .header(Headers.ACCEPT, "application/json")
-                .header("Caller-Id", "${data.organizationOid}.${env.municipalityCallerId}")
-                .jsonBody(payload)
-                .response()
-
-            val response: HenkilönOpiskeluoikeusVersiot? = try {
-                jsonMapper.readValue<HenkilönOpiskeluoikeusVersiot>(result.get())
-            } catch (error: FuelError) {
-                val errors: List<Error>? = try {
-                    jsonMapper.readValue(error.errorData)
-                } catch (err: Exception) {
-                    null
-                }
-                if (data.operation == KoskiOperation.VOID && errors?.any { it.isNotFound() } == true) {
-                    logger.warn("Koski upload ${msg.key} ${data.operation}: 404 not found -> assuming study right is already voided and nothing needs to be done")
-                    null
-                } else {
-                    val meta = mapOf(
-                        "method" to request.method,
-                        "url" to request.url,
-                        "body" to request.body.asString("application/json"),
-                        "errorMessage" to error.errorData.decodeToString()
-                    )
-                    logger.error(
-                        error,
-                        meta
-                    ) { "Koski upload ${msg.key} ${data.operation} failed, status ${error.response.statusCode}" }
-                    throw error
-                }
+    fun uploadToKoski(db: Database.Connection, msg: AsyncJob.UploadToKoski, today: LocalDate) =
+        db.transaction { tx ->
+            logger.info { "Koski upload ${msg.key}: starting" }
+            val data =
+                tx.beginKoskiUpload(
+                    env.sourceSystem,
+                    ophEnv.organizerOid,
+                    ophEnv.municipalityCode,
+                    msg.key,
+                    today
+                )
+            if (data == null) {
+                logger.info { "Koski upload ${msg.key}: no data -> skipping" }
+                return@transaction
             }
-            if (response != null) {
-                tx.finishKoskiUpload(
-                    KoskiUploadResponse(
-                        id = KoskiStudyRightId(response.opiskeluoikeudet[0].lähdejärjestelmänId.id),
-                        studyRightOid = response.opiskeluoikeudet[0].oid,
-                        personOid = response.henkilö.oid,
-                        version = response.opiskeluoikeudet[0].versionumero,
-                        // We need to apply the returned OID back to the payload, or `isPayloadChanged` would always
-                        // consider a freshly created study right as "outdated" because the original payload did not have the
-                        // OID field
-                        payload = jsonMapper.writeValueAsString(
-                            data.oppija.copy(
-                                opiskeluoikeudet = data.oppija.opiskeluoikeudet.zip(response.opiskeluoikeudet).map {
-                                    it.first.copy(
-                                        oid = it.second.oid
-                                    )
-                                }
+            val payload = jsonMapper.writeValueAsString(data.oppija)
+            if (!tx.isPayloadChanged(msg.key, payload)) {
+                logger.info {
+                    "Koski upload ${msg.key} ${data.operation}: no change in payload -> skipping"
+                }
+            } else {
+                val (request, _, result) =
+                    fuel
+                        .request(
+                            method =
+                                if (data.operation == KoskiOperation.CREATE) Method.POST
+                                else Method.PUT,
+                            path = "${env.url}/oppija"
+                        )
+                        .authentication()
+                        .basic(env.user, env.secret.value)
+                        .header(Headers.ACCEPT, "application/json")
+                        .header("Caller-Id", "${data.organizationOid}.${env.municipalityCallerId}")
+                        .jsonBody(payload)
+                        .response()
+
+                val response: HenkilönOpiskeluoikeusVersiot? =
+                    try {
+                        jsonMapper.readValue<HenkilönOpiskeluoikeusVersiot>(result.get())
+                    } catch (error: FuelError) {
+                        val errors: List<Error>? =
+                            try {
+                                jsonMapper.readValue(error.errorData)
+                            } catch (err: Exception) {
+                                null
+                            }
+                        if (
+                            data.operation == KoskiOperation.VOID &&
+                                errors?.any { it.isNotFound() } == true
+                        ) {
+                            logger.warn(
+                                "Koski upload ${msg.key} ${data.operation}: 404 not found -> assuming study right is already voided and nothing needs to be done"
                             )
+                            null
+                        } else {
+                            val meta =
+                                mapOf(
+                                    "method" to request.method,
+                                    "url" to request.url,
+                                    "body" to request.body.asString("application/json"),
+                                    "errorMessage" to error.errorData.decodeToString()
+                                )
+                            logger.error(error, meta) {
+                                "Koski upload ${msg.key} ${data.operation} failed, status ${error.response.statusCode}"
+                            }
+                            throw error
+                        }
+                    }
+                if (response != null) {
+                    tx.finishKoskiUpload(
+                        KoskiUploadResponse(
+                            id =
+                                KoskiStudyRightId(
+                                    response.opiskeluoikeudet[0].lähdejärjestelmänId.id
+                                ),
+                            studyRightOid = response.opiskeluoikeudet[0].oid,
+                            personOid = response.henkilö.oid,
+                            version = response.opiskeluoikeudet[0].versionumero,
+                            // We need to apply the returned OID back to the payload, or
+                            // `isPayloadChanged` would always
+                            // consider a freshly created study right as "outdated" because the
+                            // original payload did not have the
+                            // OID field
+                            payload =
+                                jsonMapper.writeValueAsString(
+                                    data.oppija.copy(
+                                        opiskeluoikeudet =
+                                            data.oppija.opiskeluoikeudet
+                                                .zip(response.opiskeluoikeudet)
+                                                .map { it.first.copy(oid = it.second.oid) }
+                                    )
+                                )
                         )
                     )
-                )
+                }
+                logger.info { "Koski upload ${msg.key} ${data.operation}: finished" }
             }
-            logger.info { "Koski upload ${msg.key} ${data.operation}: finished" }
         }
-    }
 }

@@ -18,6 +18,8 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.math.BigDecimal
+import java.time.LocalTime
 import org.jdbi.v3.core.JdbiException
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -25,8 +27,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.math.BigDecimal
-import java.time.LocalTime
 
 @RestController
 @RequestMapping("/mobile/realtime-staff-attendances")
@@ -41,18 +41,23 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         ac.requirePermissionFor(user, clock, Action.Unit.READ_REALTIME_STAFF_ATTENDANCES, unitId)
 
         return db.connect { dbc ->
-            dbc.read {
-                CurrentDayStaffAttendanceResponse(
-                    staff = it.getStaffAttendances(unitId, clock.now()),
-                    extraAttendances = it.getExternalStaffAttendances(unitId, clock.now())
+                dbc.read {
+                    CurrentDayStaffAttendanceResponse(
+                        staff = it.getStaffAttendances(unitId, clock.now()),
+                        extraAttendances = it.getExternalStaffAttendances(unitId, clock.now())
+                    )
+                }
+            }
+            .also {
+                Audit.UnitStaffAttendanceRead.log(
+                    targetId = unitId,
+                    args =
+                        mapOf(
+                            "staffCount" to it.staff.size,
+                            "externalStaffCount" to it.extraAttendances.size
+                        )
                 )
             }
-        }.also {
-            Audit.UnitStaffAttendanceRead.log(
-                targetId = unitId,
-                args = mapOf("staffCount" to it.staff.size, "externalStaffCount" to it.extraAttendances.size)
-            )
-        }
     }
 
     data class StaffArrivalRequest(
@@ -74,29 +79,39 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         ac.verifyPinCodeAndThrow(body.employeeId, body.pinCode, clock)
         // todo: check that employee has access to a unit related to the group?
 
-        val staffAttendanceIds = try {
-            db.connect { dbc ->
-                dbc.transaction { tx ->
-                    val plannedAttendances = tx.getPlannedStaffAttendances(body.employeeId, clock.now())
-                    val ongoingAttendance = tx.getOngoingAttendance(body.employeeId)
-                    val attendances = createAttendancesFromArrival(clock.now(), plannedAttendances, ongoingAttendance, body)
-                    val occupancyCoefficient = tx.getOccupancyCoefficientForEmployee(body.employeeId, body.groupId) ?: BigDecimal.ZERO
-                    attendances.map { attendance ->
-                        tx.upsertStaffAttendance(
-                            attendance.id,
-                            attendance.employeeId,
-                            attendance.groupId,
-                            attendance.arrived,
-                            attendance.departed,
-                            occupancyCoefficient,
-                            attendance.type
-                        )
+        val staffAttendanceIds =
+            try {
+                db.connect { dbc ->
+                    dbc.transaction { tx ->
+                        val plannedAttendances =
+                            tx.getPlannedStaffAttendances(body.employeeId, clock.now())
+                        val ongoingAttendance = tx.getOngoingAttendance(body.employeeId)
+                        val attendances =
+                            createAttendancesFromArrival(
+                                clock.now(),
+                                plannedAttendances,
+                                ongoingAttendance,
+                                body
+                            )
+                        val occupancyCoefficient =
+                            tx.getOccupancyCoefficientForEmployee(body.employeeId, body.groupId)
+                                ?: BigDecimal.ZERO
+                        attendances.map { attendance ->
+                            tx.upsertStaffAttendance(
+                                attendance.id,
+                                attendance.employeeId,
+                                attendance.groupId,
+                                attendance.arrived,
+                                attendance.departed,
+                                occupancyCoefficient,
+                                attendance.type
+                            )
+                        }
                     }
                 }
+            } catch (e: JdbiException) {
+                throw mapPSQLException(e)
             }
-        } catch (e: JdbiException) {
-            throw mapPSQLException(e)
-        }
         Audit.StaffAttendanceArrivalCreate.log(
             targetId = listOf(body.groupId, body.employeeId),
             objectId = staffAttendanceIds
@@ -121,26 +136,37 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         ac.requirePermissionFor(user, clock, Action.Group.MARK_DEPARTURE, body.groupId)
         ac.verifyPinCodeAndThrow(body.employeeId, body.pinCode, clock)
 
-        val staffAttendanceIds = db.connect { dbc ->
-            dbc.transaction { tx ->
-                val plannedAttendances = tx.getPlannedStaffAttendances(body.employeeId, clock.now())
-                val ongoingAttendance = tx.getOngoingAttendance(body.employeeId)
-                    ?: throw BadRequest("No ongoing staff attendance found")
-                val attendances = createAttendancesFromDeparture(clock.now(), plannedAttendances, ongoingAttendance, body)
-                val occupancyCoefficient = tx.getOccupancyCoefficientForEmployee(body.employeeId, body.groupId) ?: BigDecimal.ZERO
-                attendances.map { attendance ->
-                    tx.upsertStaffAttendance(
-                        attendance.id,
-                        attendance.employeeId,
-                        attendance.groupId,
-                        attendance.arrived,
-                        attendance.departed,
-                        occupancyCoefficient,
-                        attendance.type
-                    )
+        val staffAttendanceIds =
+            db.connect { dbc ->
+                dbc.transaction { tx ->
+                    val plannedAttendances =
+                        tx.getPlannedStaffAttendances(body.employeeId, clock.now())
+                    val ongoingAttendance =
+                        tx.getOngoingAttendance(body.employeeId)
+                            ?: throw BadRequest("No ongoing staff attendance found")
+                    val attendances =
+                        createAttendancesFromDeparture(
+                            clock.now(),
+                            plannedAttendances,
+                            ongoingAttendance,
+                            body
+                        )
+                    val occupancyCoefficient =
+                        tx.getOccupancyCoefficientForEmployee(body.employeeId, body.groupId)
+                            ?: BigDecimal.ZERO
+                    attendances.map { attendance ->
+                        tx.upsertStaffAttendance(
+                            attendance.id,
+                            attendance.employeeId,
+                            attendance.groupId,
+                            attendance.arrived,
+                            attendance.departed,
+                            occupancyCoefficient,
+                            attendance.type
+                        )
+                    }
                 }
             }
-        }
         Audit.StaffAttendanceDepartureCreate.log(
             targetId = listOf(body.groupId, body.employeeId),
             objectId = staffAttendanceIds
@@ -167,22 +193,23 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         val arrivedTimeOrDefault = if (arrivedTimeHDT.isBefore(nowHDT)) arrivedTimeHDT else nowHDT
 
         return db.connect { dbc ->
-            dbc.transaction {
-                it.markExternalStaffArrival(
-                    ExternalStaffArrival(
-                        name = body.name,
-                        groupId = body.groupId,
-                        arrived = arrivedTimeOrDefault,
-                        occupancyCoefficient = occupancyCoefficientSeven
+                dbc.transaction {
+                    it.markExternalStaffArrival(
+                        ExternalStaffArrival(
+                            name = body.name,
+                            groupId = body.groupId,
+                            arrived = arrivedTimeOrDefault,
+                            occupancyCoefficient = occupancyCoefficientSeven
+                        )
                     )
+                }
+            }
+            .also { staffAttendanceExternalId ->
+                Audit.StaffAttendanceArrivalExternalCreate.log(
+                    targetId = body.groupId,
+                    objectId = staffAttendanceExternalId
                 )
             }
-        }.also { staffAttendanceExternalId ->
-            Audit.StaffAttendanceArrivalExternalCreate.log(
-                targetId = body.groupId,
-                objectId = staffAttendanceExternalId
-            )
-        }
     }
 
     data class ExternalStaffDepartureRequest(
@@ -199,20 +226,24 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
     ) {
         db.connect { dbc ->
             // todo: convert to action auth
-            val attendance = dbc.read { it.getExternalStaffAttendance(body.attendanceId, clock.now()) }
-                ?: throw NotFound("attendance not found")
-            ac.requirePermissionFor(user, clock, Action.Group.MARK_EXTERNAL_DEPARTURE, attendance.groupId)
+            val attendance =
+                dbc.read { it.getExternalStaffAttendance(body.attendanceId, clock.now()) }
+                    ?: throw NotFound("attendance not found")
+            ac.requirePermissionFor(
+                user,
+                clock,
+                Action.Group.MARK_EXTERNAL_DEPARTURE,
+                attendance.groupId
+            )
 
             val departedTimeHDT = clock.now().withTime(body.time)
             val nowHDT = clock.now()
-            val departedTimeOrDefault = if (departedTimeHDT.isBefore(nowHDT)) departedTimeHDT else nowHDT
+            val departedTimeOrDefault =
+                if (departedTimeHDT.isBefore(nowHDT)) departedTimeHDT else nowHDT
 
             dbc.transaction {
                 it.markExternalStaffDeparture(
-                    ExternalStaffDeparture(
-                        id = body.attendanceId,
-                        departed = departedTimeOrDefault
-                    )
+                    ExternalStaffDeparture(id = body.attendanceId, departed = departedTimeOrDefault)
                 )
             }
         }
@@ -225,10 +256,15 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         ongoingAttendance: StaffAttendance?,
         arrival: StaffArrivalRequest
     ): List<StaffAttendance> {
-        val arrivalTime = now.withTime(arrival.time).takeIf { it <= now }
-            ?: throw BadRequest("Arrival time cannot be in the future")
+        val arrivalTime =
+            now.withTime(arrival.time).takeIf { it <= now }
+                ?: throw BadRequest("Arrival time cannot be in the future")
 
-        fun createNewAttendance(arrived: HelsinkiDateTime, departed: HelsinkiDateTime?, type: StaffAttendanceType) =
+        fun createNewAttendance(
+            arrived: HelsinkiDateTime,
+            departed: HelsinkiDateTime?,
+            type: StaffAttendanceType
+        ) =
             StaffAttendance(
                 id = null,
                 employeeId = arrival.employeeId,
@@ -248,22 +284,31 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         }
 
         if (arrival.type == StaffAttendanceType.JUSTIFIED_CHANGE) {
-            return listOf(createNewAttendance(arrivalTime, null, StaffAttendanceType.JUSTIFIED_CHANGE))
+            return listOf(
+                createNewAttendance(arrivalTime, null, StaffAttendanceType.JUSTIFIED_CHANGE)
+            )
         }
 
         val planStart = plans.minOf { it.start }
         if (arrivalTime < planStart.minusMinutes(15)) {
             return when (arrival.type) {
-                StaffAttendanceType.OVERTIME -> listOf(createNewAttendance(arrivalTime, null, arrival.type))
-                else -> throw BadRequest("Staff attendance type ${arrival.type} cannot be used when arrived 15 minutes before plan start")
+                StaffAttendanceType.OVERTIME ->
+                    listOf(createNewAttendance(arrivalTime, null, arrival.type))
+                else ->
+                    throw BadRequest(
+                        "Staff attendance type ${arrival.type} cannot be used when arrived 15 minutes before plan start"
+                    )
             }
         }
 
         if (arrivalTime > planStart.plusMinutes(15)) {
             return when (arrival.type) {
-                StaffAttendanceType.TRAINING, StaffAttendanceType.OTHER_WORK -> {
+                StaffAttendanceType.TRAINING,
+                StaffAttendanceType.OTHER_WORK -> {
                     if (ongoingAttendance != null && ongoingAttendance.type != arrival.type) {
-                        throw BadRequest("Arrival type ${arrival.type} does not match ongoing attendance type ${ongoingAttendance.type}")
+                        throw BadRequest(
+                            "Arrival type ${arrival.type} does not match ongoing attendance type ${ongoingAttendance.type}"
+                        )
                     }
                     listOf(
                         ongoingAttendance?.copy(departed = arrivalTime)
@@ -271,14 +316,19 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         createNewAttendance(arrivalTime, null, StaffAttendanceType.PRESENT)
                     )
                 }
-                else -> throw BadRequest("Staff attendance type ${arrival.type} cannot be used when arrived 15 minutes after plan start")
+                else ->
+                    throw BadRequest(
+                        "Staff attendance type ${arrival.type} cannot be used when arrived 15 minutes after plan start"
+                    )
             }
         }
 
         return if (arrival.type == null) {
             listOf(createNewAttendance(arrivalTime, null, StaffAttendanceType.PRESENT))
         } else {
-            throw BadRequest("Staff attendance type should not be used when arrived within 15 minutes of plan start")
+            throw BadRequest(
+                "Staff attendance type should not be used when arrived within 15 minutes of plan start"
+            )
         }
     }
 
@@ -288,14 +338,19 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         ongoingAttendance: StaffAttendance,
         departure: StaffDepartureRequest
     ): List<StaffAttendance> {
-        val departureTime = now.withTime(departure.time).takeIf { it <= now }
-            ?: throw BadRequest("Departure time cannot be in the future")
+        val departureTime =
+            now.withTime(departure.time).takeIf { it <= now }
+                ?: throw BadRequest("Departure time cannot be in the future")
 
         if (departureTime <= ongoingAttendance.arrived) {
             throw BadRequest("Departure time must be after arrival time")
         }
 
-        fun createNewAttendance(arrived: HelsinkiDateTime, departed: HelsinkiDateTime?, type: StaffAttendanceType) =
+        fun createNewAttendance(
+            arrived: HelsinkiDateTime,
+            departed: HelsinkiDateTime?,
+            type: StaffAttendanceType
+        ) =
             StaffAttendance(
                 id = null,
                 employeeId = departure.employeeId,
@@ -311,18 +366,21 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         }
 
         if (!ongoingAttendance.type.presentInGroup()) {
-            throw BadRequest("Trying to mark a departure for an employee that is not present in group")
+            throw BadRequest(
+                "Trying to mark a departure for an employee that is not present in group"
+            )
         }
 
         if (departure.type == StaffAttendanceType.JUSTIFIED_CHANGE) {
             return listOf(
                 ongoingAttendance.copy(
                     departed = departureTime,
-                    type = if (ongoingAttendance.type == StaffAttendanceType.PRESENT) {
-                        StaffAttendanceType.JUSTIFIED_CHANGE
-                    } else {
-                        ongoingAttendance.type
-                    }
+                    type =
+                        if (ongoingAttendance.type == StaffAttendanceType.PRESENT) {
+                            StaffAttendanceType.JUSTIFIED_CHANGE
+                        } else {
+                            ongoingAttendance.type
+                        }
                 )
             )
         }
@@ -330,11 +388,16 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         val planEnd = plans.maxOf { it.end }
         if (departureTime < planEnd.minusMinutes(15)) {
             return when (departure.type) {
-                StaffAttendanceType.TRAINING, StaffAttendanceType.OTHER_WORK -> listOf(
-                    ongoingAttendance.copy(departed = departureTime),
-                    createNewAttendance(departureTime, null, departure.type)
-                )
-                else -> throw BadRequest("Staff attendance type ${departure.type} cannot be used when departed 15 minutes before plan end")
+                StaffAttendanceType.TRAINING,
+                StaffAttendanceType.OTHER_WORK ->
+                    listOf(
+                        ongoingAttendance.copy(departed = departureTime),
+                        createNewAttendance(departureTime, null, departure.type)
+                    )
+                else ->
+                    throw BadRequest(
+                        "Staff attendance type ${departure.type} cannot be used when departed 15 minutes before plan end"
+                    )
             }
         }
 
@@ -342,7 +405,10 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             return when (departure.type) {
                 StaffAttendanceType.OVERTIME ->
                     listOf(ongoingAttendance.copy(departed = departureTime, type = departure.type))
-                else -> throw BadRequest("Staff attendance type ${departure.type} cannot be used when departed 15 minutes after plan end")
+                else ->
+                    throw BadRequest(
+                        "Staff attendance type ${departure.type} cannot be used when departed 15 minutes after plan end"
+                    )
             }
         }
 

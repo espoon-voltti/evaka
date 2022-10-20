@@ -28,7 +28,9 @@ fun convertMidnightEndTime(timeRange: TimeRange) =
 
 fun validateReservationTimeRange(timeRange: TimeRange) {
     if (timeRange.endTime <= timeRange.startTime) {
-        throw BadRequest("Reservation start (${timeRange.startTime}) must be before end (${timeRange.endTime})")
+        throw BadRequest(
+            "Reservation start (${timeRange.startTime}) must be before end (${timeRange.endTime})"
+        )
     }
 }
 
@@ -41,10 +43,8 @@ data class DailyReservationRequest(
 
 @JsonSerialize(using = TimeRangeSerializer::class)
 data class TimeRange(
-    @ForceCodeGenType(String::class)
-    val startTime: LocalTime,
-    @ForceCodeGenType(String::class)
-    val endTime: LocalTime
+    @ForceCodeGenType(String::class) val startTime: LocalTime,
+    @ForceCodeGenType(String::class) val endTime: LocalTime
 )
 
 class TimeRangeSerializer : JsonSerializer<TimeRange>() {
@@ -58,16 +58,20 @@ class TimeRangeSerializer : JsonSerializer<TimeRange>() {
 
 @JsonSerialize(using = OpenTimeRangeSerializer::class)
 data class OpenTimeRange(
-    @ForceCodeGenType(String::class)
-    val startTime: LocalTime,
-    @ForceCodeGenType(String::class)
-    val endTime: LocalTime?
+    @ForceCodeGenType(String::class) val startTime: LocalTime,
+    @ForceCodeGenType(String::class) val endTime: LocalTime?
 )
 
 private fun padWithZeros(hoursOrMinutes: Int) = hoursOrMinutes.toString().padStart(2, '0')
+
 private fun LocalTime.format() = "${padWithZeros(hour)}:${padWithZeros(minute)}"
+
 class OpenTimeRangeSerializer : JsonSerializer<OpenTimeRange>() {
-    override fun serialize(value: OpenTimeRange, gen: JsonGenerator, serializers: SerializerProvider) {
+    override fun serialize(
+        value: OpenTimeRange,
+        gen: JsonGenerator,
+        serializers: SerializerProvider
+    ) {
         gen.writeStartObject()
         gen.writeObjectField("startTime", value.startTime.format())
         gen.writeObjectField("endTime", value.endTime?.format())
@@ -87,27 +91,37 @@ fun createReservationsAndAbsences(
     userId: EvakaUserId,
     reservationRequests: List<DailyReservationRequest>
 ): CreateReservationsResult {
-    val reservations = reservationRequests.map {
-        it.copy(reservations = it.reservations?.map(::convertMidnightEndTime))
-    }
+    val reservations =
+        reservationRequests.map {
+            it.copy(reservations = it.reservations?.map(::convertMidnightEndTime))
+        }
     reservations.forEach { it.reservations?.forEach(::validateReservationTimeRange) }
 
-    val deletedAbsences = tx.clearOldCitizenEditableAbsences(
-        reservations.filter {
-            it.reservations != null || it.absent
-        }.map { it.childId to it.date }
-    )
+    val deletedAbsences =
+        tx.clearOldCitizenEditableAbsences(
+            reservations
+                .filter { it.reservations != null || it.absent }
+                .map { it.childId to it.date }
+        )
     val deletedReservations = tx.clearOldReservations(reservations.map { it.childId to it.date })
-    val upsertedReservations = tx.insertValidReservations(userId, reservations.filterNot { it.absent })
+    val upsertedReservations =
+        tx.insertValidReservations(userId, reservations.filterNot { it.absent })
 
-    val absences = reservations
-        .filter { it.absent }
-        .map { AbsenceInsert(it.childId, it.date, AbsenceType.OTHER_ABSENCE) }
-    val upsertedAbsences = if (absences.isNotEmpty()) {
-        tx.insertAbsences(userId, absences)
-    } else {
-        emptyList()
-    }
+    val absences =
+        reservations
+            .filter { it.absent }
+            .map { AbsenceInsert(it.childId, it.date, AbsenceType.OTHER_ABSENCE) }
+    val upsertedAbsences =
+        if (absences.isNotEmpty()) {
+            tx.insertAbsences(userId, absences)
+        } else {
+            emptyList()
+        }
 
-    return CreateReservationsResult(deletedAbsences, deletedReservations, upsertedAbsences, upsertedReservations)
+    return CreateReservationsResult(
+        deletedAbsences,
+        deletedReservations,
+        upsertedAbsences,
+        upsertedReservations
+    )
 }

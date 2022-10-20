@@ -43,9 +43,10 @@ class UnitAclController(private val accessControl: AccessControl) {
     ): DaycareAclResponse {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_ACL, daycareId)
         return DaycareAclResponse(
-            db.connect { dbc -> getDaycareAclRows(dbc, daycareId) }.also {
-                Audit.UnitAclRead.log(targetId = daycareId, args = mapOf("count" to it.size))
-            }
+            db.connect { dbc -> getDaycareAclRows(dbc, daycareId) }
+                .also {
+                    Audit.UnitAclRead.log(targetId = daycareId, args = mapOf("count" to it.size))
+                }
         )
     }
 
@@ -57,7 +58,12 @@ class UnitAclController(private val accessControl: AccessControl) {
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.INSERT_ACL_UNIT_SUPERVISOR, daycareId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Unit.INSERT_ACL_UNIT_SUPERVISOR,
+            daycareId
+        )
         db.connect { dbc -> addUnitSupervisor(dbc, daycareId, employeeId) }
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
     }
@@ -70,7 +76,12 @@ class UnitAclController(private val accessControl: AccessControl) {
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.DELETE_ACL_UNIT_SUPERVISOR, daycareId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Unit.DELETE_ACL_UNIT_SUPERVISOR,
+            daycareId
+        )
         db.connect { dbc -> removeUnitSupervisor(dbc, daycareId, employeeId) }
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
     }
@@ -83,7 +94,12 @@ class UnitAclController(private val accessControl: AccessControl) {
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.INSERT_ACL_SPECIAL_EDUCATION_TEACHER, daycareId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Unit.INSERT_ACL_SPECIAL_EDUCATION_TEACHER,
+            daycareId
+        )
         db.connect { dbc -> addSpecialEducationTeacher(dbc, daycareId, employeeId) }
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
     }
@@ -96,7 +112,12 @@ class UnitAclController(private val accessControl: AccessControl) {
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.DELETE_ACL_SPECIAL_EDUCATION_TEACHER, daycareId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Unit.DELETE_ACL_SPECIAL_EDUCATION_TEACHER,
+            daycareId
+        )
         db.connect { dbc -> removeSpecialEducationTeacher(dbc, daycareId, employeeId) }
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
     }
@@ -109,7 +130,12 @@ class UnitAclController(private val accessControl: AccessControl) {
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.INSERT_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY, daycareId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Unit.INSERT_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY,
+            daycareId
+        )
         db.connect { dbc -> addEarlyChildhoodEducationSecretary(dbc, daycareId, employeeId) }
         Audit.UnitAclCreate.log(targetId = daycareId, objectId = employeeId)
     }
@@ -122,7 +148,12 @@ class UnitAclController(private val accessControl: AccessControl) {
         @PathVariable daycareId: DaycareId,
         @PathVariable employeeId: EmployeeId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.DELETE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY, daycareId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Unit.DELETE_ACL_EARLY_CHILDHOOD_EDUCATION_SECRETARY,
+            daycareId
+        )
         db.connect { dbc -> removeEarlyChildhoodEducationSecretary(dbc, daycareId, employeeId) }
         Audit.UnitAclDelete.log(targetId = daycareId, objectId = employeeId)
     }
@@ -162,7 +193,12 @@ class UnitAclController(private val accessControl: AccessControl) {
         @PathVariable employeeId: EmployeeId,
         @RequestBody update: GroupAclUpdate
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE_STAFF_GROUP_ACL, daycareId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Unit.UPDATE_STAFF_GROUP_ACL,
+            daycareId
+        )
 
         db.connect { dbc ->
             dbc.transaction {

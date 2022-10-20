@@ -23,10 +23,7 @@ import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
-data class ApplicationUpdate(
-    val form: ApplicationFormUpdate,
-    val dueDate: LocalDate? = null
-)
+data class ApplicationUpdate(val form: ApplicationFormUpdate, val dueDate: LocalDate? = null)
 
 data class ApplicationSummary(
     val id: ApplicationId,
@@ -89,7 +86,6 @@ data class ApplicationDetails(
     val form: ApplicationForm,
     val status: ApplicationStatus,
     val origin: ApplicationOrigin,
-
     val childId: ChildId,
     val guardianId: PersonId,
     val otherGuardianId: PersonId?,
@@ -108,17 +104,22 @@ data class ApplicationDetails(
     val hideFromGuardian: Boolean,
     val attachments: List<ApplicationAttachment>
 ) {
-    fun derivePlacementType(): PlacementType = when (type) {
-        ApplicationType.PRESCHOOL -> {
-            if (form.preferences.preparatory) {
-                if (form.preferences.serviceNeed != null) PlacementType.PREPARATORY_DAYCARE else PlacementType.PREPARATORY
-            } else {
-                if (form.preferences.serviceNeed != null) PlacementType.PRESCHOOL_DAYCARE else PlacementType.PRESCHOOL
+    fun derivePlacementType(): PlacementType =
+        when (type) {
+            ApplicationType.PRESCHOOL -> {
+                if (form.preferences.preparatory) {
+                    if (form.preferences.serviceNeed != null) PlacementType.PREPARATORY_DAYCARE
+                    else PlacementType.PREPARATORY
+                } else {
+                    if (form.preferences.serviceNeed != null) PlacementType.PRESCHOOL_DAYCARE
+                    else PlacementType.PRESCHOOL
+                }
             }
+            ApplicationType.DAYCARE ->
+                if (form.preferences.serviceNeed?.partTime == true) PlacementType.DAYCARE_PART_TIME
+                else PlacementType.DAYCARE
+            ApplicationType.CLUB -> PlacementType.CLUB
         }
-        ApplicationType.DAYCARE -> if (form.preferences.serviceNeed?.partTime == true) PlacementType.DAYCARE_PART_TIME else PlacementType.DAYCARE
-        ApplicationType.CLUB -> PlacementType.CLUB
-    }
 }
 
 data class ApplicationAttachment(
@@ -158,10 +159,7 @@ enum class ApplicationOrigin {
     PAPER
 }
 
-data class PreferredUnit(
-    val id: DaycareId,
-    val name: String
-)
+data class PreferredUnit(val id: DaycareId, val name: String)
 
 data class ApplicationNote(
     val id: ApplicationNoteId,
@@ -211,21 +209,25 @@ fun fetchApplicationDetailsWithCurrentOtherGuardianInfoAndFilteredAttachments(
     tx: Database.Transaction,
     personService: PersonService,
     applicationId: ApplicationId
-): ApplicationDetails? = tx.fetchApplicationDetails(applicationId, includeCitizenAttachmentsOnly = true)
-    ?.let { application ->
-        application.copy(
-            otherGuardianId = personService.getOtherGuardian(tx, user, application.guardianId, application.childId)?.id
-        )
-    }
-    ?.let { application ->
-        application.copy(
-            otherGuardianLivesInSameAddress = application.otherGuardianId
-                ?.let { otherGuardianId ->
-                    personService.personsLiveInTheSameAddress(
-                        tx,
-                        application.guardianId,
-                        otherGuardianId
-                    )
-                }
-        )
-    }
+): ApplicationDetails? =
+    tx.fetchApplicationDetails(applicationId, includeCitizenAttachmentsOnly = true)
+        ?.let { application ->
+            application.copy(
+                otherGuardianId =
+                    personService
+                        .getOtherGuardian(tx, user, application.guardianId, application.childId)
+                        ?.id
+            )
+        }
+        ?.let { application ->
+            application.copy(
+                otherGuardianLivesInSameAddress =
+                    application.otherGuardianId?.let { otherGuardianId ->
+                        personService.personsLiveInTheSameAddress(
+                            tx,
+                            application.guardianId,
+                            otherGuardianId
+                        )
+                    }
+            )
+        }

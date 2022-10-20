@@ -12,11 +12,11 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
+import java.time.Month
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
-import java.time.Month
 
 @RestController
 class StartingPlacementsReportController(private val accessControl: AccessControl) {
@@ -28,15 +28,22 @@ class StartingPlacementsReportController(private val accessControl: AccessContro
         @RequestParam("year") year: Int,
         @RequestParam("month") month: Int
     ): List<StartingPlacementsRow> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_STARTING_PLACEMENTS_REPORT)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Global.READ_STARTING_PLACEMENTS_REPORT
+        )
         return db.connect { dbc ->
-            dbc.read {
-                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.getStartingPlacementsRows(year, month)
+                dbc.read {
+                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    it.getStartingPlacementsRows(year, month)
+                }
             }
-        }.also {
-            Audit.StartingPlacementsReportRead.log(args = mapOf("year" to year, "month" to month, "count" to it.size))
-        }
+            .also {
+                Audit.StartingPlacementsReportRead.log(
+                    args = mapOf("year" to year, "month" to month, "count" to it.size)
+                )
+            }
     }
 }
 
@@ -53,8 +60,11 @@ data class StartingPlacementsRow(
 /*
  * The preceding placement logic has to be checked if club placements are to be added to the placements table
  */
-private fun Database.Read.getStartingPlacementsRows(year: Int, month: Int): List<StartingPlacementsRow> {
-    //language=SQL
+private fun Database.Read.getStartingPlacementsRows(
+    year: Int,
+    month: Int
+): List<StartingPlacementsRow> {
+    // language=SQL
     val sql =
         """
         SELECT p.child_id, p.start_date AS placement_start, c.first_name, c.last_name, c.date_of_birth, c.social_security_number AS ssn,
@@ -68,7 +78,8 @@ private fun Database.Read.getStartingPlacementsRows(year: Int, month: Int): List
         JOIN care_area ca ON u.care_area_id = ca.id
         LEFT JOIN placement preceding ON p.child_id = preceding.child_id AND (p.start_date - interval '1 days') = preceding.end_date AND preceding.type != 'CLUB'::placement_type
         WHERE between_start_and_end(:range, p.start_date) AND preceding.id IS NULL AND p.type != 'CLUB'::placement_type
-        """.trimIndent()
+        """
+            .trimIndent()
 
     return createQuery(sql)
         .bind("range", FiniteDateRange.ofMonth(year, Month.of(month)))

@@ -16,13 +16,13 @@ import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
+import java.time.LocalDate
+import kotlin.math.roundToInt
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
-import kotlin.math.roundToInt
 
 @RestController
 @RequestMapping("/mobile/units")
@@ -35,16 +35,8 @@ class MobileUnitController(private val accessControl: AccessControl) {
         @PathVariable unitId: DaycareId
     ): UnitInfo {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_MOBILE_INFO, unitId)
-        return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.fetchUnitInfo(
-                    unitId,
-                    clock.today()
-                )
-            }
-        }.also {
-            Audit.UnitRead.log(targetId = unitId)
-        }
+        return db.connect { dbc -> dbc.read { tx -> tx.fetchUnitInfo(unitId, clock.today()) } }
+            .also { Audit.UnitRead.log(targetId = unitId) }
     }
 
     @GetMapping("/stats")
@@ -55,16 +47,8 @@ class MobileUnitController(private val accessControl: AccessControl) {
         @RequestParam unitIds: List<DaycareId>
     ): List<UnitStats> {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_MOBILE_STATS, unitIds)
-        return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.fetchUnitStats(
-                    unitIds,
-                    clock.today()
-                )
-            }
-        }.also {
-            Audit.UnitRead.log(targetId = unitIds)
-        }
+        return db.connect { dbc -> dbc.read { tx -> tx.fetchUnitStats(unitIds, clock.today()) } }
+            .also { Audit.UnitRead.log(targetId = unitIds) }
     }
 }
 
@@ -77,11 +61,7 @@ data class UnitInfo(
     val utilization: Double
 )
 
-data class GroupInfo(
-    val id: GroupId,
-    val name: String,
-    val utilization: Double
-)
+data class GroupInfo(val id: GroupId, val name: String, val utilization: Double)
 
 data class Staff(
     val id: EmployeeId,
@@ -93,23 +73,19 @@ data class Staff(
 )
 
 fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
-    data class UnitBasics(
-        val id: DaycareId,
-        val name: String,
-        val features: List<PilotFeature>
-    )
+    data class UnitBasics(val id: DaycareId, val name: String, val features: List<PilotFeature>)
     // language=sql
     val unitSql =
         """
         SELECT u.id, u.name, u.enabled_pilot_features AS features
         FROM daycare u
         WHERE u.id = :unitId
-        """.trimIndent()
+        """
+            .trimIndent()
 
-    val unit = createQuery(unitSql)
-        .bind("unitId", unitId)
-        .mapTo<UnitBasics>()
-        .list().firstOrNull() ?: throw NotFound("Unit $unitId not found")
+    val unit =
+        createQuery(unitSql).bind("unitId", unitId).mapTo<UnitBasics>().list().firstOrNull()
+            ?: throw NotFound("Unit $unitId not found")
 
     // language=sql
     val groupsSql =
@@ -184,7 +160,8 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
             LEFT JOIN child c ON c.group_id = g.id
             LEFT JOIN staff s ON s.group_id = g.id
         WHERE u.id = :unitId
-        """.trimIndent()
+        """
+            .trimIndent()
 
     data class TempGroupInfo(
         val id: GroupId,
@@ -194,11 +171,12 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
         val childCapacity: Double
     )
 
-    val tmpGroups = createQuery(groupsSql)
-        .bind("unitId", unitId)
-        .bind("date", date)
-        .mapTo<TempGroupInfo>()
-        .list()
+    val tmpGroups =
+        createQuery(groupsSql)
+            .bind("unitId", unitId)
+            .bind("date", date)
+            .mapTo<TempGroupInfo>()
+            .list()
 
     val totalChildCapacity = tmpGroups.sumOf { it.childCapacity }
     val totalStaffCapacity = tmpGroups.sumOf { it.staffCapacity }
@@ -210,8 +188,9 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
         }
     val groups = tmpGroups.map { GroupInfo(it.id, it.name, it.utilization) }.sortedBy { it.name }
 
-    val staff = createQuery(
-        """
+    val staff =
+        createQuery(
+                """
         SELECT
             COALESCE(e.preferred_first_name, e.first_name) AS first_name,
             e.last_name,
@@ -230,11 +209,12 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
             GROUP BY employee_id
         ) group_acl ON acl.employee_id = group_acl.employee_id
         WHERE acl.daycare_id = :id
-        """.trimIndent()
-    )
-        .bind("id", unitId)
-        .mapTo<Staff>()
-        .list()
+        """
+                    .trimIndent()
+            )
+            .bind("id", unitId)
+            .mapTo<Staff>()
+            .list()
 
     return UnitInfo(
         id = unit.id,
@@ -257,12 +237,9 @@ data class UnitStats(
     val utilization: Double
 )
 
-fun Database.Read.fetchUnitStats(
-    unitIds: List<DaycareId>,
-    date: LocalDate
-): List<UnitStats> {
+fun Database.Read.fetchUnitStats(unitIds: List<DaycareId>, date: LocalDate): List<UnitStats> {
     return createQuery(
-        """
+            """
 WITH present_children AS (
     SELECT
         ca.unit_id,
@@ -336,7 +313,7 @@ LEFT JOIN present_staff ps ON ps.unit_id = u.id
 LEFT JOIN total_staff ts ON ts.unit_id = u.id
 WHERE u.id = ANY(:unitIds)
 """
-    )
+        )
         .bind("unitIds", unitIds)
         .bind("date", date)
         .mapTo<UnitStats>()

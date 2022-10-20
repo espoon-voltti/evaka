@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -26,7 +27,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 class ServiceNeedController(
@@ -49,26 +49,32 @@ class ServiceNeedController(
         clock: EvakaClock,
         @RequestBody body: ServiceNeedCreateRequest
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Placement.CREATE_SERVICE_NEED, body.placementId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Placement.CREATE_SERVICE_NEED,
+            body.placementId
+        )
 
-        val serviceNeedId = db.connect { dbc ->
-            dbc.transaction { tx ->
-                createServiceNeed(
-                    tx = tx,
-                    user = user,
-                    placementId = body.placementId,
-                    startDate = body.startDate,
-                    endDate = body.endDate,
-                    optionId = body.optionId,
-                    shiftCare = body.shiftCare,
-                    confirmedAt = HelsinkiDateTime.now()
-                )
-                    .also { id ->
-                        val range = tx.getServiceNeedChildRange(id)
-                        notifyServiceNeedUpdated(tx, clock, asyncJobRunner, range)
-                    }
+        val serviceNeedId =
+            db.connect { dbc ->
+                dbc.transaction { tx ->
+                    createServiceNeed(
+                            tx = tx,
+                            user = user,
+                            placementId = body.placementId,
+                            startDate = body.startDate,
+                            endDate = body.endDate,
+                            optionId = body.optionId,
+                            shiftCare = body.shiftCare,
+                            confirmedAt = HelsinkiDateTime.now()
+                        )
+                        .also { id ->
+                            val range = tx.getServiceNeedChildRange(id)
+                            notifyServiceNeedUpdated(tx, clock, asyncJobRunner, range)
+                        }
+                }
             }
-        }
         Audit.PlacementServiceNeedCreate.log(targetId = body.placementId, objectId = serviceNeedId)
     }
 
@@ -108,10 +114,11 @@ class ServiceNeedController(
                     asyncJobRunner,
                     ServiceNeedChildRange(
                         childId = oldRange.childId,
-                        dateRange = FiniteDateRange(
-                            minOf(oldRange.dateRange.start, body.startDate),
-                            maxOf(oldRange.dateRange.end, body.endDate)
-                        )
+                        dateRange =
+                            FiniteDateRange(
+                                minOf(oldRange.dateRange.start, body.startDate),
+                                maxOf(oldRange.dateRange.end, body.endDate)
+                            )
                     )
                 )
             }
@@ -146,9 +153,8 @@ class ServiceNeedController(
     ): List<ServiceNeedOption> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_SERVICE_NEED_OPTIONS)
 
-        return db.connect { dbc -> dbc.read { it.getServiceNeedOptions() } }.also {
-            Audit.ServiceNeedOptionsRead.log(args = mapOf("count" to it.size))
-        }
+        return db.connect { dbc -> dbc.read { it.getServiceNeedOptions() } }
+            .also { Audit.ServiceNeedOptionsRead.log(args = mapOf("count" to it.size)) }
     }
 
     @GetMapping("/public/service-needs/options")

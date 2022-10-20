@@ -15,6 +15,10 @@ import com.github.kittinunf.fuel.core.extensions.authentication
 import com.github.kittinunf.fuel.core.requests.DefaultBody
 import com.github.kittinunf.fuel.core.requests.DefaultRequest
 import com.github.kittinunf.result.Result
+import java.io.ByteArrayInputStream
+import java.net.URL
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.Test
@@ -22,18 +26,16 @@ import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
-import java.io.ByteArrayInputStream
-import java.net.URL
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class FuelExtensionsTest {
     private val basicRetryResponse = createRetryResponse("0")
 
     @Test
     fun `token adds Token Authorization header to request`() {
-        val request = DefaultRequest(Method.GET, URL("https://example.com/authentication"))
-            .authentication().token("token")
+        val request =
+            DefaultRequest(Method.GET, URL("https://example.com/authentication"))
+                .authentication()
+                .token("token")
 
         assertThat(request[Headers.AUTHORIZATION].lastOrNull(), equalTo("Token token"))
     }
@@ -52,8 +54,7 @@ class FuelExtensionsTest {
             )
         FuelManager.instance.client = client
 
-        val (_, response, result) = Fuel.get("https://example.com")
-            .responseStringWithRetries(1, 1L)
+        val (_, response, result) = Fuel.get("https://example.com").responseStringWithRetries(1, 1L)
 
         assertEquals(200, response.statusCode)
         assertEquals("final", result.get())
@@ -69,8 +70,9 @@ class FuelExtensionsTest {
             .thenReturn(Response(statusCode = 200, url = URL("https://example.com")))
         FuelManager.instance.client = client
 
-        val (_, response, result) = Fuel.get("https://example.com")
-            .responseStringWithRetries(2, 1L) // Would have to be 3 to succeed
+        val (_, response, result) =
+            Fuel.get("https://example.com")
+                .responseStringWithRetries(2, 1L) // Would have to be 3 to succeed
         assertEquals(429, response.statusCode) // Status code of last response
         assertTrue(result is Result.Failure)
     }
@@ -82,14 +84,16 @@ class FuelExtensionsTest {
         FuelManager.instance.client = client
 
         assertThrows<NumberFormatException> {
-            Fuel.get("https://example.com").responseStringWithRetries(1, 1L) // Would have to be 2 to succeed
+            Fuel.get("https://example.com")
+                .responseStringWithRetries(1, 1L) // Would have to be 2 to succeed
         }
     }
 
     @Test
     fun `responseStringWithRetries throws when no Retry-After header is received in HTTP 429 response`() {
         val client = mock<Client>()
-        `when`(client.executeRequest(any())).thenReturn(createRetryResponse("", Headers())) // No Retry-After header
+        `when`(client.executeRequest(any()))
+            .thenReturn(createRetryResponse("", Headers())) // No Retry-After header
         FuelManager.instance.client = client
 
         assertThrows<IllegalStateException> {
@@ -100,13 +104,18 @@ class FuelExtensionsTest {
     @Test
     fun `responseStringWithRetries returns non-throttled error by default`() {
         val client = mock<Client>()
-        `when`(client.executeRequest(any())).thenReturn(
-            Response(
-                statusCode = 400,
-                url = URL("https://example.com"),
-                body = DefaultBody.from({ ByteArrayInputStream("unhandled error".toByteArray()) }, null)
+        `when`(client.executeRequest(any()))
+            .thenReturn(
+                Response(
+                    statusCode = 400,
+                    url = URL("https://example.com"),
+                    body =
+                        DefaultBody.from(
+                            { ByteArrayInputStream("unhandled error".toByteArray()) },
+                            null
+                        )
+                )
             )
-        )
         FuelManager.instance.client = client
 
         val (_, response, _) = Fuel.get("https://example.com").responseStringWithRetries(1)
@@ -117,26 +126,36 @@ class FuelExtensionsTest {
     @Test
     fun `responseStringWithRetries returns fallback error handler's response when faced with a non-throttled error response`() {
         val client = mock<Client>()
-        `when`(client.executeRequest(any())).thenReturn(
-            Response(
-                statusCode = 400,
-                url = URL("https://example.com"),
-                body = DefaultBody.from({ ByteArrayInputStream("unhandled error".toByteArray()) }, null)
-            )
-        )
-        FuelManager.instance.client = client
-
-        val (_, response, _) = Fuel.get("https://example.com").responseStringWithRetries(1) { r, _ ->
-            ResponseResultOf(
-                r.first,
+        `when`(client.executeRequest(any()))
+            .thenReturn(
                 Response(
                     statusCode = 400,
                     url = URL("https://example.com"),
-                    body = DefaultBody.from({ ByteArrayInputStream("handled error".toByteArray()) }, null)
-                ),
-                r.third
+                    body =
+                        DefaultBody.from(
+                            { ByteArrayInputStream("unhandled error".toByteArray()) },
+                            null
+                        )
+                )
             )
-        }
+        FuelManager.instance.client = client
+
+        val (_, response, _) =
+            Fuel.get("https://example.com").responseStringWithRetries(1) { r, _ ->
+                ResponseResultOf(
+                    r.first,
+                    Response(
+                        statusCode = 400,
+                        url = URL("https://example.com"),
+                        body =
+                            DefaultBody.from(
+                                { ByteArrayInputStream("handled error".toByteArray()) },
+                                null
+                            )
+                    ),
+                    r.third
+                )
+            }
         assertEquals(400, response.statusCode)
         assertEquals("handled error", response.body().asString("text/html"))
     }
@@ -144,10 +163,11 @@ class FuelExtensionsTest {
     private fun createRetryResponse(
         retryAfter: String,
         headers: Headers = Headers.from(Headers.RETRY_AFTER to listOf(retryAfter))
-    ) = Response(
-        statusCode = 429,
-        responseMessage = "RETRY",
-        url = URL("https://example.com"),
-        headers = headers
-    )
+    ) =
+        Response(
+            statusCode = 429,
+            responseMessage = "RETRY",
+            url = URL("https://example.com"),
+            headers = headers
+        )
 }

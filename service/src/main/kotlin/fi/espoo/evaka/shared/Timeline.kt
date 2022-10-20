@@ -7,49 +7,55 @@ package fi.espoo.evaka.shared
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 
 /**
- * A timeline is basically an immutable set of dates, but provides simple read/write operations that involve date ranges
- * instead of individual dates.
+ * A timeline is basically an immutable set of dates, but provides simple read/write operations that
+ * involve date ranges instead of individual dates.
  *
  * Invariants:
- *   * no overlapping date ranges (they are merged when adding to the timeline)
- *   * no adjacent date ranges (they are merged when adding to the timeline)
- *   * functions that return dates/ranges always return them in ascending order
+ * * no overlapping date ranges (they are merged when adding to the timeline)
+ * * no adjacent date ranges (they are merged when adding to the timeline)
+ * * functions that return dates/ranges always return them in ascending order
  *
  * Note: this implementation is *very* inefficient
  */
-data class Timeline private constructor(private val ranges: List<FiniteDateRange>) : Iterable<FiniteDateRange> by ranges {
+data class Timeline private constructor(private val ranges: List<FiniteDateRange>) :
+    Iterable<FiniteDateRange> by ranges {
     constructor() : this(emptyList())
 
-    fun add(range: FiniteDateRange) = this.ranges.partition { it.overlaps(range) || it.adjacentTo(range) }
-        .let { (conflicts, unchanged) ->
-            val result = unchanged.toMutableList()
-            result.add(
-                conflicts.fold(range) { acc, it ->
-                    FiniteDateRange(
-                        minOf(it.start, acc.start),
-                        maxOf(it.end, acc.end)
-                    )
-                }
-            )
-            result.sortBy { it.start }
-            Timeline(result)
-        }
-
-    fun addAll(ranges: Iterable<FiniteDateRange>) = ranges.fold(this) { timeline, range -> timeline.add(range) }
-    fun addAll(ranges: Sequence<FiniteDateRange>) = ranges.fold(this) { timeline, range -> timeline.add(range) }
-
-    fun remove(range: FiniteDateRange) = this.ranges.partition { it.overlaps(range) }
-        .let { (conflicts, unchanged) ->
-            val result = unchanged.toMutableList()
-            for (conflict in conflicts) {
-                result.addAll(conflict.complement(range))
+    fun add(range: FiniteDateRange) =
+        this.ranges
+            .partition { it.overlaps(range) || it.adjacentTo(range) }
+            .let { (conflicts, unchanged) ->
+                val result = unchanged.toMutableList()
+                result.add(
+                    conflicts.fold(range) { acc, it ->
+                        FiniteDateRange(minOf(it.start, acc.start), maxOf(it.end, acc.end))
+                    }
+                )
+                result.sortBy { it.start }
+                Timeline(result)
             }
-            result.sortBy { it.start }
-            Timeline(result)
-        }
 
-    fun removeAll(ranges: Iterable<FiniteDateRange>) = ranges.fold(this) { timeline, range -> timeline.remove(range) }
-    fun removeAll(ranges: Sequence<FiniteDateRange>) = ranges.fold(this) { timeline, range -> timeline.remove(range) }
+    fun addAll(ranges: Iterable<FiniteDateRange>) =
+        ranges.fold(this) { timeline, range -> timeline.add(range) }
+    fun addAll(ranges: Sequence<FiniteDateRange>) =
+        ranges.fold(this) { timeline, range -> timeline.add(range) }
+
+    fun remove(range: FiniteDateRange) =
+        this.ranges
+            .partition { it.overlaps(range) }
+            .let { (conflicts, unchanged) ->
+                val result = unchanged.toMutableList()
+                for (conflict in conflicts) {
+                    result.addAll(conflict.complement(range))
+                }
+                result.sortBy { it.start }
+                Timeline(result)
+            }
+
+    fun removeAll(ranges: Iterable<FiniteDateRange>) =
+        ranges.fold(this) { timeline, range -> timeline.remove(range) }
+    fun removeAll(ranges: Sequence<FiniteDateRange>) =
+        ranges.fold(this) { timeline, range -> timeline.remove(range) }
 
     fun contains(range: FiniteDateRange) = this.ranges.any { it.contains(range) }
 
@@ -71,15 +77,15 @@ data class Timeline private constructor(private val ranges: List<FiniteDateRange
     }
 
     fun ranges() = this.ranges.asSequence()
-    fun gaps() = this.ranges().windowed(2).map { pair ->
-        FiniteDateRange(pair[0].end.plusDays(1), pair[1].start.minusDays(1))
-    }
-
-    fun spanningRange() = this.ranges.firstOrNull()?.let { first ->
-        this.ranges.lastOrNull()?.let { last ->
-            FiniteDateRange(first.start, last.end)
+    fun gaps() =
+        this.ranges().windowed(2).map { pair ->
+            FiniteDateRange(pair[0].end.plusDays(1), pair[1].start.minusDays(1))
         }
-    }
+
+    fun spanningRange() =
+        this.ranges.firstOrNull()?.let { first ->
+            this.ranges.lastOrNull()?.let { last -> FiniteDateRange(first.start, last.end) }
+        }
 
     fun isEmpty() = this.ranges.isEmpty()
 

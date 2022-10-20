@@ -45,22 +45,35 @@ class VoucherValueDecisionService(
 
     fun createDecisionPdf(tx: Database.Transaction, decisionId: VoucherValueDecisionId) {
         val decision = getDecision(tx, decisionId)
-        check(decision.documentKey.isNullOrBlank()) { "Voucher value decision $decisionId has document key already!" }
+        check(decision.documentKey.isNullOrBlank()) {
+            "Voucher value decision $decisionId has document key already!"
+        }
 
         val settings = tx.getSettings()
 
         val pdf = generatePdf(decision, settings)
-        val key = documentClient.upload(bucket, Document("value_decision_$decisionId.pdf", pdf, "application/pdf")).key
+        val key =
+            documentClient
+                .upload(bucket, Document("value_decision_$decisionId.pdf", pdf, "application/pdf"))
+                .key
         tx.updateVoucherValueDecisionDocumentKey(decision.id, key)
     }
 
-    fun getDecisionPdfResponse(dbc: Database.Connection, decisionId: VoucherValueDecisionId): ResponseEntity<Any> {
-        val documentKey = dbc.read { it.getVoucherValueDecisionDocumentKey(decisionId) }
-            ?: throw NotFound("No voucher value decision found with ID ($decisionId)")
+    fun getDecisionPdfResponse(
+        dbc: Database.Connection,
+        decisionId: VoucherValueDecisionId
+    ): ResponseEntity<Any> {
+        val documentKey =
+            dbc.read { it.getVoucherValueDecisionDocumentKey(decisionId) }
+                ?: throw NotFound("No voucher value decision found with ID ($decisionId)")
         return documentClient.responseAttachment(bucket, documentKey, null)
     }
 
-    fun sendDecision(tx: Database.Transaction, clock: EvakaClock, decisionId: VoucherValueDecisionId): Boolean {
+    fun sendDecision(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        decisionId: VoucherValueDecisionId
+    ): Boolean {
         val decision = getDecision(tx, decisionId)
         check(decision.status == VoucherValueDecisionStatus.WAITING_FOR_SENDING) {
             "Cannot send voucher value decision ${decision.id} - has status ${decision.status}"
@@ -79,9 +92,11 @@ class VoucherValueDecisionService(
 
         val lang = if (decision.headOfFamily.language == "sv") DocumentLang.SV else DocumentLang.FI
 
-        // If address is missing (restricted info enabled), use the financial handling address instead
-        val sendAddress = DecisionSendAddress.fromPerson(decision.headOfFamily)
-            ?: messageProvider.getDefaultFinancialDecisionAddress(lang.messageLang)
+        // If address is missing (restricted info enabled), use the financial handling address
+        // instead
+        val sendAddress =
+            DecisionSendAddress.fromPerson(decision.headOfFamily)
+                ?: messageProvider.getDefaultFinancialDecisionAddress(lang.messageLang)
 
         val documentDisplayName = suomiFiDocumentFileName(lang)
         val messageHeader = messageProvider.getVoucherValueDecisionHeader(lang.messageLang)
@@ -116,26 +131,41 @@ class VoucherValueDecisionService(
         return true
     }
 
-    private fun getDecision(tx: Database.Read, decisionId: VoucherValueDecisionId): VoucherValueDecisionDetailed =
+    private fun getDecision(
+        tx: Database.Read,
+        decisionId: VoucherValueDecisionId
+    ): VoucherValueDecisionDetailed =
         tx.getVoucherValueDecision(decisionId)?.let {
             it.copy(
-                partnerIsCodebtor = tx.partnerIsCodebtor(
-                    it.headOfFamily.id,
-                    it.partner?.id,
-                    listOf(it.child.id),
-                    DateRange(it.validFrom, it.validTo)
-                )
+                partnerIsCodebtor =
+                    tx.partnerIsCodebtor(
+                        it.headOfFamily.id,
+                        it.partner?.id,
+                        listOf(it.child.id),
+                        DateRange(it.validFrom, it.validTo)
+                    )
             )
-        } ?: error("No voucher value decision found with ID ($decisionId)")
+        }
+            ?: error("No voucher value decision found with ID ($decisionId)")
 
-    private fun generatePdf(decision: VoucherValueDecisionDetailed, settings: Map<SettingType, String>): ByteArray {
+    private fun generatePdf(
+        decision: VoucherValueDecisionDetailed,
+        settings: Map<SettingType, String>
+    ): ByteArray {
         val lang = if (decision.headOfFamily.language == "sv") DocumentLang.SV else DocumentLang.FI
-        return pdfService.generateVoucherValueDecisionPdf(VoucherValueDecisionPdfData(decision, settings, lang))
+        return pdfService.generateVoucherValueDecisionPdf(
+            VoucherValueDecisionPdfData(decision, settings, lang)
+        )
     }
 
-    fun setType(tx: Database.Transaction, decisionId: VoucherValueDecisionId, type: VoucherValueDecisionType) {
-        val decision = tx.getVoucherValueDecision(decisionId)
-            ?: throw BadRequest("Decision not found with id $decisionId")
+    fun setType(
+        tx: Database.Transaction,
+        decisionId: VoucherValueDecisionId,
+        type: VoucherValueDecisionType
+    ) {
+        val decision =
+            tx.getVoucherValueDecision(decisionId)
+                ?: throw BadRequest("Decision not found with id $decisionId")
         if (decision.status != VoucherValueDecisionStatus.DRAFT) {
             throw BadRequest("Can't change type for decision $decisionId")
         }

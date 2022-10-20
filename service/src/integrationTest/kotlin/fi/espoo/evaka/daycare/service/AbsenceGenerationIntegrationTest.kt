@@ -31,15 +31,16 @@ import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import fi.espoo.evaka.user.EvakaUserType
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
-    private val placementPeriod = FiniteDateRange(LocalDate.of(2020, 11, 1), LocalDate.of(2020, 11, 30))
+    private val placementPeriod =
+        FiniteDateRange(LocalDate.of(2020, 11, 1), LocalDate.of(2020, 11, 30))
 
     private val today = placementPeriod.start
     private val now = HelsinkiDateTime.of(today, LocalTime.of(0, 0))
@@ -52,9 +53,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
@@ -133,11 +132,7 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
     fun `generates correct absence categories`() {
         db.transaction { tx ->
             // Absent on mondays
-            listOf(
-                testChild_1.id,
-                testChild_2.id,
-                testChild_3.id
-            ).forEach {
+            listOf(testChild_1.id, testChild_2.id, testChild_3.id).forEach {
                 tx.insertTestDailyServiceTimes(
                     DevDailyServiceTimes(
                         childId = it,
@@ -281,7 +276,8 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
             generateAbsencesFromIrregularDailyServiceTimes(tx, now, testChild_1.id)
         }
 
-        // The absence created above is not overridden, and absences are created for "empty" mondays only
+        // The absence created above is not overridden, and absences are created for "empty" mondays
+        // only
         val absences = getAllAbsences()
         assertEquals(3, absences.size)
         assertEquals(mondays.slice(2..4), absences.map { it.date })
@@ -380,7 +376,10 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
             val (generated, existing) = absences.partition { it.id != existingAbsenceId }
 
             assertEquals(mondays.size + wednesdays.size - 1, generated.size)
-            assertEquals((mondays + wednesdays.takeLast(wednesdays.size - 1)).sorted(), generated.map { it.date })
+            assertEquals(
+                (mondays + wednesdays.takeLast(wednesdays.size - 1)).sorted(),
+                generated.map { it.date }
+            )
             generated.forEach {
                 assertEquals(EvakaUserType.SYSTEM, it.modifiedByType)
                 assertEquals(now.plusHours(1), it.modifiedAt)
@@ -401,13 +400,13 @@ class AbsenceGenerationIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) 
     private fun getAllAbsences(): List<AbsenceWithModifierInfo> {
         return db.read {
             it.createQuery(
-                """
+                    """
 SELECT a.id, a.child_id, a.date, a.category, a.absence_type, eu.type AS modified_by_type, a.modified_at AS modified_at
 FROM absence a
 LEFT JOIN evaka_user eu ON eu.id = a.modified_by
 ORDER BY a.date, a.category
 """
-            )
+                )
                 .mapTo<AbsenceWithModifierInfo>()
                 .list()
         }

@@ -35,13 +35,15 @@ data class DvvModification(
     JsonSubTypes.Type(value = RestrictedInfoDvvInfoGroup::class, name = "TURVAKIELTO"),
     JsonSubTypes.Type(value = SsnDvvInfoGroup::class, name = "HENKILOTUNNUS_KORJAUS"),
     JsonSubTypes.Type(value = CaretakerLimitedDvvInfoGroup::class, name = "HUOLTAJA_SUPPEA"),
-
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "HENKILON_NIMI"),
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "NIMENMUUTOS"),
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "NIMENMUUTOS_LAAJA"),
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "VAKINAINEN_KOTIMAINEN_OSOITE"),
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "HUOLLETTAVA_SUPPEA"),
-    JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS"),
+    JsonSubTypes.Type(
+        value = DefaultDvvInfoGroup::class,
+        name = "VAKINAINEN_KOTIMAINEN_ASUINPAIKKATUNNUS"
+    ),
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "KOTIKUNTA"),
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "LAPSI"),
     JsonSubTypes.Type(value = DefaultDvvInfoGroup::class, name = "AIDINKIELI"),
@@ -53,10 +55,8 @@ interface DvvInfoGroup {
     val tietoryhma: String
 }
 
-data class DefaultDvvInfoGroup(
-    override val tietoryhma: String,
-    val muutosattribuutti: String?
-) : DvvInfoGroup
+data class DefaultDvvInfoGroup(override val tietoryhma: String, val muutosattribuutti: String?) :
+    DvvInfoGroup
 
 data class RestrictedInfoDvvInfoGroup(
     override val tietoryhma: String,
@@ -75,9 +75,7 @@ data class CaretakerLimitedDvvInfoGroup(
     val huoltosuhteenLoppupv: DvvDate?
 ) : DvvInfoGroup
 
-data class DvvSsn(
-    val henkilotunnus: String?
-)
+data class DvvSsn(val henkilotunnus: String?)
 
 data class DeathDvvInfoGroup(
     override val tietoryhma: String,
@@ -95,13 +93,17 @@ data class SsnDvvInfoGroup(
     val edellisetHenkilotunnukset: List<String>
 ) : DvvInfoGroup
 
-@JsonIgnoreProperties("sukupuoli", "etunimet", "sukunimi", "kansalaisuuskoodi", "kansalaisuusnimi", "nimienLisatieto")
+@JsonIgnoreProperties(
+    "sukupuoli",
+    "etunimet",
+    "sukunimi",
+    "kansalaisuuskoodi",
+    "kansalaisuusnimi",
+    "nimienLisatieto"
+)
 data class DvvChild(val henkilotunnus: String?, val syntymapv: DvvDate?)
 
-data class DvvDate(
-    val arvo: String,
-    val tarkkuus: String
-) {
+data class DvvDate(val arvo: String, val tarkkuus: String) {
     fun asLocalDate(): LocalDate {
         return LocalDate.parse(arvo)
     }

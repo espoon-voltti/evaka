@@ -15,37 +15,39 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
-class ApplicationsReportController(private val accessControl: AccessControl, private val acl: AccessControlList) {
+class ApplicationsReportController(
+    private val accessControl: AccessControl,
+    private val acl: AccessControlList
+) {
     @GetMapping("/reports/applications")
     fun getApplicationsReport(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("from")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        from: LocalDate,
-        @RequestParam("to")
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-        to: LocalDate
+        @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
+        @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ): List<ApplicationsReportRow> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_APPLICATIONS_REPORT)
         if (to.isBefore(from)) throw BadRequest("Inverted time range")
 
         return db.connect { dbc ->
-            dbc.read {
-                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.getApplicationsRows(from, to, acl.getAuthorizedUnits(user))
+                dbc.read {
+                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    it.getApplicationsRows(from, to, acl.getAuthorizedUnits(user))
+                }
             }
-        }.also {
-            Audit.ApplicationsReportRead.log(args = mapOf("from" to from, "to" to to, "count" to it.size))
-        }
+            .also {
+                Audit.ApplicationsReportRead.log(
+                    args = mapOf("from" to from, "to" to to, "count" to it.size)
+                )
+            }
     }
 }
 
@@ -89,7 +91,8 @@ private fun Database.Read.getApplicationsRows(
         FROM data
         GROUP BY care_area_name, unit_id, unit_name, unit_provider_type
         ORDER BY care_area_name, unit_name;
-        """.trimIndent()
+        """
+            .trimIndent()
     return createQuery(sql)
         .bind("from", from)
         .bind("to", to)

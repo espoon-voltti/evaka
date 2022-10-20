@@ -42,9 +42,6 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -52,21 +49,24 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired
-    private lateinit var scheduledJobs: ScheduledJobs
+    @Autowired private lateinit var scheduledJobs: ScheduledJobs
 
-    @Autowired
-    private lateinit var applicationStateService: ApplicationStateService
+    @Autowired private lateinit var applicationStateService: ApplicationStateService
 
-    private val serviceWorker = AuthenticatedUser.Employee(id = testDecisionMaker_1.id, roles = setOf(UserRole.SERVICE_WORKER))
+    private val serviceWorker =
+        AuthenticatedUser.Employee(
+            id = testDecisionMaker_1.id,
+            roles = setOf(UserRole.SERVICE_WORKER)
+        )
 
     @BeforeEach
     fun beforeEach() {
-        db.transaction { tx ->
-            tx.insertGeneralTestFixtures()
-        }
+        db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
     @Test
@@ -104,8 +104,13 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
     }
 
-    private fun setApplicationCreatedDate(db: Database.Transaction, applicationId: ApplicationId, created: LocalDate) {
-        db.handle.createUpdate("""UPDATE application SET created = :created WHERE id = :id""")
+    private fun setApplicationCreatedDate(
+        db: Database.Transaction,
+        applicationId: ApplicationId,
+        created: LocalDate
+    ) {
+        db.handle
+            .createUpdate("""UPDATE application SET created = :created WHERE id = :id""")
             .bind("created", created)
             .bind("id", applicationId)
             .execute()
@@ -163,7 +168,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `a daycare transfer application for a child with a future daycare placement is not cancelled`() {
         val preferredStartDate = LocalDate.now().plusMonths(1)
         val applicationId = createTransferApplication(ApplicationType.DAYCARE, preferredStartDate)
-        val dateRange = FiniteDateRange(preferredStartDate.plusMonths(1), preferredStartDate.plusMonths(2))
+        val dateRange =
+            FiniteDateRange(preferredStartDate.plusMonths(1), preferredStartDate.plusMonths(2))
         createPlacement(PlacementType.DAYCARE, dateRange)
 
         scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
@@ -189,7 +195,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `a daycare transfer application for a child with a past daycare placement is cancelled`() {
         val preferredStartDate = LocalDate.now().minusMonths(2)
         val applicationId = createTransferApplication(ApplicationType.DAYCARE, preferredStartDate)
-        val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().minusMonths(1))
+        val dateRange =
+            FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().minusMonths(1))
         createPlacement(PlacementType.DAYCARE, dateRange)
 
         scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
@@ -215,7 +222,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `a daycare transfer application for a child with a past daycare placement that ended day before yesterday is cancelled`() {
         val preferredStartDate = LocalDate.now().minusMonths(2)
         val applicationId = createTransferApplication(ApplicationType.DAYCARE, preferredStartDate)
-        val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().minusDays(2))
+        val dateRange =
+            FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().minusDays(2))
         createPlacement(PlacementType.DAYCARE, dateRange)
 
         scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
@@ -228,7 +236,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `a preschool transfer application for a child with a preschool placement is not cancelled`() {
         val preferredStartDate = LocalDate.now().minusMonths(2)
         val applicationId = createTransferApplication(ApplicationType.PRESCHOOL, preferredStartDate)
-        val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
+        val dateRange =
+            FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
         createPlacement(PlacementType.PRESCHOOL, dateRange)
 
         scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
@@ -241,8 +250,13 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `a preschool daycare transfer application for a child with a preschool placement is not cancelled`() {
         val preferredStartDate = LocalDate.now().minusMonths(2)
         val applicationId =
-            createTransferApplication(ApplicationType.PRESCHOOL, preferredStartDate, preschoolDaycare = true)
-        val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
+            createTransferApplication(
+                ApplicationType.PRESCHOOL,
+                preferredStartDate,
+                preschoolDaycare = true
+            )
+        val dateRange =
+            FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
         createPlacement(PlacementType.PRESCHOOL, dateRange)
 
         scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
@@ -255,7 +269,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `a preschool transfer application for a child with a preparatory placement is not cancelled`() {
         val preferredStartDate = LocalDate.now().minusMonths(2)
         val applicationId = createTransferApplication(ApplicationType.PRESCHOOL, preferredStartDate)
-        val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
+        val dateRange =
+            FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
         createPlacement(PlacementType.PREPARATORY, dateRange)
 
         scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
@@ -268,7 +283,8 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `a preschool transfer application for a child with a preschool daycare placement is not cancelled`() {
         val preferredStartDate = LocalDate.now().minusMonths(2)
         val applicationId = createTransferApplication(ApplicationType.PRESCHOOL, preferredStartDate)
-        val dateRange = FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
+        val dateRange =
+            FiniteDateRange(preferredStartDate.minusMonths(1), LocalDate.now().plusMonths(1))
         createPlacement(PlacementType.PRESCHOOL_DAYCARE, dateRange)
 
         scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
@@ -280,11 +296,12 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `a transfer application with a decision does not get canceled`() {
         val preferredStartDate = LocalDate.now()
-        val applicationId = createTransferApplication(
-            ApplicationType.PRESCHOOL,
-            preferredStartDate,
-            status = ApplicationStatus.WAITING_PLACEMENT
-        )
+        val applicationId =
+            createTransferApplication(
+                ApplicationType.PRESCHOOL,
+                preferredStartDate,
+                status = ApplicationStatus.WAITING_PLACEMENT
+            )
         db.transaction {
             applicationStateService.createPlacementPlan(
                 it,
@@ -295,7 +312,12 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
                     FiniteDateRange(preferredStartDate, preferredStartDate.plusMonths(1))
                 )
             )
-            applicationStateService.sendDecisionsWithoutProposal(it, serviceWorker, RealEvakaClock(), applicationId)
+            applicationStateService.sendDecisionsWithoutProposal(
+                it,
+                serviceWorker,
+                RealEvakaClock(),
+                applicationId
+            )
         }
 
         scheduledJobs.cancelOutdatedTransferApplications(db, RealEvakaClock())
@@ -310,22 +332,17 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             tx.createChildStickyNote(
                 childId = testChild_1.id,
-                note = ChildStickyNoteBody(
-                    note = "",
-                    expires = LocalDate.now().minusDays(1)
-                )
+                note = ChildStickyNoteBody(note = "", expires = LocalDate.now().minusDays(1))
             )
         }
 
-        val validNoteId = db.transaction { tx ->
-            tx.createChildStickyNote(
-                childId = testChild_1.id,
-                note = ChildStickyNoteBody(
-                    note = "",
-                    expires = LocalDate.now()
+        val validNoteId =
+            db.transaction { tx ->
+                tx.createChildStickyNote(
+                    childId = testChild_1.id,
+                    note = ChildStickyNoteBody(note = "", expires = LocalDate.now())
                 )
-            )
-        }
+            }
 
         db.read {
             val notesBeforeCleanup = it.getChildStickyNotesForChild(testChild_1.id)
@@ -345,26 +362,27 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         val now = Instant.now()
         createExpiredDailyNote(now)
 
-        val validNoteId = db.transaction {
-            it.insertPlacement(
-                type = PlacementType.DAYCARE,
-                childId = testChild_2.id,
-                unitId = testDaycare.id,
-                startDate = LocalDate.now().minusDays(100),
-                endDate = LocalDate.now().plusDays(100)
-            )
-            it.createChildDailyNote(
-                testChild_2.id,
-                ChildDailyNoteBody(
-                    feedingNote = null,
-                    note = "",
-                    reminderNote = "",
-                    sleepingMinutes = null,
-                    reminders = emptyList(),
-                    sleepingNote = null
+        val validNoteId =
+            db.transaction {
+                it.insertPlacement(
+                    type = PlacementType.DAYCARE,
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    startDate = LocalDate.now().minusDays(100),
+                    endDate = LocalDate.now().plusDays(100)
                 )
-            )
-        }
+                it.createChildDailyNote(
+                    testChild_2.id,
+                    ChildDailyNoteBody(
+                        feedingNote = null,
+                        note = "",
+                        reminderNote = "",
+                        sleepingMinutes = null,
+                        reminders = emptyList(),
+                        sleepingNote = null
+                    )
+                )
+            }
 
         scheduledJobs.removeExpiredNotes(db, RealEvakaClock())
 
@@ -381,21 +399,24 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         db.transaction {
             val sixteenHoursAgo = now - Duration.ofHours(16)
             it.createChildDailyNote(
-                testChild_1.id,
-                ChildDailyNoteBody(
-                    feedingNote = null,
-                    note = "",
-                    reminderNote = "",
-                    sleepingMinutes = null,
-                    reminders = emptyList(),
-                    sleepingNote = null
+                    testChild_1.id,
+                    ChildDailyNoteBody(
+                        feedingNote = null,
+                        note = "",
+                        reminderNote = "",
+                        sleepingMinutes = null,
+                        reminders = emptyList(),
+                        sleepingNote = null
+                    )
                 )
-            ).let { id ->
-                it.createUpdate("UPDATE child_daily_note SET modified_at = :date WHERE id = :id")
-                    .bind("id", id)
-                    .bind("date", sixteenHoursAgo)
-                    .updateExactlyOne()
-            }
+                .let { id ->
+                    it.createUpdate(
+                            "UPDATE child_daily_note SET modified_at = :date WHERE id = :id"
+                        )
+                        .bind("id", id)
+                        .bind("date", sixteenHoursAgo)
+                        .updateExactlyOne()
+                }
         }
     }
 
@@ -404,36 +425,38 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         val now = Instant.now()
         createExpiredDailyNote(now)
 
-        val validNoteId = db.transaction {
-            it.insertTestPlacement(
-                unitId = testDaycare.id,
-                childId = testChild_2.id,
-                startDate = LocalDate.now().minusDays(150),
-                endDate = LocalDate.now().plusDays(150)
-            )
-            it.insertTestBackupCare(
-                DevBackupCare(
-                    childId = testChild_2.id,
-                    groupId = null,
+        val validNoteId =
+            db.transaction {
+                it.insertTestPlacement(
                     unitId = testDaycare.id,
-                    period = FiniteDateRange(
-                        LocalDate.now().minusDays(100),
-                        LocalDate.now().plusDays(100)
+                    childId = testChild_2.id,
+                    startDate = LocalDate.now().minusDays(150),
+                    endDate = LocalDate.now().plusDays(150)
+                )
+                it.insertTestBackupCare(
+                    DevBackupCare(
+                        childId = testChild_2.id,
+                        groupId = null,
+                        unitId = testDaycare.id,
+                        period =
+                            FiniteDateRange(
+                                LocalDate.now().minusDays(100),
+                                LocalDate.now().plusDays(100)
+                            )
                     )
                 )
-            )
-            it.createChildDailyNote(
-                testChild_2.id,
-                ChildDailyNoteBody(
-                    feedingNote = null,
-                    note = "",
-                    reminderNote = "",
-                    sleepingMinutes = null,
-                    reminders = emptyList(),
-                    sleepingNote = null
+                it.createChildDailyNote(
+                    testChild_2.id,
+                    ChildDailyNoteBody(
+                        feedingNote = null,
+                        note = "",
+                        reminderNote = "",
+                        sleepingMinutes = null,
+                        reminders = emptyList(),
+                        sleepingNote = null
+                    )
                 )
-            )
-        }
+            }
 
         scheduledJobs.removeExpiredNotes(db, RealEvakaClock())
 
@@ -454,20 +477,23 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         status: ApplicationStatus = ApplicationStatus.SENT
     ): ApplicationId {
         return db.transaction { tx ->
-            val applicationId = tx.insertTestApplication(
-                status = status,
-                childId = childId,
-                guardianId = testAdult_1.id,
-                transferApplication = true,
-                type = type
-            )
+            val applicationId =
+                tx.insertTestApplication(
+                    status = status,
+                    childId = childId,
+                    guardianId = testAdult_1.id,
+                    transferApplication = true,
+                    type = type
+                )
             tx.insertTestApplicationForm(
                 applicationId = applicationId,
-                document = DaycareFormV0.fromApplication2(validDaycareApplication).copy(
-                    type = type,
-                    preferredStartDate = preferredStartDate,
-                    connectedDaycare = preschoolDaycare
-                )
+                document =
+                    DaycareFormV0.fromApplication2(validDaycareApplication)
+                        .copy(
+                            type = type,
+                            preferredStartDate = preferredStartDate,
+                            connectedDaycare = preschoolDaycare
+                        )
             )
             applicationId
         }
@@ -480,27 +506,33 @@ class ScheduledJobsTest : FullApplicationTest(resetDbBeforeEach = true) {
         childId: ChildId = testChild_1.id
     ): ApplicationId {
         return db.transaction { tx ->
-            val applicationId = tx.insertTestApplication(
-                status = ApplicationStatus.SENT,
-                childId = childId,
-                guardianId = testAdult_1.id,
-                type = type
-            )
+            val applicationId =
+                tx.insertTestApplication(
+                    status = ApplicationStatus.SENT,
+                    childId = childId,
+                    guardianId = testAdult_1.id,
+                    type = type
+                )
             tx.insertTestApplicationForm(
                 applicationId = applicationId,
-                document = DaycareFormV0.fromApplication2(validDaycareApplication).let { form ->
-                    form.copy(
-                        type = type,
-                        preferredStartDate = preferredStartDate,
-                        careDetails = form.careDetails.copy(preparatory = preparatory)
-                    )
-                }
+                document =
+                    DaycareFormV0.fromApplication2(validDaycareApplication).let { form ->
+                        form.copy(
+                            type = type,
+                            preferredStartDate = preferredStartDate,
+                            careDetails = form.careDetails.copy(preparatory = preparatory)
+                        )
+                    }
             )
             applicationId
         }
     }
 
-    private fun createPlacement(type: PlacementType, dateRange: FiniteDateRange, childId: ChildId = testChild_1.id) {
+    private fun createPlacement(
+        type: PlacementType,
+        dateRange: FiniteDateRange,
+        childId: ChildId = testChild_1.id
+    ) {
         db.transaction {
             it.insertTestPlacement(
                 childId = childId,

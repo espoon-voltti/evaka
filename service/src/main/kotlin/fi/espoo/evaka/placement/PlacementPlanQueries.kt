@@ -25,8 +25,8 @@ fun Database.Transaction.deletePlacementPlans(applicationIds: List<ApplicationId
 
 fun Database.Transaction.softDeletePlacementPlanIfUnused(applicationId: ApplicationId) {
     createUpdate(
-        // language=SQL
-        """
+            // language=SQL
+            """
 UPDATE placement_plan
 SET deleted = true
 WHERE application_id = :applicationId
@@ -36,16 +36,19 @@ AND NOT EXISTS (
   WHERE application_id = :applicationId
   AND status = 'PENDING'
 )"""
-    ).bind("applicationId", applicationId).execute()
+        )
+        .bind("applicationId", applicationId)
+        .execute()
 }
 
 fun Database.Transaction.createPlacementPlan(
     applicationId: ApplicationId,
     type: PlacementType,
     plan: DaycarePlacementPlan
-): PlacementPlanId = createUpdate(
-    // language=SQL
-    """
+): PlacementPlanId =
+    createUpdate(
+            // language=SQL
+            """
 INSERT INTO placement_plan (type, unit_id, application_id, start_date, end_date, preschool_daycare_start_date, preschool_daycare_end_date)
 VALUES (
     :type,
@@ -57,17 +60,17 @@ VALUES (
     :preschoolDaycareEndDate
 )
 RETURNING id"""
-)
-    .bind("type", type)
-    .bind("unitId", plan.unitId)
-    .bind("applicationId", applicationId)
-    .bind("startDate", plan.period.start)
-    .bind("endDate", plan.period.end)
-    .bind("preschoolDaycareStartDate", plan.preschoolDaycarePeriod?.start)
-    .bind("preschoolDaycareEndDate", plan.preschoolDaycarePeriod?.end)
-    .executeAndReturnGeneratedKeys()
-    .mapTo<PlacementPlanId>()
-    .single()
+        )
+        .bind("type", type)
+        .bind("unitId", plan.unitId)
+        .bind("applicationId", applicationId)
+        .bind("startDate", plan.period.start)
+        .bind("endDate", plan.period.end)
+        .bind("preschoolDaycareStartDate", plan.preschoolDaycarePeriod?.start)
+        .bind("preschoolDaycareEndDate", plan.preschoolDaycarePeriod?.end)
+        .executeAndReturnGeneratedKeys()
+        .mapTo<PlacementPlanId>()
+        .single()
 
 fun Database.Read.getPlacementPlan(applicationId: ApplicationId): PlacementPlan? {
     data class QueryResult(
@@ -81,13 +84,14 @@ fun Database.Read.getPlacementPlan(applicationId: ApplicationId): PlacementPlan?
         val preschoolDaycareEndDate: LocalDate?
     )
     return createQuery(
-        // language=SQL
-        """
+            // language=SQL
+            """
 SELECT id, unit_id, application_id, type, start_date, end_date, preschool_daycare_start_date, preschool_daycare_end_date
 FROM placement_plan
 WHERE application_id = :applicationId AND deleted = false
     """
-    ).bind("applicationId", applicationId)
+        )
+        .bind("applicationId", applicationId)
         .mapTo<QueryResult>()
         .findOne()
         .orElse(null)
@@ -98,25 +102,29 @@ WHERE application_id = :applicationId AND deleted = false
                 applicationId = it.applicationId,
                 type = it.type,
                 period = FiniteDateRange(it.startDate, it.endDate),
-                preschoolDaycarePeriod = if (it.preschoolDaycareStartDate != null && it.preschoolDaycareEndDate != null) {
-                    FiniteDateRange(it.preschoolDaycareStartDate, it.preschoolDaycareEndDate)
-                } else {
-                    null
-                }
+                preschoolDaycarePeriod =
+                    if (
+                        it.preschoolDaycareStartDate != null && it.preschoolDaycareEndDate != null
+                    ) {
+                        FiniteDateRange(it.preschoolDaycareStartDate, it.preschoolDaycareEndDate)
+                    } else {
+                        null
+                    }
             )
         }
 }
 
 fun Database.Read.getPlacementPlanUnitName(applicationId: ApplicationId): String {
     return createQuery(
-        // language=SQL
-        """
+            // language=SQL
+            """
 SELECT d.name
 FROM placement_plan
 JOIN daycare d ON d.id = placement_plan.unit_id
 WHERE application_id = :applicationId AND deleted = false
     """
-    ).bind("applicationId", applicationId)
+        )
+        .bind("applicationId", applicationId)
         .mapTo<String>()
         .findOne()
         .orElseThrow { NotFound("Placement plan for application $applicationId not found") }
@@ -149,8 +157,8 @@ fun Database.Read.getPlacementPlans(
     )
 
     return createQuery(
-        // language=SQL
-        """
+            // language=SQL
+            """
 SELECT
     pp.id, pp.unit_id, pp.application_id, pp.type, pp.start_date, pp.end_date, pp.preschool_daycare_start_date, pp.preschool_daycare_end_date,
     pp.unit_confirmation_status, pp.unit_reject_reason, pp.unit_reject_other_reason,
@@ -176,7 +184,8 @@ WHERE
     ${if (to != null) " AND (start_date <= :to OR preschool_daycare_start_date <= :to)" else ""}
     ${if (from != null) " AND (end_date >= :from OR preschool_daycare_end_date >= :from)" else ""}
 """
-    ).bind("unitId", unitId)
+        )
+        .bind("unitId", unitId)
         .bind("today", today)
         .bind("from", from)
         .bind("to", to)
@@ -190,17 +199,21 @@ WHERE
                 applicationId = it.applicationId,
                 type = it.type,
                 period = FiniteDateRange(it.startDate, it.endDate),
-                preschoolDaycarePeriod = if (it.preschoolDaycareStartDate != null && it.preschoolDaycareEndDate != null) {
-                    FiniteDateRange(it.preschoolDaycareStartDate, it.preschoolDaycareEndDate)
-                } else {
-                    null
-                },
-                child = PlacementPlanChild(
-                    id = it.childId,
-                    firstName = it.firstName,
-                    lastName = it.lastName,
-                    dateOfBirth = it.dateOfBirth
-                ),
+                preschoolDaycarePeriod =
+                    if (
+                        it.preschoolDaycareStartDate != null && it.preschoolDaycareEndDate != null
+                    ) {
+                        FiniteDateRange(it.preschoolDaycareStartDate, it.preschoolDaycareEndDate)
+                    } else {
+                        null
+                    },
+                child =
+                    PlacementPlanChild(
+                        id = it.childId,
+                        firstName = it.firstName,
+                        lastName = it.lastName,
+                        dateOfBirth = it.dateOfBirth
+                    ),
                 unitConfirmationStatus = it.unitConfirmationStatus,
                 unitRejectReason = it.unitRejectReason,
                 unitRejectOtherReason = it.unitRejectOtherReason,
@@ -232,13 +245,13 @@ fun Database.Transaction.updatePlacementPlanUnitConfirmation(
 
 fun Database.Read.getPlacementDraftChild(childId: ChildId): PlacementDraftChild? {
     return createQuery(
-        // language=SQL
-        """
+            // language=SQL
+            """
             SELECT id, first_name, last_name, date_of_birth AS dob
             FROM person
             WHERE id = :id
         """
-    )
+        )
         .bind("id", childId)
         .mapTo<PlacementDraftChild>()
         .list()
@@ -247,13 +260,13 @@ fun Database.Read.getPlacementDraftChild(childId: ChildId): PlacementDraftChild?
 
 fun Database.Read.getGuardiansRestrictedStatus(guardianId: PersonId): Boolean? {
     return createQuery(
-        // language=SQL
-        """
+            // language=SQL
+            """
             SELECT restricted_details_enabled
             FROM person
             WHERE id = :id
         """
-    )
+        )
         .bind("id", guardianId)
         .mapTo<Boolean>()
         .toList()

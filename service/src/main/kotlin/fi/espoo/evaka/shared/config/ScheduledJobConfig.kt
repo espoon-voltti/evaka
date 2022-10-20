@@ -8,13 +8,13 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.job.JobSchedule
 import fi.espoo.evaka.shared.job.ScheduledJobRunner
+import javax.sql.DataSource
 import org.jdbi.v3.core.Jdbi
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.context.event.EventListener
-import javax.sql.DataSource
 
 @Configuration
 @Profile("production")
@@ -28,10 +28,11 @@ class ScheduledJobConfig {
     ) = ScheduledJobRunner(jdbi, asyncJobRunner, dataSource, schedule)
 
     @Bean
-    fun scheduledJobRunnerStart(runner: ScheduledJobRunner) = object {
-        @EventListener
-        fun onApplicationReady(@Suppress("UNUSED_PARAMETER") event: ApplicationReadyEvent) {
-            runner.scheduler.start()
+    fun scheduledJobRunnerStart(runner: ScheduledJobRunner) =
+        object {
+            @EventListener
+            fun onApplicationReady(@Suppress("UNUSED_PARAMETER") event: ApplicationReadyEvent) {
+                runner.scheduler.start()
+            }
         }
-    }
 }

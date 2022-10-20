@@ -19,7 +19,10 @@ interface InvoiceProductProvider {
     val contractSurplusDay: ProductKey
 
     fun mapToProduct(placementType: PlacementType): ProductKey
-    fun mapToFeeAlterationProduct(productKey: ProductKey, feeAlterationType: FeeAlteration.Type): ProductKey
+    fun mapToFeeAlterationProduct(
+        productKey: ProductKey,
+        feeAlterationType: FeeAlteration.Type
+    ): ProductKey
 }
 
 @JsonSerialize(converter = ProductKey.ToJson::class)

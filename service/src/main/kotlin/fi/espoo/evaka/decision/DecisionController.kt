@@ -42,7 +42,10 @@ class DecisionController(
         @RequestParam("id") guardianId: PersonId
     ): DecisionListResponse {
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_DECISIONS, guardianId)
-        val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByGuardian(guardianId, acl.getAuthorizedUnits(user)) } }
+        val decisions =
+            db.connect { dbc ->
+                dbc.read { it.getDecisionsByGuardian(guardianId, acl.getAuthorizedUnits(user)) }
+            }
         Audit.DecisionRead.log(targetId = guardianId, args = mapOf("count" to decisions.size))
         return DecisionListResponse(decisions)
     }
@@ -55,7 +58,10 @@ class DecisionController(
         @RequestParam("id") childId: ChildId
     ): DecisionListResponse {
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_DECISIONS, childId)
-        val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByChild(childId, acl.getAuthorizedUnits(user)) } }
+        val decisions =
+            db.connect { dbc ->
+                dbc.read { it.getDecisionsByChild(childId, acl.getAuthorizedUnits(user)) }
+            }
         Audit.DecisionRead.log(targetId = childId, args = mapOf("count" to decisions.size))
         return DecisionListResponse(decisions)
     }
@@ -67,19 +73,32 @@ class DecisionController(
         clock: EvakaClock,
         @RequestParam("id") applicationId: ApplicationId
     ): DecisionListResponse {
-        accessControl.requirePermissionFor(user, clock, Action.Application.READ_DECISIONS, applicationId)
-        val decisions = db.connect { dbc -> dbc.read { it.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user)) } }
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Application.READ_DECISIONS,
+            applicationId
+        )
+        val decisions =
+            db.connect { dbc ->
+                dbc.read {
+                    it.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user))
+                }
+            }
         Audit.DecisionReadByApplication.log(targetId = applicationId)
 
         return DecisionListResponse(decisions)
     }
 
     @GetMapping("/units")
-    fun getDecisionUnits(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<DecisionUnit> {
+    fun getDecisionUnits(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock
+    ): List<DecisionUnit> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_DECISION_UNITS)
-        return db.connect { dbc -> dbc.read { decisionDraftService.getDecisionUnits(it) } }.also {
-            Audit.UnitRead.log(args = mapOf("count" to it.size))
-        }
+        return db.connect { dbc -> dbc.read { decisionDraftService.getDecisionUnits(it) } }
+            .also { Audit.UnitRead.log(args = mapOf("count" to it.size)) }
     }
 
     @GetMapping("/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
@@ -92,30 +111,40 @@ class DecisionController(
         accessControl.requirePermissionFor(user, clock, Action.Decision.DOWNLOAD_PDF, decisionId)
 
         return db.connect { dbc ->
-            val decision = dbc.transaction { tx ->
-                val decision = tx.getDecision(decisionId) ?: error("Cannot find decision for decision id '$decisionId'")
-                val application = tx.fetchApplicationDetails(decision.applicationId)
-                    ?: error("Cannot find application for decision id '$decisionId'")
+                val decision =
+                    dbc.transaction { tx ->
+                        val decision =
+                            tx.getDecision(decisionId)
+                                ?: error("Cannot find decision for decision id '$decisionId'")
+                        val application =
+                            tx.fetchApplicationDetails(decision.applicationId)
+                                ?: error("Cannot find application for decision id '$decisionId'")
 
-                val child = tx.getPersonById(application.childId)
-                    ?: error("Cannot find user for child id '${application.childId}'")
+                        val child =
+                            tx.getPersonById(application.childId)
+                                ?: error("Cannot find user for child id '${application.childId}'")
 
-                val guardian = tx.getPersonById(application.guardianId)
-                    ?: error("Cannot find user for guardian id '${application.guardianId}'")
+                        val guardian =
+                            tx.getPersonById(application.guardianId)
+                                ?: error(
+                                    "Cannot find user for guardian id '${application.guardianId}'"
+                                )
 
-                if ((child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) && !user.isAdmin) {
-                    throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
-                }
+                        if (
+                            (child.restrictedDetailsEnabled || guardian.restrictedDetailsEnabled) &&
+                                !user.isAdmin
+                        ) {
+                            throw Forbidden(
+                                "Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen."
+                            )
+                        }
 
-                decision
+                        decision
+                    }
+                decisionService.getDecisionPdf(dbc, decision)
             }
-            decisionService.getDecisionPdf(dbc, decision)
-        }.also {
-            Audit.DecisionDownloadPdf.log(targetId = decisionId)
-        }
+            .also { Audit.DecisionDownloadPdf.log(targetId = decisionId) }
     }
 }
 
-data class DecisionListResponse(
-    val decisions: List<Decision>
-)
+data class DecisionListResponse(val decisions: List<Decision>)

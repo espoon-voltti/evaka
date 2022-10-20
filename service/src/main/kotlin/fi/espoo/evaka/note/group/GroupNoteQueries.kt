@@ -22,25 +22,28 @@ fun Database.Read.getGroupNotesForUnit(unitId: DaycareId): List<GroupNote> {
         .let { groupIds -> getGroupNotesForGroups(groupIds) }
 }
 
-private fun Database.Read.getGroupNotesForGroups(groupIds: List<GroupId>): List<GroupNote> = createQuery(
-    """
+private fun Database.Read.getGroupNotesForGroups(groupIds: List<GroupId>): List<GroupNote> =
+    createQuery(
+            """
     SELECT gn.id, gn.group_id, gn.note, gn.modified_at, gn.expires
     FROM group_note gn
     WHERE group_id = ANY(:groupIds)
-    """.trimIndent()
-)
-    .bind("groupIds", groupIds)
-    .mapTo<GroupNote>()
-    .list()
+    """
+                .trimIndent()
+        )
+        .bind("groupIds", groupIds)
+        .mapTo<GroupNote>()
+        .list()
 
 fun Database.Transaction.createGroupNote(groupId: GroupId, note: GroupNoteBody): GroupNoteId {
     return createUpdate(
-        """
+            """
 INSERT INTO group_note (group_id, note, expires)
 VALUES (:groupId, :note, :expires)
 RETURNING id
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bindKotlin(note)
         .bind("groupId", groupId)
         .executeAndReturnGeneratedKeys()
@@ -48,17 +51,22 @@ RETURNING id
         .one()
 }
 
-fun Database.Transaction.updateGroupNote(clock: EvakaClock, id: GroupNoteId, note: GroupNoteBody): GroupNote {
+fun Database.Transaction.updateGroupNote(
+    clock: EvakaClock,
+    id: GroupNoteId,
+    note: GroupNoteBody
+): GroupNote {
     return createUpdate(
-        """
+            """
 UPDATE group_note SET
     note = :note,
     expires = :expires,
     modified_at = :now
 WHERE id = :id
 RETURNING *
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("id", id)
         .bind("now", clock.now())
         .bindKotlin(note)
@@ -68,7 +76,5 @@ RETURNING *
 }
 
 fun Database.Transaction.deleteGroupNote(noteId: GroupNoteId) {
-    createUpdate("DELETE FROM group_note WHERE id = :noteId")
-        .bind("noteId", noteId)
-        .execute()
+    createUpdate("DELETE FROM group_note WHERE id = :noteId").bind("noteId", noteId).execute()
 }

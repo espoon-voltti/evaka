@@ -26,9 +26,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/vasu/templates")
-class VasuTemplateController(
-    private val accessControl: AccessControl
-) {
+class VasuTemplateController(private val accessControl: AccessControl) {
     data class CreateTemplateRequest(
         val name: String,
         val valid: FiniteDateRange,
@@ -46,18 +44,17 @@ class VasuTemplateController(
         accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_VASU_TEMPLATE)
 
         return db.connect { dbc ->
-            dbc.transaction {
-                it.insertVasuTemplate(
-                    name = body.name,
-                    valid = body.valid,
-                    type = body.type,
-                    language = body.language,
-                    content = getDefaultTemplateContent(body.type, body.language)
-                )
+                dbc.transaction {
+                    it.insertVasuTemplate(
+                        name = body.name,
+                        valid = body.valid,
+                        type = body.type,
+                        language = body.language,
+                        content = getDefaultTemplateContent(body.type, body.language)
+                    )
+                }
             }
-        }.also { vasuTemplateId ->
-            Audit.VasuTemplateCreate.log(targetId = vasuTemplateId)
-        }
+            .also { vasuTemplateId -> Audit.VasuTemplateCreate.log(targetId = vasuTemplateId) }
     }
 
     @PutMapping("/{id}")
@@ -72,7 +69,8 @@ class VasuTemplateController(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val template = tx.getVasuTemplateForUpdate(id) ?: throw NotFound("Template not found")
+                val template =
+                    tx.getVasuTemplateForUpdate(id) ?: throw NotFound("Template not found")
                 validateTemplateUpdate(template, body)
                 tx.updateVasuTemplate(id, body)
             }
@@ -80,10 +78,7 @@ class VasuTemplateController(
         Audit.VasuTemplateEdit.log(targetId = id)
     }
 
-    data class CopyTemplateRequest(
-        val name: String,
-        val valid: FiniteDateRange
-    )
+    data class CopyTemplateRequest(val name: String, val valid: FiniteDateRange)
 
     @PostMapping("/{id}/copy")
     fun copyTemplate(
@@ -96,19 +91,18 @@ class VasuTemplateController(
         accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.COPY, id)
 
         return db.connect { dbc ->
-            dbc.transaction {
-                val template = it.getVasuTemplate(id) ?: throw NotFound("template not found")
-                it.insertVasuTemplate(
-                    name = body.name,
-                    valid = body.valid,
-                    type = template.type,
-                    language = template.language,
-                    content = copyTemplateContentWithCurrentlyValidOphSections(template)
-                )
+                dbc.transaction {
+                    val template = it.getVasuTemplate(id) ?: throw NotFound("template not found")
+                    it.insertVasuTemplate(
+                        name = body.name,
+                        valid = body.valid,
+                        type = template.type,
+                        language = template.language,
+                        content = copyTemplateContentWithCurrentlyValidOphSections(template)
+                    )
+                }
             }
-        }.also {
-            Audit.VasuTemplateCopy.log(targetId = id)
-        }
+            .also { Audit.VasuTemplateCopy.log(targetId = id) }
     }
 
     @GetMapping
@@ -120,9 +114,8 @@ class VasuTemplateController(
     ): List<VasuTemplateSummary> {
         accessControl.requirePermissionFor(user, clock, Action.Global.READ_VASU_TEMPLATE)
 
-        return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplates(clock, validOnly) } }.also {
-            Audit.VasuTemplateRead.log(args = mapOf("count" to it.size))
-        }
+        return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplates(clock, validOnly) } }
+            .also { Audit.VasuTemplateRead.log(args = mapOf("count" to it.size)) }
     }
 
     @GetMapping("/{id}")
@@ -134,9 +127,11 @@ class VasuTemplateController(
     ): VasuTemplate {
         accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.READ, id)
 
-        return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplate(id) } ?: throw NotFound("template $id not found") }.also {
-            Audit.VasuTemplateRead.log(targetId = id)
-        }
+        return db.connect { dbc ->
+                dbc.read { tx -> tx.getVasuTemplate(id) }
+                    ?: throw NotFound("template $id not found")
+            }
+            .also { Audit.VasuTemplateRead.log(targetId = id) }
     }
 
     @DeleteMapping("/{id}")
@@ -164,8 +159,10 @@ class VasuTemplateController(
 
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val template = tx.getVasuTemplateForUpdate(id) ?: throw NotFound("template $id not found")
-                if (template.documentCount > 0) throw Conflict("Template with documents cannot be updated", "TEMPLATE_IN_USE")
+                val template =
+                    tx.getVasuTemplateForUpdate(id) ?: throw NotFound("template $id not found")
+                if (template.documentCount > 0)
+                    throw Conflict("Template with documents cannot be updated", "TEMPLATE_IN_USE")
                 tx.updateVasuTemplateContent(id, content)
             }
         }

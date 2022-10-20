@@ -19,7 +19,13 @@ import org.springframework.stereotype.Service
 
 @Service
 class AssistanceNeedService(val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
-    fun createAssistanceNeed(db: Database.Connection, user: AuthenticatedUser, clock: EvakaClock, childId: ChildId, data: AssistanceNeedRequest): AssistanceNeed {
+    fun createAssistanceNeed(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        childId: ChildId,
+        data: AssistanceNeedRequest
+    ): AssistanceNeed {
         try {
             return db.transaction { tx ->
                 validateBases(data, tx.getAssistanceBasisOptions().map { it.value })
@@ -37,11 +43,20 @@ class AssistanceNeedService(val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         }
     }
 
-    fun getAssistanceNeedsByChildId(db: Database.Connection, childId: ChildId): List<AssistanceNeed> {
+    fun getAssistanceNeedsByChildId(
+        db: Database.Connection,
+        childId: ChildId
+    ): List<AssistanceNeed> {
         return db.transaction { it.getAssistanceNeedsByChild(childId) }
     }
 
-    fun updateAssistanceNeed(db: Database.Connection, user: AuthenticatedUser, clock: EvakaClock, id: AssistanceNeedId, data: AssistanceNeedRequest): AssistanceNeed {
+    fun updateAssistanceNeed(
+        db: Database.Connection,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        id: AssistanceNeedId,
+        data: AssistanceNeedRequest
+    ): AssistanceNeed {
         try {
             return db.transaction { tx ->
                 validateBases(data, tx.getAssistanceBasisOptions().map { it.value })
@@ -77,10 +92,16 @@ class AssistanceNeedService(val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
         }
     }
 
-    private fun notifyAssistanceNeedUpdated(tx: Database.Transaction, clock: EvakaClock, childRange: AssistanceNeedChildRange) {
+    private fun notifyAssistanceNeedUpdated(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        childRange: AssistanceNeedChildRange
+    ) {
         asyncJobRunner.plan(
             tx,
-            listOf(AsyncJob.GenerateFinanceDecisions.forChild(childRange.childId, childRange.dateRange)),
+            listOf(
+                AsyncJob.GenerateFinanceDecisions.forChild(childRange.childId, childRange.dateRange)
+            ),
             runAt = clock.now()
         )
     }

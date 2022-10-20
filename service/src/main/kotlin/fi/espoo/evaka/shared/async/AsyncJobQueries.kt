@@ -7,47 +7,56 @@ package fi.espoo.evaka.shared.async
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import java.util.UUID
 import mu.KotlinLogging
 import org.jdbi.v3.core.qualifier.QualifiedType
 import org.jdbi.v3.json.Json
-import java.util.UUID
 
-private val logger = KotlinLogging.logger { }
+private val logger = KotlinLogging.logger {}
 
-fun Database.Transaction.insertJob(jobParams: JobParams<*>): UUID = createUpdate(
-    // language=SQL
-    """
+fun Database.Transaction.insertJob(jobParams: JobParams<*>): UUID =
+    createUpdate(
+            // language=SQL
+            """
 INSERT INTO async_job (type, retry_count, retry_interval, run_at, payload)
 VALUES (:jobType, :retryCount, :retryInterval, :runAt, :payload)
 RETURNING id
 """
-)
-    .bind("jobType", AsyncJobType.ofPayload(jobParams.payload).name)
-    .bind("retryCount", jobParams.retryCount)
-    .bind("retryInterval", jobParams.retryInterval)
-    .bind("runAt", jobParams.runAt)
-    .bindByType("payload", jobParams.payload, QualifiedType.of(jobParams.payload.javaClass).with(Json::class.java))
-    .executeAndReturnGeneratedKeys()
-    .mapTo<UUID>()
-    .one()
+        )
+        .bind("jobType", AsyncJobType.ofPayload(jobParams.payload).name)
+        .bind("retryCount", jobParams.retryCount)
+        .bind("retryInterval", jobParams.retryInterval)
+        .bind("runAt", jobParams.runAt)
+        .bindByType(
+            "payload",
+            jobParams.payload,
+            QualifiedType.of(jobParams.payload.javaClass).with(Json::class.java)
+        )
+        .executeAndReturnGeneratedKeys()
+        .mapTo<UUID>()
+        .one()
 
 fun Database.Read.getPendingJobCount(jobTypes: Collection<AsyncJobType<*>>): Int =
     createQuery(
-        // language=SQL
-        """
+            // language=SQL
+            """
 SELECT count(*)
 FROM async_job
 WHERE completed_at IS NULL
 AND type = ANY(:jobTypes)
 """
-    ).bind("jobTypes", jobTypes.map { it.name })
+        )
+        .bind("jobTypes", jobTypes.map { it.name })
         .mapTo<Int>()
         .one()
 
-fun <T : AsyncJobPayload> Database.Transaction.claimJob(now: HelsinkiDateTime, jobTypes: Collection<AsyncJobType<out T>>): ClaimedJobRef<out T>? =
+fun <T : AsyncJobPayload> Database.Transaction.claimJob(
+    now: HelsinkiDateTime,
+    jobTypes: Collection<AsyncJobType<out T>>
+): ClaimedJobRef<out T>? =
     createUpdate(
-        // language=SQL
-        """
+            // language=SQL
+            """
 WITH claimed_job AS (
   SELECT id
   FROM async_job
@@ -68,15 +77,17 @@ SET
 WHERE id = (SELECT id FROM claimed_job)
 RETURNING id AS jobId, type AS jobType, txid_current() AS txId, retry_count AS remainingAttempts
 """
-    ).bind("jobTypes", jobTypes.map { it.name })
+        )
+        .bind("jobTypes", jobTypes.map { it.name })
         .bind("now", now)
         .executeAndReturnGeneratedKeys()
         .map { row ->
             ClaimedJobRef(
                 jobId = row.mapColumn("jobId"),
-                jobType = row.mapColumn<String>("jobType").let { jobType ->
-                    jobTypes.find { it.name == jobType }
-                }!!,
+                jobType =
+                    row.mapColumn<String>("jobType").let { jobType ->
+                        jobTypes.find { it.name == jobType }
+                    }!!,
                 txId = row.mapColumn("txId"),
                 remainingAttempts = row.mapColumn("remainingAttempts")
             )
@@ -84,9 +95,13 @@ RETURNING id AS jobId, type AS jobType, txid_current() AS txId, retry_count AS r
         .findOne()
         .orElse(null)
 
-fun <T : AsyncJobPayload> Database.Transaction.startJob(job: ClaimedJobRef<T>, now: HelsinkiDateTime): T? = createUpdate(
-    // language=SQL
-    """
+fun <T : AsyncJobPayload> Database.Transaction.startJob(
+    job: ClaimedJobRef<T>,
+    now: HelsinkiDateTime
+): T? =
+    createUpdate(
+            // language=SQL
+            """
 WITH started_job AS (
   SELECT id
   FROM async_job
@@ -99,39 +114,47 @@ SET started_at = :now
 WHERE id = (SELECT id FROM started_job)
 RETURNING payload
 """
-).bindKotlin(job)
-    .bind("now", now)
-    .executeAndReturnGeneratedKeys()
-    .map { row -> row.getColumn("payload", QualifiedType.of(job.jobType.payloadClass.java).with(Json::class.java)) }
-    .findOne()
-    .orElse(null)
+        )
+        .bindKotlin(job)
+        .bind("now", now)
+        .executeAndReturnGeneratedKeys()
+        .map { row ->
+            row.getColumn(
+                "payload",
+                QualifiedType.of(job.jobType.payloadClass.java).with(Json::class.java)
+            )
+        }
+        .findOne()
+        .orElse(null)
 
-fun Database.Transaction.completeJob(job: ClaimedJobRef<*>, now: HelsinkiDateTime) = createUpdate(
-    // language=SQL
-    """
+fun Database.Transaction.completeJob(job: ClaimedJobRef<*>, now: HelsinkiDateTime) =
+    createUpdate(
+            // language=SQL
+            """
 UPDATE async_job
 SET completed_at = :now
 WHERE id = :jobId
 """
-).bindKotlin(job)
-    .bind("now", now)
-    .execute()
+        )
+        .bindKotlin(job)
+        .bind("now", now)
+        .execute()
 
-fun Database.Transaction.removeCompletedJobs(completedBefore: HelsinkiDateTime): Int = createUpdate(
-    """
+fun Database.Transaction.removeCompletedJobs(completedBefore: HelsinkiDateTime): Int =
+    createUpdate("""
 DELETE FROM async_job
 WHERE completed_at < :completedBefore
-"""
-).bind("completedBefore", completedBefore)
-    .execute()
+""")
+        .bind("completedBefore", completedBefore)
+        .execute()
 
-fun Database.Transaction.removeJobs(runBefore: HelsinkiDateTime): Int = createUpdate(
-    """
+fun Database.Transaction.removeJobs(runBefore: HelsinkiDateTime): Int =
+    createUpdate("""
 DELETE FROM async_job
 WHERE run_at < :runBefore
-"""
-).bind("runBefore", runBefore)
-    .execute()
+""")
+        .bind("runBefore", runBefore)
+        .execute()
 
 fun Database.Connection.removeOldAsyncJobs(now: HelsinkiDateTime) {
     val completedBefore = now.minusMonths(6)

@@ -19,15 +19,16 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.vtjclient.dto.VtjPerson
 import fi.espoo.evaka.vtjclient.service.persondetails.MockPersonDetailsService
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private val admin = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
+    private val admin =
+        AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
     private val mockToday = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
 
     lateinit var adult1: PersonDTO
@@ -51,105 +52,103 @@ class FridgeFamilyServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach
         child2VtjPerson = child2.toVtjPerson()
     }
 
-    @Autowired
-    lateinit var fridgeFamilyService: FridgeFamilyService
+    @Autowired lateinit var fridgeFamilyService: FridgeFamilyService
 
     @Test
     fun `First adult becomes the head of all common children`() {
         MockPersonDetailsService.addPerson(
-            adult1VtjPerson.copy(
-                dependants = listOf(child1VtjPerson, child2VtjPerson)
-            )
+            adult1VtjPerson.copy(dependants = listOf(child1VtjPerson, child2VtjPerson))
         )
 
         MockPersonDetailsService.addPerson(
-            adult2VtjPerson.copy(
-                dependants = listOf(child1VtjPerson, child2VtjPerson)
-            )
+            adult2VtjPerson.copy(dependants = listOf(child1VtjPerson, child2VtjPerson))
         )
 
-        db.transaction { it.createPartnership(adult1.id, adult2.id, mockToday.today(), null, false) }
+        db.transaction {
+            it.createPartnership(adult1.id, adult2.id, mockToday.today(), null, false)
+        }
 
-        fridgeFamilyService.updatePersonAndFamilyFromVtj(
-            db,
-            admin,
-            mockToday,
-            adult1.id
-        )
+        fridgeFamilyService.updatePersonAndFamilyFromVtj(db, admin, mockToday, adult1.id)
 
         db.read {
-            assertEquals(1, it.getParentships(adult1.id, child1.id, false, DateRange(mockToday.today(), null)).size)
-            assertEquals(1, it.getParentships(adult1.id, child2.id, false, DateRange(mockToday.today(), null)).size)
+            assertEquals(
+                1,
+                it.getParentships(adult1.id, child1.id, false, DateRange(mockToday.today(), null))
+                    .size
+            )
+            assertEquals(
+                1,
+                it.getParentships(adult1.id, child2.id, false, DateRange(mockToday.today(), null))
+                    .size
+            )
         }
     }
 
     @Test
     fun `New child is added to existing head of family`() {
         MockPersonDetailsService.addPerson(
-            adult1VtjPerson.copy(
-                dependants = listOf(child1VtjPerson)
-            )
+            adult1VtjPerson.copy(dependants = listOf(child1VtjPerson))
         )
 
         MockPersonDetailsService.addPerson(
-            adult2VtjPerson.copy(
-                dependants = listOf(child1VtjPerson)
-            )
+            adult2VtjPerson.copy(dependants = listOf(child1VtjPerson))
         )
 
-        db.transaction { it.createPartnership(adult1.id, adult2.id, mockToday.today(), null, false) }
+        db.transaction {
+            it.createPartnership(adult1.id, adult2.id, mockToday.today(), null, false)
+        }
 
-        fridgeFamilyService.updatePersonAndFamilyFromVtj(
-            db,
-            admin,
-            mockToday,
-            adult1.id
-        )
+        fridgeFamilyService.updatePersonAndFamilyFromVtj(db, admin, mockToday, adult1.id)
 
         db.read {
-            assertEquals(1, it.getParentships(adult1.id, child1.id, false, DateRange(mockToday.today(), null)).size)
+            assertEquals(
+                1,
+                it.getParentships(adult1.id, child1.id, false, DateRange(mockToday.today(), null))
+                    .size
+            )
         }
 
         MockPersonDetailsService.upsertPerson(
-            adult1VtjPerson.copy(
-                dependants = listOf(child1VtjPerson, child2VtjPerson)
-            )
+            adult1VtjPerson.copy(dependants = listOf(child1VtjPerson, child2VtjPerson))
         )
 
         MockPersonDetailsService.addPerson(
-            adult2VtjPerson.copy(
-                dependants = listOf(child1VtjPerson, child2VtjPerson)
-            )
+            adult2VtjPerson.copy(dependants = listOf(child1VtjPerson, child2VtjPerson))
         )
 
         // Note: the person to update here is the other adult2. Implementation should
-        // detect that her partner already has a fridge family and add the child to that one instead of
+        // detect that her partner already has a fridge family and add the child to that one instead
+        // of
         // creating a new fridge family for this other adult2
-        fridgeFamilyService.updatePersonAndFamilyFromVtj(
-            db,
-            admin,
-            mockToday,
-            adult2.id
-        )
+        fridgeFamilyService.updatePersonAndFamilyFromVtj(db, admin, mockToday, adult2.id)
 
         db.read {
-            assertEquals(1, it.getParentships(adult1.id, child1.id, false, DateRange(mockToday.today(), null)).size)
-            assertEquals(1, it.getParentships(adult1.id, child2.id, false, DateRange(mockToday.today(), null)).size)
+            assertEquals(
+                1,
+                it.getParentships(adult1.id, child1.id, false, DateRange(mockToday.today(), null))
+                    .size
+            )
+            assertEquals(
+                1,
+                it.getParentships(adult1.id, child2.id, false, DateRange(mockToday.today(), null))
+                    .size
+            )
         }
     }
 
     private fun createPerson(ssn: String, firstName: String): PersonDTO {
         return db.transaction {
-            val id = it.insertTestPerson(
-                DevPerson(
-                    ssn = ssn,
-                    dateOfBirth = getDobFromSsn(ssn),
-                    firstName = firstName,
-                    lastName = "Meikäläinen",
-                    email = "",
-                    language = "fi"
+            val id =
+                it.insertTestPerson(
+                    DevPerson(
+                        ssn = ssn,
+                        dateOfBirth = getDobFromSsn(ssn),
+                        firstName = firstName,
+                        lastName = "Meikäläinen",
+                        email = "",
+                        language = "fi"
+                    )
                 )
-            )
             it.getPersonById(id)!!
         }
     }

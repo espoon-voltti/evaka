@@ -8,11 +8,11 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.getActiveClubTermAt
 import fi.espoo.evaka.daycare.getClubTerms
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class ClubTermQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
@@ -23,7 +23,8 @@ class ClubTermQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 """INSERT INTO club_term (term, application_period) VALUES
                 ('[2020-08-13,2021-06-04]', '[2020-01-08,2020-01-20]'),
                 ('[2021-08-11,2022-06-03]', '[2021-01-08,2021-01-20]')
-                """.trimIndent()
+                """
+                    .trimIndent()
             )
         }
     }

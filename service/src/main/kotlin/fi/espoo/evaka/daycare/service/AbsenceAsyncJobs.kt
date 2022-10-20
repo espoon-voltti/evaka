@@ -11,9 +11,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import org.springframework.stereotype.Component
 
 @Component
-class AbsenceAsyncJobs(
-    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
-) {
+class AbsenceAsyncJobs(private val asyncJobRunner: AsyncJobRunner<AsyncJob>) {
     init {
         asyncJobRunner.registerHandler(::generateIrregularAbsences)
     }

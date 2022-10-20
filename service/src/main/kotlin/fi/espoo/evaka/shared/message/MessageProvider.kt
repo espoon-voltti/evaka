@@ -17,13 +17,12 @@ interface IMessageProvider {
     fun getAssistanceNeedDecisionContent(lang: MessageLanguage): String
 
     /**
-     * Returns address used for decisions when person has restricted details enabled or missing address.
+     * Returns address used for decisions when person has restricted details enabled or missing
+     * address.
      */
     fun getDefaultDecisionAddress(lang: MessageLanguage): DecisionSendAddress
 
-    /**
-     * Returns address used for fee decisions when person is missing address.
-     */
+    /** Returns address used for fee decisions when person is missing address. */
     fun getDefaultFinancialDecisionAddress(lang: MessageLanguage): DecisionSendAddress
 }
 

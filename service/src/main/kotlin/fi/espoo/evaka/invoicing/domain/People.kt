@@ -9,8 +9,8 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.DateRange
-import org.jdbi.v3.core.mapper.PropagateNull
 import java.time.LocalDate
+import org.jdbi.v3.core.mapper.PropagateNull
 
 data class ChildWithDateOfBirth(
     @PropagateNull val id: ChildId,
@@ -24,8 +24,7 @@ data class EmployeeWithName(
 )
 
 data class PersonBasic(
-    @PropagateNull
-    val id: PersonId,
+    @PropagateNull val id: PersonId,
     val dateOfBirth: LocalDate,
     val firstName: String,
     val lastName: String,
@@ -33,8 +32,7 @@ data class PersonBasic(
 )
 
 data class PersonDetailed(
-    @PropagateNull
-    val id: PersonId,
+    @PropagateNull val id: PersonId,
     val dateOfBirth: LocalDate,
     val dateOfDeath: LocalDate? = null,
     val firstName: String,

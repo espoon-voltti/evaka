@@ -40,9 +40,10 @@ class StaffAttendanceController(
         @PathVariable unitId: DaycareId
     ): UnitStaffAttendance {
         accessControl.requirePermissionFor(user, clock, Action.Unit.READ_STAFF_ATTENDANCES, unitId)
-        return db.connect { dbc -> staffAttendanceService.getUnitAttendancesForDate(dbc, unitId, clock.today()) }.also {
-            Audit.UnitStaffAttendanceRead.log(targetId = unitId)
-        }
+        return db.connect { dbc ->
+                staffAttendanceService.getUnitAttendancesForDate(dbc, unitId, clock.today())
+            }
+            .also { Audit.UnitStaffAttendanceRead.log(targetId = unitId) }
     }
 
     @GetMapping("/group/{groupId}")
@@ -54,8 +55,16 @@ class StaffAttendanceController(
         @RequestParam month: Int,
         @PathVariable groupId: GroupId
     ): Wrapper<StaffAttendanceForDates> {
-        accessControl.requirePermissionFor(user, clock, Action.Group.READ_STAFF_ATTENDANCES, groupId)
-        val result = db.connect { dbc -> staffAttendanceService.getGroupAttendancesByMonth(dbc, year, month, groupId) }
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Group.READ_STAFF_ATTENDANCES,
+            groupId
+        )
+        val result =
+            db.connect { dbc ->
+                staffAttendanceService.getGroupAttendancesByMonth(dbc, year, month, groupId)
+            }
         Audit.StaffAttendanceRead.log(targetId = groupId)
         return Wrapper(result)
     }
@@ -68,11 +77,21 @@ class StaffAttendanceController(
         @RequestBody staffAttendance: StaffAttendanceUpdate,
         @PathVariable groupId: GroupId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Group.UPDATE_STAFF_ATTENDANCES, groupId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Group.UPDATE_STAFF_ATTENDANCES,
+            groupId
+        )
         if (staffAttendance.count == null) {
             throw BadRequest("Count can't be null")
         }
-        db.connect { dbc -> staffAttendanceService.upsertStaffAttendance(dbc, staffAttendance.copy(groupId = groupId)) }
+        db.connect { dbc ->
+            staffAttendanceService.upsertStaffAttendance(
+                dbc,
+                staffAttendance.copy(groupId = groupId)
+            )
+        }
         Audit.StaffAttendanceUpdate.log(targetId = groupId)
     }
 }

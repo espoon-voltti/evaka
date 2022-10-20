@@ -17,7 +17,4 @@ data class GroupNote(
     val expires: LocalDate
 )
 
-data class GroupNoteBody(
-    val note: String,
-    val expires: LocalDate
-)
+data class GroupNoteBody(val note: String, val expires: LocalDate)

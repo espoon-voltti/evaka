@@ -23,9 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class AssistanceNeedVoucherCoefficientController(
-    private val accessControl: AccessControl
-) {
+class AssistanceNeedVoucherCoefficientController(private val accessControl: AccessControl) {
     @PostMapping("/children/{childId}/assistance-need-voucher-coefficients")
     fun createAssistanceNeedVoucherCoefficient(
         db: Database,
@@ -34,16 +32,25 @@ class AssistanceNeedVoucherCoefficientController(
         @PathVariable childId: ChildId,
         @RequestBody body: AssistanceNeedVoucherCoefficientRequest
     ): AssistanceNeedVoucherCoefficient {
-        accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_ASSISTANCE_NEED_VOUCHER_COEFFICIENT, childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Child.CREATE_ASSISTANCE_NEED_VOUCHER_COEFFICIENT,
+            childId
+        )
 
         return db.connect { dbc ->
-            dbc.transaction { tx ->
-                adjustExistingCoefficients(tx, childId, body.validityPeriod, null)
-                tx.insertAssistanceNeedVoucherCoefficient(childId, body)
+                dbc.transaction { tx ->
+                    adjustExistingCoefficients(tx, childId, body.validityPeriod, null)
+                    tx.insertAssistanceNeedVoucherCoefficient(childId, body)
+                }
             }
-        }.also { coefficient ->
-            Audit.ChildAssistanceNeedVoucherCoefficientCreate.log(targetId = childId, objectId = coefficient.id)
-        }
+            .also { coefficient ->
+                Audit.ChildAssistanceNeedVoucherCoefficientCreate.log(
+                    targetId = childId,
+                    objectId = coefficient.id
+                )
+            }
     }
 
     @GetMapping("/children/{childId}/assistance-need-voucher-coefficients")
@@ -53,19 +60,29 @@ class AssistanceNeedVoucherCoefficientController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<AssistanceNeedVoucherCoefficientResponse> {
-        accessControl.requirePermissionFor(user, clock, Action.Child.READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS, childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Child.READ_ASSISTANCE_NEED_VOUCHER_COEFFICIENTS,
+            childId
+        )
         return db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.getAssistanceNeedVoucherCoefficientsForChild(childId).map {
-                    AssistanceNeedVoucherCoefficientResponse(
-                        voucherCoefficient = it,
-                        permittedActions = accessControl.getPermittedActions(tx, user, clock, it.id)
-                    )
+                dbc.transaction { tx ->
+                    tx.getAssistanceNeedVoucherCoefficientsForChild(childId).map {
+                        AssistanceNeedVoucherCoefficientResponse(
+                            voucherCoefficient = it,
+                            permittedActions =
+                                accessControl.getPermittedActions(tx, user, clock, it.id)
+                        )
+                    }
                 }
             }
-        }.also {
-            Audit.ChildAssistanceNeedVoucherCoefficientRead.log(targetId = childId, args = mapOf("count" to it.size))
-        }
+            .also {
+                Audit.ChildAssistanceNeedVoucherCoefficientRead.log(
+                    targetId = childId,
+                    args = mapOf("count" to it.size)
+                )
+            }
     }
 
     @PutMapping("/assistance-need-voucher-coefficients/{id}")
@@ -76,23 +93,34 @@ class AssistanceNeedVoucherCoefficientController(
         @PathVariable("id") assistanceNeedVoucherCoefficientId: AssistanceNeedVoucherCoefficientId,
         @RequestBody body: AssistanceNeedVoucherCoefficientRequest
     ): AssistanceNeedVoucherCoefficient {
-        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedVoucherCoefficient.UPDATE, assistanceNeedVoucherCoefficientId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.AssistanceNeedVoucherCoefficient.UPDATE,
+            assistanceNeedVoucherCoefficientId
+        )
         return db.connect { dbc ->
-            dbc.transaction { tx ->
-                adjustExistingCoefficients(
-                    tx,
-                    tx.getAssistanceNeedVoucherCoefficientById(assistanceNeedVoucherCoefficientId).childId,
-                    body.validityPeriod,
-                    assistanceNeedVoucherCoefficientId
-                )
-                tx.updateAssistanceNeedVoucherCoefficient(
-                    id = assistanceNeedVoucherCoefficientId,
-                    data = body
+                dbc.transaction { tx ->
+                    adjustExistingCoefficients(
+                        tx,
+                        tx.getAssistanceNeedVoucherCoefficientById(
+                                assistanceNeedVoucherCoefficientId
+                            )
+                            .childId,
+                        body.validityPeriod,
+                        assistanceNeedVoucherCoefficientId
+                    )
+                    tx.updateAssistanceNeedVoucherCoefficient(
+                        id = assistanceNeedVoucherCoefficientId,
+                        data = body
+                    )
+                }
+            }
+            .also {
+                Audit.ChildAssistanceNeedVoucherCoefficientUpdate.log(
+                    targetId = assistanceNeedVoucherCoefficientId
                 )
             }
-        }.also {
-            Audit.ChildAssistanceNeedVoucherCoefficientUpdate.log(targetId = assistanceNeedVoucherCoefficientId)
-        }
     }
 
     @DeleteMapping("/assistance-need-voucher-coefficients/{id}")
@@ -102,10 +130,17 @@ class AssistanceNeedVoucherCoefficientController(
         clock: EvakaClock,
         @PathVariable("id") assistanceNeedVoucherCoefficientId: AssistanceNeedVoucherCoefficientId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.AssistanceNeedVoucherCoefficient.DELETE, assistanceNeedVoucherCoefficientId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.AssistanceNeedVoucherCoefficient.DELETE,
+            assistanceNeedVoucherCoefficientId
+        )
         db.connect { dbc ->
             dbc.transaction { tx ->
-                if (!tx.deleteAssistanceNeedVoucherCoefficient(assistanceNeedVoucherCoefficientId)) {
+                if (
+                    !tx.deleteAssistanceNeedVoucherCoefficient(assistanceNeedVoucherCoefficientId)
+                ) {
                     throw NotFound(
                         "Assistance need voucher coefficient $assistanceNeedVoucherCoefficientId cannot found or cannot be deleted",
                         "VOUCHER_COEFFICIENT_NOT_FOUND"
@@ -113,14 +148,23 @@ class AssistanceNeedVoucherCoefficientController(
                 }
             }
         }
-        Audit.ChildAssistanceNeedVoucherCoefficientDelete.log(targetId = assistanceNeedVoucherCoefficientId)
+        Audit.ChildAssistanceNeedVoucherCoefficientDelete.log(
+            targetId = assistanceNeedVoucherCoefficientId
+        )
     }
 
-    private fun adjustExistingCoefficients(tx: Database.Transaction, childId: ChildId, range: FiniteDateRange, ignoreCoefficientId: AssistanceNeedVoucherCoefficientId?) {
-        val overlappingCoefficients = tx.getOverlappingAssistanceNeedVoucherCoefficientsForChild(
-            childId = childId,
-            range = range
-        ).filterNot { it.id == ignoreCoefficientId }
+    private fun adjustExistingCoefficients(
+        tx: Database.Transaction,
+        childId: ChildId,
+        range: FiniteDateRange,
+        ignoreCoefficientId: AssistanceNeedVoucherCoefficientId?
+    ) {
+        val overlappingCoefficients =
+            tx.getOverlappingAssistanceNeedVoucherCoefficientsForChild(
+                    childId = childId,
+                    range = range
+                )
+                .filterNot { it.id == ignoreCoefficientId }
 
         if (overlappingCoefficients.isNotEmpty()) {
             overlappingCoefficients.forEach {
@@ -129,17 +173,24 @@ class AssistanceNeedVoucherCoefficientController(
                 } else {
                     tx.updateAssistanceNeedVoucherCoefficient(
                         id = it.id,
-                        data = AssistanceNeedVoucherCoefficientRequest(
-                            coefficient = it.coefficient.toDouble(),
-                            validityPeriod =
-                            if (range.start <= it.validityPeriod.end && range.start >= it.validityPeriod.start) {
-                                it.validityPeriod.copy(end = range.start.minusDays(1))
-                            } else if (range.end >= it.validityPeriod.start && range.end <= it.validityPeriod.end) {
-                                it.validityPeriod.copy(start = range.end.plusDays(1))
-                            } else {
-                                it.validityPeriod
-                            }
-                        )
+                        data =
+                            AssistanceNeedVoucherCoefficientRequest(
+                                coefficient = it.coefficient.toDouble(),
+                                validityPeriod =
+                                    if (
+                                        range.start <= it.validityPeriod.end &&
+                                            range.start >= it.validityPeriod.start
+                                    ) {
+                                        it.validityPeriod.copy(end = range.start.minusDays(1))
+                                    } else if (
+                                        range.end >= it.validityPeriod.start &&
+                                            range.end <= it.validityPeriod.end
+                                    ) {
+                                        it.validityPeriod.copy(start = range.end.plusDays(1))
+                                    } else {
+                                        it.validityPeriod
+                                    }
+                            )
                     )
                 }
             }

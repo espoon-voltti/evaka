@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -24,13 +25,10 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 @RequestMapping("/income-statements")
-class IncomeStatementController(
-    private val accessControl: AccessControl
-) {
+class IncomeStatementController(private val accessControl: AccessControl) {
     @GetMapping("/person/{personId}")
     fun getIncomeStatements(
         db: Database,
@@ -40,19 +38,28 @@ class IncomeStatementController(
         @RequestParam page: Int,
         @RequestParam pageSize: Int
     ): Paged<IncomeStatement> {
-        accessControl.requirePermissionFor(user, clock, Action.Person.READ_INCOME_STATEMENTS, personId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Person.READ_INCOME_STATEMENTS,
+            personId
+        )
         return db.connect { dbc ->
-            dbc.read {
-                it.readIncomeStatementsForPerson(
-                    personId = personId,
-                    includeEmployeeContent = true,
-                    page = page,
-                    pageSize = pageSize
+                dbc.read {
+                    it.readIncomeStatementsForPerson(
+                        personId = personId,
+                        includeEmployeeContent = true,
+                        page = page,
+                        pageSize = pageSize
+                    )
+                }
+            }
+            .also {
+                Audit.IncomeStatementsOfPerson.log(
+                    targetId = personId,
+                    args = mapOf("total" to it.total)
                 )
             }
-        }.also {
-            Audit.IncomeStatementsOfPerson.log(targetId = personId, args = mapOf("total" to it.total))
-        }
     }
 
     @GetMapping("/child/{childId}")
@@ -64,15 +71,29 @@ class IncomeStatementController(
         @RequestParam page: Int,
         @RequestParam pageSize: Int
     ): Paged<IncomeStatement> {
-        accessControl.requirePermissionFor(user, clock, Action.Person.READ_INCOME_STATEMENTS, PersonId(childId.raw))
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Person.READ_INCOME_STATEMENTS,
+            PersonId(childId.raw)
+        )
 
         return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.readIncomeStatementsForPerson(PersonId(childId.raw), includeEmployeeContent = true, page = page, pageSize = pageSize)
+                dbc.read { tx ->
+                    tx.readIncomeStatementsForPerson(
+                        PersonId(childId.raw),
+                        includeEmployeeContent = true,
+                        page = page,
+                        pageSize = pageSize
+                    )
+                }
             }
-        }.also {
-            Audit.IncomeStatementsOfChild.log(targetId = childId, args = mapOf("total" to it.total))
-        }
+            .also {
+                Audit.IncomeStatementsOfChild.log(
+                    targetId = childId,
+                    args = mapOf("total" to it.total)
+                )
+            }
     }
 
     @GetMapping("/person/{personId}/{incomeStatementId}")
@@ -83,18 +104,23 @@ class IncomeStatementController(
         @PathVariable personId: PersonId,
         @PathVariable incomeStatementId: IncomeStatementId
     ): IncomeStatement {
-        accessControl.requirePermissionFor(user, clock, Action.Person.READ_INCOME_STATEMENTS, personId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Person.READ_INCOME_STATEMENTS,
+            personId
+        )
         return db.connect { dbc ->
-            dbc.read {
-                it.readIncomeStatementForPerson(
-                    personId,
-                    incomeStatementId,
-                    includeEmployeeContent = true
-                )
-            } ?: throw NotFound("No such income statement")
-        }.also {
-            Audit.IncomeStatementReadOfPerson.log(targetId = incomeStatementId)
-        }
+                dbc.read {
+                    it.readIncomeStatementForPerson(
+                        personId,
+                        incomeStatementId,
+                        includeEmployeeContent = true
+                    )
+                }
+                    ?: throw NotFound("No such income statement")
+            }
+            .also { Audit.IncomeStatementReadOfPerson.log(targetId = incomeStatementId) }
     }
 
     data class SetIncomeStatementHandledBody(val handled: Boolean, val handlerNote: String)
@@ -107,7 +133,12 @@ class IncomeStatementController(
         @PathVariable incomeStatementId: IncomeStatementId,
         @RequestBody body: SetIncomeStatementHandledBody
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.IncomeStatement.UPDATE_HANDLED, incomeStatementId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.IncomeStatement.UPDATE_HANDLED,
+            incomeStatementId
+        )
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.updateIncomeStatementHandled(
@@ -127,25 +158,28 @@ class IncomeStatementController(
         clock: EvakaClock,
         @RequestBody body: SearchIncomeStatementsRequest
     ): Paged<IncomeStatementAwaitingHandler> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.FETCH_INCOME_STATEMENTS_AWAITING_HANDLER)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Global.FETCH_INCOME_STATEMENTS_AWAITING_HANDLER
+        )
         return db.connect { dbc ->
-            dbc.read {
-                it.fetchIncomeStatementsAwaitingHandler(
-                    clock.now().toLocalDate(),
-                    body.areas ?: emptyList(),
-                    body.providerTypes ?: emptyList(),
-                    body.sentStartDate,
-                    body.sentEndDate,
-                    body.placementValidDate,
-                    body.page,
-                    body.pageSize,
-                    body.sortBy ?: IncomeStatementSortParam.CREATED,
-                    body.sortDirection ?: SortDirection.ASC
-                )
+                dbc.read {
+                    it.fetchIncomeStatementsAwaitingHandler(
+                        clock.now().toLocalDate(),
+                        body.areas ?: emptyList(),
+                        body.providerTypes ?: emptyList(),
+                        body.sentStartDate,
+                        body.sentEndDate,
+                        body.placementValidDate,
+                        body.page,
+                        body.pageSize,
+                        body.sortBy ?: IncomeStatementSortParam.CREATED,
+                        body.sortDirection ?: SortDirection.ASC
+                    )
+                }
             }
-        }.also {
-            Audit.IncomeStatementsAwaitingHandler.log(args = mapOf("total" to it.total))
-        }
+            .also { Audit.IncomeStatementsAwaitingHandler.log(args = mapOf("total" to it.total)) }
     }
 
     @GetMapping("/guardian/{guardianId}/children")
@@ -155,14 +189,18 @@ class IncomeStatementController(
         clock: EvakaClock,
         @PathVariable guardianId: PersonId
     ): List<ChildBasicInfo> {
-        accessControl.requirePermissionFor(user, clock, Action.Person.READ_INCOME_STATEMENTS, guardianId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Person.READ_INCOME_STATEMENTS,
+            guardianId
+        )
         return db.connect { dbc ->
-            dbc.read {
-                it.getIncomeStatementChildrenByGuardian(guardianId)
+                dbc.read { it.getIncomeStatementChildrenByGuardian(guardianId) }
             }
-        }.also {
-            Audit.GuardianChildrenRead.log(targetId = guardianId, mapOf("count" to it.size))
-        }
+            .also {
+                Audit.GuardianChildrenRead.log(targetId = guardianId, mapOf("count" to it.size))
+            }
     }
 }
 

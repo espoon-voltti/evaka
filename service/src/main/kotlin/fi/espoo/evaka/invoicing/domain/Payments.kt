@@ -18,10 +18,10 @@ import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import mu.KotlinLogging
-import org.jdbi.v3.core.mapper.Nested
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
+import mu.KotlinLogging
+import org.jdbi.v3.core.mapper.Nested
 
 val logger = KotlinLogging.logger {}
 
@@ -35,7 +35,9 @@ interface PaymentIntegrationClient {
 
     class MockClient(private val jsonMapper: JsonMapper) : PaymentIntegrationClient {
         override fun send(payments: List<Payment>): SendResult {
-            logger.info("Mock payment integration client got payments ${jsonMapper.writeValueAsString(payments)}")
+            logger.info(
+                "Mock payment integration client got payments ${jsonMapper.writeValueAsString(payments)}"
+            )
             return SendResult(succeeded = payments)
         }
     }
@@ -54,14 +56,11 @@ enum class PaymentStatus : DatabaseEnum {
     override val sqlType = "payment_status"
 }
 
-data class PaymentDraft(
-    val unitId: DaycareId,
-    val period: DateRange,
-    val amount: Int
-)
+data class PaymentDraft(val unitId: DaycareId, val period: DateRange, val amount: Int)
 
 fun createPaymentDrafts(tx: Database.Transaction) {
-    val lastSnapshot = tx.getLastSnapshotMonth() ?: throw BadRequest("No voucher value report snapshot found")
+    val lastSnapshot =
+        tx.getLastSnapshotMonth() ?: throw BadRequest("No voucher value report snapshot found")
 
     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
     tx.createUpdate("LOCK TABLE payment").execute()
@@ -69,15 +68,17 @@ fun createPaymentDrafts(tx: Database.Transaction) {
     val report = getServiceVoucherReport(tx, lastSnapshot.year, lastSnapshot.month, null, null)
     if (report.locked == null) throw BadRequest("Voucher value report is not locked")
 
-    val period = lastSnapshot.let {
-        val start = LocalDate.of(it.year, it.month, 1)
-        val end = start.with(TemporalAdjusters.lastDayOfMonth())
-        DateRange(start, end)
-    }
+    val period =
+        lastSnapshot.let {
+            val start = LocalDate.of(it.year, it.month, 1)
+            val end = start.with(TemporalAdjusters.lastDayOfMonth())
+            DateRange(start, end)
+        }
 
-    val payments = report.rows.map {
-        PaymentDraft(unitId = it.unit.id, period = period, amount = it.monthlyPaymentSum)
-    }
+    val payments =
+        report.rows.map {
+            PaymentDraft(unitId = it.unit.id, period = period, amount = it.monthlyPaymentSum)
+        }
 
     tx.deletePaymentDraftsByDateRange(period)
     tx.insertPaymentDrafts(payments)

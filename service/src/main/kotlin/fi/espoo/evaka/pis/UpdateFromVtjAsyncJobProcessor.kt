@@ -24,15 +24,26 @@ class UpdateFromVtjAsyncJobProcessor(
     private val fridgeFamilyService: FridgeFamilyService
 ) {
     init {
-        asyncJobRunner.registerHandler { db, clock, msg: AsyncJob.UpdateFromVtj -> updateFromVtj(db, clock, msg) }
+        asyncJobRunner.registerHandler { db, clock, msg: AsyncJob.UpdateFromVtj ->
+            updateFromVtj(db, clock, msg)
+        }
     }
 
-    fun updateFromVtj(db: Database.Connection, evakaClock: EvakaClock, msg: AsyncJob.UpdateFromVtj) {
+    fun updateFromVtj(
+        db: Database.Connection,
+        evakaClock: EvakaClock,
+        msg: AsyncJob.UpdateFromVtj
+    ) {
         db.transaction { tx ->
-            personService.getOrCreatePerson(tx, AuthenticatedUser.SystemInternalUser, ExternalIdentifier.SSN.getInstance(msg.ssn))
-        }?.let {
-            logger.info("Refreshing all VTJ information for person ${it.id}")
-            fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(it.id), evakaClock)
-        }
+                personService.getOrCreatePerson(
+                    tx,
+                    AuthenticatedUser.SystemInternalUser,
+                    ExternalIdentifier.SSN.getInstance(msg.ssn)
+                )
+            }
+            ?.let {
+                logger.info("Refreshing all VTJ information for person ${it.id}")
+                fridgeFamilyService.doVTJRefresh(db, AsyncJob.VTJRefresh(it.id), evakaClock)
+            }
     }
 }

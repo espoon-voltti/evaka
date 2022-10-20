@@ -15,7 +15,7 @@ fun Database.Transaction.insertAssistanceNeedDecision(
     childId: ChildId,
     data: AssistanceNeedDecisionForm
 ): AssistanceNeedDecision {
-    //language=sql
+    // language=sql
     val sql =
         """
         INSERT INTO assistance_need_decision (
@@ -71,35 +71,55 @@ fun Database.Transaction.insertAssistanceNeedDecision(
             :preparer2PhoneNumber
         )
         RETURNING id
-        """.trimIndent()
+        """
+            .trimIndent()
 
-    val id = createQuery(sql)
-        .bindKotlin(data)
-        .bind("childId", childId)
-        .bind("structuralMotivationOptSmallerGroup", data.structuralMotivationOptions.smallerGroup)
-        .bind("structuralMotivationOptSpecialGroup", data.structuralMotivationOptions.specialGroup)
-        .bind("structuralMotivationOptSmallGroup", data.structuralMotivationOptions.smallGroup)
-        .bind("structuralMotivationOptGroupAssistant", data.structuralMotivationOptions.groupAssistant)
-        .bind("structuralMotivationOptChildAssistant", data.structuralMotivationOptions.childAssistant)
-        .bind("structuralMotivationOptAdditionalStaff", data.structuralMotivationOptions.additionalStaff)
-        .bind("serviceOptConsultationSpecialEd", data.serviceOptions.consultationSpecialEd)
-        .bind("serviceOptPartTimeSpecialEd", data.serviceOptions.partTimeSpecialEd)
-        .bind("serviceOptFullTimeSpecialEd", data.serviceOptions.fullTimeSpecialEd)
-        .bind("serviceOptInterpretationAndAssistanceServices", data.serviceOptions.interpretationAndAssistanceServices)
-        .bind("serviceOptSpecialAides", data.serviceOptions.specialAides)
-        .bind("decisionMakerEmployeeId", data.decisionMaker?.employeeId)
-        .bind("decisionMakerTitle", data.decisionMaker?.title)
-        .bind("preparer1EmployeeId", data.preparedBy1?.employeeId)
-        .bind("preparer1Title", data.preparedBy1?.title)
-        .bind("preparer1PhoneNumber", data.preparedBy1?.phoneNumber)
-        .bind("preparer2EmployeeId", data.preparedBy2?.employeeId)
-        .bind("preparer2Title", data.preparedBy2?.title)
-        .bind("preparer2PhoneNumber", data.preparedBy2?.phoneNumber)
-        .bind("selectedUnit", data.selectedUnit?.id)
-        .mapTo<AssistanceNeedDecisionId>()
-        .first()
+    val id =
+        createQuery(sql)
+            .bindKotlin(data)
+            .bind("childId", childId)
+            .bind(
+                "structuralMotivationOptSmallerGroup",
+                data.structuralMotivationOptions.smallerGroup
+            )
+            .bind(
+                "structuralMotivationOptSpecialGroup",
+                data.structuralMotivationOptions.specialGroup
+            )
+            .bind("structuralMotivationOptSmallGroup", data.structuralMotivationOptions.smallGroup)
+            .bind(
+                "structuralMotivationOptGroupAssistant",
+                data.structuralMotivationOptions.groupAssistant
+            )
+            .bind(
+                "structuralMotivationOptChildAssistant",
+                data.structuralMotivationOptions.childAssistant
+            )
+            .bind(
+                "structuralMotivationOptAdditionalStaff",
+                data.structuralMotivationOptions.additionalStaff
+            )
+            .bind("serviceOptConsultationSpecialEd", data.serviceOptions.consultationSpecialEd)
+            .bind("serviceOptPartTimeSpecialEd", data.serviceOptions.partTimeSpecialEd)
+            .bind("serviceOptFullTimeSpecialEd", data.serviceOptions.fullTimeSpecialEd)
+            .bind(
+                "serviceOptInterpretationAndAssistanceServices",
+                data.serviceOptions.interpretationAndAssistanceServices
+            )
+            .bind("serviceOptSpecialAides", data.serviceOptions.specialAides)
+            .bind("decisionMakerEmployeeId", data.decisionMaker?.employeeId)
+            .bind("decisionMakerTitle", data.decisionMaker?.title)
+            .bind("preparer1EmployeeId", data.preparedBy1?.employeeId)
+            .bind("preparer1Title", data.preparedBy1?.title)
+            .bind("preparer1PhoneNumber", data.preparedBy1?.phoneNumber)
+            .bind("preparer2EmployeeId", data.preparedBy2?.employeeId)
+            .bind("preparer2Title", data.preparedBy2?.title)
+            .bind("preparer2PhoneNumber", data.preparedBy2?.phoneNumber)
+            .bind("selectedUnit", data.selectedUnit?.id)
+            .mapTo<AssistanceNeedDecisionId>()
+            .first()
 
-    //language=sql
+    // language=sql
     val guardianSql =
         """
         INSERT INTO assistance_need_decision_guardian (
@@ -114,22 +134,22 @@ fun Database.Transaction.insertAssistanceNeedDecision(
             :details
         )
             
-        """.trimIndent()
+        """
+            .trimIndent()
 
     val batch = prepareBatch(guardianSql)
     data.guardianInfo.forEach { guardian ->
-        batch
-            .bindKotlin(guardian)
-            .bind("assistanceNeedDecisionId", id)
-            .add()
+        batch.bindKotlin(guardian).bind("assistanceNeedDecisionId", id).add()
     }
     batch.execute()
 
     return getAssistanceNeedDecisionById(id)
 }
 
-fun Database.Read.getAssistanceNeedDecisionById(id: AssistanceNeedDecisionId): AssistanceNeedDecision {
-    //language=sql
+fun Database.Read.getAssistanceNeedDecisionById(
+    id: AssistanceNeedDecisionId
+): AssistanceNeedDecision {
+    // language=sql
     val sql =
         """
         SELECT ad.id, decision_number, child_id, concat(child.first_name, ' ', child.last_name) child_name, validity_period, status,
@@ -164,11 +184,10 @@ fun Database.Read.getAssistanceNeedDecisionById(id: AssistanceNeedDecisionId): A
         LEFT JOIN person child ON child.id = ad.child_id
         WHERE ad.id = :id
         GROUP BY ad.id, child_id, validity_period, unit.id, p1.id, p2.id, dm.id, child.id;
-        """.trimIndent()
-    return createQuery(sql)
-        .bind("id", id)
-        .mapTo<AssistanceNeedDecision>()
-        .firstOrNull() ?: throw NotFound("Assistance need decision $id not found")
+        """
+            .trimIndent()
+    return createQuery(sql).bind("id", id).mapTo<AssistanceNeedDecision>().firstOrNull()
+        ?: throw NotFound("Assistance need decision $id not found")
 }
 
 fun Database.Transaction.updateAssistanceNeedDecision(
@@ -176,7 +195,7 @@ fun Database.Transaction.updateAssistanceNeedDecision(
     data: AssistanceNeedDecisionForm,
     decisionMakerHasOpened: Boolean? = null
 ) {
-    //language=sql
+    // language=sql
     val sql =
         """
         UPDATE assistance_need_decision
@@ -219,20 +238,33 @@ fun Database.Transaction.updateAssistanceNeedDecision(
             preparer_2_phone_number = :preparer2PhoneNumber,
             decision_maker_has_opened = COALESCE(:decisionMakerHasOpened, decision_maker_has_opened)
         WHERE id = :id AND status IN ('DRAFT', 'NEEDS_WORK')
-        """.trimIndent()
+        """
+            .trimIndent()
     createUpdate(sql)
         .bindKotlin(data)
         .bind("id", id)
         .bind("structuralMotivationOptSmallerGroup", data.structuralMotivationOptions.smallerGroup)
         .bind("structuralMotivationOptSpecialGroup", data.structuralMotivationOptions.specialGroup)
         .bind("structuralMotivationOptSmallGroup", data.structuralMotivationOptions.smallGroup)
-        .bind("structuralMotivationOptGroupAssistant", data.structuralMotivationOptions.groupAssistant)
-        .bind("structuralMotivationOptChildAssistant", data.structuralMotivationOptions.childAssistant)
-        .bind("structuralMotivationOptAdditionalStaff", data.structuralMotivationOptions.additionalStaff)
+        .bind(
+            "structuralMotivationOptGroupAssistant",
+            data.structuralMotivationOptions.groupAssistant
+        )
+        .bind(
+            "structuralMotivationOptChildAssistant",
+            data.structuralMotivationOptions.childAssistant
+        )
+        .bind(
+            "structuralMotivationOptAdditionalStaff",
+            data.structuralMotivationOptions.additionalStaff
+        )
         .bind("serviceOptConsultationSpecialEd", data.serviceOptions.consultationSpecialEd)
         .bind("serviceOptPartTimeSpecialEd", data.serviceOptions.partTimeSpecialEd)
         .bind("serviceOptFullTimeSpecialEd", data.serviceOptions.fullTimeSpecialEd)
-        .bind("serviceOptInterpretationAndAssistanceServices", data.serviceOptions.interpretationAndAssistanceServices)
+        .bind(
+            "serviceOptInterpretationAndAssistanceServices",
+            data.serviceOptions.interpretationAndAssistanceServices
+        )
         .bind("serviceOptSpecialAides", data.serviceOptions.specialAides)
         .bind("decisionMakerEmployeeId", data.decisionMaker?.employeeId)
         .bind("decisionMakerTitle", data.decisionMaker?.title)
@@ -246,25 +278,24 @@ fun Database.Transaction.updateAssistanceNeedDecision(
         .bind("decisionMakerHasOpened", decisionMakerHasOpened)
         .updateExactlyOne()
 
-    //language=sql
+    // language=sql
     val guardianSql =
         """
         UPDATE assistance_need_decision_guardian SET 
             is_heard = :isHeard,
             details = :details
         WHERE id = :id
-        """.trimIndent()
+        """
+            .trimIndent()
     val batch = prepareBatch(guardianSql)
-    data.guardianInfo.forEach { guardian ->
-        batch
-            .bindKotlin(guardian)
-            .add()
-    }
+    data.guardianInfo.forEach { guardian -> batch.bindKotlin(guardian).add() }
     batch.execute()
 }
 
-fun Database.Read.getAssistanceNeedDecisionsByChildId(childId: ChildId): List<AssistanceNeedDecisionBasics> {
-    //language=sql
+fun Database.Read.getAssistanceNeedDecisionsByChildId(
+    childId: ChildId
+): List<AssistanceNeedDecisionBasics> {
+    // language=sql
     val sql =
         """
         SELECT ad.id, validity_period, status, decision_made, sent_for_decision, ad.created,
@@ -272,48 +303,41 @@ fun Database.Read.getAssistanceNeedDecisionsByChildId(childId: ChildId): List<As
         FROM assistance_need_decision ad
         LEFT JOIN daycare unit ON unit.id = selected_unit
         WHERE child_id = :childId;
-        """.trimIndent()
-    return createQuery(sql)
-        .bind("childId", childId)
-        .mapTo<AssistanceNeedDecisionBasics>()
-        .list()
+        """
+            .trimIndent()
+    return createQuery(sql).bind("childId", childId).mapTo<AssistanceNeedDecisionBasics>().list()
 }
 
 fun Database.Transaction.deleteAssistanceNeedDecision(id: AssistanceNeedDecisionId): Boolean {
-    //language=sql
+    // language=sql
     val sql =
         """
         DELETE FROM assistance_need_decision
         WHERE id = :id AND status IN ('DRAFT', 'NEEDS_WORK')
         RETURNING id;
-        """.trimIndent()
-    return createQuery(sql)
-        .bind("id", id)
-        .mapTo<AssistanceNeedDecisionId>()
-        .firstOrNull() != null
+        """
+            .trimIndent()
+    return createQuery(sql).bind("id", id).mapTo<AssistanceNeedDecisionId>().firstOrNull() != null
 }
 
-fun Database.Transaction.markAssistanceNeedDecisionAsOpened(
-    id: AssistanceNeedDecisionId
-) {
-    //language=sql
+fun Database.Transaction.markAssistanceNeedDecisionAsOpened(id: AssistanceNeedDecisionId) {
+    // language=sql
     val sql =
         """
         UPDATE assistance_need_decision
         SET decision_maker_has_opened = TRUE
         WHERE id = :id
-        """.trimIndent()
+        """
+            .trimIndent()
 
-    createUpdate(sql)
-        .bind("id", id)
-        .updateExactlyOne()
+    createUpdate(sql).bind("id", id).updateExactlyOne()
 }
 
 fun Database.Read.getAssistanceNeedDecisionsByChildIdForCitizen(
     childId: ChildId,
     guardianId: PersonId
 ): List<AssistanceNeedDecisionCitizenListItem> {
-    //language=sql
+    // language=sql
     val sql =
         """
         SELECT ad.id, ad.child_id, validity_period, status, decision_made, assistance_levels,
@@ -322,7 +346,8 @@ fun Database.Read.getAssistanceNeedDecisionsByChildIdForCitizen(
         FROM assistance_need_decision ad
         LEFT JOIN daycare unit ON unit.id = selected_unit
         WHERE child_id = :childId AND status IN ('REJECTED', 'ACCEPTED') AND decision_made IS NOT NULL
-        """.trimIndent()
+        """
+            .trimIndent()
     return createQuery(sql)
         .bind("childId", childId)
         .bind("guardianId", guardianId)
@@ -334,7 +359,7 @@ fun Database.Read.getAssistanceNeedDecisionsForCitizen(
     today: LocalDate,
     userId: PersonId
 ): List<AssistanceNeedDecisionCitizenListItem> {
-    //language=sql
+    // language=sql
     val sql =
         """
         WITH children AS (
@@ -349,7 +374,8 @@ fun Database.Read.getAssistanceNeedDecisionsForCitizen(
         JOIN assistance_need_decision ad ON ad.child_id = c.child_id
         LEFT JOIN daycare unit ON unit.id = selected_unit
         WHERE status IN ('REJECTED', 'ACCEPTED') AND decision_made IS NOT NULL
-        """.trimIndent()
+        """
+            .trimIndent()
     return createQuery(sql)
         .bind("today", today)
         .bind("userId", userId)
@@ -358,45 +384,45 @@ fun Database.Read.getAssistanceNeedDecisionsForCitizen(
 }
 
 fun Database.Read.getAssistanceNeedDecisionDocumentKey(id: AssistanceNeedDecisionId): String? {
-    //language=sql
+    // language=sql
     val sql =
         """
         SELECT document_key
         FROM assistance_need_decision ad
         LEFT JOIN daycare unit ON unit.id = selected_unit
         WHERE ad.id = :id
-        """.trimIndent()
-    return createQuery(sql)
-        .bind("id", id)
-        .mapTo<String>()
-        .firstOrNull()
+        """
+            .trimIndent()
+    return createQuery(sql).bind("id", id).mapTo<String>().firstOrNull()
 }
 
-fun Database.Transaction.updateAssistanceNeedDocumentKey(id: AssistanceNeedDecisionId, key: String) {
-    //language=sql
+fun Database.Transaction.updateAssistanceNeedDocumentKey(
+    id: AssistanceNeedDecisionId,
+    key: String
+) {
+    // language=sql
     val sql =
         """
         UPDATE assistance_need_decision
         SET document_key = :key
         WHERE id = :id
-        """.trimIndent()
-    createUpdate(sql)
-        .bind("id", id)
-        .bind("key", key)
-        .updateExactlyOne()
+        """
+            .trimIndent()
+    createUpdate(sql).bind("id", id).bind("key", key).updateExactlyOne()
 }
 
 fun Database.Transaction.markAssistanceNeedDecisionAsReadByGuardian(
     assistanceNeedDecisionId: AssistanceNeedDecisionId,
     guardianId: PersonId
 ) {
-    //language=sql
+    // language=sql
     val sql =
         """
         UPDATE assistance_need_decision
         SET unread_guardian_ids = array_remove(unread_guardian_ids, :guardianId)
         WHERE id = :id
-        """.trimIndent()
+        """
+            .trimIndent()
 
     createUpdate(sql)
         .bind("id", assistanceNeedDecisionId)
@@ -408,7 +434,7 @@ fun Database.Read.getAssistanceNeedDecisionsUnreadCountsForCitizen(
     today: LocalDate,
     userId: PersonId
 ): List<UnreadAssistanceNeedDecisionItem> {
-    //language=sql
+    // language=sql
     val sql =
         """
         WITH children AS (
@@ -421,7 +447,8 @@ fun Database.Read.getAssistanceNeedDecisionsUnreadCountsForCitizen(
         JOIN children c ON c.child_id = ad.child_id
         WHERE (:userId = ANY(ad.unread_guardian_ids)) AND status IN ('REJECTED', 'ACCEPTED')
         GROUP BY ad.child_id
-        """.trimIndent()
+        """
+            .trimIndent()
     return createQuery(sql)
         .bind("today", today)
         .bind("userId", userId)
@@ -435,7 +462,7 @@ fun Database.Transaction.decideAssistanceNeedDecision(
     decisionMade: LocalDate?,
     unreadGuardianIds: List<PersonId>?
 ) {
-    //language=sql
+    // language=sql
     val sql =
         """
         UPDATE assistance_need_decision
@@ -444,7 +471,8 @@ fun Database.Transaction.decideAssistanceNeedDecision(
             decision_made = :decisionMade,
             unread_guardian_ids = :unreadGuardianIds
         WHERE id = :id AND status IN ('DRAFT', 'NEEDS_WORK')
-        """.trimIndent()
+        """
+            .trimIndent()
     createUpdate(sql)
         .bind("id", id)
         .bind("status", status)
@@ -458,7 +486,7 @@ fun Database.Transaction.endActiveAssistanceNeedDecisions(
     endDate: LocalDate,
     childId: ChildId
 ) {
-    //language=sql
+    // language=sql
     val sql =
         """
         UPDATE assistance_need_decision
@@ -467,7 +495,8 @@ fun Database.Transaction.endActiveAssistanceNeedDecisions(
           AND (upper(validity_period) IS NULL OR upper(validity_period) > :endDate)
           AND child_id = :childId
           AND status = 'ACCEPTED'
-        """.trimIndent()
+        """
+            .trimIndent()
     createUpdate(sql)
         .bind("excludingId", excludingId)
         .bind("endDate", endDate.minusDays(1))

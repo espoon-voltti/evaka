@@ -14,10 +14,10 @@ import fi.espoo.evaka.pis.service.Parentship
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import org.junit.jupiter.api.Test
 
 class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     @Test
@@ -26,11 +26,13 @@ class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val parent = testPerson2()
         val startDate = LocalDate.now()
         val endDate = startDate.plusDays(100)
-        val parentship = db.transaction { tx ->
-            tx.createParentship(child.id, parent.id, startDate, endDate)
-        }
+        val parentship =
+            db.transaction { tx -> tx.createParentship(child.id, parent.id, startDate, endDate) }
         assertNotNull(parentship.id)
-        assertEquals(child.copy(updatedFromVtj = null), parentship.child.copy(updatedFromVtj = null))
+        assertEquals(
+            child.copy(updatedFromVtj = null),
+            parentship.child.copy(updatedFromVtj = null)
+        )
         assertEquals(parent.id, parentship.headOfChildId)
         assertEquals(startDate, parentship.startDate)
         assertEquals(endDate, parentship.endDate)
@@ -43,14 +45,11 @@ class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val endDate = startDate.plusDays(100)
 
         listOf(testPerson4(), testPerson5(), testPerson6()).map {
-            db.transaction { tx ->
-                tx.createParentship(it.id, parent.id, startDate, endDate)
-            }
+            db.transaction { tx -> tx.createParentship(it.id, parent.id, startDate, endDate) }
         }
 
-        val fetchedRelations = db.read { r ->
-            r.getParentships(headOfChildId = parent.id, childId = null)
-        }
+        val fetchedRelations =
+            db.read { r -> r.getParentships(headOfChildId = parent.id, childId = null) }
         assertEquals(3, fetchedRelations.size)
     }
 
@@ -64,19 +63,19 @@ class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         listOf(adult1, adult2).mapIndexed { index, parent ->
             val startDate = now.plusDays(index * 51.toLong())
             val endDate = startDate.plusDays((index + 1) * 50.toLong())
-            db.transaction { tx ->
-                tx.createParentship(child.id, parent.id, startDate, endDate)
-            }
+            db.transaction { tx -> tx.createParentship(child.id, parent.id, startDate, endDate) }
         }
 
         db.read { r ->
             val fetchedRelationsByChild = r.getParentships(headOfChildId = null, childId = child.id)
             assertEquals(2, fetchedRelationsByChild.size)
 
-            val fetchedRelationsByParent1 = r.getParentships(headOfChildId = adult1.id, childId = child.id)
+            val fetchedRelationsByParent1 =
+                r.getParentships(headOfChildId = adult1.id, childId = child.id)
             assertEquals(1, fetchedRelationsByParent1.size)
 
-            val fetchedRelationsByParent2 = r.getParentships(headOfChildId = adult2.id, childId = child.id)
+            val fetchedRelationsByParent2 =
+                r.getParentships(headOfChildId = adult2.id, childId = child.id)
             assertEquals(1, fetchedRelationsByParent2.size)
         }
     }
@@ -90,30 +89,50 @@ class ParentshipDAOIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             val parentship = tx.createParentship(child.id, adult.id, startDate, endDate)
 
-            assertEquals(setOf(parentship), tx.getParentships(headOfChildId = adult.id, childId = child.id).toHashSet())
-            assertEquals(setOf(parentship), tx.getParentships(headOfChildId = adult.id, childId = null).toHashSet())
-            assertEquals(setOf(parentship), tx.getParentships(headOfChildId = null, childId = child.id).toHashSet())
+            assertEquals(
+                setOf(parentship),
+                tx.getParentships(headOfChildId = adult.id, childId = child.id).toHashSet()
+            )
+            assertEquals(
+                setOf(parentship),
+                tx.getParentships(headOfChildId = adult.id, childId = null).toHashSet()
+            )
+            assertEquals(
+                setOf(parentship),
+                tx.getParentships(headOfChildId = null, childId = child.id).toHashSet()
+            )
 
-            assertEquals(emptySet<Parentship>(), tx.getParentships(headOfChildId = child.id, childId = adult.id).toHashSet())
-            assertEquals(emptySet<Parentship>(), tx.getParentships(headOfChildId = child.id, childId = null).toHashSet())
-            assertEquals(emptySet<Parentship>(), tx.getParentships(headOfChildId = null, childId = adult.id).toHashSet())
+            assertEquals(
+                emptySet<Parentship>(),
+                tx.getParentships(headOfChildId = child.id, childId = adult.id).toHashSet()
+            )
+            assertEquals(
+                emptySet<Parentship>(),
+                tx.getParentships(headOfChildId = child.id, childId = null).toHashSet()
+            )
+            assertEquals(
+                emptySet<Parentship>(),
+                tx.getParentships(headOfChildId = null, childId = adult.id).toHashSet()
+            )
         }
     }
 
-    private fun createPerson(ssn: String, firstName: String): PersonJSON = db.transaction { tx ->
-        tx.getPersonBySSN(ssn)
-            ?: tx.insertTestPerson(
-                DevPerson(
-                    ssn = ssn,
-                    dateOfBirth = getDobFromSsn(ssn),
-                    firstName = firstName,
-                    lastName = "Meikäläinen",
-                    email = "${firstName.lowercase()}.meikalainen@example.com",
-                    language = "fi"
-                )
-            ).let { tx.getPersonById(it)!! }
-    }
-        .let { PersonJSON.from(it) }
+    private fun createPerson(ssn: String, firstName: String): PersonJSON =
+        db.transaction { tx ->
+                tx.getPersonBySSN(ssn)
+                    ?: tx.insertTestPerson(
+                            DevPerson(
+                                ssn = ssn,
+                                dateOfBirth = getDobFromSsn(ssn),
+                                firstName = firstName,
+                                lastName = "Meikäläinen",
+                                email = "${firstName.lowercase()}.meikalainen@example.com",
+                                language = "fi"
+                            )
+                        )
+                        .let { tx.getPersonById(it)!! }
+            }
+            .let { PersonJSON.from(it) }
 
     private fun testPerson1() = createPerson("140881-172X", "Aku")
     private fun testPerson2() = createPerson("150786-1766", "Iines")

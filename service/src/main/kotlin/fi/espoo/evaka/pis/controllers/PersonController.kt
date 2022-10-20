@@ -33,6 +33,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
@@ -42,7 +43,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 @RequestMapping("/person")
@@ -53,13 +53,15 @@ class PersonController(
     private val fridgeFamilyService: FridgeFamilyService
 ) {
     @PostMapping
-    fun createEmpty(db: Database, user: AuthenticatedUser, clock: EvakaClock): PersonIdentityResponseJSON {
+    fun createEmpty(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock
+    ): PersonIdentityResponseJSON {
         accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_PERSON)
         return db.connect { dbc -> dbc.transaction { createEmptyPerson(it, clock) } }
             .let { PersonIdentityResponseJSON.from(it) }
-            .also {
-                Audit.PersonCreate.log(targetId = it.id)
-            }
+            .also { Audit.PersonCreate.log(targetId = it.id) }
     }
 
     @GetMapping("/{personId}")
@@ -71,17 +73,17 @@ class PersonController(
     ): PersonResponse {
         accessControl.requirePermissionFor(user, clock, Action.Person.READ, personId)
         return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.getPersonById(personId)?.let {
-                    PersonResponse(
-                        PersonJSON.from(it),
-                        accessControl.getPermittedActions(tx, user, clock, personId)
-                    )
+                dbc.read { tx ->
+                    tx.getPersonById(personId)?.let {
+                        PersonResponse(
+                            PersonJSON.from(it),
+                            accessControl.getPermittedActions(tx, user, clock, personId)
+                        )
+                    }
                 }
-            } ?: throw NotFound("Person $personId not found")
-        }.also {
-            Audit.PersonDetailsRead.log(targetId = personId)
-        }
+                    ?: throw NotFound("Person $personId not found")
+            }
+            .also { Audit.PersonDetailsRead.log(targetId = personId) }
     }
 
     @GetMapping(value = ["/details/{personId}", "/identity/{personId}"])
@@ -92,20 +94,27 @@ class PersonController(
         @PathVariable(value = "personId") personId: PersonId
     ): PersonJSON {
         accessControl.requirePermissionFor(user, clock, Action.Person.READ, personId)
-        return db.connect { dbc -> dbc.transaction { it.getPersonById(personId) } ?: throw NotFound() }
+        return db.connect { dbc ->
+                dbc.transaction { it.getPersonById(personId) } ?: throw NotFound()
+            }
             .hideNonPermittedPersonData(
-                includeInvoiceAddress = accessControl.hasPermissionFor(
-                    user,
-                    clock,
-                    Action.Person.READ_INVOICE_ADDRESS,
-                    personId
-                ),
-                includeOphOid = accessControl.hasPermissionFor(user, clock, Action.Person.READ_OPH_OID, personId)
+                includeInvoiceAddress =
+                    accessControl.hasPermissionFor(
+                        user,
+                        clock,
+                        Action.Person.READ_INVOICE_ADDRESS,
+                        personId
+                    ),
+                includeOphOid =
+                    accessControl.hasPermissionFor(
+                        user,
+                        clock,
+                        Action.Person.READ_OPH_OID,
+                        personId
+                    )
             )
             .let { PersonJSON.from(it) }
-            .also {
-                Audit.PersonDetailsRead.log(targetId = personId)
-            }
+            .also { Audit.PersonDetailsRead.log(targetId = personId) }
     }
 
     @GetMapping("/dependants/{personId}")
@@ -116,9 +125,14 @@ class PersonController(
         @PathVariable(value = "personId") personId: PersonId
     ): List<PersonWithChildrenDTO> {
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_DEPENDANTS, personId)
-        return db.connect { dbc -> dbc.transaction { personService.getPersonWithChildren(it, user, personId) }?.children ?: throw NotFound() }.also {
-            Audit.PersonDependantRead.log(targetId = personId, args = mapOf("count" to it.size))
-        }
+        return db.connect { dbc ->
+                dbc.transaction { personService.getPersonWithChildren(it, user, personId) }
+                    ?.children
+                    ?: throw NotFound()
+            }
+            .also {
+                Audit.PersonDependantRead.log(targetId = personId, args = mapOf("count" to it.size))
+            }
     }
 
     @GetMapping("/guardians/{personId}")
@@ -129,7 +143,9 @@ class PersonController(
         @PathVariable(value = "personId") childId: ChildId
     ): List<PersonJSON> {
         accessControl.requirePermissionFor(user, clock, Action.Child.READ_GUARDIANS, childId)
-        return db.connect { dbc -> dbc.transaction { personService.getGuardians(it, user, childId) } }
+        return db.connect { dbc ->
+                dbc.transaction { personService.getGuardians(it, user, childId) }
+            }
             .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
             .also {
                 Audit.PersonGuardianRead.log(targetId = childId, args = mapOf("count" to it.size))
@@ -143,14 +159,24 @@ class PersonController(
         clock: EvakaClock,
         @PathVariable(value = "personId") childId: ChildId
     ): List<PersonJSON> {
-        accessControl.requirePermissionFor(user, clock, Action.Child.READ_BLOCKED_GUARDIANS, childId)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Child.READ_BLOCKED_GUARDIANS,
+            childId
+        )
         return db.connect { dbc ->
-            dbc.transaction { tx ->
-                tx.getBlockedGuardians(childId).mapNotNull { tx.getPersonById(it) }
+                dbc.transaction { tx ->
+                    tx.getBlockedGuardians(childId).mapNotNull { tx.getPersonById(it) }
+                }
             }
-        }
             .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
-            .also { Audit.PersonBlockedGuardiansRead.log(targetId = childId, args = mapOf("count" to it.size)) }
+            .also {
+                Audit.PersonBlockedGuardiansRead.log(
+                    targetId = childId,
+                    args = mapOf("count" to it.size)
+                )
+            }
     }
 
     @PostMapping("/search")
@@ -162,18 +188,22 @@ class PersonController(
     ): List<PersonSummary> {
         accessControl.requirePermissionFor(user, clock, Action.Global.SEARCH_PEOPLE)
         return db.connect { dbc ->
-            dbc.read {
-                it.searchPeople(
-                    user,
-                    body.searchTerm,
-                    body.orderBy,
-                    body.sortDirection,
-                    restricted = !accessControl.hasPermissionFor(user, clock, Action.Global.SEARCH_PEOPLE_UNRESTRICTED)
-                )
+                dbc.read {
+                    it.searchPeople(
+                        user,
+                        body.searchTerm,
+                        body.orderBy,
+                        body.sortDirection,
+                        restricted =
+                            !accessControl.hasPermissionFor(
+                                user,
+                                clock,
+                                Action.Global.SEARCH_PEOPLE_UNRESTRICTED
+                            )
+                    )
+                }
             }
-        }.also {
-            Audit.PersonDetailsSearch.log(args = mapOf("count" to it.size))
-        }
+            .also { Audit.PersonDetailsSearch.log(args = mapOf("count" to it.size)) }
     }
 
     @PatchMapping("/{personId}")
@@ -186,47 +216,71 @@ class PersonController(
     ): PersonJSON {
         accessControl.requirePermissionFor(user, clock, Action.Person.UPDATE, personId)
 
-        val userEditablePersonData = data
-            .let {
-                if (accessControl.hasPermissionFor(user, clock, Action.Person.UPDATE_PERSONAL_DETAILS, personId)) {
-                    it
-                } else {
-                    it.copy(
-                        firstName = null,
-                        lastName = null,
-                        dateOfBirth = null,
-                        streetAddress = null,
-                        postalCode = null,
-                        postOffice = null
-                    )
+        val userEditablePersonData =
+            data
+                .let {
+                    if (
+                        accessControl.hasPermissionFor(
+                            user,
+                            clock,
+                            Action.Person.UPDATE_PERSONAL_DETAILS,
+                            personId
+                        )
+                    ) {
+                        it
+                    } else {
+                        it.copy(
+                            firstName = null,
+                            lastName = null,
+                            dateOfBirth = null,
+                            streetAddress = null,
+                            postalCode = null,
+                            postOffice = null
+                        )
+                    }
                 }
-            }
-            .let {
-                if (accessControl.hasPermissionFor(user, clock, Action.Person.UPDATE_INVOICE_ADDRESS, personId)) {
-                    it
-                } else {
-                    it.copy(
-                        invoiceRecipientName = null,
-                        invoicingStreetAddress = null,
-                        invoicingPostalCode = null,
-                        invoicingPostOffice = null,
-                        forceManualFeeDecisions = null
-                    )
+                .let {
+                    if (
+                        accessControl.hasPermissionFor(
+                            user,
+                            clock,
+                            Action.Person.UPDATE_INVOICE_ADDRESS,
+                            personId
+                        )
+                    ) {
+                        it
+                    } else {
+                        it.copy(
+                            invoiceRecipientName = null,
+                            invoicingStreetAddress = null,
+                            invoicingPostalCode = null,
+                            invoicingPostOffice = null,
+                            forceManualFeeDecisions = null
+                        )
+                    }
                 }
-            }
-            .let {
-                if (accessControl.hasPermissionFor(user, clock, Action.Person.UPDATE_OPH_OID, personId)) {
-                    it
-                } else {
-                    it.copy(ophPersonOid = null)
+                .let {
+                    if (
+                        accessControl.hasPermissionFor(
+                            user,
+                            clock,
+                            Action.Person.UPDATE_OPH_OID,
+                            personId
+                        )
+                    ) {
+                        it
+                    } else {
+                        it.copy(ophPersonOid = null)
+                    }
                 }
-            }
 
-        return db.connect { dbc -> dbc.transaction { personService.patchUserDetails(it, personId, userEditablePersonData) } }
-            .let { PersonJSON.from(it) }
-            .also {
-                Audit.PersonUpdate.log(targetId = personId)
+        return db.connect { dbc ->
+                dbc.transaction {
+                    personService.patchUserDetails(it, personId, userEditablePersonData)
+                }
             }
+            .let { PersonJSON.from(it) }
+            .also { Audit.PersonUpdate.log(targetId = personId) }
     }
 
     @DeleteMapping("/{personId}")
@@ -251,11 +305,17 @@ class PersonController(
     ): PersonJSON {
         accessControl.requirePermissionFor(user, clock, Action.Person.ADD_SSN, personId)
 
-        val person = db.connect { dbc -> dbc.transaction { it.getPersonById(personId) } }
-            ?: throw NotFound("Person with id $personId not found")
+        val person =
+            db.connect { dbc -> dbc.transaction { it.getPersonById(personId) } }
+                ?: throw NotFound("Person with id $personId not found")
 
         if (person.ssnAddingDisabled) {
-            accessControl.requirePermissionFor(user, clock, Action.Person.ENABLE_SSN_ADDING, personId)
+            accessControl.requirePermissionFor(
+                user,
+                clock,
+                Action.Person.ENABLE_SSN_ADDING,
+                personId
+            )
         }
 
         if (!isValidSSN(body.ssn)) {
@@ -264,12 +324,16 @@ class PersonController(
 
         return PersonJSON.from(
             db.connect { dbc ->
-                dbc.transaction {
-                    personService.addSsn(it, user, personId, ExternalIdentifier.SSN.getInstance(body.ssn))
+                    dbc.transaction {
+                        personService.addSsn(
+                            it,
+                            user,
+                            personId,
+                            ExternalIdentifier.SSN.getInstance(body.ssn)
+                        )
+                    }
                 }
-            }.also {
-                Audit.PersonUpdate.log(targetId = personId)
-            }
+                .also { Audit.PersonUpdate.log(targetId = personId) }
         )
     }
 
@@ -282,12 +346,24 @@ class PersonController(
         @RequestBody body: DisableSsnRequest
     ) {
         if (!body.disabled) {
-            accessControl.requirePermissionFor(user, clock, Action.Person.ENABLE_SSN_ADDING, personId)
+            accessControl.requirePermissionFor(
+                user,
+                clock,
+                Action.Person.ENABLE_SSN_ADDING,
+                personId
+            )
         } else {
-            accessControl.requirePermissionFor(user, clock, Action.Person.DISABLE_SSN_ADDING, personId)
+            accessControl.requirePermissionFor(
+                user,
+                clock,
+                Action.Person.DISABLE_SSN_ADDING,
+                personId
+            )
         }
 
-        db.connect { dbc -> dbc.transaction { personService.disableSsn(it, personId, body.disabled) } }
+        db.connect { dbc ->
+            dbc.transaction { personService.disableSsn(it, personId, body.disabled) }
+        }
         Audit.PersonUpdate.log(targetId = personId)
     }
 
@@ -303,19 +379,18 @@ class PersonController(
         if (!isValidSSN(body.ssn)) throw BadRequest("Invalid SSN")
 
         return db.connect { dbc ->
-            dbc.transaction {
-                personService.getOrCreatePerson(
-                    it,
-                    user,
-                    ExternalIdentifier.SSN.getInstance(body.ssn),
-                    body.readonly
-                )
-            } ?: throw NotFound()
-        }
-            .let { PersonJSON.from(it) }
-            .also {
-                Audit.PersonDetailsRead.log(targetId = it.id)
+                dbc.transaction {
+                    personService.getOrCreatePerson(
+                        it,
+                        user,
+                        ExternalIdentifier.SSN.getInstance(body.ssn),
+                        body.readonly
+                    )
+                }
+                    ?: throw NotFound()
             }
+            .let { PersonJSON.from(it) }
+            .also { Audit.PersonDetailsRead.log(targetId = it.id) }
     }
 
     @PostMapping("/merge")
@@ -325,10 +400,20 @@ class PersonController(
         clock: EvakaClock,
         @RequestBody body: MergeRequest
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Person.MERGE, setOf(body.master, body.duplicate))
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Person.MERGE,
+            setOf(body.master, body.duplicate)
+        )
         db.connect { dbc ->
             dbc.transaction { tx ->
-                mergeService.mergePeople(tx, clock, master = body.master, duplicate = body.duplicate)
+                mergeService.mergePeople(
+                    tx,
+                    clock,
+                    master = body.master,
+                    duplicate = body.duplicate
+                )
             }
         }
         Audit.PersonMerge.log(targetId = body.master, objectId = body.duplicate)
@@ -342,9 +427,8 @@ class PersonController(
         @RequestBody body: CreatePersonBody
     ): PersonId {
         accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_PERSON)
-        return db.connect { dbc -> dbc.transaction { createPerson(it, body) } }.also { personId ->
-            Audit.PersonCreate.log(targetId = personId)
-        }
+        return db.connect { dbc -> dbc.transaction { createPerson(it, body) } }
+            .also { personId -> Audit.PersonCreate.log(targetId = personId) }
     }
 
     @PostMapping("/{personId}/vtj-update")
@@ -355,9 +439,10 @@ class PersonController(
         @PathVariable personId: PersonId
     ) {
         accessControl.requirePermissionFor(user, clock, Action.Person.UPDATE_FROM_VTJ, personId)
-        return db.connect { dbc -> fridgeFamilyService.updatePersonAndFamilyFromVtj(dbc, user, clock, personId) }.also {
-            Audit.PersonVtjFamilyUpdate.log(targetId = personId)
-        }
+        return db.connect { dbc ->
+                fridgeFamilyService.updatePersonAndFamilyFromVtj(dbc, user, clock, personId)
+            }
+            .also { Audit.PersonVtjFamilyUpdate.log(targetId = personId) }
     }
 
     data class EvakaRightsRequest(val guardianId: PersonId, val denied: Boolean)
@@ -382,45 +467,33 @@ class PersonController(
                 }
             }
         }
-        Audit.PersonUpdateEvakaRights.log(targetId = childId, objectId = body.guardianId, mapOf("denied" to body.denied))
+        Audit.PersonUpdateEvakaRights.log(
+            targetId = childId,
+            objectId = body.guardianId,
+            mapOf("denied" to body.denied)
+        )
     }
 
-    data class PersonResponse(
-        val person: PersonJSON,
-        val permittedActions: Set<Action.Person>
-    )
+    data class PersonResponse(val person: PersonJSON, val permittedActions: Set<Action.Person>)
 
-    data class MergeRequest(
-        val master: PersonId,
-        val duplicate: PersonId
-    )
+    data class MergeRequest(val master: PersonId, val duplicate: PersonId)
 
-    data class AddSsnRequest(
-        val ssn: String
-    )
+    data class AddSsnRequest(val ssn: String)
 
-    data class DisableSsnRequest(
-        val disabled: Boolean
-    )
+    data class DisableSsnRequest(val disabled: Boolean)
 
-    data class PersonIdentityResponseJSON(
-        val id: PersonId,
-        val socialSecurityNumber: String?
-    ) {
+    data class PersonIdentityResponseJSON(val id: PersonId, val socialSecurityNumber: String?) {
         companion object {
-            fun from(person: PersonDTO): PersonIdentityResponseJSON = PersonIdentityResponseJSON(
-                id = person.id,
-                socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.ssn
-            )
+            fun from(person: PersonDTO): PersonIdentityResponseJSON =
+                PersonIdentityResponseJSON(
+                    id = person.id,
+                    socialSecurityNumber = (person.identity as? ExternalIdentifier.SSN)?.ssn
+                )
         }
     }
 }
 
-data class SearchPersonBody(
-    val searchTerm: String,
-    val orderBy: String,
-    val sortDirection: String
-)
+data class SearchPersonBody(val searchTerm: String, val orderBy: String, val sortDirection: String)
 
 data class CreatePersonBody(
     val firstName: String,
@@ -433,7 +506,4 @@ data class CreatePersonBody(
     val email: String?
 )
 
-data class GetOrCreatePersonBySsnRequest(
-    val ssn: String,
-    val readonly: Boolean = false
-)
+data class GetOrCreatePersonBySsnRequest(val ssn: String, val readonly: Boolean = false)

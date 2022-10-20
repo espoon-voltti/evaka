@@ -26,9 +26,15 @@ class FeeDecisionGenerationJobProcessor(
         asyncJobRunner.registerHandler<AsyncJob.GenerateFinanceDecisions>(::runJob)
     }
 
-    fun runJob(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.NotifyFeeThresholdsUpdated) {
+    fun runJob(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.NotifyFeeThresholdsUpdated
+    ) {
         logger.info { "Handling fee thresholds update event for date range (id: ${msg.dateRange})" }
-        db.transaction { planFinanceDecisionGeneration(it, clock, asyncJobRunner, msg.dateRange, listOf()) }
+        db.transaction {
+            planFinanceDecisionGeneration(it, clock, asyncJobRunner, msg.dateRange, listOf())
+        }
     }
 
     fun runJob(db: Database.Connection, clock: EvakaClock, msg: AsyncJob.GenerateFinanceDecisions) {
@@ -36,9 +42,19 @@ class FeeDecisionGenerationJobProcessor(
         db.transaction { tx ->
             when (msg.person) {
                 is AsyncJob.GenerateFinanceDecisions.Person.Adult ->
-                    generator.generateNewDecisionsForAdult(tx, clock, msg.person.adultId, msg.dateRange.start)
+                    generator.generateNewDecisionsForAdult(
+                        tx,
+                        clock,
+                        msg.person.adultId,
+                        msg.dateRange.start
+                    )
                 is AsyncJob.GenerateFinanceDecisions.Person.Child ->
-                    generator.generateNewDecisionsForChild(tx, clock, msg.person.childId, msg.dateRange.start)
+                    generator.generateNewDecisionsForChild(
+                        tx,
+                        clock,
+                        msg.person.childId,
+                        msg.dateRange.start
+                    )
             }
         }
     }
@@ -51,14 +67,19 @@ fun planFinanceDecisionGeneration(
     dateRange: DateRange,
     targetHeadsOfFamily: List<PersonId>
 ) {
-    val heads = targetHeadsOfFamily.ifEmpty {
-        tx.createQuery(
-            "SELECT head_of_child FROM fridge_child WHERE daterange(start_date, end_date, '[]') && :dateRange AND conflict = false"
-        )
-            .bind("dateRange", dateRange)
-            .mapTo<PersonId>()
-            .list()
-    }
+    val heads =
+        targetHeadsOfFamily.ifEmpty {
+            tx.createQuery(
+                    "SELECT head_of_child FROM fridge_child WHERE daterange(start_date, end_date, '[]') && :dateRange AND conflict = false"
+                )
+                .bind("dateRange", dateRange)
+                .mapTo<PersonId>()
+                .list()
+        }
 
-    asyncJobRunner.plan(tx, heads.distinct().map { AsyncJob.GenerateFinanceDecisions.forAdult(it, dateRange) }, runAt = clock.now())
+    asyncJobRunner.plan(
+        tx,
+        heads.distinct().map { AsyncJob.GenerateFinanceDecisions.forAdult(it, dateRange) },
+        runAt = clock.now()
+    )
 }

@@ -12,12 +12,12 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 @RequestMapping("/citizen")
@@ -28,11 +28,22 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock
     ): List<DailyServiceTimeNotification> {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.Person.READ_DAILY_SERVICE_TIME_NOTIFICATIONS, user.id)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.Person.READ_DAILY_SERVICE_TIME_NOTIFICATIONS,
+            user.id
+        )
 
-        return db.connect { dbc -> dbc.transaction { tx -> tx.getDailyServiceTimesNotifications(user.id) } }.also {
-            Audit.ChildDailyServiceTimeNotificationsRead.log(targetId = user.id, args = mapOf("count" to it.size))
-        }
+        return db.connect { dbc ->
+                dbc.transaction { tx -> tx.getDailyServiceTimesNotifications(user.id) }
+            }
+            .also {
+                Audit.ChildDailyServiceTimeNotificationsRead.log(
+                    targetId = user.id,
+                    args = mapOf("count" to it.size)
+                )
+            }
     }
 
     @PostMapping("/daily-service-time-notifications/dismiss")
@@ -42,9 +53,16 @@ class DailyServiceTimesCitizenController(private val accessControl: AccessContro
         clock: EvakaClock,
         @RequestBody body: List<DailyServiceTimeNotificationId>
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Citizen.DailyServiceTimeNotification.DISMISS, body)
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Citizen.DailyServiceTimeNotification.DISMISS,
+            body
+        )
 
-        db.connect { dbc -> dbc.transaction { tx -> tx.deleteDailyServiceTimesNotifications(body) } }
+        db.connect { dbc ->
+            dbc.transaction { tx -> tx.deleteDailyServiceTimesNotifications(body) }
+        }
         Audit.ChildDailyServiceTimeNotificationsDismiss.log(targetId = body)
     }
 }
@@ -55,21 +73,28 @@ data class DailyServiceTimeNotification(
     val hasDeletedReservations: Boolean
 )
 
-fun Database.Read.getDailyServiceTimesNotifications(userId: PersonId): List<DailyServiceTimeNotification> = createQuery(
-    """
+fun Database.Read.getDailyServiceTimesNotifications(
+    userId: PersonId
+): List<DailyServiceTimeNotification> =
+    createQuery(
+            """
 SELECT id, date_from, has_deleted_reservations FROM daily_service_time_notification WHERE guardian_id = :userId
-    """.trimIndent()
-)
-    .bind("userId", userId)
-    .mapTo<DailyServiceTimeNotification>()
-    .list()
+    """
+                .trimIndent()
+        )
+        .bind("userId", userId)
+        .mapTo<DailyServiceTimeNotification>()
+        .list()
 
-fun Database.Transaction.deleteDailyServiceTimesNotifications(notificationIds: List<DailyServiceTimeNotificationId>) {
+fun Database.Transaction.deleteDailyServiceTimesNotifications(
+    notificationIds: List<DailyServiceTimeNotificationId>
+) {
     createUpdate(
-        """
+            """
 DELETE FROM daily_service_time_notification WHERE id = ANY(:ids)
-        """.trimIndent()
-    )
+        """
+                .trimIndent()
+        )
         .bind("ids", notificationIds)
         .execute()
 }

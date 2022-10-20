@@ -38,12 +38,12 @@ import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
@@ -52,9 +52,11 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     private val secondUnitId = testDaycare2.id
 
     private val supervisorId = EmployeeId(UUID.randomUUID())
-    private val supervisor1 = AuthenticatedUser.Employee(supervisorId, setOf(UserRole.UNIT_SUPERVISOR))
+    private val supervisor1 =
+        AuthenticatedUser.Employee(supervisorId, setOf(UserRole.UNIT_SUPERVISOR))
     private val supervisor2Id = EmployeeId(UUID.randomUUID())
-    private val supervisor2 = AuthenticatedUser.Employee(supervisor2Id, setOf(UserRole.UNIT_SUPERVISOR))
+    private val supervisor2 =
+        AuthenticatedUser.Employee(supervisor2Id, setOf(UserRole.UNIT_SUPERVISOR))
     private val guardianPerson = testAdult_6
     private val groupId = GroupId(UUID.randomUUID())
     private val groupName = "Testaajat"
@@ -102,11 +104,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.insertGeneralTestFixtures()
 
             tx.insertTestDaycareGroup(
-                DevDaycareGroup(
-                    id = groupId,
-                    daycareId = testDaycare.id,
-                    name = groupName
-                )
+                DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName)
             )
             tx.createDaycareGroupMessageAccount(groupId)
 
@@ -121,11 +119,13 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             insertChildToGroup(tx, childId, guardianPerson.id, groupId, unitId)
             insertChildToGroup(tx, testChild_4.id, testAdult_4.id, secondGroupId, secondUnitId)
 
-            // Child 2 has a placement but is not in any group => should not show up in receivers list
+            // Child 2 has a placement but is not in any group => should not show up in receivers
+            // list
             insertChildToUnit(tx, testChild_2.id, testAdult_2.id, unitId)
 
-            listOf(guardianPerson.id, testAdult_2.id, testAdult_3.id, testAdult_4.id)
-                .forEach { tx.createPersonMessageAccount(it) }
+            listOf(guardianPerson.id, testAdult_2.id, testAdult_3.id, testAdult_4.id).forEach {
+                tx.createPersonMessageAccount(it)
+            }
 
             // Child 3 has no guardians => should not show up in receivers list
             insertChildToGroup(tx, testChild_3.id, null, secondGroupId, secondUnitId)
@@ -143,9 +143,11 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `message receiver endpoint works for unit 1`() {
-        val (_, res, result) = http.get("/messages/receivers?unitId=$unitId")
-            .asUser(supervisor1)
-            .responseObject<List<MessageReceiversResponse>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get("/messages/receivers?unitId=$unitId")
+                .asUser(supervisor1)
+                .responseObject<List<MessageReceiversResponse>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
 
@@ -162,9 +164,11 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
     @Test
     fun `message receiver endpoint works for unit 2`() {
-        val (_, res, result) = http.get("/messages/receivers?unitId=$secondUnitId")
-            .asUser(supervisor2)
-            .responseObject<List<MessageReceiversResponse>>(jsonMapper)
+        val (_, res, result) =
+            http
+                .get("/messages/receivers?unitId=$secondUnitId")
+                .asUser(supervisor2)
+                .responseObject<List<MessageReceiversResponse>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
 
@@ -176,7 +180,8 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         assertEquals(1, groupKoekaniinit.receivers.size)
         assertEquals(setOf(testChild_4.id), groupKoekaniinit.receivers.map { it.childId }.toSet())
 
-        val childWithOnlyFridgeParentGuardian = groupKoekaniinit.receivers.find { it.childId == testChild_3.id }
+        val childWithOnlyFridgeParentGuardian =
+            groupKoekaniinit.receivers.find { it.childId == testChild_3.id }
         assertNull(childWithOnlyFridgeParentGuardian)
     }
 }

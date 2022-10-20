@@ -35,6 +35,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.time.LocalDate
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -42,7 +43,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 enum class FeeDecisionSortParam {
     HEAD_OF_FAMILY,
@@ -91,29 +91,28 @@ class FeeDecisionController(
             throw BadRequest("End date cannot be before start date")
         }
         return db.connect { dbc ->
-            dbc.read { tx ->
-                tx.searchFeeDecisions(
-                    clock,
-                    featureConfig.postOffice,
-                    body.page,
-                    body.pageSize,
-                    body.sortBy ?: FeeDecisionSortParam.STATUS,
-                    body.sortDirection ?: SortDirection.DESC,
-                    body.status ?: emptyList(),
-                    body.area ?: emptyList(),
-                    body.unit,
-                    body.distinctions ?: emptyList(),
-                    body.searchTerms ?: "",
-                    body.startDate,
-                    body.endDate,
-                    body.searchByStartDate,
-                    body.financeDecisionHandlerId,
-                    body.difference ?: emptySet()
-                )
+                dbc.read { tx ->
+                    tx.searchFeeDecisions(
+                        clock,
+                        featureConfig.postOffice,
+                        body.page,
+                        body.pageSize,
+                        body.sortBy ?: FeeDecisionSortParam.STATUS,
+                        body.sortDirection ?: SortDirection.DESC,
+                        body.status ?: emptyList(),
+                        body.area ?: emptyList(),
+                        body.unit,
+                        body.distinctions ?: emptyList(),
+                        body.searchTerms ?: "",
+                        body.startDate,
+                        body.endDate,
+                        body.searchByStartDate,
+                        body.financeDecisionHandlerId,
+                        body.difference ?: emptySet()
+                    )
+                }
             }
-        }.also {
-            Audit.FeeDecisionSearch.log(args = mapOf("total" to it.total))
-        }
+            .also { Audit.FeeDecisionSearch.log(args = mapOf("total" to it.total)) }
     }
 
     @PostMapping("/confirm")
@@ -126,57 +125,81 @@ class FeeDecisionController(
         accessControl.requirePermissionFor(user, clock, Action.FeeDecision.UPDATE, feeDecisionIds)
         db.connect { dbc ->
             dbc.transaction { tx ->
-                val confirmedDecisions = service.confirmDrafts(
+                val confirmedDecisions =
+                    service.confirmDrafts(
+                        tx,
+                        user,
+                        feeDecisionIds,
+                        clock.now(),
+                        featureConfig.alwaysUseDaycareFinanceDecisionHandler
+                    )
+                asyncJobRunner.plan(
                     tx,
-                    user,
-                    feeDecisionIds,
-                    clock.now(),
-                    featureConfig.alwaysUseDaycareFinanceDecisionHandler
+                    confirmedDecisions.map { AsyncJob.NotifyFeeDecisionApproved(it) },
+                    runAt = clock.now()
                 )
-                asyncJobRunner.plan(tx, confirmedDecisions.map { AsyncJob.NotifyFeeDecisionApproved(it) }, runAt = clock.now())
             }
         }
         Audit.FeeDecisionConfirm.log(targetId = feeDecisionIds)
     }
 
     @PostMapping("/mark-sent")
-    fun setSent(db: Database, user: AuthenticatedUser, clock: EvakaClock, @RequestBody feeDecisionIds: List<FeeDecisionId>) {
+    fun setSent(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestBody feeDecisionIds: List<FeeDecisionId>
+    ) {
         accessControl.requirePermissionFor(user, clock, Action.FeeDecision.UPDATE, feeDecisionIds)
         db.connect { dbc -> dbc.transaction { service.setSent(it, clock, feeDecisionIds) } }
         Audit.FeeDecisionMarkSent.log(targetId = feeDecisionIds)
     }
 
     @GetMapping("/pdf/{decisionId}")
-    fun getDecisionPdf(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable decisionId: FeeDecisionId): ResponseEntity<Any> {
+    fun getDecisionPdf(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable decisionId: FeeDecisionId
+    ): ResponseEntity<Any> {
         accessControl.requirePermissionFor(user, clock, Action.FeeDecision.READ, decisionId)
 
         return db.connect { dbc ->
-            dbc.read { tx ->
-                val decision = tx.getFeeDecision(decisionId) ?: error("Cannot find fee decision $decisionId")
+                dbc.read { tx ->
+                    val decision =
+                        tx.getFeeDecision(decisionId)
+                            ?: error("Cannot find fee decision $decisionId")
 
-                val personIds = listOfNotNull(
-                    decision.headOfFamily.id,
-                    decision.partner?.id
-                ) + decision.children.map { part -> part.child.id }
+                    val personIds =
+                        listOfNotNull(decision.headOfFamily.id, decision.partner?.id) +
+                            decision.children.map { part -> part.child.id }
 
-                val restrictedDetails = personIds.any { personId ->
-                    tx.getPersonById(personId)?.restrictedDetailsEnabled ?: false
+                    val restrictedDetails =
+                        personIds.any { personId ->
+                            tx.getPersonById(personId)?.restrictedDetailsEnabled ?: false
+                        }
+                    if (restrictedDetails && !user.isAdmin) {
+                        throw Forbidden(
+                            "Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen."
+                        )
+                    }
                 }
-                if (restrictedDetails && !user.isAdmin) {
-                    throw Forbidden("Päätöksen alaisella henkilöllä on voimassa turvakielto. Osoitetietojen suojaamiseksi vain pääkäyttäjä voi ladata tämän päätöksen.")
-                }
+                service.getFeeDecisionPdfResponse(dbc, decisionId)
             }
-            service.getFeeDecisionPdfResponse(dbc, decisionId)
-        }.also {
-            Audit.FeeDecisionPdfRead.log(targetId = decisionId)
-        }
+            .also { Audit.FeeDecisionPdfRead.log(targetId = decisionId) }
     }
 
     @GetMapping("/{uuid}")
-    fun getDecision(db: Database, user: AuthenticatedUser, clock: EvakaClock, @PathVariable uuid: FeeDecisionId): Wrapper<FeeDecisionDetailed> {
+    fun getDecision(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable uuid: FeeDecisionId
+    ): Wrapper<FeeDecisionDetailed> {
         accessControl.requirePermissionFor(user, clock, Action.FeeDecision.READ, uuid)
-        val res = db.connect { dbc -> dbc.read { it.getFeeDecision(uuid) } }
-            ?: throw NotFound("No fee decision found with given ID ($uuid)")
+        val res =
+            db.connect { dbc -> dbc.read { it.getFeeDecision(uuid) } }
+                ?: throw NotFound("No fee decision found with given ID ($uuid)")
         Audit.FeeDecisionRead.log(targetId = uuid)
         return Wrapper(res)
     }
@@ -190,13 +213,13 @@ class FeeDecisionController(
     ): Wrapper<List<FeeDecision>> {
         accessControl.requirePermissionFor(user, clock, Action.Person.READ_FEE_DECISIONS, id)
         return Wrapper(
-            db.connect { dbc ->
-                dbc.read {
-                    it.findFeeDecisionsForHeadOfFamily(id, null, null)
+            db.connect { dbc -> dbc.read { it.findFeeDecisionsForHeadOfFamily(id, null, null) } }
+                .also {
+                    Audit.FeeDecisionHeadOfFamilyRead.log(
+                        targetId = id,
+                        args = mapOf("count" to it.size)
+                    )
                 }
-            }.also {
-                Audit.FeeDecisionHeadOfFamilyRead.log(targetId = id, args = mapOf("count" to it.size))
-            }
         )
     }
 
@@ -208,8 +231,15 @@ class FeeDecisionController(
         @PathVariable id: PersonId,
         @RequestBody body: CreateRetroactiveFeeDecisionsBody
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Person.GENERATE_RETROACTIVE_FEE_DECISIONS, id)
-        db.connect { dbc -> dbc.transaction { generator.createRetroactiveFeeDecisions(it, id, body.from) } }
+        accessControl.requirePermissionFor(
+            user,
+            clock,
+            Action.Person.GENERATE_RETROACTIVE_FEE_DECISIONS,
+            id
+        )
+        db.connect { dbc ->
+            dbc.transaction { generator.createRetroactiveFeeDecisions(it, id, body.from) }
+        }
         Audit.FeeDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)
     }
 
@@ -244,9 +274,6 @@ data class SearchFeeDecisionRequest(
     val searchByStartDate: Boolean = false,
     val financeDecisionHandlerId: EmployeeId?,
     val difference: Set<FeeDecisionDifference>?
-
 )
 
-data class FeeDecisionTypeRequest(
-    val type: FeeDecisionType
-)
+data class FeeDecisionTypeRequest(val type: FeeDecisionType)

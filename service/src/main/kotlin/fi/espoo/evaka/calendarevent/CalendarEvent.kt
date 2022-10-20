@@ -11,33 +11,21 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import org.jdbi.v3.json.Json
 
-data class GroupInfo(
-    val id: GroupId,
-    val name: String
-)
+data class GroupInfo(val id: GroupId, val name: String)
 
-data class IndividualChild(
-    val id: ChildId,
-    val name: String,
-    val groupId: GroupId
-)
+data class IndividualChild(val id: ChildId, val name: String, val groupId: GroupId)
 
 data class CalendarEvent(
     val id: CalendarEventId,
     val unitId: DaycareId,
-    @Json
-    val groups: Set<GroupInfo>,
-    @Json
-    val individualChildren: Set<IndividualChild>,
+    @Json val groups: Set<GroupInfo>,
+    @Json val individualChildren: Set<IndividualChild>,
     val title: String,
     val description: String,
     val period: FiniteDateRange
 )
 
-data class CitizenIndividualChild(
-    val id: ChildId,
-    val groupId: GroupId
-)
+data class CitizenIndividualChild(val id: ChildId, val groupId: GroupId)
 
 data class AttendingChild(
     val periods: List<FiniteDateRange>,
@@ -50,8 +38,7 @@ data class CitizenCalendarEvent(
     val id: CalendarEventId,
     val title: String,
     val description: String,
-    @Json
-    val attendingChildren: Map<ChildId, List<AttendingChild>>
+    @Json val attendingChildren: Map<ChildId, List<AttendingChild>>
 )
 
 data class CalendarEventForm(
@@ -62,7 +49,4 @@ data class CalendarEventForm(
     val period: FiniteDateRange
 )
 
-data class CalendarEventUpdateForm(
-    val title: String,
-    val description: String
-)
+data class CalendarEventUpdateForm(val title: String, val description: String)

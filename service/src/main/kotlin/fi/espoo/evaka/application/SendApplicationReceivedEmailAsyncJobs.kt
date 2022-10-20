@@ -11,7 +11,7 @@ import fi.espoo.evaka.shared.db.Database
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
-private val logger = KotlinLogging.logger { }
+private val logger = KotlinLogging.logger {}
 
 @Component
 class SendApplicationReceivedEmailAsyncJobs(
@@ -20,17 +20,33 @@ class SendApplicationReceivedEmailAsyncJobs(
 ) {
 
     init {
-        asyncJobRunner.registerHandler { db, _, msg: AsyncJob.SendApplicationEmail -> runSendApplicationEmail(db, msg) }
+        asyncJobRunner.registerHandler { db, _, msg: AsyncJob.SendApplicationEmail ->
+            runSendApplicationEmail(db, msg)
+        }
     }
 
-    private fun runSendApplicationEmail(db: Database.Connection, msg: AsyncJob.SendApplicationEmail) {
-        val guardian = db.read { it.getPersonById(msg.guardianId) }
-            ?: throw Exception("Didn't find guardian when sending application email (guardianId: ${msg.guardianId})")
+    private fun runSendApplicationEmail(
+        db: Database.Connection,
+        msg: AsyncJob.SendApplicationEmail
+    ) {
+        val guardian =
+            db.read { it.getPersonById(msg.guardianId) }
+                ?: throw Exception(
+                    "Didn't find guardian when sending application email (guardianId: ${msg.guardianId})"
+                )
 
         if (!guardian.email.isNullOrBlank()) {
-            applicationReceivedEmailService.sendApplicationEmail(guardian.id, guardian.email, msg.language, msg.type, msg.sentWithinPreschoolApplicationPeriod)
+            applicationReceivedEmailService.sendApplicationEmail(
+                guardian.id,
+                guardian.email,
+                msg.language,
+                msg.type,
+                msg.sentWithinPreschoolApplicationPeriod
+            )
         } else {
-            logger.warn("Cannot send application received email to guardian ${guardian.id}: missing email")
+            logger.warn(
+                "Cannot send application received email to guardian ${guardian.id}: missing email"
+            )
         }
     }
 }

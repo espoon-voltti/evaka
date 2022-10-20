@@ -9,16 +9,16 @@ import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Headers
 import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.shared.utils.responseStringWithRetries
-import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
+import org.springframework.stereotype.Service
 
 interface VardaTokenProvider {
     /**
-     * Wrapper that provides a valid Varda API token and a method for refreshing it in case the current one
-     * gets invalidated.
+     * Wrapper that provides a valid Varda API token and a method for refreshing it in case the
+     * current one gets invalidated.
      */
     fun <T> withToken(action: (token: String, refresh: () -> String) -> T): T
 }
@@ -26,9 +26,9 @@ interface VardaTokenProvider {
 /**
  * Provide a temporary token fetched with basic authentication credentials from the Varda API.
  *
- * The API only has a single active token per user at a time, making it shared mutable (and remote) state
- * which needs to be locked to prevent invalidating a token about to be used. This is handled automatically
- * and internally in this provider with a mutex.
+ * The API only has a single active token per user at a time, making it shared mutable (and remote)
+ * state which needs to be locked to prevent invalidating a token about to be used. This is handled
+ * automatically and internally in this provider with a mutex.
  */
 @Service
 class VardaTempTokenProvider(
@@ -43,10 +43,12 @@ class VardaTempTokenProvider(
     private val tokenLock = ReentrantLock()
     private var token: VardaApiToken? = null
 
-    // TODO: Could we provide an algebraic effect like method for catching token errors and continuing after a refresh?
-    override fun <T> withToken(action: (token: String, refreshToken: () -> String) -> T): T = tokenLock.withLock {
-        action(getValidToken().token) { getValidToken(forceNew = true).token }
-    }
+    // TODO: Could we provide an algebraic effect like method for catching token errors and
+    // continuing after a refresh?
+    override fun <T> withToken(action: (token: String, refreshToken: () -> String) -> T): T =
+        tokenLock.withLock {
+            action(getValidToken().token) { getValidToken(forceNew = true).token }
+        }
 
     private fun getValidToken(forceNew: Boolean = false): VardaApiToken =
         when (!forceNew && VardaApiToken.isValid(token)) {
@@ -57,26 +59,30 @@ class VardaTempTokenProvider(
             }
         }
 
-    private fun fetchToken(): VardaApiToken = fuel.get(apiTokenUrl)
-        .header(Headers.AUTHORIZATION, basicAuth)
-        .header(Headers.ACCEPT, "application/json")
-        .header(Headers.CONTENT_TYPE, "application/json")
-        .responseStringWithRetries(3, 300L)
-        .third
-        .fold(
-            { d -> VardaApiToken.from(jsonMapper.readTree(d).get("token").asText()) },
-            { err -> throw IllegalStateException("Requesting Varda API token failed: ${String(err.errorData)}. Aborting update") }
-        )
+    private fun fetchToken(): VardaApiToken =
+        fuel
+            .get(apiTokenUrl)
+            .header(Headers.AUTHORIZATION, basicAuth)
+            .header(Headers.ACCEPT, "application/json")
+            .header(Headers.CONTENT_TYPE, "application/json")
+            .responseStringWithRetries(3, 300L)
+            .third
+            .fold(
+                { d -> VardaApiToken.from(jsonMapper.readTree(d).get("token").asText()) },
+                { err ->
+                    throw IllegalStateException(
+                        "Requesting Varda API token failed: ${String(err.errorData)}. Aborting update"
+                    )
+                }
+            )
 }
 
-private data class VardaApiToken(
-    val token: String,
-    val createdAt: Instant
-) {
+private data class VardaApiToken(val token: String, val createdAt: Instant) {
     companion object {
         fun from(token: String) = VardaApiToken(token, Instant.now())
 
-        // NOTE: This is just our perception of a token's validity. Varda API can invalidate a token at any point.
+        // NOTE: This is just our perception of a token's validity. Varda API can invalidate a token
+        // at any point.
         fun isValid(token: VardaApiToken?): Boolean =
             token?.createdAt?.isAfter(Instant.now().minus(12, ChronoUnit.HOURS)) ?: false
     }
