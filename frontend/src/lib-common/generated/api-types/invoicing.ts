@@ -885,6 +885,9 @@ export type VoucherValueDecisionDifference = typeof voucherValueDecisionDifferen
 * Generated from fi.espoo.evaka.invoicing.controller.VoucherValueDecisionDistinctiveParams
 */
 export const voucherValueDecisionDistinctiveParams = [
+  'UNCONFIRMED_HOURS',
+  'EXTERNAL_CHILD',
+  'RETROACTIVE',
   'NO_STARTING_PLACEMENTS',
   'MAX_FEE_ACCEPTED'
 ] as const
@@ -914,6 +917,7 @@ export interface VoucherValueDecisionServiceNeed {
   feeCoefficient: number
   feeDescriptionFi: string
   feeDescriptionSv: string
+  missing: boolean
   voucherValueCoefficient: number
   voucherValueDescriptionFi: string
   voucherValueDescriptionSv: string

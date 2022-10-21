@@ -659,5 +659,6 @@ fun ServiceNeedOption.toValueDecisionServiceNeed() =
         feeDescriptionFi = this.feeDescriptionFi,
         feeDescriptionSv = this.feeDescriptionSv,
         voucherValueDescriptionFi = this.voucherValueDescriptionFi,
-        voucherValueDescriptionSv = this.voucherValueDescriptionSv
+        voucherValueDescriptionSv = this.voucherValueDescriptionSv,
+        missing = this.defaultOption
     )

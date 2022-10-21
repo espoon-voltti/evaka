@@ -19,9 +19,11 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
+import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
@@ -164,6 +166,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 tx.searchValueDecisions(
                     evakaClock =
                         MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(13, 37))),
+                    postOffice = "ESPOO",
                     page = 0,
                     pageSize = 100,
                     sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
@@ -237,6 +240,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 tx.searchValueDecisions(
                     evakaClock =
                         MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
+                    postOffice = "ESPOO",
                     page = 0,
                     pageSize = 100,
                     sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
@@ -272,6 +276,207 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                         VoucherValueDecisionDifference.FAMILY_SIZE
                     )
                 )
+            )
+    }
+
+    @Test
+    fun `search with UNCONFIRMED_HOURS`() {
+        db.transaction { tx ->
+            val baseDecision = { child: DevPerson ->
+                createVoucherValueDecisionFixture(
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    validFrom = testPeriod.start,
+                    validTo = testPeriod.end,
+                    headOfFamilyId = PersonId(UUID.randomUUID()),
+                    childId = child.id,
+                    dateOfBirth = child.dateOfBirth,
+                    unitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed()
+                )
+            }
+            tx.upsertValueDecisions(
+                listOf(
+                    baseDecision(testChild_1)
+                        .copy(
+                            headOfFamilyId = testAdult_1.id,
+                            serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed()
+                        ),
+                    baseDecision(testChild_2)
+                        .copy(
+                            headOfFamilyId = testAdult_2.id,
+                            serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed()
+                        ),
+                    baseDecision(testChild_3)
+                        .copy(
+                            headOfFamilyId = testAdult_3.id,
+                            serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed()
+                        ),
+                    baseDecision(testChild_4)
+                        .copy(
+                            headOfFamilyId = testAdult_4.id,
+                            serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed()
+                        )
+                )
+            )
+        }
+
+        val result =
+            db.read { tx ->
+                tx.searchValueDecisions(
+                    evakaClock =
+                        MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
+                    postOffice = "ESPOO",
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                    sortDirection = SortDirection.ASC,
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    financeDecisionHandlerId = null,
+                    difference = emptySet(),
+                    distinctiveParams =
+                        listOf(VoucherValueDecisionDistinctiveParams.UNCONFIRMED_HOURS)
+                )
+            }
+
+        assertThat(result.data)
+            .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName })
+            .containsExactlyInAnyOrder(
+                Tuple(testAdult_2.lastName, testAdult_2.firstName),
+                Tuple(testAdult_3.lastName, testAdult_3.firstName)
+            )
+    }
+
+    @Test
+    fun `search with EXTERNAL_CHILD`() {
+        db.transaction { tx ->
+            val baseDecision = { child: DevPerson ->
+                createVoucherValueDecisionFixture(
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    validFrom = testPeriod.start,
+                    validTo = testPeriod.end,
+                    headOfFamilyId = PersonId(UUID.randomUUID()),
+                    childId = child.id,
+                    dateOfBirth = child.dateOfBirth,
+                    unitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed()
+                )
+            }
+            tx.upsertValueDecisions(
+                listOf(
+                    baseDecision(testChild_1).copy(headOfFamilyId = testAdult_1.id),
+                    baseDecision(testChild_2).copy(headOfFamilyId = testAdult_2.id),
+                    baseDecision(testChild_3).copy(headOfFamilyId = testAdult_3.id),
+                    baseDecision(testChild_4).copy(headOfFamilyId = testAdult_4.id)
+                )
+            )
+        }
+
+        val result =
+            db.read { tx ->
+                tx.searchValueDecisions(
+                    evakaClock =
+                        MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
+                    postOffice = "ESPOO",
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                    sortDirection = SortDirection.ASC,
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    financeDecisionHandlerId = null,
+                    difference = emptySet(),
+                    distinctiveParams = listOf(VoucherValueDecisionDistinctiveParams.EXTERNAL_CHILD)
+                )
+            }
+
+        assertThat(result.data)
+            .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName })
+            .containsExactly(Tuple(testAdult_4.lastName, testAdult_4.firstName))
+    }
+
+    @Test
+    fun `search with RETROACTIVE`() {
+        val testPeriod1 = FiniteDateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 31))
+        val testPeriod2 = FiniteDateRange(LocalDate.of(2019, 6, 1), LocalDate.of(2019, 6, 30))
+        db.transaction { tx ->
+            val baseDecision = { child: DevPerson ->
+                createVoucherValueDecisionFixture(
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    validFrom = testPeriod.start,
+                    validTo = testPeriod.end,
+                    headOfFamilyId = PersonId(UUID.randomUUID()),
+                    childId = child.id,
+                    dateOfBirth = child.dateOfBirth,
+                    unitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed()
+                )
+            }
+            tx.upsertValueDecisions(
+                listOf(
+                    baseDecision(testChild_1)
+                        .copy(
+                            headOfFamilyId = testAdult_1.id,
+                            validFrom = testPeriod1.start,
+                            validTo = testPeriod1.end
+                        ),
+                    baseDecision(testChild_2)
+                        .copy(
+                            headOfFamilyId = testAdult_2.id,
+                            validFrom = testPeriod1.start,
+                            validTo = testPeriod1.end
+                        ),
+                    baseDecision(testChild_3)
+                        .copy(
+                            headOfFamilyId = testAdult_3.id,
+                            validFrom = testPeriod2.start,
+                            validTo = testPeriod2.end
+                        ),
+                    baseDecision(testChild_4)
+                        .copy(
+                            headOfFamilyId = testAdult_4.id,
+                            validFrom = testPeriod2.start,
+                            validTo = testPeriod2.end
+                        )
+                )
+            )
+        }
+
+        val result =
+            db.read { tx ->
+                tx.searchValueDecisions(
+                    evakaClock =
+                        MockEvakaClock(HelsinkiDateTime.of(testPeriod2.start, LocalTime.of(15, 6))),
+                    postOffice = "ESPOO",
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                    sortDirection = SortDirection.ASC,
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    financeDecisionHandlerId = null,
+                    difference = emptySet(),
+                    distinctiveParams = listOf(VoucherValueDecisionDistinctiveParams.RETROACTIVE)
+                )
+            }
+
+        assertThat(result.data)
+            .extracting({ it.headOfFamily.lastName }, { it.headOfFamily.firstName })
+            .containsExactlyInAnyOrder(
+                Tuple(testAdult_1.lastName, testAdult_1.firstName),
+                Tuple(testAdult_2.lastName, testAdult_2.firstName)
             )
     }
 

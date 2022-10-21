@@ -56,6 +56,7 @@ INSERT INTO voucher_value_decision (
     service_need_fee_description_sv,
     service_need_voucher_value_description_fi,
     service_need_voucher_value_description_sv,
+    service_need_missing,
     base_co_payment,
     sibling_discount,
     co_payment,
@@ -89,6 +90,7 @@ INSERT INTO voucher_value_decision (
     :serviceNeedFeeDescriptionSv,
     :serviceNeedVoucherValueDescriptionFi,
     :serviceNeedVoucherValueDescriptionSv,
+    :serviceNeedMissing,
     :baseCoPayment,
     :siblingDiscount,
     :coPayment,
@@ -120,6 +122,7 @@ INSERT INTO voucher_value_decision (
     service_need_fee_description_sv = :serviceNeedFeeDescriptionSv,
     service_need_voucher_value_description_fi = :serviceNeedVoucherValueDescriptionFi,
     service_need_voucher_value_description_sv = :serviceNeedVoucherValueDescriptionSv,
+    service_need_missing = :serviceNeedMissing,
     base_co_payment = :baseCoPayment,
     sibling_discount = :siblingDiscount,
     co_payment = :coPayment,
@@ -156,6 +159,7 @@ INSERT INTO voucher_value_decision (
                 "serviceNeedVoucherValueDescriptionSv",
                 decision.serviceNeed?.voucherValueDescriptionSv
             )
+            .bind("serviceNeedMissing", decision.serviceNeed?.missing ?: false)
             .bind("sentAt", decision.sentAt)
             .execute()
     }
@@ -190,6 +194,7 @@ SELECT
     service_need_fee_description_sv,
     service_need_voucher_value_description_fi,
     service_need_voucher_value_description_sv,
+    service_need_missing,
     base_co_payment,
     sibling_discount,
     co_payment,
@@ -246,6 +251,7 @@ SELECT
     service_need_fee_description_sv,
     service_need_voucher_value_description_fi,
     service_need_voucher_value_description_sv,
+    service_need_missing,
     base_co_payment,
     sibling_discount,
     co_payment,
@@ -284,6 +290,7 @@ fun Database.Transaction.deleteValueDecisions(ids: List<VoucherValueDecisionId>)
 
 fun Database.Read.searchValueDecisions(
     evakaClock: EvakaClock,
+    postOffice: String,
     page: Int,
     pageSize: Int,
     sortBy: VoucherValueDecisionSortParam,
@@ -312,15 +319,26 @@ fun Database.Read.searchValueDecisions(
             Binding.of("status", status),
             Binding.of("areas", areas),
             Binding.of("unit", unit),
+            Binding.of("postOffice", postOffice),
             Binding.of("start_date", startDate),
             Binding.of("end_date", endDate),
             Binding.of("financeDecisionHandlerId", financeDecisionHandlerId),
             Binding.of("difference", difference),
-            Binding.of("firstPlacementStartDate", evakaClock.now().toLocalDate().withDayOfMonth(1))
+            Binding.of("firstPlacementStartDate", evakaClock.now().toLocalDate().withDayOfMonth(1)),
+            Binding.of("now", evakaClock.now())
         )
 
     val (freeTextQuery, freeTextParams) =
         freeTextSearchQuery(listOf("head", "partner", "child"), searchTerms)
+
+    val withNullHours =
+        distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.UNCONFIRMED_HOURS)
+
+    val havingExternalChildren =
+        distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.EXTERNAL_CHILD)
+
+    val retroactiveOnly =
+        distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.RETROACTIVE)
 
     val noStartingPlacements =
         distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.NO_STARTING_PLACEMENTS)
@@ -356,6 +374,13 @@ NOT EXISTS (
                 "placement_unit.finance_decision_handler = :financeDecisionHandlerId"
             else null,
             if (difference.isNotEmpty()) "decision.difference && :difference" else null,
+            if (withNullHours) "decision.service_need_missing" else null,
+            if (havingExternalChildren)
+                "child.post_office <> '' AND child.post_office NOT ILIKE :postOffice"
+            else null,
+            if (retroactiveOnly)
+                "decision.valid_from < date_trunc('month', COALESCE(decision.approved_at, :now))"
+            else null,
             if (noStartingPlacements) noStartingPlacementsQuery else null,
             if (maxFeeAccepted)
                 "(decision.head_of_family_income->>'effect' = 'MAX_FEE_ACCEPTED' OR decision.partner_income->>'effect' = 'MAX_FEE_ACCEPTED')"

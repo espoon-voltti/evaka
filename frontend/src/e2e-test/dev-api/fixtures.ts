@@ -906,7 +906,8 @@ export const voucherValueDecisionsFixture = (
     feeDescriptionFi: '',
     feeDescriptionSv: '',
     voucherValueDescriptionFi: '',
-    voucherValueDescriptionSv: ''
+    voucherValueDescriptionSv: '',
+    missing: false
   },
   baseCoPayment: 28900,
   coPayment: 28900,

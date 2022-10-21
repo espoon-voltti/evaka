@@ -2404,7 +2404,7 @@ export const fi = {
     distinctiveDetails: {
       UNCONFIRMED_HOURS: 'Palveluntarve vahvistamatta',
       EXTERNAL_CHILD: 'Ulkopaikkakuntalainen',
-      RETROACTIVE: 'Takautuva maksupäätös',
+      RETROACTIVE: 'Takautuva päätös',
       NO_STARTING_PLACEMENTS: 'Piilota uudet aloittavat lapset',
       MAX_FEE_ACCEPTED: 'Suostumus korkeimpaan maksuun'
     },

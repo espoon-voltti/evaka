@@ -315,7 +315,8 @@ private fun generateNewValueDecisions(
                                 placement.serviceNeed.feeDescriptionFi,
                                 placement.serviceNeed.feeDescriptionSv,
                                 placement.serviceNeed.voucherValueDescriptionFi,
-                                placement.serviceNeed.voucherValueDescriptionSv
+                                placement.serviceNeed.voucherValueDescriptionSv,
+                                placement.missingServiceNeed
                             ),
                         baseCoPayment = baseCoPayment,
                         siblingDiscount = price.siblingDiscountPercent(siblingIndex + 1),
