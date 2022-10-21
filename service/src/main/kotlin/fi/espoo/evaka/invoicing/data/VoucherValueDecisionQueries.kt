@@ -306,11 +306,8 @@ fun Database.Read.searchValueDecisions(
             VoucherValueDecisionSortParam.STATUS -> "decision.status"
         }
 
-    val retroactiveOnly =
-        distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.RETROACTIVE)
-
     val params =
-        listOfNotNull(
+        listOf(
             Binding.of("page", page),
             Binding.of("pageSize", pageSize),
             Binding.of("status", status),
@@ -322,7 +319,7 @@ fun Database.Read.searchValueDecisions(
             Binding.of("financeDecisionHandlerId", financeDecisionHandlerId),
             Binding.of("difference", difference),
             Binding.of("firstPlacementStartDate", evakaClock.now().toLocalDate().withDayOfMonth(1)),
-            if (retroactiveOnly) Binding.of("now", evakaClock.now()) else null
+            Binding.of("now", evakaClock.now())
         )
 
     val (freeTextQuery, freeTextParams) =
@@ -333,6 +330,9 @@ fun Database.Read.searchValueDecisions(
 
     val havingExternalChildren =
         distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.EXTERNAL_CHILD)
+
+    val retroactiveOnly =
+        distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.RETROACTIVE)
 
     val noStartingPlacements =
         distinctiveParams.contains(VoucherValueDecisionDistinctiveParams.NO_STARTING_PLACEMENTS)

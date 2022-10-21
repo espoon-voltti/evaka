@@ -293,10 +293,8 @@ fun Database.Read.searchFeeDecisions(
             FeeDecisionSortParam.FINAL_PRICE -> "total_fee"
         }
 
-    val retroactiveOnly = distinctiveParams.contains(DistinctiveParams.RETROACTIVE)
-
     val params =
-        listOfNotNull(
+        listOf(
             Binding.of("page", page),
             Binding.of("pageSize", pageSize),
             Binding.of("status", statuses),
@@ -308,7 +306,7 @@ fun Database.Read.searchFeeDecisions(
             Binding.of("finance_decision_handler", financeDecisionHandlerId),
             Binding.of("difference", difference),
             Binding.of("firstPlacementStartDate", clock.today().withDayOfMonth(1)),
-            if (retroactiveOnly) Binding.of("now", clock.now()) else null
+            Binding.of("now", clock.now())
         )
 
     val numberParamsRaw = splitSearchText(searchTerms).filter(decisionNumberRegex::matches)
@@ -320,6 +318,8 @@ fun Database.Read.searchFeeDecisions(
     val withNullHours = distinctiveParams.contains(DistinctiveParams.UNCONFIRMED_HOURS)
 
     val havingExternalChildren = distinctiveParams.contains(DistinctiveParams.EXTERNAL_CHILD)
+
+    val retroactiveOnly = distinctiveParams.contains(DistinctiveParams.RETROACTIVE)
 
     val noStartingPlacements = distinctiveParams.contains(DistinctiveParams.NO_STARTING_PLACEMENTS)
 
