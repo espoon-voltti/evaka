@@ -6,7 +6,7 @@ SPDX-License-Identifier: LGPL-2.1-or-later
 
 # evaka-base
 
-Shared Docker base image for eVaka services based on Ubuntu 20.04.
+Shared Docker base image for eVaka services based on Ubuntu 22.04.
 
 Includes `s3download` binary in the `PATH` for downloading files from AWS S3
 without the need for AWS SDK in the application.
