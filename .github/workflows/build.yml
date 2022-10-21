@@ -468,7 +468,7 @@ jobs:
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-            BASE_IMAGE=${{ needs.service.outputs.image }}
+            BASE_IMAGE=${{ needs.java.outputs.image }}
           cache_from_images: |
             ${{ needs.base.outputs.image_name }}
             ${{ needs.java.outputs.image_name }}
