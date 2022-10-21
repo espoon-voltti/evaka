@@ -1875,7 +1875,7 @@ export const fi = {
       title: 'Kalenteri',
       noGroup: 'Ei ryhmää',
       staff: 'Henkilökunta',
-      all: 'Kaikki',
+      allChildren: 'Kaikki lapset',
       modes: {
         week: 'Viikko',
         month: 'Kuukausi'

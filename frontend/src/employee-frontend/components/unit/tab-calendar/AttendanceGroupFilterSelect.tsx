@@ -40,7 +40,7 @@ export default React.memo(function AttendanceGroupFilterSelect({
           )
       )
       .map((group) => ({ type: 'group', id: group.id }))
-    result.push({ type: 'no-group' }, { type: 'all' })
+    result.push({ type: 'no-group' }, { type: 'all-children' })
     if (realtimeStaffAttendanceEnabled) {
       result.push({ type: 'staff' })
     }
@@ -54,8 +54,8 @@ export default React.memo(function AttendanceGroupFilterSelect({
           return i18n.unit.calendar.noGroup
         case 'staff':
           return i18n.unit.calendar.staff
-        case 'all':
-          return i18n.unit.calendar.all
+        case 'all-children':
+          return i18n.unit.calendar.allChildren
         default:
           return groups.find(({ id }) => id === item.id)?.name ?? ''
       }

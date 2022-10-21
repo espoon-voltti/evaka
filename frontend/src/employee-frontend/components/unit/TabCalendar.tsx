@@ -53,7 +53,7 @@ type CalendarMode = 'week' | 'month'
 
 export type AttendanceGroupFilter =
   | { type: 'group'; id: UUID }
-  | { type: 'no-group' | 'staff' | 'all' }
+  | { type: 'all-children' | 'no-group' | 'staff' }
 
 const GroupSelectorWrapper = styled.div`
   min-width: 320px;
@@ -95,7 +95,7 @@ function getDefaultGroup(
     if (
       groupParam === 'no-group' ||
       groupParam === 'staff' ||
-      groupParam === 'all'
+      groupParam === 'all-children'
     ) {
       return { type: groupParam }
     }
@@ -214,7 +214,7 @@ const TabContent = React.memo(function TabContent({
   const onlyShowWeeklyView =
     selectedGroup.type === 'staff' ||
     selectedGroup.type === 'no-group' ||
-    selectedGroup.type === 'all'
+    selectedGroup.type === 'all-children'
 
   const [calendarOpen, setCalendarOpen] = useState(true)
   const [attendancesOpen, setAttendancesOpen] = useState(true)
@@ -347,7 +347,7 @@ const TabContent = React.memo(function TabContent({
         </CollapsibleContentArea>
 
         {selectedGroup.type === 'group' ||
-        (selectedGroup.type === 'all' &&
+        (selectedGroup.type === 'all-children' &&
           (mode === 'week' || onlyShowWeeklyView)) ? (
           <>
             <HorizontalLine dashed slim />

@@ -100,9 +100,7 @@ export default React.memo(function UnitAttendanceReservationsView({
   }, [i18n])
 
   const groupFilter = useCallback(
-    (id) =>
-      (selectedGroup.type === 'group' && selectedGroup.id === id) ||
-      selectedGroup.type === 'all',
+    (id) => selectedGroup.type === 'group' && selectedGroup.id === id,
     [selectedGroup]
   )
   const noFilter = useCallback(() => true, [])
@@ -143,41 +141,28 @@ export default React.memo(function UnitAttendanceReservationsView({
           />
         ) : (
           <>
-            {realtimeStaffAttendanceEnabled && (
+            {realtimeStaffAttendanceEnabled &&
+            selectedGroup.type === 'group' ? (
               <StaffAttendanceTable
                 unitId={unitId}
                 operationalDays={childData.operationalDays}
-                staffAttendances={
-                  selectedGroup.type === 'all'
-                    ? staffData.staff
-                    : selectedGroup.type === 'group'
-                    ? staffData.staff.filter((s) =>
-                        s.groups.includes(selectedGroup.id)
-                      )
-                    : []
-                }
-                extraAttendances={
-                  selectedGroup.type === 'all'
-                    ? staffData.extraAttendances
-                    : selectedGroup.type === 'group'
-                    ? staffData.extraAttendances.filter(
-                        (ea) => ea.groupId === selectedGroup.id
-                      )
-                    : []
-                }
+                staffAttendances={staffData.staff.filter((s) =>
+                  s.groups.includes(selectedGroup.id)
+                )}
+                extraAttendances={staffData.extraAttendances.filter(
+                  (ea) => ea.groupId === selectedGroup.id
+                )}
                 reloadStaffAttendances={reloadStaffAttendances}
                 groups={groups}
                 groupFilter={groupFilter}
-                defaultGroup={
-                  selectedGroup.type === 'group' ? selectedGroup.id : null
-                }
+                defaultGroup={selectedGroup.id}
               />
-            )}
+            ) : null}
             <ChildReservationsTable
               unitId={unitId}
               operationalDays={childData.operationalDays}
               allDayRows={
-                selectedGroup.type === 'all'
+                selectedGroup.type === 'all-children'
                   ? childData.groups
                       .flatMap(({ children }) => children)
                       .concat(childData.ungrouped)
