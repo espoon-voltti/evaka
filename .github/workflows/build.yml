@@ -411,6 +411,30 @@ jobs:
         with:
           name: customizations
           path: .
+      - name: Build Evaka Service builder image
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        uses: espoon-voltti/voltti-actions/docker-build-s3@master
+        id: build-builder
+        with:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
+          registry: ${{ env.ECR_REGISTRY }}
+          name: evaka/service-builder
+          target: builder
+          path: .
+          dockerfile: service/Dockerfile
+          push: true
+          build-args: |
+            build=${{ github.run_number }}
+            commit=${{ github.event.pull_request.head.sha || github.sha }}
+            BASE_IMAGE=${{ needs.java.outputs.image }}
+          cache_from_images: |
+            ${{ needs.base.outputs.image_name }}
+            ${{ needs.java.outputs.image_name }}
 
       - name: Build Evaka Service image
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -435,9 +459,12 @@ jobs:
           cache_from_images: |
             ${{ needs.base.outputs.image_name }}
             ${{ needs.java.outputs.image_name }}
+            ${{ steps.build-builder.outputs.image_name }}
     outputs:
       image: ${{ steps.build.outputs.image }}
       image_name: ${{ steps.build.outputs.image_name }}
+      builder_image: ${{ steps.build-builder.outputs.image }}
+      builder_image_name: ${{ steps.build-builder.outputs.image_name }}
 
   service-test:
     needs:
@@ -468,7 +495,7 @@ jobs:
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-            BASE_IMAGE=${{ needs.java.outputs.image }}
+            BASE_IMAGE=${{ needs.service.outputs.builder_image }}
           cache_from_images: |
             ${{ needs.base.outputs.image_name }}
             ${{ needs.java.outputs.image_name }}
