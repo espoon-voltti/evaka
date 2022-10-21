@@ -292,7 +292,8 @@ data class VoucherValueDecisionServiceNeed(
     val feeDescriptionFi: String,
     val feeDescriptionSv: String,
     val voucherValueDescriptionFi: String,
-    val voucherValueDescriptionSv: String
+    val voucherValueDescriptionSv: String,
+    val missing: Boolean
 )
 
 fun firstOfMonthAfterThirdBirthday(dateOfBirth: LocalDate): LocalDate =

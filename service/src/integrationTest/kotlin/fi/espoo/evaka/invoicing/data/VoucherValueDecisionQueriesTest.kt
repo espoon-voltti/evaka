@@ -15,13 +15,9 @@ import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionDifference
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionStatus
 import fi.espoo.evaka.placement.PlacementType
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.dev.DevPerson
-import fi.espoo.evaka.shared.dev.DevPlacement
-import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -42,7 +38,6 @@ import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.toValueDecisionServiceNeed
-import fi.espoo.evaka.unitSupervisorOfTestDaycare
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -302,38 +297,28 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
             }
             tx.upsertValueDecisions(
                 listOf(
-                    baseDecision(testChild_1).copy(headOfFamilyId = testAdult_1.id),
-                    baseDecision(testChild_2).copy(headOfFamilyId = testAdult_2.id),
-                    baseDecision(testChild_3).copy(headOfFamilyId = testAdult_3.id),
-                    baseDecision(testChild_4).copy(headOfFamilyId = testAdult_4.id)
+                    baseDecision(testChild_1)
+                        .copy(
+                            headOfFamilyId = testAdult_1.id,
+                            serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed()
+                        ),
+                    baseDecision(testChild_2)
+                        .copy(
+                            headOfFamilyId = testAdult_2.id,
+                            serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed()
+                        ),
+                    baseDecision(testChild_3)
+                        .copy(
+                            headOfFamilyId = testAdult_3.id,
+                            serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed()
+                        ),
+                    baseDecision(testChild_4)
+                        .copy(
+                            headOfFamilyId = testAdult_4.id,
+                            serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed()
+                        )
                 )
             )
-            tx.insertTestPlacement(DevPlacement(childId = testChild_1.id, unitId = testDaycare.id))
-                .let { placementId ->
-                    tx.insertTestServiceNeed(
-                        confirmedBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw),
-                        placementId = placementId,
-                        period = testPeriod.asFiniteDateRange()!!,
-                        optionId = snDaycareFullDay35.id
-                    )
-                }
-            tx.insertTestPlacement(DevPlacement(childId = testChild_4.id, unitId = testDaycare.id))
-                .let { placementId ->
-                    tx.insertTestServiceNeed(
-                        confirmedBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw),
-                        placementId = placementId,
-                        period =
-                            FiniteDateRange(LocalDate.of(2019, 5, 1), LocalDate.of(2019, 5, 15)),
-                        optionId = snDaycareFullDay35.id
-                    )
-                    tx.insertTestServiceNeed(
-                        confirmedBy = EvakaUserId(unitSupervisorOfTestDaycare.id.raw),
-                        placementId = placementId,
-                        period =
-                            FiniteDateRange(LocalDate.of(2019, 5, 16), LocalDate.of(2019, 5, 31)),
-                        optionId = snDaycareFullDay35.id
-                    )
-                }
         }
 
         val result =

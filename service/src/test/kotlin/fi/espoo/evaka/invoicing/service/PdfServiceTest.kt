@@ -184,7 +184,8 @@ class PdfServiceTest {
                     feeDescriptionFi = "palveluntarve puuttuu, korkein maksu",
                     feeDescriptionSv = "vårdbehovet saknas, högsta avgift",
                     voucherValueDescriptionFi = "yli 25h/viikko",
-                    voucherValueDescriptionSv = "mer än 25 h/vecka"
+                    voucherValueDescriptionSv = "mer än 25 h/vecka",
+                    missing = false
                 ),
             voucherValue = 120000,
             assistanceNeedCoefficient = BigDecimal("1"),

@@ -56,6 +56,7 @@ INSERT INTO voucher_value_decision (
     service_need_fee_description_sv,
     service_need_voucher_value_description_fi,
     service_need_voucher_value_description_sv,
+    service_need_missing,
     base_co_payment,
     sibling_discount,
     co_payment,
@@ -89,6 +90,7 @@ INSERT INTO voucher_value_decision (
     :serviceNeedFeeDescriptionSv,
     :serviceNeedVoucherValueDescriptionFi,
     :serviceNeedVoucherValueDescriptionSv,
+    :serviceNeedMissing,
     :baseCoPayment,
     :siblingDiscount,
     :coPayment,
@@ -120,6 +122,7 @@ INSERT INTO voucher_value_decision (
     service_need_fee_description_sv = :serviceNeedFeeDescriptionSv,
     service_need_voucher_value_description_fi = :serviceNeedVoucherValueDescriptionFi,
     service_need_voucher_value_description_sv = :serviceNeedVoucherValueDescriptionSv,
+    service_need_missing = :serviceNeedMissing,
     base_co_payment = :baseCoPayment,
     sibling_discount = :siblingDiscount,
     co_payment = :coPayment,
@@ -156,6 +159,7 @@ INSERT INTO voucher_value_decision (
                 "serviceNeedVoucherValueDescriptionSv",
                 decision.serviceNeed?.voucherValueDescriptionSv
             )
+            .bind("serviceNeedMissing", decision.serviceNeed?.missing ?: false)
             .bind("sentAt", decision.sentAt)
             .execute()
     }
@@ -190,6 +194,7 @@ SELECT
     service_need_fee_description_sv,
     service_need_voucher_value_description_fi,
     service_need_voucher_value_description_sv,
+    service_need_missing,
     base_co_payment,
     sibling_discount,
     co_payment,
@@ -246,6 +251,7 @@ SELECT
     service_need_fee_description_sv,
     service_need_voucher_value_description_fi,
     service_need_voucher_value_description_sv,
+    service_need_missing,
     base_co_payment,
     sibling_discount,
     co_payment,
@@ -368,7 +374,7 @@ NOT EXISTS (
                 "placement_unit.finance_decision_handler = :financeDecisionHandlerId"
             else null,
             if (difference.isNotEmpty()) "decision.difference && :difference" else null,
-            if (withNullHours) "service_need.option_id IS NULL" else null,
+            if (withNullHours) "decision.service_need_missing" else null,
             if (havingExternalChildren)
                 "child.post_office <> '' AND child.post_office NOT ILIKE :postOffice"
             else null,
@@ -413,8 +419,6 @@ LEFT JOIN person AS child ON decision.child_id = child.id
 LEFT JOIN person AS partner ON decision.partner_id = partner.id
 LEFT JOIN daycare AS placement_unit ON placement_unit.id = decision.placement_unit_id
 LEFT JOIN care_area AS area ON placement_unit.care_area_id = area.id
-LEFT JOIN placement ON placement.child_id = child.id AND decision.valid_from BETWEEN placement.start_date AND placement.end_date
-LEFT JOIN service_need ON service_need.placement_id = placement.id AND decision.valid_from BETWEEN service_need.start_date AND service_need.end_date
 WHERE
     decision.status = :status::voucher_value_decision_status
     AND $freeTextQuery
