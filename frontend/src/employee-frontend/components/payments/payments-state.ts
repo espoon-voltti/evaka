@@ -140,6 +140,15 @@ export function usePaymentsState() {
 
   const loadPayments = useRestApi(getPayments, setPaymentsResult)
   const reloadPayments = useCallback(() => {
+    const { paymentDateStart, paymentDateEnd } = searchFilters
+    if (
+      paymentDateStart &&
+      paymentDateEnd &&
+      paymentDateStart.isAfter(paymentDateEnd)
+    ) {
+      return
+    }
+
     void loadPayments({
       ...searchFilters,
       searchTerms: debouncedSearchTerms,

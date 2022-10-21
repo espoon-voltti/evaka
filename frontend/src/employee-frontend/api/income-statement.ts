@@ -49,6 +49,11 @@ export async function getIncomeStatementsAwaitingHandler(
   sortDirection: SortDirection,
   searchFilters: IncomeStatementSearchFilters
 ): Promise<Result<Paged<IncomeStatementAwaitingHandler>>> {
+  const { sentStartDate, sentEndDate } = searchFilters
+  if (sentStartDate && sentEndDate && sentStartDate.isAfter(sentEndDate)) {
+    return Success.of({ data: [], pages: 0, total: 0 })
+  }
+
   return client
     .post<JsonOf<Paged<IncomeStatementAwaitingHandler>>>(
       '/income-statements/awaiting-handler',
