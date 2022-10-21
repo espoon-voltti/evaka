@@ -917,6 +917,7 @@ export interface VoucherValueDecisionServiceNeed {
   feeCoefficient: number
   feeDescriptionFi: string
   feeDescriptionSv: string
+  missing: boolean
   voucherValueCoefficient: number
   voucherValueDescriptionFi: string
   voucherValueDescriptionSv: string
