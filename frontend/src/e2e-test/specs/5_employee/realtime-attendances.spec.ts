@@ -179,65 +179,11 @@ describe('Realtime staff attendances', () => {
       await attendancesSection.assertZeroOccupancyCoefficientCount(1)
     })
 
-    test('It is not possible to create new entries', async () => {
-      await attendancesSection.assertNoTimeInputsVisible()
-      await attendancesSection.clickEditOnRow(0)
-      await attendancesSection.assertNoTimeInputsVisible()
-      await attendancesSection.clickCommitOnRow(0)
-    })
-
     test('Sunday entries are shown in the calendar', async () => {
       await calendarPage.changeWeekToDate(mockedToday.subWeeks(1))
       await attendancesSection.assertArrivalDeparture({
         rowIx: 0,
         nth: 6,
-        arrival: '07:00',
-        departure: '15:00'
-      })
-    })
-  })
-  describe('Group selection: staff, with one attendance entry', () => {
-    beforeEach(async () => {
-      await insertStaffRealtimeAttendance({
-        id: uuidv4(),
-        employeeId: staff[1].id,
-        groupId: groupId,
-        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
-        departed: null,
-        occupancyCoefficient: 7.0,
-        type: 'PRESENT'
-      })
-
-      attendancesSection = await openAttendancesSection()
-      await attendancesSection.selectGroup('staff')
-      await attendancesSection.assertNoTimeInputsVisible()
-    })
-    test('Existing entries can be edited', async () => {
-      await attendancesSection.clickEditOnRow(1)
-      await attendancesSection.assertCountTimeInputsVisible(1)
-    })
-
-    test('Editing an existing entry updates it', async () => {
-      const rowIx = 1
-      const nth = 0
-      await attendancesSection.assertArrivalDeparture({
-        rowIx,
-        nth,
-        arrival: '07:00',
-        departure: '–'
-      })
-      await attendancesSection.clickEditOnRow(rowIx)
-      await attendancesSection.setNthArrivalDeparture(
-        0,
-        nth,
-        '07:00',
-        '15:00',
-        1
-      )
-      await attendancesSection.closeInlineEditor()
-      await attendancesSection.assertArrivalDeparture({
-        rowIx,
-        nth,
         arrival: '07:00',
         departure: '15:00'
       })
@@ -290,195 +236,6 @@ describe('Realtime staff attendances', () => {
         realized: '07:00 –',
         hours: '5:00 (-3:00)'
       })
-    })
-  })
-  describe('Group selection: group', () => {
-    beforeEach(async () => {
-      await insertStaffRealtimeAttendance({
-        id: uuidv4(),
-        employeeId: staff[1].id,
-        groupId: groupId,
-        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0)),
-        departed: mockedToday.toHelsinkiDateTime(LocalTime.of(16, 0)),
-        occupancyCoefficient: 7.0,
-        type: 'PRESENT'
-      })
-
-      attendancesSection = await openAttendancesSection()
-      await attendancesSection.selectGroup(groupId)
-      await waitUntilEqual(
-        () => attendancesSection.staffInAttendanceTable(),
-        [staffName(groupStaff)]
-      )
-    })
-    test('A new entry can be added', async () => {
-      const rowIx = 0
-      await attendancesSection.clickEditOnRow(rowIx)
-      await attendancesSection.setNthArrivalDeparture(0, 2, '07:00', '15:00')
-      await attendancesSection.closeInlineEditor()
-      await attendancesSection.assertArrivalDeparture({
-        rowIx,
-        nth: 2,
-        arrival: '07:00',
-        departure: '15:00'
-      })
-    })
-    test('An overnight entry can be added', async () => {
-      const rowIx = 0
-      await attendancesSection.clickEditOnRow(rowIx)
-      await attendancesSection.setNthArrivalDeparture(0, 1, '09:00', '')
-      await attendancesSection.setNthDeparture(0, 2, '15:00')
-      await attendancesSection.closeInlineEditor()
-      await attendancesSection.assertArrivalDeparture({
-        rowIx,
-        nth: 1,
-        arrival: '09:00',
-        departure: '→'
-      })
-      await attendancesSection.assertArrivalDeparture({
-        rowIx,
-        nth: 2,
-        arrival: '→',
-        departure: '15:00'
-      })
-    })
-    test('Existing entries can be deleted by entering empty values', async () => {
-      const rowIx = 0
-      await attendancesSection.clickEditOnRow(rowIx)
-      await attendancesSection.setNthArrivalDeparture(0, 0, '', '')
-      await attendancesSection.closeInlineEditor()
-      await attendancesSection.assertArrivalDeparture({
-        rowIx,
-        nth: 0,
-        arrival: '–',
-        departure: '–'
-      })
-    })
-    test('An overnight entry can be added over the week boundary', async () => {
-      const rowIx = 0
-      await attendancesSection.clickEditOnRow(rowIx)
-      await attendancesSection.setNthArrivalDeparture(0, 6, '15:00', '')
-      await calendarPage.changeWeekToDate(mockedToday.addWeeks(1))
-      await attendancesSection.assertDepartureLocked(0, 0)
-      await attendancesSection.setNthDeparture(0, 0, '07:00')
-      await attendancesSection.closeInlineEditor()
-      await attendancesSection.assertArrivalDeparture({
-        rowIx,
-        nth: 0,
-        arrival: '→',
-        departure: '07:00'
-      })
-      await calendarPage.changeWeekToDate(mockedToday)
-      await attendancesSection.assertArrivalDeparture({
-        rowIx,
-        nth: 6,
-        arrival: '15:00',
-        departure: '→'
-      })
-    })
-    test('Navigating to the previous week does not delete an open attendance', async () => {
-      const rowIx = 0
-      await attendancesSection.clickEditOnRow(rowIx)
-      await attendancesSection.setNthArrivalDeparture(0, 0, '15:00', '')
-      await attendancesSection.closeInlineEditor()
-      await calendarPage.changeWeekToDate(mockedToday.subWeeks(1))
-      await calendarPage.changeWeekToDate(mockedToday)
-      await attendancesSection.assertArrivalDeparture({
-        rowIx,
-        nth: 0,
-        arrival: '15:00',
-        departure: '–'
-      })
-    })
-    test('A warning is shown if open range is added with a future attendance', async () => {
-      await attendancesSection.clickEditOnRow(0)
-      await attendancesSection.setNthArrivalDeparture(0, 6, '09:00', '10:00')
-      await attendancesSection.setNthArrivalDeparture(0, 4, '10:00', '')
-      await attendancesSection.assertFormWarning()
-    })
-    test('A warning is shown if open range is added with a future attendance over the week boundary', async () => {
-      await attendancesSection.clickEditOnRow(0)
-      await calendarPage.changeWeekToDate(mockedToday.addWeeks(1))
-      await attendancesSection.setNthArrivalDeparture(0, 0, '09:00', '10:00')
-      await calendarPage.changeWeekToDate(mockedToday)
-      await attendancesSection.setNthArrivalDeparture(0, 4, '10:00', '')
-      await attendancesSection.assertFormWarning()
-    })
-  })
-  describe('Group selected, multiple per-day attendances', () => {
-    beforeEach(async () => {
-      await insertStaffRealtimeAttendance({
-        id: uuidv4(),
-        employeeId: staff[1].id,
-        groupId: groupId,
-        arrived: mockedToday.addDays(1).toHelsinkiDateTime(LocalTime.of(7, 0)),
-        departed: mockedToday.addDays(1).toHelsinkiDateTime(LocalTime.of(9, 0)),
-        occupancyCoefficient: 2.0,
-        type: 'PRESENT'
-      })
-      await insertStaffRealtimeAttendance({
-        id: uuidv4(),
-        employeeId: staff[1].id,
-        groupId: groupId,
-        arrived: mockedToday.addDays(1).toHelsinkiDateTime(LocalTime.of(9, 0)),
-        departed: mockedToday
-          .addDays(1)
-          .toHelsinkiDateTime(LocalTime.of(10, 0)),
-        occupancyCoefficient: 2.0,
-        type: 'PRESENT'
-      })
-
-      attendancesSection = await openAttendancesSection()
-      await attendancesSection.selectGroup(groupId)
-      await waitUntilEqual(
-        () => attendancesSection.staffInAttendanceTable(),
-        [staffName(groupStaff)]
-      )
-    })
-
-    test('Multi-row attendances can be edited', async () => {
-      await attendancesSection.clickEditOnRow(0)
-      await attendancesSection.setNthArrivalDeparture(1, 1, '12:00', '14:00')
-      await attendancesSection.closeInlineEditor()
-      await attendancesSection.assertArrivalDeparture({
-        rowIx: 0,
-        nth: 1,
-        timeNth: 0,
-        arrival: '07:00',
-        departure: '09:00'
-      })
-      await attendancesSection.assertArrivalDeparture({
-        rowIx: 0,
-        nth: 1,
-        timeNth: 1,
-        arrival: '12:00',
-        departure: '14:00'
-      })
-    })
-    test('Multi-row attendance can be extended overnight', async () => {
-      await attendancesSection.clickEditOnRow(0)
-      await attendancesSection.setNthArrivalDeparture(1, 1, '14:00', '')
-      await attendancesSection.setNthDeparture(0, 2, '04:00')
-      await attendancesSection.closeInlineEditor()
-      await attendancesSection.assertArrivalDeparture({
-        rowIx: 0,
-        nth: 1,
-        timeNth: 1,
-        arrival: '14:00',
-        departure: '→'
-      })
-      await attendancesSection.assertArrivalDeparture({
-        rowIx: 0,
-        nth: 2,
-        timeNth: 0,
-        arrival: '→',
-        departure: '04:00'
-      })
-    })
-    test('An open multi-row attendance has warning when there is another after it', async () => {
-      await attendancesSection.clickEditOnRow(0)
-      await attendancesSection.setNthArrivalDeparture(0, 1, '07:00', '')
-      await attendancesSection.assertFormWarning()
     })
   })
   describe('Details modal', () => {
@@ -618,80 +375,43 @@ describe('Realtime staff attendances', () => {
       )
     })
   })
-  describe('Entries to multiple groups', () => {
+  describe('Staff count sums in the table', () => {
     beforeEach(async () => {
-      await insertStaffRealtimeAttendance({
-        id: uuidv4(),
-        employeeId: staff[1].id,
-        groupId: groupId,
-        arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(8, 0)),
-        departed: null,
-        occupancyCoefficient: 7.0,
-        type: 'PRESENT'
-      })
+      const times: [number, number, number][] = [
+        [0, 12, 15],
+        [4, 9, 10],
+        [5, 10, 13]
+      ]
+      for (const [day, arrivalHour, departureHour] of times) {
+        await insertStaffRealtimeAttendance({
+          id: uuidv4(),
+          employeeId: staff[1].id,
+          groupId: groupId,
+          arrived: mockedToday
+            .addDays(day)
+            .toHelsinkiDateTime(LocalTime.of(arrivalHour, 0)),
+          departed: mockedToday
+            .addDays(day)
+            .toHelsinkiDateTime(LocalTime.of(departureHour, 0)),
+          occupancyCoefficient: 7.0,
+          type: 'PRESENT'
+        })
+      }
 
       attendancesSection = await openAttendancesSection()
     })
-    test('Inline editor does not overwrite entries to other groups', async () => {
-      await attendancesSection.selectGroup(groupId)
-      await attendancesSection.assertArrivalDeparture({
-        rowIx: 0,
-        nth: 0,
-        arrival: '08:00',
-        departure: '–'
-      })
-      await attendancesSection.clickEditOnRow(0)
-      await attendancesSection.setNthArrivalDeparture(0, 0, '07:00', '15:00')
-      await attendancesSection.closeInlineEditor()
-      await attendancesSection.assertArrivalDeparture({
-        rowIx: 0,
-        nth: 0,
-        arrival: '07:00',
-        departure: '15:00'
-      })
-      await attendancesSection.selectGroup(groupId2)
-      await attendancesSection.assertArrivalDeparture({
-        rowIx: 0,
-        nth: 0,
-        arrival: '–',
-        departure: '–'
-      })
-      await attendancesSection.clickEditOnRow(0)
-      await attendancesSection.setNthArrivalDeparture(0, 0, '15:00', '16:15')
-      await attendancesSection.closeInlineEditor()
-      await attendancesSection.assertArrivalDeparture({
-        rowIx: 0,
-        nth: 0,
-        arrival: '15:00',
-        departure: '16:15'
-      })
-      await attendancesSection.selectGroup(groupId)
-      await attendancesSection.assertArrivalDeparture({
-        rowIx: 0,
-        nth: 0,
-        arrival: '07:00',
-        departure: '15:00'
-      })
-    })
-  })
-  describe('Staff count sums in the table', () => {
-    beforeEach(async () => {
-      attendancesSection = await openAttendancesSection()
-    })
+
     test('Total staff counts', async () => {
+      await attendancesSection.selectGroup(groupId2)
       await waitUntilEqual(() => attendancesSection.personCountSum(0), '– hlö')
+
       await attendancesSection.selectGroup(groupId)
-      await attendancesSection.clickEditOnRow(0)
-      await attendancesSection.setNthArrivalDeparture(0, 0, '12:00', '15:00')
-      await attendancesSection.setNthArrivalDeparture(0, 4, '09:00', '10:00')
-      await attendancesSection.setNthArrivalDeparture(0, 5, '10:00', '13:00')
-      await attendancesSection.closeInlineEditor()
       await waitUntilEqual(() => attendancesSection.personCountSum(0), '1 hlö')
-      await waitUntilEqual(() => attendancesSection.personCountSum(4), '1 hlö')
-      await waitUntilEqual(() => attendancesSection.personCountSum(5), '1 hlö')
       await waitUntilEqual(() => attendancesSection.personCountSum(1), '– hlö')
       await waitUntilEqual(() => attendancesSection.personCountSum(2), '– hlö')
       await waitUntilEqual(() => attendancesSection.personCountSum(3), '– hlö')
+      await waitUntilEqual(() => attendancesSection.personCountSum(4), '1 hlö')
+      await waitUntilEqual(() => attendancesSection.personCountSum(5), '1 hlö')
     })
   })
 
