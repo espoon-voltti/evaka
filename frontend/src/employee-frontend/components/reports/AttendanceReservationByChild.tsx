@@ -425,6 +425,17 @@ const getTableRow = (
             )}
           </React.Fragment>
         )}
+        {column === undefined && (
+          <AttendanceReservationReportTd
+            borderEdge={[
+              'right',
+              ...(isToday && isFirstRow ? (['top'] as const) : [])
+            ]}
+            isToday={isToday}
+            isFuture={isFuture}
+            colSpan={2}
+          />
+        )}
       </React.Fragment>
     )
   })
