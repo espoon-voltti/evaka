@@ -247,7 +247,8 @@ sealed interface Action {
                 .inAnyUnit()
         ),
         READ_ASSISTANCE_NEED_DECISIONS_REPORT(
-            IsEmployee.andIsDecisionMakerForAnyAssistanceNeedDecision()
+            IsEmployee.andIsDecisionMakerForAnyAssistanceNeedDecision(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inAnyUnit()
         ),
         READ_ATTENDANCE_RESERVATION_REPORT(HasUnitRole(UNIT_SUPERVISOR).inAnyUnit()),
         READ_CHILD_AGE_AND_LANGUAGE_REPORT(
@@ -623,7 +624,10 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfAssistanceNeedDecision()
         ),
-        READ_IN_REPORT(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
+        READ_IN_REPORT(
+            IsEmployee.andIsDecisionMakerForAssistanceNeedDecision(),
+            HasUnitRole(SPECIAL_EDUCATION_TEACHER).inPlacementUnitOfChildOfAssistanceNeedDecision()
+        ),
         SEND(
             HasGlobalRole(SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
