@@ -8,7 +8,3 @@
 export * from 'Icons'
 
 export type IconSet = typeof import('Icons')
-
-export function typeAssert<T extends boolean>(_: T) {
-  // empty
-}
