@@ -12,6 +12,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import { AttendanceReservationReportByChildRow } from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
@@ -24,6 +25,7 @@ import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
+import { Translations } from 'lib-customizations/employee'
 
 import {
   AttendanceReservationReportFilters,
@@ -100,7 +102,7 @@ export default React.memo(function AttendanceReservationByChild() {
     .getOrElse([])
 
   const dates = sortedRows
-    .map((row) => row.reservationDate)
+    .map((row) => row.date)
     .filter(
       (value, index, array) =>
         array.findIndex((date) => date.isEqual(value)) === index
@@ -112,9 +114,7 @@ export default React.memo(function AttendanceReservationByChild() {
   >((data, row) => {
     const groupKey = row.groupId ?? 'ungrouped'
     const rows = data[groupKey] ?? []
-    const columnIndex = dates.findIndex((date) =>
-      date.isEqual(row.reservationDate)
-    )
+    const columnIndex = dates.findIndex((date) => date.isEqual(row.date))
     const rowIndex = rows.findIndex((row) => row[columnIndex] === undefined)
     if (rowIndex !== -1) {
       rows[rowIndex][columnIndex] = row
@@ -173,7 +173,7 @@ export default React.memo(function AttendanceReservationByChild() {
             })}
           </Tr>
         </Thead>
-        <Tbody>{getTableBody(rows, dates, theme)}</Tbody>
+        <Tbody>{getTableBody(rows, dates, i18n, theme)}</Tbody>
       </TableScrollable>
     )
   })
@@ -276,10 +276,19 @@ export default React.memo(function AttendanceReservationByChild() {
               data={sortedRows.map((row) => ({
                 ...row,
                 childName: getChildName(row),
-                reservationDate: row.reservationDate.format(),
+                date: row.date.format(),
+                absenceType:
+                  row.absenceType !== null
+                    ? i18n.absences.absenceTypes[row.absenceType]
+                    : '',
                 reservationStartTime:
-                  row.reservationStartTime.format(timeFormat),
-                reservationEndTime: row.reservationEndTime.format(timeFormat)
+                  row.absenceType === null
+                    ? row.reservationStartTime?.format(timeFormat)
+                    : '',
+                reservationEndTime:
+                  row.absenceType === null
+                    ? row.reservationEndTime?.format(timeFormat)
+                    : ''
               }))}
               headers={[
                 ...(filters.groupIds.length > 0
@@ -296,7 +305,11 @@ export default React.memo(function AttendanceReservationByChild() {
                 },
                 {
                   label: i18n.reports.common.date,
-                  key: 'reservationDate'
+                  key: 'date'
+                },
+                {
+                  label: i18n.reports.attendanceReservationByChild.absenceType,
+                  key: 'absenceType'
                 },
                 {
                   label:
@@ -326,13 +339,14 @@ export default React.memo(function AttendanceReservationByChild() {
 const getTableBody = (
   rows: (AttendanceReservationReportByChildRow | undefined)[][],
   dates: LocalDate[],
+  i18n: Translations,
   theme: DefaultTheme
 ) => {
   const components: React.ReactNode[] = []
   rows.forEach((row, rowIndex) => {
     components.push(
       <Tr key={`row-${rowIndex}`}>
-        {getTableRow(row, rowIndex, dates, theme)}
+        {getTableRow(row, rowIndex, dates, i18n, theme)}
       </Tr>
     )
   })
@@ -343,6 +357,7 @@ const getTableRow = (
   row: (AttendanceReservationReportByChildRow | undefined)[],
   rowIndex: number,
   dates: LocalDate[],
+  i18n: Translations,
   theme: DefaultTheme
 ) => {
   const components: React.ReactNode[] = []
@@ -372,23 +387,44 @@ const getTableRow = (
             </>
           )}
         </AttendanceReservationReportTd>
-        <AttendanceReservationReportTd
-          borderEdge={isToday && isFirstRow ? ['top'] : []}
-          isToday={isToday}
-          isFuture={isFuture}
-        >
-          {column && column.reservationStartTime.format(timeFormat)}
-        </AttendanceReservationReportTd>
-        <AttendanceReservationReportTd
-          borderEdge={[
-            'right',
-            ...(isToday && isFirstRow ? (['top'] as const) : [])
-          ]}
-          isToday={isToday}
-          isFuture={isFuture}
-        >
-          {column && column.reservationEndTime.format(timeFormat)}
-        </AttendanceReservationReportTd>
+        {column !== undefined && (
+          <React.Fragment>
+            {column.absenceType !== null && (
+              <AttendanceReservationReportTd
+                borderEdge={[
+                  'right',
+                  ...(isToday && isFirstRow ? (['top'] as const) : [])
+                ]}
+                isToday={isToday}
+                isFuture={isFuture}
+                colSpan={2}
+              >
+                {i18n.absences.absenceTypes[column.absenceType]}
+              </AttendanceReservationReportTd>
+            )}
+            {column.absenceType === null && (
+              <React.Fragment>
+                <AttendanceReservationReportTd
+                  borderEdge={isToday && isFirstRow ? ['top'] : []}
+                  isToday={isToday}
+                  isFuture={isFuture}
+                >
+                  {column.reservationStartTime?.format(timeFormat)}
+                </AttendanceReservationReportTd>
+                <AttendanceReservationReportTd
+                  borderEdge={[
+                    'right',
+                    ...(isToday && isFirstRow ? (['top'] as const) : [])
+                  ]}
+                  isToday={isToday}
+                  isFuture={isFuture}
+                >
+                  {column.reservationEndTime?.format(timeFormat)}
+                </AttendanceReservationReportTd>
+              </React.Fragment>
+            )}
+          </React.Fragment>
+        )}
       </React.Fragment>
     )
   })
@@ -404,17 +440,30 @@ const compareByGroup = (
 const compareByDate = (
   a: AttendanceReservationReportByChildRow,
   b: AttendanceReservationReportByChildRow
-) => a.reservationDate.compareTo(b.reservationDate)
+) => a.date.compareTo(b.date)
 
 const compareByStartTime = (
   a: AttendanceReservationReportByChildRow,
   b: AttendanceReservationReportByChildRow
-) => a.reservationStartTime.compareTo(b.reservationStartTime)
+) => compareByTime(a.reservationStartTime, b.reservationStartTime)
 
 const compareByEndTime = (
   a: AttendanceReservationReportByChildRow,
   b: AttendanceReservationReportByChildRow
-) => a.reservationEndTime.compareTo(b.reservationEndTime)
+) => compareByTime(a.reservationEndTime, b.reservationEndTime)
+
+const compareByTime = (a: LocalTime | null, b: LocalTime | null) => {
+  if (a !== null && b !== null) {
+    return a.compareTo(b)
+  }
+  if (a !== null) {
+    return -1
+  }
+  if (b !== null) {
+    return 1
+  }
+  return 0
+}
 
 const compareByChildName = (
   a: AttendanceReservationReportByChildRow,

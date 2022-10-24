@@ -602,12 +602,15 @@ export async function getAssistanceReservationReportByChild(
       Success.of(
         data.map((row) => ({
           ...row,
-          reservationDate: LocalDate.parseIso(row.reservationDate),
-          reservationStartTime: LocalTime.parse(
-            row.reservationStartTime,
-            'HH:mm'
-          ),
-          reservationEndTime: LocalTime.parse(row.reservationEndTime, 'HH:mm')
+          date: LocalDate.parseIso(row.date),
+          reservationStartTime:
+            row.reservationStartTime !== null
+              ? LocalTime.parse(row.reservationStartTime, 'HH:mm')
+              : null,
+          reservationEndTime:
+            row.reservationEndTime !== null
+              ? LocalTime.parse(row.reservationEndTime, 'HH:mm')
+              : null
         }))
       )
     )

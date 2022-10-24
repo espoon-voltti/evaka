@@ -6,7 +6,9 @@ package fi.espoo.evaka.reports
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.occupancy.familyUnitPlacementCoefficient
+import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.AttendanceReservationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -206,27 +208,25 @@ private fun Database.Read.getAttendanceReservationReportByChild(
 ): List<AttendanceReservationReportByChildRow> {
     val sql =
         """
-        WITH reservations AS (
+        WITH
+        dates AS (SELECT generate_series::date AS date FROM generate_series(:start, :end, interval '1 day')),
+        children AS (
           SELECT
             CASE WHEN bc.id IS NOT NULL THEN bc.group_id ELSE dgp.daycare_group_id END AS group_id,
-            ar.id,
-            ar.date,
-            ar.start_time,
-            ar.end_time,
-            p.id AS child_id,
-            p.last_name AS child_last_name,
-            p.first_name AS child_first_name,
-            bc.id IS NOT NULL AS is_backup_care
-          FROM attendance_reservation ar
-          JOIN person p ON p.id = ar.child_id
-          JOIN placement pl ON pl.child_id = p.id AND ar.date BETWEEN pl.start_date AND pl.end_date
-          LEFT JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = pl.id AND ar.date BETWEEN dgp.start_date AND dgp.end_date
-          LEFT JOIN backup_care bc ON bc.child_id = p.id AND ar.date BETWEEN bc.start_date AND bc.end_date
+            date, p.id, p.last_name, p.first_name, bc.id IS NOT NULL AS is_backup_care
+          FROM dates date
+          JOIN placement pl ON date BETWEEN pl.start_date AND pl.end_date
+          JOIN person p ON p.id = pl.child_id
+          LEFT JOIN daycare_group_placement dgp ON dgp.daycare_placement_id = pl.id AND date BETWEEN dgp.start_date AND dgp.end_date
+          LEFT JOIN backup_care bc ON bc.child_id = p.id AND date BETWEEN bc.start_date AND bc.end_date
           JOIN daycare u ON u.id = coalesce(bc.unit_id, pl.unit_id)
-          WHERE u.id = :unitId AND ar.date BETWEEN :start AND :end
+          WHERE u.id = :unitId
             AND (:groupIds::uuid[] IS NULL OR coalesce(bc.group_id, dgp.daycare_group_id) = ANY(:groupIds))
-            AND extract(isodow FROM ar.date) = ANY(u.operation_days)
-        ), groups AS (
+            AND extract(isodow FROM date) = ANY(u.operation_days)
+        ),
+        absences AS (SELECT id, date, child_id, absence_type FROM absence WHERE date BETWEEN :start AND :end),
+        reservations AS (SELECT id, date, child_id, start_time, end_time FROM attendance_reservation WHERE date BETWEEN :start AND :end),
+        groups AS (
           SELECT dg.id, dg.name, d.operation_days
           FROM daycare_group dg
           JOIN daycare d ON d.id = dg.daycare_id
@@ -237,17 +237,20 @@ private fun Database.Read.getAttendanceReservationReportByChild(
         )
         SELECT
           ${if (groupIds != null) "g.id AS group_id, g.name AS group_name" else "NULL AS group_id, NULL as group_name"},
+          c.date,
+          c.id AS child_id,
+          c.last_name AS child_last_name,
+          c.first_name AS child_first_name,
+          c.is_backup_care,
+          a.id AS absence_id,
+          a.absence_type,
           r.id AS reservation_id,
-          r.date AS reservation_date,
           r.start_time AS reservation_start_time,
-          r.end_time AS reservation_end_time,
-          r.child_id,
-          r.child_last_name,
-          r.child_first_name,
-          r.is_backup_care
-        FROM groups g
-        JOIN reservations r ON (r.group_id IS NULL AND g.id IS NULL OR r.group_id = g.id)
-        WHERE (:groupIds::uuid[] IS NULL OR g.id = ANY(:groupIds))
+          r.end_time AS reservation_end_time
+        FROM children c
+        JOIN groups g ON (c.group_id IS NULL AND g.id IS NULL OR c.group_id = g.id)
+        LEFT JOIN absences a ON a.child_id = c.id AND a.date = c.date
+        LEFT JOIN reservations r ON r.child_id = c.id AND r.date = c.date
     """
             .trimIndent()
     return createQuery(sql)
@@ -262,14 +265,16 @@ private fun Database.Read.getAttendanceReservationReportByChild(
 data class AttendanceReservationReportByChildRow(
     val groupId: GroupId?,
     val groupName: String?,
-    val reservationId: AttendanceReservationId,
-    val reservationDate: LocalDate,
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
-    val reservationStartTime: LocalTime,
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
-    val reservationEndTime: LocalTime,
+    val date: LocalDate,
     val childId: ChildId,
     val childLastName: String,
     val childFirstName: String,
-    val isBackupCare: Boolean
+    val isBackupCare: Boolean,
+    val absenceId: AbsenceId?,
+    val absenceType: AbsenceType?,
+    val reservationId: AttendanceReservationId?,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
+    val reservationStartTime: LocalTime?,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
+    val reservationEndTime: LocalTime?
 )
