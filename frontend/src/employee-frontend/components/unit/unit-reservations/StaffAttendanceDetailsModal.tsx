@@ -14,6 +14,7 @@ import styled from 'styled-components'
 
 import { ErrorKey } from 'lib-common/form-validation'
 import {
+  Attendance,
   EmployeeAttendance,
   SingleDayStaffAttendanceUpsert,
   StaffAttendanceType,
@@ -194,7 +195,11 @@ export default React.memo(function StaffAttendanceDetailsModal({
       })),
     []
   )
-  const [requestBody, errors] = validateEditState(employee, date, editState)
+  const [requestBody, errors] = validateEditState(
+    employee?.attendances ?? [],
+    date,
+    editState
+  )
   const save = useCallback(() => {
     if (!requestBody) return
     return postSingleDayStaffAttendances(unitId, employeeId, date, requestBody)
@@ -532,8 +537,8 @@ interface ValidationError {
   departed?: ErrorKey
 }
 
-function validateEditState(
-  employee: EmployeeAttendance | undefined,
+export function validateEditState(
+  attendances: Attendance[],
   date: LocalDate,
   state: EditedAttendance[]
 ): [SingleDayStaffAttendanceUpsert[] | undefined, ValidationError[]] {
@@ -545,7 +550,7 @@ function validateEditState(
     if (!attendance.arrived) {
       if (i === 0) {
         const isNotOvernightAttendance =
-          employee?.attendances
+          attendances
             .find(({ id }) => id === attendance.id)
             ?.arrived.toLocalDate()
             .isEqual(date) ?? true
@@ -601,12 +606,11 @@ function validateEditState(
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       groupId: att.groupId!,
       arrived: !att.arrived
-        ? employee?.attendances.find(({ id }) => id === att.id)?.arrived ??
+        ? attendances.find(({ id }) => id === att.id)?.arrived ??
           arrivedAsHelsinkiDateTime()
         : arrivedAsHelsinkiDateTime(),
       departed: !att.departed
-        ? employee?.attendances.find(({ id }) => id === att.id)?.departed ??
-          null
+        ? attendances.find(({ id }) => id === att.id)?.departed ?? null
         : HelsinkiDateTime.fromLocal(
             date,
             LocalTime.parse(att.departed, 'HH:mm')
