@@ -928,6 +928,13 @@ export interface VoucherValueDecisionServiceNeed {
 */
 export type VoucherValueDecisionSortParam =
   | 'HEAD_OF_FAMILY'
+  | 'CHILD'
+  | 'VALIDITY'
+  | 'VOUCHER_VALUE'
+  | 'FINAL_CO_PAYMENT'
+  | 'NUMBER'
+  | 'CREATED'
+  | 'SENT'
   | 'STATUS'
 
 /**

@@ -309,6 +309,13 @@ fun Database.Read.searchValueDecisions(
     val sortColumn =
         when (sortBy) {
             VoucherValueDecisionSortParam.HEAD_OF_FAMILY -> "head.last_name"
+            VoucherValueDecisionSortParam.CHILD -> "child.last_name"
+            VoucherValueDecisionSortParam.VALIDITY -> "decision.valid_from"
+            VoucherValueDecisionSortParam.VOUCHER_VALUE -> "decision.voucher_value"
+            VoucherValueDecisionSortParam.FINAL_CO_PAYMENT -> "decision.final_co_payment"
+            VoucherValueDecisionSortParam.NUMBER -> "decision.decision_number"
+            VoucherValueDecisionSortParam.CREATED -> "decision.created"
+            VoucherValueDecisionSortParam.SENT -> "decision.sent_at"
             VoucherValueDecisionSortParam.STATUS -> "decision.status"
         }
 
@@ -428,7 +435,7 @@ WHERE
         } else {
             ""
         }}
-ORDER BY $sortColumn $sortDirection, decision.id DESC
+ORDER BY $sortColumn $sortDirection, decision.id $sortDirection
 LIMIT :pageSize OFFSET :pageSize * :page
 """
     return this.createQuery(sql)
