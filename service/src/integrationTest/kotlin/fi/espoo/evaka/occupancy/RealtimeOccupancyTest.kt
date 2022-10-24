@@ -236,6 +236,25 @@ class RealtimeOccupancyTest : FullApplicationTest(resetDbBeforeEach = true) {
             ?: error("data point missing")
     }
 
+    @Test
+    fun childWithoutPlacementGetsCapacityFactor1() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, date).addChild().withAge(2, 10).saveAnd {
+                // addPlacement().toUnit(testDaycare.id).save()
+                addAttendance()
+                    .inUnit(testDaycare.id)
+                    .arriving(LocalTime.of(7, 45))
+                    .departing(LocalTime.of(16, 30))
+                    .save()
+            }
+        }
+
+        val result = getRealtimeOccupancy()
+        val occupancies = result.occupancySeries
+        assertEquals(2, occupancies.size)
+        assertEquals(1.0, occupancies.get(0).childCapacity)
+    }
+
     private fun getRealtimeOccupancy(
         timeRange: HelsinkiDateTimeRange =
             HelsinkiDateTimeRange(
