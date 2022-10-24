@@ -9,13 +9,7 @@ import orderBy from 'lodash/orderBy'
 import reduce from 'lodash/reduce'
 import uniq from 'lodash/uniq'
 import uniqBy from 'lodash/uniqBy'
-import React, {
-  Fragment,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { ErrorKey } from 'lib-common/form-validation'
@@ -158,14 +152,12 @@ export default React.memo(function StaffAttendanceDetailsModal({
     editStateDate: LocalDate
   }>({ editState: initialEditState, editStateDate: date })
 
-  useEffect(() => {
-    if (editStateDate !== date) {
-      setEditState({
-        editState: initialEditState,
-        editStateDate: date
-      })
-    }
-  }, [initialEditState, date, editStateDate, editState, attendances])
+  if (editStateDate !== date) {
+    setEditState({
+      editState: initialEditState,
+      editStateDate: date
+    })
+  }
 
   const updateAttendance = useCallback(
     (index: number, data: Omit<EditedAttendance, 'id'>) =>
