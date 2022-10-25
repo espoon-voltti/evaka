@@ -64,6 +64,11 @@ export default React.memo(function VoucherValueDecisionsPage() {
   const checkedState = useCheckedState()
 
   const loadDecisions = useCallback(() => {
+    const { startDate, endDate } = searchFilters
+    if (startDate && endDate && startDate.isAfter(endDate)) {
+      return
+    }
+
     const status = searchFilters.status
     const params: VoucherValueDecisionSearchParams = {
       status: status.length > 0 ? status : undefined,
@@ -75,8 +80,8 @@ export default React.memo(function VoucherValueDecisionsPage() {
         ? searchFilters.financeDecisionHandlerId
         : undefined,
       difference: searchFilters.difference,
-      startDate: searchFilters.startDate,
-      endDate: searchFilters.endDate,
+      startDate,
+      endDate,
       searchByStartDate: searchFilters.searchByStartDate
     }
     void reloadDecisions(page, pageSize, sortBy, sortDirection, params)

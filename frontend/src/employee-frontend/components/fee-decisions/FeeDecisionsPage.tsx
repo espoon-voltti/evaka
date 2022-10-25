@@ -57,6 +57,11 @@ export default React.memo(function FeeDecisionsPage() {
   const checkedState = useCheckedState()
 
   const loadDecisions = useCallback(() => {
+    const { startDate, endDate } = searchFilters
+    if (startDate && endDate && startDate.isAfter(endDate)) {
+      return
+    }
+
     const status = searchFilters.status
     const params: FeeDecisionSearchParams = {
       status: status.length > 0 ? [status] : undefined,
@@ -64,8 +69,8 @@ export default React.memo(function FeeDecisionsPage() {
       unit: searchFilters.unit,
       distinctions: searchFilters.distinctiveDetails,
       searchTerms: debouncedSearchTerms ? debouncedSearchTerms : undefined,
-      startDate: searchFilters.startDate,
-      endDate: searchFilters.endDate,
+      startDate,
+      endDate,
       searchByStartDate: searchFilters.searchByStartDate,
       financeDecisionHandlerId: searchFilters.financeDecisionHandlerId,
       difference: searchFilters.difference

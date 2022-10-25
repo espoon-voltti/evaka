@@ -138,6 +138,11 @@ export function useInvoicesState() {
 
   const loadInvoices = useRestApi(getInvoices, setInvoicesResult)
   const reloadInvoices = useCallback(() => {
+    const { startDate, endDate } = searchFilters
+    if (startDate && endDate && startDate.isAfter(endDate)) {
+      return
+    }
+
     const status = searchFilters.status
     const params: InvoiceSearchParams = {
       area: searchFilters.area,
@@ -145,8 +150,8 @@ export function useInvoicesState() {
       status: status.length > 0 ? [status] : undefined,
       distinctions: searchFilters.distinctiveDetails,
       searchTerms: debouncedSearchTerms ? debouncedSearchTerms : undefined,
-      periodStart: searchFilters.startDate,
-      periodEnd: searchFilters.endDate
+      periodStart: startDate,
+      periodEnd: endDate
     }
     void loadInvoices(
       state.page,
@@ -159,12 +164,7 @@ export function useInvoicesState() {
     state.page,
     state.sortBy,
     state.sortDirection,
-    searchFilters.area,
-    searchFilters.status,
-    searchFilters.distinctiveDetails,
-    searchFilters.unit,
-    searchFilters.startDate,
-    searchFilters.endDate,
+    searchFilters,
     debouncedSearchTerms,
     loadInvoices
   ])
