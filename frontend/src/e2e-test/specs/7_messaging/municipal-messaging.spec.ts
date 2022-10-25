@@ -134,7 +134,10 @@ describe('Municipal messaging -', () => {
     await openMessagingPage()
     await messagingPage.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(messagingPage)
-    await messagesPage.sendNewMessage(defaultMessage)
+    await messagesPage.sendNewMessage({
+      ...defaultMessage,
+      receiver: fixtures.careAreaFixture.id
+    })
 
     await openStaffPage()
     await staffPage.goto(`${config.employeeUrl}/messages`)

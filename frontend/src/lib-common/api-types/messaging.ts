@@ -6,6 +6,7 @@ import {
   Message,
   MessageAccount,
   MessageCopy,
+  MessageReceiver,
   MessageThread,
   ThreadReply
 } from '../generated/api-types/messaging'
@@ -59,3 +60,16 @@ export const deserializeMessageCopy = (
   sentAt: HelsinkiDateTime.parseIso(json.sentAt),
   readAt: json.readAt ? HelsinkiDateTime.parseIso(json.readAt) : null
 })
+
+export const sortReceivers = (
+  receivers: MessageReceiver[]
+): MessageReceiver[] =>
+  receivers
+    .map((receiver) => ({
+      ...receiver,
+      receivers:
+        receiver.receivers.length === 0 ? [] : sortReceivers(receiver.receivers)
+    }))
+    .sort((a, b) =>
+      a.name.toLocaleLowerCase().localeCompare(b.name.toLocaleLowerCase())
+    )

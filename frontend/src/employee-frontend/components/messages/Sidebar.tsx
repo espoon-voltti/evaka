@@ -8,6 +8,7 @@ import React, { useContext, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
+import { sortReceivers } from 'lib-common/api-types/messaging'
 import {
   AuthorizedMessageAccount,
   MessageReceiversResponse
@@ -121,7 +122,11 @@ function Accounts({ accounts, setReceivers }: AccountsProps) {
   useEffect(() => {
     void getReceivers().then((result: Result<MessageReceiversResponse[]>) => {
       if (result.isSuccess) {
-        setReceivers(result.value)
+        const sortedReceivers = result.value.map((account) => ({
+          ...account,
+          receivers: sortReceivers(account.receivers)
+        }))
+        setReceivers(sortedReceivers)
       }
     })
   }, [setReceivers])
