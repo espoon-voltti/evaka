@@ -38,10 +38,15 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestParam unitId: DaycareId
     ): CurrentDayStaffAttendanceResponse {
-        ac.requirePermissionFor(user, clock, Action.Unit.READ_REALTIME_STAFF_ATTENDANCES, unitId)
-
         return db.connect { dbc ->
                 dbc.read {
+                    ac.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Unit.READ_REALTIME_STAFF_ATTENDANCES,
+                        unitId
+                    )
                     CurrentDayStaffAttendanceResponse(
                         staff = it.getStaffAttendances(unitId, clock.now()),
                         extraAttendances = it.getExternalStaffAttendances(unitId, clock.now())
@@ -75,14 +80,20 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: StaffArrivalRequest
     ) {
-        ac.requirePermissionFor(user, clock, Action.Group.MARK_ARRIVAL, body.groupId)
-        ac.verifyPinCodeAndThrow(body.employeeId, body.pinCode, clock)
-        // todo: check that employee has access to a unit related to the group?
-
         val staffAttendanceIds =
             try {
                 db.connect { dbc ->
                     dbc.transaction { tx ->
+                        ac.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Group.MARK_ARRIVAL,
+                            body.groupId
+                        )
+                        ac.verifyPinCodeAndThrow(tx, body.employeeId, body.pinCode, clock)
+                        // todo: check that employee has access to a unit related to the group?
+
                         val plannedAttendances =
                             tx.getPlannedStaffAttendances(body.employeeId, clock.now())
                         val ongoingAttendance = tx.getOngoingAttendance(body.employeeId)
@@ -133,12 +144,18 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: StaffDepartureRequest
     ) {
-        ac.requirePermissionFor(user, clock, Action.Group.MARK_DEPARTURE, body.groupId)
-        ac.verifyPinCodeAndThrow(body.employeeId, body.pinCode, clock)
-
         val staffAttendanceIds =
             db.connect { dbc ->
                 dbc.transaction { tx ->
+                    ac.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Group.MARK_DEPARTURE,
+                        body.groupId
+                    )
+                    ac.verifyPinCodeAndThrow(tx, body.employeeId, body.pinCode, clock)
+
                     val plannedAttendances =
                         tx.getPlannedStaffAttendances(body.employeeId, clock.now())
                     val ongoingAttendance =
@@ -186,14 +203,20 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: ExternalStaffArrivalRequest
     ): StaffAttendanceExternalId {
-        ac.requirePermissionFor(user, clock, Action.Group.MARK_EXTERNAL_ARRIVAL, body.groupId)
-
         val arrivedTimeHDT = clock.now().withTime(body.arrived)
         val nowHDT = clock.now()
         val arrivedTimeOrDefault = if (arrivedTimeHDT.isBefore(nowHDT)) arrivedTimeHDT else nowHDT
 
         return db.connect { dbc ->
                 dbc.transaction {
+                    ac.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Group.MARK_EXTERNAL_ARRIVAL,
+                        body.groupId
+                    )
+
                     it.markExternalStaffArrival(
                         ExternalStaffArrival(
                             name = body.name,
@@ -229,12 +252,15 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             val attendance =
                 dbc.read { it.getExternalStaffAttendance(body.attendanceId, clock.now()) }
                     ?: throw NotFound("attendance not found")
-            ac.requirePermissionFor(
-                user,
-                clock,
-                Action.Group.MARK_EXTERNAL_DEPARTURE,
-                attendance.groupId
-            )
+            dbc.read {
+                ac.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Group.MARK_EXTERNAL_DEPARTURE,
+                    attendance.groupId
+                )
+            }
 
             val departedTimeHDT = clock.now().withTime(body.time)
             val nowHDT = clock.now()

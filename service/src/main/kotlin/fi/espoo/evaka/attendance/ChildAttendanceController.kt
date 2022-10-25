@@ -70,9 +70,19 @@ class ChildAttendanceController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId
     ): AttendanceResponse {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_CHILD_ATTENDANCES, unitId)
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Unit.READ_CHILD_ATTENDANCES,
+                        unitId
+                    )
 
-        return db.connect { dbc -> dbc.read { it.getAttendancesResponse(unitId, clock.now()) } }
+                    it.getAttendancesResponse(unitId, clock.now())
+                }
+            }
             .also {
                 Audit.ChildAttendancesRead.log(
                     targetId = unitId,
@@ -101,15 +111,15 @@ class ChildAttendanceController(
         @PathVariable childId: ChildId,
         @RequestBody body: AttendancesRequest
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Unit.UPDATE_CHILD_ATTENDANCES,
-            unitId
-        )
-
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.UPDATE_CHILD_ATTENDANCES,
+                    unitId
+                )
                 tx.deleteAbsencesByDate(childId, clock.today())
                 tx.deleteAttendancesByDate(childId, body.date)
                 try {
@@ -143,17 +153,16 @@ class ChildAttendanceController(
         @PathVariable childId: ChildId,
         @RequestBody body: ArrivalRequest
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Unit.UPDATE_CHILD_ATTENDANCES,
-            unitId
-        )
-
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.UPDATE_CHILD_ATTENDANCES,
+                    unitId
+                )
                 tx.fetchChildPlacementBasics(childId, unitId, clock.today())
-
                 tx.deleteAbsencesByDate(childId, clock.today())
                 try {
                     tx.insertAttendance(
@@ -178,15 +187,15 @@ class ChildAttendanceController(
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Unit.UPDATE_CHILD_ATTENDANCES,
-            unitId
-        )
-
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.UPDATE_CHILD_ATTENDANCES,
+                    unitId
+                )
                 tx.fetchChildPlacementBasics(childId, unitId, clock.today())
                 tx.deleteAbsencesByDate(childId, clock.today())
 
@@ -205,10 +214,15 @@ class ChildAttendanceController(
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId
     ): List<AbsenceThreshold> {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_CHILD_ATTENDANCES, unitId)
-
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_CHILD_ATTENDANCES,
+                        unitId
+                    )
                     val attendance = getChildOngoingAttendance(tx, childId, unitId)
                     getPartialAbsenceThresholds(tx, clock, childId, unitId, attendance)
                 }
@@ -236,15 +250,15 @@ class ChildAttendanceController(
         @PathVariable childId: ChildId,
         @RequestBody body: DepartureRequest
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Unit.UPDATE_CHILD_ATTENDANCES,
-            unitId
-        )
-
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.UPDATE_CHILD_ATTENDANCES,
+                    unitId
+                )
                 val now = clock.now()
                 val today = clock.today()
 
@@ -310,15 +324,15 @@ class ChildAttendanceController(
         @PathVariable unitId: DaycareId,
         @PathVariable childId: ChildId
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Unit.UPDATE_CHILD_ATTENDANCES,
-            unitId
-        )
-
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.UPDATE_CHILD_ATTENDANCES,
+                    unitId
+                )
                 tx.fetchChildPlacementBasics(childId, unitId, clock.today())
                 tx.deleteAbsencesByDate(childId, clock.today())
 
@@ -341,18 +355,18 @@ class ChildAttendanceController(
         @PathVariable childId: ChildId,
         @RequestBody body: FullDayAbsenceRequest
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Unit.UPDATE_CHILD_ATTENDANCES,
-            unitId
-        )
-
         val now = clock.now()
         val today = now.toLocalDate()
 
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.UPDATE_CHILD_ATTENDANCES,
+                    unitId
+                )
                 val placementBasics = tx.fetchChildPlacementBasics(childId, unitId, clock.today())
 
                 val attendance = tx.getChildAttendance(childId, unitId, clock.now())
@@ -390,16 +404,16 @@ class ChildAttendanceController(
         @PathVariable childId: ChildId,
         @RequestBody body: AbsenceRangeRequest
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Unit.UPDATE_CHILD_ATTENDANCES,
-            unitId
-        )
-
         val now = clock.now()
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Unit.UPDATE_CHILD_ATTENDANCES,
+                    unitId
+                )
                 val typeOnDates =
                     tx.fetchChildPlacementTypeDates(childId, unitId, body.startDate, body.endDate)
 
@@ -429,10 +443,16 @@ class ChildAttendanceController(
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Child.DELETE_ABSENCE_RANGE, childId)
         val deleted =
             db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.DELETE_ABSENCE_RANGE,
+                        childId
+                    )
                     tx.deleteAbsencesByFiniteDateRange(childId, FiniteDateRange(from, to))
                 }
             }

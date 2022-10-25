@@ -49,16 +49,17 @@ class ServiceNeedController(
         clock: EvakaClock,
         @RequestBody body: ServiceNeedCreateRequest
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Placement.CREATE_SERVICE_NEED,
-            body.placementId
-        )
-
         val serviceNeedId =
             db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Placement.CREATE_SERVICE_NEED,
+                        body.placementId
+                    )
+
                     createServiceNeed(
                             tx = tx,
                             user = user,
@@ -93,10 +94,10 @@ class ServiceNeedController(
         @PathVariable id: ServiceNeedId,
         @RequestBody body: ServiceNeedUpdateRequest
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.ServiceNeed.UPDATE, id)
-
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.ServiceNeed.UPDATE, id)
+
                 val oldRange = tx.getServiceNeedChildRange(id)
                 updateServiceNeed(
                     tx = tx,
@@ -133,10 +134,10 @@ class ServiceNeedController(
         clock: EvakaClock,
         @PathVariable id: ServiceNeedId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.ServiceNeed.DELETE, id)
-
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.ServiceNeed.DELETE, id)
+
                 val childRange = tx.getServiceNeedChildRange(id)
                 tx.deleteServiceNeed(id)
                 notifyServiceNeedUpdated(tx, clock, asyncJobRunner, childRange)
@@ -151,9 +152,17 @@ class ServiceNeedController(
         user: AuthenticatedUser,
         clock: EvakaClock
     ): List<ServiceNeedOption> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_SERVICE_NEED_OPTIONS)
-
-        return db.connect { dbc -> dbc.read { it.getServiceNeedOptions() } }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_SERVICE_NEED_OPTIONS
+                    )
+                    it.getServiceNeedOptions()
+                }
+            }
             .also { Audit.ServiceNeedOptionsRead.log(args = mapOf("count" to it.size)) }
     }
 

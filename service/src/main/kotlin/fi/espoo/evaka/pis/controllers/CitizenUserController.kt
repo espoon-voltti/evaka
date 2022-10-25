@@ -36,12 +36,6 @@ class CitizenUserController(
         clock: EvakaClock,
         @PathVariable(value = "personId") personId: PersonId
     ): UserDetailsResponse {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Person.READ_VTJ_DETAILS,
-            personId
-        )
         val notFound = { throw NotFound("Person not found") }
         if (user.id != personId) {
             notFound()
@@ -49,6 +43,13 @@ class CitizenUserController(
 
         return db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Citizen.Person.READ_VTJ_DETAILS,
+                        personId
+                    )
                     val person = tx.getPersonById(personId) ?: notFound()
                     val userDetails =
                         CitizenUserDetails.from(

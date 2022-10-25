@@ -141,11 +141,16 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @RequestBody body: PaperApplicationCreateRequest
     ): ApplicationId {
-        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_PAPER_APPLICATION)
-
         val (guardianId, applicationId) =
             db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.CREATE_PAPER_APPLICATION
+                    )
+
                     val child =
                         tx.getPersonById(body.childId)
                             ?: throw BadRequest("Could not find the child with id ${body.childId}")
@@ -239,15 +244,16 @@ class ApplicationControllerV2(
             throw Forbidden("application search not allowed for any unit")
         }
 
-        val canReadServiceWorkerNotes =
-            accessControl.hasPermissionFor(
-                user,
-                clock,
-                Action.Global.READ_SERVICE_WORKER_APPLICATION_NOTES
-            )
-
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    val canReadServiceWorkerNotes =
+                        accessControl.hasPermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Global.READ_SERVICE_WORKER_APPLICATION_NOTES
+                        )
+
                     tx.fetchApplicationSummaries(
                         today = clock.today(),
                         page = body.page ?: 1,
@@ -300,10 +306,16 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @PathVariable(value = "guardianId") guardianId: PersonId
     ): List<PersonApplicationSummary> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_PERSON_APPLICATION)
-
         return db.connect { dbc ->
-                dbc.read { it.fetchApplicationSummariesForGuardian(guardianId) }
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_PERSON_APPLICATION
+                    )
+                    it.fetchApplicationSummariesForGuardian(guardianId)
+                }
             }
             .also { Audit.ApplicationRead.log(targetId = guardianId) }
     }
@@ -315,9 +327,18 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @PathVariable(value = "childId") childId: ChildId
     ): List<PersonApplicationSummary> {
-        accessControl.requirePermissionFor(user, clock, Action.Child.READ_APPLICATION, childId)
-
-        return db.connect { dbc -> dbc.read { it.fetchApplicationSummariesForChild(childId) } }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Child.READ_APPLICATION,
+                        childId
+                    )
+                    it.fetchApplicationSummariesForChild(childId)
+                }
+            }
             .also { Audit.ApplicationRead.log(targetId = childId) }
     }
 
@@ -340,7 +361,7 @@ class ApplicationControllerV2(
                                 Action.Application.READ_IF_HAS_ASSISTANCE_NEED
                             else -> Action.Application.READ
                         }
-                    accessControl.requirePermissionFor(user, clock, action, applicationId)
+                    accessControl.requirePermissionFor(tx, user, clock, action, applicationId)
 
                     val decisions =
                         tx.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user))
@@ -398,10 +419,15 @@ class ApplicationControllerV2(
         @PathVariable applicationId: ApplicationId,
         @RequestBody application: ApplicationUpdate
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Application.UPDATE, applicationId)
-
         db.connect { dbc ->
             dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Application.UPDATE,
+                    applicationId
+                )
                 applicationStateService.updateApplicationContentsServiceWorker(
                     it,
                     user,
@@ -436,14 +462,17 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): PlacementPlanDraft {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Application.READ_PLACEMENT_PLAN_DRAFT,
-            applicationId
-        )
         return db.connect { dbc ->
-                dbc.read { placementPlanService.getPlacementPlanDraft(it, applicationId) }
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Application.READ_PLACEMENT_PLAN_DRAFT,
+                        applicationId
+                    )
+                    placementPlanService.getPlacementPlanDraft(it, applicationId)
+                }
             }
             .also { Audit.PlacementPlanDraftRead.log(targetId = applicationId) }
     }
@@ -455,15 +484,16 @@ class ApplicationControllerV2(
         clock: EvakaClock,
         @PathVariable(value = "applicationId") applicationId: ApplicationId
     ): DecisionDraftJSON {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Application.READ_DECISION_DRAFT,
-            applicationId
-        )
-
         return db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Application.READ_DECISION_DRAFT,
+                        applicationId
+                    )
+
                     val application =
                         tx.fetchApplicationDetails(applicationId)
                             ?: throw NotFound("Application $applicationId not found")
@@ -539,15 +569,17 @@ class ApplicationControllerV2(
         @PathVariable(value = "applicationId") applicationId: ApplicationId,
         @RequestBody body: List<DecisionDraftService.DecisionDraftUpdate>
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Application.UPDATE_DECISION_DRAFT,
-            applicationId
-        )
-
         db.connect { dbc ->
-            dbc.transaction { decisionDraftService.updateDecisionDrafts(it, applicationId, body) }
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Application.UPDATE_DECISION_DRAFT,
+                    applicationId
+                )
+                decisionDraftService.updateDecisionDrafts(it, applicationId, body)
+            }
         }
         Audit.DecisionDraftUpdate.log(targetId = applicationId, objectId = body.map { it.id })
     }
@@ -604,16 +636,16 @@ class ApplicationControllerV2(
         @PathVariable applicationId: ApplicationId,
         @RequestBody body: DaycarePlacementPlan
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Application.CREATE_PLACEMENT_PLAN,
-            applicationId
-        )
-
         val placementPlanId =
             db.connect { dbc ->
                 dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Application.CREATE_PLACEMENT_PLAN,
+                        applicationId
+                    )
                     applicationStateService.createPlacementPlan(it, user, applicationId, body)
                 }
             }

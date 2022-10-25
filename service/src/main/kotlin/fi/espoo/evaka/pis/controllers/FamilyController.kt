@@ -44,12 +44,24 @@ class FamilyController(
         clock: EvakaClock,
         @PathVariable(value = "id") id: PersonId
     ): FamilyOverview {
-        accessControl.requirePermissionFor(user, clock, Action.Person.READ_FAMILY_OVERVIEW, id)
-        val includeIncome =
-            accessControl.hasPermissionFor(user, clock, Action.Person.READ_INCOME, id)
-
         return db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Person.READ_FAMILY_OVERVIEW,
+                        id
+                    )
+                    val includeIncome =
+                        accessControl.hasPermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Person.READ_INCOME,
+                            id
+                        )
+
                     val overview = familyOverviewService.getFamilyByAdult(it, clock, id)
                     if (includeIncome) {
                         overview
@@ -73,8 +85,18 @@ class FamilyController(
         clock: EvakaClock,
         @RequestParam(value = "childId", required = true) childId: ChildId
     ): List<FamilyContact> {
-        accessControl.requirePermissionFor(user, clock, Action.Child.READ_FAMILY_CONTACTS, childId)
-        return db.connect { dbc -> dbc.read { it.fetchFamilyContacts(clock, childId) } }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Child.READ_FAMILY_CONTACTS,
+                        childId
+                    )
+                    it.fetchFamilyContacts(clock, childId)
+                }
+            }
             .also {
                 Audit.FamilyContactsRead.log(targetId = childId, args = mapOf("count" to it.size))
             }
@@ -87,14 +109,15 @@ class FamilyController(
         clock: EvakaClock,
         @RequestBody body: FamilyContactUpdate
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Child.UPDATE_FAMILY_CONTACT_DETAILS,
-            body.childId
-        )
         db.connect { dbc ->
             dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Child.UPDATE_FAMILY_CONTACT_DETAILS,
+                    body.childId
+                )
                 if (
                     !it.isFamilyContactForChild(clock.today(), body.childId, body.contactPersonId)
                 ) {
@@ -121,14 +144,15 @@ class FamilyController(
         clock: EvakaClock,
         @RequestBody body: FamilyContactPriorityUpdate
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Child.UPDATE_FAMILY_CONTACT_PRIORITY,
-            body.childId
-        )
         db.connect { dbc ->
             dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Child.UPDATE_FAMILY_CONTACT_PRIORITY,
+                    body.childId
+                )
                 if (
                     !it.isFamilyContactForChild(clock.today(), body.childId, body.contactPersonId)
                 ) {

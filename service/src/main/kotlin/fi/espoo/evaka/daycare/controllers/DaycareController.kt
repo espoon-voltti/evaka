@@ -69,8 +69,17 @@ class DaycareController(
 
     @GetMapping("/features")
     fun getFeatures(db: Database, user: AuthenticatedUser, clock: EvakaClock): List<UnitFeatures> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_UNIT_FEATURES)
-        return db.connect { dbc -> dbc.read { it.getUnitFeatures() } }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_UNIT_FEATURES
+                    )
+                    it.getUnitFeatures()
+                }
+            }
             .also { Audit.UnitFeaturesRead.log(args = mapOf("count" to it.size)) }
     }
 
@@ -81,15 +90,16 @@ class DaycareController(
         clock: EvakaClock,
         @RequestBody request: UpdateFeaturesRequest
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Unit.UPDATE_FEATURES,
-            request.unitIds
-        )
-
         db.connect { dbc ->
             dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Unit.UPDATE_FEATURES,
+                    request.unitIds
+                )
+
                 if (request.enable) {
                     it.addUnitFeatures(request.unitIds, request.features)
                 } else {
@@ -107,9 +117,9 @@ class DaycareController(
         clock: EvakaClock,
         @PathVariable daycareId: DaycareId
     ): DaycareResponse {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.READ, daycareId)
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(tx, user, clock, Action.Unit.READ, daycareId)
                     tx.getDaycare(daycareId)?.let { daycare ->
                         val groups = tx.getDaycareGroupSummaries(daycareId)
                         val permittedActions =
@@ -151,9 +161,17 @@ class DaycareController(
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         to: LocalDate? = null
     ): List<DaycareGroup> {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_GROUPS, daycareId)
         return db.connect { dbc ->
-                dbc.read { daycareService.getDaycareGroups(it, daycareId, from, to) }
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Unit.READ_GROUPS,
+                        daycareId
+                    )
+                    daycareService.getDaycareGroups(it, daycareId, from, to)
+                }
             }
             .also {
                 Audit.UnitGroupsSearch.log(
@@ -171,10 +189,15 @@ class DaycareController(
         @PathVariable daycareId: DaycareId,
         @RequestBody body: CreateGroupRequest
     ): DaycareGroup {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.CREATE_GROUP, daycareId)
-
         return db.connect { dbc ->
                 dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Unit.CREATE_GROUP,
+                        daycareId
+                    )
                     daycareService.createGroup(
                         it,
                         daycareId,
@@ -202,10 +225,11 @@ class DaycareController(
         @PathVariable groupId: GroupId,
         @RequestBody body: GroupUpdateRequest
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Group.UPDATE, groupId)
-
         db.connect { dbc ->
-            dbc.transaction { it.updateGroup(groupId, body.name, body.startDate, body.endDate) }
+            dbc.transaction {
+                accessControl.requirePermissionFor(it, user, clock, Action.Group.UPDATE, groupId)
+                it.updateGroup(groupId, body.name, body.startDate, body.endDate)
+            }
         }
         Audit.UnitGroupsUpdate.log(targetId = groupId)
     }
@@ -218,9 +242,12 @@ class DaycareController(
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Group.DELETE, groupId)
-
-        db.connect { dbc -> dbc.transaction { daycareService.deleteGroup(it, groupId) } }
+        db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(it, user, clock, Action.Group.DELETE, groupId)
+                daycareService.deleteGroup(it, groupId)
+            }
+        }
         Audit.UnitGroupsDelete.log(targetId = groupId)
     }
 
@@ -232,10 +259,15 @@ class DaycareController(
         @PathVariable daycareId: DaycareId,
         @PathVariable groupId: GroupId
     ): CaretakersResponse {
-        accessControl.requirePermissionFor(user, clock, Action.Group.READ_CARETAKERS, groupId)
-
         return db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Group.READ_CARETAKERS,
+                        groupId
+                    )
                     CaretakersResponse(
                         caretakers = getCaretakers(it, groupId),
                         unitName = it.getDaycareStub(daycareId)?.name ?: "",
@@ -260,11 +292,16 @@ class DaycareController(
         @PathVariable groupId: GroupId,
         @RequestBody body: CaretakerRequest
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Group.CREATE_CARETAKERS, groupId)
-
         val daycareCaretakerId =
             db.connect { dbc ->
                 dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Group.CREATE_CARETAKERS,
+                        groupId
+                    )
                     insertCaretakers(
                         it,
                         groupId = groupId,
@@ -287,10 +324,15 @@ class DaycareController(
         @PathVariable id: DaycareCaretakerId,
         @RequestBody body: CaretakerRequest
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Group.UPDATE_CARETAKERS, groupId)
-
         db.connect { dbc ->
             dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Group.UPDATE_CARETAKERS,
+                    groupId
+                )
                 updateCaretakers(
                     it,
                     groupId = groupId,
@@ -313,9 +355,18 @@ class DaycareController(
         @PathVariable groupId: GroupId,
         @PathVariable id: DaycareCaretakerId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Group.DELETE_CARETAKERS, groupId)
-
-        db.connect { dbc -> dbc.transaction { deleteCaretakers(it, groupId = groupId, id = id) } }
+        db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Group.DELETE_CARETAKERS,
+                    groupId
+                )
+                deleteCaretakers(it, groupId = groupId, id = id)
+            }
+        }
         Audit.UnitGroupsCaretakersDelete.log(targetId = id)
     }
 
@@ -327,10 +378,16 @@ class DaycareController(
         @PathVariable daycareId: DaycareId,
         @RequestBody fields: DaycareFields
     ): Daycare {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.UPDATE, daycareId)
         fields.validate()
         return db.connect { dbc ->
                 dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Unit.UPDATE,
+                        daycareId
+                    )
                     it.updateDaycareManager(daycareId, fields.unitManager)
                     it.updateDaycare(daycareId, fields)
                     it.getDaycare(daycareId)!!
@@ -346,11 +403,16 @@ class DaycareController(
         clock: EvakaClock,
         @RequestBody fields: DaycareFields
     ): CreateDaycareResponse {
-        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_UNIT)
         fields.validate()
         return CreateDaycareResponse(
             db.connect { dbc ->
                     dbc.transaction {
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Global.CREATE_UNIT
+                        )
                         val id = it.createDaycare(fields.areaId, fields.name)
                         it.updateDaycareManager(id, fields.unitManager)
                         it.updateDaycare(id, fields)

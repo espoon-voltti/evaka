@@ -39,8 +39,16 @@ class StaffAttendanceController(
         clock: EvakaClock,
         @PathVariable unitId: DaycareId
     ): UnitStaffAttendance {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_STAFF_ATTENDANCES, unitId)
         return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Unit.READ_STAFF_ATTENDANCES,
+                        unitId
+                    )
+                }
                 staffAttendanceService.getUnitAttendancesForDate(dbc, unitId, clock.today())
             }
             .also { Audit.UnitStaffAttendanceRead.log(targetId = unitId) }
@@ -55,14 +63,17 @@ class StaffAttendanceController(
         @RequestParam month: Int,
         @PathVariable groupId: GroupId
     ): Wrapper<StaffAttendanceForDates> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Group.READ_STAFF_ATTENDANCES,
-            groupId
-        )
         val result =
             db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Group.READ_STAFF_ATTENDANCES,
+                        groupId
+                    )
+                }
                 staffAttendanceService.getGroupAttendancesByMonth(dbc, year, month, groupId)
             }
         Audit.StaffAttendanceRead.log(targetId = groupId)
@@ -77,16 +88,19 @@ class StaffAttendanceController(
         @RequestBody staffAttendance: StaffAttendanceUpdate,
         @PathVariable groupId: GroupId
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Group.UPDATE_STAFF_ATTENDANCES,
-            groupId
-        )
         if (staffAttendance.count == null) {
             throw BadRequest("Count can't be null")
         }
         db.connect { dbc ->
+            dbc.read {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Group.UPDATE_STAFF_ATTENDANCES,
+                    groupId
+                )
+            }
             staffAttendanceService.upsertStaffAttendance(
                 dbc,
                 staffAttendance.copy(groupId = groupId)

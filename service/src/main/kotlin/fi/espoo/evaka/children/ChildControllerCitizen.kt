@@ -19,13 +19,18 @@ import org.springframework.web.bind.annotation.RestController
 class ChildControllerCitizen(private val accessControl: AccessControl) {
     @GetMapping
     fun getChildren(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock): List<Child> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Citizen.Person.READ_CHILDREN,
-            user.id
-        )
-        return db.connect { dbc -> dbc.read { it.getChildrenByParent(user.id, clock.today()) } }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Citizen.Person.READ_CHILDREN,
+                        user.id
+                    )
+                    it.getChildrenByParent(user.id, clock.today())
+                }
+            }
             .also {
                 Audit.CitizenChildrenRead.log(targetId = user.id, args = mapOf("count" to it.size))
             }

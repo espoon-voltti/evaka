@@ -35,13 +35,16 @@ class AssistanceActionController(
         @PathVariable childId: ChildId,
         @RequestBody body: AssistanceActionRequest
     ): AssistanceAction {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Child.CREATE_ASSISTANCE_ACTION,
-            childId
-        )
         return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Child.CREATE_ASSISTANCE_ACTION,
+                        childId
+                    )
+                }
                 assistanceActionService.createAssistanceAction(
                     dbc,
                     user = user,
@@ -64,13 +67,16 @@ class AssistanceActionController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<AssistanceActionResponse> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Child.READ_ASSISTANCE_ACTION,
-            childId
-        )
         return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Child.READ_ASSISTANCE_ACTION,
+                        childId
+                    )
+                }
                 val relevantPreschoolPlacements =
                     dbc.read { tx ->
                         tx.getPlacementsForChild(childId).filter {
@@ -134,13 +140,16 @@ class AssistanceActionController(
         @PathVariable("id") assistanceActionId: AssistanceActionId,
         @RequestBody body: AssistanceActionRequest
     ): AssistanceAction {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.AssistanceAction.UPDATE,
-            assistanceActionId
-        )
         return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.AssistanceAction.UPDATE,
+                        assistanceActionId
+                    )
+                }
                 assistanceActionService.updateAssistanceAction(
                     dbc,
                     user = user,
@@ -158,13 +167,16 @@ class AssistanceActionController(
         clock: EvakaClock,
         @PathVariable("id") assistanceActionId: AssistanceActionId
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.AssistanceAction.DELETE,
-            assistanceActionId
-        )
         db.connect { dbc ->
+            dbc.read {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.AssistanceAction.DELETE,
+                    assistanceActionId
+                )
+            }
             assistanceActionService.deleteAssistanceAction(dbc, assistanceActionId)
         }
         Audit.ChildAssistanceActionDelete.log(targetId = assistanceActionId)
@@ -176,11 +188,16 @@ class AssistanceActionController(
         user: AuthenticatedUser,
         clock: EvakaClock
     ): List<AssistanceActionOption> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Global.READ_ASSISTANCE_ACTION_OPTIONS
-        )
-        return db.connect { dbc -> assistanceActionService.getAssistanceActionOptions(dbc) }
+        return db.connect { dbc ->
+            dbc.read {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Global.READ_ASSISTANCE_ACTION_OPTIONS
+                )
+            }
+            assistanceActionService.getAssistanceActionOptions(dbc)
+        }
     }
 }

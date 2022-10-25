@@ -45,16 +45,16 @@ class PartnershipsController(
         clock: EvakaClock,
         @RequestBody body: PartnershipRequest
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Person.CREATE_PARTNERSHIP,
-            body.person1Id
-        )
-
         val partnership =
             db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Person.CREATE_PARTNERSHIP,
+                        body.person1Id
+                    )
                     partnershipService
                         .createPartnership(
                             tx,
@@ -90,10 +90,17 @@ class PartnershipsController(
         clock: EvakaClock,
         @RequestParam personId: PersonId
     ): List<Partnership> {
-        accessControl.requirePermissionFor(user, clock, Action.Person.READ_PARTNERSHIPS, personId)
-
         return db.connect { dbc ->
-                dbc.read { it.getPartnershipsForPerson(personId, includeConflicts = true) }
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Person.READ_PARTNERSHIPS,
+                        personId
+                    )
+                    it.getPartnershipsForPerson(personId, includeConflicts = true)
+                }
             }
             .also {
                 Audit.PartnerShipsRead.log(targetId = personId, args = mapOf("count" to it.size))
@@ -107,10 +114,18 @@ class PartnershipsController(
         clock: EvakaClock,
         @PathVariable partnershipId: PartnershipId
     ): Partnership {
-        accessControl.requirePermissionFor(user, clock, Action.Partnership.READ, partnershipId)
-
         return db.connect { dbc ->
-                dbc.read { it.getPartnership(partnershipId) } ?: throw NotFound()
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Partnership.READ,
+                        partnershipId
+                    )
+                    it.getPartnership(partnershipId)
+                }
+                    ?: throw NotFound()
             }
             .also { Audit.PartnerShipsRead.log(targetId = partnershipId) }
     }
@@ -123,10 +138,15 @@ class PartnershipsController(
         @PathVariable partnershipId: PartnershipId,
         @RequestBody body: PartnershipUpdateRequest
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Partnership.UPDATE, partnershipId)
-
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Partnership.UPDATE,
+                    partnershipId
+                )
                 val partnership =
                     partnershipService.updatePartnershipDuration(
                         tx,
@@ -159,10 +179,15 @@ class PartnershipsController(
         clock: EvakaClock,
         @PathVariable partnershipId: PartnershipId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Partnership.RETRY, partnershipId)
-
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Partnership.RETRY,
+                    partnershipId
+                )
                 partnershipService.retryPartnership(tx, partnershipId)?.let {
                     asyncJobRunner.plan(
                         tx,
@@ -187,10 +212,15 @@ class PartnershipsController(
         clock: EvakaClock,
         @PathVariable partnershipId: PartnershipId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Partnership.DELETE, partnershipId)
-
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Partnership.DELETE,
+                    partnershipId
+                )
                 partnershipService.deletePartnership(tx, partnershipId)?.also { partnership ->
                     asyncJobRunner.plan(
                         tx,

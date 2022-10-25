@@ -33,13 +33,14 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         earliestPreferredStartDate: LocalDate?
     ): List<PlacementSketchingReportRow> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Global.READ_PLACEMENT_SKETCHING_REPORT
-        )
         return db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_PLACEMENT_SKETCHING_REPORT
+                    )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getPlacementSketchingReportRows(
                         placementStartDate,

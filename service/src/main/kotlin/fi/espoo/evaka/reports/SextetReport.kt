@@ -27,10 +27,15 @@ class SextetReportController(private val accessControl: AccessControl) {
         @RequestParam year: Int,
         @RequestParam placementType: PlacementType
     ): List<SextetReportRow> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_SEXTET_REPORT)
-
         return db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_SEXTET_REPORT
+                    )
+
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.sextetReport(
                         LocalDate.of(year, 1, 1),

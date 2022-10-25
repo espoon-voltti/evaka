@@ -31,8 +31,17 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock
     ): List<FixedPeriodQuestionnaire> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_QUESTIONNAIRES)
-        return db.connect { dbc -> dbc.read { it.getHolidayQuestionnaires() } }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_HOLIDAY_QUESTIONNAIRES
+                    )
+                    it.getHolidayQuestionnaires()
+                }
+            }
             .also { Audit.HolidayQuestionnairesList.log(args = mapOf("count" to it.size)) }
     }
 
@@ -43,9 +52,16 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: HolidayQuestionnaireId
     ): FixedPeriodQuestionnaire {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_HOLIDAY_QUESTIONNAIRE)
         return db.connect { dbc ->
-                dbc.read { it.getFixedPeriodQuestionnaire(id) ?: throw NotFound() }
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_HOLIDAY_QUESTIONNAIRE
+                    )
+                    it.getFixedPeriodQuestionnaire(id) ?: throw NotFound()
+                }
             }
             .also { Audit.HolidayQuestionnaireRead.log(targetId = id) }
     }
@@ -57,10 +73,15 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: FixedPeriodQuestionnaireBody
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_HOLIDAY_QUESTIONNAIRE)
         val id =
             db.connect { dbc ->
                 dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.CREATE_HOLIDAY_QUESTIONNAIRE
+                    )
                     try {
                         it.createFixedPeriodQuestionnaire(body)
                     } catch (e: Exception) {
@@ -79,9 +100,14 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         @PathVariable id: HolidayQuestionnaireId,
         @RequestBody body: FixedPeriodQuestionnaireBody
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Global.UPDATE_HOLIDAY_QUESTIONNAIRE)
         db.connect { dbc ->
             dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Global.UPDATE_HOLIDAY_QUESTIONNAIRE
+                )
                 try {
                     it.updateFixedPeriodQuestionnaire(id, body)
                 } catch (e: Exception) {
@@ -99,8 +125,17 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: HolidayQuestionnaireId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Global.DELETE_HOLIDAY_QUESTIONNAIRE)
-        db.connect { dbc -> dbc.transaction { it.deleteHolidayQuestionnaire(id) } }
+        db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Global.DELETE_HOLIDAY_QUESTIONNAIRE
+                )
+                it.deleteHolidayQuestionnaire(id)
+            }
+        }
         Audit.HolidayQuestionnaireDelete.log(targetId = id)
     }
 }

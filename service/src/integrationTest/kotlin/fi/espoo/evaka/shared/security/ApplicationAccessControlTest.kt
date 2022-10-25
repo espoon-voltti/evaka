@@ -74,8 +74,14 @@ class ApplicationAccessControlTest : AccessControlTest() {
         rules.add(action, IsCitizen(allowWeakLogin = false).ownerOfApplication())
         val otherCitizen = createTestCitizen(CitizenAuthLevel.STRONG)
 
-        assertTrue(accessControl.hasPermissionFor(creatorCitizen, clock, action, applicationId))
-        assertFalse(accessControl.hasPermissionFor(otherCitizen, clock, action, applicationId))
+        db.read { tx ->
+            assertTrue(
+                accessControl.hasPermissionFor(tx, creatorCitizen, clock, action, applicationId)
+            )
+            assertFalse(
+                accessControl.hasPermissionFor(tx, otherCitizen, clock, action, applicationId)
+            )
+        }
     }
 
     @Test
@@ -92,8 +98,14 @@ class ApplicationAccessControlTest : AccessControlTest() {
                 globalRoles = emptySet(),
                 unitRoles = mapOf(daycareId to UserRole.STAFF)
             )
-        assertTrue(accessControl.hasPermissionFor(unitSupervisor, clock, action, applicationId))
-        assertFalse(accessControl.hasPermissionFor(otherEmployee, clock, action, applicationId))
+        db.read { tx ->
+            assertTrue(
+                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, applicationId)
+            )
+            assertFalse(
+                accessControl.hasPermissionFor(tx, otherEmployee, clock, action, applicationId)
+            )
+        }
     }
 
     @Test
@@ -116,7 +128,13 @@ class ApplicationAccessControlTest : AccessControlTest() {
                 globalRoles = emptySet(),
                 unitRoles = mapOf(daycareId to UserRole.STAFF)
             )
-        assertTrue(accessControl.hasPermissionFor(unitSupervisor, clock, action, applicationId))
-        assertFalse(accessControl.hasPermissionFor(otherEmployee, clock, action, applicationId))
+        db.read { tx ->
+            assertTrue(
+                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, applicationId)
+            )
+            assertFalse(
+                accessControl.hasPermissionFor(tx, otherEmployee, clock, action, applicationId)
+            )
+        }
     }
 }

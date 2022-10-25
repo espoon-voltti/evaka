@@ -38,14 +38,15 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
         user: AuthenticatedUser,
         clock: EvakaClock
     ): List<AttendanceReservationReportRow> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Unit.READ_ATTENDANCE_RESERVATION_REPORT,
-            unitId
-        )
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_ATTENDANCE_RESERVATION_REPORT,
+                        unitId
+                    )
                     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     tx.getAttendanceReservationReport(
                         start,
@@ -79,14 +80,15 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
         clock: EvakaClock,
         user: AuthenticatedUser
     ): List<AttendanceReservationReportByChildRow> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Unit.READ_ATTENDANCE_RESERVATION_REPORT,
-            unitId
-        )
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_ATTENDANCE_RESERVATION_REPORT,
+                        unitId
+                    )
                     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     tx.getAttendanceReservationReportByChild(
                         start,

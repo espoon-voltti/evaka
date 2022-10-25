@@ -32,8 +32,18 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestParam unitId: DaycareId
     ): List<MobileDevice> {
-        accessControl.requirePermissionFor(user, clock, Action.Unit.READ_MOBILE_DEVICES, unitId)
-        return db.connect { dbc -> dbc.read { it.listSharedDevices(unitId) } }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Unit.READ_MOBILE_DEVICES,
+                        unitId
+                    )
+                    it.listSharedDevices(unitId)
+                }
+            }
             .also {
                 Audit.MobileDevicesList.log(targetId = unitId, args = mapOf("count" to it.size))
             }
@@ -45,8 +55,17 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         user: AuthenticatedUser.Employee,
         clock: EvakaClock
     ): List<MobileDevice> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_PERSONAL_MOBILE_DEVICES)
-        return db.connect { dbc -> dbc.read { it.listPersonalDevices(user.id) } }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_PERSONAL_MOBILE_DEVICES
+                    )
+                    it.listPersonalDevices(user.id)
+                }
+            }
             .also {
                 Audit.MobileDevicesList.log(targetId = user.id, args = mapOf("count" to it.size))
             }
@@ -73,8 +92,18 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         @PathVariable id: MobileDeviceId,
         @RequestBody body: RenameRequest
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.MobileDevice.UPDATE_NAME, id)
-        db.connect { dbc -> dbc.transaction { it.renameDevice(id, body.name) } }
+        db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.MobileDevice.UPDATE_NAME,
+                    id
+                )
+                it.renameDevice(id, body.name)
+            }
+        }
         Audit.MobileDevicesRename.log(targetId = id)
     }
 
@@ -85,8 +114,12 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: MobileDeviceId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.MobileDevice.DELETE, id)
-        db.connect { dbc -> dbc.transaction { it.deleteDevice(id) } }
+        db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(it, user, clock, Action.MobileDevice.DELETE, id)
+                it.deleteDevice(id)
+            }
+        }
         Audit.MobileDevicesDelete.log(targetId = id)
     }
 
@@ -97,25 +130,32 @@ class MobileDevicesController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody params: PinLoginRequest
     ): PinLoginResponse =
-        when (accessControl.verifyPinCode(params.employeeId, params.pin, clock)) {
-            AccessControl.PinError.PIN_LOCKED -> PinLoginResponse(PinLoginStatus.PIN_LOCKED)
-            AccessControl.PinError.WRONG_PIN -> PinLoginResponse(PinLoginStatus.WRONG_PIN)
-            null ->
-                db.connect { dbc ->
-                    dbc.transaction { tx ->
-                        val employee = tx.getEmployeeUser(params.employeeId)
-                        employee?.let {
-                            PinLoginResponse(
-                                PinLoginStatus.SUCCESS,
-                                Employee(it.preferredFirstName ?: it.firstName, it.lastName)
-                            )
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    when (accessControl.verifyPinCode(tx, params.employeeId, params.pin, clock)) {
+                        AccessControl.PinError.PIN_LOCKED ->
+                            PinLoginResponse(PinLoginStatus.PIN_LOCKED)
+                        AccessControl.PinError.WRONG_PIN ->
+                            PinLoginResponse(PinLoginStatus.WRONG_PIN)
+                        null -> {
+                            val employee = tx.getEmployeeUser(params.employeeId)
+                            employee?.let {
+                                PinLoginResponse(
+                                    PinLoginStatus.SUCCESS,
+                                    Employee(it.preferredFirstName ?: it.firstName, it.lastName)
+                                )
+                            }
+                                ?: PinLoginResponse(PinLoginStatus.WRONG_PIN)
                         }
-                            ?: PinLoginResponse(PinLoginStatus.WRONG_PIN)
                     }
                 }
-        }.also {
-            Audit.PinLogin.log(targetId = params.employeeId, args = mapOf("status" to it.status))
-        }
+            }
+            .also {
+                Audit.PinLogin.log(
+                    targetId = params.employeeId,
+                    args = mapOf("status" to it.status)
+                )
+            }
 }
 
 data class PinLoginRequest(val pin: String, val employeeId: EmployeeId)

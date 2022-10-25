@@ -38,14 +38,18 @@ class FosterParentController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable parentId: PersonId
     ): List<FosterParentRelationship> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Person.READ_FOSTER_CHILDREN,
-            parentId
-        )
-
-        return db.connect { dbc -> dbc.read { tx -> tx.getFosterChildren(parentId) } }
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Person.READ_FOSTER_CHILDREN,
+                        parentId
+                    )
+                    tx.getFosterChildren(parentId)
+                }
+            }
             .also { Audit.FosterParentReadChildren.log(targetId = parentId) }
     }
 
@@ -56,9 +60,18 @@ class FosterParentController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable childId: PersonId
     ): List<FosterParentRelationship> {
-        accessControl.requirePermissionFor(user, clock, Action.Person.READ_FOSTER_PARENTS, childId)
-
-        return db.connect { dbc -> dbc.read { tx -> tx.getFosterParents(childId) } }
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Person.READ_FOSTER_PARENTS,
+                        childId
+                    )
+                    tx.getFosterParents(childId)
+                }
+            }
             .also { Audit.FosterParentReadParents.log(targetId = childId) }
     }
 
@@ -69,14 +82,18 @@ class FosterParentController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: CreateFosterParentRelationshipBody
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Person.CREATE_FOSTER_PARENT_RELATIONSHIP,
-            body.parentId
-        )
-
-        db.connect { dbc -> dbc.transaction { tx -> tx.createFosterParentRelationship(body) } }
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Person.CREATE_FOSTER_PARENT_RELATIONSHIP,
+                        body.parentId
+                    )
+                    tx.createFosterParentRelationship(body)
+                }
+            }
             .also { id ->
                 Audit.FosterParentCreateRelationship.log(
                     targetId = body.parentId,
@@ -94,10 +111,17 @@ class FosterParentController(private val accessControl: AccessControl) {
         @PathVariable id: FosterParentId,
         @RequestBody validDuring: DateRange
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.FosterParent.UPDATE, id)
-
         db.connect { dbc ->
-                dbc.transaction { tx -> tx.updateFosterParentRelationshipValidity(id, validDuring) }
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.FosterParent.UPDATE,
+                        id
+                    )
+                    tx.updateFosterParentRelationshipValidity(id, validDuring)
+                }
             }
             .also {
                 Audit.FosterParentUpdateRelationship.log(
@@ -114,9 +138,18 @@ class FosterParentController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: FosterParentId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.FosterParent.DELETE, id)
-
-        db.connect { dbc -> dbc.transaction { tx -> tx.deleteFosterParentRelationship(id) } }
+        db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.FosterParent.DELETE,
+                        id
+                    )
+                    tx.deleteFosterParentRelationship(id)
+                }
+            }
             .also { Audit.FosterParentDeleteRelationship.log(targetId = id) }
     }
 }

@@ -41,8 +41,17 @@ class PaymentController(
 
     @PostMapping("/create-drafts")
     fun createDrafts(db: Database, user: AuthenticatedUser, clock: EvakaClock) {
-        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_DRAFT_PAYMENTS)
-        db.connect { dbc -> dbc.transaction { tx -> createPaymentDrafts(tx) } }
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Global.CREATE_DRAFT_PAYMENTS
+                )
+                createPaymentDrafts(tx)
+            }
+        }
         Audit.PaymentsCreate.log()
     }
 
@@ -59,9 +68,15 @@ class PaymentController(
         clock: EvakaClock,
         @RequestBody body: SendPaymentsRequest
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Payment.SEND, body.paymentIds)
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Payment.SEND,
+                    body.paymentIds
+                )
                 paymentService.sendPayments(
                     tx,
                     clock.now(),

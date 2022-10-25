@@ -34,10 +34,19 @@ class ChildDailyNoteController(private val ac: AccessControl) {
         @PathVariable childId: ChildId,
         @RequestBody body: ChildDailyNoteBody
     ): ChildDailyNoteId {
-        ac.requirePermissionFor(user, clock, Action.Child.CREATE_DAILY_NOTE, childId)
-
         try {
-            return db.connect { dbc -> dbc.transaction { it.createChildDailyNote(childId, body) } }
+            return db.connect { dbc ->
+                    dbc.transaction {
+                        ac.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Child.CREATE_DAILY_NOTE,
+                            childId
+                        )
+                        it.createChildDailyNote(childId, body)
+                    }
+                }
                 .also { noteId ->
                     Audit.ChildDailyNoteCreate.log(targetId = childId, objectId = noteId)
                 }
@@ -57,10 +66,11 @@ class ChildDailyNoteController(private val ac: AccessControl) {
         @PathVariable noteId: ChildDailyNoteId,
         @RequestBody body: ChildDailyNoteBody
     ): ChildDailyNote {
-        ac.requirePermissionFor(user, clock, Action.ChildDailyNote.UPDATE, noteId)
-
         return db.connect { dbc ->
-                dbc.transaction { it.updateChildDailyNote(clock, noteId, body) }
+                dbc.transaction {
+                    ac.requirePermissionFor(it, user, clock, Action.ChildDailyNote.UPDATE, noteId)
+                    it.updateChildDailyNote(clock, noteId, body)
+                }
             }
             .also { Audit.ChildDailyNoteUpdate.log(targetId = noteId) }
     }
@@ -72,9 +82,12 @@ class ChildDailyNoteController(private val ac: AccessControl) {
         clock: EvakaClock,
         @PathVariable noteId: ChildDailyNoteId
     ) {
-        ac.requirePermissionFor(user, clock, Action.ChildDailyNote.DELETE, noteId)
-
-        db.connect { dbc -> dbc.transaction { it.deleteChildDailyNote(noteId) } }
+        db.connect { dbc ->
+            dbc.transaction {
+                ac.requirePermissionFor(it, user, clock, Action.ChildDailyNote.DELETE, noteId)
+                it.deleteChildDailyNote(noteId)
+            }
+        }
         Audit.ChildDailyNoteDelete.log(targetId = noteId)
     }
 }

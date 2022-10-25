@@ -36,10 +36,9 @@ class NotesController(private val ac: AccessControl) {
         clock: EvakaClock,
         @PathVariable groupId: GroupId
     ): NotesByGroupResponse {
-        ac.requirePermissionFor(user, clock, Action.Group.READ_NOTES, groupId)
-
         return db.connect { dbc ->
                 dbc.read {
+                    ac.requirePermissionFor(it, user, clock, Action.Group.READ_NOTES, groupId)
                     NotesByGroupResponse(
                         childDailyNotes = it.getChildDailyNotesInGroup(groupId, clock.today()),
                         childStickyNotes = it.getChildStickyNotesForGroup(groupId, clock.today()),

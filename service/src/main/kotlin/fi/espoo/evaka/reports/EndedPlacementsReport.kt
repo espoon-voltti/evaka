@@ -26,12 +26,17 @@ class EndedPlacementsReportController(private val accessControl: AccessControl) 
         @RequestParam year: Int,
         @RequestParam month: Int
     ): List<EndedPlacementsReportRow> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_ENDED_PLACEMENTS_REPORT)
         val from = LocalDate.of(year, month, 1)
         val to = from.plusMonths(1).minusDays(1)
 
         return db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_ENDED_PLACEMENTS_REPORT
+                    )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getEndedPlacementsRows(from, to)
                 }

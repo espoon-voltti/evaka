@@ -26,10 +26,16 @@ class ChildSensitiveInfoController(private val ac: AccessControl) {
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): ChildSensitiveInformation {
-        ac.requirePermissionFor(user, clock, Action.Child.READ_SENSITIVE_INFO, childId)
-
         return db.connect { dbc ->
                 dbc.read {
+                    ac.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Child.READ_SENSITIVE_INFO,
+                        childId
+                    )
+
                     it.getChildSensitiveInfo(clock, childId) ?: throw NotFound("Child not found")
                 }
             }

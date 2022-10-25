@@ -26,8 +26,17 @@ class SettingController(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock
     ): Map<SettingType, String> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.UPDATE_SETTINGS)
-        return db.connect { dbc -> dbc.read { tx -> tx.getSettings() } }
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.UPDATE_SETTINGS
+                    )
+                    tx.getSettings()
+                }
+            }
             .also { Audit.SettingsRead.log() }
     }
 
@@ -38,8 +47,12 @@ class SettingController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody settings: Map<SettingType, String>
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Global.UPDATE_SETTINGS)
-        db.connect { dbc -> dbc.transaction { tx -> tx.setSettings(settings) } }
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.Global.UPDATE_SETTINGS)
+                tx.setSettings(settings)
+            }
+        }
         Audit.SettingsUpdate.log()
     }
 }

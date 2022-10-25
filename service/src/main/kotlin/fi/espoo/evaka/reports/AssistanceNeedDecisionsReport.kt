@@ -49,13 +49,17 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
         user: AuthenticatedUser,
         clock: EvakaClock
     ): Int {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Global.READ_ASSISTANCE_NEED_DECISIONS_REPORT
-        )
-
-        return db.connect { dbc -> dbc.read { it.getDecisionMakerUnreadCount(user.evakaUserId) } }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_ASSISTANCE_NEED_DECISIONS_REPORT
+                    )
+                    it.getDecisionMakerUnreadCount(user.evakaUserId)
+                }
+            }
             .also { Audit.AssistanceNeedDecisionsReportUnreadCount.log() }
     }
 }

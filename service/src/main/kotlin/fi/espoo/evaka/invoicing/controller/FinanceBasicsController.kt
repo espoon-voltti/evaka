@@ -43,10 +43,14 @@ class FinanceBasicsController(
         user: AuthenticatedUser,
         clock: EvakaClock
     ): List<FeeThresholdsWithId> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_FEE_THRESHOLDS)
-
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.READ_FEE_THRESHOLDS
+                    )
                     tx.getFeeThresholds().sortedByDescending { it.thresholds.validDuring.start }
                 }
             }
@@ -60,12 +64,17 @@ class FinanceBasicsController(
         clock: EvakaClock,
         @RequestBody body: FeeThresholds
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_FEE_THRESHOLDS)
-
         validateFeeThresholds(body)
         val id =
             db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.CREATE_FEE_THRESHOLDS
+                    )
+
                     val latest =
                         tx.getFeeThresholds().maxByOrNull { it.thresholds.validDuring.start }
 
@@ -107,11 +116,11 @@ class FinanceBasicsController(
         @PathVariable id: FeeThresholdsId,
         @RequestBody thresholds: FeeThresholds
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.FeeThresholds.UPDATE, id)
-
         validateFeeThresholds(thresholds)
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.FeeThresholds.UPDATE, id)
+
                 mapConstraintExceptions { tx.updateFeeThresholds(id, thresholds) }
                 asyncJobRunner.plan(
                     tx,

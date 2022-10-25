@@ -41,10 +41,18 @@ class DecisionController(
         clock: EvakaClock,
         @RequestParam("id") guardianId: PersonId
     ): DecisionListResponse {
-        accessControl.requirePermissionFor(user, clock, Action.Person.READ_DECISIONS, guardianId)
         val decisions =
             db.connect { dbc ->
-                dbc.read { it.getDecisionsByGuardian(guardianId, acl.getAuthorizedUnits(user)) }
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Person.READ_DECISIONS,
+                        guardianId
+                    )
+                    it.getDecisionsByGuardian(guardianId, acl.getAuthorizedUnits(user))
+                }
             }
         Audit.DecisionRead.log(targetId = guardianId, args = mapOf("count" to decisions.size))
         return DecisionListResponse(decisions)
@@ -57,10 +65,18 @@ class DecisionController(
         clock: EvakaClock,
         @RequestParam("id") childId: ChildId
     ): DecisionListResponse {
-        accessControl.requirePermissionFor(user, clock, Action.Child.READ_DECISIONS, childId)
         val decisions =
             db.connect { dbc ->
-                dbc.read { it.getDecisionsByChild(childId, acl.getAuthorizedUnits(user)) }
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Child.READ_DECISIONS,
+                        childId
+                    )
+                    it.getDecisionsByChild(childId, acl.getAuthorizedUnits(user))
+                }
             }
         Audit.DecisionRead.log(targetId = childId, args = mapOf("count" to decisions.size))
         return DecisionListResponse(decisions)
@@ -73,15 +89,16 @@ class DecisionController(
         clock: EvakaClock,
         @RequestParam("id") applicationId: ApplicationId
     ): DecisionListResponse {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Application.READ_DECISIONS,
-            applicationId
-        )
         val decisions =
             db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Application.READ_DECISIONS,
+                        applicationId
+                    )
                     it.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user))
                 }
             }
@@ -96,8 +113,17 @@ class DecisionController(
         user: AuthenticatedUser,
         clock: EvakaClock
     ): List<DecisionUnit> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_DECISION_UNITS)
-        return db.connect { dbc -> dbc.read { decisionDraftService.getDecisionUnits(it) } }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_DECISION_UNITS
+                    )
+                    decisionDraftService.getDecisionUnits(it)
+                }
+            }
             .also { Audit.UnitRead.log(args = mapOf("count" to it.size)) }
     }
 
@@ -108,11 +134,17 @@ class DecisionController(
         clock: EvakaClock,
         @PathVariable("id") decisionId: DecisionId
     ): ResponseEntity<Any> {
-        accessControl.requirePermissionFor(user, clock, Action.Decision.DOWNLOAD_PDF, decisionId)
-
         return db.connect { dbc ->
                 val decision =
                     dbc.transaction { tx ->
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Decision.DOWNLOAD_PDF,
+                            decisionId
+                        )
+
                         val decision =
                             tx.getDecision(decisionId)
                                 ?: error("Cannot find decision for decision id '$decisionId'")

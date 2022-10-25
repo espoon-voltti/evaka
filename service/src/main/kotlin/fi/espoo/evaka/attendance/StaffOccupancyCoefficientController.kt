@@ -28,8 +28,18 @@ class StaffOccupancyCoefficientController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestParam unitId: DaycareId
     ): List<StaffOccupancyCoefficient> {
-        ac.requirePermissionFor(user, clock, Action.Unit.READ_STAFF_OCCUPANCY_COEFFICIENTS, unitId)
-        return db.connect { dbc -> dbc.read { it.getOccupancyCoefficientsByUnit(unitId) } }
+        return db.connect { dbc ->
+                dbc.read {
+                    ac.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Unit.READ_STAFF_OCCUPANCY_COEFFICIENTS,
+                        unitId
+                    )
+                    it.getOccupancyCoefficientsByUnit(unitId)
+                }
+            }
             .also {
                 Audit.StaffOccupancyCoefficientRead.log(
                     targetId = unitId,
@@ -45,13 +55,19 @@ class StaffOccupancyCoefficientController(private val ac: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: OccupancyCoefficientUpsert
     ) {
-        ac.requirePermissionFor(
-            user,
-            clock,
-            Action.Unit.UPSERT_STAFF_OCCUPANCY_COEFFICIENTS,
-            body.unitId
-        )
-        val id = db.connect { dbc -> dbc.transaction { it.upsertOccupancyCoefficient(body) } }
+        val id =
+            db.connect { dbc ->
+                dbc.transaction {
+                    ac.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Unit.UPSERT_STAFF_OCCUPANCY_COEFFICIENTS,
+                        body.unitId
+                    )
+                    it.upsertOccupancyCoefficient(body)
+                }
+            }
         Audit.StaffOccupancyCoefficientUpsert.log(
             targetId = listOf(body.unitId, body.employeeId),
             objectId = id

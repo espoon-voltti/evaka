@@ -41,10 +41,15 @@ class VasuTemplateController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestBody body: CreateTemplateRequest
     ): VasuTemplateId {
-        accessControl.requirePermissionFor(user, clock, Action.Global.CREATE_VASU_TEMPLATE)
-
         return db.connect { dbc ->
                 dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.CREATE_VASU_TEMPLATE
+                    )
+
                     it.insertVasuTemplate(
                         name = body.name,
                         valid = body.valid,
@@ -65,10 +70,10 @@ class VasuTemplateController(private val accessControl: AccessControl) {
         @PathVariable id: VasuTemplateId,
         @RequestBody body: VasuTemplateUpdate
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.UPDATE, id)
-
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.VasuTemplate.UPDATE, id)
+
                 val template =
                     tx.getVasuTemplateForUpdate(id) ?: throw NotFound("Template not found")
                 validateTemplateUpdate(template, body)
@@ -88,10 +93,16 @@ class VasuTemplateController(private val accessControl: AccessControl) {
         @PathVariable id: VasuTemplateId,
         @RequestBody body: CopyTemplateRequest
     ): VasuTemplateId {
-        accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.COPY, id)
-
         return db.connect { dbc ->
                 dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.VasuTemplate.COPY,
+                        id
+                    )
+
                     val template = it.getVasuTemplate(id) ?: throw NotFound("template not found")
                     it.insertVasuTemplate(
                         name = body.name,
@@ -112,9 +123,17 @@ class VasuTemplateController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @RequestParam(required = false) validOnly: Boolean = false
     ): List<VasuTemplateSummary> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_VASU_TEMPLATE)
-
-        return db.connect { dbc -> dbc.read { tx -> tx.getVasuTemplates(clock, validOnly) } }
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Global.READ_VASU_TEMPLATE
+                    )
+                    tx.getVasuTemplates(clock, validOnly)
+                }
+            }
             .also { Audit.VasuTemplateRead.log(args = mapOf("count" to it.size)) }
     }
 
@@ -125,10 +144,17 @@ class VasuTemplateController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: VasuTemplateId
     ): VasuTemplate {
-        accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.READ, id)
-
         return db.connect { dbc ->
-                dbc.read { tx -> tx.getVasuTemplate(id) }
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.VasuTemplate.READ,
+                        id
+                    )
+                    tx.getVasuTemplate(id)
+                }
                     ?: throw NotFound("template $id not found")
             }
             .also { Audit.VasuTemplateRead.log(targetId = id) }
@@ -141,9 +167,12 @@ class VasuTemplateController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable id: VasuTemplateId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.DELETE, id)
-
-        db.connect { dbc -> dbc.transaction { it.deleteUnusedVasuTemplate(id) } }
+        db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(it, user, clock, Action.VasuTemplate.DELETE, id)
+                it.deleteUnusedVasuTemplate(id)
+            }
+        }
         Audit.VasuTemplateDelete.log(targetId = id)
     }
 
@@ -155,10 +184,9 @@ class VasuTemplateController(private val accessControl: AccessControl) {
         @PathVariable id: VasuTemplateId,
         @RequestBody content: VasuContent
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.VasuTemplate.UPDATE, id)
-
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.VasuTemplate.UPDATE, id)
                 val template =
                     tx.getVasuTemplateForUpdate(id) ?: throw NotFound("template $id not found")
                 if (template.documentCount > 0)

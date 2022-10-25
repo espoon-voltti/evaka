@@ -34,15 +34,16 @@ class MissingServiceNeedReportController(
         @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
         @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate?
     ): List<MissingServiceNeedReportRow> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Global.READ_MISSING_SERVICE_NEED_REPORT
-        )
         if (to != null && to.isBefore(from)) throw BadRequest("Invalid time range")
 
         return db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_MISSING_SERVICE_NEED_REPORT
+                    )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getMissingServiceNeedRows(from, to, acl.getAuthorizedUnits(user))
                 }

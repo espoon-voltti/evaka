@@ -37,32 +37,25 @@ class FeeDecisionGeneratorController(
         clock: EvakaClock,
         @RequestBody data: GenerateDecisionsBody
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Global.GENERATE_FEE_DECISIONS)
         db.connect { dbc ->
-            generateAllStartingFrom(
-                dbc,
-                clock,
-                LocalDate.parse(data.starting, DateTimeFormatter.ISO_DATE),
-                data.targetHeads.filterNotNull().distinct()
-            )
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Global.GENERATE_FEE_DECISIONS
+                )
+                val starting = LocalDate.parse(data.starting, DateTimeFormatter.ISO_DATE)
+                val targetHeads = data.targetHeads.filterNotNull().distinct()
+                planFinanceDecisionGeneration(
+                    it,
+                    clock,
+                    asyncJobRunner,
+                    DateRange(starting, null),
+                    targetHeads
+                )
+            }
         }
         Audit.FeeDecisionGenerate.log(targetId = data.targetHeads)
-    }
-
-    private fun generateAllStartingFrom(
-        db: Database.Connection,
-        clock: EvakaClock,
-        starting: LocalDate,
-        targetHeads: List<PersonId>
-    ) {
-        db.transaction {
-            planFinanceDecisionGeneration(
-                it,
-                clock,
-                asyncJobRunner,
-                DateRange(starting, null),
-                targetHeads
-            )
-        }
     }
 }

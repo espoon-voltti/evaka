@@ -31,9 +31,14 @@ class ServiceNeedReport(
         clock: EvakaClock,
         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): List<ServiceNeedReportRow> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_SERVICE_NEED_REPORT)
         return db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_SERVICE_NEED_REPORT
+                    )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getServiceNeedRows(date, acl.getAuthorizedUnits(user))
                 }

@@ -52,30 +52,29 @@ class PairingsController(
         clock: EvakaClock,
         @RequestBody body: PostPairingReq
     ): Pairing {
-        when (body) {
-            is PostPairingReq.Unit ->
-                accessControl.requirePermissionFor(
-                    user,
-                    clock,
-                    Action.Unit.CREATE_MOBILE_DEVICE_PAIRING,
-                    body.unitId
-                )
-            is PostPairingReq.Employee -> {
-                accessControl.requirePermissionFor(
-                    user,
-                    clock,
-                    Action.Global.CREATE_PERSONAL_MOBILE_DEVICE_PAIRING
-                )
-                if (user.id != body.employeeId) throw Forbidden()
-            }
-        }
-
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     when (body) {
-                        is PostPairingReq.Unit -> tx.initPairing(clock, unitId = body.unitId)
-                        is PostPairingReq.Employee ->
+                        is PostPairingReq.Unit -> {
+                            accessControl.requirePermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Unit.CREATE_MOBILE_DEVICE_PAIRING,
+                                body.unitId
+                            )
+                            tx.initPairing(clock, unitId = body.unitId)
+                        }
+                        is PostPairingReq.Employee -> {
+                            accessControl.requirePermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Global.CREATE_PERSONAL_MOBILE_DEVICE_PAIRING
+                            )
+                            if (user.id != body.employeeId) throw Forbidden()
                             tx.initPairing(clock, employeeId = body.employeeId)
+                        }
                     }.also {
                         asyncJobRunner.plan(
                             tx = tx,
@@ -135,21 +134,24 @@ class PairingsController(
         @RequestBody body: PostPairingResponseReq
     ): Pairing {
         return db.connect { dbc ->
-                val (unitId, employeeId) = dbc.read { it.fetchPairingReferenceIds(id) }
-                try {
-                    when {
-                        unitId != null ->
-                            accessControl.requirePermissionFor(
-                                user,
-                                clock,
-                                Action.Pairing.POST_RESPONSE,
-                                id
-                            )
-                        employeeId != null -> if (user.id != employeeId) throw Forbidden()
-                        else -> error("Pairing unitId and employeeId were null")
+                dbc.read {
+                    val (unitId, employeeId) = it.fetchPairingReferenceIds(id)
+                    try {
+                        when {
+                            unitId != null ->
+                                accessControl.requirePermissionFor(
+                                    it,
+                                    user,
+                                    clock,
+                                    Action.Pairing.POST_RESPONSE,
+                                    id
+                                )
+                            employeeId != null -> if (user.id != employeeId) throw Forbidden()
+                            else -> error("Pairing unitId and employeeId were null")
+                        }
+                    } catch (e: Forbidden) {
+                        throw NotFound("Pairing not found or not authorized")
                     }
-                } catch (e: Forbidden) {
-                    throw NotFound("Pairing not found or not authorized")
                 }
                 dbc.transaction { it.incrementAttempts(id, body.challengeKey) }
 

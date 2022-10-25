@@ -29,9 +29,13 @@ class GroupNoteController(private val ac: AccessControl) {
         @PathVariable groupId: GroupId,
         @RequestBody body: GroupNoteBody
     ): GroupNoteId {
-        ac.requirePermissionFor(user, clock, Action.Group.CREATE_NOTE, groupId)
+        return db.connect { dbc ->
+                dbc.transaction {
+                    ac.requirePermissionFor(it, user, clock, Action.Group.CREATE_NOTE, groupId)
 
-        return db.connect { dbc -> dbc.transaction { it.createGroupNote(groupId, body) } }
+                    it.createGroupNote(groupId, body)
+                }
+            }
             .also { noteId -> Audit.GroupNoteCreate.log(targetId = groupId, objectId = noteId) }
     }
 
@@ -43,9 +47,12 @@ class GroupNoteController(private val ac: AccessControl) {
         @PathVariable noteId: GroupNoteId,
         @RequestBody body: GroupNoteBody
     ): GroupNote {
-        ac.requirePermissionFor(user, clock, Action.GroupNote.UPDATE, noteId)
-
-        return db.connect { dbc -> dbc.transaction { it.updateGroupNote(clock, noteId, body) } }
+        return db.connect { dbc ->
+                dbc.transaction {
+                    ac.requirePermissionFor(it, user, clock, Action.GroupNote.UPDATE, noteId)
+                    it.updateGroupNote(clock, noteId, body)
+                }
+            }
             .also { Audit.GroupNoteUpdate.log(targetId = noteId) }
     }
 
@@ -56,9 +63,12 @@ class GroupNoteController(private val ac: AccessControl) {
         clock: EvakaClock,
         @PathVariable noteId: GroupNoteId
     ) {
-        ac.requirePermissionFor(user, clock, Action.GroupNote.DELETE, noteId)
-
-        return db.connect { dbc -> dbc.transaction { it.deleteGroupNote(noteId) } }
+        return db.connect { dbc ->
+                dbc.transaction {
+                    ac.requirePermissionFor(it, user, clock, Action.GroupNote.DELETE, noteId)
+                    it.deleteGroupNote(noteId)
+                }
+            }
             .also { Audit.GroupNoteDelete.log(targetId = noteId) }
     }
 }

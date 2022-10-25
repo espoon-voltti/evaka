@@ -25,8 +25,17 @@ class ScheduledJobTriggerController(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     @GetMapping(produces = ["text/html"])
-    fun form(user: AuthenticatedUser, clock: EvakaClock): String {
-        accessControl.requirePermissionFor(user, clock, Action.Global.TRIGGER_SCHEDULED_JOBS)
+    fun form(db: Database, user: AuthenticatedUser, clock: EvakaClock): String {
+        db.connect { dbc ->
+            dbc.read {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Global.TRIGGER_SCHEDULED_JOBS
+                )
+            }
+        }
 
         // language=html
         return """
@@ -73,10 +82,15 @@ class ScheduledJobTriggerController(
         clock: EvakaClock,
         @RequestBody body: TriggerBody
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Global.TRIGGER_SCHEDULED_JOBS)
-
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Global.TRIGGER_SCHEDULED_JOBS
+                )
+
                 asyncJobRunner.plan(
                     tx,
                     listOf(AsyncJob.RunScheduledJob(body.type)),

@@ -37,14 +37,15 @@ class PedagogicalDocumentController(
         clock: EvakaClock,
         @RequestBody body: PedagogicalDocumentPostBody
     ): PedagogicalDocument {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Child.CREATE_PEDAGOGICAL_DOCUMENT,
-            body.childId
-        )
-        return db.connect {
-                it.transaction { tx ->
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.CREATE_PEDAGOGICAL_DOCUMENT,
+                        body.childId
+                    )
                     tx.createDocument(user, body).also {
                         pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(
                             tx,
@@ -64,14 +65,15 @@ class PedagogicalDocumentController(
         @PathVariable documentId: PedagogicalDocumentId,
         @RequestBody body: PedagogicalDocumentPostBody
     ): PedagogicalDocument {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.PedagogicalDocument.UPDATE,
-            documentId
-        )
-        return db.connect {
-                it.transaction { tx ->
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.PedagogicalDocument.UPDATE,
+                        documentId
+                    )
                     tx.updateDocument(user, body, documentId).also {
                         pedagogicalDocumentNotificationService.maybeScheduleEmailNotification(
                             tx,
@@ -90,13 +92,18 @@ class PedagogicalDocumentController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<PedagogicalDocument> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Child.READ_PEDAGOGICAL_DOCUMENTS,
-            childId
-        )
-        return db.connect { dbc -> dbc.read { it.findPedagogicalDocumentsByChild(childId) } }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Child.READ_PEDAGOGICAL_DOCUMENTS,
+                        childId
+                    )
+                    it.findPedagogicalDocumentsByChild(childId)
+                }
+            }
             .also {
                 Audit.PedagogicalDocumentRead.log(
                     targetId = childId,
@@ -112,13 +119,18 @@ class PedagogicalDocumentController(
         clock: EvakaClock,
         @PathVariable documentId: PedagogicalDocumentId
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.PedagogicalDocument.DELETE,
-            documentId
-        )
-        db.connect { dbc -> dbc.transaction { it.deleteDocument(documentId) } }
+        db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.PedagogicalDocument.DELETE,
+                    documentId
+                )
+                it.deleteDocument(documentId)
+            }
+        }
         Audit.PedagogicalDocumentUpdate.log(targetId = documentId)
     }
 }

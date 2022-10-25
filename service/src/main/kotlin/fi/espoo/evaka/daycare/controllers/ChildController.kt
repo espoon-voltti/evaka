@@ -39,14 +39,15 @@ class ChildController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): ChildResponse {
-        accessControl.requirePermissionFor(user, clock, Action.Child.READ, childId)
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(tx, user, clock, Action.Child.READ, childId)
                     val child =
                         tx.getPersonById(childId)
                             ?.hideNonPermittedPersonData(
                                 includeInvoiceAddress =
                                     accessControl.hasPermissionFor(
+                                        tx,
                                         user,
                                         clock,
                                         Action.Person.READ_INVOICE_ADDRESS,
@@ -54,6 +55,7 @@ class ChildController(
                                     ),
                                 includeOphOid =
                                     accessControl.hasPermissionFor(
+                                        tx,
                                         user,
                                         clock,
                                         Action.Person.READ_OPH_OID,
@@ -82,8 +84,18 @@ class ChildController(
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): AdditionalInformation {
-        accessControl.requirePermissionFor(user, clock, Action.Child.READ_ADDITIONAL_INFO, childId)
-        return db.connect { dbc -> dbc.read { it.getAdditionalInformation(childId) } }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Child.READ_ADDITIONAL_INFO,
+                        childId
+                    )
+                    it.getAdditionalInformation(childId)
+                }
+            }
             .also { Audit.ChildAdditionalInformationRead.log(targetId = childId) }
     }
 
@@ -95,13 +107,18 @@ class ChildController(
         @PathVariable childId: ChildId,
         @RequestBody data: AdditionalInformation
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Child.UPDATE_ADDITIONAL_INFO,
-            childId
-        )
-        db.connect { dbc -> dbc.transaction { it.upsertAdditionalInformation(childId, data) } }
+        db.connect { dbc ->
+            dbc.transaction {
+                accessControl.requirePermissionFor(
+                    it,
+                    user,
+                    clock,
+                    Action.Child.UPDATE_ADDITIONAL_INFO,
+                    childId
+                )
+                it.upsertAdditionalInformation(childId, data)
+            }
+        }
         Audit.ChildAdditionalInformationUpdate.log(targetId = childId)
     }
 

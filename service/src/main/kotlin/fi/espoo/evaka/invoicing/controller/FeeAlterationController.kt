@@ -45,9 +45,15 @@ class FeeAlterationController(
         clock: EvakaClock,
         @RequestParam personId: PersonId
     ): List<FeeAlterationWithPermittedActions> {
-        accessControl.requirePermissionFor(user, clock, Action.Child.READ_FEE_ALTERATIONS, personId)
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.READ_FEE_ALTERATIONS,
+                        personId
+                    )
                     val feeAlterations = tx.getFeeAlterationsForPerson(personId)
                     val permittedActions =
                         accessControl.getPermittedActions<FeeAlterationId, Action.FeeAlteration>(
@@ -81,15 +87,16 @@ class FeeAlterationController(
         clock: EvakaClock,
         @RequestBody feeAlteration: FeeAlteration
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Child.CREATE_FEE_ALTERATION,
-            feeAlteration.personId
-        )
         val id = FeeAlterationId(UUID.randomUUID())
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.Child.CREATE_FEE_ALTERATION,
+                    feeAlteration.personId
+                )
                 tx.upsertFeeAlteration(
                     clock,
                     feeAlteration.copy(id = id, updatedBy = user.evakaUserId)
@@ -117,14 +124,15 @@ class FeeAlterationController(
         @PathVariable feeAlterationId: FeeAlterationId,
         @RequestBody feeAlteration: FeeAlteration
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.FeeAlteration.UPDATE,
-            feeAlterationId
-        )
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.FeeAlteration.UPDATE,
+                    feeAlterationId
+                )
                 val existing = tx.getFeeAlteration(feeAlterationId)
                 tx.upsertFeeAlteration(
                     clock,
@@ -162,14 +170,15 @@ class FeeAlterationController(
         clock: EvakaClock,
         @PathVariable feeAlterationId: FeeAlterationId
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.FeeAlteration.DELETE,
-            feeAlterationId
-        )
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.FeeAlteration.DELETE,
+                    feeAlterationId
+                )
                 val existing = tx.getFeeAlteration(feeAlterationId)
                 tx.deleteFeeAlteration(feeAlterationId)
 

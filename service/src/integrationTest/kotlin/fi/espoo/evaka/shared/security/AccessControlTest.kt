@@ -28,7 +28,7 @@ abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun prepareRules() {
         rules = TestActionRuleMapping()
-        accessControl = AccessControl(rules, jdbi)
+        accessControl = AccessControl(rules)
     }
 
     class TestActionRuleMapping : ActionRuleMapping {

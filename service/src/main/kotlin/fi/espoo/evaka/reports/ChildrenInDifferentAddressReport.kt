@@ -29,13 +29,14 @@ class ChildrenInDifferentAddressReportController(
         user: AuthenticatedUser,
         clock: EvakaClock
     ): List<ChildrenInDifferentAddressReportRow> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Global.READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT
-        )
         return db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT
+                    )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getChildrenInDifferentAddressRows(acl.getAuthorizedUnits(user), clock)
                 }

@@ -70,8 +70,10 @@ class UnitAccessControlTest : AccessControlTest() {
                 unitRoles =
                     mapOf(daycareId to UserRole.STAFF, featureDaycareId to UserRole.UNIT_SUPERVISOR)
             )
-        assertFalse(accessControl.hasPermissionFor(deniedSupervisor, clock, action))
-        assertTrue(accessControl.hasPermissionFor(permittedSupervisor, clock, action))
+        db.read { tx ->
+            assertFalse(accessControl.hasPermissionFor(tx, deniedSupervisor, clock, action))
+            assertTrue(accessControl.hasPermissionFor(tx, permittedSupervisor, clock, action))
+        }
     }
 
     @Test
@@ -88,8 +90,10 @@ class UnitAccessControlTest : AccessControlTest() {
                 globalRoles = emptySet(),
                 unitRoles = mapOf(daycareId to UserRole.STAFF)
             )
-        assertTrue(accessControl.hasPermissionFor(unitSupervisor, clock, action, daycareId))
-        assertFalse(accessControl.hasPermissionFor(otherEmployee, clock, action, daycareId))
+        db.read { tx ->
+            assertTrue(accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, daycareId))
+            assertFalse(accessControl.hasPermissionFor(tx, otherEmployee, clock, action, daycareId))
+        }
     }
 
     @Test
@@ -113,10 +117,18 @@ class UnitAccessControlTest : AccessControlTest() {
                 globalRoles = emptySet(),
                 unitRoles = mapOf(daycareId to UserRole.STAFF, featureDaycareId to UserRole.STAFF)
             )
-        assertFalse(accessControl.hasPermissionFor(unitSupervisor, clock, action, daycareId))
-        assertTrue(accessControl.hasPermissionFor(unitSupervisor, clock, action, featureDaycareId))
-        assertFalse(accessControl.hasPermissionFor(otherEmployee, clock, action, daycareId))
-        assertFalse(accessControl.hasPermissionFor(otherEmployee, clock, action, featureDaycareId))
+        db.read { tx ->
+            assertFalse(
+                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, daycareId)
+            )
+            assertTrue(
+                accessControl.hasPermissionFor(tx, unitSupervisor, clock, action, featureDaycareId)
+            )
+            assertFalse(accessControl.hasPermissionFor(tx, otherEmployee, clock, action, daycareId))
+            assertFalse(
+                accessControl.hasPermissionFor(tx, otherEmployee, clock, action, featureDaycareId)
+            )
+        }
     }
 
     @Test
@@ -127,8 +139,10 @@ class UnitAccessControlTest : AccessControlTest() {
         val otherDaycareId =
             db.transaction { tx -> tx.insertTestDaycare(DevDaycare(areaId = areaId)) }
         val otherMobile = createTestMobile(otherDaycareId)
-        assertTrue(accessControl.hasPermissionFor(unitMobile, clock, action, daycareId))
-        assertFalse(accessControl.hasPermissionFor(otherMobile, clock, action, daycareId))
+        db.read { tx ->
+            assertTrue(accessControl.hasPermissionFor(tx, unitMobile, clock, action, daycareId))
+            assertFalse(accessControl.hasPermissionFor(tx, otherMobile, clock, action, daycareId))
+        }
     }
 
     @Test

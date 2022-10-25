@@ -28,9 +28,14 @@ class FamilyConflictReportController(
         user: AuthenticatedUser,
         clock: EvakaClock
     ): List<FamilyConflictReportRow> {
-        accessControl.requirePermissionFor(user, clock, Action.Global.READ_FAMILY_CONFLICT_REPORT)
         return db.connect { dbc ->
                 dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_FAMILY_CONFLICT_REPORT
+                    )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getFamilyConflicts(acl.getAuthorizedUnits(user))
                 }

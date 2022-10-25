@@ -44,9 +44,17 @@ class AbsenceController(private val accessControl: AccessControl) {
         @RequestParam month: Int,
         @PathVariable groupId: GroupId
     ): AbsenceGroup {
-        accessControl.requirePermissionFor(user, clock, Action.Group.READ_ABSENCES, groupId)
         return db.connect { dbc ->
-                dbc.read { getAbsencesInGroupByMonth(it, groupId, year, month) }
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Group.READ_ABSENCES,
+                        groupId
+                    )
+                    getAbsencesInGroupByMonth(it, groupId, year, month)
+                }
             }
             .also {
                 Audit.AbsenceRead.log(targetId = groupId, mapOf("year" to year, "month" to month))
@@ -62,12 +70,26 @@ class AbsenceController(private val accessControl: AccessControl) {
         @PathVariable groupId: GroupId
     ) {
         val children = absences.map { it.childId }
-        accessControl.requirePermissionFor(user, clock, Action.Group.CREATE_ABSENCES, groupId)
-        accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_ABSENCE, children)
 
         val upserted =
             db.connect { dbc ->
-                dbc.transaction { it.upsertAbsences(clock.now(), user.evakaUserId, absences) }
+                dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Group.CREATE_ABSENCES,
+                        groupId
+                    )
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Child.CREATE_ABSENCE,
+                        children
+                    )
+                    it.upsertAbsences(clock.now(), user.evakaUserId, absences)
+                }
             }
         Audit.AbsenceUpsert.log(
             targetId = groupId,
@@ -85,10 +107,26 @@ class AbsenceController(private val accessControl: AccessControl) {
         @PathVariable groupId: GroupId
     ) {
         val children = deletions.map { it.childId }
-        accessControl.requirePermissionFor(user, clock, Action.Group.DELETE_ABSENCES, groupId)
-        accessControl.requirePermissionFor(user, clock, Action.Child.DELETE_ABSENCE, children)
-
-        val deleted = db.connect { dbc -> dbc.transaction { it.batchDeleteAbsences(deletions) } }
+        val deleted =
+            db.connect { dbc ->
+                dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Group.DELETE_ABSENCES,
+                        groupId
+                    )
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Child.DELETE_ABSENCE,
+                        children
+                    )
+                    it.batchDeleteAbsences(deletions)
+                }
+            }
         Audit.AbsenceDelete.log(
             targetId = groupId,
             objectId = deleted,
@@ -106,9 +144,19 @@ class AbsenceController(private val accessControl: AccessControl) {
         @PathVariable childId: ChildId,
         @RequestBody body: DeleteChildAbsenceBody
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.Child.DELETE_ABSENCE, childId)
         val deleted =
-            db.connect { dbc -> dbc.transaction { it.deleteChildAbsences(childId, body.date) } }
+            db.connect { dbc ->
+                dbc.transaction {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Child.DELETE_ABSENCE,
+                        childId
+                    )
+                    it.deleteChildAbsences(childId, body.date)
+                }
+            }
         Audit.AbsenceDelete.log(targetId = childId, objectId = deleted, mapOf("date" to body.date))
     }
 
@@ -121,9 +169,17 @@ class AbsenceController(private val accessControl: AccessControl) {
         @RequestParam year: Int,
         @RequestParam month: Int
     ): List<Absence> {
-        accessControl.requirePermissionFor(user, clock, Action.Child.READ_ABSENCES, childId)
         return db.connect { dbc ->
-                dbc.read { getAbsencesOfChildByMonth(it, childId, year, month) }
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Child.READ_ABSENCES,
+                        childId
+                    )
+                    getAbsencesOfChildByMonth(it, childId, year, month)
+                }
             }
             .also {
                 Audit.AbsenceRead.log(targetId = childId, mapOf("year" to year, "month" to month))
@@ -137,8 +193,18 @@ class AbsenceController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable childId: ChildId
     ): List<Absence> {
-        accessControl.requirePermissionFor(user, clock, Action.Child.READ_FUTURE_ABSENCES, childId)
-        return db.connect { dbc -> dbc.read { getFutureAbsencesOfChild(it, clock, childId) } }
+        return db.connect { dbc ->
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Child.READ_FUTURE_ABSENCES,
+                        childId
+                    )
+                    getFutureAbsencesOfChild(it, clock, childId)
+                }
+            }
             .also { Audit.AbsenceRead.log(targetId = childId) }
     }
 }

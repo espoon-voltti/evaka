@@ -40,14 +40,15 @@ class InvoiceCorrectionsController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable personId: PersonId
     ): List<InvoiceCorrectionWithPermittedActions> {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Person.READ_INVOICE_CORRECTIONS,
-            personId
-        )
         return db.connect { dbc ->
                 dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Person.READ_INVOICE_CORRECTIONS,
+                        personId
+                    )
                     val invoiceCorrections =
                         tx.createQuery(
                                 """
@@ -106,15 +107,16 @@ WHERE c.head_of_family_id = :personId AND NOT applied_completely
         clock: EvakaClock,
         @RequestBody body: NewInvoiceCorrection
     ) {
-        accessControl.requirePermissionFor(
-            user,
-            clock,
-            Action.Person.CREATE_INVOICE_CORRECTION,
-            body.headOfFamilyId
-        )
         val invoiceCorrectionId =
             db.connect { dbc ->
                 dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Person.CREATE_INVOICE_CORRECTION,
+                        body.headOfFamilyId
+                    )
                     tx.createUpdate(
                             """
 INSERT INTO invoice_correction (head_of_family_id, child_id, unit_id, product, period, amount, unit_price, description, note)
@@ -141,9 +143,15 @@ RETURNING id
         clock: EvakaClock,
         @PathVariable id: InvoiceCorrectionId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.InvoiceCorrection.DELETE, id)
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.InvoiceCorrection.DELETE,
+                    id
+                )
                 try {
                     tx.createUpdate(
                             """
@@ -180,9 +188,15 @@ DELETE FROM invoice_correction WHERE id = :id RETURNING id
         @PathVariable id: InvoiceCorrectionId,
         @RequestBody body: NoteUpdateBody
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.InvoiceCorrection.UPDATE_NOTE, id)
         db.connect { dbc ->
             dbc.transaction { tx ->
+                accessControl.requirePermissionFor(
+                    tx,
+                    user,
+                    clock,
+                    Action.InvoiceCorrection.UPDATE_NOTE,
+                    id
+                )
                 tx.createUpdate("UPDATE invoice_correction SET note = :note WHERE id = :id")
                     .bind("id", id)
                     .bind("note", body.note)

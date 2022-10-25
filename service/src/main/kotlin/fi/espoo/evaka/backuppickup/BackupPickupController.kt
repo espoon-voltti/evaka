@@ -30,9 +30,19 @@ class BackupPickupController(private val accessControl: AccessControl) {
         @PathVariable("childId") childId: ChildId,
         @RequestBody body: ChildBackupPickupContent
     ): ChildBackupPickupCreateResponse {
-        accessControl.requirePermissionFor(user, clock, Action.Child.CREATE_BACKUP_PICKUP, childId)
         return ChildBackupPickupCreateResponse(
-            db.connect { dbc -> dbc.transaction { tx -> tx.createBackupPickup(childId, body) } }
+            db.connect { dbc ->
+                    dbc.transaction { tx ->
+                        accessControl.requirePermissionFor(
+                            tx,
+                            user,
+                            clock,
+                            Action.Child.CREATE_BACKUP_PICKUP,
+                            childId
+                        )
+                        tx.createBackupPickup(childId, body)
+                    }
+                }
                 .also { backupPickupId ->
                     Audit.ChildBackupPickupCreate.log(targetId = childId, objectId = backupPickupId)
                 }
@@ -46,8 +56,18 @@ class BackupPickupController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable("childId") childId: ChildId
     ): List<ChildBackupPickup> {
-        accessControl.requirePermissionFor(user, clock, Action.Child.READ_BACKUP_PICKUP, childId)
-        return db.connect { dbc -> dbc.transaction { tx -> tx.getBackupPickupsForChild(childId) } }
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Child.READ_BACKUP_PICKUP,
+                        childId
+                    )
+                    tx.getBackupPickupsForChild(childId)
+                }
+            }
             .also {
                 Audit.ChildBackupPickupRead.log(
                     targetId = childId,
@@ -64,8 +84,12 @@ class BackupPickupController(private val accessControl: AccessControl) {
         @PathVariable("id") id: BackupPickupId,
         @RequestBody body: ChildBackupPickupContent
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.BackupPickup.UPDATE, id)
-        db.connect { dbc -> dbc.transaction { tx -> tx.updateBackupPickup(id, body) } }
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.BackupPickup.UPDATE, id)
+                tx.updateBackupPickup(id, body)
+            }
+        }
         Audit.ChildBackupPickupUpdate.log(targetId = id)
     }
 
@@ -76,8 +100,12 @@ class BackupPickupController(private val accessControl: AccessControl) {
         clock: EvakaClock,
         @PathVariable("id") id: BackupPickupId
     ) {
-        accessControl.requirePermissionFor(user, clock, Action.BackupPickup.DELETE, id)
-        db.connect { dbc -> dbc.transaction { tx -> tx.deleteBackupPickup(id) } }
+        db.connect { dbc ->
+            dbc.transaction { tx ->
+                accessControl.requirePermissionFor(tx, user, clock, Action.BackupPickup.DELETE, id)
+                tx.deleteBackupPickup(id)
+            }
+        }
         Audit.ChildBackupPickupDelete.log(targetId = id)
     }
 }
