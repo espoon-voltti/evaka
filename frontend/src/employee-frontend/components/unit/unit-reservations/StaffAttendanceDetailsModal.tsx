@@ -542,92 +542,98 @@ export function validateEditState(
   date: LocalDate,
   state: EditedAttendance[]
 ): [SingleDayStaffAttendanceUpsert[] | undefined, ValidationError[]] {
+  const body: SingleDayStaffAttendanceUpsert[] = []
   const errors: ValidationError[] = []
+  let hasErrors = false
+
   for (let i = 0; i < state.length; i++) {
-    const attendance = state[i]
-    const attendanceErrors: ValidationError = {}
+    const item = state[i]
+    const existing = attendances.find((a) => a.id === item.id)
+
+    const itemErrors: ValidationError = {}
 
     let parsedArrived: LocalTime | undefined = undefined
-    if (!attendance.arrived) {
+    if (!item.arrived) {
       if (i === 0) {
-        const isNotOvernightAttendance =
-          attendances
-            .find(({ id }) => id === attendance.id)
-            ?.arrived.toLocalDate()
-            .isEqual(date) ?? true
-        if (isNotOvernightAttendance) {
-          attendanceErrors.arrived = 'required'
+        const isOvernightAttendance =
+          existing && existing.arrived.toLocalDate().isBefore(date)
+        if (!isOvernightAttendance) {
+          itemErrors.arrived = 'required'
         }
       } else {
-        attendanceErrors.arrived = 'required'
+        itemErrors.arrived = 'required'
       }
     } else {
-      parsedArrived = LocalTime.tryParse(attendance.arrived, 'HH:mm')
+      parsedArrived = LocalTime.tryParse(item.arrived, 'HH:mm')
       if (!parsedArrived) {
-        attendanceErrors.arrived = 'timeFormat'
+        itemErrors.arrived = 'timeFormat'
       }
     }
 
     let parsedDeparted: LocalTime | undefined = undefined
-    if (!attendance.departed) {
+    if (!item.departed) {
       if (i !== state.length - 1) {
-        attendanceErrors.departed = 'required'
+        itemErrors.departed = 'required'
       }
     } else {
-      parsedDeparted = LocalTime.tryParse(attendance.departed, 'HH:mm')
+      parsedDeparted = LocalTime.tryParse(item.departed, 'HH:mm')
       if (!parsedDeparted) {
-        attendanceErrors.departed = 'timeFormat'
+        itemErrors.departed = 'timeFormat'
       }
     }
 
     if (
+      i !== state.length - 1 &&
       parsedArrived &&
       parsedDeparted &&
       parsedDeparted.isBefore(parsedArrived)
     ) {
-      attendanceErrors.departed = 'timeFormat'
+      itemErrors.departed = 'timeFormat'
     }
 
     if (
       i > 0 &&
-      !attendanceErrors.arrived &&
+      !itemErrors.arrived &&
       !errors[i - 1].departed &&
-      attendance.arrived < state[i - 1].departed
+      item.arrived < state[i - 1].departed
     ) {
-      attendanceErrors.arrived = 'timeFormat'
+      itemErrors.arrived = 'timeFormat'
     }
 
-    errors[i] = attendanceErrors
-  }
-
-  if (errors.some((error) => Object.keys(error).length > 0)) {
-    return [undefined, errors]
-  }
-
-  if (state.some(({ groupId }) => groupId === null)) {
-    return [undefined, errors]
-  }
-
-  const body = state.map((att) => {
-    const arrivedAsHelsinkiDateTime = () =>
-      HelsinkiDateTime.fromLocal(date, LocalTime.parse(att.arrived, 'HH:mm'))
-    return {
-      attendanceId: att.id,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      groupId: att.groupId!,
-      arrived: !att.arrived
-        ? attendances.find(({ id }) => id === att.id)?.arrived ??
-          arrivedAsHelsinkiDateTime()
-        : arrivedAsHelsinkiDateTime(),
-      departed: !att.departed
-        ? attendances.find(({ id }) => id === att.id)?.departed ?? null
-        : HelsinkiDateTime.fromLocal(
-            date,
-            LocalTime.parse(att.departed, 'HH:mm')
-          ),
-      type: att.type
+    const arrived = parsedArrived
+      ? HelsinkiDateTime.fromLocal(date, parsedArrived)
+      : existing?.arrived ?? null
+    if (
+      arrived !== null &&
+      item.groupId !== null &&
+      Object.keys(itemErrors).length === 0
+    ) {
+      const departed = parsedDeparted
+        ? HelsinkiDateTime.fromLocal(
+            // If departed is before arrived, it means that the attendance
+            // is overnight and departed is on the next day
+            parsedArrived && parsedDeparted.isBefore(parsedArrived)
+              ? date.addDays(1)
+              : date,
+            parsedDeparted
+          )
+        : existing?.departed ?? null
+      body.push({
+        attendanceId: item.id,
+        type: item.type,
+        groupId: item.groupId,
+        arrived,
+        departed
+      })
+    } else {
+      hasErrors = true
     }
-  })
+    errors[i] = itemErrors
+  }
+
+  if (hasErrors) {
+    return [undefined, errors]
+  }
 
   return [body, errors]
 }

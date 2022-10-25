@@ -10,6 +10,7 @@ import { validateEditState } from './StaffAttendanceDetailsModal'
 
 const today = LocalDate.of(2022, 1, 2)
 const yesterday = today.subDays(1)
+const tomorrow = today.addDays(1)
 
 describe('validateEditState', () => {
   it('maps the state to a request body', () => {
@@ -56,6 +57,42 @@ describe('validateEditState', () => {
         groupId: 'group1',
         arrived: HelsinkiDateTime.fromLocal(today, LocalTime.of(8, 0)),
         departed: HelsinkiDateTime.fromLocal(today, LocalTime.of(12, 0))
+      }
+    ])
+    expect(errors).toEqual([{}, {}])
+  })
+
+  it('maps the departure before arrival at last item to next day', () => {
+    const [body, errors] = validateEditState([], today, [
+      {
+        id: null,
+        type: 'PRESENT',
+        groupId: 'group1',
+        arrived: '12:00',
+        departed: '16:00'
+      },
+      {
+        id: null,
+        type: 'PRESENT',
+        groupId: 'group1',
+        arrived: '16:00',
+        departed: '10:00'
+      }
+    ])
+    expect(body).toEqual([
+      {
+        attendanceId: null,
+        type: 'PRESENT',
+        groupId: 'group1',
+        arrived: HelsinkiDateTime.fromLocal(today, LocalTime.of(12, 0)),
+        departed: HelsinkiDateTime.fromLocal(today, LocalTime.of(16, 0))
+      },
+      {
+        attendanceId: null,
+        type: 'PRESENT',
+        groupId: 'group1',
+        arrived: HelsinkiDateTime.fromLocal(today, LocalTime.of(16, 0)),
+        departed: HelsinkiDateTime.fromLocal(tomorrow, LocalTime.of(10, 0))
       }
     ])
     expect(errors).toEqual([{}, {}])
@@ -144,7 +181,7 @@ describe('validateEditState', () => {
     expect(errors).toEqual([{ arrived: 'timeFormat', departed: 'timeFormat' }])
   })
 
-  it('requires departure to be after arrival', () => {
+  it('requires departure to be after arrival for all but the last item', () => {
     const [body, errors] = validateEditState(
       [
         {
@@ -175,9 +212,6 @@ describe('validateEditState', () => {
       ]
     )
     expect(body).toBeUndefined()
-    expect(errors).toEqual([
-      { departed: 'timeFormat' },
-      { departed: 'timeFormat' }
-    ])
+    expect(errors).toEqual([{ departed: 'timeFormat' }, {}])
   })
 })

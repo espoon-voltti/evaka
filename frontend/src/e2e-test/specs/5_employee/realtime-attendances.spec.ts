@@ -303,6 +303,34 @@ describe('Realtime staff attendances', () => {
         departure: '16:00'
       })
     })
+    test('If departure is earlier than arrival, departure is on the next day', async () => {
+      const modal = await attendancesSection.openDetails(
+        groupStaff.id,
+        mockedToday
+      )
+      await modal.setDepartureTime(0, '06:00')
+      await modal.save()
+
+      await waitUntilEqual(() => modal.summary(), {
+        plan: '–',
+        realized: '07:00 – →',
+        hours: '23:00'
+      })
+
+      await modal.close()
+      await attendancesSection.assertArrivalDeparture({
+        rowIx: 1,
+        nth: 0,
+        arrival: '07:00',
+        departure: '→'
+      })
+      await attendancesSection.assertArrivalDeparture({
+        rowIx: 1,
+        nth: 1,
+        arrival: '→',
+        departure: '06:00'
+      })
+    })
     test('Multiple new entries can be added', async () => {
       const modal = await attendancesSection.openDetails(
         groupStaff.id,
