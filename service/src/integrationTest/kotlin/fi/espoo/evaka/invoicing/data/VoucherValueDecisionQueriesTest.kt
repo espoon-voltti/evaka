@@ -18,6 +18,8 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -31,6 +33,7 @@ import fi.espoo.evaka.testAdult_4
 import fi.espoo.evaka.testAdult_5
 import fi.espoo.evaka.testAdult_6
 import fi.espoo.evaka.testAdult_7
+import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testChild_3
@@ -41,6 +44,7 @@ import fi.espoo.evaka.toValueDecisionServiceNeed
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
+import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.groups.Tuple
 import org.junit.jupiter.api.BeforeEach
@@ -977,5 +981,87 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 Tuple(testAdult_1.lastName, testAdult_1.firstName, testChild_1.dateOfBirth),
                 Tuple(testAdult_1.lastName, testAdult_1.firstName, testChild_2.dateOfBirth)
             )
+    }
+
+    @Test
+    fun `search with NO_STARTING_CHILDREN`() {
+        db.transaction { tx ->
+            tx.upsertValueDecisions(
+                listOf(
+                    createVoucherValueDecisionFixture(
+                        status = VoucherValueDecisionStatus.DRAFT,
+                        validFrom = LocalDate.now(),
+                        validTo = LocalDate.now(),
+                        headOfFamilyId = testAdult_1.id,
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        unitId = testDaycare.id,
+                        placementType = PlacementType.DAYCARE,
+                        serviceNeed = snDefaultDaycare.toValueDecisionServiceNeed()
+                    )
+                )
+            )
+
+            assertEquals(
+                1,
+                tx.searchValueDecisions(
+                        evakaClock =
+                            MockEvakaClock(
+                                HelsinkiDateTime.of(LocalDate.now(), LocalTime.of(15, 6))
+                            ),
+                        postOffice = "ESPOO",
+                        page = 0,
+                        pageSize = 100,
+                        sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                        sortDirection = SortDirection.ASC,
+                        status = VoucherValueDecisionStatus.DRAFT,
+                        areas = listOf(testArea.shortName),
+                        unit = null,
+                        startDate = null,
+                        endDate = null,
+                        financeDecisionHandlerId = null,
+                        difference = emptySet(),
+                        distinctiveParams =
+                            listOf(VoucherValueDecisionDistinctiveParams.NO_STARTING_PLACEMENTS)
+                    )
+                    .data
+                    .size
+            )
+
+            tx.insertTestPlacement(
+                DevPlacement(
+                    childId = testChild_1.id,
+                    unitId = testDaycare.id,
+                    startDate = LocalDate.now(),
+                    endDate = LocalDate.now()
+                )
+            )
+
+            assertEquals(
+                0,
+                tx.searchValueDecisions(
+                        evakaClock =
+                            MockEvakaClock(
+                                HelsinkiDateTime.of(LocalDate.now(), LocalTime.of(15, 6))
+                            ),
+                        postOffice = "ESPOO",
+                        page = 0,
+                        pageSize = 100,
+                        sortBy = VoucherValueDecisionSortParam.HEAD_OF_FAMILY,
+                        sortDirection = SortDirection.ASC,
+                        status = VoucherValueDecisionStatus.DRAFT,
+                        areas = emptyList(),
+                        unit = null,
+                        startDate = null,
+                        endDate = null,
+                        financeDecisionHandlerId = null,
+                        difference = emptySet(),
+                        distinctiveParams =
+                            listOf(VoucherValueDecisionDistinctiveParams.NO_STARTING_PLACEMENTS)
+                    )
+                    .data
+                    .size
+            )
+        }
     }
 }
