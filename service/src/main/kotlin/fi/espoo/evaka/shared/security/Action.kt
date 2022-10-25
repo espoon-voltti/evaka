@@ -1085,7 +1085,13 @@ sealed interface Action {
         DELETE_ABSENCES(HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnitOfGroup()),
         READ_STAFF_ATTENDANCES(
             HasGlobalRole(FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup(),
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    STAFF,
+                    SPECIAL_EDUCATION_TEACHER,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                )
+                .inUnitOfGroup(),
             IsMobile(requirePinLogin = false).inUnitOfGroup()
         ),
         UPDATE_STAFF_ATTENDANCES(
@@ -1102,9 +1108,15 @@ sealed interface Action {
                 )
                 .inUnitOfGroup()
         ),
-        CREATE_CARETAKERS(HasUnitRole(UNIT_SUPERVISOR).inUnitOfGroup()),
-        UPDATE_CARETAKERS(HasUnitRole(UNIT_SUPERVISOR).inUnitOfGroup()),
-        DELETE_CARETAKERS(HasUnitRole(UNIT_SUPERVISOR).inUnitOfGroup()),
+        CREATE_CARETAKERS(
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup()
+        ),
+        UPDATE_CARETAKERS(
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup()
+        ),
+        DELETE_CARETAKERS(
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnitOfGroup()
+        ),
         CREATE_NOTE(
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnitOfGroup(),
             IsMobile(requirePinLogin = false).inUnitOfGroup()
@@ -1427,7 +1439,13 @@ sealed interface Action {
         ),
         READ_ATTENDANCES(
             HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER).inUnit()
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    STAFF,
+                    SPECIAL_EDUCATION_TEACHER,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                )
+                .inUnit()
         ), // marker for ui to toggle attendances-tab
         READ_DETAILED(HasGlobalRole(SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
         READ_GROUPS(
@@ -1452,7 +1470,7 @@ sealed interface Action {
         UPDATE,
         READ_CHILD_ATTENDANCES(
             HasGlobalRole(SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF).inUnit(),
+            HasUnitRole(UNIT_SUPERVISOR, STAFF, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
             IsMobile(requirePinLogin = false).inUnit()
         ),
         UPDATE_CHILD_ATTENDANCES(
@@ -1462,7 +1480,13 @@ sealed interface Action {
         ),
         READ_STAFF_ATTENDANCES(
             IsMobile(requirePinLogin = false).inUnit(),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit()
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    SPECIAL_EDUCATION_TEACHER,
+                    STAFF,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                )
+                .inUnit()
         ),
         UPDATE_STAFF_ATTENDANCES(
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit()
@@ -1481,7 +1505,13 @@ sealed interface Action {
             IsMobile(requirePinLogin = false).inUnit()
         ),
         READ_ATTENDANCE_RESERVATIONS(
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER, STAFF).inUnit()
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    SPECIAL_EDUCATION_TEACHER,
+                    STAFF,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                )
+                .inUnit()
         ),
         READ_BACKUP_CARE(
             HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
