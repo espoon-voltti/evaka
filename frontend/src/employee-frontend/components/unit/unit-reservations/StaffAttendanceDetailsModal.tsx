@@ -547,6 +547,7 @@ export function validateEditState(
     const attendance = state[i]
     const attendanceErrors: ValidationError = {}
 
+    let parsedArrived: LocalTime | undefined = undefined
     if (!attendance.arrived) {
       if (i === 0) {
         const isNotOvernightAttendance =
@@ -561,21 +562,30 @@ export function validateEditState(
         attendanceErrors.arrived = 'required'
       }
     } else {
-      const parsedArrived = LocalTime.tryParse(attendance.arrived, 'HH:mm')
+      parsedArrived = LocalTime.tryParse(attendance.arrived, 'HH:mm')
       if (!parsedArrived) {
         attendanceErrors.arrived = 'timeFormat'
       }
     }
 
+    let parsedDeparted: LocalTime | undefined = undefined
     if (!attendance.departed) {
       if (i !== state.length - 1) {
         attendanceErrors.departed = 'required'
       }
     } else {
-      const parsedDeparted = LocalTime.tryParse(attendance.departed, 'HH:mm')
+      parsedDeparted = LocalTime.tryParse(attendance.departed, 'HH:mm')
       if (!parsedDeparted) {
         attendanceErrors.departed = 'timeFormat'
       }
+    }
+
+    if (
+      parsedArrived &&
+      parsedDeparted &&
+      parsedDeparted.isBefore(parsedArrived)
+    ) {
+      attendanceErrors.departed = 'timeFormat'
     }
 
     if (

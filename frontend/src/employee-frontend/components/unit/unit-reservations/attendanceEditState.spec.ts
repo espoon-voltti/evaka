@@ -143,4 +143,41 @@ describe('validateEditState', () => {
     expect(body).toBeUndefined()
     expect(errors).toEqual([{ arrived: 'timeFormat', departed: 'timeFormat' }])
   })
+
+  it('requires departure to be after arrival', () => {
+    const [body, errors] = validateEditState(
+      [
+        {
+          id: 'id1',
+          type: 'PRESENT',
+          groupId: 'group1',
+          arrived: HelsinkiDateTime.fromLocal(yesterday, LocalTime.of(8, 0)),
+          departed: null,
+          occupancyCoefficient: 1
+        }
+      ],
+      today,
+      [
+        {
+          id: 'id1',
+          type: 'PRESENT',
+          groupId: 'group1',
+          arrived: '8:00',
+          departed: '07:00'
+        },
+        {
+          id: null,
+          type: 'PRESENT',
+          groupId: 'group1',
+          arrived: '10:00',
+          departed: '09:00'
+        }
+      ]
+    )
+    expect(body).toBeUndefined()
+    expect(errors).toEqual([
+      { departed: 'timeFormat' },
+      { departed: 'timeFormat' }
+    ])
+  })
 })
