@@ -43,7 +43,6 @@ import { fontWeights } from 'lib-components/typography'
 import { BaseProps } from 'lib-components/utils'
 import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
-import { featureFlags } from 'lib-customizations/employee'
 import { faCircleEllipsis } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
@@ -275,11 +274,7 @@ export default React.memo(function StaffAttendanceTable({
               attendances={row.attendances}
               plannedAttendances={row.plannedAttendances}
               groupFilter={groupFilter}
-              openDetails={
-                featureFlags.experimental?.staffAttendanceTypes
-                  ? setDetailsModal
-                  : undefined
-              }
+              openDetails={setDetailsModal}
             />
           ))}
           {extraRowsGroupedByName.map((row, index) => (

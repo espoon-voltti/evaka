@@ -47,6 +47,7 @@ import {
 import { H1, H2, H3, LabelLike } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 import {
   faChevronLeft,
   faChevronRight,
@@ -435,21 +436,25 @@ export default React.memo(function StaffAttendanceDetailsModal({
                     />
                   )}
                 </GroupIndicator>
-                <Select
-                  items={[...staffAttendanceTypes]}
-                  selectedItem={type}
-                  onChange={(value) =>
-                    value &&
-                    updateAttendance(index, {
-                      arrived,
-                      departed,
-                      type: value,
-                      groupId
-                    })
-                  }
-                  getItemLabel={(item) => i18n.unit.staffAttendance.types[item]}
-                  data-qa="attendance-type-select"
-                />
+                {featureFlags.experimental?.staffAttendanceTypes ? (
+                  <Select
+                    items={[...staffAttendanceTypes]}
+                    selectedItem={type}
+                    onChange={(value) =>
+                      value &&
+                      updateAttendance(index, {
+                        arrived,
+                        departed,
+                        type: value,
+                        groupId
+                      })
+                    }
+                    getItemLabel={(item) =>
+                      i18n.unit.staffAttendance.types[item]
+                    }
+                    data-qa="attendance-type-select"
+                  />
+                ) : null}
                 <InputRow>
                   <TimeInput
                     value={arrived}
