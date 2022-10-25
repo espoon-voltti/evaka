@@ -26,6 +26,8 @@ import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevPerson
+import fi.espoo.evaka.shared.dev.DevPlacement
+import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
@@ -210,6 +212,50 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
             val result = search(distinctiveParams = listOf(params))
             assertResultsByChild(result, child)
         }
+    }
+
+    @Test
+    fun `starting children filter search`() {
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(
+                listOf(
+                    decisionFixture(
+                        headOfFamily = testAdult_3.id,
+                        children =
+                            listOf(childFixture(testChild_3, testDaycare.id, serviceNeed = null))
+                    )
+                )
+            )
+        }
+        assertEquals(
+            1,
+            search(distinctiveParams = listOf(DistinctiveParams.NO_STARTING_PLACEMENTS)).size
+        )
+
+        assertEquals(
+            1,
+            search(
+                    areas = listOf(testArea.shortName),
+                    distinctiveParams = listOf(DistinctiveParams.NO_STARTING_PLACEMENTS)
+                )
+                .size
+        )
+
+        db.transaction { tx ->
+            tx.insertTestPlacement(
+                DevPlacement(
+                    childId = testChild_3.id,
+                    unitId = testDaycare.id,
+                    startDate = LocalDate.now(),
+                    endDate = LocalDate.now()
+                )
+            )
+        }
+
+        assertEquals(
+            0,
+            search(distinctiveParams = listOf(DistinctiveParams.NO_STARTING_PLACEMENTS)).size
+        )
     }
 
     @Test
