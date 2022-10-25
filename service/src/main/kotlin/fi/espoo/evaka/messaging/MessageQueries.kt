@@ -121,11 +121,11 @@ fun Database.Transaction.insertMessage(
             :contentId,
             :threadId,
             :senderId,
-            CASE WHEN name_view.type = 'MUNICIPAL' THEN :municipalAccountName ELSE name_view.account_name END,
+            CASE WHEN name_view.type = 'MUNICIPAL' THEN :municipalAccountName ELSE name_view.name END,
             :repliesToId,
             :now,
             :recipientNames
-        FROM message_account_name_view name_view
+        FROM message_account_view name_view
         WHERE name_view.id = :senderId
         RETURNING id
     """
@@ -481,7 +481,7 @@ SELECT
     c.content,
     rec.read_at,
     rec.recipient_id,
-    acc.account_name recipient_name,
+    acc.name recipient_name,
     recipient_acc.type AS recipient_account_type,
     m.recipient_names,
     (
@@ -495,7 +495,7 @@ SELECT
 FROM message_recipients rec
 JOIN message m ON rec.message_id = m.id
 JOIN message_content c ON m.content_id = c.id
-JOIN message_account_name_view acc ON rec.recipient_id = acc.id
+JOIN message_account_view acc ON rec.recipient_id = acc.id
 JOIN message_account sender_acc ON sender_acc.id = m.sender_id
 JOIN message_account recipient_acc ON recipient_acc.id = rec.recipient_id
 JOIN message_thread t ON m.thread_id = t.id
@@ -604,11 +604,11 @@ relevant_placements AS (
     FROM backup_care_placements bc
 ),
 personal_accounts AS (
-    SELECT acc.id, acc_name.account_name AS name, 'PERSONAL' AS type, p.child_id
+    SELECT acc.id, acc_name.name, 'PERSONAL' AS type, p.child_id
     FROM (SELECT DISTINCT unit_id, child_id FROM relevant_placements) p
     JOIN daycare_acl acl ON acl.daycare_id = p.unit_id
     JOIN message_account acc ON acc.employee_id = acl.employee_id
-    JOIN message_account_name_view acc_name ON acc_name.id = acc.id
+    JOIN message_account_view acc_name ON acc_name.id = acc.id
     WHERE active IS TRUE
 ),
 group_accounts AS (
@@ -670,11 +670,11 @@ recipients AS (
     SELECT
         m.content_id,
         rec.recipient_id,
-        name_view.account_name,
+        name_view.name,
         acc.type AS account_type
     FROM message_recipients rec
     JOIN message m ON rec.message_id = m.id
-    JOIN message_account_name_view name_view ON rec.recipient_id = name_view.id
+    JOIN message_account_view name_view ON rec.recipient_id = name_view.id
     JOIN message_account acc ON acc.id = rec.recipient_id
 )
 
@@ -689,7 +689,7 @@ SELECT
     mc.content,
     (SELECT jsonb_agg(jsonb_build_object(
            'id', rec.recipient_id,
-           'name', rec.account_name,
+           'name', rec.name,
            'type', rec.account_type
        ))) AS recipients,
     (SELECT coalesce(jsonb_agg(jsonb_build_object(

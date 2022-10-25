@@ -188,9 +188,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val employeeAccount = counts.first().accountId
         db.transaction { tx ->
             val allAccounts =
-                tx.createQuery(
-                        "SELECT id, account_name as name, 'PERSONAL' as type from message_account_name_view"
-                    )
+                tx.createQuery("SELECT id, name, 'PERSONAL' as type from message_account_view")
                     .mapTo<MessageAccount>()
                     .list()
 

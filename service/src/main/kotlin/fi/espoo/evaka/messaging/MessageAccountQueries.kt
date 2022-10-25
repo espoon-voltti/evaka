@@ -53,7 +53,7 @@ SELECT
     acc.id AS account_id,
     (CASE
         WHEN acc.type = 'MUNICIPAL'::message_account_type THEN :municipalAccountName
-        ELSE name_view.account_name
+        ELSE name_view.name
     END) AS account_name,
     acc.type AS account_type,
     dg.id AS group_id,
@@ -61,7 +61,7 @@ SELECT
     dc.id AS group_unitId,
     dc.name AS group_unitName
 FROM message_account acc
-    JOIN message_account_name_view name_view ON name_view.id = acc.id
+    JOIN message_account_view name_view ON name_view.id = acc.id
     LEFT JOIN daycare_group dg ON acc.daycare_group_id = dg.id
     LEFT JOIN daycare dc ON dc.id = dg.daycare_id
     LEFT JOIN daycare_acl acl ON acc.employee_id = acl.employee_id AND (acl.role = 'UNIT_SUPERVISOR' OR acl.role = 'SPECIAL_EDUCATION_TEACHER' OR acl.role = 'EARLY_CHILDHOOD_EDUCATION_SECRETARY')
@@ -83,8 +83,8 @@ AND (
 fun Database.Read.getAccountNames(accountIds: Set<MessageAccountId>): List<String> {
     val sql =
         """
-        SELECT account_name
-        FROM message_account_name_view
+        SELECT name
+        FROM message_account_view
         WHERE id = ANY(:ids)
     """
             .trimIndent()
