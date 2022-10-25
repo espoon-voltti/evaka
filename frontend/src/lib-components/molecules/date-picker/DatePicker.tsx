@@ -9,19 +9,21 @@ import styled from 'styled-components'
 import LocalDate from 'lib-common/local-date'
 
 import { InputInfo } from '../../atoms/form/InputField'
+import { fontWeights } from '../../typography'
 import { defaultMargins } from '../../white-space'
 
 import DatePickerDay from './DatePickerDay'
 import DatePickerInput from './DatePickerInput'
 
 const inputWidth = 120
+
 const DatePickerWrapper = styled.div`
   position: relative;
   display: inline-block;
   width: ${inputWidth}px;
 `
 const minMargin = 16
-const overflow = 70
+const overflow = 100
 
 const DayPickerPositioner = styled.div<{ openAbove?: boolean }>`
   position: absolute;
@@ -43,8 +45,37 @@ const DayPickerDiv = styled.div`
   display: flex;
   justify-content: center;
 
-  p:not(:last-child) {
-    margin-bottom: 8px;
+  .rdp-caption_label {
+    font-weight: ${fontWeights.medium};
+  }
+
+  .rdp-head_cell {
+    text-transform: none;
+    font-size: 1em;
+    font-weight: ${fontWeights.normal};
+  }
+
+  .rdp-day_today {
+    color: ${(p) => p.theme.colors.accents.a2orangeDark};
+  }
+
+  .rdp-button:not([disabled]) {
+    &:hover {
+      color: ${(p) => p.theme.colors.grayscale.g100};
+      background-color: ${(p) => p.theme.colors.accents.a8lightBlue};
+    }
+
+    &:active,
+    &:focus {
+      color: ${(p) => p.theme.colors.grayscale.g100};
+      background-color: ${(p) => p.theme.colors.grayscale.g0};
+      border: 2px solid ${(p) => p.theme.colors.main.m2Active};
+    }
+  }
+
+  .rdp-day_selected:not([disabled]) {
+    color: ${(p) => p.theme.colors.grayscale.g0};
+    background-color: ${(p) => p.theme.colors.main.m2Active};
   }
 `
 

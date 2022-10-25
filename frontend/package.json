@@ -57,7 +57,7 @@
     "react-chartjs-2": "^4.3.1",
     "react-csv": "^2.2.2",
     "react-datepicker": "^4.8.0",
-    "react-day-picker": "7.4.10",
+    "react-day-picker": "^8.3.5",
     "react-dom": "^17.0.2",
     "react-focus-lock": "2.9.1",
     "react-image-crop": "^9.1.1",

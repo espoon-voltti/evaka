@@ -3,17 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { fi, sv, enGB } from 'date-fns/locale'
-import React from 'react'
-import DayPicker, { DayModifiers } from 'react-day-picker'
+import React, { useMemo } from 'react'
+import { DayPicker, DayModifiers } from 'react-day-picker'
 
 import LocalDate from 'lib-common/local-date'
+import 'react-day-picker/dist/style.css'
 import { capitalizeFirstLetter } from 'lib-common/string'
-
-import 'react-day-picker/lib/style.css'
-
-const monthNumbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-
-const weekdayNumbers = [0, 1, 2, 3, 4, 5, 6]
 
 interface Props {
   handleDayClick: (day: Date, modifiers?: DayModifiers) => void
@@ -34,28 +29,14 @@ export default React.memo(function DatePickerDay({
   minDate,
   maxDate
 }: Props) {
-  const dateI18n = locale === 'sv' ? sv : locale === 'en' ? enGB : fi
-
-  const months = monthNumbers
-    .map((m) => dateI18n.localize?.month(m) ?? '') // eslint-disable-line @typescript-eslint/no-unsafe-return
-    .map(capitalizeFirstLetter)
-  const weekdaysLong = weekdayNumbers
-    .map((d) => dateI18n.localize?.day(d) ?? '') // eslint-disable-line @typescript-eslint/no-unsafe-return
-    .map(capitalizeFirstLetter)
-  const weekdaysShort = weekdayNumbers
-    .map((d) => dateI18n.localize?.day(d, { width: 'short' }) ?? '') // eslint-disable-line @typescript-eslint/no-unsafe-return
-    .map(capitalizeFirstLetter)
+  const localeData = useLocaleWithCapitalizedNames(locale)
 
   return (
     <DayPicker
       onDayClick={handleDayClick}
-      locale={locale}
-      months={months}
-      weekdaysLong={weekdaysLong}
-      weekdaysShort={weekdaysShort}
-      firstDayOfWeek={locale === 'en' ? 0 : 1}
-      selectedDays={inputValue?.toSystemTzDate() ?? undefined}
-      disabledDays={(date) => {
+      locale={localeData}
+      selected={inputValue?.toSystemTzDate() ?? undefined}
+      disabled={(date) => {
         const localDate = LocalDate.fromSystemTzDate(date)
 
         if (isInvalidDate?.(localDate)) {
@@ -72,9 +53,30 @@ export default React.memo(function DatePickerDay({
 
         return false
       }}
-      initialMonth={
+      defaultMonth={
         inputValue?.toSystemTzDate() ?? initialMonth?.toSystemTzDate()
       }
     />
   )
 })
+
+function useLocaleWithCapitalizedNames(locale: 'fi' | 'sv' | 'en'): Locale {
+  const localeData = locale === 'sv' ? sv : locale === 'en' ? enGB : fi
+  return useMemo(
+    () => ({
+      ...localeData,
+      localize: localeData.localize
+        ? {
+            ...localeData.localize,
+            month: (m: unknown) =>
+              capitalizeFirstLetter(localeData.localize?.month(m) ?? ''), // eslint-disable-line @typescript-eslint/no-unsafe-argument
+            day: (d: unknown) =>
+              capitalizeFirstLetter(
+                localeData.localize?.day(d, { width: 'short' }) ?? '' // eslint-disable-line @typescript-eslint/no-unsafe-argument
+              )
+          }
+        : undefined
+    }),
+    [localeData]
+  )
+}
