@@ -75,10 +75,17 @@ export default function GroupMessageAccountList({
   const { unreadCountsByAccount } = useContext(MessageContext)
   const startCollapsed = (acc: AuthorizedMessageAccount, i: number) =>
     i > 0 &&
-    ((unreadCountsByAccount.isSuccess &&
-      !unreadCountsByAccount.value.find((a) => a.accountId === acc.account.id)
-        ?.unreadCount) ||
-      !unreadCountsByAccount.isSuccess)
+    unreadCountsByAccount
+      .map((counts) => {
+        const accountUnreadCounts = counts.find(
+          (a) => a.accountId === acc.account.id
+        )
+        return accountUnreadCounts
+          ? accountUnreadCounts.unreadCount +
+              accountUnreadCounts.unreadCopyCount
+          : 0
+      })
+      .getOrElse(0) === 0
 
   return (
     <CollapsibleMessageBoxesContainer>
