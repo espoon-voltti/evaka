@@ -29,7 +29,8 @@ class MessageService(private val notificationEmailService: MessageNotificationEm
         recipientNames: List<String>,
         attachmentIds: Set<AttachmentId> = setOf(),
         staffCopyRecipients: Set<MessageAccountId>,
-        accountIdsToChildIds: Map<MessageAccountId, ChildId>
+        accountIdsToChildIds: Map<MessageAccountId, ChildId>,
+        municipalAccountName: String
     ) =
         // for each recipient group, create a thread, message and message_recipients while re-using
         // content
@@ -49,7 +50,8 @@ class MessageService(private val notificationEmailService: MessageNotificationEm
                             contentId = contentId,
                             threadId = threadId,
                             sender = sender,
-                            recipientNames = recipientNames
+                            recipientNames = recipientNames,
+                            municipalAccountName = municipalAccountName
                         )
                     tx.insertRecipients(recipientIds, messageId)
                     notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)
@@ -66,7 +68,8 @@ class MessageService(private val notificationEmailService: MessageNotificationEm
                             contentId = contentId,
                             threadId = threadId,
                             sender = sender,
-                            recipientNames = recipientNames
+                            recipientNames = recipientNames,
+                            municipalAccountName = municipalAccountName
                         )
                     tx.insertRecipients(staffCopyRecipients, messageId)
                 }
@@ -80,7 +83,8 @@ class MessageService(private val notificationEmailService: MessageNotificationEm
         replyToMessageId: MessageId,
         senderAccount: MessageAccountId,
         recipientAccountIds: Set<MessageAccountId>,
-        content: String
+        content: String,
+        municipalAccountName: String
     ): ThreadReply {
         val (threadId, type, isCopy, senders, recipients) =
             db.read { it.getThreadByMessageId(replyToMessageId) }
@@ -108,7 +112,8 @@ class MessageService(private val notificationEmailService: MessageNotificationEm
                         threadId,
                         senderAccount,
                         repliesToMessageId = replyToMessageId,
-                        recipientNames = recipientNames
+                        recipientNames = recipientNames,
+                        municipalAccountName = municipalAccountName
                     )
                 tx.insertRecipients(recipientAccountIds, messageId)
                 notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)

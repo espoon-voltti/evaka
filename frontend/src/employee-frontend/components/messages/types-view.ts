@@ -11,6 +11,7 @@ export interface AccountView {
   view: View
 }
 
+export const municipalMessageBoxes: View[] = ['SENT', 'DRAFTS']
 export const personalMessageBoxes: View[] = ['RECEIVED', 'SENT', 'DRAFTS']
 export const groupMessageBoxes: View[] = [
   'RECEIVED',

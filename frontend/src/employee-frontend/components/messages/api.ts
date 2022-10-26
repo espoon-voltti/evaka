@@ -7,7 +7,7 @@ import {
   deserializeMessageCopy,
   deserializeMessageThread,
   deserializeReplyResponse
-} from 'lib-common/api-types/messaging/message'
+} from 'lib-common/api-types/messaging'
 import {
   AuthorizedMessageAccount,
   DraftContent,
@@ -22,30 +22,18 @@ import {
 } from 'lib-common/generated/api-types/messaging'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
-import {
-  deserializeReceiver,
-  SaveDraftParams
-} from 'lib-components/employee/messages/types'
+import { SaveDraftParams } from 'lib-components/employee/messages/types'
 
 import { client } from '../../api/client'
 
 import { deserializeDraftContent, deserializeSentMessage } from './types'
 
-export async function getReceivers(
-  unitId: UUID
-): Promise<Result<MessageReceiversResponse[]>> {
+export async function getReceivers(): Promise<
+  Result<MessageReceiversResponse[]>
+> {
   return client
-    .get<JsonOf<MessageReceiversResponse[]>>('/messages/receivers', {
-      params: { unitId }
-    })
-    .then((res) =>
-      Success.of(
-        res.data.map((receiverGroup) => ({
-          ...receiverGroup,
-          receivers: receiverGroup.receivers.map(deserializeReceiver)
-        }))
-      )
-    )
+    .get<JsonOf<MessageReceiversResponse[]>>('/messages/receivers')
+    .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
 

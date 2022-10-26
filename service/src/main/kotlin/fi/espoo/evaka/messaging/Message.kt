@@ -4,7 +4,9 @@
 
 package fi.espoo.evaka.messaging
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.attachment.MessageAttachment
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -14,7 +16,6 @@ import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
 import org.jdbi.v3.json.Json
@@ -59,22 +60,45 @@ enum class MessageType {
 }
 
 data class MessageReceiversResponse(
-    val groupId: GroupId,
-    val groupName: String,
+    val accountId: MessageAccountId,
     val receivers: List<MessageReceiver>
 )
 
-data class MessageReceiver(
-    val childId: ChildId,
-    val childFirstName: String,
-    val childLastName: String,
-    val childDateOfBirth: LocalDate
-)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+sealed class MessageReceiver(val type: MessageRecipientType) {
+    abstract val id: Id<*>
+    abstract val name: String
+
+    data class Area(
+        override val id: AreaId,
+        override val name: String,
+        val receivers: List<UnitInArea>
+    ) : MessageReceiver(MessageRecipientType.AREA)
+
+    data class UnitInArea(override val id: DaycareId, override val name: String) :
+        MessageReceiver(MessageRecipientType.UNIT)
+
+    data class Unit(
+        override val id: DaycareId,
+        override val name: String,
+        val receivers: List<Group>
+    ) : MessageReceiver(MessageRecipientType.UNIT)
+
+    data class Group(
+        override val id: GroupId,
+        override val name: String,
+        val receivers: List<Child>,
+    ) : MessageReceiver(MessageRecipientType.GROUP)
+
+    data class Child(override val id: ChildId, override val name: String) :
+        MessageReceiver(MessageRecipientType.CHILD)
+}
 
 enum class AccountType {
     PERSONAL,
     GROUP,
-    CITIZEN
+    CITIZEN,
+    MUNICIPAL
 }
 
 data class MessageAccount(val id: MessageAccountId, val name: String, val type: AccountType)
@@ -92,6 +116,7 @@ data class AuthorizedMessageAccount(
 )
 
 enum class MessageRecipientType {
+    AREA,
     UNIT,
     GROUP,
     CHILD

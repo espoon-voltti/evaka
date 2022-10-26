@@ -119,5 +119,8 @@ data class FeatureConfig(
     val partialAbsenceThresholdsEnabled: Boolean,
 
     /** Post office for the city. Used for external children filter in finance decision searches */
-    val postOffice: String
+    val postOffice: String,
+
+    /** Name of the message sender when sending messages on the municipal message account */
+    val municipalMessageAccountName: String
 )

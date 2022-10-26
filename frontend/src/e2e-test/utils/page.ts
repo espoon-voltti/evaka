@@ -477,7 +477,22 @@ export class TreeDropdown extends Element {
     return new Checkbox(this.findByDataQa(`tree-checkbox-${key}`))
   }
 
+  firstOption(): Checkbox {
+    return new Checkbox(this.findAll(`[data-qa*="tree-checkbox-"]`).nth(0))
+  }
+
   async expandOption(key: string): Promise<void> {
     await this.findByDataQa(`tree-toggle-${key}`).click()
+  }
+
+  async expandAll() {
+    const toggles = await this.findAll(
+      '[data-qa*="tree-toggle-"]'
+    ).elementHandles()
+    for (const toggle of toggles) {
+      if ((await toggle.getAttribute('aria-expanded')) === 'false') {
+        await toggle.click()
+      }
+    }
   }
 }

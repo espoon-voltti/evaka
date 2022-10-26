@@ -144,6 +144,14 @@ function ChildAttendanceRouter() {
             </RequireAuth>
           }
         />
+        <Route
+          path=":childId/new-message"
+          element={
+            <RequireAuth strength="PIN">
+              <MessageEditorPage />
+            </RequireAuth>
+          }
+        />
         <Route index element={<Navigate replace to="list/coming" />} />
       </Routes>
     </ChildAttendanceContextProvider>
@@ -202,14 +210,6 @@ function MessagesRouter() {
         }
       />
       <Route path="unread-messages" element={<UnreadMessagesPage />} />
-      <Route
-        path=":childId/new-message"
-        element={
-          <RequireAuth strength="PIN">
-            <MessageEditorPage />
-          </RequireAuth>
-        }
-      />
     </Routes>
   )
 }

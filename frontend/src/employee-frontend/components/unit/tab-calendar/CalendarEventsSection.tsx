@@ -425,24 +425,23 @@ const CreateEventModal = React.memo(function CreateEventModal({
           const useDefault = attendees.length === 0
 
           const selectedChildrenByGroup = Object.fromEntries(
-            attendees.flatMap(
-              (unit) =>
-                unit.children?.map((group) => {
-                  const groupChildren = group.children ?? []
-                  const selectedChildren = groupChildren
-                    .filter(({ checked }) => checked)
-                    .map(({ key, checked }) => [key, checked] as const)
+            attendees.flatMap((unit) =>
+              unit.children.map((group) => {
+                const groupChildren = group.children ?? []
+                const selectedChildren = groupChildren
+                  .filter(({ checked }) => checked)
+                  .map(({ key, checked }) => [key, checked] as const)
 
-                  return [
-                    group.key,
-                    {
-                      allChildrenAreSelected:
-                        groupChildren.length > 0 &&
-                        groupChildren.length === selectedChildren.length,
-                      selectedChildren: Object.fromEntries(selectedChildren)
-                    }
-                  ]
-                }) ?? []
+                return [
+                  group.key,
+                  {
+                    allChildrenAreSelected:
+                      groupChildren.length > 0 &&
+                      groupChildren.length === selectedChildren.length,
+                    selectedChildren: Object.fromEntries(selectedChildren)
+                  }
+                ]
+              })
             )
           )
 
@@ -484,14 +483,15 @@ const CreateEventModal = React.memo(function CreateEventModal({
               checked: useDefault
                 ? selectedGroupId === group.id || selectedGroupId === 'all'
                 : selectedChildrenByGroup[group.id]?.allChildrenAreSelected ||
-                  selectedChildrenByGroup[group.id]?.selectedChildren[child.id]
+                  selectedChildrenByGroup[group.id]?.selectedChildren[child.id],
+              children: []
             }))
 
             return {
               text: group.name,
               key: group.id,
               checked: groupChildren.some(({ checked }) => checked),
-              children: groupChildren.length === 0 ? undefined : groupChildren
+              children: groupChildren
             }
           })
 

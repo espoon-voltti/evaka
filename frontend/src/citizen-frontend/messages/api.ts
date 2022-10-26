@@ -7,7 +7,7 @@ import {
   deserializeMessageAccount,
   deserializeMessageThread,
   deserializeReplyResponse
-} from 'lib-common/api-types/messaging/message'
+} from 'lib-common/api-types/messaging'
 import {
   CitizenMessageBody,
   GetReceiversResponse,

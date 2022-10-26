@@ -26,7 +26,6 @@ import { useTranslation } from '../../../state/i18n'
 import { UnitContext } from '../../../state/unit'
 import { renderResult } from '../../async-rendering'
 import BottomModalMenu from '../../common/BottomModalMenu'
-import MessageEditorPage from '../../messages/MessageEditorPage'
 import { BackButton, TallContentArea } from '../../mobile/components'
 import Absences from '../Absences'
 import AttendanceDailyServiceTimes from '../AttendanceDailyServiceTimes'
@@ -58,7 +57,7 @@ export default React.memo(function AttendanceChildPage() {
   )
 
   const [uiMode, setUiMode] = useState<
-    'default' | 'img-modal' | 'img-crop' | 'img-delete' | 'send-new-message'
+    'default' | 'img-modal' | 'img-crop' | 'img-delete'
   >('default')
 
   const [rawImage, setRawImage] = useState<string | null>(null)
@@ -292,7 +291,6 @@ export default React.memo(function AttendanceChildPage() {
           }}
         />
       )}
-      {uiMode == 'send-new-message' && <MessageEditorPage />}
     </>
   )
 })

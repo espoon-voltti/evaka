@@ -20,4 +20,11 @@ CREATE VIEW message_account_access_view(employee_id, account_id) AS (
     FROM message_account acc
         JOIN daycare_group_acl gacl ON gacl.daycare_group_id = acc.daycare_group_id
     WHERE acc.active = TRUE
+
+    UNION
+
+    SELECT e.id AS employee_id, acc.id AS account_id
+    FROM employee e
+    JOIN message_account acc ON acc.type = 'MUNICIPAL'
+    WHERE e.roles && '{ADMIN, MESSAGING}'::user_role[]
 );

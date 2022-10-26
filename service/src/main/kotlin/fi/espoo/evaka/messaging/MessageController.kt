@@ -5,9 +5,11 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageDraftId
@@ -16,6 +18,7 @@ import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.security.AccessControl
@@ -49,6 +52,7 @@ data class ReplyToMessageBody(val content: String, val recipientAccountIds: Set<
 @RequestMapping("/messages")
 class MessageController(
     private val accessControl: AccessControl,
+    private val featureConfig: FeatureConfig,
     messageNotificationEmailService: MessageNotificationEmailService
 ) {
     private val messageService = MessageService(messageNotificationEmailService)
@@ -67,7 +71,10 @@ class MessageController(
                         clock,
                         Action.Global.READ_USER_MESSAGE_ACCOUNTS
                     )
-                    it.getAuthorizedMessageAccountsForEmployee(user.id)
+                    it.getAuthorizedMessageAccountsForEmployee(
+                        user.id,
+                        featureConfig.municipalMessageAccountName
+                    )
                 }
             }
             .also { Audit.MessagingMyAccountsRead.log(args = mapOf("count" to it.size)) }
@@ -91,10 +98,11 @@ class MessageController(
                         unitId
                     )
                     if (user.employeeId != null) {
-                        it.getAuthorizedMessageAccountsForEmployee(user.employeeId)
-                    } else {
-                        setOf()
-                    }
+                        it.getAuthorizedMessageAccountsForEmployee(
+                            user.employeeId,
+                            featureConfig.municipalMessageAccountName
+                        )
+                    } else setOf()
                 }
             }
         Audit.MessagingMyAccountsRead.log(targetId = unitId, args = mapOf("count" to result.size))
@@ -112,7 +120,14 @@ class MessageController(
     ): Paged<MessageThread> {
         return db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
-                dbc.read { it.getReceivedThreads(accountId, pageSize, page) }
+                dbc.read {
+                    it.getReceivedThreads(
+                        accountId,
+                        pageSize,
+                        page,
+                        featureConfig.municipalMessageAccountName
+                    )
+                }
             }
             .also {
                 Audit.MessagingReceivedMessagesRead.log(
@@ -235,6 +250,15 @@ class MessageController(
         db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { tx ->
+                val senderAccountType = tx.getMessageAccountType(accountId)
+                if (
+                    senderAccountType == AccountType.MUNICIPAL && body.type != MessageType.BULLETIN
+                ) {
+                    throw BadRequest(
+                        "Municipal message accounts are only allowed to send bulletins"
+                    )
+                }
+
                 val messageAccountIdsToChildIds =
                     tx.getMessageAccountsForRecipients(accountId, body.recipients, clock.today())
                 val messageRecipients = messageAccountIdsToChildIds.keys
@@ -245,6 +269,10 @@ class MessageController(
                     if (body.recipients.none { it.type == MessageRecipientType.CHILD }) {
                         tx.getStaffCopyRecipients(
                             accountId,
+                            body.recipients.mapNotNull {
+                                if (it.type == MessageRecipientType.AREA) AreaId(it.id.raw)
+                                else null
+                            },
                             body.recipients.mapNotNull {
                                 if (it.type == MessageRecipientType.UNIT) DaycareId(it.id.raw)
                                 else null
@@ -272,7 +300,8 @@ class MessageController(
                     recipientGroups = groupedRecipients,
                     attachmentIds = body.attachmentIds,
                     staffCopyRecipients = staffCopyRecipients,
-                    accountIdsToChildIds = messageAccountIdsToChildIds
+                    accountIdsToChildIds = messageAccountIdsToChildIds,
+                    municipalAccountName = featureConfig.municipalMessageAccountName
                 )
                 if (body.draftId != null)
                     tx.deleteDraft(accountId = accountId, draftId = body.draftId)
@@ -365,7 +394,8 @@ class MessageController(
                     replyToMessageId = messageId,
                     senderAccount = accountId,
                     recipientAccountIds = body.recipientAccountIds,
-                    content = body.content
+                    content = body.content,
+                    municipalAccountName = featureConfig.municipalMessageAccountName
                 )
             }
             .also {
@@ -392,27 +422,21 @@ class MessageController(
     fun getReceiversForNewMessage(
         db: Database,
         user: AuthenticatedUser,
-        clock: EvakaClock,
-        @RequestParam unitId: DaycareId
+        clock: EvakaClock
     ): List<MessageReceiversResponse> {
+        val employeeId = getEmployeeId(user) ?: throw Forbidden("Permission denied")
         return db.connect { dbc ->
                 dbc.read {
                     accessControl.requirePermissionFor(
                         it,
                         user,
                         clock,
-                        Action.Unit.READ_RECEIVERS_FOR_NEW_MESSAGE,
-                        unitId
+                        Action.Global.READ_MESSAGE_RECEIVERS
                     )
-                    it.getReceiversForNewMessage(EmployeeId(user.rawId()), unitId)
+                    it.getReceiversForNewMessage(employeeId, clock.today())
                 }
             }
-            .also {
-                Audit.MessagingMessageReceiversRead.log(
-                    targetId = unitId,
-                    args = mapOf("count" to it.size)
-                )
-            }
+            .also { Audit.MessagingMessageReceiversRead.log(args = mapOf("count" to it.size)) }
     }
 
     private fun requireMessageAccountAccess(

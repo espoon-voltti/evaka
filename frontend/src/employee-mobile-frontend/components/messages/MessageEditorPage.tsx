@@ -2,22 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
-import {
-  MessageReceiversResponse,
-  PostMessageBody
-} from 'lib-common/generated/api-types/messaging'
+import { combine } from 'lib-common/api'
+import { MessageReceiver } from 'lib-common/api-types/messaging'
+import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import MessageEditor from 'lib-components/employee/messages/MessageEditor'
-import {
-  receiverAsSelectorNode,
-  SelectorNode
-} from 'lib-components/employee/messages/SelectorNode'
 import { ContentArea } from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 import { faArrowLeft } from 'lib-icons'
@@ -29,10 +24,10 @@ import {
 } from '../../api/attachments'
 import {
   deleteDraft,
+  getReceivers,
   initDraft,
   postMessage,
-  saveDraft,
-  getReceivers
+  saveDraft
 } from '../../api/messages'
 import { useTranslation } from '../../state/i18n'
 import { MessageContext } from '../../state/messages'
@@ -42,35 +37,34 @@ import TopBar from '../common/TopBar'
 
 export default function MessageEditorPage() {
   const { i18n } = useTranslation()
-  const { childId, unitId } = useNonNullableParams<{
+  const { childId } = useNonNullableParams<{
     unitId: UUID
     groupId: UUID
     childId: UUID
   }>()
 
   const navigate = useNavigate()
-
-  const { accounts, selectedAccount, selectedUnit } = useContext(MessageContext)
-
+  const { accounts, selectedAccount } = useContext(MessageContext)
+  const [messageReceivers] = useApiState(getReceivers, [])
   const [sending, setSending] = useState(false)
 
-  const [selectedReceivers, setSelectedReceivers] = useState<SelectorNode>()
+  const receivers = useMemo(() => {
+    const findChildReceivers = (receiver: MessageReceiver): MessageReceiver[] =>
+      receiver.type === 'CHILD' && receiver.id === childId
+        ? [receiver]
+        : 'receivers' in receiver
+        ? receiver.receivers.flatMap(findChildReceivers)
+        : []
 
-  useEffect(() => {
-    if (!unitId) return
-
-    void getReceivers(unitId).then(
-      (result: Result<MessageReceiversResponse[]>) => {
-        if (result.isSuccess) {
-          const child = result.value.flatMap(({ receivers }) =>
-            receivers.filter((r) => r.childId === childId)
-          )[0]
-          if (!child) return
-          setSelectedReceivers(receiverAsSelectorNode(child))
-        }
-      }
+    return messageReceivers.map((accounts) =>
+      accounts
+        .map((account) => ({
+          ...account,
+          receivers: account.receivers.flatMap(findChildReceivers)
+        }))
+        .filter((account) => account.receivers.length > 0)
     )
-  }, [childId, unitId, setSelectedReceivers])
+  }, [childId, messageReceivers])
 
   const onSend = useCallback(
     (accountId: UUID, messageBody: PostMessageBody) => {
@@ -99,10 +93,10 @@ export default function MessageEditorPage() {
     navigate(-1)
   }, [navigate])
 
-  return renderResult(accounts, (accounts) =>
-    selectedReceivers && selectedAccount && selectedUnit ? (
+  return renderResult(combine(accounts, receivers), ([accounts, receivers]) =>
+    receivers.length > 0 && selectedAccount ? (
       <MessageEditor
-        availableReceivers={selectedReceivers}
+        availableReceivers={receivers}
         defaultSender={{
           value: selectedAccount.account.id,
           label: selectedAccount.account.name
@@ -123,10 +117,9 @@ export default function MessageEditorPage() {
         onSend={onSend}
         saveDraftRaw={saveDraft}
         saveMessageAttachment={saveMessageAttachment}
-        selectedUnit={selectedUnit}
         sending={sending}
       />
-    ) : !selectedReceivers ? (
+    ) : receivers.length === 0 ? (
       <ContentArea
         opaque
         paddingVertical="zero"

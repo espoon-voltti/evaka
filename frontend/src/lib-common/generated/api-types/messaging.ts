@@ -6,8 +6,8 @@
 /* eslint-disable import/order, prettier/prettier */
 
 import HelsinkiDateTime from '../../helsinki-date-time'
-import LocalDate from '../../local-date'
 import { MessageAttachment } from './attachment'
+import { MessageReceiver } from '../../api-types/messaging'
 import { UUID } from '../../types'
 
 /**
@@ -17,6 +17,7 @@ export type AccountType =
   | 'PERSONAL'
   | 'GROUP'
   | 'CITIZEN'
+  | 'MUNICIPAL'
 
 /**
 * Generated from fi.espoo.evaka.messaging.AuthorizedMessageAccount
@@ -133,21 +134,10 @@ export interface MessageCopy {
 }
 
 /**
-* Generated from fi.espoo.evaka.messaging.MessageReceiver
-*/
-export interface MessageReceiver {
-  childDateOfBirth: LocalDate
-  childFirstName: string
-  childId: UUID
-  childLastName: string
-}
-
-/**
 * Generated from fi.espoo.evaka.messaging.MessageReceiversResponse
 */
 export interface MessageReceiversResponse {
-  groupId: UUID
-  groupName: string
+  accountId: UUID
   receivers: MessageReceiver[]
 }
 
@@ -163,6 +153,7 @@ export interface MessageRecipient {
 * Generated from fi.espoo.evaka.messaging.MessageRecipientType
 */
 export type MessageRecipientType =
+  | 'AREA'
   | 'UNIT'
   | 'GROUP'
   | 'CHILD'

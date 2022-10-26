@@ -226,7 +226,8 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     contentId,
                     threadId,
                     employeeAccount,
-                    listOf("recipient name")
+                    listOf("recipient name"),
+                    "Espoo"
                 )
             tx.insertRecipients(setOf(personAccount), messageId)
         }
@@ -255,7 +256,8 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     contentId,
                     threadId,
                     personAccount,
-                    listOf("employee name")
+                    listOf("employee name"),
+                    "Espoo"
                 )
             tx.insertRecipients(setOf(employeeAccount), messageId)
         }

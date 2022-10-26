@@ -180,7 +180,7 @@ describe('Sending and receiving messages', () => {
 
         await messagesPage.sendNewMessage({
           ...defaultMessage,
-          receiver: `${enduserChildFixtureKaarina.firstName} ${enduserChildFixtureKaarina.lastName}`
+          receiver: enduserChildFixtureKaarina.id
         })
 
         await messagesPage.assertMessageIsSentForParticipants(

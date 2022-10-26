@@ -4,10 +4,11 @@
 
 import sortBy from 'lodash/sortBy'
 import uniqBy from 'lodash/uniqBy'
-import React, { useContext, useEffect, useMemo } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
+import { sortReceivers } from 'lib-common/api-types/messaging'
 import {
   AuthorizedMessageAccount,
   MessageReceiversResponse
@@ -15,10 +16,11 @@ import {
 import Button from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
 import {
-  SelectorNode,
-  unitAsSelectorNode
-} from 'lib-components/employee/messages/SelectorNode'
-import { isGroupMessageAccount } from 'lib-components/employee/messages/types'
+  isGroupMessageAccount,
+  isMunicipalMessageAccount,
+  isPersonalMessageAccount
+} from 'lib-components/employee/messages/types'
+import { SelectOption } from 'lib-components/molecules/Select'
 import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -30,7 +32,7 @@ import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
 import { MessageContext } from './MessageContext'
 import { getReceivers } from './api'
-import { personalMessageBoxes } from './types-view'
+import { municipalMessageBoxes, personalMessageBoxes } from './types-view'
 
 const Container = styled.div`
   flex: 0 1 260px;
@@ -83,31 +85,33 @@ const UnitSelection = styled.div`
 
 interface AccountsProps {
   accounts: AuthorizedMessageAccount[]
-  setSelectedReceivers: React.Dispatch<
-    React.SetStateAction<SelectorNode | undefined>
+  setReceivers: React.Dispatch<
+    React.SetStateAction<MessageReceiversResponse[] | undefined>
   >
 }
 
-function Accounts({ accounts, setSelectedReceivers }: AccountsProps) {
+function Accounts({ accounts, setReceivers }: AccountsProps) {
   const { i18n } = useTranslation()
-  const { setSelectedAccount, selectedAccount, selectedUnit, setSelectedUnit } =
-    useContext(MessageContext)
+  const { setSelectedAccount, selectedAccount } = useContext(MessageContext)
+  const [selectedUnit, setSelectedUnit] = useState<SelectOption>()
 
-  const [personalAccount, groupAccounts, unitOptions] = useMemo(() => {
-    const personal = accounts.find((a) => !isGroupMessageAccount(a))
-    const groupAccs = accounts.filter(isGroupMessageAccount)
-    const unitOpts = sortBy(
-      uniqBy(
-        groupAccs.map(({ daycareGroup }) => ({
-          value: daycareGroup.unitId,
-          label: daycareGroup.unitName
-        })),
-        (val) => val.value
-      ),
-      (u) => u.label
-    )
-    return [personal, groupAccs, unitOpts]
-  }, [accounts])
+  const [municipalAccount, personalAccount, groupAccounts, unitOptions] =
+    useMemo(() => {
+      const municipal = accounts.find(isMunicipalMessageAccount)
+      const personal = accounts.find(isPersonalMessageAccount)
+      const groupAccs = accounts.filter(isGroupMessageAccount)
+      const unitOpts = sortBy(
+        uniqBy(
+          groupAccs.map(({ daycareGroup }) => ({
+            value: daycareGroup.unitId,
+            label: daycareGroup.unitName
+          })),
+          (val) => val.value
+        ),
+        (u) => u.label
+      )
+      return [municipal, personal, groupAccs, unitOpts]
+    }, [accounts])
 
   const unitSelectionEnabled = unitOptions.length > 1
 
@@ -116,19 +120,16 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsProps) {
   }, [selectedUnit, setSelectedUnit, unitOptions])
 
   useEffect(() => {
-    if (!selectedUnit) {
-      return
-    }
-    const { label: unitName, value: unitId } = selectedUnit
-    void getReceivers(unitId).then(
-      (result: Result<MessageReceiversResponse[]>) => {
-        if (result.isSuccess)
-          setSelectedReceivers(() =>
-            unitAsSelectorNode({ id: unitId, name: unitName }, result.value)
-          )
+    void getReceivers().then((result: Result<MessageReceiversResponse[]>) => {
+      if (result.isSuccess) {
+        const sortedReceivers = result.value.map((account) => ({
+          ...account,
+          receivers: sortReceivers(account.receivers)
+        }))
+        setReceivers(sortedReceivers)
       }
-    )
-  }, [selectedUnit, setSelectedReceivers])
+    })
+  }, [setReceivers])
 
   const visibleGroupAccounts = selectedUnit
     ? sortBy(
@@ -143,6 +144,23 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsProps) {
     <>
       {accounts.length === 0 && (
         <NoAccounts>{i18n.messages.sidePanel.noAccountAccess}</NoAccounts>
+      )}
+
+      {municipalAccount && (
+        <AccountSection data-qa="municipal-account">
+          <AccountHeader>
+            {i18n.messages.sidePanel.municipalMessages}
+          </AccountHeader>
+          {municipalMessageBoxes.map((view) => (
+            <MessageBox
+              key={view}
+              view={view}
+              account={municipalAccount.account}
+              activeView={selectedAccount}
+              setView={setSelectedAccount}
+            />
+          ))}
+        </AccountSection>
       )}
 
       {personalAccount && (
@@ -188,14 +206,14 @@ function Accounts({ accounts, setSelectedReceivers }: AccountsProps) {
 
 interface Props {
   showEditor: () => void
-  setSelectedReceivers: React.Dispatch<
-    React.SetStateAction<SelectorNode | undefined>
+  setReceivers: React.Dispatch<
+    React.SetStateAction<MessageReceiversResponse[] | undefined>
   >
 }
 
 export default React.memo(function Sidebar({
   showEditor,
-  setSelectedReceivers
+  setReceivers
 }: Props) {
   const { i18n } = useTranslation()
   const { accounts } = useContext(MessageContext)
@@ -220,10 +238,7 @@ export default React.memo(function Sidebar({
           />
         </HeaderContainer>
         {renderResult(accounts, (value) => (
-          <Accounts
-            accounts={value}
-            setSelectedReceivers={setSelectedReceivers}
-          />
+          <Accounts accounts={value} setReceivers={setReceivers} />
         ))}
       </AccountContainer>
     </Container>

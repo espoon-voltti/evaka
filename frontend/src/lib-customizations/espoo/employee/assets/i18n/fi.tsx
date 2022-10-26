@@ -3419,6 +3419,7 @@ export const fi = {
       title: 'Yksiköt'
     },
     sidePanel: {
+      municipalMessages: 'Kunnan tiedotteet',
       ownMessages: 'Omat viestit',
       groupsMessages: 'Ryhmien viestit',
       noAccountAccess:
@@ -3429,7 +3430,7 @@ export const fi = {
         RECEIVED: 'Saapuneet',
         SENT: 'Lähetetyt',
         DRAFTS: 'Luonnokset',
-        COPIES: 'Johtajan/kaupungin tiedotteet'
+        COPIES: 'Johtajan/kunnan tiedotteet'
       },
       receivers: 'Vastaanottajat',
       newMessage: 'Uusi viesti'
@@ -3439,7 +3440,7 @@ export const fi = {
         RECEIVED: 'Saapuneet viestit',
         SENT: 'Lähetetyt viestit',
         DRAFTS: 'Luonnokset',
-        COPIES: 'Johtajan/kaupungin tiedotteet'
+        COPIES: 'Johtajan/kunnan tiedotteet'
       }
     },
     types: {
@@ -3454,7 +3455,7 @@ export const fi = {
       confirmText: 'Lähetä viesti valituille'
     },
     messageEditor: {
-      newMessage: (unitName: string) => `Uusi viesti (${unitName})`,
+      newMessage: 'Uusi viesti',
       to: {
         label: 'Vastaanottaja',
         placeholder: 'Valitse ryhmä',

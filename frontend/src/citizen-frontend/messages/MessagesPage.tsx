@@ -53,7 +53,15 @@ export default React.memo(function MessagesPage() {
   const [displaySendError, setDisplaySendError] = useState<boolean>(false)
   const t = useTranslation()
   const [receivers] = useApiState(
-    () => getReceivers(t.messages.staffAnnotation),
+    () =>
+      getReceivers(t.messages.staffAnnotation).then((receivers) =>
+        receivers.map((rs) => ({
+          ...rs,
+          messageAccounts: rs.messageAccounts.sort((a, b) =>
+            a.name.toLocaleLowerCase().localeCompare(b.name.toLocaleLowerCase())
+          )
+        }))
+      ),
     [t.messages.staffAnnotation]
   )
 

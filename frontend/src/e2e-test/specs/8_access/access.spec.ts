@@ -36,7 +36,7 @@ beforeEach(async () => {
 })
 
 describe('Child information page', () => {
-  test('Admin sees every tab, except messaging', async () => {
+  test('Admin sees every tab', async () => {
     const admin = await Fixture.employeeAdmin().save()
     await employeeLogin(page, admin.data)
     await page.goto(config.employeeUrl)
@@ -46,7 +46,7 @@ describe('Child information page', () => {
       search: true,
       finance: true,
       reports: true,
-      messages: false
+      messages: true
     })
   })
 

@@ -159,7 +159,7 @@ describe('Staff copies', () => {
     const message = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      receiver: fixtures.daycareFixture.name
+      receiver: fixtures.daycareFixture.id
     }
     await new MessagesPage(unitSupervisorPage).sendNewMessage(message)
 
@@ -177,7 +177,7 @@ describe('Staff copies', () => {
     const message = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      receiver: fixtures.enduserChildFixtureKaarina.firstName
+      receiver: fixtures.enduserChildFixtureKaarina.id
     }
     await new MessagesPage(unitSupervisorPage).sendNewMessage(message)
 
@@ -193,7 +193,7 @@ describe('Staff copies', () => {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
       sender: `${fixtures.daycareFixture.name} - ${daycareGroupFixture.name}`,
-      receiver: daycareGroupFixture.name
+      receiver: daycareGroupFixture.id
     }
     await new MessagesPage(unitSupervisorPage).sendNewMessage(message)
 

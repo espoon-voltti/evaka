@@ -24,7 +24,6 @@ import {
 import { UUID } from 'lib-common/types'
 import { usePeriodicRefresh } from 'lib-common/utils/usePeriodicRefresh'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
-import { ReactSelectOption } from 'lib-components/employee/messages/SelectorNode'
 
 import { client } from '../../api/client'
 import { UserContext } from '../../state/user'
@@ -51,8 +50,6 @@ export interface MessagesState {
   setSelectedDraft: (draft: DraftContent | undefined) => void
   selectedAccount: AccountView | undefined
   setSelectedAccount: (view: AccountView) => void
-  selectedUnit: ReactSelectOption | undefined
-  setSelectedUnit: (unit: ReactSelectOption) => void
   page: number
   setPage: (page: number) => void
   pages: number | undefined
@@ -77,8 +74,6 @@ const defaultState: MessagesState = {
   setSelectedDraft: () => undefined,
   selectedAccount: undefined,
   setSelectedAccount: () => undefined,
-  selectedUnit: undefined,
-  setSelectedUnit: () => undefined,
   page: 1,
   setPage: () => undefined,
   pages: undefined,
@@ -116,9 +111,6 @@ const appendMessageAndMoveThreadToTopOfList =
 
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: JSX.Element }) {
-    const [selectedUnit, setSelectedUnit] = useState<
-      ReactSelectOption | undefined
-    >()
     const { user } = useContext(UserContext)
 
     const [accounts] = useApiState(
@@ -309,8 +301,6 @@ export const MessageContextProvider = React.memo(
         setSelectedDraft,
         selectedAccount,
         setSelectedAccount,
-        selectedUnit,
-        setSelectedUnit,
         page,
         setPage,
         pages,
@@ -332,8 +322,6 @@ export const MessageContextProvider = React.memo(
         accounts,
         selectedDraft,
         selectedAccount,
-        selectedUnit,
-        setSelectedUnit,
         page,
         pages,
         receivedMessages,

@@ -51,6 +51,7 @@ import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.UserRole.DIRECTOR
 import fi.espoo.evaka.shared.auth.UserRole.EARLY_CHILDHOOD_EDUCATION_SECRETARY
 import fi.espoo.evaka.shared.auth.UserRole.FINANCE_ADMIN
+import fi.espoo.evaka.shared.auth.UserRole.MESSAGING
 import fi.espoo.evaka.shared.auth.UserRole.REPORT_VIEWER
 import fi.espoo.evaka.shared.auth.UserRole.SERVICE_WORKER
 import fi.espoo.evaka.shared.auth.UserRole.SPECIAL_EDUCATION_TEACHER
@@ -84,6 +85,7 @@ sealed interface Action {
         FINANCE_PAGE(HasGlobalRole(FINANCE_ADMIN)),
         HOLIDAY_PERIODS_PAGE,
         MESSAGES_PAGE(
+            HasGlobalRole(MESSAGING),
             HasUnitRole(
                     STAFF,
                     UNIT_SUPERVISOR,
@@ -210,6 +212,7 @@ sealed interface Action {
             IsMobile(requirePinLogin = false).any()
         ),
         READ_USER_MESSAGE_ACCOUNTS(
+            HasGlobalRole(MESSAGING),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
@@ -217,6 +220,17 @@ sealed interface Action {
                     EARLY_CHILDHOOD_EDUCATION_SECRETARY
                 )
                 .inAnyUnit()
+        ),
+        READ_MESSAGE_RECEIVERS(
+            HasGlobalRole(MESSAGING),
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    STAFF,
+                    SPECIAL_EDUCATION_TEACHER,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                )
+                .inAnyUnit(),
+            IsMobile(requirePinLogin = true).any()
         ),
         READ_UNITS(
             HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
@@ -260,6 +274,7 @@ sealed interface Action {
         UPDATE_HOLIDAY_QUESTIONNAIRE,
         SEND_PATU_REPORT,
         ACCESS_MESSAGING(
+            HasGlobalRole(MESSAGING),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
@@ -1570,16 +1585,6 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
         ),
         UPDATE_FEATURES,
-        READ_RECEIVERS_FOR_NEW_MESSAGE(
-            HasUnitRole(
-                    UNIT_SUPERVISOR,
-                    STAFF,
-                    SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
-                )
-                .inUnit(),
-            IsMobile(requirePinLogin = false).inUnit()
-        ),
         READ_MESSAGING_ACCOUNTS(IsMobile(requirePinLogin = false).inUnit()),
         READ_UNREAD_MESSAGES(IsMobile(requirePinLogin = false).inUnit()),
         READ_TERMINATED_PLACEMENTS(HasUnitRole(UNIT_SUPERVISOR).inUnit()),

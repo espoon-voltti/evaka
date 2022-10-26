@@ -5,13 +5,12 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
+import {
+  MessageReceiversResponse,
+  PostMessageBody
+} from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import MessageEditor from 'lib-components/employee/messages/MessageEditor'
-import {
-  deselectAll,
-  SelectorNode
-} from 'lib-components/employee/messages/SelectorNode'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
 
@@ -44,7 +43,6 @@ export default React.memo(function MessagesPage() {
     setSelectedDraft,
     selectedAccount,
     setSelectedAccount,
-    selectedUnit,
     refreshMessages
   } = useContext(MessageContext)
 
@@ -82,10 +80,9 @@ export default React.memo(function MessagesPage() {
     }
   }, [selectedDraft])
 
-  const [selectedReceivers, setSelectedReceivers] = useState<SelectorNode>()
+  const [receivers, setReceivers] = useState<MessageReceiversResponse[]>()
 
   const hideEditor = useCallback(() => {
-    setSelectedReceivers((old) => (old ? deselectAll(old) : old))
     setShowEditor(false)
     setSelectedDraft(undefined)
   }, [setSelectedDraft])
@@ -127,39 +124,34 @@ export default React.memo(function MessagesPage() {
       <PanelContainer>
         <Sidebar
           showEditor={() => setShowEditor(true)}
-          setSelectedReceivers={setSelectedReceivers}
+          setReceivers={setReceivers}
         />
         {selectedAccount?.view && <MessageList {...selectedAccount} />}
-        {showEditor &&
-          accounts.isSuccess &&
-          selectedReceivers &&
-          selectedAccount &&
-          selectedUnit && (
-            <MessageEditor
-              availableReceivers={selectedReceivers}
-              defaultSender={{
-                value: selectedAccount.account.id,
-                label: selectedAccount.account.name
-              }}
-              deleteAttachment={deleteAttachment}
-              draftContent={selectedDraft}
-              getAttachmentUrl={getAttachmentUrl}
-              i18n={{
-                ...i18n.messages.messageEditor,
-                ...i18n.fileUpload,
-                ...i18n.common
-              }}
-              initDraftRaw={initDraft}
-              accounts={accounts.value}
-              onClose={onHide}
-              onDiscard={onDiscard}
-              onSend={onSend}
-              saveDraftRaw={saveDraft}
-              saveMessageAttachment={saveMessageAttachment}
-              selectedUnit={selectedUnit}
-              sending={sending}
-            />
-          )}
+        {showEditor && accounts.isSuccess && receivers && selectedAccount && (
+          <MessageEditor
+            availableReceivers={receivers}
+            defaultSender={{
+              value: selectedAccount.account.id,
+              label: selectedAccount.account.name
+            }}
+            deleteAttachment={deleteAttachment}
+            draftContent={selectedDraft}
+            getAttachmentUrl={getAttachmentUrl}
+            i18n={{
+              ...i18n.messages.messageEditor,
+              ...i18n.fileUpload,
+              ...i18n.common
+            }}
+            initDraftRaw={initDraft}
+            accounts={accounts.value}
+            onClose={onHide}
+            onDiscard={onDiscard}
+            onSend={onSend}
+            saveDraftRaw={saveDraft}
+            saveMessageAttachment={saveMessageAttachment}
+            sending={sending}
+          />
+        )}
       </PanelContainer>
     </Container>
   )

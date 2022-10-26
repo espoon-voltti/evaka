@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -41,15 +42,14 @@ import fi.espoo.evaka.testDaycare2
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
-    private val childId = testChild_1.id
-    private val unitId = testDaycare.id
-    private val secondUnitId = testDaycare2.id
+    private val child = testChild_1
+    private val unit = testDaycare
+    private val secondUnit = testDaycare2
 
     private val supervisorId = EmployeeId(UUID.randomUUID())
     private val supervisor1 =
@@ -64,6 +64,10 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     private val secondGroupName = "Koekaniinit"
     private val placementStart = LocalDate.now().minusDays(30)
     private val placementEnd = LocalDate.now().plusDays(30)
+
+    private lateinit var groupMessageAccount: MessageAccountId
+    private lateinit var supervisor1MessageAccount: MessageAccountId
+    private lateinit var supervisor2MessageAccount: MessageAccountId
 
     private fun insertChildToUnit(
         tx: Database.Transaction,
@@ -106,37 +110,37 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.insertTestDaycareGroup(
                 DevDaycareGroup(id = groupId, daycareId = testDaycare.id, name = groupName)
             )
-            tx.createDaycareGroupMessageAccount(groupId)
+            groupMessageAccount = tx.createDaycareGroupMessageAccount(groupId)
 
             tx.insertTestDaycareGroup(
                 DevDaycareGroup(
                     id = secondGroupId,
-                    daycareId = secondUnitId,
+                    daycareId = secondUnit.id,
                     name = secondGroupName
                 )
             )
 
-            insertChildToGroup(tx, childId, guardianPerson.id, groupId, unitId)
-            insertChildToGroup(tx, testChild_4.id, testAdult_4.id, secondGroupId, secondUnitId)
+            insertChildToGroup(tx, child.id, guardianPerson.id, groupId, unit.id)
+            insertChildToGroup(tx, testChild_4.id, testAdult_4.id, secondGroupId, secondUnit.id)
 
             // Child 2 has a placement but is not in any group => should not show up in receivers
             // list
-            insertChildToUnit(tx, testChild_2.id, testAdult_2.id, unitId)
+            insertChildToUnit(tx, testChild_2.id, testAdult_2.id, unit.id)
 
             listOf(guardianPerson.id, testAdult_2.id, testAdult_3.id, testAdult_4.id).forEach {
                 tx.createPersonMessageAccount(it)
             }
 
             // Child 3 has no guardians => should not show up in receivers list
-            insertChildToGroup(tx, testChild_3.id, null, secondGroupId, secondUnitId)
+            insertChildToGroup(tx, testChild_3.id, null, secondGroupId, secondUnit.id)
             tx.createParentship(testChild_3.id, testAdult_2.id, placementStart, placementEnd)
 
             tx.insertTestEmployee(DevEmployee(id = supervisorId))
-            tx.upsertEmployeeMessageAccount(supervisorId)
+            supervisor1MessageAccount = tx.upsertEmployeeMessageAccount(supervisorId)
             tx.insertTestEmployee(DevEmployee(id = supervisor2Id))
-            tx.upsertEmployeeMessageAccount(supervisor2Id)
-            tx.insertDaycareAclRow(unitId, supervisorId, UserRole.UNIT_SUPERVISOR)
-            tx.insertDaycareAclRow(secondUnitId, supervisor2Id, UserRole.UNIT_SUPERVISOR)
+            supervisor2MessageAccount = tx.upsertEmployeeMessageAccount(supervisor2Id)
+            tx.insertDaycareAclRow(unit.id, supervisorId, UserRole.UNIT_SUPERVISOR)
+            tx.insertDaycareAclRow(secondUnit.id, supervisor2Id, UserRole.UNIT_SUPERVISOR)
         }
         MockEmailClient.emails.clear()
     }
@@ -145,43 +149,102 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     fun `message receiver endpoint works for unit 1`() {
         val (_, res, result) =
             http
-                .get("/messages/receivers?unitId=$unitId")
+                .get("/messages/receivers?unitId=${unit.id}")
                 .asUser(supervisor1)
                 .responseObject<List<MessageReceiversResponse>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
 
         val receivers = result.get()
-
-        assertEquals(1, receivers.size)
-
-        val groupTestaajat = receivers.find { it.groupName == groupName }!!
-        assertEquals(1, groupTestaajat.receivers.size)
-
-        val receiverChild = groupTestaajat.receivers[0]
-        assertEquals(childId, receiverChild.childId)
+        assertEquals(
+            setOf(
+                MessageReceiversResponse(
+                    accountId = supervisor1MessageAccount,
+                    receivers =
+                        listOf(
+                            MessageReceiver.Unit(
+                                id = unit.id,
+                                name = unit.name,
+                                receivers =
+                                    listOf(
+                                        MessageReceiver.Group(
+                                            id = groupId,
+                                            name = groupName,
+                                            receivers =
+                                                listOf(
+                                                    MessageReceiver.Child(
+                                                        id = child.id,
+                                                        name =
+                                                            "${child.firstName} ${child.lastName}"
+                                                    )
+                                                )
+                                        )
+                                    )
+                            )
+                        )
+                ),
+                MessageReceiversResponse(
+                    accountId = groupMessageAccount,
+                    receivers =
+                        listOf(
+                            MessageReceiver.Group(
+                                id = groupId,
+                                name = groupName,
+                                receivers =
+                                    listOf(
+                                        MessageReceiver.Child(
+                                            id = child.id,
+                                            name = "${child.firstName} ${child.lastName}"
+                                        )
+                                    )
+                            )
+                        )
+                )
+            ),
+            receivers.toSet()
+        )
     }
 
     @Test
     fun `message receiver endpoint works for unit 2`() {
         val (_, res, result) =
             http
-                .get("/messages/receivers?unitId=$secondUnitId")
+                .get("/messages/receivers?unitId=${secondUnit.id}")
                 .asUser(supervisor2)
                 .responseObject<List<MessageReceiversResponse>>(jsonMapper)
 
         assertEquals(200, res.statusCode)
 
         val receivers = result.get()
-
-        assertEquals(1, receivers.size)
-
-        val groupKoekaniinit = receivers.find { it.groupName == secondGroupName }!!
-        assertEquals(1, groupKoekaniinit.receivers.size)
-        assertEquals(setOf(testChild_4.id), groupKoekaniinit.receivers.map { it.childId }.toSet())
-
-        val childWithOnlyFridgeParentGuardian =
-            groupKoekaniinit.receivers.find { it.childId == testChild_3.id }
-        assertNull(childWithOnlyFridgeParentGuardian)
+        assertEquals(
+            setOf(
+                MessageReceiversResponse(
+                    accountId = supervisor2MessageAccount,
+                    receivers =
+                        listOf(
+                            MessageReceiver.Unit(
+                                id = secondUnit.id,
+                                name = secondUnit.name,
+                                receivers =
+                                    listOf(
+                                        MessageReceiver.Group(
+                                            id = secondGroupId,
+                                            name = secondGroupName,
+                                            receivers =
+                                                listOf(
+                                                    MessageReceiver.Child(
+                                                        id = testChild_4.id,
+                                                        name =
+                                                            "${testChild_4.firstName} ${testChild_4.lastName}"
+                                                    )
+                                                )
+                                        )
+                                    )
+                            )
+                        )
+                )
+            ),
+            receivers.toSet()
+        )
     }
 }

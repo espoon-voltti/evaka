@@ -148,15 +148,7 @@ class SystemController(
                                         Action.Global.HOLIDAY_PERIODS_PAGE
                                     ),
                                 messages =
-                                    accessControl
-                                        .checkPermissionFor(
-                                            tx,
-                                            user,
-                                            clock,
-                                            Action.Global.MESSAGES_PAGE,
-                                            allowedToAdmin = false
-                                        )
-                                        .isPermitted(),
+                                    permittedGlobalActions.contains(Action.Global.MESSAGES_PAGE),
                                 personSearch =
                                     permittedGlobalActions.contains(
                                         Action.Global.PERSON_SEARCH_PAGE

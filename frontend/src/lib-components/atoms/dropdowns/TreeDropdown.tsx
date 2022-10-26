@@ -144,12 +144,12 @@ export interface TreeNode {
   text: string
   key: string
   checked: boolean
-  children?: TreeNode[]
+  children: TreeNode[]
 }
 
-interface TreeDropdownProps {
-  tree: TreeNode[]
-  onChange: (node: TreeNode[]) => void
+interface TreeDropdownProps<N extends TreeNode> {
+  tree: N[]
+  onChange: (node: N[]) => void
   'data-qa'?: string
   placeholder: string
   labels: {
@@ -159,35 +159,33 @@ interface TreeDropdownProps {
   }
 }
 
-const updateNodeCheckedRecursively = (
-  node: TreeNode,
+const updateNodeCheckedRecursively = <N extends TreeNode>(
+  node: N,
   checked: boolean
-): TreeNode => ({
+): N => ({
   ...node,
   checked,
-  children: node.children?.map((child) =>
+  children: node.children.map((child) =>
     updateNodeCheckedRecursively(child, checked)
   )
 })
 
 export const hasUncheckedChildren = (node: TreeNode): boolean =>
-  node.children?.some(
-    (child) => !child.checked || hasUncheckedChildren(child)
-  ) ?? false
+  node.children.some((child) => !child.checked || hasUncheckedChildren(child))
 
 const hasOnlyUncheckedChildren = (node: TreeNode): boolean =>
-  node.children?.every(
+  node.children.every(
     (child) => !child.checked && hasOnlyUncheckedChildren(child)
-  ) ?? true
+  )
 
-const TreeLevel = React.memo(function TreeLevel({
+function _TreeLevel<N extends TreeNode>({
   node,
   onChange,
   defaultExpanded = false,
   labels
 }: {
-  node: TreeNode
-  onChange: (node: TreeNode) => void
+  node: N
+  onChange: (node: N) => void
   defaultExpanded?: boolean
   labels: {
     expand: (opt: string) => string
@@ -200,7 +198,7 @@ const TreeLevel = React.memo(function TreeLevel({
 
   const [expanded, setExpanded] = useState(defaultExpanded)
 
-  if (!node.checked && node.children?.some(({ checked }) => checked)) {
+  if (!node.checked && node.children.some(({ checked }) => checked)) {
     Sentry.captureMessage('Unchecked node has checked children', 'error')
     return null
   }
@@ -228,7 +226,7 @@ const TreeLevel = React.memo(function TreeLevel({
           </IconWrapper>
         </Box>
         <label htmlFor={id}>{node.text}</label>
-        {node.children && (
+        {node.children.length > 0 && (
           <IconButton
             icon={expanded ? faChevronUp : faChevronDown}
             onClick={() => setExpanded(!expanded)}
@@ -240,7 +238,7 @@ const TreeLevel = React.memo(function TreeLevel({
           />
         )}
       </CheckboxRow>
-      {expanded && node.children && (
+      {expanded && node.children.length > 0 && (
         <TreeChildren>
           {node.children.map((childNode, i) => (
             <TreeLevel
@@ -249,7 +247,7 @@ const TreeLevel = React.memo(function TreeLevel({
               onChange={(changedNode) => {
                 const newNode = {
                   ...node,
-                  children: node.children?.map((existingNode, idx) =>
+                  children: node.children.map((existingNode, idx) =>
                     idx === i ? changedNode : existingNode
                   )
                 }
@@ -276,15 +274,17 @@ const TreeLevel = React.memo(function TreeLevel({
       )}
     </div>
   )
-})
+}
 
-export default React.memo(function TreeDropdown({
+const TreeLevel = React.memo(_TreeLevel) as typeof _TreeLevel
+
+function TreeDropdown<N extends TreeNode>({
   tree,
   onChange,
   'data-qa': dataQa,
   labels,
   placeholder
-}: TreeDropdownProps) {
+}: TreeDropdownProps<N>) {
   const [active, setActive] = useState(false)
 
   const ref = useRef<HTMLDivElement>(null)
@@ -319,7 +319,7 @@ export default React.memo(function TreeDropdown({
       nodes
         .filter(({ checked }) => checked)
         .flatMap((node) =>
-          node.children && hasUncheckedChildren(node)
+          hasUncheckedChildren(node)
             ? formEntries(node.children).map(({ child, key }) => ({
                 child: (
                   <React.Fragment key={JSON.stringify([...node.key, key])}>
@@ -334,7 +334,7 @@ export default React.memo(function TreeDropdown({
     return tree
       .filter(({ checked }) => checked)
       .map((node) =>
-        node.children && hasUncheckedChildren(node) ? (
+        hasUncheckedChildren(node) ? (
           formEntries(node.children).map(({ child, key }) => (
             <ValueChip key={JSON.stringify([...node.key, key])}>
               {tree.length !== 1 ? (
@@ -375,7 +375,7 @@ export default React.memo(function TreeDropdown({
           data-qa={dataQa ? `${dataQa}-tree` : undefined}
         >
           {tree.map((node, i) => (
-            <TreeLevel
+            <TreeLevel<N>
               node={node}
               key={node.key}
               onChange={(changedNode) =>
@@ -393,4 +393,6 @@ export default React.memo(function TreeDropdown({
       )}
     </RelativeContainer>
   )
-})
+}
+
+export default React.memo(TreeDropdown) as typeof TreeDropdown
