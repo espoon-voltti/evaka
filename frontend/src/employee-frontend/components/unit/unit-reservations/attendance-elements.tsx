@@ -80,6 +80,7 @@ export const StyledTd = styled(Td)<{ partialRow: boolean; rowIndex: number }>`
 
 export const DayTd = styled(StyledTd)`
   padding: 0;
+  vertical-align: top;
 `
 
 export const DayTr = styled(Tr)<TrProps>`

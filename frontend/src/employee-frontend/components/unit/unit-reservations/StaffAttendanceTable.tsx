@@ -509,16 +509,23 @@ const AttendanceRow = React.memo(function AttendanceRow({
                   )}
                 </PlannedAttendanceTimes>
                 <AttendanceTimes data-qa="attendance-day">
-                  {attendancesForToday.map((attendance, i) => (
-                    <AttendanceCell key={i}>
-                      <AttendanceTime data-qa="arrival-time">
-                        {renderTime(attendance.arrived, date)}
-                      </AttendanceTime>
-                      <AttendanceTime data-qa="departure-time">
-                        {renderTime(attendance.departed, date)}
-                      </AttendanceTime>
+                  {attendancesForToday.length > 0 ? (
+                    attendancesForToday.map((attendance, i) => (
+                      <AttendanceCell key={i}>
+                        <AttendanceTime data-qa="arrival-time">
+                          {renderTime(attendance.arrived, date)}
+                        </AttendanceTime>
+                        <AttendanceTime data-qa="departure-time">
+                          {renderTime(attendance.departed, date)}
+                        </AttendanceTime>
+                      </AttendanceCell>
+                    ))
+                  ) : (
+                    <AttendanceCell>
+                      <AttendanceTime>{renderTime(null, date)}</AttendanceTime>
+                      <AttendanceTime>{renderTime(null, date)}</AttendanceTime>
                     </AttendanceCell>
-                  ))}
+                  )}
                 </AttendanceTimes>
                 {!!employeeId && openDetails && (
                   <DetailsToggle showAlways={hasHiddenAttendances}>
