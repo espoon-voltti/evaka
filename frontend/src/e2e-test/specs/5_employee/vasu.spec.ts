@@ -5,6 +5,7 @@
 import assert from 'assert'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
@@ -598,7 +599,9 @@ describe('Vasu document page', () => {
         LocalDate.todayInSystemTz().format()
       )
 
-      await runPendingAsyncJobs()
+      await runPendingAsyncJobs(
+        HelsinkiDateTime.now() // TODO: use mock clock
+      )
       const emails = await getSentEmails()
 
       // eslint-disable-next-line

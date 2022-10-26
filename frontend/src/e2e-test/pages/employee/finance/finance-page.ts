@@ -4,6 +4,7 @@
 
 import { ProviderType } from 'lib-common/generated/api-types/daycare'
 import { PaymentStatus } from 'lib-common/generated/api-types/invoicing'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import { runPendingAsyncJobs } from '../../../dev-api'
@@ -95,10 +96,10 @@ export class FeeDecisionsPage {
     await this.#allFeeDecisionsToggle.waitUntilChecked(toggledOn)
   }
 
-  async sendFeeDecisions() {
+  async sendFeeDecisions(mockedNow: HelsinkiDateTime) {
     await this.#sendFeeDecisionsButton.click()
     await this.#sendFeeDecisionsButton.waitUntilIdle()
-    await runPendingAsyncJobs()
+    await runPendingAsyncJobs(mockedNow)
   }
 
   async assertSentDecisionsCount(count: number) {
@@ -194,10 +195,10 @@ export class ValueDecisionsPage {
     await this.#allValueDecisionsToggle.check()
   }
 
-  async sendValueDecisions() {
+  async sendValueDecisions(mockedNow: HelsinkiDateTime) {
     await this.#sendValueDecisionsButton.click()
     await this.#sendValueDecisionsButton.waitUntilIdle()
-    await runPendingAsyncJobs()
+    await runPendingAsyncJobs(mockedNow)
   }
 
   async assertSentDecisionsCount(count: number) {

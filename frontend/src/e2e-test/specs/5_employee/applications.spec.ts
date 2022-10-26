@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+
 import config from '../../config'
 import {
   execSimpleApplicationActions,
@@ -43,11 +45,15 @@ describe('Applications', () => {
       'DAYCARE'
     )
     await insertApplications([application])
-    await execSimpleApplicationActions(application.id, [
-      'move-to-waiting-placement',
-      'create-default-placement-plan',
-      'send-decisions-without-proposal'
-    ])
+    await execSimpleApplicationActions(
+      application.id,
+      [
+        'move-to-waiting-placement',
+        'create-default-placement-plan',
+        'send-decisions-without-proposal'
+      ],
+      HelsinkiDateTime.now() // TODO: use mock clock
+    )
 
     await applicationsPage.toggleApplicationStatusFilter('ALL')
     await applicationsPage

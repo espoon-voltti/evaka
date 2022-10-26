@@ -4,10 +4,8 @@
 
 package fi.espoo.evaka.placement
 
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.core.isSuccessful
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.ApplicationControllerV2
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.DaycarePlacementPlan
@@ -18,12 +16,14 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.test.getApplicationStatus
 import fi.espoo.evaka.test.getPlacementPlanRowByApplication
 import fi.espoo.evaka.testAdult_1
@@ -36,14 +36,21 @@ import fi.espoo.evaka.testSvebiDaycare
 import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
 import java.time.LocalDate
+import java.time.LocalTime
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
 
 class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val serviceWorker =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+
+    @Autowired private lateinit var applicationController: ApplicationControllerV2
+
+    private val clock =
+        MockEvakaClock(HelsinkiDateTime.Companion.of(LocalDate.of(2020, 1, 1), LocalTime.of(15, 0)))
 
     @BeforeEach
     fun beforeEach() {
@@ -269,12 +276,14 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 setOf()
             )
         invalidRoleLists.forEach { roles ->
-            val (_, res, _) =
-                http
-                    .get("/v2/applications/$applicationId/placement-draft")
-                    .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, roles))
-                    .response()
-            assertEquals(403, res.statusCode)
+            assertThrows<Forbidden> {
+                applicationController.getPlacementPlanDraft(
+                    dbInstance(),
+                    AuthenticatedUser.Employee(testDecisionMaker_1.id, roles),
+                    clock,
+                    applicationId
+                )
+            }
         }
         val proposal =
             DaycarePlacementPlan(
@@ -282,13 +291,15 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2020, 6, 1))
             )
         invalidRoleLists.forEach { roles ->
-            val (_, res, _) =
-                http
-                    .post("/v2/applications/$applicationId/actions/create-placement-plan")
-                    .jsonBody(jsonMapper.writeValueAsString(proposal))
-                    .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, roles))
-                    .response()
-            assertEquals(403, res.statusCode)
+            assertThrows<Forbidden> {
+                applicationController.createPlacementPlan(
+                    dbInstance(),
+                    AuthenticatedUser.Employee(testDecisionMaker_1.id, roles),
+                    clock,
+                    applicationId,
+                    proposal
+                )
+            }
         }
     }
 
@@ -302,11 +313,13 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         placements: List<PlacementDraftPlacement> = emptyList(),
         guardianHasRestrictedDetails: Boolean = false
     ) {
-        val (_, _, body) =
-            http
-                .get("/v2/applications/$applicationId/placement-draft")
-                .asUser(serviceWorker)
-                .responseObject<PlacementPlanDraft>(jsonMapper)
+        val result =
+            applicationController.getPlacementPlanDraft(
+                dbInstance(),
+                serviceWorker,
+                clock,
+                applicationId
+            )
         assertEquals(
             PlacementPlanDraft(
                 type = type,
@@ -324,7 +337,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 placements = placements,
                 guardianHasRestrictedDetails = guardianHasRestrictedDetails
             ),
-            body.get()
+            result
         )
     }
 
@@ -333,13 +346,13 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         type: PlacementType,
         proposal: DaycarePlacementPlan
     ) {
-        val (_, res, _) =
-            http
-                .post("/v2/applications/$applicationId/actions/create-placement-plan")
-                .jsonBody(jsonMapper.writeValueAsString(proposal))
-                .asUser(serviceWorker)
-                .response()
-        assertTrue(res.isSuccessful)
+        applicationController.createPlacementPlan(
+            dbInstance(),
+            serviceWorker,
+            clock,
+            applicationId,
+            proposal
+        )
 
         db.read { r ->
             r.getPlacementPlanRowByApplication(applicationId).one().also {

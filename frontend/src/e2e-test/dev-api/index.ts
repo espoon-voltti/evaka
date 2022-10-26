@@ -4,7 +4,11 @@
 
 import * as fs from 'fs/promises'
 
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
+import axios, {
+  AxiosRequestConfig,
+  AxiosRequestHeaders,
+  AxiosResponse
+} from 'axios'
 import FormData from 'form-data'
 import { BaseError } from 'make-error-cause'
 
@@ -34,6 +38,7 @@ import {
   CurriculumType,
   VasuLanguage
 } from 'lib-common/generated/api-types/vasu'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -101,6 +106,12 @@ export class DevApiError extends BaseError {
   }
 }
 
+function clockHeader(now: HelsinkiDateTime): AxiosRequestHeaders {
+  return {
+    EvakaMockedTime: now.formatIso()
+  }
+}
+
 function formatRequest(config: AxiosRequestConfig): string {
   if (!config.url) return ''
   const url = new URL(config.url, config.baseURL)
@@ -141,10 +152,17 @@ type ApplicationActionSimple =
 
 export async function execSimpleApplicationAction(
   applicationId: string,
-  action: ApplicationActionSimple
+  action: ApplicationActionSimple,
+  mockedTime: HelsinkiDateTime
 ): Promise<void> {
   try {
-    await devClient.post(`/applications/${applicationId}/actions/${action}`)
+    await devClient.post(
+      `/applications/${applicationId}/actions/${action}`,
+      null,
+      {
+        headers: clockHeader(mockedTime)
+      }
+    )
   } catch (e) {
     throw new DevApiError(e)
   }
@@ -166,12 +184,13 @@ export async function createPlacementPlan(
 
 export async function execSimpleApplicationActions(
   applicationId: string,
-  actions: ApplicationActionSimple[]
+  actions: ApplicationActionSimple[],
+  mockedTime: HelsinkiDateTime
 ): Promise<void> {
   for (const action of actions) {
-    await execSimpleApplicationAction(applicationId, action)
+    await execSimpleApplicationAction(applicationId, action, mockedTime)
     if (action === 'move-to-waiting-placement') {
-      await runPendingAsyncJobs()
+      await runPendingAsyncJobs(mockedTime)
     }
   }
 }
@@ -626,9 +645,13 @@ export async function insertChildConsent(data: DevChildConsent): Promise<void> {
   }
 }
 
-export async function runPendingAsyncJobs(): Promise<void> {
+export async function runPendingAsyncJobs(
+  mockedTime: HelsinkiDateTime
+): Promise<void> {
   try {
-    await devClient.post(`/run-jobs`, null)
+    await devClient.post(`/run-jobs`, null, {
+      headers: clockHeader(mockedTime)
+    })
   } catch (e) {
     throw new DevApiError(e)
   }

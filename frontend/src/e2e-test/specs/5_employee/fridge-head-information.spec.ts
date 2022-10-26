@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import DateRange from 'lib-common/date-range'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import {
@@ -123,7 +124,9 @@ describe('Employee - Head of family details', () => {
       startDate: '01.01.2020',
       endDate: '31.07.2020'
     })
-    await runPendingAsyncJobs()
+    await runPendingAsyncJobs(
+      HelsinkiDateTime.now() // TODO: use mock clock
+    )
 
     await guardianInformation.navigateToGuardian(regularPerson.id)
     const feeDecisions = await guardianInformation.openCollapsible(

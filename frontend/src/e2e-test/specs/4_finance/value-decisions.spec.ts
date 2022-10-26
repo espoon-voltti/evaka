@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { DecisionIncome } from 'lib-common/api-types/income'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
@@ -157,7 +158,9 @@ describe('Value decisions', () => {
 
     await valueDecisionsPage.openFirstValueDecision()
     await new ValueDecisionDetailsPage(page).sendValueDecision()
-    await runPendingAsyncJobs()
+    await runPendingAsyncJobs(
+      HelsinkiDateTime.now() // TODO: use mock clock
+    )
     await valueDecisionsPage.navigateBackFromDetails()
     await valueDecisionsPage.assertSentDecisionsCount(1)
   })
@@ -166,7 +169,9 @@ describe('Value decisions', () => {
     await insertTwoValueDecisionsFixturesAndNavigateToValueDecisions()
 
     await valueDecisionsPage.toggleAllValueDecisions()
-    await valueDecisionsPage.sendValueDecisions()
+    await valueDecisionsPage.sendValueDecisions(
+      HelsinkiDateTime.now() // TODO: use mock clock
+    )
     await valueDecisionsPage.assertSentDecisionsCount(2)
   })
 

@@ -478,7 +478,11 @@ class ApplicationControllerV2(
                         Action.Application.READ_PLACEMENT_PLAN_DRAFT,
                         applicationId
                     )
-                    placementPlanService.getPlacementPlanDraft(it, applicationId)
+                    placementPlanService.getPlacementPlanDraft(
+                        it,
+                        applicationId,
+                        minStartDate = clock.today()
+                    )
                 }
             }
             .also { Audit.PlacementPlanDraftRead.log(targetId = applicationId) }
