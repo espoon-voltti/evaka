@@ -56,7 +56,7 @@ interface Props {
   onReload: () => void
   availableChildren: ReservationChild[]
   reservableDays: Record<string, FiniteDateRange[]>
-  initialStart: LocalDate
+  initialStart: LocalDate | null
   initialEnd: LocalDate | null
   existingReservations: DailyReservationData[]
 }

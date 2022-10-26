@@ -11,15 +11,14 @@ export const getEarliestReservableDate = (
   reservableDays: Record<string, FiniteDateRange[]>
 ) => {
   const earliestReservableDateByChild = childInfo.map((c) =>
-    reservableDays[c.id].reduce(
-      (acc, cur) => (cur.start.isBefore(acc) ? cur.start : acc),
-      LocalDate.todayInSystemTz()
+    reservableDays[c.id].reduce<LocalDate | undefined>(
+      (acc, cur) => (!acc || cur.start.isBefore(acc) ? cur.start : acc),
+      undefined
     )
   )
-  const earliestReservableDate = earliestReservableDateByChild.reduce(
-    (acc, cur) => (cur.isBefore(acc) ? cur : acc),
-    LocalDate.todayInSystemTz()
-  )
+  const earliestReservableDate = earliestReservableDateByChild.reduce<
+    LocalDate | undefined
+  >((acc, cur) => (!acc || cur?.isBefore(acc) ? cur : acc), undefined)
   return earliestReservableDate
 }
 
