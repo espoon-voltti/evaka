@@ -338,7 +338,8 @@ FROM message_thread_participant tp
 JOIN message_thread t on t.id = tp.thread_id
 WHERE
     tp.participant_id = :accountId AND
-    tp.last_received_timestamp IS NOT NULL
+    tp.last_received_timestamp IS NOT NULL AND
+    NOT t.is_copy
 ORDER BY tp.last_received_timestamp DESC
 LIMIT :pageSize OFFSET :offset
         """
