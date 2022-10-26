@@ -200,10 +200,7 @@ export default React.memo(function StaffMarkArrivedPage() {
               !isValidTime(time) ||
               timeInFuture ||
               pinCode.join('').trim().length < 4 ||
-              !attendanceGroup ||
-              (staffAttendanceDifferenceReasons.length > 1 &&
-                (!attendanceType ||
-                  !staffAttendanceDifferenceReasons.includes(attendanceType)))
+              !attendanceGroup
 
             const parsedTime = LocalTime.tryParse(time, 'HH:mm')
 
