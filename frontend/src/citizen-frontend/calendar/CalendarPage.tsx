@@ -126,7 +126,8 @@ const CalendarPage = React.memo(function CalendarPage() {
       // First reservable day that has no reservations
       const firstReservableEmptyDate = data.value.dailyData.find(
         (day) =>
-          earliestReservableDate?.isBefore(day.date) && day.children.length == 0
+          earliestReservableDate?.isEqualOrBefore(day.date) &&
+          day.children.length == 0
       )
       return firstReservableEmptyDate
         ? firstReservableEmptyDate.date
