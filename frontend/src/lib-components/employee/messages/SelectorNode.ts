@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { MessageReceiver } from 'lib-common/api-types/messaging'
 import {
-  MessageReceiver,
   MessageReceiversResponse,
   MessageRecipient
 } from 'lib-common/generated/api-types/messaging'
@@ -50,7 +50,10 @@ const receiverAsSelectorNode = (receiver: MessageReceiver): SelectorNode => ({
   checked: false,
   text: receiver.name,
   messageRecipient: { type: receiver.type, id: receiver.id },
-  children: receiver.receivers.map(receiverAsSelectorNode)
+  children:
+    'receivers' in receiver
+      ? receiver.receivers.map(receiverAsSelectorNode)
+      : []
 })
 
 type SelectedNode = {

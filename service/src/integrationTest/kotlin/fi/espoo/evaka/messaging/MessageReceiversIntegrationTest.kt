@@ -162,24 +162,20 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     accountId = supervisor1MessageAccount,
                     receivers =
                         listOf(
-                            MessageReceiver(
+                            MessageReceiver.Unit(
                                 id = unit.id,
                                 name = unit.name,
-                                type = MessageRecipientType.UNIT,
                                 receivers =
                                     listOf(
-                                        MessageReceiver(
+                                        MessageReceiver.Group(
                                             id = groupId,
                                             name = groupName,
-                                            type = MessageRecipientType.GROUP,
                                             receivers =
                                                 listOf(
-                                                    MessageReceiver(
+                                                    MessageReceiver.Child(
                                                         id = child.id,
                                                         name =
-                                                            "${child.firstName} ${child.lastName}",
-                                                        type = MessageRecipientType.CHILD,
-                                                        receivers = listOf()
+                                                            "${child.firstName} ${child.lastName}"
                                                     )
                                                 )
                                         )
@@ -191,17 +187,14 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     accountId = groupMessageAccount,
                     receivers =
                         listOf(
-                            MessageReceiver(
+                            MessageReceiver.Group(
                                 id = groupId,
                                 name = groupName,
-                                type = MessageRecipientType.GROUP,
                                 receivers =
                                     listOf(
-                                        MessageReceiver(
+                                        MessageReceiver.Child(
                                             id = child.id,
-                                            name = "${child.firstName} ${child.lastName}",
-                                            type = MessageRecipientType.CHILD,
-                                            receivers = listOf()
+                                            name = "${child.firstName} ${child.lastName}"
                                         )
                                     )
                             )
@@ -229,24 +222,20 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     accountId = supervisor2MessageAccount,
                     receivers =
                         listOf(
-                            MessageReceiver(
+                            MessageReceiver.Unit(
                                 id = secondUnit.id,
                                 name = secondUnit.name,
-                                type = MessageRecipientType.UNIT,
                                 receivers =
                                     listOf(
-                                        MessageReceiver(
+                                        MessageReceiver.Group(
                                             id = secondGroupId,
                                             name = secondGroupName,
-                                            type = MessageRecipientType.GROUP,
                                             receivers =
                                                 listOf(
-                                                    MessageReceiver(
+                                                    MessageReceiver.Child(
                                                         id = testChild_4.id,
                                                         name =
-                                                            "${testChild_4.firstName} ${testChild_4.lastName}",
-                                                        type = MessageRecipientType.CHILD,
-                                                        receivers = listOf()
+                                                            "${testChild_4.firstName} ${testChild_4.lastName}"
                                                     )
                                                 )
                                         )

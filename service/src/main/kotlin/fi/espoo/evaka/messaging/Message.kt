@@ -4,7 +4,9 @@
 
 package fi.espoo.evaka.messaging
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.attachment.MessageAttachment
+import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -62,12 +64,35 @@ data class MessageReceiversResponse(
     val receivers: List<MessageReceiver>
 )
 
-data class MessageReceiver(
-    val id: Id<*>,
-    val type: MessageRecipientType,
-    val name: String,
-    val receivers: List<MessageReceiver>
-)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+sealed class MessageReceiver(val type: MessageRecipientType) {
+    abstract val id: Id<*>
+    abstract val name: String
+
+    data class Area(
+        override val id: AreaId,
+        override val name: String,
+        val receivers: List<UnitInArea>
+    ) : MessageReceiver(MessageRecipientType.AREA)
+
+    data class UnitInArea(override val id: DaycareId, override val name: String) :
+        MessageReceiver(MessageRecipientType.UNIT)
+
+    data class Unit(
+        override val id: DaycareId,
+        override val name: String,
+        val receivers: List<Group>
+    ) : MessageReceiver(MessageRecipientType.UNIT)
+
+    data class Group(
+        override val id: GroupId,
+        override val name: String,
+        val receivers: List<Child>,
+    ) : MessageReceiver(MessageRecipientType.GROUP)
+
+    data class Child(override val id: ChildId, override val name: String) :
+        MessageReceiver(MessageRecipientType.CHILD)
+}
 
 enum class AccountType {
     PERSONAL,

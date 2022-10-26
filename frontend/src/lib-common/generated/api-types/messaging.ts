@@ -7,6 +7,7 @@
 
 import HelsinkiDateTime from '../../helsinki-date-time'
 import { MessageAttachment } from './attachment'
+import { MessageReceiver } from '../../api-types/messaging'
 import { UUID } from '../../types'
 
 /**
@@ -130,16 +131,6 @@ export interface MessageCopy {
   title: string
   type: MessageType
   urgent: boolean
-}
-
-/**
-* Generated from fi.espoo.evaka.messaging.MessageReceiver
-*/
-export interface MessageReceiver {
-  id: UUID
-  name: string
-  receivers: MessageReceiver[]
-  type: MessageRecipientType
 }
 
 /**

@@ -835,9 +835,8 @@ fun Database.Read.getReceiversForNewMessage(
                         if (unitId == null || unitName == null) getReceiverGroups(groups)
                         else
                             listOf(
-                                MessageReceiver(
+                                MessageReceiver.Unit(
                                     id = unitId,
-                                    type = MessageRecipientType.UNIT,
                                     name = unitName,
                                     receivers = getReceiverGroups(groups)
                                 )
@@ -870,17 +869,14 @@ fun Database.Read.getReceiversForNewMessage(
                 val accountReceivers =
                     areas.map { (area, units) ->
                         val (areaId, areaName) = area
-                        MessageReceiver(
+                        MessageReceiver.Area(
                             id = areaId,
-                            type = MessageRecipientType.AREA,
                             name = areaName,
                             receivers =
                                 units.map { unit ->
-                                    MessageReceiver(
+                                    MessageReceiver.UnitInArea(
                                         id = unit.unitId,
-                                        type = MessageRecipientType.UNIT,
-                                        name = unit.unitName,
-                                        receivers = listOf()
+                                        name = unit.unitName
                                     )
                                 }
                         )
@@ -891,22 +887,21 @@ fun Database.Read.getReceiversForNewMessage(
     return municipalReceivers + unitReceivers
 }
 
-private fun getReceiverGroups(receivers: List<UnitMessageReceiversResult>): List<MessageReceiver> =
+private fun getReceiverGroups(
+    receivers: List<UnitMessageReceiversResult>
+): List<MessageReceiver.Group> =
     receivers
         .groupBy { it.groupId to it.groupName }
         .map { (group, children) ->
             val (groupId, groupName) = group
-            MessageReceiver(
+            MessageReceiver.Group(
                 id = groupId,
-                type = MessageRecipientType.GROUP,
                 name = groupName,
                 receivers =
                     children.map {
-                        MessageReceiver(
+                        MessageReceiver.Child(
                             id = it.childId,
-                            type = MessageRecipientType.CHILD,
-                            name = "${it.firstName} ${it.lastName}",
-                            receivers = listOf()
+                            name = "${it.firstName} ${it.lastName}"
                         )
                     }
             )

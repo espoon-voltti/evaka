@@ -7,10 +7,8 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import {
-  MessageReceiver,
-  PostMessageBody
-} from 'lib-common/generated/api-types/messaging'
+import { MessageReceiver } from 'lib-common/api-types/messaging'
+import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -53,8 +51,10 @@ export default function MessageEditorPage() {
   const receivers = useMemo(() => {
     const findChildReceivers = (receiver: MessageReceiver): MessageReceiver[] =>
       receiver.type === 'CHILD' && receiver.id === childId
-        ? [{ ...receiver, receivers: [] }]
-        : receiver.receivers.flatMap(findChildReceivers)
+        ? [receiver]
+        : 'receivers' in receiver
+        ? receiver.receivers.flatMap(findChildReceivers)
+        : []
 
     return messageReceivers.map((accounts) =>
       accounts
