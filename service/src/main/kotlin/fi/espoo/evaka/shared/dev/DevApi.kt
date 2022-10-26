@@ -132,7 +132,6 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.async.VardaAsyncJob
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -147,6 +146,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.shared.security.PilotFeature
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.upsertEmployeeUser
 import fi.espoo.evaka.user.EvakaUser
 import fi.espoo.evaka.user.EvakaUserType
@@ -455,7 +455,9 @@ class DevApi(
         @PathVariable applicationId: ApplicationId
     ): List<Decision> {
         return db.connect { dbc ->
-            dbc.read { tx -> tx.getDecisionsByApplication(applicationId, AclAuthorization.All) }
+            dbc.read { tx ->
+                tx.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
+            }
         }
     }
 

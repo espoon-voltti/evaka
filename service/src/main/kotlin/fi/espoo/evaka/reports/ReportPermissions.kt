@@ -50,33 +50,38 @@ class ReportPermissions(private val accessControl: AccessControl) {
             dbc.read { tx ->
                 val permittedGlobalActions =
                     accessControl.getPermittedActions<Action.Global>(tx, user, clock)
+                val permittedActionsForSomeUnit =
+                    accessControl.getPermittedActionsForSomeTarget<Action.Unit>(tx, user, clock)
                 setOfNotNull(
                     Report.APPLICATIONS.takeIf {
-                        permittedGlobalActions.contains(Action.Global.READ_APPLICATIONS_REPORT)
+                        permittedActionsForSomeUnit.contains(Action.Unit.READ_APPLICATIONS_REPORT)
                     },
                     Report.ASSISTANCE_NEED_DECISIONS.takeIf {
-                        permittedGlobalActions.contains(
-                            Action.Global.READ_ASSISTANCE_NEED_DECISIONS_REPORT
+                        accessControl.isPermittedForSomeTarget(
+                            tx,
+                            user,
+                            clock,
+                            Action.AssistanceNeedDecision.READ_IN_REPORT
                         )
                     },
                     Report.ASSISTANCE_NEEDS_AND_ACTIONS.takeIf {
-                        permittedGlobalActions.contains(
-                            Action.Global.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT
+                        permittedActionsForSomeUnit.contains(
+                            Action.Unit.READ_ASSISTANCE_NEEDS_AND_ACTIONS_REPORT
                         )
                     },
                     Report.ATTENDANCE_RESERVATION.takeIf {
-                        permittedGlobalActions.contains(
-                            Action.Global.READ_ATTENDANCE_RESERVATION_REPORT
+                        permittedActionsForSomeUnit.contains(
+                            Action.Unit.READ_ATTENDANCE_RESERVATION_REPORT
                         )
                     },
                     Report.CHILD_AGE_LANGUAGE.takeIf {
-                        permittedGlobalActions.contains(
-                            Action.Global.READ_CHILD_AGE_AND_LANGUAGE_REPORT
+                        permittedActionsForSomeUnit.contains(
+                            Action.Unit.READ_CHILD_AGE_AND_LANGUAGE_REPORT
                         )
                     },
                     Report.CHILDREN_IN_DIFFERENT_ADDRESS.takeIf {
-                        permittedGlobalActions.contains(
-                            Action.Global.READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT
+                        permittedActionsForSomeUnit.contains(
+                            Action.Unit.READ_CHILD_IN_DIFFERENT_ADDRESS_REPORT
                         )
                     },
                     Report.DECISIONS.takeIf {
@@ -89,27 +94,29 @@ class ReportPermissions(private val accessControl: AccessControl) {
                         permittedGlobalActions.contains(Action.Global.READ_ENDED_PLACEMENTS_REPORT)
                     },
                     Report.FAMILY_CONFLICT.takeIf {
-                        permittedGlobalActions.contains(Action.Global.READ_FAMILY_CONFLICT_REPORT)
+                        permittedActionsForSomeUnit.contains(
+                            Action.Unit.READ_FAMILY_CONFLICT_REPORT
+                        )
                     },
                     Report.INVOICE.takeIf {
                         permittedGlobalActions.contains(Action.Global.READ_INVOICE_REPORT)
                     },
                     Report.MISSING_HEAD_OF_FAMILY.takeIf {
-                        permittedGlobalActions.contains(
-                            Action.Global.READ_MISSING_HEAD_OF_FAMILY_REPORT
+                        permittedActionsForSomeUnit.contains(
+                            Action.Unit.READ_MISSING_HEAD_OF_FAMILY_REPORT
                         )
                     },
                     Report.MISSING_SERVICE_NEED.takeIf {
-                        permittedGlobalActions.contains(
-                            Action.Global.READ_MISSING_SERVICE_NEED_REPORT
+                        permittedActionsForSomeUnit.contains(
+                            Action.Unit.READ_MISSING_SERVICE_NEED_REPORT
                         )
                     },
                     Report.OCCUPANCY.takeIf {
-                        permittedGlobalActions.contains(Action.Global.READ_OCCUPANCY_REPORT)
+                        permittedActionsForSomeUnit.contains(Action.Unit.READ_OCCUPANCY_REPORT)
                     },
                     Report.PARTNERS_IN_DIFFERENT_ADDRESS.takeIf {
-                        permittedGlobalActions.contains(
-                            Action.Global.READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT
+                        permittedActionsForSomeUnit.contains(
+                            Action.Unit.READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT
                         )
                     },
                     Report.PLACEMENT_SKETCHING.takeIf {
@@ -124,10 +131,12 @@ class ReportPermissions(private val accessControl: AccessControl) {
                         permittedGlobalActions.contains(Action.Global.READ_RAW_REPORT)
                     },
                     Report.SERVICE_NEED.takeIf {
-                        permittedGlobalActions.contains(Action.Global.READ_SERVICE_NEED_REPORT)
+                        permittedActionsForSomeUnit.contains(Action.Unit.READ_SERVICE_NEED_REPORT)
                     },
                     Report.SERVICE_VOUCHER_VALUE.takeIf {
-                        permittedGlobalActions.contains(Action.Global.READ_SERVICE_VOUCHER_REPORT)
+                        permittedActionsForSomeUnit.contains(
+                            Action.Unit.READ_SERVICE_VOUCHER_REPORT
+                        )
                     },
                     Report.SEXTET.takeIf {
                         permittedGlobalActions.contains(Action.Global.READ_SEXTET_REPORT)

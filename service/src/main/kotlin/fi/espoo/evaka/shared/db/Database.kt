@@ -394,6 +394,11 @@ open class SqlBuilder {
         return fragment.sql
     }
 
+    fun predicate(predicate: PredicateSql<*>): PredicateSqlString {
+        this.bindings += predicate.bindings
+        return PredicateSqlString("(${predicate.sql})")
+    }
+
     /** A marker type used for bound parameters that can be used in a template string */
     object Binding {
         override fun toString(): String = "?"
@@ -423,20 +428,21 @@ class QuerySql<@Suppress("unused") in Tag>(
             this.used = true
             return QuerySql(QuerySqlString(sql), bindings)
         }
-
-        fun tablePredicate(tablePrefix: String, predicate: Predicate<Tag>): PredicateSqlString {
-            val fragment = PredicateSql.Builder<Tag>().run { (predicate.f)(tablePrefix) }
-            this.bindings += fragment.bindings
-            return fragment.sql
-        }
     }
 }
 
 class Predicate<Tag>(val f: PredicateSql.Builder<Tag>.(tablePrefix: String) -> PredicateSql<Tag>) {
+    fun forTable(tablePrefix: String): PredicateSql<Tag> =
+        PredicateSql.Builder<Tag>().run { (f)(tablePrefix) }
+
+    fun and(other: Predicate<Tag>): Predicate<Tag> = Predicate {
+        where("${predicate(forTable(it))} AND ${predicate(other.forTable(it))}")
+    }
+    fun or(other: Predicate<Tag>): Predicate<Tag> = Predicate {
+        where("${predicate(forTable(it))} OR ${predicate(other.forTable(it))}")
+    }
     companion object {
-        fun <Tag> alwaysTrue(): Predicate<Tag> = of { sql("TRUE") }
-        fun <Tag> of(f: PredicateSql.Builder<Tag>.(tablePrefix: String) -> PredicateSql<Tag>) =
-            Predicate(f)
+        fun <Tag> alwaysTrue(): Predicate<Tag> = Predicate { where("TRUE") }
     }
 }
 
@@ -446,7 +452,7 @@ class PredicateSql<@Suppress("unused") in Tag>(
 ) {
     class Builder<Tag> : SqlBuilder() {
         private var used: Boolean = false
-        fun sql(@Language("sql", prefix = "WHERE ") sql: String): PredicateSql<Tag> {
+        fun where(@Language("sql", prefix = "WHERE ") sql: String): PredicateSql<Tag> {
             check(!used) { "builder has already been used" }
             this.used = true
             return PredicateSql(PredicateSqlString(sql), bindings)

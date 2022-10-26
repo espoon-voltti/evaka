@@ -43,7 +43,6 @@ import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -60,6 +59,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -1138,7 +1138,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             }
 
             val decisionsByApplication =
-                it.getDecisionsByApplication(applicationId, AclAuthorization.All)
+                it.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
             assertEquals(1, decisionsByApplication.size)
             val decision = decisionsByApplication.first()
             if (!manualMailing) {
@@ -1196,7 +1196,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_UNIT_CONFIRMATION, application.status)
 
-            val decisions = tx.getSentDecisionsByApplication(applicationId, AclAuthorization.All)
+            val decisions =
+                tx.getSentDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
             assertEquals(0, decisions.size)
         }
     }
@@ -1233,7 +1234,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             val application = tx.fetchApplicationDetails(applicationId)!!
             assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
 
-            val decisions = tx.getSentDecisionsByApplication(applicationId, AclAuthorization.All)
+            val decisions =
+                tx.getSentDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
             assertEquals(0, decisions.size)
         }
     }
@@ -1283,7 +1285,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             assertEquals(ApplicationStatus.WAITING_CONFIRMATION, application.status)
 
             val decisionsByApplication =
-                tx.getDecisionsByApplication(applicationId, AclAuthorization.All)
+                tx.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
             assertEquals(2, decisionsByApplication.size)
             decisionsByApplication.forEach { decision ->
                 assertNotNull(decision.sentDate)
@@ -1356,7 +1358,7 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             assertEquals(2, decisionDrafts.size)
 
             val decisionsByApplication =
-                tx.getSentDecisionsByApplication(applicationId, AclAuthorization.All)
+                tx.getSentDecisionsByApplication(applicationId, AccessControlFilter.PermitAll)
             assertEquals(0, decisionsByApplication.size)
 
             val messages = MockSfiMessagesClient.getMessages()
@@ -2510,7 +2512,9 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     }
 
     private fun getDecision(r: Database.Read, type: DecisionType): Decision =
-        r.getDecisionsByApplication(applicationId, AclAuthorization.All).first { it.type == type }
+        r.getDecisionsByApplication(applicationId, AccessControlFilter.PermitAll).first {
+            it.type == type
+        }
 
     private fun workflowForPreschoolDaycareDecisions(
         preferredStartDate: LocalDate? = LocalDate.of(2020, 8, 1),

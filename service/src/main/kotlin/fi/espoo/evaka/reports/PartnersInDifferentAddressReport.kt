@@ -5,23 +5,21 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.PersonId
-import fi.espoo.evaka.shared.auth.AccessControlList
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class PartnersInDifferentAddressReportController(
-    private val acl: AccessControlList,
-    private val accessControl: AccessControl
-) {
+class PartnersInDifferentAddressReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/partners-in-different-address")
     fun getPartnersInDifferentAddressReport(
         db: Database,
@@ -30,14 +28,15 @@ class PartnersInDifferentAddressReportController(
     ): List<PartnersInDifferentAddressReportRow> {
         return db.connect { dbc ->
                 dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Global.READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT
-                    )
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.Unit.READ_PARTNERS_IN_DIFFERENT_ADDRESS_REPORT
+                        )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getPartnersInDifferentAddressRows(acl.getAuthorizedUnits(user), clock)
+                    it.getPartnersInDifferentAddressRows(clock, filter)
                 }
             }
             .also {
@@ -47,12 +46,12 @@ class PartnersInDifferentAddressReportController(
 }
 
 private fun Database.Read.getPartnersInDifferentAddressRows(
-    authorizedUnits: AclAuthorization,
-    clock: EvakaClock
-): List<PartnersInDifferentAddressReportRow> {
-    // language=sql
-    val sql =
-        """
+    clock: EvakaClock,
+    unitFilter: AccessControlFilter<DaycareId>
+): List<PartnersInDifferentAddressReportRow> =
+    createQuery<DatabaseTable> {
+            sql(
+                """
         SELECT
             ca.name AS care_area_name,
             u.id AS unit_id,
@@ -74,8 +73,8 @@ private fun Database.Read.getPartnersInDifferentAddressRows(
         JOIN daycare u ON u.id = coalesce(pu1.unit_id, pu2.unit_id)
         JOIN care_area ca ON ca.id = u.care_area_id
         WHERE
-            (:units::uuid[] IS NULL OR u.id = ANY(:units)) AND
-            daterange(fp1.start_date, fp1.end_date, '[]') @> :today AND
+            ${predicate(unitFilter.forTable("u"))} AND
+            daterange(fp1.start_date, fp1.end_date, '[]') @> ${bind(clock.today())} AND
             fp1.conflict = false AND 
             p1.residence_code <> p2.residence_code AND
             p1.residence_code IS NOT NULL AND
@@ -90,13 +89,11 @@ private fun Database.Read.getPartnersInDifferentAddressRows(
             lower(p2.street_address) <> 'poste restante'
         ORDER BY u.name, p1.last_name, p1.first_name, p2.last_name, p2.first_name;
         """
-            .trimIndent()
-    return createQuery(sql)
-        .bind("today", clock.today())
-        .bind("units", authorizedUnits.ids)
+                    .trimIndent()
+            )
+        }
         .mapTo<PartnersInDifferentAddressReportRow>()
         .toList()
-}
 
 data class PartnersInDifferentAddressReportRow(
     val careAreaName: String,

@@ -6,14 +6,15 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.auth.AccessControlList
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
@@ -21,10 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class ChildAgeLanguageReportController(
-    private val acl: AccessControlList,
-    private val accessControl: AccessControl
-) {
+class ChildAgeLanguageReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/child-age-language")
     fun getChildAgeLanguageReport(
         db: Database,
@@ -34,14 +32,15 @@ class ChildAgeLanguageReportController(
     ): List<ChildAgeLanguageReportRow> {
         return db.connect { dbc ->
                 dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Global.READ_CHILD_AGE_AND_LANGUAGE_REPORT
-                    )
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.Unit.READ_CHILD_AGE_AND_LANGUAGE_REPORT
+                        )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getChildAgeLanguageRows(date, acl.getAuthorizedUnits(user))
+                    it.getChildAgeLanguageRows(date, filter)
                 }
             }
             .also {
@@ -54,16 +53,13 @@ class ChildAgeLanguageReportController(
 
 private fun Database.Read.getChildAgeLanguageRows(
     date: LocalDate,
-    authorizedUnits: AclAuthorization
-): List<ChildAgeLanguageReportRow> {
-    val daycareFilter: String =
-        if (authorizedUnits != AclAuthorization.All) "WHERE u.id = ANY(:authorizedUnitIds)" else ""
-
-    // language=sql
-    val sql =
-        """
+    unitFilter: AccessControlFilter<DaycareId>
+): List<ChildAgeLanguageReportRow> =
+    createQuery<DatabaseTable> {
+            sql(
+                """
         WITH children AS (
-            SELECT id, extract(year from age(:target_date, date_of_birth)) age, language
+            SELECT id, extract(year from age(${bind(date)}, date_of_birth)) age, language
             FROM person
         )
         SELECT
@@ -102,21 +98,18 @@ private fun Database.Read.getChildAgeLanguageRows(
         
         FROM daycare u
         JOIN care_area ca ON u.care_area_id = ca.id
-        LEFT JOIN placement pl ON pl.unit_id = u.id AND daterange(pl.start_date, pl.end_date, '[]') @> :target_date
+        LEFT JOIN placement pl ON pl.unit_id = u.id AND daterange(pl.start_date, pl.end_date, '[]') @> ${bind(date)}
         LEFT JOIN children ch ON ch.id = pl.child_id
-        $daycareFilter
+        WHERE ${predicate(unitFilter.forTable("u"))}
         GROUP BY ca.name, u.id, u.name, u.type, u.provider_type
         ORDER BY ca.name, u.name;
-        """
-            .trimIndent()
-
-    return createQuery(sql)
-        .bind("target_date", date)
-        .bind("authorizedUnitIds", authorizedUnits.ids)
+            """
+                    .trimIndent()
+            )
+        }
         .registerColumnMapper(UnitType.JDBI_COLUMN_MAPPER)
         .mapTo<ChildAgeLanguageReportRow>()
         .toList()
-}
 
 data class ChildAgeLanguageReportRow(
     val careAreaName: String,

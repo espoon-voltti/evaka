@@ -95,6 +95,7 @@ fun configureJdbi(jdbi: Jdbi): Jdbi {
     jdbi.registerArgument(helsinkiDateTimeArgumentFactory)
     jdbi.registerArgument(helsinkiDateTimeRangeArgumentFactory)
     jdbi.registerArgument(productKeyArgumentFactory)
+    jdbi.registerArgument(databaseEnumArgumentFactory)
     jdbi.register(finiteDateRangeColumnMapper)
     jdbi.register(dateRangeColumnMapper)
     jdbi.register(timeRangeColumnMapper)

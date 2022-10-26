@@ -55,7 +55,9 @@ val finiteDateRangeArgumentFactory =
     pgObjectArgumentFactory<FiniteDateRange> {
         PGobject().apply {
             type = "daterange"
-            value = "[${it.start},${it.end}]"
+            if (it != null) {
+                value = "[${it.start},${it.end}]"
+            }
         }
     }
 
@@ -63,7 +65,9 @@ val dateRangeArgumentFactory =
     pgObjectArgumentFactory<DateRange> {
         PGobject().apply {
             type = "daterange"
-            value = "[${it.start},${it.end ?: ""}]"
+            if (it != null) {
+                value = "[${it.start},${it.end ?: ""}]"
+            }
         }
     }
 
@@ -71,15 +75,19 @@ val timeRangeArgumentFactory =
     pgObjectArgumentFactory<TimeRange> {
         PGobject().apply {
             type = "timerange"
-            value = "(${it.start},${it.end})"
+            if (it != null) {
+                value = "(${it.start},${it.end})"
+            }
         }
     }
 
 val coordinateArgumentFactory =
     pgObjectArgumentFactory<Coordinate> {
         PGpoint().apply {
-            y = it.lat
-            x = it.lon
+            if (it != null) {
+                y = it.lat
+                x = it.lon
+            }
         }
     }
 
@@ -93,7 +101,15 @@ val identityArgumentFactory =
 
 val externalIdArgumentFactory = toStringArgumentFactory<ExternalId>()
 
-val idArgumentFactory = customArgumentFactory<Id<*>>(Types.OTHER) { CustomObjectArgument(it.raw) }
+val idArgumentFactory =
+    pgObjectArgumentFactory<Id<*>> {
+        PGobject().apply {
+            type = "uuid"
+            if (it != null) {
+                value = it.raw.toString()
+            }
+        }
+    }
 
 val helsinkiDateTimeArgumentFactory =
     customArgumentFactory<HelsinkiDateTime>(Types.TIMESTAMP_WITH_TIMEZONE) {
@@ -104,12 +120,36 @@ val helsinkiDateTimeRangeArgumentFactory =
     pgObjectArgumentFactory<HelsinkiDateTimeRange> {
         PGobject().apply {
             type = "tstzrange"
-            value = "[${it.start.toInstant()},${it.end.toInstant()})"
+            if (it != null) {
+                value = "[${it.start.toInstant()},${it.end.toInstant()})"
+            }
         }
     }
 
 val productKeyArgumentFactory =
     customArgumentFactory<ProductKey>(Types.VARCHAR) { CustomStringArgument(it.value) }
+
+val databaseEnumArgumentFactory =
+    ArgumentFactory.Preparable { type, _ ->
+        val erasedType = GenericTypes.getErasedType(type)
+        if (DatabaseEnum::class.java.isAssignableFrom(erasedType) && erasedType.isEnum) {
+            val sqlType = (erasedType.enumConstants[0] as DatabaseEnum).sqlType
+            Optional.of(
+                Function { nullableValue ->
+                    CustomObjectArgument(
+                        PGobject().apply {
+                            this.type = sqlType
+                            if (nullableValue != null) {
+                                this.value = nullableValue.toString()
+                            }
+                        }
+                    )
+                }
+            )
+        } else {
+            Optional.empty()
+        }
+    }
 
 val finiteDateRangeColumnMapper = PgObjectColumnMapper {
     assert(it.type == "daterange")
@@ -173,12 +213,32 @@ class CustomArgumentFactory<T>(
     private val sqlType: Int,
     private inline val f: (T) -> Argument?
 ) : ArgumentFactory.Preparable {
+    init {
+        check(sqlType != Types.OTHER) {
+            "OTHER cannot be used because the type of NULL values is lost"
+        }
+    }
+
     override fun prepare(type: Type, config: ConfigRegistry): Optional<Function<Any?, Argument>> =
         Optional.ofNullable(
             if (clazz.isAssignableFrom(GenericTypes.getErasedType(type))) {
                 Function { nullableValue ->
                     clazz.cast(nullableValue)?.let(f) ?: NullArgument(sqlType)
                 }
+            } else {
+                null
+            }
+        )
+}
+
+class PgObjectArgumentFactory<T>(
+    private val clazz: Class<T>,
+    private inline val f: (T?) -> PGobject
+) : ArgumentFactory.Preparable {
+    override fun prepare(type: Type, config: ConfigRegistry): Optional<Function<Any?, Argument>> =
+        Optional.ofNullable(
+            if (clazz.isAssignableFrom(GenericTypes.getErasedType(type))) {
+                Function { nullableValue -> CustomObjectArgument(f(clazz.cast(nullableValue))) }
             } else {
                 null
             }
@@ -203,8 +263,8 @@ inline fun <reified T> customArgumentFactory(
     noinline f: (T) -> Argument?
 ): CustomArgumentFactory<T> = CustomArgumentFactory(T::class.java, sqlType, f)
 
-inline fun <reified T> pgObjectArgumentFactory(noinline serializer: (T) -> PGobject) =
-    customArgumentFactory<T>(Types.OTHER) { CustomObjectArgument(serializer(it)) }
+inline fun <reified T> pgObjectArgumentFactory(noinline serializer: (T?) -> PGobject) =
+    PgObjectArgumentFactory(T::class.java, serializer)
 
 inline fun <reified T> toStringArgumentFactory() =
     customArgumentFactory<T>(Types.VARCHAR) { CustomStringArgument(it.toString()) }

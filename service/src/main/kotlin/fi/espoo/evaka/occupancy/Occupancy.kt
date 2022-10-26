@@ -11,15 +11,17 @@ import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.PlacementId
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
@@ -95,7 +97,7 @@ fun Database.Read.calculateDailyUnitOccupancyValues(
     today: LocalDate,
     queryPeriod: FiniteDateRange,
     type: OccupancyType,
-    aclAuth: AclAuthorization,
+    unitFilter: AccessControlFilter<DaycareId>,
     areaId: AreaId? = null,
     providerType: ProviderType? = null,
     unitTypes: Set<CareType>? = null,
@@ -106,7 +108,7 @@ fun Database.Read.calculateDailyUnitOccupancyValues(
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
 
     val caretakerCounts =
-        getCaretakers(type, period, aclAuth, areaId, providerType, unitTypes, unitId) { row ->
+        getCaretakers(type, period, unitFilter, areaId, providerType, unitTypes, unitId) { row ->
             Caretakers(
                 UnitKey(
                     areaId = row.mapColumn("area_id"),
@@ -135,7 +137,7 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
     today: LocalDate,
     queryPeriod: FiniteDateRange,
     type: OccupancyType,
-    aclAuth: AclAuthorization,
+    unitFilter: AccessControlFilter<DaycareId>,
     areaId: AreaId? = null,
     providerType: ProviderType? = null,
     unitTypes: Set<CareType>? = null,
@@ -145,7 +147,7 @@ fun Database.Read.calculateDailyGroupOccupancyValues(
     val period = getAndValidatePeriod(today, type, queryPeriod, singleUnit = unitId != null)
 
     val caretakerCounts =
-        getCaretakers(type, period, aclAuth, areaId, providerType, unitTypes, unitId) { row ->
+        getCaretakers(type, period, unitFilter, areaId, providerType, unitTypes, unitId) { row ->
             Caretakers(
                 UnitGroupKey(
                     areaId = row.mapColumn("area_id"),
@@ -228,7 +230,7 @@ private fun getAndValidatePeriod(
 private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretakers(
     type: OccupancyType,
     period: FiniteDateRange,
-    aclAuth: AclAuthorization,
+    unitFilter: AccessControlFilter<DaycareId>,
     areaId: AreaId?,
     providerType: ProviderType?,
     unitTypes: Set<CareType>?,
@@ -292,39 +294,33 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
             else -> error("Unsupported caretakers query class parameter (${K::class})")
         }
 
-    // language=sql
-    val query =
-        """
+    return createQuery<DatabaseTable> {
+            sql(
+                """
 SELECT $keyColumns, t::date AS date,
 coalesce(
     $caretakersSum,
     0.0
 ) AS caretaker_count
-FROM generate_series(:start, :end, '1 day') t
+FROM generate_series(${bind(period.start)}, ${bind(period.end)}, '1 day') t
 CROSS JOIN daycare_group g
 JOIN daycare u ON g.daycare_id = u.id AND daterange(g.start_date, g.end_date, '[]') @> t::date
 JOIN care_area a ON a.id = u.care_area_id
 $caretakersJoin
 LEFT JOIN holiday h ON t = h.date AND NOT u.operation_days @> ARRAY[1, 2, 3, 4, 5, 6, 7]
 WHERE date_part('isodow', t) = ANY(u.operation_days) AND h.date IS NULL
-AND daterange(u.opening_date, u.closing_date, '[]') && daterange(:start, :end, '[]')
-AND (:areaId::uuid IS NULL OR u.care_area_id = :areaId)
-AND (:unitId::uuid IS NULL OR u.id = :unitId)
-AND (:unitIds::uuid[] IS NULL OR u.id = ANY(:unitIds))
-AND (:providerType::unit_provider_type IS NULL OR u.provider_type = :providerType::unit_provider_type)
-AND (:unitTypes::care_types[] IS NULL OR u.type && :unitTypes::care_types[])
+AND daterange(u.opening_date, u.closing_date, '[]') && ${bind(period)}
+AND (${bind(areaId)} IS NULL OR u.care_area_id = ${bind(areaId)})
+AND (${bind(unitId)} IS NULL OR u.id = ${bind(unitId)})
+AND ${predicate(unitFilter.forTable("u"))}
+AND (${bind(providerType)} IS NULL OR u.provider_type = ${bind(providerType)})
+AND (${bind(unitTypes?.ifEmpty { null })}::care_types[] IS NULL OR u.type && ${bind(unitTypes)}::care_types[])
 GROUP BY $groupBy, t
-"""
-
-    return createQuery(query)
-        .bind("areaId", areaId)
-        .bind("providerType", providerType)
-        .bind("unitTypes", unitTypes?.ifEmpty { null })
-        .bind("unitId", unitId)
-        .bind("unitIds", aclAuth.ids)
-        .bind("start", period.start)
-        .bind("end", period.end)
-        .map(mapper)
+            """
+                    .trimIndent()
+            )
+        }
+        .map { row -> mapper(row) }
         .groupBy { it.key }
 }
 

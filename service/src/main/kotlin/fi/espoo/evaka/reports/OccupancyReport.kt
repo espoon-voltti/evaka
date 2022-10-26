@@ -15,7 +15,6 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.auth.AccessControlList
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -23,6 +22,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -50,12 +50,13 @@ class OccupancyReportController(
 
         return db.connect { dbc ->
                 dbc.read { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Global.READ_OCCUPANCY_REPORT
-                    )
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            tx,
+                            user,
+                            clock,
+                            Action.Unit.READ_OCCUPANCY_REPORT
+                        )
                     tx.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     tx.calculateUnitOccupancyReport(
                         clock.today(),
@@ -64,7 +65,7 @@ class OccupancyReportController(
                         unitTypes,
                         FiniteDateRange(from, to),
                         type,
-                        acl.getAuthorizedUnits(user)
+                        filter
                     )
                 }
             }
@@ -100,12 +101,13 @@ class OccupancyReportController(
 
         return db.connect { dbc ->
                 dbc.read { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Global.READ_OCCUPANCY_REPORT
-                    )
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            tx,
+                            user,
+                            clock,
+                            Action.Unit.READ_OCCUPANCY_REPORT
+                        )
                     tx.calculateGroupOccupancyReport(
                         clock.today(),
                         careAreaId,
@@ -113,7 +115,7 @@ class OccupancyReportController(
                         unitTypes,
                         FiniteDateRange(from, to),
                         type,
-                        acl.getAuthorizedUnits(user)
+                        filter
                     )
                 }
             }
@@ -158,13 +160,13 @@ private fun Database.Read.calculateUnitOccupancyReport(
     unitTypes: Set<CareType>?,
     queryPeriod: FiniteDateRange,
     type: OccupancyType,
-    aclAuth: AclAuthorization
+    unitFilter: AccessControlFilter<DaycareId>
 ): List<OccupancyUnitReportResultRow> {
     return calculateDailyUnitOccupancyValues(
             today,
             queryPeriod,
             type,
-            aclAuth,
+            unitFilter,
             areaId = areaId,
             providerType = providerType,
             unitTypes = unitTypes
@@ -188,7 +190,7 @@ private fun Database.Read.calculateGroupOccupancyReport(
     unitTypes: Set<CareType>?,
     queryPeriod: FiniteDateRange,
     type: OccupancyType,
-    aclAuth: AclAuthorization
+    unitFilter: AccessControlFilter<DaycareId>
 ): List<OccupancyGroupReportResultRow> {
     if (type == OccupancyType.PLANNED)
         throw BadRequest("Unable to calculate planned occupancy at group level")
@@ -197,7 +199,7 @@ private fun Database.Read.calculateGroupOccupancyReport(
             today,
             queryPeriod,
             type,
-            aclAuth,
+            unitFilter,
             areaId = areaId,
             providerType = providerType,
             unitTypes = unitTypes

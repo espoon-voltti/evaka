@@ -27,9 +27,15 @@ import fi.espoo.evaka.shared.security.AccessControlDecision
 private typealias FilterByCitizen<T> =
     QuerySql.Builder<T>.(personId: PersonId, now: HelsinkiDateTime) -> QuerySql<T>
 
-data class IsCitizen(val allowWeakLogin: Boolean) {
+data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
     fun isPermittedAuthLevel(authLevel: CitizenAuthLevel) =
         authLevel == CitizenAuthLevel.STRONG || allowWeakLogin
+
+    override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
+        when (ctx.user) {
+            is AuthenticatedUser.Citizen -> isPermittedAuthLevel(ctx.user.authLevel)
+            else -> false
+        }
 
     private fun <T : Id<*>> rule(
         filter: FilterByCitizen<T>

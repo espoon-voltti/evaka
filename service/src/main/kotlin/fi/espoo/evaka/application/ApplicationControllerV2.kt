@@ -363,8 +363,15 @@ class ApplicationControllerV2(
                         }
                     accessControl.requirePermissionFor(tx, user, clock, action, applicationId)
 
-                    val decisions =
-                        tx.getDecisionsByApplication(applicationId, acl.getAuthorizedUnits(user))
+                    val decisionFilter =
+                        accessControl.requireAuthorizationFilter(
+                            tx,
+                            user,
+                            clock,
+                            Action.Decision.READ
+                        )
+
+                    val decisions = tx.getDecisionsByApplication(applicationId, decisionFilter)
                     val guardians =
                         personService.getGuardians(tx, user, application.childId).map { personDTO ->
                             PersonJSON.from(personDTO)

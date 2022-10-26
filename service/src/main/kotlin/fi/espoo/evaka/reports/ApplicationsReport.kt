@@ -6,15 +6,16 @@ package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.daycare.domain.ProviderType
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.auth.AccessControlList
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,10 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class ApplicationsReportController(
-    private val accessControl: AccessControl,
-    private val acl: AccessControlList
-) {
+class ApplicationsReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/applications")
     fun getApplicationsReport(
         db: Database,
@@ -38,14 +36,15 @@ class ApplicationsReportController(
 
         return db.connect { dbc ->
                 dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Global.READ_APPLICATIONS_REPORT
-                    )
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.Unit.READ_APPLICATIONS_REPORT
+                        )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                    it.getApplicationsRows(from, to, acl.getAuthorizedUnits(user))
+                    it.getApplicationsRows(from, to, filter)
                 }
             }
             .also {
@@ -59,11 +58,11 @@ class ApplicationsReportController(
 private fun Database.Read.getApplicationsRows(
     from: LocalDate,
     to: LocalDate,
-    aclAuth: AclAuthorization
-): List<ApplicationsReportRow> {
-    // language=sql
-    val sql =
-        """
+    unitFilter: AccessControlFilter<DaycareId>
+): List<ApplicationsReportRow> =
+    createQuery<DatabaseTable> {
+            sql(
+                """
         WITH data AS (
             SELECT
                 ca.name AS care_area_name,
@@ -72,16 +71,16 @@ private fun Database.Read.getApplicationsRows(
                 u.provider_type AS unit_provider_type,
                 a.type AS application_type,
                 ch.id AS child_id,
-                date_part('year', age(:to, date_of_birth)) AS age
+                date_part('year', age(${bind(to)}, date_of_birth)) AS age
             FROM care_area ca
-            JOIN daycare u ON ca.id = u.care_area_id AND :from <= COALESCE(u.closing_date, 'infinity'::date)
+            JOIN daycare u ON ca.id = u.care_area_id AND ${bind(from)} <= COALESCE(u.closing_date, 'infinity'::date)
             LEFT JOIN application_view a 
                 ON a.preferredunit = u.id 
                 AND a.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_DECISION}'::application_status_type[]) 
-                AND a.startdate BETWEEN :from AND :to
+                AND a.startdate BETWEEN ${bind(from)} AND ${bind(to)}
                 AND a.transferapplication != true
             LEFT JOIN person ch ON ch.id = a.childid
-            WHERE (:unitIds::uuid[] IS NULL OR u.id = ANY(:unitIds))
+            WHERE ${predicate(unitFilter.forTable("u"))}
         )
         SELECT
             care_area_name,
@@ -97,14 +96,11 @@ private fun Database.Read.getApplicationsRows(
         GROUP BY care_area_name, unit_id, unit_name, unit_provider_type
         ORDER BY care_area_name, unit_name;
         """
-            .trimIndent()
-    return createQuery(sql)
-        .bind("from", from)
-        .bind("to", to)
-        .bind("unitIds", aclAuth.ids)
+                    .trimIndent()
+            )
+        }
         .mapTo<ApplicationsReportRow>()
         .toList()
-}
 
 data class ApplicationsReportRow(
     val careAreaName: String,

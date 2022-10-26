@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Id
-import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevCareArea
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -33,6 +32,7 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestStaffAttendance
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.snDefaultPartDayDaycare
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -170,7 +170,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     today,
                     period,
                     OccupancyType.CONFIRMED,
-                    AclAuthorization.All,
+                    AccessControlFilter.PermitAll,
                     areaId = careArea1
                 )
 
@@ -217,7 +217,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     today,
                     FiniteDateRange(today, today),
                     OccupancyType.CONFIRMED,
-                    AclAuthorization.All,
+                    AccessControlFilter.PermitAll,
                     unitId = daycareInArea1
                 )
 
@@ -256,7 +256,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         today,
                         FiniteDateRange(rangeStart, rangeEnd),
                         OccupancyType.REALIZED,
-                        AclAuthorization.All,
+                        AccessControlFilter.PermitAll,
                         unitId = daycareInArea1
                     )
                     .find { it.key.groupId == daycareGroup1 }!!
@@ -306,7 +306,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     today,
                     FiniteDateRange(today, today),
                     OccupancyType.REALIZED,
-                    AclAuthorization.All,
+                    AccessControlFilter.PermitAll,
                     unitId = daycareInArea1
                 )
 
@@ -364,7 +364,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     today,
                     FiniteDateRange(today, today),
                     OccupancyType.REALIZED,
-                    AclAuthorization.All,
+                    AccessControlFilter.PermitAll,
                     unitId = daycareInArea1
                 )
 
@@ -929,7 +929,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         today = today,
                         queryPeriod = FiniteDateRange(today.minusDays(2), today.plusDays(1)),
                         type = OccupancyType.REALIZED,
-                        aclAuth = AclAuthorization.All,
+                        unitFilter = AccessControlFilter.PermitAll,
                         unitId = daycareInArea1
                     )
                     .first { it.key.groupId == daycareGroup1 }
@@ -966,7 +966,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     today = today,
                     queryPeriod = FiniteDateRange(today.plusDays(1), today.plusDays(2)),
                     type = OccupancyType.REALIZED,
-                    aclAuth = AclAuthorization.All,
+                    unitFilter = AccessControlFilter.PermitAll,
                     unitId = daycareInArea1
                 )
             assertTrue(values.isEmpty())
@@ -1134,7 +1134,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         today = today,
                         queryPeriod = FiniteDateRange(today.minusDays(3), today.plusDays(10)),
                         type = OccupancyType.CONFIRMED,
-                        aclAuth = AclAuthorization.All,
+                        unitFilter = AccessControlFilter.PermitAll,
                         unitId = daycareInArea1
                     )
                     .let { reduceDailyOccupancyValues(it) }
@@ -1213,7 +1213,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         today,
                         FiniteDateRange(today.minusDays(1), today),
                         OccupancyType.CONFIRMED,
-                        AclAuthorization.All,
+                        AccessControlFilter.PermitAll,
                         providerType = providerType
                     )
                 }
@@ -1270,7 +1270,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         today,
                         FiniteDateRange(today.minusDays(1), today),
                         OccupancyType.CONFIRMED,
-                        AclAuthorization.All,
+                        AccessControlFilter.PermitAll,
                         unitTypes = unitTypes
                     )
                 }
@@ -1329,7 +1329,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         today,
                         FiniteDateRange(today.minusDays(1), today),
                         OccupancyType.CONFIRMED,
-                        AclAuthorization.All,
+                        AccessControlFilter.PermitAll,
                         providerType = providerType
                     )
                 }
@@ -1386,7 +1386,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                         today,
                         FiniteDateRange(today.minusDays(1), today),
                         OccupancyType.CONFIRMED,
-                        AclAuthorization.All,
+                        AccessControlFilter.PermitAll,
                         unitTypes = unitTypes
                     )
                 }
@@ -1428,7 +1428,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     today = today,
                     queryPeriod = FiniteDateRange(date, date),
                     type = type,
-                    aclAuth = AclAuthorization.All,
+                    unitFilter = AccessControlFilter.PermitAll,
                     unitId = unitId
                 )
         )
@@ -1451,7 +1451,7 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
                     today = today,
                     queryPeriod = FiniteDateRange(date, date),
                     type = type,
-                    aclAuth = AclAuthorization.All,
+                    unitFilter = AccessControlFilter.PermitAll,
                     unitId = unitId
                 )
         )
