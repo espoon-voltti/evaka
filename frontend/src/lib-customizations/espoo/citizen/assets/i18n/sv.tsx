@@ -69,7 +69,7 @@ const sv: Translations = {
     },
     datetime: {
       weekdaysShort: ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'],
-      week: 'Veckan',
+      week: 'Vecka',
       weekShort: 'V',
       weekdays: [
         'Måndag',
