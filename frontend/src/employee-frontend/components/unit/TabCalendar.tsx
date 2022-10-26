@@ -3,13 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sortBy from 'lodash/sortBy'
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { UserContext } from 'employee-frontend/state/user'
@@ -162,14 +156,13 @@ const TabContent = React.memo(function TabContent({
 
   const { roles } = useContext(UserContext)
 
-  const query = useQuery()
-
-  const modeParam = query.get('mode')
-  const [mode, setMode] = useState<CalendarMode>(
-    modeParam && ['month', 'week'].includes(modeParam)
-      ? (modeParam as CalendarMode)
-      : 'month'
+  const { enabledPilotFeatures } = unitInformation.daycare
+  const reservationEnabled = enabledPilotFeatures.includes('RESERVATIONS')
+  const realtimeStaffAttendanceEnabled = enabledPilotFeatures.includes(
+    'REALTIME_STAFF_ATTENDANCE'
   )
+
+  const query = useQuery()
 
   const selectedDateParam = query.get('date')
   const [selectedDate, setSelectedDate] = useState<LocalDate>(
@@ -182,6 +175,22 @@ const TabContent = React.memo(function TabContent({
   const [selectedGroup, setSelectedGroup] = useState<AttendanceGroupFilter>(
     () => getDefaultGroup(groupParam, groups)
   )
+
+  const modeParam = query.get('mode')
+  const [requestedMode, setRequestedMode] = useState<CalendarMode>(
+    modeParam && ['month', 'week'].includes(modeParam)
+      ? (modeParam as CalendarMode)
+      : realtimeStaffAttendanceEnabled
+      ? 'week'
+      : 'month'
+  )
+
+  const [mode, availableModes]: [CalendarMode, CalendarMode[]] =
+    selectedGroup.type === 'staff' ||
+    selectedGroup.type === 'no-group' ||
+    selectedGroup.type === 'all-children'
+      ? ['week', ['week']]
+      : [requestedMode, ['month', 'week']]
 
   useSyncQueryParams({
     group: attendanceGroupToString(selectedGroup),
@@ -197,24 +206,6 @@ const TabContent = React.memo(function TabContent({
     () => getWeekDateRange(selectedDate, operationalDays),
     [operationalDays, selectedDate]
   )
-
-  const { enabledPilotFeatures } = unitInformation.daycare
-  const reservationEnabled = enabledPilotFeatures.includes('RESERVATIONS')
-  const realtimeStaffAttendanceEnabled = enabledPilotFeatures.includes(
-    'REALTIME_STAFF_ATTENDANCE'
-  )
-
-  // TODO: You might not need an effect
-  useEffect(() => {
-    if (realtimeStaffAttendanceEnabled) {
-      setMode('week')
-    }
-  }, [realtimeStaffAttendanceEnabled, setMode])
-
-  const onlyShowWeeklyView =
-    selectedGroup.type === 'staff' ||
-    selectedGroup.type === 'no-group' ||
-    selectedGroup.type === 'all-children'
 
   const [calendarOpen, setCalendarOpen] = useState(true)
   const [attendancesOpen, setAttendancesOpen] = useState(true)
@@ -275,19 +266,19 @@ const TabContent = React.memo(function TabContent({
         opaque
       >
         {(reservationEnabled || realtimeStaffAttendanceEnabled) &&
-          !onlyShowWeeklyView && (
-            <FixedSpaceRow spacing="xs" justifyContent="flex-end">
-              {(['week', 'month'] as const).map((m) => (
-                <ChoiceChip
-                  key={m}
-                  data-qa={`choose-calendar-mode-${m}`}
-                  text={i18n.unit.calendar.modes[m]}
-                  selected={mode === m}
-                  onChange={() => setMode(m)}
-                />
-              ))}
-            </FixedSpaceRow>
-          )}
+        availableModes.length >= 2 ? (
+          <FixedSpaceRow spacing="xs" justifyContent="flex-end">
+            {availableModes.map((m) => (
+              <ChoiceChip
+                key={m}
+                data-qa={`choose-calendar-mode-${m}`}
+                text={i18n.unit.calendar.modes[m]}
+                selected={mode === m}
+                onChange={() => setRequestedMode(m)}
+              />
+            ))}
+          </FixedSpaceRow>
+        ) : null}
 
         <StickyTopBar>
           <FixedSpaceRow spacing="s" alignItems="center">
@@ -320,9 +311,7 @@ const TabContent = React.memo(function TabContent({
           paddingHorizontal="zero"
           paddingVertical="zero"
         >
-          {mode === 'month' &&
-          !onlyShowWeeklyView &&
-          selectedGroup.type === 'group' ? (
+          {mode === 'month' && selectedGroup.type === 'group' ? (
             <Absences
               groupId={selectedGroup.id}
               selectedDate={selectedDate}
@@ -331,7 +320,7 @@ const TabContent = React.memo(function TabContent({
             />
           ) : null}
 
-          {mode === 'week' || onlyShowWeeklyView ? (
+          {mode === 'week' ? (
             <UnitAttendanceReservationsView
               unitId={unitId}
               selectedGroup={selectedGroup}
@@ -347,8 +336,7 @@ const TabContent = React.memo(function TabContent({
         </CollapsibleContentArea>
 
         {selectedGroup.type === 'group' ||
-        (selectedGroup.type === 'all-children' &&
-          (mode === 'week' || onlyShowWeeklyView)) ? (
+        (selectedGroup.type === 'all-children' && mode === 'week') ? (
           <>
             <HorizontalLine dashed slim />
 
