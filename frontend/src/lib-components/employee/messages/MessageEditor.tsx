@@ -167,16 +167,12 @@ export default React.memo(function MessageEditor({
   saveMessageAttachment,
   sending
 }: Props) {
-  const [receiverTree, setReceiverTree] = useState<SelectorNode[]>([])
-  const selectedReceivers = useMemo(
-    () => (receiverTree ? getSelected(receiverTree) : []),
-    [receiverTree]
+  const [receiverTree, setReceiverTree] = useState<SelectorNode[]>(
+    receiversAsSelectorNode(defaultSender.value, availableReceivers)
   )
-
   const [message, setMessage] = useState<Message>(() =>
     getInitialMessage(draftContent, defaultSender)
   )
-  const [contentTouched, setContentTouched] = useState(false)
   const {
     draftId,
     setDraft,
@@ -188,35 +184,55 @@ export default React.memo(function MessageEditor({
     saveDraftRaw,
     initDraftRaw
   })
-  const sender = useMemo(
-    () => accounts.find(({ account }) => account.id === message.sender.value),
-    [accounts, message.sender]
+  const updateMessage = useCallback<UpdateStateFn<Message>>(
+    (changes) => {
+      const updatedMessage = { ...message, ...changes }
+      setMessage(updatedMessage)
+      const selectedReceivers = getSelected(receiverTree)
+      setDraft(
+        messageToUpdatableDraftWithAccount(updatedMessage, selectedReceivers)
+      )
+    },
+    [message, receiverTree, setDraft]
   )
+  const getSenderAccount = useCallback(
+    (senderId: string) =>
+      accounts.find(({ account }) => account.id === senderId),
+    [accounts]
+  )
+  const setSender = useCallback(
+    (sender: SelectOption | null) => {
+      if (!sender) return
+      updateMessage({ sender })
+
+      const accountReceivers = receiversAsSelectorNode(
+        sender.value,
+        availableReceivers
+      )
+      if (accountReceivers) {
+        setReceiverTree(accountReceivers)
+      }
+    },
+    [availableReceivers, updateMessage]
+  )
+  const selectedReceivers = useMemo(
+    () => (receiverTree ? getSelected(receiverTree) : []),
+    [receiverTree]
+  )
+  const updateReceivers = useCallback((receivers: SelectorNode[]) => {
+    setReceiverTree(receivers)
+    const selected = getSelected(receivers)
+    setMessage((old) => ({
+      ...old,
+      recipientIds: selected.map((s) => s.key),
+      recipientNames: selected.map((s) => s.text)
+    }))
+  }, [])
 
   const [expandedView, setExpandedView] = useState(false)
-
   const toggleExpandedView = useCallback(
     () => setExpandedView((prev) => !prev),
     []
-  )
-
-  useEffect(
-    function syncDraftContentOnMessageChanges() {
-      contentTouched &&
-        setDraft(messageToUpdatableDraftWithAccount(message, selectedReceivers))
-    },
-    [contentTouched, message, selectedReceivers, setDraft]
-  )
-
-  useEffect(
-    function updateSelectedReceiversOnReceiverTreeChanges() {
-      setMessage((old) => ({
-        ...old,
-        recipientIds: selectedReceivers.map((s) => s.key),
-        recipientNames: selectedReceivers.map((s) => s.text)
-      }))
-    },
-    [selectedReceivers]
   )
 
   const [saveStatus, setSaveStatus] = useState<string>()
@@ -235,29 +251,9 @@ export default React.memo(function MessageEditor({
     },
     [i18n, draftState, draftWasModified]
   )
-  useEffect(
-    function updateReceiversOnSenderChange() {
-      if (!sender) {
-        throw new Error('Selected sender was not found in accounts')
-      }
-      const accountReceivers = receiversAsSelectorNode(
-        sender.account.id,
-        availableReceivers
-      )
-      if (accountReceivers) {
-        setReceiverTree(accountReceivers)
-      }
-    },
-    [sender, availableReceivers]
-  )
 
   const debouncedSaveStatus = useDebounce(saveStatus, 250)
   const title = debouncedSaveStatus || message.title || i18n.newMessage
-
-  const updateMessage = useCallback<UpdateStateFn<Message>>((changes) => {
-    setMessage((old) => ({ ...old, ...changes }))
-    setContentTouched(true)
-  }, [])
 
   const sendHandler = useCallback(() => {
     const {
@@ -285,19 +281,17 @@ export default React.memo(function MessageEditor({
       draftId
         ? (await saveMessageAttachment(draftId, file, onUploadProgress)).map(
             (id) => {
-              setMessage(({ attachments, ...rest }) => ({
-                ...rest,
+              updateMessage({
                 attachments: [
-                  ...attachments,
+                  ...message.attachments,
                   { id, name: file.name, contentType: file.type }
                 ]
-              }))
-              setContentTouched(true)
+              })
               return id
             }
           )
         : Failure.of<UUID>({ message: 'Should not happen' }),
-    [draftId, saveMessageAttachment]
+    [draftId, message.attachments, saveMessageAttachment, updateMessage]
   )
 
   const handleAttachmentDelete = useCallback(
@@ -328,10 +322,13 @@ export default React.memo(function MessageEditor({
   )
 
   useEffect(() => {
-    if (sender?.account.type === 'MUNICIPAL' && message.type !== 'BULLETIN') {
+    if (
+      getSenderAccount(message.sender.value)?.account.type === 'MUNICIPAL' &&
+      message.type !== 'BULLETIN'
+    ) {
       updateMessage({ type: 'BULLETIN' })
     }
-  }, [sender, message.type, updateMessage])
+  }, [getSenderAccount, message.sender, message.type, updateMessage])
 
   const sendEnabled =
     !sending &&
@@ -359,7 +356,7 @@ export default React.memo(function MessageEditor({
       }
     }
     const messageType =
-      sender?.account.type === 'MUNICIPAL' ? (
+      getSenderAccount(message.sender.value)?.account.type === 'MUNICIPAL' ? (
         <FixedSpaceRow>
           <Radio
             label={i18n.type.bulletin}
@@ -431,9 +428,7 @@ export default React.memo(function MessageEditor({
                   <Bold>{i18n.sender}</Bold>
                   <Combobox
                     items={senderOptions}
-                    onChange={(sender) =>
-                      sender ? updateMessage({ sender }) : undefined
-                    }
+                    onChange={setSender}
                     selectedItem={message.sender}
                     getItemLabel={(sender) => sender.label}
                     data-qa="select-sender"
@@ -445,7 +440,7 @@ export default React.memo(function MessageEditor({
                   <Bold>{i18n.receivers}</Bold>
                   <TreeDropdown
                     tree={receiverTree}
-                    onChange={setReceiverTree}
+                    onChange={updateReceivers}
                     labels={i18n.treeDropdown}
                     placeholder={i18n.treeDropdown.placeholder}
                     data-qa="select-receiver"
@@ -570,7 +565,7 @@ export default React.memo(function MessageEditor({
         </div>
         <TreeDropdown
           tree={receiverTree}
-          onChange={setReceiverTree}
+          onChange={updateReceivers}
           data-qa="attendees"
           labels={i18n.treeDropdown}
           placeholder={i18n.treeDropdown.placeholder}
