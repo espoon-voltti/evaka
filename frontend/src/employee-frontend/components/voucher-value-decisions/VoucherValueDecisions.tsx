@@ -175,13 +175,45 @@ export default React.memo(function VoucherValueDecisions({
             >
               {i18n.valueDecisions.table.head}
             </SortableTh>
-            <Th>{i18n.valueDecisions.table.child}</Th>
-            <Th>{i18n.valueDecisions.table.validity}</Th>
-            <Th>{i18n.valueDecisions.table.totalValue}</Th>
-            <Th>{i18n.valueDecisions.table.totalCoPayment}</Th>
-            <Th>{i18n.valueDecisions.table.number}</Th>
-            <Th>{i18n.valueDecisions.table.createdAt}</Th>
-            <Th>{i18n.valueDecisions.table.sentAt}</Th>
+            <SortableTh
+              sorted={isSorted('CHILD')}
+              onClick={toggleSort('CHILD')}
+            >
+              {i18n.valueDecisions.table.child}
+            </SortableTh>
+            <SortableTh
+              sorted={isSorted('VALIDITY')}
+              onClick={toggleSort('VALIDITY')}
+            >
+              {i18n.valueDecisions.table.validity}
+            </SortableTh>
+            <SortableTh
+              sorted={isSorted('VOUCHER_VALUE')}
+              onClick={toggleSort('VOUCHER_VALUE')}
+            >
+              {i18n.valueDecisions.table.totalValue}
+            </SortableTh>
+            <SortableTh
+              sorted={isSorted('FINAL_CO_PAYMENT')}
+              onClick={toggleSort('FINAL_CO_PAYMENT')}
+            >
+              {i18n.valueDecisions.table.totalCoPayment}
+            </SortableTh>
+            <SortableTh
+              sorted={isSorted('NUMBER')}
+              onClick={toggleSort('NUMBER')}
+            >
+              {i18n.valueDecisions.table.number}
+            </SortableTh>
+            <SortableTh
+              sorted={isSorted('CREATED')}
+              onClick={toggleSort('CREATED')}
+            >
+              {i18n.valueDecisions.table.createdAt}
+            </SortableTh>
+            <SortableTh sorted={isSorted('SENT')} onClick={toggleSort('SENT')}>
+              {i18n.valueDecisions.table.sentAt}
+            </SortableTh>
             <Th>{i18n.valueDecisions.table.difference.title}</Th>
             <SortableTh
               sorted={isSorted('STATUS')}

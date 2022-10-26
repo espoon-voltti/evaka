@@ -481,6 +481,466 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
     }
 
     @Test
+    fun `search - sort by child`() {
+        db.transaction { tx ->
+            val baseDecision = { child: DevPerson ->
+                createVoucherValueDecisionFixture(
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    validFrom = testPeriod.start,
+                    validTo = testPeriod.end,
+                    headOfFamilyId = PersonId(UUID.randomUUID()),
+                    childId = child.id,
+                    dateOfBirth = child.dateOfBirth,
+                    unitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed()
+                )
+            }
+            tx.upsertValueDecisions(
+                listOf(
+                    baseDecision(testChild_1)
+                        .copy(
+                            id =
+                                VoucherValueDecisionId(
+                                    UUID.fromString("0bcbeb16-57b2-49ff-b1f3-e234770d693c")
+                                ),
+                            headOfFamilyId = testAdult_1.id
+                        ),
+                    baseDecision(testChild_2)
+                        .copy(
+                            id =
+                                VoucherValueDecisionId(
+                                    UUID.fromString("cbe1e6a2-47a2-4291-8881-6991714e266f")
+                                ),
+                            headOfFamilyId = testAdult_2.id
+                        ),
+                    baseDecision(testChild_3).copy(headOfFamilyId = testAdult_3.id),
+                    baseDecision(testChild_4).copy(headOfFamilyId = testAdult_4.id)
+                )
+            )
+        }
+
+        val sortByChild = { direction: SortDirection ->
+            db.read { tx ->
+                tx.searchValueDecisions(
+                    evakaClock =
+                        MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
+                    postOffice = "ESPOO",
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.CHILD,
+                    sortDirection = direction,
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    financeDecisionHandlerId = null,
+                    difference = emptySet(),
+                    distinctiveParams = emptyList()
+                )
+            }
+        }
+        val expectedAsc =
+            listOf(
+                Tuple(testChild_1.lastName, testChild_1.firstName),
+                Tuple(testChild_2.lastName, testChild_2.firstName),
+                Tuple(testChild_4.lastName, testChild_4.firstName),
+                Tuple(testChild_3.lastName, testChild_3.firstName)
+            )
+        assertThat(sortByChild(SortDirection.ASC).data)
+            .extracting({ it.child.lastName }, { it.child.firstName })
+            .containsExactlyElementsOf(expectedAsc)
+        assertThat(sortByChild(SortDirection.DESC).data)
+            .extracting({ it.child.lastName }, { it.child.firstName })
+            .containsExactlyElementsOf(expectedAsc.reversed())
+    }
+
+    @Test
+    fun `search - sort by validity`() {
+        db.transaction { tx ->
+            val baseDecision = { child: DevPerson ->
+                createVoucherValueDecisionFixture(
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    validFrom = testPeriod.start,
+                    validTo = testPeriod.end,
+                    headOfFamilyId = PersonId(UUID.randomUUID()),
+                    childId = child.id,
+                    dateOfBirth = child.dateOfBirth,
+                    unitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed()
+                )
+            }
+            tx.upsertValueDecisions(
+                listOf(
+                    baseDecision(testChild_1)
+                        .copy(
+                            headOfFamilyId = testAdult_1.id,
+                            validFrom = LocalDate.of(2022, 10, 22),
+                            validTo = LocalDate.of(2022, 10, 22)
+                        ),
+                    baseDecision(testChild_2)
+                        .copy(
+                            headOfFamilyId = testAdult_2.id,
+                            validFrom = LocalDate.of(2022, 9, 22),
+                            validTo = LocalDate.of(2022, 10, 22)
+                        ),
+                    baseDecision(testChild_3)
+                        .copy(
+                            id =
+                                VoucherValueDecisionId(
+                                    UUID.fromString("0bcbeb16-57b2-49ff-b1f3-e234770d693c")
+                                ),
+                            headOfFamilyId = testAdult_3.id,
+                            validFrom = LocalDate.of(2022, 8, 22),
+                            validTo = LocalDate.of(2022, 9, 22)
+                        ),
+                    baseDecision(testChild_4)
+                        .copy(
+                            id =
+                                VoucherValueDecisionId(
+                                    UUID.fromString("cbe1e6a2-47a2-4291-8881-6991714e266f")
+                                ),
+                            headOfFamilyId = testAdult_4.id,
+                            validFrom = LocalDate.of(2022, 8, 22),
+                            validTo = LocalDate.of(2022, 12, 31)
+                        )
+                )
+            )
+        }
+
+        val sortByValidity = { direction: SortDirection ->
+            db.read { tx ->
+                tx.searchValueDecisions(
+                    evakaClock =
+                        MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
+                    postOffice = "ESPOO",
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.VALIDITY,
+                    sortDirection = direction,
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    financeDecisionHandlerId = null,
+                    difference = emptySet(),
+                    distinctiveParams = emptyList()
+                )
+            }
+        }
+        val expectedAsc =
+            listOf(
+                Tuple(testChild_3.lastName, testChild_3.firstName, LocalDate.of(2022, 8, 22)),
+                Tuple(testChild_4.lastName, testChild_4.firstName, LocalDate.of(2022, 8, 22)),
+                Tuple(testChild_2.lastName, testChild_2.firstName, LocalDate.of(2022, 9, 22)),
+                Tuple(testChild_1.lastName, testChild_1.firstName, LocalDate.of(2022, 10, 22))
+            )
+        assertThat(sortByValidity(SortDirection.ASC).data)
+            .extracting({ it.child.lastName }, { it.child.firstName }, { it.validFrom })
+            .containsExactlyElementsOf(expectedAsc)
+        assertThat(sortByValidity(SortDirection.DESC).data)
+            .extracting({ it.child.lastName }, { it.child.firstName }, { it.validFrom })
+            .containsExactlyElementsOf(expectedAsc.reversed())
+    }
+
+    @Test
+    fun `search - sort by voucher value`() {
+        db.transaction { tx ->
+            val baseDecision = { child: DevPerson ->
+                createVoucherValueDecisionFixture(
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    validFrom = testPeriod.start,
+                    validTo = testPeriod.end,
+                    headOfFamilyId = PersonId(UUID.randomUUID()),
+                    childId = child.id,
+                    dateOfBirth = child.dateOfBirth,
+                    unitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed()
+                )
+            }
+            tx.upsertValueDecisions(
+                listOf(
+                    baseDecision(testChild_1)
+                        .copy(headOfFamilyId = testAdult_1.id, voucherValue = 29100),
+                    baseDecision(testChild_2)
+                        .copy(
+                            headOfFamilyId = testAdult_2.id,
+                            baseCoPayment = 0,
+                            coPayment = 0,
+                            finalCoPayment = 0,
+                            voucherValue = 0
+                        ),
+                    baseDecision(testChild_3)
+                        .copy(
+                            id =
+                                VoucherValueDecisionId(
+                                    UUID.fromString("0bcbeb16-57b2-49ff-b1f3-e234770d693c")
+                                ),
+                            headOfFamilyId = testAdult_3.id,
+                            voucherValue = 64400
+                        ),
+                    baseDecision(testChild_4)
+                        .copy(
+                            id =
+                                VoucherValueDecisionId(
+                                    UUID.fromString("cbe1e6a2-47a2-4291-8881-6991714e266f")
+                                ),
+                            headOfFamilyId = testAdult_4.id,
+                            voucherValue = 64400
+                        )
+                )
+            )
+        }
+
+        val sortByVoucherValue = { direction: SortDirection ->
+            db.read { tx ->
+                tx.searchValueDecisions(
+                    evakaClock =
+                        MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
+                    postOffice = "ESPOO",
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.VOUCHER_VALUE,
+                    sortDirection = direction,
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    financeDecisionHandlerId = null,
+                    difference = emptySet(),
+                    distinctiveParams = emptyList()
+                )
+            }
+        }
+        val expectedAsc =
+            listOf(
+                Tuple(testChild_2.lastName, testChild_2.firstName, 0),
+                Tuple(testChild_1.lastName, testChild_1.firstName, 29100),
+                Tuple(testChild_3.lastName, testChild_3.firstName, 64400),
+                Tuple(testChild_4.lastName, testChild_4.firstName, 64400)
+            )
+        assertThat(sortByVoucherValue(SortDirection.ASC).data)
+            .extracting({ it.child.lastName }, { it.child.firstName }, { it.voucherValue })
+            .containsExactlyElementsOf(expectedAsc)
+        assertThat(sortByVoucherValue(SortDirection.DESC).data)
+            .extracting({ it.child.lastName }, { it.child.firstName }, { it.voucherValue })
+            .containsExactlyElementsOf(expectedAsc.reversed())
+    }
+
+    @Test
+    fun `search - sort by final co payment`() {
+        db.transaction { tx ->
+            val baseDecision = { child: DevPerson ->
+                createVoucherValueDecisionFixture(
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    validFrom = testPeriod.start,
+                    validTo = testPeriod.end,
+                    headOfFamilyId = PersonId(UUID.randomUUID()),
+                    childId = child.id,
+                    dateOfBirth = child.dateOfBirth,
+                    unitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed()
+                )
+            }
+            tx.upsertValueDecisions(
+                listOf(
+                    baseDecision(testChild_1)
+                        .copy(headOfFamilyId = testAdult_1.id, finalCoPayment = 21300),
+                    baseDecision(testChild_2)
+                        .copy(headOfFamilyId = testAdult_2.id, finalCoPayment = 12300),
+                    baseDecision(testChild_3)
+                        .copy(
+                            id =
+                                VoucherValueDecisionId(
+                                    UUID.fromString("0bcbeb16-57b2-49ff-b1f3-e234770d693c")
+                                ),
+                            headOfFamilyId = testAdult_3.id,
+                            finalCoPayment = 55500
+                        ),
+                    baseDecision(testChild_4)
+                        .copy(
+                            id =
+                                VoucherValueDecisionId(
+                                    UUID.fromString("cbe1e6a2-47a2-4291-8881-6991714e266f")
+                                ),
+                            headOfFamilyId = testAdult_4.id,
+                            finalCoPayment = 55500
+                        )
+                )
+            )
+        }
+
+        val sortByFinalCoPayment = { direction: SortDirection ->
+            db.read { tx ->
+                tx.searchValueDecisions(
+                    evakaClock =
+                        MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
+                    postOffice = "ESPOO",
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.FINAL_CO_PAYMENT,
+                    sortDirection = direction,
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    financeDecisionHandlerId = null,
+                    difference = emptySet(),
+                    distinctiveParams = emptyList()
+                )
+            }
+        }
+        val expectedAsc =
+            listOf(
+                Tuple(testChild_2.lastName, testChild_2.firstName, 12300),
+                Tuple(testChild_1.lastName, testChild_1.firstName, 21300),
+                Tuple(testChild_3.lastName, testChild_3.firstName, 55500),
+                Tuple(testChild_4.lastName, testChild_4.firstName, 55500)
+            )
+        assertThat(sortByFinalCoPayment(SortDirection.ASC).data)
+            .extracting({ it.child.lastName }, { it.child.firstName }, { it.finalCoPayment })
+            .containsExactlyElementsOf(expectedAsc)
+        assertThat(sortByFinalCoPayment(SortDirection.DESC).data)
+            .extracting({ it.child.lastName }, { it.child.firstName }, { it.finalCoPayment })
+            .containsExactlyElementsOf(expectedAsc.reversed())
+    }
+
+    @Test
+    fun `search - sort by number`() {
+        db.transaction { tx ->
+            val baseDecision = { child: DevPerson ->
+                createVoucherValueDecisionFixture(
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    validFrom = testPeriod.start,
+                    validTo = testPeriod.end,
+                    headOfFamilyId = PersonId(UUID.randomUUID()),
+                    childId = child.id,
+                    dateOfBirth = child.dateOfBirth,
+                    unitId = testDaycare.id,
+                    placementType = PlacementType.DAYCARE,
+                    serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed()
+                )
+            }
+            tx.upsertValueDecisions(
+                listOf(
+                    baseDecision(testChild_1)
+                        .copy(headOfFamilyId = testAdult_1.id, decisionNumber = 202203),
+                    baseDecision(testChild_2)
+                        .copy(headOfFamilyId = testAdult_2.id, decisionNumber = 202201),
+                    baseDecision(testChild_3)
+                        .copy(headOfFamilyId = testAdult_3.id, decisionNumber = 202312),
+                    baseDecision(testChild_4)
+                        .copy(headOfFamilyId = testAdult_4.id, decisionNumber = 202204)
+                )
+            )
+        }
+
+        val sortByNumber = { direction: SortDirection ->
+            db.read { tx ->
+                tx.searchValueDecisions(
+                    evakaClock =
+                        MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
+                    postOffice = "ESPOO",
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.NUMBER,
+                    sortDirection = direction,
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    financeDecisionHandlerId = null,
+                    difference = emptySet(),
+                    distinctiveParams = emptyList()
+                )
+            }
+        }
+        val expectedAsc =
+            listOf(
+                Tuple(testChild_2.lastName, testChild_2.firstName, 202201L),
+                Tuple(testChild_1.lastName, testChild_1.firstName, 202203L),
+                Tuple(testChild_4.lastName, testChild_4.firstName, 202204L),
+                Tuple(testChild_3.lastName, testChild_3.firstName, 202312L)
+            )
+        assertThat(sortByNumber(SortDirection.ASC).data)
+            .extracting({ it.child.lastName }, { it.child.firstName }, { it.decisionNumber })
+            .containsExactlyElementsOf(expectedAsc)
+        assertThat(sortByNumber(SortDirection.DESC).data)
+            .extracting({ it.child.lastName }, { it.child.firstName }, { it.decisionNumber })
+            .containsExactlyElementsOf(expectedAsc.reversed())
+    }
+
+    @Test
+    fun `search - sort by created`() {
+        val baseDecision = { child: DevPerson ->
+            createVoucherValueDecisionFixture(
+                status = VoucherValueDecisionStatus.DRAFT,
+                validFrom = testPeriod.start,
+                validTo = testPeriod.end,
+                headOfFamilyId = PersonId(UUID.randomUUID()),
+                childId = child.id,
+                dateOfBirth = child.dateOfBirth,
+                unitId = testDaycare.id,
+                placementType = PlacementType.DAYCARE,
+                serviceNeed = snDaycareFullDay35.toValueDecisionServiceNeed()
+            )
+        }
+        listOf(
+                baseDecision(testChild_1).copy(headOfFamilyId = testAdult_1.id),
+                baseDecision(testChild_2).copy(headOfFamilyId = testAdult_2.id),
+                baseDecision(testChild_3).copy(headOfFamilyId = testAdult_3.id),
+                baseDecision(testChild_4).copy(headOfFamilyId = testAdult_4.id)
+            )
+            .forEach { decision ->
+                db.transaction { tx -> tx.upsertValueDecisions(listOf(decision)) }
+                Thread.sleep(10)
+            }
+
+        val sortByCreated = { direction: SortDirection ->
+            db.read { tx ->
+                tx.searchValueDecisions(
+                    evakaClock =
+                        MockEvakaClock(HelsinkiDateTime.of(testPeriod.start, LocalTime.of(12, 11))),
+                    postOffice = "ESPOO",
+                    page = 0,
+                    pageSize = 100,
+                    sortBy = VoucherValueDecisionSortParam.CREATED,
+                    sortDirection = direction,
+                    status = VoucherValueDecisionStatus.DRAFT,
+                    areas = emptyList(),
+                    unit = null,
+                    startDate = null,
+                    endDate = null,
+                    financeDecisionHandlerId = null,
+                    difference = emptySet(),
+                    distinctiveParams = emptyList()
+                )
+            }
+        }
+        val expectedAsc =
+            listOf(
+                Tuple(testChild_1.lastName, testChild_1.firstName),
+                Tuple(testChild_2.lastName, testChild_2.firstName),
+                Tuple(testChild_3.lastName, testChild_3.firstName),
+                Tuple(testChild_4.lastName, testChild_4.firstName)
+            )
+        assertThat(sortByCreated(SortDirection.ASC).data)
+            .extracting({ it.child.lastName }, { it.child.firstName })
+            .containsExactlyElementsOf(expectedAsc)
+        assertThat(sortByCreated(SortDirection.DESC).data)
+            .extracting({ it.child.lastName }, { it.child.firstName })
+            .containsExactlyElementsOf(expectedAsc.reversed())
+    }
+
+    @Test
     fun `getHeadOfFamilyVoucherValueDecisions`() {
         db.transaction { tx ->
             val baseDecision = { child: DevPerson ->
