@@ -688,6 +688,8 @@ function RedirectToMainPage() {
     return <Navigate replace to="/units" />
   } else if (hasRole(roles, 'DIRECTOR') || hasRole(roles, 'REPORT_VIEWER')) {
     return <Navigate replace to="/reports" />
+  } else if (hasRole(roles, 'MESSAGING')) {
+    return <Navigate replace to="/messages" />
   } else if (roles.length === 0) {
     return <Navigate replace to="/welcome" />
   } else {
