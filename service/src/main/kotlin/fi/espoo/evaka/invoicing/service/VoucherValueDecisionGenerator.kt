@@ -137,7 +137,8 @@ internal fun Database.Transaction.handleValueDecisionChanges(
     val existingDrafts =
         findValueDecisionsForChild(child.id, null, listOf(VoucherValueDecisionStatus.DRAFT))
 
-    val updatedDecisions = updateExistingDecisions(from, newDrafts, existingDrafts, activeDecisions)
+    val updatedDecisions =
+        updateExistingDecisions(clock.now(), from, newDrafts, existingDrafts, activeDecisions)
     deleteValueDecisions(existingDrafts.map { it.id })
     upsertValueDecisions(updatedDecisions.updatedDrafts)
     updateVoucherValueDecisionEndDates(updatedDecisions.updatedActiveDecisions, clock.now())

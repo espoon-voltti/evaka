@@ -24,8 +24,8 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
-import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.orMax
 import java.time.LocalDate
@@ -49,11 +49,13 @@ class FinanceDecisionGenerator(
 
     fun createRetroactiveFeeDecisions(
         tx: Database.Transaction,
+        clock: EvakaClock,
         headOfFamily: PersonId,
         from: LocalDate
     ) {
         val families = tx.findFamiliesByHeadOfFamily(headOfFamily, from)
         tx.handleFeeDecisionChanges(
+            clock,
             jsonMapper,
             incomeTypesProvider,
             from, // intentionally does not care about feeDecisionMinDate
@@ -118,6 +120,7 @@ class FinanceDecisionGenerator(
             .groupBy { it.headOfFamily }
             .forEach { (headOfFamily, families) ->
                 tx.handleFeeDecisionChanges(
+                    clock,
                     jsonMapper,
                     incomeTypesProvider,
                     from,
@@ -331,6 +334,7 @@ data class UpdatedExistingDecisions<Decision : FinanceDecision<Decision>>(
 )
 
 internal fun <Decision : FinanceDecision<Decision>> updateExistingDecisions(
+    now: HelsinkiDateTime,
     from: LocalDate,
     newDrafts: List<Decision>,
     existingDrafts: List<Decision>,
@@ -340,7 +344,11 @@ internal fun <Decision : FinanceDecision<Decision>> updateExistingDecisions(
         filterOrUpdateStaleDrafts(existingDrafts, DateRange(from, null)).map { it.withRandomId() }
 
     val (withUpdatedEndDates, mergedDrafts) =
-        updateDecisionEndDatesAndMergeDrafts(activeDecisions, newDrafts + draftsWithUpdatedDates)
+        updateDecisionEndDatesAndMergeDrafts(
+            now,
+            activeDecisions,
+            newDrafts + draftsWithUpdatedDates
+        )
 
     return UpdatedExistingDecisions(
         updatedDrafts = mergedDrafts,
@@ -390,6 +398,7 @@ internal fun <Decision : FinanceDecision<Decision>> filterOrUpdateStaleDrafts(
 }
 
 internal fun <Decision : FinanceDecision<Decision>> updateDecisionEndDatesAndMergeDrafts(
+    now: HelsinkiDateTime,
     actives: List<Decision>,
     drafts: List<Decision>
 ): Pair<List<Decision>, List<Decision>> {
@@ -399,37 +408,35 @@ internal fun <Decision : FinanceDecision<Decision>> updateDecisionEndDatesAndMer
      * Immediately update the validity end dates for active decisions if a new draft has the same contents and they
      * both are valid to the future
      */
-    val (updatedActives, keptDrafts) =
-        actives.fold(Pair(listOf<Decision>(), mergedDrafts)) {
-            (updatedActives, keptDrafts),
-            decision ->
-            val firstOverlappingSimilarDraft =
-                keptDrafts
-                    .filter { draft -> decision.validFrom == draft.validFrom }
-                    .firstOrNull { draft -> decision.contentEquals(draft) }
+    val (updatedActiveDecisions, unnecessaryDrafts) =
+        actives
+            .mapNotNull { decision ->
+                val firstOverlappingSimilarDraft =
+                    mergedDrafts
+                        .filter { draft -> decision.validFrom == draft.validFrom }
+                        .firstOrNull { draft -> decision.contentEquals(draft) }
 
-            firstOverlappingSimilarDraft?.let { similarDraft ->
-                val now = LocalDate.now(europeHelsinki)
-                if (orMax(decision.validTo) >= now && orMax(similarDraft.validTo) >= now) {
-                    Pair(
-                        updatedActives +
-                            decision.withValidity(
-                                DateRange(decision.validFrom, similarDraft.validTo)
-                            ),
-                        keptDrafts.filterNot { it.id == similarDraft.id }
-                    )
-                } else {
-                    null
+                firstOverlappingSimilarDraft?.let { similarDraft ->
+                    if (
+                        orMax(decision.validTo) >= now.toLocalDate() &&
+                            orMax(similarDraft.validTo) >= now.toLocalDate()
+                    ) {
+                        decision.withValidity(
+                            DateRange(decision.validFrom, similarDraft.validTo)
+                        ) to similarDraft.id
+                    } else {
+                        null
+                    }
                 }
             }
-                ?: Pair(updatedActives, keptDrafts)
-        }
+            .unzip()
 
-    val allUpdatedActives =
-        actives.map { decision -> updatedActives.find { it.id == decision.id } ?: decision }
-    val filteredDrafts = mergeAndFilterUnnecessaryDrafts(keptDrafts, allUpdatedActives)
+    val allActiveDecisions =
+        actives.map { decision -> updatedActiveDecisions.find { it.id == decision.id } ?: decision }
+    val keptDrafts = mergedDrafts.filterNot { draft -> unnecessaryDrafts.contains(draft.id) }
+    val filteredDrafts = mergeAndFilterUnnecessaryDrafts(keptDrafts, allActiveDecisions)
 
-    return Pair(updatedActives, filteredDrafts)
+    return Pair(updatedActiveDecisions, filteredDrafts)
 }
 
 internal fun addECHAFeeAlterations(

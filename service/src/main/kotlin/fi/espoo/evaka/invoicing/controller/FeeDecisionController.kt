@@ -287,7 +287,7 @@ class FeeDecisionController(
                     Action.Person.GENERATE_RETROACTIVE_FEE_DECISIONS,
                     id
                 )
-                generator.createRetroactiveFeeDecisions(it, id, body.from)
+                generator.createRetroactiveFeeDecisions(it, clock, id, body.from)
             }
         }
         Audit.FeeDecisionHeadOfFamilyCreateRetroactive.log(targetId = id)

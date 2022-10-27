@@ -11,6 +11,7 @@ import fi.espoo.evaka.invoicing.data.getFeeAlterationsFrom
 import fi.espoo.evaka.invoicing.data.getFeeThresholds
 import fi.espoo.evaka.invoicing.data.getIncomesFrom
 import fi.espoo.evaka.invoicing.data.lockFeeDecisionsForHeadOfFamily
+import fi.espoo.evaka.invoicing.data.updateFeeDecisionStatusAndDates
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.domain.ChildWithDateOfBirth
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
@@ -41,6 +42,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapRow
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.asDistinctPeriods
 import fi.espoo.evaka.shared.domain.mergePeriods
 import fi.espoo.evaka.shared.domain.periodsCanMerge
@@ -49,6 +51,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 internal fun Database.Transaction.handleFeeDecisionChanges(
+    clock: EvakaClock,
     jsonMapper: JsonMapper,
     incomeTypesProvider: IncomeTypesProvider,
     from: LocalDate,
@@ -155,20 +158,28 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
                         pairs.map { it.validDuring } + decision.validDuring,
                         decision.validDuring
                     )
-                    .map { period ->
+                    .flatMap { period ->
                         val pair = pairs.find { it.validDuring.overlaps(period) }
-                        period to
-                            if (pair != null) {
-                                decision.copy(
-                                    validDuring = period,
-                                    children =
-                                        (decision.children + pair.children)
-                                            .sortedBy { it.siblingDiscount }
-                                            .sortedByDescending { it.child.dateOfBirth }
-                                )
-                            } else {
-                                decision.copy(validDuring = period)
-                            }
+                        if (pair != null) {
+                            listOf(
+                                period to
+                                    decision.copy(
+                                        validDuring = period,
+                                        children =
+                                            (decision.children + pair.children)
+                                                .sortedBy { it.siblingDiscount }
+                                                .sortedByDescending { it.child.dateOfBirth }
+                                    ),
+                                period to
+                                    pair.copy(
+                                        validDuring = period,
+                                        children =
+                                            (decision.children + pair.children)
+                                                .sortedBy { it.siblingDiscount }
+                                                .sortedByDescending { it.child.dateOfBirth }
+                                    ),
+                            )
+                        } else listOf(period to decision.copy(validDuring = period))
                     }
             }
             .let { mergePeriods(it) }
@@ -176,7 +187,13 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
     }
 
     val updatedDecisions =
-        updateExistingDecisions(from, newDrafts, existingDrafts, combinedActiveDecisions)
+        updateExistingDecisions(
+            clock.now(),
+            from,
+            newDrafts,
+            existingDrafts,
+            combinedActiveDecisions
+        )
     deleteFeeDecisions(existingDrafts.map { it.id })
     updateFeeDecisionStatusAndDates(updatedDecisions.updatedActiveDecisions)
     upsertFeeDecisions(updatedDecisions.updatedDrafts)

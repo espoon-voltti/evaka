@@ -3247,7 +3247,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
-    fun `two separate sent fee decisions are not replaced a new draft if the combined contents are the same`() {
+    fun `two separate sent fee decisions are not replaced by a new draft if the combined contents are the same`() {
         val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
         insertPartnership(testAdult_1.id, testAdult_2.id, period)
         insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
@@ -3316,6 +3316,89 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(2, decisions.size)
         val drafts = decisions.filter { it.status == FeeDecisionStatus.DRAFT }
         assertEquals(0, drafts.size)
+    }
+
+    @Test
+    fun `two separate sent fee decisions have their validity updated by a new draft if the combined contents are the same`() {
+        val oldDecisionPeriod = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 9, 30))
+        val period = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2020, 12, 31))
+        insertPartnership(testAdult_1.id, testAdult_2.id, period)
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), period)
+        insertFamilyRelations(testAdult_2.id, listOf(testChild_2.id), period)
+        insertPlacement(testChild_1.id, period, DAYCARE, testDaycare.id)
+        insertPlacement(testChild_2.id, period, DAYCARE, testDaycare.id)
+        val sentDecisions =
+            listOf(
+                createFeeDecisionFixture(
+                    status = FeeDecisionStatus.SENT,
+                    decisionType = FeeDecisionType.NORMAL,
+                    headOfFamilyId = testAdult_1.id,
+                    partnerId = testAdult_2.id,
+                    period = oldDecisionPeriod,
+                    feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
+                    familySize = 4,
+                    children =
+                        listOf(
+                            createFeeDecisionChildFixture(
+                                childId = testChild_1.id,
+                                dateOfBirth = testChild_1.dateOfBirth,
+                                placementUnitId = testDaycare.id,
+                                placementType = DAYCARE,
+                                serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
+                                baseFee = 28900,
+                                siblingDiscount = 0,
+                                fee = 28900
+                            )
+                        )
+                ),
+                createFeeDecisionFixture(
+                    status = FeeDecisionStatus.SENT,
+                    decisionType = FeeDecisionType.NORMAL,
+                    headOfFamilyId = testAdult_2.id,
+                    partnerId = testAdult_1.id,
+                    period = oldDecisionPeriod,
+                    feeThresholds = testFeeThresholds.getFeeDecisionThresholds(4),
+                    familySize = 4,
+                    children =
+                        listOf(
+                            createFeeDecisionChildFixture(
+                                childId = testChild_2.id,
+                                dateOfBirth = testChild_2.dateOfBirth,
+                                placementUnitId = testDaycare.id,
+                                placementType = DAYCARE,
+                                serviceNeed = snDefaultDaycare.toFeeDecisionServiceNeed(),
+                                baseFee = 28900,
+                                siblingDiscount = 50,
+                                fee = 14500
+                            )
+                        )
+                )
+            )
+
+        db.transaction { tx ->
+            tx.upsertFeeDecisions(sentDecisions)
+            generator.generateNewDecisionsForAdult(
+                tx,
+                MockEvakaClock(HelsinkiDateTime.of(period.start, LocalTime.of(0, 0))),
+                testAdult_1.id,
+                period.start
+            )
+        }
+
+        val decisions = getAllFeeDecisions()
+        assertEquals(
+            sentDecisions
+                .map {
+                    it.copy(
+                        validDuring = period,
+                        created = HelsinkiDateTime.of(period.start, LocalTime.of(0, 0))
+                    )
+                }
+                .toSet(),
+            decisions
+                .map { it.copy(created = HelsinkiDateTime.of(period.start, LocalTime.of(0, 0))) }
+                .toSet()
+        )
     }
 
     @Test
