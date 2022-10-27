@@ -24,7 +24,8 @@ export const globalRoles = [
   'SERVICE_WORKER',
   'FINANCE_ADMIN',
   'REPORT_VIEWER',
-  'DIRECTOR'
+  'DIRECTOR',
+  'MESSAGING'
 ] as const
 
 export type GlobalRole = typeof globalRoles[number]
