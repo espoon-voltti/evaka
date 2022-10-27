@@ -315,8 +315,10 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             )
         }
 
+        val ARRIVAL_TRESHOLD_MINUTES = 5L
+
         val planStart = plans.minOf { it.start }
-        if (arrivalTime < planStart.minusMinutes(15)) {
+        if (arrivalTime < planStart.minusMinutes(ARRIVAL_TRESHOLD_MINUTES)) {
             return when (arrival.type) {
                 StaffAttendanceType.OVERTIME ->
                     listOf(createNewAttendance(arrivalTime, null, arrival.type))
@@ -327,7 +329,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             }
         }
 
-        if (arrivalTime > planStart.plusMinutes(15)) {
+        if (arrivalTime > planStart.plusMinutes(ARRIVAL_TRESHOLD_MINUTES)) {
             return when (arrival.type) {
                 StaffAttendanceType.TRAINING,
                 StaffAttendanceType.OTHER_WORK -> {

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { isAfter, parse } from 'date-fns'
+import { addMinutes, differenceInMinutes, parse, subMinutes } from 'date-fns'
 import React, {
   useCallback,
   useContext,
@@ -12,6 +12,7 @@ import React, {
   useState
 } from 'react'
 import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
 
 import { getAttendanceArrivalDifferenceReasons } from 'employee-mobile-frontend/utils/staffAttendances'
 import { combine, Success } from 'lib-common/api'
@@ -31,7 +32,7 @@ import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { EMPTY_PIN, PinInput } from 'lib-components/molecules/PinInput'
 import { Gap } from 'lib-components/white-space'
 
@@ -109,8 +110,11 @@ export default React.memo(function StaffMarkArrivedPage() {
     }
   }, [attendanceGroup, groupOptions])
 
+  const MAX_ALLOWED_TIME_DIFF_MINUTES = 30
   const now = mockNow() ?? new Date()
-  const timeInFuture = isAfter(parse(time, 'HH:mm', now), now)
+  const timeDiffTooBig =
+    Math.abs(differenceInMinutes(parse(time, 'HH:mm', now), now)) >
+    MAX_ALLOWED_TIME_DIFF_MINUTES
 
   const backButtonText = useMemo(
     () =>
@@ -198,7 +202,7 @@ export default React.memo(function StaffMarkArrivedPage() {
               pinLocked ||
               !pinSet ||
               !isValidTime(time) ||
-              timeInFuture ||
+              timeDiffTooBig ||
               pinCode.join('').trim().length < 4 ||
               !attendanceGroup
 
@@ -246,45 +250,56 @@ export default React.memo(function StaffMarkArrivedPage() {
                     value={time}
                     data-qa="input-arrived"
                     info={
-                      timeInFuture
+                      timeDiffTooBig
                         ? {
                             status: 'warning',
-                            text: i18n.common.validation.dateLte(
-                              formatTime(mockNow() ?? new Date())
+                            text: i18n.common.validation.dateBetween(
+                              formatTime(subMinutes(now, 15)),
+                              formatTime(addMinutes(now, 15))
                             )
                           }
                         : undefined
                     }
                   />
-                  {staffAttendanceDifferenceReasons.length > 0 && (
-                    <StaffAttendanceTypeSelection
-                      i18n={i18n}
-                      types={staffAttendanceDifferenceReasons}
-                      selectedType={attendanceType}
-                      setSelectedType={setAttendanceType}
-                    />
+                  {timeDiffTooBig && (
+                    <InfoBoxWrapper>
+                      <InfoBox
+                        message={i18n.attendances.timeDiffTooBigNotification}
+                        data-qa="time-diff-too-big-notification"
+                      />
+                    </InfoBoxWrapper>
                   )}
-                  {renderResult(groupOptions, (groupOptions) =>
-                    groupOptions.length > 1 ? (
-                      <>
-                        <Gap />
-                        <CustomTitle>{i18n.common.group}</CustomTitle>
-                        <Select
-                          data-qa="group-select"
-                          selectedItem={attendanceGroup}
-                          items={groupOptions}
-                          getItemLabel={(item) =>
-                            unitInfo.groups.find((group) => group.id === item)
-                              ?.name ?? ''
-                          }
-                          placeholder={i18n.attendances.chooseGroup}
-                          onChange={(group) =>
-                            setAttendanceGroup(group ?? undefined)
-                          }
-                        />
-                      </>
-                    ) : null
-                  )}
+                  {!timeDiffTooBig &&
+                    staffAttendanceDifferenceReasons.length > 0 && (
+                      <StaffAttendanceTypeSelection
+                        i18n={i18n}
+                        types={staffAttendanceDifferenceReasons}
+                        selectedType={attendanceType}
+                        setSelectedType={setAttendanceType}
+                      />
+                    )}
+                  {!timeDiffTooBig &&
+                    renderResult(groupOptions, (groupOptions) =>
+                      groupOptions.length > 1 ? (
+                        <>
+                          <Gap />
+                          <CustomTitle>{i18n.common.group}</CustomTitle>
+                          <Select
+                            data-qa="group-select"
+                            selectedItem={attendanceGroup}
+                            items={groupOptions}
+                            getItemLabel={(item) =>
+                              unitInfo.groups.find((group) => group.id === item)
+                                ?.name ?? ''
+                            }
+                            placeholder={i18n.attendances.chooseGroup}
+                            onChange={(group) =>
+                              setAttendanceGroup(group ?? undefined)
+                            }
+                          />
+                        </>
+                      ) : null
+                    )}
                   <Gap />
                 </TimeWrapper>
                 <Gap size="xs" />
@@ -315,3 +330,7 @@ export default React.memo(function StaffMarkArrivedPage() {
     </TallContentArea>
   )
 })
+
+const InfoBoxWrapper = styled.div`
+  font-size: 16px;
+`
