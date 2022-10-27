@@ -12,9 +12,13 @@ interface EvakaClock {
     fun now(): HelsinkiDateTime
 }
 
-class MockEvakaClock(private val now: HelsinkiDateTime) : EvakaClock {
+class MockEvakaClock(private var now: HelsinkiDateTime) : EvakaClock {
     override fun today(): LocalDate = now.toLocalDate()
     override fun now(): HelsinkiDateTime = now
+
+    fun tick() {
+        now = now.plusSeconds(1)
+    }
 }
 
 class RealEvakaClock(private val clock: Clock = Clock.systemUTC()) : EvakaClock {
