@@ -7,7 +7,8 @@ INSERT INTO employee (id, first_name, last_name, email, external_id, roles) VALU
     ('00000000-0000-0000-0001-000000000000', 'Paula', 'Palveluohjaaja', 'paula.palveluohjaaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0001-000000000000', '{SERVICE_WORKER}'::user_role[]),
     ('00000000-0000-0000-0002-000000000000', 'Lasse', 'Laskuttaja', 'lasse.laskuttaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0002-000000000000', '{FINANCE_ADMIN}'::user_role[]),
     ('00000000-0000-0000-0003-000000000000', 'Hemmo', 'Hallinto', 'hemmo.hallinto@espoo.fi', 'espoo-ad:00000000-0000-0000-0003-000000000000', '{DIRECTOR}'::user_role[]),
-    ('00000000-0000-0000-0007-000000000000', 'Raisa', 'Raportoija', 'raisa.raportoija@espoo.fi', 'espoo-ad:00000000-0000-0000-0007-000000000000', '{REPORT_VIEWER}'::user_role[]);
+    ('00000000-0000-0000-0007-000000000000', 'Raisa', 'Raportoija', 'raisa.raportoija@espoo.fi', 'espoo-ad:00000000-0000-0000-0007-000000000000', '{REPORT_VIEWER}'::user_role[]),
+    ('00000000-0000-0000-0008-000000000000', 'Viena', 'Viestittäjä', 'viena.viestittaja@espoo.fi', 'espoo-ad:00000000-0000-0000-0008-000000000000', '{MESSAGING}'::user_role[]);
 INSERT INTO employee (id, first_name, last_name, email, external_id) VALUES
     ('00000000-0000-0000-0004-000000000000', 'Essi', 'Esimies', 'essi.esimies@espoo.fi', 'espoo-ad:00000000-0000-0000-0004-000000000000'),
     ('00000000-0000-0000-0004-000000000001', 'Eemeli', 'Esimies', 'eemeli.esimies@espoo.fi', 'espoo-ad:00000000-0000-0000-0004-000000000001'),
