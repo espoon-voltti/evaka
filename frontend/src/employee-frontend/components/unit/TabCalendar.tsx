@@ -4,6 +4,7 @@
 
 import sortBy from 'lodash/sortBy'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { UserContext } from 'employee-frontend/state/user'
@@ -13,7 +14,6 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { useQuery } from 'lib-common/utils/useQuery'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { useSyncQueryParams } from 'lib-common/utils/useSyncQueryParams'
 import { ChoiceChip } from 'lib-components/atoms/Chip'
@@ -162,21 +162,21 @@ const TabContent = React.memo(function TabContent({
     'REALTIME_STAFF_ATTENDANCE'
   )
 
-  const query = useQuery()
+  const [searchParams] = useSearchParams()
 
-  const selectedDateParam = query.get('date')
+  const selectedDateParam = searchParams.get('date')
   const [selectedDate, setSelectedDate] = useState<LocalDate>(
     selectedDateParam
       ? LocalDate.parseIso(selectedDateParam)
       : LocalDate.todayInSystemTz()
   )
 
-  const groupParam = query.get('group')
+  const groupParam = searchParams.get('group')
   const [selectedGroup, setSelectedGroup] = useState<AttendanceGroupFilter>(
     () => getDefaultGroup(groupParam, groups)
   )
 
-  const modeParam = query.get('mode')
+  const modeParam = searchParams.get('mode')
   const [requestedMode, setRequestedMode] = useState<CalendarMode>(
     modeParam && ['month', 'week'].includes(modeParam)
       ? (modeParam as CalendarMode)

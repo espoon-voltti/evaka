@@ -23,7 +23,6 @@ import { isLoading } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { useQuery } from 'lib-common/utils/useQuery'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import Tabs from 'lib-components/molecules/Tabs'
@@ -50,10 +49,10 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const { unitInformation, unitData, reloadUnitData, filters, setFilters } =
     useContext(UnitContext)
 
-  const query = useQuery()
+  const [searchParams, setSearchParams] = useSearchParams()
   useEffect(() => {
-    if (query.has('start')) {
-      const queryStart = LocalDate.parseIso(query.get('start') ?? '')
+    if (searchParams.has('start')) {
+      const queryStart = LocalDate.parseIso(searchParams.get('start') ?? '')
       setFilters(filters.withStartDate(queryStart))
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -104,8 +103,6 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
       )
       .join(',')
   }
-
-  const [searchParams, setSearchParams] = useSearchParams()
 
   useEffect(() => {
     const openList = openGroupsToStringList(openGroups)
