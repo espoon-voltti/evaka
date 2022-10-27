@@ -10,7 +10,8 @@ import styled from 'styled-components'
 import { postStaffAndExternalAttendances } from 'employee-frontend/api/staff-attendance'
 import { useTranslation } from 'employee-frontend/state/i18n'
 import { isTimeValid } from 'employee-frontend/utils/validation/validations'
-import { Failure, Result } from 'lib-common/api'
+import { Failure } from 'lib-common/api'
+import DateRange from 'lib-common/date-range'
 import { ErrorsOf, getErrorCount } from 'lib-common/form-validation'
 import { UpsertStaffAndExternalAttendanceRequest } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
@@ -20,6 +21,7 @@ import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 import StatusIcon from 'lib-components/atoms/StatusIcon'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import Select from 'lib-components/atoms/dropdowns/Select'
 import InputField, {
   InputFieldUnderRow
 } from 'lib-components/atoms/form/InputField'
@@ -35,16 +37,14 @@ import { fontWeights, H1, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
-import GroupSelector from '../tab-calendar/GroupSelector'
-
 type PersonArrivalData = {
   arrivalDate: LocalDate | null
   arrivalTime: string
   name: string
-  groupId: UUID | null
+  groupId: UUID
 }
 
-const defaultPersonArrival = (groupId: UUID | null): PersonArrivalData => ({
+const defaultPersonArrival = (groupId: UUID): PersonArrivalData => ({
   arrivalDate: LocalDate.todayInHelsinkiTz(),
   arrivalTime: LocalTime.nowInHelsinkiTz().format('HH:mm'),
   name: '',
@@ -83,8 +83,7 @@ const validateForm = (
             LocalTime.parse(formData.arrivalTime, 'HH:mm')
           ),
           name: formData.name,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          groupId: formData.groupId!
+          groupId: formData.groupId
         }
       ],
       staffAttendances: []
@@ -96,8 +95,8 @@ type AddPersonModalProps = {
   onClose: () => void
   onSave: () => void
   unitId: UUID
-  groups: Result<DaycareGroup[]>
-  defaultGroupId: UUID | null
+  groups: DaycareGroup[]
+  defaultGroupId: UUID
 }
 
 export const AddPersonModal = React.memo(function AddPersonModal({
@@ -123,6 +122,8 @@ export const AddPersonModal = React.memo(function AddPersonModal({
       return Promise.reject(Failure.of({ message: 'validation error' }))
     return postStaffAndExternalAttendances(unitId, requestBody)
   }, [requestBody, unitId])
+
+  const openGroups = useMemo(() => groups.filter(isGroupOpen), [groups])
 
   return (
     <PlainModal margin="auto" data-qa="staff-attendance-add-person-modal">
@@ -202,16 +203,20 @@ export const AddPersonModal = React.memo(function AddPersonModal({
           <FieldLabel>
             {i18n.unit.staffAttendance.addPersonModal.group}
           </FieldLabel>
-          <GroupSelector
-            groups={groups}
-            data-qa="add-person-group-select"
-            selected={formData.groupId}
-            onSelect={(val) =>
-              setFormData((prev) => ({ ...prev, groupId: val }))
+          <Select
+            items={openGroups}
+            selectedItem={
+              openGroups.find(({ id }) => id === formData.groupId) ?? null
             }
-            // Modal is accessible only when realtime staff attendance is enabled
-            realtimeStaffAttendanceEnabled={true}
-            onlyRealGroups
+            onChange={(group) => {
+              if (group !== null) {
+                setFormData((prev) => ({ ...prev, groupId: group.id }))
+              }
+            }}
+            getItemValue={({ id }) => id}
+            getItemLabel={({ name }) => name}
+            placeholder={i18n.common.select}
+            data-qa="add-person-group-select"
           />
           {errors?.groupId && (
             <InputFieldUnderRow className={classNames('warning')}>
@@ -239,6 +244,12 @@ export const AddPersonModal = React.memo(function AddPersonModal({
     </PlainModal>
   )
 })
+
+function isGroupOpen(group: DaycareGroup) {
+  return new DateRange(group.startDate, group.endDate).includes(
+    LocalDate.todayInHelsinkiTz()
+  )
+}
 
 const Content = styled.div`
   padding: ${defaultMargins.XL};

@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { MutableRefObject, useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import { renderResult } from 'employee-frontend/components/async-rendering'
 import LabelValueList from 'employee-frontend/components/common/LabelValueList'
-import { combine, Result } from 'lib-common/api'
+import { combine } from 'lib-common/api'
 import { Child } from 'lib-common/api-types/reservations'
-import { UpsertStaffAndExternalAttendanceRequest } from 'lib-common/generated/api-types/attendance'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -25,16 +25,11 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faChevronDown, faChevronUp } from 'lib-icons'
 
-import {
-  deleteExternalStaffAttendance,
-  deleteStaffAttendance,
-  getStaffAttendances,
-  postStaffAndExternalAttendances
-} from '../../../api/staff-attendance'
+import { getStaffAttendances } from '../../../api/staff-attendance'
 import { getUnitAttendanceReservations } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
 import { AbsenceLegend } from '../../absences/AbsenceLegend'
-import { WeekData, WeekSavingFns } from '../TabCalendar'
+import { AttendanceGroupFilter } from '../TabCalendar'
 
 import ChildReservationsTable from './ChildReservationsTable'
 import ReservationModalSingleChild from './ReservationModalSingleChild'
@@ -55,44 +50,36 @@ const AttendanceTime = styled(Time)`
 
 interface Props {
   unitId: UUID
-  groupId: UUID | 'no-group' | 'staff' | 'all'
+  selectedGroup: AttendanceGroupFilter
   selectedDate: LocalDate
   setSelectedDate: (date: LocalDate) => void
   isShiftCareUnit: boolean
   realtimeStaffAttendanceEnabled: boolean
   operationalDays: number[]
-  groups: Result<DaycareGroup[]>
-  week: WeekData
-  weekSavingFns: MutableRefObject<WeekSavingFns>
+  groups: DaycareGroup[]
+  weekRange: FiniteDateRange
 }
 
 export default React.memo(function UnitAttendanceReservationsView({
   unitId,
-  groupId,
+  selectedGroup,
   selectedDate,
   isShiftCareUnit,
   realtimeStaffAttendanceEnabled,
   operationalDays,
   groups,
-  week,
-  weekSavingFns
+  weekRange
 }: Props) {
   const { i18n } = useTranslation()
 
   const [childReservations, reloadChildReservations] = useApiState(
-    () =>
-      week.savingPromise.then(() =>
-        getUnitAttendanceReservations(unitId, week.dateRange)
-      ),
-    [unitId, week.dateRange, week.savingPromise]
+    () => getUnitAttendanceReservations(unitId, weekRange),
+    [unitId, weekRange]
   )
 
   const [staffAttendances, reloadStaffAttendances] = useApiState(
-    () =>
-      week.savingPromise.then(() =>
-        getStaffAttendances(unitId, week.dateRange)
-      ),
-    [unitId, week.dateRange, week.savingPromise]
+    () => getStaffAttendances(unitId, weekRange),
+    [unitId, weekRange]
   )
 
   const [creatingReservationChild, setCreatingReservationChild] =
@@ -112,40 +99,10 @@ export default React.memo(function UnitAttendanceReservationsView({
     }).map(([value, label]) => ({ label, value }))
   }, [i18n])
 
-  const saveAttendances = useCallback(
-    (body: UpsertStaffAndExternalAttendanceRequest) =>
-      groupId === 'staff'
-        ? postStaffAndExternalAttendances(unitId, body)
-        : postStaffAndExternalAttendances(unitId, {
-            staffAttendances: body.staffAttendances.map((a) => ({
-              ...a,
-              groupId
-            })),
-            externalAttendances: body.externalAttendances.map((a) => ({
-              ...a,
-              groupId
-            }))
-          }),
-    [groupId, unitId]
+  const groupFilter = useCallback(
+    (id) => selectedGroup.type === 'group' && selectedGroup.id === id,
+    [selectedGroup]
   )
-
-  const deleteAttendances = useCallback(
-    (
-      staffAttendanceIds: UUID[],
-      externalStaffAttendanceIds: UUID[]
-    ): Promise<Result<void>[]> => {
-      const staffDeletes = staffAttendanceIds.map((id) =>
-        deleteStaffAttendance(unitId, id)
-      )
-      const externalDeletes = externalStaffAttendanceIds.map((id) =>
-        deleteExternalStaffAttendance(unitId, id)
-      )
-      return Promise.all([...staffDeletes, ...externalDeletes])
-    },
-    [unitId]
-  )
-
-  const groupFilter = useCallback((id) => id === groupId, [groupId])
   const noFilter = useCallback(() => true, [])
 
   const combinedData = combine(childReservations, staffAttendances)
@@ -171,59 +128,51 @@ export default React.memo(function UnitAttendanceReservationsView({
       )}
 
       <FixedSpaceColumn spacing="L">
-        {groupId === 'staff' ? (
+        {selectedGroup.type === 'staff' ? (
           <StaffAttendanceTable
             unitId={unitId}
             operationalDays={childData.operationalDays}
             staffAttendances={staffData.staff}
             extraAttendances={staffData.extraAttendances}
-            saveAttendances={saveAttendances}
-            deleteAttendances={deleteAttendances}
             reloadStaffAttendances={reloadStaffAttendances}
             groups={groups}
             groupFilter={noFilter}
-            selectedGroup={null}
-            weekSavingFns={weekSavingFns}
+            defaultGroup={null}
           />
         ) : (
           <>
-            {realtimeStaffAttendanceEnabled && (
+            {realtimeStaffAttendanceEnabled &&
+            selectedGroup.type === 'group' ? (
               <StaffAttendanceTable
                 unitId={unitId}
                 operationalDays={childData.operationalDays}
-                staffAttendances={
-                  groupId === 'all'
-                    ? staffData.staff
-                    : staffData.staff.filter((s) => s.groups.includes(groupId))
-                }
-                extraAttendances={
-                  groupId === 'all'
-                    ? staffData.extraAttendances
-                    : staffData.extraAttendances.filter(
-                        (ea) => ea.groupId === groupId
-                      )
-                }
-                saveAttendances={saveAttendances}
-                deleteAttendances={deleteAttendances}
+                staffAttendances={staffData.staff.filter((s) =>
+                  s.groups.includes(selectedGroup.id)
+                )}
+                extraAttendances={staffData.extraAttendances.filter(
+                  (ea) => ea.groupId === selectedGroup.id
+                )}
                 reloadStaffAttendances={reloadStaffAttendances}
                 groups={groups}
                 groupFilter={groupFilter}
-                selectedGroup={groupId}
-                weekSavingFns={weekSavingFns}
+                defaultGroup={selectedGroup.id}
               />
-            )}
+            ) : null}
             <ChildReservationsTable
               unitId={unitId}
               operationalDays={childData.operationalDays}
               allDayRows={
-                groupId === 'all'
+                selectedGroup.type === 'all-children'
                   ? childData.groups
                       .flatMap(({ children }) => children)
                       .concat(childData.ungrouped)
-                  : groupId === 'no-group'
+                  : selectedGroup.type === 'no-group'
                   ? childData.ungrouped
-                  : childData.groups.find((g) => g.group.id === groupId)
-                      ?.children ?? []
+                  : selectedGroup.type === 'group'
+                  ? childData.groups.find(
+                      (g) => g.group.id === selectedGroup.id
+                    )?.children ?? []
+                  : []
               }
               onMakeReservationForChild={setCreatingReservationChild}
               selectedDate={selectedDate}

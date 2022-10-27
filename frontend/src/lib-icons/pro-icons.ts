@@ -127,8 +127,8 @@ export { faXmark as farXmark } from '@fortawesome/pro-regular-svg-icons/faXmark'
 export { faCommentAltLines as fasCommentAltLines } from '@fortawesome/pro-solid-svg-icons/faCommentAltLines'
 
 import type * as ProIconsSet from './pro-icons'
+import { typeAssert } from './utils'
 
 import type { IconSet } from '.'
-import { typeAssert } from '.'
 
 typeAssert<typeof ProIconsSet extends IconSet ? true : false>(true)

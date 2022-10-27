@@ -9,18 +9,12 @@ import orderBy from 'lodash/orderBy'
 import reduce from 'lodash/reduce'
 import uniq from 'lodash/uniq'
 import uniqBy from 'lodash/uniqBy'
-import React, {
-  Fragment,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
 import { ErrorKey } from 'lib-common/form-validation'
 import {
+  Attendance,
   EmployeeAttendance,
   SingleDayStaffAttendanceUpsert,
   StaffAttendanceType,
@@ -53,6 +47,7 @@ import {
 import { H1, H2, H3, LabelLike } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 import {
   faChevronLeft,
   faChevronRight,
@@ -72,7 +67,7 @@ interface Props {
   attendances: EmployeeAttendance[]
   close: () => void
   reloadStaffAttendances: () => void
-  groups: Result<DaycareGroup[]>
+  groups: DaycareGroup[]
   onPreviousDate: () => Promise<void>
   onNextDate: () => Promise<void>
 }
@@ -159,14 +154,12 @@ export default React.memo(function StaffAttendanceDetailsModal({
     editStateDate: LocalDate
   }>({ editState: initialEditState, editStateDate: date })
 
-  useEffect(() => {
-    if (editStateDate !== date) {
-      setEditState({
-        editState: initialEditState,
-        editStateDate: date
-      })
-    }
-  }, [initialEditState, date, editStateDate, editState, attendances])
+  if (editStateDate !== date) {
+    setEditState({
+      editState: initialEditState,
+      editStateDate: date
+    })
+  }
 
   const updateAttendance = useCallback(
     (index: number, data: Omit<EditedAttendance, 'id'>) =>
@@ -203,7 +196,11 @@ export default React.memo(function StaffAttendanceDetailsModal({
       })),
     []
   )
-  const [requestBody, errors] = validateEditState(employee, date, editState)
+  const [requestBody, errors] = validateEditState(
+    employee?.attendances ?? [],
+    date,
+    editState
+  )
   const save = useCallback(() => {
     if (!requestBody) return
     return postSingleDayStaffAttendances(unitId, employeeId, date, requestBody)
@@ -409,12 +406,7 @@ export default React.memo(function StaffAttendanceDetailsModal({
                 <GroupIndicator data-qa="group-indicator">
                   {groupId === null ? (
                     <Select
-                      items={[
-                        null,
-                        ...groups
-                          .map((gs) => gs.map(({ id }) => id))
-                          .getOrElse([])
-                      ]}
+                      items={[null, ...groups.map(({ id }) => id)]}
                       selectedItem={groupId}
                       onChange={(value) =>
                         updateAttendance(index, {
@@ -425,20 +417,14 @@ export default React.memo(function StaffAttendanceDetailsModal({
                         })
                       }
                       getItemLabel={(item) =>
-                        groups
-                          .map((gs) => gs.find(({ id }) => id === item)?.name)
-                          .getOrElse(undefined) ??
+                        groups.find(({ id }) => id === item)?.name ??
                         i18n.unit.staffAttendance.noGroup
                       }
                       data-qa="attendance-group-select"
                     />
                   ) : (
                     <InlineButton
-                      text={
-                        groups
-                          .map((gs) => gs.find((g) => g.id === groupId)?.name)
-                          .getOrElse(undefined) ?? '-'
-                      }
+                      text={groups.find((g) => g.id === groupId)?.name ?? '-'}
                       onClick={() =>
                         updateAttendance(index, {
                           arrived,
@@ -450,21 +436,25 @@ export default React.memo(function StaffAttendanceDetailsModal({
                     />
                   )}
                 </GroupIndicator>
-                <Select
-                  items={[...staffAttendanceTypes]}
-                  selectedItem={type}
-                  onChange={(value) =>
-                    value &&
-                    updateAttendance(index, {
-                      arrived,
-                      departed,
-                      type: value,
-                      groupId
-                    })
-                  }
-                  getItemLabel={(item) => i18n.unit.staffAttendance.types[item]}
-                  data-qa="attendance-type-select"
-                />
+                {featureFlags.experimental?.staffAttendanceTypes ? (
+                  <Select
+                    items={[...staffAttendanceTypes]}
+                    selectedItem={type}
+                    onChange={(value) =>
+                      value &&
+                      updateAttendance(index, {
+                        arrived,
+                        departed,
+                        type: value,
+                        groupId
+                      })
+                    }
+                    getItemLabel={(item) =>
+                      i18n.unit.staffAttendance.types[item]
+                    }
+                    data-qa="attendance-type-select"
+                  />
+                ) : null}
                 <InputRow>
                   <TimeInput
                     value={arrived}
@@ -552,88 +542,103 @@ interface ValidationError {
   departed?: ErrorKey
 }
 
-function validateEditState(
-  employee: EmployeeAttendance | undefined,
+export function validateEditState(
+  attendances: Attendance[],
   date: LocalDate,
   state: EditedAttendance[]
 ): [SingleDayStaffAttendanceUpsert[] | undefined, ValidationError[]] {
+  const body: SingleDayStaffAttendanceUpsert[] = []
   const errors: ValidationError[] = []
-  for (let i = 0; i < state.length; i++) {
-    const attendance = state[i]
-    const attendanceErrors: ValidationError = {}
+  let hasErrors = false
 
-    if (!attendance.arrived) {
+  for (let i = 0; i < state.length; i++) {
+    const item = state[i]
+    const existing = attendances.find((a) => a.id === item.id)
+
+    const itemErrors: ValidationError = {}
+
+    let parsedArrived: LocalTime | undefined = undefined
+    if (!item.arrived) {
       if (i === 0) {
-        const isNotOvernightAttendance =
-          employee?.attendances
-            .find(({ id }) => id === attendance.id)
-            ?.arrived.toLocalDate()
-            .isEqual(date) ?? true
-        if (isNotOvernightAttendance) {
-          attendanceErrors.arrived = 'required'
+        const isOvernightAttendance =
+          existing && existing.arrived.toLocalDate().isBefore(date)
+        if (!isOvernightAttendance) {
+          itemErrors.arrived = 'required'
         }
       } else {
-        attendanceErrors.arrived = 'required'
+        itemErrors.arrived = 'required'
       }
     } else {
-      const parsedArrived = LocalTime.tryParse(attendance.arrived, 'HH:mm')
+      parsedArrived = LocalTime.tryParse(item.arrived, 'HH:mm')
       if (!parsedArrived) {
-        attendanceErrors.arrived = 'timeFormat'
+        itemErrors.arrived = 'timeFormat'
       }
     }
 
-    if (!attendance.departed) {
+    let parsedDeparted: LocalTime | undefined = undefined
+    if (!item.departed) {
       if (i !== state.length - 1) {
-        attendanceErrors.departed = 'required'
+        itemErrors.departed = 'required'
       }
     } else {
-      const parsedDeparted = LocalTime.tryParse(attendance.departed, 'HH:mm')
+      parsedDeparted = LocalTime.tryParse(item.departed, 'HH:mm')
       if (!parsedDeparted) {
-        attendanceErrors.departed = 'timeFormat'
+        itemErrors.departed = 'timeFormat'
       }
     }
 
     if (
-      i > 0 &&
-      !attendanceErrors.arrived &&
-      !errors[i - 1].departed &&
-      attendance.arrived < state[i - 1].departed
+      i !== state.length - 1 &&
+      parsedArrived &&
+      parsedDeparted &&
+      parsedDeparted.isBefore(parsedArrived)
     ) {
-      attendanceErrors.arrived = 'timeFormat'
+      itemErrors.departed = 'timeFormat'
     }
 
-    errors[i] = attendanceErrors
-  }
-
-  if (errors.some((error) => Object.keys(error).length > 0)) {
-    return [undefined, errors]
-  }
-
-  if (state.some(({ groupId }) => groupId === null)) {
-    return [undefined, errors]
-  }
-
-  const body = state.map((att) => {
-    const arrivedAsHelsinkiDateTime = () =>
-      HelsinkiDateTime.fromLocal(date, LocalTime.parse(att.arrived, 'HH:mm'))
-    return {
-      attendanceId: att.id,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      groupId: att.groupId!,
-      arrived: !att.arrived
-        ? employee?.attendances.find(({ id }) => id === att.id)?.arrived ??
-          arrivedAsHelsinkiDateTime()
-        : arrivedAsHelsinkiDateTime(),
-      departed: !att.departed
-        ? employee?.attendances.find(({ id }) => id === att.id)?.departed ??
-          null
-        : HelsinkiDateTime.fromLocal(
-            date,
-            LocalTime.parse(att.departed, 'HH:mm')
-          ),
-      type: att.type
+    if (
+      i > 0 &&
+      !itemErrors.arrived &&
+      !errors[i - 1].departed &&
+      item.arrived < state[i - 1].departed
+    ) {
+      itemErrors.arrived = 'timeFormat'
     }
-  })
+
+    const arrived = parsedArrived
+      ? HelsinkiDateTime.fromLocal(date, parsedArrived)
+      : existing?.arrived ?? null
+    if (
+      arrived !== null &&
+      item.groupId !== null &&
+      Object.keys(itemErrors).length === 0
+    ) {
+      const departed = parsedDeparted
+        ? HelsinkiDateTime.fromLocal(
+            // If departed is before arrived, it means that the attendance
+            // is overnight and departed is on the next day
+            parsedArrived && parsedDeparted.isBefore(parsedArrived)
+              ? date.addDays(1)
+              : date,
+            parsedDeparted
+          )
+        : existing?.departed ?? null
+      body.push({
+        attendanceId: item.id,
+        type: item.type,
+        groupId: item.groupId,
+        arrived,
+        departed
+      })
+    } else {
+      hasErrors = true
+    }
+    errors[i] = itemErrors
+  }
+
+  if (hasErrors) {
+    return [undefined, errors]
+  }
 
   return [body, errors]
 }

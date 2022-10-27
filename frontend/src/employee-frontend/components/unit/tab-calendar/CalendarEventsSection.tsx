@@ -56,8 +56,6 @@ import { Bold, fontWeights, H4, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faCalendarPlus, faQuestion, faTrash } from 'lib-icons'
 
-import { AttendanceGroupFilter } from '../TabCalendar'
-
 async function getCalendarEvents(
   unitId: UUID,
   range: FiniteDateRange
@@ -179,7 +177,7 @@ const getShortAttendees = (
   daycareName: string,
   groups: GroupInfo[],
   individualChildren: IndividualChild[],
-  groupId: AttendanceGroupFilter
+  groupId: UUID | null
 ): {
   type: SpecifierType
   matchers: string[]
@@ -189,7 +187,7 @@ const getShortAttendees = (
     return { type: 'daycare', matchers: [], text: daycareName }
   }
 
-  if (individualChildren.filter((i) => i.groupId === groupId).length === 0) {
+  if (!individualChildren.some((i) => i.groupId === groupId)) {
     return {
       type: 'group',
       matchers: groups.map(({ id }) => id),
@@ -216,11 +214,11 @@ const getShortAttendees = (
 export default React.memo(function CalendarEventsSection({
   unitId,
   weekDateRange,
-  selectedGroupId
+  groupId
 }: {
   unitId: UUID
   weekDateRange: FiniteDateRange
-  selectedGroupId: AttendanceGroupFilter
+  groupId: UUID | null // null means all groups
 }) {
   const [events, reloadEvents] = useApiState(
     () => getCalendarEvents(unitId, weekDateRange),
@@ -272,7 +270,7 @@ export default React.memo(function CalendarEventsSection({
               void reloadEvents()
             }
           }}
-          selectedGroupId={selectedGroupId}
+          groupId={groupId}
         />
       )}
 
@@ -310,20 +308,18 @@ export default React.memo(function CalendarEventsSection({
                           .getOrElse(''),
                         event.groups,
                         event.individualChildren,
-                        selectedGroupId
+                        groupId
                       )
                     }))
                     .filter(({ specifier }) =>
                       // if all groups selected: only show events applicable for daycare, NOT group events
                       // if specific group selected: show daycare-wide events and group's events
-                      selectedGroupId === 'all'
+                      groupId === null
                         ? specifier.type === 'daycare'
                         : specifier.type === 'daycare' ||
                           ((specifier.type === 'group' ||
                             specifier.type === 'partial-group') &&
-                            specifier.matchers.some(
-                              (groupId) => groupId === selectedGroupId
-                            ))
+                            specifier.matchers.some((id) => id === groupId))
                     ),
                   ({ specifier }) =>
                     ['unit', 'group', 'partial-group'].indexOf(specifier.type)
@@ -384,11 +380,11 @@ const getFormTree = (tree: TreeNode[]) => {
 const CreateEventModal = React.memo(function CreateEventModal({
   unitId,
   onClose,
-  selectedGroupId
+  groupId
 }: {
   unitId: UUID
   onClose: (shouldRefresh: boolean) => void
-  selectedGroupId: AttendanceGroupFilter
+  groupId: UUID | null
 }) {
   const { i18n, lang } = useTranslation()
 
@@ -481,7 +477,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
               text: `${child.firstName ?? ''} ${child.lastName ?? ''}`,
               key: child.id,
               checked: useDefault
-                ? selectedGroupId === group.id || selectedGroupId === 'all'
+                ? groupId === group.id || groupId === null
                 : selectedChildrenByGroup[group.id]?.allChildrenAreSelected ||
                   selectedChildrenByGroup[group.id]?.selectedChildren[child.id],
               children: []
@@ -509,7 +505,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
         })
       }
     )
-  }, [form.period, selectedGroupId, unitData, unitInformation, updateForm])
+  }, [form.period, groupId, unitData, unitInformation, updateForm])
 
   const childrenWithMissingPlacement = useMemo(() => {
     const specificChildSelections = omitBy(

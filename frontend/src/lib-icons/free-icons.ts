@@ -130,8 +130,8 @@ export { faChevronDown as fasChevronDown } from '@fortawesome/free-solid-svg-ico
 export { faChevronUp as fasChevronUp } from '@fortawesome/free-solid-svg-icons/faChevronUp'
 
 import type * as FreeIconsSet from './free-icons'
+import { typeAssert } from './utils'
 
 import type { IconSet } from '.'
-import { typeAssert } from '.'
 
 typeAssert<typeof FreeIconsSet extends IconSet ? true : false>(true)

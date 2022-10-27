@@ -1875,7 +1875,7 @@ export const fi = {
       title: 'Kalenteri',
       noGroup: 'Ei ryhmää',
       staff: 'Henkilökunta',
-      all: 'Kaikki',
+      allChildren: 'Kaikki lapset',
       modes: {
         week: 'Viikko',
         month: 'Kuukausi'
@@ -2062,7 +2062,7 @@ export const fi = {
       incalculableSum:
         'Tunteja ei voi laskea, koska päivän kirjauksista puuttuu viimeinen lähtöaika.',
       gapWarning: (gapRange: string) => `Kirjaus puuttuu välillä ${gapRange}`,
-      personCount: 'Henkilökuntaa paikalla',
+      personCount: 'Läsnäolleiden yhteismäärä',
       personCountAbbr: 'hlö',
       unlinkOvernight: 'Erota yön yli menevä läsnäolo',
       previousDay: 'Edellinen päivä',
