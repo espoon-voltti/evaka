@@ -92,7 +92,6 @@ describe('Realtime staff attendance page', () => {
     const departureTime = '12:45'
 
     await staffAttendancePage.assertPresentStaffCount(0)
-
     await staffAttendancePage.selectTab('absent')
     await staffAttendancePage.openStaffPage(name)
     await staffAttendancePage.assertEmployeeStatus('Poissa')

@@ -46,10 +46,13 @@ export function getAttendanceArrivalDifferenceReasons(
   plannedStart: HelsinkiDateTime,
   arrival: HelsinkiDateTime
 ): StaffAttendanceType[] {
+  const ARRIVAL_THRESHOLD_MINUTES = 5
   const arrivedBeforeMinThreshold = arrival.isBefore(
-    plannedStart.subMinutes(15)
+    plannedStart.subMinutes(ARRIVAL_THRESHOLD_MINUTES)
   )
-  const arrivedAfterMaxThreshold = arrival.isAfter(plannedStart.addMinutes(15))
+  const arrivedAfterMaxThreshold = arrival.isAfter(
+    plannedStart.addMinutes(ARRIVAL_THRESHOLD_MINUTES)
+  )
 
   if (arrivedBeforeMinThreshold) {
     return ['OVERTIME', 'JUSTIFIED_CHANGE']
