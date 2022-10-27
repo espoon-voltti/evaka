@@ -10,7 +10,8 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestDaycare
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
@@ -18,6 +19,7 @@ import fi.espoo.evaka.testPurchasedDaycare
 import fi.espoo.evaka.varda.integration.MockVardaIntegrationEndpoint
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
@@ -26,9 +28,12 @@ import org.springframework.beans.factory.annotation.Autowired
 
 class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var mockEndpoint: MockVardaIntegrationEndpoint
+    lateinit var clock: MockEvakaClock
 
     @BeforeEach
     fun beforeEach() {
+        clock = MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2020, 1, 1), LocalTime.of(8, 0, 0)))
+
         db.transaction { tx ->
             tx.insertTestCareArea(testArea)
             tx.insertTestDaycare(
@@ -60,23 +65,28 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         val closingDate = LocalDate.now()
         db.transaction {
             it.createUpdate(
-                    "UPDATE DAYCARE set closing_date = current_date WHERE id = :daycareId".trimIndent()
+                    "UPDATE DAYCARE set closing_date = current_date, updated = :now WHERE id = :daycareId".trimIndent()
                 )
                 .bind("daycareId", testDaycare.id)
                 .bind("closingDate", closingDate)
+                .bind("now", clock.now())
                 .execute()
         }
+        clock.tick()
+
         updateUnits()
         assertEquals(
             closingDate.toString(),
             mockEndpoint.units.values.first { it.nimi == testDaycare.name }.paattymis_pvm
         )
 
+        clock.tick()
         db.transaction {
             it.createUpdate(
-                    "UPDATE DAYCARE set closing_date = NULL WHERE id = :daycareId".trimIndent()
+                    "UPDATE DAYCARE set closing_date = NULL, updated = :now WHERE id = :daycareId".trimIndent()
                 )
                 .bind("daycareId", testDaycare.id)
+                .bind("now", clock.now())
                 .execute()
         }
         val unit =
@@ -134,11 +144,15 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
         val uploadedAt = unitToStale.uploadedAt
         val createdAt = unitToStale.createdAt
 
+        clock.tick()
         db.transaction {
             it.createUpdate(
-                    "UPDATE daycare SET street_address = 'new address' WHERE id = :daycareId"
+                    """
+                        UPDATE daycare SET street_address = 'new address', updated = :now WHERE id = :daycareId;
+                        """
                 )
                 .bind("daycareId", daycareId)
+                .bind("now", clock.now())
                 .execute()
         }
 
@@ -152,13 +166,7 @@ class VardaUnitIntegrationTest : VardaIntegrationTest(resetDbBeforeEach = true) 
 
     private fun updateUnits() {
         val ophMunicipalOrganizerIdUrl = "${vardaEnv.url}/v1/vakajarjestajat/${ophEnv.organizerId}/"
-        updateUnits(
-            db,
-            RealEvakaClock(),
-            vardaClient,
-            ophEnv.municipalityCode,
-            ophMunicipalOrganizerIdUrl
-        )
+        updateUnits(db, clock, vardaClient, ophEnv.municipalityCode, ophMunicipalOrganizerIdUrl)
     }
 }
 
