@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+
 import config from '../../config'
 import {
   cleanUpMessages,
@@ -144,7 +146,8 @@ describe('Application details', () => {
 
     await execSimpleApplicationAction(
       restrictedDetailsGuardianApplication.id,
-      'move-to-waiting-placement'
+      'move-to-waiting-placement',
+      HelsinkiDateTime.now() // TODO: use mock clock
     )
     await createPlacementPlan(restrictedDetailsGuardianApplication.id, {
       unitId: fixtures.preschoolFixture.id,
@@ -159,7 +162,8 @@ describe('Application details', () => {
     })
     await execSimpleApplicationAction(
       restrictedDetailsGuardianApplication.id,
-      'send-decisions-without-proposal'
+      'send-decisions-without-proposal',
+      HelsinkiDateTime.now() // TODO: use mock clock
     )
 
     await employeeLogin(page, serviceWorker.data)
@@ -170,7 +174,9 @@ describe('Application details', () => {
       'Vahvistettavana huoltajalla'
     )
 
-    await runPendingAsyncJobs()
+    await runPendingAsyncJobs(
+      HelsinkiDateTime.now() // TODO: use mock clock
+    )
     const messages = await getMessages()
     expect(messages.length).toEqual(1)
     expect(messages[0].ssn).toEqual(
@@ -185,7 +191,8 @@ describe('Application details', () => {
 
     await execSimpleApplicationAction(
       singleParentApplication.id,
-      'move-to-waiting-placement'
+      'move-to-waiting-placement',
+      HelsinkiDateTime.now() // TODO: use mock clock
     )
     await createPlacementPlan(singleParentApplication.id, {
       unitId: fixtures.preschoolFixture.id,
@@ -200,7 +207,8 @@ describe('Application details', () => {
     })
     await execSimpleApplicationAction(
       singleParentApplication.id,
-      'send-decisions-without-proposal'
+      'send-decisions-without-proposal',
+      HelsinkiDateTime.now() // TODO: use mock clock
     )
 
     await employeeLogin(page, unitSupervisor.data)

@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import {
@@ -67,11 +68,15 @@ describe('Application transitions', () => {
     applicationId = fixture.id
 
     await insertApplications([fixture])
-    await execSimpleApplicationActions(applicationId, [
-      'move-to-waiting-placement',
-      'create-default-placement-plan',
-      'send-decisions-without-proposal'
-    ])
+    await execSimpleApplicationActions(
+      applicationId,
+      [
+        'move-to-waiting-placement',
+        'create-default-placement-plan',
+        'send-decisions-without-proposal'
+      ],
+      HelsinkiDateTime.now() // TODO: use mock clock
+    )
 
     await employeeLogin(page, serviceWorker)
     await applicationReadView.navigateToApplication(applicationId)
@@ -92,11 +97,15 @@ describe('Application transitions', () => {
     applicationId = fixture.id
 
     await insertApplications([fixture])
-    await execSimpleApplicationActions(applicationId, [
-      'move-to-waiting-placement',
-      'create-default-placement-plan',
-      'send-decisions-without-proposal'
-    ])
+    await execSimpleApplicationActions(
+      applicationId,
+      [
+        'move-to-waiting-placement',
+        'create-default-placement-plan',
+        'send-decisions-without-proposal'
+      ],
+      HelsinkiDateTime.now() // TODO: use mock clock
+    )
 
     await employeeLogin(page, serviceWorker)
     await applicationReadView.navigateToApplication(applicationId)
@@ -121,10 +130,11 @@ describe('Application transitions', () => {
     applicationId = fixture.id
 
     await insertApplications([fixture])
-    await execSimpleApplicationActions(applicationId, [
-      'move-to-waiting-placement',
-      'create-default-placement-plan'
-    ])
+    await execSimpleApplicationActions(
+      applicationId,
+      ['move-to-waiting-placement', 'create-default-placement-plan'],
+      HelsinkiDateTime.now() // TODO: use mock clock
+    )
 
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
@@ -151,10 +161,11 @@ describe('Application transitions', () => {
     applicationId = fixture.id
 
     await insertApplications([fixture])
-    await execSimpleApplicationActions(applicationId, [
-      'move-to-waiting-placement',
-      'create-default-placement-plan'
-    ])
+    await execSimpleApplicationActions(
+      applicationId,
+      ['move-to-waiting-placement', 'create-default-placement-plan'],
+      HelsinkiDateTime.now() // TODO: use mock clock
+    )
 
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
@@ -227,9 +238,11 @@ describe('Application transitions', () => {
 
     await insertApplications([fixture])
 
-    await execSimpleApplicationActions(applicationId, [
-      'move-to-waiting-placement'
-    ])
+    await execSimpleApplicationActions(
+      applicationId,
+      ['move-to-waiting-placement'],
+      HelsinkiDateTime.now() // TODO: use mock clock
+    )
 
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
@@ -276,9 +289,11 @@ describe('Application transitions', () => {
 
     await insertApplications([restrictedDetailsGuardianApplication])
 
-    await execSimpleApplicationActions(applicationId, [
-      'move-to-waiting-placement'
-    ])
+    await execSimpleApplicationActions(
+      applicationId,
+      ['move-to-waiting-placement'],
+      HelsinkiDateTime.now() // TODO: use mock clock
+    )
 
     await employeeLogin(page, serviceWorker)
     await page.goto(ApplicationListView.url)
@@ -313,16 +328,24 @@ describe('Application transitions', () => {
     }
 
     await insertApplications([fixture1, fixture2])
-    await execSimpleApplicationActions(applicationId, [
-      'move-to-waiting-placement',
-      'create-default-placement-plan',
-      'send-placement-proposal'
-    ])
-    await execSimpleApplicationActions(applicationId2, [
-      'move-to-waiting-placement',
-      'create-default-placement-plan',
-      'send-placement-proposal'
-    ])
+    await execSimpleApplicationActions(
+      applicationId,
+      [
+        'move-to-waiting-placement',
+        'create-default-placement-plan',
+        'send-placement-proposal'
+      ],
+      HelsinkiDateTime.now() // TODO: use mock clock
+    )
+    await execSimpleApplicationActions(
+      applicationId2,
+      [
+        'move-to-waiting-placement',
+        'create-default-placement-plan',
+        'send-placement-proposal'
+      ],
+      HelsinkiDateTime.now() // TODO: use mock clock
+    )
 
     const page2 = await Page.open()
     const unitPage = new UnitPage(page2)
@@ -364,9 +387,11 @@ describe('Application transitions', () => {
     await placementProposals.assertPlacementProposalRowCount(0)
     await applicationProcessPage.waitUntilLoaded()
 
-    await execSimpleApplicationActions(applicationId, [
-      'confirm-decision-mailed'
-    ])
+    await execSimpleApplicationActions(
+      applicationId,
+      ['confirm-decision-mailed'],
+      HelsinkiDateTime.now() // TODO: use mock clock
+    )
 
     await unitPage.navigateToUnit(fixtures.daycareFixture.id)
     const waitingConfirmation = (await unitPage.openApplicationProcessTab())
@@ -386,11 +411,16 @@ describe('Application transitions', () => {
 
     await insertApplications([fixture1])
 
-    await execSimpleApplicationActions(applicationId, [
-      'move-to-waiting-placement',
-      'create-default-placement-plan',
-      'send-placement-proposal'
-    ])
+    const now = HelsinkiDateTime.now() // TODO: use mock clock
+    await execSimpleApplicationActions(
+      applicationId,
+      [
+        'move-to-waiting-placement',
+        'create-default-placement-plan',
+        'send-placement-proposal'
+      ],
+      now
+    )
 
     const page2 = await Page.open()
     const unitPage = new UnitPage(page2)

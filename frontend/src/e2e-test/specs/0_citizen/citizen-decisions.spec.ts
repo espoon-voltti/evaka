@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import DateRange from 'lib-common/date-range'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
@@ -55,12 +56,15 @@ describe('Citizen application decisions', () => {
     const applicationId = application.id
     await insertApplications([application])
 
-    await execSimpleApplicationActions(applicationId, [
-      'move-to-waiting-placement',
-      'create-default-placement-plan',
-      'send-decisions-without-proposal'
-    ])
-    await runPendingAsyncJobs()
+    await execSimpleApplicationActions(
+      applicationId,
+      [
+        'move-to-waiting-placement',
+        'create-default-placement-plan',
+        'send-decisions-without-proposal'
+      ],
+      HelsinkiDateTime.now() // TODO: use mock clock
+    )
 
     const decisions = await getDecisionsByApplication(applicationId)
     if (decisions.length !== 2) throw Error('Expected 2 decisions')
@@ -142,12 +146,17 @@ describe('Citizen application decisions', () => {
     const applicationId = application.id
     await insertApplications([application])
 
-    await execSimpleApplicationActions(applicationId, [
-      'move-to-waiting-placement',
-      'create-default-placement-plan',
-      'send-decisions-without-proposal'
-    ])
-    await runPendingAsyncJobs()
+    const now = HelsinkiDateTime.now() // TODO: use mock clock
+    await execSimpleApplicationActions(
+      applicationId,
+      [
+        'move-to-waiting-placement',
+        'create-default-placement-plan',
+        'send-decisions-without-proposal'
+      ],
+      now
+    )
+    await runPendingAsyncJobs(now)
 
     const decisions = await getDecisionsByApplication(applicationId)
     if (decisions.length !== 2) throw Error('Expected 2 decisions')

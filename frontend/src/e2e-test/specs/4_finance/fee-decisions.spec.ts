@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { DecisionIncome } from 'lib-common/api-types/income'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import config from '../../config'
 import {
@@ -100,7 +101,9 @@ describe('Fee decisions', () => {
       enduserChildFixtureKaarina
     )
     await feeDecisionsPage.toggleAllFeeDecisions(true)
-    await feeDecisionsPage.sendFeeDecisions()
+    await feeDecisionsPage.sendFeeDecisions(
+      HelsinkiDateTime.now() // TODO: use mock clock
+    )
     await feeDecisionsPage.assertSentDecisionsCount(1)
   })
 

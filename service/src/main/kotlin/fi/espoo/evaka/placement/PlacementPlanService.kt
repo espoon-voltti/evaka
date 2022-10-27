@@ -37,7 +37,11 @@ private val logger = KotlinLogging.logger {}
 class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>, env: EvakaEnv) {
     private val useFiveYearsOldDaycare = env.fiveYearsOldDaycareEnabled
 
-    fun getPlacementPlanDraft(tx: Database.Read, applicationId: ApplicationId): PlacementPlanDraft {
+    fun getPlacementPlanDraft(
+        tx: Database.Read,
+        applicationId: ApplicationId,
+        minStartDate: LocalDate
+    ): PlacementPlanDraft {
         val application =
             tx.fetchApplicationDetails(applicationId)
                 ?: throw NotFound("Application $applicationId not found")
@@ -64,7 +68,7 @@ class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
             form.preferences.preferredUnits.map { PlacementDraftUnit(id = it.id, name = it.name) }
         val placements = tx.getPlacementDraftPlacements(application.childId)
 
-        val startDate = form.preferences.preferredStartDate!!
+        val startDate = maxOf(minStartDate, form.preferences.preferredStartDate!!)
 
         return when (application.type) {
             ApplicationType.PRESCHOOL -> {

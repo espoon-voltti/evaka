@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+
 import config from '../../config'
 import {
   execSimpleApplicationActions,
@@ -89,11 +91,15 @@ describe('Employee application attachments', () => {
   test('Extended care attachment is visible to appropriate unit supervisor', async () => {
     await addAttachmentToApplication(applicationFixtureId)
 
-    await execSimpleApplicationActions(applicationFixtureId, [
-      'move-to-waiting-placement',
-      'create-default-placement-plan',
-      'send-placement-proposal'
-    ])
+    await execSimpleApplicationActions(
+      applicationFixtureId,
+      [
+        'move-to-waiting-placement',
+        'create-default-placement-plan',
+        'send-placement-proposal'
+      ],
+      HelsinkiDateTime.now() // TODO: use mock clock
+    )
 
     const unitSupervisor = (
       await Fixture.employeeUnitSupervisor(daycareFixture.id).save()
@@ -135,11 +141,15 @@ describe('Employee application attachments', () => {
 
     await addAttachmentToApplication(applicationId)
 
-    await execSimpleApplicationActions(applicationId, [
-      'move-to-waiting-placement',
-      'create-default-placement-plan',
-      'send-placement-proposal'
-    ])
+    await execSimpleApplicationActions(
+      applicationId,
+      [
+        'move-to-waiting-placement',
+        'create-default-placement-plan',
+        'send-placement-proposal'
+      ],
+      HelsinkiDateTime.now() // TODO: use mock clock
+    )
 
     const page2 = await Page.open()
     await employeeLogin(

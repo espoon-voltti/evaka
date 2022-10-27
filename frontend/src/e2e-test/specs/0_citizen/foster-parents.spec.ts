@@ -4,6 +4,7 @@
 
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 
 import config from '../../config'
@@ -15,7 +16,6 @@ import {
   insertVasuTemplateFixture,
   publishVasuDocument,
   resetDatabase,
-  runPendingAsyncJobs,
   upsertMessageAccounts
 } from '../../dev-api'
 import {
@@ -43,7 +43,9 @@ let activeRelationshipHeader: CitizenHeader
 let fixtures: AreaAndPersonFixtures
 let fosterParent: PersonDetail
 let fosterChild: PersonDetail
-const mockedDate = LocalDate.of(2021, 4, 1)
+
+const mockedNow = HelsinkiDateTime.of(2021, 4, 1, 15, 0)
+const mockedDate = mockedNow.toLocalDate()
 
 beforeEach(async () => {
   await resetDatabase()
@@ -62,7 +64,7 @@ beforeEach(async () => {
   ])
 
   activeRelationshipPage = await Page.open({
-    mockedTime: mockedDate.toSystemTzDate()
+    mockedTime: mockedNow.toSystemTzDate()
   })
   await enduserLogin(activeRelationshipPage)
   activeRelationshipHeader = new CitizenHeader(activeRelationshipPage)
@@ -103,13 +105,16 @@ test('Foster parent can create a daycare application and accept a daycare decisi
     'Lähetetty'
   )
 
-  await execSimpleApplicationActions(applicationId, [
-    'move-to-waiting-placement',
-    'create-default-placement-plan',
-    'send-decisions-without-proposal',
-    'confirm-decision-mailed'
-  ])
-  await runPendingAsyncJobs()
+  await execSimpleApplicationActions(
+    applicationId,
+    [
+      'move-to-waiting-placement',
+      'create-default-placement-plan',
+      'send-decisions-without-proposal',
+      'confirm-decision-mailed'
+    ],
+    mockedNow
+  )
 
   const citizenDecisionsPage = new CitizenDecisionsPage(activeRelationshipPage)
   const decisions = await getDecisionsByApplication(applicationId)
@@ -175,13 +180,16 @@ test('Foster parent can create a daycare application and accept a daycare decisi
     'Lähetetty'
   )
 
-  await execSimpleApplicationActions(applicationId, [
-    'move-to-waiting-placement',
-    'create-default-placement-plan',
-    'send-decisions-without-proposal',
-    'confirm-decision-mailed'
-  ])
-  await runPendingAsyncJobs()
+  await execSimpleApplicationActions(
+    applicationId,
+    [
+      'move-to-waiting-placement',
+      'create-default-placement-plan',
+      'send-decisions-without-proposal',
+      'confirm-decision-mailed'
+    ],
+    HelsinkiDateTime.now() // TODO: use mock clock
+  )
 
   const citizenDecisionsPage = new CitizenDecisionsPage(activeRelationshipPage)
   const decisions = await getDecisionsByApplication(applicationId)

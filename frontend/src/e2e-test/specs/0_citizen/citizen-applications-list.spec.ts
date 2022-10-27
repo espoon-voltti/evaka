@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+
 import {
   execSimpleApplicationActions,
   insertApplications,
-  resetDatabase,
-  runPendingAsyncJobs
+  resetDatabase
 } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
@@ -23,11 +24,15 @@ let header: CitizenHeader
 let applicationsPage: CitizenApplicationsPage
 let fixtures: AreaAndPersonFixtures
 
+const now = HelsinkiDateTime.of(2020, 1, 1, 15, 0)
+
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
 
-  page = await Page.open()
+  page = await Page.open({
+    mockedTime: now.toSystemTzDate()
+  })
   await enduserLogin(page)
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)
@@ -74,12 +79,15 @@ describe('Citizen applications list', () => {
       true
     )
     await insertApplications([application])
-    await execSimpleApplicationActions(application.id, [
-      'move-to-waiting-placement',
-      'create-default-placement-plan',
-      'send-decisions-without-proposal'
-    ])
-    await runPendingAsyncJobs()
+    await execSimpleApplicationActions(
+      application.id,
+      [
+        'move-to-waiting-placement',
+        'create-default-placement-plan',
+        'send-decisions-without-proposal'
+      ],
+      now
+    )
     await page.reload()
 
     await header.selectTab('applications')

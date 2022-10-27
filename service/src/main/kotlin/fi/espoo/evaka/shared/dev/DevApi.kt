@@ -838,12 +838,16 @@ INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON C
     }
 
     @PostMapping("/applications/{applicationId}/actions/create-default-placement-plan")
-    fun createDefaultPlacementPlan(db: Database, @PathVariable applicationId: ApplicationId) {
+    fun createDefaultPlacementPlan(
+        db: Database,
+        clock: EvakaClock,
+        @PathVariable applicationId: ApplicationId
+    ) {
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.ensureFakeAdminExists()
                 placementPlanService
-                    .getPlacementPlanDraft(tx, applicationId)
+                    .getPlacementPlanDraft(tx, applicationId, minStartDate = clock.today())
                     .let {
                         DaycarePlacementPlan(
                             unitId = it.preferredUnits.first().id,

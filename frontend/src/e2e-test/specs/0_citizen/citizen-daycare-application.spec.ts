@@ -2,15 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import LocalDate from 'lib-common/local-date'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 
 import {
   execSimpleApplicationActions,
   getApplication,
   insertApplications,
   insertDaycarePlacementFixtures,
-  resetDatabase,
-  runPendingAsyncJobs
+  resetDatabase
 } from '../../dev-api'
 import {
   AreaAndPersonFixtures,
@@ -33,13 +32,14 @@ let fixtures: AreaAndPersonFixtures
 
 const testFileName = 'test_file.png'
 const testFilePath = `src/e2e-test/assets/${testFileName}`
-const mockedDate = LocalDate.of(2021, 4, 1)
+const mockedNow = HelsinkiDateTime.of(2021, 4, 1, 15, 0)
+const mockedDate = mockedNow.toLocalDate()
 
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
 
-  page = await Page.open({ mockedTime: mockedDate.toSystemTzDate() })
+  page = await Page.open({ mockedTime: mockedNow.toSystemTzDate() })
   await enduserLogin(page)
   header = new CitizenHeader(page)
   applicationsPage = new CitizenApplicationsPage(page)
@@ -103,10 +103,11 @@ describe('Citizen daycare applications', () => {
       true
     )
     await insertApplications([application])
-    await execSimpleApplicationActions(application.id, [
-      'move-to-waiting-placement'
-    ])
-    await runPendingAsyncJobs()
+    await execSimpleApplicationActions(
+      application.id,
+      ['move-to-waiting-placement'],
+      mockedNow
+    )
 
     await header.selectTab('applications')
     await applicationsPage.assertDuplicateWarningIsShown(
