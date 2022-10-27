@@ -9,6 +9,8 @@ env:
   ECR_REGISTRY: 307238562370.dkr.ecr.eu-west-1.amazonaws.com
   ECR_PUBLIC_REGISTRY: public.ecr.aws/p6g0g5e1
   AWS_REGION: eu-west-1
+  # Migrating to this in fugure variable if depndabot uses this
+  EXTERNAL_SOURCE: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.fork }}
 
 jobs:
   lint-shell:
@@ -226,31 +228,11 @@ jobs:
           cache_from_images: |
             ${{ needs.base.outputs.image_name }}
             ${{ needs.yarn.outputs.image_name }}
-    outputs:
-      image: ${{ steps.build.outputs.image }}
-      image_name: ${{ steps.build.outputs.image_name }}
-      builder-image: ${{ steps.build-builder.outputs.image }}
 
-  frontend-test:
-    needs:
-      - base
-      - yarn
-      - customizations
-      - frontend
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Download customizations
-        uses: actions/download-artifact@v3
-        with:
-          name: customizations
-          path: frontend/
-
-      - name: Build frontend builder
+      - name: Build frontend builder image
         if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
-        id: build-builder
+        id: builder
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -262,30 +244,61 @@ jobs:
           name: evaka/frontend-builder
           path: ./frontend
           target: builder
-          push: false
-          load: true
           build-args: |
             BASE_IMAGE=${{ needs.yarn.outputs.image }}
-            ICONS=pro
-            SENTRY_PUBLISH_ENABLED=false
+            SENTRY_PUBLISH_ENABLED=${{ github.ref_name == 'master' && 'true' || 'false' }}
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
+            ICONS=pro
+            SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }}
           cache_from_images: |
             ${{ needs.base.outputs.image_name }}
             ${{ needs.yarn.outputs.image_name }}
-            ${{ needs.frontend.outputs.image_name }}
+            ${{ steps.build.outputs.image_name }}
+
+    outputs:
+      image: ${{ steps.build.outputs.image }}
+      image_name: ${{ steps.build.outputs.image_name }}
+      builder_image: ${{ steps.builder.outputs.image }}
+      builder_image_name: ${{ steps.builder.outputs.image_name }}
+
+  frontend-test:
+    needs:
+      - base
+      - yarn
+      - customizations
+      - frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_REGISTRY_ROLE }}
+          role-duration-seconds: 1200
+
+      - name: Login to ECR
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        shell: bash
+        run: |
+          aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
 
       - name: Lint
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        run: docker run --rm "${{ steps.build-builder.outputs.image }}" yarn lint
+        run: docker run --rm "${{ needs.frontend.outputs.builder_image }}" yarn lint
 
       - name: Type check
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        run: docker run --rm "${{ steps.build-builder.outputs.image }}" yarn type-check
+        run: docker run --rm "${{ needs.frontend.outputs.builder_image }}" yarn type-check
 
       - name: Test
         if: ${{ !github.event.pull_request.head.repo.fork }}
-        run: docker run --rm "${{ steps.build-builder.outputs.image }}" yarn test --maxWorkers=2
+        run: docker run --rm "${{ needs.frontend.outputs.builder_image }}" yarn test --maxWorkers=2
 
       - name: Build and test fork
         id: fork
@@ -338,7 +351,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Build API-gateway test image
+      - name: Build and run API-gateway tests"
         if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
         id: test
@@ -435,23 +448,11 @@ jobs:
           cache_from_images: |
             ${{ needs.base.outputs.image_name }}
             ${{ needs.java.outputs.image_name }}
-    outputs:
-      image: ${{ steps.build.outputs.image }}
-      image_name: ${{ steps.build.outputs.image_name }}
-
-  service-test:
-    needs:
-      - base
-      - java
-      - service
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
 
       - name: Build Evaka Service builder image
         if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
-        id: build-builder
+        id: builder
         with:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -472,9 +473,24 @@ jobs:
           cache_from_images: |
             ${{ needs.base.outputs.image_name }}
             ${{ needs.java.outputs.image_name }}
-            ${{ needs.service.outputs.image_name }}
+            ${{ steps.build.outputs.image_name }}
 
-      - name: Build Evaka Service test image
+    outputs:
+      image: ${{ steps.build.outputs.image }}
+      image_name: ${{ steps.build.outputs.image_name }}
+      builder_image: ${{ steps.builder.outputs.image }}
+      builder_image_name: ${{ steps.builder.outputs.image_name }}
+
+  service-test:
+    needs:
+      - base
+      - java
+      - service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build and run Evaka Service tests
         if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
         id: build
@@ -494,13 +510,13 @@ jobs:
           build-args: |
             build=${{ github.run_number }}
             commit=${{ github.event.pull_request.head.sha || github.sha }}
-            BASE_IMAGE=${{ steps.build-builder.outputs.image }}
+            BASE_IMAGE=${{ needs.service.outputs.builder_image }}
           cache_from_images: |
             ${{ needs.base.outputs.image_name }}
             ${{ needs.java.outputs.image_name }}
-            ${{ needs.service.outputs.image_name }}
+            ${{ needs.service.outputs.builder_image_name }}
 
-      - name: Run service tests
+      - name: Run service OWASP tests
         if: ${{ !github.event.pull_request.head.repo.fork }}
         shell: bash
         run: |
@@ -523,32 +539,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Build Evaka Service builder image
-        if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: espoon-voltti/voltti-actions/docker-build-s3@master
-        id: build
-        with:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-          AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_REGISTRY_ROLE }}
-          registry: ${{ env.ECR_REGISTRY }}
-          name: evaka/service-builder
-          target: builder
-          path: .
-          dockerfile: service/Dockerfile
-          push: false
-          load: true
-          build-args: |
-            build=${{ github.run_number }}
-            commit=${{ github.event.pull_request.head.sha || github.sha }}
-            BASE_IMAGE=${{ needs.java.outputs.image }}
-          cache_from_images: |
-            ${{ needs.base.outputs.image_name }}
-            ${{ needs.java.outputs.image_name }}
-            ${{ needs.service.outputs.image_name }}
 
       - name: Configure AWS credentials
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -572,9 +562,9 @@ jobs:
         run: |
           export "EVAKA_KEYCLOAK_IMAGE=${{ needs.keycloak.outputs.image }}"
           export "JAVA_BASE_IMAGE=${{ needs.java.outputs.image }}"
-          export "EVAKA_SERVICE_BUILDER_IMAGE=${{ steps.build.outputs.image }}"
+          export "EVAKA_SERVICE_BUILDER_IMAGE=${{ needs.service.outputs.builder_image }}"
           cd ./compose
-          docker-compose pull
+          ./compose-integration pull
 
       - name: Run service integration tests
         if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -582,7 +572,7 @@ jobs:
         run: |
           export "EVAKA_KEYCLOAK_IMAGE=${{ needs.keycloak.outputs.image }}"
           export "JAVA_BASE_IMAGE=${{ needs.java.outputs.image }}"
-          export "EVAKA_SERVICE_BUILDER_IMAGE=${{ steps.build.outputs.image }}"
+          export "EVAKA_SERVICE_BUILDER_IMAGE=${{ needs.service.outputs.builder_image }}"
           cd ./compose
           ./compose-integration run integration-test
 
