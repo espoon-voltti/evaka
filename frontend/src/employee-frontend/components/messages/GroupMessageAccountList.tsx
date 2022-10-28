@@ -66,11 +66,11 @@ const CollapsibleMessageBoxesContainer = styled.div`
 export default function GroupMessageAccountList({
   accounts,
   activeView,
-  setView
+  selectAccount
 }: {
   accounts: GroupMessageAccount[]
   activeView: AccountView | undefined
-  setView: (view: AccountView) => void
+  selectAccount: (v: AccountView) => void
 }) {
   const { unreadCountsByAccount } = useContext(MessageContext)
   const startCollapsed = (acc: AuthorizedMessageAccount, i: number) =>
@@ -100,8 +100,9 @@ export default function GroupMessageAccountList({
               key={view}
               view={view}
               account={acc.account}
+              unitId={acc.daycareGroup.unitId}
               activeView={activeView}
-              setView={setView}
+              selectAccount={selectAccount}
             />
           ))}
         </CollapsibleRow>

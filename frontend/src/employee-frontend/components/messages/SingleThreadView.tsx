@@ -255,7 +255,7 @@ export function SingleThreadView({
           </React.Fragment>
         ))}
         {canReply &&
-          view == 'RECEIVED' &&
+          view == 'received' &&
           (replyEditorVisible ? (
             <MessageContainer>
               <MessageReplyEditor

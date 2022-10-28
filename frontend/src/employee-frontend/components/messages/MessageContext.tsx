@@ -2,13 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import sortBy from 'lodash/sortBy'
+import uniqBy from 'lodash/uniqBy'
 import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState
 } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import { Loading, Paged, Result } from 'lib-common/api'
 import {
@@ -24,6 +28,13 @@ import {
 import { UUID } from 'lib-common/types'
 import { usePeriodicRefresh } from 'lib-common/utils/usePeriodicRefresh'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
+import {
+  GroupMessageAccount,
+  isGroupMessageAccount,
+  isMunicipalMessageAccount,
+  isPersonalMessageAccount
+} from 'lib-components/employee/messages/types'
+import { SelectOption } from 'lib-components/molecules/Select'
 
 import { client } from '../../api/client'
 import { UserContext } from '../../state/user'
@@ -40,17 +51,28 @@ import {
   replyToThread,
   ReplyToThreadParams
 } from './api'
-import { AccountView } from './types-view'
+import {
+  AccountView,
+  groupMessageBoxes,
+  isValidView,
+  municipalMessageBoxes,
+  personalMessageBoxes
+} from './types-view'
 
 const PAGE_SIZE = 20
 type RepliesByThread = Record<UUID, string>
 
 export interface MessagesState {
   accounts: Result<AuthorizedMessageAccount[]>
+  municipalAccount: AuthorizedMessageAccount | undefined
+  personalAccount: AuthorizedMessageAccount | undefined
+  groupAccounts: GroupMessageAccount[]
+  unitOptions: SelectOption[]
   selectedDraft: DraftContent | undefined
   setSelectedDraft: (draft: DraftContent | undefined) => void
   selectedAccount: AccountView | undefined
-  setSelectedAccount: (view: AccountView) => void
+  selectAccount: (v: AccountView) => void
+  selectUnit: (v: string) => void
   page: number
   setPage: (page: number) => void
   pages: number | undefined
@@ -72,10 +94,15 @@ export interface MessagesState {
 
 const defaultState: MessagesState = {
   accounts: Loading.of(),
+  municipalAccount: undefined,
+  personalAccount: undefined,
+  groupAccounts: [],
+  unitOptions: [],
   selectedDraft: undefined,
   setSelectedDraft: () => undefined,
   selectedAccount: undefined,
-  setSelectedAccount: () => undefined,
+  selectAccount: () => undefined,
+  selectUnit: () => undefined,
   page: 1,
   setPage: () => undefined,
   pages: undefined,
@@ -115,6 +142,10 @@ const appendMessageAndMoveThreadToTopOfList =
 export const MessageContextProvider = React.memo(
   function MessageContextProvider({ children }: { children: JSX.Element }) {
     const { user } = useContext(UserContext)
+    const [searchParams, setSearchParams] = useSearchParams()
+    const accountId = searchParams.get('accountId')
+    const messageBox = searchParams.get('messageBox')
+    const unitId = searchParams.get('unitId')
 
     const [accounts] = useApiState(
       () =>
@@ -122,6 +153,55 @@ export const MessageContextProvider = React.memo(
           ? getMessagingAccounts()
           : Promise.resolve(Loading.of<AuthorizedMessageAccount[]>()),
       [user]
+    )
+
+    const municipalAccount = useMemo(
+      () =>
+        accounts
+          .map((accounts) => accounts.find(isMunicipalMessageAccount))
+          .getOrElse(undefined),
+      [accounts]
+    )
+    const personalAccount = useMemo(
+      () =>
+        accounts
+          .map((accounts) => accounts.find(isPersonalMessageAccount))
+          .getOrElse(undefined),
+      [accounts]
+    )
+    const groupAccounts = useMemo(
+      () =>
+        accounts
+          .map((accounts) =>
+            accounts
+              .filter(isGroupMessageAccount)
+              .sort((a, b) =>
+                a.daycareGroup.name
+                  .toLocaleLowerCase()
+                  .localeCompare(b.daycareGroup.name.toLocaleLowerCase())
+              )
+              .sort((a, b) =>
+                a.daycareGroup.unitName
+                  .toLocaleLowerCase()
+                  .localeCompare(b.daycareGroup.unitName.toLocaleLowerCase())
+              )
+          )
+          .getOrElse([]),
+      [accounts]
+    )
+    const unitOptions = useMemo(
+      () =>
+        sortBy(
+          uniqBy(
+            groupAccounts.map(({ daycareGroup }) => ({
+              value: daycareGroup.unitId,
+              label: daycareGroup.unitName
+            })),
+            (val) => val.value
+          ),
+          (u) => u.label
+        ),
+      [groupAccounts]
     )
 
     const [unreadCountsByAccount, refreshUnreadCounts] = useApiState(
@@ -134,20 +214,22 @@ export const MessageContextProvider = React.memo(
 
     usePeriodicRefresh(client, refreshUnreadCounts, { thresholdInMinutes: 1 })
 
-    const [unverifiedSelectedAccount, setSelectedAccount] =
-      useState<AccountView>()
-
-    const selectedAccount = useMemo(
-      () =>
-        unverifiedSelectedAccount &&
-        accounts.isSuccess &&
-        accounts.value.find(
-          (a) => a.account.id === unverifiedSelectedAccount.account.id
+    const selectedAccount: AccountView | undefined = useMemo(() => {
+      const account = accounts
+        .map(
+          (accounts) =>
+            accounts.find((a) => a.account.id === accountId)?.account
         )
-          ? unverifiedSelectedAccount
-          : undefined,
-      [accounts, unverifiedSelectedAccount]
-    )
+        .getOrElse(undefined)
+      if (messageBox && isValidView(messageBox) && account) {
+        return {
+          account,
+          view: messageBox,
+          unitId
+        }
+      }
+      return undefined
+    }, [accountId, accounts, messageBox, unitId])
 
     const [selectedDraft, setSelectedDraft] = useState(
       defaultState.selectedDraft
@@ -241,15 +323,15 @@ export const MessageContextProvider = React.memo(
         return
       }
       switch (selectedAccount.view) {
-        case 'RECEIVED':
+        case 'received':
           return void loadReceivedMessages(selectedAccount.account.id, page)
-        case 'SENT':
+        case 'sent':
           return void loadSentMessages(selectedAccount.account.id, page)
-        case 'DRAFTS':
+        case 'drafts':
           return void loadMessageDrafts(selectedAccount.account.id)
-        case 'COPIES':
+        case 'copies':
           return void loadMessageCopies(selectedAccount.account.id, page)
-        case 'ARCHIVE':
+        case 'archive':
           return void loadArchivedMessages(selectedAccount.account.id, page)
       }
     }, [
@@ -324,13 +406,97 @@ export const MessageContextProvider = React.memo(
       [refreshMessages, selectedAccount, refreshUnreadCounts]
     )
 
+    const selectUnit = useCallback(
+      (unitId: string) => {
+        const firstUnitGroupAccount = groupAccounts.find(
+          (acc) => acc.daycareGroup.unitId === unitId
+        )
+        if (firstUnitGroupAccount) {
+          setSearchParams(
+            {
+              accountId: firstUnitGroupAccount?.account.id,
+              messageBox: groupMessageBoxes[0],
+              unitId
+            },
+            { replace: true }
+          )
+        } else {
+          setSearchParams({ unitId }, { replace: true })
+        }
+      },
+      [groupAccounts, setSearchParams]
+    )
+
+    const selectAccount = useCallback(
+      (accountView: AccountView) => {
+        const updatedParams = {
+          accountId: accountView.account.id,
+          messageBox: accountView.view
+        }
+        setSearchParams(
+          unitId
+            ? {
+                unitId,
+                ...updatedParams
+              }
+            : updatedParams,
+          { replace: true }
+        )
+      },
+      [setSearchParams, unitId]
+    )
+
+    // select first account if no account is selected
+    useEffect(() => {
+      if (!accounts.isSuccess || selectedAccount) {
+        return
+      }
+
+      if (municipalAccount) {
+        return selectAccount({
+          view: municipalMessageBoxes[0],
+          account: municipalAccount.account,
+          unitId: null
+        })
+      }
+
+      if (personalAccount) {
+        return selectAccount({
+          view: personalMessageBoxes[0],
+          account: personalAccount.account,
+          unitId: null
+        })
+      }
+
+      const firstGroupAccount = groupAccounts[0]
+      if (firstGroupAccount) {
+        return selectAccount({
+          view: groupMessageBoxes[0],
+          account: firstGroupAccount.account,
+          unitId: firstGroupAccount.daycareGroup.unitId
+        })
+      }
+    }, [
+      accounts,
+      groupAccounts,
+      municipalAccount,
+      personalAccount,
+      selectAccount,
+      selectedAccount
+    ])
+
     const value = useMemo(
       () => ({
         accounts,
+        municipalAccount,
+        personalAccount,
+        groupAccounts,
+        unitOptions,
         selectedDraft,
         setSelectedDraft,
         selectedAccount,
-        setSelectedAccount,
+        selectAccount,
+        selectUnit,
         page,
         setPage,
         pages,
@@ -351,8 +517,14 @@ export const MessageContextProvider = React.memo(
       }),
       [
         accounts,
+        municipalAccount,
+        personalAccount,
+        groupAccounts,
+        unitOptions,
         selectedDraft,
         selectedAccount,
+        selectAccount,
+        selectUnit,
         page,
         pages,
         receivedMessages,

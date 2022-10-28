@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React, { useCallback, useContext } from 'react'
 import styled from 'styled-components'
 
 import { MessageAccount } from 'lib-common/generated/api-types/messaging'
@@ -26,28 +26,30 @@ export const MessageBoxRow = styled.div<{ active: boolean }>`
 interface MessageBoxProps {
   account: MessageAccount
   activeView: AccountView | undefined
-  setView: (view: AccountView) => void
   view: View
+  unitId: string | null
+  selectAccount: (v: AccountView) => void
 }
 
 export default function MessageBox({
   account,
   activeView,
-  setView,
-  view
+  view,
+  unitId,
+  selectAccount
 }: MessageBoxProps) {
   const { i18n } = useTranslation()
   const { unreadCountsByAccount } = useContext(MessageContext)
   const active = view == activeView?.view && account.id == activeView.account.id
   const unreadCount = unreadCountsByAccount
     .map((unreadCounts) => {
-      if (view === 'RECEIVED') {
+      if (view === 'received') {
         return (
           unreadCounts.find(({ accountId }) => accountId === account.id)
             ?.unreadCount ?? 0
         )
       }
-      if (view === 'COPIES') {
+      if (view === 'copies') {
         return (
           unreadCounts.find(({ accountId }) => accountId === account.id)
             ?.unreadCopyCount ?? 0
@@ -57,9 +59,13 @@ export default function MessageBox({
       return 0
     })
     .getOrElse(0)
+  const onClick = useCallback(
+    () => selectAccount({ account, view, unitId }),
+    [account, selectAccount, unitId, view]
+  )
   return (
     <MessageBoxRow
-      onClick={() => setView({ account: account, view: view })}
+      onClick={onClick}
       active={active}
       data-qa={`message-box-row-${view}`}
     >

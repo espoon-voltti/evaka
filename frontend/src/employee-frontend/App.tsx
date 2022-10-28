@@ -114,9 +114,12 @@ export default function App() {
             <ErrorPage basePath="/employee" labels={i18n.errorPage} />
           )}
         >
-          <UserContextProvider user={authStatus.user} roles={authStatus.roles}>
-            <StateProvider>
-              <Router basename="/employee">
+          <Router basename="/employee">
+            <UserContextProvider
+              user={authStatus.user}
+              roles={authStatus.roles}
+            >
+              <StateProvider>
                 <Header />
                 <ReloadNotification
                   i18n={{
@@ -672,9 +675,9 @@ export default function App() {
                 <ErrorMessage />
                 <LoginErrorModal translations={i18n.login.failedModal} />
                 <PairingModal />
-              </Router>
-            </StateProvider>
-          </UserContextProvider>
+              </StateProvider>
+            </UserContextProvider>
+          </Router>
         </ErrorBoundary>
       </ThemeProvider>
     </I18nContextProvider>

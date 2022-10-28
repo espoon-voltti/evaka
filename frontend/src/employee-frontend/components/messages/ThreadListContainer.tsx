@@ -83,15 +83,15 @@ export default React.memo(function ThreadListContainer({
   )
 
   const hasMessages = useMemo<boolean>(() => {
-    if (view === 'RECEIVED' && receivedMessages.isSuccess) {
+    if (view === 'received' && receivedMessages.isSuccess) {
       return receivedMessages.value.length > 0
-    } else if (view === 'SENT' && sentMessages.isSuccess) {
+    } else if (view === 'sent' && sentMessages.isSuccess) {
       return sentMessages.value.length > 0
-    } else if (view === 'DRAFTS' && messageDrafts.isSuccess) {
+    } else if (view === 'drafts' && messageDrafts.isSuccess) {
       return messageDrafts.value.length > 0
-    } else if (view === 'COPIES' && messageCopies.isSuccess) {
+    } else if (view === 'copies' && messageCopies.isSuccess) {
       return messageCopies.value.length > 0
-    } else if (view === 'ARCHIVE' && archivedMessages.isSuccess) {
+    } else if (view === 'archive' && archivedMessages.isSuccess) {
       return archivedMessages.value.length > 0
     } else {
       return false
@@ -112,7 +112,7 @@ export default React.memo(function ThreadListContainer({
         thread={selectedThread}
         accountId={account.id}
         view={view}
-        onArchived={view === 'RECEIVED' ? deselectThread : undefined}
+        onArchived={view === 'received' ? deselectThread : undefined}
       />
     )
   }
@@ -127,7 +127,7 @@ export default React.memo(function ThreadListContainer({
     content: thread.messages[thread.messages.length - 1].content,
     urgent: thread.urgent,
     participants:
-      view === 'SENT'
+      view === 'sent'
         ? thread.messages[0].recipientNames || getUniqueParticipants(thread)
         : getUniqueParticipants(thread),
     unread: thread.messages.some((m) => !m.readAt && m.sender.id != account.id),
@@ -231,11 +231,11 @@ export default React.memo(function ThreadListContainer({
   )
 
   const threadListItems: Result<ThreadListItem[]> = {
-    RECEIVED: receivedMessageItems,
-    SENT: sentMessageItems,
-    DRAFTS: draftMessageItems,
-    COPIES: messageCopyItems,
-    ARCHIVE: messageArchivedItems
+    received: receivedMessageItems,
+    sent: sentMessageItems,
+    drafts: draftMessageItems,
+    copies: messageCopyItems,
+    archive: messageArchivedItems
   }[view]
 
   return hasMessages ? (
@@ -245,7 +245,7 @@ export default React.memo(function ThreadListContainer({
       <ThreadList
         items={threadListItems}
         accountId={account.id}
-        onArchive={view === 'RECEIVED' ? deselectThread : undefined}
+        onArchive={view === 'received' ? deselectThread : undefined}
       />
       <Pagination
         pages={pages}
@@ -257,10 +257,10 @@ export default React.memo(function ThreadListContainer({
   ) : (
     <EmptyMessageFolder
       loading={
-        (view === 'RECEIVED' && receivedMessages.isLoading) ||
-        (view === 'SENT' && sentMessages.isLoading) ||
-        (view === 'DRAFTS' && messageDrafts.isLoading) ||
-        (view === 'COPIES' && messageCopies.isLoading)
+        (view === 'received' && receivedMessages.isLoading) ||
+        (view === 'sent' && sentMessages.isLoading) ||
+        (view === 'drafts' && messageDrafts.isLoading) ||
+        (view === 'copies' && messageCopies.isLoading)
       }
       iconColor={colors.grayscale.g35}
       text={i18n.messages.emptyInbox}

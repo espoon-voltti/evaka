@@ -3445,22 +3445,22 @@ export const fi = {
     },
     messageBoxes: {
       names: {
-        RECEIVED: 'Saapuneet',
-        SENT: 'Lähetetyt',
-        DRAFTS: 'Luonnokset',
-        COPIES: 'Johtajan/kunnan tiedotteet',
-        ARCHIVE: 'Arkisto'
+        received: 'Saapuneet',
+        sent: 'Lähetetyt',
+        drafts: 'Luonnokset',
+        copies: 'Johtajan/kunnan tiedotteet',
+        archive: 'Arkisto'
       },
       receivers: 'Vastaanottajat',
       newMessage: 'Uusi viesti'
     },
     messageList: {
       titles: {
-        RECEIVED: 'Saapuneet viestit',
-        SENT: 'Lähetetyt viestit',
-        DRAFTS: 'Luonnokset',
-        COPIES: 'Johtajan/kunnan tiedotteet',
-        ARCHIVE: 'Arkisto'
+        received: 'Saapuneet viestit',
+        sent: 'Lähetetyt viestit',
+        drafts: 'Luonnokset',
+        copies: 'Johtajan/kunnan tiedotteet',
+        archive: 'Arkisto'
       }
     },
     types: {

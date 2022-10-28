@@ -42,7 +42,7 @@ export default React.memo(function MessagesPage() {
     selectedDraft,
     setSelectedDraft,
     selectedAccount,
-    setSelectedAccount,
+    selectAccount,
     refreshMessages
   } = useContext(MessageContext)
 
@@ -51,26 +51,6 @@ export default React.memo(function MessagesPage() {
 
   useEffect(() => refreshMessages(), [refreshMessages])
   const [sending, setSending] = useState(false)
-
-  // pre-select first account on page load and on unit change
-  useEffect(() => {
-    if (!accounts.isSuccess) {
-      return
-    }
-    const { value: data } = accounts
-    const unitSelectionChange =
-      selectedAccount &&
-      !data.find((acc) => acc.account.id === selectedAccount.account.id)
-    if ((!selectedAccount || unitSelectionChange) && data.length > 0) {
-      setSelectedAccount({
-        view: 'RECEIVED',
-        account:
-          data.find((a) => a.account.type === 'PERSONAL')?.account ||
-          data[0].account
-      })
-    }
-  }, [accounts, setSelectedAccount, selectedAccount])
-
   const [showEditor, setShowEditor] = useState<boolean>(false)
 
   // open editor when draft is selected
