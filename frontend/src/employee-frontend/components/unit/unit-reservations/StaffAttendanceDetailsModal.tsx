@@ -12,6 +12,7 @@ import uniqBy from 'lodash/uniqBy'
 import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
+import DateRange from 'lib-common/date-range'
 import { ErrorKey } from 'lib-common/form-validation'
 import {
   Attendance,
@@ -305,6 +306,8 @@ export default React.memo(function StaffAttendanceDetailsModal({
     [requestBody]
   )
 
+  const openGroups = useMemo(() => groups.filter(isGroupOpen), [groups])
+
   if (!employee) return null
 
   const saveDisabled =
@@ -406,7 +409,7 @@ export default React.memo(function StaffAttendanceDetailsModal({
                 <GroupIndicator data-qa="group-indicator">
                   {groupId === null ? (
                     <Select
-                      items={[null, ...groups.map(({ id }) => id)]}
+                      items={[null, ...openGroups.map(({ id }) => id)]}
                       selectedItem={groupId}
                       onChange={(value) =>
                         updateAttendance(index, {
@@ -647,6 +650,12 @@ function formatMinutes(minutes: number) {
   return `${Math.floor(minutes / 60)}:${Math.floor(minutes % 60)
     .toString()
     .padStart(2, '0')}`
+}
+
+function isGroupOpen(group: DaycareGroup) {
+  return new DateRange(group.startDate, group.endDate).includes(
+    LocalDate.todayInHelsinkiTz()
+  )
 }
 
 const Content = styled.div`
