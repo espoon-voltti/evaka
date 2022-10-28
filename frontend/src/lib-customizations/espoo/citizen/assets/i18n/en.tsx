@@ -353,6 +353,7 @@ const en: Translations = {
       BULLETIN: 'Bulletin'
     },
     replyToThread: 'Reply',
+    deleteThread: 'Delete thread',
     staffAnnotation: 'Staff',
     messageEditor: {
       newMessage: 'New message',

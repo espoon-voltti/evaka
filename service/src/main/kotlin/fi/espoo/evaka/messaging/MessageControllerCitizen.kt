@@ -76,6 +76,19 @@ class MessageControllerCitizen(
         Audit.MessagingMarkMessagesReadWrite.log(targetId = threadId)
     }
 
+    @PutMapping("/threads/{threadId}/archive")
+    fun archiveThread(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        @PathVariable("threadId") threadId: MessageThreadId
+    ) {
+        db.connect { dbc ->
+            val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
+            dbc.transaction { it.archiveThread(accountId, threadId) }
+        }
+        Audit.MessagingArchiveMessageWrite.log(targetId = threadId)
+    }
+
     @GetMapping("/received")
     fun getReceivedMessages(
         db: Database,

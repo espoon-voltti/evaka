@@ -110,3 +110,10 @@ export async function replyToThread({
     )
     .catch((e) => Failure.fromError(e))
 }
+
+export async function archiveThread(id: UUID): Promise<Result<void>> {
+  return client
+    .put(`/citizen/messages/threads/${id}/archive`)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}

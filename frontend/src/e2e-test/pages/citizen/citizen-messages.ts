@@ -92,6 +92,10 @@ export default class CitizenMessagesPage {
     await waitUntilTrue(() => this.#sendReplyButton.disabled)
   }
 
+  async deleteFirstThread() {
+    await this.#threadListItem.findByDataQa('delete-thread-btn').click()
+  }
+
   async clickNewMessage() {
     await this.#newMessageButton.click()
     await waitUntilTrue(() => this.isEditorVisible())

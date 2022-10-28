@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useMemo } from 'react'
+import React, { useCallback, useContext, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
@@ -61,6 +61,7 @@ export default React.memo(function ThreadListContainer({
     sentMessages,
     messageDrafts,
     messageCopies,
+    archivedMessages,
     page,
     setPage,
     pages,
@@ -76,6 +77,11 @@ export default React.memo(function ThreadListContainer({
     [account.id, selectThread, view]
   )
 
+  const deselectThread = useCallback(
+    () => selectThread(undefined),
+    [selectThread]
+  )
+
   const hasMessages = useMemo<boolean>(() => {
     if (view === 'RECEIVED' && receivedMessages.isSuccess) {
       return receivedMessages.value.length > 0
@@ -85,10 +91,19 @@ export default React.memo(function ThreadListContainer({
       return messageDrafts.value.length > 0
     } else if (view === 'COPIES' && messageCopies.isSuccess) {
       return messageCopies.value.length > 0
+    } else if (view === 'ARCHIVE' && archivedMessages.isSuccess) {
+      return archivedMessages.value.length > 0
     } else {
       return false
     }
-  }, [view, receivedMessages, sentMessages, messageDrafts, messageCopies])
+  }, [
+    view,
+    receivedMessages,
+    sentMessages,
+    messageDrafts,
+    messageCopies,
+    archivedMessages
+  ])
 
   if (selectedThread) {
     return (
@@ -210,18 +225,27 @@ export default React.memo(function ThreadListContainer({
     value.map((t) => threadToListItem(t, true, 'message-copy-row'))
   )
 
+  const messageArchivedItems = archivedMessages.map((value) =>
+    value.map((t) => threadToListItem(t, true, 'archived-message-row'))
+  )
+
   const threadListItems: Result<ThreadListItem[]> = {
     RECEIVED: receivedMessageItems,
     SENT: sentMessageItems,
     DRAFTS: draftMessageItems,
-    COPIES: messageCopyItems
+    COPIES: messageCopyItems,
+    ARCHIVE: messageArchivedItems
   }[view]
 
   return hasMessages ? (
     <MessagesContainer opaque>
       <H1>{i18n.messages.messageList.titles[view]}</H1>
       {account.type !== 'PERSONAL' && <H2>{account.name}</H2>}
-      <ThreadList items={threadListItems} />
+      <ThreadList
+        items={threadListItems}
+        accountId={account.id}
+        onArchived={view === 'ARCHIVE' ? undefined : deselectThread}
+      />
       <Pagination
         pages={pages}
         currentPage={page}

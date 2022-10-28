@@ -194,6 +194,10 @@ export default class MessagesPage {
     await waitUntilEqual(() => this.isEditorVisible(), false)
   }
 
+  async deleteFirstThread() {
+    await this.#receivedMessage.findByDataQa('delete-thread-btn').click()
+  }
+
   async assertMessageContent(index: number, content: string) {
     await this.#receivedMessage.click()
     await waitUntilEqual(() => this.#messageContent(index).innerText, content)

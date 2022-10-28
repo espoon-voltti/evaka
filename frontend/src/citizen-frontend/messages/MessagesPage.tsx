@@ -80,6 +80,11 @@ export default React.memo(function MessagesPage() {
     [navigate]
   )
 
+  const onSelectedThreadDeleted = useCallback(() => {
+    refreshThreads()
+    changeEditorVisibility(false)
+  }, [refreshThreads, changeEditorVisibility])
+
   return (
     <Container>
       <UnwrapResult result={combine(accountId, receivers)}>
@@ -96,7 +101,11 @@ export default React.memo(function MessagesPage() {
                   newMessageButtonEnabled={!editorVisible}
                 />
                 {selectedThread ? (
-                  <ThreadView accountId={id} thread={selectedThread} />
+                  <ThreadView
+                    accountId={id}
+                    thread={selectedThread}
+                    onThreadDeleted={() => onSelectedThreadDeleted()}
+                  />
                 ) : (
                   <EmptyThreadView inboxEmpty={threads.length == 0} />
                 )}

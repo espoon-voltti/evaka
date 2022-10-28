@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageRecipientId
+import fi.espoo.evaka.shared.MessageThreadFolderId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.db.Database
@@ -35,13 +36,14 @@ fun Database.Read.getUnreadMessagesCounts(
         """
         SELECT 
             acc.id as account_id,
-            SUM(CASE WHEN mr.id IS NOT NULL AND mr.read_at IS NULL AND NOT mt.is_copy THEN 1 ELSE 0 END) as unread_count,
-            SUM(CASE WHEN mr.id IS NOT NULL AND mr.read_at IS NULL AND mt.is_copy THEN 1 ELSE 0 END) as unread_copy_count
+            SUM(CASE WHEN mtp.folder_id IS NULL AND mr.id IS NOT NULL AND mr.read_at IS NULL AND NOT mt.is_copy THEN 1 ELSE 0 END) as unread_count,
+            SUM(CASE WHEN mtp.folder_id IS NULL AND mr.id IS NOT NULL AND mr.read_at IS NULL AND mt.is_copy THEN 1 ELSE 0 END) as unread_copy_count
         FROM message_account acc
         LEFT JOIN message_recipients mr ON mr.recipient_id = acc.id
         LEFT JOIN message m ON mr.message_id = m.id
         LEFT JOIN message_thread mt ON m.thread_id = mt.id
-        WHERE acc.id = ANY(:accountIds)
+        LEFT JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id
+        WHERE acc.id = ANY(:accountIds) 
         GROUP BY acc.id
     """
             .trimIndent()
@@ -101,6 +103,31 @@ WHERE rec.message_id = msg.id
         .bind("now", clock.now())
         .bind("accountId", accountId)
         .bind("threadId", threadId)
+        .execute()
+}
+
+fun Database.Transaction.archiveThread(
+    accountId: MessageAccountId,
+    threadId: MessageThreadId
+): Int {
+    var archiveFolderId = getArchiveFolderId(accountId)
+    if (archiveFolderId == null) {
+        archiveFolderId =
+            this.createUpdate(
+                    "INSERT INTO message_thread_folder (owner_id, name) VALUES (:accountId, 'ARCHIVE') ON CONFLICT DO NOTHING RETURNING id"
+                )
+                .bind("accountId", accountId)
+                .executeAndReturnGeneratedKeys()
+                .mapTo<MessageThreadFolderId>()
+                .single()
+    }
+
+    return this.createUpdate(
+            "UPDATE message_thread_participant SET folder_id = :archiveFolderId WHERE thread_id = :threadId AND participant_id = :accountId"
+        )
+        .bind("accountId", accountId)
+        .bind("threadId", threadId)
+        .bind("archiveFolderId", archiveFolderId)
         .execute()
 }
 
@@ -291,7 +318,7 @@ SELECT
     ), '[]'::jsonb) AS children
 FROM message_thread_participant tp
 JOIN message_thread t on t.id = tp.thread_id
-WHERE tp.participant_id = :accountId
+WHERE tp.participant_id = :accountId AND tp.folder_id IS NULL
 ORDER BY tp.last_message_timestamp DESC
 LIMIT :pageSize OFFSET :offset
         """
@@ -311,7 +338,8 @@ fun Database.Read.getReceivedThreads(
     accountId: MessageAccountId,
     pageSize: Int,
     page: Int,
-    municipalAccountName: String
+    municipalAccountName: String,
+    folderId: MessageThreadFolderId? = null
 ): Paged<MessageThread> {
     val threads =
         createQuery(
@@ -339,7 +367,14 @@ JOIN message_thread t on t.id = tp.thread_id
 WHERE
     tp.participant_id = :accountId AND
     tp.last_received_timestamp IS NOT NULL AND
-    NOT t.is_copy
+    NOT t.is_copy AND
+    ${
+        if (folderId === null) {
+            "tp.folder_id IS NULL"
+        } else {
+            "tp.folder_id = :folderId"
+        }
+    }
 ORDER BY tp.last_received_timestamp DESC
 LIMIT :pageSize OFFSET :offset
         """
@@ -347,6 +382,7 @@ LIMIT :pageSize OFFSET :offset
             .bind("accountId", accountId)
             .bind("pageSize", pageSize)
             .bind("offset", (page - 1) * pageSize)
+            .bind("folderId", folderId)
             .mapToPaged<ReceivedThread>(pageSize)
 
     val messagesByThread =
@@ -1036,3 +1072,11 @@ WHERE sender_acc.id = :senderId AND (u.care_area_id = ANY(:areaIds) OR u.id = AN
         .mapTo<MessageAccountId>()
         .toSet()
 }
+
+fun Database.Read.getArchiveFolderId(accountId: MessageAccountId): MessageThreadFolderId? =
+    this.createQuery(
+            "SELECT id FROM message_thread_folder WHERE owner_id = :accountId AND name = 'ARCHIVE'"
+        )
+        .bind("accountId", accountId)
+        .mapTo<MessageThreadFolderId>()
+        .firstOrNull()

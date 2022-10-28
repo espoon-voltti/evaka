@@ -351,6 +351,7 @@ const sv: Translations = {
     },
     staffAnnotation: 'Personal',
     replyToThread: 'Svar',
+    deleteThread: 'Radera meddelandetråden',
     messageEditor: {
       newMessage: 'Nytt Meddelande',
       recipients: 'Mottagare',

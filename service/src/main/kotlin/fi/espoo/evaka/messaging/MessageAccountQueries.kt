@@ -200,3 +200,10 @@ fun Database.Read.getMessageAccountType(accountId: MessageAccountId): AccountTyp
         .mapTo<AccountType>()
         .one()
 }
+
+fun Database.Read.allFoldersForAccount(accountId: MessageAccountId): List<String> {
+    return createQuery("SELECT name FROM message_thread_folders WHERE owner_id = :accountId")
+        .bind("accountId", accountId)
+        .mapTo<String>()
+        .list()
+}

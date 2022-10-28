@@ -662,6 +662,41 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
     }
 
+    @Test
+    fun `a thread can be archived`() {
+        val (employeeAccount, person1Account) =
+            db.read {
+                listOf(
+                    it.getEmployeeMessageAccountIds(employee1Id).first(),
+                    it.getCitizenMessageAccount(person1Id)
+                )
+            }
+
+        val content = "Content"
+        val title = "Hello"
+        val threadId = createThread(title, content, employeeAccount, listOf(person1Account))
+
+        assertEquals(
+            1,
+            db.read { it.getUnreadMessagesCounts(setOf(person1Account)).first().unreadCount }
+        )
+
+        db.transaction { tx -> tx.archiveThread(person1Account, threadId) }
+
+        assertEquals(
+            0,
+            db.read { it.getUnreadMessagesCounts(setOf(person1Account)).first().unreadCount }
+        )
+
+        assertEquals(
+            1,
+            db.read {
+                val archiveFolderId = it.getArchiveFolderId(person1Account)
+                it.getReceivedThreads(person1Account, 50, 1, "Espoo", archiveFolderId).total
+            }
+        )
+    }
+
     // TODO: Remove this function, creating threads should be MessageService's job
     private fun createThread(
         title: String,

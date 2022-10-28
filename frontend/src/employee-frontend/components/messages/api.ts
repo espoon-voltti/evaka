@@ -70,6 +70,23 @@ export async function getReceivedMessages(
         data: data.data.map((d) => deserializeMessageThread(d))
       })
     )
+}
+
+export async function getArchivedMessages(
+  accountId: UUID,
+  page: number,
+  pageSize: number
+): Promise<Result<Paged<MessageThread>>> {
+  return client
+    .get<JsonOf<Paged<MessageThread>>>(`/messages/${accountId}/archived`, {
+      params: { page, pageSize }
+    })
+    .then(({ data }) =>
+      Success.of({
+        ...data,
+        data: data.data.map((d) => deserializeMessageThread(d))
+      })
+    )
     .catch((e) => Failure.fromError(e))
 }
 
@@ -178,6 +195,16 @@ export async function markThreadRead(
 ): Promise<Result<void>> {
   return client
     .put(`/messages/${accountId}/threads/${id}/read`)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function archiveThread(
+  accountId: UUID,
+  id: UUID
+): Promise<Result<void>> {
+  return client
+    .put(`/messages/${accountId}/threads/${id}/archive`)
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
 }

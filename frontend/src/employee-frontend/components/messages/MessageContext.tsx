@@ -31,6 +31,7 @@ import { UserContext } from '../../state/user'
 import {
   getMessageCopies,
   getMessageDrafts,
+  getArchivedMessages,
   getMessagingAccounts,
   getReceivedMessages,
   getSentMessages,
@@ -58,6 +59,7 @@ export interface MessagesState {
   sentMessages: Result<SentMessage[]>
   messageDrafts: Result<DraftContent[]>
   messageCopies: Result<MessageCopy[]>
+  archivedMessages: Result<MessageThread[]>
   selectedThread: MessageThread | undefined
   selectThread: (thread: MessageThread | undefined) => void
   sendReply: (params: ReplyToThreadParams) => void
@@ -82,6 +84,7 @@ const defaultState: MessagesState = {
   sentMessages: Loading.of(),
   messageDrafts: Loading.of(),
   messageCopies: Loading.of(),
+  archivedMessages: Loading.of(),
   selectedThread: undefined,
   selectThread: () => undefined,
   sendReply: () => undefined,
@@ -166,6 +169,9 @@ export const MessageContextProvider = React.memo(
     const [messageCopies, setMessageCopies] = useState<Result<MessageCopy[]>>(
       Loading.of()
     )
+    const [archivedMessages, setArchivedMessages] = useState<
+      Result<MessageThread[]>
+    >(Loading.of())
 
     const setReceivedMessagesResult = useCallback(
       (result: Result<Paged<MessageThread>>) => {
@@ -177,7 +183,8 @@ export const MessageContextProvider = React.memo(
       []
     )
     const loadReceivedMessages = useRestApi(
-      getReceivedMessages,
+      (accountId: UUID, page: number) =>
+        getReceivedMessages(accountId, page, PAGE_SIZE),
       setReceivedMessagesResult
     )
 
@@ -192,7 +199,11 @@ export const MessageContextProvider = React.memo(
       },
       []
     )
-    const loadSentMessages = useRestApi(getSentMessages, setSentMessagesResult)
+    const loadSentMessages = useRestApi(
+      (accountId: UUID, page: number) =>
+        getSentMessages(accountId, page, PAGE_SIZE),
+      setSentMessagesResult
+    )
 
     const setMessageCopiesResult = useCallback(
       (result: Result<Paged<MessageCopy>>) => {
@@ -204,8 +215,24 @@ export const MessageContextProvider = React.memo(
       []
     )
     const loadMessageCopies = useRestApi(
-      getMessageCopies,
+      (accountId: UUID, page: number) =>
+        getMessageCopies(accountId, page, PAGE_SIZE),
       setMessageCopiesResult
+    )
+
+    const setArchivedMessagesResult = useCallback(
+      (result: Result<Paged<MessageThread>>) => {
+        setArchivedMessages(result.map((r) => r.data))
+        if (result.isSuccess) {
+          setPages(result.value.pages)
+        }
+      },
+      []
+    )
+    const loadArchivedMessages = useRestApi(
+      (accountId: UUID, page: number) =>
+        getArchivedMessages(accountId, page, PAGE_SIZE),
+      setArchivedMessagesResult
     )
 
     // load messages if account, view or page changes
@@ -215,22 +242,22 @@ export const MessageContextProvider = React.memo(
       }
       switch (selectedAccount.view) {
         case 'RECEIVED':
-          void loadReceivedMessages(selectedAccount.account.id, page, PAGE_SIZE)
-          break
+          return void loadReceivedMessages(selectedAccount.account.id, page)
         case 'SENT':
-          void loadSentMessages(selectedAccount.account.id, page, PAGE_SIZE)
-          break
+          return void loadSentMessages(selectedAccount.account.id, page)
         case 'DRAFTS':
-          void loadMessageDrafts(selectedAccount.account.id)
-          break
+          return void loadMessageDrafts(selectedAccount.account.id)
         case 'COPIES':
-          void loadMessageCopies(selectedAccount.account.id, page, PAGE_SIZE)
+          return void loadMessageCopies(selectedAccount.account.id, page)
+        case 'ARCHIVE':
+          return void loadArchivedMessages(selectedAccount.account.id, page)
       }
     }, [
       loadMessageDrafts,
       loadReceivedMessages,
       loadSentMessages,
       loadMessageCopies,
+      loadArchivedMessages,
       page,
       selectedAccount
     ])
@@ -309,6 +336,7 @@ export const MessageContextProvider = React.memo(
         sentMessages,
         messageDrafts,
         messageCopies,
+        archivedMessages,
         selectedThread,
         selectThread,
         replyState,
@@ -328,6 +356,7 @@ export const MessageContextProvider = React.memo(
         sentMessages,
         messageDrafts,
         messageCopies,
+        archivedMessages,
         selectedThread,
         selectThread,
         replyState,

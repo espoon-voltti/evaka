@@ -9,7 +9,9 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.MessageNotificationEmailService
 import fi.espoo.evaka.messaging.MessageService
 import fi.espoo.evaka.messaging.MessageType
+import fi.espoo.evaka.messaging.archiveThread
 import fi.espoo.evaka.messaging.createPersonMessageAccount
+import fi.espoo.evaka.messaging.getArchiveFolderId
 import fi.espoo.evaka.messaging.getMessagesSentByAccount
 import fi.espoo.evaka.messaging.getReceivedThreads
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
@@ -321,6 +323,71 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     private fun receivedThreadCounts(accountIds: List<MessageAccountId>): List<Int> =
         db.read { tx -> accountIds.map { tx.getReceivedThreads(it, 10, 1, "Espoo").total } }
+
+    private fun archivedThreadCounts(accountIds: List<MessageAccountId>): List<Int> =
+        db.read { tx ->
+            accountIds.map {
+                val archiveFolderId = tx.getArchiveFolderId(it)
+                tx.getReceivedThreads(it, 10, 1, "Espoo", archiveFolderId).total
+            }
+        }
+
+    @Test
+    fun `merging a person should move archived messages as well`() {
+        val employeeId = EmployeeId(UUID.randomUUID())
+        val senderAccount =
+            db.transaction {
+                it.insertTestEmployee(DevEmployee(id = employeeId))
+                it.upsertEmployeeMessageAccount(employeeId)
+            }
+
+        val receiverId = PersonId(UUID.randomUUID())
+        val receiverIdDuplicate = PersonId(UUID.randomUUID())
+        val (receiverAccount, receiverDuplicateAccount) =
+            db.transaction { tx ->
+                listOf(receiverId, receiverIdDuplicate).map {
+                    tx.insertTestPerson(DevPerson(id = it))
+                    tx.createPersonMessageAccount(it)
+                }
+            }
+        db.transaction { tx ->
+            messageService.createMessageThreadsForRecipientGroups(
+                tx,
+                RealEvakaClock(),
+                title = "Juhannus",
+                content = "Juhannus tulee kohta",
+                type = MessageType.MESSAGE,
+                urgent = false,
+                sender = senderAccount,
+                recipientGroups = setOf(setOf(receiverDuplicateAccount)),
+                recipientNames = listOf(),
+                staffCopyRecipients = setOf(),
+                accountIdsToChildIds = mapOf(),
+                municipalAccountName = "Espoo"
+            )
+            val threadId =
+                tx.getReceivedThreads(receiverDuplicateAccount, 50, 1, "Espoo").data[0].id
+            tx.archiveThread(receiverDuplicateAccount, threadId)
+        }
+        assertEquals(
+            listOf(0, 0),
+            receivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
+        )
+        assertEquals(
+            listOf(0, 1),
+            archivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
+        )
+
+        db.transaction {
+            mergeService.mergePeople(it, RealEvakaClock(), receiverId, receiverIdDuplicate)
+            mergeService.deleteEmptyPerson(it, receiverIdDuplicate)
+        }
+
+        assertEquals(
+            listOf(1, 0),
+            archivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
+        )
+    }
 
     @Test
     fun `merging child sends update event to head of child`() {

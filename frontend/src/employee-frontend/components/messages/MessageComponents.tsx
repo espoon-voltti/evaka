@@ -22,6 +22,16 @@ export const MessageRow = styled.div<{ unread?: boolean }>`
   border-bottom: 1px solid ${colors.grayscale.g15};
   border-left: 6px solid
     ${(p) => (p.unread ? colors.status.success : 'transparent')};
+
+  .delete-btn {
+    opacity: 0;
+  }
+
+  &:hover {
+    .delete-btn {
+      opacity: 1;
+    }
+  }
 `
 export const Participants = styled.div<{ unread?: boolean }>`
   color: ${(p) => (p.unread ? colors.grayscale.g100 : colors.grayscale.g70)};
