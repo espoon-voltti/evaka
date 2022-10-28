@@ -239,7 +239,7 @@ export default React.memo(function DatePicker({
   }
 
   function handleUserKeyPress(e: React.KeyboardEvent) {
-    if (e.key === 'Esc' || e.key === 'Escape') {
+    if (e.key === 'Esc' || e.key === 'Escape' || e.key === 'Enter') {
       hideDatePicker()
     }
   }
@@ -309,12 +309,7 @@ export default React.memo(function DatePicker({
     <DatePickerWrapper ref={wrapperRef} onKeyDown={handleUserKeyPress}>
       <DatePickerInput
         date={internalDate}
-        setDate={(date) => {
-          if (date !== null) {
-            hideDatePicker()
-          }
-          setInternalDate(date)
-        }}
+        setDate={setInternalDate}
         disabled={disabled}
         onFocus={(ev) => {
           setShowDatePicker(true)

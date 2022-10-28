@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'
@@ -67,13 +67,13 @@ export default React.memo(function DatePickerInput({
   const ariaId = useUniqueId('date-picker-input')
 
   const [rawDate, setRawDate, parsedDate] = usePendingUserInput(transformDate)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (date) {
+    if (date && document.activeElement !== inputRef.current) {
       setRawDate(date.format())
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date])
+  }, [date, inputRef, setRawDate])
 
   function changeHandler(target: EventTarget & HTMLInputElement) {
     if (useBrowserPicker) {
@@ -133,6 +133,7 @@ export default React.memo(function DatePickerInput({
         id={id}
         required={required}
         width="s"
+        inputRef={inputRef}
         {...dateProps}
       />
       <DatePickerDescription id={ariaId} locale={locale} />

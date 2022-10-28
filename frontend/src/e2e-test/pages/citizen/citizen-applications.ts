@@ -203,12 +203,20 @@ class CitizenApplicationEditor {
     }
   }
 
-  async fillInput(field: string, value: string, clearFirst = true) {
+  async fillInput(
+    field: string,
+    value: string,
+    clearFirst = true,
+    pressEnterAfter = false
+  ) {
     const element = new TextInput(this.page.find(`[data-qa="${field}-input"]`))
     if (clearFirst) {
       await element.clear()
     }
     await element.type(value)
+    if (pressEnterAfter) {
+      await element.press('Enter')
+    }
   }
 
   async fillData(data: JsonOf<FormInput>) {
@@ -276,7 +284,12 @@ class CitizenApplicationEditor {
             await this.fillInput(field, hours)
             await this.fillInput(field, minutes, false)
           } else if (typeof value === 'string') {
-            await this.fillInput(field, value)
+            await this.fillInput(
+              field,
+              value,
+              true,
+              field.toLowerCase().indexOf('date') >= 0
+            )
           } else if (typeof value === 'boolean') {
             await this.setCheckbox(field, value)
           }
@@ -296,6 +309,7 @@ class CitizenApplicationEditor {
     await this.openSection('serviceNeed')
     await this.#preferredStartDateInput.clear()
     await this.#preferredStartDateInput.type(formattedDate)
+    await this.#preferredStartDateInput.press('Enter')
     await this.page.keyboard.press('Tab')
   }
 

@@ -316,6 +316,7 @@ class AbsencesModal {
     await this.#childCheckbox(child.id).click()
     await this.#startDateInput.fill(dateRange.start.format())
     await this.#endDateInput.fill(dateRange.end.format())
+    await this.#endDateInput.press('Enter')
     await this.#absenceChip(absenceType).click()
 
     await this.#modalSendButton.click()

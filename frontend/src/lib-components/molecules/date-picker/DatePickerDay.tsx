@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { fi, sv, enGB } from 'date-fns/locale'
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { DayPicker, DayModifiers } from 'react-day-picker'
 
 import LocalDate from 'lib-common/local-date'
@@ -30,13 +30,25 @@ export default React.memo(function DatePickerDay({
   maxDate
 }: Props) {
   const localeData = useLocaleWithCapitalizedNames(locale)
+  const [month, setMonth] = useState<Date>(
+    initialMonth?.toSystemTzDate() ??
+      LocalDate.todayInHelsinkiTz().toSystemTzDate()
+  )
+
+  useEffect(() => {
+    if (inputValue) {
+      setMonth(inputValue.toSystemTzDate())
+    }
+  }, [inputValue])
 
   return (
     <DayPicker
       onDayClick={handleDayClick}
       locale={localeData}
       selected={inputValue?.toSystemTzDate() ?? undefined}
-      disabled={(date) => {
+      month={month}
+      onMonthChange={(m) => setMonth(m)}
+      disabled={(date: Date) => {
         const localDate = LocalDate.fromSystemTzDate(date)
 
         if (isInvalidDate?.(localDate)) {
