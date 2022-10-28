@@ -178,7 +178,8 @@ internal fun Database.Transaction.handleFeeDecisionChanges(
     val updatedDecisions =
         updateExistingDecisions(from, newDrafts, existingDrafts, combinedActiveDecisions)
     deleteFeeDecisions(existingDrafts.map { it.id })
-    upsertFeeDecisions(updatedDecisions.updatedDrafts + updatedDecisions.updatedActiveDecisions)
+    updateFeeDecisionStatusAndDates(updatedDecisions.updatedActiveDecisions)
+    upsertFeeDecisions(updatedDecisions.updatedDrafts)
 }
 
 private fun generateFeeDecisions(
