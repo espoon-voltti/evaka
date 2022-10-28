@@ -366,7 +366,7 @@ fun Database.Read.searchFeeDecisions(
 
     val youngestChildQuery =
         """
-        WITH youngest_child AS (
+        youngest_child AS (
             SELECT
                 fee_decision_child.fee_decision_id AS decision_id,
                 care_area.short_name AS area,
@@ -383,7 +383,7 @@ fun Database.Read.searchFeeDecisions(
 
     val firstPlacementStartingThisMonthChildQuery =
         """
-        WITH decisions_with_first_placement_starting_this_month AS (    
+        decisions_with_first_placement_starting_this_month AS (    
             SELECT DISTINCT(fdc.fee_decision_id)
             FROM placement p
             JOIN person c ON p.child_id = c.id
@@ -397,12 +397,19 @@ fun Database.Read.searchFeeDecisions(
     val firstPlacementStartingThisMonthChildIdsQueryJoin =
         "LEFT JOIN decisions_with_first_placement_starting_this_month ON decision.id = decisions_with_first_placement_starting_this_month.fee_decision_id"
 
-    // language=sql
+    val CTEs =
+        listOf(
+                if (areas.isNotEmpty() || financeDecisionHandlerId != null) youngestChildQuery
+                else "",
+                if (noStartingPlacements) firstPlacementStartingThisMonthChildQuery else ""
+            )
+            .filter { it.isNotEmpty() }
+            .joinToString(",")
+
     val sql =
         """
         WITH decision_ids AS (
-            ${if (areas.isNotEmpty() || financeDecisionHandlerId != null) youngestChildQuery else ""}
-            ${if (noStartingPlacements) firstPlacementStartingThisMonthChildQuery else ""}
+            ${ if (CTEs.length > 0) "WITH $CTEs" else ""}
             SELECT decision.id, count(*) OVER ()
             FROM fee_decision AS decision
             LEFT JOIN fee_decision_child AS part ON decision.id = part.fee_decision_id
