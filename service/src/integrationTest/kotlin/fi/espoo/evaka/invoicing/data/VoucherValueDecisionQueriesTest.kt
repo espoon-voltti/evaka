@@ -42,6 +42,7 @@ import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.toValueDecisionServiceNeed
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -985,13 +986,15 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
 
     @Test
     fun `search with NO_STARTING_CHILDREN`() {
+        val now = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
+
         db.transaction { tx ->
             tx.upsertValueDecisions(
                 listOf(
                     createVoucherValueDecisionFixture(
                         status = VoucherValueDecisionStatus.DRAFT,
-                        validFrom = LocalDate.now(),
-                        validTo = LocalDate.now(),
+                        validFrom = now.today(),
+                        validTo = now.today(),
                         headOfFamilyId = testAdult_1.id,
                         childId = testChild_1.id,
                         dateOfBirth = testChild_1.dateOfBirth,
@@ -1006,9 +1009,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 1,
                 tx.searchValueDecisions(
                         evakaClock =
-                            MockEvakaClock(
-                                HelsinkiDateTime.of(LocalDate.now(), LocalTime.of(15, 6))
-                            ),
+                            MockEvakaClock(HelsinkiDateTime.of(now.today(), LocalTime.of(15, 6))),
                         postOffice = "ESPOO",
                         page = 0,
                         pageSize = 100,
@@ -1032,8 +1033,8 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 DevPlacement(
                     childId = testChild_1.id,
                     unitId = testDaycare.id,
-                    startDate = LocalDate.now(),
-                    endDate = LocalDate.now()
+                    startDate = now.today(),
+                    endDate = now.today()
                 )
             )
 
@@ -1041,9 +1042,7 @@ internal class VoucherValueDecisionQueriesTest : PureJdbiTest(resetDbBeforeEach 
                 0,
                 tx.searchValueDecisions(
                         evakaClock =
-                            MockEvakaClock(
-                                HelsinkiDateTime.of(LocalDate.now(), LocalTime.of(15, 6))
-                            ),
+                            MockEvakaClock(HelsinkiDateTime.of(now.today(), LocalTime.of(15, 6))),
                         postOffice = "ESPOO",
                         page = 0,
                         pageSize = 100,

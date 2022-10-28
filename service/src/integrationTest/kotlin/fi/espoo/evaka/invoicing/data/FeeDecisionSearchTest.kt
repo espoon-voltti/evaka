@@ -216,13 +216,16 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `starting children filter search`() {
+        val now = MockEvakaClock(HelsinkiDateTime.of(LocalDateTime.of(2022, 1, 1, 12, 0)))
+
         db.transaction { tx ->
             tx.upsertFeeDecisions(
                 listOf(
                     decisionFixture(
                         headOfFamily = testAdult_3.id,
                         children =
-                            listOf(childFixture(testChild_3, testDaycare.id, serviceNeed = null))
+                            listOf(childFixture(testChild_3, testDaycare.id, serviceNeed = null)),
+                        period = DateRange(now.today(), now.today())
                     )
                 )
             )
@@ -246,8 +249,8 @@ class FeeDecisionSearchTest : PureJdbiTest(resetDbBeforeEach = true) {
                 DevPlacement(
                     childId = testChild_3.id,
                     unitId = testDaycare.id,
-                    startDate = LocalDate.now(),
-                    endDate = LocalDate.now()
+                    startDate = now.today(),
+                    endDate = now.today()
                 )
             )
         }
