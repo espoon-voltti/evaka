@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useMemo } from 'react'
+import React, { useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
@@ -10,7 +10,6 @@ import {
   MessageAccount,
   MessageThread
 } from 'lib-common/generated/api-types/messaging'
-import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { formatPreferredName } from 'lib-common/names'
 import Pagination from 'lib-components/Pagination'
 import EmptyMessageFolder from 'lib-components/employee/messages/EmptyMessageFolder'
@@ -67,15 +66,10 @@ export default React.memo(function ThreadListContainer({
     pages,
     selectedThread,
     selectThread,
-    setSelectedDraft
+    setSelectedDraft,
+    sentMessagesAsThreads,
+    messageCopiesAsThreads
   } = useContext(MessageContext)
-
-  useEffect(
-    function deselectThreadWhenViewChanges() {
-      selectThread(undefined)
-    },
-    [account.id, selectThread, view]
-  )
 
   const deselectThread = useCallback(
     () => selectThread(undefined),
@@ -105,6 +99,88 @@ export default React.memo(function ThreadListContainer({
     archivedMessages
   ])
 
+  const threadToListItem = useCallback(
+    (
+      thread: MessageThread,
+      displayMessageCount: boolean,
+      dataQa: string
+    ): ThreadListItem => ({
+      id: thread.id,
+      title: thread.title,
+      content: thread.messages[thread.messages.length - 1].content,
+      urgent: thread.urgent,
+      participants:
+        view === 'sent'
+          ? thread.messages[0].recipientNames || getUniqueParticipants(thread)
+          : getUniqueParticipants(thread),
+      unread: thread.messages.some(
+        (m) => !m.readAt && m.sender.id != account.id
+      ),
+      onClick: () => selectThread(thread),
+      type: thread.type,
+      timestamp: thread.messages[thread.messages.length - 1].sentAt,
+      messageCount: displayMessageCount ? thread.messages.length : undefined,
+      dataQa: dataQa
+    }),
+    [account.id, selectThread, view]
+  )
+
+  const receivedMessageItems: Result<ThreadListItem[]> = useMemo(
+    () =>
+      receivedMessages.map((value) =>
+        value.map((t) => threadToListItem(t, true, 'received-message-row'))
+      ),
+    [receivedMessages, threadToListItem]
+  )
+  const sentMessageItems: Result<ThreadListItem[]> = useMemo(
+    () =>
+      sentMessagesAsThreads.map((value) =>
+        value.map((t) => threadToListItem(t, false, 'sent-message-row'))
+      ),
+    [sentMessagesAsThreads, threadToListItem]
+  )
+  const draftMessageItems: Result<ThreadListItem[]> = useMemo(
+    () =>
+      messageDrafts.map((value) =>
+        value.map((draft) => ({
+          id: draft.id,
+          title: draft.title,
+          content: draft.content,
+          urgent: draft.urgent,
+          participants: draft.recipientNames,
+          unread: false,
+          onClick: () => setSelectedDraft(draft),
+          type: draft.type,
+          timestamp: draft.created,
+          messageCount: undefined,
+          dataQa: 'draft-message-row'
+        }))
+      ),
+    [messageDrafts, setSelectedDraft]
+  )
+  const messageCopyItems = useMemo(
+    () =>
+      messageCopiesAsThreads.map((value) =>
+        value.map((t) => threadToListItem(t, true, 'message-copy-row'))
+      ),
+    [messageCopiesAsThreads, threadToListItem]
+  )
+  const messageArchivedItems = useMemo(
+    () =>
+      archivedMessages.map((value) =>
+        value.map((t) => threadToListItem(t, true, 'archived-message-row'))
+      ),
+    [archivedMessages, threadToListItem]
+  )
+
+  const threadListItems: Result<ThreadListItem[]> = {
+    received: receivedMessageItems,
+    sent: sentMessageItems,
+    drafts: draftMessageItems,
+    copies: messageCopyItems,
+    archive: messageArchivedItems
+  }[view]
+
   if (selectedThread) {
     return (
       <SingleThreadView
@@ -116,127 +192,6 @@ export default React.memo(function ThreadListContainer({
       />
     )
   }
-
-  const threadToListItem = (
-    thread: MessageThread,
-    displayMessageCount: boolean,
-    dataQa: string
-  ): ThreadListItem => ({
-    id: thread.id,
-    title: thread.title,
-    content: thread.messages[thread.messages.length - 1].content,
-    urgent: thread.urgent,
-    participants:
-      view === 'sent'
-        ? thread.messages[0].recipientNames || getUniqueParticipants(thread)
-        : getUniqueParticipants(thread),
-    unread: thread.messages.some((m) => !m.readAt && m.sender.id != account.id),
-    onClick: () => selectThread(thread),
-    type: thread.type,
-    timestamp: thread.messages[thread.messages.length - 1].sentAt,
-    messageCount: displayMessageCount ? thread.messages.length : undefined,
-    dataQa: dataQa
-  })
-
-  // TODO: Sent messages should probably be threads. Non trivial due to thread-splitting.
-  const sentMessagesAsThreads: Result<MessageThread[]> = sentMessages.map(
-    (value) =>
-      value.map((message) => ({
-        id: message.contentId,
-        type: message.type,
-        title: message.threadTitle,
-        urgent: message.urgent,
-        isCopy: false,
-        participants: message.recipientNames,
-        children: [],
-        messages: [
-          {
-            id: message.contentId,
-            threadId: message.contentId,
-            sender: { ...account },
-            sentAt: message.sentAt,
-            recipients: message.recipients,
-            readAt: HelsinkiDateTime.now(),
-            content: message.content,
-            attachments: message.attachments,
-            recipientNames: message.recipientNames
-          }
-        ]
-      }))
-  )
-
-  const messageCopiesAsThreads: Result<MessageThread[]> = messageCopies.map(
-    (value) =>
-      value.map((message) => ({
-        ...message,
-        id: message.threadId,
-        isCopy: true,
-        participants: [message.recipientName],
-        children: [],
-        messages: [
-          {
-            id: message.messageId,
-            threadId: message.threadId,
-            sender: {
-              id: message.senderId,
-              name: message.senderName,
-              type: message.senderAccountType
-            },
-            sentAt: message.sentAt,
-            recipients: [
-              {
-                id: message.recipientId,
-                name: message.recipientName,
-                type: message.recipientAccountType
-              }
-            ],
-            readAt: message.readAt,
-            content: message.content,
-            attachments: message.attachments,
-            recipientNames: message.recipientNames
-          }
-        ]
-      }))
-  )
-
-  const receivedMessageItems: Result<ThreadListItem[]> = receivedMessages.map(
-    (value) =>
-      value.map((t) => threadToListItem(t, true, 'received-message-row'))
-  )
-  const sentMessageItems: Result<ThreadListItem[]> = sentMessagesAsThreads.map(
-    (value) => value.map((t) => threadToListItem(t, false, 'sent-message-row'))
-  )
-  const draftMessageItems: Result<ThreadListItem[]> = messageDrafts.map(
-    (value) =>
-      value.map((draft) => ({
-        id: draft.id,
-        title: draft.title,
-        content: draft.content,
-        urgent: draft.urgent,
-        participants: draft.recipientNames,
-        unread: false,
-        onClick: () => setSelectedDraft(draft),
-        type: draft.type,
-        timestamp: draft.created,
-        messageCount: undefined,
-        dataQa: 'draft-message-row'
-      }))
-  )
-  const messageCopyItems = messageCopiesAsThreads.map((value) =>
-    value.map((t) => threadToListItem(t, true, 'message-copy-row'))
-  )
-
-  const messageArchivedItems = archivedMessages.map((value) =>
-    value.map((t) => threadToListItem(t, true, 'archived-message-row'))
-  )
-
-  const threadListItems: Result<ThreadListItem[]> = {
-    received: receivedMessageItems,
-    sent: sentMessageItems,
-    drafts: draftMessageItems,
-    copies: messageCopyItems,
-    archive: messageArchivedItems
-  }[view]
 
   return hasMessages ? (
     <MessagesContainer opaque>

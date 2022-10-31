@@ -25,6 +25,7 @@ import {
   UnreadCountByAccount,
   MessageCopy
 } from 'lib-common/generated/api-types/messaging'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 import { usePeriodicRefresh } from 'lib-common/utils/usePeriodicRefresh'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
@@ -90,6 +91,8 @@ export interface MessagesState {
   getReplyContent: (threadId: UUID) => string
   refreshMessages: (account?: UUID) => void
   unreadCountsByAccount: Result<UnreadCountByAccount[]>
+  sentMessagesAsThreads: Result<MessageThread[]>
+  messageCopiesAsThreads: Result<MessageThread[]>
 }
 
 const defaultState: MessagesState = {
@@ -119,7 +122,9 @@ const defaultState: MessagesState = {
   getReplyContent: () => '',
   setReplyContent: () => undefined,
   refreshMessages: () => undefined,
-  unreadCountsByAccount: Loading.of()
+  unreadCountsByAccount: Loading.of(),
+  sentMessagesAsThreads: Loading.of(),
+  messageCopiesAsThreads: Loading.of()
 }
 
 export const MessageContext = createContext<MessagesState>(defaultState)
@@ -146,6 +151,28 @@ export const MessageContextProvider = React.memo(
     const accountId = searchParams.get('accountId')
     const messageBox = searchParams.get('messageBox')
     const unitId = searchParams.get('unitId')
+    const threadId = searchParams.get('threadId')
+    const setParams = useCallback(
+      (params: {
+        accountId?: string | null
+        messageBox?: string | null
+        unitId?: string | null
+        threadId?: string | null
+      }) => {
+        setSearchParams(
+          {
+            ...(params.accountId ? { accountId: params.accountId } : undefined),
+            ...(params.messageBox
+              ? { messageBox: params.messageBox }
+              : undefined),
+            ...(params.unitId ? { unitId: params.unitId } : undefined),
+            ...(params.threadId ? { threadId: params.threadId } : undefined)
+          },
+          { replace: true }
+        )
+      },
+      [setSearchParams]
+    )
 
     const [accounts] = useApiState(
       () =>
@@ -234,8 +261,6 @@ export const MessageContextProvider = React.memo(
     const [selectedDraft, setSelectedDraft] = useState(
       defaultState.selectedDraft
     )
-
-    const [selectedThread, setSelectedThread] = useState<MessageThread>()
 
     const [page, setPage] = useState<number>(1)
     const [pages, setPages] = useState<number>()
@@ -344,24 +369,143 @@ export const MessageContextProvider = React.memo(
       selectedAccount
     ])
 
+    const refreshMessages = useCallback(
+      (accountId?: UUID) => {
+        if (!accountId || selectedAccount?.account.id === accountId) {
+          loadMessages()
+        }
+      },
+      [loadMessages, selectedAccount]
+    )
+
+    const sentMessagesAsThreads: Result<MessageThread[]> = useMemo(
+      () =>
+        sentMessages.map((value) =>
+          selectedAccount
+            ? value.map((message) => ({
+                id: message.contentId,
+                type: message.type,
+                title: message.threadTitle,
+                urgent: message.urgent,
+                isCopy: false,
+                participants: message.recipientNames,
+                children: [],
+                messages: [
+                  {
+                    id: message.contentId,
+                    threadId: message.contentId,
+                    sender: { ...selectedAccount.account },
+                    sentAt: message.sentAt,
+                    recipients: message.recipients,
+                    readAt: HelsinkiDateTime.now(),
+                    content: message.content,
+                    attachments: message.attachments,
+                    recipientNames: message.recipientNames
+                  }
+                ]
+              }))
+            : []
+        ),
+      [selectedAccount, sentMessages]
+    )
+
+    const messageCopiesAsThreads: Result<MessageThread[]> = useMemo(
+      () =>
+        messageCopies.map((value) =>
+          value.map((message) => ({
+            ...message,
+            id: message.threadId,
+            isCopy: true,
+            participants: [message.recipientName],
+            children: [],
+            messages: [
+              {
+                id: message.messageId,
+                threadId: message.threadId,
+                sender: {
+                  id: message.senderId,
+                  name: message.senderName,
+                  type: message.senderAccountType
+                },
+                sentAt: message.sentAt,
+                recipients: [
+                  {
+                    id: message.recipientId,
+                    name: message.recipientName,
+                    type: message.recipientAccountType
+                  }
+                ],
+                readAt: message.readAt,
+                content: message.content,
+                attachments: message.attachments,
+                recipientNames: message.recipientNames
+              }
+            ]
+          }))
+        ),
+      [messageCopies]
+    )
+
+    const setSelectedThread = useCallback(
+      (threadId: string | undefined) =>
+        setParams({
+          threadId,
+          accountId,
+          messageBox,
+          unitId
+        }),
+      [accountId, messageBox, setParams, unitId]
+    )
+    const selectThread = useCallback(
+      (thread: MessageThread | undefined) => {
+        setSelectedThread(thread?.id)
+        if (!selectedAccount) throw new Error('Should never happen')
+
+        const accountId = selectedAccount.account.id
+        const hasUnreadMessages = thread?.messages.some(
+          (m) => !m.readAt && m.sender.id !== accountId
+        )
+        if (thread && hasUnreadMessages) {
+          void markThreadRead(accountId, thread.id).then(() => {
+            refreshMessages(accountId)
+            void refreshUnreadCounts()
+          })
+        }
+      },
+      [setSelectedThread, selectedAccount, refreshMessages, refreshUnreadCounts]
+    )
+    const selectedThread = useMemo(
+      () =>
+        [
+          ...receivedMessages.getOrElse([]),
+          ...sentMessagesAsThreads.getOrElse([]),
+          ...messageCopiesAsThreads.getOrElse([])
+        ].find((t) => t.id === threadId),
+      [
+        receivedMessages,
+        sentMessagesAsThreads,
+        messageCopiesAsThreads,
+        threadId
+      ]
+    )
+
     const [replyState, setReplyState] = useState<Result<void>>()
-    const setReplyResponse = useCallback((res: Result<ThreadReply>) => {
-      setReplyState(res.map(() => undefined))
-      if (res.isSuccess) {
-        const {
-          value: { message, threadId }
-        } = res
-        setReceivedMessages(
-          appendMessageAndMoveThreadToTopOfList(threadId, message)
-        )
-        setSelectedThread((thread) =>
-          thread?.id === threadId
-            ? { ...thread, messages: [...thread.messages, message] }
-            : thread
-        )
-        setReplyContents((state) => ({ ...state, [threadId]: '' }))
-      }
-    }, [])
+    const setReplyResponse = useCallback(
+      (res: Result<ThreadReply>) => {
+        setReplyState(res.map(() => undefined))
+        if (res.isSuccess) {
+          const {
+            value: { message, threadId }
+          } = res
+          setReceivedMessages(
+            appendMessageAndMoveThreadToTopOfList(threadId, message)
+          )
+          setSelectedThread(threadId)
+          setReplyContents((state) => ({ ...state, [threadId]: '' }))
+        }
+      },
+      [setSelectedThread]
+    )
     const reply = useRestApi(replyToThread, setReplyResponse)
     const sendReply = useCallback(reply, [reply])
 
@@ -375,75 +519,32 @@ export const MessageContextProvider = React.memo(
       setReplyContents((state) => ({ ...state, [threadId]: content }))
     }, [])
 
-    const refreshMessages = useCallback(
-      (accountId?: UUID) => {
-        if (!accountId || selectedAccount?.account.id === accountId) {
-          loadMessages()
-        }
-      },
-      [loadMessages, selectedAccount]
-    )
-    const selectThread = useCallback(
-      (thread: MessageThread | undefined) => {
-        setSelectedThread(thread)
-        if (!thread) {
-          refreshMessages()
-          return
-        }
-        if (!selectedAccount) throw new Error('Should never happen')
-
-        const accountId = selectedAccount.account.id
-        const hasUnreadMessages = thread.messages.some(
-          (m) => !m.readAt && m.sender.id !== accountId
-        )
-        if (hasUnreadMessages) {
-          void markThreadRead(accountId, thread.id).then(() => {
-            refreshMessages(accountId)
-            void refreshUnreadCounts()
-          })
-        }
-      },
-      [refreshMessages, selectedAccount, refreshUnreadCounts]
-    )
-
     const selectUnit = useCallback(
       (unitId: string) => {
         const firstUnitGroupAccount = groupAccounts.find(
           (acc) => acc.daycareGroup.unitId === unitId
         )
         if (firstUnitGroupAccount) {
-          setSearchParams(
-            {
-              accountId: firstUnitGroupAccount?.account.id,
-              messageBox: groupMessageBoxes[0],
-              unitId
-            },
-            { replace: true }
-          )
+          setParams({
+            accountId: firstUnitGroupAccount?.account.id,
+            messageBox: groupMessageBoxes[0],
+            unitId
+          })
         } else {
-          setSearchParams({ unitId }, { replace: true })
+          setParams({ unitId })
         }
       },
-      [groupAccounts, setSearchParams]
+      [groupAccounts, setParams]
     )
 
     const selectAccount = useCallback(
-      (accountView: AccountView) => {
-        const updatedParams = {
+      (accountView: AccountView) =>
+        setParams({
           accountId: accountView.account.id,
-          messageBox: accountView.view
-        }
-        setSearchParams(
+          messageBox: accountView.view,
           unitId
-            ? {
-                unitId,
-                ...updatedParams
-              }
-            : updatedParams,
-          { replace: true }
-        )
-      },
-      [setSearchParams, unitId]
+        }),
+      [setParams, unitId]
     )
 
     // select first account if no account is selected
@@ -513,7 +614,9 @@ export const MessageContextProvider = React.memo(
         getReplyContent,
         setReplyContent,
         refreshMessages,
-        unreadCountsByAccount
+        unreadCountsByAccount,
+        sentMessagesAsThreads,
+        messageCopiesAsThreads
       }),
       [
         accounts,
@@ -539,7 +642,9 @@ export const MessageContextProvider = React.memo(
         getReplyContent,
         setReplyContent,
         refreshMessages,
-        unreadCountsByAccount
+        unreadCountsByAccount,
+        sentMessagesAsThreads,
+        messageCopiesAsThreads
       ]
     )
 
