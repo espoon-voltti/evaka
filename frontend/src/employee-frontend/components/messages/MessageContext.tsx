@@ -304,7 +304,10 @@ export const MessageContextProvider = React.memo(
     const selectThread = useCallback(
       (thread: MessageThread | undefined) => {
         setSelectedThread(thread)
-        if (!thread) return
+        if (!thread) {
+          refreshMessages()
+          return
+        }
         if (!selectedAccount) throw new Error('Should never happen')
 
         const accountId = selectedAccount.account.id
