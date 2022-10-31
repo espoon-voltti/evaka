@@ -244,7 +244,7 @@ export default React.memo(function ThreadListContainer({
       <ThreadList
         items={threadListItems}
         accountId={account.id}
-        onArchived={view === 'ARCHIVE' ? undefined : deselectThread}
+        onArchived={view === 'RECEIVED' ? deselectThread : undefined}
       />
       <Pagination
         pages={pages}
