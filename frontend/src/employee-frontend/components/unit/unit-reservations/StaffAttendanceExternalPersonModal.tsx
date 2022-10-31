@@ -37,37 +37,45 @@ import { fontWeights, H1, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
-type PersonArrivalData = {
-  arrivalDate: LocalDate | null
+type FormState = {
+  date: LocalDate | null
   arrivalTime: string
+  departureTime: string
   name: string
   groupId: UUID
 }
 
-const defaultPersonArrival = (groupId: UUID): PersonArrivalData => ({
-  arrivalDate: LocalDate.todayInHelsinkiTz(),
+const initialFormState = (groupId: UUID): FormState => ({
+  date: LocalDate.todayInHelsinkiTz(),
   arrivalTime: LocalTime.nowInHelsinkiTz().format('HH:mm'),
+  departureTime: '',
   name: '',
   groupId
 })
 
 const validateForm = (
-  formData: PersonArrivalData
+  attendanceId: UUID | null,
+  formState: FormState
 ):
   | [UpsertStaffAndExternalAttendanceRequest]
-  | [undefined, ErrorsOf<PersonArrivalData>] => {
-  const errors: ErrorsOf<PersonArrivalData> = {
-    arrivalDate: !formData.arrivalDate ? 'required' : undefined,
-    arrivalTime: !formData.arrivalTime
+  | [undefined, ErrorsOf<FormState>] => {
+  const errors: ErrorsOf<FormState> = {
+    date: !formState.date ? 'required' : undefined,
+    arrivalTime: !formState.arrivalTime
       ? 'timeRequired'
-      : isTimeValid(formData.arrivalTime)
+      : isTimeValid(formState.arrivalTime)
       ? undefined
       : 'timeFormat',
-    name: formData.name.length < 3 ? 'required' : undefined,
-    groupId: !formData.groupId ? 'required' : undefined
+    departureTime: !formState.departureTime
+      ? undefined
+      : isTimeValid(formState.departureTime)
+      ? undefined
+      : 'timeFormat',
+    name: formState.name.length < 3 ? 'required' : undefined,
+    groupId: !formState.groupId ? 'required' : undefined
   }
 
-  if (getErrorCount(errors) > 0) {
+  if (getErrorCount(errors) > 0 || !formState.date) {
     return [undefined, errors]
   }
 
@@ -75,15 +83,19 @@ const validateForm = (
     {
       externalAttendances: [
         {
-          attendanceId: null,
-          departed: null,
+          attendanceId,
           arrived: HelsinkiDateTime.fromLocal(
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            formData.arrivalDate!,
-            LocalTime.parse(formData.arrivalTime, 'HH:mm')
+            formState.date,
+            LocalTime.parse(formState.arrivalTime, 'HH:mm')
           ),
-          name: formData.name,
-          groupId: formData.groupId
+          departed: formState.departureTime
+            ? HelsinkiDateTime.fromLocal(
+                formState.date,
+                LocalTime.parse(formState.departureTime, 'HH:mm')
+              )
+            : null,
+          name: formState.name,
+          groupId: formState.groupId
         }
       ],
       staffAttendances: []
@@ -91,7 +103,7 @@ const validateForm = (
   ]
 }
 
-type AddPersonModalProps = {
+type ExternalPersonModalProps = {
   onClose: () => void
   onSave: () => void
   unitId: UUID
@@ -99,21 +111,21 @@ type AddPersonModalProps = {
   defaultGroupId: UUID
 }
 
-export const AddPersonModal = React.memo(function AddPersonModal({
+export default React.memo(function StaffAttendanceExternalPersonModal({
   onClose,
   onSave,
   unitId,
   groups,
   defaultGroupId
-}: AddPersonModalProps) {
+}: ExternalPersonModalProps) {
   const { i18n, lang } = useTranslation()
 
-  const [formData, setFormData] = useState<PersonArrivalData>(
-    defaultPersonArrival(defaultGroupId)
+  const [formData, setFormData] = useState<FormState>(
+    initialFormState(defaultGroupId)
   )
 
   const [requestBody, errors] = useMemo(
-    () => validateForm(formData),
+    () => validateForm(null, formData),
     [formData]
   )
 
@@ -142,20 +154,20 @@ export const AddPersonModal = React.memo(function AddPersonModal({
           </FieldLabel>
           <FixedSpaceRow>
             <DatePicker
-              date={formData.arrivalDate}
+              date={formData.date}
               locale={lang}
               onChange={(date) =>
                 setFormData((prev) => ({
                   ...prev,
-                  arrivalDate: date
+                  date: date
                 }))
               }
               data-qa="add-person-arrival-date-picker"
               required
               errorTexts={i18n.validationErrors}
               info={
-                errors?.arrivalDate && {
-                  text: i18n.validationErrors[errors.arrivalDate],
+                errors?.date && {
+                  text: i18n.validationErrors[errors.date],
                   status: 'warning'
                 }
               }
@@ -172,6 +184,23 @@ export const AddPersonModal = React.memo(function AddPersonModal({
               info={
                 errors?.arrivalTime && {
                   text: i18n.validationErrors[errors.arrivalTime],
+                  status: 'warning'
+                }
+              }
+            />
+            {' – '}
+            <TimeInput
+              value={formData.departureTime}
+              onChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  departureTime: value
+                }))
+              }
+              data-qa="add-person-departure-time-input"
+              info={
+                errors?.departureTime && {
+                  text: i18n.validationErrors[errors.departureTime],
                   status: 'warning'
                 }
               }
