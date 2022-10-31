@@ -39,18 +39,13 @@ class PartnershipService {
         partnershipId: PartnershipId,
         startDate: LocalDate,
         endDate: LocalDate?
-    ): Partnership {
-        val partnership =
-            tx.getPartnership(partnershipId)
-                ?: throw NotFound("No partnership found with id $partnershipId")
+    ) {
         try {
             val success = tx.updatePartnershipDuration(partnershipId, startDate, endDate)
             if (!success) throw NotFound("No partnership found with id $partnershipId")
         } catch (e: Exception) {
             throw mapPSQLException(e)
         }
-
-        return partnership.copy(startDate = startDate, endDate = endDate)
     }
 
     fun retryPartnership(tx: Database.Transaction, partnershipId: PartnershipId): Partnership? {
