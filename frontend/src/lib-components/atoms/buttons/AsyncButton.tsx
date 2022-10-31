@@ -50,6 +50,7 @@ export interface AsyncButtonProps<T> {
   onFailure?: (failure: Failure<T>) => void
   type?: 'button' | 'submit'
   preventDefault?: boolean
+  stopPropagation?: boolean
   primary?: boolean
   disabled?: boolean
   className?: string
@@ -65,6 +66,7 @@ function AsyncButton<T>({
   textDone = text,
   type = 'button',
   preventDefault = type === 'submit',
+  stopPropagation = false,
   primary,
   disabled,
   onClick,
@@ -106,6 +108,7 @@ function AsyncButton<T>({
   const handleClick = useCallback(
     (e: FormEvent) => {
       if (preventDefault) e.preventDefault()
+      if (stopPropagation) e.stopPropagation()
 
       if (!mountedRef.current) return
       if (isInProgress || isSuccess) return
@@ -151,6 +154,7 @@ function AsyncButton<T>({
     },
     [
       preventDefault,
+      stopPropagation,
       isInProgress,
       onClick,
       handleSuccess,

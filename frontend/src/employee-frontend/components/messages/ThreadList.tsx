@@ -84,6 +84,7 @@ export function ThreadList({ items: messages, accountId, onArchived }: Props) {
                 className="delete-btn"
                 onClick={() => archiveThread(accountId, item.id)}
                 onSuccess={onArchived}
+                stopPropagation
               />
             )}
             <TypeAndDate>

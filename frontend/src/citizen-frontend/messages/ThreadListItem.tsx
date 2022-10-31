@@ -78,6 +78,7 @@ export default React.memo(function ThreadListItem({
               className="delete-btn"
               onClick={() => deleteThread(thread.id)}
               onSuccess={onDeleted}
+              stopPropagation
             />
             <MessageCharacteristics
               type={thread.type}
