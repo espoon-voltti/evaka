@@ -276,6 +276,9 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         Audit.StaffAttendanceDepartureExternalCreate.log(targetId = body.attendanceId)
     }
 
+    val ATTENDANCE_MARKING_ALLOWED_THRESHOLD_MINUTES = 30L
+    val ALLOWED_DIFF_FROM_PLAN_MINUTES = 5L
+
     fun createAttendancesFromArrival(
         now: HelsinkiDateTime,
         plans: List<PlannedStaffAttendance>,
@@ -283,8 +286,13 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         arrival: StaffArrivalRequest
     ): List<StaffAttendance> {
         val arrivalTime =
-            now.withTime(arrival.time).takeIf { it <= now }
-                ?: throw BadRequest("Arrival time cannot be in the future")
+            now.withTime(arrival.time).takeIf {
+                it <= now.plusMinutes(ATTENDANCE_MARKING_ALLOWED_THRESHOLD_MINUTES) &&
+                    it >= now.minusMinutes(ATTENDANCE_MARKING_ALLOWED_THRESHOLD_MINUTES)
+            }
+                ?: throw BadRequest(
+                    "Arrival time is not allowed to differ from now for more than $ATTENDANCE_MARKING_ALLOWED_THRESHOLD_MINUTES minutes"
+                )
 
         fun createNewAttendance(
             arrived: HelsinkiDateTime,
@@ -315,24 +323,25 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             )
         }
 
-        val ARRIVAL_TRESHOLD_MINUTES = 5L
-
         val planStart = plans.minOf { it.start }
-        if (arrivalTime < planStart.minusMinutes(ARRIVAL_TRESHOLD_MINUTES)) {
+        if (arrivalTime < planStart.minusMinutes(ALLOWED_DIFF_FROM_PLAN_MINUTES)) {
             return when (arrival.type) {
                 StaffAttendanceType.OVERTIME ->
                     listOf(createNewAttendance(arrivalTime, null, arrival.type))
                 else ->
                     throw BadRequest(
-                        "Staff attendance type ${arrival.type} cannot be used when arrived 15 minutes before plan start"
+                        "Staff attendance type ${arrival.type} cannot be used when arrived $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes before plan start"
                     )
             }
         }
 
-        if (arrivalTime > planStart.plusMinutes(ARRIVAL_TRESHOLD_MINUTES)) {
+        if (arrivalTime > planStart.plusMinutes(ALLOWED_DIFF_FROM_PLAN_MINUTES)) {
             return when (arrival.type) {
+                StaffAttendanceType.JUSTIFIED_CHANGE,
                 StaffAttendanceType.TRAINING,
-                StaffAttendanceType.OTHER_WORK -> {
+                StaffAttendanceType.OTHER_WORK,
+                null -> {
+                    // TODO en ymmärrä mikä tän tarkoitus on
                     if (ongoingAttendance != null && ongoingAttendance.type != arrival.type) {
                         throw BadRequest(
                             "Arrival type ${arrival.type} does not match ongoing attendance type ${ongoingAttendance.type}"
@@ -340,13 +349,17 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     }
                     listOf(
                         ongoingAttendance?.copy(departed = arrivalTime)
-                            ?: createNewAttendance(planStart, arrivalTime, arrival.type),
+                            ?: createNewAttendance(
+                                planStart,
+                                arrivalTime,
+                                arrival.type ?: StaffAttendanceType.PRESENT
+                            ),
                         createNewAttendance(arrivalTime, null, StaffAttendanceType.PRESENT)
                     )
                 }
                 else ->
                     throw BadRequest(
-                        "Staff attendance type ${arrival.type} cannot be used when arrived 15 minutes after plan start"
+                        "Staff attendance type ${arrival.type} cannot be used when arrived $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes after plan start"
                     )
             }
         }
@@ -355,7 +368,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             listOf(createNewAttendance(arrivalTime, null, StaffAttendanceType.PRESENT))
         } else {
             throw BadRequest(
-                "Staff attendance type should not be used when arrived within 15 minutes of plan start"
+                "Staff attendance type should not be used when arrived within $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes of plan start"
             )
         }
     }
@@ -414,7 +427,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         }
 
         val planEnd = plans.maxOf { it.end }
-        if (departureTime < planEnd.minusMinutes(15)) {
+        if (departureTime < planEnd.minusMinutes(ALLOWED_DIFF_FROM_PLAN_MINUTES)) {
             return when (departure.type) {
                 StaffAttendanceType.TRAINING,
                 StaffAttendanceType.OTHER_WORK ->
@@ -424,18 +437,18 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     )
                 else ->
                     throw BadRequest(
-                        "Staff attendance type ${departure.type} cannot be used when departed 15 minutes before plan end"
+                        "Staff attendance type ${departure.type} cannot be used when departed $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes before plan end"
                     )
             }
         }
 
-        if (departureTime > planEnd.plusMinutes(15)) {
+        if (departureTime > planEnd.plusMinutes(ALLOWED_DIFF_FROM_PLAN_MINUTES)) {
             return when (departure.type) {
                 StaffAttendanceType.OVERTIME ->
                     listOf(ongoingAttendance.copy(departed = departureTime, type = departure.type))
                 else ->
                     throw BadRequest(
-                        "Staff attendance type ${departure.type} cannot be used when departed 15 minutes after plan end"
+                        "Staff attendance type ${departure.type} cannot be used when departed $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes after plan end"
                     )
             }
         }
