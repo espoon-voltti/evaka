@@ -8,5 +8,15 @@ package fi.espoo.evaka.daycare.domain
 enum class Language {
     fi,
     sv,
-    en
+    en;
+
+    companion object {
+        fun tryValueOf(value: String): Language? =
+            when (value) {
+                "fi" -> fi
+                "sv" -> sv
+                "en" -> en
+                else -> null
+            }
+    }
 }

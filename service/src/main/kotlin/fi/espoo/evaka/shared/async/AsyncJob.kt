@@ -25,6 +25,7 @@ import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.job.ScheduledJob
 import fi.espoo.evaka.varda.VardaChildCalculatedServiceNeedChanges
@@ -220,6 +221,11 @@ sealed interface AsyncJob : AsyncJobPayload {
     }
 
     data class UpdateIrregularAbsences(val childId: ChildId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class SendMissingReservationsReminder(val guardian: PersonId, val range: FiniteDateRange) :
+        AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 }

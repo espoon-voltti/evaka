@@ -4,8 +4,16 @@
 
 package fi.espoo.evaka.emailclient
 
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+
+data class EmailContent(
+    val subject: String,
+    val text: String,
+    @org.intellij.lang.annotations.Language("html") val html: String
+)
 
 interface IEmailMessageProvider {
 
@@ -49,4 +57,9 @@ interface IEmailMessageProvider {
 
     fun getDecisionEmailHtml(childId: ChildId, decisionId: AssistanceNeedDecisionId): String
     fun getDecisionEmailText(childId: ChildId, decisionId: AssistanceNeedDecisionId): String
+
+    fun missingReservationsNotification(
+        language: Language,
+        checkedRange: FiniteDateRange
+    ): EmailContent
 }

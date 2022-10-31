@@ -16,6 +16,7 @@ import fi.espoo.evaka.note.child.daily.deleteExpiredNotes
 import fi.espoo.evaka.pis.cleanUpInactivePeople
 import fi.espoo.evaka.pis.clearRolesForInactiveEmployees
 import fi.espoo.evaka.reports.freezeVoucherValueReportRows
+import fi.espoo.evaka.reservations.MissingReservationsReminders
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
@@ -42,7 +43,8 @@ enum class ScheduledJob(val fn: (ScheduledJobs, Database.Connection, EvakaClock)
     VardaUpdate(ScheduledJobs::vardaUpdate),
     VardaReset(ScheduledJobs::vardaReset),
     InactivePeopleCleanup(ScheduledJobs::inactivePeopleCleanup),
-    InactiveEmployeesRoleReset(ScheduledJobs::inactiveEmployeesRoleReset)
+    InactiveEmployeesRoleReset(ScheduledJobs::inactiveEmployeesRoleReset),
+    SendMissingReservationReminders(ScheduledJobs::sendMissingReservationReminders)
 }
 
 private val logger = KotlinLogging.logger {}
@@ -55,6 +57,7 @@ class ScheduledJobs(
     private val attachmentsController: AttachmentsController,
     private val pendingDecisionEmailService: PendingDecisionEmailService,
     private val koskiUpdateService: KoskiUpdateService,
+    private val missingReservationsReminders: MissingReservationsReminders,
     asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
 
@@ -176,6 +179,13 @@ WHERE id IN (SELECT id FROM attendances_to_end)
         db.transaction {
             val ids = it.clearRolesForInactiveEmployees(clock.now())
             logger.info { "Roles cleared for ${ids.size} inactive employees: $ids" }
+        }
+    }
+
+    fun sendMissingReservationReminders(db: Database.Connection, clock: EvakaClock) {
+        db.transaction { tx ->
+            val count = missingReservationsReminders.scheduleReminders(tx, clock)
+            logger.info("Scheduled $count reminders about missing reservations")
         }
     }
 }
