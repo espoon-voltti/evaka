@@ -48,8 +48,8 @@ import { faCircleEllipsis } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
 
-import { AddPersonModal } from './StaffAttendanceAddPersonModal'
 import StaffAttendanceDetailsModal from './StaffAttendanceDetailsModal'
+import StaffAttendanceExternalPersonModal from './StaffAttendanceExternalPersonModal'
 import {
   AttendanceTableHeader,
   DayTd,
@@ -86,9 +86,10 @@ export default React.memo(function StaffAttendanceTable({
   }>()
   const closeDetailsModal = useCallback(() => setDetailsModal(undefined), [])
 
-  const [showAddPersonModal, setShowAddPersonModal] = useState<boolean>(false)
+  const [showExternalPersonModal, setShowExternalPersonModal] =
+    useState<boolean>(false)
   const toggleAddPersonModal = useCallback(
-    () => setShowAddPersonModal((prev) => !prev),
+    () => setShowExternalPersonModal((prev) => !prev),
     []
   )
 
@@ -356,8 +357,8 @@ export default React.memo(function StaffAttendanceTable({
           }
         />
       )}
-      {showAddPersonModal && (
-        <AddPersonModal
+      {showExternalPersonModal && (
+        <StaffAttendanceExternalPersonModal
           onClose={toggleAddPersonModal}
           onSave={async () => {
             await reloadStaffAttendances()
