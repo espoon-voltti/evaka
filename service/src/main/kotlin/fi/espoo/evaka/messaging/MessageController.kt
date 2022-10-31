@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
@@ -279,8 +280,8 @@ class MessageController(
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @RequestBody body: PostMessageBody
-    ) {
-        db.connect { dbc ->
+    ): MessageContentId? {
+        return db.connect { dbc ->
             requireMessageAccountAccess(dbc, user, clock, accountId)
             dbc.transaction { tx ->
                 val senderAccountType = tx.getMessageAccountType(accountId)
@@ -296,7 +297,7 @@ class MessageController(
                     tx.getMessageAccountsForRecipients(accountId, body.recipients, clock.today())
                 val messageRecipients = messageAccountIdsToChildIds.keys
 
-                if (messageRecipients.isEmpty()) return@transaction
+                if (messageRecipients.isEmpty()) return@transaction null
 
                 val staffCopyRecipients =
                     if (body.recipients.none { it.type == MessageRecipientType.CHILD }) {
@@ -321,7 +322,7 @@ class MessageController(
                     }
 
                 val groupedRecipients = tx.groupRecipientAccountsByGuardianship(messageRecipients)
-                messageService.createMessageThreadsForRecipientGroups(
+                val messageContentId = messageService.createMessageThreadsForRecipientGroups(
                     tx,
                     clock,
                     title = body.title,
@@ -338,9 +339,9 @@ class MessageController(
                 )
                 if (body.draftId != null)
                     tx.deleteDraft(accountId = accountId, draftId = body.draftId)
+                messageContentId
             }
-        }
-        Audit.MessagingNewMessageWrite.log(targetId = accountId)
+        }.also { Audit.MessagingNewMessageWrite.log(targetId = accountId, objectId = it) }
     }
 
     @GetMapping("/{accountId}/drafts")

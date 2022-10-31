@@ -83,6 +83,7 @@ export interface MessagesState {
   messageDrafts: Result<DraftContent[]>
   messageCopies: Result<MessageCopy[]>
   archivedMessages: Result<MessageThread[]>
+  setSelectedThread: (threadId: UUID) => void
   selectedThread: MessageThread | undefined
   selectThread: (thread: MessageThread | undefined) => void
   sendReply: (params: ReplyToThreadParams) => void
@@ -115,6 +116,7 @@ const defaultState: MessagesState = {
   messageDrafts: Loading.of(),
   messageCopies: Loading.of(),
   archivedMessages: Loading.of(),
+  setSelectedThread: () => undefined,
   selectedThread: undefined,
   selectThread: () => undefined,
   sendReply: () => undefined,
@@ -607,6 +609,7 @@ export const MessageContextProvider = React.memo(
         messageDrafts,
         messageCopies,
         archivedMessages,
+        setSelectedThread,
         selectedThread,
         selectThread,
         replyState,
@@ -635,6 +638,7 @@ export const MessageContextProvider = React.memo(
         messageDrafts,
         messageCopies,
         archivedMessages,
+        setSelectedThread,
         selectedThread,
         selectThread,
         replyState,

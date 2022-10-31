@@ -43,6 +43,7 @@ export default React.memo(function MessagesPage() {
     setSelectedDraft,
     selectedAccount,
     selectAccount,
+    setSelectedThread,
     refreshMessages
   } = useContext(MessageContext)
 
@@ -73,6 +74,21 @@ export default React.memo(function MessagesPage() {
       void postMessage(accountId, messageBody).then((res) => {
         if (res.isSuccess) {
           refreshMessages(accountId)
+          const senderAccount = accounts
+            .map((accounts) =>
+              accounts.find((acc) => acc.account.id === accountId)
+            )
+            .getOrElse(undefined)
+          if (senderAccount) {
+            selectAccount({
+              account: senderAccount.account,
+              view: 'sent',
+              unitId: senderAccount.daycareGroup?.unitId ?? null
+            })
+            if (res.value) {
+              setSelectedThread(res.value)
+            }
+          }
           hideEditor()
         } else {
           setErrorMessage({
@@ -84,7 +100,15 @@ export default React.memo(function MessagesPage() {
         setSending(false)
       })
     },
-    [hideEditor, i18n, refreshMessages, setErrorMessage]
+    [
+      accounts,
+      hideEditor,
+      i18n,
+      refreshMessages,
+      selectAccount,
+      setErrorMessage,
+      setSelectedThread
+    ]
   )
 
   const onDiscard = (accountId: UUID, draftId: UUID) => {

@@ -7,6 +7,7 @@ package fi.espoo.evaka.messaging
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.db.Database
@@ -31,49 +32,49 @@ class MessageService(private val notificationEmailService: MessageNotificationEm
         staffCopyRecipients: Set<MessageAccountId>,
         accountIdsToChildIds: Map<MessageAccountId, Set<ChildId>>,
         municipalAccountName: String
-    ) =
+    ): MessageContentId {
         // for each recipient group, create a thread, message and message_recipients while re-using
         // content
-        tx.insertMessageContent(content, sender)
-            .also { contentId -> tx.reAssociateMessageAttachments(attachmentIds, contentId) }
-            .let { contentId ->
-                val now = clock.now()
-                recipientGroups.map { recipientIds ->
-                    val threadId = tx.insertThread(type, title, urgent, isCopy = false)
-                    val childIds =
-                        recipientIds.flatMap { accountIdsToChildIds[it] ?: emptyList() }.toSet()
-                    tx.insertMessageThreadChildren(childIds, threadId)
-                    tx.upsertThreadParticipants(threadId, sender, recipientIds, now)
-                    val messageId =
-                        tx.insertMessage(
-                            now = now,
-                            contentId = contentId,
-                            threadId = threadId,
-                            sender = sender,
-                            recipientNames = recipientNames,
-                            municipalAccountName = municipalAccountName
-                        )
-                    tx.insertRecipients(recipientIds, messageId)
-                    notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)
-                    threadId
-                }
+        val contentId = tx.insertMessageContent(content, sender)
+        tx.reAssociateMessageAttachments(attachmentIds, contentId)
+        val now = clock.now()
+        recipientGroups.forEach { recipientIds ->
+            val threadId = tx.insertThread(type, title, urgent, isCopy = false)
+            val childIds =
+                recipientIds.flatMap { accountIdsToChildIds[it] ?: emptyList() }.toSet()
+            tx.insertMessageThreadChildren(childIds, threadId)
+            tx.upsertThreadParticipants(threadId, sender, recipientIds, now)
+            val messageId =
+                tx.insertMessage(
+                    now = now,
+                    contentId = contentId,
+                    threadId = threadId,
+                    sender = sender,
+                    recipientNames = recipientNames,
+                    municipalAccountName = municipalAccountName
+                )
+            tx.insertRecipients(recipientIds, messageId)
+            notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)
+        }
 
-                if (staffCopyRecipients.isNotEmpty()) {
-                    // a separate copy for staff
-                    val threadId = tx.insertThread(type, title, urgent, isCopy = true)
-                    tx.upsertThreadParticipants(threadId, sender, staffCopyRecipients, now)
-                    val messageId =
-                        tx.insertMessage(
-                            now = now,
-                            contentId = contentId,
-                            threadId = threadId,
-                            sender = sender,
-                            recipientNames = recipientNames,
-                            municipalAccountName = municipalAccountName
-                        )
-                    tx.insertRecipients(staffCopyRecipients, messageId)
-                }
-            }
+        if (staffCopyRecipients.isNotEmpty()) {
+            // a separate copy for staff
+            val threadId = tx.insertThread(type, title, urgent, isCopy = true)
+            tx.upsertThreadParticipants(threadId, sender, staffCopyRecipients, now)
+            val messageId =
+                tx.insertMessage(
+                    now = now,
+                    contentId = contentId,
+                    threadId = threadId,
+                    sender = sender,
+                    recipientNames = recipientNames,
+                    municipalAccountName = municipalAccountName
+                )
+            tx.insertRecipients(staffCopyRecipients, messageId)
+        }
+
+        return contentId
+    }
 
     data class ThreadReply(val threadId: MessageThreadId, val message: Message)
 
