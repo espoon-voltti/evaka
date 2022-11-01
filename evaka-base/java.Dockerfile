@@ -9,8 +9,6 @@ WORKDIR /evaka
 
 USER root
 
-ARG CACHE_BUST=2022-05-03
-
 RUN apt-get update \
  && apt-get -y --no-install-recommends install \
        curl \
