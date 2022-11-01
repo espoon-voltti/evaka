@@ -160,12 +160,20 @@ data class EmailEnv(
     val senderAddress: String,
     val senderNameFi: String,
     val senderNameSv: String,
+    val subjectPostfix: String?,
     val applicationReceivedSenderAddressFi: String,
     val applicationReceivedSenderAddressSv: String,
     val applicationReceivedSenderNameFi: String,
     val applicationReceivedSenderNameSv: String
 ) {
     companion object {
+        private fun getLegacyPostfix(): String? =
+            when (val volttiEnv = System.getenv("VOLTTI_ENV")) {
+                "prod",
+                null -> null
+                else -> volttiEnv
+            }
+
         fun fromEnvironment(env: Environment) =
             EmailEnv(
                 enabled = env.lookup("evaka.email.enabled", "application.email.enabled") ?: false,
@@ -184,6 +192,7 @@ data class EmailEnv(
                     env.lookup("evaka.email.sender_name.fi", "fi.espoo.evaka.email.sender_name.fi"),
                 senderNameSv =
                     env.lookup("evaka.email.sender_name.sv", "fi.espoo.evaka.email.sender_name.sv"),
+                subjectPostfix = env.lookup("evaka.email.subject_postfix") ?: getLegacyPostfix(),
                 applicationReceivedSenderAddressFi =
                     env.lookup(
                         "evaka.email.application_received.sender_address.fi",

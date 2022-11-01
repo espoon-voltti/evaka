@@ -115,9 +115,7 @@ WHERE
     }
 
     private fun getSubject(): String {
-        val postfix =
-            if (System.getenv("VOLTTI_ENV") == "prod") "" else " [${System.getenv("VOLTTI_ENV")}]"
-        return "Uusi dokumentti eVakassa / Nytt dokument i eVaka / New document in eVaka$postfix"
+        return "Uusi dokumentti eVakassa / Nytt dokument i eVaka / New document in eVaka"
     }
 
     private fun getDocumentsUrl(childId: ChildId, lang: Language): String {

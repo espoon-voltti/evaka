@@ -156,10 +156,7 @@ SELECT EXISTS(
     }
 
     private fun getSubject(): String {
-        val postfix =
-            if (System.getenv("VOLTTI_ENV") == "prod") "" else " [${System.getenv("VOLTTI_ENV")}]"
-
-        return "Uusi pedagoginen dokumentti eVakassa / Nytt pedagogiskt dokument i eVaka / New pedagogical document in eVaka$postfix"
+        return "Uusi pedagoginen dokumentti eVakassa / Nytt pedagogiskt dokument i eVaka / New pedagogical document in eVaka"
     }
 
     private fun getDocumentsUrl(lang: Language): String {

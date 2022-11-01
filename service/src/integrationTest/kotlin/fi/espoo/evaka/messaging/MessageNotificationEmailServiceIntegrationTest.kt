@@ -116,7 +116,7 @@ class MessageNotificationEmailServiceIntegrationTest :
 
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
-            "Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka [null]",
+            "Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka",
             getEmailFor(testPersonFi).subject
         )
         assertEquals(

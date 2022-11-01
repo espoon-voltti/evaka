@@ -117,13 +117,10 @@ class MessageNotificationEmailService(
     }
 
     private fun getSubject(urgent: Boolean): String {
-        val postfix =
-            if (System.getenv("VOLTTI_ENV") == "prod") "" else " [${System.getenv("VOLTTI_ENV")}]"
-
         return if (urgent) {
-            "Uusi kiireellinen viesti eVakassa / Nytt brådskande meddelande i eVaka / New urgent message in eVaka$postfix"
+            "Uusi kiireellinen viesti eVakassa / Nytt brådskande meddelande i eVaka / New urgent message in eVaka"
         } else {
-            "Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka$postfix"
+            "Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka"
         }
     }
 

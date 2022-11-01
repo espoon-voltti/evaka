@@ -125,7 +125,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
 
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
-            "Uusi pedagoginen dokumentti eVakassa / Nytt pedagogiskt dokument i eVaka / New pedagogical document in eVaka [null]",
+            "Uusi pedagoginen dokumentti eVakassa / Nytt pedagogiskt dokument i eVaka / New pedagogical document in eVaka",
             getEmailFor(testGuardianFi).subject
         )
         assertEquals(
@@ -211,7 +211,7 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
 
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
-            "Uusi pedagoginen dokumentti eVakassa / Nytt pedagogiskt dokument i eVaka / New pedagogical document in eVaka [null]",
+            "Uusi pedagoginen dokumentti eVakassa / Nytt pedagogiskt dokument i eVaka / New pedagogical document in eVaka",
             getEmailFor(testGuardianFi).subject
         )
         assertEquals(
