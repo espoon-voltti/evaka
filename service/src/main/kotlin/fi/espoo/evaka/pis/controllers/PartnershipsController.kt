@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.maxEndDate
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
@@ -147,19 +148,24 @@ class PartnershipsController(
                     Action.Partnership.UPDATE,
                     partnershipId
                 )
-                val partnership =
-                    partnershipService.updatePartnershipDuration(
-                        tx,
-                        partnershipId,
-                        body.startDate,
-                        body.endDate
-                    )
+                val oldPartnership =
+                    tx.getPartnership(partnershipId)
+                        ?: throw NotFound("No partnership found with id $partnershipId")
+                partnershipService.updatePartnershipDuration(
+                    tx,
+                    partnershipId,
+                    body.startDate,
+                    body.endDate
+                )
                 asyncJobRunner.plan(
                     tx,
                     listOf(
                         AsyncJob.GenerateFinanceDecisions.forAdult(
-                            partnership.partners.first().id,
-                            DateRange(partnership.startDate, partnership.endDate)
+                            oldPartnership.partners.first().id,
+                            DateRange(
+                                minOf(oldPartnership.startDate, body.startDate),
+                                maxEndDate(oldPartnership.endDate, body.endDate)
+                            )
                         )
                     ),
                     runAt = clock.now()
