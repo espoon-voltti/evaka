@@ -664,11 +664,13 @@ sealed interface Action {
         ScopedAction<BackupCareId> {
         UPDATE(
             HasGlobalRole(SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfBackupCare()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
+                .inPlacementUnitOfChildOfBackupCare()
         ),
         DELETE(
             HasGlobalRole(SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChildOfBackupCare()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
+                .inPlacementUnitOfChildOfBackupCare()
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
@@ -785,7 +787,8 @@ sealed interface Action {
         ),
         CREATE_BACKUP_CARE(
             HasGlobalRole(SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR).inPlacementUnitOfChild()
+            HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
+                .inPlacementUnitOfChild()
         ),
         READ_BACKUP_CARE(
             HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
