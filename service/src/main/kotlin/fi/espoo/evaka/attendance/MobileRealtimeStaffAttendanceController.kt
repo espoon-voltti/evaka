@@ -412,6 +412,11 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             )
         }
 
+        // If no reason is given, just end whatever is going on
+        if (departure.type == null) {
+            return listOf(ongoingAttendance.copy(departed = departureTime))
+        }
+
         if (departure.type == StaffAttendanceType.JUSTIFIED_CHANGE) {
             return listOf(
                 ongoingAttendance.copy(
@@ -437,7 +442,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                     )
                 else ->
                     throw BadRequest(
-                        "Staff attendance type ${departure.type} cannot be used when departed $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes before plan end"
+                        "Staff attendance type ${departure.type} cannot be used when departed $ALLOWED_DIFF_FROM_PLAN_MINUTES minutes or more before plan end"
                     )
             }
         }

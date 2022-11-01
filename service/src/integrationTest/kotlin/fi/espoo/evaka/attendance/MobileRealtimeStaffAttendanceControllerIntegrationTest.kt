@@ -107,9 +107,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         }
 
         val arrivalTime = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
-        markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null).let {
-            assertEquals(200, it)
-        }
+        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+            .let { assertEquals(200, it) }
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
             assertEquals(employeeId, it.employeeId)
@@ -136,13 +135,18 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         }
 
         val arrivalTime = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
-        markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null).let {
-            assertEquals(200, it)
-        }
+        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+            .let { assertEquals(200, it) }
         val departureTime = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
-        markDeparture(employeeId, pinCode, groupId, departureTime.toLocalTime(), null).let {
-            assertEquals(200, it)
-        }
+        markDeparture(
+                departureTime,
+                employeeId,
+                pinCode,
+                groupId,
+                departureTime.toLocalTime(),
+                null
+            )
+            .let { assertEquals(200, it) }
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
             assertEquals(employeeId, it.employeeId)
@@ -173,9 +177,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 }
         }
 
-        markArrival(employeeId, pinCode, groupId, plannedStart.toLocalTime(), null).let {
-            assertEquals(200, it)
-        }
+        markArrival(plannedStart, employeeId, pinCode, groupId, plannedStart.toLocalTime(), null)
+            .let { assertEquals(200, it) }
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
             assertEquals(employeeId, it.employeeId)
@@ -206,12 +209,10 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 }
         }
 
-        markArrival(employeeId, pinCode, groupId, plannedStart.toLocalTime(), null).let {
-            assertEquals(200, it)
-        }
-        markDeparture(employeeId, pinCode, groupId, plannedEnd.toLocalTime(), null).let {
-            assertEquals(200, it)
-        }
+        markArrival(plannedStart, employeeId, pinCode, groupId, plannedStart.toLocalTime(), null)
+            .let { assertEquals(200, it) }
+        markDeparture(plannedEnd, employeeId, pinCode, groupId, plannedEnd.toLocalTime(), null)
+            .let { assertEquals(200, it) }
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
             assertEquals(employeeId, it.employeeId)
@@ -224,7 +225,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     @Test
-    fun `Employee arriving within 15 minutes of planned time does not require a type`() {
+    fun `Employee arriving within 5 minutes of planned time does not require a type`() {
         val pinCode = "1212"
         lateinit var employeeId: EmployeeId
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
@@ -242,10 +243,9 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 }
         }
 
-        val arrivalTime = plannedStart.plusMinutes(15)
-        markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null).let {
-            assertEquals(200, it)
-        }
+        val arrivalTime = plannedStart.plusMinutes(5)
+        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+            .let { assertEquals(200, it) }
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
             assertEquals(employeeId, it.employeeId)
@@ -258,7 +258,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     @Test
-    fun `Employee departing within 15 minutes of planned time does not require a type`() {
+    fun `Employee departing within 5 minutes of planned time does not require a type`() {
         val pinCode = "1212"
         lateinit var employeeId: EmployeeId
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
@@ -276,14 +276,19 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 }
         }
 
-        val arrivalTime = plannedStart.minusMinutes(15)
-        markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null).let {
-            assertEquals(200, it)
-        }
-        val departureTime = plannedEnd.plusMinutes(15)
-        markDeparture(employeeId, pinCode, groupId, departureTime.toLocalTime(), null).let {
-            assertEquals(200, it)
-        }
+        val arrivalTime = plannedStart.minusMinutes(5)
+        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+            .let { assertEquals(200, it) }
+        val departureTime = plannedEnd.plusMinutes(5)
+        markDeparture(
+                departureTime,
+                employeeId,
+                pinCode,
+                groupId,
+                departureTime.toLocalTime(),
+                null
+            )
+            .let { assertEquals(200, it) }
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
             assertEquals(employeeId, it.employeeId)
@@ -315,9 +320,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         }
 
         val arrivalTime = plannedStart.minusMinutes(20)
-        markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null).let {
-            assertEquals(400, it)
-        }
+        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+            .let { assertEquals(400, it) }
     }
 
     @Test
@@ -340,10 +344,10 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         assertEquals(initialLastLogin, lastLoginBeforeArrival)
 
         val arrivalTime = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
-        markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
 
         val lastLogin = db.read { db -> db.getEmployeeLastLogin(employeeId) }
-        assertEquals(now, lastLogin)
+        assertEquals(arrivalTime, lastLogin)
     }
 
     @ParameterizedTest(
@@ -370,9 +374,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         }
 
         val arrivalTime = plannedStart.minusMinutes(20)
-        markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), type).let {
-            assertEquals(200, it)
-        }
+        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), type)
+            .let { assertEquals(200, it) }
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
             assertEquals(employeeId, it.employeeId)
@@ -408,13 +411,12 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         }
 
         val arrivalTime = plannedStart.minusMinutes(20)
-        markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), type).let {
-            assertEquals(400, it)
-        }
+        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), type)
+            .let { assertEquals(400, it) }
     }
 
     @Test
-    fun `Employee arriving 20 minutes after planned time requires a type`() {
+    fun `Employee arriving 35 minutes after planned time does not require a type`() {
         val pinCode = "1212"
         lateinit var employeeId: EmployeeId
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
@@ -432,10 +434,9 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 }
         }
 
-        val arrivalTime = plannedStart.plusMinutes(20)
-        markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null).let {
-            assertEquals(400, it)
-        }
+        val arrivalTime = plannedStart.plusMinutes(35)
+        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+            .let { assertEquals(200, it) }
     }
 
     @Test
@@ -459,6 +460,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
 
         val arrivalTime = plannedStart.plusMinutes(20)
         markArrival(
+                arrivalTime,
                 employeeId,
                 pinCode,
                 groupId,
@@ -501,9 +503,8 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         }
 
         val arrivalTime = plannedStart.plusMinutes(20)
-        markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), type).let {
-            assertEquals(200, it)
-        }
+        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), type)
+            .let { assertEquals(200, it) }
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
             assertEquals(employeeId, it.employeeId)
@@ -542,13 +543,12 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         }
 
         val arrivalTime = plannedStart.plusMinutes(20)
-        markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), type).let {
-            assertEquals(400, it)
-        }
+        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), type)
+            .let { assertEquals(400, it) }
     }
 
     @Test
-    fun `Employee departing 20 minutes before planned time requires a type`() {
+    fun `Employee departing without reason before planned time is possible`() {
         val pinCode = "1212"
         lateinit var employeeId: EmployeeId
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
@@ -567,13 +567,18 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         }
 
         val arrivalTime = plannedStart
-        markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null).let {
-            assertEquals(200, it)
-        }
-        val departureTime = plannedEnd.minusMinutes(20)
-        markDeparture(employeeId, pinCode, groupId, departureTime.toLocalTime(), null).let {
-            assertEquals(400, it)
-        }
+        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+            .let { assertEquals(200, it) }
+        val departureTime = plannedEnd.minusMinutes(6)
+        markDeparture(
+                departureTime,
+                employeeId,
+                pinCode,
+                groupId,
+                departureTime.toLocalTime(),
+                null
+            )
+            .let { assertEquals(200, it) }
     }
 
     @Test
@@ -596,11 +601,11 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         }
 
         val arrivalTime = plannedStart
-        markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null).let {
-            assertEquals(200, it)
-        }
+        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+            .let { assertEquals(200, it) }
         val departureTime = plannedEnd.minusMinutes(20)
         markDeparture(
+                plannedEnd,
                 employeeId,
                 pinCode,
                 groupId,
@@ -643,13 +648,18 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         }
 
         val arrivalTime = plannedStart
-        markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null).let {
-            assertEquals(200, it)
-        }
+        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+            .let { assertEquals(200, it) }
         val departureTime = plannedEnd.minusMinutes(20)
-        markDeparture(employeeId, pinCode, groupId, departureTime.toLocalTime(), type).let {
-            assertEquals(200, it)
-        }
+        markDeparture(
+                departureTime,
+                employeeId,
+                pinCode,
+                groupId,
+                departureTime.toLocalTime(),
+                type
+            )
+            .let { assertEquals(200, it) }
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
             assertEquals(employeeId, it.employeeId)
@@ -689,17 +699,22 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         }
 
         val arrivalTime = plannedStart
-        markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null).let {
-            assertEquals(200, it)
-        }
+        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+            .let { assertEquals(200, it) }
         val departureTime = plannedEnd.minusMinutes(20)
-        markDeparture(employeeId, pinCode, groupId, departureTime.toLocalTime(), type).let {
-            assertEquals(400, it)
-        }
+        markDeparture(
+                departureTime,
+                employeeId,
+                pinCode,
+                groupId,
+                departureTime.toLocalTime(),
+                type
+            )
+            .let { assertEquals(400, it) }
     }
 
     @Test
-    fun `Employee departing 20 minutes after planned time requires a type`() {
+    fun `Employee departing 20 minutes after planned time does not require a type`() {
         val pinCode = "1212"
         lateinit var employeeId: EmployeeId
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
@@ -718,13 +733,18 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         }
 
         val arrivalTime = plannedStart
-        markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null).let {
-            assertEquals(200, it)
-        }
+        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+            .let { assertEquals(200, it) }
         val departureTime = plannedEnd.plusMinutes(20)
-        markDeparture(employeeId, pinCode, groupId, departureTime.toLocalTime(), null).let {
-            assertEquals(400, it)
-        }
+        markDeparture(
+                departureTime,
+                employeeId,
+                pinCode,
+                groupId,
+                departureTime.toLocalTime(),
+                null
+            )
+            .let { assertEquals(200, it) }
     }
 
     @ParameterizedTest(
@@ -751,13 +771,18 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         }
 
         val arrivalTime = plannedStart
-        markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null).let {
-            assertEquals(200, it)
-        }
+        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+            .let { assertEquals(200, it) }
         val departureTime = plannedEnd.plusMinutes(20)
-        markDeparture(employeeId, pinCode, groupId, departureTime.toLocalTime(), type).let {
-            assertEquals(200, it)
-        }
+        markDeparture(
+                departureTime,
+                employeeId,
+                pinCode,
+                groupId,
+                departureTime.toLocalTime(),
+                type
+            )
+            .let { assertEquals(200, it) }
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
             assertEquals(employeeId, it.employeeId)
@@ -793,13 +818,18 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         }
 
         val arrivalTime = plannedStart
-        markArrival(employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null).let {
-            assertEquals(200, it)
-        }
+        markArrival(arrivalTime, employeeId, pinCode, groupId, arrivalTime.toLocalTime(), null)
+            .let { assertEquals(200, it) }
         val departureTime = plannedEnd.plusMinutes(20)
-        markDeparture(employeeId, pinCode, groupId, departureTime.toLocalTime(), type).let {
-            assertEquals(400, it)
-        }
+        markDeparture(
+                departureTime,
+                employeeId,
+                pinCode,
+                groupId,
+                departureTime.toLocalTime(),
+                type
+            )
+            .let { assertEquals(400, it) }
     }
 
     @Test
@@ -823,6 +853,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
 
         val firstArrivalTime = plannedStart.minusMinutes(20)
         markArrival(
+                firstArrivalTime,
                 employeeId,
                 pinCode,
                 groupId,
@@ -832,6 +863,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             .let { assertEquals(200, it) }
         val firstDepartureTime = firstArrivalTime.plusHours(1)
         markDeparture(
+                firstDepartureTime,
                 employeeId,
                 pinCode,
                 groupId,
@@ -841,6 +873,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             .let { assertEquals(200, it) }
         val secondArrivalTime = firstDepartureTime.plusHours(1)
         markArrival(
+                secondArrivalTime,
                 employeeId,
                 pinCode,
                 groupId,
@@ -850,6 +883,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             .let { assertEquals(200, it) }
         val secondDepartureTime = secondArrivalTime.plusHours(1)
         markDeparture(
+                secondDepartureTime,
                 employeeId,
                 pinCode,
                 groupId,
@@ -859,6 +893,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             .let { assertEquals(200, it) }
         val thirdArrivalTime = secondDepartureTime.plusHours(1)
         markArrival(
+                thirdArrivalTime,
                 employeeId,
                 pinCode,
                 groupId,
@@ -866,10 +901,16 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
                 StaffAttendanceType.TRAINING
             )
             .let { assertEquals(200, it) }
-        val thirdDepartureTime = plannedEnd.minusMinutes(15)
-        markDeparture(employeeId, pinCode, groupId, thirdDepartureTime.toLocalTime(), null).let {
-            assertEquals(200, it)
-        }
+        val thirdDepartureTime = plannedEnd.minusMinutes(5)
+        markDeparture(
+                thirdDepartureTime,
+                employeeId,
+                pinCode,
+                groupId,
+                thirdDepartureTime.toLocalTime(),
+                null
+            )
+            .let { assertEquals(200, it) }
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         attendances.staff.first().let {
             assertEquals(employeeId, it.employeeId)
@@ -909,12 +950,13 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     private fun markArrival(
+        now: HelsinkiDateTime,
         employeeId: EmployeeId,
         pinCode: String,
         groupId: GroupId,
         time: LocalTime,
         type: StaffAttendanceType?,
-        user: AuthenticatedUser.MobileDevice = mobileUser
+        user: AuthenticatedUser.MobileDevice = mobileUser,
     ): Int {
         val body =
             MobileRealtimeStaffAttendanceController.StaffArrivalRequest(
@@ -935,6 +977,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
     }
 
     private fun markDeparture(
+        now: HelsinkiDateTime,
         employeeId: EmployeeId,
         pinCode: String,
         groupId: GroupId,
