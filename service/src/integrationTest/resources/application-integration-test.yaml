@@ -14,6 +14,10 @@ evaka:
   clock:
     mock: true
   email:
+    sender_address: no-reply.evaka@espoo.fi
+    sender_name:
+      fi: Espoon Varhaiskasvatus
+      sv: Esbo småbarnspedagogik
     application_received:
       sender_address:
         fi: testemail_fi@test.com
