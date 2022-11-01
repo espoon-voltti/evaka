@@ -26,21 +26,11 @@ class PendingDecisionEmailService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: IEmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
-    env: EmailEnv
+    private val emailEnv: EmailEnv
 ) {
     init {
         asyncJobRunner.registerHandler(::doSendPendingDecisionsEmail)
     }
-
-    val senderAddress: String = env.senderAddress
-    val senderNameFi: String = env.senderNameFi
-    val senderNameSv: String = env.senderNameSv
-
-    fun getFromAddress(language: Language) =
-        when (language) {
-            Language.sv -> "$senderNameSv <$senderAddress>"
-            else -> "$senderNameFi <$senderAddress>"
-        }
 
     fun doSendPendingDecisionsEmail(
         db: Database.Connection,
@@ -140,7 +130,7 @@ GROUP BY application.guardian_id
             emailClient.sendEmail(
                 "${pendingDecision.guardianId} - ${pendingDecision.decisionIds.joinToString("-")}",
                 pendingDecision.email,
-                getFromAddress(lang),
+                emailEnv.sender(lang),
                 emailMessageProvider.getPendingDecisionEmailSubject(),
                 emailMessageProvider.getPendingDecisionEmailHtml(),
                 emailMessageProvider.getPendingDecisionEmailText()

@@ -18,14 +18,8 @@ private val logger = KotlinLogging.logger {}
 class ApplicationReceivedEmailService(
     private val emailClient: IEmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
-    env: EmailEnv
+    private val emailEnv: EmailEnv
 ) {
-
-    private val senderAddressFi = env.applicationReceivedSenderAddressFi
-    private val senderNameFi = env.applicationReceivedSenderNameFi
-    private val senderAddressSv = env.applicationReceivedSenderAddressSv
-    private val senderNameSv = env.applicationReceivedSenderNameSv
-
     fun sendApplicationEmail(
         personId: PersonId,
         toAddress: String,
@@ -33,11 +27,7 @@ class ApplicationReceivedEmailService(
         type: ApplicationType,
         sentWithinPreschoolApplicationPeriod: Boolean? = null
     ) {
-        val fromAddress =
-            when (language) {
-                Language.sv -> "$senderNameSv <$senderAddressSv>"
-                else -> "$senderNameFi <$senderAddressFi>"
-            }
+        val fromAddress = emailEnv.applicationReceivedSender(language)
 
         val subject =
             when (type) {

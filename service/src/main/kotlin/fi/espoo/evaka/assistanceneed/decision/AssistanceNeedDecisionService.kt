@@ -6,6 +6,7 @@ package fi.espoo.evaka.assistanceneed.decision
 
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EmailEnv
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.decision.DecisionSendAddress
 import fi.espoo.evaka.decision.getSendAddress
 import fi.espoo.evaka.emailclient.IEmailClient
@@ -55,14 +56,9 @@ class AssistanceNeedDecisionService(
     private val messageProvider: IMessageProvider,
     private val sfiClient: SfiMessagesClient,
     bucketEnv: BucketEnv,
-    emailEnv: EmailEnv,
+    private val emailEnv: EmailEnv,
     asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
-    private val senderAddressFi = emailEnv.applicationReceivedSenderAddressFi
-    private val senderNameFi = emailEnv.applicationReceivedSenderNameFi
-    private val senderAddressSv = emailEnv.applicationReceivedSenderAddressSv
-    private val senderNameSv = emailEnv.applicationReceivedSenderNameSv
-
     private val bucket = bucketEnv.data
 
     init {
@@ -96,10 +92,12 @@ class AssistanceNeedDecisionService(
         logger.info { "Sending assistance need decision email (decisionId: $decision)" }
 
         val fromAddress =
-            when (decision.language) {
-                AssistanceNeedDecisionLanguage.SV -> "$senderNameSv <$senderAddressSv>"
-                else -> "$senderNameFi <$senderAddressFi>"
-            }
+            emailEnv.applicationReceivedSender(
+                when (decision.language) {
+                    AssistanceNeedDecisionLanguage.SV -> Language.sv
+                    else -> Language.fi
+                }
+            )
 
         tx.getChildGuardians(decision.child.id)
             .map { Pair(it, tx.getPersonById(it)?.email) }

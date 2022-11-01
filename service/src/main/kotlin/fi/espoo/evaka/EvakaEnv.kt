@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka
 
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.shared.job.JobSchedule
 import fi.espoo.evaka.shared.job.ScheduledJob
 import fi.espoo.evaka.shared.job.ScheduledJobSettings
@@ -166,6 +167,17 @@ data class EmailEnv(
     val applicationReceivedSenderNameFi: String,
     val applicationReceivedSenderNameSv: String
 ) {
+    fun sender(language: Language): String =
+        when (language) {
+            Language.sv -> "$senderNameSv <$senderAddress>"
+            else -> "$senderNameFi <$senderAddress>"
+        }
+    fun applicationReceivedSender(language: Language): String =
+        when (language) {
+            Language.sv -> "$applicationReceivedSenderNameSv <$applicationReceivedSenderAddressSv>"
+            else -> "$applicationReceivedSenderNameFi <$applicationReceivedSenderAddressFi>"
+        }
+
     companion object {
         private fun getLegacyPostfix(): String? =
             when (val volttiEnv = System.getenv("VOLTTI_ENV")) {

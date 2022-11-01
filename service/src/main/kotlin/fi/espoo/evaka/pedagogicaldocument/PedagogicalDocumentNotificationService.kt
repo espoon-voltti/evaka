@@ -25,7 +25,7 @@ class PedagogicalDocumentNotificationService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: IEmailClient,
     env: EvakaEnv,
-    emailEnv: EmailEnv
+    private val emailEnv: EmailEnv
 ) {
     init {
         asyncJobRunner.registerHandler(::sendNotification)
@@ -33,15 +33,6 @@ class PedagogicalDocumentNotificationService(
 
     val baseUrl: String = env.frontendBaseUrlFi
     val baseUrlSv: String = env.frontendBaseUrlSv
-    val senderAddress: String = emailEnv.senderAddress
-    val senderNameFi: String = emailEnv.senderNameFi
-    val senderNameSv: String = emailEnv.senderNameSv
-
-    fun getFromAddress(language: Language) =
-        when (language) {
-            Language.sv -> "$senderNameSv <$senderAddress>"
-            else -> "$senderNameFi <$senderAddress>"
-        }
 
     fun getPedagogicalDocumentationNotifications(
         tx: Database.Transaction,
@@ -146,7 +137,7 @@ SELECT EXISTS(
             emailClient.sendEmail(
                 traceId = pedagogicalDocumentId.toString(),
                 toAddress = recipientEmail,
-                fromAddress = getFromAddress(language),
+                fromAddress = emailEnv.sender(language),
                 subject = getSubject(),
                 htmlBody = getHtml(language),
                 textBody = getText(language)
