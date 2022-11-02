@@ -305,8 +305,8 @@ export default React.memo(function StaffMarkArrivedPage() {
                         ? {
                             status: 'warning',
                             text: i18n.common.validation.dateBetween(
-                              formatTime(subMinutes(now, 15)),
-                              formatTime(addMinutes(now, 15))
+                              formatTime(subMinutes(now, 30)),
+                              formatTime(addMinutes(now, 30))
                             )
                           }
                         : undefined
