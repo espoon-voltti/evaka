@@ -537,18 +537,34 @@ FROM staff_attendance_realtime WHERE employee_id = :employeeId AND departed IS N
         .findOne()
         .orElseGet { null }
 
-fun Database.Transaction.deleteStaffAttendanceWithoutIds(
+fun Database.Transaction.deleteStaffAttendancesInRangeExcept(
     employeeId: EmployeeId,
     timeRange: HelsinkiDateTimeRange,
-    attendanceIds: List<StaffAttendanceId>
+    exceptIds: List<StaffAttendanceId>
 ) =
     createUpdate(
             """
 DELETE FROM staff_attendance_realtime
-WHERE employee_id = :employeeId AND tstzrange(arrived, departed) && :timeRange AND NOT id = ANY(:attendanceIds)
+WHERE employee_id = :employeeId AND tstzrange(arrived, departed) && :timeRange AND NOT id = ANY(:exceptIds)
 """
         )
         .bind("employeeId", employeeId)
         .bind("timeRange", timeRange)
-        .bind("attendanceIds", attendanceIds)
+        .bind("exceptIds", exceptIds)
+        .execute()
+
+fun Database.Transaction.deleteExternalAttendancesInRangeExcept(
+    name: String,
+    timeRange: HelsinkiDateTimeRange,
+    exceptIds: List<StaffAttendanceExternalId>
+) =
+    createUpdate(
+            """
+DELETE FROM staff_attendance_external
+WHERE name = :name AND tstzrange(arrived, departed) && :timeRange AND NOT id = ANY(:exceptIds)
+"""
+        )
+        .bind("name", name)
+        .bind("timeRange", timeRange)
+        .bind("exceptIds", exceptIds)
         .execute()

@@ -8,11 +8,16 @@ import mapValues from 'lodash/mapValues'
 import maxBy from 'lodash/maxBy'
 import minBy from 'lodash/minBy'
 import sortBy from 'lodash/sortBy'
+import uniq from 'lodash/uniq'
 import uniqBy from 'lodash/uniqBy'
 import React, { useMemo, useState, useCallback } from 'react'
 import styled from 'styled-components'
 
-import { getStaffAttendances } from 'employee-frontend/api/staff-attendance'
+import {
+  getStaffAttendances,
+  upsertExternalAttendances,
+  upsertStaffAttendances
+} from 'employee-frontend/api/staff-attendance'
 import { getUnitAttendanceReservations } from 'employee-frontend/api/unit'
 import { Loading, Result, Success } from 'lib-common/api'
 import {
@@ -26,7 +31,8 @@ import {
   EmployeeAttendance,
   ExternalAttendance,
   StaffAttendanceResponse,
-  PlannedStaffAttendance
+  PlannedStaffAttendance,
+  StaffAttendanceUpsert
 } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -48,7 +54,10 @@ import { faCircleEllipsis } from 'lib-icons'
 import { useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
 
-import StaffAttendanceDetailsModal from './StaffAttendanceDetailsModal'
+import StaffAttendanceDetailsModal, {
+  ModalAttendance,
+  ModalPlannedAttendance
+} from './StaffAttendanceDetailsModal'
 import StaffAttendanceExternalPersonModal from './StaffAttendanceExternalPersonModal'
 import {
   AttendanceTableHeader,
@@ -69,6 +78,18 @@ interface Props {
   defaultGroup: UUID | null
 }
 
+type DetailsModalTarget =
+  | { type: 'employee'; employeeId: UUID }
+  | { type: 'external'; name: string }
+
+interface DetailsModalConfig {
+  date: LocalDate
+  name: string
+  attendances: ModalAttendance[]
+  plannedAttendances?: ModalPlannedAttendance[]
+  target: DetailsModalTarget
+}
+
 export default React.memo(function StaffAttendanceTable({
   unitId,
   staffAttendances,
@@ -80,11 +101,12 @@ export default React.memo(function StaffAttendanceTable({
   defaultGroup
 }: Props) {
   const { i18n } = useTranslation()
-  const [detailsModal, setDetailsModal] = useState<{
-    employeeId: string
-    date: LocalDate
-  }>()
-  const closeDetailsModal = useCallback(() => setDetailsModal(undefined), [])
+  const [detailsModalConfig, setDetailsModalConfig] =
+    useState<DetailsModalConfig>()
+  const closeDetailsModal = useCallback(
+    () => setDetailsModalConfig(undefined),
+    []
+  )
 
   const [showExternalPersonModal, setShowExternalPersonModal] =
     useState<boolean>(false)
@@ -150,12 +172,12 @@ export default React.memo(function StaffAttendanceTable({
 
   const changeDate = useCallback(
     async (getNearestDay: GetNearestDayFn, newStartOfWeek: LocalDate) => {
-      if (!detailsModal) return Loading.of()
+      if (!detailsModalConfig) return Loading.of()
 
       const nearestNextDate =
         (modalOperationalDays &&
-          getNearestDay(modalOperationalDays, detailsModal.date)) ??
-        getNearestDay(operationalDays, detailsModal.date)
+          getNearestDay(modalOperationalDays, detailsModalConfig.date)) ??
+        getNearestDay(operationalDays, detailsModalConfig.date)
 
       if (!nearestNextDate) {
         const nextWeekRange = new FiniteDateRange(
@@ -175,26 +197,26 @@ export default React.memo(function StaffAttendanceTable({
 
         const newPreviousDay = getNearestDay(
           newOperationalDays,
-          detailsModal.date
+          detailsModalConfig.date
         )
 
         if (!newPreviousDay) return Loading.of()
 
-        setDetailsModal({
-          ...detailsModal,
+        setDetailsModalConfig({
+          ...detailsModalConfig,
           date: newPreviousDay.date
         })
         return Success.of()
       }
 
-      setDetailsModal({
-        ...detailsModal,
+      setDetailsModalConfig({
+        ...detailsModalConfig,
         date: nearestNextDate.date
       })
       return Success.of()
     },
     [
-      detailsModal,
+      detailsModalConfig,
       loadModalAttendance,
       loadModalStaffAttendance,
       modalOperationalDays,
@@ -255,6 +277,46 @@ export default React.memo(function StaffAttendanceTable({
     [extraAttendances, groupFilter, staffRows]
   )
 
+  const modalData = useMemo(
+    () =>
+      detailsModalConfig
+        ? computeModalAttendances(
+            detailsModalConfig,
+            staffAttendances,
+            extraAttendances,
+            modalStaffAttendance
+          )
+        : undefined,
+    [
+      detailsModalConfig,
+      extraAttendances,
+      staffAttendances,
+      modalStaffAttendance
+    ]
+  )
+
+  const handleModalSave = useCallback(
+    (entries: StaffAttendanceUpsert[]) => {
+      if (!detailsModalConfig) return Promise.reject()
+      if (detailsModalConfig.target.type === 'employee') {
+        return upsertStaffAttendances({
+          unitId,
+          employeeId: detailsModalConfig.target.employeeId,
+          date: detailsModalConfig.date,
+          entries
+        })
+      } else {
+        return upsertExternalAttendances({
+          unitId,
+          name: detailsModalConfig.target.name,
+          date: detailsModalConfig.date,
+          entries
+        })
+      }
+    },
+    [detailsModalConfig, unitId]
+  )
+
   return (
     <>
       <Table data-qa="staff-attendances-table">
@@ -276,7 +338,15 @@ export default React.memo(function StaffAttendanceTable({
               attendances={row.attendances}
               plannedAttendances={row.plannedAttendances}
               groupFilter={groupFilter}
-              openDetails={setDetailsModal}
+              openDetails={(date: LocalDate) => {
+                setDetailsModalConfig({
+                  date,
+                  name: row.name,
+                  attendances: row.attendances,
+                  plannedAttendances: row.plannedAttendances,
+                  target: { type: 'employee', employeeId: row.employeeId }
+                })
+              }}
             />
           ))}
           {extraRowsGroupedByName.map((row, index) => (
@@ -290,6 +360,14 @@ export default React.memo(function StaffAttendanceTable({
               operationalDays={operationalDays}
               attendances={row.attendances}
               groupFilter={groupFilter}
+              openDetails={(date: LocalDate) => {
+                setDetailsModalConfig({
+                  date,
+                  name: row.name,
+                  attendances: row.attendances,
+                  target: { type: 'external', name: row.name }
+                })
+              }}
             />
           ))}
         </Tbody>
@@ -318,24 +396,24 @@ export default React.memo(function StaffAttendanceTable({
           onClick={toggleAddPersonModal}
         />
       ) : null}
-      {detailsModal && (
+      {detailsModalConfig && modalData ? (
         <StaffAttendanceDetailsModal
-          unitId={unitId}
-          employeeId={detailsModal.employeeId}
-          date={detailsModal.date}
-          attendances={staffAttendances.concat(
-            modalStaffAttendance.getOrElse(undefined)?.staff ?? []
-          )}
-          close={closeDetailsModal}
-          reloadStaffAttendances={() => {
+          name={detailsModalConfig.name}
+          date={detailsModalConfig.date}
+          attendances={modalData.attendances}
+          plannedAttendances={modalData.plannedAttendances}
+          isExternal={detailsModalConfig.target.type === 'external'}
+          onSave={handleModalSave}
+          onClose={closeDetailsModal}
+          onSuccess={() => {
             void reloadStaffAttendances()
 
             if (
               !operationalDays.some(({ date }) =>
-                date.isEqual(detailsModal.date)
+                date.isEqual(detailsModalConfig.date)
               )
             ) {
-              const startOfWeek = detailsModal.date.startOfWeek()
+              const startOfWeek = detailsModalConfig.date.startOfWeek()
               void loadModalStaffAttendance(
                 unitId,
                 new FiniteDateRange(startOfWeek, startOfWeek.addDays(6))
@@ -346,17 +424,17 @@ export default React.memo(function StaffAttendanceTable({
           onPreviousDate={() =>
             changeDate(
               getNearestPreviousDay,
-              detailsModal.date.startOfWeek().subWeeks(1)
+              detailsModalConfig.date.startOfWeek().subWeeks(1)
             )
           }
           onNextDate={() =>
             changeDate(
               getNearestNextDay,
-              detailsModal.date.startOfWeek().addWeeks(1)
+              detailsModalConfig.date.startOfWeek().addWeeks(1)
             )
           }
         />
-      )}
+      ) : null}
       {showExternalPersonModal && (
         <StaffAttendanceExternalPersonModal
           onClose={toggleAddPersonModal}
@@ -409,7 +487,7 @@ interface AttendanceRowProps extends BaseProps {
   attendances: Attendance[]
   plannedAttendances?: PlannedStaffAttendance[]
   groupFilter: (id: UUID) => boolean
-  openDetails?: (v: { employeeId: string; date: LocalDate }) => void
+  openDetails: (date: LocalDate) => void
 }
 
 const AttendanceRow = React.memo(function AttendanceRow({
@@ -487,26 +565,22 @@ const AttendanceRow = React.memo(function AttendanceRow({
                   {plannedAttendancesForToday.length > 0 ? (
                     plannedAttendancesForToday.map((plannedAttendance, i) => (
                       <AttendanceCell key={i}>
-                        <>
-                          <AttendanceTime data-qa="planned-attendance-start">
-                            {renderTime(plannedAttendance.start, date)}
-                          </AttendanceTime>
-                          <AttendanceTime data-qa="planned-attendance-end">
-                            {renderTime(plannedAttendance.end, date)}
-                          </AttendanceTime>
-                        </>
+                        <AttendanceTime data-qa="planned-attendance-start">
+                          {renderTime(plannedAttendance.start, date)}
+                        </AttendanceTime>
+                        <AttendanceTime data-qa="planned-attendance-end">
+                          {renderTime(plannedAttendance.end, date)}
+                        </AttendanceTime>
                       </AttendanceCell>
                     ))
                   ) : (
                     <AttendanceCell>
-                      <>
-                        <AttendanceTime data-qa="planned-arrival-time">
-                          {renderTime(null, date)}
-                        </AttendanceTime>
-                        <AttendanceTime data-qa="planned-departure-time">
-                          {renderTime(null, date)}
-                        </AttendanceTime>
-                      </>
+                      <AttendanceTime data-qa="planned-arrival-time">
+                        {renderTime(null, date)}
+                      </AttendanceTime>
+                      <AttendanceTime data-qa="planned-departure-time">
+                        {renderTime(null, date)}
+                      </AttendanceTime>
                     </AttendanceCell>
                   )}
                 </PlannedAttendanceTimes>
@@ -529,16 +603,16 @@ const AttendanceRow = React.memo(function AttendanceRow({
                     </AttendanceCell>
                   )}
                 </AttendanceTimes>
-                {!!employeeId && openDetails && (
-                  <DetailsToggle showAlways={hasHiddenAttendances}>
-                    <IconButton
-                      icon={faCircleEllipsis}
-                      onClick={() => openDetails({ employeeId, date })}
-                      data-qa={`open-details-${employeeId}-${date.formatIso()}`}
-                      aria-label={i18n.common.open}
-                    />
-                  </DetailsToggle>
-                )}
+                <DetailsToggle showAlways={hasHiddenAttendances}>
+                  <IconButton
+                    icon={faCircleEllipsis}
+                    onClick={() => openDetails(date)}
+                    data-qa={`open-details-${
+                      employeeId ?? name
+                    }-${date.formatIso()}`}
+                    aria-label={i18n.common.open}
+                  />
+                </DetailsToggle>
               </DayCell>
             </DayTd>
           )
@@ -592,6 +666,40 @@ function renderTime(
   return timestamp.toLocalTime().format('HH:mm')
 }
 
+function computeModalAttendances(
+  detailsModalConfig: DetailsModalConfig,
+  staffAttendances: EmployeeAttendance[],
+  extraAttendances: ExternalAttendance[],
+  modalStaffAttendance: Result<StaffAttendanceResponse>
+): {
+  attendances: ModalAttendance[]
+  plannedAttendances: ModalPlannedAttendance[]
+} {
+  if (detailsModalConfig.target.type === 'employee') {
+    const employeeId = detailsModalConfig.target.employeeId
+    const combined: EmployeeAttendance[] = staffAttendances
+      .concat(modalStaffAttendance.getOrElse(undefined)?.staff ?? [])
+      .filter((attendance) => attendance.employeeId === employeeId)
+    const attendances: ModalAttendance[] = uniqBy(
+      combined.flatMap((employee) => employee.attendances),
+      (attendance) => attendance.id
+    )
+    const plannedAttendances: ModalPlannedAttendance[] = uniq(
+      combined.flatMap((employee) => employee.plannedAttendances)
+    ).map((attendance) => ({
+      start: attendance.start,
+      end: attendance.end
+    }))
+    return { attendances, plannedAttendances }
+  } else {
+    const name = detailsModalConfig.target.name
+    const attendances: ModalAttendance[] = extraAttendances
+      .concat(modalStaffAttendance.getOrElse(undefined)?.extraAttendances ?? [])
+      .filter((attendance) => attendance.name === name)
+    return { attendances, plannedAttendances: [] }
+  }
+}
+
 const DetailsToggle = styled.div<{ showAlways: boolean }>`
   display: flex;
   align-items: center;
@@ -622,14 +730,14 @@ const AttendanceTimes = styled.div`
   flex-grow: 1;
   background-color: ${colors.grayscale.g4};
   width: 100%;
-  padding: 0px 15px 0px 0px;
+  padding: 0 23px 0 0;
 `
 
 const PlannedAttendanceTimes = styled.div`
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  padding: 0px 15px 0px 0px;
+  padding: 0 23px 0 0;
 `
 
 const AttendanceCell = styled.div`

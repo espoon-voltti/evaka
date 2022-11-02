@@ -47,9 +47,9 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) end: LocalDate
     ): StaffAttendanceResponse {
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Unit.READ_STAFF_ATTENDANCES,
@@ -57,19 +57,19 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                     )
                     val range = FiniteDateRange(start, end)
                     val attendancesByEmployee =
-                        it.getStaffAttendancesForDateRange(unitId, range).groupBy { raw ->
+                        tx.getStaffAttendancesForDateRange(unitId, range).groupBy { raw ->
                             raw.employeeId
                         }
                     val attendanceEmployeeToGroups =
-                        it.getGroupsForEmployees(attendancesByEmployee.keys)
+                        tx.getGroupsForEmployees(attendancesByEmployee.keys)
                     val staffForAttendanceCalendar =
-                        it.getCurrentStaffForAttendanceCalendar(unitId, range.start, range.end)
+                        tx.getCurrentStaffForAttendanceCalendar(unitId, range.start, range.end)
                     val noAttendanceEmployeeToGroups =
-                        it.getGroupsForEmployees(
+                        tx.getGroupsForEmployees(
                             staffForAttendanceCalendar.map { emp -> emp.id }.toSet()
                         )
                     val plannedAttendances =
-                        it.getPlannedStaffAttendanceForDays(
+                        tx.getPlannedStaffAttendanceForDays(
                             attendancesByEmployee.keys + staffForAttendanceCalendar.map { it.id },
                             range
                         )
@@ -113,7 +113,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                             }
                     StaffAttendanceResponse(
                         staff = staffWithAttendance + staffWithoutAttendance,
-                        extraAttendances = it.getExternalStaffAttendancesByDateRange(unitId, range)
+                        extraAttendances = tx.getExternalStaffAttendancesByDateRange(unitId, range)
                     )
                 }
             }
@@ -219,23 +219,27 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         Audit.StaffAttendanceUpdate.log(targetId = unitId, objectId = objectId)
     }
 
-    data class SingleDayStaffAttendanceUpsert(
-        val attendanceId: StaffAttendanceId?,
+    data class StaffAttendanceUpsert(
+        val id: StaffAttendanceId?,
         val groupId: GroupId,
         val arrived: HelsinkiDateTime,
         val departed: HelsinkiDateTime?,
         val type: StaffAttendanceType
     )
 
-    @PostMapping("/{unitId}/{employeeId}/{date}")
+    data class StaffAttendanceBody(
+        val unitId: DaycareId,
+        val employeeId: EmployeeId,
+        val date: LocalDate,
+        val entries: List<StaffAttendanceUpsert>
+    )
+
+    @PostMapping("/upsert")
     fun upsertDailyStaffAttendances(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @PathVariable unitId: DaycareId,
-        @PathVariable employeeId: EmployeeId,
-        @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
-        @RequestBody body: List<SingleDayStaffAttendanceUpsert>
+        @RequestBody body: StaffAttendanceBody
     ) {
         val staffAttendanceIds =
             db.connect { dbc ->
@@ -245,30 +249,30 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                         user,
                         clock,
                         Action.Unit.UPDATE_STAFF_ATTENDANCES,
-                        unitId
+                        body.unitId
                     )
                     val occupancyCoefficients =
-                        body
+                        body.entries
                             .map { it.groupId }
                             .distinct()
                             .associateWith {
-                                tx.getOccupancyCoefficientForEmployee(employeeId, it)
+                                tx.getOccupancyCoefficientForEmployee(body.employeeId, it)
                                     ?: BigDecimal.ZERO
                             }
                     val wholeDay =
                         HelsinkiDateTimeRange(
-                            HelsinkiDateTime.of(date, LocalTime.of(0, 0)),
-                            HelsinkiDateTime.of(date.plusDays(1), LocalTime.of(0, 0))
+                            HelsinkiDateTime.of(body.date, LocalTime.of(0, 0)),
+                            HelsinkiDateTime.of(body.date.plusDays(1), LocalTime.of(0, 0))
                         )
-                    tx.deleteStaffAttendanceWithoutIds(
-                        employeeId,
+                    tx.deleteStaffAttendancesInRangeExcept(
+                        body.employeeId,
                         wholeDay,
-                        body.mapNotNull { it.attendanceId }
+                        body.entries.mapNotNull { it.id }
                     )
-                    body.map {
+                    body.entries.map {
                         tx.upsertStaffAttendance(
-                            it.attendanceId,
-                            employeeId,
+                            it.id,
+                            body.employeeId,
                             it.groupId,
                             it.arrived,
                             it.departed,
@@ -279,9 +283,70 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                 }
             }
         Audit.StaffAttendanceUpdate.log(
-            targetId = unitId,
+            targetId = body.unitId,
             objectId = staffAttendanceIds,
-            args = mapOf("date" to date)
+            args = mapOf("date" to body.date)
+        )
+    }
+
+    data class ExternalAttendanceUpsert(
+        val id: StaffAttendanceExternalId?,
+        val groupId: GroupId,
+        val arrived: HelsinkiDateTime,
+        val departed: HelsinkiDateTime?,
+        val type: StaffAttendanceType
+    )
+
+    data class ExternalAttendanceBody(
+        val unitId: DaycareId,
+        val name: String,
+        val date: LocalDate,
+        val entries: List<ExternalAttendanceUpsert>
+    )
+
+    @PostMapping("/upsert-external")
+    fun upsertDailyExternalAttendances(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @RequestBody body: ExternalAttendanceBody
+    ) {
+        val externalAttendanceIds =
+            db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.UPDATE_STAFF_ATTENDANCES,
+                        body.unitId
+                    )
+                    val wholeDay =
+                        HelsinkiDateTimeRange(
+                            HelsinkiDateTime.of(body.date, LocalTime.of(0, 0)),
+                            HelsinkiDateTime.of(body.date.plusDays(1), LocalTime.of(0, 0))
+                        )
+                    tx.deleteExternalAttendancesInRangeExcept(
+                        body.name,
+                        wholeDay,
+                        body.entries.mapNotNull { it.id }
+                    )
+                    body.entries.map {
+                        tx.upsertExternalStaffAttendance(
+                            it.id,
+                            body.name,
+                            it.groupId,
+                            it.arrived,
+                            it.departed,
+                            occupancyCoefficientSeven
+                        )
+                    }
+                }
+            }
+        Audit.StaffAttendanceExternalUpdate.log(
+            targetId = body.unitId,
+            objectId = externalAttendanceIds,
+            args = mapOf("date" to body.date)
         )
     }
 

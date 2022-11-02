@@ -21,8 +21,7 @@ describe('validateEditState', () => {
           type: 'PRESENT',
           groupId: 'group1',
           arrived: HelsinkiDateTime.fromLocal(yesterday, LocalTime.of(8, 0)),
-          departed: null,
-          occupancyCoefficient: 1
+          departed: null
         }
       ],
       today,
@@ -45,14 +44,14 @@ describe('validateEditState', () => {
     )
     expect(body).toEqual([
       {
-        attendanceId: 'id1',
+        id: 'id1',
         type: 'PRESENT',
         groupId: 'group1',
         arrived: HelsinkiDateTime.fromLocal(yesterday, LocalTime.of(8, 0)),
         departed: HelsinkiDateTime.fromLocal(today, LocalTime.of(7, 0))
       },
       {
-        attendanceId: null,
+        id: null,
         type: 'PRESENT',
         groupId: 'group1',
         arrived: HelsinkiDateTime.fromLocal(today, LocalTime.of(8, 0)),
@@ -81,14 +80,14 @@ describe('validateEditState', () => {
     ])
     expect(body).toEqual([
       {
-        attendanceId: null,
+        id: null,
         type: 'PRESENT',
         groupId: 'group1',
         arrived: HelsinkiDateTime.fromLocal(today, LocalTime.of(12, 0)),
         departed: HelsinkiDateTime.fromLocal(today, LocalTime.of(16, 0))
       },
       {
-        attendanceId: null,
+        id: null,
         type: 'PRESENT',
         groupId: 'group1',
         arrived: HelsinkiDateTime.fromLocal(today, LocalTime.of(16, 0)),
@@ -120,8 +119,7 @@ describe('validateEditState', () => {
           type: 'PRESENT',
           groupId: 'group1',
           arrived: HelsinkiDateTime.fromLocal(yesterday, LocalTime.of(8, 0)),
-          departed: null,
-          occupancyCoefficient: 1
+          departed: null
         }
       ],
       today,
@@ -137,7 +135,7 @@ describe('validateEditState', () => {
     )
     expect(body).toEqual([
       {
-        attendanceId: 'id1',
+        id: 'id1',
         groupId: 'group1',
         arrived: HelsinkiDateTime.fromLocal(yesterday, LocalTime.of(8, 0)),
         departed: null,
@@ -189,8 +187,7 @@ describe('validateEditState', () => {
           type: 'PRESENT',
           groupId: 'group1',
           arrived: HelsinkiDateTime.fromLocal(yesterday, LocalTime.of(8, 0)),
-          departed: null,
-          occupancyCoefficient: 1
+          departed: null
         }
       ],
       today,

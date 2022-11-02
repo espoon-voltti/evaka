@@ -323,6 +323,7 @@ enum class Audit(
     StaffAttendanceUpdate,
     StaffAttendanceDelete,
     StaffAttendanceExternalDelete,
+    StaffAttendanceExternalUpdate,
     StaffOccupancyCoefficientRead,
     StaffOccupancyCoefficientUpsert,
     StartingPlacementsReportRead,
