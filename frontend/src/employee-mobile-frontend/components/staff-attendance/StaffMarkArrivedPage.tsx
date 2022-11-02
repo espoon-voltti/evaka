@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { addMinutes, differenceInMinutes, parse, subMinutes } from 'date-fns'
+import { addMinutes, differenceInMinutes, subMinutes } from 'date-fns'
 import React, {
   useCallback,
   useContext,
@@ -131,14 +131,25 @@ export default React.memo(function StaffMarkArrivedPage() {
     () =>
       firstPlannedStartOfTheDay &&
       differenceInMinutes(
-        parse(time, 'HH:mm', now),
+        HelsinkiDateTime.now()
+          .withTime(LocalTime.parse(time, 'HH:mm'))
+          .toSystemTzDate(),
         firstPlannedStartOfTheDay.toSystemTzDate()
       ),
-    [firstPlannedStartOfTheDay, now, time]
+    [firstPlannedStartOfTheDay, time]
   )
 
   const selectedTimeIsWithin30MinsFromNow = useMemo(() => {
-    return Math.abs(differenceInMinutes(parse(time, 'HH:mm', now), now)) <= 30
+    return (
+      Math.abs(
+        differenceInMinutes(
+          HelsinkiDateTime.now()
+            .withTime(LocalTime.parse(time, 'HH:mm'))
+            .toSystemTzDate(),
+          now
+        )
+      ) <= 30
+    )
   }, [time, now])
 
   const hasPlan = useMemo(
