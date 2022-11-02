@@ -40,8 +40,7 @@ class MessageService(private val notificationEmailService: MessageNotificationEm
         val now = clock.now()
         recipientGroups.forEach { recipientIds ->
             val threadId = tx.insertThread(type, title, urgent, isCopy = false)
-            val childIds =
-                recipientIds.flatMap { accountIdsToChildIds[it] ?: emptyList() }.toSet()
+            val childIds = recipientIds.flatMap { accountIdsToChildIds[it] ?: emptyList() }.toSet()
             tx.insertMessageThreadChildren(childIds, threadId)
             tx.upsertThreadParticipants(threadId, sender, recipientIds, now)
             val messageId =

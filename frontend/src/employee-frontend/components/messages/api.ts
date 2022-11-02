@@ -208,3 +208,16 @@ export async function archiveThread(
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
 }
+
+export async function undoMessage(
+  accountId: UUID,
+  messageId: UUID | undefined,
+  contentId: UUID | undefined
+): Promise<Result<UUID | null>> {
+  return client
+    .post(`/messages/${accountId}/undo-message`, null, {
+      params: { messageId, contentId }
+    })
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}

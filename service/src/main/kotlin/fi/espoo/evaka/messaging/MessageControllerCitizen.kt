@@ -48,11 +48,12 @@ class MessageControllerCitizen(
     @GetMapping("/unread-count")
     fun getUnreadMessages(
         db: Database,
-        user: AuthenticatedUser.Citizen
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock
     ): Set<UnreadCountByAccount> {
         return db.connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
-                dbc.read { it.getUnreadMessagesCounts(setOf(accountId)) }
+                dbc.read { it.getUnreadMessagesCounts(clock.now(), setOf(accountId)) }
             }
             .also {
                 Audit.MessagingUnreadMessagesRead.log(
@@ -93,6 +94,7 @@ class MessageControllerCitizen(
     fun getReceivedMessages(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @RequestParam pageSize: Int,
         @RequestParam page: Int
     ): Paged<MessageThread> {
@@ -100,6 +102,7 @@ class MessageControllerCitizen(
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
                 dbc.read {
                     it.getThreads(
+                        clock.now(),
                         accountId,
                         pageSize,
                         page,

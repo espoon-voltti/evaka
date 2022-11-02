@@ -62,6 +62,13 @@ import {
 
 const PAGE_SIZE = 20
 type RepliesByThread = Record<UUID, string>
+export type CancelableMessage = {
+  accountId: UUID
+  sentAt: HelsinkiDateTime
+} & (
+  | { messageId: UUID; contentId?: undefined }
+  | { contentId: UUID; messageId?: undefined }
+)
 
 export interface MessagesState {
   accounts: Result<AuthorizedMessageAccount[]>
@@ -94,6 +101,8 @@ export interface MessagesState {
   unreadCountsByAccount: Result<UnreadCountByAccount[]>
   sentMessagesAsThreads: Result<MessageThread[]>
   messageCopiesAsThreads: Result<MessageThread[]>
+  cancelableMessage: CancelableMessage | undefined
+  setCancelableMessage: (m: CancelableMessage | undefined) => void
 }
 
 const defaultState: MessagesState = {
@@ -126,7 +135,9 @@ const defaultState: MessagesState = {
   refreshMessages: () => undefined,
   unreadCountsByAccount: Loading.of(),
   sentMessagesAsThreads: Loading.of(),
-  messageCopiesAsThreads: Loading.of()
+  messageCopiesAsThreads: Loading.of(),
+  cancelableMessage: undefined,
+  setCancelableMessage: () => undefined
 }
 
 export const MessageContext = createContext<MessagesState>(defaultState)
@@ -508,8 +519,20 @@ export const MessageContextProvider = React.memo(
       },
       [setSelectedThread]
     )
-    const reply = useRestApi(replyToThread, setReplyResponse)
-    const sendReply = useCallback(reply, [reply])
+    const sendReply = useRestApi(
+      (params: ReplyToThreadParams) =>
+        replyToThread(params).then((result) => {
+          if (result.isSuccess) {
+            setCancelableMessage({
+              accountId: params.accountId,
+              messageId: result.value.message.id,
+              sentAt: HelsinkiDateTime.now()
+            })
+          }
+          return result
+        }),
+      setReplyResponse
+    )
 
     const [replyContents, setReplyContents] = useState<RepliesByThread>({})
 
@@ -548,6 +571,9 @@ export const MessageContextProvider = React.memo(
         }),
       [setParams, unitId]
     )
+
+    const [cancelableMessage, setCancelableMessage] =
+      useState<CancelableMessage>()
 
     // select first account if no account is selected
     useEffect(() => {
@@ -619,7 +645,9 @@ export const MessageContextProvider = React.memo(
         refreshMessages,
         unreadCountsByAccount,
         sentMessagesAsThreads,
-        messageCopiesAsThreads
+        messageCopiesAsThreads,
+        cancelableMessage,
+        setCancelableMessage
       }),
       [
         accounts,
@@ -648,7 +676,9 @@ export const MessageContextProvider = React.memo(
         refreshMessages,
         unreadCountsByAccount,
         sentMessagesAsThreads,
-        messageCopiesAsThreads
+        messageCopiesAsThreads,
+        cancelableMessage,
+        setCancelableMessage
       ]
     )
 

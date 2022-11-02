@@ -242,13 +242,13 @@ test('Foster parent can receive and reply to messages', async () => {
 
   const unitSupervisor = await Fixture.employeeUnitSupervisor(unitId).save()
   await upsertMessageAccounts()
-  const unitSupervisorPage = await Page.open({
-    mockedTime: mockedDate.toSystemTzDate()
+  let unitSupervisorPage = await Page.open({
+    mockedTime: mockedNow.subMinutes(1).toSystemTzDate()
   })
   await employeeLogin(unitSupervisorPage, unitSupervisor.data)
 
   await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-  const messagesPage = new MessagesPage(unitSupervisorPage)
+  let messagesPage = new MessagesPage(unitSupervisorPage)
   const message = {
     title: 'Message title',
     content: 'Message content'
@@ -262,6 +262,11 @@ test('Foster parent can receive and reply to messages', async () => {
   await citizenMessagesPage.replyToFirstThread(reply)
   await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
 
+  unitSupervisorPage = await Page.open({
+    mockedTime: mockedNow.addMinutes(1).toSystemTzDate()
+  })
+  await employeeLogin(unitSupervisorPage, unitSupervisor.data)
+  messagesPage = new MessagesPage(unitSupervisorPage)
   await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
   await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
   await messagesPage.assertMessageContent(1, reply)

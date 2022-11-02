@@ -28,7 +28,10 @@ interface Props {
   i18n: ReloadNotificationTranslations
 }
 
-export default function ReloadNotification({ apiVersion, i18n }: Props) {
+export const ReloadNotification = React.memo(function ReloadNotification({
+  apiVersion,
+  i18n
+}: Props) {
   const theme = useTheme()
   const [show, setShow] = useState(false)
   const timer = useRef<number>()
@@ -53,45 +56,51 @@ export default function ReloadNotification({ apiVersion, i18n }: Props) {
   }, [maybeShow])
 
   return show ? (
-    <OuterContainer>
-      <ToastContainer>
-        <Toast
-          icon={faInfo}
-          iconColor={theme.colors.main.m1}
-          onClose={close}
-          closeLabel={i18n.closeLabel}
-        >
-          <FixedSpaceColumn spacing="xs">
-            <div>{i18n.title}</div>
-            <div>
-              <ReloadButton
-                icon={faRedo}
-                text={i18n.buttonText}
-                onClick={() => {
-                  window.location.reload()
-                }}
-              />
-            </div>
-          </FixedSpaceColumn>
-        </Toast>
-      </ToastContainer>
-    </OuterContainer>
+    <Toast
+      icon={faInfo}
+      iconColor={theme.colors.main.m1}
+      onClose={close}
+      closeLabel={i18n.closeLabel}
+    >
+      <FixedSpaceColumn spacing="xs">
+        <div>{i18n.title}</div>
+        <div>
+          <ReloadButton
+            icon={faRedo}
+            text={i18n.buttonText}
+            onClick={() => {
+              window.location.reload()
+            }}
+          />
+        </div>
+      </FixedSpaceColumn>
+    </Toast>
   ) : null
-}
+})
 
-const ToastContainer = styled.div`
-  padding: ${defaultMargins.s};
-  position: absolute;
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-`
+export default React.memo(function ReloadNotificationBar(props: Props) {
+  return (
+    <OuterContainer>
+      <ReloadNotification {...props} />
+    </OuterContainer>
+  )
+})
 
-const OuterContainer = styled.div`
+export const OuterContainer = styled.div`
   position: sticky;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
   height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  > * {
+    margin: ${defaultMargins.s};
+    margin-bottom: 0;
+  }
 `
 
 const ReloadButton = styled(InlineButton)`

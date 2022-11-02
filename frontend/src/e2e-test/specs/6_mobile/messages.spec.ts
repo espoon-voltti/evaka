@@ -2,6 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
+
 import config from '../../config'
 import {
   insertGuardianFixtures,
@@ -67,6 +71,20 @@ const staff2Name = `${staff2LastName} ${staff2FirstName}`
 
 const pin = '2580'
 
+const mockedDate = LocalDate.of(2022, 5, 21)
+const mockedDateAt10 = HelsinkiDateTime.fromLocal(
+  mockedDate,
+  LocalTime.of(10, 2)
+)
+const mockedDateAt11 = HelsinkiDateTime.fromLocal(
+  mockedDate,
+  LocalTime.of(11, 31)
+)
+const mockedDateAt12 = HelsinkiDateTime.fromLocal(
+  mockedDate,
+  LocalTime.of(12, 17)
+)
+
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
@@ -127,7 +145,12 @@ beforeEach(async () => {
   await Fixture.employeePin().with({ userId: staff2.data.id, pin }).save()
 
   const placementFixture = await Fixture.placement()
-    .with({ childId: child.id, unitId: unit.id })
+    .with({
+      childId: child.id,
+      unitId: unit.id,
+      startDate: mockedDate.formatIso(),
+      endDate: mockedDate.formatIso()
+    })
     .save()
   await Fixture.groupPlacement()
     .withGroup(daycareGroup)
@@ -135,7 +158,12 @@ beforeEach(async () => {
     .save()
 
   const placement2Fixture = await Fixture.placement()
-    .with({ childId: child2.id, unitId: unit.id })
+    .with({
+      childId: child2.id,
+      unitId: unit.id,
+      startDate: mockedDate.formatIso(),
+      endDate: mockedDate.formatIso()
+    })
     .save()
   await Fixture.groupPlacement()
     .withGroup(daycareGroup2)
@@ -154,7 +182,7 @@ beforeEach(async () => {
     }
   ])
 
-  page = await Page.open()
+  page = await Page.open({ mockedTime: mockedDateAt11.toSystemTzDate() })
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
   unreadMessageCountsPage = new UnreadMobileMessagesPage(page)
@@ -168,8 +196,8 @@ beforeEach(async () => {
   await page.goto(mobileSignupUrl)
 })
 
-async function initCitizenPage() {
-  citizenPage = await Page.open()
+async function initCitizenPage(mockedTime: HelsinkiDateTime) {
+  citizenPage = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
   await enduserLogin(citizenPage)
 }
 
@@ -191,7 +219,7 @@ describe('Message editor in child page', () => {
     await messageEditorPage.sendEditedMessage()
     await childPage.waitUntilLoaded()
 
-    await initCitizenPage()
+    await initCitizenPage(mockedDateAt12)
     await citizenPage.goto(config.enduserMessagesUrl)
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
     await citizenMessagesPage.assertThreadContent(message)
@@ -200,7 +228,7 @@ describe('Message editor in child page', () => {
 
 describe('Child message thread', () => {
   test('Employee sees unread counts and pin login button', async () => {
-    await initCitizenPage()
+    await initCitizenPage(mockedDateAt10)
     await citizenSendsMessageToGroup()
     await userSeesNewMessageIndicatorAndClicks()
 
@@ -209,7 +237,7 @@ describe('Child message thread', () => {
   })
 
   test('Employee navigates using login button and sees messages', async () => {
-    await initCitizenPage()
+    await initCitizenPage(mockedDateAt10)
     await citizenSendsMessageToGroup()
     await userSeesNewMessagesIndicator()
     await employeeLoginsToMessagesPage()
@@ -218,7 +246,7 @@ describe('Child message thread', () => {
   })
 
   test('Employee navigates using group link and sees messages', async () => {
-    await initCitizenPage()
+    await initCitizenPage(mockedDateAt10)
     await citizenSendsMessageToGroup()
     await userSeesNewMessagesIndicator()
     await employeeLoginsToMessagesPageThroughGroup()
@@ -226,7 +254,7 @@ describe('Child message thread', () => {
   })
 
   test('Employee replies as a group to message sent to group', async () => {
-    await initCitizenPage()
+    await initCitizenPage(mockedDateAt10)
     await citizenSendsMessageToGroup()
     await userSeesNewMessagesIndicator()
     await employeeLoginsToMessagesPage()
@@ -259,7 +287,7 @@ describe('Child message thread', () => {
   })
 
   test("Staff sees citizen's message for group", async () => {
-    await initCitizenPage()
+    await initCitizenPage(mockedDateAt10)
     await citizenSendsMessageToGroup()
     await userSeesNewMessagesIndicator()
     await staffLoginsToMessagesPage()
@@ -276,7 +304,7 @@ describe('Child message thread', () => {
   })
 
   test('Supervisor navigates through group message boxes', async () => {
-    await initCitizenPage()
+    await initCitizenPage(mockedDateAt10)
     await citizenSendsMessageToGroup()
     await citizenSendsMessageToGroup2()
     await userSeesNewMessagesIndicator()
@@ -299,7 +327,9 @@ describe('Child message thread', () => {
   test('Employee sees info while trying to send message to child whose guardians are blocked', async () => {
     // Add child's guardians to block list
     const admin = await Fixture.employeeAdmin().save()
-    const adminPage = await Page.open()
+    const adminPage = await Page.open({
+      mockedTime: mockedDateAt10.toSystemTzDate()
+    })
     await employeeLogin(adminPage, admin.data)
     await adminPage.goto(`${config.employeeUrl}/child-information/${child.id}`)
     const childInformationPage = new ChildInformationPage(adminPage)

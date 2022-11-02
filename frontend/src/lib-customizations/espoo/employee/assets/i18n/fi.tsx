@@ -3503,7 +3503,12 @@ export const fi = {
     },
     noTitle: 'Ei otsikkoa',
     notSent: 'Ei lähetetty',
-    editDraft: 'Muokkaa luonnosta'
+    editDraft: 'Muokkaa luonnosta',
+    undo: {
+      info: 'Viesti lähetetty',
+      secondsLeft: (s: number) =>
+        s === 1 ? '1 sekunti aikaa' : `${s} sekuntia aikaa`
+    }
   },
   pinCode: {
     title: 'eVaka-mobiilin PIN-koodi',

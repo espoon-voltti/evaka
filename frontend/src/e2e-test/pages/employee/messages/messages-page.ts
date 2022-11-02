@@ -41,6 +41,7 @@ export default class MessagesPage {
   #openReplyEditorButton = this.page.find(
     `[data-qa="message-reply-editor-btn"]`
   )
+  sendReplyButton = this.page.find('[data-qa="message-send-btn"]')
   discardMessageButton = this.page.find('[data-qa="message-discard-btn"]')
   #messageReplyContent = new TextInput(
     this.page.find('[data-qa="message-reply-content"]')
@@ -238,5 +239,12 @@ export default class MessagesPage {
   async assertNoCopies() {
     await this.#messageCopiesInbox.click()
     await this.#emptyInboxText.waitUntilVisible()
+  }
+
+  async undoMessage() {
+    await this.page
+      .findByDataQa('undo-message-toast')
+      .findByDataQa('cancel-message')
+      .click()
   }
 }

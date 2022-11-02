@@ -9,6 +9,7 @@ import {
   MessageReceiversResponse,
   PostMessageBody
 } from 'lib-common/generated/api-types/messaging'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 import MessageEditor from 'lib-components/employee/messages/MessageEditor'
 import Container from 'lib-components/layout/Container'
@@ -44,7 +45,8 @@ export default React.memo(function MessagesPage() {
     selectedAccount,
     selectAccount,
     setSelectedThread,
-    refreshMessages
+    refreshMessages,
+    setCancelableMessage
   } = useContext(MessageContext)
 
   const { setErrorMessage } = useContext(UIContext)
@@ -87,6 +89,11 @@ export default React.memo(function MessagesPage() {
             })
             if (res.value) {
               setSelectedThread(res.value)
+              setCancelableMessage({
+                accountId: senderAccount.account.id,
+                contentId: res.value,
+                sentAt: HelsinkiDateTime.now()
+              })
             }
           }
           hideEditor()
@@ -103,9 +110,11 @@ export default React.memo(function MessagesPage() {
     [
       accounts,
       hideEditor,
-      i18n,
+      i18n.common.error.unknown,
+      i18n.common.ok,
       refreshMessages,
       selectAccount,
+      setCancelableMessage,
       setErrorMessage,
       setSelectedThread
     ]

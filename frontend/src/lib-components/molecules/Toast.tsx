@@ -23,7 +23,7 @@ export interface Props {
   offsetTop?: string
   offsetTopDesktop?: string
   children?: React.ReactNode
-  dataQa?: string
+  'data-qa'?: string
   closeLabel: string
 }
 
@@ -33,7 +33,7 @@ export default React.memo(function Toast({
   onClick,
   onClose,
   children,
-  dataQa,
+  'data-qa': dataQa,
   closeLabel
 }: Props) {
   return (

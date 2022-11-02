@@ -66,6 +66,10 @@ export default class CitizenMessagesPage {
     return this.page.find('[data-qa="input-content"]').visible
   }
 
+  async openFirstThread() {
+    await this.#threadListItem.click()
+  }
+
   async openFirstThreadReplyEditor() {
     await this.#threadListItem.click()
     await this.#openReplyEditorButton.click()

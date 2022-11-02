@@ -160,7 +160,7 @@ export const CalendarNotificationsSlot = React.memo(
     return (
       <FixedSpaceColumn spacing="s">
         {Object.entries(notifications).map(
-          ([id, { children, onClose, onClick, ...props }]) => (
+          ([id, { children, onClose, onClick, dataQa, ...props }]) => (
             <Toast
               {...props}
               key={id}
@@ -174,6 +174,7 @@ export const CalendarNotificationsSlot = React.memo(
                 }
               }}
               closeLabel={i18n.common.close}
+              data-qa={dataQa}
             >
               {children}
             </Toast>
