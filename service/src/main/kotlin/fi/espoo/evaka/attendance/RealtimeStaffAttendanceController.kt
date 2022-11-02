@@ -93,7 +93,6 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                             att.type
                                         )
                                     },
-                                hasFutureAttendances = data[0].hasFutureAttendances,
                                 plannedAttendances = plannedAttendances[employeeId] ?: emptyList()
                             )
                         }
@@ -109,7 +108,6 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                     currentOccupancyCoefficient = emp.currentOccupancyCoefficient
                                             ?: BigDecimal.ZERO,
                                     listOf(),
-                                    hasFutureAttendances = emp.hasFutureAttendances,
                                     plannedAttendances = plannedAttendances[emp.id] ?: emptyList()
                                 )
                             }
