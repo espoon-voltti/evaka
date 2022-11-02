@@ -136,12 +136,13 @@ class ReservationControllerCitizen(
             }
         Audit.AttendanceReservationCitizenCreate.log(
             targetId = children,
-            mapOf(
-                "deletedAbsences" to result.deletedAbsences,
-                "deletedReservations" to result.deletedReservations,
-                "upsertedAbsences" to result.upsertedAbsences,
-                "upsertedReservations" to result.upsertedReservations
-            )
+            args =
+                mapOf(
+                    "deletedAbsences" to result.deletedAbsences,
+                    "deletedReservations" to result.deletedReservations,
+                    "upsertedAbsences" to result.upsertedAbsences,
+                    "upsertedReservations" to result.upsertedReservations
+                )
         )
     }
 
@@ -192,7 +193,7 @@ class ReservationControllerCitizen(
         Audit.AbsenceCitizenCreate.log(
             targetId = body.childIds,
             objectId = inserted,
-            mapOf("deleted" to deleted)
+            args = mapOf("deleted" to deleted)
         )
     }
 }

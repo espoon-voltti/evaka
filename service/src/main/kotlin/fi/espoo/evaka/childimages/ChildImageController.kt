@@ -72,7 +72,7 @@ class ChildImageController(
         Audit.ChildImageUpload.log(
             targetId = childId,
             objectId = imageId,
-            mapOf("size" to file.size, "contentType" to contentType)
+            args = mapOf("size" to file.size, "contentType" to contentType)
         )
     }
 

@@ -459,7 +459,7 @@ class ChildAttendanceController(
         Audit.AbsenceDeleteRange.log(
             targetId = childId,
             objectId = deleted,
-            mapOf("from" to from, "to" to to)
+            args = mapOf("from" to from, "to" to to)
         )
     }
 

@@ -326,7 +326,7 @@ class PlacementController(
                 Audit.DaycareGroupPlacementCreate.log(
                     targetId = placementId,
                     objectId = groupPlacementId,
-                    mapOf("groupId" to body.groupId)
+                    args = mapOf("groupId" to body.groupId)
                 )
             }
     }

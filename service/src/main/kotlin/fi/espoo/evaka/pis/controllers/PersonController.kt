@@ -561,7 +561,7 @@ class PersonController(
         Audit.PersonUpdateEvakaRights.log(
             targetId = childId,
             objectId = body.guardianId,
-            mapOf("denied" to body.denied)
+            args = mapOf("denied" to body.denied)
         )
     }
 

@@ -210,7 +210,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
                                     occupancyCoefficientSeven
                                 )
                             }
-                        listOf(staffAttendanceIds, externalStaffAttendanceIds)
+                        staffAttendanceIds + externalStaffAttendanceIds
                     } catch (e: JdbiException) {
                         throw mapPSQLException(e)
                     }

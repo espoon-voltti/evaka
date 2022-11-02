@@ -103,7 +103,7 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
                     it.countUnreadDocumentsByUser(clock.today(), user.id)
                 }
             }
-            .also { Audit.PedagogicalDocumentCountUnread.log(user.id) }
+            .also { Audit.PedagogicalDocumentCountUnread.log(targetId = user.id) }
     }
 }
 

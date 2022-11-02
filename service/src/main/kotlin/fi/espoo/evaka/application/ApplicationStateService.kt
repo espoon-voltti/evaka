@@ -757,7 +757,8 @@ class ApplicationStateService(
         }
         Audit.DecisionAccept.log(
             targetId = decisionId,
-            mapOf("applicationId" to applicationId, "requestedStartDate" to requestedStartDate)
+            args =
+                mapOf("applicationId" to applicationId, "requestedStartDate" to requestedStartDate)
         )
     }
 
