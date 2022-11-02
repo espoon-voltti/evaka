@@ -24,6 +24,7 @@ export default class CitizenIncomePage {
 
   async setValidFromDate(date: string) {
     await this.#startDate.fill(date)
+    await this.#startDate.press('Enter')
   }
 
   async submit() {
@@ -50,6 +51,7 @@ export default class CitizenIncomePage {
 
   async setEntrepreneurStartDate(date: string) {
     await this.#entrepreneurDate.fill(date)
+    await this.#entrepreneurDate.press('Enter')
   }
 
   async selectEntrepreneurSpouse(yesNo: 'yes' | 'no') {
