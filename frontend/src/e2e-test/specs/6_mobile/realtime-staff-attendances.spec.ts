@@ -73,9 +73,11 @@ beforeEach(async () => {
     .withGroupAcl(daycareGroup2Fixture.id)
     .save()
   await Fixture.employeePin().with({ userId: staffFixture.data.id, pin }).save()
+})
 
+const initPages = async (mockedTime: Date) => {
   page = await Page.open({
-    mockedTime: new Date('2022-05-05T13:00Z')
+    mockedTime
   })
   nav = new MobileNav(page)
 
@@ -83,10 +85,12 @@ beforeEach(async () => {
   await page.goto(mobileSignupUrl)
   await nav.openPage('staff')
   staffAttendancePage = new StaffAttendancePage(page)
-})
+}
 
 describe('Realtime staff attendance page', () => {
   test('Staff member can be marked as arrived and departed', async () => {
+    await initPages(new Date('2022-05-05T03:00Z'))
+
     const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
     const arrivalTime = '05:59'
     const departureTime = '12:45'
@@ -105,7 +109,9 @@ describe('Realtime staff attendance page', () => {
       0,
       `Paikalla ${arrivalTime}–`
     )
-    await staffAttendancePage.goBackFromMemberPage()
+
+    await initPages(new Date('2022-05-05T10:30Z'))
+
     await staffAttendancePage.assertPresentStaffCount(1)
 
     await staffAttendancePage.selectTab('present')
@@ -120,6 +126,8 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.assertPresentStaffCount(0)
   })
   test('New external staff member can be added and marked as departed', async () => {
+    await initPages(new Date('2022-05-05T13:00Z'))
+
     const name = 'Nomen Estomen'
     const arrivalTime = '03:20'
 
