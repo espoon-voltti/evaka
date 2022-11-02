@@ -170,7 +170,6 @@ export interface EmployeeAttendance {
   employeeId: UUID
   firstName: string
   groups: UUID[]
-  hasFutureAttendances: boolean
   lastName: string
   plannedAttendances: PlannedStaffAttendance[]
 }
@@ -182,7 +181,6 @@ export interface ExternalAttendance {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
   groupId: UUID
-  hasFutureAttendances: boolean
   id: UUID
   name: string
   occupancyCoefficient: number
@@ -212,7 +210,6 @@ export interface ExternalStaffDepartureRequest {
 export interface ExternalStaffMember {
   arrived: HelsinkiDateTime
   groupId: UUID
-  hasFutureAttendances: boolean
   id: UUID
   name: string
 }

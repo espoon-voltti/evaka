@@ -46,7 +46,6 @@ data class ExternalStaffMember(
     val name: String,
     val groupId: GroupId,
     val arrived: HelsinkiDateTime,
-    val hasFutureAttendances: Boolean
 )
 
 data class StaffMember(
@@ -93,7 +92,6 @@ data class ExternalAttendance(
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
     val occupancyCoefficient: BigDecimal,
-    val hasFutureAttendances: Boolean
 ) {
     val type = StaffAttendanceType.PRESENT
 }
@@ -114,7 +112,6 @@ data class EmployeeAttendance(
     val lastName: String,
     val currentOccupancyCoefficient: BigDecimal,
     val attendances: List<Attendance>,
-    val hasFutureAttendances: Boolean,
     val plannedAttendances: List<PlannedStaffAttendance>
 )
 
