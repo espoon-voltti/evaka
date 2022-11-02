@@ -6,9 +6,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import initial from 'lodash/initial'
 import last from 'lodash/last'
 import orderBy from 'lodash/orderBy'
-import reduce from 'lodash/reduce'
-import uniq from 'lodash/uniq'
-import uniqBy from 'lodash/uniqBy'
 import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
@@ -16,11 +13,9 @@ import { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { ErrorKey } from 'lib-common/form-validation'
 import {
-  Attendance,
-  EmployeeAttendance,
-  SingleDayStaffAttendanceUpsert,
   StaffAttendanceType,
-  staffAttendanceTypes
+  staffAttendanceTypes,
+  StaffAttendanceUpsert
 } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -58,20 +53,34 @@ import {
   faTrash
 } from 'lib-icons'
 
-import { postSingleDayStaffAttendances } from '../../../api/staff-attendance'
 import { useTranslation } from '../../../state/i18n'
 import { errorToInputInfo } from '../../../utils/validation/input-info-helper'
 
-interface Props<T> {
-  unitId: UUID
-  employeeId: UUID
+export interface ModalAttendance {
+  id: UUID
+  groupId: UUID
+  arrived: HelsinkiDateTime
+  departed: HelsinkiDateTime | null
+  type: StaffAttendanceType
+}
+
+export interface ModalPlannedAttendance {
+  start: HelsinkiDateTime
+  end: HelsinkiDateTime
+}
+
+interface Props {
   date: LocalDate
-  attendances: EmployeeAttendance[]
-  close: () => void
-  reloadStaffAttendances: () => void
+  name: string
+  attendances: ModalAttendance[]
+  plannedAttendances: ModalPlannedAttendance[]
+  isExternal: boolean
+  onSave: (body: StaffAttendanceUpsert[]) => void
+  onSuccess: () => void
+  onClose: () => void
   groups: DaycareGroup[]
-  onPreviousDate: () => Promise<Result<T>>
-  onNextDate: () => Promise<Result<T>>
+  onPreviousDate: () => Promise<Result<unknown>>
+  onNextDate: () => Promise<Result<unknown>>
 }
 
 interface EditedAttendance {
@@ -82,18 +91,21 @@ interface EditedAttendance {
   type: StaffAttendanceType
 }
 
-export default React.memo(function StaffAttendanceDetailsModal<T>({
-  unitId,
-  employeeId,
+export default React.memo(function StaffAttendanceDetailsModal({
   date,
+  name,
   attendances,
-  close,
-  reloadStaffAttendances,
+  plannedAttendances,
+  isExternal,
+  onSave,
+  onSuccess,
+  onClose,
   groups,
   onPreviousDate,
   onNextDate
-}: Props<T>) {
+}: Props) {
   const { i18n } = useTranslation()
+
   const [startOfDay, endOfDay] = useMemo(
     () => [
       HelsinkiDateTime.fromLocal(date, LocalTime.of(0, 0)),
@@ -101,38 +113,17 @@ export default React.memo(function StaffAttendanceDetailsModal<T>({
     ],
     [date]
   )
-  const employee = useMemo(
-    () =>
-      reduce(
-        attendances.filter(
-          (attendance) => attendance.employeeId === employeeId
-        ),
-        (p, n) => ({
-          ...p,
-          ...n,
-          attendances: uniqBy(
-            [...p.attendances, ...n.attendances],
-            ({ id }) => id
-          ),
-          groups: uniq([...p.groups, ...n.groups]),
-          plannedAttendances: uniq([
-            ...p.plannedAttendances,
-            ...n.plannedAttendances
-          ])
-        })
-      ),
-    [employeeId, attendances]
-  )
+
   const sortedAttendances = useMemo(
     () =>
       orderBy(
-        employee?.attendances?.filter(
+        attendances.filter(
           ({ arrived, departed }) =>
             arrived < endOfDay && (departed === null || startOfDay < departed)
         ) ?? [],
         ({ arrived }) => arrived
       ),
-    [employee?.attendances, endOfDay, startOfDay]
+    [attendances, endOfDay, startOfDay]
   )
 
   const initialEditState = useMemo(
@@ -198,15 +189,11 @@ export default React.memo(function StaffAttendanceDetailsModal<T>({
       })),
     []
   )
-  const [requestBody, errors] = validateEditState(
-    employee?.attendances ?? [],
-    date,
-    editState
-  )
+  const [requestBody, errors] = validateEditState(attendances, date, editState)
   const save = useCallback(() => {
     if (!requestBody) return
-    return postSingleDayStaffAttendances(unitId, employeeId, date, requestBody)
-  }, [date, employeeId, requestBody, unitId])
+    return onSave(requestBody)
+  }, [onSave, requestBody])
 
   const gaplessAttendances = useMemo(
     () =>
@@ -241,13 +228,13 @@ export default React.memo(function StaffAttendanceDetailsModal<T>({
     [sortedAttendances]
   )
 
-  const plannedAttendances = useMemo(
+  const plannedAttendancesToday = useMemo(
     () =>
-      employee?.plannedAttendances.filter(
+      plannedAttendances.filter(
         ({ end, start }) =>
           end.toLocalDate().isEqual(date) || start.toLocalDate().isEqual(date)
       ),
-    [employee?.plannedAttendances, date]
+    [plannedAttendances, date]
   )
 
   const totalMinutes = useMemo(
@@ -275,13 +262,13 @@ export default React.memo(function StaffAttendanceDetailsModal<T>({
       totalMinutes === 'incalculable'
         ? 0
         : totalMinutes -
-          (plannedAttendances?.reduce(
+          (plannedAttendancesToday?.reduce(
             (prev, { start, end }) => prev + (end.timestamp - start.timestamp),
             0
           ) ?? 0) /
             1000 /
             60,
-    [plannedAttendances, totalMinutes]
+    [plannedAttendancesToday, totalMinutes]
   )
 
   const getGapBefore = useCallback(
@@ -309,11 +296,12 @@ export default React.memo(function StaffAttendanceDetailsModal<T>({
 
   const openGroups = useMemo(() => groups.filter(isGroupOpen), [groups])
 
-  if (!employee) return null
-
-  const saveDisabled =
-    !requestBody ||
-    JSON.stringify(initialEditState) === JSON.stringify(editState)
+  const saveDisabled = useMemo(
+    () =>
+      !requestBody ||
+      JSON.stringify(initialEditState) === JSON.stringify(editState),
+    [editState, initialEditState, requestBody]
+  )
 
   return (
     <PlainModal margin="auto" data-qa="staff-attendance-details-modal">
@@ -333,57 +321,59 @@ export default React.memo(function StaffAttendanceDetailsModal<T>({
             aria-label={i18n.unit.staffAttendance.nextDay}
           />
         </FixedSpaceRow>
-        <H2>
-          {employee.firstName} {employee.lastName}
-        </H2>
-        <H3>{i18n.unit.staffAttendance.summary}</H3>
-        <ListGrid rowGap="s" labelWidth="auto">
-          <LabelLike>{i18n.unit.staffAttendance.plan}</LabelLike>
-          <FixedSpaceColumn data-qa="staff-attendance-summary-plan">
-            {plannedAttendances && plannedAttendances.length > 0
-              ? plannedAttendances.map(({ end, start }, i) => (
-                  <div key={i}>
-                    {formatDate(start, date)} –{' '}
-                    {end ? formatDate(end, date) : ''}
-                  </div>
-                ))
-              : '–'}
-          </FixedSpaceColumn>
-          <LabelLike>{i18n.unit.staffAttendance.realized}</LabelLike>
-          <FixedSpaceColumn data-qa="staff-attendance-summary-realized">
-            {gaplessAttendances.length > 0
-              ? gaplessAttendances.map(({ arrived, departed }, i) => (
-                  <div key={i}>
-                    {arrived ? formatDate(arrived, date) : ''} –{' '}
-                    {departed ? formatDate(departed, date) : ''}
-                  </div>
-                ))
-              : '–'}
-          </FixedSpaceColumn>
-          <LabelLike>{i18n.unit.staffAttendance.hours}</LabelLike>
-          <div data-qa="staff-attendance-summary-hours">
-            {totalMinutes === 'incalculable' ? (
-              <Tooltip tooltip={i18n.unit.staffAttendance.incalculableSum}>
-                <FontAwesomeIcon
-                  icon={faExclamationTriangle}
-                  color={colors.status.warning}
-                />
-              </Tooltip>
-            ) : totalMinutes === 0 ? (
-              '-'
-            ) : (
-              `${formatMinutes(totalMinutes)}${
-                plannedAttendances && plannedAttendances.length > 0
-                  ? ` (${
-                      Math.sign(diffPlannedTotalMinutes) === 1 ? '+' : '-'
-                    }${formatMinutes(Math.abs(diffPlannedTotalMinutes))})`
-                  : ''
-              }`
-            )}
-          </div>
-        </ListGrid>
+        <H2>{name}</H2>
+        {!isExternal ? (
+          <>
+            <H3>{i18n.unit.staffAttendance.summary}</H3>
+            <ListGrid rowGap="s" labelWidth="auto">
+              <LabelLike>{i18n.unit.staffAttendance.plan}</LabelLike>
+              <FixedSpaceColumn data-qa="staff-attendance-summary-plan">
+                {plannedAttendances.length > 0
+                  ? plannedAttendances.map(({ end, start }, i) => (
+                      <div key={i}>
+                        {formatDate(start, date)} –{' '}
+                        {end ? formatDate(end, date) : ''}
+                      </div>
+                    ))
+                  : '–'}
+              </FixedSpaceColumn>
+              <LabelLike>{i18n.unit.staffAttendance.realized}</LabelLike>
+              <FixedSpaceColumn data-qa="staff-attendance-summary-realized">
+                {gaplessAttendances.length > 0
+                  ? gaplessAttendances.map(({ arrived, departed }, i) => (
+                      <div key={i}>
+                        {arrived ? formatDate(arrived, date) : ''} –{' '}
+                        {departed ? formatDate(departed, date) : ''}
+                      </div>
+                    ))
+                  : '–'}
+              </FixedSpaceColumn>
+              <LabelLike>{i18n.unit.staffAttendance.hours}</LabelLike>
+              <div data-qa="staff-attendance-summary-hours">
+                {totalMinutes === 'incalculable' ? (
+                  <Tooltip tooltip={i18n.unit.staffAttendance.incalculableSum}>
+                    <FontAwesomeIcon
+                      icon={faExclamationTriangle}
+                      color={colors.status.warning}
+                    />
+                  </Tooltip>
+                ) : totalMinutes === 0 ? (
+                  '-'
+                ) : (
+                  `${formatMinutes(totalMinutes)}${
+                    plannedAttendances.length > 0
+                      ? ` (${
+                          Math.sign(diffPlannedTotalMinutes) === 1 ? '+' : '-'
+                        }${formatMinutes(Math.abs(diffPlannedTotalMinutes))})`
+                      : ''
+                  }`
+                )}
+              </div>
+            </ListGrid>
 
-        <HorizontalLine slim />
+            <HorizontalLine slim />
+          </>
+        ) : null}
 
         <H3>{i18n.unit.staffAttendance.dailyAttendances}</H3>
         <ListGrid rowGap="s" labelWidth="auto">
@@ -442,7 +432,8 @@ export default React.memo(function StaffAttendanceDetailsModal<T>({
                     />
                   )}
                 </GroupIndicator>
-                {featureFlags.experimental?.staffAttendanceTypes ? (
+                {featureFlags.experimental?.staffAttendanceTypes &&
+                !isExternal ? (
                   <Select
                     items={[...staffAttendanceTypes]}
                     selectedItem={type}
@@ -518,19 +509,19 @@ export default React.memo(function StaffAttendanceDetailsModal<T>({
         </ListGrid>
         <Gap size="L" />
         <ModalActions>
-          <Button text={i18n.common.cancel} onClick={close} />
+          <Button text={i18n.common.cancel} onClick={onClose} />
           <AsyncButton
             primary
             text={i18n.unit.staffAttendance.saveChanges}
             onClick={save}
-            onSuccess={reloadStaffAttendances}
+            onSuccess={onSuccess}
             disabled={saveDisabled}
             data-qa="save"
           />
         </ModalActions>
       </Content>
       <ModalCloseButton
-        close={close}
+        close={onClose}
         closeLabel={i18n.common.closeModal}
         data-qa="close"
       />
@@ -549,11 +540,11 @@ interface ValidationError {
 }
 
 export function validateEditState(
-  attendances: Attendance[],
+  attendances: ModalAttendance[],
   date: LocalDate,
   state: EditedAttendance[]
-): [SingleDayStaffAttendanceUpsert[] | undefined, ValidationError[]] {
-  const body: SingleDayStaffAttendanceUpsert[] = []
+): [StaffAttendanceUpsert[] | undefined, ValidationError[]] {
+  const body: StaffAttendanceUpsert[] = []
   const errors: ValidationError[] = []
   let hasErrors = false
 
@@ -630,7 +621,7 @@ export function validateEditState(
           )
         : existing?.departed ?? null
       body.push({
-        attendanceId: item.id,
+        id: item.id,
         type: item.type,
         groupId: item.groupId,
         arrived,

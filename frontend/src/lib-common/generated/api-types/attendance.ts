@@ -188,6 +188,27 @@ export interface ExternalAttendance {
 }
 
 /**
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.ExternalAttendanceBody
+*/
+export interface ExternalAttendanceBody {
+  date: LocalDate
+  entries: ExternalAttendanceUpsert[]
+  name: string
+  unitId: UUID
+}
+
+/**
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.ExternalAttendanceUpsert
+*/
+export interface ExternalAttendanceUpsert {
+  arrived: HelsinkiDateTime
+  departed: HelsinkiDateTime | null
+  groupId: UUID
+  id: UUID | null
+  type: StaffAttendanceType
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.ExternalStaffArrivalRequest
 */
 export interface ExternalStaffArrivalRequest {
@@ -249,17 +270,6 @@ export interface PlannedStaffAttendance {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.SingleDayStaffAttendanceUpsert
-*/
-export interface SingleDayStaffAttendanceUpsert {
-  arrived: HelsinkiDateTime
-  attendanceId: UUID | null
-  departed: HelsinkiDateTime | null
-  groupId: UUID
-  type: StaffAttendanceType
-}
-
-/**
 * Generated from fi.espoo.evaka.attendance.Staff
 */
 export interface Staff {
@@ -283,6 +293,16 @@ export interface StaffArrivalRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.StaffAttendanceBody
+*/
+export interface StaffAttendanceBody {
+  date: LocalDate
+  employeeId: UUID
+  entries: StaffAttendanceUpsert[]
+  unitId: UUID
+}
+
+/**
 * Generated from fi.espoo.evaka.attendance.StaffAttendanceResponse
 */
 export interface StaffAttendanceResponse {
@@ -302,6 +322,17 @@ export const staffAttendanceTypes = [
 ] as const
 
 export type StaffAttendanceType = typeof staffAttendanceTypes[number]
+
+/**
+* Generated from fi.espoo.evaka.attendance.RealtimeStaffAttendanceController.StaffAttendanceUpsert
+*/
+export interface StaffAttendanceUpsert {
+  arrived: HelsinkiDateTime
+  departed: HelsinkiDateTime | null
+  groupId: UUID
+  id: UUID | null
+  type: StaffAttendanceType
+}
 
 /**
 * Generated from fi.espoo.evaka.attendance.MobileRealtimeStaffAttendanceController.StaffDepartureRequest
