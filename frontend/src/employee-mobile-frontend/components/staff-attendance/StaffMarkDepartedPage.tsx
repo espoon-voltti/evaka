@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { isAfter, parse } from 'date-fns'
+import { isAfter } from 'date-fns'
 import React, {
   useCallback,
   useContext,
@@ -74,6 +74,8 @@ export default React.memo(function StaffMarkDepartedPage() {
   const [time, setTime] = useState<string>(() =>
     HelsinkiDateTime.now().toLocalTime().format()
   )
+  const [now, setNow] = useState<Date>(() => mockNow() ?? new Date())
+
   const [errorCode, setErrorCode] = useState<string | undefined>(undefined)
   const [attendanceType, setAttendanceType] = useState<StaffAttendanceType>()
 
@@ -113,8 +115,16 @@ export default React.memo(function StaffMarkDepartedPage() {
     [memberAttendance, i18n.common.back]
   )
 
-  const now = mockNow() ?? new Date()
-  const timeInFuture = isAfter(parse(time, 'HH:mm', now), now)
+  const timeInFuture = useMemo(
+    () =>
+      isAfter(
+        HelsinkiDateTime.now()
+          .withTime(LocalTime.parse(time, 'HH:mm'))
+          .toSystemTzDate(),
+        now
+      ),
+    [time, now]
+  )
 
   const staffAttendanceDifferenceReasons: StaffAttendanceType[] = useMemo(
     () =>
@@ -220,6 +230,7 @@ export default React.memo(function StaffMarkDepartedPage() {
                   <CustomTitle>{i18n.attendances.departureTime}</CustomTitle>
                   <TimeInput
                     onChange={setTime}
+                    onFocus={() => setNow(mockNow() ?? new Date())}
                     value={time}
                     data-qa="set-time"
                     info={
@@ -227,7 +238,7 @@ export default React.memo(function StaffMarkDepartedPage() {
                         ? {
                             status: 'warning',
                             text: i18n.common.validation.dateLte(
-                              formatTime(mockNow() ?? new Date())
+                              formatTime(now)
                             )
                           }
                         : undefined
