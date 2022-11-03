@@ -255,24 +255,33 @@ const AmountInput = React.memo(function AmountInput({
   const [stringValue, setStringValue] = useState(value ? value.toString() : '')
   const [invalid, setInvalid] = useState(false)
 
-  const amount = useMemo(() => validateAmount(stringValue), [stringValue])
-  useEffect(() => {
-    if (amount !== undefined && amount !== value) {
-      onChange(amount)
-      setInvalid(false)
-    } else {
-      setInvalid(true)
-    }
-  }, [amount, value, onChange])
+  const handleChange = useCallback(
+    (value: string) => {
+      const amount = validateAmount(value)
+      if (amount === undefined) setInvalid(true)
+      else {
+        setInvalid(false)
+        onChange(amount)
+      }
+      setStringValue(value)
+    },
+    [onChange]
+  )
+
+  const info = useMemo(
+    () =>
+      invalid ? { status: 'warning' as const, text: 'Tarkista' } : undefined,
+    [invalid]
+  )
 
   return (
     <NarrowInput
       inputMode="numeric"
       value={stringValue}
-      onChange={setStringValue}
+      onChange={handleChange}
       data-qa="input-amount"
       hideErrorsBeforeTouched
-      info={invalid ? { status: 'warning', text: 'Tarkista' } : undefined}
+      info={info}
     />
   )
 })
