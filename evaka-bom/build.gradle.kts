@@ -67,6 +67,7 @@ dependencies {
     api(platform("org.jdbi:jdbi3-bom:3.32.0"))
     api(platform("org.jetbrains.kotlin:kotlin-bom:1.7.20"))
     api(platform("org.junit:junit-bom:5.9.1"))
-    api(platform("org.springframework.boot:spring-boot-dependencies:2.7.4"))
+    api(platform("org.springframework.boot:spring-boot-dependencies:2.7.5"))
+    api(platform("org.springframework.security:spring-security-bom:5.7.5"))
     api(platform("software.amazon.awssdk:bom:2.17.285"))
 }
