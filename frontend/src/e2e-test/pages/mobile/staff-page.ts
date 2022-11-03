@@ -2,9 +2,18 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
+
 import { DaycareGroup } from '../../dev-api/types'
 import { waitUntilEqual } from '../../utils'
-import { Combobox, Element, Page, Select, TextInput } from '../../utils/page'
+import {
+  Checkbox,
+  Combobox,
+  Element,
+  Page,
+  Select,
+  TextInput
+} from '../../utils/page'
 
 export default class StaffPage {
   constructor(private readonly page: Page) {}
@@ -107,7 +116,10 @@ export class StaffAttendancePage {
     groupSelect: new Combobox(this.page.findByDataQa('input-group'))
   }
   #staffArrivalPage = {
-    groupSelect: new Select(this.page.findByDataQa('group-select'))
+    groupSelect: new Select(this.page.findByDataQa('group-select')),
+    timeInputWarningText: this.page.findByDataQa('input-arrived-info'),
+    arrivalTypeCheckbox: (type: StaffAttendanceType) =>
+      new Checkbox(this.page.findByDataQa(`attendance-type-${type}`))
   }
   #staffDeparturePage = {
     departureTime: new TextInput(this.page.findByDataQa('set-time')),
@@ -187,6 +199,14 @@ export class StaffAttendancePage {
     )
   }
 
+  async selectArrivalType(type: StaffAttendanceType) {
+    await this.#staffArrivalPage.arrivalTypeCheckbox(type).click()
+  }
+
+  async assertArrivalTypeCheckboxVisible(type: StaffAttendanceType) {
+    await this.#staffArrivalPage.arrivalTypeCheckbox(type).waitUntilVisible()
+  }
+
   async markStaffArrived(args: {
     pin: string
     time: string
@@ -213,5 +233,39 @@ export class StaffAttendancePage {
       await this.#externalMemberPage.departureTimeInput.fill(time)
     }
     await this.#anyMemberPage.markDepartedLink.click()
+  }
+
+  async clickStaffArrivedAndSetPin(pin: string) {
+    await this.#staffMemberPage.markArrivedBtn.click()
+    await this.#pinInput.locator.type(pin)
+  }
+
+  async setTime(time: string) {
+    await this.#anyArrivalPage.arrivedInput.fill(time)
+  }
+
+  async assertDoneButtonEnabled(enabled: boolean) {
+    await waitUntilEqual(
+      () => this.#anyArrivalPage.markArrivedBtn.disabled,
+      !enabled
+    )
+  }
+
+  async assertGroupSelectionVisible(visible: boolean) {
+    await waitUntilEqual(
+      () => this.#staffArrivalPage.groupSelect.visible,
+      visible
+    )
+  }
+
+  async assertArrivalTimeInputInfo(expected: string) {
+    await waitUntilEqual(
+      () => this.#staffArrivalPage.timeInputWarningText.textContent,
+      expected
+    )
+  }
+
+  async selectGroup(groupId: string) {
+    await this.#staffArrivalPage.groupSelect.selectOption(groupId)
   }
 }

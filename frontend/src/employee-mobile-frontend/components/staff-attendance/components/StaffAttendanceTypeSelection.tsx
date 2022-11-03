@@ -27,7 +27,9 @@ export default React.memo(function StaffAttendanceTypeSelection({
 }: Props) {
   return (
     <Container>
-      <InfoBox message={i18n.attendances.staff.differenceInfo} />
+      <InfoBoxContainer>
+        <InfoBox message={i18n.attendances.staff.differenceInfo} />
+      </InfoBoxContainer>
       <Gap size="s" />
       <CustomTitle>{i18n.attendances.staff.differenceReason}</CustomTitle>
       <Gap size="s" />
@@ -42,6 +44,7 @@ export default React.memo(function StaffAttendanceTypeSelection({
                 ? setSelectedType(undefined)
                 : setSelectedType(type)
             }
+            data-qa={`attendance-type-${type}`}
           />
         ))}
       </ChipWrapper>
@@ -53,4 +56,9 @@ const Container = styled.div`
   font-size: 1rem;
   color: ${({ theme }) => theme.colors.grayscale.g100};
   font-weight: 400;
+`
+
+const InfoBoxContainer = styled.div`
+  display: flex;
+  justify-content: center;
 `

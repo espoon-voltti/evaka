@@ -16,7 +16,7 @@ import styled from 'styled-components'
 
 import { getAttendanceArrivalDifferenceReasons } from 'employee-mobile-frontend/utils/staffAttendances'
 import { combine, Success } from 'lib-common/api'
-import { formatTime, isValidTime } from 'lib-common/date'
+import { formatTime } from 'lib-common/date'
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
@@ -102,6 +102,15 @@ export default React.memo(function StaffMarkArrivedPage() {
     [groupId, staffMember, unitInfoResponse]
   )
 
+  const isValidTimeString = (time: string) => {
+    try {
+      LocalTime.parse(time, 'HH:mm')
+      return true
+    } catch (e) {
+      return false
+    }
+  }
+
   useEffect(() => {
     if (
       attendanceGroup === undefined &&
@@ -130,6 +139,7 @@ export default React.memo(function StaffMarkArrivedPage() {
   const selectedTimeDiffFromPlannedStartOfDayMinutes = useMemo(
     () =>
       firstPlannedStartOfTheDay &&
+      isValidTimeString(time) &&
       differenceInMinutes(
         HelsinkiDateTime.now()
           .withTime(LocalTime.parse(time, 'HH:mm'))
@@ -141,6 +151,7 @@ export default React.memo(function StaffMarkArrivedPage() {
 
   const selectedTimeIsWithin30MinsFromNow = useMemo(() => {
     return (
+      isValidTimeString(time) &&
       Math.abs(
         differenceInMinutes(
           HelsinkiDateTime.now()
@@ -261,7 +272,7 @@ export default React.memo(function StaffMarkArrivedPage() {
             const confirmDisabled =
               pinLocked ||
               !pinSet ||
-              !isValidTime(time) ||
+              !isValidTimeString(time) ||
               pinCode.join('').trim().length < 4 ||
               !selectedTimeIsWithin30MinsFromNow ||
               !attendanceGroup ||
