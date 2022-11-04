@@ -134,8 +134,16 @@ export class ElementCollection {
     return new Element(this.locator.locator(selector))
   }
 
+  findByDataQa(dataQa: string) {
+    return this.find(`[data-qa="${dataQa}"]`)
+  }
+
   findAll(selector: string) {
     return new ElementCollection(this.locator.locator(selector))
+  }
+
+  findAllByDataQa(dataQa: string) {
+    return this.findAll(`[data-qa="${dataQa}"]`)
   }
 
   async assertCount(count: number): Promise<void> {

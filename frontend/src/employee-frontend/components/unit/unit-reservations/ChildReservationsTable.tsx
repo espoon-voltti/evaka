@@ -70,7 +70,7 @@ const ChildReservations = React.memo(function ChildReservations(props: Props) {
   )
 
   return (
-    <Table>
+    <Table data-qa="child-reservations-table">
       <AttendanceTableHeader
         operationalDays={operationalDays}
         nameColumnLabel={i18n.unit.attendanceReservations.childName}
