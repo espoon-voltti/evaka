@@ -22,7 +22,7 @@ export default class LocalTime implements Ordered<LocalTime> {
     readonly nanosecond: number
   ) {}
 
-  format(pattern: 'HH:mm'): string {
+  format(pattern = 'HH:mm'): string {
     const timestamp = new Date(
       1970,
       0,

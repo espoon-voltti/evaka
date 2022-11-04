@@ -15,7 +15,7 @@ describe('LocalTime', () => {
   })
   it('can be formatted to HH:mm format', () => {
     const time = LocalTime.of(1, 2, 3, 123456789)
-    expect(time.format('HH:mm')).toStrictEqual('01:02')
+    expect(time.format()).toStrictEqual('01:02')
   })
   it('can be parsed from HH:mm format', () => {
     const expected = LocalTime.of(1, 2)

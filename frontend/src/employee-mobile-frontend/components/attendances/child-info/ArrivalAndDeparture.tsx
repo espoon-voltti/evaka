@@ -37,13 +37,13 @@ export default React.memo(function ArrivalAndDeparture({ child }: Props) {
       {arrival ? (
         <ArrivalTime>
           <span>{i18n.attendances.arrivalTime}</span>
-          <span>{`${dateInfo} ${arrival.toLocalTime().format('HH:mm')}`}</span>
+          <span>{`${dateInfo} ${arrival.toLocalTime().format()}`}</span>
         </ArrivalTime>
       ) : null}
       {departure ? (
         <ArrivalTime>
           <span>{i18n.attendances.departureTime}</span>
-          <span>{departure.toLocalTime().format('HH:mm')}</span>
+          <span>{departure.toLocalTime().format()}</span>
         </ArrivalTime>
       ) : null}
     </FixedSpaceRow>

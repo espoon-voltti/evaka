@@ -173,6 +173,6 @@ function updatedTime(
   if (date.isEqualOrBefore(endOfYesterday)) {
     return `${i18n.staff.updated} ${date.toLocalDate().format()}`
   } else {
-    return `${i18n.staff.updatedToday} ${date.toLocalTime().format('HH:mm')}`
+    return `${i18n.staff.updatedToday} ${date.toLocalTime().format()}`
   }
 }

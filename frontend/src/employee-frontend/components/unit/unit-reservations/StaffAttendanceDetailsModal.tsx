@@ -132,11 +132,11 @@ export default React.memo(function StaffAttendanceDetailsModal({
         id,
         groupId,
         arrived: date.isEqual(arrived.toLocalDate())
-          ? arrived.toLocalTime().format('HH:mm')
+          ? arrived.toLocalTime().format()
           : '',
         departed:
           departed && date.isEqual(departed.toLocalDate())
-            ? departed.toLocalTime().format('HH:mm')
+            ? departed.toLocalTime().format()
             : '',
         type
       })),
@@ -285,8 +285,8 @@ export default React.memo(function StaffAttendanceDetailsModal({
         !currentEntry.arrived.isEqual(previousEntry.departed)
       ) {
         return `${
-          previousEntry.departed?.toLocalTime().format('HH:mm') ?? ''
-        } – ${currentEntry.arrived.toLocalTime().format('HH:mm')}`
+          previousEntry.departed?.toLocalTime().format() ?? ''
+        } – ${currentEntry.arrived.toLocalTime().format()}`
       }
 
       return undefined
@@ -530,9 +530,7 @@ export default React.memo(function StaffAttendanceDetailsModal({
 })
 
 const formatDate = (time: HelsinkiDateTime, currentDate: LocalDate) =>
-  time.toLocalDate().isEqual(currentDate)
-    ? time.toLocalTime().format('HH:mm')
-    : '→'
+  time.toLocalDate().isEqual(currentDate) ? time.toLocalTime().format() : '→'
 
 interface ValidationError {
   arrived?: ErrorKey

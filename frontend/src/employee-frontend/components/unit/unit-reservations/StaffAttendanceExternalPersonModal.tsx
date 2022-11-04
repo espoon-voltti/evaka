@@ -47,7 +47,7 @@ type FormState = {
 
 const initialFormState = (groupId: UUID): FormState => ({
   date: LocalDate.todayInHelsinkiTz(),
-  arrivalTime: LocalTime.nowInHelsinkiTz().format('HH:mm'),
+  arrivalTime: LocalTime.nowInHelsinkiTz().format(),
   departureTime: '',
   name: '',
   groupId

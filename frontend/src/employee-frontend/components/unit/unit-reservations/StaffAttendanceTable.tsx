@@ -663,7 +663,7 @@ function renderTime(
 ): string {
   if (timestamp && !timestamp.toLocalDate().isEqual(today)) return '→'
   if (timestamp === null) return '–'
-  return timestamp.toLocalTime().format('HH:mm')
+  return timestamp.toLocalTime().format()
 }
 
 function computeModalAttendances(
