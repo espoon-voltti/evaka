@@ -3678,7 +3678,11 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     private fun getAllFeeDecisions(): List<FeeDecision> {
-        return db.read { tx -> tx.createQuery(feeDecisionQueryBase).mapTo<FeeDecision>().merge() }
+        return db.read { tx ->
+                tx.createQuery(feeDecisionQueryBase).mapTo<FeeDecision>().merge().map {
+                    it.copy(children = it.children.sortedByDescending { it.child.dateOfBirth })
+                }
+            }
             .shuffled() // randomize order to expose assumptions
     }
 }
