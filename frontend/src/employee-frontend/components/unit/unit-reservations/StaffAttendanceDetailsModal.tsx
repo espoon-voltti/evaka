@@ -493,6 +493,7 @@ export default React.memo(function StaffAttendanceDetailsModal({
                     icon={faTrash}
                     onClick={() => removeAttendance(index)}
                     aria-label={i18n.common.remove}
+                    data-qa="remove-attendance"
                   />
                 </InputRow>
               </Fragment>

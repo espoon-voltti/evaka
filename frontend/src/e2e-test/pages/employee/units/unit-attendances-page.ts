@@ -204,8 +204,12 @@ export class UnitStaffAttendancesTable extends Element {
     super(element)
   }
 
-  async allStaff(): Promise<string[]> {
+  get allNames(): Promise<string[]> {
     return this.findAllByDataQa('staff-attendance-name').allInnerTexts()
+  }
+
+  get rowCount(): Promise<number> {
+    return this.find('tbody').findAll('tr').count()
   }
 
   async assertPositiveOccupancyCoefficientCount(
@@ -518,6 +522,10 @@ export class StaffAttendanceDetailsModal extends Element {
     await new TextInput(
       this.findAllByDataQa('departure-time-input').nth(row)
     ).fill(time)
+  }
+
+  async removeAttendance(row: number) {
+    await this.findAllByDataQa('remove-attendance').nth(row).click()
   }
 
   async addNewAttendance() {

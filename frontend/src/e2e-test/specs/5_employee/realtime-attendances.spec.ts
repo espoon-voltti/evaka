@@ -173,7 +173,7 @@ describe('Realtime staff attendances', () => {
 
     test('The staff attendances table shows all unit staff', async () => {
       await waitUntilEqual(
-        () => staffAttendances.allStaff(),
+        () => staffAttendances.allNames,
         staff.map(staffName)
       )
     })
@@ -447,7 +447,7 @@ describe('Realtime staff attendances', () => {
       staffAttendances = attendancesSection.staffAttendances
     })
 
-    test('It is possible to add a new external staff member', async () => {
+    test('Can an add and modify an external', async () => {
       const addPersonModal = await attendancesSection.clickAddPersonButton()
       await addPersonModal.setArrivalDate(mockedToday.format())
       await addPersonModal.setArrivalTime('11:00')
@@ -460,6 +460,43 @@ describe('Realtime staff attendances', () => {
         name: 'Sijainen Saija',
         arrival: '11:00',
         departure: '–'
+      })
+
+      let modal = await staffAttendances.openDetails(1, mockedToday)
+      await modal.setDepartureTime(0, '13:00')
+      await modal.save()
+      await modal.close()
+
+      await waitUntilEqual(() => staffAttendances.rowCount, 2)
+      await staffAttendances.assertTableRow({
+        rowIx: 1,
+        name: 'Sijainen Saija',
+        arrival: '11:00',
+        departure: '13:00'
+      })
+
+      modal = await staffAttendances.openDetails(1, mockedToday)
+      await modal.removeAttendance(0)
+      await modal.save()
+      await modal.close()
+
+      await waitUntilEqual(() => staffAttendances.rowCount, 1)
+    })
+
+    test('Can an add new external with arrival and departure times', async () => {
+      const addPersonModal = await attendancesSection.clickAddPersonButton()
+      await addPersonModal.setArrivalDate(mockedToday.format())
+      await addPersonModal.setArrivalTime('11:00')
+      await addPersonModal.setDepartureTime('16:00')
+      await addPersonModal.typeName('Sijainen Saija')
+      await addPersonModal.selectGroup(groupId)
+      await addPersonModal.save()
+
+      await staffAttendances.assertTableRow({
+        rowIx: 1,
+        name: 'Sijainen Saija',
+        arrival: '11:00',
+        departure: '16:00'
       })
     })
 
