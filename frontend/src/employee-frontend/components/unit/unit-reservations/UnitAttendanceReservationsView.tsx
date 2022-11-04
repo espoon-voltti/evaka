@@ -133,7 +133,7 @@ export default React.memo(function UnitAttendanceReservationsView({
             unitId={unitId}
             operationalDays={childData.operationalDays}
             staffAttendances={staffData.staff}
-            extraAttendances={staffData.extraAttendances}
+            externalAttendances={staffData.extraAttendances}
             reloadStaffAttendances={reloadStaffAttendances}
             groups={groups}
             groupFilter={noFilter}
@@ -149,7 +149,7 @@ export default React.memo(function UnitAttendanceReservationsView({
                 staffAttendances={staffData.staff.filter((s) =>
                   s.groups.includes(selectedGroup.id)
                 )}
-                extraAttendances={staffData.extraAttendances.filter(
+                externalAttendances={staffData.extraAttendances.filter(
                   (ea) => ea.groupId === selectedGroup.id
                 )}
                 reloadStaffAttendances={reloadStaffAttendances}
