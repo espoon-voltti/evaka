@@ -163,7 +163,12 @@ class FinanceDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBefor
 
     private fun getAllFeeDecisions(): List<FeeDecision> {
         return db.read { tx ->
-                tx.createQuery(feeDecisionQueryBase).mapTo<FeeDecision>().let { it.merge() }
+                tx.createQuery(feeDecisionQueryBase)
+                    .mapTo<FeeDecision>()
+                    .let { it.merge() }
+                    .map {
+                        it.copy(children = it.children.sortedByDescending { it.child.dateOfBirth })
+                    }
             }
             .shuffled() // randomize order to expose assumptions
     }
