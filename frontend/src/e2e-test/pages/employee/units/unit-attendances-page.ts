@@ -233,51 +233,21 @@ export class UnitStaffAttendancesTable extends Element {
   #attendanceCell = (date: LocalDate, row: number) =>
     this.findByDataQa(`attendance-${date.formatIso()}-${row}`)
 
-  #getPlannedAttendanceStart(date: LocalDate, row: number): Promise<string> {
-    return this.#attendanceCell(date, row).findByDataQa(
-      'planned-attendance-start'
-    ).innerText
-  }
-
-  #getPlannedAttendanceEnd(date: LocalDate, row: number): Promise<string> {
-    return this.#attendanceCell(date, row).findByDataQa(
-      'planned-attendance-end'
-    ).innerText
-  }
-
-  async assertPlannedAttendance(
-    date: LocalDate,
-    row: number,
-    startTime: string,
-    endTime: string
-  ) {
-    await waitUntilEqual(
-      () => this.#getPlannedAttendanceStart(date, row),
-      startTime
-    )
-    await waitUntilEqual(
-      () => this.#getPlannedAttendanceEnd(date, row),
-      endTime
-    )
-  }
-
   async assertTableRow({
     rowIx = 0,
     name,
     nth = 0,
-    timeNth = 0,
-    arrival,
-    departure
+    plannedAttendances,
+    attendances
   }: {
     rowIx?: number
     name?: string
     nth?: number
     timeNth?: number
-    arrival?: string
-    departure?: string
+    plannedAttendances?: [string, string][]
+    attendances?: [string, string][]
   }): Promise<void> {
     const row = this.findByDataQa(`attendance-row-${rowIx}`)
-    const day = row.findAllByDataQa('attendance-day').nth(nth)
 
     if (name !== undefined) {
       await waitUntilEqual(
@@ -285,17 +255,41 @@ export class UnitStaffAttendancesTable extends Element {
         name
       )
     }
-    if (arrival !== undefined) {
-      await waitUntilEqual(
-        () => day.findAllByDataQa('arrival-time').nth(timeNth ?? 0).innerText,
-        arrival
-      )
+
+    if (plannedAttendances !== undefined) {
+      const plannedAttendanceDay = row
+        .findAllByDataQa('planned-attendance-day')
+        .nth(nth)
+      for (const [i, [arrival, departure]] of plannedAttendances.entries()) {
+        await waitUntilEqual(
+          () =>
+            plannedAttendanceDay
+              .findAllByDataQa('planned-attendance-start')
+              .nth(i).innerText,
+          arrival
+        )
+        await waitUntilEqual(
+          () =>
+            plannedAttendanceDay
+              .findAllByDataQa('planned-attendance-end')
+              .nth(i).innerText,
+          departure
+        )
+      }
     }
-    if (departure !== undefined) {
-      await waitUntilEqual(
-        () => day.findAllByDataQa('departure-time').nth(timeNth).innerText,
-        departure
-      )
+    if (attendances !== undefined) {
+      const attendanceDay = row.findAllByDataQa('attendance-day').nth(nth)
+      for (const [i, [arrival, departure]] of attendances.entries()) {
+        await waitUntilEqual(
+          () => attendanceDay.findAllByDataQa('arrival-time').nth(i).innerText,
+          arrival
+        )
+        await waitUntilEqual(
+          () =>
+            attendanceDay.findAllByDataQa('departure-time').nth(i).innerText,
+          departure
+        )
+      }
     }
   }
 
