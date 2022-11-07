@@ -215,7 +215,7 @@ fun Database.Transaction.upsertThreadParticipants(
     receiverIds: Set<MessageAccountId>,
     now: HelsinkiDateTime
 ) {
-    this.createUpdate(
+    createUpdate(
             """
         INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_sent_timestamp)
         VALUES (:threadId, :accountId, :now, :now)
@@ -228,7 +228,7 @@ fun Database.Transaction.upsertThreadParticipants(
         .execute()
 
     val batch =
-        this.prepareBatch(
+        prepareBatch(
             """
         INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_received_timestamp)
         VALUES (:threadId, :accountId, :now, :now)
@@ -239,6 +239,20 @@ fun Database.Transaction.upsertThreadParticipants(
         batch.bind("threadId", threadId).bind("accountId", it).bind("now", now).add()
     }
     batch.execute()
+
+    // If the receiver has archived the thread, move it back to inbox
+    createUpdate(
+            """
+        UPDATE message_thread_participant mtp
+        SET folder_id = NULL
+        WHERE thread_id = :threadId
+          AND participant_id = ANY(:receiverIds)
+          AND folder_id = (SELECT id FROM message_thread_folder mtf WHERE mtf.owner_id = mtp.participant_id AND mtf.name = 'ARCHIVE')
+    """
+        )
+        .bind("threadId", threadId)
+        .bind("receiverIds", receiverIds)
+        .execute()
 }
 
 fun Database.Transaction.insertThread(
