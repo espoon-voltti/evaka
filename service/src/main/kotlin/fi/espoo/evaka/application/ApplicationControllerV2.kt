@@ -208,7 +208,7 @@ class ApplicationControllerV2(
         Audit.ApplicationCreate.log(
             targetId = body.childId,
             objectId = applicationId,
-            mapOf("guardianId" to guardianId, "applicationType" to body.type)
+            args = mapOf("guardianId" to guardianId, "applicationType" to body.type)
         )
         return applicationId
     }

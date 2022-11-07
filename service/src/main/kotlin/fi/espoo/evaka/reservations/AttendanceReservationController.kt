@@ -153,12 +153,13 @@ class AttendanceReservationController(private val ac: AccessControl) {
             }
         Audit.AttendanceReservationEmployeeCreate.log(
             targetId = children,
-            mapOf(
-                "deletedAbsences" to result.deletedAbsences,
-                "deletedReservations" to result.deletedReservations,
-                "upsertedAbsences" to result.upsertedAbsences,
-                "upsertedReservations" to result.upsertedReservations
-            )
+            args =
+                mapOf(
+                    "deletedAbsences" to result.deletedAbsences,
+                    "deletedReservations" to result.deletedReservations,
+                    "upsertedAbsences" to result.upsertedAbsences,
+                    "upsertedReservations" to result.upsertedReservations
+                )
         )
     }
 }

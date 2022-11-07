@@ -373,7 +373,15 @@ enum class Audit(
 
     private val eventCode = name
 
-    fun log(targetId: Any? = null, objectId: Any? = null, args: Map<String, Any?> = emptyMap()) {
+    class UseNamedArguments private constructor()
+
+    fun log(
+        // This is a hack to force passing all real parameters by name
+        @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
+        targetId: Any? = null,
+        objectId: Any? = null,
+        args: Map<String, Any?> = emptyMap()
+    ) {
         logger.audit(
             args +
                 mapOf(

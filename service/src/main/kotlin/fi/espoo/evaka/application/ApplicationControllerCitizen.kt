@@ -207,7 +207,7 @@ class ApplicationControllerCitizen(
                 Audit.ApplicationCreate.log(
                     targetId = body.childId,
                     objectId = applicationId,
-                    mapOf("guardianId" to user.id, "applicationType" to body.type)
+                    args = mapOf("guardianId" to user.id, "applicationType" to body.type)
                 )
             }
     }

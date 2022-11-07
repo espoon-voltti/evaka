@@ -252,7 +252,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                 }
                 createIncomeStatement(dbc, childId, user.id, body)
             }
-        Audit.IncomeStatementCreateForChild.log(user.id, objectId = id)
+        Audit.IncomeStatementCreateForChild.log(targetId = user.id, objectId = id)
     }
 
     @PutMapping("/{incomeStatementId}")

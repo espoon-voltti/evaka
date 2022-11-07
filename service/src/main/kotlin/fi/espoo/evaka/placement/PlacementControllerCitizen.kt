@@ -150,6 +150,6 @@ class PlacementControllerCitizen(
                 )
             }
         }
-        Audit.PlacementTerminate.log(body.unitId, body.type)
+        Audit.PlacementTerminate.log(targetId = body.unitId, objectId = body.type)
     }
 }

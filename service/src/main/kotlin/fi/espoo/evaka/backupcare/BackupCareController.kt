@@ -274,7 +274,8 @@ class BackupCareController(private val accessControl: AccessControl) {
             }
         Audit.DaycareBackupCareRead.log(
             targetId = daycareId,
-            mapOf("startDate" to startDate, "endDate" to endDate, "count" to backupCares.size)
+            args =
+                mapOf("startDate" to startDate, "endDate" to endDate, "count" to backupCares.size)
         )
         return UnitBackupCaresResponse(backupCares)
     }

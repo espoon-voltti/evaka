@@ -91,7 +91,7 @@ class AttachmentsController(
                 Audit.AttachmentsUploadForApplication.log(
                     targetId = applicationId,
                     objectId = attachmentId,
-                    mapOf("type" to type.name, "size" to file.size)
+                    args = mapOf("type" to type.name, "size" to file.size)
                 )
             }
     }
@@ -129,7 +129,7 @@ class AttachmentsController(
                 Audit.AttachmentsUploadForIncomeStatement.log(
                     targetId = incomeStatementId,
                     objectId = attachmentId,
-                    mapOf("size" to file.size)
+                    args = mapOf("size" to file.size)
                 )
             }
     }
@@ -167,7 +167,7 @@ class AttachmentsController(
                 Audit.AttachmentsUploadForIncome.log(
                     targetId = incomeId,
                     objectId = attachmentId,
-                    mapOf("size" to file.size)
+                    args = mapOf("size" to file.size)
                 )
             }
     }
@@ -202,7 +202,7 @@ class AttachmentsController(
                 Audit.AttachmentsUploadForMessageDraft.log(
                     targetId = draftId,
                     objectId = attachmentId,
-                    mapOf("size" to file.size)
+                    args = mapOf("size" to file.size)
                 )
             }
     }
@@ -245,7 +245,7 @@ class AttachmentsController(
                 Audit.AttachmentsUploadForPedagogicalDocument.log(
                     targetId = documentId,
                     objectId = attachmentId,
-                    mapOf("size" to file.size)
+                    args = mapOf("size" to file.size)
                 )
             }
     }
@@ -291,7 +291,7 @@ class AttachmentsController(
                 Audit.AttachmentsUploadForApplication.log(
                     targetId = applicationId,
                     objectId = attachmentId,
-                    mapOf("type" to type.name, "size" to file.size)
+                    args = mapOf("type" to type.name, "size" to file.size)
                 )
             }
     }
@@ -331,7 +331,7 @@ class AttachmentsController(
                 Audit.AttachmentsUploadForIncomeStatement.log(
                     targetId = incomeStatementId,
                     objectId = attachmentId,
-                    mapOf("size" to file.size)
+                    args = mapOf("size" to file.size)
                 )
             }
     }

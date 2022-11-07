@@ -57,7 +57,10 @@ class AbsenceController(private val accessControl: AccessControl) {
                 }
             }
             .also {
-                Audit.AbsenceRead.log(targetId = groupId, mapOf("year" to year, "month" to month))
+                Audit.AbsenceRead.log(
+                    targetId = groupId,
+                    args = mapOf("year" to year, "month" to month)
+                )
             }
     }
 
@@ -94,7 +97,7 @@ class AbsenceController(private val accessControl: AccessControl) {
         Audit.AbsenceUpsert.log(
             targetId = groupId,
             objectId = upserted,
-            mapOf("children" to children)
+            args = mapOf("children" to children)
         )
     }
 
@@ -130,7 +133,7 @@ class AbsenceController(private val accessControl: AccessControl) {
         Audit.AbsenceDelete.log(
             targetId = groupId,
             objectId = deleted,
-            mapOf("children" to children)
+            args = mapOf("children" to children)
         )
     }
 
@@ -157,7 +160,11 @@ class AbsenceController(private val accessControl: AccessControl) {
                     it.deleteChildAbsences(childId, body.date)
                 }
             }
-        Audit.AbsenceDelete.log(targetId = childId, objectId = deleted, mapOf("date" to body.date))
+        Audit.AbsenceDelete.log(
+            targetId = childId,
+            objectId = deleted,
+            args = mapOf("date" to body.date)
+        )
     }
 
     @GetMapping("/by-child/{childId}")
@@ -182,7 +189,10 @@ class AbsenceController(private val accessControl: AccessControl) {
                 }
             }
             .also {
-                Audit.AbsenceRead.log(targetId = childId, mapOf("year" to year, "month" to month))
+                Audit.AbsenceRead.log(
+                    targetId = childId,
+                    args = mapOf("year" to year, "month" to month)
+                )
             }
     }
 

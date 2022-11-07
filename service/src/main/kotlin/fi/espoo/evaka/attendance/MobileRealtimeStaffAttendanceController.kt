@@ -273,7 +273,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 )
             }
         }
-        Audit.StaffAttendanceDepartureExternalCreate.log(body.attendanceId)
+        Audit.StaffAttendanceDepartureExternalCreate.log(targetId = body.attendanceId)
     }
 
     fun createAttendancesFromArrival(

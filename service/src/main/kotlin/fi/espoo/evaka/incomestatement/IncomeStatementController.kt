@@ -206,7 +206,10 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                 }
             }
             .also {
-                Audit.GuardianChildrenRead.log(targetId = guardianId, mapOf("count" to it.size))
+                Audit.GuardianChildrenRead.log(
+                    targetId = guardianId,
+                    args = mapOf("count" to it.size)
+                )
             }
     }
 }
