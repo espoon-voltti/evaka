@@ -164,7 +164,27 @@ class RealtimeStaffAttendanceQueriesTest : PureJdbiTest(resetDbBeforeEach = true
             val staffAttendances = tx.getRealtimeStaffAttendances()
             assertEquals(2, staffAttendances.size)
             assertEquals(
-                now.minusDays(1).withTime(LocalTime.of(18, 0)),
+                now.minusDays(1).withTime(LocalTime.of(20, 0)),
+                staffAttendances.first { it.employeeId == employee1Id }.departed
+            )
+            assertEquals(null, staffAttendances.first { it.employeeId == employee2Id }.departed)
+        }
+    }
+
+    @Test
+    fun `addMissingStaffAttendanceDeparture adds departures for yesterday's arrivals without a plan also when arrival is after the cutoff at 8 PM`() {
+        val now = HelsinkiDateTime.now().atStartOfDay().plusHours(8)
+        val arrival = HelsinkiDateTime.now().minusDays(1).withTime(LocalTime.of(20, 30))
+        db.transaction { tx ->
+            tx.markStaffArrival(employee1Id, group1.id, arrival, BigDecimal(7.0))
+            tx.markStaffArrival(employee2Id, group1.id, now, BigDecimal(0))
+
+            tx.addMissingStaffAttendanceDepartures(now)
+
+            val staffAttendances = tx.getRealtimeStaffAttendances()
+            assertEquals(2, staffAttendances.size)
+            assertEquals(
+                now.withTime(LocalTime.of(0, 0)),
                 staffAttendances.first { it.employeeId == employee1Id }.departed
             )
             assertEquals(null, staffAttendances.first { it.employeeId == employee2Id }.departed)
