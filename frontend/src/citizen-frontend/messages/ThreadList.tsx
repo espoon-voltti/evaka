@@ -124,9 +124,8 @@ export default React.memo(function ThreadList({
             <SolidLine />
             <ThreadListContainer>
               <Gap size="s" />
-              <span style={{ color: `${colors.grayscale.g70}` }}>
-                {t.messages.noMessagesInfo}
-              </span>
+              <NoMessagesInfo>{t.messages.noMessagesInfo}</NoMessagesInfo>
+              <Gap size="XXL" />
             </ThreadListContainer>
           </>
         )}
@@ -171,6 +170,10 @@ const SolidLine = styled.hr`
   width: 100%;
   border: 1px solid ${colors.grayscale.g15};
   border-top-width: 0px;
+`
+
+const NoMessagesInfo = styled.div`
+  color: ${colors.grayscale.g70};
 `
 
 const Container = styled.div`
