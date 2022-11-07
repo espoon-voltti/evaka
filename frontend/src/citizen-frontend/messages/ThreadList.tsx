@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback, useContext, useEffect } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -24,6 +24,7 @@ import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
 import { mobileBottomNavHeight } from '../navigation/const'
 
+import { ConfirmDeleteThread } from './MessageComponents'
 import ThreadListItem from './ThreadListItem'
 import { MessageContext } from './state'
 
@@ -53,6 +54,7 @@ export default React.memo(function ThreadList({
     refreshThreads,
     refreshUnreadMessagesCount
   } = useContext(MessageContext)
+  const [confirmDelete, setConfirmDelete] = useState<UUID>()
 
   useEffect(() => {
     setSelectedThread(params.threadId)
@@ -136,7 +138,7 @@ export default React.memo(function ThreadList({
               <ThreadListItem
                 thread={thread}
                 onClick={() => selectThread(thread.id)}
-                onDeleted={refreshEverything}
+                onDelete={() => setConfirmDelete(thread.id)}
                 active={selectedThread?.id === thread.id}
                 hasUnreadMessages={hasUnreadMessages(thread, accountId)}
               />
@@ -146,6 +148,16 @@ export default React.memo(function ThreadList({
         {renderResult(threadLoadingResult, () => (
           <OnEnterView onEnter={loadMoreThreads} />
         ))}
+        {confirmDelete !== undefined ? (
+          <ConfirmDeleteThread
+            threadId={confirmDelete}
+            onClose={() => setConfirmDelete(undefined)}
+            onSuccess={() => {
+              setConfirmDelete(undefined)
+              refreshEverything()
+            }}
+          />
+        ) : null}
       </Container>
     </>
   )
@@ -163,13 +175,13 @@ const MobileOnly = styled.div`
 const DottedLine = styled.hr`
   width: 100%;
   border: 1px dashed ${colors.grayscale.g35};
-  border-top-width: 0px;
+  border-top-width: 0;
 `
 
 const SolidLine = styled.hr`
   width: 100%;
   border: 1px solid ${colors.grayscale.g15};
-  border-top-width: 0px;
+  border-top-width: 0;
 `
 
 const NoMessagesInfo = styled.div`

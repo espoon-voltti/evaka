@@ -23,7 +23,6 @@ import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Linkify from 'lib-components/atoms/Linkify'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { desktopMin } from 'lib-components/breakpoints'
 import {
@@ -45,8 +44,7 @@ import { getAttachmentUrl } from '../attachments'
 import { useTranslation } from '../localization'
 
 import { MessageCharacteristics } from './MessageCharacteristics'
-import { MessageContainer } from './MessageComponents'
-import { archiveThread } from './api'
+import { ConfirmDeleteThread, MessageContainer } from './MessageComponents'
 import { MessageContext } from './state'
 
 const TitleRow = styled.div`
@@ -95,15 +93,6 @@ const ActionRow = styled(FixedSpaceRow)`
 
 const ReplyToThreadButton = styled(InlineButton)`
   align-self: flex-start;
-`
-
-const DeleteThreadButton = styled(AsyncButton)`
-  align-self: flex-end;
-  padding: 0;
-  min-width: 0;
-  min-height: 0;
-  border: none;
-  background-color: transparent;
 `
 
 const SingleMessage = React.memo(function SingleMessage({
@@ -171,8 +160,9 @@ export default React.memo(function ThreadView({
     useContext(MessageContext)
 
   const { onToggleRecipient, recipients } = useRecipients(messages, accountId)
-  const [replyEditorVisible, setReplyEditorVisible] = useState<boolean>(false)
-  const [stickyTitleRowHeight, setStickyTitleRowHeight] = useState<number>(0)
+  const [replyEditorVisible, setReplyEditorVisible] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [stickyTitleRowHeight, setStickyTitleRowHeight] = useState(0)
   const stickyTitleRowRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -285,13 +275,12 @@ export default React.memo(function ThreadView({
                 ref={autoFocusRef}
               />
               <MobileOnly>
-                <DeleteThreadButton
+                <InlineButton
                   icon={faTrash}
                   aria-label={i18n.common.delete}
                   data-qa="delete-thread-btn"
                   className="delete-btn"
-                  onClick={() => archiveThread(threadId)}
-                  onSuccess={onThreadDeleted}
+                  onClick={() => setConfirmDelete(true)}
                   text={i18n.messages.deleteThread}
                 />
               </MobileOnly>
@@ -300,6 +289,16 @@ export default React.memo(function ThreadView({
           </>
         ))}
       {replyEditorVisible && <span ref={autoScrollRef} />}
+      {confirmDelete && (
+        <ConfirmDeleteThread
+          threadId={threadId}
+          onClose={() => setConfirmDelete(false)}
+          onSuccess={() => {
+            setConfirmDelete(false)
+            onThreadDeleted()
+          }}
+        />
+      )}
     </ThreadContainer>
   )
 })

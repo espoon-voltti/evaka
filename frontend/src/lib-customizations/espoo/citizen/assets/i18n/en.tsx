@@ -367,6 +367,12 @@ const en: Translations = {
       search: 'Search',
       noResults: 'No results',
       messageSendError: 'Failed to send the message'
+    },
+    confirmDelete: {
+      title: 'Do you really want to delete the message thread?',
+      text: 'The messages cannot be recovered after deleting.',
+      cancel: 'Do not delete',
+      confirm: 'Delete thread'
     }
   },
   applications: {

@@ -96,6 +96,10 @@ export default class CitizenMessagesPage {
     await this.#threadListItem.findByDataQa('delete-thread-btn').click()
   }
 
+  async confirmThreadDeletion() {
+    await this.page.findByDataQa('modal').findByDataQa('modal-okBtn').click()
+  }
+
   async clickNewMessage() {
     await this.#newMessageButton.click()
     await waitUntilTrue(() => this.isEditorVisible())

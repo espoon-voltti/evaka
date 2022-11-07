@@ -447,6 +447,7 @@ describe('Sending and receiving messages', () => {
           const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
           await citizenMessagesPage.assertThreadContent(defaultMessage)
           await citizenMessagesPage.deleteFirstThread()
+          await citizenMessagesPage.confirmThreadDeletion()
           await citizenMessagesPage.assertInboxIsEmpty()
         })
       })
