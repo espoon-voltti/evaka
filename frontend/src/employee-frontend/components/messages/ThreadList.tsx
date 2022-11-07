@@ -10,7 +10,7 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 import AsyncIconButton from 'lib-components/atoms/buttons/AsyncIconButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { faTrash } from 'lib-icons'
+import { faBoxArchive } from 'lib-icons'
 
 import { useTranslation } from '../../state/i18n'
 import { renderResult } from '../async-rendering'
@@ -45,10 +45,10 @@ export type ThreadListItem = {
 interface Props {
   items: Result<ThreadListItem[]>
   accountId: UUID
-  onArchived?: () => void
+  onArchive?: () => void
 }
 
-export function ThreadList({ items: messages, accountId, onArchived }: Props) {
+export function ThreadList({ items: messages, accountId, onArchive }: Props) {
   const { i18n } = useTranslation()
 
   return renderResult(messages, (threads) => (
@@ -76,14 +76,14 @@ export function ThreadList({ items: messages, accountId, onArchived }: Props) {
             </Truncated>
           </ParticipantsAndPreview>
           <FixedSpaceRow>
-            {onArchived && (
+            {onArchive && (
               <AsyncIconButton
-                icon={faTrash}
+                icon={faBoxArchive}
                 aria-label={i18n.common.archive}
                 data-qa="delete-thread-btn"
                 className="delete-btn"
                 onClick={() => archiveThread(accountId, item.id)}
-                onSuccess={onArchived}
+                onSuccess={onArchive}
                 stopPropagation
               />
             )}

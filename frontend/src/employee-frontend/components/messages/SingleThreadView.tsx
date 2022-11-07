@@ -24,9 +24,13 @@ import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Linkify from 'lib-components/atoms/Linkify'
+import AsyncInlineButton from 'lib-components/atoms/buttons/AsyncInlineButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { ContentArea } from 'lib-components/layout/Container'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import {
+  FixedSpaceColumn,
+  FixedSpaceRow
+} from 'lib-components/layout/flex-helpers'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
 import { Bold, H2, InformationText } from 'lib-components/typography'
@@ -34,12 +38,14 @@ import { useRecipients } from 'lib-components/utils/useReplyRecipients'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faAngleLeft } from 'lib-icons'
+import { faBoxArchive } from 'lib-icons'
 
 import { getAttachmentUrl } from '../../api/attachments'
 import { useTranslation } from '../../state/i18n'
 
 import { MessageCharacteristics } from './MessageCharacteristics'
 import { MessageContext } from './MessageContext'
+import { archiveThread } from './api'
 import { View } from './types-view'
 
 const MessageContainer = styled.div`
@@ -143,9 +149,6 @@ const ScrollContainer = styled.div`
   overflow-y: auto;
 `
 
-const ReplyToThreadButton = styled(InlineButton)`
-  padding-left: 28px;
-`
 const AutoScrollPositionSpan = styled.span<{ top: string }>`
   position: absolute;
   top: ${(p) => p.top};
@@ -156,13 +159,15 @@ interface Props {
   goBack: () => void
   thread: MessageThread
   view: View
+  onArchived?: () => void
 }
 
 export function SingleThreadView({
   accountId,
   goBack,
   thread: { id: threadId, messages, title, type, urgent, children },
-  view
+  view,
+  onArchived
 }: Props) {
   const { i18n } = useTranslation()
   const { getReplyContent, sendReply, replyState, setReplyContent } =
@@ -267,12 +272,26 @@ export function SingleThreadView({
           ) : (
             <>
               <Gap size="s" />
-              <ReplyToThreadButton
-                icon={faReply}
-                onClick={() => setReplyEditorVisible(true)}
-                data-qa="message-reply-editor-btn"
-                text={i18n.messages.replyToThread}
-              />
+              <ActionRow justifyContent="space-between">
+                <InlineButton
+                  icon={faReply}
+                  onClick={() => setReplyEditorVisible(true)}
+                  data-qa="message-reply-editor-btn"
+                  text={i18n.messages.replyToThread}
+                />
+                {onArchived && (
+                  <AsyncInlineButton
+                    icon={faBoxArchive}
+                    aria-label={i18n.common.archive}
+                    data-qa="delete-thread-btn"
+                    className="delete-btn"
+                    onClick={() => archiveThread(accountId, threadId)}
+                    onSuccess={onArchived}
+                    text={i18n.messages.archiveThread}
+                    stopPropagation
+                  />
+                )}
+              </ActionRow>
               <Gap size="m" />
             </>
           ))}
@@ -281,3 +300,7 @@ export function SingleThreadView({
     </ThreadContainer>
   )
 }
+
+const ActionRow = styled(FixedSpaceRow)`
+  padding: 0 28px 0 28px;
+`
