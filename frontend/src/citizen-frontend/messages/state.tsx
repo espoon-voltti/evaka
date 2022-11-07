@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import uniqBy from 'lodash/uniqBy'
 import React, {
   createContext,
   useCallback,
@@ -118,7 +119,10 @@ export const MessageContextProvider = React.memo(
             }),
             success: ({ data, pages }) => ({
               ...state,
-              threads: [...state.threads, ...data],
+              threads: uniqBy(
+                [...state.threads, ...data],
+                (thread) => thread.id
+              ),
               loadingResult: Success.of(undefined),
               pages
             })
