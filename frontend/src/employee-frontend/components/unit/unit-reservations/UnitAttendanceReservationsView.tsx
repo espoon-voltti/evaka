@@ -100,7 +100,8 @@ export default React.memo(function UnitAttendanceReservationsView({
   }, [i18n])
 
   const groupFilter = useCallback(
-    (id) => selectedGroup.type === 'group' && selectedGroup.id === id,
+    (ids: UUID[]) =>
+      selectedGroup.type === 'group' && ids.includes(selectedGroup.id),
     [selectedGroup]
   )
   const noFilter = useCallback(() => true, [])
@@ -133,7 +134,7 @@ export default React.memo(function UnitAttendanceReservationsView({
             unitId={unitId}
             operationalDays={childData.operationalDays}
             staffAttendances={staffData.staff}
-            extraAttendances={staffData.extraAttendances}
+            externalAttendances={staffData.extraAttendances}
             reloadStaffAttendances={reloadStaffAttendances}
             groups={groups}
             groupFilter={noFilter}
@@ -146,12 +147,8 @@ export default React.memo(function UnitAttendanceReservationsView({
               <StaffAttendanceTable
                 unitId={unitId}
                 operationalDays={childData.operationalDays}
-                staffAttendances={staffData.staff.filter((s) =>
-                  s.groups.includes(selectedGroup.id)
-                )}
-                extraAttendances={staffData.extraAttendances.filter(
-                  (ea) => ea.groupId === selectedGroup.id
-                )}
+                staffAttendances={staffData.staff}
+                externalAttendances={staffData.extraAttendances}
                 reloadStaffAttendances={reloadStaffAttendances}
                 groups={groups}
                 groupFilter={groupFilter}

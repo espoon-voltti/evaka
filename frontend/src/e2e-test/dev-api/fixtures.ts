@@ -1679,7 +1679,7 @@ export class Fixture {
       groupId: 'not set',
       arrived: HelsinkiDateTime.now(),
       departed: null,
-      occupancyCoefficient: 0,
+      occupancyCoefficient: 7,
       type: 'PRESENT'
     })
   }
