@@ -947,7 +947,7 @@ fun Database.Read.getMessageAccountsForRecipients(
     accountId: MessageAccountId,
     recipients: Set<MessageRecipient>,
     date: LocalDate
-): Map<MessageAccountId, ChildId> {
+): Map<MessageAccountId, Set<ChildId>> {
     data class MessageAccountIdToChildId(val accountId: MessageAccountId, val childId: ChildId)
     val groupedRecipients = recipients.groupBy { it.type }
     return this.createQuery(
@@ -1029,7 +1029,10 @@ WHERE NOT EXISTS (
             groupedRecipients[MessageRecipientType.CHILD]?.map { it.id } ?: listOf()
         )
         .mapTo<MessageAccountIdToChildId>()
-        .associate { it.accountId to it.childId }
+        .fold(mutableMapOf()) { acc, row ->
+            acc.merge(row.accountId, setOf(row.childId)) { a, b -> a + b }
+            acc
+        }
 }
 
 fun Database.Transaction.markNotificationAsSent(
