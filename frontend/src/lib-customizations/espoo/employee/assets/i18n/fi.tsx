@@ -39,7 +39,7 @@ export const fi = {
     employeePinCode: 'PIN-koodin hallinta',
     preferredFirstName: 'Kutsumanimen hallinta',
     welcomePage: 'Tervetuloa eVakaan',
-    vasuPage: 'Vasu 2021',
+    vasuPage: 'Vasu',
     vasuTemplates: 'Vasu-pohjat',
     assistanceNeedDecision: 'Päätös tuesta varhaiskasvatuksessa'
   },
