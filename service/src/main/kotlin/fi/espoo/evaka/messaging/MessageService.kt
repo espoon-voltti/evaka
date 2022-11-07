@@ -29,7 +29,7 @@ class MessageService(private val notificationEmailService: MessageNotificationEm
         recipientNames: List<String>,
         attachmentIds: Set<AttachmentId> = setOf(),
         staffCopyRecipients: Set<MessageAccountId>,
-        accountIdsToChildIds: Map<MessageAccountId, ChildId>,
+        accountIdsToChildIds: Map<MessageAccountId, Set<ChildId>>,
         municipalAccountName: String
     ) =
         // for each recipient group, create a thread, message and message_recipients while re-using
@@ -41,7 +41,7 @@ class MessageService(private val notificationEmailService: MessageNotificationEm
                 recipientGroups.map { recipientIds ->
                     val threadId = tx.insertThread(type, title, urgent, isCopy = false)
                     val childIds =
-                        recipientIds.mapNotNull { accId -> accountIdsToChildIds[accId] }.toSet()
+                        recipientIds.flatMap { accountIdsToChildIds[it] ?: emptyList() }.toSet()
                     tx.insertMessageThreadChildren(childIds, threadId)
                     tx.upsertThreadParticipants(threadId, sender, recipientIds, now)
                     val messageId =
