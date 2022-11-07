@@ -102,14 +102,8 @@ export default React.memo(function StaffMarkArrivedPage() {
     [groupId, staffMember, unitInfoResponse]
   )
 
-  const isValidTimeString = (time: string) => {
-    try {
-      LocalTime.parse(time, 'HH:mm')
-      return true
-    } catch (e) {
-      return false
-    }
-  }
+  const isValidTimeString = (time: string) =>
+    LocalTime.tryParse(time, 'HH:mm') ? true : false
 
   useEffect(() => {
     if (

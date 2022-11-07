@@ -250,7 +250,9 @@ export const fi = {
         'Sinulla on tulevaisuuteen merkittu läsnäolo, joten et voi kirjautua läsnäolevaksi.'
     },
     timeDiffTooBigNotification:
-      'Voit tehdä sisäänkirjauksen +/- 30 min päähän nykyhetkestä. Kirjauksia voi tarvittaessa muokata työpöytäselaimen kautta.'
+      'Voit tehdä sisäänkirjauksen +/- 30 min päähän nykyhetkestä. Kirjauksia voi tarvittaessa muokata työpöytäselaimen kautta.',
+    departureCannotBeDoneInFuture:
+      'Työvuoron uloskirjausta ei voi merkitä ennakkoon.'
   },
   childInfo: {
     header: 'Lapsen tiedot',

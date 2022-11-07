@@ -341,7 +341,6 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                 StaffAttendanceType.TRAINING,
                 StaffAttendanceType.OTHER_WORK,
                 null -> {
-                    // TODO en ymmärrä mikä tän tarkoitus on
                     if (ongoingAttendance != null && ongoingAttendance.type != arrival.type) {
                         throw BadRequest(
                             "Arrival type ${arrival.type} does not match ongoing attendance type ${ongoingAttendance.type}"
