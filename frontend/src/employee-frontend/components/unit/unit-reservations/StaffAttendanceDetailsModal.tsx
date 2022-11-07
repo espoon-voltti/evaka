@@ -75,10 +75,11 @@ interface Props {
   attendances: ModalAttendance[]
   plannedAttendances: ModalPlannedAttendance[]
   isExternal: boolean
+  groups: DaycareGroup[]
+  defaultGroupId: UUID | null
   onSave: (body: StaffAttendanceUpsert[]) => void
   onSuccess: () => void
   onClose: () => void
-  groups: DaycareGroup[]
   onPreviousDate: () => Promise<Result<unknown>>
   onNextDate: () => Promise<Result<unknown>>
 }
@@ -97,10 +98,11 @@ export default React.memo(function StaffAttendanceDetailsModal({
   attendances,
   plannedAttendances,
   isExternal,
+  groups,
+  defaultGroupId,
   onSave,
   onSuccess,
   onClose,
-  groups,
   onPreviousDate,
   onNextDate
 }: Props) {
@@ -180,14 +182,14 @@ export default React.memo(function StaffAttendanceDetailsModal({
           ...editState,
           {
             id: null,
-            groupId: null,
+            groupId: defaultGroupId,
             arrived: '',
             departed: '',
             type: 'PRESENT'
           }
         ]
       })),
-    []
+    [defaultGroupId]
   )
   const [requestBody, errors] = validateEditState(attendances, date, editState)
   const save = useCallback(() => {

@@ -332,6 +332,8 @@ export default React.memo(function StaffAttendanceTable({
           attendances={modalData.attendances}
           plannedAttendances={modalData.plannedAttendances}
           isExternal={detailsModalConfig.target.type === 'external'}
+          groups={groups}
+          defaultGroupId={defaultGroup}
           onSave={handleModalSave}
           onClose={closeDetailsModal}
           onSuccess={() => {
@@ -349,7 +351,6 @@ export default React.memo(function StaffAttendanceTable({
               )
             }
           }}
-          groups={groups}
           onPreviousDate={() =>
             changeDate(
               getNearestPreviousDay,
