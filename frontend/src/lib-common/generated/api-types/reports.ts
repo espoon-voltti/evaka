@@ -80,16 +80,18 @@ export interface AssistanceNeedsAndActionsReportRow {
 * Generated from fi.espoo.evaka.reports.AttendanceReservationReportByChildRow
 */
 export interface AttendanceReservationReportByChildRow {
+  absenceId: UUID | null
+  absenceType: AbsenceType | null
   childFirstName: string
   childId: UUID
   childLastName: string
+  date: LocalDate
   groupId: UUID | null
   groupName: string | null
   isBackupCare: boolean
-  reservationDate: LocalDate
-  reservationEndTime: LocalTime
-  reservationId: UUID
-  reservationStartTime: LocalTime
+  reservationEndTime: LocalTime | null
+  reservationId: UUID | null
+  reservationStartTime: LocalTime | null
 }
 
 /**

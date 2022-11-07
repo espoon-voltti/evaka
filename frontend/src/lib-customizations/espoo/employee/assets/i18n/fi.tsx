@@ -2924,6 +2924,7 @@ export const fi = {
         start: 'Tuloaika',
         end: 'Lähtöaika'
       },
+      absenceType: 'Poissaolo',
       reservationStartTime: 'Tulo',
       reservationEndTime: 'Lähtö'
     },

@@ -7,12 +7,15 @@ package fi.espoo.evaka.reports
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.children.Group
+import fi.espoo.evaka.daycare.service.AbsenceCategory
+import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevReservation
+import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
@@ -83,7 +86,7 @@ internal class AttendanceReservationReportByChildTest :
 
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get())
-            .extracting({ it.childId }, { it.reservationDate })
+            .extracting({ it.childId }, { it.date })
             .containsExactlyInAnyOrder(
                 Tuple(testChild_1.id, LocalDate.of(2022, 9, 1)), // Thu
                 Tuple(testChild_1.id, LocalDate.of(2022, 9, 2)), // Fri
@@ -124,7 +127,7 @@ internal class AttendanceReservationReportByChildTest :
 
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get())
-            .extracting({ it.childId }, { it.reservationDate })
+            .extracting({ it.childId }, { it.date })
             .containsExactlyInAnyOrder(Tuple(testChild_1.id, LocalDate.of(2022, 9, 2)))
     }
 
@@ -253,7 +256,7 @@ internal class AttendanceReservationReportByChildTest :
 
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get())
-            .extracting({ it.childId }, { it.reservationDate }, { it.isBackupCare })
+            .extracting({ it.childId }, { it.date }, { it.isBackupCare })
             .containsExactlyInAnyOrder(
                 Tuple(testChild_1.id, date, true),
                 Tuple(testChild_2.id, date, false)
@@ -304,7 +307,7 @@ internal class AttendanceReservationReportByChildTest :
 
         assertThat(res.statusCode).isEqualTo(200)
         assertThat(result.get())
-            .extracting({ it.childLastName }, { it.childFirstName }, { it.reservationDate })
+            .extracting({ it.childLastName }, { it.childFirstName }, { it.date })
             .containsExactlyInAnyOrder(
                 Tuple(testChild_1.lastName, testChild_1.firstName, date),
                 Tuple(testChild_2.lastName, testChild_2.firstName, date),
@@ -523,5 +526,77 @@ internal class AttendanceReservationReportByChildTest :
         assertThat(result.get())
             .extracting({ it.groupId }, { it.childId })
             .containsExactlyInAnyOrder(Tuple(null, testChild_1.id))
+    }
+
+    @Test
+    fun `absences are supported`() {
+        val startDate = LocalDate.of(2022, 10, 24)
+        val endDate = LocalDate.of(2022, 10, 28)
+        db.transaction { tx ->
+            tx.insertTestPlacement(
+                childId = testChild_1.id,
+                unitId = testDaycare.id,
+                startDate = startDate,
+                endDate = endDate
+            )
+            FiniteDateRange(startDate, endDate).dates().forEach { date ->
+                tx.insertTestReservation(
+                    DevReservation(
+                        childId = testChild_1.id,
+                        date = date,
+                        startTime = LocalTime.of(8, 15),
+                        endTime = LocalTime.of(15, 48),
+                        createdBy = admin.evakaUserId
+                    )
+                )
+            }
+            tx.insertTestAbsence(
+                childId = testChild_1.id,
+                date = LocalDate.of(2022, 10, 27),
+                category = AbsenceCategory.BILLABLE,
+                absenceType = AbsenceType.SICKLEAVE
+            )
+            tx.insertTestAbsence(
+                childId = testChild_1.id,
+                date = LocalDate.of(2022, 10, 28),
+                category = AbsenceCategory.BILLABLE,
+                absenceType = AbsenceType.PARENTLEAVE
+            )
+        }
+
+        val (_, res, result) =
+            http
+                .get(
+                    "/reports/attendance-reservation/${testDaycare.id}/by-child",
+                    listOf("start" to startDate.format(ISO_DATE), "end" to endDate.format(ISO_DATE))
+                )
+                .asUser(admin)
+                .responseObject<List<AttendanceReservationReportByChildRow>>(jsonMapper)
+
+        assertThat(res.statusCode).isEqualTo(200)
+        assertThat(result.get())
+            .extracting(
+                { it.childId },
+                { it.date },
+                { it.reservationStartTime },
+                { it.absenceType }
+            )
+            .containsExactlyInAnyOrder(
+                Tuple(testChild_1.id, LocalDate.of(2022, 10, 24), LocalTime.of(8, 15), null),
+                Tuple(testChild_1.id, LocalDate.of(2022, 10, 25), LocalTime.of(8, 15), null),
+                Tuple(testChild_1.id, LocalDate.of(2022, 10, 26), LocalTime.of(8, 15), null),
+                Tuple(
+                    testChild_1.id,
+                    LocalDate.of(2022, 10, 27),
+                    LocalTime.of(8, 15),
+                    AbsenceType.SICKLEAVE
+                ),
+                Tuple(
+                    testChild_1.id,
+                    LocalDate.of(2022, 10, 28),
+                    LocalTime.of(8, 15),
+                    AbsenceType.PARENTLEAVE
+                )
+            )
     }
 }
