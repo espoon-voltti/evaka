@@ -30,7 +30,6 @@ import {
   FixedSpaceFlexWrap,
   FixedSpaceRow
 } from 'lib-components/layout/flex-helpers'
-import { MobileOnly } from 'lib-components/layout/responsive-layout'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
 import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
@@ -274,16 +273,14 @@ export default React.memo(function ThreadView({
                 text={i18n.messages.replyToThread}
                 ref={autoFocusRef}
               />
-              <MobileOnly>
-                <InlineButton
-                  icon={faTrash}
-                  aria-label={i18n.common.delete}
-                  data-qa="delete-thread-btn"
-                  className="delete-btn"
-                  onClick={() => setConfirmDelete(true)}
-                  text={i18n.messages.deleteThread}
-                />
-              </MobileOnly>
+              <InlineButton
+                icon={faTrash}
+                aria-label={i18n.common.delete}
+                data-qa="delete-thread-btn"
+                className="delete-btn"
+                onClick={() => setConfirmDelete(true)}
+                text={i18n.messages.deleteThread}
+              />
             </ActionRow>
             <Gap size="m" />
           </>
