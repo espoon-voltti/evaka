@@ -66,6 +66,6 @@ export function isValidTime(time: string): boolean {
 
 export function formatDateOrTime(timestamp: HelsinkiDateTime): string {
   return timestamp.toLocalDate().isToday()
-    ? timestamp.toLocalTime().format('HH:mm')
+    ? timestamp.toLocalTime().format()
     : timestamp.toLocalDate().format('dd.MM.')
 }

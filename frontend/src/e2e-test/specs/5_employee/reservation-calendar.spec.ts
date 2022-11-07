@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
@@ -122,38 +124,42 @@ const loadUnitAttendancesSection =
 
 describe('Unit group calendar', () => {
   test('Employee sees row for child', async () => {
-    attendancesSection = await loadUnitAttendancesSection()
+    const childReservations = (await loadUnitAttendancesSection())
+      .childReservations
     await calendarPage.selectMode('week')
     await waitUntilEqual(
-      () => attendancesSection.childRowCount(child1Fixture.id),
+      () => childReservations.childRowCount(child1Fixture.id),
       1
     )
   })
 
   test('Child in backup care for the entire week is shown', async () => {
-    attendancesSection = await loadUnitAttendancesSection()
+    const childReservations = (await loadUnitAttendancesSection())
+      .childReservations
     await calendarPage.selectMode('week')
     await calendarPage.changeWeekToDate(backupCareStartDate)
     await waitUntilEqual(
-      () => attendancesSection.childInOtherUnitCount(child1Fixture.id),
+      () => childReservations.childInOtherUnitCount(child1Fixture.id),
       7
     )
   })
 
   test('Child in backup care during the week is shown', async () => {
-    attendancesSection = await loadUnitAttendancesSection()
+    const childReservations = (await loadUnitAttendancesSection())
+      .childReservations
     await calendarPage.selectMode('week')
     await calendarPage.changeWeekToDate(backupCareEndDate)
     await waitUntilEqual(
-      () => attendancesSection.childInOtherUnitCount(child1Fixture.id),
+      () => childReservations.childInOtherUnitCount(child1Fixture.id),
       2
     )
   })
 
   test('Employee can add reservation', async () => {
-    attendancesSection = await loadUnitAttendancesSection()
+    const childReservations = (await loadUnitAttendancesSection())
+      .childReservations
     await calendarPage.selectMode('week')
-    reservationModal = await attendancesSection.openReservationModal(
+    reservationModal = await childReservations.openReservationModal(
       child1Fixture.id
     )
     await reservationModal.addReservation(mockedToday)
@@ -192,11 +198,12 @@ describe('Unit group calendar', () => {
 
 describe('Unit group calendar for shift care unit', () => {
   test('Employee can add two reservations for day and sees two rows', async () => {
-    attendancesSection = await loadUnitAttendancesSection()
+    const childReservations = (await loadUnitAttendancesSection())
+      .childReservations
 
     await calendarPage.selectMode('week')
 
-    reservationModal = await attendancesSection.openReservationModal(
+    reservationModal = await childReservations.openReservationModal(
       child1Fixture.id
     )
     await reservationModal.selectRepetitionType('IRREGULAR')
@@ -214,43 +221,47 @@ describe('Unit group calendar for shift care unit', () => {
     await reservationModal.save()
 
     await waitUntilEqual(
-      () => attendancesSection.childRowCount(child1Fixture.id),
+      () => childReservations.childRowCount(child1Fixture.id),
       2
     )
   })
 
   // DST breaks this
   test.skip('Employee sees attendances along reservations', async () => {
-    attendancesSection = await loadUnitAttendancesSection()
+    const childReservations = (await loadUnitAttendancesSection())
+      .childReservations
     await calendarPage.selectMode('week')
 
-    reservationModal = await attendancesSection.openReservationModal(
+    reservationModal = await childReservations.openReservationModal(
       child1Fixture.id
     )
     await reservationModal.selectRepetitionType('IRREGULAR')
 
     const startDate = mockedToday
-    const arrived = new Date(`${startDate.formatIso()}T08:30Z`)
-    const departed = new Date(`${startDate.formatIso()}T13:30Z`)
+    const arrived = HelsinkiDateTime.fromLocal(startDate, LocalTime.of(8, 30))
+    const departed = HelsinkiDateTime.fromLocal(startDate, LocalTime.of(13, 30))
 
     await Fixture.childAttendances()
       .with({
         childId: child1Fixture.id,
         unitId: daycare2Fixture.id,
-        arrived,
-        departed
+        arrived: arrived.toSystemTzDate(),
+        departed: arrived.toSystemTzDate()
       })
       .save()
 
-    const arrived2 = new Date(`${startDate.formatIso()}T18:15Z`)
-    const departed2 = new Date(`${startDate.addDays(1).formatIso()}T05:30Z`)
+    const arrived2 = HelsinkiDateTime.fromLocal(startDate, LocalTime.of(18, 15))
+    const departed2 = HelsinkiDateTime.fromLocal(
+      startDate.addDays(1),
+      LocalTime.of(5, 30)
+    )
 
     await Fixture.childAttendances()
       .with({
         childId: child1Fixture.id,
         unitId: daycare2Fixture.id,
-        arrived: arrived2,
-        departed: departed2
+        arrived: arrived2.toSystemTzDate(),
+        departed: departed2.toSystemTzDate()
       })
       .save()
 
@@ -267,113 +278,76 @@ describe('Unit group calendar for shift care unit', () => {
     await reservationModal.save()
 
     await waitUntilEqual(
-      () => attendancesSection.childRowCount(child1Fixture.id),
+      () => childReservations.childRowCount(child1Fixture.id),
       2
     )
 
     await waitUntilEqual(
-      () => attendancesSection.getReservationStart(startDate, 0),
-      '00:00'
+      () => childReservations.getReservation(startDate, 0),
+      ['00:00', '12:00']
     )
     await waitUntilEqual(
-      () => attendancesSection.getReservationEnd(startDate, 0),
-      '12:00'
-    )
-    await waitUntilEqual(
-      () => attendancesSection.getReservationStart(startDate, 1),
-      '20:00'
-    )
-    await waitUntilEqual(
-      () => attendancesSection.getReservationEnd(startDate, 1),
-      '23:59'
+      () => childReservations.getReservation(startDate, 1),
+      ['20:00', '23:59']
     )
 
     await waitUntilEqual(
-      () => attendancesSection.getAttendanceStart(startDate, 0),
-      `${arrived.getHours()}:${arrived.getMinutes()}`
+      () => childReservations.getAttendance(startDate, 0),
+      [arrived.toLocalTime().format(), departed.toLocalTime().format()]
     )
     await waitUntilEqual(
-      () => attendancesSection.getAttendanceEnd(startDate, 0),
-      `${departed.getHours()}:${departed.getMinutes()}`
+      () => childReservations.getAttendance(startDate, 1),
+      [arrived2.format(), '23:59']
     )
     await waitUntilEqual(
-      () => attendancesSection.getAttendanceStart(startDate, 1),
-      `${arrived2.getHours()}:${arrived2.getMinutes()}`
+      () => childReservations.getAttendance(startDate.addDays(1), 0),
+      ['00:00', departed2.format()]
     )
     await waitUntilEqual(
-      () => attendancesSection.getAttendanceEnd(startDate, 1),
-      '23:59'
-    )
-    await waitUntilEqual(
-      () => attendancesSection.getAttendanceStart(startDate.addDays(1), 0),
-      '00:00'
-    )
-    await waitUntilEqual(
-      () => attendancesSection.getAttendanceEnd(startDate.addDays(1), 0),
-      `0${departed2.getHours()}:${departed2.getMinutes()}`
-    )
-    await waitUntilEqual(
-      () => attendancesSection.getAttendanceStart(startDate.addDays(1), 1),
-      '–'
-    )
-    await waitUntilEqual(
-      () => attendancesSection.getAttendanceEnd(startDate.addDays(1), 1),
-      '–'
+      () => childReservations.getAttendance(startDate.addDays(1), 1),
+      ['–', '–']
     )
   })
 
   test('Employee can edit attendances and reservations inline', async () => {
-    attendancesSection = await loadUnitAttendancesSection()
+    const childReservations = (await loadUnitAttendancesSection())
+      .childReservations
     await calendarPage.selectMode('week')
-    await attendancesSection.openInlineEditor(child1Fixture.id)
-    await attendancesSection.setReservationTimes(mockedToday, '08:00', '16:00')
-    await attendancesSection.setAttendanceTimes(mockedToday, '08:02', '15:54')
-    await attendancesSection.closeInlineEditor()
+    await childReservations.openInlineEditor(child1Fixture.id)
+    await childReservations.setReservationTimes(mockedToday, '08:00', '16:00')
+    await childReservations.setAttendanceTimes(mockedToday, '08:02', '15:54')
+    await childReservations.closeInlineEditor()
     await waitUntilEqual(
-      () => attendancesSection.getReservationStart(mockedToday, 0),
-      '08:00'
+      () => childReservations.getReservation(mockedToday, 0),
+      ['08:00', '16:00']
     )
     await waitUntilEqual(
-      () => attendancesSection.getReservationEnd(mockedToday, 0),
-      '16:00'
-    )
-    await waitUntilEqual(
-      () => attendancesSection.getAttendanceStart(mockedToday, 0),
-      '08:02'
-    )
-    await waitUntilEqual(
-      () => attendancesSection.getAttendanceEnd(mockedToday, 0),
-      '15:54'
+      () => childReservations.getAttendance(mockedToday, 0),
+      ['08:02', '15:54']
     )
   })
 
   test('Employee can add attendance without an end', async () => {
-    attendancesSection = await loadUnitAttendancesSection()
+    const childReservations = (await loadUnitAttendancesSection())
+      .childReservations
     await calendarPage.selectMode('week')
-    await attendancesSection.openInlineEditor(child1Fixture.id)
-    await attendancesSection.setAttendanceTimes(mockedToday, '08:02', '')
-    await attendancesSection.closeInlineEditor()
+    await childReservations.openInlineEditor(child1Fixture.id)
+    await childReservations.setAttendanceTimes(mockedToday, '08:02', '')
+    await childReservations.closeInlineEditor()
     await waitUntilEqual(
-      () => attendancesSection.getAttendanceStart(mockedToday, 0),
-      '08:02'
-    )
-    await waitUntilEqual(
-      () => attendancesSection.getAttendanceEnd(mockedToday, 0),
-      '–'
+      () => childReservations.getAttendance(mockedToday, 0),
+      ['08:02', '–']
     )
   })
 
   test('Employee cannot edit attendances in the future', async () => {
-    attendancesSection = await loadUnitAttendancesSection()
+    const childReservations = (await loadUnitAttendancesSection())
+      .childReservations
     await calendarPage.selectMode('week')
-    await attendancesSection.openInlineEditor(child1Fixture.id)
+    await childReservations.openInlineEditor(child1Fixture.id)
     await waitUntilEqual(
-      () => attendancesSection.getAttendanceStart(mockedToday.addDays(1), 0),
-      '–'
-    )
-    await waitUntilEqual(
-      () => attendancesSection.getAttendanceEnd(mockedToday.addDays(1), 0),
-      '–'
+      () => childReservations.getAttendance(mockedToday.addDays(1), 0),
+      ['–', '–']
     )
   })
 })

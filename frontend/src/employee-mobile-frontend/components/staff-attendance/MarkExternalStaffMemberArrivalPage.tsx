@@ -45,7 +45,7 @@ export default function MarkExternalStaffMemberArrivalPage() {
   const { reloadStaffAttendance } = useContext(StaffAttendanceContext)
 
   const [form, setForm] = useState<FormState>(() => ({
-    arrived: HelsinkiDateTime.now().toLocalTime().format('HH:mm'),
+    arrived: HelsinkiDateTime.now().toLocalTime().format(),
     group: unitInfoResponse
       .map(({ groups }) => groups.find(({ id }) => id === groupId) ?? null)
       .getOrElse(null),

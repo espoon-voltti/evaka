@@ -152,17 +152,16 @@ export class EventDeleteModal extends Modal {}
 export class UnitAttendancesSection {
   constructor(private readonly page: Page) {}
 
-  #reservationCell = (date: LocalDate, row: number) =>
-    this.page.findByDataQa(`reservation-${date.formatIso()}-${row}`)
-  #attendanceCell = (date: LocalDate, row: number) =>
-    this.page.findByDataQa(`attendance-${date.formatIso()}-${row}`)
-
-  #ellipsisMenu = (childId: UUID) =>
-    this.page.find(`[data-qa="ellipsis-menu-${childId}"]`)
-  #editInline = this.page.find('[data-qa="menu-item-edit-row"]')
-
   occupancies = new UnitOccupanciesSection(
     this.page.find('[data-qa="occupancies"]')
+  )
+  staffAttendances = new UnitStaffAttendancesTable(
+    this.page,
+    this.page.findByDataQa('staff-attendances-table')
+  )
+  childReservations = new UnitChildReservationsTable(
+    this.page,
+    this.page.findByDataQa('child-reservations-table')
   )
 
   async waitUntilLoaded() {
@@ -178,46 +177,69 @@ export class UnitAttendancesSection {
     await this.waitUntilLoaded()
   }
 
-  async childRowCount(childId: UUID): Promise<number> {
-    return await this.page
-      .findAllByDataQa(`reservation-row-child-${childId}`)
-      .count()
+  async selectPeriod(period: '1 day' | '3 months' | '6 months' | '1 year') {
+    await this.page
+      .find(`[data-qa="unit-filter-period-${period.replace(' ', '-')}"]`)
+      .click()
   }
 
-  async childInOtherUnitCount(childId: UUID): Promise<number> {
-    return await this.page
-      .findAllByDataQa(`reservation-row-child-${childId}`)
-      .findAll('[data-qa="in-other-unit"]')
-      .count()
+  async selectGroup(groupId: UUID | 'no-group' | 'staff'): Promise<void> {
+    const select = new Select(
+      this.page.findByDataQa('attendances-group-select')
+    )
+    await select.selectOption(groupId)
   }
 
-  getReservationStart(date: LocalDate, row: number): Promise<string> {
-    return this.#reservationCell(date, row).findByDataQa('reservation-start')
-      .innerText
+  async clickAddPersonButton(): Promise<StaffAttendanceAddPersonModal> {
+    await this.page.findByDataQa('add-person-button').click()
+
+    return new StaffAttendanceAddPersonModal(
+      this.page.findByDataQa('staff-attendance-add-person-modal')
+    )
+  }
+}
+
+export class UnitStaffAttendancesTable extends Element {
+  constructor(public page: Page, element: Element) {
+    super(element)
   }
 
-  getReservationEnd(date: LocalDate, row: number): Promise<string> {
-    return this.#reservationCell(date, row).findByDataQa('reservation-end')
-      .innerText
+  get allNames(): Promise<string[]> {
+    return this.findAllByDataQa('staff-attendance-name').allInnerTexts()
   }
 
-  getAttendanceStart(date: LocalDate, row: number): Promise<string> {
-    return this.#attendanceCell(date, row).findByDataQa('attendance-start')
-      .innerText
+  get rowCount(): Promise<number> {
+    return this.find('tbody').findAll('tr').count()
   }
 
-  getAttendanceEnd(date: LocalDate, row: number): Promise<string> {
-    return this.#attendanceCell(date, row).findByDataQa('attendance-end')
-      .innerText
+  async assertPositiveOccupancyCoefficientCount(
+    expectedCount: number
+  ): Promise<void> {
+    const icons = this.findAllByDataQa('icon-occupancy-coefficient-pos')
+    await waitUntilEqual(() => icons.count(), expectedCount)
   }
 
-  getPlannedAttendanceStart(date: LocalDate, row: number): Promise<string> {
+  async assertZeroOccupancyCoefficientCount(
+    expectedCount: number
+  ): Promise<void> {
+    const icons = this.findAllByDataQa('icon-occupancy-coefficient')
+    await waitUntilEqual(() => icons.count(), expectedCount)
+  }
+
+  personCountSum(nth: number) {
+    return this.findAllByDataQa('person-count-sum').nth(nth).innerText
+  }
+
+  #attendanceCell = (date: LocalDate, row: number) =>
+    this.findByDataQa(`attendance-${date.formatIso()}-${row}`)
+
+  #getPlannedAttendanceStart(date: LocalDate, row: number): Promise<string> {
     return this.#attendanceCell(date, row).findByDataQa(
       'planned-attendance-start'
     ).innerText
   }
 
-  getPlannedAttendanceEnd(date: LocalDate, row: number): Promise<string> {
+  #getPlannedAttendanceEnd(date: LocalDate, row: number): Promise<string> {
     return this.#attendanceCell(date, row).findByDataQa(
       'planned-attendance-end'
     ).innerText
@@ -230,10 +252,107 @@ export class UnitAttendancesSection {
     endTime: string
   ) {
     await waitUntilEqual(
-      () => this.getPlannedAttendanceStart(date, row),
+      () => this.#getPlannedAttendanceStart(date, row),
       startTime
     )
-    await waitUntilEqual(() => this.getPlannedAttendanceEnd(date, row), endTime)
+    await waitUntilEqual(
+      () => this.#getPlannedAttendanceEnd(date, row),
+      endTime
+    )
+  }
+
+  async assertTableRow({
+    rowIx = 0,
+    name,
+    nth = 0,
+    timeNth = 0,
+    arrival,
+    departure
+  }: {
+    rowIx?: number
+    name?: string
+    nth?: number
+    timeNth?: number
+    arrival?: string
+    departure?: string
+  }): Promise<void> {
+    const row = this.findByDataQa(`attendance-row-${rowIx}`)
+    const day = row.findAllByDataQa('attendance-day').nth(nth)
+
+    if (name !== undefined) {
+      await waitUntilEqual(
+        () => row.findByDataQa('staff-attendance-name').innerText,
+        name
+      )
+    }
+    if (arrival !== undefined) {
+      await waitUntilEqual(
+        () => day.findAllByDataQa('arrival-time').nth(timeNth ?? 0).innerText,
+        arrival
+      )
+    }
+    if (departure !== undefined) {
+      await waitUntilEqual(
+        () => day.findAllByDataQa('departure-time').nth(timeNth).innerText,
+        departure
+      )
+    }
+  }
+
+  async openDetails(
+    row: number,
+    date: LocalDate
+  ): Promise<StaffAttendanceDetailsModal> {
+    const cell = this.#attendanceCell(date, row)
+    await cell.hover()
+    await cell.findByDataQa('open-details').click()
+
+    return new StaffAttendanceDetailsModal(
+      this.page.findByDataQa('staff-attendance-details-modal')
+    )
+  }
+}
+
+export class UnitChildReservationsTable extends Element {
+  constructor(public page: Page, element: Element) {
+    super(element)
+  }
+
+  #reservationCell = (date: LocalDate, row: number) =>
+    this.findByDataQa(`reservation-${date.formatIso()}-${row}`)
+  #attendanceCell = (date: LocalDate, row: number) =>
+    this.findByDataQa(`attendance-${date.formatIso()}-${row}`)
+
+  #ellipsisMenu = (childId: UUID) =>
+    this.findByDataQa(`ellipsis-menu-${childId}`)
+  #editInline = this.findByDataQa('menu-item-edit-row')
+
+  async childRowCount(childId: UUID): Promise<number> {
+    return await this.findAllByDataQa(
+      `reservation-row-child-${childId}`
+    ).count()
+  }
+
+  async childInOtherUnitCount(childId: UUID): Promise<number> {
+    return await this.findAllByDataQa(`reservation-row-child-${childId}`)
+      .findAllByDataQa('in-other-unit')
+      .count()
+  }
+
+  getReservation(date: LocalDate, row: number): Promise<[string, string]> {
+    const cell = this.#reservationCell(date, row)
+    return Promise.all([
+      cell.findByDataQa('reservation-start').innerText,
+      cell.findByDataQa('reservation-end').innerText
+    ])
+  }
+
+  getAttendance(date: LocalDate, row: number): Promise<[string, string]> {
+    const cell = this.#attendanceCell(date, row)
+    return Promise.all([
+      cell.findByDataQa('attendance-start').innerText,
+      cell.findByDataQa('attendance-end').innerText
+    ])
   }
 
   async openInlineEditor(childId: UUID) {
@@ -242,7 +361,7 @@ export class UnitAttendancesSection {
   }
 
   async closeInlineEditor() {
-    await this.page.findByDataQa('inline-editor-state-button').click()
+    await this.findByDataQa('inline-editor-state-button').click()
   }
 
   async setReservationTimes(
@@ -258,7 +377,7 @@ export class UnitAttendancesSection {
       endTime
     )
     // Click table header to trigger last input's onblur
-    await this.page.findAll('thead').first().click()
+    await this.findAll('thead').first().click()
   }
 
   async setAttendanceTimes(
@@ -274,185 +393,14 @@ export class UnitAttendancesSection {
       endTime
     )
     // Click table header to trigger last input's onblur
-    await this.page.findAll('thead').first().click()
+    await this.findAll('thead').first().click()
   }
 
   async openReservationModal(childId: UUID): Promise<ReservationModal> {
     await this.#ellipsisMenu(childId).click()
-    await this.page.find(`[data-qa="menu-item-reservation-modal"]`).click()
+    await this.findByDataQa('menu-item-reservation-modal').click()
 
-    return new ReservationModal(this.page.find('[data-qa="modal"]'))
-  }
-
-  async selectPeriod(period: '1 day' | '3 months' | '6 months' | '1 year') {
-    await this.page
-      .find(`[data-qa="unit-filter-period-${period.replace(' ', '-')}"]`)
-      .click()
-  }
-
-  async selectGroup(groupId: UUID | 'no-group' | 'staff'): Promise<void> {
-    const select = new Select(
-      this.page.findByDataQa('attendances-group-select')
-    )
-    await select.selectOption(groupId)
-  }
-
-  async staffInAttendanceTable(): Promise<string[]> {
-    return this.page.findAllByDataQa('staff-attendance-name').allInnerTexts()
-  }
-
-  async assertPositiveOccupancyCoefficientCount(
-    expectedCount: number
-  ): Promise<void> {
-    const icons = this.page.findAllByDataQa('icon-occupancy-coefficient-pos')
-    await waitUntilEqual(() => icons.count(), expectedCount)
-  }
-  async assertZeroOccupancyCoefficientCount(
-    expectedCount: number
-  ): Promise<void> {
-    const icons = this.page.findAllByDataQa('icon-occupancy-coefficient')
-    await waitUntilEqual(() => icons.count(), expectedCount)
-  }
-
-  async clickEditOnRow(rowIx: number): Promise<void> {
-    await this.page
-      .findByDataQa(`attendance-row-${rowIx}`)
-      .findByDataQa('row-menu')
-      .click()
-    await this.page.findByDataQa('menu-item-edit-row').click()
-  }
-
-  async clickCommitOnRow(rowIx: number): Promise<void> {
-    await this.page
-      .findByDataQa(`attendance-row-${rowIx}`)
-      .findByDataQa('inline-editor-state-button')
-      .click()
-  }
-
-  async openDetails(
-    employeeId: string,
-    date: LocalDate
-  ): Promise<StaffAttendanceDetailsModal> {
-    await this.page
-      .findByDataQa(`day-cell-${employeeId}-${date.formatIso()}`)
-      .hover()
-    await this.page
-      .findByDataQa(`open-details-${employeeId}-${date.formatIso()}`)
-      .click()
-    return new StaffAttendanceDetailsModal(
-      this.page.findByDataQa('staff-attendance-details-modal')
-    )
-  }
-
-  async assertNoTimeInputsVisible(): Promise<void> {
-    const startInputs = this.page.findAllByDataQa('input-start-time')
-    const endInputs = this.page.findAllByDataQa('input-end-time')
-    await waitUntilEqual(() => startInputs.count(), 0)
-    await waitUntilEqual(() => endInputs.count(), 0)
-  }
-
-  async assertCountTimeInputsVisible(count: number): Promise<void> {
-    const startInputs = this.page.findAllByDataQa('input-start-time')
-    const endInputs = this.page.findAllByDataQa('input-end-time')
-    await waitUntilEqual(() => startInputs.count(), count)
-    await waitUntilEqual(() => endInputs.count(), count)
-  }
-
-  async setNthStartTime(nth: number, time: string): Promise<void> {
-    const input = new TextInput(
-      this.page.findAllByDataQa('input-start-time').nth(nth)
-    )
-    await input.fill(time)
-  }
-
-  private nthEditor(nth: number, dayNth: number, rowIx = 0) {
-    return this.page
-      .findByDataQa(`attendance-row-${rowIx}`)
-      .findAllByDataQa('attendance-day')
-      .nth(dayNth)
-      .findAllByDataQa('time-range-editor')
-      .nth(nth)
-  }
-
-  async setNthArrivalDeparture(
-    nth: number,
-    dayNth: number,
-    arrival: string,
-    departure: string,
-    rowIx?: number
-  ): Promise<void> {
-    await new TextInput(
-      this.nthEditor(nth, dayNth, rowIx).findByDataQa('input-start-time')
-    ).fill(arrival)
-    await this.setNthDeparture(nth, dayNth, departure, rowIx)
-  }
-
-  async setNthDeparture(
-    nth: number,
-    dayNth: number,
-    departure: string,
-    rowIx?: number
-  ): Promise<void> {
-    await new TextInput(
-      this.nthEditor(nth, dayNth, rowIx).findByDataQa('input-end-time')
-    ).fill(departure)
-  }
-
-  async assertArrivalDeparture({
-    rowIx,
-    nth,
-    timeNth,
-    arrival,
-    departure
-  }: {
-    rowIx: number
-    nth: number
-    timeNth?: number
-    arrival: string
-    departure: string
-  }): Promise<void> {
-    await waitUntilEqual(
-      () =>
-        this.page
-          .findByDataQa(`attendance-row-${rowIx}`)
-          .findAllByDataQa('attendance-day')
-          .nth(nth)
-          .findAllByDataQa('arrival-time')
-          .nth(timeNth ?? 0).innerText,
-      arrival
-    )
-    await waitUntilEqual(
-      () =>
-        this.page
-          .findByDataQa(`attendance-row-${rowIx}`)
-          .findAllByDataQa('attendance-day')
-          .nth(nth)
-          .findAllByDataQa('departure-time')
-          .nth(timeNth ?? 0).innerText,
-      departure
-    )
-  }
-
-  async assertDepartureLocked(nth: number, dayNth: number, rowIx?: number) {
-    await this.nthEditor(nth, dayNth, rowIx)
-      .findByDataQa('departure-lock')
-      .waitUntilVisible()
-  }
-
-  async assertFormWarning() {
-    await this.page.findByDataQa('form-error-warning').waitUntilVisible()
-  }
-
-  personCountSum(nth: number) {
-    return this.page.findAllByDataQa('person-count-sum').nth(nth).innerText
-  }
-
-  async clickAddPersonButton(): Promise<StaffAttendanceAddPersonModal> {
-    await this.page.findByDataQa('add-person-button').click()
-
-    return new StaffAttendanceAddPersonModal(
-      this.page.findByDataQa('staff-attendance-add-person-modal')
-    )
+    return new ReservationModal(this.page.findByDataQa('modal'))
   }
 }
 
@@ -500,16 +448,6 @@ export class ReservationModal extends Modal {
     await this.setEndDate(endDate.format())
     await this.setStartTime('10:00', 0)
     await this.setEndTime('16:00', 0)
-    await this.save()
-  }
-
-  async addOvernightReservation() {
-    await this.selectRepetitionType('IRREGULAR')
-    await this.setEndDate(LocalDate.todayInSystemTz().addDays(1).format())
-    await this.setStartTime('22:00', 0)
-    await this.setEndTime('23:59', 0)
-    await this.setStartTime('00:00', 1)
-    await this.setEndTime('08:00', 1)
     await this.save()
   }
 }
@@ -586,6 +524,10 @@ export class StaffAttendanceDetailsModal extends Element {
     ).fill(time)
   }
 
+  async removeAttendance(row: number) {
+    await this.findAllByDataQa('remove-attendance').nth(row).click()
+  }
+
   async addNewAttendance() {
     await this.findByDataQa('new-attendance').click()
   }
@@ -621,16 +563,22 @@ export class StaffAttendanceAddPersonModal extends Element {
     )
   }
 
+  async setArrivalDate(date: string) {
+    await new DatePicker(
+      this.findByDataQa('add-person-arrival-date-picker')
+    ).fill(date)
+  }
+
   async setArrivalTime(time: string) {
     await new TextInput(
       this.findByDataQa('add-person-arrival-time-input')
     ).fill(time)
   }
 
-  async setArrivalDate(date: string) {
-    await new DatePicker(
-      this.findByDataQa('add-person-arrival-date-picker')
-    ).fill(date)
+  async setDepartureTime(time: string) {
+    await new TextInput(
+      this.findByDataQa('add-person-departure-time-input')
+    ).fill(time)
   }
 
   async typeName(name: string) {

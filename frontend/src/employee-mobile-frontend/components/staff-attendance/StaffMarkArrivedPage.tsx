@@ -76,7 +76,7 @@ export default React.memo(function StaffMarkArrivedPage() {
   const [pinCode, setPinCode] = useState(EMPTY_PIN)
   const pinInputRef = useRef<HTMLInputElement>(null)
   const [time, setTime] = useState<string>(() =>
-    HelsinkiDateTime.now().toLocalTime().format('HH:mm')
+    HelsinkiDateTime.now().toLocalTime().format()
   )
   const [attendanceGroup, setAttendanceGroup] = useState<UUID | undefined>(
     groupId !== 'all' ? groupId : undefined

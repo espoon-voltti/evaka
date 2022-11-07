@@ -44,7 +44,7 @@ export default React.memo(function ExternalStaffMemberPage() {
   )
 
   const [time, setTime] = useState(() =>
-    HelsinkiDateTime.now().toLocalTime().format('HH:mm')
+    HelsinkiDateTime.now().toLocalTime().format()
   )
   const parsedTime = useMemo(() => LocalTime.tryParse(time, 'HH:mm'), [time])
 
@@ -63,7 +63,7 @@ export default React.memo(function ExternalStaffMemberPage() {
                 <TimeInfo>
                   <Label>{i18n.attendances.arrivalTime}</Label>{' '}
                   <span data-qa="arrival-time">
-                    {ext.arrived.toLocalTime().format('HH:mm')}
+                    {ext.arrived.toLocalTime().format()}
                   </span>
                 </TimeInfo>
 

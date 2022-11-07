@@ -352,7 +352,7 @@ export default React.memo(function StaffAttendanceTable({
           {extraRowsGroupedByName.map((row, index) => (
             <AttendanceRow
               key={`${row.name}-${index}`}
-              rowIndex={index}
+              rowIndex={staffRows.length + index}
               isPositiveOccupancyCoefficient={
                 row.attendances[0].occupancyCoefficient > 0
               }
@@ -607,9 +607,7 @@ const AttendanceRow = React.memo(function AttendanceRow({
                   <IconButton
                     icon={faCircleEllipsis}
                     onClick={() => openDetails(date)}
-                    data-qa={`open-details-${
-                      employeeId ?? name
-                    }-${date.formatIso()}`}
+                    data-qa="open-details"
                     aria-label={i18n.common.open}
                   />
                 </DetailsToggle>
@@ -663,7 +661,7 @@ function renderTime(
 ): string {
   if (timestamp && !timestamp.toLocalDate().isEqual(today)) return '→'
   if (timestamp === null) return '–'
-  return timestamp.toLocalTime().format('HH:mm')
+  return timestamp.toLocalTime().format()
 }
 
 function computeModalAttendances(

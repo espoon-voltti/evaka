@@ -40,7 +40,7 @@ export const Reservations = React.memo(function Reservations({
         return (
           <Fragment key={startTime.formatIso()}>
             {index !== 0 && <Separator />}
-            <span>{startTime.toLocalTime().format('HH:mm')}</span>
+            <span>{startTime.toLocalTime().format()}</span>
             {!!startDatePart && (
               <>
                 <Whitespace />
@@ -48,7 +48,7 @@ export const Reservations = React.memo(function Reservations({
               </>
             )}
             <Dash />
-            <span>{endTime.toLocalTime().format('HH:mm')}</span>
+            <span>{endTime.toLocalTime().format()}</span>
             {!!endDatePart && (
               <>
                 <Whitespace />

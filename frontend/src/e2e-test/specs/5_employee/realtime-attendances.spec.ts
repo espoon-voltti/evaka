@@ -22,9 +22,10 @@ import { Child, Daycare, EmployeeDetail } from '../../dev-api/types'
 import { UnitPage } from '../../pages/employee/units/unit'
 import {
   UnitAttendancesSection,
-  UnitCalendarPage
+  UnitCalendarPage,
+  UnitStaffAttendancesTable
 } from '../../pages/employee/units/unit-attendances-page'
-import { waitUntilEqual, waitUntilTrue } from '../../utils'
+import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -162,26 +163,29 @@ describe('Realtime staff attendances', () => {
     await attendancesSection.occupancies.assertGraphHasNoData()
   })
   describe('Group selection: staff', () => {
+    let staffAttendances: UnitStaffAttendancesTable
+
     beforeEach(async () => {
       attendancesSection = await openAttendancesSection()
       await attendancesSection.selectGroup('staff')
+      staffAttendances = attendancesSection.staffAttendances
     })
 
     test('The staff attendances table shows all unit staff', async () => {
       await waitUntilEqual(
-        () => attendancesSection.staffInAttendanceTable(),
+        () => staffAttendances.allNames,
         staff.map(staffName)
       )
     })
 
     test('The icon tells whether a staff member is counted in occupancy or not', async () => {
-      await attendancesSection.assertPositiveOccupancyCoefficientCount(1)
-      await attendancesSection.assertZeroOccupancyCoefficientCount(1)
+      await staffAttendances.assertPositiveOccupancyCoefficientCount(1)
+      await staffAttendances.assertZeroOccupancyCoefficientCount(1)
     })
 
     test('Sunday entries are shown in the calendar', async () => {
       await calendarPage.changeWeekToDate(mockedToday.subWeeks(1))
-      await attendancesSection.assertArrivalDeparture({
+      await staffAttendances.assertTableRow({
         rowIx: 0,
         nth: 6,
         arrival: '07:00',
@@ -189,9 +193,11 @@ describe('Realtime staff attendances', () => {
       })
     })
   })
+
   describe('Planned attendances', () => {
     const plannedStartTime = mockedToday.toHelsinkiDateTime(LocalTime.of(7, 0))
     const plannedEndTime = mockedToday.toHelsinkiDateTime(LocalTime.of(15, 0))
+    let staffAttendances: UnitStaffAttendancesTable
 
     beforeEach(async () => {
       await Fixture.realtimeStaffAttendance()
@@ -217,20 +223,17 @@ describe('Realtime staff attendances', () => {
 
       attendancesSection = await openAttendancesSection()
       await attendancesSection.selectGroup('staff')
-      await attendancesSection.assertNoTimeInputsVisible()
+      staffAttendances = attendancesSection.staffAttendances
     })
     test('Plan is shown on week view and day modal', async () => {
-      await attendancesSection.assertPlannedAttendance(
+      await staffAttendances.assertPlannedAttendance(
         plannedStartTime.toLocalDate(),
         1,
         '07:00',
         '15:00'
       )
 
-      const modal = await attendancesSection.openDetails(
-        groupStaff.id,
-        mockedToday
-      )
+      const modal = await staffAttendances.openDetails(1, mockedToday)
       await waitUntilEqual(() => modal.summary(), {
         plan: '07:00 – 15:00',
         realized: '07:00 –',
@@ -239,6 +242,8 @@ describe('Realtime staff attendances', () => {
     })
   })
   describe('Details modal', () => {
+    let staffAttendances: UnitStaffAttendancesTable
+
     beforeEach(async () => {
       await insertStaffRealtimeAttendance({
         id: uuidv4(),
@@ -252,12 +257,10 @@ describe('Realtime staff attendances', () => {
 
       attendancesSection = await openAttendancesSection()
       await attendancesSection.selectGroup('staff')
+      staffAttendances = attendancesSection.staffAttendances
     })
     test('An existing entry can be edited', async () => {
-      const modal = await attendancesSection.openDetails(
-        groupStaff.id,
-        mockedToday
-      )
+      const modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.setDepartureTime(0, '15:00')
       await modal.save()
 
@@ -268,7 +271,7 @@ describe('Realtime staff attendances', () => {
       })
 
       await modal.close()
-      await attendancesSection.assertArrivalDeparture({
+      await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 0,
         arrival: '07:00',
@@ -276,8 +279,8 @@ describe('Realtime staff attendances', () => {
       })
     })
     test('An existing overnight entry can be edited', async () => {
-      const modal = await attendancesSection.openDetails(
-        groupStaff.id,
+      const modal = await staffAttendances.openDetails(
+        1,
         mockedToday.addDays(1)
       )
       await modal.setDepartureTime(0, '16:00')
@@ -290,13 +293,13 @@ describe('Realtime staff attendances', () => {
       })
 
       await modal.close()
-      await attendancesSection.assertArrivalDeparture({
+      await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 0,
         arrival: '07:00',
         departure: '→'
       })
-      await attendancesSection.assertArrivalDeparture({
+      await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 1,
         arrival: '→',
@@ -304,10 +307,7 @@ describe('Realtime staff attendances', () => {
       })
     })
     test('If departure is earlier than arrival, departure is on the next day', async () => {
-      const modal = await attendancesSection.openDetails(
-        groupStaff.id,
-        mockedToday
-      )
+      const modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.setDepartureTime(0, '06:00')
       await modal.save()
 
@@ -318,13 +318,13 @@ describe('Realtime staff attendances', () => {
       })
 
       await modal.close()
-      await attendancesSection.assertArrivalDeparture({
+      await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 0,
         arrival: '07:00',
         departure: '→'
       })
-      await attendancesSection.assertArrivalDeparture({
+      await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 1,
         arrival: '→',
@@ -332,10 +332,7 @@ describe('Realtime staff attendances', () => {
       })
     })
     test('Multiple new entries can be added', async () => {
-      const modal = await attendancesSection.openDetails(
-        groupStaff.id,
-        mockedToday
-      )
+      const modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.setDepartureTime(0, '12:00')
       await modal.addNewAttendance()
       await modal.setGroup(1, groupId)
@@ -361,14 +358,14 @@ describe('Realtime staff attendances', () => {
       })
 
       await modal.close()
-      await attendancesSection.assertArrivalDeparture({
+      await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 0,
         timeNth: 0,
         arrival: '07:00',
         departure: '12:00'
       })
-      await attendancesSection.assertArrivalDeparture({
+      await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 0,
         timeNth: 1,
@@ -377,10 +374,7 @@ describe('Realtime staff attendances', () => {
       })
     })
     test('Gaps in attendances are warned about', async () => {
-      const modal = await attendancesSection.openDetails(
-        groupStaff.id,
-        mockedToday
-      )
+      const modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.setDepartureTime(0, '12:00')
       await modal.addNewAttendance()
       await modal.setGroup(1, groupId)
@@ -404,6 +398,8 @@ describe('Realtime staff attendances', () => {
     })
   })
   describe('Staff count sums in the table', () => {
+    let staffAttendances: UnitStaffAttendancesTable
+
     beforeEach(async () => {
       const times: [number, number, number][] = [
         [0, 12, 15],
@@ -427,28 +423,31 @@ describe('Realtime staff attendances', () => {
       }
 
       attendancesSection = await openAttendancesSection()
+      staffAttendances = attendancesSection.staffAttendances
     })
 
     test('Total staff counts', async () => {
       await attendancesSection.selectGroup(groupId2)
-      await waitUntilEqual(() => attendancesSection.personCountSum(0), '– hlö')
+      await waitUntilEqual(() => staffAttendances.personCountSum(0), '– hlö')
 
       await attendancesSection.selectGroup(groupId)
-      await waitUntilEqual(() => attendancesSection.personCountSum(0), '1 hlö')
-      await waitUntilEqual(() => attendancesSection.personCountSum(1), '– hlö')
-      await waitUntilEqual(() => attendancesSection.personCountSum(2), '– hlö')
-      await waitUntilEqual(() => attendancesSection.personCountSum(3), '– hlö')
-      await waitUntilEqual(() => attendancesSection.personCountSum(4), '1 hlö')
-      await waitUntilEqual(() => attendancesSection.personCountSum(5), '1 hlö')
+      await waitUntilEqual(() => staffAttendances.personCountSum(0), '1 hlö')
+      await waitUntilEqual(() => staffAttendances.personCountSum(1), '– hlö')
+      await waitUntilEqual(() => staffAttendances.personCountSum(2), '– hlö')
+      await waitUntilEqual(() => staffAttendances.personCountSum(3), '– hlö')
+      await waitUntilEqual(() => staffAttendances.personCountSum(4), '1 hlö')
+      await waitUntilEqual(() => staffAttendances.personCountSum(5), '1 hlö')
     })
   })
+  describe('External staff members', () => {
+    let staffAttendances: UnitStaffAttendancesTable
 
-  describe('External (temporary) staff members', () => {
     beforeEach(async () => {
       attendancesSection = await openAttendancesSection()
+      staffAttendances = attendancesSection.staffAttendances
     })
 
-    test('It is possible to add a new external staff member', async () => {
+    test('Can an add and modify an external', async () => {
       const addPersonModal = await attendancesSection.clickAddPersonButton()
       await addPersonModal.setArrivalDate(mockedToday.format())
       await addPersonModal.setArrivalTime('11:00')
@@ -456,14 +455,52 @@ describe('Realtime staff attendances', () => {
       await addPersonModal.selectGroup(groupId)
       await addPersonModal.save()
 
-      await waitUntilTrue(() =>
-        attendancesSection
-          .staffInAttendanceTable()
-          .then((res) => res.includes('Sijainen Saija'))
-      )
+      await staffAttendances.assertTableRow({
+        rowIx: 1,
+        name: 'Sijainen Saija',
+        arrival: '11:00',
+        departure: '–'
+      })
+
+      let modal = await staffAttendances.openDetails(1, mockedToday)
+      await modal.setDepartureTime(0, '13:00')
+      await modal.save()
+      await modal.close()
+
+      await waitUntilEqual(() => staffAttendances.rowCount, 2)
+      await staffAttendances.assertTableRow({
+        rowIx: 1,
+        name: 'Sijainen Saija',
+        arrival: '11:00',
+        departure: '13:00'
+      })
+
+      modal = await staffAttendances.openDetails(1, mockedToday)
+      await modal.removeAttendance(0)
+      await modal.save()
+      await modal.close()
+
+      await waitUntilEqual(() => staffAttendances.rowCount, 1)
     })
 
-    test('Saving invalid information is not possible', async () => {
+    test('Can an add new external with arrival and departure times', async () => {
+      const addPersonModal = await attendancesSection.clickAddPersonButton()
+      await addPersonModal.setArrivalDate(mockedToday.format())
+      await addPersonModal.setArrivalTime('11:00')
+      await addPersonModal.setDepartureTime('16:00')
+      await addPersonModal.typeName('Sijainen Saija')
+      await addPersonModal.selectGroup(groupId)
+      await addPersonModal.save()
+
+      await staffAttendances.assertTableRow({
+        rowIx: 1,
+        name: 'Sijainen Saija',
+        arrival: '11:00',
+        departure: '16:00'
+      })
+    })
+
+    test('Cannot add new external with invalid data', async () => {
       const addPersonModal = await attendancesSection.clickAddPersonButton()
       await addPersonModal.setArrivalDate(mockedToday.format())
       await addPersonModal.setArrivalTime('9:99')

@@ -72,7 +72,7 @@ export default React.memo(function StaffMarkDepartedPage() {
 
   const [pinCode, setPinCode] = useState(EMPTY_PIN)
   const [time, setTime] = useState<string>(() =>
-    HelsinkiDateTime.now().toLocalTime().format('HH:mm')
+    HelsinkiDateTime.now().toLocalTime().format()
   )
   const [errorCode, setErrorCode] = useState<string | undefined>(undefined)
   const [attendanceType, setAttendanceType] = useState<StaffAttendanceType>()

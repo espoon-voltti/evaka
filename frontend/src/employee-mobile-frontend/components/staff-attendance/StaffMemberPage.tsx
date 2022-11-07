@@ -59,11 +59,8 @@ export default React.memo(function StaffMemberPage() {
                           {i18n.attendances.staff.plannedAttendance}{' '}
                           {staffMember.spanningPlan.start
                             .toLocalTime()
-                            .format('HH:mm')}
-                          –
-                          {staffMember.spanningPlan.end
-                            .toLocalTime()
-                            .format('HH:mm')}
+                            .format()}
+                          –{staffMember.spanningPlan.end.toLocalTime().format()}
                         </span>
                       </TimeInfo>
                     )}
@@ -77,8 +74,8 @@ export default React.memo(function StaffMemberPage() {
                         >
                           <Label>{i18n.attendances.staffTypes[type]}</Label>{' '}
                           <span>
-                            {arrived.toLocalTime().format('HH:mm')}–
-                            {departed?.toLocalTime().format('HH:mm') ?? ''}
+                            {arrived.toLocalTime().format()}–
+                            {departed?.toLocalTime().format() ?? ''}
                           </span>
                         </TimeInfo>
                       ))}
@@ -91,7 +88,7 @@ export default React.memo(function StaffMemberPage() {
                         <span data-qa="arrival-time">
                           {staffMember.latestCurrentDayAttendance.arrived
                             .toLocalTime()
-                            .format('HH:mm')}
+                            .format()}
                         </span>
                       </TimeInfo>
                       {staffMember.latestCurrentDayAttendance.departed && (
@@ -100,7 +97,7 @@ export default React.memo(function StaffMemberPage() {
                           <span data-qa="departure-time">
                             {staffMember.latestCurrentDayAttendance.departed
                               ?.toLocalTime()
-                              .format('HH:mm')}
+                              .format()}
                           </span>
                         </TimeInfo>
                       )}

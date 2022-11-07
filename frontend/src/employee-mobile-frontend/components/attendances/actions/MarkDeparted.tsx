@@ -65,7 +65,7 @@ function validateTime(
     if (!parsedTimestamp.isAfter(attendance.arrived)) {
       return `${i18n.attendances.arrived} ${attendance.arrived
         .toLocalTime()
-        .format('HH:mm')}`
+        .format()}`
     }
   } catch (e) {
     return i18n.attendances.timeError
