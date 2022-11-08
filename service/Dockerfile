@@ -28,7 +28,7 @@ RUN cd custom-ktlint-rules && ./gradlew dependencies
 COPY . /evaka
 
 # --offline is used to be sure that all dependencies are installed in previous steps
-RUN ./gradlew --offline --no-daemon assemble \
+RUN ./gradlew --offline --no-daemon assemble compileIntegrationTestKotlin \
  && unzip -oq build/libs/evaka-service-boot.jar -d target
 
 RUN cd custom-ktlint-rules \

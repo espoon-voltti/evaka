@@ -31,4 +31,4 @@ services:
       - s3.mock.evaka
     ipc: host
     network_mode: host
-    command: sh -c "./gradlew compileIntegrationTestKotlin && ./gradlew integrationTest"
+    entrypoint: ./gradlew integrationTest
