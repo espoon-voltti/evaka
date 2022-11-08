@@ -537,6 +537,12 @@ jobs:
       - keycloak
       - service
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        test_chunk_number: [1, 2, 3, 4]
+        test_chunk_count: [4] # must max value of above list
+
     steps:
       - uses: actions/checkout@v3
 
@@ -574,7 +580,9 @@ jobs:
           export "JAVA_BASE_IMAGE=${{ needs.java.outputs.image }}"
           export "EVAKA_SERVICE_BUILDER_IMAGE=${{ needs.service.outputs.builder_image }}"
           cd ./compose
-          ./compose-integration run integration-test
+          mkdir -p test-results/
+          ./compose-integration run integration-test $(../bin/split-integration-tests.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}")
+          ./compose-integration logs db_it > test-results/db.log
 
       - name: Run service integration tests for fork
         if: ${{ github.event.pull_request.head.repo.fork }}
@@ -583,14 +591,14 @@ jobs:
           cd ./compose
           ./build.sh
           ./compose-integration build
-          ./compose-integration run integration-test
+          ./compose-integration run integration-test $(../bin/split-integration-tests.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}")
 
       - name: Store test results
         uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: integration-test-results
-          path: ./compose/test-results/integrationTest/
+          name: integration-test-results-${{ matrix.test_chunk_number }}
+          path: ./compose/test-results/
           retention-days: 2
 
   e2e:
@@ -682,7 +690,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: e2e-test-results
+          name: e2e-test-results-${{ matrix.test_chunk_number }}
           path: |
             frontend/screenshots/
             frontend/traces/
