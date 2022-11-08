@@ -21,6 +21,7 @@ export { faArrowUp as fasArrowUp } from '@fortawesome/free-solid-svg-icons/faArr
 export { faBabyCarriage } from '@fortawesome/free-solid-svg-icons/faBabyCarriage'
 export { faBars } from '@fortawesome/free-solid-svg-icons/faBars'
 export { faBars as farBars } from '@fortawesome/free-solid-svg-icons/faBars'
+export { faBoxArchive } from '@fortawesome/free-solid-svg-icons/faBoxArchive'
 export { faCalendar } from '@fortawesome/free-solid-svg-icons/faCalendar'
 export { faCalendarAlt } from '@fortawesome/free-solid-svg-icons/faCalendarAlt'
 export { faCalendarPlus } from '@fortawesome/free-solid-svg-icons/faCalendarPlus'

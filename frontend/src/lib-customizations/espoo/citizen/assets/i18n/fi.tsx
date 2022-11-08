@@ -364,6 +364,12 @@ export default {
       search: 'Haku',
       noResults: 'Ei tuloksia',
       messageSendError: 'Viestin lähetys epäonnistui'
+    },
+    confirmDelete: {
+      title: 'Haluatko varmasti poistaa viestiketjun?',
+      text: 'Viestejä ei poistamisen jälkeen saa enää palautettua takaisin.',
+      cancel: 'Älä poista',
+      confirm: 'Poista viestiketju'
     }
   },
   applications: {

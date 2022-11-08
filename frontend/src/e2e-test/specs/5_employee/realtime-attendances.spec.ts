@@ -39,7 +39,7 @@ let groupStaff: EmployeeDetail
 const mockedToday = LocalDate.of(2022, 3, 28)
 const placementStartDate = mockedToday.subWeeks(4)
 const placementEndDate = mockedToday.addWeeks(4)
-const groupId: UUID = uuidv4()
+const groupId = uuidv4()
 const groupId2 = uuidv4()
 
 beforeEach(async () => {
@@ -421,11 +421,6 @@ describe('Realtime staff attendances', () => {
           .save()
       }
 
-      attendancesSection = await openAttendancesSection()
-      staffAttendances = attendancesSection.staffAttendances
-    })
-
-    test('Total staff counts', async () => {
       // This employee has no group ACLs, but should still be included in totals
       await Fixture.realtimeStaffAttendance()
         .with({
@@ -438,6 +433,11 @@ describe('Realtime staff attendances', () => {
         })
         .save()
 
+      attendancesSection = await openAttendancesSection()
+      staffAttendances = attendancesSection.staffAttendances
+    })
+
+    test('Total staff counts', async () => {
       await attendancesSection.selectGroup(groupId2)
       await waitUntilEqual(() => staffAttendances.personCountSum(0), '– hlö')
 

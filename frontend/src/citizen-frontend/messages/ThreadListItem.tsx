@@ -2,14 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback } from 'react'
+import React, { SyntheticEvent, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 
 import { formatDateOrTime } from 'lib-common/date'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
-import { UUID } from 'lib-common/types'
 import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
-import AsyncIconButton from 'lib-components/atoms/buttons/AsyncIconButton'
+import IconButton from 'lib-components/atoms/buttons/IconButton'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -27,14 +26,13 @@ import { getAttachmentUrl } from '../attachments'
 import { useTranslation } from '../localization'
 
 import { MessageCharacteristics } from './MessageCharacteristics'
-import { archiveThread } from './api'
 
 interface Props {
   thread: MessageThread
   active: boolean
   hasUnreadMessages: boolean
   onClick: () => void
-  onDeleted: () => void
+  onDelete: () => void
 }
 
 export default React.memo(function ThreadListItem({
@@ -42,19 +40,18 @@ export default React.memo(function ThreadListItem({
   active,
   hasUnreadMessages,
   onClick,
-  onDeleted
+  onDelete
 }: Props) {
   const i18n = useTranslation()
   const lastMessage = thread.messages[thread.messages.length - 1]
   const participants = [...new Set(thread.messages.map((t) => t.sender.name))]
 
-  const deleteThread = useCallback(
-    async (threadId: UUID) => {
-      const result = await archiveThread(threadId)
-      onDeleted()
-      return result
+  const handleDelete = useCallback(
+    (e: SyntheticEvent<HTMLButtonElement>) => {
+      e.stopPropagation()
+      onDelete()
     },
-    [onDeleted]
+    [onDelete]
   )
 
   return (
@@ -71,14 +68,12 @@ export default React.memo(function ThreadListItem({
             {participants.join(', ')}
           </Truncated>
           <FixedSpaceRow>
-            <AsyncIconButton
+            <IconButton
               icon={faTrash}
               aria-label={i18n.common.delete}
               data-qa="delete-thread-btn"
               className="delete-btn"
-              onClick={() => deleteThread(thread.id)}
-              onSuccess={onDeleted}
-              stopPropagation
+              onClick={handleDelete}
             />
             <MessageCharacteristics
               type={thread.type}

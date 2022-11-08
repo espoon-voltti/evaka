@@ -3417,6 +3417,7 @@ export const fi = {
     inboxTitle: 'Viestit',
     emptyInbox: 'Tämä kansio on tyhjä',
     replyToThread: 'Vastaa viestiin',
+    archiveThread: 'Arkistoi viestiketju',
     unitList: {
       title: 'Yksiköt'
     },

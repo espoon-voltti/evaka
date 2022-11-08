@@ -178,25 +178,13 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
 
         // when employee gets a reply
-        db.transaction {
-            // TODO: Replying to a thread should be MessageService's job
-            val now = RealEvakaClock().now()
-            val recipients = setOf(employee1Account)
-            val contentId =
-                it.insertMessageContent(content = "Just replying here", sender = person1Account)
-            val messageId =
-                it.insertMessage(
-                    now = now,
-                    contentId = contentId,
-                    threadId = thread2Id,
-                    sender = person1Account,
-                    repliesToMessageId = thread.messages.last().id,
-                    recipientNames = listOf(),
-                    municipalAccountName = "Espoo"
-                )
-            it.insertRecipients(recipientAccountIds = recipients, messageId = messageId)
-            it.upsertThreadParticipants(thread2Id, person1Account, recipients, now)
-        }
+        replyToThread(
+            thread2Id,
+            person1Account,
+            setOf(employee1Account),
+            "Just replying here",
+            thread.messages.last().id
+        )
 
         // then employee sees the thread
         val employeeResult = db.read { it.getReceivedThreads(employee1Account, 10, 1, "Espoo") }
@@ -697,6 +685,43 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
     }
 
+    @Test
+    fun `an archived threads returns to inbox when it receives messages`() {
+        val (employeeAccount, person1Account) =
+            db.read {
+                listOf(
+                    it.getEmployeeMessageAccountIds(employee1Id).first(),
+                    it.getCitizenMessageAccount(person1Id)
+                )
+            }
+
+        val content = "Content"
+        val title = "Hello"
+        val threadId = createThread(title, content, employeeAccount, listOf(person1Account))
+        db.transaction { tx -> tx.archiveThread(person1Account, threadId) }
+        assertEquals(
+            1,
+            db.read {
+                val archiveFolderId = it.getArchiveFolderId(person1Account)
+                it.getReceivedThreads(person1Account, 50, 1, "Espoo", archiveFolderId).total
+            }
+        )
+
+        replyToThread(threadId, employeeAccount, setOf(person1Account), "Reply")
+
+        assertEquals(
+            1,
+            db.read { it.getReceivedThreads(person1Account, 50, 1, "Espoo", null).total }
+        )
+        assertEquals(
+            0,
+            db.read {
+                val archiveFolderId = it.getArchiveFolderId(person1Account)
+                it.getReceivedThreads(person1Account, 50, 1, "Espoo", archiveFolderId).total
+            }
+        )
+    }
+
     // TODO: Remove this function, creating threads should be MessageService's job
     private fun createThread(
         title: String,
@@ -721,6 +746,32 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             tx.insertRecipients(recipientAccounts.toSet(), messageId)
             tx.upsertThreadParticipants(threadId, sender, recipientAccounts.toSet(), now)
             threadId
+        }
+    }
+
+    // TODO: Remove this function; replying to a thread should be MessageService's job
+    private fun replyToThread(
+        threadId: MessageThreadId,
+        sender: MessageAccountId,
+        recipients: Set<MessageAccountId>,
+        content: String,
+        repliesToMessageId: MessageId? = null
+    ) {
+        val now = RealEvakaClock().now()
+        db.transaction { it ->
+            val contentId = it.insertMessageContent(content = content, sender = sender)
+            val messageId =
+                it.insertMessage(
+                    now = now,
+                    contentId = contentId,
+                    threadId = threadId,
+                    sender = sender,
+                    repliesToMessageId = repliesToMessageId,
+                    recipientNames = listOf(),
+                    municipalAccountName = "Espoo"
+                )
+            it.insertRecipients(recipientAccountIds = recipients, messageId = messageId)
+            it.upsertThreadParticipants(threadId, sender, recipients, now)
         }
     }
 }

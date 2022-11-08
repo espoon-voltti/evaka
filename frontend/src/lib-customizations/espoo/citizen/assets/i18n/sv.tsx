@@ -364,6 +364,12 @@ const sv: Translations = {
       search: 'Sök',
       noResults: 'Inga resultat',
       messageSendError: 'Misslyckades med att skicka meddelande'
+    },
+    confirmDelete: {
+      title: 'Vill du verkligen radera meddelandetråden?',
+      text: 'Meddelanden kan inte återställas efter radering.',
+      cancel: 'Radera inte',
+      confirm: 'Radera tråden'
     }
   },
   applications: {

@@ -21,6 +21,7 @@ declare module 'Icons' {
   const faArrowUp: IconDefinition
   const faBars: IconDefinition
   const faBabyCarriage: IconDefinition
+  const faBoxArchive: IconDefinition
   const faCalendar: IconDefinition
   const faCalendarAlt: IconDefinition
   const faCalendarPlus: IconDefinition
