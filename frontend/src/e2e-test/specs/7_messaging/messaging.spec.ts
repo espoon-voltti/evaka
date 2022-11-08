@@ -120,14 +120,15 @@ const defaultMessage = {
 
 describe('Sending and receiving messages', () => {
   const initConfigurations = [
-    { init: initCitizenPage, name: 'direct login' },
-    { init: initCitizenPageWeak, name: 'weak login' }
+    ['direct login', initCitizenPage] as const,
+    ['weak login', initCitizenPageWeak] as const
   ]
 
-  for (const configuration of initConfigurations) {
-    describe(`Interactions with ${configuration.name}`, () => {
+  describe.each(initConfigurations)(
+    'Interactions with %s',
+    (_name, initCitizen) => {
       beforeEach(async () => {
-        await Promise.all([initSupervisorPage(), configuration.init()])
+        await Promise.all([initSupervisorPage(), initCitizen()])
       })
 
       test('Unit supervisor sends message and citizen replies', async () => {
@@ -451,35 +452,35 @@ describe('Sending and receiving messages', () => {
           await citizenMessagesPage.assertInboxIsEmpty()
         })
       })
+    }
+  )
+
+  describe('Drafts', () => {
+    beforeEach(async () => {
+      await initSupervisorPage()
+    })
+    test('A draft is saved correctly', async () => {
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      const messagesPage = new MessagesPage(unitSupervisorPage)
+      await messagesPage.draftNewMessage(defaultTitle, defaultContent)
+      await messagesPage.closeMessageEditor()
+      await messagesPage.assertDraftContent(defaultTitle, defaultContent)
     })
 
-    describe('Drafts', () => {
-      beforeEach(async () => {
-        await initSupervisorPage()
-      })
-      test('A draft is saved correctly', async () => {
-        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-        const messagesPage = new MessagesPage(unitSupervisorPage)
-        await messagesPage.draftNewMessage(defaultTitle, defaultContent)
-        await messagesPage.closeMessageEditor()
-        await messagesPage.assertDraftContent(defaultTitle, defaultContent)
-      })
-
-      test('A draft is not saved when a message is sent', async () => {
-        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-        const messagesPage = new MessagesPage(unitSupervisorPage)
-        await messagesPage.draftNewMessage(defaultTitle, defaultContent)
-        await messagesPage.sendEditedMessage()
-        await messagesPage.assertNoDrafts()
-      })
-
-      test("A draft is not saved when it's discarded", async () => {
-        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-        const messagesPage = new MessagesPage(unitSupervisorPage)
-        await messagesPage.draftNewMessage(defaultTitle, defaultContent)
-        await messagesPage.discardMessage()
-        await messagesPage.assertNoDrafts()
-      })
+    test('A draft is not saved when a message is sent', async () => {
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      const messagesPage = new MessagesPage(unitSupervisorPage)
+      await messagesPage.draftNewMessage(defaultTitle, defaultContent)
+      await messagesPage.sendEditedMessage()
+      await messagesPage.assertNoDrafts()
     })
-  }
+
+    test("A draft is not saved when it's discarded", async () => {
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      const messagesPage = new MessagesPage(unitSupervisorPage)
+      await messagesPage.draftNewMessage(defaultTitle, defaultContent)
+      await messagesPage.discardMessage()
+      await messagesPage.assertNoDrafts()
+    })
+  })
 })

@@ -123,14 +123,15 @@ const defaultMessage = {
 
 describe('Sending and receiving messages', () => {
   const initConfigurations = [
-    { init: initCitizenPage, name: 'direct login' },
-    { init: initCitizenPageWeak, name: 'weak login' }
+    ['direct login', initCitizenPage] as const,
+    ['weak login', initCitizenPageWeak] as const
   ]
 
-  for (const configuration of initConfigurations) {
-    describe(`Interactions with ${configuration.name}`, () => {
+  describe.each(initConfigurations)(
+    `Interactions with $%s`,
+    (_name, initCitizen) => {
       beforeEach(async () => {
-        await Promise.all([initStaffPage(), configuration.init()])
+        await Promise.all([initStaffPage(), initCitizen()])
       })
 
       const sendMessageAsStaff = async () => {
@@ -173,8 +174,8 @@ describe('Sending and receiving messages', () => {
         await messagesPage.deleteFirstThread()
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 0)
       })
-    })
-  }
+    }
+  )
 })
 
 describe('Staff copies', () => {
