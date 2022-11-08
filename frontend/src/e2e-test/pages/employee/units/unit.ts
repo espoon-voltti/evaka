@@ -73,8 +73,7 @@ export class UnitPage {
 
   async openCalendarPage(): Promise<UnitCalendarPage> {
     await this.#calendarTab.click()
-    const section = new UnitCalendarPage(this.page)
-    return section
+    return new UnitCalendarPage(this.page)
   }
 }
 
