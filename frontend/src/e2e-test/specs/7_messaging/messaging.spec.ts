@@ -185,7 +185,7 @@ describe('Sending and receiving messages', () => {
 
         await messagesPage.assertMessageIsSentForParticipants(
           0,
-          `${enduserChildFixtureKaarina.firstName} ${enduserChildFixtureKaarina.lastName} `
+          `${enduserChildFixtureKaarina.lastName} ${enduserChildFixtureKaarina.firstName} `
         )
 
         await citizenPage.goto(config.enduserMessagesUrl)

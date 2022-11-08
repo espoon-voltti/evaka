@@ -21,6 +21,7 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.formatName
 import fi.espoo.evaka.shared.mapToPaged
 import java.time.LocalDate
 import mu.KotlinLogging
@@ -869,6 +870,7 @@ fun Database.Read.getReceiversForNewMessage(
             LEFT JOIN messaging_blocklist bl ON fp.parent_id = bl.blocked_recipient AND fp.child_id = bl.child_id
             WHERE fp.child_id = c.child_id AND fp.valid_during @> :date AND bl.id IS NULL
         )
+        ORDER BY c.unit_name, c.group_name
         """
                     .trimIndent()
             )
@@ -906,6 +908,7 @@ fun Database.Read.getReceiversForNewMessage(
         FROM accounts acc, care_area a
         JOIN daycare d ON a.id = d.care_area_id
         WHERE 'MESSAGING' = ANY(d.enabled_pilot_features)
+        ORDER BY area_name
         """
                     .trimIndent()
             )
@@ -951,7 +954,7 @@ private fun getReceiverGroups(
                     children.map {
                         MessageReceiver.Child(
                             id = it.childId,
-                            name = "${it.firstName} ${it.lastName}"
+                            name = formatName(it.firstName, it.lastName, true)
                         )
                     }
             )
