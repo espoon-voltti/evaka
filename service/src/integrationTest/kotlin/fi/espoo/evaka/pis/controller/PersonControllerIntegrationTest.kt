@@ -13,7 +13,6 @@ import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevGuardianBlocklistEntry
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestGuardianBlocklistEntry
@@ -45,7 +44,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         val response =
             controller.findBySearchTerms(
-                Database(jdbi),
+                dbInstance(),
                 user,
                 clock,
                 SearchPersonBody(
@@ -69,7 +68,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         val response =
             controller.findBySearchTerms(
-                Database(jdbi),
+                dbInstance(),
                 user,
                 clock,
                 SearchPersonBody(
@@ -93,7 +92,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
         val response =
             controller.findBySearchTerms(
-                Database(jdbi),
+                dbInstance(),
                 user,
                 clock,
                 SearchPersonBody(
@@ -119,7 +118,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
         // unless Java's Pattern.UNICODE_CHARACTER_CLASS-like functionality is enabled.
         val response =
             controller.findBySearchTerms(
-                Database(jdbi),
+                dbInstance(),
                 user,
                 clock,
                 SearchPersonBody(
@@ -145,7 +144,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 )
             }
 
-        val dependants = controller.getPersonDependants(Database(jdbi), admin, clock, guardianId)
+        val dependants = controller.getPersonDependants(dbInstance(), admin, clock, guardianId)
         assertEquals(3, dependants.size)
 
         val blockedDependant = dependants.find { it.socialSecurityNumber == "070714A9126" }!!
@@ -161,10 +160,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        assertEquals(
-            2,
-            controller.getPersonDependants(Database(jdbi), admin, clock, guardianId).size
-        )
+        assertEquals(2, controller.getPersonDependants(dbInstance(), admin, clock, guardianId).size)
     }
 
     @Test
@@ -180,7 +176,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                 )
             }
 
-        val guardians = controller.getPersonGuardians(Database(jdbi), admin, clock, childId)
+        val guardians = controller.getPersonGuardians(dbInstance(), admin, clock, childId)
         assertEquals(2, guardians.size)
 
         val blockedGuardian = guardians.find { it.socialSecurityNumber == "070644-937X" }!!
@@ -196,7 +192,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             )
         }
 
-        assertEquals(1, controller.getPersonGuardians(Database(jdbi), admin, clock, childId).size)
+        assertEquals(1, controller.getPersonGuardians(dbInstance(), admin, clock, childId).size)
     }
 
     private fun createPerson(): PersonDTO {

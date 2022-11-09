@@ -12,7 +12,6 @@ import fi.espoo.evaka.pis.controllers.SearchEmployeeRequest
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
@@ -38,7 +37,7 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val body =
             controller.searchEmployees(
-                Database(jdbi),
+                dbInstance(),
                 user,
                 RealEvakaClock(),
                 SearchEmployeeRequest(page = 1, pageSize = 4, searchTerm = null)
@@ -73,7 +72,7 @@ class EmployeeControllerSearchIntegrationTest : FullApplicationTest(resetDbBefor
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val body =
             controller.searchEmployees(
-                Database(jdbi),
+                dbInstance(),
                 user,
                 RealEvakaClock(),
                 SearchEmployeeRequest(page = 1, pageSize = 10, searchTerm = "super")

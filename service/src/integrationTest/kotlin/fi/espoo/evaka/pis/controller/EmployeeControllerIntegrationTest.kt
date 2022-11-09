@@ -12,7 +12,6 @@ import fi.espoo.evaka.pis.controllers.EmployeeController
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import java.util.UUID
@@ -29,7 +28,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     @Test
     fun `no employees return empty list`() {
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
-        val employees = employeeController.getEmployees(Database(jdbi), user, clock)
+        val employees = employeeController.getEmployees(dbInstance(), user, clock)
         assertEquals(listOf(), employees)
     }
 
@@ -38,7 +37,7 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val emp =
             employeeController.createEmployee(
-                Database(jdbi),
+                dbInstance(),
                 user,
                 clock,
                 requestFromEmployee(employee1)
@@ -52,19 +51,9 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     @Test
     fun `admin gets all employees`() {
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
-        employeeController.createEmployee(
-            Database(jdbi),
-            user,
-            clock,
-            requestFromEmployee(employee1)
-        )
-        employeeController.createEmployee(
-            Database(jdbi),
-            user,
-            clock,
-            requestFromEmployee(employee2)
-        )
-        val employees = employeeController.getEmployees(Database(jdbi), user, clock)
+        employeeController.createEmployee(dbInstance(), user, clock, requestFromEmployee(employee1))
+        employeeController.createEmployee(dbInstance(), user, clock, requestFromEmployee(employee2))
+        val employees = employeeController.getEmployees(dbInstance(), user, clock)
         assertEquals(2, employees.size)
         assertEquals(employee1.email, employees[0].email)
         assertEquals(employee2.email, employees[1].email)
@@ -73,20 +62,20 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     @Test
     fun `admin can first create, then get employee`() {
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
-        assertEquals(0, employeeController.getEmployees(Database(jdbi), user, clock).size)
+        assertEquals(0, employeeController.getEmployees(dbInstance(), user, clock).size)
 
         val responseCreate =
             employeeController.createEmployee(
-                Database(jdbi),
+                dbInstance(),
                 user,
                 clock,
                 requestFromEmployee(employee1)
             )
-        assertEquals(1, employeeController.getEmployees(Database(jdbi), user, clock).size)
+        assertEquals(1, employeeController.getEmployees(dbInstance(), user, clock).size)
 
         val responseGet =
-            employeeController.getEmployee(Database(jdbi), user, clock, responseCreate.id)
-        assertEquals(1, employeeController.getEmployees(Database(jdbi), user, clock).size)
+            employeeController.getEmployee(dbInstance(), user, clock, responseCreate.id)
+        assertEquals(1, employeeController.getEmployees(dbInstance(), user, clock).size)
         assertEquals(responseCreate.id, responseGet.id)
     }
 
@@ -95,15 +84,15 @@ class EmployeeControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
         val user = AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
         val body =
             employeeController.createEmployee(
-                Database(jdbi),
+                dbInstance(),
                 user,
                 clock,
                 requestFromEmployee(employee1)
             )
 
-        employeeController.deleteEmployee(Database(jdbi), user, clock, body.id)
+        employeeController.deleteEmployee(dbInstance(), user, clock, body.id)
 
-        assertEquals(0, employeeController.getEmployees(Database(jdbi), user, clock).size)
+        assertEquals(0, employeeController.getEmployees(dbInstance(), user, clock).size)
     }
 
     fun requestFromEmployee(employee: Employee) =
