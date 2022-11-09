@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState
+} from 'react'
 import { DayModifiers } from 'react-day-picker'
 import styled from 'styled-components'
 
@@ -189,68 +195,61 @@ export default React.memo(function DatePicker({
   const wrapperRef = useRef<HTMLDivElement>(null)
   const pickerRef = useRef<HTMLDivElement>(null)
 
-  const [internalDate, setInternalDate] = useState<LocalDate | null>(date)
-  const [parentDate, setParentDate] = useState<LocalDate | null>(date)
   const [internalError, setInternalError] = useState<InputInfo>()
 
-  useEffect(() => {
-    setParentDate(date)
-    setInternalDate(date)
-  }, [date])
-
-  useEffect(() => {
-    setInternalError(undefined)
-
-    if (parentDate?.formatIso() !== internalDate?.formatIso()) {
-      if (internalDate === null) {
-        onChange(null)
-      } else if (minDate && internalDate.isBefore(minDate)) {
-        setInternalError({ text: errorTexts.dateTooEarly, status: 'warning' })
-      } else if (maxDate && internalDate.isAfter(maxDate)) {
-        setInternalError({ text: errorTexts.dateTooLate, status: 'warning' })
-      } else {
-        const validationError = isInvalidDate?.(internalDate)
-        if (validationError) {
-          setInternalError({ text: validationError, status: 'warning' })
-        } else {
-          onChange(internalDate)
-        }
-      }
-    }
-  }, [
-    internalDate,
-    isInvalidDate,
-    onChange,
-    errorTexts,
-    minDate,
-    maxDate,
-    parentDate
-  ])
-
-  useEffect(() => {
-    if (!hideErrorsBeforeTouched) {
-      setShowErrors(true)
-    }
-  }, [hideErrorsBeforeTouched])
-
-  function hideDatePicker() {
-    setShowDatePicker(false)
+  if (!hideErrorsBeforeTouched && !showErrors) {
     setShowErrors(true)
   }
 
-  function handleUserKeyPress(e: React.KeyboardEvent) {
-    if (e.key === 'Esc' || e.key === 'Escape' || e.key === 'Enter') {
-      hideDatePicker()
-    }
-  }
+  const handleChange = useCallback(
+    (value: LocalDate | null) => {
+      if (value?.formatIso() !== date?.formatIso()) {
+        if (value === null) {
+          onChange(null)
+        } else if (minDate && value.isBefore(minDate)) {
+          setInternalError({ text: errorTexts.dateTooEarly, status: 'warning' })
+        } else if (maxDate && value.isAfter(maxDate)) {
+          setInternalError({ text: errorTexts.dateTooLate, status: 'warning' })
+        } else {
+          const validationError = isInvalidDate?.(value)
+          if (validationError) {
+            setInternalError({ text: validationError, status: 'warning' })
+          } else {
+            setInternalError(undefined)
+            onChange(value)
+          }
+        }
+      } else {
+        setInternalError(undefined)
+      }
+    },
+    [date, errorTexts, isInvalidDate, maxDate, minDate, onChange]
+  )
 
-  function handleDayClick(day: Date, modifiers?: DayModifiers) {
-    if (modifiers?.disabled) {
-      return
-    }
-    hideDatePicker()
-    setInternalDate(LocalDate.fromSystemTzDate(day))
-  }
+  const hideDatePicker = useCallback(() => {
+    setShowDatePicker(false)
+    setShowErrors(true)
+  }, [])
+
+  const handleUserKeyPress = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Esc' || e.key === 'Escape' || e.key === 'Enter') {
+        hideDatePicker()
+      }
+    },
+    [hideDatePicker]
+  )
+
+  const handleDayClick = useCallback(
+    (day: Date, modifiers?: DayModifiers) => {
+      if (modifiers?.disabled) {
+        return
+      }
+      hideDatePicker()
+      handleChange(LocalDate.fromSystemTzDate(day))
+    },
+    [handleChange, hideDatePicker]
+  )
 
   useLayoutEffect(() => {
     if (showDatePicker) {
@@ -303,13 +302,13 @@ export default React.memo(function DatePicker({
     }
 
     return () => undefined
-  }, [showDatePicker])
+  }, [hideDatePicker, showDatePicker])
 
   return (
     <DatePickerWrapper ref={wrapperRef} onKeyDown={handleUserKeyPress}>
       <DatePickerInput
-        date={internalDate}
-        setDate={setInternalDate}
+        date={date}
+        setDate={handleChange}
         disabled={disabled}
         onFocus={(ev) => {
           setShowDatePicker(true)
@@ -335,7 +334,7 @@ export default React.memo(function DatePicker({
           <DayPickerDiv>
             <DatePickerDay
               locale={locale}
-              inputValue={internalDate}
+              inputValue={date}
               handleDayClick={handleDayClick}
               minDate={minDate}
               maxDate={maxDate}
