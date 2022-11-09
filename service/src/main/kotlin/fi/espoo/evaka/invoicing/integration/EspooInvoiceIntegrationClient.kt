@@ -15,6 +15,7 @@ import fi.espoo.evaka.invoicing.service.EspooInvoiceProducts
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.shared.domain.europeHelsinki
 import fi.espoo.voltti.logging.loggers.error
+import fi.espoo.voltti.logging.loggers.info
 import java.time.LocalDate
 import mu.KotlinLogging
 
@@ -57,6 +58,11 @@ class EspooInvoiceIntegrationClient(
     private fun sendBatch(invoices: List<InvoiceDetailed>, agreementType: Int): Boolean {
         val batch = createBatchExports(invoices, agreementType, sendCodebtor = env.sendCodebtor)
         val payload = jsonMapper.writeValueAsString(batch)
+        logger.info(
+            mapOf("batchNumber" to batch.batchNumber, "batchLength" to batch.invoices.size)
+        ) {
+            "Sending invoice batch to integration"
+        }
         logger.debug("Sending invoice batch ${batch.batchNumber} to integration, payload: $payload")
         val (_, _, result) =
             Fuel.post("${env.url}/invoice-batches")
