@@ -175,7 +175,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                                     MessageReceiver.Child(
                                                         id = child.id,
                                                         name =
-                                                            "${child.firstName} ${child.lastName}"
+                                                            "${child.lastName} ${child.firstName}"
                                                     )
                                                 )
                                         )
@@ -194,7 +194,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                     listOf(
                                         MessageReceiver.Child(
                                             id = child.id,
-                                            name = "${child.firstName} ${child.lastName}"
+                                            name = "${child.lastName} ${child.firstName}"
                                         )
                                     )
                             )
@@ -235,7 +235,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                                                     MessageReceiver.Child(
                                                         id = testChild_4.id,
                                                         name =
-                                                            "${testChild_4.firstName} ${testChild_4.lastName}"
+                                                            "${testChild_4.lastName} ${testChild_4.firstName}"
                                                     )
                                                 )
                                         )
