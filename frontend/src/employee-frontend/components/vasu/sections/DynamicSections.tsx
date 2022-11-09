@@ -175,14 +175,6 @@ export function DynamicSections({
                     <RadioGroupQuestionElem
                       questionNumber={questionNumber}
                       question={question}
-                      selectedValue={
-                        question.value !== null
-                          ? {
-                              key: question.value,
-                              range: question.dateRange
-                            }
-                          : null
-                      }
                       onChange={
                         setContent
                           ? (selectedOption: RadioGroupSelectedValue | null) =>

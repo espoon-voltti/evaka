@@ -28,7 +28,6 @@ export interface RadioGroupSelectedValue {
 interface Props {
   questionNumber: string
   question: RadioGroupQuestion
-  selectedValue: RadioGroupSelectedValue | null
   onChange?: (selected: RadioGroupSelectedValue | null) => void
   lang: VasuLanguage
   translations: VasuTranslations
@@ -36,12 +35,12 @@ interface Props {
 
 export function RadioGroupQuestion({
   onChange,
-  question: { name, options, info },
+  question: { name, options, info, value, dateRange },
   questionNumber,
-  selectedValue,
   lang,
   translations
 }: Props) {
+  const selectedValue = value !== null ? { key: value, range: dateRange } : null
   const selectedOption = options.find(
     (option) => option.key === selectedValue?.key
   )
