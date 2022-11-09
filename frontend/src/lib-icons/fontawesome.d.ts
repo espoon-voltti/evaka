@@ -17,6 +17,7 @@ declare module 'Icons' {
   const faArrowDownToLine: IconDefinition
   const faArrowLeft: IconDefinition
   const faArrowRight: IconDefinition
+  const faArrowRotateLeft: IconDefinition
   const faAngleUp: IconDefinition
   const faArrowUp: IconDefinition
   const faBars: IconDefinition

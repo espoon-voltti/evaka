@@ -29,6 +29,7 @@ export { faArrowDownToLine } from '@fortawesome/pro-light-svg-icons/faArrowDownT
 export { faArrowLeft } from '@fortawesome/pro-light-svg-icons/faArrowLeft'
 export { faArrowRight } from '@fortawesome/pro-light-svg-icons/faArrowRight'
 export { faArrowUp } from '@fortawesome/pro-light-svg-icons/faArrowUp'
+export { faArrowRotateLeft } from '@fortawesome/pro-light-svg-icons/faArrowRotateLeft'
 export { faBabyCarriage } from '@fortawesome/pro-light-svg-icons/faBabyCarriage'
 export { faBars } from '@fortawesome/pro-light-svg-icons/faBars'
 export { faBoxArchive } from '@fortawesome/pro-solid-svg-icons/faBoxArchive'

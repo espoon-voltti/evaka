@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faArrowRotateLeft } from 'Icons'
 import React, { useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -32,6 +33,7 @@ export default React.memo(function AttendanceChildDeparted({
 
   return (
     <InlineWideAsyncButton
+      icon={faArrowRotateLeft}
       text={i18n.attendances.actions.returnToPresent}
       onClick={() => returnToPresentCall()}
       onSuccess={() => {

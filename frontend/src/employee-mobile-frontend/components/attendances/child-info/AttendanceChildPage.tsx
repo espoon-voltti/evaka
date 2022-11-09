@@ -176,7 +176,7 @@ export default React.memo(function AttendanceChildPage() {
                     times={child.dailyServiceTimes}
                     reservations={child.reservations}
                   />
-                  <ArrivalAndDeparture child={child} />
+                  <ArrivalAndDeparture child={child} unitId={unitId} />
                   <Absences child={child} />
                   <Gap size="xs" />
                   {child.status === 'COMING' && (
