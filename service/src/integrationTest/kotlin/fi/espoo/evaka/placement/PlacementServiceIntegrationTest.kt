@@ -866,7 +866,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         ),
                     serviceNeeds = emptyList(),
                     terminatedBy = null,
-                    terminationRequestedDate = null
+                    terminationRequestedDate = null,
+                    updated = placements.first().updated
                 )
             ),
             placements
@@ -1025,7 +1026,8 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         ),
                     serviceNeeds = emptyList(),
                     terminatedBy = null,
-                    terminationRequestedDate = null
+                    terminationRequestedDate = null,
+                    updated = placements.first().updated
                 )
             ),
             placements

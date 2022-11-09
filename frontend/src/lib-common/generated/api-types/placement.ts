@@ -6,6 +6,7 @@
 /* eslint-disable import/order, prettier/prettier */
 
 import FiniteDateRange from '../../finite-date-range'
+import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
 import { EvakaUser } from './user'
 import { Language } from './daycare'
@@ -88,6 +89,7 @@ export interface DaycarePlacementWithDetails {
   terminatedBy: EvakaUser | null
   terminationRequestedDate: LocalDate | null
   type: PlacementType
+  updated: HelsinkiDateTime | null
 }
 
 /**

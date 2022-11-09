@@ -419,7 +419,7 @@ fun Database.Read.getDaycarePlacements(
     val sql =
         """
         SELECT
-            pl.id, pl.start_date, pl.end_date, pl.type, pl.child_id, pl.termination_requested_date, 
+            pl.id, pl.start_date, pl.end_date, pl.type, pl.child_id, pl.termination_requested_date, pl.updated,
             terminated_by.id AS terminated_by_id,
             terminated_by.name AS terminated_by_name,
             terminated_by.type AS terminated_by_type,
