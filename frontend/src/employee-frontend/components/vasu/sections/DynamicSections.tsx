@@ -204,13 +204,6 @@ export function DynamicSections({
                     <MultiSelectQuestionElem
                       question={question}
                       questionNumber={questionNumber}
-                      selectedValues={
-                        findQuestion<MultiSelectQuestion>(
-                          { sections },
-                          section.name,
-                          question.name
-                        ).value
-                      }
                       onChange={
                         setContent
                           ? (option, value, date) =>

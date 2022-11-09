@@ -26,7 +26,6 @@ import { ValueOrNoRecord } from './ValueOrNoRecord'
 import { QuestionProps } from './question-props'
 
 interface Props extends QuestionProps<MultiSelectQuestion> {
-  selectedValues: string[]
   onChange?: (
     option: QuestionOption,
     value: boolean | string,
@@ -44,9 +43,8 @@ const SubText = styled(P)`
 
 export function MultiSelectQuestion({
   onChange,
-  question: { name, options, info, textValue, dateValue, maxSelections },
+  question: { name, options, info, value, textValue, dateValue, maxSelections },
   questionNumber,
-  selectedValues,
   translations
 }: Props) {
   const { i18n } = useTranslation()
@@ -72,14 +70,14 @@ export function MultiSelectQuestion({
                 <FixedSpaceRow>
                   <Checkbox
                     key={option.key}
-                    checked={selectedValues.includes(option.key)}
+                    checked={value.includes(option.key)}
                     label={option.name}
                     onChange={(checked) => onChange(option, checked)}
                     data-qa={`multi-select-question-option-${option.key}`}
                     disabled={
                       !!maxSelections &&
-                      selectedValues.length >= maxSelections &&
-                      !selectedValues.includes(option.key)
+                      value.length >= maxSelections &&
+                      !value.includes(option.key)
                     }
                   />
                   {option.date && (
@@ -89,8 +87,7 @@ export function MultiSelectQuestion({
                       onChange={(date) =>
                         onChange(
                           option,
-                          textValue?.[option.key] ??
-                            selectedValues.includes(option.key),
+                          textValue?.[option.key] ?? value.includes(option.key),
                           date
                         )
                       }
@@ -118,7 +115,7 @@ export function MultiSelectQuestion({
       ) : (
         <ValueOrNoRecord
           text={options
-            .filter((option) => selectedValues.includes(option.key))
+            .filter((option) => value.includes(option.key))
             .map((o) => {
               const date = dateValue?.[o.key]
               const name = `${o.name}${date ? ` ${date.format()}` : ''}${
