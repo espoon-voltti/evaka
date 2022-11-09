@@ -34,7 +34,7 @@ export async function enduserLoginWeak(page: Page) {
   await new TextInput(page.find('[id="password"]')).fill('test123')
   await page.find('[id="kc-login"]').click()
 
-  await page.find('[data-qa="nav-messages-desktop"]').waitUntilVisible()
+  await page.findByDataQa('header-city-logo').waitUntilVisible()
 }
 
 export async function employeeLogin(page: Page, user: { externalId: string }) {
