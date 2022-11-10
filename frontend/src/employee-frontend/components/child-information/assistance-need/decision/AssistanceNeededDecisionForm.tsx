@@ -207,7 +207,6 @@ type AssistanceNeedDecisionFormProps = {
     SetStateAction<AssistanceNeedDecisionForm | undefined>
   >
   fieldInfos: FieldInfos
-  onStartDateMissing: (missing: boolean) => void
 }
 
 export default React.memo(function AssistanceNeedDecisionForm({
@@ -215,8 +214,7 @@ export default React.memo(function AssistanceNeedDecisionForm({
   decisionMakerOptions,
   formState,
   setFormState,
-  fieldInfos,
-  onStartDateMissing
+  fieldInfos
 }: AssistanceNeedDecisionFormProps) {
   const [units] = useApiState(() => getUnits([], 'ALL'), [])
   const [employees] = useApiState(() => getEmployees(), [])
@@ -544,9 +542,8 @@ export default React.memo(function AssistanceNeedDecisionForm({
               setFieldVal({
                 validityPeriod: formState.validityPeriod.withStart(date)
               })
-              onStartDateMissing(false)
             } else {
-              onStartDateMissing(true)
+              // Setting an invalid date doesn't have any effect
             }
           }}
           errorTexts={i18n.validationErrors}
