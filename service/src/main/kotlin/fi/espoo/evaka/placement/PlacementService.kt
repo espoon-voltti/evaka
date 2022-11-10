@@ -29,6 +29,7 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.user.EvakaUser
@@ -442,7 +443,8 @@ fun Database.Read.getDetailedDaycarePlacements(
                     groupPlacements.filter { it.daycarePlacementId == daycarePlacement.id },
                 serviceNeeds = serviceNeeds.filter { it.placementId == daycarePlacement.id },
                 terminatedBy = daycarePlacement.terminatedBy,
-                terminationRequestedDate = daycarePlacement.terminationRequestedDate
+                terminationRequestedDate = daycarePlacement.terminationRequestedDate,
+                updated = daycarePlacement.updated
             )
         }
         .map(::addMissingGroupPlacements)
@@ -638,6 +640,7 @@ data class DaycarePlacementDetails(
     val type: PlacementType,
     val missingServiceNeedDays: Int,
     val terminationRequestedDate: LocalDate?,
+    val updated: HelsinkiDateTime?,
     @Nested("terminated_by") val terminatedBy: EvakaUser?
 )
 
@@ -653,7 +656,8 @@ data class DaycarePlacementWithDetails(
     val serviceNeeds: List<ServiceNeed>,
     val isRestrictedFromUser: Boolean = false,
     val terminationRequestedDate: LocalDate?,
-    val terminatedBy: EvakaUser?
+    val terminatedBy: EvakaUser?,
+    val updated: HelsinkiDateTime?
 )
 
 data class DaycareGroupPlacement(

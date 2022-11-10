@@ -69,6 +69,7 @@ export async function getPlacements(
           startDate: LocalDate.parseIso(gp.startDate),
           endDate: LocalDate.parseIso(gp.endDate)
         })),
+        updated: p.updated ? HelsinkiDateTime.parseIso(p.updated) : null,
         serviceNeeds: p.serviceNeeds.map((sn) => ({
           ...sn,
           startDate: LocalDate.parseIso(sn.startDate),
