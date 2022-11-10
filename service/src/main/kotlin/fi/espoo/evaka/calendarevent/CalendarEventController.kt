@@ -64,7 +64,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
             .also {
                 Audit.UnitCalendarEventsRead.log(
                     targetId = unitId,
-                    args = mapOf("start" to start, "end" to end, "count" to it.size)
+                    meta = mapOf("start" to start, "end" to end, "count" to it.size)
                 )
             }
     }
@@ -237,7 +237,7 @@ class CalendarEventController(private val accessControl: AccessControl) {
             .also {
                 Audit.UnitCalendarEventsRead.log(
                     targetId = user.id,
-                    args = mapOf("start" to start, "end" to end, "count" to it.size)
+                    meta = mapOf("start" to start, "end" to end, "count" to it.size)
                 )
             }
     }

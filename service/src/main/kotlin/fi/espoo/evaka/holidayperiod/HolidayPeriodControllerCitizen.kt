@@ -52,7 +52,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                     it.getHolidayPeriods()
                 }
             }
-            .also { Audit.HolidayPeriodsList.log(args = mapOf("count" to it.size)) }
+            .also { Audit.HolidayPeriodsList.log(meta = mapOf("count" to it.size)) }
     }
 
     @GetMapping("/questionnaire")
@@ -101,7 +101,7 @@ class HolidayPeriodControllerCitizen(private val accessControl: AccessControl) {
                     }
                 }
             }
-            .also { Audit.HolidayQuestionnairesList.log(args = mapOf("count" to it.size)) }
+            .also { Audit.HolidayQuestionnairesList.log(meta = mapOf("count" to it.size)) }
     }
 
     @PostMapping("/questionnaire/fixed-period/{id}")

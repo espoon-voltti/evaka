@@ -51,7 +51,7 @@ class RawReportController(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.RawReportRead.log(
-                    args = mapOf("from" to from, "to" to to, "count" to it.size)
+                    meta = mapOf("from" to from, "to" to to, "count" to it.size)
                 )
             }
     }

@@ -207,7 +207,7 @@ class ApplicationControllerCitizen(
                 Audit.ApplicationCreate.log(
                     targetId = body.childId,
                     objectId = applicationId,
-                    args = mapOf("guardianId" to user.id, "applicationType" to body.type)
+                    meta = mapOf("guardianId" to user.id, "applicationType" to body.type)
                 )
             }
     }
@@ -403,7 +403,7 @@ class ApplicationControllerCitizen(
                     it.getOwnDecisions(user.id)
                 }
             }
-            .also { Audit.DecisionRead.log(targetId = user.id, args = mapOf("count" to it.size)) }
+            .also { Audit.DecisionRead.log(targetId = user.id, meta = mapOf("count" to it.size)) }
     }
 
     data class DecisionWithValidStartDatePeriod(
@@ -441,7 +441,7 @@ class ApplicationControllerCitizen(
             .also {
                 Audit.DecisionReadByApplication.log(
                     targetId = applicationId,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }

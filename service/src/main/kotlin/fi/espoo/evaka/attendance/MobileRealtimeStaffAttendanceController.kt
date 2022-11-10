@@ -56,7 +56,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             .also {
                 Audit.UnitStaffAttendanceRead.log(
                     targetId = unitId,
-                    args =
+                    meta =
                         mapOf(
                             "staffCount" to it.staff.size,
                             "externalStaffCount" to it.extraAttendances.size

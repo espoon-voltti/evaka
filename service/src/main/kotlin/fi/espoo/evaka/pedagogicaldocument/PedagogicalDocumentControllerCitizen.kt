@@ -58,7 +58,7 @@ class PedagogicalDocumentControllerCitizen(private val accessControl: AccessCont
             .also {
                 Audit.PedagogicalDocumentReadByGuardian.log(
                     targetId = childId,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }

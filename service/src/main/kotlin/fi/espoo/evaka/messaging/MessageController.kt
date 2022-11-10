@@ -77,7 +77,7 @@ class MessageController(
                     )
                 }
             }
-            .also { Audit.MessagingMyAccountsRead.log(args = mapOf("count" to it.size)) }
+            .also { Audit.MessagingMyAccountsRead.log(meta = mapOf("count" to it.size)) }
     }
 
     @GetMapping("/mobile/my-accounts/{unitId}")
@@ -105,7 +105,7 @@ class MessageController(
                     } else setOf()
                 }
             }
-        Audit.MessagingMyAccountsRead.log(targetId = unitId, args = mapOf("count" to result.size))
+        Audit.MessagingMyAccountsRead.log(targetId = unitId, meta = mapOf("count" to result.size))
         return result
     }
 
@@ -132,7 +132,7 @@ class MessageController(
             .also {
                 Audit.MessagingReceivedMessagesRead.log(
                     targetId = accountId,
-                    args = mapOf("total" to it.total)
+                    meta = mapOf("total" to it.total)
                 )
             }
     }
@@ -166,7 +166,7 @@ class MessageController(
             .also {
                 Audit.MessagingMessagesInFolderRead.log(
                     targetId = accountId,
-                    args = mapOf("total" to it.total)
+                    meta = mapOf("total" to it.total)
                 )
             }
     }
@@ -187,7 +187,7 @@ class MessageController(
             .also {
                 Audit.MessagingReceivedMessagesRead.log(
                     targetId = accountId,
-                    args = mapOf("total" to it.total)
+                    meta = mapOf("total" to it.total)
                 )
             }
     }
@@ -208,7 +208,7 @@ class MessageController(
             .also {
                 Audit.MessagingSentMessagesRead.log(
                     targetId = accountId,
-                    args = mapOf("total" to it.total)
+                    meta = mapOf("total" to it.total)
                 )
             }
     }
@@ -232,7 +232,7 @@ class MessageController(
                     )
                 }
             }
-            .also { Audit.MessagingUnreadMessagesRead.log(args = mapOf("count" to it.size)) }
+            .also { Audit.MessagingUnreadMessagesRead.log(meta = mapOf("count" to it.size)) }
     }
 
     @GetMapping("/unread/{unitId}")
@@ -257,7 +257,7 @@ class MessageController(
             .also {
                 Audit.MessagingUnreadMessagesRead.log(
                     targetId = unitId,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }
@@ -358,7 +358,7 @@ class MessageController(
             .also {
                 Audit.MessagingDraftsRead.log(
                     targetId = accountId,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }
@@ -485,7 +485,7 @@ class MessageController(
                     it.getReceiversForNewMessage(employeeId, clock.today())
                 }
             }
-            .also { Audit.MessagingMessageReceiversRead.log(args = mapOf("count" to it.size)) }
+            .also { Audit.MessagingMessageReceiversRead.log(meta = mapOf("count" to it.size)) }
     }
 
     private fun requireMessageAccountAccess(

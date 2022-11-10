@@ -258,7 +258,7 @@ class AssistanceNeedDecisionController(
             .also {
                 Audit.ChildAssistanceNeedDecisionsList.log(
                     targetId = childId,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }
@@ -363,7 +363,7 @@ class AssistanceNeedDecisionController(
             .also {
                 Audit.ChildAssistanceNeedDecisionDecide.log(
                     targetId = id,
-                    args = mapOf("status" to body.status)
+                    meta = mapOf("status" to body.status)
                 )
             }
     }
@@ -463,7 +463,7 @@ class AssistanceNeedDecisionController(
             .also {
                 Audit.ChildAssistanceNeedDecisionReadDecisionMakerOptions.log(
                     targetId = id,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }

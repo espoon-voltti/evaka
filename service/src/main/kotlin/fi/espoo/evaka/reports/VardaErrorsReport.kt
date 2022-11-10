@@ -36,7 +36,7 @@ class VardaErrorReport(private val accessControl: AccessControl) {
                     it.getVardaErrors()
                 }
             }
-            .also { Audit.VardaReportRead.log(args = mapOf("count" to it.size)) }
+            .also { Audit.VardaReportRead.log(meta = mapOf("count" to it.size)) }
     }
 }
 

@@ -49,7 +49,7 @@ class ApplicationsReportController(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.ApplicationsReportRead.log(
-                    args = mapOf("from" to from, "to" to to, "count" to it.size)
+                    meta = mapOf("from" to from, "to" to to, "count" to it.size)
                 )
             }
     }

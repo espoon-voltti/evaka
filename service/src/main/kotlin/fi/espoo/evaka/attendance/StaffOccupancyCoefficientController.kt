@@ -43,7 +43,7 @@ class StaffOccupancyCoefficientController(private val ac: AccessControl) {
             .also {
                 Audit.StaffOccupancyCoefficientRead.log(
                     targetId = unitId,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }

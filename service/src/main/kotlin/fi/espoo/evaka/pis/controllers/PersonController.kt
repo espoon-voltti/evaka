@@ -159,7 +159,7 @@ class PersonController(
                     ?: throw NotFound()
             }
             .also {
-                Audit.PersonDependantRead.log(targetId = personId, args = mapOf("count" to it.size))
+                Audit.PersonDependantRead.log(targetId = personId, meta = mapOf("count" to it.size))
             }
     }
 
@@ -184,7 +184,7 @@ class PersonController(
             }
             .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
             .also {
-                Audit.PersonGuardianRead.log(targetId = childId, args = mapOf("count" to it.size))
+                Audit.PersonGuardianRead.log(targetId = childId, meta = mapOf("count" to it.size))
             }
     }
 
@@ -211,7 +211,7 @@ class PersonController(
             .also {
                 Audit.PersonBlockedGuardiansRead.log(
                     targetId = childId,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }
@@ -241,7 +241,7 @@ class PersonController(
                     )
                 }
             }
-            .also { Audit.PersonDetailsSearch.log(args = mapOf("count" to it.size)) }
+            .also { Audit.PersonDetailsSearch.log(meta = mapOf("count" to it.size)) }
     }
 
     @PatchMapping("/{personId}")
@@ -561,7 +561,7 @@ class PersonController(
         Audit.PersonUpdateEvakaRights.log(
             targetId = childId,
             objectId = body.guardianId,
-            args = mapOf("denied" to body.denied)
+            meta = mapOf("denied" to body.denied)
         )
     }
 

@@ -64,7 +64,7 @@ class OccupancyController(
                     )
                 }
             }
-        Audit.OccupancyRead.log(targetId = unitId, args = mapOf("count" to occupancies.size))
+        Audit.OccupancyRead.log(targetId = unitId, meta = mapOf("count" to occupancies.size))
 
         return OccupancyResponse(
             occupancies = occupancies,
@@ -190,7 +190,7 @@ class OccupancyController(
                     )
                 }
             }
-        Audit.OccupancyRead.log(targetId = unitId, args = mapOf("count" to occupancies.size))
+        Audit.OccupancyRead.log(targetId = unitId, meta = mapOf("count" to occupancies.size))
 
         return occupancies
             .groupBy({ it.groupId }) {

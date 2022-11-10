@@ -81,7 +81,7 @@ class AssistanceNeedVoucherCoefficientController(private val accessControl: Acce
             .also {
                 Audit.ChildAssistanceNeedVoucherCoefficientRead.log(
                     targetId = childId,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }

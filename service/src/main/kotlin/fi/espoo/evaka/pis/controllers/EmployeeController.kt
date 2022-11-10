@@ -113,7 +113,7 @@ class EmployeeController(private val accessControl: AccessControl) {
                 it.updateEmployee(id = id, globalRoles = body.globalRoles)
             }
         }
-        Audit.EmployeeUpdate.log(targetId = id, args = mapOf("globalRoles" to body.globalRoles))
+        Audit.EmployeeUpdate.log(targetId = id, meta = mapOf("globalRoles" to body.globalRoles))
     }
 
     @GetMapping("/{id}/details")

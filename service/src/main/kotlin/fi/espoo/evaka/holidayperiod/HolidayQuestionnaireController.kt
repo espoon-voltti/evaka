@@ -42,7 +42,7 @@ class HolidayQuestionnaireController(private val accessControl: AccessControl) {
                     it.getHolidayQuestionnaires()
                 }
             }
-            .also { Audit.HolidayQuestionnairesList.log(args = mapOf("count" to it.size)) }
+            .also { Audit.HolidayQuestionnairesList.log(meta = mapOf("count" to it.size)) }
     }
 
     @GetMapping("/{id}")

@@ -59,7 +59,7 @@ class DecisionController(
                     it.getDecisionsByGuardian(guardianId, filter)
                 }
             }
-        Audit.DecisionRead.log(targetId = guardianId, args = mapOf("count" to decisions.size))
+        Audit.DecisionRead.log(targetId = guardianId, meta = mapOf("count" to decisions.size))
         return DecisionListResponse(decisions)
     }
 
@@ -90,7 +90,7 @@ class DecisionController(
                     it.getDecisionsByChild(childId, filter)
                 }
             }
-        Audit.DecisionRead.log(targetId = childId, args = mapOf("count" to decisions.size))
+        Audit.DecisionRead.log(targetId = childId, meta = mapOf("count" to decisions.size))
         return DecisionListResponse(decisions)
     }
 
@@ -143,7 +143,7 @@ class DecisionController(
                     decisionDraftService.getDecisionUnits(it)
                 }
             }
-            .also { Audit.UnitRead.log(args = mapOf("count" to it.size)) }
+            .also { Audit.UnitRead.log(meta = mapOf("count" to it.size)) }
     }
 
     @GetMapping("/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])

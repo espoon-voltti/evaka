@@ -42,7 +42,7 @@ class StartingPlacementsReportController(private val accessControl: AccessContro
             }
             .also {
                 Audit.StartingPlacementsReportRead.log(
-                    args = mapOf("year" to year, "month" to month, "count" to it.size)
+                    meta = mapOf("year" to year, "month" to month, "count" to it.size)
                 )
             }
     }

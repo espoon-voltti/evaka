@@ -39,7 +39,7 @@ class FamilyConflictReportController(private val accessControl: AccessControl) {
                     it.getFamilyConflicts(filter)
                 }
             }
-            .also { Audit.FamilyConflictReportRead.log(args = mapOf("count" to it.size)) }
+            .also { Audit.FamilyConflictReportRead.log(meta = mapOf("count" to it.size)) }
     }
 }
 

@@ -50,7 +50,7 @@ class MissingServiceNeedReportController(private val accessControl: AccessContro
             }
             .also {
                 Audit.MissingServiceNeedReportRead.log(
-                    args = mapOf("from" to from, "to" to to, "count" to it.size)
+                    meta = mapOf("from" to from, "to" to to, "count" to it.size)
                 )
             }
     }

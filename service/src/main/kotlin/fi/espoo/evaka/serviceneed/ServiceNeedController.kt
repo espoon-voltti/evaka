@@ -163,7 +163,7 @@ class ServiceNeedController(
                     it.getServiceNeedOptions()
                 }
             }
-            .also { Audit.ServiceNeedOptionsRead.log(args = mapOf("count" to it.size)) }
+            .also { Audit.ServiceNeedOptionsRead.log(meta = mapOf("count" to it.size)) }
     }
 
     @GetMapping("/public/service-needs/options")

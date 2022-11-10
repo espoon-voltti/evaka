@@ -380,7 +380,7 @@ enum class Audit(
         @Suppress("UNUSED_PARAMETER") vararg forceNamed: UseNamedArguments,
         targetId: Any? = null,
         objectId: Any? = null,
-        args: Map<String, Any?> = emptyMap()
+        meta: Map<String, Any?> = emptyMap()
     ) {
         logger.audit(
             mapOf(
@@ -389,7 +389,7 @@ enum class Audit(
                 "objectId" to objectId,
                 "securityLevel" to securityLevel,
                 "securityEvent" to securityEvent,
-            ) + if (args.isNotEmpty()) mapOf("meta" to args) else emptyMap()
+            ) + if (meta.isNotEmpty()) mapOf("meta" to meta) else emptyMap()
         ) {
             eventCode
         }

@@ -126,7 +126,7 @@ class AssistanceNeedController(
             .also {
                 Audit.ChildAssistanceNeedRead.log(
                     targetId = childId,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }

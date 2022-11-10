@@ -117,7 +117,7 @@ class FeeDecisionController(
                     )
                 }
             }
-            .also { Audit.FeeDecisionSearch.log(args = mapOf("total" to it.total)) }
+            .also { Audit.FeeDecisionSearch.log(meta = mapOf("total" to it.total)) }
     }
 
     @PostMapping("/confirm")
@@ -264,7 +264,7 @@ class FeeDecisionController(
                 .also {
                     Audit.FeeDecisionHeadOfFamilyRead.log(
                         targetId = id,
-                        args = mapOf("count" to it.size)
+                        meta = mapOf("count" to it.size)
                     )
                 }
         )
@@ -307,7 +307,7 @@ class FeeDecisionController(
                 service.setType(it, uuid, request.type)
             }
         }
-        Audit.FeeDecisionSetType.log(targetId = uuid, args = mapOf("type" to request.type))
+        Audit.FeeDecisionSetType.log(targetId = uuid, meta = mapOf("type" to request.type))
     }
 }
 

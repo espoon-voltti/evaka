@@ -44,7 +44,7 @@ class ServiceNeedReport(private val accessControl: AccessControl) {
                 }
             }
             .also {
-                Audit.ServiceNeedReportRead.log(args = mapOf("date" to date, "count" to it.size))
+                Audit.ServiceNeedReportRead.log(meta = mapOf("date" to date, "count" to it.size))
             }
     }
 }

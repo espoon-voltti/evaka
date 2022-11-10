@@ -208,7 +208,7 @@ class ApplicationControllerV2(
         Audit.ApplicationCreate.log(
             targetId = body.childId,
             objectId = applicationId,
-            args = mapOf("guardianId" to guardianId, "applicationType" to body.type)
+            meta = mapOf("guardianId" to guardianId, "applicationType" to body.type)
         )
         return applicationId
     }
@@ -296,7 +296,7 @@ class ApplicationControllerV2(
                     )
                 }
             }
-            .also { Audit.ApplicationSearch.log(args = mapOf("total" to it.total)) }
+            .also { Audit.ApplicationSearch.log(meta = mapOf("total" to it.total)) }
     }
 
     @GetMapping("/by-guardian/{guardianId}")
@@ -413,7 +413,7 @@ class ApplicationControllerV2(
                 Audit.ApplicationRead.log(targetId = applicationId)
                 Audit.DecisionReadByApplication.log(
                     targetId = applicationId,
-                    args = mapOf("count" to it.decisions.size)
+                    meta = mapOf("count" to it.decisions.size)
                 )
             }
     }
@@ -567,7 +567,7 @@ class ApplicationControllerV2(
             .also {
                 Audit.DecisionDraftRead.log(
                     targetId = applicationId,
-                    args = mapOf("count" to it.decisions.size)
+                    meta = mapOf("count" to it.decisions.size)
                 )
             }
     }

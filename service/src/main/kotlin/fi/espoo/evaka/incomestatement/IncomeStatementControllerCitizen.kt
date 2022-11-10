@@ -61,7 +61,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
             .also {
                 Audit.IncomeStatementsOfPerson.log(
                     targetId = user.id,
-                    args = mapOf("total" to it.total)
+                    meta = mapOf("total" to it.total)
                 )
             }
     }
@@ -95,7 +95,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
             .also {
                 Audit.IncomeStatementsOfChild.log(
                     targetId = childId,
-                    args = mapOf("total" to it.total)
+                    meta = mapOf("total" to it.total)
                 )
             }
     }
@@ -122,7 +122,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
             .also {
                 Audit.IncomeStatementStartDatesOfChild.log(
                     targetId = childId,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }
@@ -148,7 +148,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
             .also {
                 Audit.IncomeStatementStartDates.log(
                     targetId = user.id,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }
@@ -407,7 +407,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
                 }
             }
             .also {
-                Audit.CitizenChildrenRead.log(targetId = personId, args = mapOf("count" to it.size))
+                Audit.CitizenChildrenRead.log(targetId = personId, meta = mapOf("count" to it.size))
             }
     }
 

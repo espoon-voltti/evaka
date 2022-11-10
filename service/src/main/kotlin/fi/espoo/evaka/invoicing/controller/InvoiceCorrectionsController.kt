@@ -90,7 +90,7 @@ WHERE c.head_of_family_id = :personId AND NOT applied_completely
             .also {
                 Audit.InvoiceCorrectionsRead.log(
                     targetId = personId,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }

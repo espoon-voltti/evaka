@@ -45,7 +45,7 @@ class ChildAgeLanguageReportController(private val accessControl: AccessControl)
             }
             .also {
                 Audit.ChildAgeLanguageReportRead.log(
-                    args = mapOf("date" to date, "count" to it.size)
+                    meta = mapOf("date" to date, "count" to it.size)
                 )
             }
     }

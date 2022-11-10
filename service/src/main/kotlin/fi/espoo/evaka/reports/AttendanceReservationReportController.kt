@@ -61,7 +61,7 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
             .also {
                 Audit.AttendanceReservationReportRead.log(
                     targetId = unitId,
-                    args =
+                    meta =
                         mapOf(
                             "groupIds" to groupIds,
                             "start" to start,
@@ -103,7 +103,7 @@ class AttendanceReservationReportController(private val accessControl: AccessCon
             .also {
                 Audit.AttendanceReservationReportRead.log(
                     targetId = unitId,
-                    args =
+                    meta =
                         mapOf(
                             "groupIds" to groupIds,
                             "start" to start,

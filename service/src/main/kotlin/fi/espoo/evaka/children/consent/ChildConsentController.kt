@@ -48,7 +48,7 @@ class ChildConsentController(
                 }
             }
             .also {
-                Audit.ChildConsentsRead.log(targetId = childId, args = mapOf("count" to it.size))
+                Audit.ChildConsentsRead.log(targetId = childId, meta = mapOf("count" to it.size))
             }
     }
 
@@ -78,7 +78,7 @@ class ChildConsentController(
             .also {
                 Audit.ChildConsentsReadCitizen.log(
                     targetId = user.id,
-                    args =
+                    meta =
                         mapOf(
                             "count" to
                                 it.values.asSequence().map { consents -> consents.size }.sum()

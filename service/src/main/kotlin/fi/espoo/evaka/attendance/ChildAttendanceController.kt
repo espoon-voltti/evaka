@@ -86,7 +86,7 @@ class ChildAttendanceController(
             .also {
                 Audit.ChildAttendancesRead.log(
                     targetId = unitId,
-                    args =
+                    meta =
                         mapOf(
                             "childCount" to it.children.size,
                             "groupNoteCount" to it.groupNotes.size
@@ -231,7 +231,7 @@ class ChildAttendanceController(
                 Audit.ChildAttendancesDepartureRead.log(
                     targetId = childId,
                     objectId = unitId,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }
@@ -459,7 +459,7 @@ class ChildAttendanceController(
         Audit.AbsenceDeleteRange.log(
             targetId = childId,
             objectId = deleted,
-            args = mapOf("from" to from, "to" to to)
+            meta = mapOf("from" to from, "to" to to)
         )
     }
 

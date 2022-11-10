@@ -58,7 +58,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
             .also {
                 Audit.IncomeStatementsOfPerson.log(
                     targetId = personId,
-                    args = mapOf("total" to it.total)
+                    meta = mapOf("total" to it.total)
                 )
             }
     }
@@ -92,7 +92,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
             .also {
                 Audit.IncomeStatementsOfChild.log(
                     targetId = childId,
-                    args = mapOf("total" to it.total)
+                    meta = mapOf("total" to it.total)
                 )
             }
     }
@@ -183,7 +183,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
                     )
                 }
             }
-            .also { Audit.IncomeStatementsAwaitingHandler.log(args = mapOf("total" to it.total)) }
+            .also { Audit.IncomeStatementsAwaitingHandler.log(meta = mapOf("total" to it.total)) }
     }
 
     @GetMapping("/guardian/{guardianId}/children")
@@ -208,7 +208,7 @@ class IncomeStatementController(private val accessControl: AccessControl) {
             .also {
                 Audit.GuardianChildrenRead.log(
                     targetId = guardianId,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }
