@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.reservations
 
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
@@ -16,7 +15,6 @@ import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevDailyServiceTimes
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
@@ -33,6 +31,7 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_4
@@ -46,10 +45,14 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class AttendanceReservationsControllerIntegrationTest :
     FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired lateinit var attendanceReservationController: AttendanceReservationController
+
     private val employeeId = EmployeeId(UUID.randomUUID())
+    private val clock = RealEvakaClock()
 
     private val mon = LocalDate.of(2021, 3, 1)
     private val tue = LocalDate.of(2021, 3, 2)
@@ -559,13 +562,13 @@ class AttendanceReservationsControllerIntegrationTest :
             }
             .toMap()
 
-    private fun getAttendanceReservations(): UnitAttendanceReservations {
-        val (_, response, body) =
-            http
-                .get("/attendance-reservations?unitId=${testDaycare.id}&from=$mon&to=$fri")
-                .asUser(AuthenticatedUser.Employee(employeeId, setOf(UserRole.STAFF)))
-                .responseObject<UnitAttendanceReservations>(jsonMapper)
-        assertEquals(200, response.statusCode)
-        return body.get()
-    }
+    private fun getAttendanceReservations(): UnitAttendanceReservations =
+        attendanceReservationController.getAttendanceReservations(
+            dbInstance(),
+            AuthenticatedUser.Employee(employeeId, setOf(UserRole.STAFF)),
+            clock,
+            testDaycare.id,
+            from = mon,
+            to = fri
+        )
 }

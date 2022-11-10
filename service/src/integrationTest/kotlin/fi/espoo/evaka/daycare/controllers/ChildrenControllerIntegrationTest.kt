@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import java.time.LocalDate
@@ -71,8 +70,7 @@ class ChildrenControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach 
     }
 
     fun getAdditionalInfo(user: AuthenticatedUser) {
-        val body =
-            childController.getAdditionalInfo(Database(jdbi), user, RealEvakaClock(), childId)
+        val body = childController.getAdditionalInfo(dbInstance(), user, RealEvakaClock(), childId)
 
         assertEquals(child.additionalInformation.diet, body.diet)
         assertEquals(child.additionalInformation.additionalInfo, body.additionalInfo)

@@ -4,13 +4,12 @@
 
 package fi.espoo.evaka.messaging
 
-import com.github.kittinunf.fuel.core.FileDataPart
 import com.github.kittinunf.fuel.core.extensions.jsonBody
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.AttachmentId
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
@@ -18,7 +17,6 @@ import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -41,6 +39,8 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -53,7 +53,6 @@ import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
-import java.io.File
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -61,8 +60,14 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.mock.web.MockMultipartFile
 
 class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired lateinit var attachmentsController: AttachmentsController
+
+    private val clock = RealEvakaClock()
 
     private val person1Id = testAdult_1.id
     private val person2Id = testAdult_2.id
@@ -191,16 +196,6 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             tx.insertDaycareAclRow(testDaycare2.id, employee2Id, UserRole.UNIT_SUPERVISOR)
         }
     }
-
-    private fun getAccounts(personAccountIds: List<PersonId>): Set<MessageAccountId> =
-        db.read {
-            it.createQuery(
-                    "SELECT acc.id FROM message_account acc WHERE acc.person_id = ANY(:personIds)"
-                )
-                .bind("personIds", personAccountIds.toTypedArray())
-                .mapTo<MessageAccountId>()
-                .toSet()
-        }
 
     @Test
     fun `a thread is created, accessed and replied to by participants who are guardian of the same child`() {
@@ -613,14 +608,36 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val attachmentId = uploadMessageAttachment(employee1, draftId)
 
         // then another employee cannot read or delete the attachment
-        downloadAttachment(employee2, attachmentId, 403)
-        deleteAttachment(employee2, attachmentId, 403)
+        assertThrows<Forbidden> {
+            attachmentsController.getAttachment(
+                dbInstance(),
+                employee2,
+                clock,
+                attachmentId,
+                "evaka-logo.png"
+            )
+        }
+        assertThrows<Forbidden> {
+            attachmentsController.deleteAttachmentHandler(
+                dbInstance(),
+                employee2,
+                clock,
+                attachmentId
+            )
+        }
+
         // then the author can read and delete the attachment
-        downloadAttachment(employee1, attachmentId, 200)
-        deleteAttachment(employee1, attachmentId, 200)
+        attachmentsController.getAttachment(
+            dbInstance(),
+            employee1,
+            clock,
+            attachmentId,
+            "evaka-logo.png"
+        )
+        attachmentsController.deleteAttachmentHandler(dbInstance(), employee1, clock, attachmentId)
 
         // a user cannot upload attachments to another user's draft
-        assertAttachmentUploadFails(employee2, draftId)
+        assertThrows<Forbidden> { uploadMessageAttachment(employee2, draftId) }
 
         val attachmentIds =
             setOf(
@@ -657,9 +674,23 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
 
         // the author can read the attachment
-        downloadAttachment(employee1, attachmentIds.first(), 200)
+        attachmentsController.getAttachment(
+            dbInstance(),
+            employee1,
+            clock,
+            attachmentIds.first(),
+            "evaka-logo.png"
+        )
         // another employee cannot read the attachment
-        downloadAttachment(employee2, attachmentIds.first(), 403)
+        assertThrows<Forbidden> {
+            attachmentsController.getAttachment(
+                dbInstance(),
+                employee2,
+                clock,
+                attachmentIds.first(),
+                "evaka-logo.png"
+            )
+        }
 
         // the recipient can read the attachment
         val threads = getMessageThreads(person1Account, person1)
@@ -668,10 +699,24 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(1, messages.size)
         val receivedAttachments = messages.first().attachments
         assertEquals(attachmentIds, receivedAttachments.map { it.id }.toSet())
-        downloadAttachment(person1, attachmentIds.first(), 200)
+        attachmentsController.getAttachment(
+            dbInstance(),
+            person1,
+            clock,
+            attachmentIds.first(),
+            "evaka-logo.png"
+        )
 
         // another citizen cannot read the attachment
-        downloadAttachment(person3, attachmentIds.first(), 403)
+        assertThrows<Forbidden> {
+            attachmentsController.getAttachment(
+                dbInstance(),
+                person3,
+                clock,
+                attachmentIds.first(),
+                "evaka-logo.png"
+            )
+        }
     }
 
     @Test
@@ -732,27 +777,6 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(1, getMessageThreads(person4Account, person4).size)
     }
 
-    private fun deleteAttachment(
-        user: AuthenticatedUser.Employee,
-        attachmentId: AttachmentId,
-        expectedStatus: Int = 200
-    ) =
-        http.delete("/attachments/$attachmentId").asUser(user).response().also {
-            assertEquals(expectedStatus, it.second.statusCode)
-        }
-
-    private fun downloadAttachment(
-        user: AuthenticatedUser,
-        attachmentId: AttachmentId,
-        expectedStatus: Int = 200,
-        requestedFilename: String = "evaka-logo.png"
-    ) =
-        http
-            .get("/attachments/$attachmentId/download/$requestedFilename")
-            .asUser(user)
-            .response()
-            .also { assertEquals(expectedStatus, it.second.statusCode) }
-
     private fun getUnreadMessages(accountId: MessageAccountId, user: AuthenticatedUser) =
         getMessageThreads(accountId, user).flatMap {
             it.messages.filter { m -> m.sender.id != accountId && m.readAt == null }
@@ -762,26 +786,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         user: AuthenticatedUser.Employee,
         draftId: MessageDraftId
     ): AttachmentId =
-        http
-            .upload("/attachments/messages/$draftId")
-            .add(FileDataPart(File(pngFile.toURI()), name = "file"))
-            .asUser(user)
-            .responseObject<AttachmentId>(jsonMapper)
-            .also { assertEquals(200, it.second.statusCode) }
-            .third
-            .get()
-
-    private fun assertAttachmentUploadFails(
-        user: AuthenticatedUser.Employee,
-        draftId: MessageDraftId,
-        expectedStatus: Int = 403
-    ) =
-        http
-            .upload("/attachments/messages/$draftId")
-            .add(FileDataPart(File(pngFile.toURI()), name = "file"))
-            .asUser(user)
-            .response()
-            .also { assertEquals(expectedStatus, it.second.statusCode) }
+        attachmentsController.uploadMessageAttachment(
+            dbInstance(),
+            user,
+            clock,
+            draftId,
+            MockMultipartFile("evaka-logo.png", "evaka-logo.png", null, pngFile.readBytes())
+        )
 
     private fun postNewThread(
         title: String,
@@ -888,17 +899,6 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             .third
             .get()
             .data
-
-    private fun getReceivers(
-        unitId: DaycareId,
-        user: AuthenticatedUser
-    ): List<MessageReceiversResponse> =
-        http
-            .get("/messages/receivers", listOf("unitId" to unitId))
-            .asUser(user)
-            .responseObject<List<MessageReceiversResponse>>(jsonMapper)
-            .third
-            .get()
 
     private fun getCitizenReceivers(
         user: AuthenticatedUser

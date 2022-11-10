@@ -43,7 +43,7 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
 
     protected val jsonMapper: JsonMapper = defaultJsonMapper()
 
-    protected lateinit var jdbi: Jdbi
+    private lateinit var jdbi: Jdbi
 
     /** HTTP client for testing the application */
     @Autowired protected lateinit var http: FuelManager

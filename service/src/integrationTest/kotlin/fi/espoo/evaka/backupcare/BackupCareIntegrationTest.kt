@@ -4,9 +4,6 @@
 
 package fi.espoo.evaka.backupcare
 
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.core.isSuccessful
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.BackupCareId
@@ -17,12 +14,14 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestServiceNeed
+import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
 import fi.espoo.evaka.test.getBackupCareRowById
 import fi.espoo.evaka.test.getBackupCareRowsByChild
@@ -34,11 +33,15 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
 
 class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired lateinit var backupCareController: BackupCareController
+
+    private val clock = RealEvakaClock()
     private val serviceWorker =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
 
@@ -73,17 +76,15 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         val period = FiniteDateRange(backupCareStart, backupCareEnd)
         val id = createBackupCareAndAssert(period = period)
         val changedPeriod = period.copy(end = backupCareEnd.plusDays(4))
-        val (_, res, _) =
-            http
-                .post("/backup-cares/$id")
-                .jsonBody(
-                    jsonMapper.writeValueAsString(
-                        BackupCareUpdateRequest(groupId = groupId, period = changedPeriod)
-                    )
-                )
-                .asUser(serviceWorker)
-                .response()
-        assertTrue(res.isSuccessful)
+
+        backupCareController.update(
+            dbInstance(),
+            serviceWorker,
+            clock,
+            id,
+            BackupCareUpdateRequest(groupId = groupId, period = changedPeriod)
+        )
+
         db.read { r ->
             r.getBackupCareRowsByChild(testChild_1.id).one().also {
                 assertEquals(id, it.id)
@@ -98,25 +99,20 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
     @Test
     fun testOverlapError() {
         createBackupCareAndAssert()
-        val (_, res, _) =
-            http
-                .post("/children/${testChild_1.id}/backup-cares")
-                .jsonBody(
-                    jsonMapper.writeValueAsString(
-                        NewBackupCare(
-                            unitId = testDaycare.id,
-                            groupId = null,
-                            period =
-                                FiniteDateRange(
-                                    backupCareStart.plusDays(1),
-                                    backupCareStart.plusDays(4)
-                                )
-                        )
-                    )
+        assertThrows<Conflict> {
+            backupCareController.createForChild(
+                dbInstance(),
+                serviceWorker,
+                clock,
+                testChild_1.id,
+                NewBackupCare(
+                    unitId = testDaycare.id,
+                    groupId = null,
+                    period =
+                        FiniteDateRange(backupCareStart.plusDays(1), backupCareStart.plusDays(4))
                 )
-                .asUser(serviceWorker)
-                .response()
-        assertEquals(409, res.statusCode)
+            )
+        }
     }
 
     @Test
@@ -129,13 +125,11 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
                 )
             }
         val id = createBackupCareAndAssert(groupId = groupId)
-        val (_, res, result) =
-            http
-                .get("/children/${testChild_1.id}/backup-cares")
-                .asUser(serviceWorker)
-                .responseObject<ChildBackupCaresResponse>(jsonMapper)
-        assertTrue(res.isSuccessful)
-        val backupCares = result.get().backupCares.map { it.backupCare }
+        val backupCares =
+            backupCareController
+                .getForChild(dbInstance(), serviceWorker, clock, testChild_1.id)
+                .backupCares
+                .map { it.backupCare }
 
         assertEquals(
             listOf(
@@ -170,19 +164,17 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
             )
         }
         val id = createBackupCareAndAssert(groupId = groupId)
-        val (_, res, result) =
-            http
-                .get(
-                    "/daycares/${testDaycare.id}/backup-cares",
-                    listOf(
-                        "startDate" to period.start.plusDays(1),
-                        "endDate" to period.end.minusDays(1)
-                    )
+        val backupCares =
+            backupCareController
+                .getForDaycare(
+                    dbInstance(),
+                    serviceWorker,
+                    clock,
+                    testDaycare.id,
+                    startDate = period.start.plusDays(1),
+                    endDate = period.end.minusDays(1)
                 )
-                .asUser(serviceWorker)
-                .responseObject<UnitBackupCaresResponse>(jsonMapper)
-        assertTrue(res.isSuccessful)
-        val backupCares = result.get().backupCares
+                .backupCares
 
         assertEquals(
             listOf(
@@ -208,25 +200,20 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
 
     @Test
     fun `backup care must be created during a placement`() {
-        val (_, res, _) =
-            http
-                .post("/children/${testChild_1.id}/backup-cares")
-                .jsonBody(
-                    jsonMapper.writeValueAsString(
-                        NewBackupCare(
-                            unitId = testDaycare.id,
-                            groupId = null,
-                            period =
-                                FiniteDateRange(
-                                    placementStart.minusDays(10),
-                                    placementStart.plusDays(2)
-                                )
-                        )
-                    )
+        assertThrows<BadRequest> {
+            backupCareController.createForChild(
+                dbInstance(),
+                serviceWorker,
+                clock,
+                testChild_1.id,
+                NewBackupCare(
+                    unitId = testDaycare.id,
+                    groupId = null,
+                    period =
+                        FiniteDateRange(placementStart.minusDays(10), placementStart.plusDays(2))
                 )
-                .asUser(serviceWorker)
-                .response()
-        assertNotEquals(200, res.statusCode)
+            )
+        }
         assertEquals(0, db.read { r -> r.getBackupCaresForChild(testChild_1.id).size })
     }
 
@@ -239,18 +226,17 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         val id = createBackupCareAndAssert(groupId = groupId)
 
         val newPeriod = FiniteDateRange(placementStart.minusDays(10), placementStart.plusDays(2))
-        val (_, res, _) =
-            http
-                .post("/backup-cares/$id")
-                .jsonBody(
-                    jsonMapper.writeValueAsString(
-                        BackupCareUpdateRequest(groupId = groupId, period = newPeriod)
-                    )
-                )
-                .asUser(serviceWorker)
-                .response()
 
-        assertNotEquals(200, res.statusCode)
+        assertThrows<BadRequest> {
+            backupCareController.update(
+                dbInstance(),
+                serviceWorker,
+                clock,
+                id,
+                BackupCareUpdateRequest(groupId = groupId, period = newPeriod)
+            )
+        }
+
         assertNotEquals(
             newPeriod,
             db.read { r -> r.getBackupCaresForChild(testChild_1.id)[0].period }
@@ -263,19 +249,15 @@ class BackupCareIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) 
         groupId: GroupId? = null,
         period: FiniteDateRange = FiniteDateRange(backupCareStart, backupCareEnd)
     ): BackupCareId {
-        val (_, res, result) =
-            http
-                .post("/children/$childId/backup-cares")
-                .jsonBody(
-                    jsonMapper.writeValueAsString(
-                        NewBackupCare(unitId = unitId, groupId = groupId, period = period)
-                    )
-                )
-                .asUser(serviceWorker)
-                .responseObject<BackupCareCreateResponse>(jsonMapper)
-        assertTrue(res.isSuccessful)
-
-        val id = result.get().id
+        val result =
+            backupCareController.createForChild(
+                dbInstance(),
+                serviceWorker,
+                clock,
+                childId,
+                NewBackupCare(unitId = unitId, groupId = groupId, period = period)
+            )
+        val id = result.id
 
         db.read { r ->
             r.getBackupCareRowById(id).one().also {
