@@ -383,14 +383,13 @@ enum class Audit(
         args: Map<String, Any?> = emptyMap()
     ) {
         logger.audit(
-            args +
-                mapOf(
-                    "eventCode" to eventCode,
-                    "targetId" to targetId,
-                    "objectId" to objectId,
-                    "securityLevel" to securityLevel,
-                    "securityEvent" to securityEvent
-                )
+            mapOf(
+                "eventCode" to eventCode,
+                "targetId" to targetId,
+                "objectId" to objectId,
+                "securityLevel" to securityLevel,
+                "securityEvent" to securityEvent,
+            ) + if (args.isNotEmpty()) mapOf("meta" to args) else emptyMap()
         ) {
             eventCode
         }
