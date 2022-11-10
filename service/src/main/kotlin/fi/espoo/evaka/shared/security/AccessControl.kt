@@ -343,25 +343,19 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping) {
     }
 
     private class UnscopedEvaluator(private val queryCtx: DatabaseActionRule.QueryContext) {
-        private val cache =
-            mutableMapOf<
-                DatabaseActionRule.Unscoped.Query<out Any?>, DatabaseActionRule.Deferred<out Any>?
-            >()
+        private val cache = mutableMapOf<Pair<Class<*>, *>, DatabaseActionRule.Deferred<in Any>?>()
 
         fun <P : Any> evaluate(rule: DatabaseActionRule.Unscoped<P>): AccessControlDecision {
             @Suppress("UNCHECKED_CAST")
-            val deferred =
-                cache.getOrPut(rule.query) { rule.query.execute(queryCtx) }
-                    as DatabaseActionRule.Deferred<P>?
+            val query = rule.query as DatabaseActionRule.Unscoped.Query<Any>
+            val cacheKey = Pair(query.javaClass, query.cacheKey(queryCtx.user, queryCtx.now))
+            val deferred = cache.getOrPut(cacheKey) { rule.query.execute(queryCtx) }
             return deferred?.evaluate(rule.params) ?: AccessControlDecision.None
         }
     }
     private class ScopedEvaluator<T>(private val queryCtx: DatabaseActionRule.QueryContext) {
-        private val query =
-            mutableMapOf<
-                DatabaseActionRule.Scoped.Query<in T, Any>,
-                Map<in T, DatabaseActionRule.Deferred<Any>>
-            >()
+        private val cache =
+            mutableMapOf<Pair<Class<*>, *>, Map<in T, DatabaseActionRule.Deferred<Any>>>()
 
         fun evaluateWithTargets(
             rule: DatabaseActionRule.Scoped<in T, *>,
@@ -369,8 +363,9 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping) {
         ): Sequence<Pair<T, AccessControlDecision>> {
             @Suppress("UNCHECKED_CAST")
             val query = rule.query as DatabaseActionRule.Scoped.Query<in T, Any>
+            val cacheKey = Pair(query.javaClass, query.cacheKey(queryCtx.user, queryCtx.now))
             val deferreds =
-                this.query.getOrPut(query) { query.executeWithTargets(queryCtx, targets) }
+                this.cache.getOrPut(cacheKey) { query.executeWithTargets(queryCtx, targets) }
             return targets.asSequence().map { target ->
                 target to (deferreds[target]?.evaluate(rule.params) ?: AccessControlDecision.None)
             }

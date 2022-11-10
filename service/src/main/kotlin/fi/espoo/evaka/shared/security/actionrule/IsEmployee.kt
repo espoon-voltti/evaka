@@ -34,6 +34,11 @@ object IsEmployee : DatabaseActionRule.Params {
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
     private data class Query<T : Id<*>>(private val filter: FilterByEmployee<T>) :
         DatabaseActionRule.Scoped.Query<T, IsEmployee> {
+        override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
+            when (user) {
+                is AuthenticatedUser.Employee -> QuerySql.of { filter(user, now) }
+                else -> Pair(user, now)
+            }
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
@@ -87,6 +92,8 @@ object IsEmployee : DatabaseActionRule.Params {
             override val params = IsEmployee
             override val query =
                 object : DatabaseActionRule.Scoped.Query<EmployeeId, IsEmployee> {
+                    override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
+                        Pair(user, now)
                     override fun executeWithTargets(
                         ctx: DatabaseActionRule.QueryContext,
                         targets: Set<EmployeeId>
@@ -106,9 +113,6 @@ object IsEmployee : DatabaseActionRule.Params {
                                 QuerySql.of { sql("SELECT ${bind(ctx.user.id)} AS id") }
                             else -> null
                         }
-
-                    override fun equals(other: Any?): Boolean = other?.javaClass == this.javaClass
-                    override fun hashCode(): Int = this.javaClass.hashCode()
                 }
         }
 
@@ -116,6 +120,8 @@ object IsEmployee : DatabaseActionRule.Params {
         DatabaseActionRule.Unscoped(
             this,
             object : DatabaseActionRule.Unscoped.Query<IsEmployee> {
+                override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
+                    Pair(user, now)
                 override fun execute(
                     ctx: DatabaseActionRule.QueryContext
                 ): DatabaseActionRule.Deferred<IsEmployee>? =
@@ -139,9 +145,6 @@ SELECT EXISTS (
                                 .let { isPermitted -> if (isPermitted) Permitted else null }
                         else -> null
                     }
-
-                override fun hashCode(): Int = this.javaClass.hashCode()
-                override fun equals(other: Any?): Boolean = other?.javaClass == this.javaClass
             }
         )
 
@@ -237,6 +240,8 @@ AND sent_for_decision IS NOT NULL
         DatabaseActionRule.Unscoped(
             this,
             object : DatabaseActionRule.Unscoped.Query<IsEmployee> {
+                override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
+                    Pair(user, now)
                 override fun execute(
                     ctx: DatabaseActionRule.QueryContext
                 ): DatabaseActionRule.Deferred<IsEmployee>? =
@@ -261,9 +266,6 @@ SELECT EXISTS (
                                 .let { isPermitted -> if (isPermitted) Permitted else null }
                         else -> null
                     }
-
-                override fun equals(other: Any?): Boolean = other?.javaClass == this.javaClass
-                override fun hashCode(): Int = this.javaClass.hashCode()
             }
         )
 }

@@ -44,6 +44,11 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
     private data class Query<T : Id<*>>(private val filter: FilterByCitizen<T>) :
         DatabaseActionRule.Scoped.Query<T, IsCitizen> {
+        override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
+            when (user) {
+                is AuthenticatedUser.Citizen -> QuerySql.of { filter(user.id, now) }
+                else -> Pair(user, now)
+            }
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
@@ -110,6 +115,8 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
             override val params = this@IsCitizen
             override val query =
                 object : DatabaseActionRule.Scoped.Query<PersonId, IsCitizen> {
+                    override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
+                        Pair(user, now)
                     override fun executeWithTargets(
                         ctx: DatabaseActionRule.QueryContext,
                         targets: Set<PersonId>
@@ -131,9 +138,6 @@ data class IsCitizen(val allowWeakLogin: Boolean) : DatabaseActionRule.Params {
                                 QuerySql.of { sql("SELECT ${bind(ctx.user.id)} AS id") }
                             else -> null
                         }
-
-                    override fun equals(other: Any?): Boolean = other?.javaClass == this.javaClass
-                    override fun hashCode(): Int = this.javaClass.hashCode()
                 }
         }
 

@@ -87,8 +87,13 @@ SELECT EXISTS (
     ): DatabaseActionRule.Scoped<T, HasUnitRole> =
         DatabaseActionRule.Scoped.Simple(this, Query(getUnitRoles))
 
-    private data class Query<T : Id<*>>(private val getUnitRoles: GetUnitRoles) :
+    private class Query<T : Id<*>>(private val getUnitRoles: GetUnitRoles) :
         DatabaseActionRule.Scoped.Query<T, HasUnitRole> {
+        override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
+            when (user) {
+                is AuthenticatedUser.Employee -> QuerySql.of { getUnitRoles(user, now) }
+                else -> Pair(user, now)
+            }
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
@@ -159,6 +164,8 @@ SELECT EXISTS (
         DatabaseActionRule.Unscoped(
             this,
             object : DatabaseActionRule.Unscoped.Query<HasUnitRole> {
+                override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
+                    Pair(user, now)
                 override fun execute(
                     ctx: DatabaseActionRule.QueryContext
                 ): DatabaseActionRule.Deferred<HasUnitRole>? =
@@ -182,8 +189,6 @@ WHERE employee_id = ${bind(ctx.user.id)}
                             )
                         else -> null
                     }
-                override fun equals(other: Any?): Boolean = other?.javaClass == this.javaClass
-                override fun hashCode(): Int = this.javaClass.hashCode()
             }
         )
 

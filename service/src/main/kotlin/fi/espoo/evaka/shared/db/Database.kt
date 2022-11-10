@@ -421,7 +421,7 @@ open class SqlBuilder {
  * `Tag` can be used to assign some type to a query for documentation purpose and to prevent mixing
  * different types of queries.
  */
-class QuerySql<@Suppress("unused") in Tag>(
+data class QuerySql<@Suppress("unused") in Tag>(
     val sql: QuerySqlString,
     val bindings: List<ValueBinding<out Any?>>
 ) {

@@ -63,8 +63,13 @@ SELECT EXISTS (
         getGroupRoles: GetGroupRoles
     ): DatabaseActionRule.Scoped<T, HasGroupRole> =
         DatabaseActionRule.Scoped.Simple(this, Query(getGroupRoles))
-    private data class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles) :
+    private class Query<T : Id<*>>(private val getGroupRoles: GetGroupRoles) :
         DatabaseActionRule.Scoped.Query<T, HasGroupRole> {
+        override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
+            when (user) {
+                is AuthenticatedUser.Employee -> QuerySql.of { getGroupRoles(user, now) }
+                else -> Pair(user, now)
+            }
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>

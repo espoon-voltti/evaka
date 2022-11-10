@@ -43,6 +43,11 @@ data class HasGlobalRole(val oneOf: EnumSet<UserRole>) :
         DatabaseActionRule.Scoped.Simple(this, Query(filter))
     data class Query<T : Id<*>>(private val filter: Filter<T>) :
         DatabaseActionRule.Scoped.Query<T, HasGlobalRole> {
+        override fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any =
+            when (user) {
+                is AuthenticatedUser.Employee -> QuerySql.of { filter(user, now) }
+                else -> Pair(user, now)
+            }
         override fun executeWithTargets(
             ctx: DatabaseActionRule.QueryContext,
             targets: Set<T>
