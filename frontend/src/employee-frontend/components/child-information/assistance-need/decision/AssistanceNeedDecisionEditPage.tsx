@@ -141,15 +141,11 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
     }
   }, [formState, childId, id, navigate])
 
-  const [startDateMissing, setStartDateMissing] = useState(false)
-
   const missingFields = useMemo(
     () =>
       concat(
         [] as Array<keyof FieldInfos | undefined | null | false>,
         requiredFormFields.filter((key) => !formState?.[key]),
-        // must have a start date
-        startDateMissing && 'startDate',
         // decision-maker is required
         !formState?.decisionMaker?.employeeId && 'decisionMaker',
         // at least one preparator must be selected
@@ -172,7 +168,7 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
         // at least one assistance level must be selected
         formState?.assistanceLevels.length === 0 && 'futureLevelOfAssistance'
       ).filter((field): field is keyof FieldInfos => !!field),
-    [formState, startDateMissing]
+    [formState]
   )
 
   const [showFormErrors, setShowFormErrors] = useState(false)
@@ -269,7 +265,6 @@ export default React.memo(function AssistanceNeedDecisionEditPage() {
                   formState={formState}
                   setFormState={setFormState}
                   fieldInfos={showFormErrors ? fieldInfos : {}}
-                  onStartDateMissing={setStartDateMissing}
                 />
               </I18nContext.Provider>
             </>
@@ -391,8 +386,7 @@ const DecisionContents = React.memo(function DecisionContents({
   child,
   formState,
   setFormState,
-  fieldInfos,
-  onStartDateMissing
+  fieldInfos
 }: {
   status: AutosaveStatus
   decisionMakerOptions: Result<Employee[]>
@@ -402,7 +396,6 @@ const DecisionContents = React.memo(function DecisionContents({
     React.SetStateAction<AssistanceNeedDecisionForm | undefined>
   >
   fieldInfos: FieldInfos
-  onStartDateMissing: (missing: boolean) => void
 }) {
   const { i18n } = useTranslation()
 
@@ -434,7 +427,6 @@ const DecisionContents = React.memo(function DecisionContents({
           formState={formState}
           setFormState={setFormState}
           fieldInfos={fieldInfos}
-          onStartDateMissing={onStartDateMissing}
         />
       )}
     </>

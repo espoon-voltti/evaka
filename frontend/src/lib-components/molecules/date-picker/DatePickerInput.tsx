@@ -2,11 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useRef } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import LocalDate from 'lib-common/local-date'
-import { usePendingUserInput } from 'lib-common/utils/usePendingUserInput'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 
 import InputField, { InputInfo } from '../../atoms/form/InputField'
@@ -27,7 +26,6 @@ interface Props {
   useBrowserPicker?: boolean
   minDate?: LocalDate
   maxDate?: LocalDate
-  onInputStatus?: (hasText: boolean) => void
   errorTexts: {
     validDate: string
   }
@@ -35,8 +33,6 @@ interface Props {
 }
 
 const DISALLOWED_CHARACTERS = /[^0-9./-]+/g
-
-const transformDate = (d: string) => LocalDate.parseFiOrNull(d)
 
 const DateInputField = styled(InputField)`
   &::-webkit-date-and-time-value {
@@ -59,40 +55,57 @@ export default React.memo(function DatePickerInput({
   useBrowserPicker = false,
   minDate,
   maxDate,
-  onInputStatus,
   errorTexts,
   datePickerVisible,
   ...props
 }: Props) {
   const ariaId = useUniqueId('date-picker-input')
+  const formattedDate = useMemo(() => (date ? date.format() : ''), [date])
 
-  const [rawDate, setRawDate, parsedDate] = usePendingUserInput(transformDate)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [inputValue, setInputValue] = useState(formattedDate)
+  const [hasFocus, setHasFocus] = useState(false)
 
-  useEffect(() => {
-    if (date && document.activeElement !== inputRef.current) {
-      setRawDate(date.format())
-    }
-  }, [date, inputRef, setRawDate])
-
-  function changeHandler(target: EventTarget & HTMLInputElement) {
-    if (useBrowserPicker) {
-      setDate(
-        target.valueAsDate && LocalDate.fromSystemTzDate(target.valueAsDate)
-      )
-    } else {
-      setRawDate(target.value.replace(DISALLOWED_CHARACTERS, ''))
-    }
+  if (!hasFocus && formattedDate !== inputValue) {
+    // When the input has no focus, keep it in sync with the date prop
+    setInputValue(formattedDate)
   }
+  const isValid = useMemo(
+    () => LocalDate.parseFiOrNull(inputValue) !== null,
+    [inputValue]
+  )
 
-  useEffect(() => {
-    setDate(parsedDate ?? null)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parsedDate])
+  const handleFocus = useCallback(
+    (e: React.FocusEvent<HTMLInputElement>) => {
+      setHasFocus(true)
+      onFocus(e)
+    },
+    [onFocus]
+  )
 
-  useEffect(() => {
-    onInputStatus?.(rawDate.length > 0)
-  }, [rawDate, onInputStatus])
+  const handleBlur = useCallback(
+    (e: React.FocusEvent<HTMLInputElement>) => {
+      setHasFocus(false)
+      onBlur(e)
+    },
+    [onBlur]
+  )
+
+  const handleChange = useCallback(
+    (target: EventTarget & HTMLInputElement) => {
+      if (useBrowserPicker) {
+        setDate(
+          target.valueAsDate
+            ? LocalDate.fromSystemTzDate(target.valueAsDate)
+            : null
+        )
+      } else {
+        const value = target.value.replace(DISALLOWED_CHARACTERS, '')
+        setInputValue(value)
+        setDate(LocalDate.parseFiOrNull(value))
+      }
+    },
+    [setDate, useBrowserPicker]
+  )
 
   const dateProps = useBrowserPicker
     ? {
@@ -113,11 +126,11 @@ export default React.memo(function DatePickerInput({
     <>
       <DateInputField
         placeholder={placeholder}
-        value={useBrowserPicker ? date?.formatIso() ?? '' : rawDate}
-        onChangeTarget={changeHandler}
+        value={useBrowserPicker ? date?.formatIso() ?? '' : inputValue}
+        onChangeTarget={handleChange}
         aria-describedby={ariaId}
         info={
-          !datePickerVisible && !parsedDate && rawDate !== ''
+          !datePickerVisible && !isValid && inputValue !== ''
             ? {
                 status: 'warning',
                 text: errorTexts.validDate
@@ -126,14 +139,13 @@ export default React.memo(function DatePickerInput({
         }
         hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         readonly={disabled}
-        onFocus={onFocus}
-        onBlur={onBlur}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         onKeyPress={onKeyPress}
         data-qa={props['data-qa']}
         id={id}
         required={required}
         width="s"
-        inputRef={inputRef}
         {...dateProps}
       />
       <DatePickerDescription id={ariaId} locale={locale} />
