@@ -9,6 +9,7 @@ import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.emailclient.IEmailClient
 import fi.espoo.evaka.emailclient.IEmailMessageProvider
 import fi.espoo.evaka.shared.DatabaseTable
+import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -19,11 +20,11 @@ import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import java.time.DayOfWeek
 import org.springframework.stereotype.Service
 
 @Service
 class MissingReservationsReminders(
+    private val featureConfig: FeatureConfig,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: IEmailClient,
     private val emailMessageProvider: IEmailMessageProvider,
@@ -38,10 +39,10 @@ class MissingReservationsReminders(
     fun scheduleReminders(tx: Database.Transaction, clock: EvakaClock): Int {
         tx.removeUnclaimedJobs(setOf(AsyncJobType(AsyncJob.SendMissingReservationsReminder::class)))
 
-        val range =
-            clock.today().plusDays(8).with(DayOfWeek.MONDAY).let { start ->
-                FiniteDateRange(start, start.plusDays(7))
-            }
+        val monday =
+            getNextReservableMonday(clock.now(), featureConfig.citizenReservationThresholdHours)
+        val range = FiniteDateRange(monday, monday.plusDays(6))
+
         val guardians =
             tx.createQuery<Any> {
                     sql(

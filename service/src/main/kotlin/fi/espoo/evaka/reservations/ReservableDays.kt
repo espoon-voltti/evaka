@@ -11,10 +11,10 @@ import java.time.LocalDate
 
 private fun getNextMonday(now: LocalDate): LocalDate = now.plusDays(7 - now.dayOfWeek.value + 1L)
 
-private fun getNextReservableMonday(
+fun getNextReservableMonday(
     now: HelsinkiDateTime,
     thresholdHours: Long,
-    nextMonday: LocalDate
+    nextMonday: LocalDate = getNextMonday(now.toLocalDate())
 ): LocalDate =
     if (nextMonday.isAfter(now.plusHours(thresholdHours).toLocalDate())) {
         nextMonday
