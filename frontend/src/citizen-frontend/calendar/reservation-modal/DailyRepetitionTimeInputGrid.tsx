@@ -68,16 +68,6 @@ export default React.memo(function DailyRepetitionTimeInputGrid({
     }`}</Label>
   )
 
-  if (formData.dailyTimes === 'day-off') {
-    return (
-      <>
-        <div>{label}</div>
-        <div>{i18n.calendar.reservationModal.dayOff}</div>
-        <div />
-      </>
-    )
-  }
-
   return (
     <TimeInputs
       label={label}

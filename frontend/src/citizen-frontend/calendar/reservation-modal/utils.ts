@@ -54,18 +54,6 @@ export const allChildrenAreAbsentMarkedByEmployee = (
     )
   )
 
-export const allChildrenHaveDayOff = (
-  dayData: DailyReservationData[],
-  childIds: string[]
-) =>
-  dayData.every((reservations) =>
-    childIds.every((childId) =>
-      reservations.children.some(
-        (child) => child.childId === childId && !!child.dayOff
-      )
-    )
-  )
-
 export const bindUnboundedTimeRanges = (ranges: TimeRange[]): TimeRanges => {
   if (ranges.length === 1) {
     return ranges as [TimeRange]

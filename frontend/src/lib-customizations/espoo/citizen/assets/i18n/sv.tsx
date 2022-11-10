@@ -252,7 +252,6 @@ const sv: Translations = {
     holiday: 'Helgdag',
     absent: 'Frånvarande',
     absentFree: 'Gratis frånvaro',
-    dayOff: 'Ledighet',
     absences: {
       SICKLEAVE: 'Sjukfrånvaro'
     },
@@ -292,7 +291,6 @@ const sv: Translations = {
       start: 'Börjar',
       end: 'Slutar',
       absent: 'Frånvarande',
-      dayOff: 'Ledighet',
       saveErrors: {
         failure: 'Kunde inte spara',
         NON_RESERVABLE_DAYS: 'Alla valda dagar kan inte reserveras.'

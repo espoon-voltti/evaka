@@ -133,22 +133,6 @@ FROM (
         FROM absence a
         WHERE a.child_id = p.child_id AND a.date = t::date
     )
-    AND NOT EXISTS (
-        SELECT 1
-        FROM daily_service_time dst
-        WHERE dst.child_id = p.child_id AND dst.validity_period @> t::date AND dst.type = 'IRREGULAR'
-        AND (
-            CASE date_part('isodow', t::date)
-                WHEN 1 THEN monday_times IS NULL
-                WHEN 2 THEN tuesday_times IS NULL
-                WHEN 3 THEN wednesday_times IS NULL
-                WHEN 4 THEN thursday_times IS NULL
-                WHEN 5 THEN friday_times IS NULL
-                WHEN 6 THEN saturday_times IS NULL
-                WHEN 7 THEN sunday_times IS NULL
-            END
-        )
-    )
 ) missing
 JOIN LATERAL (
     SELECT guardian_id
