@@ -158,22 +158,22 @@ export class GoalsSection extends SimpleTextAreaSection {
   }
 
   get supportLevel() {
-    return this.values.nth(7).innerText
+    return this.findByDataQa('value-or-no-record-5.6').innerText
   }
 
   get other() {
-    return this.values.nth(8).innerText
+    return this.values.nth(7).innerText
   }
 
   supportLevelOptions = (key: string) =>
-    this.findByDataQa(`radio-group-date-question-option-${key}`)
+    this.findByDataQa(`multi-select-question-option-${key}`)
   supportLevelOptionRangeStart = (key: string) =>
     new TextInput(
-      this.findByDataQa(`radio-group-date-question-option-${key}-range-start`)
+      this.findByDataQa(`multi-select-question-option-${key}-start-date`)
     )
   supportLevelOptionRangeEnd = (key: string) =>
     new TextInput(
-      this.findByDataQa(`radio-group-date-question-option-${key}-range-end`)
+      this.findByDataQa(`multi-select-question-option-${key}-end-date`)
     )
 }
 
