@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
 import {
@@ -73,9 +75,11 @@ beforeEach(async () => {
     .withGroupAcl(daycareGroup2Fixture.id)
     .save()
   await Fixture.employeePin().with({ userId: staffFixture.data.id, pin }).save()
+})
 
+const initPages = async (mockedTime: Date) => {
   page = await Page.open({
-    mockedTime: new Date('2022-05-05T13:00Z')
+    mockedTime
   })
   nav = new MobileNav(page)
 
@@ -83,16 +87,16 @@ beforeEach(async () => {
   await page.goto(mobileSignupUrl)
   await nav.openPage('staff')
   staffAttendancePage = new StaffAttendancePage(page)
-})
+}
 
 describe('Realtime staff attendance page', () => {
   test('Staff member can be marked as arrived and departed', async () => {
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 6, 0).toSystemTzDate())
     const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
     const arrivalTime = '05:59'
     const departureTime = '12:45'
 
     await staffAttendancePage.assertPresentStaffCount(0)
-
     await staffAttendancePage.selectTab('absent')
     await staffAttendancePage.openStaffPage(name)
     await staffAttendancePage.assertEmployeeStatus('Poissa')
@@ -106,7 +110,8 @@ describe('Realtime staff attendance page', () => {
       0,
       `Paikalla ${arrivalTime}–`
     )
-    await staffAttendancePage.goBackFromMemberPage()
+
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 13, 30).toSystemTzDate())
     await staffAttendancePage.assertPresentStaffCount(1)
 
     await staffAttendancePage.selectTab('present')
@@ -120,7 +125,319 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.goBackFromMemberPage()
     await staffAttendancePage.assertPresentStaffCount(0)
   })
+
+  test('Staff arrival page behaves correctly with different time values when no plan exists', async () => {
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 12, 0).toSystemTzDate())
+
+    const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
+
+    await staffAttendancePage.assertPresentStaffCount(0)
+    await staffAttendancePage.selectTab('absent')
+    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.assertEmployeeStatus('Poissa')
+    await staffAttendancePage.clickStaffArrivedAndSetPin(pin)
+
+    // Within 30min from now so ok
+    await staffAttendancePage.setArrivalTime('12:30')
+    await staffAttendancePage.selectGroup(daycareGroupFixture.id)
+    await staffAttendancePage.assertDoneButtonEnabled(true)
+
+    // 1min too far in the future
+    await staffAttendancePage.setArrivalTime('12:31')
+    await staffAttendancePage.assertArrivalTimeInputInfo(
+      'Oltava välillä 11:30-12:30'
+    )
+    await staffAttendancePage.assertGroupSelectionVisible(false)
+    await staffAttendancePage.assertDoneButtonEnabled(false)
+  })
+
+  test('Staff arrival page behaves correctly with different time values in the future when plan exists', async () => {
+    // Planned attendance 08:00 - 16:00
+    const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
+    const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
+    await Fixture.staffAttendancePlan()
+      .with({
+        id: uuidv4(),
+        employeeId: staffFixture.data.id,
+        startTime: planStart,
+        endTime: planEnd
+      })
+      .save()
+
+    // Now it is 7:30
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 7, 30).toSystemTzDate())
+
+    const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
+
+    await staffAttendancePage.assertPresentStaffCount(0)
+    await staffAttendancePage.selectTab('absent')
+    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.assertEmployeeStatus('Poissa')
+    await staffAttendancePage.clickStaffArrivedAndSetPin(pin)
+
+    // Within 30min from planned start so ok, type required
+    await staffAttendancePage.setArrivalTime('7:30')
+    await staffAttendancePage.selectGroup(daycareGroupFixture.id)
+    await staffAttendancePage.assertDoneButtonEnabled(false)
+    await staffAttendancePage.selectAttendanceType('JUSTIFIED_CHANGE')
+    await staffAttendancePage.assertDoneButtonEnabled(true)
+
+    // Within 5min from planned start so ok, type not required
+    await staffAttendancePage.setArrivalTime('7:55')
+    await staffAttendancePage.selectGroup(daycareGroupFixture.id)
+    await staffAttendancePage.assertDoneButtonEnabled(true)
+
+    // Not ok because >+-30min from current time
+    await staffAttendancePage.setArrivalTime('8:01')
+    await staffAttendancePage.assertArrivalTimeInputInfo(
+      'Oltava välillä 07:00-08:00'
+    )
+    // Not ok because >30min from current time
+    await staffAttendancePage.setArrivalTime('6:59')
+    await staffAttendancePage.assertArrivalTimeInputInfo(
+      'Oltava välillä 07:00-08:00'
+    )
+  })
+
+  test('Staff arrival page behaves correctly with different time values in the past when plan exists', async () => {
+    // Planned attendance 08:00 - 16:00
+    const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
+    const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
+    await Fixture.staffAttendancePlan()
+      .with({
+        id: uuidv4(),
+        employeeId: staffFixture.data.id,
+        startTime: planStart,
+        endTime: planEnd
+      })
+      .save()
+
+    // Now it is 8:30
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 8, 30).toSystemTzDate())
+
+    const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
+
+    await staffAttendancePage.assertPresentStaffCount(0)
+    await staffAttendancePage.selectTab('absent')
+    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.assertEmployeeStatus('Poissa')
+    await staffAttendancePage.clickStaffArrivedAndSetPin(pin)
+
+    // Within 5min from planned start so ok, type not required
+    await staffAttendancePage.setArrivalTime('8:00')
+    await staffAttendancePage.selectGroup(daycareGroupFixture.id)
+    await staffAttendancePage.assertDoneButtonEnabled(true)
+
+    // More than 5min from planned start, type is not required but can be selected
+    await staffAttendancePage.setArrivalTime('8:15')
+    await staffAttendancePage.selectGroup(daycareGroupFixture.id)
+    await staffAttendancePage.assertDoneButtonEnabled(true)
+    await staffAttendancePage.selectAttendanceType('JUSTIFIED_CHANGE')
+    await staffAttendancePage.assertDoneButtonEnabled(true)
+
+    // Not ok because >+-30min from current time
+    await staffAttendancePage.setArrivalTime('7:59')
+    await staffAttendancePage.assertArrivalTimeInputInfo(
+      'Oltava välillä 08:00-09:00'
+    )
+  })
+
+  test('Staff departure page behaves correctly with different time values in the future when plan exists', async () => {
+    // Planned attendance 08:00 - 16:00
+    const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
+    const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
+    await Fixture.staffAttendancePlan()
+      .with({
+        id: uuidv4(),
+        employeeId: staffFixture.data.id,
+        startTime: planStart,
+        endTime: planEnd
+      })
+      .save()
+
+    await Fixture.realtimeStaffAttendance()
+      .with({
+        employeeId: staffFixture.data.id,
+        groupId: daycareGroupFixture.id,
+        arrived: HelsinkiDateTime.of(2022, 5, 5, 8, 0),
+        departed: null,
+        occupancyCoefficient: 0,
+        type: 'PRESENT'
+      })
+      .save()
+
+    // Now it is 15:30
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 15, 30).toSystemTzDate())
+
+    const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
+
+    await staffAttendancePage.assertPresentStaffCount(1)
+    await staffAttendancePage.selectTab('present')
+    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.assertEmployeeStatus('Läsnä')
+    await staffAttendancePage.clickStaffDepartedAndSetPin(pin)
+
+    // Before planned end no type is required
+    await staffAttendancePage.setDepartureTime('15:30')
+    await staffAttendancePage.assertMarkDepartedButtonEnabled(true)
+
+    // Departure time in the future is not allowed
+    await staffAttendancePage.setDepartureTime('16:00')
+    await staffAttendancePage.assertDepartureTimeInputInfo(
+      'Oltava 15:30 tai aikaisemmin'
+    )
+    await staffAttendancePage.assertMarkDepartedButtonEnabled(false)
+  })
+
+  test('Staff departure page behaves correctly with different time values in the past when plan exists', async () => {
+    // Planned attendance 08:00 - 16:00
+    const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
+    const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
+    await Fixture.staffAttendancePlan()
+      .with({
+        id: uuidv4(),
+        employeeId: staffFixture.data.id,
+        startTime: planStart,
+        endTime: planEnd
+      })
+      .save()
+
+    await Fixture.realtimeStaffAttendance()
+      .with({
+        employeeId: staffFixture.data.id,
+        groupId: daycareGroupFixture.id,
+        arrived: HelsinkiDateTime.of(2022, 5, 5, 8, 0),
+        departed: null,
+        occupancyCoefficient: 0,
+        type: 'PRESENT'
+      })
+      .save()
+
+    // Now it is 16:30
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 16, 30).toSystemTzDate())
+
+    const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
+
+    await staffAttendancePage.assertPresentStaffCount(1)
+    await staffAttendancePage.selectTab('present')
+    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.assertEmployeeStatus('Läsnä')
+    await staffAttendancePage.clickStaffDepartedAndSetPin(pin)
+
+    // Departure is possible now
+    await staffAttendancePage.setDepartureTime('16:30')
+    await staffAttendancePage.assertMarkDepartedButtonEnabled(true)
+
+    // Departure is possible when the plan ends
+    await staffAttendancePage.setDepartureTime('16:00')
+    await staffAttendancePage.assertMarkDepartedButtonEnabled(true)
+  })
+
+  test('Staff departs in the middle of the planned day', async () => {
+    // Planned attendance 08:00 - 16:00
+    const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
+    const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
+    await Fixture.staffAttendancePlan()
+      .with({
+        id: uuidv4(),
+        employeeId: staffFixture.data.id,
+        startTime: planStart,
+        endTime: planEnd
+      })
+      .save()
+
+    await Fixture.realtimeStaffAttendance()
+      .with({
+        employeeId: staffFixture.data.id,
+        groupId: daycareGroupFixture.id,
+        arrived: HelsinkiDateTime.of(2022, 5, 5, 8, 2),
+        departed: null,
+        occupancyCoefficient: 0,
+        type: 'PRESENT'
+      })
+      .save()
+
+    // Now it is 14:02
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 14, 2).toSystemTzDate())
+    const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
+    await staffAttendancePage.assertPresentStaffCount(1)
+    await staffAttendancePage.selectTab('present')
+    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.assertEmployeeStatus('Läsnä')
+    await staffAttendancePage.clickStaffDepartedAndSetPin(pin)
+
+    await staffAttendancePage.setDepartureTime('14:02')
+    await staffAttendancePage.assertMarkDepartedButtonEnabled(true)
+    await staffAttendancePage.selectAttendanceType('OTHER_WORK')
+    await staffAttendancePage.clickMarkDepartedButton()
+    await staffAttendancePage.assertEmployeeStatus('Poissa')
+    await staffAttendancePage.assertShiftTimeTextShown(
+      'Työvuoro tänään 08:00–16:00'
+    )
+    await staffAttendancePage.assertAttendanceTimeTextShown(
+      'Paikalla 08:02–14:02,Työasia 14:02–'
+    )
+  })
+
+  test('Staff has been in training and arrives and then departs in the middle of the planned day', async () => {
+    // Planned attendance 08:00 - 16:00
+    const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
+    const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
+    await Fixture.staffAttendancePlan()
+      .with({
+        id: uuidv4(),
+        employeeId: staffFixture.data.id,
+        startTime: planStart,
+        endTime: planEnd
+      })
+      .save()
+
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 12, 4).toSystemTzDate())
+    const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
+    await staffAttendancePage.assertPresentStaffCount(0)
+    await staffAttendancePage.selectTab('absent')
+    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.assertEmployeeStatus('Poissa')
+    await staffAttendancePage.clickStaffArrivedAndSetPin(pin)
+
+    await staffAttendancePage.setArrivalTime('12:04')
+    await staffAttendancePage.selectGroup(daycareGroupFixture.id)
+    await staffAttendancePage.assertDoneButtonEnabled(true)
+    await staffAttendancePage.selectAttendanceType('TRAINING')
+    await staffAttendancePage.clickDoneButton()
+    await staffAttendancePage.assertShiftTimeTextShown(
+      'Työvuoro tänään 08:00–16:00'
+    )
+    await staffAttendancePage.assertAttendanceTimeTextShown(
+      'Koulutus 08:00–12:04,Paikalla 12:04–'
+    )
+
+    // Clock is now 14:02
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 14, 2).toSystemTzDate())
+    await staffAttendancePage.assertPresentStaffCount(1)
+    await staffAttendancePage.selectTab('present')
+    await staffAttendancePage.openStaffPage(
+      `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
+    )
+    await staffAttendancePage.assertEmployeeStatus('Läsnä')
+    await staffAttendancePage.clickStaffDepartedAndSetPin(pin)
+
+    await staffAttendancePage.setDepartureTime('14:02')
+    await staffAttendancePage.assertMarkDepartedButtonEnabled(true)
+    await staffAttendancePage.selectAttendanceType('OTHER_WORK')
+    await staffAttendancePage.clickMarkDepartedButton()
+    await staffAttendancePage.assertEmployeeStatus('Poissa')
+    await staffAttendancePage.assertShiftTimeTextShown(
+      'Työvuoro tänään 08:00–16:00'
+    )
+    await staffAttendancePage.assertAttendanceTimeTextShown(
+      'Koulutus 08:00–12:04,Paikalla 12:04–14:02,Työasia 14:02–'
+    )
+  })
+
   test('New external staff member can be added and marked as departed', async () => {
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 16, 0).toSystemTzDate())
+
     const name = 'Nomen Estomen'
     const arrivalTime = '03:20'
 

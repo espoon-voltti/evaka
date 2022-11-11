@@ -76,7 +76,9 @@ export const fi = {
     group: 'Ryhmä',
     yesterday: 'eilen',
     validation: {
-      dateLte: (date: string) => `Oltava ${date} tai aikaisemmin`
+      dateLte: (date: string) => `Oltava ${date} tai aikaisemmin`,
+      dateBetween: (start: string, end: string) =>
+        `Oltava välillä ${start}-${end}`
     },
     openExpandingInfo: 'Avaa lisätietokenttä',
     nb: 'Huom',
@@ -242,13 +244,15 @@ export const fi = {
       pinNotSet: 'Aseta itsellesi PIN-koodi',
       pinLocked: 'Vaihda lukkiutunut PIN-koodi',
       plannedAttendance: 'Työvuoro tänään',
-      differenceReason: 'Kirjaa syy',
-      differenceInfo:
-        'Saavut työvuorostasi poikkeavaan aikaan. Valitse syykoodi.',
-      differenceInfoToggle: 'Poikkeaa työvuorostasi',
+      differenceReason: 'Kirjaa syy tarvittaessa',
+      differenceInfo: 'Aika poikkeaa työvuorostasi',
       hasFutureAttendance:
         'Sinulla on tulevaisuuteen merkittu läsnäolo, joten et voi kirjautua läsnäolevaksi.'
-    }
+    },
+    timeDiffTooBigNotification:
+      'Voit tehdä sisäänkirjauksen +/- 30 min päähän nykyhetkestä. Kirjauksia voi tarvittaessa muokata työpöytäselaimen kautta.',
+    departureCannotBeDoneInFuture:
+      'Työvuoron uloskirjausta ei voi merkitä ennakkoon.'
   },
   childInfo: {
     header: 'Lapsen tiedot',

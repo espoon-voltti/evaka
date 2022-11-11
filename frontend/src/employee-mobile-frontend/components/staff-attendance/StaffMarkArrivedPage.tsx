@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { isAfter, parse } from 'date-fns'
+import { addMinutes, differenceInMinutes, subMinutes } from 'date-fns'
 import React, {
   useCallback,
   useContext,
@@ -12,10 +12,11 @@ import React, {
   useState
 } from 'react'
 import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
 
 import { getAttendanceArrivalDifferenceReasons } from 'employee-mobile-frontend/utils/staffAttendances'
 import { combine, Success } from 'lib-common/api'
-import { formatTime, isValidTime } from 'lib-common/date'
+import { formatTime } from 'lib-common/date'
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
@@ -31,7 +32,7 @@ import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { AlertBox } from 'lib-components/molecules/MessageBoxes'
+import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { EMPTY_PIN, PinInput } from 'lib-components/molecules/PinInput'
 import { Gap } from 'lib-components/white-space'
 
@@ -78,6 +79,8 @@ export default React.memo(function StaffMarkArrivedPage() {
   const [time, setTime] = useState<string>(() =>
     HelsinkiDateTime.now().toLocalTime().format()
   )
+
+  const [now, setNow] = useState<Date>(() => mockNow() ?? new Date())
   const [attendanceGroup, setAttendanceGroup] = useState<UUID | undefined>(
     groupId !== 'all' ? groupId : undefined
   )
@@ -99,6 +102,9 @@ export default React.memo(function StaffMarkArrivedPage() {
     [groupId, staffMember, unitInfoResponse]
   )
 
+  const isValidTimeString = (time: string) =>
+    LocalTime.tryParse(time, 'HH:mm') ? true : false
+
   useEffect(() => {
     if (
       attendanceGroup === undefined &&
@@ -109,8 +115,52 @@ export default React.memo(function StaffMarkArrivedPage() {
     }
   }, [attendanceGroup, groupOptions])
 
-  const now = mockNow() ?? new Date()
-  const timeInFuture = isAfter(parse(time, 'HH:mm', now), now)
+  const firstPlannedStartOfTheDay = useMemo(
+    () =>
+      staffMember
+        .map((staff) =>
+          staff && staff.plannedAttendances.length > 0
+            ? staff.plannedAttendances.reduce(
+                (prev, curr) => (prev.start.isBefore(curr.start) ? prev : curr),
+                staff.plannedAttendances[0]
+              ).start
+            : null
+        )
+        .getOrElse(null),
+    [staffMember]
+  )
+
+  const selectedTimeDiffFromPlannedStartOfDayMinutes = useMemo(
+    () =>
+      firstPlannedStartOfTheDay &&
+      isValidTimeString(time) &&
+      differenceInMinutes(
+        HelsinkiDateTime.now()
+          .withTime(LocalTime.parse(time, 'HH:mm'))
+          .toSystemTzDate(),
+        firstPlannedStartOfTheDay.toSystemTzDate()
+      ),
+    [firstPlannedStartOfTheDay, time]
+  )
+
+  const selectedTimeIsWithin30MinsFromNow = useMemo(() => {
+    return (
+      isValidTimeString(time) &&
+      Math.abs(
+        differenceInMinutes(
+          HelsinkiDateTime.now()
+            .withTime(LocalTime.parse(time, 'HH:mm'))
+            .toSystemTzDate(),
+          now
+        )
+      ) <= 30
+    )
+  }, [time, now])
+
+  const hasPlan = useMemo(
+    () => firstPlannedStartOfTheDay != null,
+    [firstPlannedStartOfTheDay]
+  )
 
   const backButtonText = useMemo(
     () =>
@@ -142,6 +192,18 @@ export default React.memo(function StaffMarkArrivedPage() {
         .getOrElse([]),
     [staffMember, time]
   )
+
+  const showAttendanceTypeSelection = useMemo(() => {
+    if (!hasPlan || !selectedTimeDiffFromPlannedStartOfDayMinutes) return false
+    if (Math.abs(selectedTimeDiffFromPlannedStartOfDayMinutes) <= 5)
+      return false
+    if (staffAttendanceDifferenceReasons.length < 1) return false
+    return true
+  }, [
+    selectedTimeDiffFromPlannedStartOfDayMinutes,
+    staffAttendanceDifferenceReasons,
+    hasPlan
+  ])
 
   const confirm = useCallback(() => {
     if (!attendanceGroup) return undefined
@@ -194,16 +256,21 @@ export default React.memo(function StaffMarkArrivedPage() {
             const staffInfo = unitInfo.staff.find((s) => s.id === employeeId)
             const pinSet = staffInfo?.pinSet ?? true
             const pinLocked = staffInfo?.pinLocked || errorCode === 'PIN_LOCKED'
+
+            const disableConfirmBecauseOfPlan =
+              showAttendanceTypeSelection &&
+              selectedTimeDiffFromPlannedStartOfDayMinutes != null &&
+              selectedTimeDiffFromPlannedStartOfDayMinutes < -5 &&
+              attendanceType == null
+
             const confirmDisabled =
               pinLocked ||
               !pinSet ||
-              !isValidTime(time) ||
-              timeInFuture ||
+              !isValidTimeString(time) ||
               pinCode.join('').trim().length < 4 ||
+              !selectedTimeIsWithin30MinsFromNow ||
               !attendanceGroup ||
-              (staffAttendanceDifferenceReasons.length > 1 &&
-                (!attendanceType ||
-                  !staffAttendanceDifferenceReasons.includes(attendanceType)))
+              disableConfirmBecauseOfPlan
 
             const parsedTime = LocalTime.tryParse(time, 'HH:mm')
 
@@ -246,20 +313,30 @@ export default React.memo(function StaffMarkArrivedPage() {
                   <CustomTitle>{i18n.attendances.arrivalTime}</CustomTitle>
                   <TimeInput
                     onChange={setTime}
+                    onFocus={() => setNow(mockNow() ?? new Date())}
                     value={time}
                     data-qa="input-arrived"
                     info={
-                      timeInFuture
+                      !selectedTimeIsWithin30MinsFromNow
                         ? {
                             status: 'warning',
-                            text: i18n.common.validation.dateLte(
-                              formatTime(mockNow() ?? new Date())
+                            text: i18n.common.validation.dateBetween(
+                              formatTime(subMinutes(now, 30)),
+                              formatTime(addMinutes(now, 30))
                             )
                           }
                         : undefined
                     }
                   />
-                  {staffAttendanceDifferenceReasons.length > 0 && (
+                  {!selectedTimeIsWithin30MinsFromNow && (
+                    <InfoBoxWrapper>
+                      <InfoBox
+                        message={i18n.attendances.timeDiffTooBigNotification}
+                        data-qa="time-diff-too-big-notification"
+                      />
+                    </InfoBoxWrapper>
+                  )}
+                  {showAttendanceTypeSelection && (
                     <StaffAttendanceTypeSelection
                       i18n={i18n}
                       types={staffAttendanceDifferenceReasons}
@@ -267,27 +344,28 @@ export default React.memo(function StaffMarkArrivedPage() {
                       setSelectedType={setAttendanceType}
                     />
                   )}
-                  {renderResult(groupOptions, (groupOptions) =>
-                    groupOptions.length > 1 ? (
-                      <>
-                        <Gap />
-                        <CustomTitle>{i18n.common.group}</CustomTitle>
-                        <Select
-                          data-qa="group-select"
-                          selectedItem={attendanceGroup}
-                          items={groupOptions}
-                          getItemLabel={(item) =>
-                            unitInfo.groups.find((group) => group.id === item)
-                              ?.name ?? ''
-                          }
-                          placeholder={i18n.attendances.chooseGroup}
-                          onChange={(group) =>
-                            setAttendanceGroup(group ?? undefined)
-                          }
-                        />
-                      </>
-                    ) : null
-                  )}
+                  {selectedTimeIsWithin30MinsFromNow &&
+                    renderResult(groupOptions, (groupOptions) =>
+                      groupOptions.length > 1 ? (
+                        <>
+                          <Gap />
+                          <CustomTitle>{i18n.common.group}</CustomTitle>
+                          <Select
+                            data-qa="group-select"
+                            selectedItem={attendanceGroup}
+                            items={groupOptions}
+                            getItemLabel={(item) =>
+                              unitInfo.groups.find((group) => group.id === item)
+                                ?.name ?? ''
+                            }
+                            placeholder={i18n.attendances.chooseGroup}
+                            onChange={(group) =>
+                              setAttendanceGroup(group ?? undefined)
+                            }
+                          />
+                        </>
+                      ) : null
+                    )}
                   <Gap />
                 </TimeWrapper>
                 <Gap size="xs" />
@@ -318,3 +396,7 @@ export default React.memo(function StaffMarkArrivedPage() {
     </TallContentArea>
   )
 })
+
+const InfoBoxWrapper = styled.div`
+  font-size: 16px;
+`

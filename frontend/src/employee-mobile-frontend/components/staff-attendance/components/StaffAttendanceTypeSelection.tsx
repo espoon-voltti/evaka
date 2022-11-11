@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback, useState } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 import { CustomTitle } from 'employee-mobile-frontend/components/attendances/components'
@@ -12,7 +11,6 @@ import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
 import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { Gap } from 'lib-components/white-space'
 import { Translations } from 'lib-customizations/employeeMobile'
-import { fasInfo } from 'lib-icons'
 
 interface Props {
   i18n: Translations
@@ -27,19 +25,11 @@ export default React.memo(function StaffAttendanceTypeSelection({
   selectedType,
   setSelectedType
 }: Props) {
-  const [showInfo, setShowInfo] = useState(false)
-  const toggleInfo = useCallback(() => setShowInfo((value) => !value), [])
-
   return (
     <Container>
-      {showInfo && <InfoBox message={i18n.attendances.staff.differenceInfo} />}
-      <InfoToggle onClick={toggleInfo}>
-        <InfoBall>
-          <FontAwesomeIcon icon={fasInfo} />
-        </InfoBall>
-        <Gap size="xs" horizontal />
-        <InfoText>{i18n.attendances.staff.differenceInfoToggle}</InfoText>
-      </InfoToggle>
+      <InfoBoxContainer>
+        <InfoBox message={i18n.attendances.staff.differenceInfo} />
+      </InfoBoxContainer>
       <Gap size="s" />
       <CustomTitle>{i18n.attendances.staff.differenceReason}</CustomTitle>
       <Gap size="s" />
@@ -54,6 +44,7 @@ export default React.memo(function StaffAttendanceTypeSelection({
                 ? setSelectedType(undefined)
                 : setSelectedType(type)
             }
+            data-qa={`attendance-type-${type}`}
           />
         ))}
       </ChipWrapper>
@@ -67,30 +58,7 @@ const Container = styled.div`
   font-weight: 400;
 `
 
-const InfoToggle = styled.button`
+const InfoBoxContainer = styled.div`
   display: flex;
   justify-content: center;
-  align-items: center;
-  width: 100%;
-  background: transparent;
-  color: inherit;
-  border: none;
-  outline: none;
-  cursor: pointer;
-`
-
-const InfoBall = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: calc(1em + 6px);
-  height: calc(1em + 6px);
-  border-radius: 1em;
-  background: ${({ theme }) => theme.colors.main.m2};
-  color: ${({ theme }) => theme.colors.grayscale.g0};
-`
-
-const InfoText = styled.span`
-  color: ${({ theme }) => theme.colors.grayscale.g70};
-  font-size: 1rem;
 `

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { isAfter, parse } from 'date-fns'
+import { isAfter } from 'date-fns'
 import React, {
   useCallback,
   useContext,
@@ -11,6 +11,7 @@ import React, {
   useState
 } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
 
 import { getAttendanceDepartureDifferenceReasons } from 'employee-mobile-frontend/utils/staffAttendances'
 import { combine } from 'lib-common/api'
@@ -28,6 +29,7 @@ import TimeInput from 'lib-components/atoms/form/TimeInput'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { EMPTY_PIN, PinInput } from 'lib-components/molecules/PinInput'
 import { Gap } from 'lib-components/white-space'
 
@@ -74,8 +76,13 @@ export default React.memo(function StaffMarkDepartedPage() {
   const [time, setTime] = useState<string>(() =>
     HelsinkiDateTime.now().toLocalTime().format()
   )
+  const [now, setNow] = useState<Date>(() => mockNow() ?? new Date())
+
   const [errorCode, setErrorCode] = useState<string | undefined>(undefined)
   const [attendanceType, setAttendanceType] = useState<StaffAttendanceType>()
+
+  const isValidTimeString = (time: string) =>
+    LocalTime.parse(time, 'HH:mm') ? true : false
 
   const staffInfo = useMemo(
     () =>
@@ -113,8 +120,17 @@ export default React.memo(function StaffMarkDepartedPage() {
     [memberAttendance, i18n.common.back]
   )
 
-  const now = mockNow() ?? new Date()
-  const timeInFuture = isAfter(parse(time, 'HH:mm', now), now)
+  const timeInFuture = useMemo(
+    () =>
+      isValidTime(time) &&
+      isAfter(
+        HelsinkiDateTime.now()
+          .withTime(LocalTime.parse(time, 'HH:mm'))
+          .toSystemTzDate(),
+        now
+      ),
+    [time, now]
+  )
 
   const staffAttendanceDifferenceReasons: StaffAttendanceType[] = useMemo(
     () =>
@@ -191,12 +207,9 @@ export default React.memo(function StaffMarkDepartedPage() {
             const confirmDisabled =
               pinLocked ||
               !pinSet ||
-              !isValidTime(time) ||
+              !isValidTimeString(time) ||
               timeInFuture ||
-              pinCode.join('').trim().length < 4 ||
-              (staffAttendanceDifferenceReasons.length > 1 &&
-                (!attendanceType ||
-                  !staffAttendanceDifferenceReasons.includes(attendanceType)))
+              pinCode.join('').trim().length < 4
 
             return (
               <>
@@ -220,6 +233,7 @@ export default React.memo(function StaffMarkDepartedPage() {
                   <CustomTitle>{i18n.attendances.departureTime}</CustomTitle>
                   <TimeInput
                     onChange={setTime}
+                    onFocus={() => setNow(mockNow() ?? new Date())}
                     value={time}
                     data-qa="set-time"
                     info={
@@ -227,21 +241,29 @@ export default React.memo(function StaffMarkDepartedPage() {
                         ? {
                             status: 'warning',
                             text: i18n.common.validation.dateLte(
-                              formatTime(mockNow() ?? new Date())
+                              formatTime(now)
                             )
                           }
                         : undefined
                     }
                   />
-                  <Gap />
-                  {staffAttendanceDifferenceReasons.length > 0 && (
-                    <StaffAttendanceTypeSelection
-                      i18n={i18n}
-                      types={staffAttendanceDifferenceReasons}
-                      selectedType={attendanceType}
-                      setSelectedType={setAttendanceType}
-                    />
+                  {timeInFuture && (
+                    <InfoBoxWrapper>
+                      <InfoBox
+                        message={i18n.attendances.departureCannotBeDoneInFuture}
+                        data-qa="departure-cannot-be-done-in-future-notification"
+                      />
+                    </InfoBoxWrapper>
                   )}
+                  {!timeInFuture &&
+                    staffAttendanceDifferenceReasons.length > 0 && (
+                      <StaffAttendanceTypeSelection
+                        i18n={i18n}
+                        types={staffAttendanceDifferenceReasons}
+                        selectedType={attendanceType}
+                        setSelectedType={setAttendanceType}
+                      />
+                    )}
                 </TimeWrapper>
                 <Gap size="xs" />
                 <Actions>
@@ -277,3 +299,7 @@ export default React.memo(function StaffMarkDepartedPage() {
     </TallContentArea>
   )
 })
+
+const InfoBoxWrapper = styled.div`
+  font-size: 16px;
+`

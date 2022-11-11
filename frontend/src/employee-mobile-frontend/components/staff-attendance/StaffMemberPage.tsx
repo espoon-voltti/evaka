@@ -54,7 +54,7 @@ export default React.memo(function StaffMemberPage() {
                 {featureFlags.experimental?.staffAttendanceTypes ? (
                   <>
                     {staffMember.spanningPlan && (
-                      <TimeInfo>
+                      <TimeInfo data-qa="shift-time">
                         <span>
                           {i18n.attendances.staff.plannedAttendance}{' '}
                           {staffMember.spanningPlan.start
