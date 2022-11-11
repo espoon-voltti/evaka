@@ -12,14 +12,12 @@ import { ValueOrNoRecord } from './ValueOrNoRecord'
 import { QuestionProps } from './question-props'
 
 interface Props extends QuestionProps<MultiSelectQuestion> {
-  selectedValues: string[]
   translations: VasuTranslations
 }
 
 export function MultiSelectQuestion({
-  question: { name, options, textValue, dateValue },
+  question: { name, value, options, textValue, dateValue, dateRangeValue },
   questionNumber,
-  selectedValues,
   translations
 }: Props) {
   return (
@@ -30,13 +28,16 @@ export function MultiSelectQuestion({
 
       <ValueOrNoRecord
         text={options
-          .filter((option) => selectedValues.includes(option.key))
+          .filter((option) => value.includes(option.key))
           .map((o) => {
             const date = dateValue?.[o.key]
-            const name = `${o.name}${date ? ` ${date.format()}` : ''}${
-              o.subText ? `\n${o.subText}` : ''
-            }`
-
+            const dateStr = date ? ` ${date.format()}` : ''
+            const dateRange = dateRangeValue?.[o.key]
+            const dateRangeStr = dateRange
+              ? ` ${dateRange.start.format()}–${dateRange.end.format()}`
+              : ''
+            const subTextStr = o.subText ? `\n${o.subText}` : ''
+            const name = `${o.name}${dateStr}${dateRangeStr}${subTextStr}`
             return textValue && textValue[o.key]
               ? `${name}: ${textValue[o.key]}`
               : name

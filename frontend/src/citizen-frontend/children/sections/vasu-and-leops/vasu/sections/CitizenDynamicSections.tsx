@@ -6,7 +6,6 @@ import last from 'lodash/last'
 import React, { Fragment } from 'react'
 import styled, { css } from 'styled-components'
 
-import { MultiSelectQuestion } from 'lib-common/api-types/vasu'
 import {
   VasuSection,
   VasuDocumentState
@@ -130,13 +129,6 @@ export function CitizenDynamicSections({
                     <MultiSelectQuestionElem
                       question={question}
                       questionNumber={questionNumber}
-                      selectedValues={
-                        (
-                          sections[sectionIndex].questions[
-                            questionIndex
-                          ] as MultiSelectQuestion
-                        ).value
-                      }
                       translations={translations}
                     />
                   ) : isMultiFieldQuestion(question) ? (
