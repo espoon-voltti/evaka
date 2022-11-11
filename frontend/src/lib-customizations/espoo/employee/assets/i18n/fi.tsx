@@ -565,9 +565,11 @@ export const fi = {
       role: 'Rooli',
       roles: {
         LOCAL_GUARDIAN: 'Huoltaja',
+        LOCAL_FOSTER_PARENT: 'Sijaisvanhempi',
         LOCAL_ADULT: 'Aikuinen samassa taloudessa',
         LOCAL_SIBLING: 'Lapsi',
-        REMOTE_GUARDIAN: 'Huoltaja'
+        REMOTE_GUARDIAN: 'Huoltaja',
+        REMOTE_FOSTER_PARENT: 'Sijaisvanhempi'
       },
       contact: 'S-posti ja puhelin',
       contactPerson: 'Yhteyshlö',

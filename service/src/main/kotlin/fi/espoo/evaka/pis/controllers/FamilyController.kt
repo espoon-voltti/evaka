@@ -6,7 +6,9 @@ package fi.espoo.evaka.pis.controllers
 
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.pis.FamilyContact
+import fi.espoo.evaka.pis.FamilyContactRole.LOCAL_FOSTER_PARENT
 import fi.espoo.evaka.pis.FamilyContactRole.LOCAL_GUARDIAN
+import fi.espoo.evaka.pis.FamilyContactRole.REMOTE_FOSTER_PARENT
 import fi.espoo.evaka.pis.FamilyContactRole.REMOTE_GUARDIAN
 import fi.espoo.evaka.pis.service.FamilyOverview
 import fi.espoo.evaka.pis.service.FamilyOverviewService
@@ -261,8 +263,9 @@ WITH contact AS (
     -- adults in the same household
     SELECT
         CASE
-            WHEN EXISTS (SELECT 1 FROM guardian g WHERE g.guardian_id = p.id AND g.child_id = :id)
-            THEN 'LOCAL_GUARDIAN' ELSE 'LOCAL_ADULT'
+            WHEN EXISTS (SELECT 1 FROM guardian g WHERE g.guardian_id = p.id AND g.child_id = :id) THEN 'LOCAL_GUARDIAN'
+            WHEN EXISTS (SELECT 1 FROM foster_parent f WHERE f.parent_id = p.id AND f.child_id = :id AND valid_during @> :today) THEN 'LOCAL_FOSTER_PARENT'
+            ELSE 'LOCAL_ADULT'
         END AS role, p.id, p.first_name, p.last_name, p.email, p.phone, p.backup_phone, p.street_address, p.postal_code, p.post_office, family_contact.priority
     FROM person p
     LEFT JOIN family_contact ON family_contact.contact_person_id = p.id AND family_contact.child_id = :id
@@ -314,14 +317,37 @@ WITH contact AS (
                 )
             )
         )
+
+    UNION
+
+    -- foster parents in other households
+    SELECT 'REMOTE_FOSTER_PARENT' AS role, p.id, p.first_name, p.last_name, p.email, p.phone, p.backup_phone, p.street_address, p.postal_code, p.post_office, family_contact.priority
+    FROM person p
+    LEFT JOIN family_contact ON family_contact.contact_person_id = p.id AND family_contact.child_id = :id
+    WHERE
+        EXISTS (SELECT 1 FROM foster_parent g WHERE g.parent_id = p.id AND g.child_id = :id AND valid_during @> :today) -- is a foster parent
+        AND NOT EXISTS ( -- but is neither head of child nor their partner
+            SELECT 1 FROM fridge_child fc
+            WHERE fc.child_id = :id AND daterange(fc.start_date, fc.end_date, '[]') @> :today AND (
+                fc.head_of_child = p.id OR EXISTS (
+                    SELECT 1 FROM fridge_partner_view fp
+                    WHERE
+                        fp.person_id = fc.head_of_child
+                        AND fp.partner_person_id = p.id
+                        AND daterange(fp.start_date, fp.end_date, '[]') @> :today
+                )
+            )
+        )
 )
 SELECT
     *,
     (CASE role
         WHEN 'LOCAL_GUARDIAN' THEN 1
-        WHEN 'LOCAL_ADULT' THEN 2
-        WHEN 'LOCAL_SIBLING' THEN 3
-        WHEN 'REMOTE_GUARDIAN' THEN 4
+        WHEN 'LOCAL_FOSTER_PARENT' THEN 2
+        WHEN 'LOCAL_ADULT' THEN 3
+        WHEN 'LOCAL_SIBLING' THEN 4
+        WHEN 'REMOTE_GUARDIAN' THEN 5
+        WHEN 'REMOTE_FOSTER_PARENT' THEN 6
     END) AS role_order
 FROM contact
 ORDER BY priority ASC, role_order ASC
@@ -336,7 +362,8 @@ ORDER BY priority ASC, role_order ASC
     )
 }
 
-private val defaultContacts = setOf(LOCAL_GUARDIAN, REMOTE_GUARDIAN)
+private val defaultContacts =
+    setOf(LOCAL_GUARDIAN, LOCAL_FOSTER_PARENT, REMOTE_GUARDIAN, REMOTE_FOSTER_PARENT)
 
 private fun addDefaultPriorities(contacts: List<FamilyContact>): List<FamilyContact> =
     if (contacts.none { it.priority != null }) {

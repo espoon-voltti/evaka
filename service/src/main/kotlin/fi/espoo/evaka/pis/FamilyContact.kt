@@ -8,9 +8,11 @@ import fi.espoo.evaka.shared.PersonId
 
 enum class FamilyContactRole {
     LOCAL_GUARDIAN,
+    LOCAL_FOSTER_PARENT,
     LOCAL_ADULT,
     LOCAL_SIBLING,
-    REMOTE_GUARDIAN
+    REMOTE_GUARDIAN,
+    REMOTE_FOSTER_PARENT
 }
 
 data class FamilyContact(
