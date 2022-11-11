@@ -88,8 +88,70 @@ const PaginationWrapper = styled.div<PaginationWrapperProps>`
 `
 
 const StatusColorTd = styled(Td)<{ color: string }>`
-  border-left-color: ${(p) => p.color};
-  border-left-width: 7px;
+  border-left: solid 7px ${(p) => p.color};
+`
+
+const SortableThWithBorder = styled(SortableTh)`
+  border-left: solid 7px white;
+`
+
+const ApplicationsTableContainer = styled.div`
+  table {
+    width: auto;
+  }
+
+  @media screen and (min-width: 1024px) {
+    table {
+      max-width: 960px;
+    }
+
+    th,
+    td {
+      padding: ${defaultMargins.s} ${defaultMargins.xs};
+    }
+    th:last-of-type,
+    td:last-of-type {
+      padding: ${defaultMargins.s};
+    }
+  }
+  @media screen and (max-width: 1215px) {
+    table {
+      max-width: 1152px;
+    }
+
+    th,
+    td {
+      padding: ${defaultMargins.s} ${defaultMargins.xs};
+    }
+    th:last-of-type,
+    td:last-of-type {
+      padding: ${defaultMargins.s};
+    }
+  }
+  @media screen and (max-width: 1407px) {
+    table {
+      max-width: 1344px;
+    }
+  }
+  @media screen and (min-width: 1216px) {
+    table {
+      max-width: 1152px;
+    }
+
+    th,
+    td {
+      padding: ${defaultMargins.s} ${defaultMargins.xs};
+    }
+    th:last-of-type,
+    td:last-of-type {
+      padding: ${defaultMargins.s};
+    }
+  }
+  @media screen and (min-width: 1408px) {
+    table {
+      max-width: 1344px;
+    }
+  }
 `
 
 interface Props {
@@ -458,54 +520,38 @@ const ApplicationsList = React.memo(function Applications({
         </PaginationWrapper>
       </TitleRowContainer>
 
-      <div>
+      <ApplicationsTableContainer>
         <Table data-qa="table-of-applications">
-          <Thead>
+          <Thead sticky="90px">
             <Tr>
-              <SortableTh
-                sticky
-                top="106px"
+              <SortableThWithBorder
                 sorted={isSorted('APPLICATION_TYPE')}
                 onClick={toggleSort('APPLICATION_TYPE')}
               >
                 {i18n.applications.list.type}
-              </SortableTh>
-              <Th sticky top="106px">
-                {i18n.applications.list.subtype}
-              </Th>
+              </SortableThWithBorder>
+              <Th>{i18n.applications.list.subtype}</Th>
               <SortableTh
-                sticky
-                top="106px"
                 sorted={isSorted('CHILD_NAME')}
                 onClick={toggleSort('CHILD_NAME')}
               >
                 {i18n.applications.list.name}
               </SortableTh>
               <SortableTh
-                sticky
-                top="106px"
                 sorted={isSorted('DUE_DATE')}
                 onClick={toggleSort('DUE_DATE')}
               >
                 {i18n.applications.list.dueDate}
               </SortableTh>
               <SortableTh
-                sticky
-                top="106px"
                 sorted={isSorted('START_DATE')}
                 onClick={toggleSort('START_DATE')}
               >
                 {i18n.applications.list.startDate}
               </SortableTh>
-              <Th sticky top="106px">
-                {i18n.applications.list.basis}
-              </Th>
-              <Th sticky top="106px">
-                {i18n.applications.list.unit}
-              </Th>
+              <Th>{i18n.applications.list.basis}</Th>
+              <Th>{i18n.applications.list.unit}</Th>
               <SortableTh
-                sticky
-                top="106px"
                 sorted={isSorted('STATUS')}
                 onClick={toggleSort('STATUS')}
               >
@@ -532,7 +578,7 @@ const ApplicationsList = React.memo(function Applications({
           <Tbody>{rows}</Tbody>
         </Table>
         <ActionBar reloadApplications={reloadApplications} fullWidth />
-      </div>
+      </ApplicationsTableContainer>
 
       {!!editedNote && (
         <AsyncFormModal
