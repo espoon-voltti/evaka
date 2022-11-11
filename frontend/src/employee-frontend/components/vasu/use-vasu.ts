@@ -62,9 +62,8 @@ export function useVasu(id: string): Vasu {
     []
   )
 
-  const getSaveParameters = useCallback(
-    () =>
-      [{ documentId: id, content, childLanguage }] as [PutVasuDocumentParams],
+  const getSaveParameters: () => [PutVasuDocumentParams] = useCallback(
+    () => [{ documentId: id, content, childLanguage }],
     [id, content, childLanguage]
   )
 

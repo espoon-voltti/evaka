@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
@@ -16,7 +16,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { Label, P } from 'lib-components/typography'
+import { Bold, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { VasuTranslations } from 'lib-customizations/employee'
 
@@ -29,26 +29,24 @@ interface Props extends QuestionProps<MultiSelectQuestion> {
   onChange?: (
     option: QuestionOption,
     value: boolean | string,
-    dateValue?: LocalDate | null
+    dateValue: LocalDate | null,
+    dateRangeValue: { start: LocalDate; end: LocalDate } | null
   ) => void
   translations: VasuTranslations
 }
 
 const SubText = styled(P)`
-  margin: 0;
-  margin-left: 46px;
-  margin-top: -${defaultMargins.xs};
-  margin-bottom: ${defaultMargins.xs};
+  margin-top: -${defaultMargins.xs} 0 ${defaultMargins.xs} 46px;
 `
 
 export function MultiSelectQuestion({
   onChange,
-  question: { name, options, info, value, textValue, dateValue, maxSelections },
+  question,
   questionNumber,
   translations
 }: Props) {
-  const { i18n } = useTranslation()
-
+  const { name, options, info, value, textValue, dateValue, dateRangeValue } =
+    question
   return (
     <div>
       <QuestionInfo info={info}>
@@ -60,56 +58,20 @@ export function MultiSelectQuestion({
         <>
           <Gap size="m" />
           <FixedSpaceColumn>
-            {options.map((option) => (
-              <ExpandingInfo
-                key={option.key}
-                info={option.info}
-                ariaLabel={i18n.common.openExpandingInfo}
-                closeLabel={i18n.common.close}
-              >
-                <FixedSpaceRow>
-                  <Checkbox
-                    key={option.key}
-                    checked={value.includes(option.key)}
-                    label={option.name}
-                    onChange={(checked) => onChange(option, checked)}
-                    data-qa={`multi-select-question-option-${option.key}`}
-                    disabled={
-                      !!maxSelections &&
-                      value.length >= maxSelections &&
-                      !value.includes(option.key)
-                    }
-                  />
-                  {option.date && (
-                    <DatePicker
-                      locale="fi"
-                      date={dateValue?.[option.key] ?? null}
-                      onChange={(date) =>
-                        onChange(
-                          option,
-                          textValue?.[option.key] ?? value.includes(option.key),
-                          date
-                        )
-                      }
-                      data-qa={`multi-select-question-option-${option.key}-date`}
-                      errorTexts={i18n.validationErrors}
-                      hideErrorsBeforeTouched
-                    />
-                  )}
-                </FixedSpaceRow>
-                {!!option.subText && (
-                  <SubText noMargin>{option.subText}</SubText>
-                )}
-                {option.textAnswer && textValue && (
-                  <InputField
-                    value={textValue[option.key] || ''}
-                    onChange={(text) => onChange(option, text)}
-                    placeholder={option.name}
-                    data-qa={`multi-select-question-option-text-input-${option.key}`}
-                  />
-                )}
-              </ExpandingInfo>
-            ))}
+            {options.map((option) =>
+              option.isIntervention ? (
+                <QuestionInfo key={option.key} info={option.info ?? null}>
+                  <Bold>{option.name}</Bold>
+                </QuestionInfo>
+              ) : (
+                <MultiSelectQuestionOption
+                  key={option.key}
+                  question={question}
+                  option={option}
+                  onChange={onChange}
+                />
+              )
+            )}
           </FixedSpaceColumn>
         </>
       ) : (
@@ -118,10 +80,13 @@ export function MultiSelectQuestion({
             .filter((option) => value.includes(option.key))
             .map((o) => {
               const date = dateValue?.[o.key]
-              const name = `${o.name}${date ? ` ${date.format()}` : ''}${
-                o.subText ? `\n${o.subText}` : ''
-              }`
-
+              const dateStr = date ? ` ${date.format()}` : ''
+              const dateRange = dateRangeValue?.[o.key]
+              const dateRangeStr = dateRange
+                ? ` ${dateRange.start.format()}–${dateRange.end.format()}`
+                : ''
+              const subTextStr = o.subText ? `\n${o.subText}` : ''
+              const name = `${o.name}${dateStr}${dateRangeStr}${subTextStr}`
               return textValue && textValue[o.key]
                 ? `${name}: ${textValue[o.key]}`
                 : name
@@ -134,3 +99,151 @@ export function MultiSelectQuestion({
     </div>
   )
 }
+
+const MultiSelectQuestionOption = React.memo(
+  function MultiSelectQuestionOption({
+    question: { value, maxSelections, textValue, dateValue, dateRangeValue },
+    option,
+    onChange
+  }: {
+    question: MultiSelectQuestion
+    option: QuestionOption
+    onChange: (
+      option: QuestionOption,
+      value: boolean | string,
+      dateValue: LocalDate | null,
+      dateRange: { start: LocalDate; end: LocalDate } | null
+    ) => void
+  }) {
+    const { i18n } = useTranslation()
+
+    const checked = value.includes(option.key)
+    const date = dateValue?.[option.key] ?? null
+    const dateRange = dateRangeValue?.[option.key] ?? null
+    const [startDate, setStartDate] = useState(dateRange?.start ?? null)
+    const [endDate, setEndDate] = useState(dateRange?.end ?? null)
+
+    const handleChange = useCallback(
+      (
+        checkedOrText: boolean | string,
+        date: LocalDate | null,
+        startDate: LocalDate | null,
+        endDate: LocalDate | null
+      ) => {
+        onChange(
+          option,
+          checkedOrText,
+          option.date ? date : null,
+          option.dateRange && startDate && endDate
+            ? { start: startDate, end: endDate }
+            : null
+        )
+      },
+      [onChange, option]
+    )
+
+    const handleCheckboxChange = useCallback(
+      (newChecked: boolean) => {
+        if (!newChecked) {
+          setStartDate(null)
+          setEndDate(null)
+        }
+        handleChange(newChecked, date, startDate, endDate)
+      },
+      [date, endDate, handleChange, startDate]
+    )
+
+    const handleDateChange = useCallback(
+      (newDate: LocalDate | null) => {
+        handleChange(checked, newDate, startDate, endDate)
+      },
+      [checked, endDate, handleChange, startDate]
+    )
+
+    const handleStartDateChange = useCallback(
+      (newStartDate: LocalDate | null) => {
+        setStartDate(newStartDate)
+        handleChange(checked, date, newStartDate, endDate)
+      },
+      [checked, date, endDate, handleChange]
+    )
+
+    const handleEndDateChange = useCallback(
+      (newEndDate: LocalDate | null) => {
+        setEndDate(newEndDate)
+        handleChange(checked, date, startDate, newEndDate)
+      },
+      [checked, date, handleChange, startDate]
+    )
+
+    const handleTextChange = useCallback(
+      (newText: string) => {
+        handleChange(newText, date, startDate, endDate)
+      },
+      [date, endDate, handleChange, startDate]
+    )
+
+    return (
+      <ExpandingInfo
+        key={option.key}
+        info={option.info}
+        ariaLabel={i18n.common.openExpandingInfo}
+        closeLabel={i18n.common.close}
+      >
+        <FixedSpaceRow>
+          <Checkbox
+            key={option.key}
+            checked={checked}
+            label={option.name}
+            onChange={handleCheckboxChange}
+            data-qa={`multi-select-question-option-${option.key}`}
+            disabled={
+              !!maxSelections &&
+              value.length >= maxSelections &&
+              !value.includes(option.key)
+            }
+          />
+          {option.date ? (
+            <DatePicker
+              locale="fi"
+              date={date}
+              onChange={handleDateChange}
+              data-qa={`multi-select-question-option-${option.key}-date`}
+              errorTexts={i18n.validationErrors}
+              hideErrorsBeforeTouched
+            />
+          ) : option.dateRange ? (
+            <div>
+              <DatePicker
+                locale="fi"
+                date={startDate}
+                onChange={handleStartDateChange}
+                data-qa={`multi-select-question-option-${option.key}-start-date`}
+                errorTexts={i18n.validationErrors}
+                hideErrorsBeforeTouched
+              />
+              <span>-</span>
+              <DatePicker
+                locale="fi"
+                date={endDate}
+                onChange={handleEndDateChange}
+                data-qa={`multi-select-question-option-${option.key}-end-date`}
+                errorTexts={i18n.validationErrors}
+                hideErrorsBeforeTouched
+              />
+            </div>
+          ) : null}
+        </FixedSpaceRow>
+        {option.subText ? <SubText noMargin>{option.subText}</SubText> : null}
+        {option.textAnswer && textValue && (
+          <InputField
+            value={textValue[option.key] || ''}
+            onChange={handleTextChange}
+            placeholder={option.name}
+            data-qa={`multi-select-question-option-text-input-${option.key}`}
+          />
+        )}
+      </ExpandingInfo>
+    )
+  }
+)
