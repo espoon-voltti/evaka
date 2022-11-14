@@ -254,7 +254,6 @@ const en: Translations = {
     holiday: 'Holiday',
     absent: 'Absent',
     absentFree: 'Free absence',
-    dayOff: 'Day off',
     absences: {
       SICKLEAVE: 'Absence due to illness'
     },
@@ -295,7 +294,6 @@ const en: Translations = {
       start: 'Start',
       end: 'End',
       absent: 'Absent',
-      dayOff: 'Day off',
       saveErrors: {
         failure: 'Could not save',
         NON_RESERVABLE_DAYS: 'Some of the selected days cannot be reserved'

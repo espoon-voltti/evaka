@@ -4,8 +4,16 @@
 
 package fi.espoo.evaka.emailclient
 
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+
+data class EmailContent(
+    val subject: String,
+    val text: String,
+    @org.intellij.lang.annotations.Language("html") val html: String
+)
 
 interface IEmailMessageProvider {
 
@@ -16,41 +24,42 @@ interface IEmailMessageProvider {
     val subjectForDecisionEmail: String
 
     fun getPendingDecisionEmailSubject(): String {
-        return subjectForPendingDecisionEmail + getMessagePostfix()
+        return subjectForPendingDecisionEmail
     }
 
     fun getPendingDecisionEmailHtml(): String
     fun getPendingDecisionEmailText(): String
 
     fun getClubApplicationReceivedEmailSubject(): String {
-        return subjectForClubApplicationReceivedEmail + getMessagePostfix()
+        return subjectForClubApplicationReceivedEmail
     }
 
     fun getClubApplicationReceivedEmailHtml(): String
     fun getClubApplicationReceivedEmailText(): String
 
     fun getDaycareApplicationReceivedEmailSubject(): String {
-        return subjectForDaycareApplicationReceivedEmail + getMessagePostfix()
+        return subjectForDaycareApplicationReceivedEmail
     }
 
     fun getDaycareApplicationReceivedEmailHtml(): String
     fun getDaycareApplicationReceivedEmailText(): String
 
     fun getPreschoolApplicationReceivedEmailSubject(): String {
-        return subjectForPreschoolApplicationReceivedEmail + getMessagePostfix()
+        return subjectForPreschoolApplicationReceivedEmail
     }
 
     fun getPreschoolApplicationReceivedEmailHtml(withinApplicationPeriod: Boolean): String
     fun getPreschoolApplicationReceivedEmailText(withinApplicationPeriod: Boolean): String
 
     fun getDecisionEmailSubject(): String {
-        return subjectForDecisionEmail + getMessagePostfix()
+        return subjectForDecisionEmail
     }
 
     fun getDecisionEmailHtml(childId: ChildId, decisionId: AssistanceNeedDecisionId): String
     fun getDecisionEmailText(childId: ChildId, decisionId: AssistanceNeedDecisionId): String
 
-    private fun getMessagePostfix(): String {
-        return if (System.getenv("VOLTTI_ENV") == "staging") " [staging]" else ""
-    }
+    fun missingReservationsNotification(
+        language: Language,
+        checkedRange: FiniteDateRange
+    ): EmailContent
 }

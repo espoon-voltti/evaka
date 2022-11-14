@@ -18,8 +18,11 @@ import software.amazon.awssdk.services.ses.model.SendEmailRequest
 
 private val logger = KotlinLogging.logger {}
 
-class EmailClient(private val client: SesClient, private val whitelist: List<Regex>?) :
-    IEmailClient {
+class EmailClient(
+    private val client: SesClient,
+    private val whitelist: List<Regex>?,
+    private val subjectPostfix: String?
+) : IEmailClient {
     private val charset = "UTF-8"
 
     override fun sendEmail(
@@ -55,7 +58,18 @@ class EmailClient(private val client: SesClient, private val whitelist: List<Reg
                                         )
                                         .build()
                                 )
-                                .subject(Content.builder().charset(charset).data(subject).build())
+                                .subject(
+                                    Content.builder()
+                                        .charset(charset)
+                                        .data(
+                                            when (subjectPostfix) {
+                                                null,
+                                                "" -> subject
+                                                else -> "$subject [$subjectPostfix]"
+                                            }
+                                        )
+                                        .build()
+                                )
                                 .build()
                         )
                         .source(fromAddress)

@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka
 
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.shared.job.JobSchedule
 import fi.espoo.evaka.shared.job.ScheduledJob
 import fi.espoo.evaka.shared.job.ScheduledJobSettings
@@ -160,12 +161,31 @@ data class EmailEnv(
     val senderAddress: String,
     val senderNameFi: String,
     val senderNameSv: String,
+    val subjectPostfix: String?,
     val applicationReceivedSenderAddressFi: String,
     val applicationReceivedSenderAddressSv: String,
     val applicationReceivedSenderNameFi: String,
     val applicationReceivedSenderNameSv: String
 ) {
+    fun sender(language: Language): String =
+        when (language) {
+            Language.sv -> "$senderNameSv <$senderAddress>"
+            else -> "$senderNameFi <$senderAddress>"
+        }
+    fun applicationReceivedSender(language: Language): String =
+        when (language) {
+            Language.sv -> "$applicationReceivedSenderNameSv <$applicationReceivedSenderAddressSv>"
+            else -> "$applicationReceivedSenderNameFi <$applicationReceivedSenderAddressFi>"
+        }
+
     companion object {
+        private fun getLegacyPostfix(): String? =
+            when (val volttiEnv = System.getenv("VOLTTI_ENV")) {
+                "prod",
+                null -> null
+                else -> volttiEnv
+            }
+
         fun fromEnvironment(env: Environment) =
             EmailEnv(
                 enabled = env.lookup("evaka.email.enabled", "application.email.enabled") ?: false,
@@ -184,6 +204,7 @@ data class EmailEnv(
                     env.lookup("evaka.email.sender_name.fi", "fi.espoo.evaka.email.sender_name.fi"),
                 senderNameSv =
                     env.lookup("evaka.email.sender_name.sv", "fi.espoo.evaka.email.sender_name.sv"),
+                subjectPostfix = env.lookup("evaka.email.subject_postfix") ?: getLegacyPostfix(),
                 applicationReceivedSenderAddressFi =
                     env.lookup(
                         "evaka.email.application_received.sender_address.fi",

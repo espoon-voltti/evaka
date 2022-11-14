@@ -26,7 +26,7 @@ class VasuNotificationService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: IEmailClient,
     env: EvakaEnv,
-    emailEnv: EmailEnv
+    private val emailEnv: EmailEnv
 ) {
     init {
         asyncJobRunner.registerHandler(::sendVasuNotificationEmail)
@@ -34,9 +34,6 @@ class VasuNotificationService(
 
     val baseUrl: String = env.frontendBaseUrlFi
     val baseUrlSv: String = env.frontendBaseUrlSv
-    val senderAddress: String = emailEnv.senderAddress
-    val senderNameFi: String = emailEnv.senderNameFi
-    val senderNameSv: String = emailEnv.senderNameSv
 
     fun scheduleEmailNotification(tx: Database.Transaction, id: VasuDocumentId) {
         logger.info { "Scheduling sending of vasu/leops notification emails (id: $id)" }
@@ -47,12 +44,6 @@ class VasuNotificationService(
             retryCount = 10
         )
     }
-
-    private fun getFromAddress(language: Language) =
-        when (language) {
-            Language.sv -> "$senderNameSv <$senderAddress>"
-            else -> "$senderNameFi <$senderAddress>"
-        }
 
     private fun getLanguage(languageStr: String?): Language {
         return when (languageStr?.lowercase()) {
@@ -107,7 +98,7 @@ WHERE
         emailClient.sendEmail(
             traceId = msg.vasuDocumentId.toString(),
             toAddress = msg.recipientEmail,
-            fromAddress = getFromAddress(msg.language),
+            fromAddress = emailEnv.sender(msg.language),
             subject = getSubject(),
             htmlBody = getHtml(msg.childId, msg.language),
             textBody = getText(msg.childId, msg.language)
@@ -115,9 +106,7 @@ WHERE
     }
 
     private fun getSubject(): String {
-        val postfix =
-            if (System.getenv("VOLTTI_ENV") == "prod") "" else " [${System.getenv("VOLTTI_ENV")}]"
-        return "Uusi dokumentti eVakassa / Nytt dokument i eVaka / New document in eVaka$postfix"
+        return "Uusi dokumentti eVakassa / Nytt dokument i eVaka / New document in eVaka"
     }
 
     private fun getDocumentsUrl(childId: ChildId, lang: Language): String {

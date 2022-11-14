@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.async
 
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -146,6 +147,20 @@ DELETE FROM async_job
 WHERE completed_at < :completedBefore
 """)
         .bind("completedBefore", completedBefore)
+        .execute()
+
+fun Database.Transaction.removeUnclaimedJobs(jobTypes: Collection<AsyncJobType<*>>): Int =
+    createUpdate<DatabaseTable> {
+            sql(
+                """
+DELETE FROM async_job
+WHERE completed_at IS NULL
+AND claimed_at IS NULL
+AND type = ANY(${bind(jobTypes.map { it.name })})
+    """
+                    .trimIndent()
+            )
+        }
         .execute()
 
 fun Database.Transaction.removeJobs(runBefore: HelsinkiDateTime): Int =

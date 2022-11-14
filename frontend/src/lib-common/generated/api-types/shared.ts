@@ -100,6 +100,7 @@ export type ScheduledJob =
   | 'VardaReset'
   | 'InactivePeopleCleanup'
   | 'InactiveEmployeesRoleReset'
+  | 'SendMissingReservationReminders'
 
 /**
 * Generated from fi.espoo.evaka.shared.domain.Translatable

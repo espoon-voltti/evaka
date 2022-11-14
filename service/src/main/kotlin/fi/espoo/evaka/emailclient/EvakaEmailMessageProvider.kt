@@ -4,8 +4,13 @@
 
 package fi.espoo.evaka.emailclient
 
+import fi.espoo.evaka.daycare.domain.Language
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.domain.FiniteDateRange
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.util.Locale
 
 class EvakaEmailMessageProvider : IEmailMessageProvider {
 
@@ -585,4 +590,40 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
         The decision can be viewed on eVaka at https://www.espoonvarhaiskasvatus.fi/.
     """
             .trimIndent()
+
+    override fun missingReservationsNotification(
+        language: Language,
+        checkedRange: FiniteDateRange
+    ): EmailContent {
+        val start =
+            checkedRange.start.format(
+                DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).withLocale(Locale("fi", "FI"))
+            )
+        return EmailContent(
+            subject =
+                "Läsnäolovarauksia puuttuu / Det finns några närvarobokningar som saknas / There are missing attendance reservations",
+            text =
+                """
+Läsnäolovarauksia puuttuu seuraavalta viikolta: $start. Käythän merkitsemässä ne mahdollisimman pian.
+
+-----
+
+Det finns några närvarobokningar som saknas för följande vecka: $start. Vänligen markera dem så snart som möjligt.
+
+----
+
+There are missing attendance reservations for the following week: $start. Please mark them as soon as possible.
+                """
+                    .trimIndent(),
+            html =
+                """
+<p>Läsnäolovarauksia puuttuu seuraavalta viikolta: $start. Käythän merkitsemässä ne mahdollisimman pian.</p>
+<hr>
+<p>Det finns några närvarobokningar som saknas för följande vecka: $start. Vänligen markera dem så snart som möjligt.</p>
+<hr>
+<p>There are missing attendance reservations for the following week: $start. Please mark them as soon as possible.</p>
+            """
+                    .trimIndent()
+        )
+    }
 }

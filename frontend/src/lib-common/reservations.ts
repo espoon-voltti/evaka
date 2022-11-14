@@ -19,13 +19,11 @@ export interface ReservationFormData {
   startDate: LocalDate | null
   endDate: LocalDate | null
   repetition: Repetition
-  dailyTimes: TimeRanges | 'day-off'
-  weeklyTimes: Array<
-    TimeRanges | 'absent' | 'day-off' | 'not-editable' | undefined
-  >
+  dailyTimes: TimeRanges
+  weeklyTimes: Array<TimeRanges | 'absent' | 'not-editable' | undefined>
   irregularTimes: Record<
     string,
-    TimeRanges | 'absent' | 'day-off' | 'not-editable' | 'holiday' | undefined
+    TimeRanges | 'absent' | 'not-editable' | 'holiday' | undefined
   >
 }
 
@@ -94,18 +92,14 @@ export function validateForm(
   }
 
   if (formData.repetition === 'DAILY') {
-    errors['dailyTimes'] =
-      formData.dailyTimes === 'day-off'
-        ? undefined
-        : formData.dailyTimes.map((timeRange) => validateTimeRange(timeRange))
+    errors['dailyTimes'] = formData.dailyTimes.map((timeRange) =>
+      validateTimeRange(timeRange)
+    )
   }
 
   if (formData.repetition === 'WEEKLY') {
     errors['weeklyTimes'] = formData.weeklyTimes.map((times) =>
-      times &&
-      times !== 'absent' &&
-      times !== 'day-off' &&
-      times !== 'not-editable'
+      times && times !== 'absent' && times !== 'not-editable'
         ? times.map((timeRange) => validateTimeRange(timeRange))
         : undefined
     )
@@ -117,7 +111,6 @@ export function validateForm(
         date,
         times &&
         times !== 'absent' &&
-        times !== 'day-off' &&
         times !== 'not-editable' &&
         times !== 'holiday'
           ? times.map((timeRange) => validateTimeRange(timeRange))
@@ -181,20 +174,9 @@ export function validateForm(
 }
 
 function filterReservations(
-  times:
-    | TimeRanges
-    | 'absent'
-    | 'day-off'
-    | 'not-editable'
-    | 'holiday'
-    | undefined
+  times: TimeRanges | 'absent' | 'not-editable' | 'holiday' | undefined
 ) {
-  if (
-    times === 'absent' ||
-    times === 'day-off' ||
-    times === 'not-editable' ||
-    times === 'holiday'
-  ) {
+  if (times === 'absent' || times === 'not-editable' || times === 'holiday') {
     return null
   }
 

@@ -107,6 +107,11 @@ data class ScheduledJobSettings(
                         enabled = true,
                         schedule = JobSchedule.daily(LocalTime.of(3, 15))
                     )
+                ScheduledJob.SendMissingReservationReminders ->
+                    ScheduledJobSettings(
+                        enabled = false,
+                        schedule = JobSchedule.cron("0 0 18 * * 0") // Sunday 18:00
+                    )
             }
     }
 }

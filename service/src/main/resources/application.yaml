@@ -5,11 +5,6 @@
 evaka:
   database:
     maximum_pool_size: 20
-  email:
-    sender_address: "no-reply.evaka@espoo.fi"
-    sender_name:
-      fi: "Espoon Varhaiskasvatus"
-      sv: "Esbo småbarnspedagogik"
   fee_decision:
     min_date: "2020-03-01"
   five_years_old_daycare:

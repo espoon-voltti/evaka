@@ -23,7 +23,7 @@ class MessageNotificationEmailService(
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val emailClient: IEmailClient,
     env: EvakaEnv,
-    emailEnv: EmailEnv
+    private val emailEnv: EmailEnv
 ) {
     init {
         asyncJobRunner.registerHandler(::sendMessageNotification)
@@ -31,15 +31,6 @@ class MessageNotificationEmailService(
 
     val baseUrl: String = env.frontendBaseUrlFi
     val baseUrlSv: String = env.frontendBaseUrlSv
-    val senderAddress: String = emailEnv.senderAddress
-    val senderNameFi: String = emailEnv.senderNameFi
-    val senderNameSv: String = emailEnv.senderNameSv
-
-    fun getFromAddress(language: Language) =
-        when (language) {
-            Language.sv -> "$senderNameSv <$senderAddress>"
-            else -> "$senderNameFi <$senderAddress>"
-        }
 
     fun getMessageNotifications(
         tx: Database.Transaction,
@@ -107,7 +98,7 @@ class MessageNotificationEmailService(
             emailClient.sendEmail(
                 traceId = messageRecipientId.toString(),
                 toAddress = personEmail,
-                fromAddress = getFromAddress(language),
+                fromAddress = emailEnv.sender(language),
                 subject = getSubject(urgent),
                 htmlBody = getHtml(language, threadId, urgent),
                 textBody = getText(language, threadId, urgent)
@@ -117,13 +108,10 @@ class MessageNotificationEmailService(
     }
 
     private fun getSubject(urgent: Boolean): String {
-        val postfix =
-            if (System.getenv("VOLTTI_ENV") == "prod") "" else " [${System.getenv("VOLTTI_ENV")}]"
-
         return if (urgent) {
-            "Uusi kiireellinen viesti eVakassa / Nytt brådskande meddelande i eVaka / New urgent message in eVaka$postfix"
+            "Uusi kiireellinen viesti eVakassa / Nytt brådskande meddelande i eVaka / New urgent message in eVaka"
         } else {
-            "Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka$postfix"
+            "Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka"
         }
     }
 

@@ -1424,3 +1424,13 @@ VALUES (:id, :childId, :type, :validityPeriod, :regularTimes, :mondayTimes, :tue
         )
         .bindKotlin(dailyServiceTimes)
         .execute()
+
+fun Database.Transaction.insertTestGuardian(guardian: DevGuardian) =
+    createUpdate(
+            """
+INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON CONFLICT (guardian_id, child_id) DO NOTHING
+"""
+                .trimIndent()
+        )
+        .bindKotlin(guardian)
+        .execute()

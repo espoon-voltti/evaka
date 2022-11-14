@@ -251,7 +251,6 @@ export default {
     holiday: 'Pyhäpäivä',
     absent: 'Poissa',
     absentFree: 'Maksuton poissaolo',
-    dayOff: 'Vapaapäivä',
     absences: {
       SICKLEAVE: 'Sairauspoissaolo'
     },
@@ -292,7 +291,6 @@ export default {
       start: 'Alkaa',
       end: 'Päättyy',
       absent: 'Poissa',
-      dayOff: 'Vapaapäivä',
       saveErrors: {
         failure: 'Tallennus epäonnistui',
         NON_RESERVABLE_DAYS: 'Joitain valittuja päiviä ei voida varata'

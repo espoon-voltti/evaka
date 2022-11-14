@@ -217,8 +217,7 @@ data class ChildDailyData(
     val markedByEmployee: Boolean,
     val absence: AbsenceType?,
     val reservations: List<TimeRange>,
-    val attendances: List<OpenTimeRange>,
-    val dayOff: Boolean
+    val attendances: List<OpenTimeRange>
 )
 
 data class ReservationChild(
@@ -263,11 +262,10 @@ SELECT
                 'markedByEmployee', a.modified_by_type <> 'CITIZEN',
                 'absence', a.absence_type,
                 'reservations', coalesce(ar.reservations, '[]'),
-                'attendances', coalesce(ca.attendances, '[]'),
-                'dayOff', coalesce(ds.day_off, FALSE)
+                'attendances', coalesce(ca.attendances, '[]')
             )
         ) FILTER (
-            WHERE (a.absence_type IS NOT NULL OR ar.reservations IS NOT NULL OR ca.attendances IS NOT NULL OR ds.day_off IS TRUE)
+            WHERE (a.absence_type IS NOT NULL OR ar.reservations IS NOT NULL OR ca.attendances IS NOT NULL)
               AND EXISTS(
                 SELECT 1 FROM placement p
                 JOIN daycare d ON p.unit_id = d.id AND 'RESERVATIONS' = ANY(d.enabled_pilot_features)
@@ -303,22 +301,6 @@ LEFT JOIN LATERAL (
     WHERE a.child_id = c.child_id AND a.date = t::date
     LIMIT 1
 ) a ON true
-LEFT JOIN LATERAL (
-    SELECT (
-    	CASE date_part('isodow', t)
-    	    WHEN 1 THEN monday_times IS NULL
-    	    WHEN 2 THEN tuesday_times IS NULL
-    	    WHEN 3 THEN wednesday_times IS NULL
-    	    WHEN 4 THEN thursday_times IS NULL
-    	    WHEN 5 THEN friday_times IS NULL
-    	    WHEN 6 THEN saturday_times IS NULL
-    	    WHEN 7 THEN sunday_times IS NULL
-    	END
-	) AS day_off
-    FROM daily_service_time dst
-    WHERE dst.child_id = c.child_id AND dst.validity_period @> t::date AND dst.type = 'IRREGULAR'
-    LIMIT 1
-) ds ON true
 WHERE (:includeWeekends OR date_part('isodow', t) = ANY('{1, 2, 3, 4, 5}'))
 GROUP BY date, is_holiday
         """

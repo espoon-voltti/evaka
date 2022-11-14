@@ -166,6 +166,15 @@ class Database(private val jdbi: Jdbi) {
 
         fun nextSavepoint(): String = "savepoint-${savepointId++}"
         fun createUpdate(@Language("sql") sql: String): Update = Update(handle.createUpdate(sql))
+        fun <Tag> createUpdate(f: QuerySql.Builder<Tag>.() -> QuerySql<Tag>): Update =
+            createUpdate(QuerySql.Builder<Tag>().run { f(this) })
+        fun createUpdate(fragment: QuerySql<*>): Update {
+            val raw = handle.createUpdate(fragment.sql.toString())
+            for ((idx, binding) in fragment.bindings.withIndex()) {
+                raw.bindByType(idx, binding.value, binding.type)
+            }
+            return Update(raw)
+        }
         fun prepareBatch(@Language("sql") sql: String): PreparedBatch =
             PreparedBatch(handle.prepareBatch(sql))
         fun execute(@Language("sql") sql: String, vararg args: Any): Int =

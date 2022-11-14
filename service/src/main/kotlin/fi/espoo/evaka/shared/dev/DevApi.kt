@@ -621,23 +621,10 @@ RETURNING id
             }
         }
 
-    data class DevGuardian(val guardianId: PersonId, val childId: ChildId)
-
     @PostMapping("/guardian")
     fun insertGuardians(db: Database, @RequestBody guardians: List<DevGuardian>) {
         db.connect { dbc ->
-            dbc.transaction {
-                guardians.forEach { guardian ->
-                    it.createUpdate(
-                            """
-INSERT INTO guardian (guardian_id, child_id) VALUES (:guardianId, :childId) ON CONFLICT (guardian_id, child_id) DO NOTHING
-                        """
-                                .trimIndent()
-                        )
-                        .bindKotlin(guardian)
-                        .execute()
-                }
-            }
+            dbc.transaction { tx -> guardians.forEach { tx.insertTestGuardian(it) } }
         }
     }
 
@@ -1929,3 +1916,5 @@ data class DevAbsenceBody(
     val absenceCategory: AbsenceCategory,
     val modifiedBy: PersonId
 )
+
+data class DevGuardian(val guardianId: PersonId, val childId: ChildId)
