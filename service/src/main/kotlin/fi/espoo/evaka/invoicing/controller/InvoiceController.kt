@@ -342,13 +342,13 @@ data class InvoicePayload(
 data class SearchInvoicesRequest(
     val page: Int,
     val pageSize: Int,
-    val sortBy: InvoiceSortParam?,
-    val sortDirection: SortDirection?,
-    val status: List<InvoiceStatus>?,
-    val area: List<String>?,
-    val unit: DaycareId?,
-    val distinctions: List<InvoiceDistinctiveParams>?,
-    val searchTerms: String?,
-    val periodStart: LocalDate?,
-    val periodEnd: LocalDate?
+    val sortBy: InvoiceSortParam? = null,
+    val sortDirection: SortDirection? = null,
+    val status: List<InvoiceStatus>? = null,
+    val area: List<String>? = null,
+    val unit: DaycareId? = null,
+    val distinctions: List<InvoiceDistinctiveParams>? = null,
+    val searchTerms: String? = null,
+    val periodStart: LocalDate? = null,
+    val periodEnd: LocalDate? = null,
 )
