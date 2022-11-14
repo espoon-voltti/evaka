@@ -92,6 +92,26 @@ export class Page {
   findAllByDataQa(dataQa: string) {
     return this.findAll(`[data-qa="${dataQa}"]`)
   }
+
+  async mockToday(mockedToday: LocalDate) {
+    const fakeTimeValue = mockedToday.toSystemTzDate().valueOf()
+    await this.page.addInitScript(`{
+      // Make Date constructor default to mockedToday
+      Date = class extends Date {
+        constructor(...args) {
+          if (args.length === 0) {
+            super(${fakeTimeValue});
+          } else {
+            super(...args);
+          }
+        }
+      }
+      // Override Date.now() to start from fakeNow
+      const __DateNowOffset = ${fakeTimeValue} - Date.now();
+      const __DateNow = Date.now;
+      Date.now = () => __DateNow() + __DateNowOffset;
+    }`)
+  }
 }
 
 export class ElementCollection {
