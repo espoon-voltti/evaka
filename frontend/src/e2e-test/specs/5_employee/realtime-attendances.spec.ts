@@ -122,6 +122,7 @@ beforeEach(async () => {
       .toHelsinkiDateTime(LocalTime.of(12, 0))
       .toSystemTzDate()
   })
+
   await employeeLogin(page, unitSupervisor)
 })
 
@@ -396,6 +397,20 @@ describe('Realtime staff attendances', () => {
         () => modal.gapWarning(2),
         'Kirjaus puuttuu välillä 13:00 – 13:20'
       )
+    })
+    test('Departure time is required when editing days that are not today', async () => {
+      const modal = await staffAttendances.openDetails(
+        1,
+        mockedToday.addDays(1)
+      )
+      await modal.setArrivalTime(0, '08:00')
+      await waitUntilEqual(() => modal.departureTimeInfo(0), 'Pakollinen tieto')
+    })
+    test('Departure time is NOT required when editing today', async () => {
+      const modal = await staffAttendances.openDetails(1, mockedToday)
+      await modal.setArrivalTime(0, '')
+      await waitUntilEqual(() => modal.arrivalTimeInfo(0), 'Pakollinen tieto')
+      await modal.assertDepartureTimeInfoHidden(0)
     })
   })
   describe('Staff count sums in the table', () => {
