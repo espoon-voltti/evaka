@@ -3713,6 +3713,7 @@ export const fi = {
     required: 'Pakollinen tieto',
     requiredSelection: 'Valinta puuttuu',
     format: 'Anna oikeassa muodossa',
+    integerFormat: 'Anna kokonaisluku',
     ssn: 'Virheellinen henkilötunnus',
     phone: 'Virheellinen numero',
     email: 'Virheellinen sähköpostiosoite',

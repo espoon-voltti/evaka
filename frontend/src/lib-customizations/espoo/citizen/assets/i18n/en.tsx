@@ -1910,6 +1910,7 @@ const en: Translations = {
     required: 'Value missing',
     requiredSelection: 'Please select one of the options',
     format: 'Give value in correct format',
+    integerFormat: 'Give an integer value',
     ssn: 'Invalid person identification number',
     phone: 'Invalid telephone number',
     email: 'Invalid email',
