@@ -5,6 +5,7 @@
 import React, { ReactNode } from 'react'
 
 import { AssistanceNeedDecisionReportContextProvider } from 'employee-frontend/components/reports/AssistanceNeedDecisionReportContext'
+import { NotificationsContextProvider } from 'lib-components/Notifications'
 
 import { MessageContextProvider } from '../components/messages/MessageContext'
 
@@ -21,23 +22,25 @@ const StateProvider = React.memo(function StateProvider({
   children: ReactNode | ReactNode[]
 }) {
   return (
-    <UIContextProvider>
-      <UnitsContextProvider>
-        <CustomersContextProvider>
-          <InvoicingUIContextProvider>
-            <MessageContextProvider>
-              <TitleContextProvider>
-                <ApplicationUIContextProvider>
-                  <AssistanceNeedDecisionReportContextProvider>
-                    {children}
-                  </AssistanceNeedDecisionReportContextProvider>
-                </ApplicationUIContextProvider>
-              </TitleContextProvider>
-            </MessageContextProvider>
-          </InvoicingUIContextProvider>
-        </CustomersContextProvider>
-      </UnitsContextProvider>
-    </UIContextProvider>
+    <NotificationsContextProvider>
+      <UIContextProvider>
+        <UnitsContextProvider>
+          <CustomersContextProvider>
+            <InvoicingUIContextProvider>
+              <MessageContextProvider>
+                <TitleContextProvider>
+                  <ApplicationUIContextProvider>
+                    <AssistanceNeedDecisionReportContextProvider>
+                      {children}
+                    </AssistanceNeedDecisionReportContextProvider>
+                  </ApplicationUIContextProvider>
+                </TitleContextProvider>
+              </MessageContextProvider>
+            </InvoicingUIContextProvider>
+          </CustomersContextProvider>
+        </UnitsContextProvider>
+      </UIContextProvider>
+    </NotificationsContextProvider>
   )
 })
 

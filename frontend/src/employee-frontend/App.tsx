@@ -14,6 +14,7 @@ import { ThemeProvider } from 'styled-components'
 
 import { AuthStatus, User } from 'lib-common/api-types/employee-auth'
 import { idleTracker } from 'lib-common/utils/idleTracker'
+import { Notifications } from 'lib-components/Notifications'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
 import { theme } from 'lib-customizations/common'
@@ -30,7 +31,6 @@ import Header from './components/Header'
 import IncomeStatementPage from './components/IncomeStatementPage'
 import LoginPage from './components/LoginPage'
 import MobilePairingModal from './components/MobilePairingModal'
-import Notifications from './components/Notifications'
 import PersonProfile from './components/PersonProfile'
 import PersonalMobileDevicesPage from './components/PersonalMobileDevicesPage'
 import Reports from './components/Reports'
@@ -121,7 +121,7 @@ export default function App() {
             >
               <StateProvider>
                 <Header />
-                <Notifications apiVersion={authStatus.apiVersion} />
+                <Notifications apiVersion={authStatus.apiVersion} i18n={i18n} />
                 <Routes>
                   <Route
                     path="/login"

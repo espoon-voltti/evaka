@@ -33,7 +33,6 @@ import { useLang, useTranslation } from '../localization'
 import { headerHeightDesktop } from '../navigation/const'
 
 import { asWeeklyData, WeeklyData } from './CalendarListView'
-import { CalendarNotificationsSlot } from './CalendarNotifications'
 import { HistoryOverlay } from './HistoryOverlay'
 import ReportHolidayLabel from './ReportHolidayLabel'
 import { ChildImageData, getChildImages } from './RoundChildImages'
@@ -66,7 +65,6 @@ export default React.memo(function CalendarGridView({
 }: Props) {
   const i18n = useTranslation()
   const monthlyData = useMemo(() => asMonthlyData(dailyData), [dailyData])
-  const headerRef = useRef<HTMLDivElement>(null)
   const todayRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -95,11 +93,6 @@ export default React.memo(function CalendarGridView({
 
   return (
     <>
-      <StickyHeader ref={headerRef}>
-        <NotificationSlotContainer>
-          <CalendarNotificationsSlot />
-        </NotificationSlotContainer>
-      </StickyHeader>
       <StickyBottomBar>
         <ButtonContainer>
           {questionnaireAvailable && (
@@ -146,14 +139,6 @@ export default React.memo(function CalendarGridView({
     </>
   )
 })
-
-const NotificationSlotContainer = styled.div`
-  position: absolute;
-  top: 0;
-  right: ${defaultMargins.s};
-  z-index: 10;
-  padding-left: 16px;
-`
 
 interface MonthlyData {
   month: number
@@ -476,13 +461,6 @@ const Day = React.memo(function Day({
     </DayCell>
   )
 })
-
-const StickyHeader = styled.div`
-  position: sticky;
-  top: ${defaultMargins.s};
-  z-index: 2;
-  width: 100%;
-`
 
 const StickyBottomBar = styled.div`
   position: fixed;

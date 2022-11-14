@@ -33,7 +33,7 @@ import AbsenceModal from './AbsenceModal'
 import ActionPickerModal from './ActionPickerModal'
 import CalendarGridView from './CalendarGridView'
 import CalendarListView from './CalendarListView'
-import { CalendarNotificationsProvider } from './CalendarNotifications'
+import CalendarNotifications from './CalendarNotifications'
 import DailyServiceTimeNotifications from './DailyServiceTimeNotifications'
 import DayView from './DayView'
 import NonReservableDaysWarningModal from './NonReservableDaysWarningModal'
@@ -142,11 +142,12 @@ const CalendarPage = React.memo(function CalendarPage() {
   if (!user || !user.accessibleFeatures.reservations) return null
 
   return (
-    <CalendarNotificationsProvider>
+    <>
       <DailyServiceTimeNotifications />
 
       {renderResult(combine(data, events), ([response, events]) => (
         <div data-qa="calendar-page" data-isloading={isLoading(data)}>
+          <CalendarNotifications />
           <MobileAndTablet>
             <ContentArea opaque paddingVertical="zero" paddingHorizontal="zero">
               <CalendarListView
@@ -248,7 +249,7 @@ const CalendarPage = React.memo(function CalendarPage() {
           )}
         </div>
       ))}
-    </CalendarNotificationsProvider>
+    </>
   )
 })
 

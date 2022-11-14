@@ -1,0 +1,214 @@
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+
+import omit from 'lodash/omit'
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
+import styled, { useTheme } from 'styled-components'
+
+import { appVersion } from 'lib-common/globals'
+import Toast from 'lib-components/molecules/Toast'
+import { faInfo, faRedo } from 'lib-icons'
+
+import InlineButton from './atoms/buttons/InlineButton'
+import { FixedSpaceColumn } from './layout/flex-helpers'
+import { defaultMargins } from './white-space'
+
+interface NotificationsState {
+  notifications: Record<string, Notification>
+  addNotification: (n: Notification, customId?: string) => void
+  removeNotification: (id: string) => void
+}
+
+interface Notification {
+  icon: IconDefinition
+  iconColor: string
+  children: React.ReactNode | React.ReactNode[]
+  onClick?: (close: () => void) => void
+  onClose?: () => void
+  dataQa?: string
+}
+
+export const NotificationsContext = createContext<NotificationsState>({
+  notifications: {},
+  addNotification: () => undefined,
+  removeNotification: () => undefined
+})
+
+let idCounter = 1
+
+export const NotificationsContextProvider = React.memo(
+  function NotificationsContextProvider({
+    children
+  }: {
+    children: React.ReactNode | React.ReactNode[]
+  }) {
+    const [notifications, setNotifications] = useState({})
+    const addNotification = useCallback(
+      (notification: Notification, customId?: string) =>
+        setNotifications((notifications) => ({
+          ...notifications,
+          [customId ?? (idCounter++).toString(10)]: notification
+        })),
+      []
+    )
+
+    const removeNotification = useCallback((id: string) => {
+      setNotifications((notifications) => omit(notifications, id))
+    }, [])
+
+    const value = useMemo(
+      () => ({
+        notifications,
+        addNotification,
+        removeNotification
+      }),
+      [addNotification, notifications, removeNotification]
+    )
+
+    return (
+      <NotificationsContext.Provider value={value}>
+        {children}
+      </NotificationsContext.Provider>
+    )
+  }
+)
+
+export const Notifications = React.memo(function Notifications({
+  apiVersion,
+  i18n
+}: {
+  apiVersion: string | undefined
+  i18n: {
+    common: {
+      close: string
+    }
+    reloadNotification: {
+      title: string
+      buttonText: string
+    }
+  }
+}) {
+  const { notifications, addNotification, removeNotification } =
+    useContext(NotificationsContext)
+  useReloadNotification(
+    apiVersion,
+    i18n.reloadNotification.title,
+    i18n.reloadNotification.buttonText,
+    addNotification
+  )
+  return (
+    <OuterContainer>
+      <ColumnContainer spacing="s" alignItems="flex-end">
+        {Object.entries(notifications).map(
+          ([id, { children, onClose, onClick, dataQa, ...props }]) => (
+            <Toast
+              key={id}
+              {...props}
+              closeLabel={i18n.common.close}
+              onClick={() => onClick?.(() => removeNotification(id))}
+              onClose={() => {
+                removeNotification(id)
+                onClose?.()
+              }}
+              data-qa={dataQa}
+            >
+              {children}
+            </Toast>
+          )
+        )}
+      </ColumnContainer>
+    </OuterContainer>
+  )
+})
+
+const OuterContainer = styled.div`
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: 0;
+`
+
+const ColumnContainer = styled(FixedSpaceColumn)`
+  margin: ${defaultMargins.s};
+`
+
+function useReloadNotification(
+  apiVersion: string | undefined,
+  title: string,
+  buttonText: string,
+  addNotification: (n: Notification) => void
+) {
+  const theme = useTheme()
+  const timer = useRef<number>()
+  const [show, setShow] = useState(false)
+
+  const maybeShow = useCallback(() => {
+    if (apiVersion !== undefined && apiVersion !== appVersion) {
+      setShow(true)
+    }
+  }, [apiVersion])
+
+  const onClose = useCallback(() => {
+    if (timer.current) clearInterval(timer.current)
+    timer.current = setTimeout(maybeShow, REMIND_INTERVAL)
+  }, [maybeShow])
+
+  useEffect(() => {
+    maybeShow()
+    return () => (timer.current ? clearInterval(timer.current) : undefined)
+  }, [maybeShow])
+
+  useEffect(() => {
+    if (show) {
+      addNotification({
+        icon: faInfo,
+        iconColor: theme.colors.main.m1,
+        children: <ReloadNotification title={title} buttonText={buttonText} />,
+        onClose
+      })
+      setShow(false)
+    }
+  }, [addNotification, buttonText, onClose, show, theme.colors.main.m1, title])
+}
+
+// If the user closes the toast, remind every 5 minutes
+const REMIND_INTERVAL = 5 * 60 * 1000
+
+const ReloadNotification = React.memo(function ReloadNotification({
+  title,
+  buttonText
+}: {
+  title: string
+  buttonText: string
+}) {
+  return (
+    <FixedSpaceColumn spacing="xs">
+      <div>{title}</div>
+      <div>
+        <ReloadButton
+          icon={faRedo}
+          text={buttonText}
+          onClick={() => {
+            window.location.reload()
+          }}
+        />
+      </div>
+    </FixedSpaceColumn>
+  )
+})
+
+const ReloadButton = styled(InlineButton)`
+  white-space: normal;
+  text-align: left;
+`

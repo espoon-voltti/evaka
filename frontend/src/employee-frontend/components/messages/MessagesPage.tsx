@@ -46,7 +46,7 @@ export default React.memo(function MessagesPage() {
     selectAccount,
     setSelectedThread,
     refreshMessages,
-    setCancelableMessage
+    openMessageUndo
   } = useContext(MessageContext)
 
   const { setErrorMessage } = useContext(UIContext)
@@ -89,7 +89,7 @@ export default React.memo(function MessagesPage() {
             })
             if (res.value) {
               setSelectedThread(res.value)
-              setCancelableMessage({
+              openMessageUndo({
                 accountId: senderAccount.account.id,
                 contentId: res.value,
                 sentAt: HelsinkiDateTime.now()
@@ -112,9 +112,9 @@ export default React.memo(function MessagesPage() {
       hideEditor,
       i18n.common.error.unknown,
       i18n.common.ok,
+      openMessageUndo,
       refreshMessages,
       selectAccount,
-      setCancelableMessage,
       setErrorMessage,
       setSelectedThread
     ]

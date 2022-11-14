@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ErrorBoundary } from '@sentry/react'
-import React, { useEffect } from 'react'
+import React, { useContext, useEffect } from 'react'
 import {
   BrowserRouter as Router,
   Navigate,
@@ -14,10 +14,13 @@ import {
 import { ThemeProvider } from 'styled-components'
 
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import {
+  Notifications,
+  NotificationsContextProvider
+} from 'lib-components/Notifications'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { theme } from 'lib-customizations/common'
 
-import MobileReloadNotification from './components/MobileReloadNotification'
 import RequireAuth from './components/RequireAuth'
 import UnitList from './components/UnitList'
 import AttendancePageWrapper from './components/attendances/AttendancePageWrapper'
@@ -45,10 +48,11 @@ import { I18nContextProvider, useTranslation } from './state/i18n'
 import { MessageContextProvider } from './state/messages'
 import { StaffAttendanceContextProvider } from './state/staff-attendance'
 import { UnitContextProvider } from './state/unit'
-import { UserContextProvider } from './state/user'
+import { UserContext, UserContextProvider } from './state/user'
 
 export default function App() {
   const { i18n } = useTranslation()
+  const { apiVersion } = useContext(UserContext)
 
   return (
     <I18nContextProvider>
@@ -59,30 +63,32 @@ export default function App() {
           )}
         >
           <UserContextProvider>
-            <MobileReloadNotification />
-            <Router basename="/employee/mobile">
-              <Routes>
-                <Route path="/landing" element={<MobileLander />} />
-                <Route path="/pairing" element={<PairingWizard />} />
-                <Route
-                  path="/units"
-                  element={
-                    <RequireAuth>
-                      <UnitList />
-                    </RequireAuth>
-                  }
-                />
-                <Route
-                  path="/units/:unitId/*"
-                  element={
-                    <RequireAuth>
-                      <UnitRouter />
-                    </RequireAuth>
-                  }
-                />
-                <Route index element={<Navigate replace to="/landing" />} />
-              </Routes>
-            </Router>
+            <NotificationsContextProvider>
+              <Notifications apiVersion={apiVersion} i18n={i18n} />
+              <Router basename="/employee/mobile">
+                <Routes>
+                  <Route path="/landing" element={<MobileLander />} />
+                  <Route path="/pairing" element={<PairingWizard />} />
+                  <Route
+                    path="/units"
+                    element={
+                      <RequireAuth>
+                        <UnitList />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/units/:unitId/*"
+                    element={
+                      <RequireAuth>
+                        <UnitRouter />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route index element={<Navigate replace to="/landing" />} />
+                </Routes>
+              </Router>
+            </NotificationsContextProvider>
           </UserContextProvider>
         </ErrorBoundary>
       </ThemeProvider>
