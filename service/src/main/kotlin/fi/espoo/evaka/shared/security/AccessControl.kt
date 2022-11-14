@@ -156,6 +156,17 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping) {
         action: Action.ScopedAction<T>,
         targets: Iterable<T>
     ) = checkPermissionFor(tx, user, clock, action, targets).values.forEach { it.assert() }
+    fun <T> requirePermissionForSomeTarget(
+        tx: Database.Read,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        action: Action.ScopedAction<T>,
+        targets: Iterable<T>
+    ) {
+        if (!checkPermissionFor(tx, user, clock, action, targets).values.any { it.isPermitted() }) {
+            throw Forbidden()
+        }
+    }
 
     fun <T> hasPermissionFor(
         tx: Database.Read,

@@ -35,7 +35,7 @@ import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.InvoiceCorrectionId
 import fi.espoo.evaka.shared.InvoiceId
-import fi.espoo.evaka.shared.MessageDraftId
+import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
@@ -211,27 +211,6 @@ sealed interface Action {
                 .inAnyUnit(),
             IsMobile(requirePinLogin = false).any()
         ),
-        READ_USER_MESSAGE_ACCOUNTS(
-            HasGlobalRole(MESSAGING),
-            HasUnitRole(
-                    UNIT_SUPERVISOR,
-                    STAFF,
-                    SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
-                )
-                .inAnyUnit()
-        ),
-        READ_MESSAGE_RECEIVERS(
-            HasGlobalRole(MESSAGING),
-            HasUnitRole(
-                    UNIT_SUPERVISOR,
-                    STAFF,
-                    SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
-                )
-                .inAnyUnit(),
-            IsMobile(requirePinLogin = true).any()
-        ),
         READ_UNITS(
             HasGlobalRole(SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(
@@ -273,17 +252,6 @@ sealed interface Action {
         DELETE_HOLIDAY_QUESTIONNAIRE,
         UPDATE_HOLIDAY_QUESTIONNAIRE,
         SEND_PATU_REPORT,
-        ACCESS_MESSAGING(
-            HasGlobalRole(MESSAGING),
-            HasUnitRole(
-                    UNIT_SUPERVISOR,
-                    STAFF,
-                    SPECIAL_EDUCATION_TEACHER,
-                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
-                )
-                .inAnyUnit(),
-            IsMobile(requirePinLogin = true).any()
-        ),
         CREATE_EMPLOYEE,
         READ_EMPLOYEES(
             HasGlobalRole(SERVICE_WORKER),
@@ -629,11 +597,6 @@ sealed interface Action {
             IsCitizen(allowWeakLogin = false).uploaderOfAttachment()
         ),
         READ_INCOME_ATTACHMENT(HasGlobalRole(FINANCE_ADMIN)),
-        READ_MESSAGE_CONTENT_ATTACHMENT(
-            IsEmployee.hasPermissionForAttachmentThroughMessageContent(),
-            IsCitizen(allowWeakLogin = true).hasPermissionForAttachmentThroughMessageContent()
-        ),
-        READ_MESSAGE_DRAFT_ATTACHMENT(IsEmployee.hasPermissionForAttachmentThroughMessageDraft()),
         READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT(
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
@@ -651,7 +614,6 @@ sealed interface Action {
         ),
         DELETE_INCOME_ATTACHMENT(HasGlobalRole(FINANCE_ADMIN)),
         DELETE_MESSAGE_CONTENT_ATTACHMENT,
-        DELETE_MESSAGE_DRAFT_ATTACHMENT(IsEmployee.hasPermissionForAttachmentThroughMessageDraft()),
         DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT(
             HasUnitRole(UNIT_SUPERVISOR, STAFF, SPECIAL_EDUCATION_TEACHER)
                 .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
@@ -1176,9 +1138,21 @@ sealed interface Action {
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
-    enum class MessageDraft(override vararg val defaultRules: ScopedActionRule<in MessageDraftId>) :
-        ScopedAction<MessageDraftId> {
-        UPLOAD_ATTACHMENT(IsEmployee.hasPermissionForMessageDraft());
+    enum class MessageAccount(
+        override vararg val defaultRules: ScopedActionRule<in MessageAccountId>
+    ) : ScopedAction<MessageAccountId> {
+        ACCESS(
+            IsEmployee.hasPersonalMessageAccount(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).hasDaycareMessageAccount(),
+            IsEmployee.hasDaycareGroupMessageAccount(),
+            IsEmployee.hasMunicipalMessageAccount(),
+            IsMobile(requirePinLogin = true).hasPersonalMessageAccount(),
+            IsMobile(requirePinLogin = true)
+                .hasDaycareMessageAccount(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
+            IsMobile(requirePinLogin = true).hasDaycareGroupMessageAccount(),
+            IsMobile(requirePinLogin = true).hasMunicipalMessageAccount(),
+            IsCitizen(allowWeakLogin = true).hasMessageAccount()
+        );
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
@@ -1588,7 +1562,6 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
         ),
         UPDATE_FEATURES,
-        READ_MESSAGING_ACCOUNTS(IsMobile(requirePinLogin = false).inUnit()),
         READ_UNREAD_MESSAGES(IsMobile(requirePinLogin = false).inUnit()),
         READ_TERMINATED_PLACEMENTS(HasUnitRole(UNIT_SUPERVISOR).inUnit()),
         READ_MISSING_GROUP_PLACEMENTS(

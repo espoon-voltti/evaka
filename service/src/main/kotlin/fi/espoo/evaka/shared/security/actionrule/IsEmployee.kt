@@ -6,11 +6,10 @@ package fi.espoo.evaka.shared.security.actionrule
 
 import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
-import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.Id
-import fi.espoo.evaka.shared.MessageDraftId
+import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -182,45 +181,41 @@ WHERE created_by = ${bind(user.id)}
             )
         }
 
-    fun hasPermissionForMessageDraft() =
-        rule<MessageDraftId> { user, _ ->
+    fun hasPersonalMessageAccount() =
+        rule<MessageAccountId> { user, _ ->
             sql(
                 """
-SELECT draft.id
-FROM message_draft draft
-JOIN message_account_access_view access ON access.account_id = draft.account_id
-WHERE access.employee_id = ${bind(user.id)}
-            """
+SELECT acc.id
+FROM message_account acc
+JOIN employee ON acc.employee_id = employee.id
+WHERE employee.id = ${bind(user.id)} AND acc.active = TRUE
+                """
                     .trimIndent()
             )
         }
 
-    fun hasPermissionForAttachmentThroughMessageContent() =
-        rule<AttachmentId> { user, _ ->
+    fun hasDaycareGroupMessageAccount() =
+        rule<MessageAccountId> { user, _ ->
             sql(
                 """
-SELECT att.id
-FROM attachment att
-JOIN message_content content ON att.message_content_id = content.id
-JOIN message msg ON content.id = msg.content_id
-JOIN message_recipients rec ON msg.id = rec.message_id
-JOIN message_account_access_view access ON access.account_id = msg.sender_id OR access.account_id = rec.recipient_id
-WHERE access.employee_id = ${bind(user.id)}
-            """
+SELECT acc.id
+FROM message_account acc
+JOIN daycare_group_acl gacl ON gacl.daycare_group_id = acc.daycare_group_id
+WHERE gacl.employee_id = ${bind(user.id)} AND acc.active = TRUE
+                """
                     .trimIndent()
             )
         }
 
-    fun hasPermissionForAttachmentThroughMessageDraft() =
-        rule<AttachmentId> { user, _ ->
+    fun hasMunicipalMessageAccount() =
+        rule<MessageAccountId> { user, _ ->
             sql(
                 """
-SELECT att.id
-FROM attachment att
-JOIN message_draft draft ON att.message_draft_id = draft.id
-JOIN message_account_access_view access ON access.account_id = draft.account_id
-WHERE access.employee_id = ${bind(user.id)}
-            """
+SELECT acc.id
+FROM employee e
+JOIN message_account acc ON acc.type = 'MUNICIPAL'
+WHERE e.id = ${bind(user.id)} AND e.roles && '{ADMIN, MESSAGING}'::user_role[]
+                """
                     .trimIndent()
             )
         }

@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.ParentshipId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevChild
@@ -33,14 +34,20 @@ import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
+import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -55,9 +62,12 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val person2Id = PersonId(UUID.randomUUID())
     private val employee1Id = EmployeeId(UUID.randomUUID())
     private val employee2Id = EmployeeId(UUID.randomUUID())
+    private val accessControl = AccessControl(DefaultActionRuleMapping())
+    private lateinit var clock: EvakaClock
 
     @BeforeEach
     fun setUp() {
+        clock = MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 11, 8), LocalTime.of(13, 1)))
         db.transaction { tx ->
             tx.insertTestPerson(
                 DevPerson(id = person1Id, firstName = "Firstname", lastName = "Person")
@@ -82,7 +92,15 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val (employeeAccount, person1Account, person2Account) =
             db.read {
                 listOf(
-                    it.getEmployeeMessageAccountIds(employee1Id).first(),
+                    it.getEmployeeMessageAccountIds(
+                            accessControl.requireAuthorizationFilter(
+                                it,
+                                AuthenticatedUser.Employee(employee1Id, emptySet()),
+                                clock,
+                                Action.MessageAccount.ACCESS
+                            )
+                        )
+                        .first(),
                     it.getCitizenMessageAccount(person1Id),
                     it.getCitizenMessageAccount(person2Id)
                 )
@@ -128,8 +146,24 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val (employee1Account, employee2Account, person1Account, person2Account) =
             db.read {
                 listOf(
-                    it.getEmployeeMessageAccountIds(employee1Id).first(),
-                    it.getEmployeeMessageAccountIds(employee2Id).first(),
+                    it.getEmployeeMessageAccountIds(
+                            accessControl.requireAuthorizationFilter(
+                                it,
+                                AuthenticatedUser.Employee(employee1Id, emptySet()),
+                                clock,
+                                Action.MessageAccount.ACCESS
+                            )
+                        )
+                        .first(),
+                    it.getEmployeeMessageAccountIds(
+                            accessControl.requireAuthorizationFilter(
+                                it,
+                                AuthenticatedUser.Employee(employee2Id, emptySet()),
+                                clock,
+                                Action.MessageAccount.ACCESS
+                            )
+                        )
+                        .first(),
                     it.getCitizenMessageAccount(person1Id),
                     it.getCitizenMessageAccount(person2Id)
                 )
@@ -229,7 +263,15 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val (employee1Account, person1Account) =
             db.read {
                 listOf(
-                    it.getEmployeeMessageAccountIds(employee1Id).first(),
+                    it.getEmployeeMessageAccountIds(
+                            accessControl.requireAuthorizationFilter(
+                                it,
+                                AuthenticatedUser.Employee(employee1Id, emptySet()),
+                                clock,
+                                Action.MessageAccount.ACCESS
+                            )
+                        )
+                        .first(),
                     it.getCitizenMessageAccount(person1Id)
                 )
             }
@@ -266,7 +308,15 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val (employee1Account, person1Account, person2Account) =
             db.read {
                 listOf(
-                    it.getEmployeeMessageAccountIds(employee1Id).first(),
+                    it.getEmployeeMessageAccountIds(
+                            accessControl.requireAuthorizationFilter(
+                                it,
+                                AuthenticatedUser.Employee(employee1Id, emptySet()),
+                                clock,
+                                Action.MessageAccount.ACCESS
+                            )
+                        )
+                        .first(),
                     it.getCitizenMessageAccount(person1Id),
                     it.getCitizenMessageAccount(person2Id)
                 )
@@ -314,7 +364,15 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val (employee1Account, person1Account, person2Account) =
             db.read {
                 listOf(
-                    it.getEmployeeMessageAccountIds(employee1Id).first(),
+                    it.getEmployeeMessageAccountIds(
+                            accessControl.requireAuthorizationFilter(
+                                it,
+                                AuthenticatedUser.Employee(employee1Id, emptySet()),
+                                clock,
+                                Action.MessageAccount.ACCESS
+                            )
+                        )
+                        .first(),
                     it.getCitizenMessageAccount(person1Id),
                     it.getCitizenMessageAccount(person2Id)
                 )
@@ -467,7 +525,16 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             }
         val supervisorPersonalAccount =
-            db.read { it.getEmployeeMessageAccountIds(employee1Id) }
+            db.read {
+                    it.getEmployeeMessageAccountIds(
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            AuthenticatedUser.Employee(employee1Id, emptySet()),
+                            clock,
+                            Action.MessageAccount.ACCESS
+                        )
+                    )
+                }
                 .first { it != group1Account && it != group2Account }
 
         // when we get the receivers for the citizen person1
@@ -565,7 +632,15 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val (employee1Account, person1Account, person2Account) =
             db.read {
                 listOf(
-                    it.getEmployeeMessageAccountIds(employee1Id).first(),
+                    it.getEmployeeMessageAccountIds(
+                            accessControl.requireAuthorizationFilter(
+                                it,
+                                AuthenticatedUser.Employee(employee1Id, emptySet()),
+                                clock,
+                                Action.MessageAccount.ACCESS
+                            )
+                        )
+                        .first(),
                     it.getCitizenMessageAccount(person1Id),
                     it.getCitizenMessageAccount(person2Id)
                 )
@@ -655,7 +730,15 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val (employeeAccount, person1Account) =
             db.read {
                 listOf(
-                    it.getEmployeeMessageAccountIds(employee1Id).first(),
+                    it.getEmployeeMessageAccountIds(
+                            accessControl.requireAuthorizationFilter(
+                                it,
+                                AuthenticatedUser.Employee(employee1Id, emptySet()),
+                                clock,
+                                Action.MessageAccount.ACCESS
+                            )
+                        )
+                        .first(),
                     it.getCitizenMessageAccount(person1Id)
                 )
             }
@@ -690,7 +773,15 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val (employeeAccount, person1Account) =
             db.read {
                 listOf(
-                    it.getEmployeeMessageAccountIds(employee1Id).first(),
+                    it.getEmployeeMessageAccountIds(
+                            accessControl.requireAuthorizationFilter(
+                                it,
+                                AuthenticatedUser.Employee(employee1Id, emptySet()),
+                                clock,
+                                Action.MessageAccount.ACCESS
+                            )
+                        )
+                        .first(),
                     it.getCitizenMessageAccount(person1Id)
                 )
             }

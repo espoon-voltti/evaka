@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.Id
+import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PairingId
 import fi.espoo.evaka.shared.ParentshipId
@@ -660,6 +661,21 @@ JOIN daycare_acl acl ON acl.daycare_id = cea.unit_id
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
             """
+                    .trimIndent()
+            )
+        }
+
+    fun hasDaycareMessageAccount() =
+        rule<MessageAccountId> { user, _ ->
+            sql(
+                """
+SELECT acc.id, acl.role, enabled_pilot_features AS unit_features
+FROM message_account acc
+JOIN daycare_group dg ON acc.daycare_group_id = dg.id
+JOIN daycare_acl acl ON acl.daycare_id = dg.daycare_id
+JOIN daycare ON acl.daycare_id = daycare.id
+WHERE acl.employee_id = ${bind(user.id)} AND acc.active = TRUE
+                """
                     .trimIndent()
             )
         }
