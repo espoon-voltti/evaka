@@ -338,6 +338,7 @@ describe('Vasu document page', () => {
         .supportLevelOptionRangeStart('during_range')
         .fill('02.03.2020')
       await goals.supportLevelOptionRangeEnd('during_range').fill('11.05.2021')
+      await goals.supportLevelOptions('intensified').click()
       await goals.otherInput.type(
         'Child snores heavily, waking all the other kids up'
       )
@@ -374,7 +375,7 @@ describe('Vasu document page', () => {
       )
       await waitUntilEqual(
         () => vasuPage.goalsSection.supportLevel,
-        'Tukipalvelut ajalla 02.03.2020–11.05.2021'
+        'Tukipalvelut ajalla 02.03.2020–11.05.2021, Tehostettu tuki'
       )
       await waitUntilEqual(
         () => vasuPage.goalsSection.other,

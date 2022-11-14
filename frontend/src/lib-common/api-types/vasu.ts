@@ -58,8 +58,9 @@ export interface MultiSelectQuestion extends VasuQuestionCommon {
   minSelections: number
   maxSelections: number | null
   value: string[]
-  textValue?: TextValueMap
-  dateValue?: DateValueMap
+  textValue?: Record<string, string>
+  dateValue?: Record<string, LocalDate>
+  dateRangeValue?: Record<string, { start: LocalDate; end: LocalDate }>
 }
 
 export interface QuestionOption {
@@ -71,14 +72,6 @@ export interface QuestionOption {
   info?: string
   subText?: string
   date?: boolean
-}
-
-export interface TextValueMap {
-  [key: string]: string
-}
-
-export interface DateValueMap {
-  [key: string]: LocalDate
 }
 
 export interface MultiFieldQuestion extends VasuQuestionCommon {

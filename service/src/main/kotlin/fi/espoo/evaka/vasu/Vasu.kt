@@ -301,27 +301,35 @@ sealed class VasuQuestion(val type: VasuQuestionType) {
         val maxSelections: Int?,
         val value: List<String>,
         val textValue: Map<String, String> = mapOf(),
-        val dateValue: Map<String, LocalDate>? = mapOf()
+        val dateValue: Map<String, LocalDate>? = mapOf(),
+        val dateRangeValue: Map<String, FiniteDateRange>? = mapOf()
     ) : VasuQuestion(VasuQuestionType.MULTISELECT) {
         override fun equalsIgnoringValue(question: VasuQuestion?): Boolean {
             return question is MultiSelectQuestion &&
                 question.copy(
                     value = this.value,
                     textValue = this.textValue,
-                    dateValue = this.dateValue
+                    dateValue = this.dateValue,
+                    dateRangeValue = this.dateRangeValue
                 ) == this
         }
 
         override fun isValid(section: VasuSection): Boolean {
             if (!super.isValid(section)) return false
 
-            if (this.maxSelections != null && this.value.size > this.maxSelections) return false
+            if (maxSelections != null && value.size > maxSelections) return false
 
-            if (!this.value.all { v -> options.any { opt -> v == opt.key } }) return false
-            return this.dateValue?.keys?.all { key ->
-                options.find { it.key == key }?.date ?: false
-            }
-                ?: true
+            val selectedOptionsExist =
+                this.value.all { v -> options.any { opt -> !opt.isIntervention && v == opt.key } }
+            val datesAreDateOptions =
+                this.dateValue?.keys?.all { key -> options.find { it.key == key }?.date == true }
+                    ?: true
+            val dateRangesAreDateRangeOptions =
+                this.dateRangeValue?.keys?.all { key ->
+                    options.find { it.key == key }?.dateRange == true
+                }
+                    ?: true
+            return selectedOptionsExist && datesAreDateOptions && dateRangesAreDateRangeOptions
         }
     }
 

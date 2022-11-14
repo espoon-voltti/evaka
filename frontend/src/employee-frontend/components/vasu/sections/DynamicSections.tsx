@@ -175,14 +175,6 @@ export function DynamicSections({
                     <RadioGroupQuestionElem
                       questionNumber={questionNumber}
                       question={question}
-                      selectedValue={
-                        question.value !== null
-                          ? {
-                              key: question.value,
-                              range: question.dateRange
-                            }
-                          : null
-                      }
                       onChange={
                         setContent
                           ? (selectedOption: RadioGroupSelectedValue | null) =>
@@ -212,16 +204,9 @@ export function DynamicSections({
                     <MultiSelectQuestionElem
                       question={question}
                       questionNumber={questionNumber}
-                      selectedValues={
-                        findQuestion<MultiSelectQuestion>(
-                          { sections },
-                          section.name,
-                          question.name
-                        ).value
-                      }
                       onChange={
                         setContent
-                          ? (option, value, date) =>
+                          ? (option, value, date, dateRange) =>
                               setContent((prev) => {
                                 const clone = cloneDeep(prev)
                                 const question1 =
@@ -250,7 +235,7 @@ export function DynamicSections({
                                         [option.key]: value
                                       })
                                 }
-                                if (date !== undefined) {
+                                if (option.date) {
                                   if (question1.dateValue) {
                                     if (date) {
                                       question1.dateValue[option.key] = date
@@ -261,6 +246,30 @@ export function DynamicSections({
                                     question1.dateValue = {
                                       [option.key]: date
                                     }
+                                  }
+                                } else {
+                                  if (question1.dateValue) {
+                                    delete question1.dateValue[option.key]
+                                  }
+                                }
+                                if (option.dateRange) {
+                                  if (question1.dateRangeValue) {
+                                    if (dateRange) {
+                                      question1.dateRangeValue[option.key] =
+                                        dateRange
+                                    } else {
+                                      delete question1.dateRangeValue[
+                                        option.key
+                                      ]
+                                    }
+                                  } else if (dateRange) {
+                                    question1.dateRangeValue = {
+                                      [option.key]: dateRange
+                                    }
+                                  }
+                                } else {
+                                  if (question1.dateRangeValue) {
+                                    delete question1.dateRangeValue[option.key]
                                   }
                                 }
                                 return clone

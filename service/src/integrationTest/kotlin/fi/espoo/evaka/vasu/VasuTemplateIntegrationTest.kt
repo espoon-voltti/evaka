@@ -4,24 +4,25 @@
 
 package fi.espoo.evaka.vasu
 
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class VasuTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var vasuTemplateController: VasuTemplateController
+
     private val adminUser =
         AuthenticatedUser.Employee(EmployeeId(UUID.randomUUID()), setOf(UserRole.ADMIN))
 
@@ -127,52 +128,28 @@ class VasuTemplateIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     private fun postVasuTemplate(request: VasuTemplateController.CreateTemplateRequest) {
-        val (_, res, _) =
-            http
-                .post("/vasu/templates")
-                .jsonBody(jsonMapper.writeValueAsString(request))
-                .asUser(adminUser)
-                .response()
-
-        assertEquals(200, res.statusCode)
+        vasuTemplateController.postTemplate(dbInstance(), adminUser, RealEvakaClock(), request)
     }
 
     private fun getVasuTemplates(): List<VasuTemplateSummary> {
-        val (_, res, result) =
-            http
-                .get("/vasu/templates")
-                .asUser(adminUser)
-                .responseObject<List<VasuTemplateSummary>>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-        return result.get()
+        return vasuTemplateController.getTemplates(dbInstance(), adminUser, RealEvakaClock())
     }
 
     private fun getVasuTemplate(id: VasuTemplateId): VasuTemplate {
-        val (_, res, result) =
-            http
-                .get("/vasu/templates/$id")
-                .asUser(adminUser)
-                .responseObject<VasuTemplate>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-        return result.get()
+        return vasuTemplateController.getTemplate(dbInstance(), adminUser, RealEvakaClock(), id)
     }
 
     private fun putVasuTemplateContent(id: VasuTemplateId, request: VasuContent) {
-        val (_, res, _) =
-            http
-                .put("/vasu/templates/$id/content")
-                .jsonBody(jsonMapper.writeValueAsString(request))
-                .asUser(adminUser)
-                .response()
-
-        assertEquals(200, res.statusCode)
+        vasuTemplateController.putTemplateContent(
+            dbInstance(),
+            adminUser,
+            RealEvakaClock(),
+            id,
+            request
+        )
     }
 
     private fun deleteVasuTemplate(id: VasuTemplateId) {
-        val (_, res, _) = http.delete("/vasu/templates/$id").asUser(adminUser).response()
-
-        assertEquals(200, res.statusCode)
+        vasuTemplateController.deleteTemplate(dbInstance(), adminUser, RealEvakaClock(), id)
     }
 }

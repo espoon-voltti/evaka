@@ -428,7 +428,7 @@ fun getDefaultVasuContent(lang: VasuLanguage) =
                                 multiline = true,
                                 value = ""
                             ),
-                            VasuQuestion.RadioGroupQuestion(
+                            VasuQuestion.MultiSelectQuestion(
                                 name =
                                     when (lang) {
                                         VasuLanguage.FI -> "Lapsen tuen taso jatkossa"
@@ -488,7 +488,9 @@ fun getDefaultVasuContent(lang: VasuLanguage) =
                                                 }
                                         )
                                     ),
-                                value = null
+                                minSelections = 0,
+                                maxSelections = null,
+                                value = listOf(),
                             ),
                             VasuQuestion.TextQuestion(
                                 name =

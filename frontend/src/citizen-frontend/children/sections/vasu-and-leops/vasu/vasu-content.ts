@@ -142,7 +142,13 @@ export const mapVasuContent = (content: JsonOf<VasuContent>): VasuContent => ({
             ...question,
             dateValue:
               question.dateValue &&
-              mapValues(question.dateValue, (v) => LocalDate.parseIso(v))
+              mapValues(question.dateValue, (v) => LocalDate.parseIso(v)),
+            dateRangeValue:
+              question.dateRangeValue &&
+              mapValues(question.dateRangeValue, (v) => ({
+                start: LocalDate.parseIso(v.start),
+                end: LocalDate.parseIso(v.end)
+              }))
           }
         : question
     )
