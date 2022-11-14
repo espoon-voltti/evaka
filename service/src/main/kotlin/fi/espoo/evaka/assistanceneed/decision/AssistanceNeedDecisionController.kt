@@ -439,10 +439,10 @@ class AssistanceNeedDecisionController(
 
     @GetMapping("/assistance-need-decision/{id}/decision-maker-option")
     fun getAssistanceDecisionMakerOptions(
-        @PathVariable id: AssistanceNeedDecisionId,
-        clock: EvakaClock,
+        db: Database,
         user: AuthenticatedUser,
-        db: Database
+        clock: EvakaClock,
+        @PathVariable id: AssistanceNeedDecisionId,
     ): List<Employee> {
         return db.connect { dbc ->
                 dbc.read { tx ->

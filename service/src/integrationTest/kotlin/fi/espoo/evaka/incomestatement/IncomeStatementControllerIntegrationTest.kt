@@ -4,10 +4,8 @@
 
 package fi.espoo.evaka.incomestatement
 
-import com.github.kittinunf.fuel.core.FileDataPart
-import com.github.kittinunf.fuel.jackson.objectBody
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertApplication
 import fi.espoo.evaka.insertGeneralTestFixtures
@@ -22,7 +20,6 @@ import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestParentship
@@ -46,15 +43,19 @@ import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testPurchasedDaycare
-import java.io.File
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.mock.web.MockMultipartFile
 
 class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var incomeStatementController: IncomeStatementController
+    @Autowired private lateinit var attachmentsController: AttachmentsController
+
     private val employeeId = EmployeeId(UUID.randomUUID())
     private val citizenId = testAdult_1.id
     private val employee = AuthenticatedUser.Employee(employeeId, setOf(UserRole.FINANCE_ADMIN))
@@ -832,53 +833,54 @@ class IncomeStatementControllerIntegrationTest : FullApplicationTest(resetDbBefo
         )
     }
 
-    private fun getIncomeStatement(id: IncomeStatementId): IncomeStatement =
-        http
-            .get("/income-statements/person/$citizenId/$id")
-            .asUser(employee)
-            .responseObject<IncomeStatement>(jsonMapper)
-            .let { (_, _, body) -> body.get() }
+    private fun getIncomeStatement(id: IncomeStatementId): IncomeStatement {
+        return incomeStatementController.getIncomeStatement(
+            dbInstance(),
+            employee,
+            RealEvakaClock(),
+            citizenId,
+            id
+        )
+    }
 
-    private fun getIncomeStatements(personId: PersonId): Paged<IncomeStatement> =
-        http
-            .get("/income-statements/person/$personId?page=1&pageSize=10")
-            .asUser(employee)
-            .responseObject<Paged<IncomeStatement>>(jsonMapper)
-            .let { (_, _, body) -> body.get() }
+    private fun getIncomeStatements(personId: PersonId): Paged<IncomeStatement> {
+        return incomeStatementController.getIncomeStatements(
+            dbInstance(),
+            employee,
+            RealEvakaClock(),
+            personId,
+            page = 1,
+            pageSize = 10
+        )
+    }
 
     private fun setIncomeStatementHandled(
         id: IncomeStatementId,
         body: IncomeStatementController.SetIncomeStatementHandledBody
     ) {
-        http
-            .post("/income-statements/$id/handled")
-            .asUser(employee)
-            .objectBody(body, mapper = jsonMapper)
-            .response()
-            .also { (_, res, _) -> assertEquals(200, res.statusCode) }
+        incomeStatementController.setHandled(dbInstance(), employee, RealEvakaClock(), id, body)
     }
 
     private fun getIncomeStatementsAwaitingHandler(
         body: SearchIncomeStatementsRequest =
             SearchIncomeStatementsRequest(1, 50, null, null, emptyList(), emptyList(), null, null),
         clock: EvakaClock = RealEvakaClock()
-    ): Paged<IncomeStatementAwaitingHandler> =
-        http
-            .post("/income-statements/awaiting-handler")
-            .asUser(employee)
-            .header("EvakaMockedTime", clock.now())
-            .objectBody(body, mapper = jsonMapper)
-            .responseObject<Paged<IncomeStatementAwaitingHandler>>(jsonMapper)
-            .let { (_, _, body) -> body.get() }
+    ): Paged<IncomeStatementAwaitingHandler> {
+        return incomeStatementController.getIncomeStatementsAwaitingHandler(
+            dbInstance(),
+            employee,
+            clock,
+            body
+        )
+    }
 
     private fun uploadAttachment(id: IncomeStatementId): AttachmentId {
-        val (_, _, result) =
-            http
-                .upload("/attachments/income-statements/$id")
-                .add(FileDataPart(File(pngFile.toURI()), name = "file"))
-                .asUser(employee)
-                .responseObject<AttachmentId>(jsonMapper)
-
-        return result.get()
+        return attachmentsController.uploadIncomeStatementAttachmentEmployee(
+            dbInstance(),
+            employee,
+            RealEvakaClock(),
+            id,
+            MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes())
+        )
     }
 }

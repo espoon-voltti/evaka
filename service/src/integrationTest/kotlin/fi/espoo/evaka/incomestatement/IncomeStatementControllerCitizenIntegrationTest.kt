@@ -4,10 +4,8 @@
 
 package fi.espoo.evaka.incomestatement
 
-import com.github.kittinunf.fuel.core.FileDataPart
-import com.github.kittinunf.fuel.jackson.objectBody
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
@@ -19,16 +17,17 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
-import java.io.File
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -36,9 +35,16 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.mock.web.MockMultipartFile
 
 class IncomeStatementControllerCitizenIntegrationTest :
     FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired
+    private lateinit var incomeStatementControllerCitizen: IncomeStatementControllerCitizen
+    @Autowired private lateinit var attachmentsController: AttachmentsController
+
     private val citizen = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
 
     @BeforeEach
@@ -181,16 +187,17 @@ class IncomeStatementControllerCitizenIntegrationTest :
 
     @Test
     fun `create an income statement for non custodian child fails`() {
-        createIncomeStatementForChild(
-            IncomeStatementBody.ChildIncome(
-                startDate = LocalDate.of(2021, 4, 3),
-                endDate = LocalDate.of(2021, 8, 9),
-                otherInfo = "foo bar",
-                attachmentIds = listOf()
-            ),
-            testChild_1.id,
-            403
-        )
+        assertThrows<Forbidden> {
+            createIncomeStatementForChild(
+                IncomeStatementBody.ChildIncome(
+                    startDate = LocalDate.of(2021, 4, 3),
+                    endDate = LocalDate.of(2021, 8, 9),
+                    otherInfo = "foo bar",
+                    attachmentIds = listOf()
+                ),
+                testChild_1.id,
+            )
+        }
     }
 
     @Test
@@ -231,124 +238,129 @@ class IncomeStatementControllerCitizenIntegrationTest :
 
     @Test
     fun `create an invalid income statement`() {
-        createIncomeStatement(
-            // Either gross or entrepreneur is needed
-            IncomeStatementBody.Income(
-                startDate = LocalDate.of(2021, 4, 3),
-                endDate = null,
-                gross = null,
-                entrepreneur = null,
-                student = false,
-                alimonyPayer = true,
-                otherInfo = "foo bar",
-                attachmentIds = listOf()
-            ),
-            400
-        )
-        createIncomeStatement(
-            IncomeStatementBody.Income(
-                // endDate is before startDate
-                startDate = LocalDate.of(2021, 4, 3),
-                endDate = LocalDate.of(2021, 4, 2),
-                gross =
-                    Gross(
-                        incomeSource = IncomeSource.INCOMES_REGISTER,
-                        estimatedMonthlyIncome = 1500,
-                        otherIncome = setOf(),
-                        otherIncomeInfo = ""
-                    ),
-                entrepreneur = null,
-                student = false,
-                alimonyPayer = true,
-                otherInfo = "foo bar",
-                attachmentIds = listOf()
-            ),
-            400
-        )
-        createIncomeStatement(
-            IncomeStatementBody.Income(
-                startDate = LocalDate.of(2021, 4, 3),
-                endDate = null,
-                gross = null,
-                // At least one company type is needed
-                entrepreneur =
-                    Entrepreneur(
-                        fullTime = true,
-                        startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
-                        spouseWorksInCompany = true,
-                        startupGrant = true,
-                        checkupConsent = true,
-                        selfEmployed = null,
-                        limitedCompany = null,
-                        partnership = false,
-                        lightEntrepreneur = false,
-                        accountant =
-                            Accountant(
-                                name = "Foo",
-                                address = "Bar",
-                                phone = "123",
-                                email = "foo.bar@example.com"
-                            )
-                    ),
-                student = false,
-                alimonyPayer = false,
-                otherInfo = "foo bar",
-                attachmentIds = listOf()
-            ),
-            400
-        )
-        createIncomeStatement(
-            IncomeStatementBody.Income(
-                startDate = LocalDate.of(2021, 4, 3),
-                endDate = null,
-                gross = null,
-                entrepreneur =
-                    Entrepreneur(
-                        fullTime = true,
-                        startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
-                        spouseWorksInCompany = true,
-                        startupGrant = true,
-                        checkupConsent = true,
-                        selfEmployed = null,
-                        limitedCompany = null,
-                        partnership = true,
-                        lightEntrepreneur = false,
-                        // Accountant is required if limitedCompany or partnership is given
-                        accountant = null
-                    ),
-                student = false,
-                alimonyPayer = false,
-                otherInfo = "foo bar",
-                attachmentIds = listOf()
-            ),
-            400
-        )
-        createIncomeStatement(
-            IncomeStatementBody.Income(
-                startDate = LocalDate.of(2021, 4, 3),
-                endDate = null,
-                gross = null,
-                entrepreneur =
-                    Entrepreneur(
-                        fullTime = true,
-                        startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
-                        spouseWorksInCompany = true,
-                        startupGrant = true,
-                        checkupConsent = true,
-                        selfEmployed = null,
-                        limitedCompany = null,
-                        partnership = true,
-                        lightEntrepreneur = false,
-                        // Accountant name, phone or email cannot be empty
-                        accountant = Accountant(name = "", address = "", phone = "", email = "")
-                    ),
-                student = false,
-                alimonyPayer = false,
-                otherInfo = "foo bar",
-                attachmentIds = listOf()
-            ),
-            400
-        )
+        assertThrows<BadRequest> {
+            createIncomeStatement(
+                // Either gross or entrepreneur is needed
+                IncomeStatementBody.Income(
+                    startDate = LocalDate.of(2021, 4, 3),
+                    endDate = null,
+                    gross = null,
+                    entrepreneur = null,
+                    student = false,
+                    alimonyPayer = true,
+                    otherInfo = "foo bar",
+                    attachmentIds = listOf()
+                ),
+            )
+        }
+        assertThrows<BadRequest> {
+            createIncomeStatement(
+                IncomeStatementBody.Income(
+                    // endDate is before startDate
+                    startDate = LocalDate.of(2021, 4, 3),
+                    endDate = LocalDate.of(2021, 4, 2),
+                    gross =
+                        Gross(
+                            incomeSource = IncomeSource.INCOMES_REGISTER,
+                            estimatedMonthlyIncome = 1500,
+                            otherIncome = setOf(),
+                            otherIncomeInfo = ""
+                        ),
+                    entrepreneur = null,
+                    student = false,
+                    alimonyPayer = true,
+                    otherInfo = "foo bar",
+                    attachmentIds = listOf()
+                ),
+            )
+        }
+        assertThrows<BadRequest> {
+            createIncomeStatement(
+                IncomeStatementBody.Income(
+                    startDate = LocalDate.of(2021, 4, 3),
+                    endDate = null,
+                    gross = null,
+                    // At least one company type is needed
+                    entrepreneur =
+                        Entrepreneur(
+                            fullTime = true,
+                            startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
+                            spouseWorksInCompany = true,
+                            startupGrant = true,
+                            checkupConsent = true,
+                            selfEmployed = null,
+                            limitedCompany = null,
+                            partnership = false,
+                            lightEntrepreneur = false,
+                            accountant =
+                                Accountant(
+                                    name = "Foo",
+                                    address = "Bar",
+                                    phone = "123",
+                                    email = "foo.bar@example.com"
+                                )
+                        ),
+                    student = false,
+                    alimonyPayer = false,
+                    otherInfo = "foo bar",
+                    attachmentIds = listOf()
+                ),
+            )
+        }
+        assertThrows<BadRequest> {
+            createIncomeStatement(
+                IncomeStatementBody.Income(
+                    startDate = LocalDate.of(2021, 4, 3),
+                    endDate = null,
+                    gross = null,
+                    entrepreneur =
+                        Entrepreneur(
+                            fullTime = true,
+                            startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
+                            spouseWorksInCompany = true,
+                            startupGrant = true,
+                            checkupConsent = true,
+                            selfEmployed = null,
+                            limitedCompany = null,
+                            partnership = true,
+                            lightEntrepreneur = false,
+                            // Accountant is required if limitedCompany or partnership is given
+                            accountant = null
+                        ),
+                    student = false,
+                    alimonyPayer = false,
+                    otherInfo = "foo bar",
+                    attachmentIds = listOf()
+                ),
+            )
+        }
+        assertThrows<BadRequest> {
+            createIncomeStatement(
+                IncomeStatementBody.Income(
+                    startDate = LocalDate.of(2021, 4, 3),
+                    endDate = null,
+                    gross = null,
+                    entrepreneur =
+                        Entrepreneur(
+                            fullTime = true,
+                            startOfEntrepreneurship = LocalDate.of(2000, 1, 1),
+                            spouseWorksInCompany = true,
+                            startupGrant = true,
+                            checkupConsent = true,
+                            selfEmployed = null,
+                            limitedCompany = null,
+                            partnership = true,
+                            lightEntrepreneur = false,
+                            // Accountant name, phone or email cannot be empty
+                            accountant = Accountant(name = "", address = "", phone = "", email = "")
+                        ),
+                    student = false,
+                    alimonyPayer = false,
+                    otherInfo = "foo bar",
+                    attachmentIds = listOf()
+                ),
+            )
+        }
     }
 
     @Test
@@ -447,25 +459,26 @@ class IncomeStatementControllerCitizenIntegrationTest :
     fun `create an income statement with an attachment that does not exist`() {
         val nonExistingAttachmentId = AttachmentId(UUID.randomUUID())
 
-        createIncomeStatement(
-            IncomeStatementBody.Income(
-                startDate = LocalDate.of(2021, 4, 3),
-                endDate = null,
-                gross =
-                    Gross(
-                        incomeSource = IncomeSource.ATTACHMENTS,
-                        estimatedMonthlyIncome = 1500,
-                        otherIncome = setOf(),
-                        otherIncomeInfo = ""
-                    ),
-                entrepreneur = null,
-                student = false,
-                alimonyPayer = false,
-                otherInfo = "foo bar",
-                attachmentIds = listOf(nonExistingAttachmentId)
-            ),
-            400
-        )
+        assertThrows<BadRequest> {
+            createIncomeStatement(
+                IncomeStatementBody.Income(
+                    startDate = LocalDate.of(2021, 4, 3),
+                    endDate = null,
+                    gross =
+                        Gross(
+                            incomeSource = IncomeSource.ATTACHMENTS,
+                            estimatedMonthlyIncome = 1500,
+                            otherIncome = setOf(),
+                            otherIncomeInfo = ""
+                        ),
+                    entrepreneur = null,
+                    student = false,
+                    alimonyPayer = false,
+                    otherInfo = "foo bar",
+                    attachmentIds = listOf(nonExistingAttachmentId)
+                ),
+            )
+        }
     }
 
     @Test
@@ -473,25 +486,26 @@ class IncomeStatementControllerCitizenIntegrationTest :
         val someoneElse = AuthenticatedUser.Citizen(testAdult_2.id, CitizenAuthLevel.STRONG)
         val attachmentId = uploadAttachment(someoneElse)
 
-        createIncomeStatement(
-            IncomeStatementBody.Income(
-                startDate = LocalDate.of(2021, 4, 3),
-                endDate = null,
-                gross =
-                    Gross(
-                        incomeSource = IncomeSource.ATTACHMENTS,
-                        estimatedMonthlyIncome = 1500,
-                        otherIncome = setOf(),
-                        otherIncomeInfo = ""
-                    ),
-                entrepreneur = null,
-                student = false,
-                alimonyPayer = false,
-                otherInfo = "foo bar",
-                attachmentIds = listOf(attachmentId)
-            ),
-            400
-        )
+        assertThrows<BadRequest> {
+            createIncomeStatement(
+                IncomeStatementBody.Income(
+                    startDate = LocalDate.of(2021, 4, 3),
+                    endDate = null,
+                    gross =
+                        Gross(
+                            incomeSource = IncomeSource.ATTACHMENTS,
+                            estimatedMonthlyIncome = 1500,
+                            otherIncome = setOf(),
+                            otherIncomeInfo = ""
+                        ),
+                    entrepreneur = null,
+                    student = false,
+                    alimonyPayer = false,
+                    otherInfo = "foo bar",
+                    attachmentIds = listOf(attachmentId)
+                ),
+            )
+        }
     }
 
     @Test
@@ -631,11 +645,15 @@ class IncomeStatementControllerCitizenIntegrationTest :
 
         markIncomeStatementHandled(id, "foooooo")
 
-        updateIncomeStatement(
-            id,
-            IncomeStatementBody.HighestFee(startDate = LocalDate.of(2030, 4, 3), endDate = null),
-            403
-        )
+        assertThrows<Forbidden> {
+            updateIncomeStatement(
+                id,
+                IncomeStatementBody.HighestFee(
+                    startDate = LocalDate.of(2030, 4, 3),
+                    endDate = null
+                ),
+            )
+        }
     }
 
     @Test
@@ -652,7 +670,7 @@ class IncomeStatementControllerCitizenIntegrationTest :
         assertEquals(true, handled.handled)
         assertEquals("", handled.handlerNote)
 
-        deleteIncomeStatement(incomeStatement.id, 403)
+        assertThrows<Forbidden> { deleteIncomeStatement(incomeStatement.id) }
     }
 
     @Test
@@ -685,10 +703,14 @@ class IncomeStatementControllerCitizenIntegrationTest :
         createIncomeStatement(
             IncomeStatementBody.HighestFee(startDate = LocalDate.of(2021, 4, 3), endDate = null)
         )
-        createIncomeStatement(
-            IncomeStatementBody.HighestFee(startDate = LocalDate.of(2021, 4, 3), endDate = null),
-            400
-        )
+        assertThrows<BadRequest> {
+            createIncomeStatement(
+                IncomeStatementBody.HighestFee(
+                    startDate = LocalDate.of(2021, 4, 3),
+                    endDate = null
+                ),
+            )
+        }
     }
 
     private fun markIncomeStatementHandled(id: IncomeStatementId, note: String) =
@@ -822,97 +844,100 @@ class IncomeStatementControllerCitizenIntegrationTest :
         assertEquals(getIncomeStatementChildren().size, 0)
     }
 
-    private fun getIncomeStatements(pageSize: Int = 10, page: Int = 1): Paged<IncomeStatement> =
-        http
-            .get("/citizen/income-statements?page=$page&pageSize=$pageSize")
-            .timeout(1000000)
-            .timeoutRead(1000000)
-            .asUser(citizen)
-            .responseObject<Paged<IncomeStatement>>(jsonMapper)
-            .let { (_, _, body) -> body.get() }
+    private fun getIncomeStatements(pageSize: Int = 10, page: Int = 1): Paged<IncomeStatement> {
+        return incomeStatementControllerCitizen.getIncomeStatements(
+            dbInstance(),
+            citizen,
+            RealEvakaClock(),
+            page = page,
+            pageSize = pageSize
+        )
+    }
 
     private fun getIncomeStatementsForChild(
         childId: ChildId,
         pageSize: Int = 10,
         page: Int = 1
-    ): Paged<IncomeStatement> =
-        http
-            .get("/citizen/income-statements/child/$childId?page=$page&pageSize=$pageSize")
-            .timeout(1000000)
-            .timeoutRead(1000000)
-            .asUser(citizen)
-            .responseObject<Paged<IncomeStatement>>(jsonMapper)
-            .let { (_, _, body) -> body.get() }
+    ): Paged<IncomeStatement> {
+        return incomeStatementControllerCitizen.getChildIncomeStatements(
+            dbInstance(),
+            citizen,
+            RealEvakaClock(),
+            childId,
+            page = page,
+            pageSize = pageSize
+        )
+    }
 
-    private fun getIncomeStatement(id: IncomeStatementId): IncomeStatement =
-        http
-            .get("/citizen/income-statements/$id")
-            .timeout(1000000)
-            .timeoutRead(1000000)
-            .asUser(citizen)
-            .responseObject<IncomeStatement>(jsonMapper)
-            .let { (_, _, body) -> body.get() }
+    private fun getIncomeStatement(id: IncomeStatementId): IncomeStatement {
+        return incomeStatementControllerCitizen.getIncomeStatement(
+            dbInstance(),
+            citizen,
+            RealEvakaClock(),
+            id
+        )
+    }
 
-    private fun getIncomeStatementChildren(): List<ChildBasicInfo> =
-        http
-            .get("/citizen/income-statements/children/")
-            .timeout(1000000)
-            .timeoutRead(1000000)
-            .asUser(citizen)
-            .responseObject<List<ChildBasicInfo>>(jsonMapper)
-            .let { (_, _, body) -> body.get() }
+    private fun getIncomeStatementChildren(): List<ChildBasicInfo> {
+        return incomeStatementControllerCitizen.getIncomeStatementChildren(
+            dbInstance(),
+            citizen,
+            RealEvakaClock(),
+        )
+    }
 
-    private fun createIncomeStatement(body: IncomeStatementBody, expectedStatus: Int = 200) {
-        http
-            .post("/citizen/income-statements")
-            .asUser(citizen)
-            .objectBody(body, mapper = jsonMapper)
-            .response()
-            .also { (_, res, _) -> assertEquals(expectedStatus, res.statusCode) }
+    private fun createIncomeStatement(body: IncomeStatementBody) {
+        incomeStatementControllerCitizen.createIncomeStatement(
+            dbInstance(),
+            citizen,
+            RealEvakaClock(),
+            body,
+        )
     }
 
     private fun createIncomeStatementForChild(
         body: IncomeStatementBody.ChildIncome,
         childId: ChildId,
-        expectedStatus: Int = 200
     ) {
-        http
-            .post("/citizen/income-statements/child/$childId")
-            .asUser(citizen)
-            .objectBody(body, mapper = jsonMapper)
-            .response()
-            .also { (_, res, _) -> assertEquals(expectedStatus, res.statusCode) }
+        incomeStatementControllerCitizen.createChildIncomeStatement(
+            dbInstance(),
+            citizen,
+            RealEvakaClock(),
+            childId,
+            body
+        )
     }
 
     private fun updateIncomeStatement(
         id: IncomeStatementId,
         body: IncomeStatementBody,
-        expectedStatus: Int = 200
     ) {
-        http
-            .put("/citizen/income-statements/$id")
-            .asUser(citizen)
-            .objectBody(body, mapper = jsonMapper)
-            .response()
-            .also { (_, res, _) -> assertEquals(expectedStatus, res.statusCode) }
+        incomeStatementControllerCitizen.updateIncomeStatement(
+            dbInstance(),
+            citizen,
+            RealEvakaClock(),
+            id,
+            body
+        )
     }
 
-    private fun deleteIncomeStatement(id: IncomeStatementId, expectedStatus: Int = 200) {
-        http.delete("/citizen/income-statements/$id").asUser(citizen).response().also { (_, res, _)
-            ->
-            assertEquals(expectedStatus, res.statusCode)
-        }
+    private fun deleteIncomeStatement(id: IncomeStatementId) {
+        incomeStatementControllerCitizen.deleteIncomeStatement(
+            dbInstance(),
+            citizen,
+            RealEvakaClock(),
+            id,
+        )
     }
 
-    private fun uploadAttachment(user: AuthenticatedUser = citizen): AttachmentId {
-        val (_, _, result) =
-            http
-                .upload("/attachments/citizen/income-statements")
-                .add(FileDataPart(File(pngFile.toURI()), name = "file"))
-                .asUser(user)
-                .responseObject<AttachmentId>(jsonMapper)
-
-        return result.get()
+    private fun uploadAttachment(user: AuthenticatedUser.Citizen = citizen): AttachmentId {
+        return attachmentsController.uploadIncomeStatementAttachmentCitizen(
+            dbInstance(),
+            user,
+            RealEvakaClock(),
+            incomeStatementId = null,
+            file = MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes())
+        )
     }
 
     private fun idToAttachment(id: AttachmentId) =
@@ -922,13 +947,12 @@ class IncomeStatementControllerCitizenIntegrationTest :
         user: AuthenticatedUser,
         incomeStatementId: IncomeStatementId
     ): AttachmentId {
-        val (_, _, result) =
-            http
-                .upload("/attachments/income-statements/$incomeStatementId")
-                .add(FileDataPart(File(pngFile.toURI()), name = "file"))
-                .asUser(user)
-                .responseObject<AttachmentId>(jsonMapper)
-
-        return result.get()
+        return attachmentsController.uploadIncomeStatementAttachmentEmployee(
+            dbInstance(),
+            user,
+            RealEvakaClock(),
+            incomeStatementId,
+            MockMultipartFile("file", "evaka-logo.png", "image/png", pngFile.readBytes())
+        )
     }
 }

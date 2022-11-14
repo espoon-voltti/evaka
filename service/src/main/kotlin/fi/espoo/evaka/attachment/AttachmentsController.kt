@@ -300,7 +300,7 @@ class AttachmentsController(
         value = ["/citizen/income-statements/{incomeStatementId}", "/citizen/income-statements"],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
-    fun uploadAttachmentCitizen(
+    fun uploadIncomeStatementAttachmentCitizen(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,

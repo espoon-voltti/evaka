@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.invoicing
 
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.github.kittinunf.fuel.core.extensions.jsonBody
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.invoicing.controller.FeeAlterationController
@@ -13,9 +11,10 @@ import fi.espoo.evaka.invoicing.data.upsertFeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeeAlterationId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDecisionMaker_1
@@ -25,8 +24,12 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
 
 class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var feeAlterationController: FeeAlterationController
+
     private fun assertEqualEnough(expected: List<FeeAlteration>, actual: List<FeeAlteration>) {
         val nullId = FeeAlterationId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
         assertEquals(
@@ -34,11 +37,6 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             actual.map { it.copy(id = nullId, updatedAt = null) }.toSet()
         )
     }
-
-    private fun deserializeResult(json: String) =
-        jsonMapper
-            .readValue<List<FeeAlterationController.FeeAlterationWithPermittedActions>>(json)
-            .map { it.data }
 
     @BeforeEach
     fun setup() {
@@ -65,22 +63,16 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
 
     @Test
     fun `getFeeAlterations works with no data in DB`() {
-        val (_, response, result) =
-            http.get("/fee-alterations?personId=$personId").asUser(user).responseString()
-        assertEquals(200, response.statusCode)
-
-        assertEqualEnough(listOf(), deserializeResult(result.get()))
+        val result = getFeeAlterations(personId)
+        assertEquals(0, result.size)
     }
 
     @Test
     fun `getFeeAlterations works with single fee alteration in DB`() {
         db.transaction { tx -> tx.upsertFeeAlteration(clock, testFeeAlteration) }
 
-        val (_, response, result) =
-            http.get("/fee-alterations?personId=$personId").asUser(user).responseString()
-        assertEquals(200, response.statusCode)
-
-        assertEqualEnough(listOf(testFeeAlteration), deserializeResult(result.get()))
+        val result = getFeeAlterations(personId)
+        assertEqualEnough(listOf(testFeeAlteration), result.map { it.data })
     }
 
     @Test
@@ -96,28 +88,18 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             )
         db.transaction { tx -> feeAlterations.forEach { tx.upsertFeeAlteration(clock, it) } }
 
-        val (_, response, result) =
-            http.get("/fee-alterations?personId=$personId").asUser(user).responseString()
-        assertEquals(200, response.statusCode)
-
-        assertEqualEnough(feeAlterations, deserializeResult(result.get()))
+        val result = getFeeAlterations(personId)
+        assertEqualEnough(feeAlterations, result.map { it.data })
     }
 
     @Test
     fun `createFeeAlterations works with valid fee alteration`() {
-        http
-            .post("/fee-alterations?personId=$personId")
-            .asUser(user)
-            .jsonBody(jsonMapper.writeValueAsString(testFeeAlteration))
-            .response()
+        createFeeAlteration(testFeeAlteration)
 
-        val (_, response, result) =
-            http.get("/fee-alterations?personId=$personId").asUser(user).responseString()
-        assertEquals(200, response.statusCode)
-
+        val result = getFeeAlterations(personId)
         assertEqualEnough(
             listOf(testFeeAlteration.copy(updatedBy = EvakaUserId(testDecisionMaker_1.id.raw))),
-            deserializeResult(result.get())
+            result.map { it.data }
         )
     }
 
@@ -125,48 +107,29 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
     fun `createFeeAlterations throws with invalid date range`() {
         val feeAlteration =
             testFeeAlteration.copy(validTo = testFeeAlteration.validFrom.minusDays(1))
-        val (_, response, _) =
-            http
-                .post("/fee-alterations?personId=$personId")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(feeAlteration))
-                .response()
-        assertEquals(400, response.statusCode)
+        assertThrows<BadRequest> { createFeeAlteration(feeAlteration) }
     }
 
     @Test
-    fun `updateFeeAlterations works with valid fee alteration`() {
+    fun `updateFeeAlteration works with valid fee alteration`() {
         db.transaction { tx -> tx.upsertFeeAlteration(clock, testFeeAlteration) }
 
         val updated = testFeeAlteration.copy(amount = 100)
-        http
-            .put("/fee-alterations/${testFeeAlteration.id}?personId=$personId")
-            .asUser(user)
-            .jsonBody(jsonMapper.writeValueAsString(updated))
-            .response()
+        updateFeeAlteration(testFeeAlteration.id!!, updated)
 
-        val (_, response, result) =
-            http.get("/fee-alterations?personId=$personId").asUser(user).responseString()
-        assertEquals(200, response.statusCode)
-
+        val result = getFeeAlterations(personId)
         assertEqualEnough(
             listOf(updated.copy(updatedBy = EvakaUserId(testDecisionMaker_1.id.raw))),
-            deserializeResult(result.get())
+            result.map { it.data }
         )
     }
 
     @Test
-    fun `updateFeeAlterations throws with invalid date rage`() {
+    fun `updateFeeAlteration throws with invalid date rage`() {
         db.transaction { tx -> tx.upsertFeeAlteration(clock, testFeeAlteration) }
 
         val updated = testFeeAlteration.copy(validTo = testFeeAlteration.validFrom.minusDays(1))
-        val (_, response, _) =
-            http
-                .put("/fee-alterations/${testFeeAlteration.id}?personId=$personId")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(updated))
-                .response()
-        assertEquals(400, response.statusCode)
+        assertThrows<BadRequest> { updateFeeAlteration(testFeeAlteration.id!!, updated) }
     }
 
     @Test
@@ -177,26 +140,43 @@ class FeeAlterationIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
             tx.upsertFeeAlteration(clock, testFeeAlteration.copy(id = deletedId))
         }
 
-        http.delete("/fee-alterations/$deletedId").asUser(user).response()
+        deleteFeeAlteration(deletedId)
 
-        val (_, response, result) =
-            http.get("/fee-alterations?personId=$personId").asUser(user).responseString()
-        assertEquals(200, response.statusCode)
-
-        assertEquals(1, deserializeResult(result.get()).size)
-        assertFalse(deserializeResult(result.get()).any { it.id == deletedId })
+        val result = getFeeAlterations(personId)
+        assertEquals(1, result.size)
+        assertFalse(result.any { it.data.id == deletedId })
     }
 
     @Test
     fun `delete does nothing with non-existent id`() {
         db.transaction { tx -> tx.upsertFeeAlteration(clock, testFeeAlteration) }
 
-        http.delete("/fee-alterations/${UUID.randomUUID()}").asUser(user).response()
+        deleteFeeAlteration(FeeAlterationId(UUID.randomUUID()))
 
-        val (_, response, result) =
-            http.get("/fee-alterations?personId=$personId").asUser(user).responseString()
-        assertEquals(200, response.statusCode)
+        val result = getFeeAlterations(personId)
+        assertEqualEnough(listOf(testFeeAlteration), result.map { it.data })
+    }
 
-        assertEqualEnough(listOf(testFeeAlteration), deserializeResult(result.get()))
+    private fun createFeeAlteration(body: FeeAlteration) {
+        feeAlterationController.createFeeAlteration(dbInstance(), user, RealEvakaClock(), body)
+    }
+
+    private fun updateFeeAlteration(id: FeeAlterationId, body: FeeAlteration) {
+        feeAlterationController.updateFeeAlteration(dbInstance(), user, RealEvakaClock(), id, body)
+    }
+
+    private fun getFeeAlterations(
+        personId: PersonId
+    ): List<FeeAlterationController.FeeAlterationWithPermittedActions> {
+        return feeAlterationController.getFeeAlterations(
+            dbInstance(),
+            user,
+            RealEvakaClock(),
+            personId
+        )
+    }
+
+    private fun deleteFeeAlteration(id: FeeAlterationId) {
+        feeAlterationController.deleteFeeAlteration(dbInstance(), user, RealEvakaClock(), id)
     }
 }
