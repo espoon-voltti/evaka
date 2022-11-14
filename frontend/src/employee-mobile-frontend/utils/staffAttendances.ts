@@ -68,9 +68,9 @@ export function getAttendanceDepartureDifferenceReasons(
   departure: HelsinkiDateTime
 ): StaffAttendanceType[] {
   const departedBeforeMinThreshold = departure.isBefore(
-    plannedEnd.subMinutes(15)
+    plannedEnd.subMinutes(5)
   )
-  const depratedAfterMaxThreshold = departure.isAfter(plannedEnd.addMinutes(15))
+  const depratedAfterMaxThreshold = departure.isAfter(plannedEnd.addMinutes(5))
 
   if (departedBeforeMinThreshold) {
     return ['OTHER_WORK', 'TRAINING', 'JUSTIFIED_CHANGE']
