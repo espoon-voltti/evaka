@@ -341,7 +341,7 @@ class IncomeStatementControllerCitizen(private val accessControl: AccessControl)
     }
 
     @DeleteMapping("/{id}")
-    fun removeIncomeStatement(
+    fun deleteIncomeStatement(
         db: Database,
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
