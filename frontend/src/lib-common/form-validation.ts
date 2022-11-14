@@ -18,6 +18,7 @@ export type ErrorKey =
   | 'required'
   | 'requiredSelection'
   | 'format'
+  | 'integerFormat'
   | 'ssn'
   | 'phone'
   | 'email'
@@ -92,7 +93,7 @@ export const email = (
 export const time = (val: string, err: ErrorKey = 'timeFormat') =>
   val.length > 0 && !TIME_REGEXP.test(val) ? err : undefined
 
-export const validInt = (val: string, err: ErrorKey = 'format') =>
+export const validInt = (val: string, err: ErrorKey = 'integerFormat') =>
   regexp(val, /^[0-9]+$/, err)
 
 export const validDate = (

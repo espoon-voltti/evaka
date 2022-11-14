@@ -2013,6 +2013,7 @@ const sv: Translations = {
     required: 'Värde saknas',
     requiredSelection: 'Val saknas',
     format: 'Ange rätt format',
+    integerFormat: 'Ange ett heltal',
     ssn: 'Ogiltigt personbeteckning',
     phone: 'Ogiltigt telefonnummer',
     email: 'Ogiltig e-postadress',
