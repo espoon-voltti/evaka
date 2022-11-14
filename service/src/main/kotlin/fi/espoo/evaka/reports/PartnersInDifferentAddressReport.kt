@@ -40,7 +40,7 @@ class PartnersInDifferentAddressReportController(private val accessControl: Acce
                 }
             }
             .also {
-                Audit.PartnersInDifferentAddressReportRead.log(args = mapOf("count" to it.size))
+                Audit.PartnersInDifferentAddressReportRead.log(meta = mapOf("count" to it.size))
             }
     }
 }

@@ -42,7 +42,7 @@ class HolidayPeriodController(private val accessControl: AccessControl) {
                     it.getHolidayPeriods()
                 }
             }
-            .also { Audit.HolidayPeriodsList.log(args = mapOf("count" to it.size)) }
+            .also { Audit.HolidayPeriodsList.log(meta = mapOf("count" to it.size)) }
     }
 
     @GetMapping("/{id}")

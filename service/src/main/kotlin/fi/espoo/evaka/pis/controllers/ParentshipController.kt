@@ -117,7 +117,7 @@ class ParentshipController(
             .also {
                 Audit.ParentShipsRead.log(
                     targetId = listOf(headOfChildId, childId),
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }
@@ -161,7 +161,7 @@ class ParentshipController(
         }
         Audit.ParentShipsUpdate.log(
             targetId = id,
-            args = mapOf("startDate" to body.startDate, "endDate" to body.endDate)
+            meta = mapOf("startDate" to body.startDate, "endDate" to body.endDate)
         )
     }
 

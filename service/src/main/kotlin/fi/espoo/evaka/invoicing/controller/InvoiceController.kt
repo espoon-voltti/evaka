@@ -109,7 +109,7 @@ class InvoiceController(
                     )
                 }
             }
-            .also { Audit.InvoicesSearch.log(args = mapOf("total" to it.total)) }
+            .also { Audit.InvoicesSearch.log(meta = mapOf("total" to it.total)) }
     }
 
     data class InvoiceSummaryResponse(
@@ -176,7 +176,7 @@ class InvoiceController(
         }
         Audit.InvoicesSend.log(
             targetId = invoiceIds,
-            args = mapOf("invoiceDate" to invoiceDate, "dueDate" to dueDate)
+            meta = mapOf("invoiceDate" to invoiceDate, "dueDate" to dueDate)
         )
     }
 
@@ -202,7 +202,7 @@ class InvoiceController(
             }
         }
         Audit.InvoicesSendByDate.log(
-            args =
+            meta =
                 mapOf(
                     "from" to payload.from,
                     "to" to payload.to,
@@ -288,7 +288,7 @@ class InvoiceController(
                         it.getHeadOfFamilyInvoices(uuid)
                     }
                 }
-                .also { Audit.InvoicesRead.log(targetId = uuid, args = mapOf("count" to it.size)) }
+                .also { Audit.InvoicesRead.log(targetId = uuid, meta = mapOf("count" to it.size)) }
         )
     }
 

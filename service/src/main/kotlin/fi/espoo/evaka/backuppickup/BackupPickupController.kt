@@ -71,7 +71,7 @@ class BackupPickupController(private val accessControl: AccessControl) {
             .also {
                 Audit.ChildBackupPickupRead.log(
                     targetId = childId,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }

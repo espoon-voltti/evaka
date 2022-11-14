@@ -98,7 +98,7 @@ class FosterParentController(private val accessControl: AccessControl) {
                 Audit.FosterParentCreateRelationship.log(
                     targetId = body.parentId,
                     objectId = body.childId,
-                    args = mapOf("fosterParentId" to id)
+                    meta = mapOf("fosterParentId" to id)
                 )
             }
     }
@@ -126,7 +126,7 @@ class FosterParentController(private val accessControl: AccessControl) {
             .also {
                 Audit.FosterParentUpdateRelationship.log(
                     targetId = id,
-                    args = mapOf("validDuring" to validDuring)
+                    meta = mapOf("validDuring" to validDuring)
                 )
             }
     }

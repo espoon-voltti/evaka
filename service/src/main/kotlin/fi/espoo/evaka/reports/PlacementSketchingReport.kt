@@ -50,7 +50,7 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
             }
             .also {
                 Audit.PlacementSketchingReportRead.log(
-                    args =
+                    meta =
                         mapOf(
                             "placementStartDate" to placementStartDate,
                             "earliestPreferredStartDate" to earliestPreferredStartDate,

@@ -120,7 +120,7 @@ class AttendanceReservationController(private val ac: AccessControl) {
             .also {
                 Audit.UnitAttendanceReservationsRead.log(
                     targetId = unitId,
-                    args = mapOf("from" to from, "to" to to)
+                    meta = mapOf("from" to from, "to" to to)
                 )
             }
     }
@@ -153,7 +153,7 @@ class AttendanceReservationController(private val ac: AccessControl) {
             }
         Audit.AttendanceReservationEmployeeCreate.log(
             targetId = children,
-            args =
+            meta =
                 mapOf(
                     "deletedAbsences" to result.deletedAbsences,
                     "deletedReservations" to result.deletedReservations,

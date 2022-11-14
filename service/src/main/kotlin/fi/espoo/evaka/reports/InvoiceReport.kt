@@ -51,7 +51,7 @@ class InvoiceReportController(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.InvoicesReportRead.log(
-                    args = mapOf("date" to date, "count" to it.reportRows.size)
+                    meta = mapOf("date" to date, "count" to it.reportRows.size)
                 )
             }
     }

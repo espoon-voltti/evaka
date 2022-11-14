@@ -88,7 +88,7 @@ class IncomeController(
                     }
                 }
             }
-        Audit.PersonIncomeRead.log(targetId = personId, args = mapOf("count" to incomes.size))
+        Audit.PersonIncomeRead.log(targetId = personId, meta = mapOf("count" to incomes.size))
         return Wrapper(incomes)
     }
 

@@ -41,7 +41,7 @@ class AssistanceNeedDecisionsReport(private val accessControl: AccessControl) {
                     it.getDecisionRows(user.evakaUserId, filter)
                 }
             }
-            .also { Audit.AssistanceNeedDecisionsReportRead.log(args = mapOf("count" to it.size)) }
+            .also { Audit.AssistanceNeedDecisionsReportRead.log(meta = mapOf("count" to it.size)) }
     }
 
     @GetMapping("/reports/assistance-need-decisions/unread-count")

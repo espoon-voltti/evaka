@@ -64,7 +64,7 @@ class DailyServiceTimesController(private val accessControl: AccessControl) {
             .also {
                 Audit.ChildDailyServiceTimesRead.log(
                     targetId = childId,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }

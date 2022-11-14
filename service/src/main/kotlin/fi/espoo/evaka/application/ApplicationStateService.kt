@@ -591,7 +591,7 @@ class ApplicationStateService(
         } else {
             tx.updatePlacementPlanUnitConfirmation(applicationId, status, null, null)
         }
-        Audit.PlacementPlanRespond.log(targetId = applicationId, args = mapOf("status" to status))
+        Audit.PlacementPlanRespond.log(targetId = applicationId, meta = mapOf("status" to status))
     }
 
     fun confirmPlacementProposalChanges(
@@ -757,7 +757,7 @@ class ApplicationStateService(
         }
         Audit.DecisionAccept.log(
             targetId = decisionId,
-            args =
+            meta =
                 mapOf("applicationId" to applicationId, "requestedStartDate" to requestedStartDate)
         )
     }

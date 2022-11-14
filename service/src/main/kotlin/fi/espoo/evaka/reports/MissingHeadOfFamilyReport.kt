@@ -47,7 +47,7 @@ class MissingHeadOfFamilyReportController(private val accessControl: AccessContr
             }
             .also {
                 Audit.MissingHeadOfFamilyReportRead.log(
-                    args = mapOf("from" to from, "to" to to, "count" to it.size)
+                    meta = mapOf("from" to from, "to" to to, "count" to it.size)
                 )
             }
     }

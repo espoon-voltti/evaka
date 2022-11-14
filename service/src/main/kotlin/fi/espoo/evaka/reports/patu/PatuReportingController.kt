@@ -52,6 +52,6 @@ class PatuReportingController(
                 )
             }
         }
-        Audit.PatuReportSend.log(args = mapOf("from" to from, "to" to to))
+        Audit.PatuReportSend.log(meta = mapOf("from" to from, "to" to to))
     }
 }

@@ -55,7 +55,7 @@ class VasuControllerCitizen(
             .also {
                 Audit.ChildVasuDocumentsReadByGuardian.log(
                     targetId = childId,
-                    args = mapOf("count" to it.data.size)
+                    meta = mapOf("count" to it.data.size)
                 )
             }
     }

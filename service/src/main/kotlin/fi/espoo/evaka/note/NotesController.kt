@@ -49,7 +49,7 @@ class NotesController(private val ac: AccessControl) {
             .also {
                 Audit.NotesByGroupRead.log(
                     targetId = groupId,
-                    args =
+                    meta =
                         mapOf(
                             "childDailyNoteCount" to it.childDailyNotes.size,
                             "childStickyNoteCount" to it.childStickyNotes.size,

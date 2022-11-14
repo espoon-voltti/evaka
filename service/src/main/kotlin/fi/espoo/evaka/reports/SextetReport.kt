@@ -46,7 +46,7 @@ class SextetReportController(private val accessControl: AccessControl) {
             }
             .also {
                 Audit.SextetReportRead.log(
-                    args =
+                    meta =
                         mapOf("year" to year, "placementType" to placementType, "count" to it.size)
                 )
             }

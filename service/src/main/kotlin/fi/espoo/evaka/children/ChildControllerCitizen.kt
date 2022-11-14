@@ -32,7 +32,7 @@ class ChildControllerCitizen(private val accessControl: AccessControl) {
                 }
             }
             .also {
-                Audit.CitizenChildrenRead.log(targetId = user.id, args = mapOf("count" to it.size))
+                Audit.CitizenChildrenRead.log(targetId = user.id, meta = mapOf("count" to it.size))
             }
     }
 }

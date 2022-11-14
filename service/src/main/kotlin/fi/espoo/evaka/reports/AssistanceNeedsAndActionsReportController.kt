@@ -56,7 +56,7 @@ class AssistanceNeedsAndActionsReportController(private val accessControl: Acces
             }
             .also {
                 Audit.AssistanceNeedsReportRead.log(
-                    args = mapOf("date" to date, "count" to it.rows.size)
+                    meta = mapOf("date" to date, "count" to it.rows.size)
                 )
             }
     }

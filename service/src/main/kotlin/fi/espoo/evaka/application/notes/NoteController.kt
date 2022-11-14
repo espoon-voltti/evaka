@@ -78,7 +78,7 @@ class NoteController(private val accessControl: AccessControl) {
                     }
                 }
             }
-            .also { Audit.NoteRead.log(targetId = applicationId, args = mapOf("count" to it.size)) }
+            .also { Audit.NoteRead.log(targetId = applicationId, meta = mapOf("count" to it.size)) }
     }
 
     @PostMapping("/application/{id}")

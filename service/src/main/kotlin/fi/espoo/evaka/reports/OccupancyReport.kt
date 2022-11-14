@@ -71,7 +71,7 @@ class OccupancyReportController(
             }
             .also {
                 Audit.OccupancyReportRead.log(
-                    args =
+                    meta =
                         mapOf(
                             "careAreaId" to careAreaId,
                             "providerType" to providerType,
@@ -121,7 +121,7 @@ class OccupancyReportController(
             }
             .also {
                 Audit.OccupancyGroupReportRead.log(
-                    args =
+                    meta =
                         mapOf(
                             "careAreaId" to careAreaId,
                             "providerType" to providerType,

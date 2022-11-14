@@ -98,7 +98,7 @@ class FamilyController(
                 }
             }
             .also {
-                Audit.FamilyContactsRead.log(targetId = childId, args = mapOf("count" to it.size))
+                Audit.FamilyContactsRead.log(targetId = childId, meta = mapOf("count" to it.size))
             }
     }
 

@@ -43,7 +43,7 @@ class EndedPlacementsReportController(private val accessControl: AccessControl) 
             }
             .also {
                 Audit.EndedPlacementsReportRead.log(
-                    args = mapOf("year" to year, "month" to month, "count" to it.size)
+                    meta = mapOf("year" to year, "month" to month, "count" to it.size)
                 )
             }
     }

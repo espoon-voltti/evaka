@@ -104,7 +104,7 @@ class PartnershipsController(
                 }
             }
             .also {
-                Audit.PartnerShipsRead.log(targetId = personId, args = mapOf("count" to it.size))
+                Audit.PartnerShipsRead.log(targetId = personId, meta = mapOf("count" to it.size))
             }
     }
 
@@ -174,7 +174,7 @@ class PartnershipsController(
         }
         Audit.PartnerShipsUpdate.log(
             targetId = partnershipId,
-            args = mapOf("startDate" to body.startDate, "endDate" to body.endDate)
+            meta = mapOf("startDate" to body.startDate, "endDate" to body.endDate)
         )
     }
 

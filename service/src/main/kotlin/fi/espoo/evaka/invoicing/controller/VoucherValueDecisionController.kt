@@ -109,7 +109,7 @@ class VoucherValueDecisionController(
                     )
                 }
             }
-            .also { Audit.VoucherValueDecisionSearch.log(args = mapOf("total" to it.total)) }
+            .also { Audit.VoucherValueDecisionSearch.log(meta = mapOf("total" to it.total)) }
     }
 
     @GetMapping("/{id}")

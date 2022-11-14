@@ -108,7 +108,7 @@ class PlacementController(
             .also {
                 Audit.PlacementSearch.log(
                     targetId = daycareId ?: childId,
-                    args = mapOf("startDate" to startDate, "endDate" to endDate, "count" to it.size)
+                    meta = mapOf("startDate" to startDate, "endDate" to endDate, "count" to it.size)
                 )
             }
     }
@@ -147,7 +147,7 @@ class PlacementController(
             .also {
                 Audit.PlacementPlanSearch.log(
                     targetId = daycareId,
-                    args = mapOf("startDate" to startDate, "endDate" to endDate, "count" to it.size)
+                    meta = mapOf("startDate" to startDate, "endDate" to endDate, "count" to it.size)
                 )
             }
     }
@@ -326,7 +326,7 @@ class PlacementController(
                 Audit.DaycareGroupPlacementCreate.log(
                     targetId = placementId,
                     objectId = groupPlacementId,
-                    args = mapOf("groupId" to body.groupId)
+                    meta = mapOf("groupId" to body.groupId)
                 )
             }
     }
@@ -421,7 +421,7 @@ JOIN all_fridge_children fc ON fc.child_id = p.child_id AND daterange(p.start_da
             .also {
                 Audit.PlacementChildPlacementPeriodsRead.log(
                     targetId = adultId,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }

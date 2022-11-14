@@ -45,7 +45,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
                 }
             }
             .also {
-                Audit.MobileDevicesList.log(targetId = unitId, args = mapOf("count" to it.size))
+                Audit.MobileDevicesList.log(targetId = unitId, meta = mapOf("count" to it.size))
             }
     }
 
@@ -67,7 +67,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
                 }
             }
             .also {
-                Audit.MobileDevicesList.log(targetId = user.id, args = mapOf("count" to it.size))
+                Audit.MobileDevicesList.log(targetId = user.id, meta = mapOf("count" to it.size))
             }
     }
 
@@ -153,7 +153,7 @@ class MobileDevicesController(private val accessControl: AccessControl) {
             .also {
                 Audit.PinLogin.log(
                     targetId = params.employeeId,
-                    args = mapOf("status" to it.status)
+                    meta = mapOf("status" to it.status)
                 )
             }
 }

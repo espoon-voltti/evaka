@@ -70,7 +70,7 @@ class FeeAlterationController(
             .also {
                 Audit.ChildFeeAlterationsRead.log(
                     targetId = personId,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }

@@ -120,7 +120,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
             .also {
                 Audit.StaffAttendanceRead.log(
                     targetId = unitId,
-                    args =
+                    meta =
                         mapOf(
                             "staffCount" to it.staff.size,
                             "externalStaffCount" to it.extraAttendances.size
@@ -285,7 +285,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         Audit.StaffAttendanceUpdate.log(
             targetId = body.unitId,
             objectId = staffAttendanceIds,
-            args = mapOf("date" to body.date)
+            meta = mapOf("date" to body.date)
         )
     }
 
@@ -346,7 +346,7 @@ class RealtimeStaffAttendanceController(private val accessControl: AccessControl
         Audit.StaffAttendanceExternalUpdate.log(
             targetId = body.unitId,
             objectId = externalAttendanceIds,
-            args = mapOf("date" to body.date)
+            meta = mapOf("date" to body.date)
         )
     }
 

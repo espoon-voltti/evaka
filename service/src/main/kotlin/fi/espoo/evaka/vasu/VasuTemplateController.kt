@@ -134,7 +134,7 @@ class VasuTemplateController(private val accessControl: AccessControl) {
                     tx.getVasuTemplates(clock, validOnly)
                 }
             }
-            .also { Audit.VasuTemplateRead.log(args = mapOf("count" to it.size)) }
+            .also { Audit.VasuTemplateRead.log(meta = mapOf("count" to it.size)) }
     }
 
     @GetMapping("/{id}")

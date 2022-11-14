@@ -41,7 +41,7 @@ class ChildrenInDifferentAddressReportController(private val accessControl: Acce
                 }
             }
             .also {
-                Audit.ChildrenInDifferentAddressReportRead.log(args = mapOf("count" to it.size))
+                Audit.ChildrenInDifferentAddressReportRead.log(meta = mapOf("count" to it.size))
             }
     }
 }

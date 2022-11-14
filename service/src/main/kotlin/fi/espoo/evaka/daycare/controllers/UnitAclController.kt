@@ -55,7 +55,7 @@ class UnitAclController(private val accessControl: AccessControl) {
                     getDaycareAclRows(dbc, daycareId)
                 }
                 .also {
-                    Audit.UnitAclRead.log(targetId = daycareId, args = mapOf("count" to it.size))
+                    Audit.UnitAclRead.log(targetId = daycareId, meta = mapOf("count" to it.size))
                 }
         )
     }

@@ -43,7 +43,7 @@ class ChildRecipientsController(private val accessControl: AccessControl) {
             .also {
                 Audit.MessagingBlocklistRead.log(
                     targetId = childId,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }

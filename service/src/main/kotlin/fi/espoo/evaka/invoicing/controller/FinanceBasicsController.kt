@@ -54,7 +54,7 @@ class FinanceBasicsController(
                     tx.getFeeThresholds().sortedByDescending { it.thresholds.validDuring.start }
                 }
             }
-            .also { Audit.FinanceBasicsFeeThresholdsRead.log(args = mapOf("count" to it.size)) }
+            .also { Audit.FinanceBasicsFeeThresholdsRead.log(meta = mapOf("count" to it.size)) }
     }
 
     @PostMapping("/fee-thresholds")

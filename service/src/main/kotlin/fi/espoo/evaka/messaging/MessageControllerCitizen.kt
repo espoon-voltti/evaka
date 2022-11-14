@@ -57,7 +57,7 @@ class MessageControllerCitizen(
             .also {
                 Audit.MessagingUnreadMessagesRead.log(
                     targetId = user.id,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }
@@ -107,7 +107,7 @@ class MessageControllerCitizen(
                     )
                 }
             }
-            .also { Audit.MessagingReceivedMessagesRead.log(args = mapOf("total" to it.total)) }
+            .also { Audit.MessagingReceivedMessagesRead.log(meta = mapOf("total" to it.total)) }
     }
 
     data class GetReceiversResponse(
@@ -132,7 +132,7 @@ class MessageControllerCitizen(
             }
             .also {
                 Audit.MessagingCitizenFetchReceiversForAccount.log(
-                    args = mapOf("count" to it.messageAccounts)
+                    meta = mapOf("count" to it.messageAccounts)
                 )
             }
     }

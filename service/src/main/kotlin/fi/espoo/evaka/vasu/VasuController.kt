@@ -122,7 +122,7 @@ class VasuController(
             .also {
                 Audit.ChildVasuDocumentsRead.log(
                     targetId = childId,
-                    args = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }

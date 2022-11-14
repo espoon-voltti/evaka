@@ -110,7 +110,7 @@ class PairingsController(
             .also {
                 Audit.PairingChallenge.log(
                     targetId = it.id,
-                    args = mapOf("challengeKey" to body.challengeKey)
+                    meta = mapOf("challengeKey" to body.challengeKey)
                 )
             }
     }
@@ -162,7 +162,7 @@ class PairingsController(
             .also {
                 Audit.PairingResponse.log(
                     targetId = id,
-                    args =
+                    meta =
                         mapOf(
                             "challengeKey" to body.challengeKey,
                             "responseKey" to body.responseKey
@@ -197,7 +197,7 @@ class PairingsController(
             .also {
                 Audit.PairingValidation.log(
                     targetId = id,
-                    args =
+                    meta =
                         mapOf(
                             "challengeKey" to body.challengeKey,
                             "responseKey" to body.responseKey
@@ -219,7 +219,7 @@ class PairingsController(
     fun getPairingStatus(db: Database, @PathVariable id: PairingId): PairingStatusRes {
         return PairingStatusRes(
             db.connect { dbc -> dbc.read { it.fetchPairingStatus(id) } }
-                .also { Audit.PairingStatusRead.log(targetId = id, args = mapOf("status" to it)) }
+                .also { Audit.PairingStatusRead.log(targetId = id, meta = mapOf("status" to it)) }
         )
     }
 }

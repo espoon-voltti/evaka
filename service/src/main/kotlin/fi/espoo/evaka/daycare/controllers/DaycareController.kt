@@ -64,7 +64,7 @@ class DaycareController(
                     tx.getDaycares(filter)
                 }
             }
-            .also { Audit.UnitSearch.log(args = mapOf("count" to it.size)) }
+            .also { Audit.UnitSearch.log(meta = mapOf("count" to it.size)) }
     }
 
     @GetMapping("/features")
@@ -80,7 +80,7 @@ class DaycareController(
                     it.getUnitFeatures()
                 }
             }
-            .also { Audit.UnitFeaturesRead.log(args = mapOf("count" to it.size)) }
+            .also { Audit.UnitFeaturesRead.log(meta = mapOf("count" to it.size)) }
     }
 
     @PostMapping("/unit-features")
@@ -176,7 +176,7 @@ class DaycareController(
             .also {
                 Audit.UnitGroupsSearch.log(
                     targetId = daycareId,
-                    args = mapOf("from" to from, "to" to to, "count" to it.size)
+                    meta = mapOf("from" to from, "to" to to, "count" to it.size)
                 )
             }
     }
@@ -278,7 +278,7 @@ class DaycareController(
             .also {
                 Audit.UnitGroupsCaretakersRead.log(
                     targetId = groupId,
-                    args = mapOf("count" to it.caretakers.size)
+                    meta = mapOf("count" to it.caretakers.size)
                 )
             }
     }
