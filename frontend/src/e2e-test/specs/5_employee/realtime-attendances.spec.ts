@@ -208,6 +208,7 @@ describe('Realtime staff attendances', () => {
         .with({
           employeeId: groupStaff.id,
           groupId,
+          type: 'OVERTIME',
           arrived: mockedToday.toHelsinkiDateTime(LocalTime.of(7, 3)),
           departed: null
         })

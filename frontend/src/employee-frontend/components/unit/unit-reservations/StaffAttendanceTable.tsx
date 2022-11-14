@@ -673,13 +673,18 @@ function getAttendancesForGroupAndDate(
           a.departed.toLocalDate()
         ).includes(date))
   )
-  const matchingAttendances = attendancesForDate.filter(
+
+  const presentAttendances = attendancesForDate.filter(
     ({ groupId, type }) =>
-      groupFilter([groupId]) && (type === undefined || type === 'PRESENT')
+      groupFilter([groupId]) &&
+      (type === undefined ||
+        type === 'PRESENT' ||
+        type === 'JUSTIFIED_CHANGE' ||
+        type === 'OVERTIME')
   )
   return {
-    matchingAttendances,
-    hasHiddenAttendances: matchingAttendances.length < attendancesForDate.length
+    matchingAttendances: presentAttendances,
+    hasHiddenAttendances: presentAttendances.length < attendancesForDate.length
   }
 }
 
