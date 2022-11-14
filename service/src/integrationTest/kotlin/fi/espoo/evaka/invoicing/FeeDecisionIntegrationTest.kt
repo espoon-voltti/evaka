@@ -4,13 +4,14 @@
 
 package fi.espoo.evaka.invoicing
 
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.github.kittinunf.fuel.core.FuelError
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.result.Result
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.invoicing.controller.DistinctiveParams
+import fi.espoo.evaka.invoicing.controller.FeeDecisionController
+import fi.espoo.evaka.invoicing.controller.FeeDecisionSortParam
 import fi.espoo.evaka.invoicing.controller.FeeDecisionTypeRequest
+import fi.espoo.evaka.invoicing.controller.SearchFeeDecisionRequest
+import fi.espoo.evaka.invoicing.controller.SortDirection
 import fi.espoo.evaka.invoicing.data.upsertFeeDecisions
 import fi.espoo.evaka.invoicing.domain.FeeDecision
 import fi.espoo.evaka.invoicing.domain.FeeDecisionDetailed
@@ -21,6 +22,7 @@ import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.insertPlacement
 import fi.espoo.evaka.sficlient.MockSfiMessagesClient
+import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
@@ -29,13 +31,15 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.controllers.Wrapper
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestPerson
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.snDaycarePartDay25
@@ -54,7 +58,6 @@ import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.testDecisionMaker_2
 import fi.espoo.evaka.toFeeDecisionServiceNeed
-import fi.espoo.evaka.withMockedTime
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -62,11 +65,12 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
-
+    @Autowired private lateinit var feeDecisionController: FeeDecisionController
+    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired private lateinit var sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>
 
     private val user =
@@ -239,20 +243,6 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         )
     }
 
-    private fun deserializeListResult(json: String) =
-        jsonMapper.readValue<Paged<FeeDecisionSummary>>(json)
-    private fun deserializeResult(json: String) =
-        jsonMapper.readValue<Wrapper<FeeDecisionDetailed>>(json)
-
-    private fun postJsonData(path: String, payload: String): Result<String, FuelError> {
-        val (_, _, result) = http.post(path).jsonBody(payload).asUser(user).responseString()
-        return result
-    }
-
-    private fun decisionSearch(payload: String): List<FeeDecisionSummary> {
-        return deserializeListResult(postJsonData("/decisions/search", payload).get()).data
-    }
-
     @BeforeEach
     fun beforeEach() {
         MockSfiMessagesClient.clearMessages()
@@ -262,43 +252,33 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
     @Test
     fun `search works with no data in DB`() {
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody("""{"page": 0, "pageSize": "50"}""")
-                .asUser(user)
-                .responseString()
+        val result = searchDecisions(SearchFeeDecisionRequest(page = 0, pageSize = 50))
 
-        assertEqualEnough(listOf(), deserializeListResult(result.get()).data)
+        assertEqualEnough(listOf(), result.data)
     }
 
     @Test
     fun `search works with test data in DB`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody("""{"page": "0", "pageSize": "50"}""")
-                .asUser(user)
-                .responseString()
+        val result = searchDecisions(SearchFeeDecisionRequest(page = 0, pageSize = 50))
 
-        assertEqualEnough(testDecisions.map(::toSummary), deserializeListResult(result.get()).data)
+        assertEqualEnough(testDecisions.map(::toSummary), result.data)
     }
 
     @Test
     fun `search works with strings and integers`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val data1 = decisionSearch("""{"page": "0", "pageSize": "1"}""")
+        val data1 = searchDecisions(SearchFeeDecisionRequest(page = 0, pageSize = 1)).data
         assertEquals(data1.size, 1)
 
-        val data2 = decisionSearch("""{"page": 1, "pageSize": 1}""")
+        val data2 = searchDecisions(SearchFeeDecisionRequest(page = 1, pageSize = 1)).data
         assertEquals(data2.size, 1)
 
         assertNotEquals(data1[0].id, data2[0].id)
 
-        val data3 = decisionSearch("""{"page": "1", "pageSize": "1"}""")
+        val data3 = searchDecisions(SearchFeeDecisionRequest(page = 1, pageSize = 1)).data
         assertEquals(data3.size, 1)
 
         assertEquals(data2[0].id, data3[0].id)
@@ -309,14 +289,16 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val drafts = testDecisions.filter { it.status === FeeDecisionStatus.DRAFT }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody("""{"page": "0", "pageSize": "50", "status": ["DRAFT"]}""")
-                .asUser(user)
-                .responseString()
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    status = listOf(FeeDecisionStatus.DRAFT)
+                )
+            )
 
-        assertEqualEnough(drafts.map(::toSummary), deserializeListResult(result.get()).data)
+        assertEqualEnough(drafts.map(::toSummary), result.data)
     }
 
     @Test
@@ -324,28 +306,32 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val sent = testDecisions.filter { it.status === FeeDecisionStatus.SENT }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody("""{"page": "0", "pageSize": "50", "status": ["SENT"]}""")
-                .asUser(user)
-                .responseString()
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    status = listOf(FeeDecisionStatus.SENT)
+                )
+            )
 
-        assertEqualEnough(sent.map(::toSummary), deserializeListResult(result.get()).data)
+        assertEqualEnough(sent.map(::toSummary), result.data)
     }
 
     @Test
     fun `search works with multiple status parameters`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody("""{"page": "0", "pageSize": "50", "status": ["DRAFT","SENT"]}""")
-                .asUser(user)
-                .responseString()
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    status = listOf(FeeDecisionStatus.DRAFT, FeeDecisionStatus.SENT)
+                )
+            )
 
-        assertEqualEnough(testDecisions.map(::toSummary), deserializeListResult(result.get()).data)
+        assertEqualEnough(testDecisions.map(::toSummary), result.data)
     }
 
     @Test
@@ -364,19 +350,16 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             tx.upsertFeeDecisions(listOf(testDecision, testDecisionMissingServiceNeed))
         }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50", "distinctions": ["UNCONFIRMED_HOURS"]}"""
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    distinctions = listOf(DistinctiveParams.UNCONFIRMED_HOURS)
                 )
-                .asUser(user)
-                .responseString()
+            )
 
-        assertEqualEnough(
-            listOf(testDecisionMissingServiceNeed.let(::toSummary)),
-            deserializeListResult(result.get()).data
-        )
+        assertEqualEnough(listOf(toSummary(testDecisionMissingServiceNeed)), result.data)
     }
 
     @Test
@@ -389,17 +372,16 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody("""{"page": "0", "pageSize": "50", "distinctions": ["EXTERNAL_CHILD"]}""")
-                .asUser(user)
-                .responseString()
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    distinctions = listOf(DistinctiveParams.EXTERNAL_CHILD)
+                )
+            )
 
-        assertEqualEnough(
-            listOf(testDecisionWithExtChild.let(::toSummary)),
-            deserializeListResult(result.get()).data
-        )
+        assertEqualEnough(listOf(toSummary(testDecisionWithExtChild)), result.data)
     }
 
     @Test
@@ -412,23 +394,22 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody("""{"page": "0", "pageSize": "50", "distinctions": ["RETROACTIVE"]}""")
-                .asUser(user)
-                .responseString()
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    distinctions = listOf(DistinctiveParams.RETROACTIVE)
+                )
+            )
 
-        assertEqualEnough(
-            listOf(oldDecision.let(::toSummary)),
-            deserializeListResult(result.get()).data
-        )
+        assertEqualEnough(listOf(toSummary(oldDecision)), result.data)
     }
 
     @Test
     fun `search works with distinctions param NO_STARTING_PLACEMENTS`() {
         val testDecisionWithOneStartingChild = testDecisions[0]
-        val firstPlacementStartingThisMonthChild = testDecisionWithOneStartingChild.children.get(0)
+        val firstPlacementStartingThisMonthChild = testDecisionWithOneStartingChild.children[0]
         db.transaction {
             it.insertPlacement(
                 PlacementType.DAYCARE,
@@ -440,7 +421,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         }
 
         val testDecisionWithNoStartingChild = testDecisions[3]
-        val previousPlacementChild = testDecisionWithNoStartingChild.children.get(0)
+        val previousPlacementChild = testDecisionWithNoStartingChild.children[0]
         db.transaction {
             it.insertPlacement(
                 PlacementType.DAYCARE,
@@ -457,179 +438,159 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50", "distinctions": ["NO_STARTING_PLACEMENTS"]}"""
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    distinctions = listOf(DistinctiveParams.NO_STARTING_PLACEMENTS)
                 )
-                .asUser(user)
-                .responseString()
+            )
 
-        assertEqualEnough(
-            listOf(testDecisionWithNoStartingChild.let(::toSummary)),
-            deserializeListResult(result.get()).data
-        )
+        assertEqualEnough(listOf(toSummary(testDecisionWithNoStartingChild)), result.data)
     }
 
     @Test
     fun `search works as expected with existing area param`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody("""{"page": "0", "pageSize": "50", "area": ["test_area"]}""")
-                .asUser(user)
-                .responseString()
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(page = 0, pageSize = 50, area = listOf("test_area"))
+            )
 
-        assertEqualEnough(
-            testDecisions.map(::toSummary).take(3),
-            deserializeListResult(result.get()).data
-        )
+        assertEqualEnough(testDecisions.map(::toSummary).take(3), result.data)
     }
 
     @Test
     fun `search works as expected with area and status params`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50", "area": ["test_area"], "status": ["DRAFT"]}"""
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    area = listOf("test_area"),
+                    status = listOf(FeeDecisionStatus.DRAFT)
                 )
-                .asUser(user)
-                .responseString()
+            )
 
-        assertEqualEnough(
-            testDecisions.take(1).map(::toSummary),
-            deserializeListResult(result.get()).data
-        )
+        assertEqualEnough(testDecisions.take(1).map(::toSummary), result.data)
     }
 
     @Test
     fun `search works as expected with non-existent area param`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody("""{"page": "0", "pageSize": "50", "area": ["non_existent"]}""")
-                .asUser(user)
-                .responseString()
-        assertEqualEnough(listOf(), deserializeListResult(result.get()).data)
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(page = 0, pageSize = 50, area = listOf("non_existent"))
+            )
+        assertEqualEnough(listOf(), result.data)
     }
 
     @Test
     fun `search works as expected with a unit param`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody("""{"page": "0", "pageSize": "50", "unit": "${testDaycare.id}"}""")
-                .asUser(user)
-                .responseString()
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(page = 0, pageSize = 50, unit = testDaycare.id)
+            )
 
         val expected =
             testDecisions.filter { decision ->
                 decision.children.any { it.placement.unitId == testDaycare.id }
             }
-        assertEqualEnough(expected.map(::toSummary), deserializeListResult(result.get()).data)
+        assertEqualEnough(expected.map(::toSummary), result.data)
     }
 
     @Test
     fun `search works as expected with a non-existent unit id param`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody("""{"page": "0", "pageSize": "50", "unit": "${UUID.randomUUID()}"}""")
-                .asUser(user)
-                .responseString()
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    unit = DaycareId(UUID.randomUUID())
+                )
+            )
 
-        assertEqualEnough(listOf(), deserializeListResult(result.get()).data)
+        assertEqualEnough(listOf(), result.data)
     }
 
     @Test
     fun `search works as expected with multiple partial search terms`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50",
-                          "searchTerms": "${testAdult_1.streetAddress} ${testAdult_1.firstName.substring(0, 2)}"}"""
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    searchTerms =
+                        "${testAdult_1.streetAddress} ${testAdult_1.firstName.substring(0, 2)}"
                 )
-                .asUser(user)
-                .responseString()
+            )
 
         val expectedDecisions = testDecisions.filter { it.headOfFamilyId != testAdult_3.id }
 
-        assertEqualEnough(
-            expectedDecisions.map(::toSummary),
-            deserializeListResult(result.get()).data
-        )
+        assertEqualEnough(expectedDecisions.map(::toSummary), result.data)
     }
 
     @Test
     fun `search works as expected with multiple more specific search terms`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50",
-                          "searchTerms": "${testAdult_1.lastName.substring(0, 2)} ${testAdult_1.firstName}"}"""
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    searchTerms = "${testAdult_1.lastName.substring(0, 2)} ${testAdult_1.firstName}"
                 )
-                .asUser(user)
-                .responseString()
+            )
 
-        assertEqualEnough(
-            testDecisions.take(2).map(::toSummary),
-            deserializeListResult(result.get()).data
-        )
+        assertEqualEnough(testDecisions.take(2).map(::toSummary), result.data)
     }
 
     @Test
     fun `search works as expected with multiple search terms where one does not match anything`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50",
-                          "searchTerms": "${testAdult_1.lastName} ${testAdult_1.streetAddress} nomatch"}"""
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    searchTerms = "${testAdult_1.lastName} ${testAdult_1.streetAddress} nomatch"
                 )
-                .asUser(user)
-                .responseString()
+            )
 
-        assertEqualEnough(listOf(), deserializeListResult(result.get()).data)
+        assertEqualEnough(listOf(), result.data)
     }
 
     @Test
     fun `search works as expected with child name as search term`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50",
-                          "searchTerms": "${testChild_2.firstName}",
-                          "sortBy": "STATUS", "sortDirection": "ASC"}"""
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    searchTerms = testChild_2.firstName,
+                    sortBy = FeeDecisionSortParam.STATUS,
+                    sortDirection = SortDirection.ASC
                 )
-                .asUser(user)
-                .responseString()
+            )
 
         assertEqualEnough(
             testDecisions.take(2).map(::toSummary).sortedBy { it.status.name },
-            deserializeListResult(result.get()).data
+            result.data
         )
     }
 
@@ -642,57 +603,40 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val otherDecision = testDecisions.find { it.status == FeeDecisionStatus.DRAFT }!!
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(sentDecision, otherDecision)) }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody("""{"page": "0", "pageSize": "50", "searchTerms": "123123123"}""")
-                .asUser(user)
-                .responseString()
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(page = 0, pageSize = 50, searchTerms = "123123123")
+            )
 
-        assertEqualEnough(
-            listOf(sentDecision).map(::toSummary),
-            deserializeListResult(result.get()).data
-        )
+        assertEqualEnough(listOf(sentDecision).map(::toSummary), result.data)
     }
 
     @Test
     fun `search works as expected with ssn as search term`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50",
-                          "searchTerms": "${testAdult_1.ssn}"}"""
-                )
-                .asUser(user)
-                .responseString()
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(page = 0, pageSize = 50, searchTerms = testAdult_1.ssn)
+            )
 
-        assertEqualEnough(
-            testDecisions.take(2).map(::toSummary),
-            deserializeListResult(result.get()).data
-        )
+        assertEqualEnough(testDecisions.take(2).map(::toSummary), result.data)
     }
 
     @Test
     fun `search works as expected with date of birth as search term`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50",
-                          "searchTerms": "${testAdult_1.ssn!!.substring(0, 6)}"}"""
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    searchTerms = testAdult_1.ssn!!.substring(0, 6)
                 )
-                .asUser(user)
-                .responseString()
+            )
 
-        assertEqualEnough(
-            testDecisions.take(2).map(::toSummary),
-            deserializeListResult(result.get()).data
-        )
+        assertEqualEnough(testDecisions.take(2).map(::toSummary), result.data)
     }
 
     @Test
@@ -700,31 +644,25 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val decision = testDecisions[0]
 
-        val (_, _, result) = http.get("/decisions/${decision.id}").asUser(user).responseString()
-
-        assertEqualEnough(decision.let(::toDetailed), deserializeResult(result.get()).data)
+        val result = getDecision(decision.id)
+        assertEqualEnough(toDetailed(decision), result)
     }
 
     @Test
     fun `getDecision returns not found with non-existent decision`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, response) =
-            http
-                .get("/decisions/00000000-0000-0000-0000-000000000000")
-                .asUser(user)
-                .responseString()
-        assertEquals(404, response.statusCode)
+        assertThrows<NotFound> {
+            getDecision(FeeDecisionId(UUID.fromString("00000000-0000-0000-0000-000000000000")))
+        }
     }
 
     @Test
     fun `getting head of family's fee decisions works`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, _, result) =
-            http.get("/decisions/head-of-family/${testAdult_1.id}").asUser(user).responseString()
+        val feeDecisions = getHeadOfFamilyDecisions(testAdult_1.id)
 
-        val feeDecisions = jsonMapper.readValue<Wrapper<List<FeeDecision>>>(result.get()).data
         assertEquals(2, feeDecisions.size)
         feeDecisions
             .find { it.status == FeeDecisionStatus.DRAFT }
@@ -747,13 +685,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val draft = testDecisions.find { it.status === FeeDecisionStatus.DRAFT }!!
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
-                .responseString()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(listOf(draft.id))
     }
 
     @Test
@@ -761,13 +693,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val draft = testDecisions.find { it.status === FeeDecisionStatus.DRAFT }!!
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
-                .responseString()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(listOf(draft.id))
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
@@ -780,9 +706,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 documentKey = "feedecision_${draft.id}_fi.pdf"
             )
 
-        val (_, _, result) = http.get("/decisions/${draft.id}").asUser(user).responseString()
-
-        assertEqualEnough(activated.let(::toDetailed), deserializeResult(result.get()).data)
+        val result = getDecision(draft.id)
+        assertEqualEnough(toDetailed(activated), result)
     }
 
     @Test
@@ -790,13 +715,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val draft = testDecisions.find { it.decisionType === FeeDecisionType.RELIEF_ACCEPTED }!!
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
-                .response()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(listOf(draft.id))
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
@@ -809,9 +728,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 documentKey = "feedecision_${draft.id}_fi.pdf"
             )
 
-        val (_, _, result) = http.get("/decisions/${draft.id}").asUser(user).responseString()
-
-        assertEqualEnough(activated.let(::toDetailed), deserializeResult(result.get()).data)
+        val result = getDecision(draft.id)
+        assertEqualEnough(toDetailed(activated), result)
     }
 
     @Test
@@ -820,13 +738,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val draft =
             testDecisions.find { it.decisionType === FeeDecisionType.RELIEF_PARTLY_ACCEPTED }!!
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
-                .response()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(listOf(draft.id))
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
@@ -839,9 +751,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 documentKey = "feedecision_${draft.id}_fi.pdf"
             )
 
-        val (_, _, result) = http.get("/decisions/${draft.id}").asUser(user).responseString()
-
-        assertEqualEnough(activated.let(::toDetailed), deserializeResult(result.get()).data)
+        val result = getDecision(draft.id)
+        assertEqualEnough(toDetailed(activated), result)
     }
 
     @Test
@@ -849,13 +760,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val draft = testDecisions.find { it.decisionType === FeeDecisionType.RELIEF_REJECTED }!!
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
-                .response()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(listOf(draft.id))
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
@@ -868,9 +773,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 documentKey = "feedecision_${draft.id}_fi.pdf"
             )
 
-        val (_, _, result) = http.get("/decisions/${draft.id}").asUser(user).responseString()
-
-        assertEqualEnough(activated.let(::toDetailed), deserializeResult(result.get()).data)
+        val result = getDecision(draft.id)
+        assertEqualEnough(toDetailed(activated), result)
     }
 
     @Test
@@ -891,13 +795,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         }
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
-                .responseString()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(listOf(draft.id))
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
@@ -910,9 +808,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 documentKey = "feedecision_${draft.id}_fi.pdf"
             )
 
-        val (_, _, result) = http.get("/decisions/${draft.id}").asUser(user).responseString()
-
-        assertEqualEnough(activated.let(::toDetailed), deserializeResult(result.get()).data)
+        val result = getDecision(draft.id)
+        assertEqualEnough(toDetailed(activated), result)
     }
 
     @Test
@@ -927,13 +824,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         }
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
-                .responseString()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(listOf(draft.id))
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
@@ -946,9 +837,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 documentKey = "feedecision_${draft.id}_fi.pdf"
             )
 
-        val (_, _, result) = http.get("/decisions/${draft.id}").asUser(user).responseString()
-
-        assertEqualEnough(activated.let(::toDetailed), deserializeResult(result.get()).data)
+        val result = getDecision(draft.id)
+        assertEqualEnough(toDetailed(activated), result)
     }
 
     @Test
@@ -969,13 +859,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         }
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(oldDecision.id)))
-                .responseString()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(listOf(oldDecision.id))
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
@@ -988,9 +872,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 documentKey = "feedecision_${oldDecision.id}_fi.pdf"
             )
 
-        val (_, _, result) = http.get("/decisions/${oldDecision.id}").asUser(user).responseString()
-
-        assertEqualEnough(activated.let(::toDetailed), deserializeResult(result.get()).data)
+        val result = getDecision(oldDecision.id)
+        assertEqualEnough(toDetailed(activated), result)
     }
 
     @Test
@@ -1002,18 +885,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, res) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
-                .responseString()
-
-        assertEquals(200, res.statusCode)
+        confirmDrafts(listOf(draft.id))
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
-        val (_, _, result) = http.get("/decisions/${draft.id}").asUser(user).responseString()
+        val result = getDecision(draft.id)
 
         val activated =
             draft.copy(
@@ -1024,20 +900,14 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 documentKey = "feedecision_${draft.id}_fi.pdf"
             )
 
-        assertEqualEnough(activated.let(::toDetailed), deserializeResult(result.get()).data)
+        assertEqualEnough(toDetailed(activated), result)
     }
 
     @Test
     fun `confirmDrafts returns bad request when some decisions are not drafts`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(testDecisions.map { it.id }))
-                .response()
-        assertEquals(400, response.statusCode)
+        assertThrows<BadRequest> { confirmDrafts(testDecisions.map { it.id }) }
     }
 
     @Test
@@ -1051,17 +921,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draftWithFutureDates)) }
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(draftWithFutureDates.id)))
-                .response()
-        assertEquals(400, response.statusCode)
-        assertEquals(
-            "feeDecisions.confirmation.tooFarInFuture",
-            jsonMapper.readTree(response.body().asString("text/json")).get("errorCode").textValue()
-        )
+        val error = assertThrows<BadRequest> { confirmDrafts(listOf(draftWithFutureDates.id)) }
+        assertEquals("feeDecisions.confirmation.tooFarInFuture", error.errorCode)
     }
 
     @Test
@@ -1076,19 +937,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draftWithFutureDates)) }
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(draftWithFutureDates.id)))
-                .withMockedTime(now)
-                .response()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(listOf(draftWithFutureDates.id), MockEvakaClock(now))
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
-        val (_, _, result) =
-            http.get("/decisions/${draftWithFutureDates.id}").asUser(user).responseString()
+        val actual = getDecision(draftWithFutureDates.id)
 
         val expected =
             draftWithFutureDates.copy(
@@ -1098,8 +951,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 decisionHandlerId = testDecisionMaker_1.id,
                 documentKey = "feedecision_${draftWithFutureDates.id}_fi.pdf"
             )
-        val actual = deserializeResult(result.get()).data
-        assertEqualEnough(expected.let(::toDetailed), actual)
+        assertEqualEnough(toDetailed(expected), actual)
         assertEquals(now, actual.approvedAt)
     }
 
@@ -1114,21 +966,15 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict)) }
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
-                .response()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(listOf(draft.id))
 
-        val (_, _, result) = http.get("/decisions/${conflict.id}").asUser(user).responseString()
+        val result = getDecision(conflict.id)
 
         val updatedConflict =
             conflict.copy(
                 validDuring = conflict.validDuring.copy(end = draft.validFrom.minusDays(1))
             )
-        assertEqualEnough(updatedConflict.let(::toDetailed), deserializeResult(result.get()).data)
+        assertEqualEnough(toDetailed(updatedConflict), result)
     }
 
     @Test
@@ -1138,18 +984,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             draft.copy(id = FeeDecisionId(UUID.randomUUID()), status = FeeDecisionStatus.SENT)
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict)) }
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
-                .response()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(listOf(draft.id))
 
-        val (_, _, result) = http.get("/decisions/${conflict.id}").asUser(user).responseString()
+        val result = getDecision(conflict.id)
 
         val updatedConflict = conflict.copy(status = FeeDecisionStatus.ANNULLED)
-        assertEqualEnough(updatedConflict.let(::toDetailed), deserializeResult(result.get()).data)
+        assertEqualEnough(toDetailed(updatedConflict), result)
     }
 
     @Test
@@ -1169,29 +1009,17 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict1, conflict2)) }
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
-                .response()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(listOf(draft.id))
 
-        val (_, _, result_1) = http.get("/decisions/${conflict1.id}").asUser(user).responseString()
+        val result1 = getDecision(conflict1.id)
 
         val updatedConflict1 = conflict1.copy(status = FeeDecisionStatus.ANNULLED)
-        assertEqualEnough(
-            updatedConflict1.let(::toDetailed),
-            deserializeResult(result_1.get()).data
-        )
+        assertEqualEnough(toDetailed(updatedConflict1), result1)
 
-        val (_, _, result_2) = http.get("/decisions/${conflict2.id}").asUser(user).responseString()
+        val result2 = getDecision(conflict2.id)
 
         val updatedConflict2 = conflict2.copy(status = FeeDecisionStatus.ANNULLED)
-        assertEqualEnough(
-            updatedConflict2.let(::toDetailed),
-            deserializeResult(result_2.get()).data
-        )
+        assertEqualEnough(toDetailed(updatedConflict2), result2)
     }
 
     @Test
@@ -1205,18 +1033,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(draft, conflict)) }
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id)))
-                .response()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(listOf(draft.id))
 
-        val (_, _, result) = http.get("/decisions/${conflict.id}").asUser(user).responseString()
+        val result = getDecision(conflict.id)
 
         val updatedConflict = conflict.copy(status = FeeDecisionStatus.ANNULLED)
-        assertEqualEnough(updatedConflict.let(::toDetailed), deserializeResult(result.get()).data)
+        assertEqualEnough(toDetailed(updatedConflict), result)
     }
 
     @Test
@@ -1242,18 +1064,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         db.transaction { tx -> tx.upsertFeeDecisions(splitDrafts + conflict) }
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(splitDrafts.map { it.id }))
-                .response()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(splitDrafts.map { it.id })
 
-        val (_, _, result) = http.get("/decisions/${conflict.id}").asUser(user).responseString()
+        val result = getDecision(conflict.id)
 
         val updatedConflict = conflict.copy(status = FeeDecisionStatus.ANNULLED)
-        assertEqualEnough(updatedConflict.let(::toDetailed), deserializeResult(result.get()).data)
+        assertEqualEnough(toDetailed(updatedConflict), result)
     }
 
     @Test
@@ -1285,18 +1101,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         db.transaction { tx -> tx.upsertFeeDecisions(splitDrafts + conflict) }
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(splitDrafts.map { it.id }))
-                .response()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(splitDrafts.map { it.id })
 
-        val (_, _, result) = http.get("/decisions/${conflict.id}").asUser(user).responseString()
+        val result = getDecision(conflict.id)
 
         val updatedConflict = conflict.copy(status = FeeDecisionStatus.ANNULLED)
-        assertEqualEnough(updatedConflict.let(::toDetailed), deserializeResult(result.get()).data)
+        assertEqualEnough(toDetailed(updatedConflict), result)
     }
 
     @Test
@@ -1314,22 +1124,17 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(requiresManualSending)) }
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(toBeCreatedDecisions.map { it.id }))
-                .response()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(toBeCreatedDecisions.map { it.id })
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody("""{"page": "0", "pageSize": "50", "status": ["DRAFT"]}""")
-                .asUser(user)
-                .responseString()
-
-        val draftDecisions = deserializeListResult(result.get()).data
+        val draftDecisions =
+            searchDecisions(
+                    SearchFeeDecisionRequest(
+                        page = 0,
+                        pageSize = 50,
+                        status = listOf(FeeDecisionStatus.DRAFT)
+                    )
+                )
+                .data
 
         assertEquals(1, draftDecisions.size)
         assertEquals(notToBeCreated.id, draftDecisions.first().id)
@@ -1350,22 +1155,17 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(requiresSending)) }
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(toBeCreatedDecisions.map { it.id }))
-                .response()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(toBeCreatedDecisions.map { it.id })
 
-        val (_, _, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody("""{"page": "0", "pageSize": "50", "status": ["DRAFT"]}""")
-                .asUser(user)
-                .responseString()
-
-        val draftDecisions = deserializeListResult(result.get()).data
+        val draftDecisions =
+            searchDecisions(
+                    SearchFeeDecisionRequest(
+                        page = 0,
+                        pageSize = 50,
+                        status = listOf(FeeDecisionStatus.DRAFT)
+                    )
+                )
+                .data
 
         assertEquals(1, draftDecisions.size)
         assertEquals(notToBeCreated.id, draftDecisions.first().id)
@@ -1397,36 +1197,23 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             tx.upsertFeeDecisions(listOf(draft, conflict, secondDraft, secondConflict))
         }
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(draft.id, secondDraft.id)))
-                .response()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(listOf(draft.id, secondDraft.id))
 
-        http.get("/decisions/${conflict.id}").asUser(user).responseString().let { (_, _, result) ->
+        getDecision(conflict.id).let { result ->
             val updatedConflict =
                 conflict.copy(
                     validDuring = conflict.validDuring.copy(end = draft.validFrom.minusDays(1))
                 )
-            assertEqualEnough(
-                updatedConflict.let(::toDetailed),
-                deserializeResult(result.get()).data
-            )
+            assertEqualEnough(toDetailed(updatedConflict), result)
         }
 
-        http.get("/decisions/${secondConflict.id}").asUser(user).responseString().let {
-            (_, _, result) ->
+        getDecision(secondConflict.id).let { result ->
             val updatedConflict =
                 secondConflict.copy(
                     validDuring =
                         secondConflict.validDuring.copy(end = secondDraft.validFrom.minusDays(1))
                 )
-            assertEqualEnough(
-                updatedConflict.let(::toDetailed),
-                deserializeResult(result.get()).data
-            )
+            assertEqualEnough(toDetailed(updatedConflict), result)
         }
     }
 
@@ -1516,39 +1303,34 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(newDraft)) }
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(newDraft.id)))
-                .response()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(listOf(newDraft.id))
         asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
-        http
-            .post("/decisions/search")
-            .jsonBody("""{"page": "0", "pageSize": "50", "status": ["SENT"]}""")
-            .asUser(user)
-            .responseString()
-            .let { (_, _, result) ->
-                val newSentDecisions = deserializeListResult(result.get()).data
-                assertEquals(1, newSentDecisions.size)
-                assertEquals(newDraft.id, newSentDecisions.first().id)
-            }
-
-        http
-            .post("/decisions/search")
-            .jsonBody("""{"page": "0", "pageSize": "50", "status": ["ANNULLED"]}""")
-            .asUser(user)
-            .responseString()
-            .let { (_, _, result) ->
-                val annulledDecisions = deserializeListResult(result.get()).data
-                assertEquals(2, annulledDecisions.size)
-                assertEquals(
-                    sentDecisions.map { it.id }.toSet(),
-                    annulledDecisions.map { it.id }.toSet()
+        val newSentDecisions =
+            searchDecisions(
+                    SearchFeeDecisionRequest(
+                        page = 0,
+                        pageSize = 50,
+                        status = listOf(FeeDecisionStatus.SENT)
+                    )
                 )
-            }
+                .data
+
+        assertEquals(1, newSentDecisions.size)
+        assertEquals(newDraft.id, newSentDecisions.first().id)
+
+        val annulledDecisions =
+            searchDecisions(
+                    SearchFeeDecisionRequest(
+                        page = 0,
+                        pageSize = 50,
+                        status = listOf(FeeDecisionStatus.ANNULLED)
+                    )
+                )
+                .data
+
+        assertEquals(2, annulledDecisions.size)
+        assertEquals(sentDecisions.map { it.id }.toSet(), annulledDecisions.map { it.id }.toSet())
     }
 
     @Test
@@ -1637,37 +1419,33 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
             )
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(newDraft)) }
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(newDraft.id)))
-                .response()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(listOf(newDraft.id))
         asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
-        http
-            .post("/decisions/search")
-            .jsonBody("""{"page": "0", "pageSize": "50", "status": ["SENT"]}""")
-            .asUser(user)
-            .responseString()
-            .let { (_, _, result) ->
-                val decisions = deserializeListResult(result.get()).data
-                assertEquals(3, decisions.size)
-                decisions
-                    .find { it.id == sentDecisions.first().id }
-                    .let {
-                        assertNotNull(it)
-                        assertEquals(newDraft.validFrom.minusDays(1), it.validDuring.end)
-                    }
-                decisions
-                    .find { it.id == sentDecisions.last().id }
-                    .let {
-                        assertNotNull(it)
-                        assertEquals(newDraft.validFrom.minusDays(1), it.validDuring.end)
-                    }
-                assertNotNull(decisions.find { it.id == newDraft.id })
+        val decisions =
+            searchDecisions(
+                    SearchFeeDecisionRequest(
+                        page = 0,
+                        pageSize = 50,
+                        status = listOf(FeeDecisionStatus.SENT)
+                    )
+                )
+                .data
+
+        assertEquals(3, decisions.size)
+        decisions
+            .find { it.id == sentDecisions.first().id }
+            .let {
+                assertNotNull(it)
+                assertEquals(newDraft.validFrom.minusDays(1), it.validDuring.end)
             }
+        decisions
+            .find { it.id == sentDecisions.last().id }
+            .let {
+                assertNotNull(it)
+                assertEquals(newDraft.validFrom.minusDays(1), it.validDuring.end)
+            }
+        assertNotNull(decisions.find { it.id == newDraft.id })
     }
 
     @Test
@@ -1680,17 +1458,17 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val (_, response, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50", "startDate": "1900-01-01", "endDate": "1901-01-01"}"""
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    startDate = LocalDate.of(1900, 1, 1),
+                    endDate = LocalDate.of(1901, 1, 1)
                 )
-                .asUser(user)
-                .responseString()
-        assertEquals(200, response.statusCode)
+            )
 
-        assertEqualEnough(listOf(), deserializeListResult(result.get()).data)
+        assertEqualEnough(listOf(), result.data)
     }
 
     @Test
@@ -1703,22 +1481,16 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val (_, response, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50",
-                          "startDate": "${now.minusMonths(3)}",
-                          "endDate": "${now.minusDays(1)}"}"""
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    startDate = now.minusMonths(3),
+                    endDate = now.minusDays(1)
                 )
-                .asUser(user)
-                .responseString()
-        assertEquals(200, response.statusCode)
-
-        assertEqualEnough(
-            listOf(oldDecision.let(::toSummary)),
-            deserializeListResult(result.get()).data
-        )
+            )
+        assertEqualEnough(listOf(toSummary(oldDecision)), result.data)
     }
 
     @Test
@@ -1731,22 +1503,17 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val (_, response, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50",
-                          "startDate": "${now.plusDays(1)}",
-                          "endDate": "${now.plusMonths(8)}"}"""
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    startDate = now.plusDays(1),
+                    endDate = now.plusMonths(8)
                 )
-                .asUser(user)
-                .responseString()
-        assertEquals(200, response.statusCode)
+            )
 
-        assertEqualEnough(
-            listOf(futureDecision.let(::toSummary)),
-            deserializeListResult(result.get()).data
-        )
+        assertEqualEnough(listOf(toSummary(futureDecision)), result.data)
     }
 
     @Test
@@ -1759,38 +1526,29 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val (_, _, resultPast) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50",
-                          "startDate": "${now.minusMonths(6)}",
-                          "endDate": "${now.minusMonths(1)}"}"""
+        val resultPast =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    startDate = now.minusMonths(6),
+                    endDate = now.minusMonths(1)
                 )
-                .asUser(user)
-                .responseString()
+            )
 
-        val (_, _, resultFuture) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0",
-                          "pageSize": "50",
-                          "startDate": "${now.plusMonths(2)}",
-                          "endDate": "${now.plusMonths(8)}" }"""
+        val resultFuture =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    startDate = now.plusMonths(2),
+                    endDate = now.plusMonths(8)
                 )
-                .asUser(user)
-                .responseString()
+            )
 
-        assertEqualEnough(
-            listOf(oldDecision.let(::toSummary)),
-            deserializeListResult(resultPast.get()).data
-        )
+        assertEqualEnough(listOf(toSummary(oldDecision)), resultPast.data)
 
-        assertEqualEnough(
-            listOf(futureDecision.let(::toSummary)),
-            deserializeListResult(resultFuture.get()).data
-        )
+        assertEqualEnough(listOf(toSummary(futureDecision)), resultFuture.data)
     }
 
     @Test
@@ -1803,21 +1561,12 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val (_, response, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50",
-                          "endDate": "${now.plusYears(8)}"}"""
-                )
-                .asUser(user)
-                .responseString()
-        assertEquals(200, response.statusCode)
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(page = 0, pageSize = 50, endDate = now.plusYears(8))
+            )
 
-        assertEqualEnough(
-            listOf(oldDecision.let(::toSummary), futureDecision.let(::toSummary)),
-            deserializeListResult(result.get()).data
-        )
+        assertEqualEnough(listOf(toSummary(oldDecision), toSummary(futureDecision)), result.data)
     }
 
     @Test
@@ -1830,149 +1579,137 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(oldDecision, futureDecision)) }
 
-        val (_, response, result) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50",
-                          "startDate": "${now.minusYears(8)}"}"""
-                )
-                .asUser(user)
-                .responseString()
-        assertEquals(200, response.statusCode)
+        val result =
+            searchDecisions(
+                SearchFeeDecisionRequest(page = 0, pageSize = 50, startDate = now.minusYears(8))
+            )
 
-        assertEqualEnough(
-            listOf(oldDecision.let(::toSummary), futureDecision.let(::toSummary)),
-            deserializeListResult(result.get()).data
-        )
+        assertEqualEnough(listOf(toSummary(oldDecision), toSummary(futureDecision)), result.data)
     }
 
     @Test
     fun `set type updates decision type`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
         val draft = testDecisions.find { it.decisionType == FeeDecisionType.NORMAL }!!
-        val requestBody = FeeDecisionTypeRequest(type = FeeDecisionType.RELIEF_ACCEPTED)
 
-        val (_, response) =
-            http
-                .post("/decisions/set-type/${draft.id}")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(requestBody))
-                .response()
-        assertEquals(200, response.statusCode)
+        setDecisionType(draft.id, FeeDecisionTypeRequest(type = FeeDecisionType.RELIEF_ACCEPTED))
 
         val modified = draft.copy(decisionType = FeeDecisionType.RELIEF_ACCEPTED)
 
-        val (_, _, result) = http.get("/decisions/${draft.id}").asUser(user).responseString()
-
-        assertEqualEnough(modified.let(::toDetailed), deserializeResult(result.get()).data)
+        val result = getDecision(draft.id)
+        assertEqualEnough(toDetailed(modified), result)
     }
 
     @Test
     fun `sorting works with different params`() {
         db.transaction { tx -> tx.upsertFeeDecisions(testDecisions) }
 
-        val (_, response, statusAsc) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50", "sortBy": "STATUS", "sortDirection": "ASC"}"""
+        val statusAsc =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    sortBy = FeeDecisionSortParam.STATUS,
+                    sortDirection = SortDirection.ASC
                 )
-                .asUser(user)
-                .responseString()
-        assertEquals(200, response.statusCode)
+            )
 
         assertEqualEnough(
             testDecisions
                 .map(::toSummary)
                 .sortedBy { it.id.toString() }
                 .sortedBy { it.status.name },
-            deserializeListResult(statusAsc.get()).data
+            statusAsc.data
         )
 
-        val (_, _, statusDesc) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50", "sortBy": "STATUS", "sortDirection": "DESC"}"""
+        val statusDesc =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    sortBy = FeeDecisionSortParam.STATUS,
+                    sortDirection = SortDirection.DESC
                 )
-                .asUser(user)
-                .responseString()
+            )
 
         assertEqualEnough(
             testDecisions
                 .map(::toSummary)
                 .sortedBy { it.id.toString() }
                 .sortedByDescending { it.status.name },
-            deserializeListResult(statusDesc.get()).data
+            statusDesc.data
         )
 
-        val (_, _, headAsc) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50", "sortBy": "HEAD_OF_FAMILY", "sortDirection": "ASC"}"""
+        val headAsc =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    sortBy = FeeDecisionSortParam.HEAD_OF_FAMILY,
+                    sortDirection = SortDirection.ASC
                 )
-                .asUser(user)
-                .responseString()
+            )
 
         assertEqualEnough(
             testDecisions
                 .map(::toSummary)
                 .sortedBy { it.id.toString() }
                 .sortedBy { it.headOfFamily.lastName },
-            deserializeListResult(headAsc.get()).data
+            headAsc.data
         )
 
-        val (_, _, headDesc) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50", "sortBy": "HEAD_OF_FAMILY", "sortDirection": "DESC"}"""
+        val headDesc =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    sortBy = FeeDecisionSortParam.HEAD_OF_FAMILY,
+                    sortDirection = SortDirection.DESC
                 )
-                .asUser(user)
-                .responseString()
+            )
 
         assertEqualEnough(
             testDecisions
                 .map(::toSummary)
                 .sortedBy { it.id.toString() }
                 .sortedByDescending { it.headOfFamily.lastName },
-            deserializeListResult(headDesc.get()).data
+            headDesc.data
         )
 
-        val (_, _, validityAsc) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50", "sortBy": "VALIDITY", "sortDirection": "ASC"}"""
+        val validityAsc =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    sortBy = FeeDecisionSortParam.VALIDITY,
+                    sortDirection = SortDirection.ASC
                 )
-                .asUser(user)
-                .responseString()
+            )
 
         assertEqualEnough(
             testDecisions
                 .map(::toSummary)
                 .sortedBy { it.id.toString() }
                 .sortedBy { it.validDuring.start },
-            deserializeListResult(validityAsc.get()).data
+            validityAsc.data
         )
 
-        val (_, _, validityDesc) =
-            http
-                .post("/decisions/search")
-                .jsonBody(
-                    """{"page": "0", "pageSize": "50", "sortBy": "VALIDITY", "sortDirection": "DESC"}"""
+        val validityDesc =
+            searchDecisions(
+                SearchFeeDecisionRequest(
+                    page = 0,
+                    pageSize = 50,
+                    sortBy = FeeDecisionSortParam.VALIDITY,
+                    sortDirection = SortDirection.DESC
                 )
-                .asUser(user)
-                .responseString()
+            )
 
         assertEqualEnough(
             testDecisions
                 .map(::toSummary)
                 .sortedBy { it.id.toString() }
                 .sortedByDescending { it.validDuring.start },
-            deserializeListResult(validityDesc.get()).data
+            validityDesc.data
         )
     }
 
@@ -1982,11 +1719,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
 
-        val (_, _, result0) = http.get("/decisions/${decision.id}").asUser(user).responseString()
-
-        deserializeResult(result0.get()).data.let { beforeForcing ->
-            assertEquals(false, beforeForcing.requiresManualSending)
-        }
+        val beforeForcing = getDecision(decision.id)
+        assertEquals(false, beforeForcing.requiresManualSending)
 
         db.transaction { tx ->
             tx.createUpdate("update person set force_manual_fee_decisions = true where id = :id")
@@ -1994,22 +1728,13 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 .execute()
         }
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(decision.id)))
-                .responseString()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(listOf(decision.id))
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 2)
 
-        val (_, _, result1) = http.get("/decisions/${decision.id}").asUser(user).responseString()
-
-        deserializeResult(result1.get()).data.let { confirmed ->
-            assertEquals(true, confirmed.requiresManualSending)
-            assertEquals(FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING, confirmed.status)
-        }
+        val confirmed = getDecision(decision.id)
+        assertEquals(true, confirmed.requiresManualSending)
+        assertEquals(FeeDecisionStatus.WAITING_FOR_MANUAL_SENDING, confirmed.status)
     }
 
     @Test
@@ -2026,11 +1751,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
 
-        val (_, _, result0) = http.get("/decisions/${decision.id}").asUser(user).responseString()
-
-        deserializeResult(result0.get()).data.let { decisionForFamily ->
-            assertEquals(true, decisionForFamily.partnerIsCodebtor)
-        }
+        val decisionForFamily = getDecision(decision.id)
+        assertEquals(true, decisionForFamily.partnerIsCodebtor)
     }
 
     @Test
@@ -2047,11 +1769,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
 
-        val (_, _, result0) = http.get("/decisions/${decision.id}").asUser(user).responseString()
-
-        deserializeResult(result0.get()).data.let { decisionForFamily ->
-            assertEquals(true, decisionForFamily.partnerIsCodebtor)
-        }
+        val decisionForFamily = getDecision(decision.id)
+        assertEquals(true, decisionForFamily.partnerIsCodebtor)
     }
 
     @Test
@@ -2069,11 +1788,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
 
-        val (_, _, result0) = http.get("/decisions/${decision.id}").asUser(user).responseString()
-
-        deserializeResult(result0.get()).data.let { decisionForFamily ->
-            assertEquals(true, decisionForFamily.partnerIsCodebtor)
-        }
+        val decisionForFamily = getDecision(decision.id)
+        assertEquals(true, decisionForFamily.partnerIsCodebtor)
     }
 
     @Test
@@ -2089,11 +1805,8 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
 
-        val (_, _, result0) = http.get("/decisions/${decision.id}").asUser(user).responseString()
-
-        deserializeResult(result0.get()).data.let { decisionForFamily ->
-            assertEquals(false, decisionForFamily.partnerIsCodebtor)
-        }
+        val decisionForFamily = getDecision(decision.id)
+        assertEquals(false, decisionForFamily.partnerIsCodebtor)
     }
 
     @Test
@@ -2111,7 +1824,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 listOf(testChild_1, testChild_2)
             )
 
-        assertEquals(200, getPdfStatus(decision.id, user))
+        getPdf(decision.id, user)
     }
 
     @Test
@@ -2130,7 +1843,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 listOf(testChild_1, testChild_2)
             )
 
-        assertEquals(403, getPdfStatus(decision.id, user))
+        assertThrows<Forbidden> { getPdf(decision.id, user) }
 
         // Check that message is still sent via sfi
         sfiAsyncJobRunner.runPendingJobsSync(MockEvakaClock(HelsinkiDateTime.now()))
@@ -2159,7 +1872,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 listOf(testChildRestricted, testChild_2)
             )
 
-        assertEquals(403, getPdfStatus(decision.id, user))
+        assertThrows<Forbidden> { getPdf(decision.id, user) }
 
         sfiAsyncJobRunner.runPendingJobsSync(MockEvakaClock(HelsinkiDateTime.now()))
         assertEquals(1, MockSfiMessagesClient.getMessages().size)
@@ -2181,12 +1894,11 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 listOf(testChild_1, testChild_2)
             )
 
-        assertEquals(200, getPdfStatus(decision.id, adminUser))
+        getPdf(decision.id, adminUser)
     }
 
-    private fun getPdfStatus(id: FeeDecisionId, user: AuthenticatedUser.Employee): Int {
-        val (_, response) = http.get("/decisions/pdf/$id").asUser(user).response()
-        return response.statusCode
+    private fun getPdf(id: FeeDecisionId, user: AuthenticatedUser.Employee) {
+        feeDecisionController.getDecisionPdf(dbInstance(), user, RealEvakaClock(), id)
     }
 
     private fun createAndConfirmFeeDecisionsForFamily(
@@ -2197,13 +1909,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         val decision = createFeeDecisionsForFamily(headOfFamily, partner, familyChildren)
         db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
 
-        val (_, response) =
-            http
-                .post("/decisions/confirm")
-                .asUser(user)
-                .jsonBody(jsonMapper.writeValueAsString(listOf(decision.id)))
-                .responseString()
-        assertEquals(200, response.statusCode)
+        confirmDrafts(listOf(decision.id))
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
         return decision
@@ -2233,5 +1939,30 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
                 },
             partnerId = partner?.id
         )
+    }
+
+    private fun searchDecisions(body: SearchFeeDecisionRequest): Paged<FeeDecisionSummary> {
+        return feeDecisionController.search(dbInstance(), user, RealEvakaClock(), body)
+    }
+
+    private fun getDecision(id: FeeDecisionId): FeeDecisionDetailed {
+        return feeDecisionController.getDecision(dbInstance(), user, RealEvakaClock(), id).data
+    }
+
+    private fun getHeadOfFamilyDecisions(id: PersonId): List<FeeDecision> {
+        return feeDecisionController
+            .getHeadOfFamilyFeeDecisions(dbInstance(), user, RealEvakaClock(), id)
+            .data
+    }
+
+    private fun confirmDrafts(
+        decisionIds: List<FeeDecisionId>,
+        now: EvakaClock = RealEvakaClock()
+    ) {
+        feeDecisionController.confirmDrafts(dbInstance(), user, now, decisionIds)
+    }
+
+    private fun setDecisionType(id: FeeDecisionId, body: FeeDecisionTypeRequest) {
+        feeDecisionController.setType(dbInstance(), user, RealEvakaClock(), id, body)
     }
 }

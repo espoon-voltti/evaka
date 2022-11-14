@@ -316,18 +316,18 @@ data class CreateRetroactiveFeeDecisionsBody(val from: LocalDate)
 data class SearchFeeDecisionRequest(
     val page: Int,
     val pageSize: Int,
-    val sortBy: FeeDecisionSortParam?,
-    val sortDirection: SortDirection?,
-    val status: List<FeeDecisionStatus>?,
-    val area: List<String>?,
-    val unit: DaycareId?,
-    val distinctions: List<DistinctiveParams>?,
-    val searchTerms: String?,
-    val startDate: LocalDate?,
-    val endDate: LocalDate?,
+    val sortBy: FeeDecisionSortParam? = null,
+    val sortDirection: SortDirection? = null,
+    val status: List<FeeDecisionStatus>? = null,
+    val area: List<String>? = null,
+    val unit: DaycareId? = null,
+    val distinctions: List<DistinctiveParams>? = null,
+    val searchTerms: String? = null,
+    val startDate: LocalDate? = null,
+    val endDate: LocalDate? = null,
     val searchByStartDate: Boolean = false,
-    val financeDecisionHandlerId: EmployeeId?,
-    val difference: Set<FeeDecisionDifference>?
+    val financeDecisionHandlerId: EmployeeId? = null,
+    val difference: Set<FeeDecisionDifference>? = null
 )
 
 data class FeeDecisionTypeRequest(val type: FeeDecisionType)
