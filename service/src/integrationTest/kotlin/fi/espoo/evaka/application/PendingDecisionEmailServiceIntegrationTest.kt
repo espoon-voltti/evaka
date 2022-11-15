@@ -66,7 +66,6 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
                 document = DaycareFormV0.fromApplication2(validDaycareApplication)
             )
         }
-        MockEmailClient.clear()
     }
 
     @Test

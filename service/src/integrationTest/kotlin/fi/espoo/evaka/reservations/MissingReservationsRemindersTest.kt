@@ -64,7 +64,6 @@ class MissingReservationsRemindersTest : FullApplicationTest(resetDbBeforeEach =
 
     @BeforeEach
     fun beforeEach() {
-        MockEmailClient.clear()
         db.transaction { tx ->
             guardian = tx.insertTestPerson(DevPerson(email = guardianEmail))
             tx.upsertCitizenUser(guardian)

@@ -114,8 +114,6 @@ class PedagogicalDocumentNotificationServiceIntegrationTest :
             tx.upsertEmployeeMessageAccount(employeeId)
             tx.insertDaycareAclRow(testDaycare.id, employeeId, UserRole.STAFF)
         }
-
-        MockEmailClient.clear()
     }
 
     @Test

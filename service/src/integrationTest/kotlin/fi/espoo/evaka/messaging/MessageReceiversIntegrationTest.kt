@@ -6,7 +6,6 @@ package fi.espoo.evaka.messaging
 
 import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
-import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.pis.createParentship
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -142,7 +141,6 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.insertDaycareAclRow(unit.id, supervisorId, UserRole.UNIT_SUPERVISOR)
             tx.insertDaycareAclRow(secondUnit.id, supervisor2Id, UserRole.UNIT_SUPERVISOR)
         }
-        MockEmailClient.clear()
     }
 
     @Test
