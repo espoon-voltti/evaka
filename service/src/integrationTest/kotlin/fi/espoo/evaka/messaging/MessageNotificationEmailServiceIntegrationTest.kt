@@ -100,7 +100,7 @@ class MessageNotificationEmailServiceIntegrationTest :
             tx.insertDaycareAclRow(testDaycare.id, employeeId, UserRole.STAFF)
         }
 
-        MockEmailClient.emails.clear()
+        MockEmailClient.clear()
     }
 
     @Test

@@ -77,7 +77,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
     @BeforeEach
     fun beforeEach() {
         db.transaction { tx -> tx.insertGeneralTestFixtures() }
-        MockEmailClient.emails.clear()
+        MockEmailClient.clear()
     }
 
     @Test

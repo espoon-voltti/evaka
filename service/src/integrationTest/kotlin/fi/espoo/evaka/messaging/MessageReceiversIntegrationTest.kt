@@ -142,7 +142,7 @@ class MessageReceiversIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             tx.insertDaycareAclRow(unit.id, supervisorId, UserRole.UNIT_SUPERVISOR)
             tx.insertDaycareAclRow(secondUnit.id, supervisor2Id, UserRole.UNIT_SUPERVISOR)
         }
-        MockEmailClient.emails.clear()
+        MockEmailClient.clear()
     }
 
     @Test
