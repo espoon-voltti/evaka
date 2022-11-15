@@ -10,6 +10,7 @@ import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Request
 import com.github.kittinunf.fuel.core.isSuccessful
 import fi.espoo.evaka.attachment.AttachmentType
+import fi.espoo.evaka.emailclient.MockEmailClient
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.asUser
@@ -76,6 +77,7 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
         if (resetDbBeforeEach) {
             db.transaction { it.resetDatabase() }
         }
+        MockEmailClient.clear()
     }
 
     @AfterAll
