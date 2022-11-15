@@ -124,7 +124,9 @@ export class StaffAttendancePage {
   #staffDeparturePage = {
     departureTime: new TextInput(this.page.findByDataQa('set-time')),
     markDepartedBtn: this.page.findByDataQa('mark-departed-btn'),
-    timeInputWarningText: this.page.findByDataQa('set-time-info')
+    timeInputWarningText: this.page.findByDataQa('set-time-info'),
+    departureTypeCheckbox: (type: StaffAttendanceType) =>
+      new Checkbox(this.page.findByDataQa(`attendance-type-${type}`))
   }
 
   #anyMemberPage = {
@@ -318,5 +320,15 @@ export class StaffAttendancePage {
 
   async selectGroup(groupId: string) {
     await this.#staffArrivalPage.groupSelect.selectOption(groupId)
+  }
+
+  async assertDepartureTypeVisible(
+    type: StaffAttendanceType,
+    visible: boolean
+  ) {
+    await waitUntilEqual(
+      () => this.#staffDeparturePage.departureTypeCheckbox(type).visible,
+      visible
+    )
   }
 }

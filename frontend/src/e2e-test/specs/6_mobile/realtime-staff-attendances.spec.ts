@@ -331,6 +331,18 @@ describe('Realtime staff attendance page', () => {
     // Departure is possible when the plan ends
     await staffAttendancePage.setDepartureTime('16:00')
     await staffAttendancePage.assertMarkDepartedButtonEnabled(true)
+    await staffAttendancePage.assertDepartureTypeVisible(
+      'JUSTIFIED_CHANGE',
+      false
+    )
+
+    // More than 5 min from the plan -> ask for reason
+    await staffAttendancePage.setDepartureTime('15:54')
+    await staffAttendancePage.assertMarkDepartedButtonEnabled(true)
+    await staffAttendancePage.assertDepartureTypeVisible(
+      'JUSTIFIED_CHANGE',
+      true
+    )
   })
 
   test('Staff departs in the middle of the planned day', async () => {
