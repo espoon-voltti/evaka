@@ -11,9 +11,9 @@
             <p>${msg("loginTotpStep1")}</p>
 
             <ul id="kc-totp-supported-apps">
-                <#list totp.policy.supportedApplications as app>
-                <li>${app}</li>
-                </#list>
+                <li>Authy</li>
+                <li>FreeOTP</li>
+                <li>Google Authenticator</li>
             </ul>
         </li>
 
