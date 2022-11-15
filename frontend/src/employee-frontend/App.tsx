@@ -96,6 +96,7 @@ import { I18nContextProvider, useTranslation } from './state/i18n'
 import { UIContext } from './state/ui'
 import { UserContext, UserContextProvider } from './state/user'
 import { hasRole } from './utils/roles'
+import PlacementCount from './components/reports/PlacementCount'
 
 export default function App() {
   const { i18n } = useTranslation()
@@ -501,6 +502,14 @@ export default function App() {
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <VardaErrors />
+                      </EmployeeRoute>
+                    }
+                  />
+                  <Route
+                    path="/reports/placement-count"
+                    element={
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <PlacementCount />
                       </EmployeeRoute>
                     }
                   />

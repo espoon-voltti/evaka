@@ -344,6 +344,42 @@ export interface PartnersInDifferentAddressReportRow {
 }
 
 /**
+* Generated from fi.espoo.evaka.reports.PlacementCountReportController.PlacementCountAreaResult
+*/
+export interface PlacementCountAreaResult {
+  areaId: UUID
+  areaName: string
+  calculatedPlacements: number
+  daycareResults: PlacementCountDaycareResult[]
+  placementCount: number
+  placementCount3vAndOver: number
+  placementCountUnder3v: number
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.PlacementCountReportController.PlacementCountDaycareResult
+*/
+export interface PlacementCountDaycareResult {
+  calculatedPlacements: number
+  daycareId: UUID
+  daycareName: string
+  placementCount: number
+  placementCount3vAndOver: number
+  placementCountUnder3v: number
+}
+
+/**
+* Generated from fi.espoo.evaka.reports.PlacementCountReportController.PlacementCountReportResult
+*/
+export interface PlacementCountReportResult {
+  areaResults: PlacementCountAreaResult[]
+  calculatedPlacements: number
+  placementCount: number
+  placementCount3vAndOver: number
+  placementCountUnder3v: number
+}
+
+/**
 * Generated from fi.espoo.evaka.reports.PlacementSketchingReportRow
 */
 export interface PlacementSketchingReportRow {
@@ -446,6 +482,7 @@ export type Report =
   | 'MISSING_SERVICE_NEED'
   | 'OCCUPANCY'
   | 'PARTNERS_IN_DIFFERENT_ADDRESS'
+  | 'PLACEMENT_COUNT'
   | 'PLACEMENT_SKETCHING'
   | 'PRESENCE'
   | 'RAW'

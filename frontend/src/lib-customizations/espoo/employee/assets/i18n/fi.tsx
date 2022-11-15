@@ -3192,6 +3192,22 @@ export const fi = {
         CORRECTION: 'Korjaus'
       }
     },
+    placementCount: {
+      title: 'Sijoitusten määrä',
+      description:
+        'Raportti sijoitusten määrästä aluettain ja yksiköittäin annettuna päivämääränä',
+      noCareAreasFound: 'Ei sijoituksia sisältäviä palvelualueita',
+      examinationDate: 'Tarkastelupäivä',
+      careArea: 'Palvelualue',
+      daycaresByArea: 'Toimintayksiköt alueittain',
+      placementCount: 'Lapsia yhteensä',
+      calculatedPlacements: 'Laskennallinen määrä',
+      providerType: 'Järjestämismuoto',
+      careType: 'Toimintamuoto',
+      placementsOver3: 'Vähintään 3v',
+      placementsUnder3: 'Alle 3v',
+      total: 'Yhteensä'
+    },
     placementSketching: {
       title: 'Sijoitusten hahmotteluraportti',
       description:

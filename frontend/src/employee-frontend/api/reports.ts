@@ -4,7 +4,7 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import { CareType, ProviderType } from 'lib-common/generated/api-types/daycare'
+import { CareType, DaycareCareArea, ProviderType } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import {
   ApplicationsReportRow,
@@ -25,6 +25,7 @@ import {
   OccupancyGroupReportResultRow,
   OccupancyUnitReportResultRow,
   PartnersInDifferentAddressReportRow,
+  PlacementCountReportResult,
   PlacementSketchingReportRow,
   PresenceReportRow,
   RawReportRow,
@@ -435,6 +436,32 @@ export function getSextetReport(
   return client
     .get<SextetReportRow[]>(
       `/reports/sextet?year=${year}&placementType=${placementType}`
+    )
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export interface PlacementCountReportFilters {
+  examinationDate: LocalDate,
+  careTypes?: CareType[],
+  providerTypes?: ProviderType[],
+  careArea?: DaycareCareArea
+}
+
+export async function getPlacementCountReport(
+  filters: PlacementCountReportFilters
+): Promise<Result<PlacementCountReportResult>> {
+  return client
+    .get<JsonOf<PlacementCountReportResult>>(
+      `/reports/placement-count`,
+      {
+        params: {
+          examinationDate:
+            filters.examinationDate.formatIso(),
+          careTypes: filters.careTypes?.join(','),
+          providerTypes: filters.providerTypes?.join(',')
+        }
+      }
     )
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
