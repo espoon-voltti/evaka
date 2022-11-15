@@ -12,8 +12,7 @@ import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../localization'
 
-import ContactInfoSecondGuardianDaycare from './ContactInfoSecondGuardianDaycare'
-import ContactInfoSecondGuardianPreschool from './ContactInfoSecondGuardianPreschool'
+import ContactInfoSecondGuardian from './ContactInfoSecondGuardian'
 import { ApplicationDataGridLabelWidth } from './const'
 
 type ContactInfoProps = {
@@ -130,9 +129,8 @@ export default React.memo(function ContactInfoSection({
         <>
           <Gap size="m" />
           <H3>{tLocal.secondGuardian.title}</H3>
-          {type === 'DAYCARE' && <ContactInfoSecondGuardianDaycare />}
-          {type === 'PRESCHOOL' && !!formData.otherGuardianAgreementStatus && (
-            <ContactInfoSecondGuardianPreschool formData={formData} />
+          {!!formData.otherGuardianAgreementStatus && (
+            <ContactInfoSecondGuardian formData={formData} />
           )}
 
           {showFridgeFamilySection && (

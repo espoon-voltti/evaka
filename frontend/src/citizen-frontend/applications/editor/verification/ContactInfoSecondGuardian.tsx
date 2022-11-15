@@ -16,7 +16,7 @@ type Props = {
   formData: ContactInfoFormData
 }
 
-export default React.memo(function ContactInfoSecondGuardianPreschool({
+export default React.memo(function ContactInfoSecondGuardian({
   formData
 }: Props) {
   const t = useTranslation()

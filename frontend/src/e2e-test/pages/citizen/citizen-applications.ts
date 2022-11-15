@@ -249,7 +249,7 @@ class CitizenApplicationEditor {
             await new Checkbox(
               this.page.find('[data-qa="other-sibling"]')
             ).click()
-          } else if (field === 'otherGuardianAgreementStatus') {
+          } else if (field === 'otherGuardianAgreementStatus' && value) {
             await new Radio(
               this.page.find(
                 `[data-qa="otherGuardianAgreementStatus-${String(value)}"]`

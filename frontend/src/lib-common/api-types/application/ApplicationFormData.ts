@@ -324,9 +324,7 @@ export function formDataToApiData(
       email: form.contactInfo.guardianEmail
     },
     secondGuardian:
-      type === 'PRESCHOOL' &&
-      otherGuardianId &&
-      !otherGuardianLivesInSameAddress
+      type !== 'CLUB' && otherGuardianId && !otherGuardianLivesInSameAddress
         ? {
             agreementStatus:
               form.contactInfo.otherGuardianAgreementStatus ?? 'NOT_AGREED',

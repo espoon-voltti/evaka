@@ -64,12 +64,15 @@ describe('Citizen daycare applications', () => {
     )
     const applicationId = editorPage.getNewApplicationId()
 
-    await editorPage.fillData(minimalDaycareForm.form)
+    const applicationForm = minimalDaycareForm({
+      otherGuardianAgreementStatus: 'AGREED'
+    })
+    await editorPage.fillData(applicationForm.form)
     await editorPage.assertChildAddress('Kamreerintie 1, 00340 Espoo')
     await editorPage.verifyAndSend()
 
     const application = await getApplication(applicationId)
-    minimalDaycareForm.validateResult(application, [
+    applicationForm.validateResult(application, [
       fixtures.enduserChildFixtureKaarina
     ])
   })
@@ -82,12 +85,15 @@ describe('Citizen daycare applications', () => {
     )
     const applicationId = editorPage.getNewApplicationId()
 
-    await editorPage.fillData(fullDaycareForm.form)
+    const applicationForm = fullDaycareForm({
+      otherGuardianAgreementStatus: 'AGREED'
+    })
+    await editorPage.fillData(applicationForm.form)
     await editorPage.assertChildAddress('Kamreerintie 1, 00340 Espoo')
     await editorPage.verifyAndSend()
 
     const application = await getApplication(applicationId)
-    fullDaycareForm.validateResult(application, [
+    applicationForm.validateResult(application, [
       fixtures.enduserChildFixtureKaarina
     ])
   })
@@ -142,7 +148,11 @@ describe('Citizen daycare applications', () => {
       'DAYCARE'
     )
 
-    await editorPage.fillData(minimalDaycareForm.form)
+    await editorPage.fillData(
+      minimalDaycareForm({
+        otherGuardianAgreementStatus: 'AGREED'
+      }).form
+    )
     await editorPage.setPreferredStartDate(mockedDate.format())
     await editorPage.assertPreferredStartDateWarningIsShown(true)
   })
@@ -168,7 +178,11 @@ describe('Citizen daycare applications', () => {
       'DAYCARE'
     )
     const applicationId = editorPage.getNewApplicationId()
-    await editorPage.fillData(minimalDaycareForm.form)
+    await editorPage.fillData(
+      minimalDaycareForm({
+        otherGuardianAgreementStatus: 'AGREED'
+      }).form
+    )
     await editorPage.verifyAndSend()
 
     await applicationsPage.editApplication(applicationId)
@@ -182,7 +196,7 @@ describe('Citizen daycare applications', () => {
       fixtures.enduserChildFixturePorriHatterRestricted.id,
       'DAYCARE'
     )
-    await editorPage.fillData(minimalDaycareForm.form)
+    await editorPage.fillData(minimalDaycareForm().form)
     await editorPage.assertChildAddress('')
     await editorPage.verifyAndSend()
     await editorPage.waitUntilLoaded()
@@ -194,7 +208,7 @@ describe('Citizen daycare applications', () => {
       fixtures.enduserChildFixturePorriHatterRestricted.id,
       'DAYCARE'
     )
-    await editorPage.fillData(minimalDaycareForm.form)
+    await editorPage.fillData(minimalDaycareForm().form)
     await editorPage.markApplicationUrgentAndAddAttachment(testFilePath)
     await editorPage.assertAttachmentUploaded(testFileName)
     await editorPage.goToVerification()

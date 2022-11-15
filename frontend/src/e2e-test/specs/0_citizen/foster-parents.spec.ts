@@ -89,7 +89,8 @@ test('Foster parent can create a daycare application and accept a daycare decisi
   )
   const applicationId = editorPage.getNewApplicationId()
 
-  await editorPage.fillData(minimalDaycareForm.form)
+  const applicationForm = minimalDaycareForm().form
+  await editorPage.fillData(applicationForm)
   await editorPage.assertChildAddress(
     `${fosterChild.streetAddress ?? ''}, ${fosterChild.postalCode ?? ''} ${
       fosterChild.postOffice ?? ''
@@ -100,8 +101,8 @@ test('Foster parent can create a daycare application and accept a daycare decisi
   await applicationsPage.assertApplicationIsListed(
     applicationId,
     'Varhaiskasvatushakemus',
-    minimalDaycareForm.form.unitPreference?.preferredUnits?.[0].name ?? '',
-    minimalDaycareForm.form.serviceNeed?.preferredStartDate ?? '',
+    applicationForm.unitPreference?.preferredUnits?.[0].name ?? '',
+    applicationForm.serviceNeed?.preferredStartDate ?? '',
     'Lähetetty'
   )
 
@@ -164,7 +165,8 @@ test('Foster parent can create a daycare application and accept a daycare decisi
   )
   const applicationId = editorPage.getNewApplicationId()
 
-  await editorPage.fillData(minimalDaycareForm.form)
+  const applicationForm = minimalDaycareForm().form
+  await editorPage.fillData(applicationForm)
   await editorPage.assertChildAddress(
     `${fosterChild.streetAddress ?? ''}, ${fosterChild.postalCode ?? ''} ${
       fosterChild.postOffice ?? ''
@@ -175,8 +177,8 @@ test('Foster parent can create a daycare application and accept a daycare decisi
   await applicationsPage.assertApplicationIsListed(
     applicationId,
     'Varhaiskasvatushakemus',
-    minimalDaycareForm.form.unitPreference?.preferredUnits?.[0].name ?? '',
-    minimalDaycareForm.form.serviceNeed?.preferredStartDate ?? '',
+    applicationForm.unitPreference?.preferredUnits?.[0].name ?? '',
+    applicationForm.serviceNeed?.preferredStartDate ?? '',
     'Lähetetty'
   )
 
