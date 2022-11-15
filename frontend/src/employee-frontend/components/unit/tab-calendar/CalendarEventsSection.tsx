@@ -16,12 +16,6 @@ import React, {
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { client } from 'employee-frontend/api/client'
-import { getUnitData } from 'employee-frontend/api/unit'
-import { renderResult } from 'employee-frontend/components/async-rendering'
-import { FlexRow } from 'employee-frontend/components/common/styled/containers'
-import { useTranslation } from 'employee-frontend/state/i18n'
-import { UnitContext } from 'employee-frontend/state/unit'
 import { combine, Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
@@ -55,6 +49,13 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Bold, fontWeights, H4, Label, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faCalendarPlus, faQuestion, faTrash } from 'lib-icons'
+
+import { client } from '../../../api/client'
+import { getUnitData } from '../../../api/unit'
+import { renderResult } from '../../../components/async-rendering'
+import { FlexRow } from '../../../components/common/styled/containers'
+import { useTranslation } from '../../../state/i18n'
+import { UnitContext } from '../../../state/unit'
 
 async function getCalendarEvents(
   unitId: UUID,

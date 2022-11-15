@@ -11,23 +11,22 @@ import uniqBy from 'lodash/uniqBy'
 import React, { useMemo, useState, useCallback } from 'react'
 import styled from 'styled-components'
 
-import {
-  upsertExternalAttendances,
-  upsertStaffAttendances
-} from 'employee-frontend/api/staff-attendance'
 import { Result } from 'lib-common/api'
 import { OperationalDay } from 'lib-common/api-types/reservations'
 import DateRange from 'lib-common/date-range'
+import { ErrorKey } from 'lib-common/form-validation'
 import {
   Attendance,
   EmployeeAttendance,
   ExternalAttendance,
   PlannedStaffAttendance,
-  StaffAttendanceUpsert
+  StaffAttendanceUpsert,
+  ExternalAttendanceUpsert
 } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import { presentInGroup } from 'lib-common/staff-attendance'
 import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -41,12 +40,18 @@ import { defaultMargins } from 'lib-components/white-space'
 import { colors } from 'lib-customizations/common'
 import { faCircleEllipsis } from 'lib-icons'
 
+import {
+  upsertExternalAttendances,
+  upsertStaffAttendances
+} from '../../../api/staff-attendance'
 import { Translations, useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
 
 import StaffAttendanceDetailsModal, {
+  EditedAttendance,
   ModalAttendance,
-  ModalPlannedAttendance
+  ModalPlannedAttendance,
+  ValidationError
 } from './StaffAttendanceDetailsModal'
 import StaffAttendanceExternalPersonModal from './StaffAttendanceExternalPersonModal'
 import {
@@ -133,28 +138,6 @@ export default React.memo(function StaffAttendanceTable({
     [detailsModalConfig, externalAttendances, staffAttendances]
   )
 
-  const handleModalSave = useCallback(
-    (entries: StaffAttendanceUpsert[]) => {
-      if (!detailsModalConfig) return Promise.reject()
-      if (detailsModalConfig.target.type === 'employee') {
-        return upsertStaffAttendances({
-          unitId,
-          employeeId: detailsModalConfig.target.employeeId,
-          date: detailsModalConfig.date,
-          entries
-        })
-      } else {
-        return upsertExternalAttendances({
-          unitId,
-          name: detailsModalConfig.target.name,
-          date: detailsModalConfig.date,
-          entries
-        })
-      }
-    },
-    [detailsModalConfig, unitId]
-  )
-
   return (
     <>
       <Table data-qa="staff-attendances-table">
@@ -235,20 +218,14 @@ export default React.memo(function StaffAttendanceTable({
         />
       ) : null}
       {detailsModalConfig && modalData ? (
-        <StaffAttendanceDetailsModal
-          name={detailsModalConfig.name}
-          date={detailsModalConfig.date}
-          attendances={modalData.attendances}
-          plannedAttendances={modalData.plannedAttendances}
-          isExternal={detailsModalConfig.target.type === 'external'}
+        <StaffAttendanceModal
+          detailsModalConfig={detailsModalConfig}
+          modalData={modalData}
+          unitId={unitId}
           groups={groups}
           defaultGroupId={defaultGroup}
-          onSave={handleModalSave}
+          reloadStaffAttendances={reloadStaffAttendances}
           onClose={closeDetailsModal}
-          onSuccess={() => {
-            void reloadStaffAttendances()
-            closeDetailsModal()
-          }}
         />
       ) : null}
       {showExternalPersonModal && (
@@ -264,6 +241,87 @@ export default React.memo(function StaffAttendanceTable({
         />
       )}
     </>
+  )
+})
+
+const StaffAttendanceModal = React.memo(function StaffAttendanceModal({
+  detailsModalConfig,
+  modalData,
+  unitId,
+  groups,
+  defaultGroupId,
+  reloadStaffAttendances,
+  onClose
+}: {
+  detailsModalConfig: DetailsModalConfig
+  modalData: {
+    attendances: ModalAttendance[]
+    plannedAttendances: ModalPlannedAttendance[]
+  }
+  unitId: string
+  groups: DaycareGroup[]
+  defaultGroupId: string | null
+  reloadStaffAttendances: () => Promise<Result<unknown>>
+  onClose: () => void
+}) {
+  const onSuccess = useCallback(() => {
+    void reloadStaffAttendances()
+    onClose()
+  }, [onClose, reloadStaffAttendances])
+  const { target, date } = detailsModalConfig
+  const onSaveStaff = useCallback(
+    (entries: StaffAttendanceUpsert[]) =>
+      target.type === 'employee'
+        ? upsertStaffAttendances({
+            unitId,
+            employeeId: target.employeeId,
+            date,
+            entries
+          })
+        : undefined,
+    [date, target, unitId]
+  )
+  const onSaveExternal = useCallback(
+    (entries: ExternalAttendanceUpsert[]) =>
+      target.type === 'external'
+        ? upsertExternalAttendances({
+            unitId,
+            name: target.name,
+            date,
+            entries
+          })
+        : undefined,
+    [date, target, unitId]
+  )
+
+  return target.type === 'employee' ? (
+    <StaffAttendanceDetailsModal
+      isExternal={false}
+      onSave={onSaveStaff}
+      validate={staffAttendanceValidator(detailsModalConfig)}
+      name={detailsModalConfig.name}
+      date={detailsModalConfig.date}
+      attendances={modalData.attendances}
+      plannedAttendances={modalData.plannedAttendances}
+      groups={groups}
+      defaultGroupId={defaultGroupId}
+      onClose={onClose}
+      onSuccess={onSuccess}
+    />
+  ) : (
+    <StaffAttendanceDetailsModal
+      isExternal={true}
+      onSave={onSaveExternal}
+      validate={externalAttendanceValidator(detailsModalConfig)}
+      name={detailsModalConfig.name}
+      date={detailsModalConfig.date}
+      attendances={modalData.attendances}
+      plannedAttendances={modalData.plannedAttendances}
+      groups={groups}
+      defaultGroupId={defaultGroupId}
+      onClose={onClose}
+      onSuccess={onSuccess}
+    />
   )
 })
 
@@ -293,7 +351,9 @@ function getStaffRows(
             true
           ),
           attendances: sortBy(
-            entry.attendances.filter((a) => groupFilter([a.groupId])),
+            entry.attendances.filter(
+              (a) => a.groupId && groupFilter([a.groupId])
+            ),
             ({ departed }) => departed?.timestamp ?? Infinity
           ),
           plannedAttendances: entry.plannedAttendances,
@@ -367,7 +427,7 @@ function getUniqueAttendanceDates(
     attendances
       .filter(
         ({ type, groupId }) =>
-          type !== 'OTHER_WORK' && type !== 'TRAINING' && groupFilter([groupId])
+          groupId && groupFilter([groupId]) && presentInGroup(type)
       )
       // TODO: What if arrived and departed are > 1 day apart?
       .flatMap(({ departed, arrived }) =>
@@ -545,11 +605,7 @@ function getAttendancesForGroupAndDate(
 
   const presentAttendances = attendancesForDate.filter(
     ({ groupId, type }) =>
-      groupFilter([groupId]) &&
-      (type === undefined ||
-        type === 'PRESENT' ||
-        type === 'JUSTIFIED_CHANGE' ||
-        type === 'OVERTIME')
+      groupId && groupFilter([groupId]) && presentInGroup(type)
   )
   return {
     matchingAttendances: presentAttendances,
@@ -608,6 +664,207 @@ function computeModalAttendances(
     )
     return { attendances, plannedAttendances: [] }
   }
+}
+
+type ValidatorConfig = Pick<DetailsModalConfig, 'date' | 'attendances'>
+
+export const staffAttendanceValidator =
+  (config: ValidatorConfig) =>
+  (
+    state: EditedAttendance[]
+  ): [undefined | StaffAttendanceUpsert[], ValidationError[]] => {
+    const body: (StaffAttendanceUpsert | undefined)[] = []
+    const errors: ValidationError[] = []
+
+    for (let i = 0; i < state.length; i++) {
+      const item = state[i]
+      const existing = config.attendances.find((a) => a.id === item.id)
+      const isFirstAttendance = i === 0
+      const isLastAttendance = i === state.length - 1
+
+      const [arrived, arrivedError] = validateArrived(
+        config,
+        item,
+        existing,
+        isFirstAttendance,
+        body[i - 1]?.departed
+      )
+      const [departed, departedError] = validateDeparted(
+        config,
+        item,
+        isLastAttendance,
+        arrived
+      )
+      const [groupId, groupIdError] = validateGroupId(item)
+
+      if (
+        arrived !== undefined &&
+        departed !== undefined &&
+        groupId !== undefined
+      ) {
+        body[i] = {
+          ...item,
+          arrived,
+          departed,
+          groupId
+        }
+      }
+
+      errors[i] = {
+        arrived: arrivedError,
+        departed: departedError,
+        groupId: groupIdError
+      }
+    }
+
+    const a = body.filter((item): item is StaffAttendanceUpsert => !!item)
+    if (a.length === state.length) {
+      return [a, errors]
+    }
+
+    return [undefined, errors]
+  }
+
+export const externalAttendanceValidator =
+  (config: ValidatorConfig) =>
+  (
+    state: EditedAttendance[]
+  ): [undefined | ExternalAttendanceUpsert[], ValidationError[]] => {
+    const body: (ExternalAttendanceUpsert | undefined)[] = []
+    const errors: ValidationError[] = []
+
+    for (let i = 0; i < state.length; i++) {
+      const item = state[i]
+      const existing = config.attendances.find((a) => a.id === item.id)
+      const isFirstAttendance = i === 0
+      const isLastAttendance = i === state.length - 1
+
+      const [arrived, arrivedError] = validateArrived(
+        config,
+        item,
+        existing,
+        isFirstAttendance,
+        body[i - 1]?.departed
+      )
+      const [departed, departedError] = validateDeparted(
+        config,
+        item,
+        isLastAttendance,
+        arrived
+      )
+      const [groupId, groupIdError] = item.groupId
+        ? [item.groupId, undefined]
+        : [undefined, 'required' as const]
+
+      if (
+        arrived !== undefined &&
+        departed !== undefined &&
+        groupId !== undefined
+      ) {
+        body[i] = {
+          ...item,
+          arrived,
+          departed,
+          groupId
+        }
+      }
+
+      errors[i] = {
+        arrived: arrivedError,
+        departed: departedError,
+        groupId: groupIdError
+      }
+    }
+
+    const a = body.filter((item): item is ExternalAttendanceUpsert => !!item)
+    if (a.length === state.length) {
+      return [a, errors]
+    }
+
+    return [undefined, errors]
+  }
+
+const validateArrived = (
+  config: ValidatorConfig,
+  item: EditedAttendance,
+  existing: ModalAttendance | undefined,
+  isFirstAttendance: boolean,
+  previousDeparted: HelsinkiDateTime | null | undefined
+): [undefined, ErrorKey] | [HelsinkiDateTime, undefined] => {
+  const parsedArrived = item.arrived
+    ? LocalTime.tryParse(item.arrived, 'HH:mm')
+    : undefined
+
+  const isOvernightAttendance =
+    existing && existing.arrived.toLocalDate().isBefore(config.date)
+
+  if (!item.arrived && isFirstAttendance && isOvernightAttendance) {
+    return [existing.arrived, undefined]
+  }
+
+  if (!item.arrived) {
+    return [undefined, 'required']
+  }
+
+  if (!parsedArrived) {
+    return [undefined, 'timeFormat']
+  }
+
+  const arrived = HelsinkiDateTime.fromLocal(config.date, parsedArrived)
+  if (previousDeparted && arrived.isBefore(previousDeparted)) {
+    return [undefined, 'timeFormat']
+  }
+
+  return [arrived, undefined]
+}
+
+const validateDeparted = (
+  config: ValidatorConfig,
+  item: EditedAttendance,
+  isLastAttendance: boolean,
+  arrived: HelsinkiDateTime | undefined
+): [undefined, ErrorKey] | [HelsinkiDateTime | null, undefined] => {
+  const parsedDeparted = item.departed
+    ? LocalTime.tryParse(item.departed, 'HH:mm')
+    : undefined
+
+  if (!item.departed && isLastAttendance && config.date.isToday()) {
+    return [null, undefined]
+  }
+
+  if (!item.departed) {
+    return [undefined, 'required']
+  }
+
+  if (!parsedDeparted) {
+    return [undefined, 'timeFormat']
+  }
+
+  const departed = HelsinkiDateTime.fromLocal(config.date, parsedDeparted)
+  if (arrived && departed.isBefore(arrived)) {
+    if (isLastAttendance) {
+      return [
+        HelsinkiDateTime.fromLocal(
+          departed.toLocalDate().addDays(1),
+          departed.toLocalTime()
+        ),
+        undefined
+      ]
+    }
+    return [undefined, 'timeFormat']
+  }
+
+  return [departed, undefined]
+}
+
+const validateGroupId = (
+  item: EditedAttendance
+): [undefined, ErrorKey] | [string | null, undefined] => {
+  if (presentInGroup(item.type) && item.groupId === null) {
+    return [undefined, 'required']
+  }
+
+  return [item.groupId, undefined]
 }
 
 const DetailsToggle = styled.div<{ showAlways: boolean }>`

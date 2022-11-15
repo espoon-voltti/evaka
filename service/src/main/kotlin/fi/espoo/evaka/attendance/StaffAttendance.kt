@@ -79,7 +79,7 @@ data class StaffMember(
 data class StaffMemberAttendance(
     @PropagateNull val id: StaffAttendanceId,
     val employeeId: EmployeeId,
-    val groupId: GroupId,
+    val groupId: GroupId?,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
     val type: StaffAttendanceType
@@ -98,7 +98,7 @@ data class ExternalAttendance(
 
 data class Attendance(
     val id: UUID,
-    val groupId: GroupId,
+    val groupId: GroupId?,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
     val occupancyCoefficient: BigDecimal,

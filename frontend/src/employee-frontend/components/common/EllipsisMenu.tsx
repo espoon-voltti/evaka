@@ -5,12 +5,13 @@
 import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { useTranslation } from 'employee-frontend/state/i18n'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import useCloseOnOutsideClick from 'lib-components/utils/useCloseOnOutsideClick'
 import { defaultMargins } from 'lib-components/white-space'
 import { faEllipsisVAlt } from 'lib-icons'
+
+import { useTranslation } from '../../state/i18n'
 
 interface Props {
   items: MenuItem[]
