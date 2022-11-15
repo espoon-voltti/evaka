@@ -291,6 +291,7 @@ enum class Audit(
     PinLogin,
     PisFamilyRead,
     PlacementCancel,
+    PlacementCountReportRead,
     PlacementCreate,
     PlacementSketchingReportRead,
     PlacementPlanCreate,
