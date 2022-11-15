@@ -3,22 +3,28 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChevronDown, faChevronUp } from 'Icons'
+import sortBy from 'lodash/sortBy'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Loading, Result } from 'lib-common/api'
+import { careTypes } from 'lib-common/generated/api-types/daycare'
 import {
-  careTypes
-} from 'lib-common/generated/api-types/daycare'
-import { PlacementCountAreaResult, PlacementCountReportResult } from 'lib-common/generated/api-types/reports'
+  PlacementCountAreaResult,
+  PlacementCountReportResult
+} from 'lib-common/generated/api-types/reports'
 import LocalDate from 'lib-common/local-date'
-import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import Loader from 'lib-components/atoms/Loader'
 import Title from 'lib-components/atoms/Title'
+import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
+import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { Tbody, Td, Tfoot, Th, Thead, Tr } from 'lib-components/layout/Table'
-import sortBy from 'lodash/sortBy'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
+import { unitProviderTypes } from 'lib-customizations/employee'
+
 import {
   getPlacementCountReport,
   PlacementCountReportFilters
@@ -26,15 +32,10 @@ import {
 import ReportDownload from '../../components/reports/ReportDownload'
 import { useTranslation } from '../../state/i18n'
 
-import MultiSelect from 'lib-components/atoms/form/MultiSelect'
-import { unitProviderTypes } from 'lib-customizations/employee'
 import { FilterLabel, FilterRow, TableScrollable } from './common'
 
-import { faChevronDown, faChevronUp } from 'Icons'
-import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-
 interface DisplayFilters {
-  careAreas: { areaId: string, areaName: string }[]
+  careAreas: { areaId: string; areaName: string }[]
 }
 
 const emptyDisplayFilters: DisplayFilters = {
@@ -86,14 +87,17 @@ export default React.memo(function PlacementCount() {
   const currentLocalDate = LocalDate.todayInSystemTz()
   const [filters, setFilters] = useState<PlacementCountReportFilters>({
     examinationDate: currentLocalDate,
-    providerTypes: [], careTypes: []
+    providerTypes: [],
+    careTypes: []
   })
 
   const [displayFilters, setDisplayFilters] =
     useState<DisplayFilters>(emptyDisplayFilters)
   const displayFilter = (row: PlacementCountAreaResult): boolean => {
-    return displayFilters.careAreas.length === 0 || displayFilters.careAreas.map(ca => ca.areaId).includes(row.areaId)
-
+    return (
+      displayFilters.careAreas.length === 0 ||
+      displayFilters.careAreas.map((ca) => ca.areaId).includes(row.areaId)
+    )
   }
 
   const [areasOpen, setAreasOpen] = useState<Record<string, boolean>>({})
@@ -104,51 +108,83 @@ export default React.memo(function PlacementCount() {
     void getPlacementCountReport(filters).then(setResult)
   }, [filters])
 
-  const countTotalsFromAreaResults = (filteredAreaResults: PlacementCountAreaResult[]) => {
-    return filteredAreaResults.reduce((sum, current) => {
-      return {
-        placementCount: sum.placementCount + current.placementCount,
-        placementCountUnder3v: sum.placementCountUnder3v + current.placementCountUnder3v,
-        placementCount3vAndOver: sum.placementCount3vAndOver + current.placementCount3vAndOver,
-        calculatedPlacements: sum.calculatedPlacements + current.calculatedPlacements
+  const countTotalsFromAreaResults = (
+    filteredAreaResults: PlacementCountAreaResult[]
+  ) => {
+    return filteredAreaResults.reduce(
+      (sum, current) => {
+        return {
+          placementCount: sum.placementCount + current.placementCount,
+          placementCountUnder3v:
+            sum.placementCountUnder3v + current.placementCountUnder3v,
+          placementCount3vAndOver:
+            sum.placementCount3vAndOver + current.placementCount3vAndOver,
+          calculatedPlacements:
+            sum.calculatedPlacements + current.calculatedPlacements
+        }
+      },
+      {
+        placementCount: 0,
+        placementCount3vAndOver: 0,
+        placementCountUnder3v: 0,
+        calculatedPlacements: 0.0
       }
-    }, { placementCount: 0, placementCount3vAndOver: 0, placementCountUnder3v: 0, calculatedPlacements: 0.0 })
+    )
   }
-  
+
   const { fullAreaResults, filteredAreaResults, filteredTotals } = useMemo(
-    () => result.map((rs) => {
-      const fullAreaResults = rs.areaResults
-      const filteredAreaResults = fullAreaResults.filter(displayFilter)
-      return { fullAreaResults, filteredAreaResults, filteredTotals: countTotalsFromAreaResults(filteredAreaResults) }
-    }).getOrElse({ fullAreaResults: [], filteredAreaResults: [], filteredTotals: countTotalsFromAreaResults([]) }),
+    () =>
+      result
+        .map((rs) => {
+          const fullAreaResults = rs.areaResults
+          const filteredAreaResults = fullAreaResults.filter(displayFilter)
+          return {
+            fullAreaResults,
+            filteredAreaResults,
+            filteredTotals: countTotalsFromAreaResults(filteredAreaResults)
+          }
+        })
+        .getOrElse({
+          fullAreaResults: [],
+          filteredAreaResults: [],
+          filteredTotals: countTotalsFromAreaResults([])
+        }),
     [result, displayFilters] // eslint-disable-line react-hooks/exhaustive-deps
   )
 
   const extractCsvRows = (): CsvReportRow[] => {
-    return [...filteredAreaResults.flatMap(areaResult => {
-      return [...areaResult.daycareResults.map(daycareResult => {
-        return {
-          ...daycareResult,
-          areaName: areaResult.areaName
+    const areaRows = filteredAreaResults.flatMap((areaResult) => {
+      return [
+        ...areaResult.daycareResults.map((daycareResult) => {
+          return {
+            ...daycareResult,
+            areaName: areaResult.areaName
+          }
+        }),
+        {
+          areaName: areaResult.areaName,
+          daycareName: null,
+          placementCount: areaResult.placementCount,
+          placementCountUnder3v: areaResult.placementCountUnder3v,
+          placementCount3vAndOver: areaResult.placementCount3vAndOver,
+          calculatedPlacements: areaResult.calculatedPlacements
         }
-      }),
-      {
-        areaName: areaResult.areaName,
-        daycareName: null,
-        placementCount: areaResult.placementCount,
-        placementCountUnder3v: areaResult.placementCountUnder3v,
-        placementCount3vAndOver: areaResult.placementCount3vAndOver,
-        calculatedPlacements: areaResult.calculatedPlacements
-      }]
-    }),
-    {
-      areaName: null,
-      daycareName: null,
-      placementCount: filteredTotals.placementCount,
-      placementCountUnder3v: filteredTotals.placementCountUnder3v,
-      placementCount3vAndOver: filteredTotals.placementCount3vAndOver,
-      calculatedPlacements: filteredTotals.calculatedPlacements
-    }]
+      ]
+    })
+
+    return areaRows.length > 0
+      ? [
+          ...areaRows,
+          {
+            areaName: null,
+            daycareName: null,
+            placementCount: filteredTotals.placementCount,
+            placementCountUnder3v: filteredTotals.placementCountUnder3v,
+            placementCount3vAndOver: filteredTotals.placementCount3vAndOver,
+            calculatedPlacements: filteredTotals.calculatedPlacements
+          }
+        ]
+      : []
   }
 
   return (
@@ -172,21 +208,20 @@ export default React.memo(function PlacementCount() {
             locale={lang}
             maxDate={currentLocalDate}
             isInvalidDate={(d) =>
-              d <= currentLocalDate
-                ? null
-                : i18n.validationErrors.dateTooLate
+              d <= currentLocalDate ? null : i18n.validationErrors.dateTooLate
             }
             errorTexts={i18n.validationErrors}
           />
         </FilterRow>
 
         <FilterRow>
-          <FilterLabel>
-            {i18n.reports.placementCount.providerType}
-          </FilterLabel>
+          <FilterLabel>{i18n.reports.placementCount.providerType}</FilterLabel>
           <Wrapper>
             <MultiSelect
-              options={sortBy(unitProviderTypes, s => i18n.common.providerType[s])}
+              options={sortBy(
+                unitProviderTypes,
+                (s) => i18n.common.providerType[s]
+              )}
               onChange={(selectedItems) =>
                 setFilters({
                   ...filters,
@@ -195,19 +230,19 @@ export default React.memo(function PlacementCount() {
               }
               value={filters.providerTypes ?? []}
               getOptionId={(providerType) => providerType}
-              getOptionLabel={(providerType) => i18n.common.providerType[providerType]}
+              getOptionLabel={(providerType) =>
+                i18n.common.providerType[providerType]
+              }
               placeholder={i18n.common.all}
             />
           </Wrapper>
         </FilterRow>
 
         <FilterRow>
-          <FilterLabel>
-            {i18n.reports.placementCount.careType}
-          </FilterLabel>
+          <FilterLabel>{i18n.reports.placementCount.careType}</FilterLabel>
           <Wrapper>
             <MultiSelect
-              options={sortBy(careTypes, s => i18n.common.types[s])}
+              options={sortBy(careTypes, (s) => i18n.common.types[s])}
               onChange={(selectedItems) =>
                 setFilters({
                   ...filters,
@@ -225,9 +260,7 @@ export default React.memo(function PlacementCount() {
         </FilterRow>
 
         <FilterRow>
-          <FilterLabel>
-            {i18n.reports.placementCount.careArea}
-          </FilterLabel>
+          <FilterLabel>{i18n.reports.placementCount.careArea}</FilterLabel>
           <Wrapper>
             <MultiSelect
               options={fullAreaResults.map((ar) => {
@@ -237,10 +270,11 @@ export default React.memo(function PlacementCount() {
                 setDisplayFilters({
                   ...displayFilters,
                   careAreas: selections
-                })}
-              value={filteredAreaResults
-                .map(ar => { return { areaId: ar.areaId, areaName: ar.areaName } })
+                })
               }
+              value={filteredAreaResults.map((ar) => {
+                return { areaId: ar.areaId, areaName: ar.areaName }
+              })}
               getOptionId={(careArea) => careArea.areaId}
               getOptionLabel={(careArea) => careArea.areaName}
               placeholder={i18n.reports.placementCount.noCareAreasFound}
@@ -248,14 +282,12 @@ export default React.memo(function PlacementCount() {
           </Wrapper>
         </FilterRow>
 
-
         {result.isLoading && <Loader />}
         {result.isFailure && <span>{i18n.common.loadingFailed}</span>}
         {result.isSuccess && (
           <>
             <ReportDownload
-              data={extractCsvRows()
-              }
+              data={extractCsvRows()}
               headers={[
                 { label: 'Alue', key: 'areaName' },
                 { label: 'Yksikkö', key: 'daycareName' },
@@ -279,16 +311,15 @@ export default React.memo(function PlacementCount() {
               <Tbody>
                 {filteredAreaResults.map((area: PlacementCountAreaResult) => (
                   <React.Fragment key={area.areaName}>
-                    <Tr
-                      key={`${area.areaId}`}
-                      data-qa={`${area.areaId}`}
-                    >
+                    <Tr key={`${area.areaId}`} data-qa={`${area.areaId}`}>
                       <Td>
                         <div
                           onClick={() =>
                             setAreasOpen({
                               ...areasOpen,
-                              [area.areaName]: !(areasOpen[area.areaName] ?? false)
+                              [area.areaName]: !(
+                                areasOpen[area.areaName] ?? false
+                              )
                             })
                           }
                         >
@@ -309,51 +340,40 @@ export default React.memo(function PlacementCount() {
                       <BoldTd>{area.placementCount}</BoldTd>
                       <BoldTd>{area.calculatedPlacements}</BoldTd>
                     </Tr>
-                    {area.daycareResults.map((daycare) =>
-                      (areasOpen[area.areaName]) &&
-                      (<Tr key={daycare.daycareId}>
-                        <StyledSubTableTd>
-                          <Link to={`/units/${daycare.daycareId}`}>
-                            {daycare.daycareName}
-                          </Link>
-                        </StyledSubTableTd>
-                        <SubTableTd>
-                          {daycare.placementCountUnder3v}
-                        </SubTableTd>
-                        <SubTableTd>
-                          {daycare.placementCount3vAndOver}
-                        </SubTableTd>
-                        <SubTableTd>
-                          {daycare.placementCount}
-                        </SubTableTd>
-                        <SubTableTd>
-                          {daycare.calculatedPlacements}
-                        </SubTableTd>
-                      </Tr>
-                      ))}
+                    {area.daycareResults.map(
+                      (daycare) =>
+                        areasOpen[area.areaName] && (
+                          <Tr key={daycare.daycareId}>
+                            <StyledSubTableTd>
+                              <Link to={`/units/${daycare.daycareId}`}>
+                                {daycare.daycareName}
+                              </Link>
+                            </StyledSubTableTd>
+                            <SubTableTd>
+                              {daycare.placementCountUnder3v}
+                            </SubTableTd>
+                            <SubTableTd>
+                              {daycare.placementCount3vAndOver}
+                            </SubTableTd>
+                            <SubTableTd>{daycare.placementCount}</SubTableTd>
+                            <SubTableTd>
+                              {daycare.calculatedPlacements}
+                            </SubTableTd>
+                          </Tr>
+                        )
+                    )}
                   </React.Fragment>
                 ))}
-
               </Tbody>
 
               {filteredTotals && (
                 <StyledTfoot>
                   <Tr>
-                    <BoldTd>
-                      {i18n.reports.common.total}
-                    </BoldTd>
-                    <BoldTd>
-                      {filteredTotals.placementCountUnder3v}
-                    </BoldTd>
-                    <BoldTd>
-                      {filteredTotals.placementCount3vAndOver}
-                    </BoldTd>
-                    <BoldTd>
-                      {filteredTotals.placementCount}
-                    </BoldTd>
-                    <BoldTd>
-                      {filteredTotals.calculatedPlacements}
-                    </BoldTd>
+                    <BoldTd>{i18n.reports.common.total}</BoldTd>
+                    <BoldTd>{filteredTotals.placementCountUnder3v}</BoldTd>
+                    <BoldTd>{filteredTotals.placementCount3vAndOver}</BoldTd>
+                    <BoldTd>{filteredTotals.placementCount}</BoldTd>
+                    <BoldTd>{filteredTotals.calculatedPlacements}</BoldTd>
                   </Tr>
                 </StyledTfoot>
               )}

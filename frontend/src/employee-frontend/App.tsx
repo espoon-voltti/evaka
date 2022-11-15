@@ -75,6 +75,7 @@ import ReportMissingHeadOfFamily from './components/reports/MissingHeadOfFamily'
 import ReportMissingServiceNeed from './components/reports/MissingServiceNeed'
 import ReportOccupancies from './components/reports/Occupancies'
 import ReportPartnersInDifferentAddress from './components/reports/PartnersInDifferentAddress'
+import PlacementCount from './components/reports/PlacementCount'
 import PlacementSketching from './components/reports/PlacementSketching'
 import ReportPresences from './components/reports/PresenceReport'
 import ReportRaw from './components/reports/Raw'
@@ -96,7 +97,6 @@ import { I18nContextProvider, useTranslation } from './state/i18n'
 import { UIContext } from './state/ui'
 import { UserContext, UserContextProvider } from './state/user'
 import { hasRole } from './utils/roles'
-import PlacementCount from './components/reports/PlacementCount'
 
 export default function App() {
   const { i18n } = useTranslation()
