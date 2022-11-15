@@ -14,12 +14,12 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.math.BigDecimal
+import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.math.BigDecimal
-import java.time.LocalDate
 
 @RestController
 class PlacementCountReportController(private val accessControl: AccessControl) {
@@ -28,36 +28,49 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
-        @RequestParam("examinationDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) examinationDate: LocalDate,
-        @RequestParam(name = "providerTypes") requestedProviderTypes: List<ProviderType> = emptyList(),
+        @RequestParam("examinationDate")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        examinationDate: LocalDate,
+        @RequestParam(name = "providerTypes")
+        requestedProviderTypes: List<ProviderType> = emptyList(),
         @RequestParam(name = "careTypes") requestedCareTypes: List<CareType> = emptyList()
     ): PlacementCountReportResult {
         return db.connect { dbc ->
-            dbc.read {
-                accessControl.requirePermissionFor(
-                    it, user, clock, Action.Global.READ_PLACEMENT_COUNT_REPORT
-                )
-                it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
-                it.getPlacementCountReportRows(examinationDate,
-                    requestedProviderTypes.ifEmpty { ProviderType.values().toList() },
-                    requestedCareTypes.ifEmpty { CareType.values().toList() })
+                dbc.read {
+                    accessControl.requirePermissionFor(
+                        it,
+                        user,
+                        clock,
+                        Action.Global.READ_PLACEMENT_COUNT_REPORT
+                    )
+                    it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
+                    it.getPlacementCountReportRows(
+                        examinationDate,
+                        requestedProviderTypes.ifEmpty { ProviderType.values().toList() },
+                        requestedCareTypes.ifEmpty { CareType.values().toList() }
+                    )
+                }
             }
-        }.also {
-            Audit.PlacementCountReportRead.log(
-                args = mapOf(
-                    "examinationDate" to examinationDate,
-                    "providerTypes" to requestedProviderTypes,
-                    "careTypes" to requestedCareTypes
+            .also {
+                Audit.PlacementCountReportRead.log(
+                    meta =
+                        mapOf(
+                            "examinationDate" to examinationDate,
+                            "providerTypes" to requestedProviderTypes,
+                            "careTypes" to requestedCareTypes
+                        )
                 )
-            )
-        }
+            }
     }
 
     private fun Database.Read.getPlacementCountReportRows(
-        examinationDate: LocalDate, providerTypes: List<ProviderType>, careTypes: List<CareType>
+        examinationDate: LocalDate,
+        providerTypes: List<ProviderType>,
+        careTypes: List<CareType>
     ): PlacementCountReportResult {
         // language=sql
-        val sql = """
+        val sql =
+            """
 WITH child_with_age AS
          (SELECT p.id,
                  date_part('year', age(:examinationDate, p.date_of_birth)) AS age_in_years
@@ -97,19 +110,25 @@ WHERE d.opening_date <= :examinationDate
   AND :careTypes::care_types[] && d.type
 GROUP BY ROLLUP ((ca.id, ca.name), (d.id, d.name))
 ORDER BY ca.name, d.name ASC;
-            """.trimIndent()
-        val resultRows = createQuery(sql).bind("examinationDate", examinationDate).bind("providerTypes", providerTypes)
-            .bind("careTypes", careTypes).mapTo<PlacementCountReportRow>()
+            """
+                .trimIndent()
+        val resultRows =
+            createQuery(sql)
+                .bind("examinationDate", examinationDate)
+                .bind("providerTypes", providerTypes)
+                .bind("careTypes", careTypes)
+                .mapTo<PlacementCountReportRow>()
 
         val daycaresByArea = mutableMapOf<String, MutableList<PlacementCountDaycareResult>>()
         val collectedAreaResults = mutableListOf<PlacementCountAreaResult>()
-        var totalResult = PlacementCountReportResult(
-            areaResults = emptyList(),
-            placementCount = 0,
-            placementCountUnder3v = 0,
-            placementCount3vAndOver = 0,
-            calculatedPlacements = BigDecimal(0.0)
-        )
+        var totalResult =
+            PlacementCountReportResult(
+                areaResults = emptyList(),
+                placementCount = 0,
+                placementCountUnder3v = 0,
+                placementCount3vAndOver = 0,
+                calculatedPlacements = BigDecimal(0.0)
+            )
 
         resultRows.forEach { row ->
             if (row.daycareId != null && row.daycareName != null) {
@@ -123,7 +142,6 @@ ORDER BY ca.name, d.name ASC;
                         placementCount3vAndOver = row.placementCount3vAndOver,
                         calculatedPlacements = row.calculatedPlacements
                     )
-
                 )
             } else if (row.areaId != null && row.areaName != null) {
                 collectedAreaResults.add(
@@ -138,13 +156,14 @@ ORDER BY ca.name, d.name ASC;
                     )
                 )
             } else {
-                totalResult = PlacementCountReportResult(
-                    placementCount = row.placementCount,
-                    placementCountUnder3v = row.placementCountUnder3v,
-                    placementCount3vAndOver = row.placementCount3vAndOver,
-                    calculatedPlacements = row.calculatedPlacements,
-                    areaResults = collectedAreaResults
-                )
+                totalResult =
+                    PlacementCountReportResult(
+                        placementCount = row.placementCount,
+                        placementCountUnder3v = row.placementCountUnder3v,
+                        placementCount3vAndOver = row.placementCount3vAndOver,
+                        calculatedPlacements = row.calculatedPlacements,
+                        areaResults = collectedAreaResults
+                    )
             }
         }
 
@@ -161,7 +180,6 @@ ORDER BY ca.name, d.name ASC;
         val placementCount: Int,
         val calculatedPlacements: BigDecimal
     )
-
 
     data class PlacementCountReportResult(
         val placementCount: Int,
@@ -188,6 +206,5 @@ ORDER BY ca.name, d.name ASC;
         val placementCount3vAndOver: Int,
         val placementCountUnder3v: Int,
         val calculatedPlacements: BigDecimal
-
     )
 }

@@ -121,9 +121,7 @@ class ReportPermissions(private val accessControl: AccessControl) {
                         )
                     },
                     Report.PLACEMENT_COUNT.takeIf {
-                        permittedGlobalActions.contains(
-                            Action.Global.READ_PLACEMENT_COUNT_REPORT
-                        )
+                        permittedGlobalActions.contains(Action.Global.READ_PLACEMENT_COUNT_REPORT)
                     },
                     Report.PLACEMENT_SKETCHING.takeIf {
                         permittedGlobalActions.contains(
