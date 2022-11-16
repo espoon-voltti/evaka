@@ -579,7 +579,6 @@ export default {
           wasOnClubCareYes:
             'Lapsi on ollut kerhossa edellisen toimintakauden aikana.',
           connectedDaycare: {
-            title: 'Esiopetukseen liittyvän varhaiskasvatuksen tarve',
             label: 'Liittyvä varhaiskasvatus',
             withConnectedDaycare:
               'Haen myös esiopetukseen liittyvää varhaiskasvatusta.',

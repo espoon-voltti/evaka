@@ -614,7 +614,6 @@ const en: Translations = {
           wasOnClubCareYes:
             'Child has been in a club during the previous club term',
           connectedDaycare: {
-            title: 'Apply for early childhood education',
             label: 'Early childhood education',
             withConnectedDaycare:
               'I also apply for early childhood education related to pre-primary education.',

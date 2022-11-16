@@ -599,8 +599,6 @@ const sv: Translations = {
           wasOnClubCareYes:
             'Barnet har varit i klubben under föregående operationsperiod\n.',
           connectedDaycare: {
-            title:
-              'Behov av småbarnspedagogik i samband med förskoleundervisningen.',
             label: 'Småbarnspedagogik i samband med förskoleundervisning',
             withConnectedDaycare:
               'Jag ansöker också om kompletterande småbarnspedagogik utöver förskolan.',
