@@ -30,7 +30,7 @@ dependencies {
         api("com.github.kittinunf.fuel:fuel-jackson:${Version.fuel}")
         api("com.google.guava:guava:30.1.1-jre")
         api("com.zaxxer:HikariCP:5.0.1")
-        api("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:3.3.2")
+        api("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:3.4.1")
         api("io.github.microutils:kotlin-logging-jvm:2.1.23")
         api("io.javalin:javalin:4.6.4")
         api("javax.annotation:javax.annotation-api:1.3.2")
