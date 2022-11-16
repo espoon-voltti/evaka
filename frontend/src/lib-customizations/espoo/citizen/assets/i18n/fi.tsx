@@ -657,7 +657,7 @@ export default {
             tel: 'Puhelin',
             info: 'Toisen huoltajan tiedot haetaan automaattisesti väestötietojärjestelmästä.',
             agreed:
-              'Olemme yhdessä sopineet lapsen esiopetuksen hakemisesta lomakkeen tietojen mukaisesti.',
+              'Olemme yhdessä sopineet hakemisesta lomakkeen tietojen mukaisesti.',
             notAgreed: 'Emme ole voineet sopia hakemuksen tekemisestä yhdessä',
             rightToGetNotified:
               'Toisella huoltajalla on vain tiedonsaantioikeus.',
