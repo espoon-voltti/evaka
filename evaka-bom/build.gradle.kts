@@ -59,7 +59,7 @@ dependencies {
         api("org.xhtmlrenderer:flying-saucer-core:${Version.flyingSaucer}")
         api("org.xhtmlrenderer:flying-saucer-pdf-openpdf:${Version.flyingSaucer}")
         api("org.yaml:snakeyaml:1.33")
-        api("redis.clients:jedis:4.2.3")
+        api("redis.clients:jedis:4.3.1")
     }
 
     api(platform("com.fasterxml.jackson:jackson-bom:2.14.0"))
