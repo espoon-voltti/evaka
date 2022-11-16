@@ -12,6 +12,8 @@ const today = LocalDate.of(2022, 1, 2)
 const yesterday = today.subDays(1)
 const tomorrow = today.addDays(1)
 
+jest.useFakeTimers().setSystemTime(today.toSystemTzDate())
+
 describe('validateEditState', () => {
   it('maps the state to a request body', () => {
     const [body, errors] = validateEditState(
@@ -210,5 +212,31 @@ describe('validateEditState', () => {
     )
     expect(body).toBeUndefined()
     expect(errors).toEqual([{ departed: 'timeFormat' }, {}])
+  })
+  it('requires a value only for arrival if editing a day that IS today', () => {
+    const [body, errors] = validateEditState([], today, [
+      {
+        id: null,
+        type: 'PRESENT',
+        groupId: 'group1',
+        arrived: '',
+        departed: ''
+      }
+    ])
+    expect(body).toBeUndefined()
+    expect(errors).toEqual([{ arrived: 'required' }])
+  })
+  it('requires a value for both arrival and departure if editing a day that is NOT today', () => {
+    const [body, errors] = validateEditState([], yesterday, [
+      {
+        id: null,
+        type: 'PRESENT',
+        groupId: 'group1',
+        arrived: '',
+        departed: ''
+      }
+    ])
+    expect(body).toBeUndefined()
+    expect(errors).toEqual([{ arrived: 'required', departed: 'required' }])
   })
 })

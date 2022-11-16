@@ -552,12 +552,14 @@ export function validateEditState(
   for (let i = 0; i < state.length; i++) {
     const item = state[i]
     const existing = attendances.find((a) => a.id === item.id)
+    const isFirstAttendance = i === 0
+    const isLastAttendance = i === state.length - 1
 
     const itemErrors: ValidationError = {}
 
     let parsedArrived: LocalTime | undefined = undefined
     if (!item.arrived) {
-      if (i === 0) {
+      if (isFirstAttendance) {
         const isOvernightAttendance =
           existing && existing.arrived.toLocalDate().isBefore(date)
         if (!isOvernightAttendance) {
@@ -575,7 +577,7 @@ export function validateEditState(
 
     let parsedDeparted: LocalTime | undefined = undefined
     if (!item.departed) {
-      if (i !== state.length - 1) {
+      if (!isLastAttendance || !date.isToday()) {
         itemErrors.departed = 'required'
       }
     } else {
@@ -586,7 +588,7 @@ export function validateEditState(
     }
 
     if (
-      i !== state.length - 1 &&
+      !isLastAttendance &&
       parsedArrived &&
       parsedDeparted &&
       parsedDeparted.isBefore(parsedArrived)
@@ -595,7 +597,7 @@ export function validateEditState(
     }
 
     if (
-      i > 0 &&
+      !isFirstAttendance &&
       !itemErrors.arrived &&
       !errors[i - 1].departed &&
       item.arrived < state[i - 1].departed
