@@ -209,7 +209,7 @@ const assertAttendanceCounts = async (
     total
   })
 
-describe.only('Child mobile attendance list', () => {
+describe('Child mobile attendance list', () => {
   test('Child can be marked as present and as departed', async () => {
     const child1 = enduserChildFixtureKaarina.id
     await createPlacements(child1)
@@ -218,7 +218,6 @@ describe.only('Child mobile attendance list', () => {
 
     const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
     await page.goto(mobileSignupUrl)
-await page.pause()
     await assertAttendanceCounts(3, 0, 0, 0, 3)
     await listPage.selectComingChildren()
     await listPage.selectChild(child1)

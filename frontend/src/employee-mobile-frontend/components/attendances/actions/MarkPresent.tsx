@@ -21,7 +21,7 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowLeft, farStickyNote } from 'lib-icons'
 
-import {childArrivesPOST, returnToPresent} from '../../../api/attendances'
+import { childArrivesPOST, returnToPresent } from '../../../api/attendances'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
@@ -59,7 +59,12 @@ export default React.memo(function MarkPresent() {
   )
 
   const isDeparted =
-    child.isSuccess && child.value && child.value.attendance ? child.value.attendance.departed : false
+    child.isSuccess &&
+    child.value &&
+    child.value.attendances &&
+    child.value.attendances.length > 0
+      ? child.value.attendances[0].departed
+      : false
 
   const groupNote = useMemo(
     () =>
@@ -122,9 +127,10 @@ export default React.memo(function MarkPresent() {
                 />
               </FixedSpaceRow>
             </Actions>
-            {isDeparted && <>
-                <Gap size={"xs"} />
-                <AsyncButton
+            {isDeparted && (
+              <>
+                <Gap size="s" />
+                <InlineWideAsyncButton
                   text={i18n.attendances.actions.returnToPresentNoTimeNeeded}
                   onClick={() => returnToPresentCall()}
                   onSuccess={() => {
@@ -133,8 +139,8 @@ export default React.memo(function MarkPresent() {
                   }}
                   data-qa="return-to-present-btn"
                 />
-            </>
-            }
+              </>
+            )}
           </ContentArea>
           <Gap size="s" />
           <ContentArea
@@ -171,4 +177,8 @@ const CustomTitle = styled(Title)`
 
 const DailyNotes = styled.div`
   display: flex;
+`
+const InlineWideAsyncButton = styled(AsyncButton)`
+  border: none;
+  height: 50px;
 `

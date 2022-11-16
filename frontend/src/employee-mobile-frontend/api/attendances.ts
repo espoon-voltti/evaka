@@ -202,18 +202,12 @@ function deserializeAttendanceResponse(
         .map((attendanceChild) => {
           return {
             ...attendanceChild,
-            attendance: attendanceChild.attendance
-              ? {
-                  arrived: HelsinkiDateTime.parseIso(
-                    attendanceChild.attendance.arrived
-                  ),
-                  departed: attendanceChild.attendance.departed
-                    ? HelsinkiDateTime.parseIso(
-                        attendanceChild.attendance.departed
-                      )
-                    : null
-                }
-              : null,
+            attendances: attendanceChild.attendances.map((attendance) => ({
+              arrived: HelsinkiDateTime.parseIso(attendance.arrived),
+              departed: attendance.departed
+                ? HelsinkiDateTime.parseIso(attendance.departed)
+                : null
+            })),
             dailyNote: attendanceChild.dailyNote
               ? {
                   ...attendanceChild.dailyNote,

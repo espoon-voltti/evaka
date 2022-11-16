@@ -556,7 +556,8 @@ private fun Database.Read.getAttendancesResponse(
     val children =
         childrenBasics.map { child ->
             val placementBasics = ChildPlacementBasics(child.placementType, child.dateOfBirth)
-            val status = getChildAttendanceStatus(placementBasics, child.attendance, child.absences)
+            val status =
+                getChildAttendanceStatus(placementBasics, child.attendances, child.absences)
             val dailyNote = dailyNotesForChildrenInUnit.firstOrNull { it.childId == child.id }
             val stickyNotes = stickyNotesForChildrenInUnit.filter { it.childId == child.id }
 
@@ -569,7 +570,7 @@ private fun Database.Read.getAttendancesResponse(
                 groupId = child.groupId,
                 backup = child.backup,
                 status = status,
-                attendance = child.attendance,
+                attendances = child.attendances,
                 absences = child.absences,
                 dailyServiceTimes = child.dailyServiceTimes?.times,
                 dailyNote = dailyNote,
@@ -586,11 +587,11 @@ private fun Database.Read.getAttendancesResponse(
 
 private fun getChildAttendanceStatus(
     placementBasics: ChildPlacementBasics,
-    attendance: AttendanceTimes?,
+    attendances: List<AttendanceTimes>,
     absences: List<ChildAbsence>
 ): AttendanceStatus {
-    if (attendance != null) {
-        return if (attendance.departed == null) AttendanceStatus.PRESENT
+    if (attendances.isNotEmpty()) {
+        return if (attendances[0].departed == null) AttendanceStatus.PRESENT
         else AttendanceStatus.DEPARTED
     }
 

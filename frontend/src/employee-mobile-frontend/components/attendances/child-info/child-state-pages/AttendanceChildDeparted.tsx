@@ -2,17 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faArrowRotateLeft } from 'Icons'
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
 
-import {Child} from 'lib-common/generated/api-types/attendance'
+import { Child } from 'lib-common/generated/api-types/attendance'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../../../state/i18n'
-import styled from "styled-components";
-import { useNavigate } from 'react-router-dom'
-import {faArrowRotateLeft} from "Icons";
-import InlineButton from "../../../../../lib-components/atoms/buttons/InlineButton";
-import colors from "../../../../../lib-customizations/common";
-import {defaultMargins} from "../../../../../lib-components/white-space";
 
 interface Props {
   child: Child
@@ -32,7 +32,11 @@ export default React.memo(function AttendanceChildDeparted({
     <ReturnToPresentButton
       icon={faArrowRotateLeft}
       text={i18n.attendances.actions.returnToPresent}
-      onClick={() => navigate(`/units/${unitId}/groups/${groupIdOrAll}/child-attendance/${child.id}/mark-present`)}
+      onClick={() =>
+        navigate(
+          `/units/${unitId}/groups/${groupIdOrAll}/child-attendance/${child.id}/mark-present`
+        )
+      }
       data-qa="return-to-present-btn"
     />
   )

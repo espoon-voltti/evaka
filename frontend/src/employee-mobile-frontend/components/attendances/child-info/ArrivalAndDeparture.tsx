@@ -34,14 +34,15 @@ export default React.memo(function ArrivalAndDeparture({
     return returnToComing(unitId, child.id)
   }
 
-  const arrival = child.attendance?.arrived
-  const departure = child.attendance?.departed
+  const latestArrival =
+    child.attendances.length > 0 ? child.attendances[0].arrived : null
+  //const latestDeparture = child.attendances.length > 0 ? child.attendances[0].departed : null
 
-  if (!arrival) {
+  if (!latestArrival) {
     return null
   }
 
-  const arrivalDate = arrival.toLocalDate()
+  const arrivalDate = latestArrival.toLocalDate()
   const dateInfo = arrivalDate.isEqual(LocalDate.todayInSystemTz())
     ? ''
     : arrivalDate.isEqual(LocalDate.todayInSystemTz().subDays(1))
@@ -49,42 +50,54 @@ export default React.memo(function ArrivalAndDeparture({
     : arrivalDate.format('d.M.')
 
   return (
-    <FixedSpaceRow justifyContent="center">
-      {arrival ? (
-        <ArrivalTimeContainer>
-          <ArrivalTime>
-            <span>{i18n.attendances.arrivalTime}</span>
-            <span>{`${dateInfo} ${arrival.toLocalTime().format()}`}</span>
-          </ArrivalTime>
-          {!departure && (
-            <InlineWideAsyncButton
-              text={i18n.common.cancel}
-              icon={faArrowRotateLeft}
-              onClick={() => returnToComingCall()}
-              onSuccess={() => {
-                reloadAttendances()
-                navigate(-1)
-              }}
-              data-qa="cancel-arrival-button"
-            />
-          )}
-        </ArrivalTimeContainer>
-      ) : null}
-      {departure ? (
-        <ArrivalTime>
-          <span>{i18n.attendances.departureTime}</span>
-          <span>{departure.toLocalTime().format()}</span>
-        </ArrivalTime>
-      ) : null}
-    </FixedSpaceRow>
+    <ArrivalTimeContainer>
+      {child.attendances.reverse().map(({ arrived, departed }) => (
+        <AttendanceRowContainer key={arrived.toSystemTzDate().toISOString()}>
+          {arrived ? (
+            <FixedSpaceRow justifyContent="center" alignItems="center">
+              <ArrivalTime>
+                <span>{i18n.attendances.arrivalTime}</span>
+                <span>{`${dateInfo} ${arrived.toLocalTime().format()}`}</span>
+              </ArrivalTime>
+              {!departed && (
+                <InlineWideAsyncButton
+                  text={i18n.common.cancel}
+                  icon={faArrowRotateLeft}
+                  onClick={() => returnToComingCall()}
+                  onSuccess={() => {
+                    reloadAttendances()
+                    navigate(-1)
+                  }}
+                  data-qa="cancel-arrival-button"
+                />
+              )}
+            </FixedSpaceRow>
+          ) : null}
+          {departed ? (
+            <ArrivalTime>
+              <span>{i18n.attendances.departureTime}</span>
+              <span>{departed.toLocalTime().format()}</span>
+            </ArrivalTime>
+          ) : null}
+        </AttendanceRowContainer>
+      ))}
+    </ArrivalTimeContainer>
   )
 })
 
 const ArrivalTimeContainer = styled.div`
   display: flex;
   align-items: center;
+  flex-direction: column;
 `
 
 const InlineWideAsyncButton = styled(AsyncButton)`
   border: none;
+`
+const AttendanceRowContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: space-evenly;
+  align-items: center;
 `

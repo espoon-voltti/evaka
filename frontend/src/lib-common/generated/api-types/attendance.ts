@@ -109,7 +109,7 @@ export interface AttendancesRequest {
 */
 export interface Child {
   absences: ChildAbsence[]
-  attendance: AttendanceTimes | null
+  attendances: AttendanceTimes[]
   backup: boolean
   dailyNote: ChildDailyNote | null
   dailyServiceTimes: DailyServiceTimesValue | null

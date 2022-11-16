@@ -100,7 +100,7 @@ data class ChildBasics(
     val placementType: PlacementType,
     val groupId: GroupId?,
     val backup: Boolean,
-    val attendance: AttendanceTimes?,
+    val attendances: List<AttendanceTimes>,
     val absences: List<ChildAbsence>,
     val imageUrl: String?
 )
@@ -115,7 +115,7 @@ data class ChildBasicsRow(
     val placementType: PlacementType,
     val groupId: GroupId?,
     val backup: Boolean,
-    @Json val attendance: AttendanceTimes?,
+    @Json val attendances: List<AttendanceTimes>,
     @Json val absences: List<ChildAbsence>,
     val imageId: String?
 ) {
@@ -130,7 +130,7 @@ data class ChildBasicsRow(
             placementType,
             groupId,
             backup,
-            attendance,
+            attendances = attendances.sortedBy { it.arrived }.reversed(),
             absences,
             imageUrl = imageId?.let { id -> "/api/internal/child-images/$id" }
         )
@@ -229,7 +229,7 @@ fun Database.Read.fetchChildrenBasics(
             c.group_id,
             c.placement_type,
             c.backup,
-            ca.attendance,
+            coalesce(ca.attendances, '[]'::jsonb) AS attendances,
             coalesce(a.absences, '[]'::jsonb) AS absences
         FROM child_group_placement c
         JOIN person pe ON pe.id = c.child_id
@@ -237,15 +237,14 @@ fun Database.Read.fetchChildrenBasics(
         LEFT JOIN child_images cimg ON pe.id = cimg.child_id
         LEFT JOIN LATERAL (
             SELECT
-                jsonb_build_object(
+                jsonb_agg(jsonb_build_object(
                     'arrived', coalesce((ca_start.date + ca_start.start_time) AT TIME ZONE 'Europe/Helsinki', (ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki'),
                     'departed', (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki'
-                ) AS attendance
+                )) AS attendances
             FROM child_attendance ca
             LEFT JOIN child_attendance ca_start ON ca.start_time = '00:00'::time AND ca.child_id = ca_start.child_id AND ca.date = ca_start.date + 1 AND ca_start.end_time = '23:59'::time
             WHERE ca.child_id = pe.id
             AND (ca.end_time IS NULL OR (ca.date = :date AND (ca.start_time != '00:00'::time OR (ca.start_time = '00:00'::time AND :departedThreshold < ca.end_time))))
-            ORDER BY ca.date, ca.start_time DESC LIMIT 1
         ) ca ON true
         LEFT JOIN LATERAL (
             SELECT jsonb_agg(jsonb_build_object('category', a.category)) AS absences
