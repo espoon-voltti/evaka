@@ -154,6 +154,7 @@ export const fi = {
       markDeparted: 'Merkitse lähteneeksi',
       returnToComing: 'Palauta tulossa oleviin',
       returnToPresent: 'Palauta läsnäolevaksi',
+      returnToPresentNoTimeNeeded: 'Siirrä läsnäoleviin ilman uutta saapumisaikaa\n',
       markAbsentBeforehand: 'Tulevat poissaolot'
     },
     timeLabel: 'Merkintä',
