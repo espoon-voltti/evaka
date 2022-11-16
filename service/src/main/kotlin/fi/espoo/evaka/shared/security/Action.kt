@@ -1150,7 +1150,6 @@ sealed interface Action {
             IsMobile(requirePinLogin = true)
                 .hasDaycareMessageAccount(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
             IsMobile(requirePinLogin = true).hasDaycareGroupMessageAccount(),
-            IsMobile(requirePinLogin = true).hasMunicipalMessageAccount(),
             IsCitizen(allowWeakLogin = true).hasMessageAccount()
         );
 

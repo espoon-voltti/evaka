@@ -239,17 +239,4 @@ WHERE gacl.employee_id = ${bind(user.employeeId)} AND acc.active = TRUE
                     .trimIndent()
             )
         }
-
-    fun hasMunicipalMessageAccount() =
-        rule<MessageAccountId> { user, _ ->
-            sql(
-                """
-SELECT acc.id
-FROM employee e
-JOIN message_account acc ON acc.type = 'MUNICIPAL'
-WHERE e.id = ${bind(user.employeeId)} AND e.roles && '{ADMIN, MESSAGING}'::user_role[]
-                """
-                    .trimIndent()
-            )
-        }
 }
