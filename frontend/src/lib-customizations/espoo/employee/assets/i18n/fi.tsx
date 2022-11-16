@@ -35,7 +35,7 @@ export const fi = {
     messages: 'Viestit',
     caretakers: 'Henkilökunta',
     createUnit: 'Luo uusi yksikkö',
-    personalMobileDevices: 'Johtajan eVaka-mobiili',
+    personalMobileDevices: 'Henkilökohtainen eVaka-mobiili',
     employeePinCode: 'PIN-koodin hallinta',
     preferredFirstName: 'Kutsumanimen hallinta',
     welcomePage: 'Tervetuloa eVakaan',
@@ -2104,9 +2104,9 @@ export const fi = {
       'Valitussa ajanjaksossa on päällekkäisyys aiemmin luodun ajanjakson kanssa. Poista päällekkäisyys muokkaamalla toista ajanjaksoa.'
   },
   personalMobileDevices: {
-    title: 'Johtajan eVaka-mobiili',
+    title: 'Henkilökohtainen eVaka-mobiili',
     infoParagraph1:
-      'Tällä sivulla voit yksikön johtajana/varajohtajana määrittää itsellesi omaan henkilökohtaiseen käyttöösi mobiililaitteen, jolla tarkastelet kaikkien yksiköidesi tietoja  eVakassa. Voit myös tarvittaessa poistaa tai lisätä useamman laitteen.',
+      'Tällä sivulla voit määrittää itsellesi omaan henkilökohtaiseen käyttöösi mobiililaitteen, jolla tarkastelet kaikkien yksiköidesi tietoja  eVakassa. Voit myös tarvittaessa poistaa tai lisätä useamman laitteen.',
     infoParagraph2:
       'Huolehdithan, että kaikissa mobiililaitteissasi on pääsykoodi käytössä.',
     name: 'Laitteen nimi',
@@ -2116,7 +2116,7 @@ export const fi = {
   },
   mobilePairingModal: {
     sharedDeviceModalTitle: 'Lisää yksikköön uusi mobiililaite',
-    personalDeviceModalTitle: 'Lisää uusi johtajan mobiililaite',
+    personalDeviceModalTitle: 'Lisää uusi henkilökohtainen mobiililaite',
     modalText1: 'Mene mobiililaitteella osoitteeseen',
     modalText2: 'ja syötä laitteeseen alla oleva koodi.',
     modalText3:
