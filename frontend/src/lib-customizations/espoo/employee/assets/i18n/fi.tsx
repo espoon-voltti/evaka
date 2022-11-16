@@ -265,7 +265,7 @@ export const fi = {
       resultCount: 'Hakutuloksia',
       noResults: 'Ei hakutuloksia',
       type: 'Hakutyyppi',
-      subtype: 'Osa/Koko',
+      subtype: 'Osa / Koko',
       areaPlaceholder: 'Valitse alue',
       transferFilter: {
         title: 'Siirtohakemukset',
