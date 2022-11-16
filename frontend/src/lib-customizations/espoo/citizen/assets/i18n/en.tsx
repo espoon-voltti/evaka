@@ -1082,7 +1082,10 @@ const en: Translations = {
           preferences: {
             label: 'Application preferences you selected',
             noSelections: 'No selections',
-            info: 'Select 1 - 3 preferred units, and sort them in preferred order with the arrows',
+            info: (maxUnits: number) =>
+              maxUnits === 1
+                ? 'Select one preferred unit'
+                : `Select 1 - ${maxUnits} preferred units, and sort them in preferred order with the arrows`,
             fi: 'finnish',
             sv: 'swedish',
             en: 'english',

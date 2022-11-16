@@ -1038,7 +1038,10 @@ const sv: Translations = {
           preferences: {
             label: 'Enheter som du har valt',
             noSelections: 'Inga val',
-            info: 'Välj minst 1 och högst 3 enheter och ange dem i önskad ordning. Du kan ändra på ordningsföljden med hjälp av pilarna.',
+            info: (maxUnits: number) =>
+              maxUnits === 1
+                ? 'Välj en enhet'
+                : `Välj minst 1 och högst ${maxUnits} enheter och ange dem i önskad ordning. Du kan ändra på ordningsföljden med hjälp av pilarna.`,
             fi: 'Finskspråkig',
             sv: 'Svenskspråkig',
             en: 'Engelskspråkig',

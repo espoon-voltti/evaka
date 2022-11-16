@@ -21,6 +21,7 @@ import {
 import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { getMaxPreferredUnits } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 
 import PreferredUnitBox from '../../../applications/editor/unit-preference/PreferredUnitBox'
@@ -29,8 +30,6 @@ import { useTranslation } from '../../../localization'
 import { ApplicationUnitType, getApplicationUnits } from '../../api'
 
 import { UnitPreferenceSectionProps } from './UnitPreferenceSection'
-
-const maxUnits = 3
 
 async function fetchUnits(
   preferredStartDate: LocalDate | null,
@@ -83,6 +82,8 @@ export default React.memo(function UnitsSubSection({
       })
     }
   }, [units]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const maxUnits = getMaxPreferredUnits(applicationType)
 
   return (
     <>
@@ -178,10 +179,9 @@ export default React.memo(function UnitsSubSection({
 
                   <Gap size="s" />
                   <Info>
-                    {
-                      t.applications.editor.unitPreference.units.preferences
-                        .info
-                    }
+                    {t.applications.editor.unitPreference.units.preferences.info(
+                      maxUnits
+                    )}
                   </Info>
                   <Gap size="xs" />
                 </FixedWidthDiv>

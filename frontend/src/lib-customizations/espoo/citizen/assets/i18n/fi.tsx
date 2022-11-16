@@ -1040,7 +1040,10 @@ export default {
           preferences: {
             label: 'Valitsemasi hakutoiveet',
             noSelections: 'Ei valintoja',
-            info: 'Valitse 1-3 varhaiskasvatusyksikköä ja järjestä ne toivomaasi järjestykseen. Voit muuttaa järjestystä nuolien avulla.',
+            info: (maxUnits: number) =>
+              maxUnits === 1
+                ? 'Valitse yksi varhaiskasvatusyksikkö'
+                : `Valitse 1-${maxUnits} varhaiskasvatusyksikköä ja järjestä ne toivomaasi järjestykseen. Voit muuttaa järjestystä nuolien avulla.`,
             fi: 'suomenkielinen',
             sv: 'ruotsinkielinen',
             en: 'englanninkielinen',

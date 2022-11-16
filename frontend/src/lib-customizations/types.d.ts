@@ -5,6 +5,7 @@
 import 'react'
 import type { LatLngExpression } from 'leaflet'
 
+import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { AssistanceMeasure } from 'lib-common/generated/api-types/assistanceaction'
 import {
   AbsenceType,
@@ -75,6 +76,7 @@ export interface CitizenCustomizations {
   routeLinkRootUrl: string
   mapConfig: MapConfig
   featureFlags: FeatureFlags
+  getMaxPreferredUnits: (type: ApplicationType) => number
 }
 
 interface MapConfig {

@@ -23,7 +23,10 @@ const customizations: CitizenCustomizations = {
   },
   routeLinkRootUrl: 'https://reittiopas.hsl.fi/reitti/',
   mapConfig,
-  featureFlags
+  featureFlags,
+  getMaxPreferredUnits() {
+    return 3
+  }
 }
 
 export default customizations
