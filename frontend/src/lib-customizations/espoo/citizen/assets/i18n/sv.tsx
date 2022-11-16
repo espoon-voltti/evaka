@@ -743,14 +743,25 @@ const sv: Translations = {
             CLUB: 'Önskat inledningsdatum'
           },
           noteOnDelay: 'Behandlingstiden för ansökningen är 4 månader.',
-          instructions: (
-            <>
-              Det är möjligt att senarelägga det önskade startdatumet så länge
-              ansökan inte har tagits upp till behandling. Därefter kan du ändra
-              det önskade startdatumet genom att kontakta servicehandledningen
-              inom småbarnspedagogik (tfn 09 816 27600).
-            </>
-          ),
+          instructions: {
+            DAYCARE: (
+              <>
+                Det är möjligt att senarelägga det önskade startdatumet så länge
+                ansökan inte har tagits upp till behandling. Därefter kan du
+                ändra det önskade startdatumet genom att kontakta
+                servicehandledningen inom småbarnspedagogik (tfn 09 816 27600).
+              </>
+            ),
+            PRESCHOOL: (
+              <>
+                Det är möjligt att senarelägga det önskade startdatumet så länge
+                ansökan inte har tagits upp till behandling. Därefter kan du
+                ändra det önskade startdatumet genom att kontakta
+                servicehandledningen inom småbarnspedagogik (tfn 09 816 27600).
+              </>
+            ),
+            CLUB: null
+          },
           placeholder: 'Välj inledningsdatum',
           validationText: 'Önskat inledningsdatum: '
         },

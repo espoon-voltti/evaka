@@ -761,14 +761,25 @@ const en: Translations = {
             CLUB: 'Desired start date'
           },
           noteOnDelay: 'The application processing time is 4 months.',
-          instructions: (
-            <>
-              You can postpone your desired start date until the processing of
-              your application starts. After this, you can make changes to your
-              desired start date by contacting early childhood education service
-              counselling (tel. 09 816 31000).
-            </>
-          ),
+          instructions: {
+            DAYCARE: (
+              <>
+                You can postpone your desired start date until the processing of
+                your application starts. After this, you can make changes to
+                your desired start date by contacting early childhood education
+                service counselling (tel. 09 816 31000).
+              </>
+            ),
+            PRESCHOOL: (
+              <>
+                You can postpone your desired start date until the processing of
+                your application starts. After this, you can make changes to
+                your desired start date by contacting early childhood education
+                service counselling (tel. 09 816 31000).
+              </>
+            ),
+            CLUB: null
+          },
           placeholder: 'Select the start date',
           validationText: 'Desired start date: '
         },

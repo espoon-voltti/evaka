@@ -723,14 +723,29 @@ export default {
             CLUB: 'Kerhon toivottu aloituspäivä'
           },
           noteOnDelay: 'Hakemuksen käsittelyaika on 4 kuukautta.',
-          instructions: (
-            <>
-              Toivottua aloituspäivää on mahdollista muuttaa myöhemmäksi niin
-              kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen
-              toivotun aloituspäivän muutokset tehdään ottamalla yhteyttä
-              varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000).
-            </>
-          ),
+          instructions: {
+            DAYCARE: (
+              <>
+                Toivottua aloituspäivää on mahdollista muuttaa myöhemmäksi niin
+                kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen
+                toivotun aloituspäivän muutokset tehdään ottamalla yhteyttä
+                varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000).
+              </>
+            ),
+            PRESCHOOL: (
+              <>
+                Toivottua aloituspäivää on mahdollista muuttaa myöhemmäksi niin
+                kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen
+                toivotun aloituspäivän muutokset tehdään ottamalla yhteyttä
+                varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000).
+              </>
+            ),
+            CLUB: null
+          } as {
+            DAYCARE: JSX.Element | null
+            PRESCHOOL: JSX.Element | null
+            CLUB: JSX.Element | null
+          },
           placeholder: 'Valitse aloituspäivä',
           validationText: 'Toivottu aloituspäivä: '
         },

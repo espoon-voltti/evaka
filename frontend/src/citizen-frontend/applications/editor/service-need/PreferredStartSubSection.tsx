@@ -126,23 +126,17 @@ export default React.memo(function PreferredStartSubSection({
 
         {type === 'CLUB' && <ClubTermsInfo clubTerms={terms ?? []} />}
 
-        {type !== 'CLUB' ? (
-          <ExpandingInfo
-            data-qa="startdate-instructions"
-            info={t.applications.editor.serviceNeed.startDate.instructions}
-            ariaLabel={t.common.openExpandingInfo}
-            closeLabel={t.common.close}
-            inlineChildren
-          >
-            <Label htmlFor={labelId}>
-              {t.applications.editor.serviceNeed.startDate.label[type]} *
-            </Label>
-          </ExpandingInfo>
-        ) : (
+        <ExpandingInfo
+          data-qa="startdate-instructions"
+          info={t.applications.editor.serviceNeed.startDate.instructions[type]}
+          ariaLabel={t.common.openExpandingInfo}
+          closeLabel={t.common.close}
+          inlineChildren
+        >
           <Label htmlFor={labelId}>
             {t.applications.editor.serviceNeed.startDate.label[type]} *
           </Label>
-        )}
+        </ExpandingInfo>
 
         <Gap size="s" />
 
