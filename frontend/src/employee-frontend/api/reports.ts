@@ -4,11 +4,7 @@
 
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
-import {
-  CareType,
-  DaycareCareArea,
-  ProviderType
-} from 'lib-common/generated/api-types/daycare'
+import { CareType, ProviderType } from 'lib-common/generated/api-types/daycare'
 import { PlacementType } from 'lib-common/generated/api-types/placement'
 import {
   ApplicationsReportRow,
@@ -447,9 +443,8 @@ export function getSextetReport(
 
 export interface PlacementCountReportFilters {
   examinationDate: LocalDate
-  careTypes?: CareType[]
-  providerTypes?: ProviderType[]
-  careArea?: DaycareCareArea
+  careTypes: CareType[]
+  providerTypes: ProviderType[]
 }
 
 export async function getPlacementCountReport(
@@ -459,8 +454,8 @@ export async function getPlacementCountReport(
     .get<JsonOf<PlacementCountReportResult>>(`/reports/placement-count`, {
       params: {
         examinationDate: filters.examinationDate.formatIso(),
-        careTypes: filters.careTypes?.join(','),
-        providerTypes: filters.providerTypes?.join(',')
+        careTypes: filters.careTypes.join(','),
+        providerTypes: filters.providerTypes.join(',')
       }
     })
     .then((res) => Success.of(res.data))
