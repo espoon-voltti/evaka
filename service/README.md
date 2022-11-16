@@ -82,8 +82,8 @@ The API is defined in [DevApi.kt](src/main/kotlin/fi/espoo/evaka/shared/dev/DevA
 
 ## Debugging integration tests
 
-At the time being, we use TestContainers for integration tests, so the database lies in a
-docker container while the tests are executed. You can access the db with eg.
+The database lies in a docker container while the tests are executed. You can
+access the db with eg.
 
 ```sh
 docker exec -it <container> psql -U evaka_it -d evaka_it
