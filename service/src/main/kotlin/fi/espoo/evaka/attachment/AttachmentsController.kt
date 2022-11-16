@@ -9,6 +9,8 @@ import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.utils.exhaust
+import fi.espoo.evaka.messaging.findMessageAccountIdByDraftId
+import fi.espoo.evaka.messaging.getMessageAccountIdsByContentId
 import fi.espoo.evaka.pedagogicaldocument.PedagogicalDocumentNotificationService
 import fi.espoo.evaka.s3.ContentTypePattern
 import fi.espoo.evaka.s3.Document
@@ -182,12 +184,13 @@ class AttachmentsController(
     ): AttachmentId {
         return db.connect { dbc ->
                 dbc.read {
+                    val accountId = it.findMessageAccountIdByDraftId(draftId) ?: throw NotFound()
                     accessControl.requirePermissionFor(
                         it,
                         user,
                         clock,
-                        Action.MessageDraft.UPLOAD_ATTACHMENT,
-                        draftId
+                        Action.MessageAccount.ACCESS,
+                        accountId
                     )
                 }
                 handleFileUpload(
@@ -425,22 +428,65 @@ class AttachmentsController(
                     val attachment =
                         it.getAttachment(attachmentId)
                             ?: throw NotFound("Attachment $attachmentId not found")
-                    val action =
-                        when (attachment.attachedTo) {
-                            is AttachmentParent.Application ->
-                                Action.Attachment.READ_APPLICATION_ATTACHMENT
-                            is AttachmentParent.Income -> Action.Attachment.READ_INCOME_ATTACHMENT
-                            is AttachmentParent.IncomeStatement,
-                            is AttachmentParent.None ->
-                                Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT
-                            is AttachmentParent.MessageContent ->
-                                Action.Attachment.READ_MESSAGE_CONTENT_ATTACHMENT
-                            is AttachmentParent.MessageDraft ->
-                                Action.Attachment.READ_MESSAGE_DRAFT_ATTACHMENT
-                            is AttachmentParent.PedagogicalDocument ->
-                                Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT
-                        }.exhaust()
-                    accessControl.requirePermissionFor(it, user, clock, action, attachmentId)
+                    when (attachment.attachedTo) {
+                        is AttachmentParent.Application ->
+                            accessControl.requirePermissionFor(
+                                it,
+                                user,
+                                clock,
+                                Action.Attachment.READ_APPLICATION_ATTACHMENT,
+                                attachment.id
+                            )
+                        is AttachmentParent.Income ->
+                            accessControl.requirePermissionFor(
+                                it,
+                                user,
+                                clock,
+                                Action.Attachment.READ_INCOME_ATTACHMENT,
+                                attachment.id
+                            )
+                        is AttachmentParent.IncomeStatement,
+                        is AttachmentParent.None ->
+                            accessControl.requirePermissionFor(
+                                it,
+                                user,
+                                clock,
+                                Action.Attachment.READ_INCOME_STATEMENT_ATTACHMENT,
+                                attachment.id
+                            )
+                        is AttachmentParent.MessageContent -> {
+                            val accountIds =
+                                it.getMessageAccountIdsByContentId(
+                                    attachment.attachedTo.messageContentId
+                                )
+                            accessControl.requirePermissionForSomeTarget(
+                                it,
+                                user,
+                                clock,
+                                Action.MessageAccount.ACCESS,
+                                accountIds
+                            )
+                        }
+                        is AttachmentParent.MessageDraft -> {
+                            val accountId =
+                                it.findMessageAccountIdByDraftId(attachment.attachedTo.draftId)
+                            accessControl.requirePermissionFor(
+                                it,
+                                user,
+                                clock,
+                                Action.MessageAccount.ACCESS,
+                                accountId!!
+                            )
+                        }
+                        is AttachmentParent.PedagogicalDocument ->
+                            accessControl.requirePermissionFor(
+                                it,
+                                user,
+                                clock,
+                                Action.Attachment.READ_PEDAGOGICAL_DOCUMENT_ATTACHMENT,
+                                attachment.id
+                            )
+                    }.exhaust()
                     attachment
                 }
             }
@@ -461,27 +507,67 @@ class AttachmentsController(
         @PathVariable attachmentId: AttachmentId
     ) {
         db.connect { dbc ->
-            val attachment =
-                dbc.read { it.getAttachment(attachmentId) }
-                    ?: throw NotFound("Attachment $attachmentId not found")
-
-            val action =
+            dbc.transaction {
+                val attachment =
+                    it.getAttachment(attachmentId)
+                        ?: throw NotFound("Attachment $attachmentId not found")
                 when (attachment.attachedTo) {
                     is AttachmentParent.Application ->
-                        Action.Attachment.DELETE_APPLICATION_ATTACHMENT
-                    is AttachmentParent.Income -> Action.Attachment.DELETE_INCOME_ATTACHMENT
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Attachment.DELETE_APPLICATION_ATTACHMENT,
+                            attachment.id
+                        )
+                    is AttachmentParent.Income ->
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Attachment.DELETE_INCOME_ATTACHMENT,
+                            attachment.id
+                        )
                     is AttachmentParent.IncomeStatement,
-                    is AttachmentParent.None -> Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT
-                    is AttachmentParent.MessageDraft ->
-                        Action.Attachment.DELETE_MESSAGE_DRAFT_ATTACHMENT
+                    is AttachmentParent.None ->
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Attachment.DELETE_INCOME_STATEMENT_ATTACHMENT,
+                            attachment.id
+                        )
+                    is AttachmentParent.MessageDraft -> {
+                        val accountId =
+                            it.findMessageAccountIdByDraftId(attachment.attachedTo.draftId)
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.MessageAccount.ACCESS,
+                            accountId!!
+                        )
+                    }
                     is AttachmentParent.MessageContent ->
-                        Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Attachment.DELETE_MESSAGE_CONTENT_ATTACHMENT,
+                            attachment.id
+                        )
                     is AttachmentParent.PedagogicalDocument ->
-                        Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT
+                        accessControl.requirePermissionFor(
+                            it,
+                            user,
+                            clock,
+                            Action.Attachment.DELETE_PEDAGOGICAL_DOCUMENT_ATTACHMENT,
+                            attachment.id
+                        )
                 }.exhaust()
-            dbc.read { accessControl.requirePermissionFor(it, user, clock, action, attachmentId) }
-
-            dbc.transaction { deleteAttachment(it, attachmentId) }
+                deleteAttachment(it, attachment.id)
+                attachment
+            }
         }
         Audit.AttachmentsDelete.log(targetId = attachmentId)
     }

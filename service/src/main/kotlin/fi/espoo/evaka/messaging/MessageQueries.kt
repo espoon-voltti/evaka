@@ -9,7 +9,6 @@ import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
@@ -23,6 +22,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.formatName
 import fi.espoo.evaka.shared.mapToPaged
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
 import mu.KotlinLogging
 import org.jdbi.v3.json.Json
@@ -658,7 +658,7 @@ relevant_placements AS (
 personal_accounts AS (
     SELECT acc.id, acc_name.name, 'PERSONAL' AS type, p.child_id
     FROM (SELECT DISTINCT unit_id, child_id FROM relevant_placements) p
-    JOIN daycare_acl acl ON acl.daycare_id = p.unit_id
+    JOIN daycare_acl acl ON acl.daycare_id = p.unit_id AND acl.role = 'UNIT_SUPERVISOR'
     JOIN message_account acc ON acc.employee_id = acl.employee_id
     JOIN message_account_view acc_name ON acc_name.id = acc.id
     WHERE active IS TRUE
@@ -817,10 +817,10 @@ data class MunicipalMessageReceiversResult(
 )
 
 fun Database.Read.getReceiversForNewMessage(
-    employeeId: EmployeeId,
+    idFilter: AccessControlFilter<MessageAccountId>,
     today: LocalDate
 ): List<MessageReceiversResponse> {
-    val accountIds = getEmployeeMessageAccountIds(employeeId)
+    val accountIds = getEmployeeMessageAccountIds(idFilter)
 
     val unitReceivers =
         createQuery(

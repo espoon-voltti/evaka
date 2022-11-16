@@ -5,11 +5,16 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageContentId
+import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 
 fun Database.Read.getDaycareGroupMessageAccount(daycareGroupId: GroupId): MessageAccountId {
     val sql =
@@ -32,20 +37,28 @@ WHERE acc.person_id = :personId AND acc.active = true
     return this.createQuery(sql).bind("personId", personId).mapTo<MessageAccountId>().one()
 }
 
-fun Database.Read.getEmployeeMessageAccountIds(employeeId: EmployeeId): Set<MessageAccountId> {
-    return this.createQuery(
-            "SELECT account_id FROM message_account_access_view WHERE employee_id = :employeeId"
-        )
-        .bind("employeeId", employeeId)
+fun Database.Read.getEmployeeMessageAccountIds(
+    idFilter: AccessControlFilter<MessageAccountId>
+): Set<MessageAccountId> {
+    return createQuery<DatabaseTable> {
+            sql(
+                """
+SELECT id
+FROM message_account
+WHERE (${predicate(idFilter.forTable("message_account"))})
+        """
+                    .trimIndent()
+            )
+        }
         .mapTo<MessageAccountId>()
         .toSet()
 }
 
 fun Database.Read.getAuthorizedMessageAccountsForEmployee(
-    employeeId: EmployeeId,
+    idFilter: AccessControlFilter<MessageAccountId>,
     municipalAccountName: String
 ): Set<AuthorizedMessageAccount> {
-    val accountIds = getEmployeeMessageAccountIds(employeeId)
+    val accountIds = getEmployeeMessageAccountIds(idFilter)
 
     val sql =
         """
@@ -207,3 +220,30 @@ fun Database.Read.allFoldersForAccount(accountId: MessageAccountId): List<String
         .mapTo<String>()
         .list()
 }
+
+fun Database.Read.findMessageAccountIdByDraftId(id: MessageDraftId): MessageAccountId? =
+    createQuery("SELECT account_id FROM message_draft WHERE id = :id")
+        .bind("id", id)
+        .mapTo<MessageAccountId>()
+        .findOne()
+        .orElse(null)
+
+fun Database.Read.getMessageAccountIdsByContentId(id: MessageContentId): List<MessageAccountId> =
+    createQuery(
+            """
+SELECT msg.sender_id
+FROM message_content content
+JOIN message msg ON content.id = msg.content_id
+WHERE content.id = :id
+UNION
+SELECT rec.recipient_id
+FROM message_content content
+JOIN message msg ON content.id = msg.content_id
+JOIN message_recipients rec ON msg.id = rec.message_id
+WHERE content.id = :id
+        """
+                .trimIndent()
+        )
+        .bind("id", id)
+        .mapTo<MessageAccountId>()
+        .list()
