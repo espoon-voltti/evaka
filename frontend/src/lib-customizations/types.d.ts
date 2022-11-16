@@ -108,6 +108,7 @@ interface BaseFeatureFlags {
   }
   groupsTableServiceNeeds: boolean
   preschool: boolean
+  preparatory: boolean
   urgencyAttachments: boolean
 
   /**
