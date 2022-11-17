@@ -245,7 +245,9 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
         sum(
             CASE
                 WHEN sar.arrived IS NOT NULL
-                    THEN EXTRACT(EPOCH FROM (sar.departed - sar.arrived)) / 3600 / $workingDayHours * sar.occupancy_coefficient / $defaultOccupancyCoefficient
+                    THEN ROUND(EXTRACT(EPOCH FROM (
+                        LEAST(sar.departed, timezone('Europe/Helsinki', (t::date + 1)::date::timestamp)) - GREATEST(sar.arrived, timezone('Europe/Helsinki', t::date::timestamp))
+                    )) / 3600 / $workingDayHours * sar.occupancy_coefficient / $defaultOccupancyCoefficient, 4)
                 ELSE s.count
             END
         )
@@ -271,7 +273,7 @@ private inline fun <reified K : OccupancyGroupingKey> Database.Read.getCaretaker
             SELECT group_id, arrived, departed, occupancy_coefficient
             FROM staff_attendance_external
             WHERE departed IS NOT NULL
-        ) sar ON g.id = sar.group_id AND t = DATE(sar.arrived)
+        ) sar ON g.id = sar.group_id AND (t = DATE(sar.arrived) OR t = DATE(sar.departed))
         LEFT JOIN staff_attendance s ON g.id = s.group_id AND t = s.date
         """
                 .trimIndent()

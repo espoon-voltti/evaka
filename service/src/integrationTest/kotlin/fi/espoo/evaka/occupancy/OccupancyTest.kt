@@ -1412,6 +1412,36 @@ class OccupancyTest : PureJdbiTest(resetDbBeforeEach = true) {
         }
     }
 
+    @Test
+    fun `calculateDailyGroupOccupancyValues should split overnight staff attendances to the respective days`() {
+        db.transaction { tx ->
+            FixtureBuilder(tx, today).addChild().withAge(4).saveAnd {
+                addPlacement()
+                    .ofType(PlacementType.DAYCARE)
+                    .toUnit(daycareInArea1)
+                    .fromDay(-1)
+                    .toDay(0)
+                    .saveAnd { addGroupPlacement().toGroup(daycareGroup1).save() }
+            }
+
+            FixtureBuilder.EmployeeFixture(tx, today, employeeId)
+                .addRealtimeAttendance()
+                .inGroup(daycareGroup1)
+                .withCoefficient(BigDecimal(7))
+                .withType(StaffAttendanceType.PRESENT)
+                .arriving(HelsinkiDateTime.of(today.minusDays(1), LocalTime.of(21, 0)))
+                .departing(HelsinkiDateTime.of(today, LocalTime.of(4, 45)))
+                .save()
+        }
+
+        assertRealtimeAttendances(
+            listOf(
+                today.minusDays(1) to OccupancyValues(1.0, 1, 0.3871, 36.9),
+                today to OccupancyValues(1.0, 1, 0.6129, 23.3)
+            )
+        )
+    }
+
     private fun getAndAssertOccupancyInUnit(
         tx: Database.Read,
         unitId: DaycareId,
