@@ -16,6 +16,8 @@ export default class MobileChildPage {
   #cancelArrivalButton = this.page.find('[data-qa="cancel-arrival-button"]')
   #returnToPresentButton = this.page.find('[data-qa="return-to-present-btn"]')
 
+  #modalOkButton = this.page.findByDataQa('modal-okBtn')
+
   #markAbsentBeforehandLink = this.page.find(
     '[data-qa="mark-absent-beforehand"]'
   )
@@ -71,6 +73,7 @@ export default class MobileChildPage {
 
   async returnToComing() {
     await this.#cancelArrivalButton.click()
+    await this.#modalOkButton.click()
   }
 
   async returnToPresent() {

@@ -68,8 +68,11 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         assertEquals(AttendanceStatus.PRESENT, child.status)
         assertNotNull(child.attendances)
-        assertEquals(arrived, child.attendances?.arrived?.toLocalTime()?.withSecond(0)?.withNano(0))
-        assertNull(child.attendances!!.departed)
+        assertEquals(
+            arrived,
+            child.attendances[0]?.arrived?.toLocalTime()?.withSecond(0)?.withNano(0)
+        )
+        assertNull(child.attendances[0]!!.departed)
         assertTrue(child.absences.isEmpty())
     }
 
@@ -90,7 +93,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         val child = returnToComingAssertOkOneChild()
 
         assertEquals(AttendanceStatus.COMING, child.status)
-        assertNull(child.attendances)
+        assertEquals(emptyList(), child.attendances)
         assertTrue(child.absences.isEmpty())
     }
 
@@ -106,7 +109,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         val child = returnToComingAssertOkOneChild()
 
         assertEquals(AttendanceStatus.COMING, child.status)
-        assertNull(child.attendances)
+        assertEquals(emptyList(), child.attendances)
         assertTrue(child.absences.isEmpty())
     }
 
@@ -258,7 +261,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertNotNull(child.attendances)
         assertEquals(
             departed,
-            child.attendances?.departed?.toLocalTime()?.withSecond(0)?.withNano(0)
+            child.attendances[0]?.departed?.toLocalTime()?.withSecond(0)?.withNano(0)
         )
         assertTrue(child.absences.isEmpty())
     }
@@ -276,7 +279,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertNotNull(child.attendances)
         assertEquals(
             departed,
-            child.attendances?.departed?.toLocalTime()?.withSecond(0)?.withNano(0)
+            child.attendances[0]?.departed?.toLocalTime()?.withSecond(0)?.withNano(0)
         )
         assertContentEquals(listOf(AbsenceCategory.BILLABLE), child.absences.map { it.category })
     }
@@ -294,7 +297,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertNotNull(child.attendances)
         assertEquals(
             departed,
-            child.attendances?.departed?.toLocalTime()?.withSecond(0)?.withNano(0)
+            child.attendances[0]?.departed?.toLocalTime()?.withSecond(0)?.withNano(0)
         )
         assertContentEquals(listOf(AbsenceCategory.NONBILLABLE), child.absences.map { it.category })
     }
@@ -312,7 +315,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         assertNotNull(child.attendances)
         assertEquals(
             departed,
-            child.attendances?.departed?.toLocalTime()?.withSecond(0)?.withNano(0)
+            child.attendances[0]?.departed?.toLocalTime()?.withSecond(0)?.withNano(0)
         )
         assertEquals(
             setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE),
@@ -329,7 +332,7 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
         val child = markDepartedAssertOkOneChild(departed, null)
 
         assertEquals(AttendanceStatus.COMING, child.status)
-        assertNull(child.attendances)
+        assertEquals(emptyList(), child.attendances)
     }
 
     @Test
@@ -349,8 +352,8 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
 
         assertEquals(AttendanceStatus.PRESENT, child.status)
         assertNotNull(child.attendances)
-        assertNotNull(child.attendances!!.arrived)
-        assertNull(child.attendances!!.departed)
+        assertNotNull(child.attendances[0]!!.arrived)
+        assertNull(child.attendances[0]!!.departed)
         assertTrue(child.absences.isEmpty())
     }
 

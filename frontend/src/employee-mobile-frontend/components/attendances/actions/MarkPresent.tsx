@@ -130,15 +130,17 @@ export default React.memo(function MarkPresent() {
             {isDeparted && (
               <>
                 <Gap size="s" />
-                <InlineWideAsyncButton
-                  text={i18n.attendances.actions.returnToPresentNoTimeNeeded}
-                  onClick={() => returnToPresentCall()}
-                  onSuccess={() => {
-                    reloadAttendances()
-                    navigate(-2)
-                  }}
-                  data-qa="return-to-present-btn"
-                />
+                <JustifyContainer>
+                  <InlineWideAsyncButton
+                    text={i18n.attendances.actions.returnToPresentNoTimeNeeded}
+                    onClick={() => returnToPresentCall()}
+                    onSuccess={() => {
+                      reloadAttendances()
+                      navigate(-2)
+                    }}
+                    data-qa="return-to-present-btn"
+                  />
+                </JustifyContainer>
               </>
             )}
           </ContentArea>
@@ -181,4 +183,9 @@ const DailyNotes = styled.div`
 const InlineWideAsyncButton = styled(AsyncButton)`
   border: none;
   height: 50px;
+`
+
+const JustifyContainer = styled.div`
+  display: flex;
+  justify-content: center;
 `

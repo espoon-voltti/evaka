@@ -109,7 +109,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         }
         val child = expectOneChild()
         assertEquals(AttendanceStatus.COMING, child.status)
-        assertNull(child.attendances)
+        assertEquals(emptyList(), child.attendances)
         assertEquals(0, child.absences.size)
         assertFalse(child.backup)
     }
@@ -142,7 +142,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         }
         val child = expectOneChild()
         assertEquals(AttendanceStatus.COMING, child.status)
-        assertNull(child.attendances)
+        assertEquals(emptyList(), child.attendances)
         assertEquals(0, child.absences.size)
         assertTrue(child.backup)
     }
@@ -163,9 +163,9 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         assertNotNull(child.attendances)
         assertEquals(
             arrived.withTime(arrived.toLocalTime().withSecond(0).withNano(0)),
-            child.attendances!!.arrived
+            child.attendances[0]!!.arrived
         )
-        assertNull(child.attendances!!.departed)
+        assertNull(child.attendances[0]!!.departed)
         assertEquals(0, child.absences.size)
     }
 
@@ -186,11 +186,11 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         assertNotNull(child.attendances)
         assertEquals(
             arrived.withTime(arrived.toLocalTime().withSecond(0).withNano(0)),
-            child.attendances!!.arrived
+            child.attendances[0]!!.arrived
         )
         assertEquals(
             departed.withTime(departed.toLocalTime().withSecond(0).withNano(0)),
-            child.attendances!!.departed
+            child.attendances[0]!!.departed
         )
         assertEquals(0, child.absences.size)
     }
@@ -213,7 +213,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         }
         val child = expectOneChild()
         assertEquals(AttendanceStatus.ABSENT, child.status)
-        assertNull(child.attendances)
+        assertEquals(emptyList(), child.attendances)
         assertEquals(
             setOf(AbsenceCategory.BILLABLE, AbsenceCategory.NONBILLABLE),
             child.absences.map { it.category }.toSet()
@@ -276,9 +276,9 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         assertNotNull(child.attendances)
         assertEquals(
             arrived.withTime(arrived.toLocalTime().withSecond(0).withNano(0)),
-            child.attendances!!.arrived
+            child.attendances[0]!!.arrived
         )
-        assertNull(child.attendances!!.departed)
+        assertNull(child.attendances[0]!!.departed)
         assertEquals(0, child.absences.size)
     }
 
@@ -299,11 +299,11 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         assertNotNull(child.attendances)
         assertEquals(
             arrived.withTime(arrived.toLocalTime().withSecond(0).withNano(0)),
-            child.attendances!!.arrived
+            child.attendances[0]!!.arrived
         )
         assertEquals(
             departed.withTime(departed.toLocalTime().withSecond(0).withNano(0)),
-            child.attendances!!.departed
+            child.attendances[0]!!.departed
         )
         assertEquals(0, child.absences.size)
     }
@@ -322,7 +322,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         }
         val child = expectOneChild()
         assertEquals(AttendanceStatus.COMING, child.status)
-        assertNull(child.attendances)
+        assertEquals(emptyList(), child.attendances)
         assertEquals(0, child.absences.size)
     }
 
@@ -348,7 +348,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val childInBackup = expectOneChild(backupUnitId, mobileUser2)
         assertEquals(AttendanceStatus.PRESENT, childInBackup.status)
         assertNotNull(childInBackup.attendances)
-        assertNull(childInBackup.attendances?.departed)
+        assertNull(childInBackup.attendances[0]?.departed)
 
         val childrenInPlacementUnit = fetchAttendances()
         assertEquals(0, childrenInPlacementUnit.children.size)
@@ -375,7 +375,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         val childInBackup = expectOneChild(backupUnitId, mobileUser2)
         assertEquals(AttendanceStatus.PRESENT, childInBackup.status)
         assertNotNull(childInBackup.attendances)
-        assertNull(childInBackup.attendances?.departed)
+        assertNull(childInBackup.attendances[0]?.departed)
 
         val childrenInPlacementUnit = fetchAttendances()
         assertEquals(0, childrenInPlacementUnit.children.size)

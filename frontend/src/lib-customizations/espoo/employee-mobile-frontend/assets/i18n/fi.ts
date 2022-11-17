@@ -4,6 +4,8 @@
 
 export const fi = {
   common: {
+    yesIDo: 'Kyllä',
+    noIDoNot: 'En',
     loadingFailed: 'Tietojen haku epäonnistui',
     cancel: 'Peruuta',
     confirm: 'Vahvista',
@@ -254,7 +256,9 @@ export const fi = {
     timeDiffTooBigNotification:
       'Voit tehdä sisäänkirjauksen +/- 30 min päähän nykyhetkestä. Kirjauksia voi tarvittaessa muokata työpöytäselaimen kautta.',
     departureCannotBeDoneInFuture:
-      'Työvuoron uloskirjausta ei voi merkitä ennakkoon.'
+      'Työvuoron uloskirjausta ei voi merkitä ennakkoon.',
+    confirmAttendanceChangeCancel:
+      'Haluatko varmasti peruuttaa viimeisimmän lähtö- tai saapumismerkinnän?'
   },
   childInfo: {
     header: 'Lapsen tiedot',

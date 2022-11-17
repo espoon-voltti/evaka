@@ -2,41 +2,32 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { faArrowRotateLeft } from 'Icons'
+import React from 'react'
 import styled from 'styled-components'
 
 import { Child } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
-import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { faArrowRotateLeft } from 'lib-icons'
+import colors from 'lib-customizations/common'
 
-import { returnToComing } from '../../../api/attendances'
-import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'
 import { ArrivalTime } from '../components'
 
 interface Props {
   child: Child
-  unitId: string
+  returnToComing: () => void
 }
 
 export default React.memo(function ArrivalAndDeparture({
   child,
-  unitId
+  returnToComing
 }: Props) {
   const { i18n } = useTranslation()
-  const { reloadAttendances } = useContext(ChildAttendanceContext)
-  const navigate = useNavigate()
-
-  function returnToComingCall() {
-    return returnToComing(unitId, child.id)
-  }
 
   const latestArrival =
     child.attendances.length > 0 ? child.attendances[0].arrived : null
-  //const latestDeparture = child.attendances.length > 0 ? child.attendances[0].departed : null
 
   if (!latestArrival) {
     return null
@@ -60,15 +51,12 @@ export default React.memo(function ArrivalAndDeparture({
                 <span>{`${dateInfo} ${arrived.toLocalTime().format()}`}</span>
               </ArrivalTime>
               {!departed && (
-                <InlineWideAsyncButton
-                  text={i18n.common.cancel}
+                <InlineButton
                   icon={faArrowRotateLeft}
-                  onClick={() => returnToComingCall()}
-                  onSuccess={() => {
-                    reloadAttendances()
-                    navigate(-1)
-                  }}
+                  text={i18n.common.cancel}
+                  onClick={returnToComing}
                   data-qa="cancel-arrival-button"
+                  color={colors.main.m2}
                 />
               )}
             </FixedSpaceRow>
@@ -91,9 +79,6 @@ const ArrivalTimeContainer = styled.div`
   flex-direction: column;
 `
 
-const InlineWideAsyncButton = styled(AsyncButton)`
-  border: none;
-`
 const AttendanceRowContainer = styled.div`
   display: flex;
   flex-direction: row;

@@ -296,6 +296,7 @@ describe('Child mobile attendance list', () => {
     await listPage.selectDepartedChildren()
     await listPage.selectChild(child)
     await childPage.returnToPresent()
+    await childPage.returnToPresent()
 
     await listPage.selectPresentChildren()
     await listPage.selectChild(child)
