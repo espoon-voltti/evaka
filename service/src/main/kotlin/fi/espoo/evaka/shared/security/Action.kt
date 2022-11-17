@@ -1222,12 +1222,11 @@ sealed interface Action {
     ) : ScopedAction<MessageAccountId> {
         ACCESS(
             IsEmployee.hasPersonalMessageAccount(),
-            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).hasDaycareMessageAccount(),
+            HasUnitRole(UNIT_SUPERVISOR).hasDaycareMessageAccount(),
             IsEmployee.hasDaycareGroupMessageAccount(),
             IsEmployee.hasMunicipalMessageAccount(),
             IsMobile(requirePinLogin = true).hasPersonalMessageAccount(),
-            IsMobile(requirePinLogin = true)
-                .hasDaycareMessageAccount(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER),
+            IsMobile(requirePinLogin = true).hasDaycareMessageAccount(UNIT_SUPERVISOR),
             IsMobile(requirePinLogin = true).hasDaycareGroupMessageAccount(),
             IsCitizen(allowWeakLogin = true).hasMessageAccount()
         );
