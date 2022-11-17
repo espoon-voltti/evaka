@@ -26,6 +26,7 @@ import {
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { presentInGroup } from 'lib-common/staff-attendance'
 import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -641,21 +642,34 @@ function computeModalAttendances(
   attendances: ModalAttendance[]
   plannedAttendances: ModalPlannedAttendance[]
 } {
+  const startOfDay = HelsinkiDateTime.fromLocal(
+    detailsModalConfig.date,
+    LocalTime.of(0, 0)
+  )
+  const endOfDay = HelsinkiDateTime.fromLocal(
+    detailsModalConfig.date.addDays(1),
+    LocalTime.of(0, 0)
+  )
   if (detailsModalConfig.target.type === 'employee') {
     const employeeId = detailsModalConfig.target.employeeId
     const combined: EmployeeAttendance[] = staffAttendances.filter(
       (attendance) => attendance.employeeId === employeeId
     )
     const attendances: ModalAttendance[] = uniqBy(
-      combined.flatMap((employee) => employee.attendances),
+      combined
+        .flatMap((employee) => employee.attendances)
+        .filter(
+          (attendance) =>
+            attendance.arrived <= endOfDay &&
+            (attendance.departed === null || startOfDay <= attendance.departed)
+        ),
       (attendance) => attendance.id
     )
     const plannedAttendances: ModalPlannedAttendance[] = uniq(
       combined.flatMap((employee) => employee.plannedAttendances)
-    ).map((attendance) => ({
-      start: attendance.start,
-      end: attendance.end
-    }))
+    )
+      .filter(({ start, end }) => start <= endOfDay && startOfDay <= end)
+      .map(({ start, end }) => ({ start, end }))
     return { attendances, plannedAttendances }
   } else {
     const name = detailsModalConfig.target.name

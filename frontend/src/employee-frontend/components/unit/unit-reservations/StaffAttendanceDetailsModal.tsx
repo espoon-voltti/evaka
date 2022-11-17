@@ -112,24 +112,9 @@ function StaffAttendanceDetailsModal<
 }: Props<T>) {
   const { i18n } = useTranslation()
 
-  const [startOfDay, endOfDay] = useMemo(
-    () => [
-      HelsinkiDateTime.fromLocal(date, LocalTime.of(0, 0)),
-      HelsinkiDateTime.fromLocal(date.addDays(1), LocalTime.of(0, 0))
-    ],
-    [date]
-  )
-
   const sortedAttendances = useMemo(
-    () =>
-      orderBy(
-        attendances.filter(
-          ({ arrived, departed }) =>
-            arrived < endOfDay && (departed === null || startOfDay < departed)
-        ) ?? [],
-        ({ arrived }) => arrived
-      ),
-    [attendances, endOfDay, startOfDay]
+    () => orderBy(attendances ?? [], ({ arrived }) => arrived),
+    [attendances]
   )
 
   const initialEditState = useMemo(
