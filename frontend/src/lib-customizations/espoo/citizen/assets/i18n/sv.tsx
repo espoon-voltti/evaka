@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
@@ -329,7 +330,19 @@ const sv: Translations = {
       ok: 'Klart!'
     },
     absentEnable: 'Markera som frånvarande',
-    absentDisable: 'Markera som närvarande'
+    absentDisable: 'Markera som närvarande',
+    nonReservableDaysWarningModal: {
+      title: 'Alla ändringar kunde inte sparas',
+      text: (
+        <>
+          Registreringsperioden för några av de dagar du valt har redan stängts.
+          Ändringar för dessa tider kunde inte sparas. Kontrollera närvaron du
+          har markerat och meddela personalen om saknade ändringar med hjälp av{' '}
+          <Link to="/messages">meddelandefunktionen</Link>.
+        </>
+      ),
+      ok: 'Klart!'
+    }
   },
   messages: {
     inboxTitle: 'Inkorg',

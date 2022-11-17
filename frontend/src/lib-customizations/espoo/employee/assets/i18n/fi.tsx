@@ -2059,8 +2059,6 @@ export const fi = {
         OVERTIME: 'Ylityö',
         JUSTIFIED_CHANGE: 'Perusteltu muutos'
       },
-      formErrorWarning:
-        'Tarkista antamasi läsnäolotiedot. Muutoksesi voi jäädä tallentamatta, jos ne ei ole kelvollisia. Ohita varoitus klikkaamalla.',
       incalculableSum:
         'Tunteja ei voi laskea, koska päivän kirjauksista puuttuu viimeinen lähtöaika.',
       gapWarning: (gapRange: string) => `Kirjaus puuttuu välillä ${gapRange}`,
