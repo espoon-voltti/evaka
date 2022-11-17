@@ -33,7 +33,7 @@ WHERE p.id = :id
         )
         .bind("id", id)
         .mapTo<Placement>()
-        .first()
+        .firstOrNull()
 }
 
 fun Database.Read.getPlacementDraftPlacements(childId: ChildId): List<PlacementDraftPlacement> {
