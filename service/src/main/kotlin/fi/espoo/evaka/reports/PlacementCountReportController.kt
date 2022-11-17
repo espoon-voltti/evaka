@@ -71,38 +71,35 @@ class PlacementCountReportController(private val accessControl: AccessControl) {
         // language=sql
         val sql =
             """
-WITH child_with_age AS
-         (SELECT p.id,
-                 date_part('year', age(:examinationDate, p.date_of_birth)) AS age_in_years
-          FROM person p
-          WHERE exists(SELECT FROM placement pl WHERE pl.child_id = p.id))
-SELECT ca.id                                                AS area_id,
-       ca.name                                              AS area_name,
-       d.id                                                 AS daycare_id,
-       d.name                                               AS daycare_name,
-       count(pl.id)                                         AS placement_count,
+SELECT ca.id                                                             AS area_id,
+       ca.name                                                           AS area_name,
+       d.id                                                              AS daycare_id,
+       d.name                                                            AS daycare_name,
+       count(pl.id)                                                      AS placement_count,
        count(pl.id)
-       FILTER (WHERE cwa.age_in_years > 2)                  AS placement_count_3v_and_over,
+       FILTER (WHERE cwa.age_in_years > 2)                               AS placement_count_3v_and_over,
        count(pl.id)
-       FILTER (WHERE cwa.age_in_years < 3)                  AS placement_count_under_3v,
+       FILTER (WHERE cwa.age_in_years < 3)                               AS placement_count_under_3v,
        COALESCE(sum(CASE
-               WHEN cwa.age_in_years > 2
-                   THEN COALESCE(sno.occupancy_coefficient, 0) * COALESCE(an.capacity_factor, 1.00)
-               ELSE COALESCE(sno.occupancy_coefficient_under_3y, 0) *
-                    COALESCE(an.capacity_factor, 1.00) END), 0) AS calculated_placements
+                        WHEN cwa.age_in_years > 2
+                            THEN COALESCE(sno.occupancy_coefficient, 0) * COALESCE(an.capacity_factor, 1.00)
+                        ELSE COALESCE(sno.occupancy_coefficient_under_3y, 0) *
+                             COALESCE(an.capacity_factor, 1.00) END), 0) AS calculated_placements
 FROM daycare d
          JOIN care_area ca
               ON d.care_area_id = ca.id
          JOIN placement pl
-                   ON pl.unit_id = d.id AND daterange(pl.start_date, pl.end_date) @> :examinationDate::date
-         JOIN child_with_age cwa
-                   ON pl.child_id = cwa.id
+              ON pl.unit_id = d.id AND daterange(pl.start_date, pl.end_date) @> :examinationDate::date
          JOIN service_need sn
-                   ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date) @> :examinationDate::date
+              ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date) @> :examinationDate::date
          JOIN service_need_option sno
-                   ON sn.option_id = sno.id
+              ON sn.option_id = sno.id
          LEFT JOIN assistance_need an
                    ON pl.child_id = an.child_id AND daterange(an.start_date, an.end_date) @> :examinationDate::date
+         JOIN LATERAL (SELECT date_part('year', age(:examinationDate, p.date_of_birth)) AS age_in_years
+                       FROM person p
+                       WHERE p.id = pl.child_id) cwa
+              ON TRUE
 WHERE d.opening_date <= :examinationDate
   AND (d.closing_date IS NULL OR d.closing_date >= :examinationDate)
   AND d.provider_type = ANY
