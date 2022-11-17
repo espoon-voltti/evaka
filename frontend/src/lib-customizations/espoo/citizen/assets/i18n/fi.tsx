@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
@@ -95,7 +96,7 @@ export default {
       ]
     },
     closeModal: 'Sulje ponnahdusikkuna',
-    close: 'Close'
+    close: 'Sulje'
   },
   header: {
     nav: {
@@ -329,7 +330,19 @@ export default {
       ok: 'Selvä!'
     },
     absentEnable: 'Merkitse poissaolevaksi',
-    absentDisable: 'Merkitse läsnä olevaksi'
+    absentDisable: 'Merkitse läsnä olevaksi',
+    nonReservableDaysWarningModal: {
+      title: 'Kaikkia muutoksia ei voitu tallentaa',
+      text: (
+        <>
+          Ilmoittautumisaika osalle valitsemistasi päivistä on jo mennyt kiinni.
+          Muutoksia näille ajoille ei voitu tallentaa. Tarkista merkitsemäsi
+          läsnäolot ja ilmoita puuttuvat muutokset henkilökunnalle{' '}
+          <Link to="/messages">viestitoiminnolla</Link>.
+        </>
+      ),
+      ok: 'Selvä!'
+    }
   },
   messages: {
     inboxTitle: 'Viestit',

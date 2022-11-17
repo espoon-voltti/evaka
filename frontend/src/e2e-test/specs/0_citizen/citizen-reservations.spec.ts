@@ -29,18 +29,8 @@ import CitizenHeader from '../../pages/citizen/citizen-header'
 import { Page } from '../../utils/page'
 import { enduserLogin } from '../../utils/user'
 
-describe('Citizen attendance reservations (desktop)', () => {
-  citizenReservationTests('desktop')
-})
-
-describe('Citizen attendance reservations (mobile)', () => {
-  citizenReservationTests('mobile')
-})
-
-function citizenReservationTests(env: 'desktop' | 'mobile') {
-  let page: Page
-  let header: CitizenHeader
-  let calendarPage: CitizenCalendarPage
+const e = ['desktop', 'mobile'] as const
+describe.each(e)('Citizen attendance reservations (%s)', (env) => {
   let children: PersonDetail[]
   let fixtures: AreaAndPersonFixtures
   const today = LocalDate.of(2022, 1, 5)
@@ -92,24 +82,28 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
       'BILLABLE',
       employee.id
     )
+  })
 
+  async function openCalendarPage() {
     const viewport =
       env === 'mobile'
         ? { width: 375, height: 812 }
         : { width: 1920, height: 1080 }
 
-    page = await Page.open({
+    const page = await Page.open({
       viewport,
       screen: viewport,
       mockedTime: today.toSystemTzDate()
     })
     await enduserLogin(page)
-    header = new CitizenHeader(page, env)
-    calendarPage = new CitizenCalendarPage(page, env)
+    const header = new CitizenHeader(page, env)
     await header.selectTab('calendar')
-  })
+    return new CitizenCalendarPage(page, env)
+  }
 
   test('Citizen creates a repeating reservation for all children', async () => {
+    const calendarPage = await openCalendarPage()
+
     const firstReservationDay = today.addDays(14)
     const reservation = {
       startTime: '08:00',
@@ -127,7 +121,41 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
     await calendarPage.assertReservations(firstReservationDay, [reservation])
   })
 
+  test('Citizen creates a reservation for all children, but some days are not reservable', async () => {
+    // Holiday period overlaps with the reservations
+    await Fixture.holidayPeriod()
+      .with({
+        period: new FiniteDateRange(today.addDays(15), today.addDays(16)),
+        reservationDeadline: today.subDays(1)
+      })
+      .save()
+
+    const calendarPage = await openCalendarPage()
+
+    const firstReservationDay = today.addDays(14)
+    const reservation = {
+      startTime: '08:00',
+      endTime: '16:00',
+      childIds: children.map(({ id }) => id)
+    }
+
+    const reservationsModal = await calendarPage.openReservationsModal()
+    await reservationsModal.createRepeatingDailyReservation(
+      new FiniteDateRange(firstReservationDay, firstReservationDay.addDays(6)),
+      reservation.startTime,
+      reservation.endTime
+    )
+
+    await calendarPage.nonReservableDaysWarningModal.waitUntilVisible()
+    await calendarPage.nonReservableDaysWarningModal.okButton.click()
+    await calendarPage.nonReservableDaysWarningModal.waitUntilHidden()
+
+    await calendarPage.assertReservations(firstReservationDay, [reservation])
+  })
+
   test('Citizen creates a repeating weekly reservation for all children', async () => {
+    const calendarPage = await openCalendarPage()
+
     // This should be a monday
     const firstReservationDay = today
       .addDays(14)
@@ -155,6 +183,8 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   })
 
   test('Citizen cannot create reservation on day where staff has marked an absence', async () => {
+    const calendarPage = await openCalendarPage()
+
     // This should be a monday
     const firstReservationDay = today
       .addDays(35)
@@ -172,6 +202,8 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   })
 
   test('Citizen creates a repeating reservation and then marks an absence for one child', async () => {
+    const calendarPage = await openCalendarPage()
+
     const firstReservationDay = today.addDays(14)
     const reservation = {
       startTime: '08:00',
@@ -199,6 +231,8 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   })
 
   test('Citizen creates a repeating reservation and then overwrites it', async () => {
+    const calendarPage = await openCalendarPage()
+
     const firstReservationDay = today.addDays(14)
     const initialReservation = {
       startTime: '08:00',
@@ -234,6 +268,8 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   })
 
   test('Citizen creates a reservation from day view', async () => {
+    const calendarPage = await openCalendarPage()
+
     const reservationDay = today.addDays(14)
 
     const dayView = await calendarPage.openDayView(reservationDay)
@@ -253,6 +289,8 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   })
 
   test('If absence modal is opened from day view, that day is filled by default', async () => {
+    const calendarPage = await openCalendarPage()
+
     const reservationDay = today.addDays(14)
 
     const dayView = await calendarPage.openDayView(reservationDay)
@@ -263,6 +301,8 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   })
 
   test('Children are grouped correctly in calendar', async () => {
+    const calendarPage = await openCalendarPage()
+
     const firstReservationDay = today.addDays(14)
     const reservation1 = {
       startTime: '08:00',
@@ -301,6 +341,8 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
   })
 
   test('Citizen creates a repeating weekly reservation for all children with absent day', async () => {
+    const calendarPage = await openCalendarPage()
+
     // This should be a monday
     const firstReservationDay = today
       .addDays(14)
@@ -336,7 +378,7 @@ function citizenReservationTests(env: 'desktop' | 'mobile') {
       )
     }, Promise.resolve())
   })
-}
+})
 
 describe('Citizen calendar child visibility', () => {
   let page: Page

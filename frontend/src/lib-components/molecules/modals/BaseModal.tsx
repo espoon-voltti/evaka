@@ -18,7 +18,7 @@ import ModalBackground from './ModalBackground'
 
 export interface ModalBaseProps {
   title: string
-  text?: string
+  text?: JSX.Element | string
   className?: string
   icon?: IconProp
   type?: ModalType

@@ -52,7 +52,11 @@ type ReservationErrors = Partial<
 
 export type ValidationResult =
   | { errors: ReservationErrors }
-  | { errors: undefined; requestPayload: DailyReservationRequest[] }
+  | {
+      errors: undefined
+      containsNonReservableDays: boolean
+      requestPayload: DailyReservationRequest[]
+    }
 
 export type ReservationFormDataForValidation = Omit<
   ReservationFormData,
@@ -125,13 +129,24 @@ export function validateForm(
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const dateRange = new FiniteDateRange(startDate!, endDate!)
+  const allDates = [...dateRange.dates()]
+
+  const containsNonReservableDays = !formData.selectedChildren.every(
+    (childId) => {
+      const childReservableDays = reservableDays[childId] ?? []
+      return allDates.every((date) =>
+        childReservableDays.some((range) => range.includes(date))
+      )
+    }
+  )
 
   return {
     errors: undefined,
+    containsNonReservableDays,
     requestPayload: formData.selectedChildren
       .flatMap((childId) => {
         const childReservableDays = reservableDays[childId] ?? []
-        const dates = [...dateRange.dates()].filter((date) =>
+        const dates = allDates.filter((date) =>
           childReservableDays.some((range) => range.includes(date))
         )
         switch (formData.repetition) {
@@ -175,7 +190,7 @@ export function validateForm(
 
 function filterReservations(
   times: TimeRanges | 'absent' | 'not-editable' | 'holiday' | undefined
-) {
+): TimeRange[] | null {
   if (times === 'absent' || times === 'not-editable' || times === 'holiday') {
     return null
   }
