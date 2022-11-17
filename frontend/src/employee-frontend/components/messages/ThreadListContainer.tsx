@@ -64,6 +64,7 @@ export default React.memo(function ThreadListContainer({
     page,
     setPage,
     pages,
+    refreshMessages,
     selectedThread,
     selectThread,
     setSelectedDraft,
@@ -71,10 +72,10 @@ export default React.memo(function ThreadListContainer({
     messageCopiesAsThreads
   } = useContext(MessageContext)
 
-  const deselectThread = useCallback(
-    () => selectThread(undefined),
-    [selectThread]
-  )
+  const onArchive = useCallback(() => {
+    selectThread(undefined)
+    refreshMessages()
+  }, [refreshMessages, selectThread])
 
   const hasMessages = useMemo<boolean>(() => {
     if (view === 'received' && receivedMessages.isSuccess) {
@@ -188,7 +189,7 @@ export default React.memo(function ThreadListContainer({
         thread={selectedThread}
         accountId={account.id}
         view={view}
-        onArchived={view === 'received' ? deselectThread : undefined}
+        onArchived={view === 'received' ? onArchive : undefined}
       />
     )
   }
@@ -200,7 +201,7 @@ export default React.memo(function ThreadListContainer({
       <ThreadList
         items={threadListItems}
         accountId={account.id}
-        onArchive={view === 'received' ? deselectThread : undefined}
+        onArchive={view === 'received' ? onArchive : undefined}
       />
       <Pagination
         pages={pages}
