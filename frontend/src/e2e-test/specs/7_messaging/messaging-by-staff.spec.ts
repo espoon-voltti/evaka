@@ -128,7 +128,7 @@ describe('Sending and receiving messages', () => {
   ]
 
   describe.each(initConfigurations)(
-    `Interactions with $%s`,
+    `Interactions with %s`,
     (_name, initCitizen) => {
       beforeEach(async () => {
         await Promise.all([initStaffPage(), initCitizen()])
