@@ -43,10 +43,6 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping) {
         clock: EvakaClock,
         action: Action.UnscopedAction
     ): AccessControlDecision {
-        if (user.isAdmin) {
-            return AccessControlDecision.PermittedToAdmin
-        }
-
         val queryCache = UnscopedEvaluator(DatabaseActionRule.QueryContext(tx, user, clock.now()))
         fun evaluate(rule: UnscopedActionRule): AccessControlDecision =
             when (rule) {
@@ -73,10 +69,6 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping) {
         actionClass: Class<A>
     ): Set<A> where A : Action.UnscopedAction, A : Enum<A> {
         val allActions = EnumSet.allOf(actionClass)
-        if (user.isAdmin) {
-            return allActions
-        }
-
         val permittedActions = EnumSet.noneOf(actionClass)
         val queryCache = UnscopedEvaluator(DatabaseActionRule.QueryContext(tx, user, clock.now()))
         fun isPermitted(rule: UnscopedActionRule): Boolean =
@@ -115,9 +107,6 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping) {
         actionClass: Class<A>
     ): Set<A> where A : Action.ScopedAction<*>, A : Enum<A> {
         val allActions = EnumSet.allOf(actionClass)
-        if (user.isAdmin) {
-            return allActions
-        }
         val queryCtx = DatabaseActionRule.QueryContext(tx, user, clock.now())
         val unscopedEvaluator = UnscopedEvaluator(queryCtx)
         val scopedCache = mutableMapOf<DatabaseActionRule.Params, Boolean>()
@@ -191,10 +180,6 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping) {
         action: Action.ScopedAction<T>,
         targets: Iterable<T>
     ): Map<T, AccessControlDecision> {
-        if (user.isAdmin) {
-            return targets.associateWith { AccessControlDecision.PermittedToAdmin }
-        }
-
         val decided = mutableMapOf<T, AccessControlDecision>()
         var undecided = targets.toSet()
         val queryCtx = DatabaseActionRule.QueryContext(tx, user, clock.now())
@@ -241,9 +226,6 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping) {
         clock: EvakaClock,
         action: Action.ScopedAction<T>
     ): AccessControlFilter<T>? {
-        if (user.isAdmin) {
-            return AccessControlFilter.PermitAll
-        }
         val queryCtx = DatabaseActionRule.QueryContext(tx, user, clock.now())
         val unscopedEvaluator = UnscopedEvaluator(queryCtx)
         val scopedEvaluator = ScopedEvaluator<T>(queryCtx)
@@ -260,8 +242,6 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping) {
                         is AccessControlDecision.Denied -> throw decision.toException()
                         AccessControlDecision.None -> {}
                         is AccessControlDecision.Permitted -> return AccessControlFilter.PermitAll
-                        AccessControlDecision.PermittedToAdmin ->
-                            return AccessControlFilter.PermitAll
                     }
                 is DatabaseActionRule.Scoped<in T, *> ->
                     scopedEvaluator.queryWithParams(rule)?.let { filter -> filters += filter }
@@ -301,10 +281,6 @@ class AccessControl(private val actionRuleMapping: ActionRuleMapping) {
         targets: Set<T>
     ): Map<T, Set<A>> where A : Action.ScopedAction<T>, A : Enum<A> {
         val allActions: Set<A> = EnumSet.allOf(actionClass)
-        if (user.isAdmin) {
-            return targets.associateWith { allActions }
-        }
-
         val queryCtx = DatabaseActionRule.QueryContext(tx, user, clock.now())
         val unscopedEvaluator = UnscopedEvaluator(queryCtx)
         val scopedEvaluator = ScopedEvaluator<T>(queryCtx)
