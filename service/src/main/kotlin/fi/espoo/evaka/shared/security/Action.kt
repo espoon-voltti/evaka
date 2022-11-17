@@ -559,14 +559,14 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfAssistanceNeedDecision()
         ),
-        READ_IN_REPORT(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
         SEND(
             HasGlobalRole(SERVICE_WORKER),
             HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
                 .inPlacementUnitOfChildOfAssistanceNeedDecision()
         ),
-        DECIDE(HasGlobalRole(DIRECTOR).andIsDecisionMakerForAssistanceNeedDecision()),
-        MARK_AS_OPENED(HasGlobalRole(DIRECTOR).andIsDecisionMakerForAssistanceNeedDecision()),
+        READ_IN_REPORT(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
+        DECIDE(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
+        MARK_AS_OPENED(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
         UPDATE_DECISION_MAKER(HasGlobalRole(DIRECTOR).andAssistanceNeedDecisionHasBeenSent());
 
         override fun toString(): String = "${javaClass.name}.$name"
