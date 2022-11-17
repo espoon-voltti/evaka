@@ -40,7 +40,11 @@ import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -68,6 +72,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var attachmentsController: AttachmentsController
 
     private val clock = RealEvakaClock()
+
+    @Autowired private lateinit var accessControl: AccessControl
 
     private val person1Id = testAdult_1.id
     private val person2Id = testAdult_2.id
@@ -186,7 +192,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee")
             )
             tx.upsertEmployeeMessageAccount(employee1Id)
-            tx.insertDaycareAclRow(testDaycare.id, employee1Id, UserRole.STAFF)
+            tx.insertDaycareAclRow(testDaycare.id, employee1Id, UserRole.UNIT_SUPERVISOR)
             tx.insertDaycareGroupAcl(testDaycare.id, employee1Id, listOf(groupId1, groupId2))
 
             tx.insertTestEmployee(
@@ -200,10 +206,19 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `a thread is created, accessed and replied to by participants who are guardian of the same child`() {
         // given
+        val clock = MockEvakaClock(HelsinkiDateTime.now())
         val (employee1Account, person1Account, person2Account) =
             db.read {
                 listOf(
-                    it.getEmployeeMessageAccountIds(employee1Id).first(),
+                    it.getEmployeeMessageAccountIds(
+                            accessControl.requireAuthorizationFilter(
+                                it,
+                                employee1,
+                                clock,
+                                Action.MessageAccount.ACCESS
+                            )
+                        )
+                        .first(),
                     it.getCitizenMessageAccount(person1Id),
                     it.getCitizenMessageAccount(person2Id)
                 )
@@ -349,10 +364,19 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `a message is split to several threads by guardianship`() {
         // given
+        val clock = MockEvakaClock(HelsinkiDateTime.now())
         val (employee1Account, person1Account, person2Account, person3Account, person4Account) =
             db.read {
                 listOf(
-                    it.getEmployeeMessageAccountIds(employee1Id).first(),
+                    it.getEmployeeMessageAccountIds(
+                            accessControl.requireAuthorizationFilter(
+                                it,
+                                employee1,
+                                clock,
+                                Action.MessageAccount.ACCESS
+                            )
+                        )
+                        .first(),
                     it.getCitizenMessageAccount(person1Id),
                     it.getCitizenMessageAccount(person2Id),
                     it.getCitizenMessageAccount(person3Id),
@@ -466,10 +490,19 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `a bulletin cannot be replied to by the recipients`() {
         // given
+        val clock = MockEvakaClock(HelsinkiDateTime.now())
         val (employee1Account, person1Account) =
             db.read {
                 listOf(
-                    it.getEmployeeMessageAccountIds(employee1Id).first(),
+                    it.getEmployeeMessageAccountIds(
+                            accessControl.requireAuthorizationFilter(
+                                it,
+                                employee1,
+                                clock,
+                                Action.MessageAccount.ACCESS
+                            )
+                        )
+                        .first(),
                     it.getCitizenMessageAccount(person1Id)
                 )
             }
@@ -538,10 +571,19 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `messages can be marked read`() {
         // given
+        val clock = MockEvakaClock(HelsinkiDateTime.now())
         val (employee1Account, person1Account, person2Account) =
             db.read {
                 listOf(
-                    it.getEmployeeMessageAccountIds(employee1Id).first(),
+                    it.getEmployeeMessageAccountIds(
+                            accessControl.requireAuthorizationFilter(
+                                it,
+                                employee1,
+                                clock,
+                                Action.MessageAccount.ACCESS
+                            )
+                        )
+                        .first(),
                     it.getCitizenMessageAccount(person1Id),
                     it.getCitizenMessageAccount(person2Id)
                 )
@@ -592,10 +634,19 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Test
     fun `messages can have attachments`() {
         // given
+        val clock = MockEvakaClock(HelsinkiDateTime.now())
         val (employee1Account, person1Account) =
             db.read {
                 listOf(
-                    it.getEmployeeMessageAccountIds(employee1Id).first(),
+                    it.getEmployeeMessageAccountIds(
+                            accessControl.requireAuthorizationFilter(
+                                it,
+                                employee1,
+                                clock,
+                                Action.MessageAccount.ACCESS
+                            )
+                        )
+                        .first(),
                     it.getCitizenMessageAccount(person1Id)
                 )
             }

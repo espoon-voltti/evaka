@@ -463,7 +463,7 @@ fun Database.Read.getUnitFeatures(id: DaycareId): UnitFeatures? =
         )
         .bind("id", id)
         .mapTo<UnitFeatures>()
-        .first()
+        .firstOrNull()
 
 private data class UnitOperationDays(val id: DaycareId, val operationDays: List<Int>)
 

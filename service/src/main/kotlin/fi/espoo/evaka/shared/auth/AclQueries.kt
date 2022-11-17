@@ -44,18 +44,17 @@ WHERE daycare_id = :daycareId
         .mapTo<DaycareAclRow>()
         .toList()
 
-fun Database.Read.hasDaycareAclRowForAnyUnit(employeeId: EmployeeId, role: UserRole): Boolean =
+fun Database.Read.hasAnyDaycareAclRow(employeeId: EmployeeId): Boolean =
     createQuery(
             """
         SELECT EXISTS(
             SELECT 1 FROM daycare_acl
-            WHERE employee_id = :employeeId AND role = :role
+            WHERE employee_id = :employeeId
         )
     """
                 .trimIndent()
         )
         .bind("employeeId", employeeId)
-        .bind("role", role)
         .mapTo<Boolean>()
         .one()
 

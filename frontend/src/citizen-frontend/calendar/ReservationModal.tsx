@@ -53,7 +53,7 @@ import { getEarliestReservableDate, getLatestReservableDate } from './utils'
 
 interface Props {
   onClose: () => void
-  onReload: () => void
+  onSuccess: (containsNonReservableDays: boolean) => void
   availableChildren: ReservationChild[]
   reservableDays: Record<string, FiniteDateRange[]>
   initialStart: LocalDate | null
@@ -63,7 +63,7 @@ interface Props {
 
 export default React.memo(function ReservationModal({
   onClose,
-  onReload,
+  onSuccess,
   availableChildren,
   reservableDays,
   initialStart,
@@ -333,8 +333,11 @@ export default React.memo(function ReservationModal({
                   }
                 }}
                 onSuccess={() => {
-                  onReload()
-                  onClose()
+                  onSuccess(
+                    !validationResult.errors
+                      ? validationResult.containsNonReservableDays
+                      : false
+                  )
                 }}
                 onFailure={(reason) => {
                   showSaveError(reason)

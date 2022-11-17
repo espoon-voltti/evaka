@@ -184,20 +184,20 @@ export const validateApplication = (
         ? validate(form.contactInfo.guardianFuturePostOffice, required)
         : undefined,
       otherGuardianAgreementStatus:
-        apiData.type === 'PRESCHOOL' &&
+        apiData.type !== 'CLUB' &&
         apiData.otherGuardianId &&
         apiData.otherGuardianLivesInSameAddress === false
           ? requiredSelection(form.contactInfo.otherGuardianAgreementStatus)
           : undefined,
       otherGuardianPhone:
-        apiData.type === 'PRESCHOOL' &&
+        apiData.type !== 'CLUB' &&
         apiData.otherGuardianId &&
         apiData.otherGuardianLivesInSameAddress === false &&
         form.contactInfo.otherGuardianAgreementStatus === 'NOT_AGREED'
           ? phone(form.contactInfo.otherGuardianPhone)
           : undefined,
       otherGuardianEmail:
-        apiData.type === 'PRESCHOOL' &&
+        apiData.type !== 'CLUB' &&
         apiData.otherGuardianId &&
         apiData.otherGuardianLivesInSameAddress === false &&
         form.contactInfo.otherGuardianAgreementStatus === 'NOT_AGREED'

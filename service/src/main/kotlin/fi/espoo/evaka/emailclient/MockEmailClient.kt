@@ -4,17 +4,27 @@
 
 package fi.espoo.evaka.emailclient
 
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.read
+import kotlin.concurrent.write
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
 class MockEmailClient : IEmailClient {
     companion object {
-        val emails = mutableListOf<MockEmail>()
+        private val data = mutableListOf<MockEmail>()
+        private val lock = ReentrantReadWriteLock()
 
-        fun getEmail(toAddress: String): MockEmail? {
-            return emails.find { email -> email.toAddress == toAddress }
-        }
+        val emails: List<MockEmail>
+            get() = lock.read { data.toList() }
+
+        fun clear() = lock.write { data.clear() }
+
+        fun addEmail(email: MockEmail) = lock.write { data.add(email) }
+
+        fun getEmail(toAddress: String): MockEmail? =
+            lock.read { emails.find { email -> email.toAddress == toAddress } }
     }
 
     override fun sendEmail(
@@ -27,7 +37,7 @@ class MockEmailClient : IEmailClient {
     ) {
         if (validateToAddress(traceId, toAddress)) {
             logger.info { "Mock sending email (personId: $traceId toAddress: $toAddress)" }
-            emails.add(MockEmail(traceId, toAddress, fromAddress, subject, htmlBody, textBody))
+            addEmail(MockEmail(traceId, toAddress, fromAddress, subject, htmlBody, textBody))
         }
     }
 }

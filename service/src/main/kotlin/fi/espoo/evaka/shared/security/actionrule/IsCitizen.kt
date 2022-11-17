@@ -14,6 +14,7 @@ import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.IncomeStatementId
+import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.PedagogicalDocumentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
@@ -328,20 +329,9 @@ WHERE EXISTS(SELECT 1 FROM foster_parent fp WHERE fp.parent_id = ${bind(citizenI
             )
         }
 
-    fun hasPermissionForAttachmentThroughMessageContent() =
-        rule<AttachmentId> { personId, _ ->
-            sql(
-                """
-SELECT att.id
-FROM attachment att
-JOIN message_content content ON att.message_content_id = content.id
-JOIN message msg ON content.id = msg.content_id
-JOIN message_recipients rec ON msg.id = rec.message_id
-JOIN message_account ma ON ma.id = msg.sender_id OR ma.id = rec.recipient_id
-WHERE ma.person_id = ${bind(personId)}
-            """
-                    .trimIndent()
-            )
+    fun hasMessageAccount() =
+        rule<MessageAccountId> { citizenId, _ ->
+            sql("SELECT id FROM message_account WHERE person_id = ${bind(citizenId)}")
         }
 
     fun ownerOfApplication() =

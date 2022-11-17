@@ -36,6 +36,7 @@ import CalendarListView from './CalendarListView'
 import { CalendarNotificationsProvider } from './CalendarNotifications'
 import DailyServiceTimeNotifications from './DailyServiceTimeNotifications'
 import DayView from './DayView'
+import NonReservableDaysWarningModal from './NonReservableDaysWarningModal'
 import ReservationModal from './ReservationModal'
 import { getCalendarEvents, getReservations } from './api'
 import FixedPeriodSelectionModal from './holiday-modal/FixedPeriodSelectionModal'
@@ -78,6 +79,7 @@ const CalendarPage = React.memo(function CalendarPage() {
     openHolidayModal,
     openAbsenceModal,
     openDayModal,
+    openNonReservableDaysWarningModal,
     closeModal
   } = useCalendarModalState()
 
@@ -199,7 +201,14 @@ const CalendarPage = React.memo(function CalendarPage() {
             <ReservationModal
               onClose={closeModal}
               availableChildren={response.children}
-              onReload={loadDefaultRange}
+              onSuccess={(containsNonReservableDays: boolean) => {
+                if (containsNonReservableDays) {
+                  openNonReservableDaysWarningModal()
+                } else {
+                  closeModal()
+                }
+                void loadDefaultRange()
+              }}
               reservableDays={response.reservableDays}
               initialStart={
                 modalState.initialRange?.start ?? firstReservableDate
@@ -234,6 +243,9 @@ const CalendarPage = React.memo(function CalendarPage() {
               />
             </RequireAuth>
           )}
+          {modalState?.type === 'nonReservableDaysWarning' && (
+            <NonReservableDaysWarningModal onClose={closeModal} />
+          )}
         </div>
       ))}
     </CalendarNotificationsProvider>
@@ -247,8 +259,13 @@ type URLModalState =
   | { type: 'reservations'; initialRange: FiniteDateRange | undefined }
   | { type: 'holidays' }
 
+// Modal statse not stored to the URL
+type NonURLModalState =
+  | { type: 'pickAction' }
+  | { type: 'nonReservableDaysWarning' }
+
 // All possible modal states
-type ModalState = { type: 'pickAction' } | URLModalState
+type ModalState = URLModalState | NonURLModalState
 
 interface UseModalStateResult {
   modalState: ModalState | undefined
@@ -257,6 +274,7 @@ interface UseModalStateResult {
   openReservationModal: (initialRange: FiniteDateRange | undefined) => void
   openAbsenceModal: (initialDate: LocalDate | undefined) => void
   openHolidayModal: () => void
+  openNonReservableDaysWarningModal: () => void
   closeModal: () => void
 }
 
@@ -268,17 +286,17 @@ export function useCalendarModalState(): UseModalStateResult {
     () => parseQueryString(location.search),
     [location.search]
   )
-  const [pickActionOpen, setPickActionOpen] = useState(false)
+  const [nonUrlModalState, setNonUrlModalState] = useState<NonURLModalState>()
 
   const openModal = useCallback(
     (modal: URLModalState) => {
-      setPickActionOpen(false)
+      setNonUrlModalState(undefined)
       navigate(`/calendar?${buildQueryString(modal)}`)
     },
     [navigate]
   )
   const closeModal = useCallback(() => {
-    setPickActionOpen(false)
+    setNonUrlModalState(undefined)
     navigate('/calendar')
   }, [navigate])
 
@@ -286,7 +304,6 @@ export function useCalendarModalState(): UseModalStateResult {
     (date: LocalDate) => openModal({ type: 'day', date }),
     [openModal]
   )
-  const openPickActionModal = useCallback(() => setPickActionOpen(true), [])
   const openReservationModal = useCallback(
     (initialRange: FiniteDateRange | undefined) =>
       openModal({ type: 'reservations', initialRange }),
@@ -302,13 +319,23 @@ export function useCalendarModalState(): UseModalStateResult {
     [openModal]
   )
 
+  const openPickActionModal = useCallback(
+    () => setNonUrlModalState({ type: 'pickAction' }),
+    []
+  )
+  const openNonReservableDaysWarningModal = useCallback(
+    () => setNonUrlModalState({ type: 'nonReservableDaysWarning' }),
+    []
+  )
+
   return {
-    modalState: pickActionOpen ? { type: 'pickAction' } : urlModalState,
+    modalState: nonUrlModalState ?? urlModalState,
     openDayModal,
     openPickActionModal,
     openReservationModal,
     openAbsenceModal,
     openHolidayModal,
+    openNonReservableDaysWarningModal,
     closeModal
   }
 }

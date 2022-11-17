@@ -42,6 +42,10 @@ export default class CitizenCalendarPage {
     private readonly type: 'desktop' | 'mobile'
   ) {}
 
+  nonReservableDaysWarningModal = new NonReservableDaysWarningModal(
+    this.page.findByDataQa('non-reservable-days-warning-modal')
+  )
+
   #openCalendarActionsModal = this.page.findByDataQa(
     'open-calendar-actions-modal'
   )
@@ -482,4 +486,8 @@ class HolidayModal extends Element {
       .findByDataQa('not-eligible')
       .waitUntilVisible()
   }
+}
+
+class NonReservableDaysWarningModal extends Element {
+  okButton = this.findByDataQa('modal-okBtn')
 }

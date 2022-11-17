@@ -29,7 +29,11 @@ import fi.espoo.evaka.shared.dev.insertTestDaycareGroupPlacement
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.security.AccessControl
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import java.time.LocalDate
@@ -43,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class MessageNotificationEmailServiceIntegrationTest :
     FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired lateinit var accessControl: AccessControl
 
     private val testPersonFi = DevPerson(email = "fi@example.com", language = "fi")
     private val testPersonSv = DevPerson(email = "sv@example.com", language = "sv")
@@ -99,13 +104,23 @@ class MessageNotificationEmailServiceIntegrationTest :
             tx.upsertEmployeeMessageAccount(employeeId)
             tx.insertDaycareAclRow(testDaycare.id, employeeId, UserRole.STAFF)
         }
-
-        MockEmailClient.emails.clear()
     }
 
     @Test
     fun `notifications are sent to citizens`() {
-        val employeeAccount = db.read { it.getEmployeeMessageAccountIds(employeeId).first() }
+        val clock = MockEvakaClock(HelsinkiDateTime.now())
+        val employeeAccount =
+            db.read {
+                it.getEmployeeMessageAccountIds(
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            employee,
+                            clock,
+                            Action.MessageAccount.ACCESS
+                        )
+                    )
+                    .first()
+            }
 
         postNewThread(
             sender = employeeAccount,

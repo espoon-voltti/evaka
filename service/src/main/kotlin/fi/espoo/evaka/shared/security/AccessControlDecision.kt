@@ -7,9 +7,6 @@ package fi.espoo.evaka.shared.security
 import fi.espoo.evaka.shared.domain.Forbidden
 
 sealed interface AccessControlDecision {
-    /** Unconditionally permitted to an admin without evaluating any rules */
-    object PermittedToAdmin : AccessControlDecision
-
     /** No decision was made, so action is denied by default */
     object None : AccessControlDecision
 
@@ -29,14 +26,12 @@ sealed interface AccessControlDecision {
 
     fun isPermitted(): Boolean =
         when (this) {
-            is PermittedToAdmin -> true
             is Permitted -> true
             is Denied -> false
             is None -> false
         }
     fun assert() =
         when (this) {
-            is PermittedToAdmin -> {}
             is Permitted -> {}
             is None -> throw Forbidden()
             is Denied -> throw this.toException()

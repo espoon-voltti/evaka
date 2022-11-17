@@ -548,6 +548,21 @@ export class StaffAttendanceDetailsModal extends Element {
   gapWarning(index: number) {
     return this.findByDataQa(`attendance-gap-warning-${index}`).innerText
   }
+
+  arrivalTimeInfo(index: number) {
+    return this.findAllByDataQa('arrival-time-input-info').nth(index).innerText
+  }
+
+  departureTimeInfo(index: number) {
+    return this.findAllByDataQa('departure-time-input-info').nth(index)
+      .innerText
+  }
+
+  async assertDepartureTimeInfoHidden(index: number) {
+    return await this.findAllByDataQa('departure-time-input-info')
+      .nth(index)
+      .waitUntilHidden()
+  }
 }
 
 export class StaffAttendanceAddPersonModal extends Element {

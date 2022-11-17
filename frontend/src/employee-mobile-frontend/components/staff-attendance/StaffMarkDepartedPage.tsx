@@ -82,7 +82,7 @@ export default React.memo(function StaffMarkDepartedPage() {
   const [attendanceType, setAttendanceType] = useState<StaffAttendanceType>()
 
   const isValidTimeString = (time: string) =>
-    LocalTime.parse(time, 'HH:mm') ? true : false
+    LocalTime.tryParse(time, 'HH:mm') ? true : false
 
   const staffInfo = useMemo(
     () =>

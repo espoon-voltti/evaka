@@ -4,6 +4,7 @@
 
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import { OtherGuardianAgreementStatus } from 'lib-common/generated/api-types/application'
 import { JsonOf } from 'lib-common/json'
 
 import { clubFixture, daycareFixture } from '../dev-api/fixtures'
@@ -49,13 +50,17 @@ export type FormInput = Partial<{
   [K in Section]: Partial<ApplicationFormData[K]>
 }>
 
-export const minimalDaycareForm: {
+export const minimalDaycareForm = ({
+  otherGuardianAgreementStatus
+}: {
+  otherGuardianAgreementStatus?: OtherGuardianAgreementStatus
+} = {}): {
   form: JsonOf<FormInput>
   validateResult: (
     result: ApplicationDetails,
     vtjSiblingsLivingInSameAddress: PersonDetail[]
   ) => void
-} = {
+} => ({
   form: {
     serviceNeed: {
       preferredStartDate: '16.08.2021',
@@ -72,7 +77,8 @@ export const minimalDaycareForm: {
     },
     contactInfo: {
       guardianPhone: '(+358) 50-1234567',
-      noGuardianEmail: true
+      noGuardianEmail: true,
+      otherGuardianAgreementStatus
     }
   },
   validateResult: (res, vtjSiblingsLivingInSameAddress) => {
@@ -88,7 +94,14 @@ export const minimalDaycareForm: {
     assertEquals('(+358) 50-1234567', res.form.guardian.phoneNumber)
     assertBlank(res.form.guardian.email)
 
-    assertNull(res.form.secondGuardian)
+    if (otherGuardianAgreementStatus) {
+      assertEquals(
+        otherGuardianAgreementStatus,
+        res.form.secondGuardian?.agreementStatus
+      )
+    } else {
+      assertNull(res.form.secondGuardian)
+    }
 
     assertNull(res.form.otherPartner)
 
@@ -123,15 +136,19 @@ export const minimalDaycareForm: {
 
     assertNull(res.form.clubDetails)
   }
-}
+})
 
-export const fullDaycareForm: {
+export const fullDaycareForm = ({
+  otherGuardianAgreementStatus
+}: {
+  otherGuardianAgreementStatus?: OtherGuardianAgreementStatus
+} = {}): {
   form: JsonOf<FormInput>
   validateResult: (
     result: ApplicationDetails,
     vtjSiblingsLivingInSameAddress: PersonDetail[]
   ) => void
-} = {
+} => ({
   form: {
     serviceNeed: {
       preferredStartDate: '16.08.2021',
@@ -165,6 +182,7 @@ export const fullDaycareForm: {
       guardianPhone: '(+358) 50-1234567',
       guardianEmail: 'johannes.karhula@example.com',
       guardianEmailVerification: 'johannes.karhula@example.com',
+      otherGuardianAgreementStatus,
       otherPartnerExists: true,
       otherPartnerFirstName: 'Heikki',
       otherPartnerLastName: 'Heppuli',
@@ -218,7 +236,14 @@ export const fullDaycareForm: {
     assertEquals('(+358) 50-1234567', res.form.guardian.phoneNumber)
     assertEquals('johannes.karhula@example.com', res.form.guardian.email)
 
-    assertNull(res.form.secondGuardian)
+    if (otherGuardianAgreementStatus) {
+      assertEquals(
+        otherGuardianAgreementStatus,
+        res.form.secondGuardian?.agreementStatus
+      )
+    } else {
+      assertNull(res.form.secondGuardian)
+    }
 
     assertEquals('Heikki', res.form.otherPartner?.firstName)
     assertEquals('Heppuli', res.form.otherPartner?.lastName)
@@ -270,7 +295,7 @@ export const fullDaycareForm: {
 
     assertNull(res.form.clubDetails)
   }
-}
+})
 
 export const minimalClubForm: {
   form: JsonOf<FormInput>

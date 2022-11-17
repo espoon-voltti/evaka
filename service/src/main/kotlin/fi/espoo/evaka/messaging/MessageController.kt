@@ -8,7 +8,6 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
@@ -65,14 +64,15 @@ class MessageController(
     ): Set<AuthorizedMessageAccount> {
         return db.connect { dbc ->
                 dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Global.READ_USER_MESSAGE_ACCOUNTS
-                    )
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.MessageAccount.ACCESS
+                        )
                     it.getAuthorizedMessageAccountsForEmployee(
-                        user.id,
+                        filter,
                         featureConfig.municipalMessageAccountName
                     )
                 }
@@ -90,16 +90,16 @@ class MessageController(
         val result =
             db.connect { dbc ->
                 dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Unit.READ_MESSAGING_ACCOUNTS,
-                        unitId
-                    )
                     if (user.employeeId != null) {
+                        val filter =
+                            accessControl.requireAuthorizationFilter(
+                                it,
+                                user,
+                                clock,
+                                Action.MessageAccount.ACCESS
+                            )
                         it.getAuthorizedMessageAccountsForEmployee(
-                            user.employeeId,
+                            filter,
                             featureConfig.municipalMessageAccountName
                         )
                     } else setOf()
@@ -221,15 +221,14 @@ class MessageController(
     ): Set<UnreadCountByAccount> {
         return db.connect { dbc ->
                 dbc.read { tx ->
-                    accessControl.requirePermissionFor(
-                        tx,
-                        user,
-                        clock,
-                        Action.Global.ACCESS_MESSAGING
-                    )
-                    tx.getUnreadMessagesCounts(
-                        tx.getEmployeeMessageAccountIds(getEmployeeId(user)!!)
-                    )
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            tx,
+                            user,
+                            clock,
+                            Action.MessageAccount.ACCESS
+                        )
+                    tx.getUnreadMessagesCounts(tx.getEmployeeMessageAccountIds(filter))
                 }
             }
             .also { Audit.MessagingUnreadMessagesRead.log(meta = mapOf("count" to it.size)) }
@@ -473,16 +472,16 @@ class MessageController(
         user: AuthenticatedUser,
         clock: EvakaClock
     ): List<MessageReceiversResponse> {
-        val employeeId = getEmployeeId(user) ?: throw Forbidden("Permission denied")
         return db.connect { dbc ->
                 dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Global.READ_MESSAGE_RECEIVERS
-                    )
-                    it.getReceiversForNewMessage(employeeId, clock.today())
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.MessageAccount.ACCESS
+                        )
+                    it.getReceiversForNewMessage(filter, clock.today())
                 }
             }
             .also { Audit.MessagingMessageReceiversRead.log(meta = mapOf("count" to it.size)) }
@@ -495,17 +494,16 @@ class MessageController(
         accountId: MessageAccountId
     ) {
         db.read {
-                accessControl.requirePermissionFor(it, user, clock, Action.Global.ACCESS_MESSAGING)
-                it.getEmployeeMessageAccountIds(getEmployeeId(user)!!)
+                val filter =
+                    accessControl.requireAuthorizationFilter(
+                        it,
+                        user,
+                        clock,
+                        Action.MessageAccount.ACCESS
+                    )
+                it.getEmployeeMessageAccountIds(filter)
             }
             .find { it == accountId }
             ?: throw Forbidden("Message account not found for user")
     }
-
-    fun getEmployeeId(user: AuthenticatedUser): EmployeeId? =
-        when (user) {
-            is AuthenticatedUser.MobileDevice -> user.employeeId
-            is AuthenticatedUser.Employee -> user.id
-            else -> null
-        }
 }

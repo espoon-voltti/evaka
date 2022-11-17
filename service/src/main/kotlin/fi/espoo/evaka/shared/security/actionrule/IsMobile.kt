@@ -13,15 +13,16 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.Id
-import fi.espoo.evaka.shared.MobileDeviceId
+import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.MobileAuthLevel
+import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.db.QuerySql
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControlDecision
 
 private typealias FilterByMobile<T> =
-    QuerySql.Builder<T>.(mobileId: MobileDeviceId, now: HelsinkiDateTime) -> QuerySql<T>
+    QuerySql.Builder<T>.(user: AuthenticatedUser.MobileDevice, now: HelsinkiDateTime) -> QuerySql<T>
 
 data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
     fun isPermittedAuthLevel(authLevel: MobileAuthLevel) =
@@ -53,7 +54,7 @@ data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
                             sql(
                                 """
                     SELECT id
-                    FROM (${subquery { filter(ctx.user.id, ctx.now) } }) fragment
+                    FROM (${subquery { filter(ctx.user, ctx.now) } }) fragment
                     WHERE id = ANY(${bind(targets.map { it.raw })})
                     """
                                     .trimIndent()
@@ -76,7 +77,7 @@ data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
             when (ctx.user) {
                 is AuthenticatedUser.MobileDevice ->
                     if (params.isPermittedAuthLevel(ctx.user.authLevel)) {
-                        QuerySql.of { filter(ctx.user.id, ctx.now) }
+                        QuerySql.of { filter(ctx.user, ctx.now) }
                     } else {
                         null
                     }
@@ -106,95 +107,135 @@ data class IsMobile(val requirePinLogin: Boolean) : DatabaseActionRule.Params {
         }
 
     fun inPlacementUnitOfChild() =
-        rule<ChildId> { mobileId, now ->
+        rule<ChildId> { user, now ->
             sql(
                 """
 SELECT child_id AS id
 FROM child_daycare_acl(${bind(now.toLocalDate())})
 JOIN mobile_device_daycare_acl_view USING (daycare_id)
-WHERE mobile_device_id = ${bind(mobileId)}
+WHERE mobile_device_id = ${bind(user.id)}
             """
                     .trimIndent()
             )
         }
 
     fun inPlacementUnitOfChildOfChildDailyNote() =
-        rule<ChildDailyNoteId> { mobileId, now ->
+        rule<ChildDailyNoteId> { user, now ->
             sql(
                 """
 SELECT cdn.id
 FROM child_daily_note cdn
 JOIN child_daycare_acl(${bind(now.toLocalDate())}) USING (child_id)
 JOIN mobile_device_daycare_acl_view USING (daycare_id)
-WHERE mobile_device_id = ${bind(mobileId)}
+WHERE mobile_device_id = ${bind(user.id)}
             """
                     .trimIndent()
             )
         }
 
     fun inPlacementUnitOfChildOfChildStickyNote() =
-        rule<ChildStickyNoteId> { mobileId, now ->
+        rule<ChildStickyNoteId> { user, now ->
             sql(
                 """
 SELECT csn.id
 FROM child_sticky_note csn
 JOIN child_daycare_acl(${bind(now.toLocalDate())}) USING (child_id)
 JOIN mobile_device_daycare_acl_view USING (daycare_id)
-WHERE mobile_device_id = ${bind(mobileId)}
+WHERE mobile_device_id = ${bind(user.id)}
             """
                     .trimIndent()
             )
         }
 
     fun inPlacementUnitOfChildOfChildImage() =
-        rule<ChildImageId> { mobileId, now ->
+        rule<ChildImageId> { user, now ->
             sql(
                 """
 SELECT img.id
 FROM child_images img
 JOIN child_daycare_acl(${bind(now.toLocalDate())}) USING (child_id)
 JOIN mobile_device_daycare_acl_view USING (daycare_id)
-WHERE mobile_device_id = ${bind(mobileId)}
+WHERE mobile_device_id = ${bind(user.id)}
             """
                     .trimIndent()
             )
         }
 
     fun inUnitOfGroup() =
-        rule<GroupId> { mobileId, _ ->
+        rule<GroupId> { user, _ ->
             sql(
                 """
 SELECT g.id
 FROM daycare_group g
 JOIN mobile_device_daycare_acl_view acl USING (daycare_id)
-WHERE acl.mobile_device_id = ${bind(mobileId)}
+WHERE acl.mobile_device_id = ${bind(user.id)}
             """
                     .trimIndent()
             )
         }
 
     fun inUnitOfGroupNote() =
-        rule<GroupNoteId> { mobileId, _ ->
+        rule<GroupNoteId> { user, _ ->
             sql(
                 """
 SELECT gn.id
 FROM group_note gn
 JOIN daycare_group g ON gn.group_id = g.id
 JOIN mobile_device_daycare_acl_view acl USING (daycare_id)
-WHERE acl.mobile_device_id = ${bind(mobileId)}
+WHERE acl.mobile_device_id = ${bind(user.id)}
             """
                     .trimIndent()
             )
         }
 
     fun inUnit() =
-        rule<DaycareId> { mobileId, _ ->
+        rule<DaycareId> { user, _ ->
             sql(
                 """
 SELECT daycare_id AS id
 FROM mobile_device_daycare_acl_view
-WHERE mobile_device_id = ${bind(mobileId)}
+WHERE mobile_device_id = ${bind(user.id)}
             """
+                    .trimIndent()
+            )
+        }
+
+    fun hasPersonalMessageAccount() =
+        rule<MessageAccountId> { user, _ ->
+            sql(
+                """
+SELECT acc.id
+FROM message_account acc
+JOIN employee ON acc.employee_id = employee.id
+WHERE employee.id = ${bind(user.employeeId)} AND acc.active = TRUE
+                """
+                    .trimIndent()
+            )
+        }
+
+    fun hasDaycareMessageAccount(vararg roles: UserRole) =
+        rule<MessageAccountId> { user, _ ->
+            sql(
+                """
+SELECT acc.id
+FROM message_account acc
+JOIN daycare_group dg ON acc.daycare_group_id = dg.id
+JOIN daycare_acl acl ON acl.daycare_id = dg.daycare_id AND acl.role = ANY(${bind(roles.asList())})
+WHERE acl.employee_id = ${bind(user.employeeId)} AND acc.active = TRUE
+                """
+                    .trimIndent()
+            )
+        }
+
+    fun hasDaycareGroupMessageAccount() =
+        rule<MessageAccountId> { user, _ ->
+            sql(
+                """
+SELECT acc.id
+FROM message_account acc
+JOIN daycare_group_acl gacl ON gacl.daycare_group_id = acc.daycare_group_id
+WHERE gacl.employee_id = ${bind(user.employeeId)} AND acc.active = TRUE
+                """
                     .trimIndent()
             )
         }

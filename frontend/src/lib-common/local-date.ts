@@ -17,6 +17,7 @@ import {
   isAfter,
   isBefore,
   isExists,
+  isSameDay,
   isToday,
   isValid,
   isWeekend,
@@ -151,7 +152,9 @@ export default class LocalDate implements Ordered<LocalDate> {
     )
   }
   isToday(): boolean {
-    return isToday(this.toSystemTzDate())
+    return isAutomatedTest
+      ? isSameDay(mockNow() ?? new Date(), this.toSystemTzDate())
+      : isToday(this.toSystemTzDate())
   }
   isWeekend(): boolean {
     return isWeekend(this.toSystemTzDate())
