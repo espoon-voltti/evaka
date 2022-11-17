@@ -799,7 +799,7 @@ export const fi = {
       },
       startDate: 'Tuki voimassa alkaen',
       startDateIndefiniteInfo:
-        'Päätös on voimassa toistaiseksi alkamispäivästä alkaen.',
+        'Tuki on voimassa toistaiseksi alkamispäivästä alkaen.',
       startDateInfo:
         'Lapsen tuki tarkistetaan aina tuen tarpeen muuttuessa ja vähintään kerran vuodessa.',
       endDate: 'Päätös voimassa saakka',
