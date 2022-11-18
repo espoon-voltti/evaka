@@ -187,6 +187,7 @@ export default React.memo(function AttendanceChildPage() {
                     child={child}
                     returnToComing={returnToComingModal}
                   />
+                  <Gap size="m" />
                   <Absences child={child} />
                   <Gap size="xs" />
                   {child.status === 'COMING' && (

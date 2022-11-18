@@ -306,6 +306,38 @@ describe('Child mobile attendance list', () => {
     await listPage.assertChildExists(child)
   })
 
+  test('Child can have multiple attendances in one day', async () => {
+    const child = enduserChildFixtureKaarina.id
+    await createPlacements(child)
+
+    const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+    await page.goto(mobileSignupUrl)
+
+    await listPage.selectChild(child)
+    await childPage.selectMarkPresentView()
+    await childAttendancePage.setTime('08:30')
+    await childAttendancePage.selectMarkPresent()
+
+    await listPage.selectPresentChildren()
+    await listPage.selectChild(child)
+    await childPage.selectMarkDepartedView()
+    await childAttendancePage.setTime('15:00')
+    await childAttendancePage.selectMarkDepartedButton()
+
+    await listPage.selectDepartedChildren()
+    await listPage.selectChild(child)
+    await childPage.returnToPresent()
+    await childAttendancePage.setTime('15:15')
+    await childAttendancePage.selectMarkPresent()
+
+    await listPage.selectPresentChildren()
+    await listPage.selectChild(child)
+    await childPage.assertArrivalTimeInfoIsShown(
+      'Saapumisaika08:30,Saapumisaika15:15'
+    )
+    await childPage.assertDepartureTimeInfoIsShown('Lähtöaika15:00')
+  })
+
   test('Group selector works consistently', async () => {
     const child1 = enduserChildFixtureKaarina.id
     await createPlacements(child1)

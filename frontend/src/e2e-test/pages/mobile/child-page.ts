@@ -51,6 +51,11 @@ export default class MobileChildPage {
       this.page.find(`[data-qa="child-info-backup-pickup${n + 1}-phone"]`)
   }
 
+  #attendance = {
+    arrivalTimes: this.page.findAllByDataQa('arrival-time'),
+    departureTimes: this.page.findAllByDataQa('departure-time')
+  }
+
   async waitUntilLoaded() {
     await this.#childName.waitUntilVisible()
   }
@@ -165,5 +170,29 @@ export default class MobileChildPage {
 
   async assertNotesExist() {
     await this.#notesExistsBubble.waitUntilVisible()
+  }
+
+  async assertArrivalTimeInfoIsShown(arrivalTimeText: string) {
+    await waitUntilEqual(
+      () =>
+        this.#attendance.arrivalTimes
+          .allInnerTexts()
+          .then((texts) =>
+            texts.map((text) => text.replace(/\s/g, '')).join(',')
+          ),
+      arrivalTimeText
+    )
+  }
+
+  async assertDepartureTimeInfoIsShown(departureTimeText: string) {
+    await waitUntilEqual(
+      () =>
+        this.#attendance.departureTimes
+          .allInnerTexts()
+          .then((texts) =>
+            texts.map((text) => text.replace(/\s/g, '')).join(',')
+          ),
+      departureTimeText
+    )
   }
 }
