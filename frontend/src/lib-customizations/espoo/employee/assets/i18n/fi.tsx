@@ -3193,7 +3193,7 @@ export const fi = {
     placementCount: {
       title: 'Sijoitusten määrä',
       description:
-        'Raportti sijoitusten määrästä aluettain ja yksiköittäin annettuna päivämääränä',
+        'Raportti sijoitusten määrästä hakuehtojen mukaisissa yksiköissä annettuna päivämääränä',
       noCareAreasFound: 'Ei sijoituksia sisältäviä palvelualueita',
       examinationDate: 'Tarkastelupäivä',
       careArea: 'Palvelualue',
