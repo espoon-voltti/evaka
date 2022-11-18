@@ -55,7 +55,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build proxy image
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: build
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
         with:
@@ -80,7 +80,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build keycloak image
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: build
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
         with:
@@ -105,7 +105,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build base image
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         id: build
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
         with:
@@ -130,7 +130,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build yarn image
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
         id: build
         with:
@@ -159,7 +159,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Configure AWS credentials
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -168,14 +168,14 @@ jobs:
           mask-aws-account-id: false
 
       - name: Write AWS config
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         shell: bash
         run: |
           mkdir -p ~/.aws
           echo '${{ secrets.AWS_CONFIG }}' > ~/.aws/config
 
       - name: Fetch files
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         run: |
           aws s3 --profile=voltti-local sync "s3://evaka-deployment-local/build-customizations/" ./espoo-customizations/
           aws s3 --profile=voltti-local sync "s3://evaka-deployment-local/frontend/vendor/fortawesome/" ./vendor/fortawesome/
@@ -205,7 +205,7 @@ jobs:
           path: frontend/
 
       - name: Build frontend image
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
         id: build
         with:
@@ -230,7 +230,7 @@ jobs:
             ${{ needs.yarn.outputs.image_name }}
 
       - name: Build frontend builder image
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
         id: builder
         with:
@@ -273,7 +273,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Configure AWS credentials
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -283,26 +283,26 @@ jobs:
           role-duration-seconds: 1200
 
       - name: Login to ECR
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         shell: bash
         run: |
           aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
 
       - name: Lint
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         run: docker run --rm "${{ needs.frontend.outputs.builder_image }}" yarn lint
 
       - name: Type check
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         run: docker run --rm "${{ needs.frontend.outputs.builder_image }}" yarn type-check
 
       - name: Test
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         run: docker run --rm "${{ needs.frontend.outputs.builder_image }}" yarn test --maxWorkers=2
 
       - name: Build and test fork
         id: fork
-        if: ${{ github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.fork }}
         run: |
           cd ./evaka-base
           ./build.sh
@@ -316,7 +316,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build java image
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
         id: build
         with:
@@ -352,7 +352,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build and run API-gateway tests"
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
         id: test
         with:
@@ -377,7 +377,7 @@ jobs:
             ${{ needs.yarn.outputs.image_name }}
 
       - name: Build API-gateway image
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
         id: build
         with:
@@ -400,7 +400,7 @@ jobs:
             ${{ needs.yarn.outputs.image_name }}
 
       - name: Build docker tests and image
-        if: ${{ github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.fork }}
         run: |
           cd ./evaka-base
           ./build.sh
@@ -426,7 +426,7 @@ jobs:
           path: .
 
       - name: Build Evaka Service image
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
         id: build
         with:
@@ -450,7 +450,7 @@ jobs:
             ${{ needs.java.outputs.image_name }}
 
       - name: Build Evaka Service builder image
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
         id: builder
         with:
@@ -491,7 +491,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Build and run Evaka Service tests
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         uses: espoon-voltti/voltti-actions/docker-build-s3@master
         id: build
         with:
@@ -517,13 +517,13 @@ jobs:
             ${{ needs.service.outputs.builder_image_name }}
 
       - name: Run service OWASP tests
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         shell: bash
         run: |
           docker run --rm ${{ steps.build.outputs.image }} sh -c "./gradlew --no-daemon dependencyCheckUpdate && ./gradlew --no-daemon dependencyCheckAnalyze"
 
       - name: Run service tests for fork
-        if: ${{ github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.fork }}
         shell: bash
         run: |
           cd ./evaka-base
@@ -547,7 +547,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Configure AWS credentials
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -557,13 +557,13 @@ jobs:
           role-duration-seconds: 1200
 
       - name: Login to ECR
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         shell: bash
         run: |
           aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
 
       - name: Pull compose images
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         shell: bash
         run: |
           export "EVAKA_KEYCLOAK_IMAGE=${{ needs.keycloak.outputs.image }}"
@@ -573,7 +573,7 @@ jobs:
           ./compose-integration pull
 
       - name: Run service integration tests
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         shell: bash
         run: |
           export "EVAKA_KEYCLOAK_IMAGE=${{ needs.keycloak.outputs.image }}"
@@ -585,7 +585,7 @@ jobs:
           ./compose-integration logs db_it > test-results/db.log
 
       - name: Run service integration tests for fork
-        if: ${{ github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.fork }}
         shell: bash
         run: |
           cd ./compose
@@ -620,14 +620,14 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Login to Docker Hub
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Configure AWS credentials
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -637,19 +637,19 @@ jobs:
           role-duration-seconds: 1200
 
       - name: Login to ECR
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         shell: bash
         run: |
           aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REGISTRY }}
 
       - name: Login to public ECR
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         shell: bash
         run: |
           aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ env.ECR_PUBLIC_REGISTRY }}
 
       - name: Prepare e2e tests
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         run: |
           cd ./compose
           export EVAKA_FRONTEND_IMAGE=${{ needs.frontend.outputs.image }}
@@ -659,7 +659,7 @@ jobs:
           ./test-e2e pull
 
       - name: Run e2e tests
-        if: ${{ !github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
         run: |
           set -eo pipefail
           ./bin/split-test.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}"
@@ -671,7 +671,7 @@ jobs:
           BUILD=false ./test-e2e run playwright | tee e2e.log
 
       - name: Run e2e tests for fork
-        if: ${{ github.event.pull_request.head.repo.fork }}
+        if: ${{ github.actor == 'dependabot[bot]' || github.event.pull_request.head.repo.fork }}
         run: |
           set -eo pipefail
           ./bin/split-test.sh "${{ matrix.test_chunk_number }}" "${{ matrix.test_chunk_count }}"
@@ -699,7 +699,7 @@ jobs:
           retention-days: 2
 
   frontend-install:
-    if: ${{ !github.event.pull_request.head.repo.fork }}
+    if: ${{ github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
     needs:
       - frontend
       - frontend-test
@@ -796,7 +796,7 @@ jobs:
         run: echo OK
 
   deploy:
-    if: ${{ github.ref == 'refs/heads/master' && !github.event.pull_request.head.repo.fork }}
+    if: ${{ github.ref == 'refs/heads/master' && github.actor != 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     needs:
       - frontend-install
