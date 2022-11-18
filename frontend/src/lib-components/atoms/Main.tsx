@@ -14,9 +14,5 @@ export default React.memo(function Loader({
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <MainContainer tabIndex={-1} id="main">
-      {children}
-    </MainContainer>
-  )
+  return <MainContainer id="main">{children}</MainContainer>
 })
