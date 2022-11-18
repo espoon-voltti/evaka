@@ -82,18 +82,20 @@ SELECT ca.id                                                             AS area
        FILTER (WHERE cwa.age_in_years < 3)                               AS placement_count_under_3v,
        COALESCE(sum(CASE
                         WHEN cwa.age_in_years > 2
-                            THEN COALESCE(sno.occupancy_coefficient, 0) * COALESCE(an.capacity_factor, 1.00)
-                        ELSE COALESCE(sno.occupancy_coefficient_under_3y, 0) *
+                            THEN COALESCE(sno.occupancy_coefficient, default_sno.occupancy_coefficient) * COALESCE(an.capacity_factor, 1.00)
+                        ELSE COALESCE(sno.occupancy_coefficient_under_3y, default_sno.occupancy_coefficient_under_3y) *
                              COALESCE(an.capacity_factor, 1.00) END), 0) AS calculated_placements
 FROM daycare d
          JOIN care_area ca
               ON d.care_area_id = ca.id
          JOIN placement pl
               ON pl.unit_id = d.id AND daterange(pl.start_date, pl.end_date) @> :examinationDate::date
-         JOIN service_need sn
+         LEFT JOIN service_need sn
               ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date) @> :examinationDate::date
-         JOIN service_need_option sno
+         LEFT JOIN service_need_option sno
               ON sn.option_id = sno.id
+         LEFT JOIN service_need_option default_sno
+              ON pl.type = default_sno.valid_placement_type AND default_sno.default_option
          LEFT JOIN assistance_need an
                    ON pl.child_id = an.child_id AND daterange(an.start_date, an.end_date) @> :examinationDate::date
          JOIN LATERAL (SELECT date_part('year', age(:examinationDate, p.date_of_birth)) AS age_in_years
