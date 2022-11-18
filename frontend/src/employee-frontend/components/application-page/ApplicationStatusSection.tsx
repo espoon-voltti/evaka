@@ -5,6 +5,7 @@
 import React from 'react'
 
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
+import { Decision } from 'lib-common/generated/api-types/decision'
 import ListGrid from 'lib-components/layout/ListGrid'
 import CollapsibleSection from 'lib-components/molecules/CollapsibleSection'
 import { Label } from 'lib-components/typography'
@@ -14,11 +15,13 @@ import { useTranslation } from '../../state/i18n'
 
 interface Props {
   application: ApplicationDetails
+  decisions?: Decision[]
   dueDateEditor?: JSX.Element
 }
 
 export default React.memo(function ApplicationStatusSection({
   application,
+  decisions,
   dueDateEditor
 }: Props) {
   const { i18n } = useTranslation()
@@ -29,6 +32,8 @@ export default React.memo(function ApplicationStatusSection({
         <Label>{i18n.application.state.status}</Label>
         <span data-qa="application-status">
           {i18n.application.statuses[application.status]}
+          {decisions?.find((d) => d.resolvedByName !== null) ? ', ' : ''}
+          {decisions?.map((d) => d.resolvedByName).join(', ')}
         </span>
 
         <Label>{i18n.application.state.origin}</Label>

@@ -29,7 +29,8 @@ data class Decision(
     val sentDate: LocalDate?,
     val status: DecisionStatus,
     val requestedStartDate: LocalDate?,
-    val resolved: LocalDate?
+    val resolved: LocalDate?,
+    val resolvedByName: String?
 ) {
     fun validRequestedStartDatePeriod(featureConfig: FeatureConfig) =
         FiniteDateRange(
