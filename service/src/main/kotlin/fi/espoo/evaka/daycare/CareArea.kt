@@ -70,8 +70,11 @@ data class Daycare(
     val providerId: String
 )
 
-@PropagateNull("finance_decision_handler_id")
-data class FinanceDecisionHandler(val id: EmployeeId, val firstName: String, val lastName: String)
+data class FinanceDecisionHandler(
+    @PropagateNull val id: EmployeeId,
+    val firstName: String,
+    val lastName: String
+)
 
 data class UnitManager(val name: String?, val email: String?, val phone: String?)
 

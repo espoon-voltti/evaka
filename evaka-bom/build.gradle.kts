@@ -8,10 +8,10 @@ plugins {
 
 object Version {
     const val bouncyCastle = "1.70"
-    const val cxf = "3.5.3"
+    const val cxf = "3.5.4"
     const val flyingSaucer = "9.1.22"
     const val fuel = "2.3.1"
-    const val mockito = "4.8.0"
+    const val mockito = "4.9.0"
 }
 
 repositories {
@@ -24,13 +24,13 @@ javaPlatform {
 
 dependencies {
     constraints {
-        api("com.auth0:java-jwt:4.0.0")
-        api("com.github.kagkarlsson:db-scheduler:11.2")
+        api("com.auth0:java-jwt:4.2.1")
+        api("com.github.kagkarlsson:db-scheduler:11.5")
         api("com.github.kittinunf.fuel:fuel:${Version.fuel}")
         api("com.github.kittinunf.fuel:fuel-jackson:${Version.fuel}")
         api("com.google.guava:guava:30.1.1-jre")
         api("com.zaxxer:HikariCP:5.0.1")
-        api("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:3.3.2")
+        api("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:3.4.1")
         api("io.github.microutils:kotlin-logging-jvm:2.1.23")
         api("io.javalin:javalin:4.6.4")
         api("javax.annotation:javax.annotation-api:1.3.2")
@@ -46,7 +46,7 @@ dependencies {
         api("org.apache.wss4j:wss4j-ws-security-dom:2.3.0")
         api("org.bouncycastle:bcpkix-jdk15on:${Version.bouncyCastle}")
         api("org.bouncycastle:bcprov-jdk15on:${Version.bouncyCastle}")
-        api("org.flywaydb:flyway-core:9.4.0")
+        api("org.flywaydb:flyway-core:9.8.1")
         api("org.glassfish.jaxb:jaxb-runtime:2.3.2")
         api("org.jetbrains:annotations:23.0.0")
         api("org.mockito:mockito-core:${Version.mockito}")
@@ -59,15 +59,15 @@ dependencies {
         api("org.xhtmlrenderer:flying-saucer-core:${Version.flyingSaucer}")
         api("org.xhtmlrenderer:flying-saucer-pdf-openpdf:${Version.flyingSaucer}")
         api("org.yaml:snakeyaml:1.33")
-        api("redis.clients:jedis:4.2.3")
+        api("redis.clients:jedis:4.3.1")
     }
 
-    api(platform("com.fasterxml.jackson:jackson-bom:2.13.4"))
+    api(platform("com.fasterxml.jackson:jackson-bom:2.14.0"))
     api(platform("org.apache.cxf:cxf-bom:${Version.cxf}"))
-    api(platform("org.jdbi:jdbi3-bom:3.32.0"))
-    api(platform("org.jetbrains.kotlin:kotlin-bom:1.7.20"))
+    api(platform("org.jdbi:jdbi3-bom:3.34.0"))
+    api(platform("org.jetbrains.kotlin:kotlin-bom:1.7.21"))
     api(platform("org.junit:junit-bom:5.9.1"))
     api(platform("org.springframework.boot:spring-boot-dependencies:2.7.5"))
     api(platform("org.springframework.security:spring-security-bom:5.7.5"))
-    api(platform("software.amazon.awssdk:bom:2.17.285"))
+    api(platform("software.amazon.awssdk:bom:2.18.18"))
 }

@@ -109,8 +109,8 @@ class MockKoskiServer(private val jsonMapper: JsonMapper, port: Int) : AutoClose
                 // that are missing in our data class -based representation to simulate a real
                 // response more accurately
                 jsonMapper.createObjectNode().apply {
-                    with("henkilö").apply { put("oid", personOid) }
-                    withArray("opiskeluoikeudet").apply {
+                    putObject("henkilö").apply { put("oid", personOid) }
+                    putArray("opiskeluoikeudet").apply {
                         addAll(
                             oppija.opiskeluoikeudet.map {
                                 val studyRightOid = it.oid ?: "1.2.246.562.15.${studyRightOid++}"
@@ -136,9 +136,9 @@ class MockKoskiServer(private val jsonMapper: JsonMapper, port: Int) : AutoClose
                                 jsonMapper.createObjectNode().apply {
                                     put("oid", studyRightOid)
                                     put("versionumero", version)
-                                    with("lähdejärjestelmänId").apply {
+                                    putObject("lähdejärjestelmänId").apply {
                                         put("id", it.lähdejärjestelmänId.id.toString())
-                                        with("lähdejärjestelmä").apply {
+                                        putObject("lähdejärjestelmä").apply {
                                             put(
                                                 "koodiarvo",
                                                 it.lähdejärjestelmänId.lähdejärjestelmä.koodiarvo
@@ -148,8 +148,8 @@ class MockKoskiServer(private val jsonMapper: JsonMapper, port: Int) : AutoClose
                                                 it.lähdejärjestelmänId.lähdejärjestelmä.koodistoUri
                                             )
                                             put("koodistoVersio", 1)
-                                            with("nimi").apply { put("fi", "EvakaEspoo") }
-                                            with("lyhytNimi").apply { put("fi", "EvakaEspoo") }
+                                            putObject("nimi").apply { put("fi", "EvakaEspoo") }
+                                            putObject("lyhytNimi").apply { put("fi", "EvakaEspoo") }
                                         }
                                     }
                                 }

@@ -48,6 +48,6 @@ data class BackupCareChild(
 
 data class BackupCareUnit(val id: DaycareId, val name: String)
 
-@PropagateNull("group_id") data class BackupCareGroup(val id: GroupId, val name: String)
+data class BackupCareGroup(@PropagateNull val id: GroupId, val name: String)
 
 data class NewBackupCare(val unitId: DaycareId, val groupId: GroupId?, val period: FiniteDateRange)
