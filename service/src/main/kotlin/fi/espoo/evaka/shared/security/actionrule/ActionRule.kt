@@ -96,10 +96,16 @@ object DatabaseActionRule {
         val query: Query<T, P>
 
         interface Query<T, P> {
+            /**
+             * Return some value that is used to decide whether two queries are considered
+             * identical.
+             *
+             * If the cache keys of two queries of the same type (= same class) are equal, we can
+             * skip execution of one if we already have cached results from the other one
+             */
+            fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any
             fun executeWithTargets(ctx: QueryContext, targets: Set<T>): Map<T, Deferred<P>>
             fun queryWithParams(ctx: QueryContext, params: P): QuerySql<T>?
-            override fun hashCode(): Int
-            override fun equals(other: Any?): Boolean
         }
         data class Simple<T, P : Params>(override val params: P, override val query: Query<T, P>) :
             Scoped<T, P>
@@ -108,9 +114,15 @@ object DatabaseActionRule {
     data class Unscoped<P : Any>(val params: P, val query: Query<P>) :
         ScopedActionRule<Any>, UnscopedActionRule {
         interface Query<P> {
+            /**
+             * Return some value that is used to decide whether two queries are considered
+             * identical.
+             *
+             * If the cache keys of two queries of the same type (= same class) are equal, we can
+             * skip execution of one if we already have cached results from the other one
+             */
+            fun cacheKey(user: AuthenticatedUser, now: HelsinkiDateTime): Any
             fun execute(ctx: QueryContext): Deferred<P>?
-            override fun hashCode(): Int
-            override fun equals(other: Any?): Boolean
         }
     }
 }
