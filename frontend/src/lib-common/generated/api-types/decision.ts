@@ -24,6 +24,7 @@ export interface Decision {
   otherGuardianDocumentKey: string | null
   requestedStartDate: LocalDate | null
   resolved: LocalDate | null
+  resolvedByName: string | null
   sentDate: LocalDate | null
   startDate: LocalDate
   status: DecisionStatus

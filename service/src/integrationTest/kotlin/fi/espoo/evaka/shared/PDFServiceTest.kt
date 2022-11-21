@@ -236,6 +236,7 @@ fun createValidDecision(
         status = status,
         childName = "Test Child",
         requestedStartDate = startDate,
-        resolved = resolved
+        resolved = resolved,
+        resolvedByName = null
     )
 }

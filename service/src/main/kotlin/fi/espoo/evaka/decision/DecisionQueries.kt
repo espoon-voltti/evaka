@@ -34,19 +34,21 @@ private fun Database.Read.createDecisionQuery(
         sql(
             """
         SELECT
-            d.id, d.type, d.start_date, d.end_date, d.document_key, d.other_guardian_document_key, d.number, d.sent_date, d.status, d.unit_id, d.application_id, d.requested_start_date, d.resolved,
+            d.id, d.type, d.start_date, d.end_date, d.document_key, d.other_guardian_document_key, d.number, d.sent_date, d.status, d.unit_id, d.application_id, d.requested_start_date, d.resolved, 
             u.name, u.decision_daycare_name, u.decision_preschool_name, u.decision_handler, u.decision_handler_address, u.provider_type,
             u.street_address, u.postal_code, u.post_office,
             u.phone,
             m.name AS manager,
             ap.child_id, ap.guardian_id,
             (SELECT name FROM evaka_user WHERE id = d.created_by) AS created_by,
-            c.first_name AS child_first_name, c.last_name AS child_last_name
+            c.first_name AS child_first_name, c.last_name AS child_last_name,
+            eu.name AS resolved_by_name
         FROM decision d
         INNER JOIN daycare u on d.unit_id = u.id
         INNER JOIN application ap on d.application_id = ap.id
         INNER JOIN person c on ap.child_id = c.id
         LEFT JOIN unit_manager m on u.unit_manager_id = m.id
+        LEFT JOIN evaka_user eu on d.resolved_by = eu.id
         WHERE ${predicate(decision.forTable("d"))}
         AND ${predicate(application.forTable("ap"))}
     """
@@ -68,6 +70,7 @@ private fun decisionFromResultSet(row: RowView): Decision =
         status = row.mapColumn("status"),
         requestedStartDate = row.mapColumn("requested_start_date"),
         resolved = row.mapColumn<HelsinkiDateTime?>("resolved")?.toLocalDate(),
+        resolvedByName = row.mapColumn<String?>("resolved_by_name"),
         unit =
             DecisionUnit(
                 id = row.mapColumn("unit_id"),

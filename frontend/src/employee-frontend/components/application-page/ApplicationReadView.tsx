@@ -567,7 +567,10 @@ export default React.memo(function ApplicationReadView({
         applicationStatus={application.application.status}
       />
 
-      <ApplicationStatusSection application={application.application} />
+      <ApplicationStatusSection
+        application={application.application}
+        decisions={decisions}
+      />
     </div>
   )
 })
