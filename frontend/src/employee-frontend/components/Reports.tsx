@@ -313,6 +313,15 @@ export default React.memo(function Reports() {
                       .getOrElse(null)}
                   </Report>
                 )}
+              {reports.has('PLACEMENT_COUNT') && (
+                <Report
+                  path="/reports/placement-count"
+                  color={colors.main.m2}
+                  icon={faChild}
+                  i18n={i18n.reports.placementCount}
+                  data-qa="report-placement-count"
+                />
+              )}
               {reports.has('PLACEMENT_SKETCHING') && (
                 <Report
                   path="/reports/placement-sketching"

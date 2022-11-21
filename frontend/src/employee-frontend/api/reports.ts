@@ -25,6 +25,7 @@ import {
   OccupancyGroupReportResultRow,
   OccupancyUnitReportResultRow,
   PartnersInDifferentAddressReportRow,
+  PlacementCountReportResult,
   PlacementSketchingReportRow,
   PresenceReportRow,
   RawReportRow,
@@ -436,6 +437,27 @@ export function getSextetReport(
     .get<SextetReportRow[]>(
       `/reports/sextet?year=${year}&placementType=${placementType}`
     )
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export interface PlacementCountReportFilters {
+  examinationDate: LocalDate
+  careTypes: CareType[]
+  providerTypes: ProviderType[]
+}
+
+export async function getPlacementCountReport(
+  filters: PlacementCountReportFilters
+): Promise<Result<PlacementCountReportResult>> {
+  return client
+    .get<JsonOf<PlacementCountReportResult>>(`/reports/placement-count`, {
+      params: {
+        examinationDate: filters.examinationDate.formatIso(),
+        careTypes: filters.careTypes.join(','),
+        providerTypes: filters.providerTypes.join(',')
+      }
+    })
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }

@@ -75,6 +75,7 @@ import ReportMissingHeadOfFamily from './components/reports/MissingHeadOfFamily'
 import ReportMissingServiceNeed from './components/reports/MissingServiceNeed'
 import ReportOccupancies from './components/reports/Occupancies'
 import ReportPartnersInDifferentAddress from './components/reports/PartnersInDifferentAddress'
+import PlacementCount from './components/reports/PlacementCount'
 import PlacementSketching from './components/reports/PlacementSketching'
 import ReportPresences from './components/reports/PresenceReport'
 import ReportRaw from './components/reports/Raw'
@@ -501,6 +502,14 @@ export default function App() {
                     element={
                       <EmployeeRoute title={i18n.titles.reports}>
                         <VardaErrors />
+                      </EmployeeRoute>
+                    }
+                  />
+                  <Route
+                    path="/reports/placement-count"
+                    element={
+                      <EmployeeRoute title={i18n.titles.reports}>
+                        <PlacementCount />
                       </EmployeeRoute>
                     }
                   />
