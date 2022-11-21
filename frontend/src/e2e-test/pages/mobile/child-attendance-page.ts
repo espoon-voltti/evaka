@@ -33,6 +33,10 @@ export default class ChildAttendancePage {
     await this.#markPresentButton.click()
   }
 
+  async assertMarkPresentButtonDisabled(disabled: boolean) {
+    await waitUntilEqual(() => this.#markPresentButton.disabled, disabled)
+  }
+
   async selectPresentTab() {
     await this.#presentTab.click()
   }
@@ -80,6 +84,6 @@ export default class ChildAttendancePage {
   // time format: "09:46"
   async setTime(time: string) {
     await this.#setTimeInput.click()
-    await this.#setTimeInput.type(time)
+    await this.#setTimeInput.fill(time)
   }
 }

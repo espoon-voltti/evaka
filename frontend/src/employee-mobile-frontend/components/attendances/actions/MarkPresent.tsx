@@ -2,12 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { isAfter } from 'date-fns'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { formatTime, isValidTime } from 'lib-common/date'
+import { formatTime } from 'lib-common/date'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalTime from 'lib-common/local-time'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { mockNow } from 'lib-common/utils/helpers'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -37,7 +40,8 @@ export default React.memo(function MarkPresent() {
     ChildAttendanceContext
   )
 
-  const [time, setTime] = useState<string>(formatTime(mockNow() ?? new Date()))
+  const now = mockNow() ?? new Date()
+  const [time, setTime] = useState<string>(formatTime(now))
 
   const { childId, unitId, groupId } = useNonNullableParams<{
     unitId: string
@@ -58,13 +62,27 @@ export default React.memo(function MarkPresent() {
     [attendanceResponse, childId]
   )
 
-  const isDeparted =
-    child.isSuccess &&
-    child.value &&
-    child.value.attendances &&
-    child.value.attendances.length > 0
-      ? child.value.attendances[0].departed
-      : false
+  const childLatestDeparture = useMemo(
+    () =>
+      child.isSuccess &&
+      child.value &&
+      child.value.attendances &&
+      child.value.attendances.length > 0
+        ? child.value.attendances[0].departed
+        : null,
+    [child]
+  )
+
+  const isValidTime = useCallback(() => {
+    const parsedTime = LocalTime.tryParse(time, 'HH:mm')
+    if (!parsedTime) return false
+    else if (childLatestDeparture) {
+      return isAfter(
+        HelsinkiDateTime.now().withTime(parsedTime).toSystemTzDate(),
+        childLatestDeparture.toSystemTzDate()
+      )
+    } else return true
+  }, [childLatestDeparture, time])
 
   const groupNote = useMemo(
     () =>
@@ -117,7 +135,7 @@ export default React.memo(function MarkPresent() {
                 <AsyncButton
                   primary
                   text={i18n.common.confirm}
-                  disabled={!isValidTime(time)}
+                  disabled={!isValidTime()}
                   onClick={childArrives}
                   onSuccess={() => {
                     reloadAttendances()
@@ -127,7 +145,7 @@ export default React.memo(function MarkPresent() {
                 />
               </FixedSpaceRow>
             </Actions>
-            {isDeparted && (
+            {childLatestDeparture && (
               <>
                 <Gap size="s" />
                 <JustifyContainer>

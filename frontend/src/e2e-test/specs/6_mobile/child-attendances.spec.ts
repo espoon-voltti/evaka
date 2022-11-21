@@ -56,7 +56,7 @@ beforeEach(async () => {
     .with({ roles: ['ADMIN'] })
     .save()
 
-  page = await Page.open({ mockedTime: new Date('2022-05-15T13:00Z') })
+  page = await Page.open({ mockedTime: new Date('2022-05-17T13:00Z') })
 
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
@@ -327,6 +327,11 @@ describe('Child mobile attendance list', () => {
     await listPage.selectDepartedChildren()
     await listPage.selectChild(child)
     await childPage.returnToPresent()
+
+    // Cannot overlap previous departure
+    await childAttendancePage.setTime('15:00')
+    await childAttendancePage.assertMarkPresentButtonDisabled(true)
+
     await childAttendancePage.setTime('15:15')
     await childAttendancePage.selectMarkPresent()
 
@@ -336,6 +341,9 @@ describe('Child mobile attendance list', () => {
       'Saapumisaika08:30,Saapumisaika15:15'
     )
     await childPage.assertDepartureTimeInfoIsShown('Lähtöaika15:00')
+    await childPage.selectMarkDepartedView()
+    await childAttendancePage.setTime('15:20')
+    await childAttendancePage.selectMarkDepartedButton()
   })
 
   test('Group selector works consistently', async () => {
