@@ -363,6 +363,25 @@ class VardaClient(
         }
     }
 
+    fun deleteChildAllData(vardaChildId: Long): Boolean {
+        logger.info("VardaUpdate: client deleting all child data (id: $vardaChildId)")
+
+        val (request, _, result) =
+                fuel.delete("${getChildUrl(vardaChildId)}/delete-all").authenticatedResponseStringWithRetries()
+
+        return when (result) {
+            is Result.Success -> {
+                logger.info("VardaUpdate: client successfully deleted all child data (id: $vardaChildId)")
+                true
+            }
+            is Result.Failure -> {
+                vardaError(request, result.error) { err ->
+                    "VardaUpdate: client failed to delete all child data $vardaChildId: $err"
+                }
+            }
+        }
+    }
+
     fun createUnit(unit: VardaUnitRequest): VardaUnitResponse {
         logger.info("VardaUpdate: client sending new unit ${unit.nimi}")
         val (request, _, result) =
