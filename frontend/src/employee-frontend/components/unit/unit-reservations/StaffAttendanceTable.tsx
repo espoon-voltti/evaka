@@ -5,8 +5,6 @@
 import classNames from 'classnames'
 import groupBy from 'lodash/groupBy'
 import mapValues from 'lodash/mapValues'
-import maxBy from 'lodash/maxBy'
-import minBy from 'lodash/minBy'
 import sortBy from 'lodash/sortBy'
 import uniq from 'lodash/uniq'
 import uniqBy from 'lodash/uniqBy'
@@ -14,23 +12,16 @@ import React, { useMemo, useState, useCallback } from 'react'
 import styled from 'styled-components'
 
 import {
-  getStaffAttendances,
   upsertExternalAttendances,
   upsertStaffAttendances
 } from 'employee-frontend/api/staff-attendance'
-import { getUnitAttendanceReservations } from 'employee-frontend/api/unit'
-import { Loading, Result, Success } from 'lib-common/api'
-import {
-  OperationalDay,
-  UnitAttendanceReservations
-} from 'lib-common/api-types/reservations'
+import { Result } from 'lib-common/api'
+import { OperationalDay } from 'lib-common/api-types/reservations'
 import DateRange from 'lib-common/date-range'
-import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   Attendance,
   EmployeeAttendance,
   ExternalAttendance,
-  StaffAttendanceResponse,
   PlannedStaffAttendance,
   StaffAttendanceUpsert
 } from 'lib-common/generated/api-types/attendance'
@@ -38,7 +29,6 @@ import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
-import { useRestApi } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -115,81 +105,6 @@ export default React.memo(function StaffAttendanceTable({
     []
   )
 
-  const [modalStaffAttendance, setModalStaffAttendance] = useState<
-    Result<StaffAttendanceResponse>
-  >(Loading.of())
-  const [modalAttendance, setModalAttendance] = useState<
-    Result<UnitAttendanceReservations>
-  >(Loading.of())
-  const loadModalStaffAttendance = useRestApi(
-    getStaffAttendances,
-    setModalStaffAttendance
-  )
-  const loadModalAttendance = useRestApi(
-    getUnitAttendanceReservations,
-    setModalAttendance
-  )
-
-  const modalOperationalDays = useMemo(
-    () => modalAttendance.getOrElse(undefined)?.operationalDays,
-    [modalAttendance]
-  )
-
-  const changeDate = useCallback(
-    async (getNearestDay: GetNearestDayFn, newStartOfWeek: LocalDate) => {
-      if (!detailsModalConfig) return Loading.of()
-
-      const nearestNextDate =
-        (modalOperationalDays &&
-          getNearestDay(modalOperationalDays, detailsModalConfig.date)) ??
-        getNearestDay(operationalDays, detailsModalConfig.date)
-
-      if (!nearestNextDate) {
-        const nextWeekRange = new FiniteDateRange(
-          newStartOfWeek,
-          newStartOfWeek.addDays(6)
-        )
-
-        const [, attendance] = await Promise.all([
-          loadModalStaffAttendance(unitId, nextWeekRange),
-          loadModalAttendance(unitId, nextWeekRange)
-        ])
-
-        const newOperationalDays =
-          attendance.getOrElse(undefined)?.operationalDays
-
-        if (!newOperationalDays) return Loading.of()
-
-        const newPreviousDay = getNearestDay(
-          newOperationalDays,
-          detailsModalConfig.date
-        )
-
-        if (!newPreviousDay) return Loading.of()
-
-        setDetailsModalConfig({
-          ...detailsModalConfig,
-          date: newPreviousDay.date
-        })
-        return Success.of()
-      }
-
-      setDetailsModalConfig({
-        ...detailsModalConfig,
-        date: nearestNextDate.date
-      })
-      return Success.of()
-    },
-    [
-      detailsModalConfig,
-      loadModalAttendance,
-      loadModalStaffAttendance,
-      modalOperationalDays,
-      operationalDays,
-      unitId
-    ]
-  )
-
   const staffRows: StaffRow[] = useMemo(
     () => getStaffRows(staffAttendances, groupFilter, i18n),
     [staffAttendances, groupFilter, i18n]
@@ -212,16 +127,10 @@ export default React.memo(function StaffAttendanceTable({
         ? computeModalAttendances(
             detailsModalConfig,
             staffAttendances,
-            externalAttendances,
-            modalStaffAttendance
+            externalAttendances
           )
         : undefined,
-    [
-      detailsModalConfig,
-      externalAttendances,
-      staffAttendances,
-      modalStaffAttendance
-    ]
+    [detailsModalConfig, externalAttendances, staffAttendances]
   )
 
   const handleModalSave = useCallback(
@@ -338,31 +247,8 @@ export default React.memo(function StaffAttendanceTable({
           onClose={closeDetailsModal}
           onSuccess={() => {
             void reloadStaffAttendances()
-
-            if (
-              !operationalDays.some(({ date }) =>
-                date.isEqual(detailsModalConfig.date)
-              )
-            ) {
-              const startOfWeek = detailsModalConfig.date.startOfWeek()
-              void loadModalStaffAttendance(
-                unitId,
-                new FiniteDateRange(startOfWeek, startOfWeek.addDays(6))
-              )
-            }
+            closeDetailsModal()
           }}
-          onPreviousDate={() =>
-            changeDate(
-              getNearestPreviousDay,
-              detailsModalConfig.date.startOfWeek().subWeeks(1)
-            )
-          }
-          onNextDate={() =>
-            changeDate(
-              getNearestNextDay,
-              detailsModalConfig.date.startOfWeek().addWeeks(1)
-            )
-          }
         />
       ) : null}
       {showExternalPersonModal && (
@@ -490,23 +376,6 @@ function getUniqueAttendanceDates(
     (localDate) => localDate.date
   )
 }
-
-type GetNearestDayFn = (
-  days: OperationalDay[],
-  targetDate: LocalDate
-) => OperationalDay | undefined
-
-const getNearestPreviousDay: GetNearestDayFn = (days, targetDate) =>
-  maxBy(
-    days.filter(({ date }) => date.isBefore(targetDate)),
-    ({ date }) => date.differenceInDays(targetDate)
-  )
-
-const getNearestNextDay: GetNearestDayFn = (days, targetDate) =>
-  minBy(
-    days.filter(({ date }) => date.isAfter(targetDate)),
-    ({ date }) => date.differenceInDays(targetDate)
-  )
 
 const BottomSumTr = styled.tr`
   background-color: ${(p) => p.theme.colors.grayscale.g4};
@@ -711,17 +580,16 @@ function renderTime(
 function computeModalAttendances(
   detailsModalConfig: DetailsModalConfig,
   staffAttendances: EmployeeAttendance[],
-  externalAttendances: ExternalAttendance[],
-  modalStaffAttendance: Result<StaffAttendanceResponse>
+  externalAttendances: ExternalAttendance[]
 ): {
   attendances: ModalAttendance[]
   plannedAttendances: ModalPlannedAttendance[]
 } {
   if (detailsModalConfig.target.type === 'employee') {
     const employeeId = detailsModalConfig.target.employeeId
-    const combined: EmployeeAttendance[] = staffAttendances
-      .concat(modalStaffAttendance.getOrElse(undefined)?.staff ?? [])
-      .filter((attendance) => attendance.employeeId === employeeId)
+    const combined: EmployeeAttendance[] = staffAttendances.filter(
+      (attendance) => attendance.employeeId === employeeId
+    )
     const attendances: ModalAttendance[] = uniqBy(
       combined.flatMap((employee) => employee.attendances),
       (attendance) => attendance.id
@@ -735,9 +603,9 @@ function computeModalAttendances(
     return { attendances, plannedAttendances }
   } else {
     const name = detailsModalConfig.target.name
-    const attendances: ModalAttendance[] = externalAttendances
-      .concat(modalStaffAttendance.getOrElse(undefined)?.extraAttendances ?? [])
-      .filter((attendance) => attendance.name === name)
+    const attendances: ModalAttendance[] = externalAttendances.filter(
+      (attendance) => attendance.name === name
+    )
     return { attendances, plannedAttendances: [] }
   }
 }

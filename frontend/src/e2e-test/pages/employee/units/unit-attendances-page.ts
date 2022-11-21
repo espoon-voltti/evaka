@@ -529,7 +529,7 @@ export class StaffAttendanceDetailsModal extends Element {
   async save() {
     const button = new AsyncButton(this.findByDataQa('save'))
     await button.click()
-    await button.waitUntilIdle()
+    await button.waitUntilHidden()
   }
 
   async close() {

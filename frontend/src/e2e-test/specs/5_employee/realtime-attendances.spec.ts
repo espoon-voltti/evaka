@@ -273,38 +273,28 @@ describe('Realtime staff attendances', () => {
       staffAttendances = attendancesSection.staffAttendances
     })
     test('An existing entry can be edited', async () => {
-      const modal = await staffAttendances.openDetails(1, mockedToday)
+      let modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.setDepartureTime(0, '15:00')
       await modal.save()
 
-      await waitUntilEqual(() => modal.summary(), {
-        plan: '–',
-        realized: '07:00 – 15:00',
-        hours: '8:00'
-      })
-
-      await modal.close()
       await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 0,
         attendances: [['07:00', '15:00']]
       })
+
+      modal = await staffAttendances.openDetails(1, mockedToday)
+      await waitUntilEqual(() => modal.summary(), {
+        plan: '–',
+        realized: '07:00 – 15:00',
+        hours: '8:00'
+      })
     })
     test('An existing overnight entry can be edited', async () => {
-      const modal = await staffAttendances.openDetails(
-        1,
-        mockedToday.addDays(1)
-      )
+      let modal = await staffAttendances.openDetails(1, mockedToday.addDays(1))
       await modal.setDepartureTime(0, '16:00')
       await modal.save()
 
-      await waitUntilEqual(() => modal.summary(), {
-        plan: '–',
-        realized: '→ – 16:00',
-        hours: '33:00'
-      })
-
-      await modal.close()
       await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 0,
@@ -315,19 +305,19 @@ describe('Realtime staff attendances', () => {
         nth: 1,
         attendances: [['→', '16:00']]
       })
+
+      modal = await staffAttendances.openDetails(1, mockedToday.addDays(1))
+      await waitUntilEqual(() => modal.summary(), {
+        plan: '–',
+        realized: '→ – 16:00',
+        hours: '33:00'
+      })
     })
     test('If departure is earlier than arrival, departure is on the next day', async () => {
-      const modal = await staffAttendances.openDetails(1, mockedToday)
+      let modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.setDepartureTime(0, '06:00')
       await modal.save()
 
-      await waitUntilEqual(() => modal.summary(), {
-        plan: '–',
-        realized: '07:00 – →',
-        hours: '23:00'
-      })
-
-      await modal.close()
       await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 0,
@@ -338,9 +328,16 @@ describe('Realtime staff attendances', () => {
         nth: 1,
         attendances: [['→', '06:00']]
       })
+
+      modal = await staffAttendances.openDetails(1, mockedToday)
+      await waitUntilEqual(() => modal.summary(), {
+        plan: '–',
+        realized: '07:00 – →',
+        hours: '23:00'
+      })
     })
     test('Multiple new entries can be added', async () => {
-      const modal = await staffAttendances.openDetails(1, mockedToday)
+      let modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.setDepartureTime(0, '12:00')
       await modal.addNewAttendance()
       await modal.setGroup(1, groupId)
@@ -359,13 +356,6 @@ describe('Realtime staff attendances', () => {
       await modal.setDepartureTime(3, '15:00')
       await modal.save()
 
-      await waitUntilEqual(() => modal.summary(), {
-        plan: '–',
-        realized: '07:00 – 15:00',
-        hours: '8:00'
-      })
-
-      await modal.close()
       await staffAttendances.assertTableRow({
         rowIx: 1,
         nth: 0,
@@ -373,6 +363,13 @@ describe('Realtime staff attendances', () => {
           ['07:00', '12:00'],
           ['13:00', '14:30']
         ]
+      })
+
+      modal = await staffAttendances.openDetails(1, mockedToday)
+      await waitUntilEqual(() => modal.summary(), {
+        plan: '–',
+        realized: '07:00 – 15:00',
+        hours: '8:00'
       })
     })
     test('Gaps in attendances are warned about', async () => {
@@ -491,7 +488,6 @@ describe('Realtime staff attendances', () => {
       let modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.setDepartureTime(0, '13:00')
       await modal.save()
-      await modal.close()
 
       await waitUntilEqual(() => staffAttendances.rowCount, 2)
       await staffAttendances.assertTableRow({
@@ -503,7 +499,6 @@ describe('Realtime staff attendances', () => {
       modal = await staffAttendances.openDetails(1, mockedToday)
       await modal.removeAttendance(0)
       await modal.save()
-      await modal.close()
 
       await waitUntilEqual(() => staffAttendances.rowCount, 1)
     })
