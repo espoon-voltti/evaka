@@ -66,7 +66,7 @@ TABLE (
 ) AS $$
     SELECT pl.child_id, pl.unit_id AS daycare_id, FALSE AS is_backup_care
     FROM placement pl
-    WHERE pl.end_date > today - interval '1 month'
+    WHERE today < pl.end_date + interval '1 month'
 
     UNION ALL
 
@@ -79,7 +79,7 @@ TABLE (
 
     SELECT child_id, bc.unit_id AS daycare_id, TRUE AS is_backup_care
     FROM backup_care bc
-    WHERE bc.end_date > today - INTERVAL '1 month'
+    WHERE today < bc.end_date + INTERVAL '1 month'
 $$ LANGUAGE SQL STABLE;
 
 CREATE FUNCTION employee_child_daycare_acl(today date) RETURNS
