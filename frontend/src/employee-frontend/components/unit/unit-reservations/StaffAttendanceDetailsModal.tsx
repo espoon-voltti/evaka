@@ -9,7 +9,6 @@ import orderBy from 'lodash/orderBy'
 import React, { Fragment, useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { ErrorKey } from 'lib-common/form-validation'
 import {
@@ -25,7 +24,6 @@ import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
-import AsyncIconButton from 'lib-components/atoms/buttons/AsyncIconButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -45,13 +43,7 @@ import { H1, H2, H3, LabelLike } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { featureFlags } from 'lib-customizations/employee'
-import {
-  faChevronLeft,
-  faChevronRight,
-  faExclamationTriangle,
-  faPlus,
-  faTrash
-} from 'lib-icons'
+import { faExclamationTriangle, faPlus, faTrash } from 'lib-icons'
 
 import { useTranslation } from '../../../state/i18n'
 import { errorToInputInfo } from '../../../utils/validation/input-info-helper'
@@ -80,8 +72,6 @@ interface Props {
   onSave: (body: StaffAttendanceUpsert[]) => void
   onSuccess: () => void
   onClose: () => void
-  onPreviousDate: () => Promise<Result<unknown>>
-  onNextDate: () => Promise<Result<unknown>>
 }
 
 interface EditedAttendance {
@@ -102,9 +92,7 @@ export default React.memo(function StaffAttendanceDetailsModal({
   defaultGroupId,
   onSave,
   onSuccess,
-  onClose,
-  onPreviousDate,
-  onNextDate
+  onClose
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -170,7 +158,7 @@ export default React.memo(function StaffAttendanceDetailsModal({
     (index: number) =>
       setEditState(({ editState, editStateDate }) => ({
         editStateDate,
-        editState: editState.filter((att, i) => index !== i)
+        editState: editState.filter((_att, i) => index !== i)
       })),
     []
   )
@@ -309,19 +297,7 @@ export default React.memo(function StaffAttendanceDetailsModal({
     <PlainModal margin="auto" data-qa="staff-attendance-details-modal">
       <Content>
         <FixedSpaceRow alignItems="center">
-          <AsyncIconButton
-            icon={faChevronLeft}
-            onClick={onPreviousDate}
-            onSuccess={() => undefined}
-            aria-label={i18n.unit.staffAttendance.previousDay}
-          />
           <H1 noMargin>{date.formatExotic('EEEEEE d.M.yyyy')}</H1>
-          <AsyncIconButton
-            icon={faChevronRight}
-            onClick={onNextDate}
-            onSuccess={() => undefined}
-            aria-label={i18n.unit.staffAttendance.nextDay}
-          />
         </FixedSpaceRow>
         <H2>{name}</H2>
         {!isExternal ? (
