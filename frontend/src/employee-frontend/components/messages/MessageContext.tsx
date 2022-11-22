@@ -69,10 +69,7 @@ type RepliesByThread = Record<UUID, string>
 export type CancelableMessage = {
   accountId: UUID
   sentAt: HelsinkiDateTime
-} & (
-  | { messageId: UUID; contentId?: undefined }
-  | { contentId: UUID; messageId?: undefined }
-)
+} & ({ messageId: UUID } | { contentId: UUID })
 
 export interface MessagesState {
   accounts: Result<AuthorizedMessageAccount[]>

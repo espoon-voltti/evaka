@@ -504,22 +504,28 @@ class MessageController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
-        @RequestParam messageId: MessageId?,
-        @RequestParam contentId: MessageContentId?
-    ): MessageDraftId? {
+        @RequestParam contentId: MessageContentId
+    ): MessageDraftId {
         return db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
-                dbc.transaction {
-                    when {
-                        messageId != null ->
-                            it.undoMessageReply(clock.now(), accountId, messageId).let { null }
-                        contentId != null ->
-                            it.undoMessageAndAllThreads(clock.now(), accountId, contentId)
-                        else -> throw BadRequest("Either messageId or contentId is required")
-                    }
-                }
+                dbc.transaction { it.undoMessageAndAllThreads(clock.now(), accountId, contentId) }
             }
             .also { Audit.MessagingUndoMessage.log(targetId = contentId) }
+    }
+
+    @PostMapping("/{accountId}/undo-reply")
+    fun undoMessage(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @RequestParam messageId: MessageId
+    ) {
+        db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, clock, accountId)
+            dbc.transaction { it.undoMessageReply(clock.now(), accountId, messageId) }
+        }
+        Audit.MessagingUndoMessageReply.log(targetId = messageId)
     }
 
     private fun requireMessageAccountAccess(

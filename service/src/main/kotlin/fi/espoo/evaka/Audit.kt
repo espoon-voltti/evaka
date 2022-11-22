@@ -232,6 +232,7 @@ enum class Audit(
     MessagingCitizenFetchReceiversForAccount,
     MessagingCitizenSendMessage,
     MessagingUndoMessage,
+    MessagingUndoMessageReply,
     MissingHeadOfFamilyReportRead,
     MissingServiceNeedReportRead,
     MobileDevicesList,

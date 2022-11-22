@@ -211,12 +211,23 @@ export async function archiveThread(
 
 export async function undoMessage(
   accountId: UUID,
-  messageId: UUID | undefined,
-  contentId: UUID | undefined
+  contentId: UUID
 ): Promise<Result<UUID | null>> {
   return client
     .post(`/messages/${accountId}/undo-message`, null, {
-      params: { messageId, contentId }
+      params: { contentId }
+    })
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function undoMessageReply(
+  accountId: UUID,
+  messageId: UUID
+): Promise<Result<UUID | null>> {
+  return client
+    .post(`/messages/${accountId}/undo-reply`, null, {
+      params: { messageId }
     })
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
