@@ -1951,14 +1951,6 @@ const en: Translations = {
     httpUrl: 'Valid url format is https://example.com',
     unselectableDate: 'Invalid date'
   },
-  login: {
-    failedModal: {
-      header: 'Login failed',
-      message:
-        'The identification process failed or was stopped. To log in, go back and try again.',
-      returnMessage: 'Go back'
-    }
-  },
   placement: {
     // TODO i18n
     type: {

@@ -10,6 +10,11 @@ export interface Translations {
     failure: string
     success: string
   }
+  loginErrorModal: {
+    header: string
+    message: string
+    returnMessage: string
+  }
   notifications: {
     close: string
   }

@@ -8,6 +8,12 @@ const components = {
     failure: 'Något gick fel',
     success: 'Klar'
   },
+  loginErrorModal: {
+    header: 'Inloggningen misslyckades',
+    message:
+      'Autentiseringen för tjänsten misslyckades eller avbröts. För att logga in gå tillbaka och försök på nytt.',
+    returnMessage: 'Gå tillbaka till inloggningen'
+  },
   notifications: {
     close: 'Stäng'
   },

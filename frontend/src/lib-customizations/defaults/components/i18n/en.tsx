@@ -8,6 +8,12 @@ const components = {
     failure: 'Failed to load',
     success: 'Success'
   },
+  loginErrorModal: {
+    header: 'Login failed',
+    message:
+      'The identification process failed or was stopped. To log in, go back and try again.',
+    returnMessage: 'Go back'
+  },
   notifications: {
     close: 'Close'
   },

@@ -2037,14 +2037,6 @@ export default {
     httpUrl: 'Anna muodossa https://example.com',
     unselectableDate: 'Päivä ei ole sallittu'
   },
-  login: {
-    failedModal: {
-      header: 'Kirjautuminen epäonnistui',
-      message:
-        'Palveluun tunnistautuminen epäonnistui tai se keskeytettiin. Kirjautuaksesi sisään palaa takaisin ja yritä uudelleen.',
-      returnMessage: 'Palaa takaisin'
-    }
-  },
   placement: {
     type: {
       CLUB: 'Kerho',

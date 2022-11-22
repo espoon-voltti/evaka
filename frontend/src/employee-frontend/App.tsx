@@ -667,7 +667,7 @@ export default function App() {
                 </Routes>
                 <Footer />
                 <ErrorMessage />
-                <LoginErrorModal translations={i18n.login.failedModal} />
+                <LoginErrorModal />
                 <PairingModal />
               </StateProvider>
             </UserContextProvider>

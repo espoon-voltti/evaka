@@ -253,12 +253,6 @@ export const fi = {
     error: {
       noRole: 'Sinulla ei ole tarvittavaa roolia',
       default: 'Jokin meni vikaan'
-    },
-    failedModal: {
-      header: 'Kirjautuminen epäonnistui',
-      message:
-        'Palveluun tunnistautuminen epäonnistui tai se keskeytettiin. Kirjautuaksesi sisään palaa takaisin ja yritä uudelleen.',
-      returnMessage: 'Palaa takaisin'
     }
   },
   applications: {

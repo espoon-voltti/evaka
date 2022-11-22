@@ -9,23 +9,16 @@ import styled from 'styled-components'
 import { P } from 'lib-components/typography'
 import { faTimes } from 'lib-icons'
 
+import { useTranslations } from '../../i18n'
+
 import InfoModal from './InfoModal'
 
 const ReturnContainer = styled.div`
   margin-top: 30px;
 `
 
-interface LoginErrorModalProps {
-  translations: {
-    header: string
-    message: string
-    returnMessage: string
-  }
-}
-
-export const LoginErrorModal = React.memo(function LoginErrorModal(
-  props: LoginErrorModalProps
-) {
+export const LoginErrorModal = React.memo(function LoginErrorModal() {
+  const i18n = useTranslations()
   const [searchParams, setSearchParams] = useSearchParams()
   const queryParamName = 'loginError'
   const queryParams = searchParams
@@ -45,17 +38,17 @@ export const LoginErrorModal = React.memo(function LoginErrorModal(
 
   return errorModalVisible ? (
     <InfoModal
-      title={props.translations.header}
+      title={i18n.loginErrorModal.header}
       close={onClose}
-      closeLabel={props.translations.returnMessage}
+      closeLabel={i18n.loginErrorModal.returnMessage}
       type="danger"
       icon={faTimes}
     >
-      <P centered>{props.translations.message}</P>
+      <P centered>{i18n.loginErrorModal.message}</P>
       <ReturnContainer>
         <P centered>
           <a href="#" onClick={onClose}>
-            {props.translations.returnMessage}
+            {i18n.loginErrorModal.returnMessage}
           </a>
         </P>
       </ReturnContainer>

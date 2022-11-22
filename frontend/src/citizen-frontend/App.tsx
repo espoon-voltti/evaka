@@ -70,9 +70,7 @@ export default function App() {
                         <ApplicationsContextProvider>
                           <Content />
                           <GlobalDialog />
-                          <LoginErrorModal
-                            translations={i18n.login.failedModal}
-                          />
+                          <LoginErrorModal />
                           <div id="modal-container" />
                         </ApplicationsContextProvider>
                       </ChildrenContextProvider>

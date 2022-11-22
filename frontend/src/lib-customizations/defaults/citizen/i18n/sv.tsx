@@ -2055,14 +2055,6 @@ const sv: Translations = {
     httpUrl: 'Ange i formen https://example.com',
     unselectableDate: 'Ogiltigt datum'
   },
-  login: {
-    failedModal: {
-      header: 'Inloggningen misslyckades',
-      message:
-        'Autentiseringen för tjänsten misslyckades eller avbröts. För att logga in gå tillbaka och försök på nytt.',
-      returnMessage: 'Gå tillbaka till inloggningen'
-    }
-  },
   placement: {
     type: {
       CLUB: 'Klubb',

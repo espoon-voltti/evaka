@@ -8,6 +8,12 @@ const components = {
     failure: 'Lataus epäonnistui',
     success: 'Valmis'
   },
+  loginErrorModal: {
+    header: 'Kirjautuminen epäonnistui',
+    message:
+      'Palveluun tunnistautuminen epäonnistui tai se keskeytettiin. Kirjautuaksesi sisään palaa takaisin ja yritä uudelleen.',
+    returnMessage: 'Palaa takaisin'
+  },
   notifications: {
     close: 'Sulje'
   },
