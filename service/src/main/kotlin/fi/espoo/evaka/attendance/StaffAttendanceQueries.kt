@@ -37,8 +37,8 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
         coalesce((
             SELECT jsonb_agg(jsonb_build_object('id', a.id, 'employeeId', a.employee_id, 'groupId', a.group_id, 'arrived', a.arrived, 'departed', a.departed, 'type', a.type))
             FROM staff_attendance_realtime a
-            JOIN daycare_group dg ON dg.id = a.group_id
-            WHERE e.id = a.employee_id AND dg.daycare_id = :unitId AND tstzrange(a.arrived, a.departed) && tstzrange(:rangeStart, :rangeEnd)
+            LEFT JOIN daycare_group dg ON dg.id = a.group_id
+            WHERE e.id = a.employee_id AND (dg.daycare_id = :unitId OR a.group_id IS NULL) AND tstzrange(a.arrived, a.departed) && tstzrange(:rangeStart, :rangeEnd)
         ), '[]'::jsonb) AS attendances,
         coalesce((
             SELECT jsonb_agg(jsonb_build_object('start', p.start_time, 'end', p.end_time, 'type', p.type))
@@ -151,7 +151,7 @@ fun Database.Transaction.markStaffArrival(
 data class StaffAttendance(
     val id: StaffAttendanceId?,
     val employeeId: EmployeeId,
-    val groupId: GroupId,
+    val groupId: GroupId?,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
     val occupancyCoefficient: BigDecimal,
@@ -328,7 +328,7 @@ fun Database.Transaction.deleteExternalStaffAttendance(attendanceId: StaffAttend
 
 data class RawAttendance(
     val id: UUID,
-    val groupId: GroupId,
+    val groupId: GroupId?,
     val arrived: HelsinkiDateTime,
     val departed: HelsinkiDateTime?,
     val occupancyCoefficient: BigDecimal,
@@ -369,6 +369,34 @@ WHERE dg.daycare_id = :unitId AND tstzrange(sa.arrived, sa.departed) && tstzrang
         .bind("end", HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0)))
         .mapTo<RawAttendance>()
         .list()
+
+fun Database.Read.getStaffAttendancesWithoutGroup(
+    range: FiniteDateRange,
+    employeeIds: Set<EmployeeId>
+): List<RawAttendance> =
+    createQuery(
+            """
+SELECT
+    sa.id,
+    sa.employee_id,
+    sa.arrived,
+    sa.departed,
+    sa.group_id,
+    sa.occupancy_coefficient,
+    sa.type,
+    emp.first_name,
+    emp.last_name,
+    0 AS currentOccupancyCoefficient
+FROM staff_attendance_realtime sa
+JOIN employee emp ON sa.employee_id = emp.id
+WHERE sa.employee_id = ANY(:employeeIds) AND sa.group_id IS NULL AND tstzrange(sa.arrived, sa.departed) && tstzrange(:start, :end)
+"""
+        )
+        .bind("employeeIds", employeeIds)
+        .bind("start", HelsinkiDateTime.of(range.start, LocalTime.of(0, 0)))
+        .bind("end", HelsinkiDateTime.of(range.end.plusDays(1), LocalTime.of(0, 0)))
+        .mapTo<RawAttendance>()
+        .toList()
 
 data class RawAttendanceEmployee(
     val id: EmployeeId,

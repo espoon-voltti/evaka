@@ -5,8 +5,6 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { renderResult } from 'employee-frontend/components/async-rendering'
-import LabelValueList from 'employee-frontend/components/common/LabelValueList'
 import { combine } from 'lib-common/api'
 import { Child } from 'lib-common/api-types/reservations'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -29,6 +27,8 @@ import { getStaffAttendances } from '../../../api/staff-attendance'
 import { getUnitAttendanceReservations } from '../../../api/unit'
 import { useTranslation } from '../../../state/i18n'
 import { AbsenceLegend } from '../../absences/AbsenceLegend'
+import { renderResult } from '../../async-rendering'
+import LabelValueList from '../../common/LabelValueList'
 import { AttendanceGroupFilter } from '../TabCalendar'
 
 import ChildReservationsTable from './ChildReservationsTable'

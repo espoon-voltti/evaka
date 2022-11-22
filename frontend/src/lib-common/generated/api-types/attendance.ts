@@ -49,7 +49,7 @@ export interface ArrivalRequest {
 export interface Attendance {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
-  groupId: UUID
+  groupId: UUID | null
   id: UUID
   occupancyCoefficient: number
   type: StaffAttendanceType
@@ -205,7 +205,6 @@ export interface ExternalAttendanceUpsert {
   departed: HelsinkiDateTime | null
   groupId: UUID
   id: UUID | null
-  type: StaffAttendanceType
 }
 
 /**
@@ -329,7 +328,7 @@ export type StaffAttendanceType = typeof staffAttendanceTypes[number]
 export interface StaffAttendanceUpsert {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
-  groupId: UUID
+  groupId: UUID | null
   id: UUID | null
   type: StaffAttendanceType
 }
@@ -368,7 +367,7 @@ export interface StaffMemberAttendance {
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
   employeeId: UUID
-  groupId: UUID
+  groupId: UUID | null
   id: UUID
   type: StaffAttendanceType
 }
@@ -437,6 +436,6 @@ export interface UpsertStaffAttendance {
   attendanceId: UUID | null
   departed: HelsinkiDateTime | null
   employeeId: UUID
-  groupId: UUID
+  groupId: UUID | null
   type: StaffAttendanceType
 }

@@ -13,13 +13,12 @@ import DateRange from 'lib-common/date-range'
 import { ErrorKey } from 'lib-common/form-validation'
 import {
   StaffAttendanceType,
-  staffAttendanceTypes,
-  StaffAttendanceUpsert
+  staffAttendanceTypes
 } from 'lib-common/generated/api-types/attendance'
 import { DaycareGroup } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
-import LocalTime from 'lib-common/local-time'
+import { presentInGroup } from 'lib-common/staff-attendance'
 import { UUID } from 'lib-common/types'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Tooltip from 'lib-components/atoms/Tooltip'
@@ -50,7 +49,7 @@ import { errorToInputInfo } from '../../../utils/validation/input-info-helper'
 
 export interface ModalAttendance {
   id: UUID
-  groupId: UUID
+  groupId: UUID | null
   arrived: HelsinkiDateTime
   departed: HelsinkiDateTime | null
   type: StaffAttendanceType
@@ -61,7 +60,9 @@ export interface ModalPlannedAttendance {
   end: HelsinkiDateTime
 }
 
-interface Props {
+interface Props<
+  T extends { arrived: HelsinkiDateTime; departed: HelsinkiDateTime | null }
+> {
   date: LocalDate
   name: string
   attendances: ModalAttendance[]
@@ -69,12 +70,13 @@ interface Props {
   isExternal: boolean
   groups: DaycareGroup[]
   defaultGroupId: UUID | null
-  onSave: (body: StaffAttendanceUpsert[]) => void
+  validate: (a: EditedAttendance[]) => [undefined | T[], ValidationError[]]
+  onSave: (body: T[]) => void
   onSuccess: () => void
   onClose: () => void
 }
 
-interface EditedAttendance {
+export interface EditedAttendance {
   id: UUID | null
   groupId: UUID | null
   arrived: string
@@ -82,7 +84,20 @@ interface EditedAttendance {
   type: StaffAttendanceType
 }
 
-export default React.memo(function StaffAttendanceDetailsModal({
+export interface ValidationError {
+  arrived?: ErrorKey
+  departed?: ErrorKey
+  groupId?: ErrorKey
+  type?: ErrorKey
+}
+
+export default React.memo(
+  StaffAttendanceDetailsModal
+) as typeof StaffAttendanceDetailsModal
+
+function StaffAttendanceDetailsModal<
+  T extends { arrived: HelsinkiDateTime; departed: HelsinkiDateTime | null }
+>({
   date,
   name,
   attendances,
@@ -90,30 +105,16 @@ export default React.memo(function StaffAttendanceDetailsModal({
   isExternal,
   groups,
   defaultGroupId,
+  validate,
   onSave,
   onSuccess,
   onClose
-}: Props) {
+}: Props<T>) {
   const { i18n } = useTranslation()
 
-  const [startOfDay, endOfDay] = useMemo(
-    () => [
-      HelsinkiDateTime.fromLocal(date, LocalTime.of(0, 0)),
-      HelsinkiDateTime.fromLocal(date.addDays(1), LocalTime.of(0, 0))
-    ],
-    [date]
-  )
-
   const sortedAttendances = useMemo(
-    () =>
-      orderBy(
-        attendances.filter(
-          ({ arrived, departed }) =>
-            arrived < endOfDay && (departed === null || startOfDay < departed)
-        ) ?? [],
-        ({ arrived }) => arrived
-      ),
-    [attendances, endOfDay, startOfDay]
+    () => orderBy(attendances ?? [], ({ arrived }) => arrived),
+    [attendances]
   )
 
   const initialEditState = useMemo(
@@ -179,7 +180,7 @@ export default React.memo(function StaffAttendanceDetailsModal({
       })),
     [defaultGroupId]
   )
-  const [requestBody, errors] = validateEditState(attendances, date, editState)
+  const [requestBody, errors] = validate(editState)
   const save = useCallback(() => {
     if (!requestBody) return
     return onSave(requestBody)
@@ -378,7 +379,9 @@ export default React.memo(function StaffAttendanceDetailsModal({
                   </FullGridWidth>
                 )}
                 <GroupIndicator data-qa="group-indicator">
-                  {groupId === null ? (
+                  {type !== null && !presentInGroup(type) ? (
+                    <span>{i18n.unit.staffAttendance.noGroup}</span>
+                  ) : groupId === null ? (
                     <Select
                       items={[null, ...openGroups.map(({ id }) => id)]}
                       selectedItem={groupId}
@@ -506,118 +509,10 @@ export default React.memo(function StaffAttendanceDetailsModal({
       />
     </PlainModal>
   )
-})
+}
 
 const formatDate = (time: HelsinkiDateTime, currentDate: LocalDate) =>
   time.toLocalDate().isEqual(currentDate) ? time.toLocalTime().format() : '→'
-
-interface ValidationError {
-  arrived?: ErrorKey
-  departed?: ErrorKey
-}
-
-export function validateEditState(
-  attendances: ModalAttendance[],
-  date: LocalDate,
-  state: EditedAttendance[]
-): [StaffAttendanceUpsert[] | undefined, ValidationError[]] {
-  const body: StaffAttendanceUpsert[] = []
-  const errors: ValidationError[] = []
-  let hasErrors = false
-
-  for (let i = 0; i < state.length; i++) {
-    const item = state[i]
-    const existing = attendances.find((a) => a.id === item.id)
-    const isFirstAttendance = i === 0
-    const isLastAttendance = i === state.length - 1
-
-    const itemErrors: ValidationError = {}
-
-    let parsedArrived: LocalTime | undefined = undefined
-    if (!item.arrived) {
-      if (isFirstAttendance) {
-        const isOvernightAttendance =
-          existing && existing.arrived.toLocalDate().isBefore(date)
-        if (!isOvernightAttendance) {
-          itemErrors.arrived = 'required'
-        }
-      } else {
-        itemErrors.arrived = 'required'
-      }
-    } else {
-      parsedArrived = LocalTime.tryParse(item.arrived, 'HH:mm')
-      if (!parsedArrived) {
-        itemErrors.arrived = 'timeFormat'
-      }
-    }
-
-    let parsedDeparted: LocalTime | undefined = undefined
-    if (!item.departed) {
-      if (!isLastAttendance || !date.isToday()) {
-        itemErrors.departed = 'required'
-      }
-    } else {
-      parsedDeparted = LocalTime.tryParse(item.departed, 'HH:mm')
-      if (!parsedDeparted) {
-        itemErrors.departed = 'timeFormat'
-      }
-    }
-
-    if (
-      !isLastAttendance &&
-      parsedArrived &&
-      parsedDeparted &&
-      parsedDeparted.isBefore(parsedArrived)
-    ) {
-      itemErrors.departed = 'timeFormat'
-    }
-
-    if (
-      !isFirstAttendance &&
-      !itemErrors.arrived &&
-      !errors[i - 1].departed &&
-      item.arrived < state[i - 1].departed
-    ) {
-      itemErrors.arrived = 'timeFormat'
-    }
-
-    const arrived = parsedArrived
-      ? HelsinkiDateTime.fromLocal(date, parsedArrived)
-      : existing?.arrived ?? null
-    if (
-      arrived !== null &&
-      item.groupId !== null &&
-      Object.keys(itemErrors).length === 0
-    ) {
-      const departed = parsedDeparted
-        ? HelsinkiDateTime.fromLocal(
-            // If departed is before arrived, it means that the attendance
-            // is overnight and departed is on the next day
-            parsedArrived && parsedDeparted.isBefore(parsedArrived)
-              ? date.addDays(1)
-              : date,
-            parsedDeparted
-          )
-        : existing?.departed ?? null
-      body.push({
-        id: item.id,
-        type: item.type,
-        groupId: item.groupId,
-        arrived,
-        departed
-      })
-    } else {
-      hasErrors = true
-    }
-    errors[i] = itemErrors
-  }
-
-  if (hasErrors) {
-    return [undefined, errors]
-  }
-
-  return [body, errors]
-}
 
 function formatMinutes(minutes: number) {
   return `${Math.floor(minutes / 60)}:${Math.floor(minutes % 60)

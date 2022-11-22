@@ -302,7 +302,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             StaffAttendance(
                 id = null,
                 employeeId = arrival.employeeId,
-                groupId = arrival.groupId,
+                groupId = if (type.presentInGroup()) arrival.groupId else null,
                 arrived = arrived,
                 departed = departed,
                 occupancyCoefficient = BigDecimal.ZERO,
@@ -394,7 +394,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
             StaffAttendance(
                 id = null,
                 employeeId = departure.employeeId,
-                groupId = departure.groupId,
+                groupId = null,
                 arrived = arrived,
                 departed = departed,
                 occupancyCoefficient = BigDecimal.ZERO,

@@ -7,9 +7,6 @@ import classNames from 'classnames'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { postStaffAndExternalAttendances } from 'employee-frontend/api/staff-attendance'
-import { useTranslation } from 'employee-frontend/state/i18n'
-import { isTimeValid } from 'employee-frontend/utils/validation/validations'
 import { Failure } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import { ErrorsOf, getErrorCount } from 'lib-common/form-validation'
@@ -36,6 +33,10 @@ import { PlainModal } from 'lib-components/molecules/modals/BaseModal'
 import { fontWeights, H1, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
+
+import { postStaffAndExternalAttendances } from '../../../api/staff-attendance'
+import { useTranslation } from '../../../state/i18n'
+import { isTimeValid } from '../../../utils/validation/validations'
 
 type FormState = {
   date: LocalDate | null
