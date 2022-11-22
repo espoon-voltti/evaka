@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import components from '../../components/i18n/fi'
+
 export const fi = {
   common: {
     yesIDo: 'Kyllä',
@@ -442,5 +444,6 @@ export const fi = {
     utilization: 'Käyttöaste',
     description:
       'Yksiköidesi henkilökunnan ja lasten määrä sekä käyttöaste tällä hetkellä.'
-  }
+  },
+  components
 }

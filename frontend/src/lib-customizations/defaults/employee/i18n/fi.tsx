@@ -7,6 +7,8 @@ import React from 'react'
 import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
 import { H3, P } from 'lib-components/typography'
 
+import components from '../../components/i18n/fi'
+
 export const fi = {
   titles: {
     defaultTitle: 'Varhaiskasvatus',
@@ -3793,5 +3795,6 @@ export const fi = {
       'Voit määritellä eVakassa käytössä olevan kutsumanimesi. Kutsumanimen tulee olla jokin etunimistäsi. Jos nimesi on vaihtunut ja sinulla on tarve päivittää eVakaan uusi nimesi, ole yhteydessä Espoon HelpDeskiin.',
     select: 'Valitse kutsumanimi',
     confirm: 'Vahvista'
-  }
+  },
+  components
 }

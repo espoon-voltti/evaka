@@ -14,6 +14,8 @@ import { Gap } from 'lib-components/white-space'
 import { Translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 
+import components from '../../components/i18n/en'
+
 import fi from './fi'
 
 const yes = 'Yes'
@@ -2221,7 +2223,8 @@ const en: Translations = {
   skipLinks: {
     mainContent: 'Skip to main content',
     applyingSubNav: 'Skip to applications navigation'
-  }
+  },
+  components
 }
 
 export default en

@@ -13,6 +13,8 @@ import { H1, H2, H3, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
+import components from '../../components/i18n/fi'
+
 const yes = 'Kyllä'
 const no = 'Ei'
 
@@ -2301,5 +2303,6 @@ export default {
   skipLinks: {
     mainContent: 'Siirry pääsisältöön',
     applyingSubNav: 'Siirry hakemusnavigaatioon'
-  }
+  },
+  components
 }

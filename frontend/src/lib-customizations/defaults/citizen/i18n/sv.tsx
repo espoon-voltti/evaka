@@ -14,6 +14,8 @@ import { Gap } from 'lib-components/white-space'
 import { Translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 
+import components from '../../components/i18n/sv'
+
 const yes = 'Ja'
 const no = 'Nej'
 
@@ -2322,7 +2324,8 @@ const sv: Translations = {
   skipLinks: {
     mainContent: 'Hoppa till innehållet',
     applyingSubNav: 'Hoppa till ansökningsnavigationen'
-  }
+  },
+  components
 }
 
 export default sv
