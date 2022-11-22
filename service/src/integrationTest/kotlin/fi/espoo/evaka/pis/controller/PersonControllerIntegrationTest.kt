@@ -58,6 +58,30 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
     }
 
     @Test
+    fun `Search finds person by emai`() {
+        val user =
+            AuthenticatedUser.Employee(
+                EmployeeId(UUID.randomUUID()),
+                setOf(UserRole.SERVICE_WORKER)
+            )
+        val person = createPerson()
+
+        val response =
+            controller.findBySearchTerms(
+                dbInstance(),
+                user,
+                clock,
+                SearchPersonBody(
+                    searchTerm = "${person.email}",
+                    orderBy = "first_name",
+                    sortDirection = "DESC"
+                )
+            )
+
+        assertEquals(person.id, response.first().id)
+    }
+
+    @Test
     fun `Search treats tabs as spaces in search terms`() {
         val user =
             AuthenticatedUser.Employee(
@@ -204,7 +228,7 @@ class PersonControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                         dateOfBirth = getDobFromSsn(ssn),
                         firstName = "Matti",
                         lastName = "Meikäläinen",
-                        email = "",
+                        email = "matti.meikalainen@test.com",
                         language = "fi"
                     )
                 )

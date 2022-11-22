@@ -14,11 +14,14 @@ data class DBQuery(val query: String, val params: List<Binding<String>>)
 private const val freeTextParamName = "free_text"
 private val ssnParamName = { index: Int -> "ssn_$index" }
 private val dateParamName = { index: Int -> "date_$index" }
+private val emailParamName = { index: Int -> "email_$index" }
 
 fun freeTextSearchQuery(tables: List<String>, searchText: String): DBQuery {
     val ssnParams = findSsnParams(searchText)
     val dateParams = findDateParams(searchText)
-    val freeTextString = searchText.let(removeSsnParams).let(removeDateParams)
+    val emailParams = findEmailParams(searchText)
+    val freeTextString =
+        searchText.let(removeSsnParams).let(removeDateParams).let(removeEmailParams)
 
     val freeTextQuery =
         if (freeTextString.isNotBlank()) {
@@ -41,11 +44,22 @@ fun freeTextSearchQuery(tables: List<String>, searchText: String): DBQuery {
             null
         }
 
-    val wholeQuery = listOfNotNull("true", freeTextQuery, ssnQuery, dateQuery).joinToString(" AND ")
+    val emailQuery =
+        if (emailParams.isNotEmpty()) {
+            emailQuery(tables, emailParams)
+        } else {
+            null
+        }
+
+    val wholeQuery =
+        listOfNotNull("true", freeTextQuery, ssnQuery, dateQuery, emailQuery).joinToString(" AND ")
 
     val allParams =
         (ssnParams.mapIndexed { index, param -> Binding.of(ssnParamName(index), param) } +
                 dateParams.mapIndexed { index, param -> Binding.of(dateParamName(index), param) } +
+                emailParams.mapIndexed { index, param ->
+                    Binding.of(emailParamName(index), param)
+                } +
                 (Binding.of(freeTextParamName, freeTextParamsToTsQuery(freeTextString))).takeIf {
                     freeTextString.isNotBlank()
                 })
@@ -159,3 +173,19 @@ fun freeTextParamsToTsQuery(searchText: String): String =
         .filter { it.isNotBlank() }
         .map { param -> "$param:*" }
         .joinToString(" & ")
+
+private val emailRegex = "^\\S+@\\S+\\.\\S+\$".toRegex()
+
+private fun findEmailParams(str: String) = splitSearchText(str).filter(emailRegex::matches)
+
+private fun emailQuery(tablePrefixes: List<String>, params: Collection<String>): String {
+    return params
+        .mapIndexed { index, _ ->
+            tablePrefixes
+                .map { table -> "lower($table.email) = lower(:${emailParamName(index)})" }
+                .joinToString(" OR ", "(", ")")
+        }
+        .joinToString(" AND ", "(", ")")
+}
+
+private val removeEmailParams: (String) -> String = { it.replace(emailRegex, "") }
