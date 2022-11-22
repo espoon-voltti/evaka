@@ -367,11 +367,15 @@ class VardaClient(
         logger.info("VardaUpdate: client deleting all child data (id: $vardaChildId)")
 
         val (request, _, result) =
-                fuel.delete("${getChildUrl(vardaChildId)}/delete-all").authenticatedResponseStringWithRetries()
+            fuel
+                .delete("${getChildUrl(vardaChildId)}/delete-all")
+                .authenticatedResponseStringWithRetries()
 
         return when (result) {
             is Result.Success -> {
-                logger.info("VardaUpdate: client successfully deleted all child data (id: $vardaChildId)")
+                logger.info(
+                    "VardaUpdate: client successfully deleted all child data (id: $vardaChildId)"
+                )
                 true
             }
             is Result.Failure -> {
