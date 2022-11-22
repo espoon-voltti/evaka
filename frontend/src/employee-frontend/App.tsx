@@ -121,7 +121,7 @@ export default function App() {
             >
               <StateProvider>
                 <Header />
-                <Notifications apiVersion={authStatus.apiVersion} i18n={i18n} />
+                <Notifications apiVersion={authStatus.apiVersion} />
                 <Routes>
                   <Route
                     path="/login"

@@ -7,6 +7,13 @@ const components = {
     inProgress: 'Laddar',
     failure: 'Något gick fel',
     success: 'Klar'
+  },
+  notifications: {
+    close: 'Stäng'
+  },
+  reloadNotification: {
+    title: 'En ny version av eVaka är tillgänglig',
+    buttonText: 'Ladda om sidan'
   }
 }
 

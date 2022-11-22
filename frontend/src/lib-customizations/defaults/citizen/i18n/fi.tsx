@@ -2065,10 +2065,6 @@ export default {
       SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito'
     }
   },
-  reloadNotification: {
-    title: 'Uusi versio eVakasta saatavilla',
-    buttonText: 'Lataa sivu uudelleen'
-  },
   children: {
     title: 'Lapset',
     pageDescription:

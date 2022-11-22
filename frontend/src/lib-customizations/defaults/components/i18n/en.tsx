@@ -7,6 +7,13 @@ const components = {
     inProgress: 'Loading',
     failure: 'Failed to load',
     success: 'Success'
+  },
+  notifications: {
+    close: 'Close'
+  },
+  reloadNotification: {
+    title: 'New version of eVaka is available',
+    buttonText: 'Reload page'
   }
 }
 

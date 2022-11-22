@@ -10,6 +10,13 @@ export interface Translations {
     failure: string
     success: string
   }
+  notifications: {
+    close: string
+  }
+  reloadNotification: {
+    title: string
+    buttonText: string
+  }
 }
 
 interface ComponentLocalizationState {

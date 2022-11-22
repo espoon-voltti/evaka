@@ -3756,10 +3756,6 @@ export const fi = {
     httpUrl: 'Anna muodossa https://example.com',
     unselectableDate: 'Päivä ei ole sallittu'
   },
-  reloadNotification: {
-    title: 'Uusi versio eVakasta saatavilla',
-    buttonText: 'Lataa sivu uudelleen'
-  },
   holidayPeriods: {
     confirmDelete: 'Haluatko varmasti poistaa loma-ajan?',
     createTitle: 'Luo uusi loma-aika',

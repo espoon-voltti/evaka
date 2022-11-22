@@ -7,6 +7,13 @@ const components = {
     inProgress: 'Ladataan',
     failure: 'Lataus epäonnistui',
     success: 'Valmis'
+  },
+  notifications: {
+    close: 'Sulje'
+  },
+  reloadNotification: {
+    title: 'Uusi versio eVakasta saatavilla',
+    buttonText: 'Lataa sivu uudelleen'
   }
 }
 

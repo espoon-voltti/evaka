@@ -1980,10 +1980,6 @@ const en: Translations = {
       SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito'
     }
   },
-  reloadNotification: {
-    title: 'New version of eVaka is available',
-    buttonText: 'Reload page'
-  },
   children: {
     title: 'Children',
     pageDescription:

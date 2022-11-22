@@ -401,10 +401,6 @@ export const fi = {
       return `Ei ${statusText} lapsia`
     }
   },
-  reloadNotification: {
-    title: 'Uusi versio eVakasta saatavilla',
-    buttonText: 'Lataa sivu uudelleen'
-  },
   childButtons: {
     newMessage: 'Uusi viesti'
   },

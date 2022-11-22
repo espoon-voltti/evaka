@@ -2086,10 +2086,6 @@ const sv: Translations = {
       SCHOOL_SHIFT_CARE: 'Skiftvård för skolbarn'
     }
   },
-  reloadNotification: {
-    title: 'En ny version av eVaka är tillgänglig',
-    buttonText: 'Ladda om sidan'
-  },
   children: {
     title: 'Barn',
     pageDescription:
