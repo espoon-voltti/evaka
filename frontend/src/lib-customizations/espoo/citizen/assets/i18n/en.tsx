@@ -614,7 +614,6 @@ const en: Translations = {
           wasOnClubCareYes:
             'Child has been in a club during the previous club term',
           connectedDaycare: {
-            title: 'Apply for early childhood education',
             label: 'Early childhood education',
             withConnectedDaycare:
               'I also apply for early childhood education related to pre-primary education.',
@@ -761,14 +760,25 @@ const en: Translations = {
             CLUB: 'Desired start date'
           },
           noteOnDelay: 'The application processing time is 4 months.',
-          instructions: (
-            <>
-              You can postpone your desired start date until the processing of
-              your application starts. After this, you can make changes to your
-              desired start date by contacting early childhood education service
-              counselling (tel. 09 816 31000).
-            </>
-          ),
+          instructions: {
+            DAYCARE: (
+              <>
+                You can postpone your desired start date until the processing of
+                your application starts. After this, you can make changes to
+                your desired start date by contacting early childhood education
+                service counselling (tel. 09 816 31000).
+              </>
+            ),
+            PRESCHOOL: (
+              <>
+                You can postpone your desired start date until the processing of
+                your application starts. After this, you can make changes to
+                your desired start date by contacting early childhood education
+                service counselling (tel. 09 816 31000).
+              </>
+            ),
+            CLUB: null
+          },
           placeholder: 'Select the start date',
           validationText: 'Desired start date: '
         },
@@ -1072,7 +1082,10 @@ const en: Translations = {
           preferences: {
             label: 'Application preferences you selected',
             noSelections: 'No selections',
-            info: 'Select 1 - 3 preferred units, and sort them in preferred order with the arrows',
+            info: (maxUnits: number) =>
+              maxUnits === 1
+                ? 'Select one preferred unit'
+                : `Select 1 - ${maxUnits} preferred units, and sort them in preferred order with the arrows`,
             fi: 'finnish',
             sv: 'swedish',
             en: 'english',

@@ -599,8 +599,6 @@ const sv: Translations = {
           wasOnClubCareYes:
             'Barnet har varit i klubben under föregående operationsperiod\n.',
           connectedDaycare: {
-            title:
-              'Behov av småbarnspedagogik i samband med förskoleundervisningen.',
             label: 'Småbarnspedagogik i samband med förskoleundervisning',
             withConnectedDaycare:
               'Jag ansöker också om kompletterande småbarnspedagogik utöver förskolan.',
@@ -743,14 +741,25 @@ const sv: Translations = {
             CLUB: 'Önskat inledningsdatum'
           },
           noteOnDelay: 'Behandlingstiden för ansökningen är 4 månader.',
-          instructions: (
-            <>
-              Det är möjligt att senarelägga det önskade startdatumet så länge
-              ansökan inte har tagits upp till behandling. Därefter kan du ändra
-              det önskade startdatumet genom att kontakta servicehandledningen
-              inom småbarnspedagogik (tfn 09 816 27600).
-            </>
-          ),
+          instructions: {
+            DAYCARE: (
+              <>
+                Det är möjligt att senarelägga det önskade startdatumet så länge
+                ansökan inte har tagits upp till behandling. Därefter kan du
+                ändra det önskade startdatumet genom att kontakta
+                servicehandledningen inom småbarnspedagogik (tfn 09 816 27600).
+              </>
+            ),
+            PRESCHOOL: (
+              <>
+                Det är möjligt att senarelägga det önskade startdatumet så länge
+                ansökan inte har tagits upp till behandling. Därefter kan du
+                ändra det önskade startdatumet genom att kontakta
+                servicehandledningen inom småbarnspedagogik (tfn 09 816 27600).
+              </>
+            ),
+            CLUB: null
+          },
           placeholder: 'Välj inledningsdatum',
           validationText: 'Önskat inledningsdatum: '
         },
@@ -1029,7 +1038,10 @@ const sv: Translations = {
           preferences: {
             label: 'Enheter som du har valt',
             noSelections: 'Inga val',
-            info: 'Välj minst 1 och högst 3 enheter och ange dem i önskad ordning. Du kan ändra på ordningsföljden med hjälp av pilarna.',
+            info: (maxUnits: number) =>
+              maxUnits === 1
+                ? 'Välj en enhet'
+                : `Välj minst 1 och högst ${maxUnits} enheter och ange dem i önskad ordning. Du kan ändra på ordningsföljden med hjälp av pilarna.`,
             fi: 'Finskspråkig',
             sv: 'Svenskspråkig',
             en: 'Engelskspråkig',

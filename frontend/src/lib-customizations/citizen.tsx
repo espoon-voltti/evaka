@@ -40,7 +40,8 @@ const {
   footerLogo,
   langs,
   mapConfig,
-  routeLinkRootUrl
+  routeLinkRootUrl,
+  getMaxPreferredUnits
 }: CitizenCustomizations = customizations
 export {
   appConfig,
@@ -49,7 +50,8 @@ export {
   footerLogo,
   langs,
   mapConfig,
-  routeLinkRootUrl
+  routeLinkRootUrl,
+  getMaxPreferredUnits
 }
 
 export type Lang = 'fi' | 'sv' | 'en'

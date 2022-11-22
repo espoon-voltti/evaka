@@ -579,7 +579,6 @@ export default {
           wasOnClubCareYes:
             'Lapsi on ollut kerhossa edellisen toimintakauden aikana.',
           connectedDaycare: {
-            title: 'Esiopetukseen liittyvän varhaiskasvatuksen tarve',
             label: 'Liittyvä varhaiskasvatus',
             withConnectedDaycare:
               'Haen myös esiopetukseen liittyvää varhaiskasvatusta.',
@@ -723,14 +722,29 @@ export default {
             CLUB: 'Kerhon toivottu aloituspäivä'
           },
           noteOnDelay: 'Hakemuksen käsittelyaika on 4 kuukautta.',
-          instructions: (
-            <>
-              Toivottua aloituspäivää on mahdollista muuttaa myöhemmäksi niin
-              kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen
-              toivotun aloituspäivän muutokset tehdään ottamalla yhteyttä
-              varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000).
-            </>
-          ),
+          instructions: {
+            DAYCARE: (
+              <>
+                Toivottua aloituspäivää on mahdollista muuttaa myöhemmäksi niin
+                kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen
+                toivotun aloituspäivän muutokset tehdään ottamalla yhteyttä
+                varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000).
+              </>
+            ),
+            PRESCHOOL: (
+              <>
+                Toivottua aloituspäivää on mahdollista muuttaa myöhemmäksi niin
+                kauan kuin hakemusta ei ole otettu käsittelyyn. Tämän jälkeen
+                toivotun aloituspäivän muutokset tehdään ottamalla yhteyttä
+                varhaiskasvatuksen palveluohjaukseen (puh. 09 816 31000).
+              </>
+            ),
+            CLUB: null
+          } as {
+            DAYCARE: JSX.Element | null
+            PRESCHOOL: JSX.Element | null
+            CLUB: JSX.Element | null
+          },
           placeholder: 'Valitse aloituspäivä',
           validationText: 'Toivottu aloituspäivä: '
         },
@@ -927,6 +941,10 @@ export default {
                 </P>
               </>
             )
+          } as {
+            DAYCARE: JSX.Element | null
+            PRESCHOOL: JSX.Element | null
+            CLUB: JSX.Element | null
           },
           checkbox: {
             DAYCARE:
@@ -1022,7 +1040,10 @@ export default {
           preferences: {
             label: 'Valitsemasi hakutoiveet',
             noSelections: 'Ei valintoja',
-            info: 'Valitse 1-3 varhaiskasvatusyksikköä ja järjestä ne toivomaasi järjestykseen. Voit muuttaa järjestystä nuolien avulla.',
+            info: (maxUnits: number) =>
+              maxUnits === 1
+                ? 'Valitse yksi varhaiskasvatusyksikkö'
+                : `Valitse 1-${maxUnits} varhaiskasvatusyksikköä ja järjestä ne toivomaasi järjestykseen. Voit muuttaa järjestystä nuolien avulla.`,
             fi: 'suomenkielinen',
             sv: 'ruotsinkielinen',
             en: 'englanninkielinen',

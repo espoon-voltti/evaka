@@ -10,6 +10,7 @@ import TextArea from 'lib-components/atoms/form/TextArea'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useTranslation } from '../../../localization'
@@ -31,7 +32,7 @@ export default React.memo(function AssistanceNeedSubSection({
 
       <Gap size="s" />
 
-      {type === 'PRESCHOOL' && (
+      {type === 'PRESCHOOL' && featureFlags.preparatory && (
         <>
           <ExpandingInfo
             info={t.applications.editor.serviceNeed.preparatoryInfo}
