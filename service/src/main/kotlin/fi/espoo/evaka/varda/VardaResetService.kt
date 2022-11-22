@@ -191,42 +191,8 @@ fun deleteChildDataFromVardaAndDbByVardaId(
     vardaClient: VardaClient,
     vardaChildId: Long
 ) {
-    val decisionIds = vardaClient.getDecisionsByChild(vardaChildId)
-    logger.info(
-        "VardaUpdate: found ${decisionIds.size} decisions to be deleted for child $vardaChildId"
-    )
-
-    val placementIds = decisionIds.flatMap { vardaClient.getPlacementsByDecision(it) }
-    logger.info(
-        "VardaUpdate: found ${placementIds.size} placements to be deleted for child $vardaChildId"
-    )
-
-    val feeIds = vardaClient.getFeeDataByChild(vardaChildId)
-    logger.info("VardaUpdate: found ${feeIds.size} fee data to be deleted for child $vardaChildId")
-
-    feeIds.forEachIndexed { index, feeId ->
-        logger.info(
-            "VardaUpdate: deleting fee data $feeId for child $vardaChildId (${index + 1} / ${feeIds.size})"
-        )
-        vardaClient.deleteFeeData(feeId)
-    }
-
-    placementIds.forEachIndexed { index, placementId ->
-        logger.info(
-            "VardaUpdate: deleting placement $placementId for child $vardaChildId (${index + 1} / ${placementIds.size})"
-        )
-        vardaClient.deletePlacement(placementId)
-    }
-
-    decisionIds.forEachIndexed { index, decisionId ->
-        logger.info(
-            "VardaUpdate: deleting decision $decisionId for child $vardaChildId (${index + 1} / ${decisionIds.size})"
-        )
-        vardaClient.deleteDecision(decisionId)
-    }
-
-    logger.info("VardaUpdate: deleting child $vardaChildId")
-    vardaClient.deleteChild(vardaChildId)
+    logger.info("VardaUpdate: deleting all child data from varda (child id: $vardaChildId)")
+    vardaClient.deleteChildAllData(vardaChildId)
     db.transaction { it.deleteVardaOrganizerChildByVardaChildId(vardaChildId) }
 
     logger.info("VardaUpdate: deleting from varda_service_need for child $vardaChildId")
