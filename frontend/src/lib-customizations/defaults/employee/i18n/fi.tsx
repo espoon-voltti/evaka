@@ -3737,9 +3737,6 @@ export const fi = {
     ssn: 'Virheellinen henkilötunnus',
     phone: 'Virheellinen numero',
     email: 'Virheellinen sähköpostiosoite',
-    validDate: 'Anna muodossa pp.kk.vvvv',
-    dateTooEarly: 'Valitse myöhäisempi päivä',
-    dateTooLate: 'Valitse aikaisempi päivä',
     preferredStartDate: 'Aloituspäivä ei ole sallittu',
     dateRangeNotLinear:
       'Aikavälin aloituspäivä tulee olla ennen lopetuspäivää.',
@@ -3748,7 +3745,8 @@ export const fi = {
     unitNotSelected: 'Valitse vähintään yksi hakutoive',
     emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää',
     httpUrl: 'Anna muodossa https://example.com',
-    unselectableDate: 'Päivä ei ole sallittu'
+    unselectableDate: 'Päivä ei ole sallittu',
+    ...components.datePicker.validationErrors
   },
   holidayPeriods: {
     confirmDelete: 'Haluatko varmasti poistaa loma-ajan?',

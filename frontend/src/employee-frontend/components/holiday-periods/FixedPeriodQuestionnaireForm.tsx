@@ -317,7 +317,6 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
             onChange={(start) => update({ start })}
             hideErrorsBeforeTouched={hideErrorsBeforeTouched}
             data-qa="input-start"
-            errorTexts={i18n.validationErrors}
           />
           <span>-</span>
           <DatePicker
@@ -332,7 +331,6 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
             onChange={(end) => update({ end })}
             hideErrorsBeforeTouched={hideErrorsBeforeTouched}
             data-qa="input-end"
-            errorTexts={i18n.validationErrors}
           />
         </FixedSpaceRow>
 
@@ -561,7 +559,6 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
             }
             hideErrorsBeforeTouched={hideErrorsBeforeTouched}
             data-qa="continuous-placement-start"
-            errorTexts={i18n.validationErrors}
           />
           <span>-</span>
           <DatePicker
@@ -582,7 +579,6 @@ export default React.memo(function FixedPeriodQuestionnaireForm({
             }
             hideErrorsBeforeTouched={hideErrorsBeforeTouched}
             data-qa="continuous-placement-end"
-            errorTexts={i18n.validationErrors}
           />
         </FixedSpaceRow>
       </ListGrid>

@@ -8,6 +8,16 @@ const components = {
     failure: 'Failed to load',
     success: 'Success'
   },
+  datePicker: {
+    placeholder: 'dd.mm.yyyy',
+    description:
+      'Type the date in dd.mm.yyyy format. You can get to month picker with the tab key.',
+    validationErrors: {
+      validDate: 'Valid date format is dd.mm.yyyy',
+      dateTooEarly: 'Pick a later date',
+      dateTooLate: 'Pick an earlier date'
+    }
+  },
   loginErrorModal: {
     header: 'Login failed',
     message:

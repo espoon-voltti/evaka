@@ -135,7 +135,6 @@ export default React.memo(function HolidayPeriodForm({
             onChange={(start) => update({ start })}
             hideErrorsBeforeTouched={hideErrorsBeforeTouched}
             data-qa="input-start"
-            errorTexts={i18n.validationErrors}
           />
           <span>-</span>
           <DatePicker
@@ -150,7 +149,6 @@ export default React.memo(function HolidayPeriodForm({
             onChange={(end) => update({ end })}
             hideErrorsBeforeTouched={hideErrorsBeforeTouched}
             data-qa="input-end"
-            errorTexts={i18n.validationErrors}
           />
         </FixedSpaceRow>
 
@@ -170,7 +168,6 @@ export default React.memo(function HolidayPeriodForm({
           date={form.reservationDeadline}
           onChange={(reservationDeadline) => update({ reservationDeadline })}
           data-qa="input-reservation-deadline"
-          errorTexts={i18n.validationErrors}
         />
       </ListGrid>
 

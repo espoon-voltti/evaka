@@ -1940,16 +1940,14 @@ const en: Translations = {
     ssn: 'Invalid person identification number',
     phone: 'Invalid telephone number',
     email: 'Invalid email',
-    validDate: 'Valid date format is pp.kk.vvvv',
-    dateTooEarly: 'Pick a later date',
-    dateTooLate: 'Pick an earlier date',
     preferredStartDate: 'Invalid preferred start date',
     timeFormat: 'Check',
     timeRequired: 'Required',
     unitNotSelected: 'Pick at least one choice',
     emailsDoNotMatch: 'The emails do not match',
     httpUrl: 'Valid url format is https://example.com',
-    unselectableDate: 'Invalid date'
+    unselectableDate: 'Invalid date',
+    ...components.datePicker.validationErrors
   },
   placement: {
     // TODO i18n

@@ -355,14 +355,12 @@ export default React.memo(function VasuTemplateEditor() {
                     locale="fi"
                     date={null}
                     onChange={() => undefined}
-                    errorTexts={i18n.validationErrors}
                   />
                   <span>-</span>
                   <DatePicker
                     locale="fi"
                     date={null}
                     onChange={() => undefined}
-                    errorTexts={i18n.validationErrors}
                   />
                 </div>
               )}
@@ -400,7 +398,6 @@ export default React.memo(function VasuTemplateEditor() {
                 {opt.date ? (
                   <DatePicker
                     date={null}
-                    errorTexts={i18n.validationErrors}
                     locale="fi"
                     onChange={() => undefined}
                     hideErrorsBeforeTouched
@@ -411,14 +408,12 @@ export default React.memo(function VasuTemplateEditor() {
                       locale="fi"
                       date={null}
                       onChange={() => undefined}
-                      errorTexts={i18n.validationErrors}
                     />
                     <span>-</span>
                     <DatePicker
                       locale="fi"
                       date={null}
                       onChange={() => undefined}
-                      errorTexts={i18n.validationErrors}
                     />
                   </div>
                 ) : null}
@@ -482,12 +477,7 @@ export default React.memo(function VasuTemplateEditor() {
         <QuestionInfo info={question.info}>
           <H3 noMargin>{`${questionNumber}. ${question.name}`}</H3>
         </QuestionInfo>
-        <DatePicker
-          date={null}
-          onChange={() => undefined}
-          locale={lang}
-          errorTexts={i18n.validationErrors}
-        />
+        <DatePicker date={null} onChange={() => undefined} locale={lang} />
         {!!question.nameInEvents && (
           <QuestionDetails>
             {`${i18n.vasuTemplates.questionModal.dateIsTrackedInEvents}: ${question.nameInEvents}`}

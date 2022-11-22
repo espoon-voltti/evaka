@@ -107,7 +107,6 @@ export default React.memo(function CreatePersonModal({
             maxDate={LocalDate.todayInSystemTz()}
             hideErrorsBeforeTouched
             data-qa="date-of-birth-input"
-            errorTexts={i18n.validationErrors}
           />
           <Label>{i18n.personSearch.createNewPerson.form.address}*</Label>
           <AddressContainer>

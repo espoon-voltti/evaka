@@ -10,6 +10,15 @@ export interface Translations {
     failure: string
     success: string
   }
+  datePicker: {
+    placeholder: string
+    description: string
+    validationErrors: {
+      validDate: string
+      dateTooEarly: string
+      dateTooLate: string
+    }
+  }
   loginErrorModal: {
     header: string
     message: string

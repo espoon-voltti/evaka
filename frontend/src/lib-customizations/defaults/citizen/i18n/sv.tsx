@@ -2044,16 +2044,14 @@ const sv: Translations = {
     ssn: 'Ogiltigt personbeteckning',
     phone: 'Ogiltigt telefonnummer',
     email: 'Ogiltig e-postadress',
-    validDate: 'Ange i format dd.mm.åååå',
-    dateTooEarly: 'Välj ett senare datum',
-    dateTooLate: 'Välj ett tidigare datum',
     preferredStartDate: 'Ogiltigt datum',
     timeFormat: 'Kolla',
     timeRequired: 'Nödvändig',
     unitNotSelected: 'Välj minst en enhet',
     emailsDoNotMatch: 'E-postadresserna är olika',
     httpUrl: 'Ange i formen https://example.com',
-    unselectableDate: 'Ogiltigt datum'
+    unselectableDate: 'Ogiltigt datum',
+    ...components.datePicker.validationErrors
   },
   placement: {
     type: {

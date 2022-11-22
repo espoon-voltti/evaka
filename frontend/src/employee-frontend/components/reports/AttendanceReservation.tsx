@@ -180,7 +180,6 @@ export default React.memo(function AttendanceReservation() {
                 }
               }}
               locale={lang}
-              errorTexts={i18n.validationErrors}
               required={true}
             />
           </FlexRow>

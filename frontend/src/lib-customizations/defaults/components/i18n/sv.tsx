@@ -8,6 +8,16 @@ const components = {
     failure: 'Något gick fel',
     success: 'Klar'
   },
+  datePicker: {
+    placeholder: 'dd.mm.åååå',
+    description:
+      'Skriv in datumet i formatet dd.mm.åååå. Du kan komma till månadsväljaren med tabbtangenten.',
+    validationErrors: {
+      validDate: 'Ange i format dd.mm.åååå',
+      dateTooEarly: 'Välj ett senare datum',
+      dateTooLate: 'Välj ett tidigare datum'
+    }
+  },
   loginErrorModal: {
     header: 'Inloggningen misslyckades',
     message:

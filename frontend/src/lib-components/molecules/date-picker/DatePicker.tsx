@@ -15,6 +15,7 @@ import styled from 'styled-components'
 import LocalDate from 'lib-common/local-date'
 
 import { InputInfo } from '../../atoms/form/InputField'
+import { useTranslations } from '../../i18n'
 import { fontWeights } from '../../typography'
 import { defaultMargins } from '../../white-space'
 
@@ -99,9 +100,6 @@ interface BaseDatePickerProps {
   required?: boolean
   initialMonth?: LocalDate
   openAbove?: boolean
-  errorTexts: {
-    validDate: string
-  }
 
   /**
    * It is preferable to use `minDate` and `maxDate` instead, if possible.
@@ -122,26 +120,16 @@ type WithoutMinMaxBaseProps = Omit<BaseDatePickerProps, 'minDate' | 'maxDate'>
 interface MinDatePickerProps extends WithoutMinMaxBaseProps {
   minDate?: LocalDate
   maxDate?: never
-  errorTexts: BaseDatePickerProps['errorTexts'] & {
-    dateTooEarly: string
-  }
 }
 
 interface MaxDatePickerProps extends WithoutMinMaxBaseProps {
   minDate?: never
   maxDate?: LocalDate
-  errorTexts: BaseDatePickerProps['errorTexts'] & {
-    dateTooLate: string
-  }
 }
 
 interface MinMaxDatePickerProps extends WithoutMinMaxBaseProps {
   minDate?: LocalDate
   maxDate?: LocalDate
-  errorTexts: BaseDatePickerProps['errorTexts'] & {
-    dateTooEarly: string
-    dateTooLate: string
-  }
 }
 
 export type DatePickerProps =
@@ -187,9 +175,9 @@ export default React.memo(function DatePicker({
   openAbove,
   maxDate,
   minDate,
-  errorTexts,
   ...props
 }: DatePickerProps) {
+  const i18n = useTranslations()
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false)
   const [showErrors, setShowErrors] = useState(!hideErrorsBeforeTouched)
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -207,9 +195,15 @@ export default React.memo(function DatePicker({
         if (value === null) {
           onChange(null)
         } else if (minDate && value.isBefore(minDate)) {
-          setInternalError({ text: errorTexts.dateTooEarly, status: 'warning' })
+          setInternalError({
+            text: i18n.datePicker.validationErrors.dateTooEarly,
+            status: 'warning'
+          })
         } else if (maxDate && value.isAfter(maxDate)) {
-          setInternalError({ text: errorTexts.dateTooLate, status: 'warning' })
+          setInternalError({
+            text: i18n.datePicker.validationErrors.dateTooLate,
+            status: 'warning'
+          })
         } else {
           const validationError = isInvalidDate?.(value)
           if (validationError) {
@@ -223,7 +217,7 @@ export default React.memo(function DatePicker({
         setInternalError(undefined)
       }
     },
-    [date, errorTexts, isInvalidDate, maxDate, minDate, onChange]
+    [date, i18n, isInvalidDate, maxDate, minDate, onChange]
   )
 
   const hideDatePicker = useCallback(() => {
@@ -325,7 +319,6 @@ export default React.memo(function DatePicker({
         useBrowserPicker={nativeDatePickerEnabled}
         minDate={minDate}
         maxDate={maxDate}
-        errorTexts={errorTexts}
         hideErrorsBeforeTouched={hideErrorsBeforeTouched}
         datePickerVisible={showDatePicker}
       />

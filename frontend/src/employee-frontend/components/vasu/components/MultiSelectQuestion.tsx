@@ -209,7 +209,6 @@ const MultiSelectQuestionOption = React.memo(
               date={date}
               onChange={handleDateChange}
               data-qa={`multi-select-question-option-${option.key}-date`}
-              errorTexts={i18n.validationErrors}
               hideErrorsBeforeTouched
             />
           ) : option.dateRange ? (
@@ -219,7 +218,6 @@ const MultiSelectQuestionOption = React.memo(
                 date={startDate}
                 onChange={handleStartDateChange}
                 data-qa={`multi-select-question-option-${option.key}-start-date`}
-                errorTexts={i18n.validationErrors}
                 hideErrorsBeforeTouched
               />
               <span>-</span>
@@ -228,7 +226,6 @@ const MultiSelectQuestionOption = React.memo(
                 date={endDate}
                 onChange={handleEndDateChange}
                 data-qa={`multi-select-question-option-${option.key}-end-date`}
-                errorTexts={i18n.validationErrors}
                 hideErrorsBeforeTouched
               />
             </div>

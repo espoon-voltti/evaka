@@ -351,7 +351,6 @@ const IncomeTypeSelection = React.memo(
                     ? null
                     : t.validationErrors.unselectableDate
                 }
-                errorTexts={t.validationErrors}
               />
             </div>
             <div>
@@ -364,7 +363,6 @@ const IncomeTypeSelection = React.memo(
                 minDate={formData.startDate ?? undefined}
                 hideErrorsBeforeTouched
                 locale={lang}
-                errorTexts={t.validationErrors}
               />
             </div>
           </FixedSpaceRow>
@@ -569,7 +567,6 @@ const EntrepreneurIncomeSelection = React.memo(
               [formData.startOfEntrepreneurship, t]
             )}
             hideErrorsBeforeTouched={!showFormErrors}
-            errorTexts={t.validationErrors}
           />
           <Gap size="L" />
           <LabelWithError
@@ -807,7 +804,6 @@ const SelfEmployedIncomeSelection = React.memo(
                         ),
                       [formData.estimation, formData.incomeStartDate, t]
                     )}
-                    errorTexts={t.validationErrors}
                   />
                   <span>{' - '}</span>
                   <DatePicker
@@ -817,7 +813,6 @@ const SelfEmployedIncomeSelection = React.memo(
                     locale={lang}
                     minDate={formData.incomeStartDate ?? undefined}
                     hideErrorsBeforeTouched={!showFormErrors}
-                    errorTexts={t.validationErrors}
                   />
                 </FixedSpaceRow>
               </FixedSpaceColumn>

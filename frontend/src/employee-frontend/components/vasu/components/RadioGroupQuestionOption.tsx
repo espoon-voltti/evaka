@@ -10,7 +10,6 @@ import { VasuLanguage } from 'lib-common/generated/api-types/vasu'
 import LocalDate from 'lib-common/local-date'
 import Radio from 'lib-components/atoms/form/Radio'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
-import { VasuTranslations } from 'lib-customizations/employee'
 
 import type { RadioGroupSelectedValue } from './RadioGroupQuestion'
 
@@ -26,7 +25,6 @@ interface Props {
   isSelected: boolean
   onSelected: () => void
   lang: VasuLanguage
-  translations: VasuTranslations
 }
 
 export default React.memo(function RadioGroupQuestionOption({
@@ -35,8 +33,7 @@ export default React.memo(function RadioGroupQuestionOption({
   onChange,
   isSelected,
   onSelected,
-  lang,
-  translations
+  lang
 }: Props) {
   const selectedStartDate =
     (isSelected && selectedValue?.range?.start) || undefined
@@ -109,7 +106,6 @@ export default React.memo(function RadioGroupQuestionOption({
             onChange={handleStartDateChange}
             maxDate={endDate ?? undefined}
             data-qa={`radio-group-date-question-option-${option.key}-range-start`}
-            errorTexts={translations.validationErrors}
             hideErrorsBeforeTouched
           />
           <span>-</span>
@@ -119,7 +115,6 @@ export default React.memo(function RadioGroupQuestionOption({
             onChange={handleEndDateChange}
             minDate={startDate ?? undefined}
             data-qa={`radio-group-date-question-option-${option.key}-range-end`}
-            errorTexts={translations.validationErrors}
             hideErrorsBeforeTouched
           />
         </div>

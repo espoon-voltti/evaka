@@ -74,7 +74,6 @@ export function RadioGroupQuestion({
               isSelected={pendingSelected === ''}
               onSelected={() => setPendingSelected('')}
               lang={lang}
-              translations={translations}
             />
             {options.map((option) =>
               option.isIntervention ? (
@@ -93,7 +92,6 @@ export function RadioGroupQuestion({
                   isSelected={option.key === pendingSelected}
                   onSelected={() => setPendingSelected(option.key)}
                   lang={lang}
-                  translations={translations}
                 />
               )
             )}

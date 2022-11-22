@@ -2026,16 +2026,14 @@ export default {
     ssn: 'Virheellinen henkilötunnus',
     phone: 'Virheellinen numero',
     email: 'Virheellinen sähköpostiosoite',
-    validDate: 'Anna muodossa pp.kk.vvvv',
-    dateTooEarly: 'Valitse myöhäisempi päivä',
-    dateTooLate: 'Valitse aikaisempi päivä',
     preferredStartDate: 'Aloituspäivä ei ole sallittu',
     timeFormat: 'Tarkista',
     timeRequired: 'Pakollinen',
     unitNotSelected: 'Valitse vähintään yksi hakutoive',
     emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää',
     httpUrl: 'Anna muodossa https://example.com',
-    unselectableDate: 'Päivä ei ole sallittu'
+    unselectableDate: 'Päivä ei ole sallittu',
+    ...components.datePicker.validationErrors
   },
   placement: {
     type: {

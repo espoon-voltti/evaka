@@ -180,7 +180,6 @@ export default React.memo(function ReservationModalSingleChild({
             i18n.validationErrors
           )}
           hideErrorsBeforeTouched={!showAllErrors}
-          errorTexts={i18n.validationErrors}
         />
         <DatePickerSpacer />
         <DatePicker
@@ -201,7 +200,6 @@ export default React.memo(function ReservationModalSingleChild({
           )}
           hideErrorsBeforeTouched={!showAllErrors}
           initialMonth={LocalDate.todayInSystemTz()}
-          errorTexts={i18n.validationErrors}
         />
       </FixedSpaceRow>
       <Gap size="m" />

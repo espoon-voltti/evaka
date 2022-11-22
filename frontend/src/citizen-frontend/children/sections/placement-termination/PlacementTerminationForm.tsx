@@ -225,7 +225,6 @@ export default React.memo(function PlacementTerminationForm({
             setState((prev) => ({ ...prev, terminationDate }))
           }
           openAbove
-          errorTexts={t.validationErrors}
         />
       </div>
 

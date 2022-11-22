@@ -245,7 +245,6 @@ const FosterChildCreationModal = React.memo(function FosterChildCreationModal({
               })
             : undefined
         }
-        errorTexts={i18n.validationErrors}
         locale={lang}
       />
     </AsyncFormModal>
@@ -287,7 +286,6 @@ const FosterChildEditingModal = React.memo(function FosterChildEditingModal({
         onChange={(start, end) =>
           start ? setValidDuring(new DateRange(start, end)) : undefined
         }
-        errorTexts={i18n.validationErrors}
         locale={lang}
       />
     </AsyncFormModal>
