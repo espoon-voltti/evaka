@@ -11,10 +11,10 @@ import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { JsonOf } from 'lib-common/json'
 
 import { mergeCustomizer } from './common'
-import { fi } from './espoo/employee/assets/i18n/fi'
-import { sv } from './espoo/employee/assets/i18n/sv'
-import { fi as vasuFI } from './espoo/employee/assets/i18n/vasu/fi'
-import { sv as vasuSV } from './espoo/employee/assets/i18n/vasu/sv'
+import { fi } from './defaults/employee/i18n/fi'
+import { sv } from './defaults/employee/i18n/sv'
+import { fi as vasuFI } from './defaults/employee/i18n/vasu/fi'
+import { sv as vasuSV } from './defaults/employee/i18n/vasu/sv'
 import type { EmployeeCustomizations } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

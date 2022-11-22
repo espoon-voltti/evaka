@@ -10,9 +10,9 @@ import mergeWith from 'lodash/mergeWith'
 import { JsonOf } from 'lib-common/json'
 
 import { mergeCustomizer } from './common'
-import en from './espoo/citizen/assets/i18n/en'
-import fi from './espoo/citizen/assets/i18n/fi'
-import sv from './espoo/citizen/assets/i18n/sv'
+import en from './defaults/citizen/i18n/en'
+import fi from './defaults/citizen/i18n/fi'
+import sv from './defaults/citizen/i18n/sv'
 import type { CitizenCustomizations } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
