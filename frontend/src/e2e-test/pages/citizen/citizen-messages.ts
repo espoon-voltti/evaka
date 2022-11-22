@@ -15,7 +15,7 @@ export default class CitizenMessagesPage {
   )
   #threadListItem = this.page.find('[data-qa="thread-list-item"]')
   #threadTitle = this.page.find('[data-qa="thread-reader-title"]')
-  #inboxEmpty = this.page.find('[data-qa="inbox-empty"]')
+  #inboxEmpty = this.page.find('[data-qa="inbox-empty"][data-loading="false"]')
   #threadContent = this.page.findAll('[data-qa="thread-reader-content"]')
   #threadUrgent = this.page.findByDataQa('thread-reader').findByDataQa('urgent')
   #openReplyEditorButton = this.page.find(`[data-qa="${this.replyButtonTag}"]`)
