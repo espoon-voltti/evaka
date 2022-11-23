@@ -890,7 +890,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     municipalAccountName = "Espoo"
                 )
             tx.insertRecipients(recipientAccounts.toSet(), messageId)
-            tx.upsertThreadParticipants(threadId, sender, recipientAccounts.toSet(), now)
+            tx.upsertSenderThreadParticipants(threadId, sender, now)
+            tx.upsertReceiverThreadParticipants(threadId, recipientAccounts.toSet(), now)
             threadId
         }
     }
@@ -917,7 +918,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     municipalAccountName = "Espoo"
                 )
             it.insertRecipients(recipientAccountIds = recipients, messageId = messageId)
-            it.upsertThreadParticipants(threadId, sender, recipients, now)
+            it.upsertSenderThreadParticipants(threadId, sender, now)
+            it.upsertReceiverThreadParticipants(threadId, recipients, now)
         }
     }
 }

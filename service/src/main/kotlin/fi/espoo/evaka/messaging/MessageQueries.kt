@@ -31,7 +31,7 @@ import org.jdbi.v3.json.Json
 
 val logger = KotlinLogging.logger {}
 
-private const val MESSAGE_UNDO_WINDOW_IN_SECONDS = 15L
+const val MESSAGE_UNDO_WINDOW_IN_SECONDS = 15L
 
 fun Database.Read.getUnreadMessagesCounts(
     now: HelsinkiDateTime,
@@ -218,10 +218,9 @@ fun Database.Transaction.insertMessageThreadChildren(
     batch.execute()
 }
 
-fun Database.Transaction.upsertThreadParticipants(
+fun Database.Transaction.upsertSenderThreadParticipants(
     threadId: MessageThreadId,
     senderId: MessageAccountId,
-    receiverIds: Set<MessageAccountId>,
     now: HelsinkiDateTime
 ) {
     createUpdate(
@@ -235,7 +234,13 @@ fun Database.Transaction.upsertThreadParticipants(
         .bind("accountId", senderId)
         .bind("now", now)
         .execute()
+}
 
+fun Database.Transaction.upsertReceiverThreadParticipants(
+    threadId: MessageThreadId,
+    receiverIds: Set<MessageAccountId>,
+    now: HelsinkiDateTime
+) {
     val batch =
         prepareBatch(
             """
@@ -1154,7 +1159,7 @@ FROM message WHERE sender_id = :accountId AND id = :messageId
     }
 
     this.deleteMessages(listOf(messageToUndo))
-    this.updateThreadParticipants(messageToUndo.threadId, messageToUndo.senderId)
+    this.resetSenderThreadParticipants(messageToUndo.threadId, messageToUndo.senderId)
 }
 
 fun Database.Transaction.undoMessageAndAllThreads(
@@ -1238,46 +1243,19 @@ DELETE FROM message_content WHERE id = ANY(:contentIds)
         .execute()
 }
 
-fun Database.Transaction.updateThreadParticipants(
+fun Database.Transaction.resetSenderThreadParticipants(
     threadId: MessageThreadId,
     senderId: MessageAccountId
 ) {
     this.createUpdate(
             """
-UPDATE message_thread_participant p SET last_message_timestamp = any_message.sent_at, last_sent_timestamp = sent_message.sent_at
-FROM (
-    SELECT MAX(sent_at) AS sent_at
-    FROM message m
-    WHERE m.thread_id = :threadId AND m.sender_id = :senderId
-) sent_message
-JOIN (
-    SELECT MAX(sent_at) AS sent_at
-    FROM message m
-    WHERE m.thread_id = :threadId
-) any_message ON true
-WHERE p.participant_id = :senderId
-"""
-        )
-        .bind("threadId", threadId)
-        .bind("senderId", senderId)
-        .execute()
-
-    this.createUpdate(
-            """
-UPDATE message_thread_participant p SET last_message_timestamp = any_message.sent_at, last_received_timestamp = received_message.sent_at
-FROM (
-    SELECT MAX(sent_at) AS sent_at, r.recipient_id
-    FROM message m
-    JOIN message_recipients r ON m.id = r.message_id
-    WHERE m.thread_id = :threadId AND m.sender_id = :senderId
-    GROUP BY r.recipient_id
-) received_message
-JOIN (
-    SELECT MAX(sent_at) AS sent_at
-    FROM message m
-    WHERE m.thread_id = :threadId
-) any_message ON true
-WHERE p.participant_id = received_message.recipient_id
+UPDATE message_thread_participant SET
+    last_message_timestamp = (
+        SELECT MAX(sent_at) FROM message m JOIN message_recipients r ON m.id = r.message_id
+        WHERE m.thread_id = :threadId AND (m.sender_id = :senderId OR r.recipient_id = :senderId)
+    ),
+    last_sent_timestamp = (SELECT MAX(sent_at) FROM message m WHERE m.thread_id = :threadId AND m.sender_id = :senderId)
+WHERE thread_id = :threadId AND participant_id = :senderId
 """
         )
         .bind("threadId", threadId)

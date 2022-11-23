@@ -53,9 +53,8 @@ data class ReplyToMessageBody(val content: String, val recipientAccountIds: Set<
 class MessageController(
     private val accessControl: AccessControl,
     private val featureConfig: FeatureConfig,
-    messageNotificationEmailService: MessageNotificationEmailService
+    private val messageService: MessageService
 ) {
-    private val messageService = MessageService(messageNotificationEmailService)
 
     @GetMapping("/my-accounts")
     fun getAccountsByUser(
