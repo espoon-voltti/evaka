@@ -1239,6 +1239,38 @@ RETURNING partnership_id
         )
         .let(::PartnershipId)
 
+data class DevFridgePartnership(
+    val id: PartnershipId = PartnershipId(UUID.randomUUID()),
+    val first: PersonId,
+    val second: PersonId,
+    val startDate: LocalDate,
+    val endDate: LocalDate? = null
+)
+
+fun Database.Transaction.insertFridgePartnership(partnership: DevFridgePartnership): PartnershipId =
+    insertFridgePartner(
+            DevFridgePartner(
+                partnership.id,
+                indx = 1,
+                otherIndx = 2,
+                personId = partnership.first,
+                startDate = partnership.startDate,
+                endDate = partnership.endDate
+            )
+        )
+        .also {
+            insertFridgePartner(
+                DevFridgePartner(
+                    partnership.id,
+                    indx = 2,
+                    otherIndx = 1,
+                    personId = partnership.second,
+                    startDate = partnership.startDate,
+                    endDate = partnership.endDate
+                )
+            )
+        }
+
 data class DevEmployeePin(
     val id: UUID = UUID.randomUUID(),
     val userId: EmployeeId? = null,

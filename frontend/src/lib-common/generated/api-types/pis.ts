@@ -184,9 +184,11 @@ export interface FamilyContactPriorityUpdate {
 */
 export type FamilyContactRole =
   | 'LOCAL_GUARDIAN'
+  | 'LOCAL_FOSTER_PARENT'
   | 'LOCAL_ADULT'
   | 'LOCAL_SIBLING'
   | 'REMOTE_GUARDIAN'
+  | 'REMOTE_FOSTER_PARENT'
 
 /**
 * Generated from fi.espoo.evaka.pis.controllers.FamilyContactUpdate

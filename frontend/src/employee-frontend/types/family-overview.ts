@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { IncomeEffect } from 'lib-common/api-types/income'
+import { FamilyContactRole } from 'lib-common/generated/api-types/pis'
 import LocalDate from 'lib-common/local-date'
 
 export interface FamilyOverviewPerson {
@@ -41,12 +42,6 @@ interface FamilyOverviewIncome {
   effect?: IncomeEffect
   total?: number
 }
-
-export type FamilyContactRole =
-  | 'LOCAL_GUARDIAN'
-  | 'LOCAL_ADULT'
-  | 'LOCAL_SIBLING'
-  | 'REMOTE_GUARDIAN'
 
 export interface FamilyContact {
   id: string
