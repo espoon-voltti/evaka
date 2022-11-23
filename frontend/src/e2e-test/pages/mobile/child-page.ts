@@ -13,8 +13,10 @@ export default class MobileChildPage {
   #markPresentLink = this.page.find('[data-qa="mark-present-link"]')
   #markDepartedLink = this.page.find('[data-qa="mark-departed-link"]')
   #markAbsentLink = this.page.find('[data-qa="mark-absent-link"]')
-  #returnToComingButton = this.page.find('[data-qa="return-to-coming-btn"]')
+  #cancelArrivalButton = this.page.find('[data-qa="cancel-arrival-button"]')
   #returnToPresentButton = this.page.find('[data-qa="return-to-present-btn"]')
+
+  #modalOkButton = this.page.findByDataQa('modal-okBtn')
 
   #markAbsentBeforehandLink = this.page.find(
     '[data-qa="mark-absent-beforehand"]'
@@ -49,6 +51,11 @@ export default class MobileChildPage {
       this.page.find(`[data-qa="child-info-backup-pickup${n + 1}-phone"]`)
   }
 
+  #attendance = {
+    arrivalTimes: this.page.findAllByDataQa('arrival-time'),
+    departureTimes: this.page.findAllByDataQa('departure-time')
+  }
+
   async waitUntilLoaded() {
     await this.#childName.waitUntilVisible()
   }
@@ -70,7 +77,8 @@ export default class MobileChildPage {
   }
 
   async returnToComing() {
-    await this.#returnToComingButton.click()
+    await this.#cancelArrivalButton.click()
+    await this.#modalOkButton.click()
   }
 
   async returnToPresent() {
@@ -162,5 +170,29 @@ export default class MobileChildPage {
 
   async assertNotesExist() {
     await this.#notesExistsBubble.waitUntilVisible()
+  }
+
+  async assertArrivalTimeInfoIsShown(arrivalTimeText: string) {
+    await waitUntilEqual(
+      () =>
+        this.#attendance.arrivalTimes
+          .allInnerTexts()
+          .then((texts) =>
+            texts.map((text) => text.replace(/\s/g, '')).join(',')
+          ),
+      arrivalTimeText
+    )
+  }
+
+  async assertDepartureTimeInfoIsShown(departureTimeText: string) {
+    await waitUntilEqual(
+      () =>
+        this.#attendance.departureTimes
+          .allInnerTexts()
+          .then((texts) =>
+            texts.map((text) => text.replace(/\s/g, '')).join(',')
+          ),
+      departureTimeText
+    )
   }
 }

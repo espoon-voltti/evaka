@@ -2,43 +2,52 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import { faArrowRotateLeft } from 'Icons'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
 
 import { Child } from 'lib-common/generated/api-types/attendance'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
+import { defaultMargins } from 'lib-components/white-space'
+import colors from 'lib-customizations/common'
 
-import { returnToPresent } from '../../../../api/attendances'
-import { ChildAttendanceContext } from '../../../../state/child-attendance'
 import { useTranslation } from '../../../../state/i18n'
-import { InlineWideAsyncButton } from '../../components'
 
 interface Props {
   child: Child
   unitId: string
+  groupIdOrAll: string | 'all'
 }
 
 export default React.memo(function AttendanceChildDeparted({
   child,
-  unitId
+  unitId,
+  groupIdOrAll
 }: Props) {
-  const navigate = useNavigate()
   const { i18n } = useTranslation()
-
-  const { reloadAttendances } = useContext(ChildAttendanceContext)
-
-  function returnToPresentCall() {
-    return returnToPresent(unitId, child.id)
-  }
+  const navigate = useNavigate()
 
   return (
-    <InlineWideAsyncButton
+    <ReturnToPresentButton
+      icon={faArrowRotateLeft}
       text={i18n.attendances.actions.returnToPresent}
-      onClick={() => returnToPresentCall()}
-      onSuccess={() => {
-        reloadAttendances()
-        navigate(-1)
-      }}
+      onClick={() =>
+        navigate(
+          `/units/${unitId}/groups/${groupIdOrAll}/child-attendance/${child.id}/mark-present`
+        )
+      }
       data-qa="return-to-present-btn"
     />
   )
 })
+
+export const ReturnToPresentButton = styled(InlineButton)`
+  color: ${colors.main.m2};
+  margin-top: ${defaultMargins.s};
+  margin-left: ${defaultMargins.s};
+  margin-bottom: ${defaultMargins.s};
+  width: calc(100vw - 50px);
+  display: flex;
+  justify-content: center;
+`

@@ -20,6 +20,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { attendanceColors } from 'lib-customizations/common'
 import { faArrowLeft, faCalendarTimes, faQuestion, farUser } from 'lib-icons'
 
+import { returnToComing } from '../../../api/attendances'
 import { deleteChildImage } from '../../../api/childImages'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'
@@ -57,7 +58,11 @@ export default React.memo(function AttendanceChildPage() {
   )
 
   const [uiMode, setUiMode] = useState<
-    'default' | 'img-modal' | 'img-crop' | 'img-delete'
+    | 'default'
+    | 'img-modal'
+    | 'img-crop'
+    | 'img-delete'
+    | 'attendance-change-cancel'
   >('default')
 
   const [rawImage, setRawImage] = useState<string | null>(null)
@@ -85,6 +90,8 @@ export default React.memo(function AttendanceChildPage() {
       ),
     [attendanceResponse, unitInfoResponse, childId]
   )
+
+  const returnToComingModal = () => setUiMode('attendance-change-cancel')
 
   if (uiMode === 'img-crop' && rawImage) {
     return (
@@ -176,7 +183,11 @@ export default React.memo(function AttendanceChildPage() {
                     times={child.dailyServiceTimes}
                     reservations={child.reservations}
                   />
-                  <ArrivalAndDeparture child={child} />
+                  <ArrivalAndDeparture
+                    child={child}
+                    returnToComing={returnToComingModal}
+                  />
+                  <Gap size="m" />
                   <Absences child={child} />
                   <Gap size="xs" />
                   {child.status === 'COMING' && (
@@ -194,7 +205,11 @@ export default React.memo(function AttendanceChildPage() {
                     />
                   )}
                   {child.status === 'DEPARTED' && (
-                    <AttendanceChildDeparted child={child} unitId={unitId} />
+                    <AttendanceChildDeparted
+                      child={child}
+                      unitId={unitId}
+                      groupIdOrAll={groupId}
+                    />
                   )}
                   {child.status === 'ABSENT' && (
                     <AttendanceChildAbsent child={child} unitId={unitId} />
@@ -287,6 +302,34 @@ export default React.memo(function AttendanceChildPage() {
           }}
           reject={{
             label: i18n.childInfo.image.modalMenu.deleteConfirm.reject,
+            action: () => setUiMode('default')
+          }}
+        />
+      )}
+      {uiMode == 'attendance-change-cancel' && (
+        <InfoModal
+          icon={faQuestion}
+          type="warning"
+          title={i18n.attendances.confirmAttendanceChangeCancel}
+          resolve={{
+            label: i18n.common.yesIDo,
+            action: () => {
+              void returnToComing(unitId, childId).then((res) => {
+                if (res.isFailure) {
+                  console.error(
+                    'Cancelling attendance change failed',
+                    res.message
+                  )
+                } else {
+                  reloadAttendances()
+                  setUiMode('default')
+                  navigate(-1)
+                }
+              })
+            }
+          }}
+          reject={{
+            label: i18n.common.noIDoNot,
             action: () => setUiMode('default')
           }}
         />

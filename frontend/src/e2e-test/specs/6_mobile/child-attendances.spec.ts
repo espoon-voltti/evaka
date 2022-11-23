@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { PlacementType } from 'lib-common/generated/api-types/placement'
-import LocalDate from 'lib-common/local-date'
 
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import {
@@ -57,8 +56,7 @@ beforeEach(async () => {
     .with({ roles: ['ADMIN'] })
     .save()
 
-  const mockedDate = LocalDate.of(2021, 5, 15)
-  page = await Page.open({ mockedTime: mockedDate.toSystemTzDate() })
+  page = await Page.open({ mockedTime: new Date('2022-05-17T13:00Z') })
 
   listPage = new MobileListPage(page)
   childPage = new MobileChildPage(page)
@@ -220,9 +218,7 @@ describe('Child mobile attendance list', () => {
 
     const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
     await page.goto(mobileSignupUrl)
-
     await assertAttendanceCounts(3, 0, 0, 0, 3)
-
     await listPage.selectComingChildren()
     await listPage.selectChild(child1)
     await childPage.selectMarkPresentView()
@@ -300,6 +296,7 @@ describe('Child mobile attendance list', () => {
     await listPage.selectDepartedChildren()
     await listPage.selectChild(child)
     await childPage.returnToPresent()
+    await childPage.returnToPresent()
 
     await listPage.selectPresentChildren()
     await listPage.selectChild(child)
@@ -307,6 +304,46 @@ describe('Child mobile attendance list', () => {
 
     await listPage.selectComingChildren()
     await listPage.assertChildExists(child)
+  })
+
+  test('Child can have multiple attendances in one day', async () => {
+    const child = enduserChildFixtureKaarina.id
+    await createPlacements(child)
+
+    const mobileSignupUrl = await pairMobileDevice(fixtures.daycareFixture.id)
+    await page.goto(mobileSignupUrl)
+
+    await listPage.selectChild(child)
+    await childPage.selectMarkPresentView()
+    await childAttendancePage.setTime('08:30')
+    await childAttendancePage.selectMarkPresent()
+
+    await listPage.selectPresentChildren()
+    await listPage.selectChild(child)
+    await childPage.selectMarkDepartedView()
+    await childAttendancePage.setTime('15:00')
+    await childAttendancePage.selectMarkDepartedButton()
+
+    await listPage.selectDepartedChildren()
+    await listPage.selectChild(child)
+    await childPage.returnToPresent()
+
+    // Cannot overlap previous departure
+    await childAttendancePage.setTime('15:00')
+    await childAttendancePage.assertMarkPresentButtonDisabled(true)
+
+    await childAttendancePage.setTime('15:15')
+    await childAttendancePage.selectMarkPresent()
+
+    await listPage.selectPresentChildren()
+    await listPage.selectChild(child)
+    await childPage.assertArrivalTimeInfoIsShown(
+      'Saapumisaika08:30,Saapumisaika15:15'
+    )
+    await childPage.assertDepartureTimeInfoIsShown('Lähtöaika15:00')
+    await childPage.selectMarkDepartedView()
+    await childAttendancePage.setTime('15:20')
+    await childAttendancePage.selectMarkDepartedButton()
   })
 
   test('Group selector works consistently', async () => {
@@ -366,16 +403,16 @@ describe('Child mobile attendance list', () => {
           id: uuidv4(),
           name: 'testgroup',
           daycareId: daycare2Fixture.id,
-          startDate: '2021-01-01'
+          startDate: '2022-01-01'
         })
         .save()
     ).data
 
-    const placement1StartDate = '2021-01-01'
-    const placement1EndDate = '2021-04-30'
+    const placement1StartDate = '2022-01-01'
+    const placement1EndDate = '2022-04-30'
 
-    const placement2StartDate = '2021-05-01'
-    const placement2EndDate = '2021-06-30'
+    const placement2StartDate = '2022-05-01'
+    const placement2EndDate = '2022-06-30'
 
     const daycarePlacementFixture = await Fixture.placement()
       .with({

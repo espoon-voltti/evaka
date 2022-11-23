@@ -267,9 +267,9 @@ function AsyncButton<T>({
             <FontAwesomeIcon icon={faTimes} color={colors.status.danger} />
           </IconWrapper>
         </IconContainer>
-        <span>
+        <TextWrapper>
           {isInProgress ? textInProgress : isSuccess ? textDone : text}
-        </span>
+        </TextWrapper>
       </Content>
     </StyledButton>
   )
@@ -324,3 +324,7 @@ const IconWrapper = animated(
     }
   `
 )
+
+const TextWrapper = styled.div`
+  white-space: pre-wrap;
+`

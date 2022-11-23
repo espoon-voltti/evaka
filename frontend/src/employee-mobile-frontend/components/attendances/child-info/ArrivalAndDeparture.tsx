@@ -2,30 +2,38 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { faArrowRotateLeft } from 'Icons'
 import React from 'react'
+import styled from 'styled-components'
 
 import { Child } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
+import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../../state/i18n'
 import { ArrivalTime } from '../components'
 
 interface Props {
   child: Child
+  returnToComing: () => void
 }
 
-export default React.memo(function ArrivalAndDeparture({ child }: Props) {
+export default React.memo(function ArrivalAndDeparture({
+  child,
+  returnToComing
+}: Props) {
   const { i18n } = useTranslation()
 
-  const arrival = child.attendance?.arrived
-  const departure = child.attendance?.departed
+  const latestArrival =
+    child.attendances.length > 0 ? child.attendances[0].arrived : null
 
-  if (!arrival) {
+  if (!latestArrival) {
     return null
   }
 
-  const arrivalDate = arrival.toLocalDate()
+  const arrivalDate = latestArrival.toLocalDate()
   const dateInfo = arrivalDate.isEqual(LocalDate.todayInSystemTz())
     ? ''
     : arrivalDate.isEqual(LocalDate.todayInSystemTz().subDays(1))
@@ -33,19 +41,48 @@ export default React.memo(function ArrivalAndDeparture({ child }: Props) {
     : arrivalDate.format('d.M.')
 
   return (
-    <FixedSpaceRow justifyContent="center">
-      {arrival ? (
-        <ArrivalTime>
-          <span>{i18n.attendances.arrivalTime}</span>
-          <span>{`${dateInfo} ${arrival.toLocalTime().format()}`}</span>
-        </ArrivalTime>
-      ) : null}
-      {departure ? (
-        <ArrivalTime>
-          <span>{i18n.attendances.departureTime}</span>
-          <span>{departure.toLocalTime().format()}</span>
-        </ArrivalTime>
-      ) : null}
-    </FixedSpaceRow>
+    <ArrivalTimeContainer>
+      {child.attendances.reverse().map(({ arrived, departed }) => (
+        <AttendanceRowContainer key={arrived.toSystemTzDate().toISOString()}>
+          {arrived ? (
+            <FixedSpaceRow justifyContent="center" alignItems="center">
+              <ArrivalTime data-qa="arrival-time">
+                <span>{i18n.attendances.arrivalTime}</span>
+                <span>{`${dateInfo} ${arrived.toLocalTime().format()}`}</span>
+              </ArrivalTime>
+              {!departed && (
+                <InlineButton
+                  icon={faArrowRotateLeft}
+                  text={i18n.common.cancel}
+                  onClick={returnToComing}
+                  data-qa="cancel-arrival-button"
+                  color={colors.main.m2}
+                />
+              )}
+            </FixedSpaceRow>
+          ) : null}
+          {departed ? (
+            <ArrivalTime data-qa="departure-time">
+              <span>{i18n.attendances.departureTime}</span>
+              <span>{departed.toLocalTime().format()}</span>
+            </ArrivalTime>
+          ) : null}
+        </AttendanceRowContainer>
+      ))}
+    </ArrivalTimeContainer>
   )
 })
+
+const ArrivalTimeContainer = styled.div`
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+`
+
+const AttendanceRowContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: space-evenly;
+  align-items: center;
+`

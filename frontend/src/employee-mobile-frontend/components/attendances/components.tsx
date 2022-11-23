@@ -65,6 +65,7 @@ export const ArrivalTime = styled.span`
   line-height: 27px;
   letter-spacing: 0em;
   display: flex;
+  flex-direction: row;
   color: ${colors.grayscale.g70};
 
   span:first-child {

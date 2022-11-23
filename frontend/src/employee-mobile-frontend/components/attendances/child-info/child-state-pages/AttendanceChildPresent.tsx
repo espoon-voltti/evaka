@@ -2,17 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React from 'react'
 
 import { Child } from 'lib-common/generated/api-types/attendance'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
-import { returnToComing } from '../../../../api/attendances'
-import { ChildAttendanceContext } from '../../../../state/child-attendance'
 import { useTranslation } from '../../../../state/i18n'
 import { WideLinkButton } from '../../../mobile/components'
-import { InlineWideAsyncButton } from '../../components'
 
 interface Props {
   child: Child
@@ -25,14 +21,7 @@ export default React.memo(function AttendanceChildPresent({
   unitId,
   groupIdOrAll
 }: Props) {
-  const navigate = useNavigate()
   const { i18n } = useTranslation()
-
-  const { reloadAttendances } = useContext(ChildAttendanceContext)
-
-  function returnToComingCall() {
-    return returnToComing(unitId, child.id)
-  }
 
   return (
     <FixedSpaceColumn>
@@ -43,15 +32,6 @@ export default React.memo(function AttendanceChildPresent({
       >
         {i18n.attendances.actions.markDeparted}
       </WideLinkButton>
-      <InlineWideAsyncButton
-        text={i18n.attendances.actions.returnToComing}
-        onClick={() => returnToComingCall()}
-        onSuccess={() => {
-          reloadAttendances()
-          navigate(-1)
-        }}
-        data-qa="return-to-coming-btn"
-      />
     </FixedSpaceColumn>
   )
 })

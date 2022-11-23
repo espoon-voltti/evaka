@@ -37,7 +37,7 @@ data class Child(
     val groupId: GroupId?,
     val backup: Boolean,
     val status: AttendanceStatus,
-    val attendance: AttendanceTimes?,
+    val attendances: List<AttendanceTimes>,
     val absences: List<ChildAbsence>,
     val dailyServiceTimes: DailyServiceTimesValue?,
     val dailyNote: ChildDailyNote?,

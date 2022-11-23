@@ -50,9 +50,9 @@ import DailyNote from '../notes/DailyNote'
 function validateTime(
   i18n: Translations,
   time: string,
-  attendance: AttendanceTimes | null | undefined
+  attendances: AttendanceTimes[] | undefined
 ): string | undefined {
-  if (!attendance) return undefined
+  if (!attendances || attendances.length === 0) return undefined
 
   if (!isValidTime(time)) {
     return i18n.attendances.timeError
@@ -62,8 +62,8 @@ function validateTime(
     const parsedTime = LocalTime.parse(time, 'HH:mm')
     const parsedTimestamp =
       LocalDate.todayInSystemTz().toHelsinkiDateTime(parsedTime)
-    if (!parsedTimestamp.isAfter(attendance.arrived)) {
-      return `${i18n.attendances.arrived} ${attendance.arrived
+    if (!parsedTimestamp.isAfter(attendances[0].arrived)) {
+      return `${i18n.attendances.arrived} ${attendances[0].arrived
         .toLocalTime()
         .format()}`
     }
@@ -125,7 +125,7 @@ export default React.memo(function MarkDeparted() {
   )
 
   const timeError = useMemo(
-    () => child.map((child) => validateTime(i18n, time, child?.attendance)),
+    () => child.map((child) => validateTime(i18n, time, child?.attendances)),
     [child, i18n, time]
   )
 

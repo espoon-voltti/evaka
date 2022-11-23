@@ -2,12 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { isAfter } from 'date-fns'
 import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import { formatTime, isValidTime } from 'lib-common/date'
+import { formatTime } from 'lib-common/date'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalTime from 'lib-common/local-time'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { mockNow } from 'lib-common/utils/helpers'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -21,7 +24,7 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowLeft, farStickyNote } from 'lib-icons'
 
-import { childArrivesPOST } from '../../../api/attendances'
+import { childArrivesPOST, returnToPresent } from '../../../api/attendances'
 import { ChildAttendanceContext } from '../../../state/child-attendance'
 import { useTranslation } from '../../../state/i18n'
 import { renderResult } from '../../async-rendering'
@@ -37,7 +40,8 @@ export default React.memo(function MarkPresent() {
     ChildAttendanceContext
   )
 
-  const [time, setTime] = useState<string>(formatTime(mockNow() ?? new Date()))
+  const now = mockNow() ?? new Date()
+  const [time, setTime] = useState<string>(formatTime(now))
 
   const { childId, unitId, groupId } = useNonNullableParams<{
     unitId: string
@@ -58,6 +62,28 @@ export default React.memo(function MarkPresent() {
     [attendanceResponse, childId]
   )
 
+  const childLatestDeparture = useMemo(
+    () =>
+      child.isSuccess &&
+      child.value &&
+      child.value.attendances &&
+      child.value.attendances.length > 0
+        ? child.value.attendances[0].departed
+        : null,
+    [child]
+  )
+
+  const isValidTime = useCallback(() => {
+    const parsedTime = LocalTime.tryParse(time, 'HH:mm')
+    if (!parsedTime) return false
+    else if (childLatestDeparture) {
+      return isAfter(
+        HelsinkiDateTime.now().withTime(parsedTime).toSystemTzDate(),
+        childLatestDeparture.toSystemTzDate()
+      )
+    } else return true
+  }, [childLatestDeparture, time])
+
   const groupNote = useMemo(
     () =>
       attendanceResponse.map((response) =>
@@ -65,6 +91,10 @@ export default React.memo(function MarkPresent() {
       ),
     [attendanceResponse, groupId]
   )
+
+  function returnToPresentCall() {
+    return returnToPresent(unitId, childId)
+  }
 
   return (
     <TallContentArea
@@ -105,7 +135,7 @@ export default React.memo(function MarkPresent() {
                 <AsyncButton
                   primary
                   text={i18n.common.confirm}
-                  disabled={!isValidTime(time)}
+                  disabled={!isValidTime()}
                   onClick={childArrives}
                   onSuccess={() => {
                     reloadAttendances()
@@ -115,6 +145,22 @@ export default React.memo(function MarkPresent() {
                 />
               </FixedSpaceRow>
             </Actions>
+            {childLatestDeparture && (
+              <>
+                <Gap size="s" />
+                <JustifyContainer>
+                  <InlineWideAsyncButton
+                    text={i18n.attendances.actions.returnToPresentNoTimeNeeded}
+                    onClick={() => returnToPresentCall()}
+                    onSuccess={() => {
+                      reloadAttendances()
+                      navigate(-2)
+                    }}
+                    data-qa="return-to-present-btn"
+                  />
+                </JustifyContainer>
+              </>
+            )}
           </ContentArea>
           <Gap size="s" />
           <ContentArea
@@ -151,4 +197,13 @@ const CustomTitle = styled(Title)`
 
 const DailyNotes = styled.div`
   display: flex;
+`
+const InlineWideAsyncButton = styled(AsyncButton)`
+  border: none;
+  height: 50px;
+`
+
+const JustifyContainer = styled.div`
+  display: flex;
+  justify-content: center;
 `
