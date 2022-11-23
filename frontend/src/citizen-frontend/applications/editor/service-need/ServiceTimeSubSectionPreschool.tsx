@@ -6,10 +6,15 @@ import React from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
+import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import Checkbox from 'lib-components/atoms/form/Checkbox'
+import Radio from 'lib-components/atoms/form/Radio'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import {
   FixedSpaceColumn,
@@ -17,8 +22,10 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import FileUpload from 'lib-components/molecules/FileUpload'
+import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H3, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 
 import {
   deleteAttachment,
@@ -26,7 +33,8 @@ import {
   saveApplicationAttachment
 } from '../../../attachments'
 import { errorToInputInfo } from '../../../input-info-helper'
-import { useTranslation } from '../../../localization'
+import { useLang, useTranslation } from '../../../localization'
+import { isValidPreferredStartDate } from '../validations'
 
 import { ServiceNeedSectionProps } from './ServiceNeedSection'
 
@@ -39,13 +47,32 @@ type ServiceTimeSubSectionProps = Omit<ServiceNeedSectionProps, 'type'>
 const applicationType = 'PRESCHOOL'
 
 export default React.memo(function ServiceTimeSubSectionPreschool({
+  originalPreferredStartDate,
+  minDate,
+  maxDate,
   formData,
   updateFormData,
   errors,
-  verificationRequested
+  verificationRequested,
+  terms,
+  serviceNeedOptions
 }: ServiceTimeSubSectionProps) {
+  const [lang] = useLang()
   const t = useTranslation()
   const { applicationId } = useNonNullableParams<{ applicationId: string }>()
+  const labelId = useUniqueId()
+
+  const serviceNeedOptionsByType =
+    serviceNeedOptions?.reduce<
+      Map<PlacementType, ServiceNeedOptionPublicInfo[]>
+    >((map, item) => {
+      const key = item.validPlacementType
+      const list = map.get(key) ?? []
+      list.push(item)
+      map.set(key, list)
+      return map
+    }, new Map<PlacementType, ServiceNeedOptionPublicInfo[]>()) ??
+    new Map<PlacementType, ServiceNeedOptionPublicInfo[]>()
 
   const uploadExtendedCareAttachment = (
     file: File,
@@ -108,55 +135,124 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
         <>
           <Gap size="m" />
 
-          <ExpandingInfo
-            info={
-              t.applications.editor.serviceNeed.dailyTime.instructions[
-                applicationType
-              ]
-            }
-            ariaLabel={t.common.openExpandingInfo}
-            closeLabel={t.common.close}
-            inlineChildren
-          >
-            <Label>
-              {t.applications.editor.serviceNeed.dailyTime
-                .usualArrivalAndDeparture[applicationType] + ' *'}
-            </Label>
-          </ExpandingInfo>
-
-          <Gap size="s" />
-
-          <FixedSpaceRow spacing="m">
-            <FixedSpaceColumn spacing="xs">
-              <Label htmlFor="daily-time-starts">
-                {t.applications.editor.serviceNeed.dailyTime.starts}
+          {featureFlags.preschoolApplication.serviceNeedOption ? (
+            <>
+              <Label htmlFor={labelId}>
+                {t.applications.editor.serviceNeed.startDate.label['PRESCHOOL']}{' '}
+                *
               </Label>
-              <TimeInput
-                id="daily-time-starts"
-                value={formData.startTime}
-                data-qa="startTime-input"
-                onChange={(value) => updateFormData({ startTime: value })}
-                info={errorToInputInfo(errors.startTime, t.validationErrors)}
-                hideErrorsBeforeTouched={!verificationRequested}
-              />
-            </FixedSpaceColumn>
 
-            <Hyphenbox>–</Hyphenbox>
+              <Gap size="s" />
 
-            <FixedSpaceColumn spacing="xs">
-              <Label htmlFor="daily-time-ends">
-                {t.applications.editor.serviceNeed.dailyTime.ends}
-              </Label>
-              <TimeInput
-                id="daily-time-ends"
-                value={formData.endTime}
-                data-qa="endTime-input"
-                onChange={(value) => updateFormData({ endTime: value })}
-                info={errorToInputInfo(errors.endTime, t.validationErrors)}
+              <DatePicker
+                date={formData.connectedDaycarePreferredStartDate}
+                onChange={(date) =>
+                  updateFormData({
+                    connectedDaycarePreferredStartDate: date
+                  })
+                }
+                locale={lang}
+                info={errorToInputInfo(
+                  errors.connectedDaycarePreferredStartDate,
+                  t.validationErrors
+                )}
                 hideErrorsBeforeTouched={!verificationRequested}
+                isInvalidDate={(date: LocalDate) =>
+                  isValidPreferredStartDate(
+                    date,
+                    originalPreferredStartDate,
+                    'PRESCHOOL',
+                    terms
+                  )
+                    ? null
+                    : t.validationErrors.unselectableDate
+                }
+                minDate={minDate}
+                maxDate={maxDate}
+                data-qa="connectedDaycarePreferredStartDate-input"
+                id={labelId}
+                required={true}
+                errorTexts={t.validationErrors}
               />
-            </FixedSpaceColumn>
-          </FixedSpaceRow>
+
+              {[...serviceNeedOptionsByType].map(([type, options]) => (
+                <FixedSpaceColumn key={type}>
+                  <Gap size="m" />
+                  <div>{t.placement.type[type]}</div>
+                  {options.map((opt) => (
+                    <Radio
+                      key={opt.id}
+                      label={
+                        (lang === 'fi' && opt.nameFi) ||
+                        (lang === 'sv' && opt.nameSv) ||
+                        (lang === 'en' && opt.nameEn) ||
+                        opt.id
+                      }
+                      checked={formData.serviceNeedOption?.id === opt.id}
+                      onChange={() =>
+                        updateFormData({ serviceNeedOption: opt })
+                      }
+                    />
+                  ))}
+                </FixedSpaceColumn>
+              ))}
+            </>
+          ) : (
+            <>
+              <ExpandingInfo
+                info={
+                  t.applications.editor.serviceNeed.dailyTime.instructions[
+                    applicationType
+                  ]
+                }
+                ariaLabel={t.common.openExpandingInfo}
+                closeLabel={t.common.close}
+                inlineChildren
+              >
+                <Label>
+                  {t.applications.editor.serviceNeed.dailyTime
+                    .usualArrivalAndDeparture[applicationType] + ' *'}
+                </Label>
+              </ExpandingInfo>
+
+              <Gap size="s" />
+
+              <FixedSpaceRow spacing="m">
+                <FixedSpaceColumn spacing="xs">
+                  <Label htmlFor="daily-time-starts">
+                    {t.applications.editor.serviceNeed.dailyTime.starts}
+                  </Label>
+                  <TimeInput
+                    id="daily-time-starts"
+                    value={formData.startTime}
+                    data-qa="startTime-input"
+                    onChange={(value) => updateFormData({ startTime: value })}
+                    info={errorToInputInfo(
+                      errors.startTime,
+                      t.validationErrors
+                    )}
+                    hideErrorsBeforeTouched={!verificationRequested}
+                  />
+                </FixedSpaceColumn>
+
+                <Hyphenbox>–</Hyphenbox>
+
+                <FixedSpaceColumn spacing="xs">
+                  <Label htmlFor="daily-time-ends">
+                    {t.applications.editor.serviceNeed.dailyTime.ends}
+                  </Label>
+                  <TimeInput
+                    id="daily-time-ends"
+                    value={formData.endTime}
+                    data-qa="endTime-input"
+                    onChange={(value) => updateFormData({ endTime: value })}
+                    info={errorToInputInfo(errors.endTime, t.validationErrors)}
+                    hideErrorsBeforeTouched={!verificationRequested}
+                  />
+                </FixedSpaceColumn>
+              </FixedSpaceRow>
+            </>
+          )}
 
           <Gap size="L" />
 

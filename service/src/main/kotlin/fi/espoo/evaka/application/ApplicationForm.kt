@@ -174,6 +174,8 @@ data class ApplicationForm(
                                         )
                                     },
                                 preferredStartDate = v0.preferredStartDate,
+                                connectedDaycarePreferredStartDate =
+                                    v0.connectedDaycarePreferredStartDate,
                                 serviceNeed =
                                     ServiceNeed(
                                             startTime =
@@ -295,6 +297,7 @@ data class ApplicationForm(
                                         )
                                     },
                                 preferredStartDate = v0.preferredStartDate,
+                                connectedDaycarePreferredStartDate = null,
                                 serviceNeed = null,
                                 siblingBasis =
                                     SiblingBasis(
@@ -372,6 +375,7 @@ data class ApplicationForm(
                     Preferences(
                         preferredUnits = emptyList(),
                         preferredStartDate = null,
+                        connectedDaycarePreferredStartDate = null,
                         serviceNeed =
                             if (type == ApplicationType.DAYCARE) {
                                 ServiceNeed(
@@ -491,6 +495,7 @@ data class FutureAddress(
 data class Preferences(
     val preferredUnits: List<PreferredUnit>,
     val preferredStartDate: LocalDate?,
+    val connectedDaycarePreferredStartDate: LocalDate?,
     val serviceNeed: ServiceNeed?,
     val siblingBasis: SiblingBasis?,
     val preparatory: Boolean,

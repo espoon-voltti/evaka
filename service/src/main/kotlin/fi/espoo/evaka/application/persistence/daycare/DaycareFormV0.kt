@@ -33,6 +33,7 @@ data class DaycareFormV0(
     val partTime: Boolean = false,
     val serviceNeedOption: ServiceNeedOption? = null,
     val connectedDaycare: Boolean? = false.takeIf { type == ApplicationType.PRESCHOOL },
+    val connectedDaycarePreferredStartDate: LocalDate? = null,
     val preferredStartDate: LocalDate? = null,
     val serviceStart: String? = null,
     val serviceEnd: String? = null,
@@ -165,6 +166,8 @@ data class DaycareFormV0(
                     (form.preferences.serviceNeed != null).takeIf {
                         type == ApplicationType.PRESCHOOL
                     },
+                connectedDaycarePreferredStartDate =
+                    form.preferences.connectedDaycarePreferredStartDate,
                 preferredStartDate = form.preferences.preferredStartDate,
                 serviceStart = form.preferences.serviceNeed?.startTime,
                 serviceEnd = form.preferences.serviceNeed?.endTime,

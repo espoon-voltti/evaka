@@ -20,14 +20,12 @@ export default React.memo(function ApplicationFormClub({
   setFormData,
   errors,
   verificationRequested,
+  originalPreferredStartDate,
+  minDate,
+  maxDate,
   terms
 }: ApplicationFormProps) {
   const applicationType = 'CLUB'
-
-  const originalPreferredStartDate =
-    apiData.status !== 'CREATED'
-      ? apiData.form.preferences.preferredStartDate
-      : null
 
   return (
     <FixedSpaceColumn spacing="s">
@@ -42,6 +40,8 @@ export default React.memo(function ApplicationFormClub({
       <ServiceNeedSection
         status={apiData.status}
         originalPreferredStartDate={originalPreferredStartDate}
+        minDate={minDate}
+        maxDate={maxDate}
         type={applicationType}
         formData={formData.serviceNeed}
         updateFormData={(data) =>
