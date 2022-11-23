@@ -14,12 +14,11 @@ Voltti IDP (dev/test):
 
 suomi.fi production environment:
 
-- 2022: `saml-signing.idp.tunnistautuminen.suomi.fi.2022.pem` `saml-signing.idp.tunnistautuminen.suomi.fi.pem`
+- 2022: `saml-signing.idp.tunnistautuminen.suomi.fi.2022.pem`
 
 suomi.fi test environment:
 
-- 2020: `saml-signing-testi.apro.tunnistus.fi.old.pem` - this old certificate will be removed in future
-- 2022: `saml-signing-testi.apro.tunnistus.fi.2022.pem` `saml-signing-testi.apro.tunnistus.fi.pem`
+- 2022: `saml-signing-testi.apro.tunnistus.fi.2022.pem`
 
 
 ## Update list of trusted IdP certificates
