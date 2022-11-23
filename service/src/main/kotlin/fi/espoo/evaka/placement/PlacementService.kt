@@ -21,7 +21,6 @@ import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
-import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapPSQLException
@@ -44,10 +43,17 @@ fun createPlacements(
     childId: ChildId,
     unitId: DaycareId,
     placementTypePeriods: List<Pair<FiniteDateRange, PlacementType>>,
-    serviceNeed: ApplicationServiceNeed? = null
+    serviceNeed: ApplicationServiceNeed? = null,
+    cancelPlacementsAfterClub: Boolean? = false
 ): List<Placement> {
-    val timeline = Timeline.of(placementTypePeriods.map { it.first })
-    timeline.ranges().forEach { tx.clearOldPlacements(childId, it.start, it.end) }
+    placementTypePeriods
+        .sortedBy { it.first.start }
+        .forEach { (period, type) ->
+            tx.clearOldPlacements(childId, period.start, period.end)
+            if (cancelPlacementsAfterClub == true && type == PlacementType.CLUB) {
+                tx.clearFutureNonPreschoolRelatedPlacements(childId, period.end.plusDays(1))
+            }
+        }
 
     return placementTypePeriods.map { (period, type) ->
         val placement = tx.insertPlacement(type, childId, unitId, period.start, period.end)
@@ -313,6 +319,46 @@ private fun Database.Transaction.clearOldPlacements(
             }.exhaust()
         }
 }
+
+private fun Database.Transaction.clearFutureNonPreschoolRelatedPlacements(
+    childId: ChildId,
+    startingFrom: LocalDate,
+) {
+    val schoolYears = generateSchoolYearDateRanges(startingFrom)
+    val futurePlacements = getPlacementsForChildDuring(childId, startingFrom, null)
+    val futureSchoolYearsWithPreschoolPlacements =
+        futurePlacements
+            .filter {
+                listOf(
+                        PlacementType.PREPARATORY,
+                        PlacementType.PREPARATORY_DAYCARE,
+                        PlacementType.PRESCHOOL,
+                        PlacementType.PRESCHOOL_DAYCARE
+                    )
+                    .contains(it.type)
+            }
+            .flatMap { placement ->
+                schoolYears.filter {
+                    it.overlaps(FiniteDateRange(placement.startDate, placement.endDate))
+                }
+            }
+    futurePlacements.forEach { placement ->
+        val dateRange = FiniteDateRange(placement.startDate, placement.endDate)
+        if (futureSchoolYearsWithPreschoolPlacements.none { it.overlaps(dateRange) }) {
+            cancelPlacement(placement.id)
+        }
+    }
+}
+
+fun generateSchoolYearDateRanges(startingFrom: LocalDate) =
+    (0..9)
+        .map { startingFrom.plusYears(it.toLong()) }
+        .map {
+            FiniteDateRange(
+                it.withMonth(8).withDayOfMonth(1),
+                it.plusYears(1).withMonth(7).withDayOfMonth(31)
+            )
+        }
 
 private fun Database.Transaction.movePlacementStartDateLater(
     placement: Placement,
