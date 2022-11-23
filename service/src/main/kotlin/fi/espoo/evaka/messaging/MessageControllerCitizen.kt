@@ -117,7 +117,7 @@ class MessageControllerCitizen(
 
     data class GetReceiversResponse(
         val messageAccounts: Set<MessageAccount>,
-        val messageAccountsToChildren: Map<MessageAccountId, List<ChildId>>
+        val childrenToMessageAccounts: Map<ChildId, List<MessageAccountId>>
     )
 
     @GetMapping("/receivers")
@@ -128,11 +128,12 @@ class MessageControllerCitizen(
     ): GetReceiversResponse {
         return db.connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
-                val accountsToChildIds =
+                val accountsPerChild =
                     (dbc.read { it.getCitizenReceivers(evakaClock.today(), accountId) })
                 GetReceiversResponse(
-                    messageAccounts = accountsToChildIds.keys,
-                    messageAccountsToChildren = accountsToChildIds.mapKeys { it.key.id }
+                    messageAccounts = accountsPerChild.values.flatten().toSet(),
+                    childrenToMessageAccounts =
+                        accountsPerChild.mapValues { entry -> entry.value.map { it.id } }
                 )
             }
             .also {
@@ -178,10 +179,14 @@ class MessageControllerCitizen(
 
         return db.connect { dbc ->
                 val senderId = dbc.read { it.getCitizenMessageAccount(user.id) }
-                val validReceivers = dbc.read { it.getCitizenReceivers(today, senderId).keys }
+                val validReceivers =
+                    dbc.read { it.getCitizenReceivers(today, senderId) }
+                        .mapValues { entry -> entry.value.map { it.id }.toSet() }
                 val allReceiversValid =
-                    body.recipients.all {
-                        validReceivers.map { receiver -> receiver.id }.contains(it.id)
+                    body.recipients.all { recipient ->
+                        body.children.any { child ->
+                            validReceivers[child]?.contains(recipient.id) ?: false
+                        }
                     }
                 if (allReceiversValid) {
                     val recipientIds = body.recipients.map { it.id }.toSet()

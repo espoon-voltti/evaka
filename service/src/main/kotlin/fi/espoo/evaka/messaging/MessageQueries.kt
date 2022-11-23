@@ -681,7 +681,7 @@ WHERE m.id = :messageId AND m.sender_id = :senderId
 fun Database.Read.getCitizenReceivers(
     today: LocalDate,
     accountId: MessageAccountId
-): Map<MessageAccount, List<ChildId>> {
+): Map<ChildId, List<MessageAccount>> {
     data class MessageAccountWithChildId(
         val id: MessageAccountId,
         val name: String,
@@ -771,7 +771,7 @@ ORDER BY type, name  -- groups first
         .bind("accountId", accountId)
         .bind("today", today)
         .mapTo<MessageAccountWithChildId>()
-        .groupBy({ MessageAccount(it.id, it.name, it.type) }, { it.childId })
+        .groupBy({ it.childId }, { MessageAccount(it.id, it.name, it.type) })
 }
 
 fun Database.Read.getMessagesSentByAccount(

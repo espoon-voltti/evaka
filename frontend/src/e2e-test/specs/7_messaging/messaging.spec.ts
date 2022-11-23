@@ -429,7 +429,6 @@ describe('Sending and receiving messages', () => {
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.clickNewMessage()
-        await citizenMessagesPage.selectNewMessageRecipients(recipients)
         await citizenMessagesPage.assertChildrenSelectable([
           fixtures.enduserChildFixtureJari.id,
           enduserChildFixtureKaarina.id
@@ -437,6 +436,7 @@ describe('Sending and receiving messages', () => {
         await citizenMessagesPage.selectMessageChildren([
           enduserChildFixtureKaarina.id
         ])
+        await citizenMessagesPage.selectNewMessageRecipients(recipients)
         await citizenMessagesPage.typeMessage(defaultTitle, defaultContent)
         await citizenMessagesPage.clickSendMessage()
 

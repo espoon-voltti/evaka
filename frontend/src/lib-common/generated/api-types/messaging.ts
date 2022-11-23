@@ -63,8 +63,8 @@ export interface EditRecipientRequest {
 * Generated from fi.espoo.evaka.messaging.MessageControllerCitizen.GetReceiversResponse
 */
 export interface GetReceiversResponse {
+  childrenToMessageAccounts: Record<string, UUID[]>
   messageAccounts: MessageAccount[]
-  messageAccountsToChildren: Record<string, UUID[]>
 }
 
 /**

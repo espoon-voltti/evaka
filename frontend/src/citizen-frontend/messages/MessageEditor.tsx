@@ -77,14 +77,18 @@ export default React.memo(function MessageEditor({
   const { children } = useContext(ChildrenContext)
 
   const childIds = useMemo(
-    () =>
-      message.recipients.length === 0
-        ? receiverOptions.messageAccountsToChildren.values
-        : message.recipients.flatMap(
-            (acc) => receiverOptions.messageAccountsToChildren[acc.id]
-          ),
-    [message.recipients, receiverOptions]
+    () => Object.keys(receiverOptions.childrenToMessageAccounts),
+    [receiverOptions]
   )
+
+  const validAccounts = useMemo(() => {
+    const validIds = message.children.flatMap(
+      (childId) => receiverOptions.childrenToMessageAccounts[childId] ?? []
+    )
+    return receiverOptions.messageAccounts.filter((account) =>
+      validIds.includes(account.id)
+    )
+  }, [message.children, receiverOptions])
 
   useEffect(
     function autoselectOnlyChild() {
@@ -120,27 +124,6 @@ export default React.memo(function MessageEditor({
                 <P noMargin>{`${user.firstName} ${user.lastName}`}</P>
               </>
             )}
-            <label>
-              <Bold>{i18n.messages.messageEditor.recipients}</Bold>
-              <Gap size="xs" />
-              <MultiSelect
-                placeholder={i18n.messages.messageEditor.search}
-                value={message.recipients}
-                options={receiverOptions.messageAccounts}
-                onChange={(change) =>
-                  setMessage((message) => ({
-                    ...message,
-                    recipients: change
-                  }))
-                }
-                noOptionsMessage={i18n.messages.messageEditor.noResults}
-                getOptionId={({ id }) => id}
-                getOptionLabel={({ name }) => name}
-                autoFocus={true}
-                data-qa="select-receiver"
-              />
-            </label>
-
             <Gap size="s" />
             {childIds && childIds.length > 1 && (
               <>
@@ -156,19 +139,26 @@ export default React.memo(function MessageEditor({
                             text={formatPreferredName(child)}
                             selected={message.children.includes(child.id)}
                             onChange={(selected) => {
-                              if (selected) {
-                                setMessage((message) => ({
-                                  ...message,
-                                  children: [...message.children, child.id]
-                                }))
-                              } else {
-                                setMessage((message) => ({
-                                  ...message,
-                                  children: message.children.filter(
+                              const children = selected
+                                ? [...message.children, child.id]
+                                : message.children.filter(
                                     (id) => id !== child.id
                                   )
-                                }))
-                              }
+
+                              setMessage((message) => ({
+                                ...message,
+                                children,
+                                recipients: message.recipients.filter(
+                                  (account) =>
+                                    children.every((childId) =>
+                                      (
+                                        receiverOptions
+                                          .childrenToMessageAccounts[childId] ??
+                                        []
+                                      ).includes(account.id)
+                                    )
+                                )
+                              }))
                             }}
                             data-qa={`child-${child.id}`}
                           />
@@ -180,6 +170,28 @@ export default React.memo(function MessageEditor({
               </>
             )}
 
+            <label>
+              <Bold>{i18n.messages.messageEditor.recipients}</Bold>
+              <Gap size="xs" />
+              <MultiSelect
+                placeholder={i18n.messages.messageEditor.search}
+                value={message.recipients}
+                options={validAccounts}
+                onChange={(change) =>
+                  setMessage((message) => ({
+                    ...message,
+                    recipients: change
+                  }))
+                }
+                noOptionsMessage={i18n.messages.messageEditor.noResults}
+                getOptionId={({ id }) => id}
+                getOptionLabel={({ name }) => name}
+                autoFocus={true}
+                data-qa="select-receiver"
+              />
+            </label>
+
+            <Gap size="s" />
             <label>
               <Bold>{i18n.messages.messageEditor.subject}</Bold>
               <InputField
