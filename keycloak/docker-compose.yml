@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2017-2020 City of Espoo
+# SPDX-FileCopyrightText: 2017-2022 City of Espoo
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -11,8 +11,8 @@ services:
       - postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: keycloak
-      POSTGRES_USER: keycloak
-      POSTGRES_PASSWORD: password
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
 
   smtp:
     image: mailhog/mailhog
@@ -25,34 +25,26 @@ services:
     ports:
       - "8080:8080"
     environment:
-      KEYCLOAK_FRONTEND_URL: "http://localhost:8080/auth/"
+      KEYCLOAK_WELCOME_THEME: evaka
       KEYCLOAK_USER: admin
       KEYCLOAK_PASSWORD: admin
-      DB_VENDOR: POSTGRES
-      DB_ADDR: keycloak-postgres
-      DB_DATABASE: keycloak
-      DB_USER: keycloak
-      DB_SCHEMA: public
-      DB_PASSWORD: password
-      KEYCLOAK_WELCOME_THEME: evaka
-      DISABLE_JSON_LOG: "true"
-      #KEYCLOAK_LOGLEVEL: DEBUG
-    command: [
-        '-b',
-        '0.0.0.0',
-        '-Dkeycloak.migration.action=import',
-        '-Dkeycloak.migration.provider=singleFile',
-        '-Dkeycloak.migration.file=/configuration/evaka.json',
-        '-Dkeycloak.migration.strategy=OVERWRITE_EXISTING',
-        '-Dkeycloak.profile.feature.scripts=enabled',
-        '--server-config=standalone.xml',
-      ]
+      KC_HOSTNAME_URL: "http://${KEYCLOAK_HOST:-localhost}:8080/auth/"
+      KC_HOSTNAME_ADMIN_URL: "http://${KEYCLOAK_HOST:-localhost}:8080/auth/"
+      KC_DB_DATABASE: keycloak
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
+      KC_DB_URL_HOST: keycloak-postgres
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      #KC_LOG_LEVEL: "debug"
+    entrypoint: /configuration/entrypoint.sh
+    command: ["start", "--optimized", "--log-console-output=json"]
     volumes:
       - ./compose-resources/configuration:/configuration
       - ./theme/evaka:/opt/jboss/keycloak/themes/evaka
-    entrypoint: /configuration/entrypoint-no-cache.sh
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/auth/health"]
       interval: 2s
       timeout: 5s
       retries: 5
