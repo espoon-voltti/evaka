@@ -15,13 +15,14 @@ export function formatCents(
     return undefined
   }
 
-  const euros = amount >= 0 ? Math.floor(amount / 100) : Math.ceil(amount / 100)
+  const euros = Math.floor(Math.abs(amount) / 100)
   const cents = Math.abs(amount % 100)
+  const sign = amount < 0 ? '-' : ''
 
   if (cents !== 0 || fixedCents) {
-    return `${euros},${cents.toString().padStart(2, '0')}`
+    return `${sign}${euros},${cents.toString().padStart(2, '0')}`
   } else {
-    return euros.toString()
+    return `${sign}${euros}`
   }
 }
 

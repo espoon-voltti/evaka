@@ -34,6 +34,14 @@ describe('utils/money', () => {
       expect(formatCents(undefined)).toBe(undefined)
     })
 
+    it('-1', () => {
+      expect(formatCents(-1)).toBe('-0,01')
+    })
+
+    it('-10', () => {
+      expect(formatCents(-10)).toBe('-0,10')
+    })
+
     it('-10050', () => {
       expect(formatCents(-10050)).toBe('-100,50')
     })
@@ -70,6 +78,14 @@ describe('utils/money', () => {
 
     it('1,001', () => {
       expect(isValidCents('1,001')).toBe(false)
+    })
+
+    it('-0,01', () => {
+      expect(isValidCents('-0,01')).toBe(true)
+    })
+
+    it('-0,10', () => {
+      expect(isValidCents('-0,10')).toBe(true)
     })
 
     it('-1,01', () => {
@@ -112,6 +128,14 @@ describe('utils/money', () => {
 
     it('1,001', () => {
       expect(parseCents('1,001')).toBe(undefined)
+    })
+
+    it('-0,01', () => {
+      expect(parseCents('-0,01')).toBe(-1)
+    })
+
+    it('-0,10', () => {
+      expect(parseCents('-0,10')).toBe(-10)
     })
 
     it('-1,01', () => {
