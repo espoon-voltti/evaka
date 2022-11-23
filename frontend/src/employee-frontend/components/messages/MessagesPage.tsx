@@ -9,6 +9,7 @@ import {
   MessageReceiversResponse,
   PostMessageBody
 } from 'lib-common/generated/api-types/messaging'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 import MessageEditor from 'lib-components/employee/messages/MessageEditor'
 import Container from 'lib-components/layout/Container'
@@ -42,8 +43,10 @@ export default React.memo(function MessagesPage() {
     selectedDraft,
     setSelectedDraft,
     selectedAccount,
-    setSelectedAccount,
-    refreshMessages
+    selectAccount,
+    setSelectedThread,
+    refreshMessages,
+    openMessageUndo
   } = useContext(MessageContext)
 
   const { setErrorMessage } = useContext(UIContext)
@@ -51,26 +54,6 @@ export default React.memo(function MessagesPage() {
 
   useEffect(() => refreshMessages(), [refreshMessages])
   const [sending, setSending] = useState(false)
-
-  // pre-select first account on page load and on unit change
-  useEffect(() => {
-    if (!accounts.isSuccess) {
-      return
-    }
-    const { value: data } = accounts
-    const unitSelectionChange =
-      selectedAccount &&
-      !data.find((acc) => acc.account.id === selectedAccount.account.id)
-    if ((!selectedAccount || unitSelectionChange) && data.length > 0) {
-      setSelectedAccount({
-        view: 'RECEIVED',
-        account:
-          data.find((a) => a.account.type === 'PERSONAL')?.account ||
-          data[0].account
-      })
-    }
-  }, [accounts, setSelectedAccount, selectedAccount])
-
   const [showEditor, setShowEditor] = useState<boolean>(false)
 
   // open editor when draft is selected
@@ -93,6 +76,26 @@ export default React.memo(function MessagesPage() {
       void postMessage(accountId, messageBody).then((res) => {
         if (res.isSuccess) {
           refreshMessages(accountId)
+          const senderAccount = accounts
+            .map((accounts) =>
+              accounts.find((acc) => acc.account.id === accountId)
+            )
+            .getOrElse(undefined)
+          if (senderAccount) {
+            selectAccount({
+              account: senderAccount.account,
+              view: 'sent',
+              unitId: senderAccount.daycareGroup?.unitId ?? null
+            })
+            if (res.value) {
+              setSelectedThread(res.value)
+              openMessageUndo({
+                accountId: senderAccount.account.id,
+                contentId: res.value,
+                sentAt: HelsinkiDateTime.now()
+              })
+            }
+          }
           hideEditor()
         } else {
           setErrorMessage({
@@ -104,7 +107,17 @@ export default React.memo(function MessagesPage() {
         setSending(false)
       })
     },
-    [hideEditor, i18n, refreshMessages, setErrorMessage]
+    [
+      accounts,
+      hideEditor,
+      i18n.common.error.unknown,
+      i18n.common.ok,
+      openMessageUndo,
+      refreshMessages,
+      selectAccount,
+      setErrorMessage,
+      setSelectedThread
+    ]
   )
 
   const onDiscard = (accountId: UUID, draftId: UUID) => {

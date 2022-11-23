@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.AssistanceNeedDecisionId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageRecipientId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.PairingId
@@ -226,6 +227,14 @@ sealed interface AsyncJob : AsyncJobPayload {
 
     data class SendMissingReservationsReminder(val guardian: PersonId, val range: FiniteDateRange) :
         AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class UpdateMessageThreadRecipients(
+        val threadId: MessageThreadId,
+        val recipientIds: Set<MessageAccountId>,
+        val sentAt: HelsinkiDateTime
+    ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 }

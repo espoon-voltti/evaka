@@ -17,6 +17,8 @@ import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -57,7 +59,9 @@ import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
+import fi.espoo.evaka.withMockedTime
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -70,6 +74,7 @@ import org.springframework.mock.web.MockMultipartFile
 
 class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var attachmentsController: AttachmentsController
+    @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val clock = RealEvakaClock()
 
@@ -92,8 +97,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val person4 = AuthenticatedUser.Citizen(id = person4Id, CitizenAuthLevel.STRONG)
     private val groupId1 = GroupId(UUID.randomUUID())
     private val groupId2 = GroupId(UUID.randomUUID())
-    private val placementStart = LocalDate.now().minusDays(30)
-    private val placementEnd = LocalDate.now().plusDays(30)
+    private val placementStart = LocalDate.of(2022, 5, 14)
+    private val placementEnd = placementStart.plusMonths(1)
+    private val sendTime = HelsinkiDateTime.of(placementStart, LocalTime.of(12, 11))
+    private val readTime = sendTime.plusSeconds(30)
 
     private fun insertChild(tx: Database.Transaction, child: DevPerson, groupId: GroupId) {
         tx.insertTestPerson(
@@ -342,11 +349,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
         // then employee can see all sent messages
         assertEquals(
-            listOf(
+            setOf(
                 Pair("person 1 does not see this", setOf(person2Account)),
                 Pair("Juhannus tulee pian", setOf(person1Account, person2Account))
             ),
-            getSentMessages(employee1Account, employee1).map { it.toContentRecipientsPair() }
+            getSentMessages(employee1Account, employee1)
+                .map { it.toContentRecipientsPair() }
+                .toSet()
         )
     }
 
@@ -476,11 +485,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
         assertEquals(employeeThreads, getMessageThreads(person1Account, person1))
         assertEquals(
-            listOf(
+            setOf(
                 listOf(Pair(employee1Account, content), Pair(person1Account, "Hello")),
                 listOf(Pair(employee1Account, content))
             ),
-            getMessageThreads(person2Account, person2).map { it.toSenderContentPairs() }
+            getMessageThreads(person2Account, person2).map { it.toSenderContentPairs() }.toSet()
         )
 
         assertEquals(person3Threads, getMessageThreads(person3Account, person3))
@@ -874,8 +883,10 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 )
             )
             .asUser(user)
+            .withMockedTime(sendTime)
             .response()
             .also { assertEquals(statusCode, it.second.statusCode) }
+            .also { asyncJobRunner.runPendingJobsSync(MockEvakaClock(readTime)) }
 
     private fun replyAsCitizen(
         user: AuthenticatedUser.Citizen,
@@ -891,7 +902,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 )
             )
             .asUser(user)
+            .withMockedTime(sendTime)
             .response()
+            .also { asyncJobRunner.runPendingJobsSync(MockEvakaClock(readTime)) }
 
     private fun replyAsEmployee(
         user: AuthenticatedUser.Employee,
@@ -908,7 +921,9 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 )
             )
             .asUser(user)
+            .withMockedTime(sendTime)
             .response()
+            .also { asyncJobRunner.runPendingJobsSync(MockEvakaClock(readTime)) }
 
     private fun markThreadRead(
         user: AuthenticatedUser,
@@ -921,6 +936,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 else "/messages/$accountId/threads/$threadId/read"
             )
             .asUser(user)
+            .withMockedTime(readTime)
             .response()
 
     private fun getMessageThreads(
@@ -934,6 +950,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 listOf("page" to 1, "pageSize" to 100)
             )
             .asUser(user)
+            .withMockedTime(readTime)
             .responseObject<Paged<MessageThread>>(jsonMapper)
             .third
             .get()
@@ -946,6 +963,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         http
             .get("/messages/$accountId/sent", listOf("page" to 1, "pageSize" to 100))
             .asUser(user)
+            .withMockedTime(readTime)
             .responseObject<Paged<SentMessage>>(jsonMapper)
             .third
             .get()
@@ -957,6 +975,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         http
             .get("/citizen/messages/receivers")
             .asUser(user)
+            .withMockedTime(readTime)
             .responseObject<MessageControllerCitizen.GetReceiversResponse>(jsonMapper)
             .third
             .get()

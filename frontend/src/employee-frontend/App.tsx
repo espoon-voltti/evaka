@@ -14,8 +14,8 @@ import { ThemeProvider } from 'styled-components'
 
 import { AuthStatus, User } from 'lib-common/api-types/employee-auth'
 import { idleTracker } from 'lib-common/utils/idleTracker'
+import { Notifications } from 'lib-components/Notifications'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
-import ReloadNotification from 'lib-components/molecules/ReloadNotification'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
 import { theme } from 'lib-customizations/common'
 
@@ -114,17 +114,14 @@ export default function App() {
             <ErrorPage basePath="/employee" labels={i18n.errorPage} />
           )}
         >
-          <UserContextProvider user={authStatus.user} roles={authStatus.roles}>
-            <StateProvider>
-              <Router basename="/employee">
+          <Router basename="/employee">
+            <UserContextProvider
+              user={authStatus.user}
+              roles={authStatus.roles}
+            >
+              <StateProvider>
                 <Header />
-                <ReloadNotification
-                  i18n={{
-                    ...i18n.reloadNotification,
-                    closeLabel: i18n.common.close
-                  }}
-                  apiVersion={authStatus?.apiVersion}
-                />
+                <Notifications apiVersion={authStatus.apiVersion} i18n={i18n} />
                 <Routes>
                   <Route
                     path="/login"
@@ -672,9 +669,9 @@ export default function App() {
                 <ErrorMessage />
                 <LoginErrorModal translations={i18n.login.failedModal} />
                 <PairingModal />
-              </Router>
-            </StateProvider>
-          </UserContextProvider>
+              </StateProvider>
+            </UserContextProvider>
+          </Router>
         </ErrorBoundary>
       </ThemeProvider>
     </I18nContextProvider>

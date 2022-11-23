@@ -14,7 +14,9 @@ import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.messaging.getArchiveFolderId
 import fi.espoo.evaka.messaging.getMessagesSentByAccount
 import fi.espoo.evaka.messaging.getReceivedThreads
+import fi.espoo.evaka.messaging.getThreads
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
+import fi.espoo.evaka.messaging.upsertReceiverThreadParticipants
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -36,11 +38,14 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.DateRange
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.upsertCitizenUser
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -56,15 +61,16 @@ import org.mockito.kotlin.verifyNoInteractions
 class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
     lateinit var mergeService: MergeService
 
-    private lateinit var asyncJobRunnerMock: AsyncJobRunner<AsyncJob>
+    private lateinit var mergeServiceAsyncJobRunnerMock: AsyncJobRunner<AsyncJob>
     private val messageNotificationEmailService =
         Mockito.mock(MessageNotificationEmailService::class.java)
-    private val messageService: MessageService = MessageService(messageNotificationEmailService)
+    private val messageService: MessageService =
+        MessageService(mock {}, messageNotificationEmailService)
 
     @BeforeEach
     fun setUp() {
-        asyncJobRunnerMock = mock {}
-        mergeService = MergeService(asyncJobRunnerMock)
+        mergeServiceAsyncJobRunnerMock = mock {}
+        mergeService = MergeService(mergeServiceAsyncJobRunnerMock)
         db.transaction { tx -> tx.insertGeneralTestFixtures() }
     }
 
@@ -160,7 +166,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             }
         assertEquals(1, countAfter)
 
-        verify(asyncJobRunnerMock)
+        verify(mergeServiceAsyncJobRunnerMock)
             .plan(
                 any(),
                 eq(
@@ -221,7 +227,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             }
         assertEquals(1, countAfter)
 
-        verifyNoInteractions(asyncJobRunnerMock)
+        verifyNoInteractions(mergeServiceAsyncJobRunnerMock)
     }
 
     @Test
@@ -273,6 +279,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `merging a person moves received messages`() {
+        val now = HelsinkiDateTime.of(LocalDate.of(2022, 8, 11), LocalTime.of(13, 45))
         val employeeId = EmployeeId(UUID.randomUUID())
         val senderAccount =
             db.transaction {
@@ -292,7 +299,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             messageService.createMessageThreadsForRecipientGroups(
                 tx,
-                RealEvakaClock(),
+                MockEvakaClock(now.minusMinutes(1)),
                 title = "Juhannus",
                 content = "Juhannus tulee kohta",
                 type = MessageType.MESSAGE,
@@ -304,10 +311,12 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 accountIdsToChildIds = mapOf(),
                 municipalAccountName = "Espoo"
             )
+            val threadId = tx.getThreads(now, senderAccount, 1, 1, "Espoo").data.first().id
+            tx.upsertReceiverThreadParticipants(threadId, setOf(receiverDuplicateAccount), now)
         }
         assertEquals(
             listOf(0, 1),
-            receivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
+            receivedThreadCounts(now, listOf(receiverAccount, receiverDuplicateAccount))
         )
 
         db.transaction {
@@ -317,23 +326,30 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertEquals(
             listOf(1, 0),
-            receivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
+            receivedThreadCounts(now, listOf(receiverAccount, receiverDuplicateAccount))
         )
     }
 
-    private fun receivedThreadCounts(accountIds: List<MessageAccountId>): List<Int> =
-        db.read { tx -> accountIds.map { tx.getReceivedThreads(it, 10, 1, "Espoo").total } }
+    private fun receivedThreadCounts(
+        now: HelsinkiDateTime,
+        accountIds: List<MessageAccountId>
+    ): List<Int> =
+        db.read { tx -> accountIds.map { tx.getReceivedThreads(now, it, 10, 1, "Espoo").total } }
 
-    private fun archivedThreadCounts(accountIds: List<MessageAccountId>): List<Int> =
+    private fun archivedThreadCounts(
+        now: HelsinkiDateTime,
+        accountIds: List<MessageAccountId>
+    ): List<Int> =
         db.read { tx ->
             accountIds.map {
                 val archiveFolderId = tx.getArchiveFolderId(it)
-                tx.getReceivedThreads(it, 10, 1, "Espoo", archiveFolderId).total
+                tx.getReceivedThreads(now, it, 10, 1, "Espoo", archiveFolderId).total
             }
         }
 
     @Test
     fun `merging a person should move archived messages as well`() {
+        val now = HelsinkiDateTime.of(LocalDate.of(2022, 8, 11), LocalTime.of(13, 45))
         val employeeId = EmployeeId(UUID.randomUUID())
         val senderAccount =
             db.transaction {
@@ -353,7 +369,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             messageService.createMessageThreadsForRecipientGroups(
                 tx,
-                RealEvakaClock(),
+                MockEvakaClock(now.minusMinutes(1)),
                 title = "Juhannus",
                 content = "Juhannus tulee kohta",
                 type = MessageType.MESSAGE,
@@ -365,17 +381,17 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 accountIdsToChildIds = mapOf(),
                 municipalAccountName = "Espoo"
             )
-            val threadId =
-                tx.getReceivedThreads(receiverDuplicateAccount, 50, 1, "Espoo").data[0].id
+            val threadId = tx.getThreads(now, senderAccount, 1, 1, "Espoo").data.first().id
+            tx.upsertReceiverThreadParticipants(threadId, setOf(receiverDuplicateAccount), now)
             tx.archiveThread(receiverDuplicateAccount, threadId)
         }
         assertEquals(
             listOf(0, 0),
-            receivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
+            receivedThreadCounts(now, listOf(receiverAccount, receiverDuplicateAccount))
         )
         assertEquals(
             listOf(0, 1),
-            archivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
+            archivedThreadCounts(now, listOf(receiverAccount, receiverDuplicateAccount))
         )
 
         db.transaction {
@@ -385,7 +401,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         assertEquals(
             listOf(1, 0),
-            archivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
+            archivedThreadCounts(now, listOf(receiverAccount, receiverDuplicateAccount))
         )
     }
 
@@ -422,7 +438,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         db.transaction { mergeService.mergePeople(it, RealEvakaClock(), childId, childIdDuplicate) }
 
-        verify(asyncJobRunnerMock)
+        verify(mergeServiceAsyncJobRunnerMock)
             .plan(
                 any(),
                 eq(

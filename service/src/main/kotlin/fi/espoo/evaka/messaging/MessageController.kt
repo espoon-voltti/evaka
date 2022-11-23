@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
@@ -52,9 +53,8 @@ data class ReplyToMessageBody(val content: String, val recipientAccountIds: Set<
 class MessageController(
     private val accessControl: AccessControl,
     private val featureConfig: FeatureConfig,
-    messageNotificationEmailService: MessageNotificationEmailService
+    private val messageService: MessageService
 ) {
-    private val messageService = MessageService(messageNotificationEmailService)
 
     @GetMapping("/my-accounts")
     fun getAccountsByUser(
@@ -122,6 +122,7 @@ class MessageController(
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 dbc.read {
                     it.getReceivedThreads(
+                        clock.now(),
                         accountId,
                         pageSize,
                         page,
@@ -154,6 +155,7 @@ class MessageController(
                         Paged(emptyList(), 0, 0)
                     } else {
                         it.getReceivedThreads(
+                            clock.now(),
                             accountId,
                             pageSize,
                             page,
@@ -182,7 +184,7 @@ class MessageController(
     ): Paged<MessageCopy> {
         return db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
-                dbc.read { it.getMessageCopiesByAccount(accountId, pageSize, page) }
+                dbc.read { it.getMessageCopiesByAccount(clock.now(), accountId, pageSize, page) }
             }
             .also {
                 Audit.MessagingReceivedMessagesRead.log(
@@ -228,7 +230,7 @@ class MessageController(
                             clock,
                             Action.MessageAccount.ACCESS
                         )
-                    tx.getUnreadMessagesCounts(tx.getEmployeeMessageAccountIds(filter))
+                    tx.getUnreadMessagesCounts(clock.now(), tx.getEmployeeMessageAccountIds(filter))
                 }
             }
             .also { Audit.MessagingUnreadMessagesRead.log(meta = mapOf("count" to it.size)) }
@@ -250,7 +252,7 @@ class MessageController(
                         Action.Unit.READ_UNREAD_MESSAGES,
                         unitId
                     )
-                    tx.getUnreadMessagesCountsByDaycare(unitId)
+                    tx.getUnreadMessagesCountsByDaycare(clock.now(), unitId)
                 }
             }
             .also {
@@ -279,68 +281,76 @@ class MessageController(
         clock: EvakaClock,
         @PathVariable accountId: MessageAccountId,
         @RequestBody body: PostMessageBody
-    ) {
-        db.connect { dbc ->
-            requireMessageAccountAccess(dbc, user, clock, accountId)
-            dbc.transaction { tx ->
-                val senderAccountType = tx.getMessageAccountType(accountId)
-                if (
-                    senderAccountType == AccountType.MUNICIPAL && body.type != MessageType.BULLETIN
-                ) {
-                    throw BadRequest(
-                        "Municipal message accounts are only allowed to send bulletins"
-                    )
-                }
-
-                val messageAccountIdsToChildIds =
-                    tx.getMessageAccountsForRecipients(accountId, body.recipients, clock.today())
-                val messageRecipients = messageAccountIdsToChildIds.keys
-
-                if (messageRecipients.isEmpty()) return@transaction
-
-                val staffCopyRecipients =
-                    if (body.recipients.none { it.type == MessageRecipientType.CHILD }) {
-                        tx.getStaffCopyRecipients(
-                            accountId,
-                            body.recipients.mapNotNull {
-                                if (it.type == MessageRecipientType.AREA) AreaId(it.id.raw)
-                                else null
-                            },
-                            body.recipients.mapNotNull {
-                                if (it.type == MessageRecipientType.UNIT) DaycareId(it.id.raw)
-                                else null
-                            },
-                            body.recipients.mapNotNull {
-                                if (it.type == MessageRecipientType.GROUP) GroupId(it.id.raw)
-                                else null
-                            },
-                            clock.today()
+    ): MessageContentId? {
+        return db.connect { dbc ->
+                requireMessageAccountAccess(dbc, user, clock, accountId)
+                dbc.transaction { tx ->
+                    val senderAccountType = tx.getMessageAccountType(accountId)
+                    if (
+                        senderAccountType == AccountType.MUNICIPAL &&
+                            body.type != MessageType.BULLETIN
+                    ) {
+                        throw BadRequest(
+                            "Municipal message accounts are only allowed to send bulletins"
                         )
-                    } else {
-                        setOf()
                     }
 
-                val groupedRecipients = tx.groupRecipientAccountsByGuardianship(messageRecipients)
-                messageService.createMessageThreadsForRecipientGroups(
-                    tx,
-                    clock,
-                    title = body.title,
-                    content = body.content,
-                    sender = accountId,
-                    type = body.type,
-                    urgent = body.urgent,
-                    recipientNames = body.recipientNames,
-                    recipientGroups = groupedRecipients,
-                    attachmentIds = body.attachmentIds,
-                    staffCopyRecipients = staffCopyRecipients,
-                    accountIdsToChildIds = messageAccountIdsToChildIds,
-                    municipalAccountName = featureConfig.municipalMessageAccountName
-                )
-                if (body.draftId != null)
-                    tx.deleteDraft(accountId = accountId, draftId = body.draftId)
+                    val messageAccountIdsToChildIds =
+                        tx.getMessageAccountsForRecipients(
+                            accountId,
+                            body.recipients,
+                            clock.today()
+                        )
+                    val messageRecipients = messageAccountIdsToChildIds.keys
+
+                    if (messageRecipients.isEmpty()) return@transaction null
+
+                    val staffCopyRecipients =
+                        if (body.recipients.none { it.type == MessageRecipientType.CHILD }) {
+                            tx.getStaffCopyRecipients(
+                                accountId,
+                                body.recipients.mapNotNull {
+                                    if (it.type == MessageRecipientType.AREA) AreaId(it.id.raw)
+                                    else null
+                                },
+                                body.recipients.mapNotNull {
+                                    if (it.type == MessageRecipientType.UNIT) DaycareId(it.id.raw)
+                                    else null
+                                },
+                                body.recipients.mapNotNull {
+                                    if (it.type == MessageRecipientType.GROUP) GroupId(it.id.raw)
+                                    else null
+                                },
+                                clock.today()
+                            )
+                        } else {
+                            setOf()
+                        }
+
+                    val groupedRecipients =
+                        tx.groupRecipientAccountsByGuardianship(messageRecipients)
+                    val messageContentId =
+                        messageService.createMessageThreadsForRecipientGroups(
+                            tx,
+                            clock,
+                            title = body.title,
+                            content = body.content,
+                            sender = accountId,
+                            type = body.type,
+                            urgent = body.urgent,
+                            recipientNames = body.recipientNames,
+                            recipientGroups = groupedRecipients,
+                            attachmentIds = body.attachmentIds,
+                            staffCopyRecipients = staffCopyRecipients,
+                            accountIdsToChildIds = messageAccountIdsToChildIds,
+                            municipalAccountName = featureConfig.municipalMessageAccountName
+                        )
+                    if (body.draftId != null)
+                        tx.deleteDraft(accountId = accountId, draftId = body.draftId)
+                    messageContentId
+                }
             }
-        }
-        Audit.MessagingNewMessageWrite.log(targetId = accountId)
+            .also { Audit.MessagingNewMessageWrite.log(targetId = accountId, objectId = it) }
     }
 
     @GetMapping("/{accountId}/drafts")
@@ -485,6 +495,36 @@ class MessageController(
                 }
             }
             .also { Audit.MessagingMessageReceiversRead.log(meta = mapOf("count" to it.size)) }
+    }
+
+    @PostMapping("/{accountId}/undo-message")
+    fun undoMessage(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @RequestParam contentId: MessageContentId
+    ): MessageDraftId {
+        return db.connect { dbc ->
+                requireMessageAccountAccess(dbc, user, clock, accountId)
+                dbc.transaction { it.undoMessageAndAllThreads(clock.now(), accountId, contentId) }
+            }
+            .also { Audit.MessagingUndoMessage.log(targetId = contentId) }
+    }
+
+    @PostMapping("/{accountId}/undo-reply")
+    fun undoMessage(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @RequestParam messageId: MessageId
+    ) {
+        db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, clock, accountId)
+            dbc.transaction { it.undoMessageReply(clock.now(), accountId, messageId) }
+        }
+        Audit.MessagingUndoMessageReply.log(targetId = messageId)
     }
 
     private fun requireMessageAccountAccess(

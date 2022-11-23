@@ -11,6 +11,8 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -34,10 +36,10 @@ data class CitizenMessageBody(
 @RestController
 @RequestMapping("/citizen/messages")
 class MessageControllerCitizen(
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val featureConfig: FeatureConfig,
-    messageNotificationEmailService: MessageNotificationEmailService
+    private val messageService: MessageService
 ) {
-    private val messageService = MessageService(messageNotificationEmailService)
 
     @GetMapping("/my-account")
     fun getMyAccount(db: Database, user: AuthenticatedUser.Citizen): MessageAccountId {
@@ -48,11 +50,12 @@ class MessageControllerCitizen(
     @GetMapping("/unread-count")
     fun getUnreadMessages(
         db: Database,
-        user: AuthenticatedUser.Citizen
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock
     ): Set<UnreadCountByAccount> {
         return db.connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
-                dbc.read { it.getUnreadMessagesCounts(setOf(accountId)) }
+                dbc.read { it.getUnreadMessagesCounts(clock.now(), setOf(accountId)) }
             }
             .also {
                 Audit.MessagingUnreadMessagesRead.log(
@@ -93,6 +96,7 @@ class MessageControllerCitizen(
     fun getReceivedMessages(
         db: Database,
         user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
         @RequestParam pageSize: Int,
         @RequestParam page: Int
     ): Paged<MessageThread> {
@@ -100,6 +104,7 @@ class MessageControllerCitizen(
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
                 dbc.read {
                     it.getThreads(
+                        clock.now(),
                         accountId,
                         pageSize,
                         page,
@@ -189,7 +194,13 @@ class MessageControllerCitizen(
                                 urgent = false,
                                 isCopy = false
                             )
-                        tx.upsertThreadParticipants(threadId, senderId, recipientIds, now)
+                        tx.upsertSenderThreadParticipants(threadId, senderId, now)
+                        asyncJobRunner.scheduleThreadRecipientsUpdate(
+                            tx,
+                            threadId,
+                            recipientIds,
+                            now
+                        )
                         val messageId =
                             tx.insertMessage(
                                 now = clock.now(),

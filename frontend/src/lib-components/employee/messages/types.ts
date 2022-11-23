@@ -20,11 +20,11 @@ export const isGroupMessageAccount = (
 
 export const isPersonalMessageAccount = (
   acc: AuthorizedMessageAccount
-): acc is GroupMessageAccount => acc.account.type === 'PERSONAL'
+): acc is AuthorizedMessageAccount => acc.account.type === 'PERSONAL'
 
 export const isMunicipalMessageAccount = (
   acc: AuthorizedMessageAccount
-): acc is GroupMessageAccount => acc.account.type === 'MUNICIPAL'
+): acc is AuthorizedMessageAccount => acc.account.type === 'MUNICIPAL'
 
 export interface SaveDraftParams {
   accountId: UUID

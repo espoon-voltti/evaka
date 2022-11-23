@@ -8,11 +8,11 @@ import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'citizen-frontend/localization'
 import { DailyServiceTimeNotification } from 'lib-common/generated/api-types/dailyservicetimes'
 import { useApiState } from 'lib-common/utils/useRestApi'
+import { NotificationsContext } from 'lib-components/Notifications'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import colors from 'lib-customizations/common'
 import { faExclamation, faInfo } from 'lib-icons'
 
-import { CalendarNotificationsContext } from './CalendarNotifications'
 import {
   dismissDailyServiceTimeNotifications,
   getDailyServiceTimeNotifications
@@ -32,7 +32,7 @@ export default React.memo(function DailyServiceTimeNotification() {
     DailyServiceTimeNotification[]
   >([])
 
-  const { addNotification } = useContext(CalendarNotificationsContext)
+  const { addNotification } = useContext(NotificationsContext)
 
   useEffect(() => {
     if (notifications.length === 0) return

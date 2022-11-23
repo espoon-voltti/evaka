@@ -11,7 +11,7 @@ import React, {
   useState
 } from 'react'
 
-import { Loading, Paged, Result, Success } from 'lib-common/api'
+import { Loading, Paged, Result } from 'lib-common/api'
 import {
   MessageThread,
   ThreadReply,
@@ -43,7 +43,7 @@ const initialThreadState: ThreadsState = {
 interface ThreadsState {
   threads: MessageThread[]
   selectedThread: UUID | undefined
-  loadingResult: Result<void>
+  loadingResult: Result<unknown>
   currentPage: number
   pages: number
 }
@@ -53,7 +53,7 @@ export interface MessagePageState {
   loadAccount: () => void
   threads: MessageThread[]
   refreshThreads: () => void
-  threadLoadingResult: Result<void>
+  threadLoadingResult: Result<unknown>
   loadMoreThreads: () => void
   selectedThread: MessageThread | undefined
   setSelectedThread: (threadId: UUID | undefined) => void
@@ -110,24 +110,21 @@ export const MessageContextProvider = React.memo(
 
     const setMessagesResult = useCallback(
       (result: Result<Paged<MessageThread>>) =>
-        setThreads((state) =>
-          result.mapAll({
+        setThreads((state) => ({
+          ...result.mapAll({
             loading: () => state,
-            failure: () => ({
-              ...state,
-              loadingResult: result.map(() => undefined)
-            }),
+            failure: () => state,
             success: ({ data, pages }) => ({
               ...state,
               threads: uniqBy(
                 [...state.threads, ...data],
                 (thread) => thread.id
               ),
-              loadingResult: Success.of(undefined),
               pages
             })
-          })
-        ),
+          }),
+          loadingResult: result
+        })),
       []
     )
 

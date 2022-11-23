@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
@@ -31,6 +34,20 @@ let staff: EmployeeDetail
 let unitSupervisor: EmployeeDetail
 let fixtures: AreaAndPersonFixtures
 
+const mockedDate = LocalDate.of(2022, 5, 21)
+const mockedDateAt10 = HelsinkiDateTime.fromLocal(
+  mockedDate,
+  LocalTime.of(10, 2)
+)
+const mockedDateAt11 = HelsinkiDateTime.fromLocal(
+  mockedDate,
+  LocalTime.of(11, 31)
+)
+const mockedDateAt12 = HelsinkiDateTime.fromLocal(
+  mockedDate,
+  LocalTime.of(12, 17)
+)
+
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
@@ -52,27 +69,35 @@ beforeEach(async () => {
   const daycarePlacementFixture = await Fixture.placement()
     .with({
       childId,
-      unitId
+      unitId,
+      startDate: mockedDate.formatIso(),
+      endDate: mockedDate.addYears(1).formatIso()
     })
     .save()
   await Fixture.groupPlacement()
     .with({
       daycarePlacementId: daycarePlacementFixture.data.id,
-      daycareGroupId: daycareGroupFixture.id
+      daycareGroupId: daycareGroupFixture.id,
+      startDate: mockedDate.formatIso(),
+      endDate: mockedDate.addYears(1).formatIso()
     })
     .save()
 
   await Fixture.placement()
     .with({
       childId: fixtures.enduserChildFixtureKaarina.id,
-      unitId
+      unitId,
+      startDate: mockedDate.formatIso(),
+      endDate: mockedDate.addYears(1).formatIso()
     })
     .save()
     .then((placement) =>
       Fixture.groupPlacement()
         .with({
           daycarePlacementId: placement.data.id,
-          daycareGroupId: daycareGroupFixture.id
+          daycareGroupId: daycareGroupFixture.id,
+          startDate: mockedDate.formatIso(),
+          endDate: mockedDate.addYears(1).formatIso()
         })
         .save()
     )
@@ -94,23 +119,25 @@ beforeEach(async () => {
   await upsertMessageAccounts()
 })
 
-async function initStaffPage() {
-  staffPage = await Page.open()
+async function initStaffPage(mockedTime: HelsinkiDateTime) {
+  staffPage = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
   await employeeLogin(staffPage, staff)
 }
 
-async function initUnitSupervisorPage() {
-  unitSupervisorPage = await Page.open()
+async function initUnitSupervisorPage(mockedTime: HelsinkiDateTime) {
+  unitSupervisorPage = await Page.open({
+    mockedTime: mockedTime.toSystemTzDate()
+  })
   await employeeLogin(unitSupervisorPage, unitSupervisor)
 }
 
-async function initCitizenPage() {
-  citizenPage = await Page.open()
+async function initCitizenPage(mockedTime: HelsinkiDateTime) {
+  citizenPage = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
   await enduserLogin(citizenPage)
 }
 
-async function initCitizenPageWeak() {
-  citizenPage = await Page.open()
+async function initCitizenPageWeak(mockedTime: HelsinkiDateTime) {
+  citizenPage = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
   await enduserLoginWeak(citizenPage)
 }
 
@@ -130,46 +157,42 @@ describe('Sending and receiving messages', () => {
   describe.each(initConfigurations)(
     `Interactions with %s`,
     (_name, initCitizen) => {
-      beforeEach(async () => {
-        await Promise.all([initStaffPage(), initCitizen()])
-      })
-
-      const sendMessageAsStaff = async () => {
-        await staffPage.goto(`${config.employeeUrl}/messages`)
-        const messagesPage = new MessagesPage(staffPage)
-        await messagesPage.sendNewMessage(defaultMessage)
-      }
-
-      const replyToMessageAsCitizen = async () => {
-        await citizenPage.goto(config.enduserMessagesUrl)
-        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
-        await citizenMessagesPage.assertThreadContent(defaultMessage)
-        await citizenMessagesPage.replyToFirstThread(defaultReply)
-        await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
-      }
-
       test('Staff sends message and citizen replies', async () => {
+        await initStaffPage(mockedDateAt10)
         await staffPage.goto(`${config.employeeUrl}/messages`)
-        const messagesPage = new MessagesPage(staffPage)
+        let messagesPage = new MessagesPage(staffPage)
         await messagesPage.sendNewMessage(defaultMessage)
 
+        await initCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
-
         await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
+
+        await initStaffPage(mockedDateAt12)
         await staffPage.goto(`${config.employeeUrl}/messages`)
+        messagesPage = new MessagesPage(staffPage)
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
         await messagesPage.assertMessageContent(1, defaultReply)
       })
 
       test('Staff can archive a message', async () => {
-        await sendMessageAsStaff()
-        await replyToMessageAsCitizen()
-
+        await initStaffPage(mockedDateAt10)
         await staffPage.goto(`${config.employeeUrl}/messages`)
-        const messagesPage = new MessagesPage(staffPage)
+        let messagesPage = new MessagesPage(staffPage)
+        await messagesPage.sendNewMessage(defaultMessage)
+
+        await initCitizen(mockedDateAt11)
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        await citizenMessagesPage.assertThreadContent(defaultMessage)
+        await citizenMessagesPage.replyToFirstThread(defaultReply)
+        await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
+
+        await initStaffPage(mockedDateAt12)
+        await staffPage.goto(`${config.employeeUrl}/messages`)
+        messagesPage = new MessagesPage(staffPage)
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
         await messagesPage.deleteFirstThread()
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 0)
@@ -180,7 +203,7 @@ describe('Sending and receiving messages', () => {
 
 describe('Staff copies', () => {
   test('Message sent by supervisor to the whole unit creates a copy for the staff', async () => {
-    await initUnitSupervisorPage()
+    await initUnitSupervisorPage(mockedDateAt10)
     await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
     const message = {
       title: 'Ilmoitus',
@@ -189,7 +212,7 @@ describe('Staff copies', () => {
     }
     await new MessagesPage(unitSupervisorPage).sendNewMessage(message)
 
-    await initStaffPage()
+    await initStaffPage(mockedDateAt11)
     await staffPage.goto(`${config.employeeUrl}/messages`)
     await new MessagesPage(staffPage).assertCopyContent(
       message.title,
@@ -198,7 +221,7 @@ describe('Staff copies', () => {
   })
 
   test('Message sent by supervisor to a single child does not create a copy for the staff', async () => {
-    await initUnitSupervisorPage()
+    await initUnitSupervisorPage(mockedDateAt10)
     await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
     const message = {
       title: 'Ilmoitus',
@@ -207,13 +230,13 @@ describe('Staff copies', () => {
     }
     await new MessagesPage(unitSupervisorPage).sendNewMessage(message)
 
-    await initStaffPage()
+    await initStaffPage(mockedDateAt11)
     await staffPage.goto(`${config.employeeUrl}/messages`)
     await new MessagesPage(staffPage).assertNoCopies()
   })
 
   test('Message sent by supervisor from a group account to a single child does not create a copy for the staff', async () => {
-    await initUnitSupervisorPage()
+    await initUnitSupervisorPage(mockedDateAt10)
     await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
     const message = {
       title: 'Ilmoitus',
@@ -223,7 +246,7 @@ describe('Staff copies', () => {
     }
     await new MessagesPage(unitSupervisorPage).sendNewMessage(message)
 
-    await initStaffPage()
+    await initStaffPage(mockedDateAt11)
     await staffPage.goto(`${config.employeeUrl}/messages`)
     await new MessagesPage(staffPage).assertNoCopies()
   })

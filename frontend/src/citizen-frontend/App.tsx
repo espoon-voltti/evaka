@@ -8,13 +8,16 @@ import { Route, BrowserRouter, Navigate, Routes } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 import styled from 'styled-components'
 
+import {
+  Notifications,
+  NotificationsContextProvider
+} from 'lib-components/Notifications'
 import SkipToContent from 'lib-components/atoms/buttons/SkipToContent'
 import ErrorPage from 'lib-components/molecules/ErrorPage'
 import { LoginErrorModal } from 'lib-components/molecules/modals/LoginErrorModal'
 import { theme } from 'lib-customizations/common'
 
 import AccessibilityStatement from './AccessibilityStatement'
-import CitizenReloadNotification from './CitizenReloadNotification'
 import LoginPage from './LoginPage'
 import RequireAuth from './RequireAuth'
 import ScrollToTop from './ScrollToTop'
@@ -60,20 +63,22 @@ export default function App() {
           >
             <AuthContextProvider>
               <OverlayContextProvider>
-                <MessageContextProvider>
-                  <HolidayPeriodsContextProvider>
-                    <ChildrenContextProvider>
-                      <ApplicationsContextProvider>
-                        <Content />
-                        <GlobalDialog />
-                        <LoginErrorModal
-                          translations={i18n.login.failedModal}
-                        />
-                        <div id="modal-container" />
-                      </ApplicationsContextProvider>
-                    </ChildrenContextProvider>
-                  </HolidayPeriodsContextProvider>
-                </MessageContextProvider>
+                <NotificationsContextProvider>
+                  <MessageContextProvider>
+                    <HolidayPeriodsContextProvider>
+                      <ChildrenContextProvider>
+                        <ApplicationsContextProvider>
+                          <Content />
+                          <GlobalDialog />
+                          <LoginErrorModal
+                            translations={i18n.login.failedModal}
+                          />
+                          <div id="modal-container" />
+                        </ApplicationsContextProvider>
+                      </ChildrenContextProvider>
+                    </HolidayPeriodsContextProvider>
+                  </MessageContextProvider>
+                </NotificationsContextProvider>
               </OverlayContextProvider>
             </AuthContextProvider>
           </ErrorBoundary>
@@ -91,6 +96,7 @@ const FullPageContainer = styled.div`
 
 const Content = React.memo(function Content() {
   const t = useTranslation()
+  const { apiVersion } = useContext(AuthContext)
 
   const { modalOpen } = useContext(OverlayContext)
 
@@ -98,7 +104,7 @@ const Content = React.memo(function Content() {
     <FullPageContainer>
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
       <Header ariaHidden={modalOpen} />
-      <CitizenReloadNotification />
+      <Notifications apiVersion={apiVersion} i18n={t} />
       <MainContainer ariaHidden={modalOpen}>
         <Routes>
           <Route

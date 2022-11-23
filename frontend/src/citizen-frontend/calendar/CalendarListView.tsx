@@ -20,9 +20,8 @@ import { defaultMargins } from 'lib-components/white-space'
 import { faPlus } from 'lib-icons'
 
 import { useTranslation } from '../localization'
-import { headerHeightMobile, mobileBottomNavHeight } from '../navigation/const'
+import { mobileBottomNavHeight } from '../navigation/const'
 
-import { CalendarNotificationsSlot } from './CalendarNotifications'
 import { getChildImages } from './RoundChildImages'
 import WeekElem from './WeekElem'
 
@@ -52,11 +51,6 @@ export default React.memo(function CalendarListView({
 
   return (
     <>
-      <NotificationSlotContainer>
-        <NotificationSlotInnerContainer>
-          <CalendarNotificationsSlot />
-        </NotificationSlotInnerContainer>
-      </NotificationSlotContainer>
       <FixedSpaceColumn spacing="zero">
         {weeklyData.map((w) => (
           <WeekElem
@@ -123,18 +117,4 @@ const HoverButton = styled(Button)`
 
 const Icon = styled(FontAwesomeIcon)`
   margin-right: ${defaultMargins.xs};
-`
-
-const NotificationSlotContainer = styled.div`
-  position: sticky;
-  top: ${headerHeightMobile}px;
-  width: 100%;
-  z-index: 10;
-`
-
-const NotificationSlotInnerContainer = styled.div`
-  position: absolute;
-  top: 0;
-  width: 100%;
-  padding: ${defaultMargins.s};
 `

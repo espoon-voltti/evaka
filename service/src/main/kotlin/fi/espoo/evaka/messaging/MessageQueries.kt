@@ -12,12 +12,14 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
+import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageRecipientId
 import fi.espoo.evaka.shared.MessageThreadFolderId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.formatName
@@ -29,7 +31,10 @@ import org.jdbi.v3.json.Json
 
 val logger = KotlinLogging.logger {}
 
+const val MESSAGE_UNDO_WINDOW_IN_SECONDS = 15L
+
 fun Database.Read.getUnreadMessagesCounts(
+    now: HelsinkiDateTime,
     accountIds: Set<MessageAccountId>
 ): Set<UnreadCountByAccount> {
     // language=SQL
@@ -44,18 +49,20 @@ fun Database.Read.getUnreadMessagesCounts(
         LEFT JOIN message m ON mr.message_id = m.id
         LEFT JOIN message_thread mt ON m.thread_id = mt.id
         LEFT JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id
-        WHERE acc.id = ANY(:accountIds) 
+        WHERE acc.id = ANY(:accountIds) AND (m.id IS NULL OR m.sent_at < :undoThreshold)
         GROUP BY acc.id
     """
             .trimIndent()
 
     return this.createQuery(sql)
         .bind("accountIds", accountIds)
+        .bind("undoThreshold", now.minusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS))
         .mapTo<UnreadCountByAccount>()
         .toSet()
 }
 
 fun Database.Read.getUnreadMessagesCountsByDaycare(
+    now: HelsinkiDateTime,
     daycareId: DaycareId
 ): Set<UnreadCountByAccountAndGroup> {
     // language=SQL
@@ -71,13 +78,14 @@ fun Database.Read.getUnreadMessagesCountsByDaycare(
         LEFT JOIN message m ON mr.message_id = m.id
         LEFT JOIN message_thread mt ON m.thread_id = mt.id
         JOIN daycare_group dg ON acc.daycare_group_id = dg.id AND dg.daycare_id = :daycareId
-        WHERE acc.active = true
+        WHERE acc.active = true AND m.sent_at < :undoThreshold
         GROUP BY acc.id, acc.daycare_group_id
     """
             .trimIndent()
 
     return this.createQuery(sql)
         .bind("daycareId", daycareId)
+        .bind("undoThreshold", now.minusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS))
         .mapTo<UnreadCountByAccountAndGroup>()
         .toSet()
 }
@@ -210,10 +218,9 @@ fun Database.Transaction.insertMessageThreadChildren(
     batch.execute()
 }
 
-fun Database.Transaction.upsertThreadParticipants(
+fun Database.Transaction.upsertSenderThreadParticipants(
     threadId: MessageThreadId,
     senderId: MessageAccountId,
-    receiverIds: Set<MessageAccountId>,
     now: HelsinkiDateTime
 ) {
     createUpdate(
@@ -227,7 +234,13 @@ fun Database.Transaction.upsertThreadParticipants(
         .bind("accountId", senderId)
         .bind("now", now)
         .execute()
+}
 
+fun Database.Transaction.upsertReceiverThreadParticipants(
+    threadId: MessageThreadId,
+    receiverIds: Set<MessageAccountId>,
+    now: HelsinkiDateTime
+) {
     val batch =
         prepareBatch(
             """
@@ -305,6 +318,7 @@ private data class ReceivedThread(
 
 /** Return all threads that are visible to the account through sent and received messages */
 fun Database.Read.getThreads(
+    now: HelsinkiDateTime,
     accountId: MessageAccountId,
     pageSize: Int,
     page: Int,
@@ -334,6 +348,7 @@ SELECT
 FROM message_thread_participant tp
 JOIN message_thread t on t.id = tp.thread_id
 WHERE tp.participant_id = :accountId AND tp.folder_id IS NULL
+AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = :accountId OR m.sent_at < :undoThreshold))
 ORDER BY tp.last_message_timestamp DESC
 LIMIT :pageSize OFFSET :offset
         """
@@ -341,15 +356,17 @@ LIMIT :pageSize OFFSET :offset
             .bind("accountId", accountId)
             .bind("pageSize", pageSize)
             .bind("offset", (page - 1) * pageSize)
+            .bind("undoThreshold", now.minusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS))
             .mapToPaged<ReceivedThread>(pageSize)
 
     val messagesByThread =
-        getThreadMessages(accountId, threads.data.map { it.id }, municipalAccountName)
+        getThreadMessages(now, accountId, threads.data.map { it.id }, municipalAccountName)
     return combineThreadsAndMessages(accountId, threads, messagesByThread)
 }
 
 /** Return all threads in which the account has received messages */
 fun Database.Read.getReceivedThreads(
+    now: HelsinkiDateTime,
     accountId: MessageAccountId,
     pageSize: Int,
     page: Int,
@@ -389,7 +406,8 @@ WHERE
         } else {
             "tp.folder_id = :folderId"
         }
-    }
+    } AND
+    EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND m.sent_at < :undoThreshold)
 ORDER BY tp.last_received_timestamp DESC
 LIMIT :pageSize OFFSET :offset
         """
@@ -398,14 +416,16 @@ LIMIT :pageSize OFFSET :offset
             .bind("pageSize", pageSize)
             .bind("offset", (page - 1) * pageSize)
             .bind("folderId", folderId)
+            .bind("undoThreshold", now.minusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS))
             .mapToPaged<ReceivedThread>(pageSize)
 
     val messagesByThread =
-        getThreadMessages(accountId, threads.data.map { it.id }, municipalAccountName)
+        getThreadMessages(now, accountId, threads.data.map { it.id }, municipalAccountName)
     return combineThreadsAndMessages(accountId, threads, messagesByThread)
 }
 
 private fun Database.Read.getThreadMessages(
+    now: HelsinkiDateTime,
     accountId: MessageAccountId,
     threadIds: List<MessageThreadId>,
     municipalAccountName: String
@@ -454,13 +474,15 @@ WHERE
         SELECT 1
         FROM message_recipients mr
         WHERE mr.message_id = m.id AND mr.recipient_id = :accountId
-    ))
+    )) AND
+    (m.sender_id = :accountId OR m.sent_at < :undoThreshold)
 ORDER BY m.sent_at
             """
         )
         .bind("accountId", accountId)
         .bind("threadIds", threadIds)
         .bind("municipalAccountName", municipalAccountName)
+        .bind("undoThreshold", now.minusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS))
         .mapTo<Message>()
         .groupBy { it.threadId }
 }
@@ -511,6 +533,7 @@ data class MessageCopy(
 )
 
 fun Database.Read.getMessageCopiesByAccount(
+    now: HelsinkiDateTime,
     accountId: MessageAccountId,
     pageSize: Int,
     page: Int
@@ -551,7 +574,7 @@ JOIN message_account_view acc ON rec.recipient_id = acc.id
 JOIN message_account sender_acc ON sender_acc.id = m.sender_id
 JOIN message_account recipient_acc ON recipient_acc.id = rec.recipient_id
 JOIN message_thread t ON m.thread_id = t.id
-WHERE rec.recipient_id = :accountId AND t.is_copy
+WHERE rec.recipient_id = :accountId AND t.is_copy AND m.sent_at < :undoThreshold
 ORDER BY m.sent_at DESC
 LIMIT :pageSize OFFSET :offset
 """
@@ -560,6 +583,7 @@ LIMIT :pageSize OFFSET :offset
         .bind("accountId", accountId)
         .bind("offset", (page - 1) * pageSize)
         .bind("pageSize", pageSize)
+        .bind("undoThreshold", now.minusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS))
         .mapToPaged(pageSize)
 }
 
@@ -1100,3 +1124,141 @@ fun Database.Read.getArchiveFolderId(accountId: MessageAccountId): MessageThread
         .bind("accountId", accountId)
         .mapTo<MessageThreadFolderId>()
         .firstOrNull()
+
+data class MessageToUndo(
+    val sentAt: HelsinkiDateTime,
+    val messageId: MessageId,
+    val contentId: MessageContentId,
+    val threadId: MessageThreadId,
+    val senderId: MessageAccountId,
+    val onlyMessageInThread: Boolean
+)
+
+fun Database.Transaction.undoMessageReply(
+    now: HelsinkiDateTime,
+    accountId: MessageAccountId,
+    messageId: MessageId
+) {
+    val messageToUndo =
+        this.createQuery(
+                """
+SELECT sent_at, id AS message_id, content_id, thread_id, sender_id, FALSE AS only_message_in_thread
+FROM message WHERE sender_id = :accountId AND id = :messageId
+"""
+            )
+            .bind("accountId", accountId)
+            .bind("messageId", messageId)
+            .mapTo<MessageToUndo>()
+            .findOne()
+            .orElseThrow { throw BadRequest("No message found with messageId $messageId") }
+
+    if (messageToUndo.sentAt.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS).isBefore(now)) {
+        throw BadRequest(
+            "Messages older than $MESSAGE_UNDO_WINDOW_IN_SECONDS seconds cannot be undone"
+        )
+    }
+
+    this.deleteMessages(listOf(messageToUndo))
+    this.resetSenderThreadParticipants(messageToUndo.threadId, messageToUndo.senderId)
+}
+
+fun Database.Transaction.undoMessageAndAllThreads(
+    now: HelsinkiDateTime,
+    accountId: MessageAccountId,
+    contentId: MessageContentId
+): MessageDraftId {
+    val messagesToUndo =
+        this.createQuery(
+                """
+SELECT m.sent_at, m.id AS message_id, m.content_id, m.thread_id, m.sender_id,
+    NOT EXISTS (SELECT 1 FROM message m2 WHERE m.thread_id = m2.thread_id AND m2.content_id != :contentId) AS only_message_in_thread
+FROM message m
+WHERE sender_id = :accountId AND content_id = :contentId
+"""
+            )
+            .bind("accountId", accountId)
+            .bind("contentId", contentId)
+            .mapTo<MessageToUndo>()
+            .toList()
+
+    if (messagesToUndo.isEmpty()) {
+        throw BadRequest("No messages found with contentId $contentId")
+    }
+
+    if (
+        messagesToUndo.any { it.sentAt.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS).isBefore(now) }
+    ) {
+        throw BadRequest(
+            "Messages older than $MESSAGE_UNDO_WINDOW_IN_SECONDS seconds cannot be undone"
+        )
+    }
+
+    if (messagesToUndo.any { !it.onlyMessageInThread }) {
+        throw BadRequest("Cannot undo message threads that have replies")
+    }
+
+    val draftContent =
+        this.createQuery(
+                """
+SELECT DISTINCT t.title, t.message_type AS type, t.urgent, c.content, '{}'::text[] AS recipient_ids, '{}'::text[] AS recipient_names
+FROM message_content c
+JOIN message m ON c.id = m.content_id
+JOIN message_thread t ON m.thread_id = t.id
+WHERE c.id = :contentId
+"""
+            )
+            .bind("contentId", contentId)
+            .mapTo<UpdatableDraftContent>()
+            .findOne()
+            .orElseThrow { error("Multiple draft contents found") }
+
+    this.deleteMessages(messagesToUndo)
+
+    val draftId = this.initDraft(accountId)
+    this.updateDraft(accountId, draftId, draftContent)
+    return draftId
+}
+
+fun Database.Transaction.deleteMessages(messages: List<MessageToUndo>) {
+    this.createUpdate(
+            """
+WITH deleted_message AS (
+    DELETE FROM message WHERE id = ANY(:messageIds)
+), deleted_recipients AS (
+    DELETE FROM message_recipients WHERE message_id = ANY(:messageIds)
+), deleted_thread AS (
+    DELETE FROM message_thread WHERE id = ANY(:threadIds)
+), deleted_thread_children AS (
+    DELETE FROM message_thread_children WHERE thread_id = ANY(:threadIds)
+)
+DELETE FROM message_content WHERE id = ANY(:contentIds)
+"""
+        )
+        .bind("messageIds", messages.map { it.messageId }.distinct())
+        .bind(
+            "threadIds",
+            messages.filter { it.onlyMessageInThread }.map { it.threadId }.distinct()
+        )
+        .bind("contentIds", messages.map { it.contentId }.distinct())
+        .execute()
+}
+
+fun Database.Transaction.resetSenderThreadParticipants(
+    threadId: MessageThreadId,
+    senderId: MessageAccountId
+) {
+    this.createUpdate(
+            """
+UPDATE message_thread_participant SET
+    last_message_timestamp = (
+        SELECT MAX(sent_at) FROM message m JOIN message_recipients r ON m.id = r.message_id
+        WHERE m.thread_id = :threadId AND (m.sender_id = :senderId OR r.recipient_id = :senderId)
+    ),
+    last_sent_timestamp = (SELECT MAX(sent_at) FROM message m WHERE m.thread_id = :threadId AND m.sender_id = :senderId)
+WHERE thread_id = :threadId AND participant_id = :senderId
+"""
+        )
+        .bind("threadId", threadId)
+        .bind("senderId", senderId)
+        .execute()
+}

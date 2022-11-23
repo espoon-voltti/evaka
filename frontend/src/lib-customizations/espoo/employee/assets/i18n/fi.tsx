@@ -3447,22 +3447,22 @@ export const fi = {
     },
     messageBoxes: {
       names: {
-        RECEIVED: 'Saapuneet',
-        SENT: 'Lähetetyt',
-        DRAFTS: 'Luonnokset',
-        COPIES: 'Johtajan/kunnan tiedotteet',
-        ARCHIVE: 'Arkisto'
+        received: 'Saapuneet',
+        sent: 'Lähetetyt',
+        drafts: 'Luonnokset',
+        copies: 'Johtajan/kunnan tiedotteet',
+        archive: 'Arkisto'
       },
       receivers: 'Vastaanottajat',
       newMessage: 'Uusi viesti'
     },
     messageList: {
       titles: {
-        RECEIVED: 'Saapuneet viestit',
-        SENT: 'Lähetetyt viestit',
-        DRAFTS: 'Luonnokset',
-        COPIES: 'Johtajan/kunnan tiedotteet',
-        ARCHIVE: 'Arkisto'
+        received: 'Saapuneet viestit',
+        sent: 'Lähetetyt viestit',
+        drafts: 'Luonnokset',
+        copies: 'Johtajan/kunnan tiedotteet',
+        archive: 'Arkisto'
       }
     },
     types: {
@@ -3505,7 +3505,12 @@ export const fi = {
     },
     noTitle: 'Ei otsikkoa',
     notSent: 'Ei lähetetty',
-    editDraft: 'Muokkaa luonnosta'
+    editDraft: 'Muokkaa luonnosta',
+    undo: {
+      info: 'Viesti lähetetty',
+      secondsLeft: (s: number) =>
+        s === 1 ? '1 sekunti aikaa' : `${s} sekuntia aikaa`
+    }
   },
   pinCode: {
     title: 'eVaka-mobiilin PIN-koodi',

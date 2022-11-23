@@ -2,6 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
+
 import config from '../../config'
 import {
   insertGuardianFixtures,
@@ -34,6 +38,16 @@ let citizenPage: Page
 let childInAreaA: PersonDetail
 let childInAreaB: PersonDetail
 
+const mockedDate = LocalDate.of(2022, 11, 8)
+const messageSendTime = HelsinkiDateTime.fromLocal(
+  mockedDate,
+  LocalTime.of(10, 49, 10)
+)
+const messageReadTime = HelsinkiDateTime.fromLocal(
+  mockedDate,
+  LocalTime.of(10, 49, 32)
+)
+
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
@@ -51,28 +65,36 @@ beforeEach(async () => {
   await Fixture.placement()
     .with({
       childId: childInAreaA.id,
-      unitId: fixtures.daycareFixture.id
+      unitId: fixtures.daycareFixture.id,
+      startDate: mockedDate.formatIso(),
+      endDate: mockedDate.formatIso()
     })
     .save()
     .then((placement) =>
       Fixture.groupPlacement()
         .with({
           daycarePlacementId: placement.data.id,
-          daycareGroupId: daycareGroupFixture.id
+          daycareGroupId: daycareGroupFixture.id,
+          startDate: placement.data.startDate,
+          endDate: placement.data.endDate
         })
         .save()
     )
   await Fixture.placement()
     .with({
       childId: childInAreaB.id,
-      unitId: daycare2Fixture.id
+      unitId: daycare2Fixture.id,
+      startDate: mockedDate.formatIso(),
+      endDate: mockedDate.formatIso()
     })
     .save()
     .then((placement) =>
       Fixture.groupPlacement()
         .with({
           daycarePlacementId: placement.data.id,
-          daycareGroupId: daycareGroup2Fixture.id
+          daycareGroupId: daycareGroup2Fixture.id,
+          startDate: placement.data.startDate,
+          endDate: placement.data.endDate
         })
         .save()
     )
@@ -97,18 +119,18 @@ beforeEach(async () => {
   ).data
 })
 
-async function openMessagingPage() {
-  messagingPage = await Page.open()
+async function openMessagingPage(mockedTime: HelsinkiDateTime) {
+  messagingPage = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
   await employeeLogin(messagingPage, messenger)
 }
 
-async function openStaffPage() {
-  staffPage = await Page.open()
+async function openStaffPage(mockedTime: HelsinkiDateTime) {
+  staffPage = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
   await employeeLogin(staffPage, staff)
 }
 
-async function openCitizenPage() {
-  citizenPage = await Page.open()
+async function openCitizenPage(mockedTime: HelsinkiDateTime) {
+  citizenPage = await Page.open({ mockedTime: mockedTime.toSystemTzDate() })
   await enduserLogin(citizenPage)
 }
 
@@ -119,19 +141,19 @@ const defaultMessage = {
 
 describe('Municipal messaging -', () => {
   test('Messaging role can send messages to multiple areas', async () => {
-    await openMessagingPage()
+    await openMessagingPage(messageSendTime)
     await messagingPage.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(messagingPage)
     await messagesPage.sendNewMessage(defaultMessage)
 
-    await openCitizenPage()
+    await openCitizenPage(messageReadTime)
     await citizenPage.goto(config.enduserMessagesUrl)
     const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
     await citizenMessagesPage.assertThreadContent(defaultMessage)
   })
 
   test('Messages sent by messaging role creates a copy for the staff', async () => {
-    await openMessagingPage()
+    await openMessagingPage(messageSendTime)
     await messagingPage.goto(`${config.employeeUrl}/messages`)
     const messagesPage = new MessagesPage(messagingPage)
     await messagesPage.sendNewMessage({
@@ -139,7 +161,7 @@ describe('Municipal messaging -', () => {
       receiver: fixtures.careAreaFixture.id
     })
 
-    await openStaffPage()
+    await openStaffPage(messageReadTime)
     await staffPage.goto(`${config.employeeUrl}/messages`)
     await new MessagesPage(staffPage).assertCopyContent(
       defaultMessage.title,

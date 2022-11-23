@@ -247,32 +247,35 @@ export default React.memo(function ThreadView({
           <SingleMessage key={message.id} message={message} />
         </React.Fragment>
       ))}
-      {type === 'MESSAGE' &&
-        messages.length > 0 &&
-        (replyEditorVisible ? (
-          <MessageContainer>
-            <MessageReplyEditor
-              replyState={replyState}
-              onSubmit={onSubmit}
-              onUpdateContent={onUpdateContent}
-              onDiscard={onDiscard}
-              recipients={recipients}
-              onToggleRecipient={onToggleRecipient}
-              replyContent={replyContent}
-              i18n={editorLabels}
-            />
-          </MessageContainer>
-        ) : (
+      {replyEditorVisible ? (
+        <MessageContainer>
+          <MessageReplyEditor
+            replyState={replyState}
+            onSubmit={onSubmit}
+            onUpdateContent={onUpdateContent}
+            onDiscard={onDiscard}
+            recipients={recipients}
+            onToggleRecipient={onToggleRecipient}
+            replyContent={replyContent}
+            i18n={editorLabels}
+          />
+        </MessageContainer>
+      ) : (
+        messages.length > 0 && (
           <>
             <Gap size="s" />
             <ActionRow justifyContent="space-between">
-              <ReplyToThreadButton
-                icon={faReply}
-                onClick={() => setReplyEditorVisible(true)}
-                data-qa="message-reply-editor-btn"
-                text={i18n.messages.replyToThread}
-                ref={autoFocusRef}
-              />
+              {type === 'MESSAGE' ? (
+                <ReplyToThreadButton
+                  icon={faReply}
+                  onClick={() => setReplyEditorVisible(true)}
+                  data-qa="message-reply-editor-btn"
+                  text={i18n.messages.replyToThread}
+                  ref={autoFocusRef}
+                />
+              ) : (
+                <div />
+              )}
               <InlineButton
                 icon={faTrash}
                 aria-label={i18n.common.delete}
@@ -284,7 +287,8 @@ export default React.memo(function ThreadView({
             </ActionRow>
             <Gap size="m" />
           </>
-        ))}
+        )
+      )}
       {replyEditorVisible && <span ref={autoScrollRef} />}
       {confirmDelete && (
         <ConfirmDeleteThread

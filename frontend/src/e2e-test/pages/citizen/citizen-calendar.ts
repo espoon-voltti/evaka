@@ -149,11 +149,11 @@ export default class CitizenCalendarPage {
   #ctas = this.page.findAllByDataQa('holiday-period-cta')
 
   async getHolidayCtaContent(): Promise<string> {
-    return this.#ctas.nth(1).innerText
+    return this.#ctas.nth(0).innerText
   }
 
   async clickHolidayCta(): Promise<void> {
-    return this.#ctas.nth(1).click()
+    return this.#ctas.nth(0).click()
   }
 
   async assertHolidayCtaNotVisible(): Promise<void> {

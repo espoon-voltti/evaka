@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
@@ -41,6 +43,20 @@ let careArea: CareArea
 let backupDaycareId: UUID
 let backupGroupFixtureId: UUID
 
+const mockedDate = LocalDate.of(2022, 5, 21)
+const mockedDateAt10 = HelsinkiDateTime.fromLocal(
+  mockedDate,
+  LocalTime.of(10, 2)
+)
+const mockedDateAt11 = HelsinkiDateTime.fromLocal(
+  mockedDate,
+  LocalTime.of(11, 31)
+)
+const mockedDateAt12 = HelsinkiDateTime.fromLocal(
+  mockedDate,
+  LocalTime.of(12, 17)
+)
+
 beforeEach(async () => {
   await resetDatabase()
   fixtures = await initializeAreaAndPersonData()
@@ -57,13 +73,17 @@ beforeEach(async () => {
   const daycarePlacementFixture = await Fixture.placement()
     .with({
       childId,
-      unitId
+      unitId,
+      startDate: mockedDate.formatIso(),
+      endDate: mockedDate.addYears(1).formatIso()
     })
     .save()
   await Fixture.groupPlacement()
     .with({
       daycarePlacementId: daycarePlacementFixture.data.id,
-      daycareGroupId: daycareGroupFixture.id
+      daycareGroupId: daycareGroupFixture.id,
+      startDate: mockedDate.formatIso(),
+      endDate: mockedDate.addYears(1).formatIso()
     })
     .save()
 
@@ -94,18 +114,24 @@ beforeEach(async () => {
   ])
 })
 
-async function initSupervisorPage() {
-  unitSupervisorPage = await Page.open()
+async function openSupervisorPage(mockedTime: HelsinkiDateTime) {
+  unitSupervisorPage = await Page.open({
+    mockedTime: mockedTime.toSystemTzDate()
+  })
   await employeeLogin(unitSupervisorPage, unitSupervisor)
 }
 
-async function initCitizenPage() {
-  citizenPage = await Page.open()
+async function openCitizenPage(mockedTime: HelsinkiDateTime) {
+  citizenPage = await Page.open({
+    mockedTime: mockedTime.toSystemTzDate()
+  })
   await enduserLogin(citizenPage)
 }
 
-async function initCitizenPageWeak() {
-  citizenPage = await Page.open()
+async function openCitizenPageWeak(mockedTime: HelsinkiDateTime) {
+  citizenPage = await Page.open({
+    mockedTime: mockedTime.toSystemTzDate()
+  })
   await enduserLoginWeak(citizenPage)
 }
 
@@ -120,28 +146,28 @@ const defaultMessage = {
 
 describe('Sending and receiving messages', () => {
   const initConfigurations = [
-    ['direct login', initCitizenPage] as const,
-    ['weak login', initCitizenPageWeak] as const
+    ['direct login', openCitizenPage] as const,
+    ['weak login', openCitizenPageWeak] as const
   ]
 
   describe.each(initConfigurations)(
     'Interactions with %s',
-    (_name, initCitizen) => {
-      beforeEach(async () => {
-        await Promise.all([initSupervisorPage(), initCitizen()])
-      })
-
+    (_name, openCitizen) => {
       test('Unit supervisor sends message and citizen replies', async () => {
+        await openSupervisorPage(mockedDateAt10)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-        const messagesPage = new MessagesPage(unitSupervisorPage)
+        let messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.sendNewMessage(defaultMessage)
 
+        await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
         await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
 
+        await openSupervisorPage(mockedDateAt12)
+        messagesPage = new MessagesPage(unitSupervisorPage)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
         await messagesPage.assertMessageContent(1, defaultReply)
@@ -152,8 +178,8 @@ describe('Sending and receiving messages', () => {
           .with({
             childId: enduserChildFixtureKaarina.id,
             unitId: fixtures.daycareFixturePrivateVoucher.id,
-            startDate: LocalDate.todayInSystemTz().formatIso(),
-            endDate: LocalDate.todayInSystemTz().formatIso()
+            startDate: mockedDate.formatIso(),
+            endDate: mockedDate.formatIso()
           })
           .save()
         await insertBackupCareFixtures([
@@ -163,8 +189,8 @@ describe('Sending and receiving messages', () => {
             unitId: fixtures.daycareFixture.id,
             groupId: daycareGroupFixture.id,
             period: {
-              start: LocalDate.todayInSystemTz().formatIso(),
-              end: LocalDate.todayInSystemTz().formatIso()
+              start: mockedDate.formatIso(),
+              end: mockedDate.formatIso()
             }
           }
         ])
@@ -176,8 +202,9 @@ describe('Sending and receiving messages', () => {
           }
         ])
 
+        await openSupervisorPage(mockedDateAt10)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-        const messagesPage = new MessagesPage(unitSupervisorPage)
+        let messagesPage = new MessagesPage(unitSupervisorPage)
 
         await messagesPage.sendNewMessage({
           ...defaultMessage,
@@ -189,13 +216,16 @@ describe('Sending and receiving messages', () => {
           `${enduserChildFixtureKaarina.lastName} ${enduserChildFixtureKaarina.firstName} `
         )
 
+        await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
         await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
 
+        await openSupervisorPage(mockedDateAt12)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        messagesPage = new MessagesPage(unitSupervisorPage)
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
         await messagesPage.assertMessageContent(1, defaultReply)
       })
@@ -208,8 +238,8 @@ describe('Sending and receiving messages', () => {
             unitId: backupDaycareId,
             groupId: backupGroupFixtureId,
             period: {
-              start: LocalDate.todayInSystemTz().formatIso(),
-              end: LocalDate.todayInSystemTz().formatIso()
+              start: mockedDate.formatIso(),
+              end: mockedDate.formatIso()
             }
           }
         ])
@@ -221,6 +251,7 @@ describe('Sending and receiving messages', () => {
           }
         ])
 
+        await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.sendNewMessage(
@@ -232,22 +263,27 @@ describe('Sending and receiving messages', () => {
 
       test('Unit supervisor sends an urgent message and citizen replies', async () => {
         const message = { ...defaultMessage, urgent: true }
+        await openSupervisorPage(mockedDateAt10)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-        const messagesPage = new MessagesPage(unitSupervisorPage)
+        let messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.sendNewMessage(message)
 
+        await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.assertThreadContent(message)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
         await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
 
+        await openSupervisorPage(mockedDateAt12)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        messagesPage = new MessagesPage(unitSupervisorPage)
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
         await messagesPage.assertMessageContent(1, defaultReply)
       })
 
       test('Employee can send attachments', async () => {
+        await openSupervisorPage(mockedDateAt10)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.sendNewMessage({
@@ -255,6 +291,7 @@ describe('Sending and receiving messages', () => {
           attachmentCount: 2
         })
 
+        await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.assertThreadContent(defaultMessage)
@@ -265,17 +302,21 @@ describe('Sending and receiving messages', () => {
       })
 
       test('Employee can discard thread reply', async () => {
+        await openSupervisorPage(mockedDateAt10)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
-        const messagesPage = new MessagesPage(unitSupervisorPage)
+        let messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.sendNewMessage(defaultMessage)
 
+        await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.assertThreadContent(defaultMessage)
         await citizenMessagesPage.replyToFirstThread(defaultReply)
 
+        await openSupervisorPage(mockedDateAt12)
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.openInbox(0)
-
         await messagesPage.openFirstThreadReplyEditor()
         await messagesPage.discardMessageButton.waitUntilVisible()
         await messagesPage.fillReplyContent(defaultContent)
@@ -306,10 +347,12 @@ describe('Sending and receiving messages', () => {
           fixtures.enduserGuardianFixture.id
         )
 
+        await openSupervisorPage(mockedDateAt10)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.sendNewMessage({ title, content })
 
+        await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.assertInboxIsEmpty()
@@ -317,6 +360,7 @@ describe('Sending and receiving messages', () => {
 
       test('Citizen sends a message to the unit supervisor', async () => {
         const receivers = ['Esimies Essi']
+        await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.sendNewMessage(
@@ -325,7 +369,7 @@ describe('Sending and receiving messages', () => {
           receivers
         )
 
-        await employeeLogin(unitSupervisorPage, unitSupervisor)
+        await openSupervisorPage(mockedDateAt11)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.openInbox(0)
@@ -336,6 +380,7 @@ describe('Sending and receiving messages', () => {
 
       test('Unit supervisor sees the name of the child in a message sent by citizen', async () => {
         const receivers = ['Esimies Essi']
+        await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.sendNewMessage(
@@ -344,7 +389,7 @@ describe('Sending and receiving messages', () => {
           receivers
         )
 
-        await employeeLogin(unitSupervisorPage, unitSupervisor)
+        await openSupervisorPage(mockedDateAt11)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.openInbox(0)
@@ -360,14 +405,16 @@ describe('Sending and receiving messages', () => {
           .with({
             childId: enduserChildFixtureKaarina.id,
             unitId: fixtures.daycareFixture.id,
-            startDate: LocalDate.todayInSystemTz().formatIso(),
-            endDate: LocalDate.todayInSystemTz().formatIso()
+            startDate: mockedDate.formatIso(),
+            endDate: mockedDate.formatIso()
           })
           .save()
         await Fixture.groupPlacement()
           .with({
             daycarePlacementId: daycarePlacementFixture.data.id,
-            daycareGroupId: daycareGroupFixture.id
+            daycareGroupId: daycareGroupFixture.id,
+            startDate: mockedDate.formatIso(),
+            endDate: mockedDate.formatIso()
           })
           .save()
         await insertGuardianFixtures([
@@ -378,6 +425,7 @@ describe('Sending and receiving messages', () => {
         ])
 
         const recipients = ['Esimies Essi']
+        await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.clickNewMessage()
@@ -392,7 +440,7 @@ describe('Sending and receiving messages', () => {
         await citizenMessagesPage.typeMessage(defaultTitle, defaultContent)
         await citizenMessagesPage.clickSendMessage()
 
-        await employeeLogin(unitSupervisorPage, unitSupervisor)
+        await openSupervisorPage(mockedDateAt11)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.openInbox(0)
@@ -405,6 +453,7 @@ describe('Sending and receiving messages', () => {
 
       test('Citizen sends message to the unit supervisor and the group', async () => {
         const receivers = ['Esimies Essi', 'Kosmiset vakiot (Henkilökunta)']
+        await openCitizen(mockedDateAt10)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.sendNewMessage(
@@ -413,7 +462,7 @@ describe('Sending and receiving messages', () => {
           receivers
         )
 
-        await employeeLogin(unitSupervisorPage, unitSupervisor)
+        await openSupervisorPage(mockedDateAt11)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.openInbox(0)
@@ -423,10 +472,12 @@ describe('Sending and receiving messages', () => {
       })
 
       test('Citizen can discard message', async () => {
+        await openSupervisorPage(mockedDateAt10)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         const messagesPage = new MessagesPage(unitSupervisorPage)
         await messagesPage.sendNewMessage(defaultMessage)
 
+        await openCitizen(mockedDateAt11)
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.openFirstThreadReplyEditor()
@@ -440,10 +491,12 @@ describe('Sending and receiving messages', () => {
 
       describe('Messages can be deleted / archived', () => {
         test('Unit supervisor sends message and citizen deletes the message', async () => {
+          await openSupervisorPage(mockedDateAt10)
           await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
           const messagesPage = new MessagesPage(unitSupervisorPage)
           await messagesPage.sendNewMessage(defaultMessage)
 
+          await openCitizen(mockedDateAt11)
           await citizenPage.goto(config.enduserMessagesUrl)
           const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
           await citizenMessagesPage.assertThreadContent(defaultMessage)
@@ -456,10 +509,8 @@ describe('Sending and receiving messages', () => {
   )
 
   describe('Drafts', () => {
-    beforeEach(async () => {
-      await initSupervisorPage()
-    })
     test('A draft is saved correctly', async () => {
+      await openSupervisorPage(mockedDateAt10)
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       const messagesPage = new MessagesPage(unitSupervisorPage)
       await messagesPage.draftNewMessage(defaultTitle, defaultContent)
@@ -468,6 +519,7 @@ describe('Sending and receiving messages', () => {
     })
 
     test('A draft is not saved when a message is sent', async () => {
+      await openSupervisorPage(mockedDateAt10)
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       const messagesPage = new MessagesPage(unitSupervisorPage)
       await messagesPage.draftNewMessage(defaultTitle, defaultContent)
@@ -476,11 +528,65 @@ describe('Sending and receiving messages', () => {
     })
 
     test("A draft is not saved when it's discarded", async () => {
+      await openSupervisorPage(mockedDateAt10)
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
       const messagesPage = new MessagesPage(unitSupervisorPage)
       await messagesPage.draftNewMessage(defaultTitle, defaultContent)
       await messagesPage.discardMessage()
       await messagesPage.assertNoDrafts()
+    })
+  })
+
+  describe('Undoing', () => {
+    test('A new message can be undone by employees', async () => {
+      await openSupervisorPage(mockedDateAt10)
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      const messagesPage = new MessagesPage(unitSupervisorPage)
+      await messagesPage.sendNewMessage(defaultMessage)
+
+      await openCitizenPage(mockedDateAt11)
+      await citizenPage.goto(config.enduserMessagesUrl)
+      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+      await citizenMessagesPage.openFirstThread()
+      await citizenMessagesPage.assertThreadContent(defaultMessage)
+
+      await messagesPage.undoMessage()
+      await citizenPage.goto(config.enduserMessagesUrl)
+      await citizenMessagesPage.assertInboxIsEmpty()
+    })
+
+    test('A new reply to a thread can be undone by employees', async () => {
+      await openSupervisorPage(mockedDateAt10)
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      let messagesPage = new MessagesPage(unitSupervisorPage)
+      await messagesPage.sendNewMessage(defaultMessage)
+
+      await openCitizenPage(mockedDateAt11)
+      await citizenPage.goto(config.enduserMessagesUrl)
+      let citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+      await citizenMessagesPage.assertThreadContent(defaultMessage)
+      await citizenMessagesPage.replyToFirstThread(defaultReply)
+      await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
+
+      await openSupervisorPage(mockedDateAt12)
+      messagesPage = new MessagesPage(unitSupervisorPage)
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      await messagesPage.openInbox(0)
+      await messagesPage.openFirstThreadReplyEditor()
+      await messagesPage.sendReplyButton.waitUntilVisible()
+      await messagesPage.fillReplyContent(defaultContent)
+      await messagesPage.sendReplyButton.click()
+
+      await openCitizenPage(mockedDateAt12.addMinutes(1))
+      await citizenPage.goto(config.enduserMessagesUrl)
+      citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+      await citizenMessagesPage.openFirstThread()
+      await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 3)
+
+      await messagesPage.undoMessage()
+      await citizenPage.goto(config.enduserMessagesUrl)
+      await citizenMessagesPage.openFirstThread()
+      await waitUntilEqual(() => citizenMessagesPage.getMessageCount(), 2)
     })
   })
 })

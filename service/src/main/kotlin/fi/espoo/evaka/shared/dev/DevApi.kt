@@ -237,6 +237,7 @@ class DevApi(
                 it.runDevScript("club-terms.sql")
             }
         }
+        MockEmailClient.clear()
     }
 
     @PostMapping("/run-jobs")

@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { ReactNode } from 'react'
 
 import { AssistanceNeedDecisionReportContextProvider } from 'employee-frontend/components/reports/AssistanceNeedDecisionReportContext'
+import { NotificationsContextProvider } from 'lib-components/Notifications'
 
 import { MessageContextProvider } from '../components/messages/MessageContext'
 
@@ -18,26 +19,28 @@ import { UnitsContextProvider } from './units'
 const StateProvider = React.memo(function StateProvider({
   children
 }: {
-  children: JSX.Element
+  children: ReactNode | ReactNode[]
 }) {
   return (
-    <UIContextProvider>
-      <UnitsContextProvider>
-        <CustomersContextProvider>
-          <InvoicingUIContextProvider>
-            <MessageContextProvider>
-              <TitleContextProvider>
-                <ApplicationUIContextProvider>
-                  <AssistanceNeedDecisionReportContextProvider>
-                    {children}
-                  </AssistanceNeedDecisionReportContextProvider>
-                </ApplicationUIContextProvider>
-              </TitleContextProvider>
-            </MessageContextProvider>
-          </InvoicingUIContextProvider>
-        </CustomersContextProvider>
-      </UnitsContextProvider>
-    </UIContextProvider>
+    <NotificationsContextProvider>
+      <UIContextProvider>
+        <UnitsContextProvider>
+          <CustomersContextProvider>
+            <InvoicingUIContextProvider>
+              <MessageContextProvider>
+                <TitleContextProvider>
+                  <ApplicationUIContextProvider>
+                    <AssistanceNeedDecisionReportContextProvider>
+                      {children}
+                    </AssistanceNeedDecisionReportContextProvider>
+                  </ApplicationUIContextProvider>
+                </TitleContextProvider>
+              </MessageContextProvider>
+            </InvoicingUIContextProvider>
+          </CustomersContextProvider>
+        </UnitsContextProvider>
+      </UIContextProvider>
+    </NotificationsContextProvider>
   )
 })
 

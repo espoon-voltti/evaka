@@ -3,30 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sortBy from 'lodash/sortBy'
-import uniqBy from 'lodash/uniqBy'
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useContext, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
 import { sortReceivers } from 'lib-common/api-types/messaging'
-import {
-  AuthorizedMessageAccount,
-  MessageReceiversResponse
-} from 'lib-common/generated/api-types/messaging'
+import { MessageReceiversResponse } from 'lib-common/generated/api-types/messaging'
 import Button from 'lib-components/atoms/buttons/Button'
 import Combobox from 'lib-components/atoms/dropdowns/Combobox'
-import {
-  isGroupMessageAccount,
-  isMunicipalMessageAccount,
-  isPersonalMessageAccount
-} from 'lib-components/employee/messages/types'
-import { SelectOption } from 'lib-components/molecules/Select'
 import { fontWeights, H1 } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
 import { useTranslation } from '../../state/i18n'
-import { renderResult } from '../async-rendering'
 
 import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
@@ -84,40 +73,30 @@ const UnitSelection = styled.div`
 `
 
 interface AccountsProps {
-  accounts: AuthorizedMessageAccount[]
   setReceivers: React.Dispatch<
     React.SetStateAction<MessageReceiversResponse[] | undefined>
   >
 }
 
-function Accounts({ accounts, setReceivers }: AccountsProps) {
+function Accounts({ setReceivers }: AccountsProps) {
   const { i18n } = useTranslation()
-  const { setSelectedAccount, selectedAccount } = useContext(MessageContext)
-  const [selectedUnit, setSelectedUnit] = useState<SelectOption>()
-
-  const [municipalAccount, personalAccount, groupAccounts, unitOptions] =
-    useMemo(() => {
-      const municipal = accounts.find(isMunicipalMessageAccount)
-      const personal = accounts.find(isPersonalMessageAccount)
-      const groupAccs = accounts.filter(isGroupMessageAccount)
-      const unitOpts = sortBy(
-        uniqBy(
-          groupAccs.map(({ daycareGroup }) => ({
-            value: daycareGroup.unitId,
-            label: daycareGroup.unitName
-          })),
-          (val) => val.value
-        ),
-        (u) => u.label
-      )
-      return [municipal, personal, groupAccs, unitOpts]
-    }, [accounts])
+  const {
+    selectedAccount,
+    municipalAccount,
+    personalAccount,
+    groupAccounts,
+    unitOptions,
+    selectAccount,
+    selectUnit
+  } = useContext(MessageContext)
 
   const unitSelectionEnabled = unitOptions.length > 1
-
-  useEffect(() => {
-    !selectedUnit && setSelectedUnit(unitOptions[0])
-  }, [selectedUnit, setSelectedUnit, unitOptions])
+  const selectedUnit = useMemo(
+    () =>
+      unitOptions.find((unit) => unit.value === selectedAccount?.unitId) ??
+      unitOptions[0],
+    [selectedAccount?.unitId, unitOptions]
+  )
 
   useEffect(() => {
     void getReceivers().then((result: Result<MessageReceiversResponse[]>) => {
@@ -142,7 +121,7 @@ function Accounts({ accounts, setReceivers }: AccountsProps) {
 
   return (
     <>
-      {accounts.length === 0 && (
+      {!municipalAccount && !personalAccount && groupAccounts.length === 0 && (
         <NoAccounts>{i18n.messages.sidePanel.noAccountAccess}</NoAccounts>
       )}
 
@@ -156,8 +135,9 @@ function Accounts({ accounts, setReceivers }: AccountsProps) {
               key={view}
               view={view}
               account={municipalAccount.account}
+              unitId={null}
               activeView={selectedAccount}
-              setView={setSelectedAccount}
+              selectAccount={selectAccount}
             />
           ))}
         </AccountSection>
@@ -171,8 +151,9 @@ function Accounts({ accounts, setReceivers }: AccountsProps) {
               key={view}
               view={view}
               account={personalAccount.account}
+              unitId={null}
               activeView={selectedAccount}
-              setView={setSelectedAccount}
+              selectAccount={selectAccount}
             />
           ))}
         </AccountSection>
@@ -187,7 +168,7 @@ function Accounts({ accounts, setReceivers }: AccountsProps) {
             <UnitSelection>
               <Combobox
                 items={unitOptions}
-                onChange={(val) => (val ? setSelectedUnit(val) : undefined)}
+                onChange={(val) => (val ? selectUnit(val.value) : undefined)}
                 selectedItem={selectedUnit ?? null}
                 getItemLabel={(val) => val.label}
               />
@@ -196,7 +177,7 @@ function Accounts({ accounts, setReceivers }: AccountsProps) {
           <GroupMessageAccountList
             accounts={visibleGroupAccounts}
             activeView={selectedAccount}
-            setView={setSelectedAccount}
+            selectAccount={selectAccount}
           />
         </AccountSection>
       )}
@@ -237,9 +218,7 @@ export default React.memo(function Sidebar({
             data-qa="new-message-btn"
           />
         </HeaderContainer>
-        {renderResult(accounts, (value) => (
-          <Accounts accounts={value} setReceivers={setReceivers} />
-        ))}
+        <Accounts setReceivers={setReceivers} />
       </AccountContainer>
     </Container>
   )

@@ -30,9 +30,9 @@ export default class MessagesPage {
   #fileUpload = this.page.find('[data-qa="upload-message-attachment"]')
   #personalAccount = this.page.find('[data-qa="personal-account"]')
   #draftMessagesBoxRow = new TextInput(
-    this.#personalAccount.find('[data-qa="message-box-row-DRAFTS"]')
+    this.#personalAccount.find('[data-qa="message-box-row-drafts"]')
   )
-  #messageCopiesInbox = this.page.findByDataQa('message-box-row-COPIES')
+  #messageCopiesInbox = this.page.findByDataQa('message-box-row-copies')
   #receivedMessage = this.page.find('[data-qa="received-message-row"]')
   #draftMessage = this.page.find('[data-qa="draft-message-row"]')
   #messageContent = (index = 0) =>
@@ -41,6 +41,7 @@ export default class MessagesPage {
   #openReplyEditorButton = this.page.find(
     `[data-qa="message-reply-editor-btn"]`
   )
+  sendReplyButton = this.page.find('[data-qa="message-send-btn"]')
   discardMessageButton = this.page.find('[data-qa="message-discard-btn"]')
   #messageReplyContent = new TextInput(
     this.page.find('[data-qa="message-reply-content"]')
@@ -61,7 +62,7 @@ export default class MessagesPage {
   }
 
   async assertMessageIsSentForParticipants(nth: number, participants: string) {
-    await this.page.findAll('[data-qa="message-box-row-SENT"]').first().click()
+    await this.page.findAll('[data-qa="message-box-row-sent"]').first().click()
     await waitUntilEqual(
       () =>
         this.page
@@ -238,5 +239,12 @@ export default class MessagesPage {
   async assertNoCopies() {
     await this.#messageCopiesInbox.click()
     await this.#emptyInboxText.waitUntilVisible()
+  }
+
+  async undoMessage() {
+    await this.page
+      .findByDataQa('undo-message-toast')
+      .findByDataQa('cancel-message')
+      .click()
   }
 }

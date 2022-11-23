@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
 
+import { Result } from 'lib-common/api'
 import { tabletMin } from 'lib-components/breakpoints'
 import { H3 } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
@@ -15,12 +16,19 @@ import { useTranslation } from '../localization'
 
 interface Props {
   inboxEmpty: boolean
+  loadingState: Result<unknown>
 }
 
-export default React.memo(function EmptyThreadView({ inboxEmpty }: Props) {
+export default React.memo(function EmptyThreadView({
+  inboxEmpty,
+  loadingState
+}: Props) {
   const i18n = useTranslation()
+  const loading =
+    loadingState.isLoading ||
+    (loadingState.isSuccess && loadingState.isReloading)
   return inboxEmpty ? (
-    <EmptyThreadViewContainer data-qa="inbox-empty">
+    <EmptyThreadViewContainer data-qa="inbox-empty" data-loading={loading}>
       <FontAwesomeIcon icon={faInbox} size="7x" color={colors.grayscale.g35} />
       <H3>{i18n.messages.emptyInbox}</H3>
     </EmptyThreadViewContainer>

@@ -42,8 +42,14 @@ const StyledFlex = styled(AdaptiveFlex)`
 export default React.memo(function MessagesPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { accountId, loadAccount, selectedThread, refreshThreads, threads } =
-    useContext(MessageContext)
+  const {
+    accountId,
+    loadAccount,
+    selectedThread,
+    refreshThreads,
+    threads,
+    threadLoadingResult
+  } = useContext(MessageContext)
   useEffect(() => {
     if (!accountId.isSuccess) {
       loadAccount()
@@ -107,7 +113,10 @@ export default React.memo(function MessagesPage() {
                     onThreadDeleted={() => onSelectedThreadDeleted()}
                   />
                 ) : (
-                  <EmptyThreadView inboxEmpty={threads.length == 0} />
+                  <EmptyThreadView
+                    inboxEmpty={threads.length === 0}
+                    loadingState={threadLoadingResult}
+                  />
                 )}
               </StyledFlex>
               {editorVisible && (

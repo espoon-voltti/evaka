@@ -24,7 +24,6 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
-import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
@@ -278,9 +277,11 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @Test
     fun `unread counts`() {
+        val now = HelsinkiDateTime.of(LocalDate.of(2022, 5, 14), LocalTime.of(12, 11))
         val counts =
             db.read {
                 it.getUnreadMessagesCounts(
+                    now,
                     it.getEmployeeMessageAccountIds(
                         accessControl.requireAuthorizationFilter(
                             it,
@@ -305,7 +306,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 tx.insertThread(MessageType.MESSAGE, "title", urgent = false, isCopy = false)
             val messageId =
                 tx.insertMessage(
-                    RealEvakaClock().now(),
+                    now.minusSeconds(30),
                     contentId,
                     threadId,
                     employeeAccount,
@@ -318,7 +319,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             3,
             db.read {
-                it.getUnreadMessagesCounts(counts.map { counts -> counts.accountId }.toSet())
+                it.getUnreadMessagesCounts(now, counts.map { counts -> counts.accountId }.toSet())
                     .map { it.unreadCount }
                     .sum()
             }
@@ -327,6 +328,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             1,
             db.read {
                     it.getUnreadMessagesCounts(
+                        now,
                         it.getEmployeeMessageAccountIds(
                             accessControl.requireAuthorizationFilter(
                                 it,
