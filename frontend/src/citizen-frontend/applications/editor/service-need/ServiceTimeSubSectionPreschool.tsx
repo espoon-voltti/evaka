@@ -135,7 +135,8 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
         <>
           <Gap size="m" />
 
-          {featureFlags.preschoolApplication.serviceNeedOption ? (
+          {featureFlags.preschoolApplication
+            .connectedDaycarePreferredStartDate ? (
             <>
               <Label htmlFor={labelId}>
                 {t.applications.editor.serviceNeed.startDate.label['PRESCHOOL']}{' '}
@@ -174,7 +175,11 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                 required={true}
                 errorTexts={t.validationErrors}
               />
+            </>
+          ) : null}
 
+          {featureFlags.preschoolApplication.serviceNeedOption ? (
+            <>
               {[...serviceNeedOptionsByType].map(([type, options]) => (
                 <FixedSpaceColumn key={type}>
                   <Gap size="m" />

@@ -20,6 +20,7 @@ const features: Features = {
       dailyTimes: true
     },
     preschoolApplication: {
+      connectedDaycarePreferredStartDate: false,
       serviceNeedOption: false
     },
     groupsTableServiceNeeds: false,
@@ -43,6 +44,7 @@ const features: Features = {
       dailyTimes: true
     },
     preschoolApplication: {
+      connectedDaycarePreferredStartDate: false,
       serviceNeedOption: false
     },
     groupsTableServiceNeeds: false,
@@ -65,6 +67,7 @@ const features: Features = {
       dailyTimes: true
     },
     preschoolApplication: {
+      connectedDaycarePreferredStartDate: false,
       serviceNeedOption: false
     },
     groupsTableServiceNeeds: false,

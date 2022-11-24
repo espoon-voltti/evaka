@@ -109,6 +109,7 @@ interface BaseFeatureFlags {
     dailyTimes: boolean
   }
   preschoolApplication: {
+    connectedDaycarePreferredStartDate: boolean
     serviceNeedOption: boolean
   }
   groupsTableServiceNeeds: boolean
