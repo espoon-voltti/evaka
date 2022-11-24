@@ -357,8 +357,9 @@ async function citizenSendsMessageToGroup() {
   const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
   const title = 'Otsikko'
   const content = 'Testiviestin sisältö'
+  const childIds = [child.id]
   const receivers = [daycareGroup.data.name + ' (Henkilökunta)']
-  await citizenMessagesPage.sendNewMessage(title, content, receivers)
+  await citizenMessagesPage.sendNewMessage(title, content, childIds, receivers)
 }
 
 async function citizenSendsMessageToGroup2() {
@@ -366,8 +367,9 @@ async function citizenSendsMessageToGroup2() {
   const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
   const title = 'Hei ryhmä 2'
   const content = 'Testiviestin sisältö'
+  const childIds = [child2.id]
   const receivers = [daycareGroup2.data.name + ' (Henkilökunta)']
-  await citizenMessagesPage.sendNewMessage(title, content, receivers)
+  await citizenMessagesPage.sendNewMessage(title, content, childIds, receivers)
 }
 
 async function userSeesNewMessagesIndicator() {

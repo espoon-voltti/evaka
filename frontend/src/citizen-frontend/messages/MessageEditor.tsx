@@ -2,13 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import partition from 'lodash/partition'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import FocusLock from 'react-focus-lock'
 import styled from 'styled-components'
 
@@ -17,7 +12,8 @@ import { ChildrenContext } from 'citizen-frontend/children/state'
 import { Result } from 'lib-common/api'
 import {
   CitizenMessageBody,
-  GetReceiversResponse
+  GetReceiversResponse,
+  MessageAccount
 } from 'lib-common/generated/api-types/messaging'
 import { formatPreferredName } from 'lib-common/names'
 import { SelectionChip } from 'lib-components/atoms/Chip'
@@ -28,6 +24,7 @@ import InputField from 'lib-components/atoms/form/InputField'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
 import { desktopMin } from 'lib-components/breakpoints'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
+import { ToggleableRecipient } from 'lib-components/molecules/ToggleableRecipient'
 import { Bold, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
@@ -44,8 +41,17 @@ const emptyMessage: CitizenMessageBody = {
   children: []
 }
 
+const isPrimaryRecipient = ({ type }: MessageAccount) => type !== 'CITIZEN'
+
+const partitionByType = (
+  accounts: MessageAccount[]
+): { primary: MessageAccount[]; secondary: MessageAccount[] } => {
+  const [primary, secondary] = partition(accounts, isPrimaryRecipient)
+  return { primary, secondary }
+}
+
 const areRequiredFieldsFilledForMessage = (msg: CitizenMessageBody): boolean =>
-  !!(msg.recipients.length && msg.content && msg.title)
+  !!(msg.recipients.some(isPrimaryRecipient) && msg.content && msg.title)
 
 interface Props {
   receiverOptions: GetReceiversResponse
@@ -67,7 +73,19 @@ export default React.memo(function MessageEditor({
   const i18n = useTranslation()
   const user = useUser()
 
-  const [message, setMessage] = useState<CitizenMessageBody>(emptyMessage)
+  const childIds = useMemo(
+    () => Object.keys(receiverOptions.childrenToMessageAccounts),
+    [receiverOptions]
+  )
+
+  const [message, setMessage] = useState<CitizenMessageBody>(
+    childIds.length === 1
+      ? {
+          ...emptyMessage,
+          children: [childIds[0]]
+        }
+      : emptyMessage
+  )
 
   const title = message.title || i18n.messages.messageEditor.newMessage
 
@@ -76,31 +94,22 @@ export default React.memo(function MessageEditor({
 
   const { children } = useContext(ChildrenContext)
 
-  const childIds = useMemo(
-    () => Object.keys(receiverOptions.childrenToMessageAccounts),
-    [receiverOptions]
-  )
-
   const validAccounts = useMemo(() => {
     const validIds = message.children.flatMap(
       (childId) => receiverOptions.childrenToMessageAccounts[childId] ?? []
     )
-    return receiverOptions.messageAccounts.filter((account) =>
+    const accounts = receiverOptions.messageAccounts.filter((account) =>
       validIds.includes(account.id)
     )
+    return partitionByType(accounts)
   }, [message.children, receiverOptions])
 
-  useEffect(
-    function autoselectOnlyChild() {
-      if (childIds && childIds.length === 1) {
-        setMessage((message) => ({
-          ...message,
-          children: [childIds[0]]
-        }))
-      }
-    },
-    [childIds]
+  const recipients = useMemo(
+    () => partitionByType(message.recipients),
+    [message.recipients]
   )
+
+  const showSecondaryRecipientSelection = validAccounts.secondary.length > 0
 
   return (
     <ModalAccessibilityWrapper>
@@ -144,20 +153,19 @@ export default React.memo(function MessageEditor({
                                 : message.children.filter(
                                     (id) => id !== child.id
                                   )
-
+                              const recipients = message.recipients.filter(
+                                (account) =>
+                                  children.every(
+                                    (childId) =>
+                                      receiverOptions.childrenToMessageAccounts[
+                                        childId
+                                      ]?.includes(account.id) ?? false
+                                  )
+                              )
                               setMessage((message) => ({
                                 ...message,
                                 children,
-                                recipients: message.recipients.filter(
-                                  (account) =>
-                                    children.every((childId) =>
-                                      (
-                                        receiverOptions
-                                          .childrenToMessageAccounts[childId] ??
-                                        []
-                                      ).includes(account.id)
-                                    )
-                                )
+                                recipients
                               }))
                             }}
                             data-qa={`child-${child.id}`}
@@ -175,12 +183,12 @@ export default React.memo(function MessageEditor({
               <Gap size="xs" />
               <MultiSelect
                 placeholder={i18n.messages.messageEditor.search}
-                value={message.recipients}
-                options={validAccounts}
-                onChange={(change) =>
+                value={recipients.primary}
+                options={validAccounts.primary}
+                onChange={(primary) =>
                   setMessage((message) => ({
                     ...message,
-                    recipients: change
+                    recipients: [...primary, ...recipients.secondary]
                   }))
                 }
                 noOptionsMessage={i18n.messages.messageEditor.noResults}
@@ -191,7 +199,47 @@ export default React.memo(function MessageEditor({
               />
             </label>
 
+            {showSecondaryRecipientSelection && (
+              <>
+                <Gap size="xs" />
+                <div>
+                  <label>
+                    <Bold>
+                      {i18n.messages.messageEditor.secondaryRecipients}
+                    </Bold>
+                  </label>
+                  <Gap size="xs" horizontal={true} />
+                  <SecondaryRecipients>
+                    {validAccounts.secondary.map((recipient) => (
+                      <ToggleableRecipient
+                        key={recipient.id}
+                        id={recipient.id}
+                        data-qa="secondary-recipient"
+                        toggleable={true}
+                        selected={recipients.secondary.some(
+                          (acc) => acc.id === recipient.id
+                        )}
+                        name={recipient.name}
+                        onToggleRecipient={(_, selected) =>
+                          setMessage((message) => ({
+                            ...message,
+                            recipients: selected
+                              ? [...message.recipients, recipient]
+                              : message.recipients.filter(
+                                  (acc) => acc.id !== recipient.id
+                                )
+                          }))
+                        }
+                        labelAdd={i18n.common.add}
+                      />
+                    ))}
+                  </SecondaryRecipients>
+                </div>
+              </>
+            )}
+
             <Gap size="s" />
+
             <label>
               <Bold>{i18n.messages.messageEditor.subject}</Bold>
               <InputField
@@ -315,5 +363,10 @@ const BottomRow = styled.div`
   width: 100%;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+`
+
+const SecondaryRecipients = styled.span`
+  display: inline-flex;
   align-items: center;
 `

@@ -694,14 +694,14 @@ fun Database.Read.getCitizenReceivers(
 WITH user_account AS (
     SELECT * FROM message_account WHERE id = :accountId
 ), children AS (
-    SELECT g.child_id, g.guardian_id AS parent_id
+    SELECT g.child_id, g.guardian_id AS parent_id, true AS guardian_relationship
     FROM user_account acc
     JOIN guardian g ON acc.person_id = g.guardian_id
     WHERE NOT EXISTS (SELECT 1 FROM messaging_blocklist b WHERE b.child_id = g.child_id AND b.blocked_recipient = g.guardian_id)
 
     UNION ALL
 
-    SELECT fp.child_id, fp.parent_id
+    SELECT fp.child_id, fp.parent_id, false AS guardian_relationship
     FROM user_account acc
     JOIN foster_parent fp ON acc.person_id = fp.parent_id AND valid_during @> :today
     WHERE NOT EXISTS (SELECT 1 FROM messaging_blocklist b WHERE b.child_id = fp.child_id AND b.blocked_recipient = fp.parent_id)
@@ -757,10 +757,33 @@ group_accounts AS (
     JOIN daycare_group g ON g.id = p.group_id
     JOIN message_account acc on g.id = acc.daycare_group_id
 ),
+citizen_accounts AS (
+    SELECT acc.id, acc_name.name, 'CITIZEN' AS type, c.child_id
+    FROM children c
+    JOIN guardian g ON c.child_id = g.child_id
+    JOIN message_account acc ON g.guardian_id = acc.person_id
+    JOIN message_account_view acc_name ON acc_name.id = acc.id
+    WHERE NOT EXISTS (SELECT 1 FROM messaging_blocklist b WHERE b.child_id = g.child_id AND b.blocked_recipient = g.guardian_id)
+    AND acc.id != :accountId
+    AND c.guardian_relationship
+
+    UNION ALL
+
+    SELECT acc.id, acc_name.name, 'CITIZEN' AS type, c.child_id
+    FROM children c
+    JOIN foster_parent fp ON c.child_id = fp.child_id AND valid_during @> :today
+    JOIN message_account acc ON fp.parent_id = acc.person_id
+    JOIN message_account_view acc_name ON acc_name.id = acc.id
+    WHERE NOT EXISTS (SELECT 1 FROM messaging_blocklist b WHERE b.child_id = fp.child_id AND b.blocked_recipient = fp.parent_id)
+    AND acc.id != :accountId
+    AND NOT c.guardian_relationship
+),
 mixed_accounts AS (
     SELECT id, name, type, child_id FROM personal_accounts
     UNION ALL
     SELECT id, name, type, child_id FROM group_accounts
+    UNION ALL
+    SELECT id, name, type, child_id FROM citizen_accounts
 )
 SELECT id, name, type, child_id FROM mixed_accounts
 ORDER BY type, name  -- groups first

@@ -184,7 +184,7 @@ class MessageControllerCitizen(
                         .mapValues { entry -> entry.value.map { it.id }.toSet() }
                 val allReceiversValid =
                     body.recipients.all { recipient ->
-                        body.children.any { child ->
+                        body.children.all { child ->
                             validReceivers[child]?.contains(recipient.id) ?: false
                         }
                     }

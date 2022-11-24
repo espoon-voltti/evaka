@@ -368,6 +368,7 @@ const sv: Translations = {
     messageEditor: {
       newMessage: 'Nytt Meddelande',
       recipients: 'Mottagare',
+      secondaryRecipients: 'Andra mottagare',
       children: 'Meddelandet angår',
       subject: 'Ämne',
       message: 'Meddelande',

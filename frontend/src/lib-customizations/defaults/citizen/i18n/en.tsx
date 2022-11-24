@@ -371,6 +371,7 @@ const en: Translations = {
     messageEditor: {
       newMessage: 'New message',
       recipients: 'Recipients',
+      secondaryRecipients: 'Other recipients',
       children: 'The message is regarding',
       subject: 'Subject',
       message: 'Message',

@@ -138,11 +138,23 @@ export default class CitizenMessagesPage {
     }
   }
 
-  async sendNewMessage(title: string, content: string, recipients: string[]) {
+  async sendNewMessage(
+    title: string,
+    content: string,
+    childIds: string[],
+    recipients: string[]
+  ) {
     await this.clickNewMessage()
-    await this.typeMessage(title, content)
+    if (childIds.length > 0) {
+      await this.selectMessageChildren(childIds)
+    }
     await this.selectNewMessageRecipients(recipients)
+    await this.typeMessage(title, content)
     await this.clickSendMessage()
     await waitUntilTrue(() => this.getThreadCount().then((count) => count > 0))
+  }
+
+  secondaryRecipient(name: string) {
+    return this.page.find(`[data-qa="secondary-recipient"]`, { hasText: name })
   }
 }
