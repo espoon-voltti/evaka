@@ -245,7 +245,7 @@ fun Database.Transaction.upsertReceiverThreadParticipants(
         prepareBatch(
             """
         INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_received_timestamp)
-        VALUES (:threadId, :accountId, :now, :now)
+        SELECT id, :accountId, :now, :now FROM message_thread WHERE id = :threadId
         ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = :now, last_received_timestamp = :now
     """
         )
