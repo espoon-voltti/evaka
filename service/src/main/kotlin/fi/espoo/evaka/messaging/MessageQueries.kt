@@ -1262,3 +1262,20 @@ WHERE thread_id = :threadId AND participant_id = :senderId
         .bind("senderId", senderId)
         .execute()
 }
+
+fun Database.Read.messageForRecipientExists(
+    messageId: MessageId,
+    recipientId: MessageAccountId
+): Boolean {
+    return createQuery<Boolean> {
+            sql(
+                """
+SELECT EXISTS (
+    SELECT * FROM message_recipients WHERE message_id = ${bind(messageId)} AND recipient_id = ${bind(recipientId)}
+)
+"""
+            )
+        }
+        .mapTo<Boolean>()
+        .first()
+}

@@ -41,6 +41,7 @@ class MessageNotificationEmailService(
             SELECT DISTINCT
                 m.thread_id,
                 mr.id as message_recipient_id,
+                mr.recipient_id,
                 p.id as person_id,
                 p.email as person_email,
                 coalesce(lower(p.language), 'fi') as language,
@@ -61,7 +62,9 @@ class MessageNotificationEmailService(
             .map { row ->
                 AsyncJob.SendMessageNotificationEmail(
                     threadId = row.mapColumn("thread_id"),
+                    messageId = messageId,
                     messageRecipientId = row.mapColumn("message_recipient_id"),
+                    recipientId = row.mapColumn("recipient_id"),
                     personEmail = row.mapColumn("person_email"),
                     language = getLanguage(row.mapColumn("language")),
                     urgent = row.mapColumn("urgent")
@@ -70,11 +73,15 @@ class MessageNotificationEmailService(
             .toList()
     }
 
-    fun scheduleSendingMessageNotifications(tx: Database.Transaction, messageId: MessageId) {
+    fun scheduleSendingMessageNotifications(
+        tx: Database.Transaction,
+        messageId: MessageId,
+        runAt: HelsinkiDateTime
+    ) {
         asyncJobRunner.plan(
             tx,
             payloads = getMessageNotifications(tx, messageId),
-            runAt = HelsinkiDateTime.now(),
+            runAt = runAt,
             retryCount = 10
         )
     }
@@ -92,9 +99,20 @@ class MessageNotificationEmailService(
         clock: EvakaClock,
         msg: AsyncJob.SendMessageNotificationEmail
     ) {
-        val (threadId, messageRecipientId, personEmail, language, urgent) = msg
+        val (threadId, messageId, recipientId, messageRecipientId, personEmail, language, urgent) =
+            msg
 
         db.transaction { tx ->
+            // The message has been undone and the recipient should no longer get an email
+            // notification
+            if (
+                messageId != null &&
+                    recipientId != null &&
+                    !tx.messageForRecipientExists(messageId, recipientId)
+            ) {
+                return@transaction
+            }
+
             emailClient.sendEmail(
                 traceId = messageRecipientId.toString(),
                 toAddress = personEmail,
