@@ -1658,7 +1658,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
         ),
         READ_MISSING_SERVICE_NEED_REPORT(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
         ),
         READ_OCCUPANCY_REPORT(
