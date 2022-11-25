@@ -72,7 +72,11 @@ class MessageService(
                     municipalAccountName = municipalAccountName
                 )
             tx.insertRecipients(recipientIds, messageId)
-            notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)
+            notificationEmailService.scheduleSendingMessageNotifications(
+                tx,
+                messageId,
+                now.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5)
+            )
         }
 
         if (staffCopyRecipients.isNotEmpty()) {
@@ -142,7 +146,11 @@ class MessageService(
                         municipalAccountName = municipalAccountName
                     )
                 tx.insertRecipients(recipientAccountIds, messageId)
-                notificationEmailService.scheduleSendingMessageNotifications(tx, messageId)
+                notificationEmailService.scheduleSendingMessageNotifications(
+                    tx,
+                    messageId,
+                    now.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5)
+                )
                 tx.getSentMessage(senderAccount, messageId)
             }
         return ThreadReply(threadId, message)

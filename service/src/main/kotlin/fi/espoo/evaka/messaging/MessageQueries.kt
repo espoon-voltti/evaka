@@ -245,7 +245,7 @@ fun Database.Transaction.upsertReceiverThreadParticipants(
         prepareBatch(
             """
         INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_received_timestamp)
-        VALUES (:threadId, :accountId, :now, :now)
+        SELECT id, :accountId, :now, :now FROM message_thread WHERE id = :threadId
         ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = :now, last_received_timestamp = :now
     """
         )
@@ -1261,4 +1261,21 @@ WHERE thread_id = :threadId AND participant_id = :senderId
         .bind("threadId", threadId)
         .bind("senderId", senderId)
         .execute()
+}
+
+fun Database.Read.messageForRecipientExists(
+    messageId: MessageId,
+    recipientId: MessageAccountId
+): Boolean {
+    return createQuery<Boolean> {
+            sql(
+                """
+SELECT EXISTS (
+    SELECT * FROM message_recipients WHERE message_id = ${bind(messageId)} AND recipient_id = ${bind(recipientId)}
+)
+"""
+            )
+        }
+        .mapTo<Boolean>()
+        .first()
 }
