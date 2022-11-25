@@ -1145,6 +1145,7 @@ export default React.memo(function ApplicationEditView({
           <DatePickerDeprecated
             date={application.dueDate || undefined}
             onChange={(value) => setApplication(set('dueDate', value))}
+            data-qa="due-date"
           />
         }
       />

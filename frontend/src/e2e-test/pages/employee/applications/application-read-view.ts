@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { DecisionType } from 'lib-common/generated/api-types/decision'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../../config'
@@ -151,6 +152,13 @@ export default class ApplicationReadView {
 
   async assertApplicantIsDead() {
     await this.page.find('[data-qa="applicant-dead"]').waitUntilVisible()
+  }
+
+  async assertDueDate(dueDate: LocalDate) {
+    await waitUntilEqual(
+      () => this.page.findByDataQa('application-due-date').textContent,
+      dueDate.format()
+    )
   }
 
   async startEditing(): Promise<ApplicationEditView> {
