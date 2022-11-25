@@ -12,6 +12,7 @@ object Version {
     const val flyingSaucer = "9.1.22"
     const val fuel = "2.3.1"
     const val mockito = "4.9.0"
+    const val openTracing = "0.33.0"
 }
 
 repositories {
@@ -33,6 +34,8 @@ dependencies {
         api("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:3.4.1")
         api("io.github.microutils:kotlin-logging-jvm:2.1.23")
         api("io.javalin:javalin:4.6.4")
+        api("io.opentracing:opentracing-api:${Version.openTracing}")
+        api("io.opentracing:opentracing-util:${Version.openTracing}")
         api("javax.annotation:javax.annotation-api:1.3.2")
         api("javax.jws:javax.jws-api:1.1")
         api("javax.xml.ws:jaxws-api:2.3.1")

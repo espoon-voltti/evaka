@@ -130,6 +130,8 @@ dependencies {
     // Miscellaneous
     implementation("com.github.kagkarlsson:db-scheduler")
     implementation("com.auth0:java-jwt")
+    implementation("io.opentracing:opentracing-api")
+    implementation("io.opentracing:opentracing-util")
     implementation("javax.annotation:javax.annotation-api")
     implementation("org.apache.commons:commons-pool2")
     implementation("org.apache.commons:commons-text")

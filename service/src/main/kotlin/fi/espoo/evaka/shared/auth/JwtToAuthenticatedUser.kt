@@ -4,8 +4,10 @@
 
 package fi.espoo.evaka.shared.auth
 
+import fi.espoo.evaka.shared.Tracing
 import fi.espoo.voltti.auth.getDecodedJwt
 import fi.espoo.voltti.logging.MdcKey
+import io.opentracing.Tracer
 import javax.servlet.FilterChain
 import javax.servlet.http.HttpFilter
 import javax.servlet.http.HttpServletRequest
@@ -18,7 +20,7 @@ fun HttpServletRequest.getAuthenticatedUser(): AuthenticatedUser? =
 
 fun HttpServletRequest.setAuthenticatedUser(user: AuthenticatedUser) = setAttribute(ATTR_USER, user)
 
-class JwtToAuthenticatedUser : HttpFilter() {
+class JwtToAuthenticatedUser(private val tracer: Tracer) : HttpFilter() {
     override fun doFilter(
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -28,6 +30,7 @@ class JwtToAuthenticatedUser : HttpFilter() {
 
         if (user != null) {
             request.setAuthenticatedUser(user)
+            tracer.activeSpan()?.setTag(Tracing.enduserIdHash, user.rawIdHash.toString())
             MdcKey.USER_ID.set(user.rawId().toString())
             MdcKey.USER_ID_HASH.set(user.rawIdHash.toString())
         }
