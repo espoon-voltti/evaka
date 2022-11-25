@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { OtherGuardianAgreementStatus } from 'lib-common/generated/api-types/application'
+import LocalDate from 'lib-common/local-date'
 
 import { waitUntilEqual, waitUntilFalse } from '../../../utils'
 import {
@@ -70,6 +71,12 @@ export default class ApplicationEditView {
       return
     }
     await this.#urgentCheckbox.click()
+  }
+
+  async setDueDate(date: LocalDate) {
+    await new DatePickerDeprecated(this.page.findByDataQa('due-date')).fill(
+      date.format()
+    )
   }
 
   async uploadUrgentAttachment(filePath: string) {

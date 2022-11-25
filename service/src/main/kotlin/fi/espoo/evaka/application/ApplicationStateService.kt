@@ -243,13 +243,14 @@ class ApplicationStateService(
 
         val sentDate = application.sentDate ?: currentDate
         val dueDate =
-            calculateDueDate(
-                application.type,
-                sentDate,
-                application.form.preferences.urgent,
-                applicationFlags.isTransferApplication,
-                application.attachments
-            )
+            application.dueDate
+                ?: calculateDueDate(
+                    application.type,
+                    sentDate,
+                    application.form.preferences.urgent,
+                    applicationFlags.isTransferApplication,
+                    application.attachments
+                )
         tx.updateApplicationDates(application.id, sentDate, dueDate)
 
         tx.getPersonById(application.guardianId)?.let {

@@ -142,4 +142,22 @@ describe('Employee - paper application', () => {
     const applicationViewPage = await applicationEditPage.saveApplication()
     await applicationViewPage.waitUntilLoaded()
   })
+
+  test('Paper application due date is saved on submit', async () => {
+    const applicationEditPage = await createApplicationModal.submit()
+    await applicationEditPage.fillStartDate(
+      LocalDate.todayInSystemTz().format()
+    )
+    await applicationEditPage.fillTimes()
+    await applicationEditPage.pickUnit(fixtures.daycareFixture.name)
+    await applicationEditPage.fillApplicantPhoneAndEmail(
+      '123456',
+      'email@evaka.test'
+    )
+    const dueDate = LocalDate.todayInSystemTz().addDays(7)
+    await applicationEditPage.setDueDate(dueDate)
+    const applicationViewPage = await applicationEditPage.saveApplication()
+    await applicationViewPage.waitUntilLoaded()
+    await applicationViewPage.assertDueDate(dueDate)
+  })
 })
