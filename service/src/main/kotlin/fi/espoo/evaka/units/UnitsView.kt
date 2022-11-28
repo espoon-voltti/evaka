@@ -189,31 +189,47 @@ class UnitsView(private val accessControl: AccessControl) {
                             unitChildrenCapacityFactors = capacities
                         )
 
+                    val dataWithOccupancies =
+                        if (
+                            accessControl.hasPermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Unit.READ_OCCUPANCIES,
+                                unitId
+                            )
+                        ) {
+                            val unitOccupancies =
+                                getUnitOccupancies(
+                                    tx,
+                                    clock.now(),
+                                    unitId,
+                                    period,
+                                    AccessControlFilter.PermitAll
+                                )
+                            val groupOccupancies =
+                                getGroupOccupancies(
+                                    tx,
+                                    clock.today(),
+                                    unitId,
+                                    period,
+                                    AccessControlFilter.PermitAll
+                                )
+                            basicData.copy(
+                                unitOccupancies = unitOccupancies,
+                                groupOccupancies = groupOccupancies
+                            )
+                        } else basicData
+
                     if (
                         accessControl.hasPermissionFor(
                             tx,
                             user,
                             clock,
-                            Action.Unit.READ_DETAILED,
+                            Action.Unit.READ_APPLICATIONS_AND_PLACEMENT_PLANS,
                             unitId
                         )
                     ) {
-                        val unitOccupancies =
-                            getUnitOccupancies(
-                                tx,
-                                clock.now(),
-                                unitId,
-                                period,
-                                AccessControlFilter.PermitAll
-                            )
-                        val groupOccupancies =
-                            getGroupOccupancies(
-                                tx,
-                                clock.today(),
-                                unitId,
-                                period,
-                                AccessControlFilter.PermitAll
-                            )
                         val placementProposals =
                             tx.getPlacementPlans(
                                 clock.today(),
@@ -236,15 +252,13 @@ class UnitsView(private val accessControl: AccessControl) {
                             )
                         val applications = tx.getApplicationUnitSummaries(unitId)
 
-                        basicData.copy(
-                            unitOccupancies = unitOccupancies,
-                            groupOccupancies = groupOccupancies,
+                        dataWithOccupancies.copy(
                             placementProposals = placementProposals,
                             placementPlans = placementPlans,
                             applications = applications
                         )
                     } else {
-                        basicData
+                        dataWithOccupancies
                     }
                 }
             }

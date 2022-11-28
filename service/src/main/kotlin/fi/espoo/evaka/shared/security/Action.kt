@@ -1490,7 +1490,10 @@ sealed interface Action {
                 )
                 .inUnit()
         ), // marker for ui to toggle attendances-tab
-        READ_DETAILED(HasGlobalRole(ADMIN, SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
+        READ_APPLICATIONS_AND_PLACEMENT_PLANS(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR).inUnit()
+        ),
         READ_GROUPS(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(
@@ -1551,7 +1554,7 @@ sealed interface Action {
         ),
         READ_OCCUPANCIES(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inUnit(),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inUnit(),
             IsMobile(requirePinLogin = false).inUnit()
         ),
         READ_ATTENDANCE_RESERVATIONS(

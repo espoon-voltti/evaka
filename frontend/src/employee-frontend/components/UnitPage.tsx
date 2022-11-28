@@ -117,7 +117,8 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const tabs = useMemo(
     () => [
       ...(unitInformation.isSuccess &&
-      (unitInformation.value.permittedActions.has('READ_ATTENDANCES') ||
+      (unitInformation.value.permittedActions.has('READ_OCCUPANCIES') ||
+        unitInformation.value.permittedActions.has('READ_ATTENDANCES') ||
         unitInformation.value.permittedActions.has('READ_CALENDAR_EVENTS'))
         ? [
             {
@@ -136,7 +137,9 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
           .getOrElse(undefined)
       },
       ...(unitInformation.isSuccess &&
-      unitInformation.value.permittedActions.has('READ_DETAILED')
+      unitInformation.value.permittedActions.has(
+        'READ_APPLICATIONS_AND_PLACEMENT_PLANS'
+      )
         ? [
             {
               id: 'application-process',
