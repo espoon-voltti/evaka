@@ -167,6 +167,14 @@ export interface CaretakerRequest {
 }
 
 /**
+* Generated from fi.espoo.evaka.daycare.service.Caretakers
+*/
+export interface Caretakers {
+  maximum: number
+  minimum: number
+}
+
+/**
 * Generated from fi.espoo.evaka.daycare.controllers.DaycareController.CaretakersResponse
 */
 export interface CaretakersResponse {
@@ -482,14 +490,6 @@ export interface StaffAttendanceUpdate {
   countOther: number | null
   date: LocalDate
   groupId: UUID
-}
-
-/**
-* Generated from fi.espoo.evaka.daycare.service.Stats
-*/
-export interface Stats {
-  maximum: number
-  minimum: number
 }
 
 /**

@@ -7,6 +7,7 @@
 
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
+import { Caretakers } from './daycare'
 import { UUID } from '../../types'
 
 /**
@@ -119,4 +120,15 @@ export interface StaffOccupancyAttendance {
   arrived: HelsinkiDateTime
   capacity: number
   departed: HelsinkiDateTime | null
+}
+
+/**
+* Generated from fi.espoo.evaka.occupancy.UnitOccupancies
+*/
+export interface UnitOccupancies {
+  caretakers: Caretakers
+  confirmed: OccupancyResponse
+  planned: OccupancyResponse
+  realized: OccupancyResponse
+  realtime: RealtimeOccupancy | null
 }

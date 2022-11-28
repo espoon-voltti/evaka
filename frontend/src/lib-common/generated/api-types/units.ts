@@ -7,23 +7,21 @@
 
 import { Action } from '../action'
 import { ApplicationUnitSummary } from './application'
+import { Caretakers } from './daycare'
 import { DaycareGroup } from './daycare'
 import { DaycarePlacementWithDetails } from './placement'
 import { MissingGroupPlacement } from './placement'
 import { OccupancyResponse } from './occupancy'
 import { PlacementPlanDetails } from './placement'
-import { RealtimeOccupancy } from './occupancy'
-import { Stats } from './daycare'
 import { TerminatedPlacement } from './placement'
 import { UnitBackupCare } from './backupcare'
 import { UnitChildrenCapacityFactors } from './placement'
 
 /**
-* Generated from fi.espoo.evaka.units.Caretakers
+* Generated from fi.espoo.evaka.units.GroupCaretakers
 */
-export interface Caretakers {
-  groupCaretakers: Record<string, Stats>
-  unitCaretakers: Stats
+export interface GroupCaretakers {
+  groupCaretakers: Record<string, Caretakers>
 }
 
 /**
@@ -40,7 +38,7 @@ export interface GroupOccupancies {
 export interface UnitDataResponse {
   applications: ApplicationUnitSummary[] | null
   backupCares: UnitBackupCare[]
-  caretakers: Caretakers
+  caretakers: GroupCaretakers
   groupOccupancies: GroupOccupancies | null
   groups: DaycareGroup[]
   missingGroupPlacements: MissingGroupPlacement[]
@@ -52,15 +50,4 @@ export interface UnitDataResponse {
   placements: DaycarePlacementWithDetails[]
   recentlyTerminatedPlacements: TerminatedPlacement[]
   unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]
-  unitOccupancies: UnitOccupancies | null
-}
-
-/**
-* Generated from fi.espoo.evaka.units.UnitOccupancies
-*/
-export interface UnitOccupancies {
-  confirmed: OccupancyResponse
-  planned: OccupancyResponse
-  realized: OccupancyResponse
-  realtime: RealtimeOccupancy | null
 }

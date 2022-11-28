@@ -17,13 +17,15 @@ import { ApplicationUnitSummary } from 'lib-common/generated/api-types/applicati
 import { AttendancesRequest } from 'lib-common/generated/api-types/attendance'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import {
+  Caretakers,
   CreateDaycareResponse,
   DaycareFields
 } from 'lib-common/generated/api-types/daycare'
 import {
   OccupancyPeriod,
   OccupancyResponse,
-  OccupancyResponseSpeculated
+  OccupancyResponseSpeculated,
+  UnitOccupancies
 } from 'lib-common/generated/api-types/occupancy'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
 import {
@@ -32,11 +34,7 @@ import {
 } from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
-import {
-  Caretakers,
-  GroupOccupancies,
-  UnitOccupancies
-} from 'lib-common/generated/api-types/units'
+import { GroupOccupancies } from 'lib-common/generated/api-types/units'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
@@ -111,7 +109,7 @@ export type UnitData = {
   groups: DaycareGroup[]
   placements: DaycarePlacement[]
   backupCares: UnitBackupCare[]
-  caretakers: Caretakers
+  caretakers: { groupCaretakers: Record<UUID, Caretakers> }
   unitOccupancies?: UnitOccupancies
   groupOccupancies?: GroupOccupancies
   missingGroupPlacements: MissingGroupPlacement[]
@@ -192,6 +190,18 @@ export async function getUnitData(
     console.error(e)
     return Failure.fromError(e)
   }
+}
+
+export function getUnitOccupancies(
+  id: UUID,
+  from: LocalDate,
+  to: LocalDate
+): Promise<Result<UnitOccupancies>> {
+  return client
+    .get<JsonOf<UnitOccupancies>>(`/occupancy/units/${id}`, {
+      params: { from: from.formatIso(), to: to.formatIso() }
+    })
+    .then((res) => Success.of(mapUnitOccupancyJson(res.data)))
 }
 
 function mapGroupJson(data: JsonOf<DaycareGroup>): DaycareGroup {
@@ -340,7 +350,8 @@ function mapUnitOccupancyJson(data: JsonOf<UnitOccupancies>): UnitOccupancies {
             time: HelsinkiDateTime.parseIso(dataPoint.time)
           }))
         }
-      : null
+      : null,
+    caretakers: data.caretakers
   }
 }
 

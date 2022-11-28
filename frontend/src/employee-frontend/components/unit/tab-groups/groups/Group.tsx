@@ -13,7 +13,7 @@ import { Loading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { Stats } from 'lib-common/generated/api-types/daycare'
+import { Caretakers } from 'lib-common/generated/api-types/daycare'
 import {
   ChildDailyNote,
   NotesByGroupResponse
@@ -78,7 +78,7 @@ interface Props {
   unit: Unit
   filters: UnitFilters
   group: GroupWithDetails
-  caretakers?: Stats
+  caretakers?: Caretakers
   confirmedOccupancy?: OccupancyResponse
   realizedOccupancy?: OccupancyResponse
   unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]

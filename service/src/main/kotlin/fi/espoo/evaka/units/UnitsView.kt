@@ -12,18 +12,13 @@ import fi.espoo.evaka.backupcare.UnitBackupCare
 import fi.espoo.evaka.backupcare.getBackupCaresForDaycare
 import fi.espoo.evaka.daycare.getDaycareGroups
 import fi.espoo.evaka.daycare.getGroupStats
-import fi.espoo.evaka.daycare.getUnitStats
+import fi.espoo.evaka.daycare.service.Caretakers
 import fi.espoo.evaka.daycare.service.DaycareGroup
-import fi.espoo.evaka.daycare.service.Stats
 import fi.espoo.evaka.occupancy.OccupancyPeriod
 import fi.espoo.evaka.occupancy.OccupancyPeriodGroupLevel
 import fi.espoo.evaka.occupancy.OccupancyResponse
 import fi.espoo.evaka.occupancy.OccupancyType
-import fi.espoo.evaka.occupancy.RealtimeOccupancy
-import fi.espoo.evaka.occupancy.calculateOccupancyPeriods
 import fi.espoo.evaka.occupancy.calculateOccupancyPeriodsGroupLevel
-import fi.espoo.evaka.occupancy.getChildOccupancyAttendances
-import fi.espoo.evaka.occupancy.getStaffOccupancyAttendances
 import fi.espoo.evaka.placement.DaycarePlacementWithDetails
 import fi.espoo.evaka.placement.MissingGroupPlacement
 import fi.espoo.evaka.placement.PlacementPlanDetails
@@ -43,13 +38,10 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
-import java.time.LocalTime
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -121,10 +113,7 @@ class UnitsView(private val accessControl: AccessControl) {
                             emptyList()
                         }
                     val caretakers =
-                        Caretakers(
-                            unitCaretakers = tx.getUnitStats(unitId, from, to),
-                            groupCaretakers = tx.getGroupStats(unitId, from, to)
-                        )
+                        GroupCaretakers(groupCaretakers = tx.getGroupStats(unitId, from, to))
                     val backupCareIds =
                         backupCares.map { it.id }.toSet() +
                             missingGroupPlacements
@@ -199,14 +188,6 @@ class UnitsView(private val accessControl: AccessControl) {
                                 unitId
                             )
                         ) {
-                            val unitOccupancies =
-                                getUnitOccupancies(
-                                    tx,
-                                    clock.now(),
-                                    unitId,
-                                    period,
-                                    AccessControlFilter.PermitAll
-                                )
                             val groupOccupancies =
                                 getGroupOccupancies(
                                     tx,
@@ -215,10 +196,7 @@ class UnitsView(private val accessControl: AccessControl) {
                                     period,
                                     AccessControlFilter.PermitAll
                                 )
-                            basicData.copy(
-                                unitOccupancies = unitOccupancies,
-                                groupOccupancies = groupOccupancies
-                            )
+                            basicData.copy(groupOccupancies = groupOccupancies)
                         } else basicData
 
                     if (
@@ -272,8 +250,7 @@ data class UnitDataResponse(
     val backupCares: List<UnitBackupCare>,
     val missingGroupPlacements: List<MissingGroupPlacement>,
     val recentlyTerminatedPlacements: List<TerminatedPlacement>,
-    val caretakers: Caretakers,
-    val unitOccupancies: UnitOccupancies? = null,
+    val caretakers: GroupCaretakers,
     val groupOccupancies: GroupOccupancies? = null,
     val placementProposals: List<PlacementPlanDetails>? = null,
     val placementPlans: List<PlacementPlanDetails>? = null,
@@ -284,81 +261,7 @@ data class UnitDataResponse(
     val unitChildrenCapacityFactors: List<UnitChildrenCapacityFactors>
 )
 
-data class Caretakers(val unitCaretakers: Stats, val groupCaretakers: Map<GroupId, Stats>)
-
-data class UnitOccupancies(
-    val planned: OccupancyResponse,
-    val confirmed: OccupancyResponse,
-    val realized: OccupancyResponse,
-    val realtime: RealtimeOccupancy?
-)
-
-private fun getUnitOccupancies(
-    tx: Database.Read,
-    now: HelsinkiDateTime,
-    unitId: DaycareId,
-    period: FiniteDateRange,
-    unitFilter: AccessControlFilter<DaycareId>
-): UnitOccupancies {
-    return UnitOccupancies(
-        planned =
-            getOccupancyResponse(
-                tx.calculateOccupancyPeriods(
-                    now.toLocalDate(),
-                    unitId,
-                    period,
-                    OccupancyType.PLANNED,
-                    unitFilter
-                )
-            ),
-        confirmed =
-            getOccupancyResponse(
-                tx.calculateOccupancyPeriods(
-                    now.toLocalDate(),
-                    unitId,
-                    period,
-                    OccupancyType.CONFIRMED,
-                    unitFilter
-                )
-            ),
-        realized =
-            getOccupancyResponse(
-                tx.calculateOccupancyPeriods(
-                    now.toLocalDate(),
-                    unitId,
-                    period,
-                    OccupancyType.REALIZED,
-                    unitFilter
-                )
-            ),
-        realtime =
-            if (period.start == period.end) {
-                val queryTimeRange =
-                    if (period.start == now.toLocalDate()) {
-                        HelsinkiDateTimeRange(now.minusHours(16), now)
-                    } else {
-                        HelsinkiDateTimeRange(
-                            HelsinkiDateTime.of(period.start, LocalTime.of(0, 0)),
-                            HelsinkiDateTime.of(period.start.plusDays(1), LocalTime.of(0, 0))
-                        )
-                    }
-                RealtimeOccupancy(
-                    childAttendances = tx.getChildOccupancyAttendances(unitId, queryTimeRange),
-                    staffAttendances = tx.getStaffOccupancyAttendances(unitId, queryTimeRange)
-                )
-            } else {
-                null
-            }
-    )
-}
-
-private fun getOccupancyResponse(occupancies: List<OccupancyPeriod>): OccupancyResponse {
-    return OccupancyResponse(
-        occupancies = occupancies,
-        max = occupancies.filter { it.percentage != null }.maxByOrNull { it.percentage!! },
-        min = occupancies.filter { it.percentage != null }.minByOrNull { it.percentage!! }
-    )
-}
+data class GroupCaretakers(val groupCaretakers: Map<GroupId, Caretakers>)
 
 data class GroupOccupancies(
     val confirmed: Map<GroupId, OccupancyResponse>,

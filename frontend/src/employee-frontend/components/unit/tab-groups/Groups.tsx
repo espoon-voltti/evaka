@@ -9,7 +9,7 @@ import styled from 'styled-components'
 
 import { Action } from 'lib-common/generated/action'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { Stats } from 'lib-common/generated/api-types/daycare'
+import { Caretakers } from 'lib-common/generated/api-types/daycare'
 import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
 import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -48,7 +48,7 @@ function renderGroups(
   permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>,
   permittedGroupPlacementActions: Record<UUID, Set<Action.GroupPlacement>>,
   backupCares: UnitBackupCare[],
-  groupCaretakers: Record<string, Stats>,
+  groupCaretakers: Record<string, Caretakers>,
   reload: () => void,
   onTransferRequested: (
     placement: DaycareGroupPlacementDetailed | UnitBackupCare
@@ -109,7 +109,7 @@ type Props = {
   placements: DaycarePlacement[]
   backupCares: UnitBackupCare[]
   groupPermittedActions: Record<UUID, Set<Action.Group> | undefined>
-  groupCaretakers: Record<string, Stats>
+  groupCaretakers: Record<string, Caretakers>
   groupConfirmedOccupancies?: Record<string, OccupancyResponse>
   groupRealizedOccupancies?: Record<string, OccupancyResponse>
   reloadUnitData: () => void

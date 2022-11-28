@@ -4,7 +4,7 @@
 
 package fi.espoo.evaka.daycare
 
-import fi.espoo.evaka.daycare.service.Stats
+import fi.espoo.evaka.daycare.service.Caretakers
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.db.Database
@@ -24,7 +24,11 @@ fun Database.Transaction.initCaretakers(groupId: GroupId, startDate: LocalDate, 
         .execute()
 }
 
-fun Database.Read.getUnitStats(unitId: DaycareId, startDate: LocalDate, endDate: LocalDate): Stats {
+fun Database.Read.getUnitStats(
+    unitId: DaycareId,
+    startDate: LocalDate,
+    endDate: LocalDate
+): Caretakers {
     if (startDate.isBefore(endDate.minusYears(5))) {
         throw BadRequest("Too long time range")
     }
@@ -51,7 +55,7 @@ fun Database.Read.getUnitStats(unitId: DaycareId, startDate: LocalDate, endDate:
         .bind("unitId", unitId)
         .bind("startDate", startDate)
         .bind("endDate", endDate)
-        .mapTo<Stats>()
+        .mapTo<Caretakers>()
         .first()
 }
 
@@ -59,7 +63,7 @@ fun Database.Read.getGroupStats(
     unitId: DaycareId,
     startDate: LocalDate,
     endDate: LocalDate
-): Map<GroupId, Stats> {
+): Map<GroupId, Caretakers> {
     // language=SQL
     val sql =
         """
@@ -85,4 +89,4 @@ fun Database.Read.getGroupStats(
         .toMap()
 }
 
-private data class GroupStats(val groupId: GroupId, @Nested val stats: Stats)
+private data class GroupStats(val groupId: GroupId, @Nested val stats: Caretakers)
