@@ -19,10 +19,12 @@ import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonJSON
 import fi.espoo.evaka.pis.service.PersonService
 import fi.espoo.evaka.placement.PlacementPlanConfirmationStatus
+import fi.espoo.evaka.placement.PlacementPlanDetails
 import fi.espoo.evaka.placement.PlacementPlanDraft
 import fi.espoo.evaka.placement.PlacementPlanRejectReason
 import fi.espoo.evaka.placement.PlacementPlanService
 import fi.espoo.evaka.placement.getPlacementPlanUnitName
+import fi.espoo.evaka.placement.getPlacementPlans
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -759,6 +761,53 @@ class ApplicationControllerV2(
         val actionFn = simpleActions[action] ?: throw NotFound("Action not recognized")
         db.connect { dbc -> dbc.transaction { actionFn.invoke(it, user, clock, applicationId) } }
     }
+
+    @GetMapping("/units/{unitId}")
+    fun getUnitApplications(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable unitId: DaycareId
+    ): UnitApplications {
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.hasPermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_APPLICATIONS_AND_PLACEMENT_PLANS,
+                        unitId
+                    )
+                    val placementProposals =
+                        tx.getPlacementPlans(
+                            clock.today(),
+                            unitId,
+                            null,
+                            null,
+                            listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION)
+                        )
+                    val placementPlans =
+                        tx.getPlacementPlans(
+                            clock.today(),
+                            unitId,
+                            null,
+                            null,
+                            listOf(
+                                ApplicationStatus.WAITING_CONFIRMATION,
+                                ApplicationStatus.WAITING_MAILING,
+                                ApplicationStatus.REJECTED
+                            )
+                        )
+                    val applications = tx.getApplicationUnitSummaries(unitId)
+                    UnitApplications(
+                        placementProposals = placementProposals,
+                        placementPlans = placementPlans,
+                        applications = applications
+                    )
+                }
+            }
+            .also { Audit.UnitApplicationsRead.log(targetId = unitId) }
+    }
 }
 
 data class PaperApplicationCreateRequest(
@@ -835,4 +884,10 @@ data class GuardianInfo(
     val firstName: String,
     val lastName: String,
     val isVtjGuardian: Boolean
+)
+
+data class UnitApplications(
+    val placementProposals: List<PlacementPlanDetails>,
+    val placementPlans: List<PlacementPlanDetails>,
+    val applications: List<ApplicationUnitSummary>
 )

@@ -13,13 +13,17 @@ import {
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
-import { ApplicationUnitSummary } from 'lib-common/generated/api-types/application'
+import {
+  ApplicationUnitSummary,
+  UnitApplications
+} from 'lib-common/generated/api-types/application'
 import { AttendancesRequest } from 'lib-common/generated/api-types/attendance'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import {
   Caretakers,
   CreateDaycareResponse,
-  DaycareFields
+  DaycareFields,
+  UnitNotifications
 } from 'lib-common/generated/api-types/daycare'
 import {
   OccupancyPeriod,
@@ -114,9 +118,6 @@ export type UnitData = {
   groupOccupancies?: GroupOccupancies
   missingGroupPlacements: MissingGroupPlacement[]
   recentlyTerminatedPlacements: TerminatedPlacement[]
-  placementProposals?: PlacementPlanDetails[]
-  placementPlans?: PlacementPlanDetails[]
-  applications?: ApplicationUnitSummary[]
   permittedPlacementActions: Record<UUID, Set<Action.Placement>>
   permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>
   permittedGroupPlacementActions: Record<UUID, Set<Action.GroupPlacement>>
@@ -154,25 +155,6 @@ export async function getUnitData(
       groupOccupancies:
         response.data.groupOccupancies &&
         mapGroupOccupancyJson(response.data.groupOccupancies),
-      placementProposals:
-        response.data.placementProposals?.map(mapPlacementPlanJson),
-      placementPlans: response.data.placementPlans?.map(mapPlacementPlanJson),
-      applications: response.data.applications
-        ?.map(mapApplicationsJson)
-        .sort((applicationA, applicationB) => {
-          const lastNameCmp = applicationA.lastName.localeCompare(
-            applicationB.lastName,
-            'fi',
-            { ignorePunctuation: true }
-          )
-          return lastNameCmp !== 0
-            ? lastNameCmp
-            : applicationA.firstName.localeCompare(
-                applicationB.firstName,
-                'fi',
-                { ignorePunctuation: true }
-              )
-        }),
       permittedPlacementActions: mapValues(
         response.data.permittedPlacementActions,
         (actions) => new Set(actions)
@@ -192,6 +174,14 @@ export async function getUnitData(
   }
 }
 
+export function getUnitNotifications(
+  id: UUID
+): Promise<Result<UnitNotifications>> {
+  return client
+    .get<JsonOf<UnitNotifications>>(`/daycares/${id}/notifications`)
+    .then((res) => Success.of(res.data))
+}
+
 export function getUnitOccupancies(
   id: UUID,
   from: LocalDate,
@@ -202,6 +192,14 @@ export function getUnitOccupancies(
       params: { from: from.formatIso(), to: to.formatIso() }
     })
     .then((res) => Success.of(mapUnitOccupancyJson(res.data)))
+}
+
+export function getUnitApplications(
+  id: UUID
+): Promise<Result<UnitApplications>> {
+  return client
+    .get<JsonOf<UnitApplications>>(`/v2/applications/units/${id}`)
+    .then((res) => Success.of(mapUnitApplicationsJson(res.data)))
 }
 
 function mapGroupJson(data: JsonOf<DaycareGroup>): DaycareGroup {
@@ -371,6 +369,29 @@ function mapGroupOccupancyJson(
         mapOccupancyResponse(data)
       ])
     )
+  }
+}
+
+function mapUnitApplicationsJson(
+  data: JsonOf<UnitApplications>
+): UnitApplications {
+  return {
+    placementProposals: data.placementProposals.map(mapPlacementPlanJson),
+    placementPlans: data.placementPlans.map(mapPlacementPlanJson),
+    applications: data.applications
+      .map(mapApplicationsJson)
+      .sort((applicationA, applicationB) => {
+        const lastNameCmp = applicationA.lastName.localeCompare(
+          applicationB.lastName,
+          'fi',
+          { ignorePunctuation: true }
+        )
+        return lastNameCmp !== 0
+          ? lastNameCmp
+          : applicationA.firstName.localeCompare(applicationB.firstName, 'fi', {
+              ignorePunctuation: true
+            })
+      })
   }
 }
 

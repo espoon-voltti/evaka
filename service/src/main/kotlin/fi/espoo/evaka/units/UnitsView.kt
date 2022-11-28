@@ -5,9 +5,6 @@
 package fi.espoo.evaka.units
 
 import fi.espoo.evaka.Audit
-import fi.espoo.evaka.application.ApplicationStatus
-import fi.espoo.evaka.application.ApplicationUnitSummary
-import fi.espoo.evaka.application.getApplicationUnitSummaries
 import fi.espoo.evaka.backupcare.UnitBackupCare
 import fi.espoo.evaka.backupcare.getBackupCaresForDaycare
 import fi.espoo.evaka.daycare.getDaycareGroups
@@ -21,12 +18,10 @@ import fi.espoo.evaka.occupancy.OccupancyType
 import fi.espoo.evaka.occupancy.calculateOccupancyPeriodsGroupLevel
 import fi.espoo.evaka.placement.DaycarePlacementWithDetails
 import fi.espoo.evaka.placement.MissingGroupPlacement
-import fi.espoo.evaka.placement.PlacementPlanDetails
 import fi.espoo.evaka.placement.TerminatedPlacement
 import fi.espoo.evaka.placement.UnitChildrenCapacityFactors
 import fi.espoo.evaka.placement.getDetailedDaycarePlacements
 import fi.espoo.evaka.placement.getMissingGroupPlacements
-import fi.espoo.evaka.placement.getPlacementPlans
 import fi.espoo.evaka.placement.getTerminatedPlacements
 import fi.espoo.evaka.placement.getUnitChildrenCapacities
 import fi.espoo.evaka.shared.BackupCareId
@@ -198,46 +193,7 @@ class UnitsView(private val accessControl: AccessControl) {
                                 )
                             basicData.copy(groupOccupancies = groupOccupancies)
                         } else basicData
-
-                    if (
-                        accessControl.hasPermissionFor(
-                            tx,
-                            user,
-                            clock,
-                            Action.Unit.READ_APPLICATIONS_AND_PLACEMENT_PLANS,
-                            unitId
-                        )
-                    ) {
-                        val placementProposals =
-                            tx.getPlacementPlans(
-                                clock.today(),
-                                unitId,
-                                null,
-                                null,
-                                listOf(ApplicationStatus.WAITING_UNIT_CONFIRMATION)
-                            )
-                        val placementPlans =
-                            tx.getPlacementPlans(
-                                clock.today(),
-                                unitId,
-                                null,
-                                null,
-                                listOf(
-                                    ApplicationStatus.WAITING_CONFIRMATION,
-                                    ApplicationStatus.WAITING_MAILING,
-                                    ApplicationStatus.REJECTED
-                                )
-                            )
-                        val applications = tx.getApplicationUnitSummaries(unitId)
-
-                        dataWithOccupancies.copy(
-                            placementProposals = placementProposals,
-                            placementPlans = placementPlans,
-                            applications = applications
-                        )
-                    } else {
-                        dataWithOccupancies
-                    }
+                    dataWithOccupancies
                 }
             }
             .also { Audit.UnitView.log(targetId = unitId) }
@@ -252,9 +208,6 @@ data class UnitDataResponse(
     val recentlyTerminatedPlacements: List<TerminatedPlacement>,
     val caretakers: GroupCaretakers,
     val groupOccupancies: GroupOccupancies? = null,
-    val placementProposals: List<PlacementPlanDetails>? = null,
-    val placementPlans: List<PlacementPlanDetails>? = null,
-    val applications: List<ApplicationUnitSummary>? = null,
     val permittedBackupCareActions: Map<BackupCareId, Set<Action.BackupCare>>,
     val permittedPlacementActions: Map<PlacementId, Set<Action.Placement>>,
     val permittedGroupPlacementActions: Map<GroupPlacementId, Set<Action.GroupPlacement>>,

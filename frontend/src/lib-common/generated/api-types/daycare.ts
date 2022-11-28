@@ -513,6 +513,13 @@ export interface UnitManager {
 }
 
 /**
+* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.UnitNotifications
+*/
+export interface UnitNotifications {
+  applications: number
+}
+
+/**
 * Generated from fi.espoo.evaka.daycare.service.UnitStaffAttendance
 */
 export interface UnitStaffAttendance {

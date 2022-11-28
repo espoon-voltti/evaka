@@ -6,13 +6,11 @@
 /* eslint-disable import/order, prettier/prettier */
 
 import { Action } from '../action'
-import { ApplicationUnitSummary } from './application'
 import { Caretakers } from './daycare'
 import { DaycareGroup } from './daycare'
 import { DaycarePlacementWithDetails } from './placement'
 import { MissingGroupPlacement } from './placement'
 import { OccupancyResponse } from './occupancy'
-import { PlacementPlanDetails } from './placement'
 import { TerminatedPlacement } from './placement'
 import { UnitBackupCare } from './backupcare'
 import { UnitChildrenCapacityFactors } from './placement'
@@ -36,7 +34,6 @@ export interface GroupOccupancies {
 * Generated from fi.espoo.evaka.units.UnitDataResponse
 */
 export interface UnitDataResponse {
-  applications: ApplicationUnitSummary[] | null
   backupCares: UnitBackupCare[]
   caretakers: GroupCaretakers
   groupOccupancies: GroupOccupancies | null
@@ -45,8 +42,6 @@ export interface UnitDataResponse {
   permittedBackupCareActions: Record<string, Action.BackupCare[]>
   permittedGroupPlacementActions: Record<string, Action.GroupPlacement[]>
   permittedPlacementActions: Record<string, Action.Placement[]>
-  placementPlans: PlacementPlanDetails[] | null
-  placementProposals: PlacementPlanDetails[] | null
   placements: DaycarePlacementWithDetails[]
   recentlyTerminatedPlacements: TerminatedPlacement[]
   unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]

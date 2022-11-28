@@ -18,11 +18,11 @@ import {
 } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { UnitResponse } from 'employee-frontend/api/unit'
-import { isLoading } from 'lib-common/api'
+import { getUnitNotifications, UnitResponse } from 'employee-frontend/api/unit'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import Tabs from 'lib-components/molecules/Tabs'
@@ -49,6 +49,7 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const { unitInformation, unitData, reloadUnitData, filters, setFilters } =
     useContext(UnitContext)
 
+  const [unitNotifications] = useApiState(() => getUnitNotifications(id), [id])
   const [searchParams, setSearchParams] = useSearchParams()
   useEffect(() => {
     if (searchParams.has('start')) {
@@ -145,12 +146,8 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
               id: 'application-process',
               link: `/units/${id}/application-process`,
               label: i18n.unit.tabs.applicationProcess,
-              counter: unitData
-                .map(
-                  (data) =>
-                    (data.placementPlans?.filter((p) => !p.rejectedByCitizen)
-                      ?.length ?? 0) + (data.placementProposals?.length ?? 0)
-                )
+              counter: unitNotifications
+                .map(({ applications }) => applications)
                 .getOrElse(0)
             }
           ]
@@ -161,7 +158,7 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
         label: i18n.unit.tabs.unitInfo
       }
     ],
-    [id, i18n, unitData, unitInformation]
+    [id, i18n, unitData, unitInformation, unitNotifications]
   )
 
   if (unitInformation.isLoading) {
@@ -216,12 +213,7 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
           />
           <Route
             path="application-process"
-            element={
-              <TabApplicationProcess
-                isLoading={isLoading(unitData)}
-                reloadUnitData={reloadUnitData}
-              />
-            }
+            element={<TabApplicationProcess unitId={id} />}
           />
           <Route
             index

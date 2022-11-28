@@ -27,6 +27,7 @@ import fi.espoo.evaka.daycare.updateCaretakers
 import fi.espoo.evaka.daycare.updateDaycare
 import fi.espoo.evaka.daycare.updateDaycareManager
 import fi.espoo.evaka.daycare.updateGroup
+import fi.espoo.evaka.placement.getUnitApplicationNotifications
 import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -423,6 +424,34 @@ class DaycareController(
         )
     }
 
+    @GetMapping("/{daycareId}/notifications")
+    fun getUnitNotifications(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable daycareId: DaycareId
+    ): UnitNotifications {
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    UnitNotifications(
+                        applications =
+                            if (
+                                accessControl.hasPermissionFor(
+                                    tx,
+                                    user,
+                                    clock,
+                                    Action.Unit.READ_APPLICATIONS_AND_PLACEMENT_PLANS,
+                                    daycareId
+                                )
+                            )
+                                tx.getUnitApplicationNotifications(daycareId)
+                            else 0
+                    )
+                }
+            }
+            .also { Audit.UnitCounters.log(targetId = daycareId) }
+    }
+
     data class CreateDaycareResponse(val id: DaycareId)
 
     data class CreateGroupRequest(
@@ -461,4 +490,6 @@ class DaycareController(
         val features: List<PilotFeature>,
         val enable: Boolean
     )
+
+    data class UnitNotifications(val applications: Int)
 }

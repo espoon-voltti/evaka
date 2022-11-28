@@ -18,6 +18,7 @@ import { DecisionType } from './decision'
 import { DecisionUnit } from './decision'
 import { PersonJSON } from './pis'
 import { PlacementPlanConfirmationStatus } from './placement'
+import { PlacementPlanDetails } from './placement'
 import { PlacementPlanRejectReason } from './placement'
 import { PlacementType } from './placement'
 import { UUID } from '../../types'
@@ -624,6 +625,15 @@ export type TransferApplicationFilter =
   | 'TRANSFER_ONLY'
   | 'NO_TRANSFER'
   | 'ALL'
+
+/**
+* Generated from fi.espoo.evaka.application.UnitApplications
+*/
+export interface UnitApplications {
+  applications: ApplicationUnitSummary[]
+  placementPlans: PlacementPlanDetails[]
+  placementProposals: PlacementPlanDetails[]
+}
 
 /**
 * Generated from fi.espoo.evaka.application.VoucherApplicationFilter

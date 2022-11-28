@@ -272,3 +272,26 @@ fun Database.Read.getGuardiansRestrictedStatus(guardianId: PersonId): Boolean? {
         .toList()
         .singleOrNull()
 }
+
+fun Database.Read.getUnitApplicationNotifications(unitId: DaycareId): Int =
+    createQuery(
+            """
+SELECT COUNT(*)
+FROM placement_plan pp
+JOIN application a ON pp.application_id = a.id
+WHERE unit_id = :unitId AND a.status = ANY(:applicationStatus::application_status_type[])
+AND pp.unit_confirmation_status != :unitConfirmationStatus::confirmation_status
+"""
+        )
+        .bind("unitId", unitId)
+        .bind(
+            "applicationStatus",
+            listOf(
+                ApplicationStatus.WAITING_UNIT_CONFIRMATION,
+                ApplicationStatus.WAITING_MAILING,
+                ApplicationStatus.WAITING_CONFIRMATION
+            )
+        )
+        .bind("unitConfirmationStatus", PlacementPlanConfirmationStatus.REJECTED)
+        .mapTo<Int>()
+        .first()

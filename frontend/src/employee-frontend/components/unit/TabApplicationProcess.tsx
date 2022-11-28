@@ -4,37 +4,48 @@
 
 import React from 'react'
 
+import { getUnitApplications } from 'employee-frontend/api/unit'
+import { UUID } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
 import { ContentArea } from 'lib-components/layout/Container'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../state/i18n'
+import { renderResult } from '../async-rendering'
 
 import TabApplications from './TabApplications'
 import TabPlacementProposals from './TabPlacementProposals'
 import TabWaitingConfirmation from './TabWaitingConfirmation'
 
 interface Props {
-  isLoading: boolean
-  reloadUnitData: () => void
+  unitId: UUID
 }
 
-export default React.memo(function TabApplicationProcess({
-  isLoading,
-  reloadUnitData
-}: Props) {
+export default React.memo(function TabApplicationProcess({ unitId }: Props) {
   const { i18n } = useTranslation()
-  return (
-    <div data-qa="application-process-page" data-isloading={isLoading}>
-      <ContentArea opaque>
-        <Title size={2}>{i18n.unit.applicationProcess.title}</Title>
-      </ContentArea>
-      <Gap size="m" />
-      <TabWaitingConfirmation />
-      <Gap size="m" />
-      <TabPlacementProposals reloadUnitData={reloadUnitData} />
-      <Gap size="m" />
-      <TabApplications />
-    </div>
+  const [applications, reloadApplications] = useApiState(
+    () => getUnitApplications(unitId),
+    [unitId]
+  )
+  return renderResult(
+    applications,
+    ({ placementPlans, placementProposals, applications }, isReloading) => (
+      <div data-qa="application-process-page" data-isloading={isReloading}>
+        <ContentArea opaque>
+          <Title size={2}>{i18n.unit.applicationProcess.title}</Title>
+        </ContentArea>
+        <Gap size="m" />
+        <TabWaitingConfirmation placementPlans={placementPlans} />
+        <Gap size="m" />
+        <TabPlacementProposals
+          unitId={unitId}
+          placementProposals={placementProposals}
+          reloadApplications={reloadApplications}
+        />
+        <Gap size="m" />
+        <TabApplications applications={applications} />
+      </div>
+    )
   )
 })
