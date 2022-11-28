@@ -368,7 +368,7 @@ class VardaClient(
 
         val (request, _, result) =
             fuel
-                .delete("${getChildUrl(vardaChildId)}/delete-all")
+                .delete("${getChildUrl(vardaChildId)}delete-all")
                 .authenticatedResponseStringWithRetries()
 
         return when (result) {
