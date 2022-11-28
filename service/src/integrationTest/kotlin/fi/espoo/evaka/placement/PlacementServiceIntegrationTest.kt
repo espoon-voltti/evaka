@@ -30,6 +30,7 @@ import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -73,7 +74,7 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
 
             oldPlacement =
                 it.insertPlacement(
-                    PlacementType.PRESCHOOL,
+                    PlacementType.DAYCARE,
                     childId,
                     unitId,
                     placementStart,
@@ -519,6 +520,271 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
                     it.endDate.isEqual(old2.endDate)
             }
         )
+    }
+
+    /*
+    old          XXXXX
+    new           yyy
+    result       Xyyy
+     */
+    @Test
+    fun `old placement starts earlier, ends later and new placement type is CLUB`() {
+        val newPlacement =
+            db.transaction {
+                    createPlacements(
+                        tx = it,
+                        childId = childId,
+                        unitId = unitId,
+                        placementTypePeriods =
+                            listOf(
+                                FiniteDateRange(
+                                    LocalDate.of(year, month, 11),
+                                    LocalDate.of(year, month, 19)
+                                ) to PlacementType.CLUB
+                            ),
+                        cancelPlacementsAfterClub = true
+                    )
+                }
+                .first()
+
+        val placements = db.read { it.getPlacementsForChild(childId) }
+
+        assertEquals(2, placements.size)
+        assertTrue(placements.contains(newPlacement))
+        assertTrue(
+            placements.any {
+                it.id == oldPlacement.id &&
+                    it.startDate.isEqual(oldPlacement.startDate) &&
+                    it.endDate.isEqual(newPlacement.startDate.minusDays(1))
+            }
+        )
+        assertFalse(
+            placements.any {
+                it.id != oldPlacement.id &&
+                    it.id != newPlacement.id &&
+                    it.startDate.isEqual(newPlacement.endDate.plusDays(1)) &&
+                    it.endDate.isEqual(oldPlacement.endDate)
+            }
+        )
+    }
+
+    /*
+    old          XXXXX
+    new          yyyy
+    result       yyyy
+     */
+    @Test
+    fun `old placement ends later and new placement type is CLUB`() {
+        val newPlacement =
+            db.transaction {
+                    createPlacements(
+                        tx = it,
+                        childId = childId,
+                        unitId = unitId,
+                        placementTypePeriods =
+                            listOf(
+                                FiniteDateRange(
+                                    LocalDate.of(year, month, 10),
+                                    LocalDate.of(year, month, 19)
+                                ) to PlacementType.CLUB
+                            ),
+                        cancelPlacementsAfterClub = true
+                    )
+                }
+                .first()
+
+        val placements = db.read { it.getPlacementsForChild(childId) }
+
+        assertEquals(1, placements.size)
+        assertTrue(placements.contains(newPlacement))
+        assertFalse(placements.any { it.id == oldPlacement.id })
+    }
+
+    /*
+    old          XXXXX
+    new         yyyyy
+    result      yyyyy
+     */
+    @Test
+    fun `old placement starts later, ends later and new placement type is CLUB`() {
+        val newPlacement =
+            db.transaction {
+                    createPlacements(
+                        tx = it,
+                        childId = childId,
+                        unitId = unitId,
+                        placementTypePeriods =
+                            listOf(
+                                FiniteDateRange(
+                                    LocalDate.of(year, month, 9),
+                                    LocalDate.of(year, month, 19)
+                                ) to PlacementType.CLUB
+                            ),
+                        cancelPlacementsAfterClub = true
+                    )
+                }
+                .first()
+
+        val placements = db.read { it.getPlacementsForChild(childId) }
+
+        assertEquals(1, placements.size)
+        assertTrue(placements.contains(newPlacement))
+        assertFalse(placements.any { it.id == oldPlacement.id })
+    }
+
+    @Test
+    fun `adding a new placement of type CLUB deletes future placements`() {
+        val futurePlacement =
+            db.transaction {
+                it.insertPlacement(
+                    PlacementType.DAYCARE,
+                    childId,
+                    unitId,
+                    LocalDate.of(year + 2, 8, 1),
+                    LocalDate.of(year + 2, 12, 1)
+                )
+            }
+
+        val newPlacement =
+            db.transaction {
+                    createPlacements(
+                        tx = it,
+                        childId = childId,
+                        unitId = unitId,
+                        placementTypePeriods =
+                            listOf(
+                                FiniteDateRange(
+                                    LocalDate.of(year, month, 9),
+                                    LocalDate.of(year, month, 19)
+                                ) to PlacementType.CLUB
+                            ),
+                        cancelPlacementsAfterClub = true
+                    )
+                }
+                .first()
+
+        val placements = db.read { it.getPlacementsForChild(childId) }
+
+        assertEquals(1, placements.size)
+        assertTrue(placements.contains(newPlacement))
+        assertFalse(placements.contains(futurePlacement))
+        assertFalse(placements.any { it.id == oldPlacement.id })
+    }
+
+    @Test
+    fun `adding a new placement of type CLUB does NOT delete future placements during a PRESCHOOL term`() {
+        // insert a future PRESCHOOL placement
+        val (futurePreschoolDaycare, futureDaycareInPreschoolTerm, futurePreschool) =
+            db.transaction {
+                listOf(
+                    it.insertPlacement(
+                        PlacementType.PRESCHOOL_DAYCARE,
+                        childId,
+                        unitId,
+                        LocalDate.of(year + 1, 8, 1),
+                        LocalDate.of(year + 2, 6, 30)
+                    ),
+                    it.insertPlacement(
+                        PlacementType.DAYCARE,
+                        childId,
+                        unitId,
+                        LocalDate.of(year + 2, 7, 1),
+                        LocalDate.of(year + 2, 7, 31)
+                    ),
+                    it.insertPlacement(
+                        PlacementType.PRESCHOOL,
+                        childId,
+                        unitId,
+                        LocalDate.of(year + 2, 9, 1),
+                        LocalDate.of(year + 3, 4, 11)
+                    )
+                )
+            }
+
+        val newPlacement =
+            db.transaction {
+                    createPlacements(
+                        tx = it,
+                        childId = childId,
+                        unitId = unitId,
+                        placementTypePeriods =
+                            listOf(
+                                FiniteDateRange(
+                                    LocalDate.of(year, month, 9),
+                                    LocalDate.of(year, month, 19)
+                                ) to PlacementType.CLUB
+                            ),
+                        cancelPlacementsAfterClub = true
+                    )
+                }
+                .first()
+
+        val placements = db.read { it.getPlacementsForChild(childId) }
+
+        assertEquals(4, placements.size)
+        assertTrue(placements.contains(newPlacement))
+        assertTrue(placements.contains(futurePreschoolDaycare))
+        assertTrue(placements.contains(futureDaycareInPreschoolTerm))
+        assertTrue(placements.contains(futurePreschool))
+        assertFalse(placements.any { it.id == oldPlacement.id })
+    }
+
+    @Test
+    fun `adding a new placement of type CLUB does NOT delete future PREPARATORY, PREPARATORY_DAYCARE placements`() {
+        // insert a future PRESCHOOL placement
+        val (futurePreparatoryDaycare, futureDaycareInPreparatoryTerm, futurePreparatory) =
+            db.transaction {
+                listOf(
+                    it.insertPlacement(
+                        PlacementType.PREPARATORY_DAYCARE,
+                        childId,
+                        unitId,
+                        LocalDate.of(year + 1, 8, 1),
+                        LocalDate.of(year + 2, 6, 30)
+                    ),
+                    it.insertPlacement(
+                        PlacementType.DAYCARE,
+                        childId,
+                        unitId,
+                        LocalDate.of(year + 2, 7, 1),
+                        LocalDate.of(year + 2, 7, 31)
+                    ),
+                    it.insertPlacement(
+                        PlacementType.PREPARATORY_DAYCARE,
+                        childId,
+                        unitId,
+                        LocalDate.of(year + 2, 9, 1),
+                        LocalDate.of(year + 3, 4, 11)
+                    )
+                )
+            }
+
+        val newPlacement =
+            db.transaction {
+                    createPlacements(
+                        tx = it,
+                        childId = childId,
+                        unitId = unitId,
+                        placementTypePeriods =
+                            listOf(
+                                FiniteDateRange(
+                                    LocalDate.of(year, month, 9),
+                                    LocalDate.of(year, month, 19)
+                                ) to PlacementType.CLUB
+                            ),
+                        cancelPlacementsAfterClub = true
+                    )
+                }
+                .first()
+
+        val placements = db.read { it.getPlacementsForChild(childId) }
+
+        assertEquals(4, placements.size)
+        assertTrue(placements.contains(newPlacement))
+        assertTrue(placements.contains(futurePreparatoryDaycare))
+        assertTrue(placements.contains(futureDaycareInPreparatoryTerm))
+        assertTrue(placements.contains(futurePreparatory))
+        assertFalse(placements.any { it.id == oldPlacement.id })
     }
 
     @Test
