@@ -38,8 +38,10 @@ import TabApplicationProcess from './unit/TabApplicationProcess'
 import TabCalendar from './unit/TabCalendar'
 
 const defaultTab = (unit: UnitResponse) => {
-  if (unit.permittedActions.has('READ_ATTENDANCES')) return 'attendances'
-  return 'groups'
+  if (unit.permittedActions.has('READ_ATTENDANCES')) return 'calendar'
+  if (unit.permittedActions.has('READ_OCCUPANCIES')) return 'calendar'
+  if (unit.permittedActions.has('READ_GROUP_DETAILS')) return 'groups'
+  return 'unit-info'
 }
 
 const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {

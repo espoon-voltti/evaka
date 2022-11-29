@@ -78,13 +78,13 @@ describe('Child information page', () => {
     })
   })
 
-  test('Director sees only the reports tab', async () => {
+  test('Director sees only the units and reports tabs', async () => {
     const director = await Fixture.employeeDirector().save()
     await employeeLogin(page, director.data)
     await page.goto(config.employeeUrl)
     await nav.tabsVisible({
       applications: false,
-      units: false,
+      units: true,
       search: false,
       finance: false,
       reports: true,

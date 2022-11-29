@@ -7,7 +7,6 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { combine } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
@@ -30,7 +29,6 @@ import { useTranslation } from '../../state/i18n'
 import { UnitContext } from '../../state/unit'
 import { DayOfWeek } from '../../types'
 import { DaycareGroup } from '../../types/unit'
-import { UnitFilters } from '../../utils/UnitFilters'
 import Absences from '../absences/Absences'
 import { renderResult } from '../async-rendering'
 
@@ -114,32 +112,50 @@ export default React.memo(function TabCalendar() {
   const { id: unitId } = useNonNullableParams<{ id: UUID }>()
   const { unitInformation, filters, setFilters } = useContext(UnitContext)
 
-  const [groups] = useApiState(() => getDaycareGroups(unitId), [unitId])
+  return renderResult(unitInformation, (unitInformation) => (
+    <>
+      {unitInformation.permittedActions.has('READ_OCCUPANCIES') ? (
+        <>
+          <Occupancy
+            unitId={unitId}
+            filters={filters}
+            setFilters={setFilters}
+            realtimeStaffAttendanceEnabled={unitInformation.daycare.enabledPilotFeatures.includes(
+              'REALTIME_STAFF_ATTENDANCE'
+            )}
+            shiftCareUnit={unitInformation.daycare.roundTheClock}
+          />
+          <Gap size="s" />
+        </>
+      ) : null}
 
-  const combinedResult = combine(unitInformation, groups)
-  return renderResult(combinedResult, ([unitInformation, groups]) => (
-    <TabContent
-      unitInformation={unitInformation}
-      filters={filters}
-      setFilters={setFilters}
-      groups={groups}
-    />
+      {unitInformation.permittedActions.has('READ_CHILD_ATTENDANCES') ? (
+        <Calendar unitId={unitId} unitInformation={unitInformation} />
+      ) : null}
+    </>
   ))
 })
 
-interface TabContentProps {
+const Calendar = React.memo(function Calendar({
+  unitId,
+  unitInformation
+}: {
+  unitId: string
   unitInformation: UnitResponse
-  filters: UnitFilters
-  setFilters: React.Dispatch<React.SetStateAction<UnitFilters>>
-  groups: DaycareGroup[]
-}
+}) {
+  const [groups] = useApiState(() => getDaycareGroups(unitId), [unitId])
+  return renderResult(groups, (groups) => (
+    <CalendarContent unitInformation={unitInformation} groups={groups} />
+  ))
+})
 
-const TabContent = React.memo(function TabContent({
+const CalendarContent = React.memo(function CalendarContent({
   unitInformation,
-  filters,
-  setFilters,
   groups
-}: TabContentProps) {
+}: {
+  unitInformation: UnitResponse
+  groups: DaycareGroup[]
+}) {
   const { i18n } = useTranslation()
   const unitId = unitInformation.daycare.id
 
@@ -199,120 +215,104 @@ const TabContent = React.memo(function TabContent({
   const [eventsOpen, setEventsOpen] = useState(true)
 
   return (
-    <>
-      {unitInformation.permittedActions.has('READ_OCCUPANCIES') ? (
-        <Occupancy
-          unitId={unitId}
-          filters={filters}
-          setFilters={setFilters}
-          realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
-          shiftCareUnit={unitInformation.daycare.roundTheClock}
-        />
+    <CollapsibleContentArea
+      open={calendarOpen}
+      toggleOpen={() => setCalendarOpen(!calendarOpen)}
+      title={<H3 noMargin>{i18n.unit.calendar.title}</H3>}
+      opaque
+    >
+      {(reservationEnabled || realtimeStaffAttendanceEnabled) &&
+      availableModes.length >= 2 ? (
+        <FixedSpaceRow spacing="xs" justifyContent="flex-end">
+          {availableModes.map((m) => (
+            <ChoiceChip
+              key={m}
+              data-qa={`choose-calendar-mode-${m}`}
+              text={i18n.unit.calendar.modes[m]}
+              selected={mode === m}
+              onChange={() => setRequestedMode(m)}
+            />
+          ))}
+        </FixedSpaceRow>
       ) : null}
 
-      <Gap size="s" />
+      <StickyTopBar>
+        <FixedSpaceRow spacing="s" alignItems="center">
+          <GroupSelectorWrapper>
+            <AttendanceGroupFilterSelect
+              groups={groups}
+              value={selectedGroup}
+              onChange={setSelectedGroup}
+              data-qa="attendances-group-select"
+              realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
+            />
+          </GroupSelectorWrapper>
+
+          <ActiveDateRangeSelector
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            mode={mode}
+            weekRange={weekRange}
+          />
+        </FixedSpaceRow>
+      </StickyTopBar>
+
+      <TopHorizontalLine dashed slim />
 
       <CollapsibleContentArea
-        open={calendarOpen}
-        toggleOpen={() => setCalendarOpen(!calendarOpen)}
-        title={<H3 noMargin>{i18n.unit.calendar.title}</H3>}
+        open={attendancesOpen}
+        toggleOpen={() => setAttendancesOpen(!attendancesOpen)}
+        title={<H4 noMargin>{i18n.unit.calendar.attendances.title}</H4>}
         opaque
+        paddingHorizontal="zero"
+        paddingVertical="zero"
       >
-        {(reservationEnabled || realtimeStaffAttendanceEnabled) &&
-        availableModes.length >= 2 ? (
-          <FixedSpaceRow spacing="xs" justifyContent="flex-end">
-            {availableModes.map((m) => (
-              <ChoiceChip
-                key={m}
-                data-qa={`choose-calendar-mode-${m}`}
-                text={i18n.unit.calendar.modes[m]}
-                selected={mode === m}
-                onChange={() => setRequestedMode(m)}
-              />
-            ))}
-          </FixedSpaceRow>
+        {mode === 'month' && selectedGroup.type === 'group' ? (
+          <Absences
+            groupId={selectedGroup.id}
+            selectedDate={selectedDate}
+            reservationEnabled={reservationEnabled}
+            staffAttendanceEnabled={!realtimeStaffAttendanceEnabled}
+          />
         ) : null}
 
-        <StickyTopBar>
-          <FixedSpaceRow spacing="s" alignItems="center">
-            <GroupSelectorWrapper>
-              <AttendanceGroupFilterSelect
-                groups={groups}
-                value={selectedGroup}
-                onChange={setSelectedGroup}
-                data-qa="attendances-group-select"
-                realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
-              />
-            </GroupSelectorWrapper>
-
-            <ActiveDateRangeSelector
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-              mode={mode}
-              weekRange={weekRange}
-            />
-          </FixedSpaceRow>
-        </StickyTopBar>
-
-        <TopHorizontalLine dashed slim />
-
-        <CollapsibleContentArea
-          open={attendancesOpen}
-          toggleOpen={() => setAttendancesOpen(!attendancesOpen)}
-          title={<H4 noMargin>{i18n.unit.calendar.attendances.title}</H4>}
-          opaque
-          paddingHorizontal="zero"
-          paddingVertical="zero"
-        >
-          {mode === 'month' && selectedGroup.type === 'group' ? (
-            <Absences
-              groupId={selectedGroup.id}
-              selectedDate={selectedDate}
-              reservationEnabled={reservationEnabled}
-              staffAttendanceEnabled={!realtimeStaffAttendanceEnabled}
-            />
-          ) : null}
-
-          {mode === 'week' ? (
-            <UnitAttendanceReservationsView
-              unitId={unitId}
-              selectedGroup={selectedGroup}
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-              isShiftCareUnit={unitInformation.daycare.roundTheClock}
-              operationalDays={operationalDays}
-              realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
-              groups={groups}
-              weekRange={weekRange}
-            />
-          ) : null}
-        </CollapsibleContentArea>
-
-        {selectedGroup.type === 'group' ||
-        (selectedGroup.type === 'all-children' && mode === 'week') ? (
-          <>
-            <HorizontalLine dashed slim />
-
-            <CollapsibleContentArea
-              open={eventsOpen}
-              toggleOpen={() => setEventsOpen(!eventsOpen)}
-              title={<H4 noMargin>{i18n.unit.calendar.events.title}</H4>}
-              opaque
-              paddingHorizontal="zero"
-              paddingVertical="zero"
-            >
-              <CalendarEventsSection
-                weekDateRange={weekRange}
-                unitId={unitId}
-                groupId={
-                  selectedGroup.type === 'group' ? selectedGroup.id : null
-                }
-              />
-            </CollapsibleContentArea>
-          </>
+        {mode === 'week' ? (
+          <UnitAttendanceReservationsView
+            unitId={unitId}
+            selectedGroup={selectedGroup}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            isShiftCareUnit={unitInformation.daycare.roundTheClock}
+            operationalDays={operationalDays}
+            realtimeStaffAttendanceEnabled={realtimeStaffAttendanceEnabled}
+            groups={groups}
+            weekRange={weekRange}
+          />
         ) : null}
       </CollapsibleContentArea>
-    </>
+
+      {selectedGroup.type === 'group' ||
+      (selectedGroup.type === 'all-children' && mode === 'week') ? (
+        <>
+          <HorizontalLine dashed slim />
+
+          <CollapsibleContentArea
+            open={eventsOpen}
+            toggleOpen={() => setEventsOpen(!eventsOpen)}
+            title={<H4 noMargin>{i18n.unit.calendar.events.title}</H4>}
+            opaque
+            paddingHorizontal="zero"
+            paddingVertical="zero"
+          >
+            <CalendarEventsSection
+              weekDateRange={weekRange}
+              unitId={unitId}
+              groupId={selectedGroup.type === 'group' ? selectedGroup.id : null}
+            />
+          </CollapsibleContentArea>
+        </>
+      ) : null}
+    </CollapsibleContentArea>
   )
 })
 
