@@ -89,8 +89,8 @@ interface Props {
   open: boolean
   toggleOpen: () => void
   permittedActions: Set<Action.Group>
-  permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>
-  permittedGroupPlacementActions: Record<UUID, Set<Action.Placement>>
+  permittedBackupCareActions: Record<UUID, Action.BackupCare[]>
+  permittedGroupPlacementActions: Record<UUID, Action.Placement[]>
 }
 
 export interface GroupWithDetails extends DaycareGroupWithPlacements {
@@ -543,20 +543,20 @@ export default React.memo(function Group({
                     const canTransfer = !!(
                       placement.id &&
                       ('type' in placement
-                        ? permittedGroupPlacementActions[placement.id]?.has(
-                            'UPDATE'
-                          )
-                        : permittedBackupCareActions[placement.id]?.has(
+                        ? permittedGroupPlacementActions[
+                            placement.id
+                          ]?.includes('UPDATE')
+                        : permittedBackupCareActions[placement.id]?.includes(
                             'UPDATE'
                           ))
                     )
                     const canDelete = !!(
                       placement.id &&
                       ('type' in placement
-                        ? permittedGroupPlacementActions[placement.id]?.has(
-                            'DELETE'
-                          )
-                        : permittedBackupCareActions[placement.id]?.has(
+                        ? permittedGroupPlacementActions[
+                            placement.id
+                          ]?.includes('DELETE')
+                        : permittedBackupCareActions[placement.id]?.includes(
                             'DELETE'
                           ))
                     )

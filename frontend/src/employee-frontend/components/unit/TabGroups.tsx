@@ -4,8 +4,10 @@
 
 import React, { Dispatch, SetStateAction, useContext, useMemo } from 'react'
 
+import { getUnitGroupDetails } from 'employee-frontend/api/unit'
 import { combine, Result } from 'lib-common/api'
 import { Action } from 'lib-common/generated/action'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
@@ -17,18 +19,20 @@ import { renderResult } from '../async-rendering'
 import TerminatedPlacements from './tab-groups/TerminatedPlacements'
 
 interface Props {
-  reloadUnitData: () => void
   openGroups: Record<string, boolean>
   setOpenGroups: Dispatch<SetStateAction<Record<string, boolean>>>
 }
 
 export default React.memo(function TabGroups({
-  reloadUnitData,
   openGroups,
   setOpenGroups
 }: Props) {
-  const { unitInformation, unitData, filters, setFilters } =
+  const { unitId, unitInformation, filters, setFilters } =
     useContext(UnitContext)
+  const [groupData, reloadGroupData] = useApiState(
+    () => getUnitGroupDetails(unitId, filters.startDate, filters.endDate),
+    [unitId, filters.startDate, filters.endDate]
+  )
 
   const groupPermittedActions: Result<
     Record<string, Set<Action.Group> | undefined>
@@ -46,28 +50,28 @@ export default React.memo(function TabGroups({
   )
 
   return renderResult(
-    combine(unitInformation, unitData, groupPermittedActions),
-    ([unitInformation, unitData, groupPermittedActions], isReloading) => (
+    combine(unitInformation, groupData, groupPermittedActions),
+    ([unitInformation, groupData, groupPermittedActions], isReloading) => (
       <FixedSpaceColumn data-qa="unit-groups-page" data-loading={isReloading}>
-        {unitData.recentlyTerminatedPlacements.length > 0 && (
+        {groupData.recentlyTerminatedPlacements.length > 0 && (
           <ContentArea opaque data-qa="terminated-placements-section">
             <TerminatedPlacements
               recentlyTerminatedPlacements={
-                unitData.recentlyTerminatedPlacements
+                groupData.recentlyTerminatedPlacements
               }
             />
           </ContentArea>
         )}
 
-        {unitData.missingGroupPlacements.length > 0 && (
+        {groupData.missingGroupPlacements.length > 0 && (
           <ContentArea opaque data-qa="missing-placements-section">
             <MissingGroupPlacements
-              groups={unitData.groups}
-              missingGroupPlacements={unitData.missingGroupPlacements}
-              backupCares={unitData.backupCares}
-              reloadUnitData={reloadUnitData}
-              permittedPlacementActions={unitData.permittedPlacementActions}
-              permittedBackupCareActions={unitData.permittedBackupCareActions}
+              groups={groupData.groups}
+              missingGroupPlacements={groupData.missingGroupPlacements}
+              backupCares={groupData.backupCares}
+              reloadGroupData={reloadGroupData}
+              permittedPlacementActions={groupData.permittedPlacementActions}
+              permittedBackupCareActions={groupData.permittedBackupCareActions}
             />
           </ContentArea>
         )}
@@ -78,19 +82,19 @@ export default React.memo(function TabGroups({
             permittedActions={unitInformation.permittedActions}
             filters={filters}
             setFilters={setFilters}
-            groups={unitData.groups}
-            placements={unitData.placements}
-            backupCares={unitData.backupCares}
+            groups={groupData.groups}
+            placements={groupData.placements}
+            backupCares={groupData.backupCares}
             groupPermittedActions={groupPermittedActions}
-            groupCaretakers={unitData.caretakers.groupCaretakers}
-            groupConfirmedOccupancies={unitData.groupOccupancies?.confirmed}
-            groupRealizedOccupancies={unitData.groupOccupancies?.realized}
-            permittedBackupCareActions={unitData.permittedBackupCareActions}
+            groupCaretakers={groupData.caretakers}
+            groupConfirmedOccupancies={groupData.groupOccupancies?.confirmed}
+            groupRealizedOccupancies={groupData.groupOccupancies?.realized}
+            permittedBackupCareActions={groupData.permittedBackupCareActions}
             permittedGroupPlacementActions={
-              unitData.permittedGroupPlacementActions
+              groupData.permittedGroupPlacementActions
             }
-            unitChildrenCapacityFactors={unitData.unitChildrenCapacityFactors}
-            reloadUnitData={reloadUnitData}
+            unitChildrenCapacityFactors={groupData.unitChildrenCapacityFactors}
+            reloadGroupData={reloadGroupData}
             openGroups={openGroups}
             setOpenGroups={setOpenGroups}
           />

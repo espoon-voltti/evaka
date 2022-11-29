@@ -20,9 +20,10 @@ import {
 import { AttendancesRequest } from 'lib-common/generated/api-types/attendance'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import {
-  Caretakers,
   CreateDaycareResponse,
   DaycareFields,
+  GroupOccupancies,
+  UnitGroupDetails,
   UnitNotifications
 } from 'lib-common/generated/api-types/daycare'
 import {
@@ -33,24 +34,19 @@ import {
 } from 'lib-common/generated/api-types/occupancy'
 import { MobileDevice } from 'lib-common/generated/api-types/pairing'
 import {
+  DaycarePlacementWithDetails,
   MissingGroupPlacement,
-  PlacementPlanDetails
+  PlacementPlanDetails,
+  TerminatedPlacement
 } from 'lib-common/generated/api-types/placement'
 import { DailyReservationRequest } from 'lib-common/generated/api-types/reservations'
 import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
-import { GroupOccupancies } from 'lib-common/generated/api-types/units'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
-import {
-  DaycareGroup,
-  DaycarePlacement,
-  TerminatedPlacement,
-  Unit,
-  UnitChildrenCapacityFactors
-} from '../types/unit'
+import { DaycareGroup, Unit } from '../types/unit'
 
 import { client } from './client'
 
@@ -109,71 +105,6 @@ export async function getDaycare(id: UUID): Promise<Result<UnitResponse>> {
     .catch((e) => Failure.fromError(e))
 }
 
-export type UnitData = {
-  groups: DaycareGroup[]
-  placements: DaycarePlacement[]
-  backupCares: UnitBackupCare[]
-  caretakers: { groupCaretakers: Record<UUID, Caretakers> }
-  unitOccupancies?: UnitOccupancies
-  groupOccupancies?: GroupOccupancies
-  missingGroupPlacements: MissingGroupPlacement[]
-  recentlyTerminatedPlacements: TerminatedPlacement[]
-  permittedPlacementActions: Record<UUID, Set<Action.Placement>>
-  permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>
-  permittedGroupPlacementActions: Record<UUID, Set<Action.GroupPlacement>>
-  unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]
-}
-
-export async function getUnitData(
-  id: UUID,
-  from: LocalDate,
-  to: LocalDate
-): Promise<Result<UnitData>> {
-  try {
-    const response = await client.get<JsonOf<UnitData>>(`/views/units/${id}`, {
-      params: {
-        from: from.formatIso(),
-        to: to.formatIso()
-      }
-    })
-
-    return Success.of({
-      ...response.data,
-      groups: response.data.groups.map(mapGroupJson),
-      placements: response.data.placements.map(mapPlacementJson),
-      backupCares: response.data.backupCares.map(mapBackupCareJson),
-      missingGroupPlacements: response.data.missingGroupPlacements.map(
-        mapMissingGroupPlacementJson
-      ),
-      recentlyTerminatedPlacements:
-        response.data.recentlyTerminatedPlacements.map(
-          mapRecentlyTerminatedPlacementJson
-        ),
-      unitOccupancies:
-        response.data.unitOccupancies &&
-        mapUnitOccupancyJson(response.data.unitOccupancies),
-      groupOccupancies:
-        response.data.groupOccupancies &&
-        mapGroupOccupancyJson(response.data.groupOccupancies),
-      permittedPlacementActions: mapValues(
-        response.data.permittedPlacementActions,
-        (actions) => new Set(actions)
-      ),
-      permittedBackupCareActions: mapValues(
-        response.data.permittedBackupCareActions,
-        (actions) => new Set(actions)
-      ),
-      permittedGroupPlacementActions: mapValues(
-        response.data.permittedGroupPlacementActions,
-        (actions) => new Set(actions)
-      )
-    })
-  } catch (e) {
-    console.error(e)
-    return Failure.fromError(e)
-  }
-}
-
 export function getUnitNotifications(
   id: UUID
 ): Promise<Result<UnitNotifications>> {
@@ -202,6 +133,35 @@ export function getUnitApplications(
     .then((res) => Success.of(mapUnitApplicationsJson(res.data)))
 }
 
+export function getUnitGroupDetails(
+  id: UUID,
+  from: LocalDate,
+  to: LocalDate
+): Promise<Result<UnitGroupDetails>> {
+  return client
+    .get<JsonOf<UnitGroupDetails>>(`/daycares/${id}/group-details`, {
+      params: { from: from.formatIso(), to: to.formatIso() }
+    })
+    .then((response) =>
+      Success.of({
+        ...response.data,
+        groups: response.data.groups.map(mapGroupJson),
+        placements: response.data.placements.map(mapPlacementJson),
+        backupCares: response.data.backupCares.map(mapBackupCareJson),
+        missingGroupPlacements: response.data.missingGroupPlacements.map(
+          mapMissingGroupPlacementJson
+        ),
+        recentlyTerminatedPlacements:
+          response.data.recentlyTerminatedPlacements.map(
+            mapRecentlyTerminatedPlacementJson
+          ),
+        groupOccupancies:
+          response.data.groupOccupancies &&
+          mapGroupOccupancyJson(response.data.groupOccupancies)
+      })
+    )
+}
+
 function mapGroupJson(data: JsonOf<DaycareGroup>): DaycareGroup {
   return {
     ...data,
@@ -210,7 +170,9 @@ function mapGroupJson(data: JsonOf<DaycareGroup>): DaycareGroup {
   }
 }
 
-function mapPlacementJson(data: JsonOf<DaycarePlacement>): DaycarePlacement {
+function mapPlacementJson(
+  data: JsonOf<DaycarePlacementWithDetails>
+): DaycarePlacementWithDetails {
   return {
     ...data,
     child: {
@@ -228,7 +190,8 @@ function mapPlacementJson(data: JsonOf<DaycarePlacement>): DaycarePlacement {
     })),
     terminationRequestedDate: LocalDate.parseNullableIso(
       data.terminationRequestedDate
-    )
+    ),
+    updated: data.updated ? HelsinkiDateTime.parseIso(data.updated) : null
   }
 }
 
@@ -251,7 +214,11 @@ function mapMissingGroupPlacementJson(
     ...data,
     dateOfBirth: LocalDate.parseIso(data.dateOfBirth),
     placementPeriod: FiniteDateRange.parseJson(data.placementPeriod),
-    serviceNeeds: mapServiceNeedsJson(data.serviceNeeds),
+    serviceNeeds: data.serviceNeeds.map((json) => ({
+      ...json,
+      startDate: LocalDate.parseIso(json.startDate),
+      endDate: LocalDate.parseIso(json.endDate)
+    })),
     gap: FiniteDateRange.parseJson(data.gap)
   }
 }
@@ -262,7 +229,9 @@ function mapRecentlyTerminatedPlacementJson(
   return {
     ...data,
     endDate: LocalDate.parseIso(data.endDate),
-    terminationRequestedDate: LocalDate.parseIso(data.terminationRequestedDate),
+    terminationRequestedDate: LocalDate.parseNullableIso(
+      data.terminationRequestedDate
+    ),
     child: {
       ...data.child,
       dateOfBirth: LocalDate.parseIso(data.child.dateOfBirth)

@@ -46,8 +46,7 @@ const defaultTab = (unit: UnitResponse) => {
 const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
-  const { unitInformation, unitData, reloadUnitData, filters, setFilters } =
-    useContext(UnitContext)
+  const { unitInformation, filters, setFilters } = useContext(UnitContext)
 
   const [unitNotifications] = useApiState(() => getUnitNotifications(id), [id])
   const [searchParams, setSearchParams] = useSearchParams()
@@ -129,14 +128,19 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
             }
           ]
         : []),
-      {
-        id: 'groups',
-        link: `/units/${id}/groups`,
-        label: i18n.unit.tabs.groups,
-        counter: unitData
-          .map((data) => data.missingGroupPlacements.length)
-          .getOrElse(undefined)
-      },
+      ...(unitInformation.isSuccess &&
+      unitInformation.value.permittedActions.has('READ_GROUP_DETAILS')
+        ? [
+            {
+              id: 'groups',
+              link: `/units/${id}/groups`,
+              label: i18n.unit.tabs.groups,
+              counter: unitNotifications
+                .map(({ groups }) => groups)
+                .getOrElse(0)
+            }
+          ]
+        : []),
       ...(unitInformation.isSuccess &&
       unitInformation.value.permittedActions.has(
         'READ_APPLICATIONS_AND_PLACEMENT_PLANS'
@@ -158,7 +162,7 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
         label: i18n.unit.tabs.unitInfo
       }
     ],
-    [id, i18n, unitData, unitInformation, unitNotifications]
+    [id, i18n, unitInformation, unitNotifications]
   )
 
   if (unitInformation.isLoading) {
@@ -195,7 +199,6 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
             path="groups"
             element={
               <TabGroups
-                reloadUnitData={reloadUnitData}
                 openGroups={openGroups}
                 setOpenGroups={setOpenGroups}
               />

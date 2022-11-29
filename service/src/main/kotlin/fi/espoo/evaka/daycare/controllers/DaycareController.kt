@@ -5,6 +5,8 @@
 package fi.espoo.evaka.daycare.controllers
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.backupcare.UnitBackupCare
+import fi.espoo.evaka.backupcare.getBackupCaresForDaycare
 import fi.espoo.evaka.daycare.CaretakerAmount
 import fi.espoo.evaka.daycare.Daycare
 import fi.espoo.evaka.daycare.DaycareFields
@@ -16,28 +18,49 @@ import fi.espoo.evaka.daycare.getCaretakers
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getDaycareGroup
 import fi.espoo.evaka.daycare.getDaycareGroupSummaries
+import fi.espoo.evaka.daycare.getDaycareGroups
 import fi.espoo.evaka.daycare.getDaycareStub
 import fi.espoo.evaka.daycare.getDaycares
+import fi.espoo.evaka.daycare.getGroupStats
 import fi.espoo.evaka.daycare.getUnitFeatures
 import fi.espoo.evaka.daycare.insertCaretakers
 import fi.espoo.evaka.daycare.removeUnitFeatures
+import fi.espoo.evaka.daycare.service.Caretakers
 import fi.espoo.evaka.daycare.service.DaycareGroup
 import fi.espoo.evaka.daycare.service.DaycareService
 import fi.espoo.evaka.daycare.updateCaretakers
 import fi.espoo.evaka.daycare.updateDaycare
 import fi.espoo.evaka.daycare.updateDaycareManager
 import fi.espoo.evaka.daycare.updateGroup
+import fi.espoo.evaka.occupancy.OccupancyPeriod
+import fi.espoo.evaka.occupancy.OccupancyPeriodGroupLevel
+import fi.espoo.evaka.occupancy.OccupancyResponse
+import fi.espoo.evaka.occupancy.OccupancyType
+import fi.espoo.evaka.occupancy.calculateOccupancyPeriodsGroupLevel
+import fi.espoo.evaka.placement.DaycarePlacementWithDetails
+import fi.espoo.evaka.placement.MissingGroupPlacement
+import fi.espoo.evaka.placement.TerminatedPlacement
+import fi.espoo.evaka.placement.UnitChildrenCapacityFactors
+import fi.espoo.evaka.placement.getDetailedDaycarePlacements
+import fi.espoo.evaka.placement.getMissingGroupPlacements
+import fi.espoo.evaka.placement.getTerminatedPlacements
 import fi.espoo.evaka.placement.getUnitApplicationNotifications
+import fi.espoo.evaka.placement.getUnitChildrenCapacities
+import fi.espoo.evaka.shared.BackupCareId
 import fi.espoo.evaka.shared.DaycareCaretakerId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
+import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -424,6 +447,151 @@ class DaycareController(
         )
     }
 
+    @GetMapping("/{unitId}/group-details")
+    fun getUnitGroupDetails(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable unitId: DaycareId,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) from: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) to: LocalDate
+    ): UnitGroupDetails {
+        val terminatedPlacementsViewWeeks = 2L
+        val period = FiniteDateRange(from, to)
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_GROUP_DETAILS,
+                        unitId
+                    )
+                    val groups = tx.getDaycareGroups(unitId, from, to)
+                    val placements =
+                        tx.getDetailedDaycarePlacements(unitId, null, from, to).toList()
+                    val backupCares = tx.getBackupCaresForDaycare(unitId, period)
+                    val missingGroupPlacements =
+                        if (
+                            accessControl.hasPermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Unit.READ_MISSING_GROUP_PLACEMENTS,
+                                unitId
+                            )
+                        ) {
+                            getMissingGroupPlacements(tx, unitId)
+                        } else {
+                            emptyList()
+                        }
+                    val recentlyTerminatedPlacements =
+                        if (
+                            accessControl.hasPermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Unit.READ_TERMINATED_PLACEMENTS,
+                                unitId
+                            )
+                        ) {
+                            tx.getTerminatedPlacements(
+                                clock.today(),
+                                unitId,
+                                clock.today().minusWeeks(terminatedPlacementsViewWeeks),
+                                clock.today()
+                            )
+                        } else {
+                            emptyList()
+                        }
+                    val caretakers = tx.getGroupStats(unitId, from, to)
+                    val backupCareIds =
+                        backupCares.map { it.id }.toSet() +
+                            missingGroupPlacements
+                                .mapNotNull {
+                                    if (it.backup) {
+                                        BackupCareId(it.placementId.raw)
+                                    } else {
+                                        null
+                                    }
+                                }
+                                .toSet()
+                    val placementIds =
+                        placements.map { it.id }.toSet() +
+                            missingGroupPlacements
+                                .mapNotNull {
+                                    if (!it.backup) {
+                                        it.placementId
+                                    } else {
+                                        null
+                                    }
+                                }
+                                .toSet()
+
+                    val capacities =
+                        if (
+                            accessControl.hasPermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Unit.READ_CHILD_CAPACITY_FACTORS,
+                                unitId
+                            )
+                        ) {
+                            tx.getUnitChildrenCapacities(unitId, from)
+                        } else {
+                            listOf()
+                        }
+
+                    val groupOccupancies =
+                        if (
+                            accessControl.hasPermissionFor(
+                                tx,
+                                user,
+                                clock,
+                                Action.Unit.READ_OCCUPANCIES,
+                                unitId
+                            )
+                        ) {
+                            getGroupOccupancies(
+                                tx,
+                                clock.today(),
+                                unitId,
+                                period,
+                                AccessControlFilter.PermitAll
+                            )
+                        } else null
+
+                    UnitGroupDetails(
+                        groups = groups,
+                        placements = placements,
+                        backupCares = backupCares,
+                        missingGroupPlacements = missingGroupPlacements,
+                        recentlyTerminatedPlacements = recentlyTerminatedPlacements,
+                        caretakers = caretakers,
+                        unitChildrenCapacityFactors = capacities,
+                        groupOccupancies = groupOccupancies,
+                        permittedBackupCareActions =
+                            accessControl.getPermittedActions(tx, user, clock, backupCareIds),
+                        permittedPlacementActions =
+                            accessControl.getPermittedActions(tx, user, clock, placementIds),
+                        permittedGroupPlacementActions =
+                            accessControl.getPermittedActions(
+                                tx,
+                                user,
+                                clock,
+                                placements.flatMap { placement ->
+                                    placement.groupPlacements.mapNotNull { groupPlacement ->
+                                        groupPlacement.id
+                                    }
+                                }
+                            )
+                    )
+                }
+            }
+            .also { Audit.UnitView.log(targetId = unitId) }
+    }
+
     @GetMapping("/{daycareId}/notifications")
     fun getUnitNotifications(
         db: Database,
@@ -445,6 +613,18 @@ class DaycareController(
                                 )
                             )
                                 tx.getUnitApplicationNotifications(daycareId)
+                            else 0,
+                        groups =
+                            if (
+                                accessControl.hasPermissionFor(
+                                    tx,
+                                    user,
+                                    clock,
+                                    Action.Unit.READ_MISSING_GROUP_PLACEMENTS,
+                                    daycareId
+                                )
+                            )
+                                getMissingGroupPlacements(tx, daycareId).size
                             else 0
                     )
                 }
@@ -491,5 +671,86 @@ class DaycareController(
         val enable: Boolean
     )
 
-    data class UnitNotifications(val applications: Int)
+    data class UnitNotifications(val applications: Int, val groups: Int)
+}
+
+data class UnitGroupDetails(
+    val groups: List<DaycareGroup>,
+    val placements: List<DaycarePlacementWithDetails>,
+    val backupCares: List<UnitBackupCare>,
+    val missingGroupPlacements: List<MissingGroupPlacement>,
+    val recentlyTerminatedPlacements: List<TerminatedPlacement>,
+    val caretakers: Map<GroupId, Caretakers>,
+    val unitChildrenCapacityFactors: List<UnitChildrenCapacityFactors>,
+    val groupOccupancies: GroupOccupancies?,
+    val permittedBackupCareActions: Map<BackupCareId, Set<Action.BackupCare>>,
+    val permittedPlacementActions: Map<PlacementId, Set<Action.Placement>>,
+    val permittedGroupPlacementActions: Map<GroupPlacementId, Set<Action.GroupPlacement>>
+)
+
+data class GroupOccupancies(
+    val confirmed: Map<GroupId, OccupancyResponse>,
+    val realized: Map<GroupId, OccupancyResponse>
+)
+
+private fun getGroupOccupancies(
+    tx: Database.Read,
+    today: LocalDate,
+    unitId: DaycareId,
+    period: FiniteDateRange,
+    unitFilter: AccessControlFilter<DaycareId>
+): GroupOccupancies {
+    return GroupOccupancies(
+        confirmed =
+            getGroupOccupancyResponses(
+                tx.calculateOccupancyPeriodsGroupLevel(
+                    today,
+                    unitId,
+                    period,
+                    OccupancyType.CONFIRMED,
+                    unitFilter
+                )
+            ),
+        realized =
+            getGroupOccupancyResponses(
+                tx.calculateOccupancyPeriodsGroupLevel(
+                    today,
+                    unitId,
+                    period,
+                    OccupancyType.REALIZED,
+                    unitFilter
+                )
+            )
+    )
+}
+
+private fun getGroupOccupancyResponses(
+    occupancies: List<OccupancyPeriodGroupLevel>
+): Map<GroupId, OccupancyResponse> {
+    return occupancies
+        .groupBy { it.groupId }
+        .mapValues { (_, value) ->
+            val occupancyPeriods =
+                value.map {
+                    OccupancyPeriod(
+                        period = it.period,
+                        sum = it.sum,
+                        headcount = it.headcount,
+                        caretakers = it.caretakers,
+                        percentage = it.percentage
+                    )
+                }
+
+            OccupancyResponse(
+                occupancies = occupancyPeriods,
+                max =
+                    occupancyPeriods
+                        .filter { it.percentage != null }
+                        .maxByOrNull { it.percentage!! },
+                min =
+                    occupancyPeriods
+                        .filter { it.percentage != null }
+                        .minByOrNull { it.percentage!! }
+            )
+        }
 }

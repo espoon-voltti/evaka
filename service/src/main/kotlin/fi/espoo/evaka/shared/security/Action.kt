@@ -1470,7 +1470,7 @@ sealed interface Action {
                 )
                 .inUnit()
         ),
-        READ_BASIC(
+        READ_GROUP_DETAILS(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
