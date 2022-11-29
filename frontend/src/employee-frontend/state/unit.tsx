@@ -11,6 +11,7 @@ import React, {
 } from 'react'
 
 import { Loading, Result, Success } from 'lib-common/api'
+import { UnitNotifications } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -19,6 +20,7 @@ import {
   DaycareAclRow,
   getDaycare,
   getDaycareAclRows,
+  getUnitNotifications,
   UnitResponse
 } from '../api/unit'
 import { UnitFilters } from '../utils/UnitFilters'
@@ -26,6 +28,8 @@ import { UnitFilters } from '../utils/UnitFilters'
 export interface UnitState {
   unitId: UUID
   unitInformation: Result<UnitResponse>
+  unitNotifications: Result<UnitNotifications>
+  reloadUnitNotifications: () => void
   filters: UnitFilters
   setFilters: Dispatch<SetStateAction<UnitFilters>>
   daycareAclRows: Result<DaycareAclRow[]>
@@ -35,6 +39,8 @@ export interface UnitState {
 const defaultState: UnitState = {
   unitId: '',
   unitInformation: Loading.of(),
+  unitNotifications: Loading.of(),
+  reloadUnitNotifications: () => undefined,
   filters: new UnitFilters(LocalDate.todayInSystemTz(), '1 day'),
   setFilters: () => undefined,
   daycareAclRows: Loading.of(),
@@ -51,8 +57,11 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
   children: JSX.Element
 }) {
   const [filters, setFilters] = useState(defaultState.filters)
-
   const [unitInformation] = useApiState(() => getDaycare(id), [id])
+  const [unitNotifications, reloadUnitNotifications] = useApiState(
+    () => getUnitNotifications(id),
+    [id]
+  )
   const [daycareAclRows, reloadDaycareAclRows] = useApiState(
     () =>
       unitInformation.isSuccess &&
@@ -66,12 +75,22 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
     () => ({
       unitId: id,
       unitInformation,
+      unitNotifications,
+      reloadUnitNotifications,
       filters,
       setFilters,
       daycareAclRows,
       reloadDaycareAclRows
     }),
-    [id, unitInformation, filters, daycareAclRows, reloadDaycareAclRows]
+    [
+      id,
+      unitInformation,
+      unitNotifications,
+      reloadUnitNotifications,
+      filters,
+      daycareAclRows,
+      reloadDaycareAclRows
+    ]
   )
 
   return <UnitContext.Provider value={value}>{children}</UnitContext.Provider>

@@ -18,11 +18,10 @@ import {
 } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { getUnitNotifications, UnitResponse } from 'employee-frontend/api/unit'
+import { UnitResponse } from 'employee-frontend/api/unit'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import Spinner from 'lib-components/atoms/state/Spinner'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import Tabs from 'lib-components/molecules/Tabs'
@@ -46,9 +45,9 @@ const defaultTab = (unit: UnitResponse) => {
 const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
-  const { unitInformation, filters, setFilters } = useContext(UnitContext)
+  const { unitInformation, unitNotifications, filters, setFilters } =
+    useContext(UnitContext)
 
-  const [unitNotifications] = useApiState(() => getUnitNotifications(id), [id])
   const [searchParams, setSearchParams] = useSearchParams()
   useEffect(() => {
     if (searchParams.has('start')) {

@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Dispatch, SetStateAction, useContext, useMemo } from 'react'
+import React, {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useContext,
+  useMemo
+} from 'react'
 
 import { getUnitGroupDetails } from 'employee-frontend/api/unit'
 import { combine, Result } from 'lib-common/api'
@@ -27,12 +33,21 @@ export default React.memo(function TabGroups({
   openGroups,
   setOpenGroups
 }: Props) {
-  const { unitId, unitInformation, filters, setFilters } =
-    useContext(UnitContext)
+  const {
+    unitId,
+    unitInformation,
+    reloadUnitNotifications,
+    filters,
+    setFilters
+  } = useContext(UnitContext)
   const [groupData, reloadGroupData] = useApiState(
     () => getUnitGroupDetails(unitId, filters.startDate, filters.endDate),
     [unitId, filters.startDate, filters.endDate]
   )
+  const reloadData = useCallback(() => {
+    void reloadGroupData()
+    reloadUnitNotifications()
+  }, [reloadGroupData, reloadUnitNotifications])
 
   const groupPermittedActions: Result<
     Record<string, Set<Action.Group> | undefined>
@@ -69,7 +84,7 @@ export default React.memo(function TabGroups({
               groups={groupData.groups}
               missingGroupPlacements={groupData.missingGroupPlacements}
               backupCares={groupData.backupCares}
-              reloadGroupData={reloadGroupData}
+              reloadGroupData={reloadData}
               permittedPlacementActions={groupData.permittedPlacementActions}
               permittedBackupCareActions={groupData.permittedBackupCareActions}
             />
@@ -94,7 +109,7 @@ export default React.memo(function TabGroups({
               groupData.permittedGroupPlacementActions
             }
             unitChildrenCapacityFactors={groupData.unitChildrenCapacityFactors}
-            reloadGroupData={reloadGroupData}
+            reloadGroupData={reloadData}
             openGroups={openGroups}
             setOpenGroups={setOpenGroups}
           />

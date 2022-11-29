@@ -2,9 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useCallback, useContext } from 'react'
 
 import { getUnitApplications } from 'employee-frontend/api/unit'
+import { UnitContext } from 'employee-frontend/state/unit'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Title from 'lib-components/atoms/Title'
@@ -24,10 +25,16 @@ interface Props {
 
 export default React.memo(function TabApplicationProcess({ unitId }: Props) {
   const { i18n } = useTranslation()
+  const { reloadUnitNotifications } = useContext(UnitContext)
   const [applications, reloadApplications] = useApiState(
     () => getUnitApplications(unitId),
     [unitId]
   )
+  const reloadData = useCallback(() => {
+    void reloadApplications()
+    reloadUnitNotifications()
+  }, [reloadApplications, reloadUnitNotifications])
+
   return renderResult(
     applications,
     ({ placementPlans, placementProposals, applications }, isReloading) => (
@@ -41,7 +48,7 @@ export default React.memo(function TabApplicationProcess({ unitId }: Props) {
         <TabPlacementProposals
           unitId={unitId}
           placementProposals={placementProposals}
-          reloadApplications={reloadApplications}
+          reloadApplications={reloadData}
         />
         <Gap size="m" />
         <TabApplications applications={applications} />
