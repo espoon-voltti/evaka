@@ -107,7 +107,7 @@ export const validateApplication = (
       ),
       connectedDaycarePreferredStartDate:
         apiData.type === 'PRESCHOOL' &&
-        featureFlags.preschoolApplication.serviceNeedOption
+        featureFlags.preschoolApplication.connectedDaycarePreferredStartDate
           ? required(form.serviceNeed.connectedDaycarePreferredStartDate)
           : undefined,
       serviceNeedOption:
