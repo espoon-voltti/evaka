@@ -212,15 +212,18 @@ export async function respondToPlacementProposal(
   status: PlacementPlanConfirmationStatus,
   reason?: PlacementPlanRejectReason,
   otherReason?: string
-): Promise<void> {
-  return client.post(
-    `/v2/applications/${applicationId}/actions/respond-to-placement-proposal`,
-    {
-      status,
-      reason,
-      otherReason
-    }
-  )
+): Promise<Result<void>> {
+  return client
+    .post(
+      `/v2/applications/${applicationId}/actions/respond-to-placement-proposal`,
+      {
+        status,
+        reason,
+        otherReason
+      }
+    )
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
 }
 
 export async function confirmDecisionMailed(

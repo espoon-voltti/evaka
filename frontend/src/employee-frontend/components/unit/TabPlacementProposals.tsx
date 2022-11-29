@@ -46,7 +46,7 @@ export default React.memo(function TabPlacementProposals({
       <PlacementProposals
         unitId={unitId}
         placementPlans={placementProposals}
-        loadUnitData={reloadApplications}
+        reloadApplications={reloadApplications}
       />
     </CollapsibleContentArea>
   )
