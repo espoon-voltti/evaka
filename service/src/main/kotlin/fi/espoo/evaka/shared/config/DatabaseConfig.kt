@@ -36,6 +36,13 @@ class DatabaseConfig {
                     .getPlugin(PostgreSQLConfigurationExtension::class.java)
                     .isTransactionalLock = false
             }
+            .ignoreMigrationPatterns(
+                if (env.flywayIgnoreFutureMigrations) {
+                    "*:future"
+                } else {
+                    ""
+                }
+            )
             .dataSource(env.url, env.flywayUsername, env.flywayPassword.value)
             .placeholders(
                 mapOf("application_user" to env.username, "migration_user" to env.flywayUsername)
