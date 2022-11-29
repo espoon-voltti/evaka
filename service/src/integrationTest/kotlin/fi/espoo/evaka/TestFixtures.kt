@@ -760,6 +760,7 @@ fun Database.Transaction.insertApplication(
                             preferredUnits =
                                 listOf(PreferredUnit(testDaycare.id, testDaycare.name)),
                             preferredStartDate = preferredStartDate,
+                            connectedDaycarePreferredStartDate = null,
                             serviceNeed =
                                 if (
                                     appliedType in

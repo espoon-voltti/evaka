@@ -75,6 +75,9 @@ export const deserializeApplicationDetails = (
       ...json.form.preferences,
       preferredStartDate: LocalDate.parseNullableIso(
         json.form.preferences.preferredStartDate
+      ),
+      connectedDaycarePreferredStartDate: LocalDate.parseNullableIso(
+        json.form.preferences.connectedDaycarePreferredStartDate
       )
     }
   },
@@ -179,6 +182,7 @@ export interface ApplicationSecondGuardian {
 export interface ApplicationPreferences {
   preferredUnits: PreferredUnit[]
   preferredStartDate: LocalDate | null
+  connectedDaycarePreferredStartDate: LocalDate | null
   serviceNeed: ApplicationServiceNeed | null
   siblingBasis: { siblingName: string; siblingSsn: string } | null
   preparatory: boolean

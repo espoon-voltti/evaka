@@ -2,9 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import maxBy from 'lodash/maxBy'
-import minBy from 'lodash/minBy'
-import React, { useMemo } from 'react'
+import React from 'react'
 
 import { Result } from 'lib-common/api'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -28,17 +26,15 @@ import {
 } from '../../../attachments'
 import { errorToInputInfo } from '../../../input-info-helper'
 import { useLang, useTranslation } from '../../../localization'
-import {
-  isValidPreferredStartDate,
-  maxPreferredStartDate,
-  minPreferredStartDate
-} from '../validations'
+import { isValidPreferredStartDate } from '../validations'
 
 import { ClubTermsInfo } from './ClubTermsInfo'
 import { ServiceNeedSectionProps } from './ServiceNeedSection'
 
 export default React.memo(function PreferredStartSubSection({
   originalPreferredStartDate,
+  minDate,
+  maxDate,
   type,
   formData,
   updateFormData,
@@ -98,20 +94,6 @@ export default React.memo(function PreferredStartSubSection({
       )
     )
   }
-
-  const maxDate = useMemo(() => {
-    const maxPreferred = maxPreferredStartDate()
-    const maxTermDate = terms && maxBy(terms, (term) => term.end)?.end
-
-    return maxTermDate?.isBefore(maxPreferred) ? maxTermDate : maxPreferred
-  }, [terms])
-
-  const minDate = useMemo(() => {
-    const minPreferred = minPreferredStartDate(originalPreferredStartDate)
-    const minTermDate = terms && minBy(terms, (term) => term.start)?.start
-
-    return minTermDate?.isAfter(minPreferred) ? minTermDate : minPreferred
-  }, [terms, originalPreferredStartDate])
 
   return (
     <>

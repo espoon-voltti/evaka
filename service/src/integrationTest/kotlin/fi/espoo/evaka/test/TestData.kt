@@ -109,6 +109,7 @@ private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: 
                     Preferences(
                         preferredUnits = preferredUnits.asList(),
                         preferredStartDate = LocalDate.of(2021, 8, 15),
+                        connectedDaycarePreferredStartDate = null,
                         serviceNeed =
                             ServiceNeed(
                                 startTime = "08:00",
@@ -201,6 +202,7 @@ val validPreschoolApplication =
                         preferredUnits =
                             listOf(PreferredUnit(id = testDaycare.id, name = testDaycare.name)),
                         preferredStartDate = LocalDate.of(2021, 8, 15),
+                        connectedDaycarePreferredStartDate = null,
                         serviceNeed =
                             ServiceNeed(
                                 startTime = "08:00",
@@ -293,6 +295,7 @@ val validClubApplication =
                         preferredUnits =
                             listOf(PreferredUnit(id = testClub.id, name = testClub.name)),
                         preferredStartDate = LocalDate.of(2021, 8, 15),
+                        connectedDaycarePreferredStartDate = null,
                         serviceNeed = null,
                         siblingBasis = null,
                         preparatory = false,

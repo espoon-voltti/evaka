@@ -524,6 +524,7 @@ export interface PlacementProposalStatus {
 * Generated from fi.espoo.evaka.application.Preferences
 */
 export interface Preferences {
+  connectedDaycarePreferredStartDate: LocalDate | null
   preferredStartDate: LocalDate | null
   preferredUnits: PreferredUnit[]
   preparatory: boolean

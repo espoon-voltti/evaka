@@ -2,7 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect, useState } from 'react'
+import maxBy from 'lodash/maxBy'
+import minBy from 'lodash/minBy'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { combine } from 'lib-common/api'
@@ -54,6 +56,8 @@ import {
 import {
   ApplicationFormDataErrors,
   applicationHasErrors,
+  maxPreferredStartDate,
+  minPreferredStartDate,
   validateApplication
 } from './validations'
 
@@ -70,6 +74,9 @@ export type ApplicationFormProps = {
   ) => void
   errors: ApplicationFormDataErrors
   verificationRequested: boolean
+  originalPreferredStartDate: LocalDate | null
+  minDate: LocalDate
+  maxDate: LocalDate
   terms?: FiniteDateRange[]
 }
 
@@ -130,6 +137,25 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   useEffect(() => {
     setErrors(validateApplication(apiData, formData, terms))
   }, [apiData, formData, terms])
+
+  const originalPreferredStartDate =
+    apiData.status !== 'CREATED'
+      ? apiData.form.preferences.preferredStartDate
+      : null
+
+  const minDate = useMemo(() => {
+    const minPreferred = minPreferredStartDate(originalPreferredStartDate)
+    const minTermDate = terms && minBy(terms, (term) => term.start)?.start
+
+    return minTermDate?.isAfter(minPreferred) ? minTermDate : minPreferred
+  }, [terms, originalPreferredStartDate])
+
+  const maxDate = useMemo(() => {
+    const maxPreferred = maxPreferredStartDate()
+    const maxTermDate = terms && maxBy(terms, (term) => term.end)?.end
+
+    return maxTermDate?.isBefore(maxPreferred) ? maxTermDate : maxPreferred
+  }, [terms])
 
   const onVerify = () => {
     setErrors(validateApplication(apiData, formData, terms))
@@ -257,6 +283,9 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             setFormData={setFormData}
             errors={errors}
             verificationRequested={verificationRequested}
+            originalPreferredStartDate={originalPreferredStartDate}
+            minDate={minDate}
+            maxDate={maxDate}
           />
         )
       case 'PRESCHOOL':
@@ -268,6 +297,9 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             errors={errors}
             verificationRequested={verificationRequested}
             terms={terms}
+            originalPreferredStartDate={originalPreferredStartDate}
+            minDate={minDate}
+            maxDate={maxDate}
           />
         )
       case 'CLUB':
@@ -279,6 +311,9 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             errors={errors}
             verificationRequested={verificationRequested}
             terms={terms}
+            originalPreferredStartDate={originalPreferredStartDate}
+            minDate={minDate}
+            maxDate={maxDate}
           />
         )
     }

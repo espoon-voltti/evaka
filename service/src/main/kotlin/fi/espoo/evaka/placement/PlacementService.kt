@@ -36,7 +36,11 @@ import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.json.Json
 
-data class ApplicationServiceNeed(val optionId: ServiceNeedOptionId, val shiftCare: Boolean)
+data class ApplicationServiceNeed(
+    val optionId: ServiceNeedOptionId,
+    val shiftCare: Boolean,
+    val placementType: PlacementType
+)
 
 fun createPlacements(
     tx: Database.Transaction,
@@ -57,7 +61,7 @@ fun createPlacements(
 
     return placementTypePeriods.map { (period, type) ->
         val placement = tx.insertPlacement(type, childId, unitId, period.start, period.end)
-        if (serviceNeed != null) {
+        if (serviceNeed?.placementType == type) {
             tx.insertServiceNeed(
                 placement.id,
                 period.start,

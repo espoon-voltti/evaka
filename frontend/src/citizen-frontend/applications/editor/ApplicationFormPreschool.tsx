@@ -2,9 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
+import { useTranslation } from 'citizen-frontend/localization'
+import { Loading, Result, Success } from 'lib-common/api'
+import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
+import { useRestApi } from 'lib-common/utils/useRestApi'
+import Loader from 'lib-components/atoms/Loader'
+import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { featureFlags } from 'lib-customizations/citizen'
 
 import AdditionalDetailsSection from '../../applications/editor/AdditionalDetailsSection'
 import { ApplicationFormProps } from '../../applications/editor/ApplicationEditor'
@@ -13,6 +20,7 @@ import Heading from '../../applications/editor/Heading'
 import ContactInfoSection from '../../applications/editor/contact-info/ContactInfoSection'
 import ServiceNeedSection from '../../applications/editor/service-need/ServiceNeedSection'
 import UnitPreferenceSection from '../../applications/editor/unit-preference/UnitPreferenceSection'
+import { getServiceNeedOptionPublicInfos } from '../api'
 
 export default React.memo(function ApplicationFormPreschool({
   apiData,
@@ -20,14 +28,44 @@ export default React.memo(function ApplicationFormPreschool({
   setFormData,
   errors,
   verificationRequested,
+  originalPreferredStartDate,
+  minDate,
+  maxDate,
   terms
 }: ApplicationFormProps) {
   const applicationType = 'PRESCHOOL'
+  const t = useTranslation()
 
-  const originalPreferredStartDate =
-    apiData.status !== 'CREATED'
-      ? apiData.form.preferences.preferredStartDate
-      : null
+  const [serviceNeedOptions, setServiceNeedOptions] = useState<
+    Result<ServiceNeedOptionPublicInfo[]>
+  >(Loading.of())
+
+  const loadServiceNeedOptions = useRestApi(
+    getServiceNeedOptionPublicInfos,
+    setServiceNeedOptions
+  )
+
+  const shouldLoadServiceNeedOptions =
+    featureFlags.preschoolApplication.serviceNeedOption
+
+  useEffect(() => {
+    if (shouldLoadServiceNeedOptions) {
+      void loadServiceNeedOptions(['PRESCHOOL_DAYCARE'])
+    } else {
+      setServiceNeedOptions((prev) => (prev.isLoading ? Success.of([]) : prev))
+    }
+  }, [
+    setServiceNeedOptions,
+    loadServiceNeedOptions,
+    shouldLoadServiceNeedOptions
+  ])
+
+  if (serviceNeedOptions.isLoading) {
+    return <Loader />
+  }
+  if (serviceNeedOptions.isFailure) {
+    return <ErrorSegment title={t.common.errors.genericGetError} />
+  }
 
   return (
     <FixedSpaceColumn spacing="s">
@@ -42,6 +80,8 @@ export default React.memo(function ApplicationFormPreschool({
       <ServiceNeedSection
         status={apiData.status}
         originalPreferredStartDate={originalPreferredStartDate}
+        minDate={minDate}
+        maxDate={maxDate}
         type={applicationType}
         formData={formData.serviceNeed}
         updateFormData={(data) =>
@@ -60,6 +100,7 @@ export default React.memo(function ApplicationFormPreschool({
         errors={errors.serviceNeed}
         verificationRequested={verificationRequested}
         terms={terms}
+        serviceNeedOptions={serviceNeedOptions.value}
       />
 
       <UnitPreferenceSection

@@ -2366,6 +2366,14 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 getDecision(tx, DecisionType.PRESCHOOL).id,
                 mainPeriod.start
             )
+            service.acceptDecision(
+                tx,
+                serviceWorker,
+                clock,
+                applicationId,
+                getDecision(tx, DecisionType.PRESCHOOL_DAYCARE).id,
+                LocalDate.of(2020, 8, 1)
+            )
         }
         db.read {
             // then

@@ -27,7 +27,10 @@ export default React.memo(function ApplicationFormDaycare({
   formData,
   setFormData,
   errors,
-  verificationRequested
+  verificationRequested,
+  originalPreferredStartDate,
+  minDate,
+  maxDate
 }: ApplicationFormProps) {
   const applicationType = 'DAYCARE'
   const t = useTranslation()
@@ -57,11 +60,6 @@ export default React.memo(function ApplicationFormDaycare({
     shouldLoadServiceNeedOptions
   ])
 
-  const originalPreferredStartDate =
-    apiData.status !== 'CREATED'
-      ? apiData.form.preferences.preferredStartDate
-      : null
-
   return (
     <>
       {serviceNeedOptions.isLoading && <Loader />}
@@ -80,6 +78,8 @@ export default React.memo(function ApplicationFormDaycare({
 
           <ServiceNeedSection
             status={apiData.status}
+            minDate={minDate}
+            maxDate={maxDate}
             originalPreferredStartDate={originalPreferredStartDate}
             type={applicationType}
             formData={formData.serviceNeed}

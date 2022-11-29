@@ -98,6 +98,7 @@ export default React.memo(function ApplicationReadView({
         preferences: {
           preferredUnits,
           preferredStartDate,
+          connectedDaycarePreferredStartDate,
           urgent,
           serviceNeed,
           siblingBasis,
@@ -227,6 +228,28 @@ export default React.memo(function ApplicationReadView({
                 value={serviceNeed !== null}
                 selectedLabel={i18n.application.serviceNeed.connectedValue}
               />
+              {connectedDaycarePreferredStartDate !== null && (
+                <>
+                  <Label>
+                    {
+                      i18n.application.serviceNeed
+                        .connectedDaycarePreferredStartDateLabel
+                    }
+                  </Label>
+                  <span>{connectedDaycarePreferredStartDate.format()}</span>
+                </>
+              )}
+              {serviceNeed !== null && serviceNeed.serviceNeedOption !== null && (
+                <>
+                  <Label>
+                    {
+                      i18n.application.serviceNeed
+                        .connectedDaycareServiceNeedOptionLabel
+                    }
+                  </Label>
+                  <span>{serviceNeed.serviceNeedOption.nameFi}</span>
+                </>
+              )}
             </>
           )}
 
@@ -234,7 +257,8 @@ export default React.memo(function ApplicationReadView({
             <>
               {((type === 'DAYCARE' &&
                 featureFlags.daycareApplication.dailyTimes) ||
-                type === 'PRESCHOOL') && (
+                (type === 'PRESCHOOL' &&
+                  !featureFlags.preschoolApplication.serviceNeedOption)) && (
                 <>
                   <Label>{i18n.application.serviceNeed.dailyTime}</Label>
                   <span>

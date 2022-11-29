@@ -727,6 +727,7 @@ const applicationForm = (
     otherChildren: [],
     preferences: {
       preferredStartDate,
+      connectedDaycarePreferredStartDate: null,
       preferredUnits: preferredUnits.map((id) => ({ id, name: id })),
       preparatory: false,
       serviceNeed,

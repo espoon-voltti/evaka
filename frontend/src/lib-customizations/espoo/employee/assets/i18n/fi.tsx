@@ -400,6 +400,9 @@ export const fi = {
       startDate: 'Toivottu aloituspäivä',
       connectedLabel: 'Liittyvä varhaiskasvatus',
       connectedValue: 'Haen myös liittyvää varhaiskasvatusta',
+      connectedDaycarePreferredStartDateLabel:
+        'Täydentävän toivottu aloituspäivä',
+      connectedDaycareServiceNeedOptionLabel: 'Täydentävän palveluntarve',
       dailyTime: 'Päivittäinen läsnäoloaika',
       startTimePlaceholder: '08:00',
       endTimePlaceholder: '16:00',

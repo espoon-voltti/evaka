@@ -306,7 +306,8 @@ class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     ): ApplicationServiceNeed? {
         val serviceNeedOptionId =
             application.form.preferences.serviceNeed?.serviceNeedOption?.id ?: return null
-        if (tx.findServiceNeedOptionById(serviceNeedOptionId) == null) {
+        val serviceNeedOption = serviceNeedOptionId.let { tx.findServiceNeedOptionById(it) }
+        if (serviceNeedOption == null) {
             logger.warn {
                 "Application ${application.id} has non-existing service need option: $serviceNeedOptionId"
             }
@@ -314,7 +315,8 @@ class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
         }
         return ApplicationServiceNeed(
             serviceNeedOptionId,
-            application.form.preferences.serviceNeed.shiftCare
+            application.form.preferences.serviceNeed.shiftCare,
+            serviceNeedOption.validPlacementType
         )
     }
 

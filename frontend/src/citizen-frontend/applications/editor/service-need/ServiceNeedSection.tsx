@@ -27,6 +27,8 @@ import { ApplicationFormDataErrors } from '../validations'
 export type ServiceNeedSectionProps = {
   status: ApplicationStatus
   originalPreferredStartDate: LocalDate | null
+  minDate: LocalDate
+  maxDate: LocalDate
   type: ApplicationType
   formData: ServiceNeedFormData
   updateFormData: UpdateStateFn<ServiceNeedFormData>

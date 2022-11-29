@@ -105,17 +105,31 @@ export const validateApplication = (
           terms
         )
       ),
+      connectedDaycarePreferredStartDate:
+        apiData.type === 'PRESCHOOL' &&
+        featureFlags.preschoolApplication.connectedDaycarePreferredStartDate
+          ? required(form.serviceNeed.connectedDaycarePreferredStartDate)
+          : undefined,
+      serviceNeedOption:
+        apiData.type === 'PRESCHOOL' &&
+        featureFlags.preschoolApplication.serviceNeedOption
+          ? required(form.serviceNeed.serviceNeedOption)
+          : undefined,
       startTime:
         (apiData.type === 'DAYCARE' &&
           featureFlags.daycareApplication.dailyTimes) ||
-        (apiData.type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
+        (apiData.type === 'PRESCHOOL' &&
+          !featureFlags.preschoolApplication.serviceNeedOption &&
+          form.serviceNeed.connectedDaycare)
           ? required(form.serviceNeed.startTime, 'timeRequired') ||
             regexp(form.serviceNeed.startTime, TIME_REGEXP, 'timeFormat')
           : undefined,
       endTime:
         (apiData.type === 'DAYCARE' &&
           featureFlags.daycareApplication.dailyTimes) ||
-        (apiData.type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
+        (apiData.type === 'PRESCHOOL' &&
+          !featureFlags.preschoolApplication.serviceNeedOption &&
+          form.serviceNeed.connectedDaycare)
           ? required(form.serviceNeed.endTime, 'timeRequired') ||
             regexp(form.serviceNeed.endTime, TIME_REGEXP, 'timeFormat')
           : undefined,

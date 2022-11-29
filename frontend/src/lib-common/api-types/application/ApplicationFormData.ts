@@ -20,6 +20,7 @@ export type ServiceNeedFormData = {
   preferredStartDate: LocalDate | null
   urgent: boolean
   connectedDaycare: boolean
+  connectedDaycarePreferredStartDate: LocalDate | null
   startTime: string
   endTime: string
   shiftCare: boolean
@@ -180,6 +181,8 @@ export function apiDataToFormData(
   return {
     serviceNeed: {
       preferredStartDate: application.form.preferences.preferredStartDate,
+      connectedDaycarePreferredStartDate:
+        application.form.preferences.connectedDaycarePreferredStartDate,
       urgent: application.form.preferences.urgent,
       connectedDaycare:
         application.type === 'PRESCHOOL' &&
@@ -363,6 +366,8 @@ export function formDataToApiData(
     preferences: {
       preferredUnits: form.unitPreference.preferredUnits,
       preferredStartDate: form.serviceNeed.preferredStartDate,
+      connectedDaycarePreferredStartDate:
+        form.serviceNeed.connectedDaycarePreferredStartDate,
       serviceNeed:
         type === 'DAYCARE' ||
         (type === 'PRESCHOOL' && form.serviceNeed.connectedDaycare)
