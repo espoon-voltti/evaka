@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.auth.JwtToAuthenticatedUser
 import fi.espoo.evaka.shared.auth.getAuthenticatedUser
 import fi.espoo.voltti.auth.JwtTokenDecoder
 import fi.espoo.voltti.logging.filter.BasicMdcFilter
+import io.opentracing.Tracer
 import javax.servlet.FilterChain
 import javax.servlet.http.HttpFilter
 import javax.servlet.http.HttpServletRequest
@@ -38,8 +39,8 @@ class HttpFilterConfig {
         }
 
     @Bean
-    fun jwtToAuthenticatedUser() =
-        FilterRegistrationBean(JwtToAuthenticatedUser()).apply {
+    fun jwtToAuthenticatedUser(tracer: Tracer) =
+        FilterRegistrationBean(JwtToAuthenticatedUser(tracer)).apply {
             setName("jwtToAuthenticatedUser")
             urlPatterns = listOf("/*")
             order = -9
