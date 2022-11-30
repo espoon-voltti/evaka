@@ -23,7 +23,7 @@ import { ScreenReaderOnly } from '../ScreenReaderOnly'
 
 import { StyledButton } from './Button'
 
-const onSuccessTimeout = isAutomatedTest ? 10 : 500
+const onSuccessTimeout = isAutomatedTest ? 10 : 800
 const clearStateTimeout = isAutomatedTest ? 25 : 3000
 
 type ButtonState<T> =
