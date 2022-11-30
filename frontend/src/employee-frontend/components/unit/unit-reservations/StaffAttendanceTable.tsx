@@ -855,6 +855,10 @@ const validateDeparted = (
   }
 
   const departed = HelsinkiDateTime.fromLocal(config.date, parsedDeparted)
+  if (arrived && arrived.isEqual(departed)) {
+    return [undefined, 'timeFormat']
+  }
+
   if (arrived && departed.isBefore(arrived)) {
     if (isLastAttendance) {
       return [
