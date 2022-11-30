@@ -42,6 +42,7 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.upsertCitizenUser
+import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDecisionMaker_1
 import java.time.LocalDate
@@ -257,10 +258,9 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 type = MessageType.MESSAGE,
                 urgent = false,
                 sender = senderDuplicateAccount,
-                recipientGroups = setOf(setOf(receiverAccount)),
+                messageRecipients = listOf(receiverAccount to testChild_1.id),
                 recipientNames = listOf(),
                 staffCopyRecipients = setOf(),
-                accountIdsToChildIds = mapOf(),
                 municipalAccountName = "Espoo"
             )
         }
@@ -305,10 +305,9 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 type = MessageType.MESSAGE,
                 urgent = false,
                 sender = senderAccount,
-                recipientGroups = setOf(setOf(receiverDuplicateAccount)),
+                messageRecipients = listOf(receiverDuplicateAccount to testChild_1.id),
                 recipientNames = listOf(),
                 staffCopyRecipients = setOf(),
-                accountIdsToChildIds = mapOf(),
                 municipalAccountName = "Espoo"
             )
             val threadId = tx.getThreads(now, senderAccount, 1, 1, "Espoo").data.first().id
@@ -375,10 +374,9 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 type = MessageType.MESSAGE,
                 urgent = false,
                 sender = senderAccount,
-                recipientGroups = setOf(setOf(receiverDuplicateAccount)),
+                messageRecipients = listOf(receiverDuplicateAccount to testChild_1.id),
                 recipientNames = listOf(),
                 staffCopyRecipients = setOf(),
-                accountIdsToChildIds = mapOf(),
                 municipalAccountName = "Espoo"
             )
             val threadId = tx.getThreads(now, senderAccount, 1, 1, "Espoo").data.first().id

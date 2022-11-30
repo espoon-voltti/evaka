@@ -52,11 +52,13 @@ import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testAdult_3
 import fi.espoo.evaka.testAdult_4
+import fi.espoo.evaka.testAdult_5
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_3
 import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testChild_5
+import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
 import fi.espoo.evaka.withMockedTime
@@ -65,7 +67,6 @@ import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -84,6 +85,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val person2Id = testAdult_2.id
     private val person3Id = testAdult_3.id
     private val person4Id = testAdult_4.id
+    private val person5Id = testAdult_5.id
     private val fridgeHeadId = person4Id
     private val employee1Id = EmployeeId(UUID.randomUUID())
     private val employee2Id = EmployeeId(UUID.randomUUID())
@@ -95,6 +97,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val person2 = AuthenticatedUser.Citizen(id = person2Id, CitizenAuthLevel.STRONG)
     private val person3 = AuthenticatedUser.Citizen(id = person3Id, CitizenAuthLevel.STRONG)
     private val person4 = AuthenticatedUser.Citizen(id = person4Id, CitizenAuthLevel.STRONG)
+    private val person5 = AuthenticatedUser.Citizen(id = person5Id, CitizenAuthLevel.STRONG)
     private val groupId1 = GroupId(UUID.randomUUID())
     private val groupId2 = GroupId(UUID.randomUUID())
     private val placementStart = LocalDate.of(2022, 5, 14)
@@ -160,7 +163,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 )
             )
 
-            listOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4).map {
+            listOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4, testAdult_5).map {
                 tx.insertTestPerson(
                     DevPerson(id = it.id, firstName = it.firstName, lastName = it.lastName)
                 )
@@ -193,6 +196,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             testChild_5.let {
                 insertChild(tx, it, groupId1)
                 tx.insertTestParentship(fridgeHeadId, it.id) // no guardian, no messages
+            }
+
+            // person 3 and 5 are guardian of child 6
+            testChild_6.let {
+                insertChild(tx, it, groupId1)
+                tx.insertGuardian(person3Id, it.id)
+                tx.insertGuardian(person5Id, it.id)
             }
 
             tx.insertTestEmployee(
@@ -374,22 +384,26 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     fun `a message is split to several threads by guardianship`() {
         // given
         val clock = MockEvakaClock(HelsinkiDateTime.now())
-        val (employee1Account, person1Account, person2Account, person3Account, person4Account) =
+        val employee1Account =
+            db.read {
+                it.getEmployeeMessageAccountIds(
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            employee1,
+                            clock,
+                            Action.MessageAccount.ACCESS
+                        )
+                    )
+                    .first()
+            }
+        val (person1Account, person2Account, person3Account, person4Account, person5Account) =
             db.read {
                 listOf(
-                    it.getEmployeeMessageAccountIds(
-                            accessControl.requireAuthorizationFilter(
-                                it,
-                                employee1,
-                                clock,
-                                Action.MessageAccount.ACCESS
-                            )
-                        )
-                        .first(),
                     it.getCitizenMessageAccount(person1Id),
                     it.getCitizenMessageAccount(person2Id),
                     it.getCitizenMessageAccount(person3Id),
-                    it.getCitizenMessageAccount(person4Id)
+                    it.getCitizenMessageAccount(person4Id),
+                    it.getCitizenMessageAccount(person5Id)
                 )
             }
 
@@ -399,8 +413,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val recipients =
             listOf(
                 MessageRecipient(MessageRecipientType.CHILD, testChild_1.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_3.id),
-                MessageRecipient(MessageRecipientType.CHILD, testChild_4.id)
+                MessageRecipient(MessageRecipientType.CHILD, testChild_4.id),
+                MessageRecipient(MessageRecipientType.CHILD, testChild_6.id)
             )
         val recipientNames = listOf("Hippiäiset", "Jani")
         postNewThread(
@@ -436,7 +450,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(1, sentMessages.data.size)
         assertEquals(recipientNames, sentMessages.data.flatMap { it.recipientNames })
         assertEquals(
-            setOf(person1Account, person2Account, person3Account, person4Account),
+            setOf(person1Account, person2Account, person3Account, person4Account, person5Account),
             sentMessages.data.flatMap { msg -> msg.recipients.map { it.id } }.toSet()
         )
         assertEquals(title, sentMessages.data[0].threadTitle)
@@ -451,18 +465,22 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         val person2Threads = getMessageThreads(person2Account, person2)
         val person3Threads = getMessageThreads(person3Account, person3)
         val person4Threads = getMessageThreads(person4Account, person4)
+        val person5Threads = getMessageThreads(person5Account, person5)
 
         assertEquals(1, person1Threads.size)
-        assertEquals(2, person2Threads.size)
+        assertEquals(1, person2Threads.size)
         assertEquals(1, person3Threads.size)
         assertEquals(1, person4Threads.size)
-        assertTrue(person2Threads.any { it == person1Threads[0] })
-        assertTrue(person2Threads.any { it == person3Threads[0] })
+        assertEquals(1, person5Threads.size)
+        assertEquals(person1Threads, person2Threads)
+        assertEquals(person3Threads, person5Threads)
+        assertNotEquals(person1Threads, person3Threads)
         assertNotEquals(person1Threads, person4Threads)
         assertNotEquals(person3Threads, person4Threads)
 
         val allThreads =
-            listOf(person1Threads, person2Threads, person3Threads, person4Threads).flatten()
+            listOf(person1Threads, person2Threads, person3Threads, person4Threads, person5Threads)
+                .flatten()
         assertEquals(5, allThreads.size)
         allThreads.forEach {
             assertEquals(title, it.title)
@@ -485,11 +503,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
         assertEquals(employeeThreads, getMessageThreads(person1Account, person1))
         assertEquals(
-            setOf(
-                listOf(Pair(employee1Account, content), Pair(person1Account, "Hello")),
-                listOf(Pair(employee1Account, content))
-            ),
-            getMessageThreads(person2Account, person2).map { it.toSenderContentPairs() }.toSet()
+            listOf(Pair(employee1Account, content), Pair(person1Account, "Hello")),
+            getMessageThreads(person2Account, person2).map { it.toSenderContentPairs() }.flatten()
         )
 
         assertEquals(person3Threads, getMessageThreads(person3Account, person3))

@@ -44,24 +44,45 @@ class MessageService(
         type: MessageType,
         urgent: Boolean,
         sender: MessageAccountId,
-        recipientGroups: Set<Set<MessageAccountId>>,
+        messageRecipients: List<Pair<MessageAccountId, ChildId>>,
         recipientNames: List<String>,
         attachmentIds: Set<AttachmentId> = setOf(),
         staffCopyRecipients: Set<MessageAccountId>,
-        accountIdsToChildIds: Map<MessageAccountId, Set<ChildId>>,
         municipalAccountName: String
     ): MessageContentId {
+        val recipientGroups: List<Pair<Set<MessageAccountId>, Set<ChildId>>> =
+            if (type == MessageType.BULLETIN) {
+                // bulletins cannot be replied to so there is no need to group threads for families
+                messageRecipients
+                    .groupBy { (accountId, _) -> accountId }
+                    .map { (accountId, pairs) ->
+                        setOf(accountId) to pairs.map { (_, childId) -> childId }.toSet()
+                    }
+            } else {
+                // groupings where all the parents can read the messages of all the children
+                messageRecipients
+                    .groupBy { (_, childId) -> childId }
+                    .mapValues { (_, accountChildPairs) ->
+                        accountChildPairs.map { it.first }.toSet()
+                    }
+                    .toList()
+                    .groupBy { (_, accounts) -> accounts }
+                    .mapValues { (_, childAccountPairs) ->
+                        childAccountPairs.map { it.first }.toSet()
+                    }
+                    .toList()
+            }
+
         // for each recipient group, create a thread, message and message_recipients while re-using
         // content
         val contentId = tx.insertMessageContent(content, sender)
         tx.reAssociateMessageAttachments(attachmentIds, contentId)
         val now = clock.now()
-        recipientGroups.forEach { recipientIds ->
+        recipientGroups.forEach { (recipients, children) ->
             val threadId = tx.insertThread(type, title, urgent, isCopy = false)
-            val childIds = recipientIds.flatMap { accountIdsToChildIds[it] ?: emptyList() }.toSet()
-            tx.insertMessageThreadChildren(childIds, threadId)
+            tx.insertMessageThreadChildren(children, threadId)
             tx.upsertSenderThreadParticipants(threadId, sender, now)
-            asyncJobRunner.scheduleThreadRecipientsUpdate(tx, threadId, recipientIds, now)
+            asyncJobRunner.scheduleThreadRecipientsUpdate(tx, threadId, recipients, now)
             val messageId =
                 tx.insertMessage(
                     now = now,
@@ -71,7 +92,7 @@ class MessageService(
                     recipientNames = recipientNames,
                     municipalAccountName = municipalAccountName
                 )
-            tx.insertRecipients(recipientIds, messageId)
+            tx.insertRecipients(recipients, messageId)
             notificationEmailService.scheduleSendingMessageNotifications(
                 tx,
                 messageId,

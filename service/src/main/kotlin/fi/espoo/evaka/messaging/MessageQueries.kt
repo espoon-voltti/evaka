@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.MessageThreadFolderId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -988,15 +989,14 @@ fun Database.Read.getMessageAccountsForRecipients(
     accountId: MessageAccountId,
     recipients: Set<MessageRecipient>,
     date: LocalDate
-): Map<MessageAccountId, Set<ChildId>> {
-    data class MessageAccountIdToChildId(val accountId: MessageAccountId, val childId: ChildId)
+): List<Pair<MessageAccountId, ChildId>> {
     val groupedRecipients = recipients.groupBy { it.type }
     return this.createQuery(
             """
 WITH sender AS (
     SELECT type, daycare_group_id, employee_id FROM message_account WHERE id = :senderId
 ), children AS (
-    SELECT pl.child_id
+    SELECT DISTINCT pl.child_id
     FROM realized_placement_all(:date) pl
     JOIN daycare d ON pl.unit_id = d.id
     WHERE (d.care_area_id = ANY(:areaRecipients) OR pl.unit_id = ANY(:unitRecipients) OR pl.group_id = ANY(:groupRecipients) OR pl.child_id = ANY(:childRecipients))
@@ -1028,7 +1028,7 @@ WITH sender AS (
     )
     AND 'MESSAGING' = ANY(d.enabled_pilot_features)
 )
-SELECT DISTINCT acc.id as account_id, c.child_id
+SELECT acc.id AS account_id, c.child_id
 FROM children c
 JOIN guardian g ON g.child_id = c.child_id
 JOIN message_account acc ON g.guardian_id = acc.person_id
@@ -1040,7 +1040,7 @@ WHERE NOT EXISTS (
 
 UNION
 
-SELECT DISTINCT acc.id as account_id, c.child_id
+SELECT acc.id AS account_id, c.child_id
 FROM children c
 JOIN foster_parent fp ON fp.child_id = c.child_id AND fp.valid_during @> :date
 JOIN message_account acc ON fp.parent_id = acc.person_id
@@ -1069,11 +1069,10 @@ WHERE NOT EXISTS (
             "childRecipients",
             groupedRecipients[MessageRecipientType.CHILD]?.map { it.id } ?: listOf()
         )
-        .mapTo<MessageAccountIdToChildId>()
-        .fold(mutableMapOf()) { acc, row ->
-            acc.merge(row.accountId, setOf(row.childId)) { a, b -> a + b }
-            acc
+        .map { rv ->
+            rv.mapColumn<MessageAccountId>("account_id") to rv.mapColumn<ChildId>("child_id")
         }
+        .toList()
 }
 
 fun Database.Transaction.markNotificationAsSent(
