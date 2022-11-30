@@ -148,7 +148,8 @@ const decisionTypesRequiringDaycareDecisionName: DecisionType[] = [
 const decisionTypesRequiringPreschoolDecisionName: DecisionType[] = [
   'PRESCHOOL',
   'PREPARATORY_EDUCATION',
-  'PRESCHOOL_DAYCARE'
+  'PRESCHOOL_DAYCARE',
+  'PRESCHOOL_CLUB'
 ]
 
 function redirectToMainPage(navigate: NavigateFunction) {
@@ -551,7 +552,7 @@ export default React.memo(function Decision() {
   its own label, infer it from existence of a preparatory decision
 */
 const decisionTypeForLabel = (type: DecisionType, decisions: DecisionDraft[]) =>
-  type === 'PRESCHOOL_DAYCARE' &&
+  (type === 'PRESCHOOL_DAYCARE' || type === 'PRESCHOOL_CLUB') &&
   decisions.some((d) => d.type === 'PREPARATORY_EDUCATION')
     ? 'PREPARATORY_DAYCARE'
     : type

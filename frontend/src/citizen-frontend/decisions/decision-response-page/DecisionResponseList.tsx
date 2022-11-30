@@ -159,7 +159,8 @@ const isDecisionBlocked = (
   { decision }: DecisionWithValidStartDatePeriod,
   allDecisions: DecisionWithValidStartDatePeriod[]
 ) =>
-  decision.type === 'PRESCHOOL_DAYCARE' &&
+  (decision.type === 'PRESCHOOL_DAYCARE' ||
+    decision.type === 'PRESCHOOL_CLUB') &&
   allDecisions.find(
     ({ decision: { type, status } }) =>
       ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(type) &&
@@ -173,5 +174,6 @@ const isRejectCascaded = (
   ['PRESCHOOL', 'PREPARATORY_EDUCATION'].includes(decision.type) &&
   allDecisions.find(
     ({ decision: { type, status } }) =>
-      type === 'PRESCHOOL_DAYCARE' && status === 'PENDING'
+      (type === 'PRESCHOOL_DAYCARE' || type === 'PRESCHOOL_CLUB') &&
+      status === 'PENDING'
   ) !== undefined

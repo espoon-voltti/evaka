@@ -412,6 +412,28 @@ val snPreschoolDaycarePartDay35 =
         active = true
     )
 
+val snPreschoolClub45 =
+    ServiceNeedOption(
+        id = ServiceNeedOptionId(UUID.randomUUID()),
+        nameFi = "Kokopäiväinen liittyvä kerho, yhteensä vähintään 45h",
+        nameSv = "Kokopäiväinen liittyvä kerho, yhteensä vähintään 45h",
+        nameEn = "Kokopäiväinen liittyvä kerho, yhteensä vähintään 45h",
+        validPlacementType = PlacementType.PRESCHOOL_CLUB,
+        defaultOption = false,
+        feeCoefficient = BigDecimal("0.80"),
+        occupancyCoefficient = BigDecimal("1.00"),
+        occupancyCoefficientUnder3y = BigDecimal("1.75"),
+        daycareHoursPerWeek = 25,
+        contractDaysPerMonth = null,
+        partDay = false,
+        partWeek = false,
+        feeDescriptionFi = "",
+        feeDescriptionSv = "",
+        voucherValueDescriptionFi = "",
+        voucherValueDescriptionSv = "",
+        active = true
+    )
+
 val snPreparatoryDaycare50 =
     ServiceNeedOption(
         id = ServiceNeedOptionId(UUID.randomUUID()),
@@ -586,6 +608,7 @@ val serviceNeedTestFixtures =
         snPreschoolDaycare45,
         snPreschoolDaycarePartDay35to45,
         snPreschoolDaycarePartDay35,
+        snPreschoolClub45,
         snPreparatoryDaycare50,
         snPreparatoryDaycarePartDay40to50,
         snPreparatoryDaycarePartDay40,
@@ -615,6 +638,7 @@ val serviceNeedOptionVoucherValueCoefficients =
         snPreschoolDaycare45.id to BigDecimal("0.50"),
         snPreschoolDaycarePartDay35to45.id to BigDecimal("0.50"),
         snPreschoolDaycarePartDay35.id to BigDecimal("0.50"),
+        snPreschoolClub45.id to BigDecimal("0.50"),
         snPreparatoryDaycare50.id to BigDecimal("0.50"),
         snPreparatoryDaycarePartDay40to50.id to BigDecimal("0.50"),
         snPreparatoryDaycarePartDay40.id to BigDecimal("0.50"),

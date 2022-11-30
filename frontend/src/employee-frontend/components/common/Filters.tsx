@@ -795,6 +795,7 @@ export function InvoiceDistinctionsFilter({
 export const preschoolTypes = [
   'PRESCHOOL_ONLY',
   'PRESCHOOL_DAYCARE',
+  'PRESCHOOL_CLUB',
   'PREPARATORY_ONLY',
   'PREPARATORY_DAYCARE',
   'DAYCARE_ONLY'

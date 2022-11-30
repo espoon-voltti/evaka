@@ -1310,6 +1310,7 @@ const en: Translations = {
         PRESCHOOL: 'pre-primary education',
         PRESCHOOL_DAYCARE:
           'early childhood education related to pre-primary education',
+        PRESCHOOL_CLUB: 'esiopetuksen kerhosta (en)',
         PREPARATORY_EDUCATION: 'preparatory education'
       },
       childName: "Child's name",
@@ -1965,6 +1966,7 @@ const en: Translations = {
       PREPARATORY: 'Valmistava opetus',
       PREPARATORY_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
       PRESCHOOL_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
+      PRESCHOOL_CLUB: 'Esiopetuksen kerho (en)',
       TEMPORARY_DAYCARE: 'Tilapäinen kokopäiväinen varhaiskasvatus',
       TEMPORARY_DAYCARE_PART_DAY: 'Tilapäinen osapäiväinen varhaiskasvatus',
       SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito'

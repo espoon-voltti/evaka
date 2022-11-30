@@ -36,6 +36,7 @@ class DecisionDraftService {
                 PlacementType.DAYCARE_PART_TIME -> planDaycareDecisionDrafts(placementPlan)
                 PlacementType.PRESCHOOL,
                 PlacementType.PRESCHOOL_DAYCARE,
+                PlacementType.PRESCHOOL_CLUB,
                 PlacementType.PREPARATORY,
                 PlacementType.PREPARATORY_DAYCARE ->
                     planPreschoolDecisionDrafts(placementPlan, application)
@@ -189,12 +190,18 @@ class DecisionDraftService {
             DecisionDraft(
                 id = DecisionId(UUID.randomUUID()), // placeholder
                 unitId = plan.unitId,
-                type = DecisionType.PRESCHOOL_DAYCARE,
+                type =
+                    if (plan.type == PlacementType.PRESCHOOL_CLUB) DecisionType.PRESCHOOL_CLUB
+                    else DecisionType.PRESCHOOL_DAYCARE,
                 startDate = plan.preschoolDaycarePeriod?.start ?: plan.period.start,
                 endDate = plan.preschoolDaycarePeriod?.end ?: plan.period.end,
                 planned =
                     plan.type in
-                        listOf(PlacementType.PRESCHOOL_DAYCARE, PlacementType.PREPARATORY_DAYCARE)
+                        listOf(
+                            PlacementType.PRESCHOOL_DAYCARE,
+                            PlacementType.PRESCHOOL_CLUB,
+                            PlacementType.PREPARATORY_DAYCARE
+                        )
             )
 
         return listOf(primary, connected)

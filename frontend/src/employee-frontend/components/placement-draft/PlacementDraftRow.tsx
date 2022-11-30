@@ -105,6 +105,7 @@ export default React.memo(function PlacementDraftSection({
         return i18n.common.types.CLUB
       case 'PRESCHOOL':
       case 'PRESCHOOL_DAYCARE':
+      case 'PRESCHOOL_CLUB':
         return i18n.common.types.PRESCHOOL
       case 'DAYCARE':
       case 'DAYCARE_PART_TIME':

@@ -693,7 +693,8 @@ class ApplicationStateService(
         }
 
         if (
-            decision.type == DecisionType.PRESCHOOL_DAYCARE &&
+            (decision.type == DecisionType.PRESCHOOL_DAYCARE ||
+                decision.type == DecisionType.PRESCHOOL_CLUB) &&
                 decisions.any {
                     it.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION) &&
                         it.status != DecisionStatus.ACCEPTED
@@ -716,6 +717,7 @@ class ApplicationStateService(
         val extent =
             when (plan.type) {
                 PlacementType.PRESCHOOL_DAYCARE,
+                PlacementType.PRESCHOOL_CLUB,
                 PlacementType.PREPARATORY_DAYCARE -> {
                     when (decision.type) {
                         DecisionType.PRESCHOOL,
@@ -723,7 +725,8 @@ class ApplicationStateService(
                             PlacementPlanExtent.OnlyPreschool(
                                 plan.period.copy(start = requestedStartDate)
                             )
-                        DecisionType.PRESCHOOL_DAYCARE ->
+                        DecisionType.PRESCHOOL_DAYCARE,
+                        DecisionType.PRESCHOOL_CLUB ->
                             PlacementPlanExtent.OnlyPreschoolDaycare(
                                 plan.preschoolDaycarePeriod!!.copy(start = requestedStartDate)
                             )
@@ -797,7 +800,8 @@ class ApplicationStateService(
                 decision.type in listOf(DecisionType.PRESCHOOL, DecisionType.PREPARATORY_EDUCATION)
             ) {
                 decisions.find {
-                    it.type === DecisionType.PRESCHOOL_DAYCARE &&
+                    (it.type === DecisionType.PRESCHOOL_DAYCARE ||
+                        it.type == DecisionType.PRESCHOOL_CLUB) &&
                         it.status == DecisionStatus.PENDING
                 }
             } else {

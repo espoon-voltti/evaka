@@ -1259,6 +1259,7 @@ export default {
         DAYCARE_PART_TIME: 'osa-aikaisesta varhaiskasvatuksesta',
         PRESCHOOL: 'esiopetuksesta',
         PRESCHOOL_DAYCARE: 'liittyvästä varhaiskasvatuksesta',
+        PRESCHOOL_CLUB: 'esiopetuksen kerhosta',
         PREPARATORY_EDUCATION: 'valmistavasta opetuksesta'
       },
       childName: 'Lapsen nimi',
@@ -2050,6 +2051,7 @@ export default {
       PREPARATORY: 'Valmistava opetus',
       PREPARATORY_DAYCARE: 'Valmistava opetus ja liittyvä varhaiskasvatus',
       PRESCHOOL_DAYCARE: 'Esiopetus ja liittyvä varhaiskasvatus',
+      PRESCHOOL_CLUB: 'Esiopetuksen kerho',
       TEMPORARY_DAYCARE: 'Tilapäinen kokopäiväinen varhaiskasvatus',
       TEMPORARY_DAYCARE_PART_DAY: 'Tilapäinen osapäiväinen varhaiskasvatus',
       SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito'

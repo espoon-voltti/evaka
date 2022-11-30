@@ -21,6 +21,7 @@ fun PlacementType.toApplicationType(): ApplicationType =
         PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> ApplicationType.DAYCARE
         PlacementType.PRESCHOOL,
         PlacementType.PRESCHOOL_DAYCARE,
+        PlacementType.PRESCHOOL_CLUB,
         PlacementType.PREPARATORY,
         PlacementType.PREPARATORY_DAYCARE -> ApplicationType.PRESCHOOL
         PlacementType.TEMPORARY_DAYCARE,

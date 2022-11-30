@@ -19,6 +19,7 @@ import fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
+import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_CLUB
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -633,7 +634,7 @@ private fun preschoolAbsenceThreshold(
     placementType: PlacementType,
     arrived: LocalTime
 ): AbsenceThreshold? {
-    if (placementType in listOf(PRESCHOOL, PRESCHOOL_DAYCARE)) {
+    if (placementType in listOf(PRESCHOOL, PRESCHOOL_DAYCARE, PRESCHOOL_CLUB)) {
         val threshold =
             if (
                 arrived > preschoolEnd ||
@@ -669,7 +670,7 @@ private fun preschoolDaycareAbsenceThreshold(
     placementType: PlacementType,
     arrived: LocalTime
 ): AbsenceThreshold? {
-    if (placementType == PRESCHOOL_DAYCARE) {
+    if (placementType == PRESCHOOL_DAYCARE || placementType == PRESCHOOL_CLUB) {
         if (Duration.between(arrived, preschoolStart) > connectedDaycareBuffer) return null
 
         val threshold = preschoolEnd.plus(connectedDaycareBuffer)

@@ -196,7 +196,8 @@ class DecisionService(
             DecisionType.DAYCARE,
             DecisionType.DAYCARE_PART_TIME -> "daycaredecision"
             DecisionType.PRESCHOOL -> "preschooldecision"
-            DecisionType.PRESCHOOL_DAYCARE -> "connectingdaycaredecision"
+            DecisionType.PRESCHOOL_DAYCARE,
+            DecisionType.PRESCHOOL_CLUB -> "connectingdaycaredecision"
             DecisionType.PREPARATORY_EDUCATION -> "preparatorydecision"
         }.let { "${it}_${decision.id}_${guardian.id}_$lang" }
     }
@@ -344,7 +345,8 @@ class DecisionService(
                     DecisionType.DAYCARE,
                     DecisionType.DAYCARE_PART_TIME -> "Beslut_om_småbarnspedagogisk_verksamhet"
                     DecisionType.PRESCHOOL -> "Beslut_om_förskoleplats"
-                    DecisionType.PRESCHOOL_DAYCARE -> "Anslutande_småbarnspedagogik"
+                    DecisionType.PRESCHOOL_DAYCARE,
+                    DecisionType.PRESCHOOL_CLUB -> "Anslutande_småbarnspedagogik"
                     DecisionType.PREPARATORY_EDUCATION ->
                         "Valmistava_päätös" // Svebi does not offer preparatory education
                 }
@@ -354,7 +356,8 @@ class DecisionService(
                     DecisionType.DAYCARE,
                     DecisionType.DAYCARE_PART_TIME -> "Varhaiskasvatuspäätös"
                     DecisionType.PRESCHOOL -> "Esiopetuspäätös"
-                    DecisionType.PRESCHOOL_DAYCARE -> "Liittyvä_varhaiskasvatuspäätös"
+                    DecisionType.PRESCHOOL_DAYCARE,
+                    DecisionType.PRESCHOOL_CLUB -> "Liittyvä_varhaiskasvatuspäätös"
                     DecisionType.PREPARATORY_EDUCATION -> "Valmistava_päätös"
                 }
         }
@@ -421,6 +424,7 @@ private fun generateDecisionPages(
             setVariable(
                 "hideDaycareTime",
                 decision.type == DecisionType.PRESCHOOL_DAYCARE ||
+                    decision.type == DecisionType.PRESCHOOL_CLUB ||
                     decision.type == DecisionType.CLUB ||
                     decision.unit.providerType == ProviderType.PRIVATE_SERVICE_VOUCHER
             )
@@ -432,6 +436,7 @@ private fun generateDecisionPages(
                         decision.unit.daycareDecisionName.takeUnless { it.isBlank() }
                     DecisionType.PRESCHOOL,
                     DecisionType.PRESCHOOL_DAYCARE,
+                    DecisionType.PRESCHOOL_CLUB,
                     DecisionType.PREPARATORY_EDUCATION ->
                         decision.unit.preschoolDecisionName.takeUnless { it.isBlank() }
                     else -> null
@@ -454,6 +459,7 @@ private fun createTemplate(
         DecisionType.CLUB -> templateProvider.getClubDecisionPath()
         DecisionType.DAYCARE,
         DecisionType.PRESCHOOL_DAYCARE,
+        DecisionType.PRESCHOOL_CLUB,
         DecisionType.DAYCARE_PART_TIME -> {
             if (decision.unit.providerType == ProviderType.PRIVATE_SERVICE_VOUCHER) {
                 templateProvider.getDaycareVoucherDecisionPath()

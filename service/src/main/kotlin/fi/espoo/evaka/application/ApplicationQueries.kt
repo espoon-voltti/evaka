@@ -134,7 +134,8 @@ fun Database.Read.activePlacementExists(
                     PlacementType.PREPARATORY,
                     PlacementType.PREPARATORY_DAYCARE,
                     PlacementType.PRESCHOOL,
-                    PlacementType.PRESCHOOL_DAYCARE
+                    PlacementType.PRESCHOOL_DAYCARE,
+                    PlacementType.PRESCHOOL_CLUB
                 )
             else -> listOf()
         }
@@ -1126,6 +1127,7 @@ RETURNING id
                 PlacementType.CLUB,
                 PlacementType.PRESCHOOL,
                 PlacementType.PRESCHOOL_DAYCARE,
+                PlacementType.PRESCHOOL_CLUB,
                 PlacementType.PREPARATORY,
                 PlacementType.PREPARATORY_DAYCARE,
                 PlacementType.TEMPORARY_DAYCARE,
@@ -1154,6 +1156,7 @@ RETURNING id
                 PlacementType.DAYCARE_FIVE_YEAR_OLDS,
                 PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
                 PlacementType.PRESCHOOL,
+                PlacementType.PRESCHOOL_CLUB,
                 PlacementType.PRESCHOOL_DAYCARE,
                 PlacementType.PREPARATORY,
                 PlacementType.PREPARATORY_DAYCARE,

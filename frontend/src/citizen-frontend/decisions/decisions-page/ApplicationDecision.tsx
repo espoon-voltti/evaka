@@ -26,6 +26,7 @@ import { PdfLink } from '../PdfLink'
 const preschoolInfoTypes: DecisionType[] = [
   'PRESCHOOL',
   'PRESCHOOL_DAYCARE',
+  'PRESCHOOL_CLUB',
   'PREPARATORY_EDUCATION'
 ]
 

@@ -1261,6 +1261,7 @@ const sv: Translations = {
         DAYCARE_PART_TIME: 'deldag småbarnspedagogik',
         PRESCHOOL: 'förskola',
         PRESCHOOL_DAYCARE: 'kompletterande småbarnspedagogik',
+        PRESCHOOL_CLUB: 'esiopetuksen kerhosta (sv)',
         PREPARATORY_EDUCATION: 'förberedande undervisning'
       },
       childName: 'Barnets namn',
@@ -2071,6 +2072,7 @@ const sv: Translations = {
         'Förberedande undervisning och tillhörande småbarnspedagogik',
       PRESCHOOL_DAYCARE:
         'Förskoleundervisning och tillhörande småbarnspedagogik',
+      PRESCHOOL_CLUB: 'Esiopetuksen kerho (sv)',
       TEMPORARY_DAYCARE: 'Tillfällig småbarnspedagogik på heltid',
       TEMPORARY_DAYCARE_PART_DAY: 'Tillfällig småbarnspedagogik på deltid',
       SCHOOL_SHIFT_CARE: 'Skiftvård för skolbarn'
