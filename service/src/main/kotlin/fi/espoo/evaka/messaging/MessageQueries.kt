@@ -1284,6 +1284,8 @@ WITH deleted_message AS (
     DELETE FROM message_thread WHERE id = ANY(:threadIds)
 ), deleted_thread_children AS (
     DELETE FROM message_thread_children WHERE thread_id = ANY(:threadIds)
+), deleted_attachment AS (
+    DELETE FROM attachment WHERE message_content_id = ANY(:contentIds)
 )
 DELETE FROM message_content WHERE id = ANY(:contentIds)
 """

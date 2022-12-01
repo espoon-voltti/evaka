@@ -555,6 +555,26 @@ describe('Sending and receiving messages', () => {
       await citizenMessagesPage.assertInboxIsEmpty()
     })
 
+    test('A new message with an attachment can be undone by employees', async () => {
+      await openSupervisorPage(mockedDateAt10)
+      await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+      const messagesPage = new MessagesPage(unitSupervisorPage)
+      await messagesPage.sendNewMessage({
+        ...defaultMessage,
+        attachmentCount: 1
+      })
+
+      await openCitizenPage(mockedDateAt11)
+      await citizenPage.goto(config.enduserMessagesUrl)
+      const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+      await citizenMessagesPage.openFirstThread()
+      await citizenMessagesPage.assertThreadContent(defaultMessage)
+
+      await messagesPage.undoMessage()
+      await citizenPage.goto(config.enduserMessagesUrl)
+      await citizenMessagesPage.assertInboxIsEmpty()
+    })
+
     test('A new reply to a thread can be undone by employees', async () => {
       await openSupervisorPage(mockedDateAt10)
       await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
