@@ -115,7 +115,15 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
       case 'CLUB':
         void getClubTerms().then((res) =>
           setTerms(
-            res.map((terms) => terms.map(({ term }) => term)).getOrElse([])
+            res
+              .map((terms) =>
+                terms
+                  .filter(({ term }) =>
+                    term.end.isEqualOrAfter(LocalDate.todayInHelsinkiTz())
+                  )
+                  .map(({ term }) => term)
+              )
+              .getOrElse([])
           )
         )
         break
