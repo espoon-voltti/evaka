@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-FROM postgres:14-alpine
+FROM postgres:14-alpine3.16
 
 ENV POSTGRES_USER=postgres POSTGRES_PASSWORD=postgres
 COPY postgresql.conf /var/lib/postgresql/
