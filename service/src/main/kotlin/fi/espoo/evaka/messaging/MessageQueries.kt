@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.MessageThreadFolderId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.db.Database
+import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -193,47 +194,51 @@ fun Database.Transaction.insertMessageContent(
 }
 
 fun Database.Transaction.insertRecipients(
-    recipientAccountIds: Set<MessageAccountId>,
-    messageId: MessageId
+    messageRecipientsPairs: List<Pair<MessageId, Set<MessageAccountId>>>
 ) {
-    // language=SQL
-    val insertRecipientsSql =
-        "INSERT INTO message_recipients (message_id, recipient_id) VALUES (:messageId, :accountId)"
-
-    val batch = this.prepareBatch(insertRecipientsSql)
-    recipientAccountIds.forEach { batch.bind("messageId", messageId).bind("accountId", it).add() }
+    val batch =
+        prepareBatch(
+            "INSERT INTO message_recipients (message_id, recipient_id) VALUES (:messageId, :accountId)"
+        )
+    messageRecipientsPairs.forEach { (messageId, recipients) ->
+        recipients.forEach { recipient ->
+            batch.bind("messageId", messageId).bind("accountId", recipient).add()
+        }
+    }
     batch.execute()
 }
 
 fun Database.Transaction.insertMessageThreadChildren(
-    childIds: Set<ChildId>,
-    threadId: MessageThreadId
+    childrenThreadPairs: List<Pair<Set<ChildId>, MessageThreadId>>
 ) {
     // language=SQL
     val insertChildrenSql =
         "INSERT INTO message_thread_children (thread_id, child_id) VALUES (:threadId, :childId)"
 
     val batch = this.prepareBatch(insertChildrenSql)
-    childIds.forEach { batch.bind("threadId", threadId).bind("childId", it).add() }
+    childrenThreadPairs.forEach { (children, threadId) ->
+        children.forEach { child -> batch.bind("threadId", threadId).bind("childId", child).add() }
+    }
     batch.execute()
 }
 
 fun Database.Transaction.upsertSenderThreadParticipants(
-    threadId: MessageThreadId,
     senderId: MessageAccountId,
+    threadIds: List<MessageThreadId>,
     now: HelsinkiDateTime
 ) {
-    createUpdate(
+    val batch =
+        prepareBatch(
             """
-        INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_sent_timestamp)
-        VALUES (:threadId, :accountId, :now, :now)
-        ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = :now, last_sent_timestamp = :now
-    """
+INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_sent_timestamp)
+VALUES (:threadId, :accountId, :now, :now)
+ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = :now, last_sent_timestamp = :now
+"""
         )
-        .bind("threadId", threadId)
-        .bind("accountId", senderId)
-        .bind("now", now)
-        .execute()
+    threadIds.forEach { threadId ->
+        batch.bind("threadId", threadId).bind("accountId", senderId).bind("now", now).add()
+    }
+    batch.execute()
 }
 
 fun Database.Transaction.upsertReceiverThreadParticipants(
@@ -267,6 +272,57 @@ fun Database.Transaction.upsertReceiverThreadParticipants(
         .bind("threadId", threadId)
         .bind("receiverIds", receiverIds)
         .execute()
+}
+
+fun Database.Transaction.insertThreadsWithMessages(
+    count: Int,
+    now: HelsinkiDateTime,
+    type: MessageType,
+    title: String,
+    urgent: Boolean,
+    isCopy: Boolean,
+    contentId: MessageContentId,
+    senderId: MessageAccountId,
+    recipientNames: List<String>,
+    municipalAccountName: String
+): List<Pair<MessageThreadId, MessageId>> {
+    val batch =
+        prepareBatch(
+            """
+WITH new_thread AS (
+    INSERT INTO message_thread (message_type, title, urgent, is_copy) VALUES (:messageType, :title, :urgent, :isCopy) RETURNING id
+)
+INSERT INTO message (content_id, thread_id, sender_id, sender_name, replies_to, sent_at, recipient_names)
+SELECT
+    :contentId,
+    new_thread.id,
+    :senderId,
+    CASE WHEN name_view.type = 'MUNICIPAL' THEN :municipalAccountName ELSE name_view.name END,
+    NULL,
+    :now,
+    :recipientNames
+FROM message_account_view name_view, new_thread
+WHERE name_view.id = :senderId
+RETURNING id, thread_id
+"""
+        )
+    repeat(count) {
+        batch
+            .bind("now", now)
+            .bind("messageType", type)
+            .bind("title", title)
+            .bind("urgent", urgent)
+            .bind("isCopy", isCopy)
+            .bind("contentId", contentId)
+            .bind("senderId", senderId)
+            .bind("recipientNames", recipientNames)
+            .bind("municipalAccountName", municipalAccountName)
+            .add()
+    }
+    return batch
+        .executeAndReturn()
+        .map { rv -> rv.mapColumn<MessageThreadId>("thread_id") to rv.mapColumn<MessageId>("id") }
+        .toList()
 }
 
 fun Database.Transaction.insertThread(
@@ -988,15 +1044,14 @@ fun Database.Read.getMessageAccountsForRecipients(
     accountId: MessageAccountId,
     recipients: Set<MessageRecipient>,
     date: LocalDate
-): Map<MessageAccountId, Set<ChildId>> {
-    data class MessageAccountIdToChildId(val accountId: MessageAccountId, val childId: ChildId)
+): List<Pair<MessageAccountId, ChildId>> {
     val groupedRecipients = recipients.groupBy { it.type }
     return this.createQuery(
             """
 WITH sender AS (
     SELECT type, daycare_group_id, employee_id FROM message_account WHERE id = :senderId
 ), children AS (
-    SELECT pl.child_id
+    SELECT DISTINCT pl.child_id
     FROM realized_placement_all(:date) pl
     JOIN daycare d ON pl.unit_id = d.id
     WHERE (d.care_area_id = ANY(:areaRecipients) OR pl.unit_id = ANY(:unitRecipients) OR pl.group_id = ANY(:groupRecipients) OR pl.child_id = ANY(:childRecipients))
@@ -1028,7 +1083,7 @@ WITH sender AS (
     )
     AND 'MESSAGING' = ANY(d.enabled_pilot_features)
 )
-SELECT DISTINCT acc.id as account_id, c.child_id
+SELECT acc.id AS account_id, c.child_id
 FROM children c
 JOIN guardian g ON g.child_id = c.child_id
 JOIN message_account acc ON g.guardian_id = acc.person_id
@@ -1040,7 +1095,7 @@ WHERE NOT EXISTS (
 
 UNION
 
-SELECT DISTINCT acc.id as account_id, c.child_id
+SELECT acc.id AS account_id, c.child_id
 FROM children c
 JOIN foster_parent fp ON fp.child_id = c.child_id AND fp.valid_during @> :date
 JOIN message_account acc ON fp.parent_id = acc.person_id
@@ -1069,11 +1124,10 @@ WHERE NOT EXISTS (
             "childRecipients",
             groupedRecipients[MessageRecipientType.CHILD]?.map { it.id } ?: listOf()
         )
-        .mapTo<MessageAccountIdToChildId>()
-        .fold(mutableMapOf()) { acc, row ->
-            acc.merge(row.accountId, setOf(row.childId)) { a, b -> a + b }
-            acc
+        .map { rv ->
+            rv.mapColumn<MessageAccountId>("account_id") to rv.mapColumn<ChildId>("child_id")
         }
+        .toList()
 }
 
 fun Database.Transaction.markNotificationAsSent(

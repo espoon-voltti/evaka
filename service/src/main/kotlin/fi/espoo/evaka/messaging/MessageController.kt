@@ -295,14 +295,12 @@ class MessageController(
                         )
                     }
 
-                    val messageAccountIdsToChildIds =
+                    val messageRecipients =
                         tx.getMessageAccountsForRecipients(
                             accountId,
                             body.recipients,
                             clock.today()
                         )
-                    val messageRecipients = messageAccountIdsToChildIds.keys
-
                     if (messageRecipients.isEmpty()) return@transaction null
 
                     val staffCopyRecipients =
@@ -327,8 +325,6 @@ class MessageController(
                             setOf()
                         }
 
-                    val groupedRecipients =
-                        tx.groupRecipientAccountsByGuardianship(messageRecipients)
                     val messageContentId =
                         messageService.createMessageThreadsForRecipientGroups(
                             tx,
@@ -339,10 +335,9 @@ class MessageController(
                             type = body.type,
                             urgent = body.urgent,
                             recipientNames = body.recipientNames,
-                            recipientGroups = groupedRecipients,
+                            messageRecipients = messageRecipients,
                             attachmentIds = body.attachmentIds,
                             staffCopyRecipients = staffCopyRecipients,
-                            accountIdsToChildIds = messageAccountIdsToChildIds,
                             municipalAccountName = featureConfig.municipalMessageAccountName
                         )
                     if (body.draftId != null)

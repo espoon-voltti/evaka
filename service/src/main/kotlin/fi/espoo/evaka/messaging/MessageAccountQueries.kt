@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.messaging
 
-import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.GroupId
@@ -160,51 +159,6 @@ fun Database.Transaction.deactivateEmployeeMessageAccount(employeeId: EmployeeId
     """
             .trimIndent()
     createUpdate(sql).bind("employeeId", employeeId).execute()
-}
-
-fun Database.Read.groupRecipientAccountsByGuardianship(
-    accountIds: Set<MessageAccountId>
-): Set<Set<MessageAccountId>> {
-    data class AccountToChild(val id: MessageAccountId, val childId: ChildId? = null)
-
-    val accountsWithCommonChildren =
-        createQuery(
-                """     
-WITH person_accounts AS (
-    SELECT id, person_id from message_account WHERE id = ANY(:accountIds) AND person_id IS NOT NULL
-), 
-common_guardians AS (
-    SELECT g.child_id, ma.id
-    FROM guardian g
-    JOIN message_account ma on g.guardian_id = ma.person_id
-    WHERE ma.person_id = ANY(SELECT person_id from person_accounts) AND EXISTS(
-        SELECT 1
-        FROM guardian g2
-        WHERE g2.guardian_id = ANY(SELECT person_id from person_accounts)
-          AND g2.guardian_id <> g.guardian_id
-          AND g2.child_id = g.child_id
-    )
-)
-SELECT id, child_id FROM common_guardians
-        """
-                    .trimIndent()
-            )
-            .bind("accountIds", accountIds)
-            .mapTo<AccountToChild>()
-            .list()
-
-    // For each account that share children, create a recipient group
-    val distinctSetsOfAccountsWithCommonChildren =
-        accountsWithCommonChildren
-            .groupBy { it.childId }
-            .values
-            .map { row -> row.map { it.id }.toSet() }
-            .toSet()
-
-    // all accounts that do not have common children get their own threads
-    val singleRecipients = (accountIds - accountsWithCommonChildren.map { it.id }).map { setOf(it) }
-
-    return distinctSetsOfAccountsWithCommonChildren + singleRecipients
 }
 
 fun Database.Read.getMessageAccountType(accountId: MessageAccountId): AccountType {

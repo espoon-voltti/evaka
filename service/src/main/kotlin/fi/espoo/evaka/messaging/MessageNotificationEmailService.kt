@@ -34,12 +34,13 @@ class MessageNotificationEmailService(
 
     fun getMessageNotifications(
         tx: Database.Transaction,
-        messageId: MessageId
+        messageIds: List<MessageId>
     ): List<AsyncJob.SendMessageNotificationEmail> {
         return tx.createQuery(
                 """
             SELECT DISTINCT
                 m.thread_id,
+                m.id AS message_id,
                 mr.id as message_recipient_id,
                 mr.recipient_id,
                 p.id as person_id,
@@ -51,18 +52,18 @@ class MessageNotificationEmailService(
             JOIN message_account ma ON ma.id = mr.recipient_id 
             JOIN person p ON p.id = ma.person_id
             JOIN message_thread t ON m.thread_id = t.id
-            WHERE m.id = :messageId
+            WHERE m.id = ANY(:messageIds)
               AND mr.read_at IS NULL
               AND mr.notification_sent_at IS NULL
               AND p.email IS NOT NULL
             """
                     .trimIndent()
             )
-            .bind("messageId", messageId)
+            .bind("messageIds", messageIds)
             .map { row ->
                 AsyncJob.SendMessageNotificationEmail(
                     threadId = row.mapColumn("thread_id"),
-                    messageId = messageId,
+                    messageId = row.mapColumn("message_id"),
                     messageRecipientId = row.mapColumn("message_recipient_id"),
                     recipientId = row.mapColumn("recipient_id"),
                     personEmail = row.mapColumn("person_email"),
@@ -75,12 +76,12 @@ class MessageNotificationEmailService(
 
     fun scheduleSendingMessageNotifications(
         tx: Database.Transaction,
-        messageId: MessageId,
+        messageIds: List<MessageId>,
         runAt: HelsinkiDateTime
     ) {
         asyncJobRunner.plan(
             tx,
-            payloads = getMessageNotifications(tx, messageId),
+            payloads = getMessageNotifications(tx, messageIds),
             runAt = runAt,
             retryCount = 10
         )
