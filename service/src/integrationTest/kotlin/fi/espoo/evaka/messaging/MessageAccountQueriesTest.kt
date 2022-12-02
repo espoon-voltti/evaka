@@ -313,7 +313,7 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     allAccounts.map { it.name },
                     "Espoo"
                 )
-            tx.insertRecipients(allAccounts.map { it.id }.toSet(), messageId)
+            tx.insertRecipients(listOf(messageId to allAccounts.map { it.id }.toSet()))
         }
 
         assertEquals(

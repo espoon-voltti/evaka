@@ -229,7 +229,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     listOf("recipient name"),
                     "Espoo"
                 )
-            tx.insertRecipients(setOf(personAccount), messageId)
+            tx.insertRecipients(listOf(messageId to setOf(personAccount)))
         }
 
         assertCleanedUpPeople(testDate, setOf(testAdult_1.id))
@@ -259,7 +259,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     listOf("employee name"),
                     "Espoo"
                 )
-            tx.insertRecipients(setOf(employeeAccount), messageId)
+            tx.insertRecipients(listOf(messageId to setOf(employeeAccount)))
         }
 
         assertCleanedUpPeople(testDate, setOf())

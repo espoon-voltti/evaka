@@ -442,7 +442,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         recipientNames = tx.getAccountNames(setOf(employee1Account)),
                         municipalAccountName = "Espoo"
                     )
-                tx.insertRecipients(setOf(employee1Account), messageId)
+                tx.insertRecipients(listOf(messageId to setOf(employee1Account)))
                 tx.getThreadByMessageId(messageId)
             }
         assertEquals(
@@ -889,8 +889,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     recipientNames = tx.getAccountNames(recipientAccounts.toSet()),
                     municipalAccountName = "Espoo"
                 )
-            tx.insertRecipients(recipientAccounts.toSet(), messageId)
-            tx.upsertSenderThreadParticipants(threadId, sender, now)
+            tx.insertRecipients(listOf(messageId to recipientAccounts.toSet()))
+            tx.upsertSenderThreadParticipants(sender, listOf(threadId), now)
             tx.upsertReceiverThreadParticipants(threadId, recipientAccounts.toSet(), now)
             threadId
         }
@@ -917,8 +917,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     recipientNames = listOf(),
                     municipalAccountName = "Espoo"
                 )
-            it.insertRecipients(recipientAccountIds = recipients, messageId = messageId)
-            it.upsertSenderThreadParticipants(threadId, sender, now)
+            it.insertRecipients(listOf(messageId to recipients))
+            it.upsertSenderThreadParticipants(sender, listOf(threadId), now)
             it.upsertReceiverThreadParticipants(threadId, recipients, now)
         }
     }

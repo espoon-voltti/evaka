@@ -194,11 +194,10 @@ class MessageControllerCitizen(
                                 urgent = false,
                                 isCopy = false
                             )
-                        tx.upsertSenderThreadParticipants(threadId, senderId, now)
+                        tx.upsertSenderThreadParticipants(senderId, listOf(threadId), now)
                         asyncJobRunner.scheduleThreadRecipientsUpdate(
                             tx,
-                            threadId,
-                            recipientIds,
+                            listOf(threadId to recipientIds),
                             now
                         )
                         val messageId =
@@ -210,8 +209,8 @@ class MessageControllerCitizen(
                                 recipientNames = body.recipients.map { it.name },
                                 municipalAccountName = featureConfig.municipalMessageAccountName
                             )
-                        tx.insertMessageThreadChildren(body.children, threadId)
-                        tx.insertRecipients(recipientIds, messageId)
+                        tx.insertMessageThreadChildren(listOf(body.children to threadId))
+                        tx.insertRecipients(listOf(messageId to recipientIds))
                         threadId
                     }
                 } else {

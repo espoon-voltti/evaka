@@ -194,47 +194,51 @@ fun Database.Transaction.insertMessageContent(
 }
 
 fun Database.Transaction.insertRecipients(
-    recipientAccountIds: Set<MessageAccountId>,
-    messageId: MessageId
+    messageRecipientsPairs: List<Pair<MessageId, Set<MessageAccountId>>>
 ) {
-    // language=SQL
-    val insertRecipientsSql =
-        "INSERT INTO message_recipients (message_id, recipient_id) VALUES (:messageId, :accountId)"
-
-    val batch = this.prepareBatch(insertRecipientsSql)
-    recipientAccountIds.forEach { batch.bind("messageId", messageId).bind("accountId", it).add() }
+    val batch =
+        prepareBatch(
+            "INSERT INTO message_recipients (message_id, recipient_id) VALUES (:messageId, :accountId)"
+        )
+    messageRecipientsPairs.forEach { (messageId, recipients) ->
+        recipients.forEach { recipient ->
+            batch.bind("messageId", messageId).bind("accountId", recipient).add()
+        }
+    }
     batch.execute()
 }
 
 fun Database.Transaction.insertMessageThreadChildren(
-    childIds: Set<ChildId>,
-    threadId: MessageThreadId
+    childrenThreadPairs: List<Pair<Set<ChildId>, MessageThreadId>>
 ) {
     // language=SQL
     val insertChildrenSql =
         "INSERT INTO message_thread_children (thread_id, child_id) VALUES (:threadId, :childId)"
 
     val batch = this.prepareBatch(insertChildrenSql)
-    childIds.forEach { batch.bind("threadId", threadId).bind("childId", it).add() }
+    childrenThreadPairs.forEach { (children, threadId) ->
+        children.forEach { child -> batch.bind("threadId", threadId).bind("childId", child).add() }
+    }
     batch.execute()
 }
 
 fun Database.Transaction.upsertSenderThreadParticipants(
-    threadId: MessageThreadId,
     senderId: MessageAccountId,
+    threadIds: List<MessageThreadId>,
     now: HelsinkiDateTime
 ) {
-    createUpdate(
+    val batch =
+        prepareBatch(
             """
-        INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_sent_timestamp)
-        VALUES (:threadId, :accountId, :now, :now)
-        ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = :now, last_sent_timestamp = :now
-    """
+INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_sent_timestamp)
+VALUES (:threadId, :accountId, :now, :now)
+ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = :now, last_sent_timestamp = :now
+"""
         )
-        .bind("threadId", threadId)
-        .bind("accountId", senderId)
-        .bind("now", now)
-        .execute()
+    threadIds.forEach { threadId ->
+        batch.bind("threadId", threadId).bind("accountId", senderId).bind("now", now).add()
+    }
+    batch.execute()
 }
 
 fun Database.Transaction.upsertReceiverThreadParticipants(
@@ -268,6 +272,57 @@ fun Database.Transaction.upsertReceiverThreadParticipants(
         .bind("threadId", threadId)
         .bind("receiverIds", receiverIds)
         .execute()
+}
+
+fun Database.Transaction.insertThreadsWithMessages(
+    count: Int,
+    now: HelsinkiDateTime,
+    type: MessageType,
+    title: String,
+    urgent: Boolean,
+    isCopy: Boolean,
+    contentId: MessageContentId,
+    senderId: MessageAccountId,
+    recipientNames: List<String>,
+    municipalAccountName: String
+): List<Pair<MessageThreadId, MessageId>> {
+    val batch =
+        prepareBatch(
+            """
+WITH new_thread AS (
+    INSERT INTO message_thread (message_type, title, urgent, is_copy) VALUES (:messageType, :title, :urgent, :isCopy) RETURNING id
+)
+INSERT INTO message (content_id, thread_id, sender_id, sender_name, replies_to, sent_at, recipient_names)
+SELECT
+    :contentId,
+    new_thread.id,
+    :senderId,
+    CASE WHEN name_view.type = 'MUNICIPAL' THEN :municipalAccountName ELSE name_view.name END,
+    NULL,
+    :now,
+    :recipientNames
+FROM message_account_view name_view, new_thread
+WHERE name_view.id = :senderId
+RETURNING id, thread_id
+"""
+        )
+    repeat(count) {
+        batch
+            .bind("now", now)
+            .bind("messageType", type)
+            .bind("title", title)
+            .bind("urgent", urgent)
+            .bind("isCopy", isCopy)
+            .bind("contentId", contentId)
+            .bind("senderId", senderId)
+            .bind("recipientNames", recipientNames)
+            .bind("municipalAccountName", municipalAccountName)
+            .add()
+    }
+    return batch
+        .executeAndReturn()
+        .map { rv -> rv.mapColumn<MessageThreadId>("thread_id") to rv.mapColumn<MessageId>("id") }
+        .toList()
 }
 
 fun Database.Transaction.insertThread(
