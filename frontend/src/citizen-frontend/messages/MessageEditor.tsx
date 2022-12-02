@@ -111,6 +111,8 @@ export default React.memo(function MessageEditor({
 
   const showSecondaryRecipientSelection = validAccounts.secondary.length > 0
 
+  const required = (text: string) => `${text}*`
+
   return (
     <ModalAccessibilityWrapper>
       <FocusLock>
@@ -137,7 +139,7 @@ export default React.memo(function MessageEditor({
             {childIds && childIds.length > 1 && (
               <>
                 <label>
-                  <Bold>{i18n.messages.messageEditor.children}</Bold>
+                  <Bold>{required(i18n.messages.messageEditor.children)}</Bold>
                   {renderResult(children, (children) => (
                     <FixedSpaceFlexWrap horizontalSpacing="xs">
                       {children
@@ -179,7 +181,7 @@ export default React.memo(function MessageEditor({
             )}
 
             <label>
-              <Bold>{i18n.messages.messageEditor.recipients}</Bold>
+              <Bold>{required(i18n.messages.messageEditor.recipients)}</Bold>
               <Gap size="xs" />
               <MultiSelect
                 placeholder={i18n.messages.messageEditor.search}
@@ -241,7 +243,7 @@ export default React.memo(function MessageEditor({
             <Gap size="s" />
 
             <label>
-              <Bold>{i18n.messages.messageEditor.subject}</Bold>
+              <Bold>{required(i18n.messages.messageEditor.subject)}</Bold>
               <InputField
                 value={message.title ?? ''}
                 onChange={(updated) =>
@@ -254,7 +256,7 @@ export default React.memo(function MessageEditor({
             <Gap size="s" />
 
             <label>
-              <Bold>{i18n.messages.messageEditor.message}</Bold>
+              <Bold>{required(i18n.messages.messageEditor.message)}</Bold>
               <Gap size="s" />
               <StyledTextArea
                 value={message.content}
