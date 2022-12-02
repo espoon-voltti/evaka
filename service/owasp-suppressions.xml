@@ -41,6 +41,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
     </suppress>
     <suppress>
         <notes><![CDATA[
+        SnakeYaml's Constructor() class does not restrict types which can be instantiated during deserialization. Deserializing yaml content provided by an attacker can lead to remote code execution. No fix released yet as of 2022-12-02. We don't parse YAML files from untrusted sources.
+        ]]></notes>
+        <cve>CVE-2022-1471</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
         Only applies to configuration we don't use
         ]]></notes>
         <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
