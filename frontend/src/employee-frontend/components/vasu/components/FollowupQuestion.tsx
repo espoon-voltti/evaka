@@ -44,7 +44,6 @@ const FollowupEntryEditor = React.memo(function FollowupEntryEditor({
           onChange={(newDate) => {
             if (newDate !== null) onChange(newDate, entry.text)
           }}
-          errorTexts={i18n.validationErrors}
           hideErrorsBeforeTouched
           data-qa={`${dataQa}-date`}
         />

@@ -47,10 +47,5 @@ export const fi = {
     CLOSED: 'Päättynyt'
   },
   lastModified: 'Viimeisin muokkauspäivämäärä',
-  lastPublished: 'Viimeksi julkaistu huoltajalle',
-  validationErrors: {
-    validDate: 'Anna muodossa pp.kk.vvvv',
-    dateTooEarly: 'Valitse myöhäisempi päivä',
-    dateTooLate: 'Valitse aikaisempi päivä'
-  }
+  lastPublished: 'Viimeksi julkaistu huoltajalle'
 }

@@ -635,7 +635,6 @@ const CreateEventModal = React.memo(function CreateEventModal({
         onChange={(start, end) =>
           start && end && updateForm('period', new FiniteDateRange(start, end))
         }
-        errorTexts={i18n.validationErrors}
         locale={lang}
         required={true}
       />

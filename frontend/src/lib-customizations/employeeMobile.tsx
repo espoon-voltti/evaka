@@ -10,7 +10,7 @@ import mergeWith from 'lodash/mergeWith'
 import { JsonOf } from 'lib-common/json'
 
 import { mergeCustomizer } from './common'
-import { fi } from './espoo/employee-mobile-frontend/assets/i18n/fi'
+import { fi } from './defaults/employee-mobile-frontend/i18n/fi'
 import type { EmployeeMobileCustomizations } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

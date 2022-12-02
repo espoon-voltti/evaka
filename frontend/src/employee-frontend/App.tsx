@@ -121,7 +121,7 @@ export default function App() {
             >
               <StateProvider>
                 <Header />
-                <Notifications apiVersion={authStatus.apiVersion} i18n={i18n} />
+                <Notifications apiVersion={authStatus.apiVersion} />
                 <Routes>
                   <Route
                     path="/login"
@@ -667,7 +667,7 @@ export default function App() {
                 </Routes>
                 <Footer />
                 <ErrorMessage />
-                <LoginErrorModal translations={i18n.login.failedModal} />
+                <LoginErrorModal />
                 <PairingModal />
               </StateProvider>
             </UserContextProvider>

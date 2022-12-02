@@ -440,7 +440,6 @@ export default React.memo(function AssistanceNeedDecisionForm({
           onChange={(date) => {
             setFieldVal({ guardiansHeardOn: date })
           }}
-          errorTexts={i18n.validationErrors}
           hideErrorsBeforeTouched={!fieldInfos.guardiansHeardOn}
           info={fieldInfos.guardiansHeardOn}
           data-qa="guardians-heard-on"
@@ -546,7 +545,6 @@ export default React.memo(function AssistanceNeedDecisionForm({
               // Setting an invalid date doesn't have any effect
             }
           }}
-          errorTexts={i18n.validationErrors}
           hideErrorsBeforeTouched={!fieldInfos.startDate}
           info={fieldInfos.startDate}
           maxDate={formState.validityPeriod.end ?? undefined}
@@ -565,7 +563,6 @@ export default React.memo(function AssistanceNeedDecisionForm({
                 validityPeriod: formState.validityPeriod.withEnd(date)
               })
             }}
-            errorTexts={i18n.validationErrors}
             hideErrorsBeforeTouched={!fieldInfos.endDate}
             info={fieldInfos.endDate}
             minDate={formState.validityPeriod.start}

@@ -258,7 +258,6 @@ export default React.memo(function AssistanceNeedVoucherCoefficientForm(
               <DateRangePicker
                 start={form.start}
                 end={form.end}
-                errorTexts={i18n.validationErrors}
                 onChange={(start, end) => updateFormState({ start, end })}
                 locale={lang}
                 hideErrorsBeforeTouched

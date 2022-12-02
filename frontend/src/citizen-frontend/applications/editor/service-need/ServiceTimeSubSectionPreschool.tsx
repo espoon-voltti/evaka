@@ -173,7 +173,6 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                 data-qa="connectedDaycarePreferredStartDate-input"
                 id={labelId}
                 required={true}
-                errorTexts={t.validationErrors}
               />
             </>
           ) : null}

@@ -201,7 +201,6 @@ export default React.memo(function GuardianSubSection({
                 t.validationErrors
               )}
               hideErrorsBeforeTouched={!verificationRequested}
-              errorTexts={t.validationErrors}
             />
           </FixedSpaceColumn>
           <Gap size="s" />

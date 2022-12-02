@@ -154,7 +154,6 @@ export default React.memo(function AbsenceModal({
                     updateForm({ startDate, endDate })
                   }
                   locale={lang}
-                  errorTexts={i18n.validationErrors}
                   hideErrorsBeforeTouched={!showAllErrors}
                   onFocus={(ev) => {
                     scrollIntoViewSoftKeyboard(ev.target, 'start')

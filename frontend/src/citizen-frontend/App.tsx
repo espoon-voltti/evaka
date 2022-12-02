@@ -70,9 +70,7 @@ export default function App() {
                         <ApplicationsContextProvider>
                           <Content />
                           <GlobalDialog />
-                          <LoginErrorModal
-                            translations={i18n.login.failedModal}
-                          />
+                          <LoginErrorModal />
                           <div id="modal-container" />
                         </ApplicationsContextProvider>
                       </ChildrenContextProvider>
@@ -97,14 +95,13 @@ const FullPageContainer = styled.div`
 const Content = React.memo(function Content() {
   const t = useTranslation()
   const { apiVersion } = useContext(AuthContext)
-
   const { modalOpen } = useContext(OverlayContext)
 
   return (
     <FullPageContainer>
       <SkipToContent target="main">{t.skipLinks.mainContent}</SkipToContent>
       <Header ariaHidden={modalOpen} />
-      <Notifications apiVersion={apiVersion} i18n={t} />
+      <Notifications apiVersion={apiVersion} />
       <MainContainer ariaHidden={modalOpen}>
         <Routes>
           <Route

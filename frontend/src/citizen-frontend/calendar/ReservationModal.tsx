@@ -266,7 +266,6 @@ export default React.memo(function ReservationModal({
                     updateForm({ startDate, endDate })
                   }
                   locale={lang}
-                  errorTexts={i18n.validationErrors}
                   isInvalidDate={isInvalidDate}
                   minDate={minDate}
                   maxDate={maxDate}

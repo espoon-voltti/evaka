@@ -14,6 +14,8 @@ import { Gap } from 'lib-components/white-space'
 import { Translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 
+import components from '../../components/i18n/sv'
+
 const yes = 'Ja'
 const no = 'Nej'
 
@@ -2042,24 +2044,14 @@ const sv: Translations = {
     ssn: 'Ogiltigt personbeteckning',
     phone: 'Ogiltigt telefonnummer',
     email: 'Ogiltig e-postadress',
-    validDate: 'Ange i format dd.mm.åååå',
-    dateTooEarly: 'Välj ett senare datum',
-    dateTooLate: 'Välj ett tidigare datum',
     preferredStartDate: 'Ogiltigt datum',
     timeFormat: 'Kolla',
     timeRequired: 'Nödvändig',
     unitNotSelected: 'Välj minst en enhet',
     emailsDoNotMatch: 'E-postadresserna är olika',
     httpUrl: 'Ange i formen https://example.com',
-    unselectableDate: 'Ogiltigt datum'
-  },
-  login: {
-    failedModal: {
-      header: 'Inloggningen misslyckades',
-      message:
-        'Autentiseringen för tjänsten misslyckades eller avbröts. För att logga in gå tillbaka och försök på nytt.',
-      returnMessage: 'Gå tillbaka till inloggningen'
-    }
+    unselectableDate: 'Ogiltigt datum',
+    ...components.datePicker.validationErrors
   },
   placement: {
     type: {
@@ -2083,10 +2075,6 @@ const sv: Translations = {
       TEMPORARY_DAYCARE_PART_DAY: 'Tillfällig småbarnspedagogik på deltid',
       SCHOOL_SHIFT_CARE: 'Skiftvård för skolbarn'
     }
-  },
-  reloadNotification: {
-    title: 'En ny version av eVaka är tillgänglig',
-    buttonText: 'Ladda om sidan'
   },
   children: {
     title: 'Barn',
@@ -2322,7 +2310,8 @@ const sv: Translations = {
   skipLinks: {
     mainContent: 'Hoppa till innehållet',
     applyingSubNav: 'Hoppa till ansökningsnavigationen'
-  }
+  },
+  components
 }
 
 export default sv

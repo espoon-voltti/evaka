@@ -180,7 +180,6 @@ const ChildIncomeTimeRangeSelection = React.memo(
                 isValidStartDate(d) ? null : t.validationErrors.unselectableDate
               }
               data-qa="start-date"
-              errorTexts={t.validationErrors}
             />
           </div>
           <div>
@@ -194,7 +193,6 @@ const ChildIncomeTimeRangeSelection = React.memo(
               hideErrorsBeforeTouched
               locale={lang}
               data-qa="end-date"
-              errorTexts={t.validationErrors}
             />
           </div>
         </FixedSpaceRow>

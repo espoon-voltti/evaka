@@ -165,7 +165,6 @@ export default React.memo(function StaffAttendanceExternalPersonModal({
               }
               data-qa="add-person-arrival-date-picker"
               required
-              errorTexts={i18n.validationErrors}
               info={
                 errors?.date && {
                   text: i18n.validationErrors[errors.date],

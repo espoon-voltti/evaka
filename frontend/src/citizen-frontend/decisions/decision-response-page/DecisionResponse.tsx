@@ -203,7 +203,6 @@ export default React.memo(function DecisionResponse({
                                 }
                               : undefined
                           }
-                          errorTexts={t.validationErrors}
                         />
                       </DatePickerContainer>
                     )}

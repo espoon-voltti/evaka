@@ -14,6 +14,8 @@ import { Gap } from 'lib-components/white-space'
 import { Translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 
+import components from '../../components/i18n/en'
+
 import fi from './fi'
 
 const yes = 'Yes'
@@ -1938,24 +1940,14 @@ const en: Translations = {
     ssn: 'Invalid person identification number',
     phone: 'Invalid telephone number',
     email: 'Invalid email',
-    validDate: 'Valid date format is pp.kk.vvvv',
-    dateTooEarly: 'Pick a later date',
-    dateTooLate: 'Pick an earlier date',
     preferredStartDate: 'Invalid preferred start date',
     timeFormat: 'Check',
     timeRequired: 'Required',
     unitNotSelected: 'Pick at least one choice',
     emailsDoNotMatch: 'The emails do not match',
     httpUrl: 'Valid url format is https://example.com',
-    unselectableDate: 'Invalid date'
-  },
-  login: {
-    failedModal: {
-      header: 'Login failed',
-      message:
-        'The identification process failed or was stopped. To log in, go back and try again.',
-      returnMessage: 'Go back'
-    }
+    unselectableDate: 'Invalid date',
+    ...components.datePicker.validationErrors
   },
   placement: {
     // TODO i18n
@@ -1977,10 +1969,6 @@ const en: Translations = {
       TEMPORARY_DAYCARE_PART_DAY: 'Tilapäinen osapäiväinen varhaiskasvatus',
       SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito'
     }
-  },
-  reloadNotification: {
-    title: 'New version of eVaka is available',
-    buttonText: 'Reload page'
   },
   children: {
     title: 'Children',
@@ -2221,7 +2209,8 @@ const en: Translations = {
   skipLinks: {
     mainContent: 'Skip to main content',
     applyingSubNav: 'Skip to applications navigation'
-  }
+  },
+  components
 }
 
 export default en

@@ -7,6 +7,8 @@ import LocalDate from 'lib-common/local-date'
 import { InputInfo } from 'lib-components/atoms/form/InputField'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 
+import { useTranslations } from '../../i18n'
+
 import DatePicker, {
   DatePickerProps,
   DatePickerSpacer,
@@ -17,10 +19,6 @@ interface DateRangePickerProps {
   start: LocalDate | null
   end: LocalDate | null
   onChange: (start: LocalDate | null, end: LocalDate | null) => void
-  errorTexts: DatePickerProps['errorTexts'] & {
-    dateTooEarly: string
-    dateTooLate: string
-  }
   startInfo?: InputInfo
   endInfo?: InputInfo
   'data-qa'?: string
@@ -30,10 +28,10 @@ export default React.memo(function DateRangePicker({
   start,
   end,
   onChange,
-  errorTexts,
   'data-qa': dataQa,
   ...datePickerProps
 }: DateRangePickerProps & Omit<DatePickerProps, 'date' | 'onChange'>) {
+  const i18n = useTranslations()
   const [internalStart, setInternalStart] = useState(start)
   const [internalEnd, setInternalEnd] = useState(end)
   const [internalStartError, setInternalStartError] = useState<InputInfo>()
@@ -53,11 +51,11 @@ export default React.memo(function DateRangePicker({
 
     if (internalStart && internalEnd && internalStart.isAfter(internalEnd)) {
       setInternalStartError({
-        text: errorTexts.dateTooLate,
+        text: i18n.datePicker.validationErrors.dateTooLate,
         status: 'warning'
       })
       setInternalEndError({
-        text: errorTexts.dateTooEarly,
+        text: i18n.datePicker.validationErrors.dateTooEarly,
         status: 'warning'
       })
       return
@@ -69,7 +67,7 @@ export default React.memo(function DateRangePicker({
     ) {
       onChange(internalStart, internalEnd)
     }
-  }, [internalStart, internalEnd, onChange, errorTexts, start, end])
+  }, [i18n, internalStart, internalEnd, onChange, start, end])
 
   const minDateForEnd = useMemo(
     () =>
@@ -105,7 +103,6 @@ export default React.memo(function DateRangePicker({
           datePickerProps.startInfo ??
           datePickerProps.info
         }
-        errorTexts={errorTexts}
       />
       <DatePickerSpacer />
       <DatePicker
@@ -118,7 +115,6 @@ export default React.memo(function DateRangePicker({
         info={
           internalEndError ?? datePickerProps.endInfo ?? datePickerProps.info
         }
-        errorTexts={errorTexts}
       />
     </FixedSpaceRow>
   )

@@ -103,7 +103,6 @@ export default React.memo(function ChildSubSection({
               locale={lang}
               info={errorToInputInfo(errors.childMoveDate, t.validationErrors)}
               hideErrorsBeforeTouched={!verificationRequested}
-              errorTexts={t.validationErrors}
             />
           </FixedSpaceColumn>
           <Gap size="s" />

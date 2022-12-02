@@ -5,6 +5,8 @@
 import React, { createContext, useContext, useMemo, useEffect } from 'react'
 
 import useLocalStorage from 'lib-common/utils/useLocalStorage'
+import type { Translations as ComponentTranslations } from 'lib-components/i18n'
+import { ComponentLocalizationContextProvider } from 'lib-components/i18n'
 import {
   Lang,
   langs,
@@ -71,7 +73,11 @@ export const LocalizationContextProvider = React.memo(
 
     return (
       <LocalizationContext.Provider value={value}>
-        {children}
+        <ComponentLocalizationContextProvider
+          useTranslations={useComponentTranslations}
+        >
+          {children}
+        </ComponentLocalizationContextProvider>
       </LocalizationContext.Provider>
     )
   }
@@ -81,6 +87,11 @@ export const useTranslation = () => {
   const { lang } = useContext(LocalizationContext)
 
   return localizations[lang]
+}
+
+function useComponentTranslations(): ComponentTranslations {
+  const translations = useTranslation()
+  return translations.components
 }
 
 export const useLang = () => {

@@ -9,6 +9,7 @@ import LocalDate from 'lib-common/local-date'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 
 import InputField, { InputInfo } from '../../atoms/form/InputField'
+import { useTranslations } from '../../i18n'
 
 interface Props {
   date: LocalDate | null
@@ -26,9 +27,6 @@ interface Props {
   useBrowserPicker?: boolean
   minDate?: LocalDate
   maxDate?: LocalDate
-  errorTexts: {
-    validDate: string
-  }
   datePickerVisible: boolean
 }
 
@@ -55,10 +53,10 @@ export default React.memo(function DatePickerInput({
   useBrowserPicker = false,
   minDate,
   maxDate,
-  errorTexts,
   datePickerVisible,
   ...props
 }: Props) {
+  const i18n = useTranslations()
   const ariaId = useUniqueId('date-picker-input')
   const formattedDate = useMemo(() => (date ? date.format() : ''), [date])
 
@@ -115,17 +113,10 @@ export default React.memo(function DatePickerInput({
       }
     : {}
 
-  const placeholder =
-    locale === 'en'
-      ? 'dd.mm.yyyy'
-      : locale === 'sv'
-      ? 'dd.mm.åååå'
-      : 'pp.kk.vvvv'
-
   return (
     <>
       <DateInputField
-        placeholder={placeholder}
+        placeholder={i18n.datePicker.placeholder}
         value={useBrowserPicker ? date?.formatIso() ?? '' : inputValue}
         onChangeTarget={handleChange}
         aria-describedby={ariaId}
@@ -133,7 +124,7 @@ export default React.memo(function DatePickerInput({
           !datePickerVisible && !isValid && inputValue !== ''
             ? {
                 status: 'warning',
-                text: errorTexts.validDate
+                text: i18n.datePicker.validationErrors.validDate
               }
             : info
         }
@@ -148,7 +139,9 @@ export default React.memo(function DatePickerInput({
         width="s"
         {...dateProps}
       />
-      <DatePickerDescription id={ariaId} locale={locale} />
+      <StyledP lang={locale} id={ariaId}>
+        {i18n.datePicker.description}
+      </StyledP>
     </>
   )
 })
@@ -163,33 +156,3 @@ const StyledP = styled.p`
   overflow: hidden;
   position: absolute;
 `
-
-const DatePickerDescription = React.memo(function DatePickerDescription({
-  id,
-  locale
-}: {
-  id: string
-  locale: 'fi' | 'sv' | 'en'
-}) {
-  // TODO: add translation
-  return (
-    <>
-      {locale === 'en' ? (
-        <StyledP lang="en" id={id}>
-          Type the date in dd.mm.yyyy format. You can get to month picker with
-          the tab key.
-        </StyledP>
-      ) : locale === 'sv' ? (
-        <StyledP lang="sv" id={id}>
-          Skriv in datumet i formatet dd.mm.åååå. Du kan komma till
-          månadsväljaren med tabbtangenten.
-        </StyledP>
-      ) : (
-        <StyledP lang="fi" id={id}>
-          Kirjoita päivämäärä muodossa pp.kk.vvvv kenttään. Tab-näppäimellä
-          pääset kuukausivalitsimeen.
-        </StyledP>
-      )}
-    </>
-  )
-})

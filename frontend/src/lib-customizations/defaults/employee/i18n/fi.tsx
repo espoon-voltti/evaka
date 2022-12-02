@@ -7,6 +7,8 @@ import React from 'react'
 import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
 import { H3, P } from 'lib-components/typography'
 
+import components from '../../components/i18n/fi'
+
 export const fi = {
   titles: {
     defaultTitle: 'Varhaiskasvatus',
@@ -251,12 +253,6 @@ export const fi = {
     error: {
       noRole: 'Sinulla ei ole tarvittavaa roolia',
       default: 'Jokin meni vikaan'
-    },
-    failedModal: {
-      header: 'Kirjautuminen epäonnistui',
-      message:
-        'Palveluun tunnistautuminen epäonnistui tai se keskeytettiin. Kirjautuaksesi sisään palaa takaisin ja yritä uudelleen.',
-      returnMessage: 'Palaa takaisin'
     }
   },
   applications: {
@@ -3741,9 +3737,6 @@ export const fi = {
     ssn: 'Virheellinen henkilötunnus',
     phone: 'Virheellinen numero',
     email: 'Virheellinen sähköpostiosoite',
-    validDate: 'Anna muodossa pp.kk.vvvv',
-    dateTooEarly: 'Valitse myöhäisempi päivä',
-    dateTooLate: 'Valitse aikaisempi päivä',
     preferredStartDate: 'Aloituspäivä ei ole sallittu',
     dateRangeNotLinear:
       'Aikavälin aloituspäivä tulee olla ennen lopetuspäivää.',
@@ -3752,11 +3745,8 @@ export const fi = {
     unitNotSelected: 'Valitse vähintään yksi hakutoive',
     emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää',
     httpUrl: 'Anna muodossa https://example.com',
-    unselectableDate: 'Päivä ei ole sallittu'
-  },
-  reloadNotification: {
-    title: 'Uusi versio eVakasta saatavilla',
-    buttonText: 'Lataa sivu uudelleen'
+    unselectableDate: 'Päivä ei ole sallittu',
+    ...components.datePicker.validationErrors
   },
   holidayPeriods: {
     confirmDelete: 'Haluatko varmasti poistaa loma-ajan?',
@@ -3793,5 +3783,6 @@ export const fi = {
       'Voit määritellä eVakassa käytössä olevan kutsumanimesi. Kutsumanimen tulee olla jokin etunimistäsi. Jos nimesi on vaihtunut ja sinulla on tarve päivittää eVakaan uusi nimesi, ole yhteydessä Espoon HelpDeskiin.',
     select: 'Valitse kutsumanimi',
     confirm: 'Vahvista'
-  }
+  },
+  components
 }

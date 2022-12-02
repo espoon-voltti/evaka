@@ -51,10 +51,5 @@ export const sv: typeof fi = {
     CLOSED: 'Avslutad'
   },
   lastModified: 'Senaste redigeringsdatum',
-  lastPublished: 'Senaste publicering för vårdnadshavare',
-  validationErrors: {
-    validDate: 'Ange i format dd.mm.åååå',
-    dateTooEarly: 'Välj ett senare datum',
-    dateTooLate: 'Välj ett tidigare datum'
-  }
+  lastPublished: 'Senaste publicering för vårdnadshavare'
 }

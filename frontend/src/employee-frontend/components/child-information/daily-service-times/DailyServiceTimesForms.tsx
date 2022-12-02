@@ -273,7 +273,6 @@ export const DailyServiceTimesCreationForm = React.memo(
           <DatePicker
             date={formData.startDate}
             onChange={(startDate) => updateField('startDate', startDate)}
-            errorTexts={i18n.validationErrors}
             locale={lang}
             minDate={LocalDate.todayInHelsinkiTz().addDays(1)}
             hideErrorsBeforeTouched
@@ -419,7 +418,6 @@ const DailyServiceTimesEditFullForm = React.memo(
           <DatePicker
             date={formData.startDate}
             onChange={(startDate) => updateField('startDate', startDate)}
-            errorTexts={i18n.validationErrors}
             locale={lang}
             minDate={LocalDate.todayInHelsinkiTz().addDays(1)}
             maxDate={formData.endDate ?? undefined}
@@ -430,7 +428,6 @@ const DailyServiceTimesEditFullForm = React.memo(
           <DatePicker
             date={formData.endDate}
             onChange={(endDate) => updateField('endDate', endDate)}
-            errorTexts={i18n.validationErrors}
             locale={lang}
             minDate={formData.startDate ?? undefined}
             hideErrorsBeforeTouched
@@ -506,7 +503,6 @@ const DailyServiceTimesEditEndForm = React.memo(
           <DatePicker
             date={endDate}
             onChange={setEndDate}
-            errorTexts={i18n.validationErrors}
             locale={lang}
             minDate={LocalDate.todayInHelsinkiTz().addDays(1)}
             hideErrorsBeforeTouched

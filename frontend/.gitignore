@@ -26,6 +26,8 @@ yalc.lock
 .pnp.*
 
 src/lib-customizations/**/*
+!src/lib-customizations/defaults
+!src/lib-customizations/defaults/**/*
 !src/lib-customizations/espoo
 !src/lib-customizations/espoo/**/*
 !src/lib-customizations/README.md

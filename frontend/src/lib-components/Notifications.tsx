@@ -19,6 +19,7 @@ import Toast from 'lib-components/molecules/Toast'
 import { faInfo, faRedo } from 'lib-icons'
 
 import InlineButton from './atoms/buttons/InlineButton'
+import { useTranslations } from './i18n'
 import { FixedSpaceColumn } from './layout/flex-helpers'
 import { defaultMargins } from './white-space'
 
@@ -83,20 +84,11 @@ export const NotificationsContextProvider = React.memo(
 )
 
 export const Notifications = React.memo(function Notifications({
-  apiVersion,
-  i18n
+  apiVersion
 }: {
   apiVersion: string | undefined
-  i18n: {
-    common: {
-      close: string
-    }
-    reloadNotification: {
-      title: string
-      buttonText: string
-    }
-  }
 }) {
+  const i18n = useTranslations()
   const { notifications, addNotification, removeNotification } =
     useContext(NotificationsContext)
   useReloadNotification(
@@ -113,7 +105,7 @@ export const Notifications = React.memo(function Notifications({
             <Toast
               key={id}
               {...props}
-              closeLabel={i18n.common.close}
+              closeLabel={i18n.notifications.close}
               onClick={() => onClick?.(() => removeNotification(id))}
               onClose={() => {
                 removeNotification(id)

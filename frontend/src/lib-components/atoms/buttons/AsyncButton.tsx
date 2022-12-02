@@ -17,6 +17,7 @@ import styled, { useTheme } from 'styled-components'
 
 import { Failure, Result } from 'lib-common/api'
 import { isAutomatedTest } from 'lib-common/utils/helpers'
+import { useTranslations } from 'lib-components/i18n'
 import { faCheck, faTimes } from 'lib-icons'
 
 import { ScreenReaderOnly } from '../ScreenReaderOnly'
@@ -76,6 +77,7 @@ function AsyncButton<T>({
   icon,
   ...props
 }: AsyncButtonProps<T>) {
+  const i18n = useTranslations()
   const { colors } = useTheme()
   const [buttonState, setButtonState] = useState<ButtonState<T>>(idle)
   const onSuccessRef = useRef(onSuccess)
@@ -224,12 +226,17 @@ function AsyncButton<T>({
     >
       {buttonState.state === 'in-progress' && (
         <ScreenReaderOnly aria-live="polite" id="in-progress">
-          Ladataan
+          {i18n.asyncButton.inProgress}
+        </ScreenReaderOnly>
+      )}
+      {buttonState.state === 'failure' && (
+        <ScreenReaderOnly aria-live="assertive" id="failure">
+          {i18n.asyncButton.failure}
         </ScreenReaderOnly>
       )}
       {buttonState.state === 'success' && (
         <ScreenReaderOnly aria-live="assertive" id="success">
-          Valmis
+          {i18n.asyncButton.success}
         </ScreenReaderOnly>
       )}
       <Content>

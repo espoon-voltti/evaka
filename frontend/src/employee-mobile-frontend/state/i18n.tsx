@@ -5,10 +5,15 @@
 import React, { useMemo, useState, createContext, useContext } from 'react'
 
 import {
+  ComponentLocalizationContextProvider,
+  Translations as ComponentTranslations
+} from 'lib-components/i18n'
+import {
   Lang,
   Translations,
   translations
 } from 'lib-customizations/employeeMobile'
+
 interface I18nState {
   lang: Lang
   setLang: (l: Lang) => void
@@ -30,12 +35,25 @@ export const I18nContextProvider = React.memo(function I18nContextProvider({
 
   const value = useMemo(() => ({ lang, setLang }), [lang, setLang])
 
-  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>
+  return (
+    <I18nContext.Provider value={value}>
+      <ComponentLocalizationContextProvider
+        useTranslations={useComponentTranslations}
+      >
+        {children}
+      </ComponentLocalizationContextProvider>
+    </I18nContext.Provider>
+  )
 })
 
 export const useTranslation = (): { i18n: Translations; lang: Lang } => {
   const { lang } = useContext(I18nContext)
   return { i18n: translations[lang], lang }
+}
+
+function useComponentTranslations(): ComponentTranslations {
+  const { i18n } = useTranslation()
+  return i18n.components
 }
 
 export type { Lang, Translations }

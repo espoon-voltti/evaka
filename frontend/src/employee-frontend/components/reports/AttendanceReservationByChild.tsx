@@ -205,7 +205,6 @@ export default React.memo(function AttendanceReservationByChild() {
                 }
               }}
               locale={lang}
-              errorTexts={i18n.validationErrors}
               required={true}
             />
           </FlexRow>

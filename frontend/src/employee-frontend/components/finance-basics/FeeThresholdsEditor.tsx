@@ -104,7 +104,6 @@ export default React.memo(function FeeThresholdsEditor({
           info={validationErrorInfo('validFrom') ?? dateOverlapInputInfo}
           hideErrorsBeforeTouched
           data-qa="valid-from"
-          errorTexts={i18n.validationErrors}
         />
         <span>-</span>
         <DatePicker
@@ -119,7 +118,6 @@ export default React.memo(function FeeThresholdsEditor({
           info={validationErrorInfo('validTo') ?? dateOverlapInputInfo}
           hideErrorsBeforeTouched
           data-qa="valid-to"
-          errorTexts={i18n.validationErrors}
         />
       </RowWithMargin>
       {'errors' in validationResult && validationResult.errors.dateOverlap ? (

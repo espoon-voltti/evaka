@@ -147,7 +147,6 @@ export default React.memo(function PreferredStartSubSection({
           data-qa="preferredStartDate-input"
           id={labelId}
           required={true}
-          errorTexts={t.validationErrors}
         />
 
         {showDaycare4MonthWarning() ? (

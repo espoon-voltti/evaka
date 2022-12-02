@@ -64,7 +64,7 @@ export default function App() {
         >
           <UserContextProvider>
             <NotificationsContextProvider>
-              <Notifications apiVersion={apiVersion} i18n={i18n} />
+              <Notifications apiVersion={apiVersion} />
               <Router basename="/employee/mobile">
                 <Routes>
                   <Route path="/landing" element={<MobileLander />} />

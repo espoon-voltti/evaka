@@ -210,7 +210,6 @@ export default React.memo(function PlacementCount() {
             isInvalidDate={(d) =>
               d <= currentLocalDate ? null : i18n.validationErrors.dateTooLate
             }
-            errorTexts={i18n.validationErrors}
           />
         </FilterRow>
 

@@ -185,7 +185,6 @@ const Modal = React.memo(function Modal({
           onChange={setDate}
           hideErrorsBeforeTouched
           openAbove
-          errorTexts={i18n.validationErrors}
         />
       </FixedSpaceRow>
     </AsyncFormModal>

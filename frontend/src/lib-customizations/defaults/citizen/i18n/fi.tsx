@@ -13,6 +13,8 @@ import { H1, H2, H3, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 
+import components from '../../components/i18n/fi'
+
 const yes = 'Kyllä'
 const no = 'Ei'
 
@@ -2024,24 +2026,14 @@ export default {
     ssn: 'Virheellinen henkilötunnus',
     phone: 'Virheellinen numero',
     email: 'Virheellinen sähköpostiosoite',
-    validDate: 'Anna muodossa pp.kk.vvvv',
-    dateTooEarly: 'Valitse myöhäisempi päivä',
-    dateTooLate: 'Valitse aikaisempi päivä',
     preferredStartDate: 'Aloituspäivä ei ole sallittu',
     timeFormat: 'Tarkista',
     timeRequired: 'Pakollinen',
     unitNotSelected: 'Valitse vähintään yksi hakutoive',
     emailsDoNotMatch: 'Sähköpostiosoitteet eivät täsmää',
     httpUrl: 'Anna muodossa https://example.com',
-    unselectableDate: 'Päivä ei ole sallittu'
-  },
-  login: {
-    failedModal: {
-      header: 'Kirjautuminen epäonnistui',
-      message:
-        'Palveluun tunnistautuminen epäonnistui tai se keskeytettiin. Kirjautuaksesi sisään palaa takaisin ja yritä uudelleen.',
-      returnMessage: 'Palaa takaisin'
-    }
+    unselectableDate: 'Päivä ei ole sallittu',
+    ...components.datePicker.validationErrors
   },
   placement: {
     type: {
@@ -2062,10 +2054,6 @@ export default {
       TEMPORARY_DAYCARE_PART_DAY: 'Tilapäinen osapäiväinen varhaiskasvatus',
       SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito'
     }
-  },
-  reloadNotification: {
-    title: 'Uusi versio eVakasta saatavilla',
-    buttonText: 'Lataa sivu uudelleen'
   },
   children: {
     title: 'Lapset',
@@ -2301,5 +2289,6 @@ export default {
   skipLinks: {
     mainContent: 'Siirry pääsisältöön',
     applyingSubNav: 'Siirry hakemusnavigaatioon'
-  }
+  },
+  components
 }

@@ -42,7 +42,6 @@ export default React.memo(function DateQuestion({
           onChange={onChange}
           locale={lang}
           data-qa="date-question-picker"
-          errorTexts={translations.validationErrors}
         />
       ) : (
         <ValueOrNoRecord text={value?.format()} translations={translations} />
