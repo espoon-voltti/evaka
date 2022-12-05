@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.DAYCARE_ONLY
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PREPARATORY_DAYCARE
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PREPARATORY_ONLY
+import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PRESCHOOL_CLUB
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PRESCHOOL_ONLY
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
@@ -261,7 +262,8 @@ fun Database.Read.fetchApplicationSummaries(
                                         connectedDaycare = false,
                                         additionalDaycareApplication = false
                                     )
-                                PRESCHOOL_DAYCARE ->
+                                PRESCHOOL_DAYCARE,
+                                PRESCHOOL_CLUB ->
                                     PreschoolFlags(
                                         preparatory = false,
                                         connectedDaycare = true,
