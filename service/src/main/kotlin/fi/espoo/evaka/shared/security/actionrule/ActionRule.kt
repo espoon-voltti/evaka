@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -127,9 +128,17 @@ object DatabaseActionRule {
     }
 }
 
-internal data class IdRoleFeatures(val id: Id<*>, @Nested val roleFeatures: RoleAndFeatures)
+internal data class IdRoleFeatures(
+    val id: Id<*>,
+    @Nested val roleFeatures: RoleAndFeatures,
+    val unitProviderType: ProviderType
+)
 
-internal data class RoleAndFeatures(val role: UserRole, val unitFeatures: Set<PilotFeature>)
+internal data class RoleAndFeatures(
+    val role: UserRole,
+    val unitFeatures: Set<PilotFeature>,
+    val unitProviderType: ProviderType
+)
 
 sealed interface AccessControlFilter<out T> {
     object PermitAll : AccessControlFilter<Nothing>
