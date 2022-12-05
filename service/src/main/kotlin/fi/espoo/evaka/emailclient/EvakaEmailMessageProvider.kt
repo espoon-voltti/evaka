@@ -604,24 +604,24 @@ class EvakaEmailMessageProvider : IEmailMessageProvider {
                 "Läsnäolovarauksia puuttuu / Det finns några närvarobokningar som saknas / There are missing attendance reservations",
             text =
                 """
-Läsnäolovarauksia puuttuu seuraavalta viikolta: $start. Käythän merkitsemässä ne mahdollisimman pian.
+Läsnäolovarauksia puuttuu $start alkavalta viikolta. Käythän merkitsemässä ne mahdollisimman pian.
 
 -----
 
-Det finns några närvarobokningar som saknas för följande vecka: $start. Vänligen markera dem så snart som möjligt.
+Det finns några närvarobokningar som saknas för veckan som börjar $start. Vänligen markera dem så snart som möjligt.
 
 ----
 
-There are missing attendance reservations for the following week: $start. Please mark them as soon as possible.
+There are missing attendance reservations for the week starting $start. Please mark them as soon as possible.
                 """
                     .trimIndent(),
             html =
                 """
-<p>Läsnäolovarauksia puuttuu seuraavalta viikolta: $start. Käythän merkitsemässä ne mahdollisimman pian.</p>
+<p>Läsnäolovarauksia puuttuu $start alkavalta viikolta. Käythän merkitsemässä ne mahdollisimman pian.</p>
 <hr>
-<p>Det finns några närvarobokningar som saknas för följande vecka: $start. Vänligen markera dem så snart som möjligt.</p>
+<p>Det finns några närvarobokningar som saknas för veckan som börjar $start. Vänligen markera dem så snart som möjligt.</p>
 <hr>
-<p>There are missing attendance reservations for the following week: $start. Please mark them as soon as possible.</p>
+<p>There are missing attendance reservations for week starting $start. Please mark them as soon as possible.</p>
             """
                     .trimIndent()
         )
