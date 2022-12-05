@@ -472,7 +472,8 @@ class DecisionResolutionIntegrationTest : FullApplicationTest(resetDbBeforeEach 
                                     PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->
                                         DecisionType.DAYCARE_PART_TIME
                                     PlacementType.PRESCHOOL,
-                                    PlacementType.PRESCHOOL_DAYCARE -> DecisionType.PRESCHOOL
+                                    PlacementType.PRESCHOOL_DAYCARE,
+                                    PlacementType.PRESCHOOL_CLUB -> DecisionType.PRESCHOOL
                                     PlacementType.PREPARATORY,
                                     PlacementType.PREPARATORY_DAYCARE ->
                                         DecisionType.PREPARATORY_EDUCATION

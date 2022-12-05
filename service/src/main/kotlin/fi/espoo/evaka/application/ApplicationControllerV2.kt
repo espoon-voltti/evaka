@@ -70,6 +70,7 @@ enum class ApplicationTypeToggle {
 enum class ApplicationPreschoolTypeToggle {
     PRESCHOOL_ONLY,
     PRESCHOOL_DAYCARE,
+    PRESCHOOL_CLUB,
     PREPARATORY_ONLY,
     PREPARATORY_DAYCARE,
     DAYCARE_ONLY

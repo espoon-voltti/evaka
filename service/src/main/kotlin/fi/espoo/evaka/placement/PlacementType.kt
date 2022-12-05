@@ -15,6 +15,7 @@ enum class PlacementType : DatabaseEnum {
     DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
     PRESCHOOL,
     PRESCHOOL_DAYCARE,
+    PRESCHOOL_CLUB,
     PREPARATORY,
     PREPARATORY_DAYCARE,
     TEMPORARY_DAYCARE,
@@ -30,6 +31,7 @@ enum class PlacementType : DatabaseEnum {
             DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> true
             PRESCHOOL -> false
             PRESCHOOL_DAYCARE -> true
+            PRESCHOOL_CLUB -> true
             PREPARATORY -> false
             PREPARATORY_DAYCARE -> true
             TEMPORARY_DAYCARE -> true
@@ -48,6 +50,7 @@ enum class PlacementType : DatabaseEnum {
             TEMPORARY_DAYCARE,
             TEMPORARY_DAYCARE_PART_DAY -> setOf(AbsenceCategory.BILLABLE)
             PRESCHOOL_DAYCARE,
+            PRESCHOOL_CLUB,
             PREPARATORY_DAYCARE,
             DAYCARE_FIVE_YEAR_OLDS,
             DAYCARE_PART_TIME_FIVE_YEAR_OLDS ->

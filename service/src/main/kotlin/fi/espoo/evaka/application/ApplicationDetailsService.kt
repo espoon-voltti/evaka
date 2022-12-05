@@ -57,6 +57,7 @@ fun Database.Read.applicationFlags(
                     listOf(
                             PlacementType.PRESCHOOL,
                             PlacementType.PRESCHOOL_DAYCARE,
+                            PlacementType.PRESCHOOL_CLUB,
                             PlacementType.PREPARATORY,
                             PlacementType.PREPARATORY_DAYCARE
                         )

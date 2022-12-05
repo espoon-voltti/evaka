@@ -111,7 +111,9 @@ data class ApplicationDetails(
                     if (form.preferences.serviceNeed != null) PlacementType.PREPARATORY_DAYCARE
                     else PlacementType.PREPARATORY
                 } else {
-                    if (form.preferences.serviceNeed != null) PlacementType.PRESCHOOL_DAYCARE
+                    if (form.preferences.serviceNeed != null)
+                        form.preferences.serviceNeed.serviceNeedOption?.validPlacementType
+                            ?: PlacementType.PRESCHOOL_DAYCARE
                     else PlacementType.PRESCHOOL
                 }
             }

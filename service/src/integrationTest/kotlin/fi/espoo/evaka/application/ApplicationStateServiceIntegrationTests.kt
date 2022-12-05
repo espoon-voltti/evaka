@@ -60,6 +60,7 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.snPreschoolClub45
 import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -991,6 +992,94 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                         DecisionDraft(
                             id = it.id,
                             type = DecisionType.PRESCHOOL_DAYCARE,
+                            startDate = connectedPeriod.start,
+                            endDate = connectedPeriod.end,
+                            unitId = testDaycare.id,
+                            planned = true
+                        ),
+                        it
+                    )
+                }
+        }
+    }
+
+    @Test
+    fun `createPlacementPlan - preschool with club`() {
+        db.transaction { tx ->
+            // given
+            val serviceNeedOption =
+                ServiceNeedOption(
+                    id = snPreschoolClub45.id,
+                    nameFi = snPreschoolClub45.nameFi,
+                    nameSv = snPreschoolClub45.nameSv,
+                    nameEn = snPreschoolClub45.nameEn,
+                    validPlacementType = PlacementType.PRESCHOOL_CLUB
+                )
+            tx.insertApplication(
+                appliedType = PlacementType.PRESCHOOL_CLUB,
+                applicationId = applicationId,
+                preferredStartDate = LocalDate.of(2020, 8, 1),
+                serviceNeedOption = serviceNeedOption
+            )
+            service.sendApplication(tx, serviceWorker, clock, applicationId)
+            service.moveToWaitingPlacement(tx, serviceWorker, clock, applicationId)
+        }
+        db.transaction { tx ->
+            // when
+            service.createPlacementPlan(
+                tx,
+                serviceWorker,
+                applicationId,
+                DaycarePlacementPlan(
+                    unitId = testDaycare.id,
+                    period = mainPeriod,
+                    preschoolDaycarePeriod = connectedPeriod
+                )
+            )
+        }
+        db.read { tx ->
+            // then
+            val application = tx.fetchApplicationDetails(applicationId)!!
+            assertEquals(ApplicationStatus.WAITING_DECISION, application.status)
+
+            val placementPlan = tx.getPlacementPlan(applicationId)!!
+            assertEquals(
+                PlacementPlan(
+                    id = placementPlan.id,
+                    unitId = testDaycare.id,
+                    applicationId = applicationId,
+                    type = PlacementType.PRESCHOOL_CLUB,
+                    period = mainPeriod,
+                    preschoolDaycarePeriod = connectedPeriod
+                ),
+                placementPlan
+            )
+
+            val decisionDrafts = tx.fetchDecisionDrafts(applicationId)
+            assertEquals(2, decisionDrafts.size)
+
+            decisionDrafts
+                .find { it.type == DecisionType.PRESCHOOL }!!
+                .let {
+                    assertEquals(
+                        DecisionDraft(
+                            id = it.id,
+                            type = DecisionType.PRESCHOOL,
+                            startDate = mainPeriod.start,
+                            endDate = mainPeriod.end,
+                            unitId = testDaycare.id,
+                            planned = true
+                        ),
+                        it
+                    )
+                }
+            decisionDrafts
+                .find { it.type == DecisionType.PRESCHOOL_CLUB }!!
+                .let {
+                    assertEquals(
+                        DecisionDraft(
+                            id = it.id,
+                            type = DecisionType.PRESCHOOL_CLUB,
                             startDate = connectedPeriod.start,
                             endDate = connectedPeriod.end,
                             unitId = testDaycare.id,
@@ -2317,7 +2406,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 ServiceNeedOptionId(UUID.randomUUID()),
                 "unknown service need option",
                 "unknown service need option",
-                "unknown service need option"
+                "unknown service need option",
+                null
             )
         workflowForPreschoolDaycareDecisions(serviceNeedOption = serviceNeedOption)
 
@@ -2352,7 +2442,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 snPreschoolDaycare45.id,
                 snPreschoolDaycare45.nameFi,
                 snPreschoolDaycare45.nameSv,
-                snPreschoolDaycare45.nameEn
+                snPreschoolDaycare45.nameEn,
+                validPlacementType = null
             )
         workflowForPreschoolDaycareDecisions(serviceNeedOption = serviceNeedOption)
 

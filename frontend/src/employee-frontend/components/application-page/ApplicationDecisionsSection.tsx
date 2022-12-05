@@ -25,7 +25,7 @@ const isPending = (decision: Decision, applicationStatus: ApplicationStatus) =>
   decision.status === 'PENDING' && applicationStatus !== 'WAITING_MAILING'
 
 const isBlocked = (decisions: Decision[], decision: Decision) =>
-  ['PRESCHOOL_DAYCARE'].includes(decision.type) &&
+  ['PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'].includes(decision.type) &&
   decisions.length > 1 &&
   !decisions.find(
     (d) =>

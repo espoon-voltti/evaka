@@ -62,6 +62,7 @@ export function formatCategory(
     // eslint-disable-next-line no-fallthrough
     case 'PRESCHOOL':
     case 'PRESCHOOL_DAYCARE':
+    case 'PRESCHOOL_CLUB':
       switch (category) {
         case 'BILLABLE':
           return i18n.absences.careTypes.PRESCHOOL_DAYCARE

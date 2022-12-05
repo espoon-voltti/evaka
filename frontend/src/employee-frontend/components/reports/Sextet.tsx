@@ -37,6 +37,7 @@ const placementTypes: PlacementType[] = [
   'DAYCARE_PART_TIME_FIVE_YEAR_OLDS',
   'PRESCHOOL',
   'PRESCHOOL_DAYCARE',
+  'PRESCHOOL_CLUB',
   'PREPARATORY',
   'PREPARATORY_DAYCARE'
 ]

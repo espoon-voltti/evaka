@@ -7,6 +7,7 @@ package fi.espoo.evaka.placement
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY
 import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
+import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_CLUB
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -47,7 +48,8 @@ private fun toTerminatablePlacementType(type: PlacementType): TerminatablePlacem
         PlacementType.DAYCARE_FIVE_YEAR_OLDS,
         PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS -> TerminatablePlacementType.DAYCARE
         PRESCHOOL,
-        PRESCHOOL_DAYCARE -> TerminatablePlacementType.PRESCHOOL
+        PRESCHOOL_DAYCARE,
+        PRESCHOOL_CLUB -> TerminatablePlacementType.PRESCHOOL
         PREPARATORY,
         PREPARATORY_DAYCARE -> TerminatablePlacementType.PREPARATORY
     }
@@ -65,7 +67,13 @@ fun mapToTerminatablePlacements(
             // preschool/preparatory
             val maybePreschoolOrPreparatoryPlacement =
                 sorted.find {
-                    listOf(PRESCHOOL, PRESCHOOL_DAYCARE, PREPARATORY, PREPARATORY_DAYCARE)
+                    listOf(
+                            PRESCHOOL_DAYCARE,
+                            PRESCHOOL,
+                            PRESCHOOL_CLUB,
+                            PREPARATORY,
+                            PREPARATORY_DAYCARE
+                        )
                         .contains(it.type)
                 }
             val placementsByType =
@@ -75,6 +83,7 @@ fun mapToTerminatablePlacements(
                             PlacementType.CLUB,
                             PRESCHOOL,
                             PRESCHOOL_DAYCARE,
+                            PRESCHOOL_CLUB,
                             PREPARATORY,
                             PREPARATORY_DAYCARE -> it.type
                             PlacementType.DAYCARE,
@@ -168,6 +177,7 @@ fun terminateBilledDaycare(
         val newPlacementType =
             when (placement.type) {
                 PRESCHOOL_DAYCARE -> PRESCHOOL
+                PRESCHOOL_CLUB -> PRESCHOOL
                 PREPARATORY_DAYCARE -> PREPARATORY
                 else ->
                     throw IllegalStateException(

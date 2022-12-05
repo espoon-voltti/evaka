@@ -73,6 +73,7 @@ object EspooInvoiceProducts {
                     PlacementType.TEMPORARY_DAYCARE,
                     PlacementType.TEMPORARY_DAYCARE_PART_DAY -> Product.TEMPORARY_CARE
                     PlacementType.PRESCHOOL,
+                    PlacementType.PRESCHOOL_CLUB,
                     PlacementType.PREPARATORY,
                     PlacementType.CLUB,
                     PlacementType.SCHOOL_SHIFT_CARE ->

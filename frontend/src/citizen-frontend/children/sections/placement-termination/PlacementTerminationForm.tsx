@@ -60,7 +60,9 @@ const maybeCreateDaycareOnlyTerminatable = (
   grp: TerminatablePlacementGroup
 ): CheckboxOption[] => {
   const isPreschoolDaycareOrPreparatoryDaycare = (p: { type: PlacementType }) =>
-    p.type === 'PRESCHOOL_DAYCARE' || p.type === 'PREPARATORY_DAYCARE'
+    p.type === 'PRESCHOOL_DAYCARE' ||
+    p.type === 'PRESCHOOL_CLUB' ||
+    p.type === 'PREPARATORY_DAYCARE'
 
   const firstBilledStartDate =
     grp.placements.find(isPreschoolDaycareOrPreparatoryDaycare)?.startDate ??

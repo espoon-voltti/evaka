@@ -81,7 +81,8 @@ class AssistanceActionController(
                     dbc.read { tx ->
                         tx.getPlacementsForChild(childId).filter {
                             (it.type == PlacementType.PRESCHOOL ||
-                                it.type == PlacementType.PRESCHOOL_DAYCARE) &&
+                                it.type == PlacementType.PRESCHOOL_DAYCARE ||
+                                it.type == PlacementType.PRESCHOOL_CLUB) &&
                                 it.startDate <= clock.today()
                         }
                     }

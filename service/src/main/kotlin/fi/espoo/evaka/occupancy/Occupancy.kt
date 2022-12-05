@@ -664,6 +664,7 @@ WHERE NOT p.deleted AND (
                             when (placementPlan.placement.type) {
                                 PlacementType.PREPARATORY_DAYCARE -> PlacementType.PREPARATORY
                                 PlacementType.PRESCHOOL_DAYCARE -> PlacementType.PRESCHOOL
+                                PlacementType.PRESCHOOL_CLUB -> PlacementType.PRESCHOOL
                                 else -> placementPlan.placement.type
                             },
                         period = it

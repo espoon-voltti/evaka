@@ -79,6 +79,7 @@ export type DecisionType =
   | 'DAYCARE_PART_TIME'
   | 'PRESCHOOL'
   | 'PRESCHOOL_DAYCARE'
+  | 'PRESCHOOL_CLUB'
   | 'PREPARATORY_EDUCATION'
 
 /**

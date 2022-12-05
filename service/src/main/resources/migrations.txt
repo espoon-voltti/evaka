@@ -285,3 +285,4 @@ V285__message_thread_folder.sql
 V286__fee_decision_child_unique_constraint.sql
 V287__personal_message_accounts.sql
 V288__staff_attendance_realtime_optional_group_id.sql
+V289__placement_type_preschool_club.sql

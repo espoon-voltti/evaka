@@ -337,7 +337,8 @@ private fun Database.Transaction.clearFutureNonPreschoolRelatedPlacements(
                         PlacementType.PREPARATORY,
                         PlacementType.PREPARATORY_DAYCARE,
                         PlacementType.PRESCHOOL,
-                        PlacementType.PRESCHOOL_DAYCARE
+                        PlacementType.PRESCHOOL_DAYCARE,
+                        PlacementType.PRESCHOOL_CLUB
                     )
                     .contains(it.type)
             }

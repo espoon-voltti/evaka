@@ -30,6 +30,7 @@ const placementTypeToCareTypeLabel = (
       return 'preparatory'
     case 'PRESCHOOL':
     case 'PRESCHOOL_DAYCARE':
+    case 'PRESCHOOL_CLUB':
       return 'preschool'
     case 'SCHOOL_SHIFT_CARE':
       return 'school-shift-care'

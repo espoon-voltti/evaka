@@ -50,7 +50,7 @@ export default React.memo(function ApplicationFormPreschool({
 
   useEffect(() => {
     if (shouldLoadServiceNeedOptions) {
-      void loadServiceNeedOptions(['PRESCHOOL_DAYCARE'])
+      void loadServiceNeedOptions(['PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'])
     } else {
       setServiceNeedOptions((prev) => (prev.isLoading ? Success.of([]) : prev))
     }

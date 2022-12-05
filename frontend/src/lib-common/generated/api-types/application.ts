@@ -599,6 +599,7 @@ export interface ServiceNeedOption {
   nameEn: string
   nameFi: string
   nameSv: string
+  validPlacementType: PlacementType | null
 }
 
 /**

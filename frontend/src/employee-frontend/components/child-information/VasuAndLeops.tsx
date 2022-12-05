@@ -104,6 +104,7 @@ const getValidVasuTemplateSummaries = () => getVasuTemplateSummaries(true)
 const preschoolPlacementTypes: readonly PlacementType[] = [
   'PRESCHOOL',
   'PRESCHOOL_DAYCARE',
+  'PRESCHOOL_CLUB',
   'PREPARATORY',
   'PREPARATORY_DAYCARE'
 ]

@@ -79,6 +79,7 @@ export default React.memo(function DecisionResponse({
       case 'PRESCHOOL':
       case 'PREPARATORY_EDUCATION':
       case 'PRESCHOOL_DAYCARE':
+      case 'PRESCHOOL_CLUB':
         return decision.unit.preschoolDecisionName
       case 'CLUB':
         return decision.unit.name

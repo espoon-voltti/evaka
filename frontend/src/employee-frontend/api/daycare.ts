@@ -78,6 +78,7 @@ const asUnitType = (
       return 'DAYCARE'
     case 'PRESCHOOL':
     case 'PRESCHOOL_DAYCARE':
+    case 'PRESCHOOL_CLUB':
       return 'PRESCHOOL'
     case 'PREPARATORY':
     case 'PREPARATORY_DAYCARE':

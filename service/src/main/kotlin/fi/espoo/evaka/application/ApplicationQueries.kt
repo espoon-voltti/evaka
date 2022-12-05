@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.DAYCARE_ONLY
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PREPARATORY_DAYCARE
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PREPARATORY_ONLY
+import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PRESCHOOL_CLUB
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PRESCHOOL_DAYCARE
 import fi.espoo.evaka.application.ApplicationPreschoolTypeToggle.PRESCHOOL_ONLY
 import fi.espoo.evaka.application.persistence.club.ClubFormV0
@@ -134,7 +135,8 @@ fun Database.Read.activePlacementExists(
                     PlacementType.PREPARATORY,
                     PlacementType.PREPARATORY_DAYCARE,
                     PlacementType.PRESCHOOL,
-                    PlacementType.PRESCHOOL_DAYCARE
+                    PlacementType.PRESCHOOL_DAYCARE,
+                    PlacementType.PRESCHOOL_CLUB
                 )
             else -> listOf()
         }
@@ -260,7 +262,8 @@ fun Database.Read.fetchApplicationSummaries(
                                         connectedDaycare = false,
                                         additionalDaycareApplication = false
                                     )
-                                PRESCHOOL_DAYCARE ->
+                                PRESCHOOL_DAYCARE,
+                                PRESCHOOL_CLUB ->
                                     PreschoolFlags(
                                         preparatory = false,
                                         connectedDaycare = true,
@@ -352,6 +355,7 @@ fun Database.Read.fetchApplicationSummaries(
             f.document -> 'serviceNeedOption' ->> 'nameFi' as serviceNeedNameFi,
             f.document -> 'serviceNeedOption' ->> 'nameSv' as serviceNeedNameSv,
             f.document -> 'serviceNeedOption' ->> 'nameEn' as serviceNeedNameEn,
+            f.document -> 'serviceNeedOption' ->> 'validPlacementType' as serviceNeedValidPlacementType,
             a.duedate,
             (f.document ->> 'preferredStartDate')::date as preferredStartDate,
             f.document -> 'apply' -> 'preferredUnits' as preferredUnits,
@@ -468,7 +472,8 @@ fun Database.Read.fetchApplicationSummaries(
                                 it,
                                 row.mapColumn("serviceNeedNameFi"),
                                 row.mapColumn("serviceNeedNameSv"),
-                                row.mapColumn("serviceNeedNameEn")
+                                row.mapColumn("serviceNeedNameEn"),
+                                row.mapColumn("serviceNeedValidPlacementType")
                             )
                         },
                     dueDate = row.mapColumn("duedate"),
@@ -815,6 +820,7 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
             f.document -> 'serviceNeedOption' ->> 'nameFi' AS serviceNeedNameFi,
             f.document -> 'serviceNeedOption' ->> 'nameSv' AS serviceNeedNameSv,
             f.document -> 'serviceNeedOption' ->> 'nameEn' AS serviceNeedNameEn,
+            f.document -> 'serviceNeedOption' ->> 'validPlacementType' AS serviceNeedValidPlacementType,
             f.document,
             (f.document ->> 'preferredStartDate')::date as preferred_start_date,
             (array_position((
@@ -861,7 +867,8 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
                             it,
                             row.mapColumn("serviceNeedNameFi"),
                             row.mapColumn("serviceNeedNameSv"),
-                            row.mapColumn("serviceNeedNameEn")
+                            row.mapColumn("serviceNeedNameEn"),
+                            row.mapColumn("serviceNeedValidPlacementType")
                         )
                     },
                 preferredStartDate = row.mapColumn("preferred_start_date"),
@@ -894,7 +901,7 @@ fun mapRequestedPlacementType(row: RowView, colName: String): PlacementType =
                     }
                 } else {
                     if (it.connectedDaycare == true) {
-                        PlacementType.PRESCHOOL_DAYCARE
+                        it.serviceNeedOption?.validPlacementType ?: PlacementType.PRESCHOOL_DAYCARE
                     } else {
                         PlacementType.PRESCHOOL
                     }
@@ -1126,6 +1133,7 @@ RETURNING id
                 PlacementType.CLUB,
                 PlacementType.PRESCHOOL,
                 PlacementType.PRESCHOOL_DAYCARE,
+                PlacementType.PRESCHOOL_CLUB,
                 PlacementType.PREPARATORY,
                 PlacementType.PREPARATORY_DAYCARE,
                 PlacementType.TEMPORARY_DAYCARE,
@@ -1154,6 +1162,7 @@ RETURNING id
                 PlacementType.DAYCARE_FIVE_YEAR_OLDS,
                 PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS,
                 PlacementType.PRESCHOOL,
+                PlacementType.PRESCHOOL_CLUB,
                 PlacementType.PRESCHOOL_DAYCARE,
                 PlacementType.PREPARATORY,
                 PlacementType.PREPARATORY_DAYCARE,
