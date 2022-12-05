@@ -117,7 +117,7 @@ sealed interface Action {
         SETTINGS_PAGE(HasGlobalRole(ADMIN)),
         UNIT_FEATURES_PAGE(HasGlobalRole(ADMIN)),
         UNITS_PAGE(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
@@ -1461,7 +1461,7 @@ sealed interface Action {
     enum class Unit(override vararg val defaultRules: ScopedActionRule<in DaycareId>) :
         ScopedAction<DaycareId> {
         READ(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR),
             HasUnitRole(
                     UNIT_SUPERVISOR,
                     STAFF,
@@ -1470,7 +1470,7 @@ sealed interface Action {
                 )
                 .inUnit()
         ),
-        READ_BASIC(
+        READ_GROUP_DETAILS(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(
                     UNIT_SUPERVISOR,
@@ -1490,7 +1490,10 @@ sealed interface Action {
                 )
                 .inUnit()
         ), // marker for ui to toggle attendances-tab
-        READ_DETAILED(HasGlobalRole(ADMIN, SERVICE_WORKER), HasUnitRole(UNIT_SUPERVISOR).inUnit()),
+        READ_APPLICATIONS_AND_PLACEMENT_PLANS(
+            HasGlobalRole(ADMIN, SERVICE_WORKER),
+            HasUnitRole(UNIT_SUPERVISOR).inUnit()
+        ),
         READ_GROUPS(
             HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
             HasUnitRole(
@@ -1550,8 +1553,8 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR).inUnit()
         ),
         READ_OCCUPANCIES(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
-            HasUnitRole(UNIT_SUPERVISOR).inUnit(),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER).inUnit(),
             IsMobile(requirePinLogin = false).inUnit()
         ),
         READ_ATTENDANCE_RESERVATIONS(
@@ -1658,7 +1661,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
         ),
         READ_MISSING_SERVICE_NEED_REPORT(
-            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN),
+            HasGlobalRole(ADMIN, SERVICE_WORKER, FINANCE_ADMIN, DIRECTOR),
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit()
         ),
         READ_OCCUPANCY_REPORT(

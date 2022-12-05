@@ -122,7 +122,16 @@ export interface MissingGroupPlacement {
   placementId: UUID
   placementPeriod: FiniteDateRange
   placementType: PlacementType | null
-  serviceNeeds: ServiceNeed[]
+  serviceNeeds: MissingGroupPlacementServiceNeed[]
+}
+
+/**
+* Generated from fi.espoo.evaka.placement.MissingGroupPlacementServiceNeed
+*/
+export interface MissingGroupPlacementServiceNeed {
+  endDate: LocalDate
+  nameFi: string
+  startDate: LocalDate
 }
 
 /**

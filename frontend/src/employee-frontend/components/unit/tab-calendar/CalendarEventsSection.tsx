@@ -51,7 +51,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faCalendarPlus, faQuestion, faTrash } from 'lib-icons'
 
 import { client } from '../../../api/client'
-import { getUnitData } from '../../../api/unit'
+import { getUnitGroupDetails } from '../../../api/unit'
 import { renderResult } from '../../../components/async-rendering'
 import { FlexRow } from '../../../components/common/styled/containers'
 import { useTranslation } from '../../../state/i18n'
@@ -401,8 +401,8 @@ const CreateEventModal = React.memo(function CreateEventModal({
     description: ''
   })
 
-  const [unitData] = useApiState(
-    () => getUnitData(unitId, form.period.start, form.period.end),
+  const [groupData] = useApiState(
+    () => getUnitGroupDetails(unitId, form.period.start, form.period.end),
     [unitId, form.period]
   )
 
@@ -416,7 +416,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
   )
 
   useEffect(() => {
-    combine(unitData, unitInformation).map(
+    combine(groupData, unitInformation).map(
       ([{ groups, placements, backupCares }, { daycare }]) => {
         setForm(({ attendees, ...rest }) => {
           const useDefault = attendees.length === 0
@@ -506,7 +506,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
         })
       }
     )
-  }, [form.period, groupId, unitData, unitInformation, updateForm])
+  }, [form.period, groupId, groupData, unitInformation, updateForm])
 
   const childrenWithMissingPlacement = useMemo(() => {
     const specificChildSelections = omitBy(
@@ -534,7 +534,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
       (value) => value.every(({ isSupplemental }) => isSupplemental)
     )
 
-    return unitData
+    return groupData
       .map(({ placements, backupCares }) =>
         Object.entries(specificChildSelections)
           .map(([childId, groups]) => {
@@ -580,7 +580,7 @@ const CreateEventModal = React.memo(function CreateEventModal({
           )
       )
       .getOrElse([])
-  }, [form.attendees, form.period, unitData])
+  }, [form.attendees, form.period, groupData])
 
   return (
     <AsyncFormModal

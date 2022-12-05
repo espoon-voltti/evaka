@@ -12,10 +12,16 @@ import LocalDate from '../../local-date'
 import { Action } from '../action'
 import { Coordinate } from './shared'
 import { DaycareAclRow } from './shared'
+import { DaycarePlacementWithDetails } from './placement'
 import { EvakaUserType } from './user'
+import { MissingGroupPlacement } from './placement'
+import { OccupancyResponse } from './occupancy'
 import { PersonJSON } from './pis'
 import { PilotFeature } from './shared'
+import { TerminatedPlacement } from './placement'
 import { UUID } from '../../types'
+import { UnitBackupCare } from './backupcare'
+import { UnitChildrenCapacityFactors } from './placement'
 
 /**
 * Generated from fi.espoo.evaka.daycare.service.Absence
@@ -164,6 +170,14 @@ export interface CaretakerRequest {
   amount: number
   endDate: LocalDate | null
   startDate: LocalDate
+}
+
+/**
+* Generated from fi.espoo.evaka.daycare.service.Caretakers
+*/
+export interface Caretakers {
+  maximum: number
+  minimum: number
 }
 
 /**
@@ -382,6 +396,14 @@ export interface GroupAclUpdate {
 }
 
 /**
+* Generated from fi.espoo.evaka.daycare.controllers.GroupOccupancies
+*/
+export interface GroupOccupancies {
+  confirmed: Record<string, OccupancyResponse>
+  realized: Record<string, OccupancyResponse>
+}
+
+/**
 * Generated from fi.espoo.evaka.daycare.service.GroupStaffAttendance
 */
 export interface GroupStaffAttendance {
@@ -485,14 +507,6 @@ export interface StaffAttendanceUpdate {
 }
 
 /**
-* Generated from fi.espoo.evaka.daycare.service.Stats
-*/
-export interface Stats {
-  maximum: number
-  minimum: number
-}
-
-/**
 * Generated from fi.espoo.evaka.daycare.UnitFeatures
 */
 export interface UnitFeatures {
@@ -504,12 +518,37 @@ export interface UnitFeatures {
 }
 
 /**
+* Generated from fi.espoo.evaka.daycare.controllers.UnitGroupDetails
+*/
+export interface UnitGroupDetails {
+  backupCares: UnitBackupCare[]
+  caretakers: Record<string, Caretakers>
+  groupOccupancies: GroupOccupancies | null
+  groups: DaycareGroup[]
+  missingGroupPlacements: MissingGroupPlacement[]
+  permittedBackupCareActions: Record<string, Action.BackupCare[]>
+  permittedGroupPlacementActions: Record<string, Action.GroupPlacement[]>
+  permittedPlacementActions: Record<string, Action.Placement[]>
+  placements: DaycarePlacementWithDetails[]
+  recentlyTerminatedPlacements: TerminatedPlacement[]
+  unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]
+}
+
+/**
 * Generated from fi.espoo.evaka.daycare.UnitManager
 */
 export interface UnitManager {
   email: string | null
   name: string | null
   phone: string | null
+}
+
+/**
+* Generated from fi.espoo.evaka.daycare.controllers.DaycareController.UnitNotifications
+*/
+export interface UnitNotifications {
+  applications: number
+  groups: number
 }
 
 /**

@@ -9,8 +9,9 @@ import styled from 'styled-components'
 
 import { Action } from 'lib-common/generated/action'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
-import { Stats } from 'lib-common/generated/api-types/daycare'
+import { Caretakers } from 'lib-common/generated/api-types/daycare'
 import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
+import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
@@ -31,7 +32,6 @@ import { UserContext } from '../../../state/user'
 import {
   DaycareGroup,
   DaycareGroupPlacementDetailed,
-  DaycarePlacement,
   flatMapGroupPlacements,
   Unit,
   UnitChildrenCapacityFactors
@@ -44,11 +44,11 @@ function renderGroups(
   filters: UnitFilters,
   groups: DaycareGroup[],
   groupPermittedActions: Record<UUID, Set<Action.Group> | undefined>,
-  placements: DaycarePlacement[],
-  permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>,
-  permittedGroupPlacementActions: Record<UUID, Set<Action.GroupPlacement>>,
+  placements: DaycarePlacementWithDetails[],
+  permittedBackupCareActions: Record<UUID, Action.BackupCare[]>,
+  permittedGroupPlacementActions: Record<UUID, Action.GroupPlacement[]>,
   backupCares: UnitBackupCare[],
-  groupCaretakers: Record<string, Stats>,
+  groupCaretakers: Record<string, Caretakers>,
   reload: () => void,
   onTransferRequested: (
     placement: DaycareGroupPlacementDetailed | UnitBackupCare
@@ -106,17 +106,17 @@ type Props = {
   filters: UnitFilters
   setFilters: Dispatch<SetStateAction<UnitFilters>>
   groups: DaycareGroup[]
-  placements: DaycarePlacement[]
+  placements: DaycarePlacementWithDetails[]
   backupCares: UnitBackupCare[]
   groupPermittedActions: Record<UUID, Set<Action.Group> | undefined>
-  groupCaretakers: Record<string, Stats>
+  groupCaretakers: Record<string, Caretakers>
   groupConfirmedOccupancies?: Record<string, OccupancyResponse>
   groupRealizedOccupancies?: Record<string, OccupancyResponse>
-  reloadUnitData: () => void
+  reloadGroupData: () => void
   openGroups: Record<string, boolean>
   setOpenGroups: Dispatch<SetStateAction<Record<string, boolean>>>
-  permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>
-  permittedGroupPlacementActions: Record<UUID, Set<Action.GroupPlacement>>
+  permittedBackupCareActions: Record<UUID, Action.BackupCare[]>
+  permittedGroupPlacementActions: Record<UUID, Action.GroupPlacement[]>
   unitChildrenCapacityFactors: UnitChildrenCapacityFactors[]
 }
 
@@ -132,7 +132,7 @@ export default React.memo(function Groups({
   groupCaretakers,
   groupConfirmedOccupancies,
   groupRealizedOccupancies,
-  reloadUnitData,
+  reloadGroupData,
   openGroups,
   setOpenGroups,
   permittedBackupCareActions,
@@ -218,7 +218,7 @@ export default React.memo(function Groups({
       </FixedSpaceRow>
       <Gap size="s" />
       {uiMode === 'create-new-daycare-group' && (
-        <GroupModal unitId={unit.id} reload={reloadUnitData} />
+        <GroupModal unitId={unit.id} reload={reloadGroupData} />
       )}
       {uiMode === 'group-transfer' && transferredPlacement && (
         <>
@@ -226,13 +226,13 @@ export default React.memo(function Groups({
             <GroupTransferModal
               placement={transferredPlacement}
               groups={groups}
-              reload={reloadUnitData}
+              reload={reloadGroupData}
             />
           ) : (
             <BackupCareGroupModal
               backupCare={transferredPlacement}
               groups={groups}
-              reload={reloadUnitData}
+              reload={reloadGroupData}
             />
           )}
         </>
@@ -247,7 +247,7 @@ export default React.memo(function Groups({
         permittedGroupPlacementActions,
         backupCares,
         groupCaretakers,
-        reloadUnitData,
+        reloadGroupData,
         (placement) => {
           setTransferredPlacement(placement)
           toggleUiMode('group-transfer')

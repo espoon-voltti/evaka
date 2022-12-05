@@ -7,7 +7,7 @@ package fi.espoo.evaka.daycare.dao
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.daycare.getGroupStats
 import fi.espoo.evaka.daycare.getUnitStats
-import fi.espoo.evaka.daycare.service.Stats
+import fi.espoo.evaka.daycare.service.Caretakers
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -95,10 +95,10 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             val groupStats =
                 tx.getGroupStats(daycareId, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
             assertEquals(4, groupStats.keys.size)
-            assertEquals(Stats(3.0, 5.0), groupStats.get(groupId1))
-            assertEquals(Stats(1.0, 3.0), groupStats.get(groupId2))
-            assertEquals(Stats(4.0, 6.0), groupStats.get(groupId3))
-            assertEquals(Stats(0.0, 0.0), groupStats.get(groupId4))
+            assertEquals(Caretakers(3.0, 5.0), groupStats.get(groupId1))
+            assertEquals(Caretakers(1.0, 3.0), groupStats.get(groupId2))
+            assertEquals(Caretakers(4.0, 6.0), groupStats.get(groupId3))
+            assertEquals(Caretakers(0.0, 0.0), groupStats.get(groupId4))
         }
 
     @Test
@@ -107,10 +107,10 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
             val groupStats =
                 tx.getGroupStats(daycareId, LocalDate.of(2000, 2, 3), LocalDate.of(2000, 4, 1))
             assertEquals(4, groupStats.keys.size)
-            assertEquals(Stats(4.0, 5.0), groupStats.get(groupId1))
-            assertEquals(Stats(1.0, 3.0), groupStats.get(groupId2))
-            assertEquals(Stats(4.0, 4.0), groupStats.get(groupId3))
-            assertEquals(Stats(0.0, 0.0), groupStats.get(groupId4))
+            assertEquals(Caretakers(4.0, 5.0), groupStats.get(groupId1))
+            assertEquals(Caretakers(1.0, 3.0), groupStats.get(groupId2))
+            assertEquals(Caretakers(4.0, 4.0), groupStats.get(groupId3))
+            assertEquals(Caretakers(0.0, 0.0), groupStats.get(groupId4))
         }
 
     @Test
@@ -118,7 +118,7 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             val singleDate = LocalDate.of(2000, 2, 1)
             val groupStats = tx.getGroupStats(daycareId, singleDate, singleDate)
-            assertEquals(Stats(3.0, 3.0), groupStats.get(groupId1))
+            assertEquals(Caretakers(3.0, 3.0), groupStats.get(groupId1))
         }
 
     @Test
@@ -126,7 +126,7 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             val singleDate = LocalDate.of(2000, 2, 2)
             val groupStats = tx.getGroupStats(daycareId, singleDate, singleDate)
-            assertEquals(Stats(5.0, 5.0), groupStats.get(groupId1))
+            assertEquals(Caretakers(5.0, 5.0), groupStats.get(groupId1))
         }
 
     @Test
@@ -134,7 +134,7 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             val unitStats =
                 tx.getUnitStats(daycareId, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
-            assertEquals(Stats(9.0, 13.0), unitStats)
+            assertEquals(Caretakers(9.0, 13.0), unitStats)
         }
 
     @Test
@@ -142,7 +142,7 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             val unitStats =
                 tx.getUnitStats(daycareId2, LocalDate.of(2000, 1, 1), LocalDate.of(2000, 6, 1))
-            assertEquals(Stats(0.0, 0.0), unitStats)
+            assertEquals(Caretakers(0.0, 0.0), unitStats)
         }
 
     @Test
@@ -150,7 +150,7 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             val unitStats =
                 tx.getUnitStats(daycareId, LocalDate.of(2000, 3, 1), LocalDate.of(2000, 3, 2))
-            assertEquals(Stats(9.0, 10.0), unitStats)
+            assertEquals(Caretakers(9.0, 10.0), unitStats)
         }
 
     @Test
@@ -158,7 +158,7 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             val unitStats =
                 tx.getUnitStats(daycareId, LocalDate.of(2000, 3, 1), LocalDate.of(2000, 3, 1))
-            assertEquals(Stats(10.0, 10.0), unitStats)
+            assertEquals(Caretakers(10.0, 10.0), unitStats)
         }
 
     @Test
@@ -166,7 +166,7 @@ class CaretakerQueriesIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction { tx ->
             val unitStats =
                 tx.getUnitStats(daycareId, LocalDate.of(2000, 3, 2), LocalDate.of(2000, 3, 2))
-            assertEquals(Stats(9.0, 9.0), unitStats)
+            assertEquals(Caretakers(9.0, 9.0), unitStats)
         }
 
     @Test

@@ -585,6 +585,7 @@ class PlacementProposalsSection {
 
   async submitProposalRejectionReason() {
     await this.page.find('[data-qa="modal-okBtn"]').click()
+    await this.page.findByDataQa('modal-okBtn').waitUntilHidden()
   }
 
   async waitUntilVisible() {

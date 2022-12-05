@@ -538,139 +538,79 @@ private fun addMissingGroupPlacements(
 }
 
 fun getMissingGroupPlacements(tx: Database.Read, unitId: DaycareId): List<MissingGroupPlacement> {
-    data class GroupPlacementGap(
-        val backup: Boolean,
-        val placementId: PlacementId,
-        val placementType: PlacementType?,
-        val placementRange: FiniteDateRange,
-        val childId: ChildId,
-        @Json val serviceNeeds: Set<ServiceNeed>,
-        val gapRange: FiniteDateRange
-    )
-
     val evakaLaunch = LocalDate.of(2020, 3, 1)
 
-    data class PlacementResult(
-        val id: PlacementId,
-        val type: PlacementType,
-        val range: FiniteDateRange,
-        val childId: ChildId,
-        @Json val serviceNeeds: Set<ServiceNeed>,
-        val groupPlacementRanges: List<FiniteDateRange>
-    )
-    val placements =
+    val missingGroupPlacements =
         tx.createQuery(
                 """
-        SELECT
-            FALSE AS backup,
-            pl.id,
-            pl.type,
-            daterange(greatest(pl.start_date, :launch), pl.end_date, '[]') AS range,
-            pl.child_id,
-            coalesce(jsonb_agg(jsonb_build_object(
-                'id', sn.id,
-                'placementId', sn.placement_id,
-                'startDate', sn.start_date,
-                'endDate', sn.end_date,
-                'option', jsonb_build_object(
-                    'id', sno.id,
-                    'nameFi', sno.name_fi,
-                    'nameSv', sno.name_sv,
-                    'nameEn', sno.name_en,
-                    'updated', date_part('epoch', sno.updated)
-                ),
-                'shiftCare', sn.shift_care,
-                'confirmed', jsonb_build_object(
-                    'userId', u.id,
-                    'name', u.name,
-                    'at', date_part('epoch', sn.confirmed_at)
-                ),
-                'updated', date_part('epoch', sn.updated)
-            )) FILTER (WHERE sn.id IS NOT NULL), '[]') AS service_needs,
-            coalesce(array_agg(daterange(greatest(dgp.start_date, :launch), dgp.end_date, '[]')) FILTER (WHERE dgp is NOT NULL), '{}') AS group_placement_ranges
-        FROM placement pl
-        LEFT JOIN daycare_group_placement dgp on pl.id = dgp.daycare_placement_id AND daterange(dgp.start_date, dgp.end_date, '[]') && daterange(:launch, NULL)
-        LEFT JOIN service_need sn ON sn.placement_id = pl.id
-        LEFT JOIN service_need_option sno ON sno.id = sn.option_id
-        LEFT JOIN evaka_user u ON u.id = sn.confirmed_by
-        WHERE pl.unit_id = :unitId AND daterange(pl.start_date, pl.end_date, '[]') && daterange(:launch, NULL)
-        GROUP BY pl.id, pl.type, pl.start_date, pl.end_date, pl.child_id
-        --exclude simple cases where there is only one group placement and it matches the placement range
-        HAVING count(dgp) != 1
-            OR greatest(min(dgp.start_date), :launch) != greatest(pl.start_date, :launch)
-            OR greatest(max(dgp.end_date), :launch) != greatest(pl.end_date, :launch);
-    """
+WITH missing_group_placement AS (
+    SELECT p.id, p.type, daterange(p.start_date, p.end_date, '[]') AS placement_period, p.child_id,
+        multirange(daterange(p.start_date, p.end_date, '[]')) - coalesce(dgp.ranges, '{}'::datemultirange) AS ranges
+    FROM placement p
+    LEFT JOIN LATERAL (
+        SELECT range_agg(daterange(dgp.start_date, dgp.end_date, '[]')) AS ranges
+        FROM daycare_group_placement dgp
+        WHERE p.id = dgp.daycare_placement_id
+    ) dgp ON true
+    WHERE p.unit_id = :unitId AND daterange(p.start_date, p.end_date, '[]') && daterange(:evakaLaunch, NULL)
+    AND NOT isempty(multirange(daterange(p.start_date, p.end_date, '[]')) - coalesce(dgp.ranges, '{}'::datemultirange))
+)
+SELECT
+    FALSE AS backup,
+    p.id AS placement_id,
+    p.type AS placement_type,
+    p.placement_period,
+    unnest(p.ranges) AS gap,
+    p.child_id,
+    c.first_name,
+    c.last_name,
+    c.date_of_birth,
+    sn.service_needs
+FROM missing_group_placement p
+JOIN person c ON p.child_id = c.id
+JOIN LATERAL (
+    SELECT coalesce(jsonb_agg(jsonb_build_object(
+        'startDate', sn.start_date,
+        'endDate', sn.end_date,
+        'nameFi', sno.name_fi
+    )), '[]'::jsonb) AS service_needs
+    FROM service_need sn
+    JOIN service_need_option sno ON sn.option_id = sno.id
+    WHERE p.id = sn.placement_id
+) sn ON true
+"""
             )
             .bind("unitId", unitId)
-            .bind("launch", evakaLaunch)
-            .mapTo<PlacementResult>()
-            .list()
-
-    val missingGroupPlacements =
-        placements.flatMap { placement ->
-            placement.range.complement(placement.groupPlacementRanges).map { gap ->
-                GroupPlacementGap(
-                    backup = false,
-                    placementId = placement.id,
-                    placementType = placement.type,
-                    placementRange = placement.range,
-                    childId = placement.childId,
-                    serviceNeeds = placement.serviceNeeds,
-                    gapRange = gap
-                )
-            }
-        }
+            .bind("evakaLaunch", evakaLaunch)
+            .mapTo<MissingGroupPlacement>()
+            .toList()
 
     val missingBackupCareGroups =
         tx.createQuery(
                 """
-        SELECT 
-            TRUE AS backup,
-            id AS placement_id,
-            NULL AS placement_type,
-            daterange(start_date, end_date, '[]') AS placement_range,
-            child_id,
-            '[]' AS service_needs,
-            daterange(start_date, end_date, '[]') AS gap_range
-        FROM backup_care bc
-        WHERE bc.unit_id = :unitId AND bc.group_id IS NULL 
-            AND daterange(bc.start_date, bc.end_date, '[]') && daterange(:launch, NULL)
-    """
+SELECT
+    TRUE AS backup,
+    bc.id AS placement_id,
+    NULL AS placement_type,
+    daterange(bc.start_date, bc.end_date, '[]') AS placement_period,
+    '[]' AS service_needs,
+    daterange(bc.start_date, bc.end_date, '[]') AS gap,
+    bc.child_id,
+    c.first_name,
+    c.last_name,
+    c.date_of_birth
+FROM backup_care bc
+JOIN person c ON bc.child_id = c.id
+WHERE bc.unit_id = :unitId AND bc.group_id IS NULL
+    AND daterange(bc.start_date, bc.end_date, '[]') && daterange(:evakaLaunch, NULL)
+"""
             )
             .bind("unitId", unitId)
-            .bind("launch", evakaLaunch)
-            .mapTo<GroupPlacementGap>()
+            .bind("evakaLaunch", evakaLaunch)
+            .mapTo<MissingGroupPlacement>()
             .list()
 
-    val gaps = missingGroupPlacements + missingBackupCareGroups
-
-    val children =
-        tx.createQuery(
-                """
-        SELECT id, first_name, last_name, date_of_birth, social_security_number
-        FROM person WHERE id = ANY(:childIds)
-    """
-            )
-            .bind("childIds", gaps.map { it.childId })
-            .mapTo<ChildBasics>()
-            .list()
-            .associateBy { it.id }
-
-    return gaps.map { gap ->
-        val child = children[gap.childId]!!
-        MissingGroupPlacement(
-            placementId = gap.placementId,
-            placementType = gap.placementType,
-            backup = gap.backup,
-            placementPeriod = gap.placementRange,
-            childId = child.id,
-            firstName = child.firstName,
-            lastName = child.lastName,
-            dateOfBirth = child.dateOfBirth,
-            serviceNeeds = gap.serviceNeeds,
-            gap = gap.gapRange
-        )
-    }
+    return missingGroupPlacements + missingBackupCareGroups
 }
 
 data class DaycarePlacement(
@@ -729,8 +669,14 @@ data class MissingGroupPlacement(
     val firstName: String,
     val lastName: String,
     val dateOfBirth: LocalDate,
-    val serviceNeeds: Set<ServiceNeed>,
+    @Json val serviceNeeds: List<MissingGroupPlacementServiceNeed>,
     val gap: FiniteDateRange
+)
+
+data class MissingGroupPlacementServiceNeed(
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+    val nameFi: String
 )
 
 data class ChildBasics(

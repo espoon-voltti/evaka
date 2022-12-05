@@ -19,7 +19,6 @@ import {
 import styled from 'styled-components'
 
 import { UnitResponse } from 'employee-frontend/api/unit'
-import { isLoading } from 'lib-common/api'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -39,14 +38,16 @@ import TabApplicationProcess from './unit/TabApplicationProcess'
 import TabCalendar from './unit/TabCalendar'
 
 const defaultTab = (unit: UnitResponse) => {
-  if (unit.permittedActions.has('READ_ATTENDANCES')) return 'attendances'
-  return 'groups'
+  if (unit.permittedActions.has('READ_ATTENDANCES')) return 'calendar'
+  if (unit.permittedActions.has('READ_OCCUPANCIES')) return 'calendar'
+  if (unit.permittedActions.has('READ_GROUP_DETAILS')) return 'groups'
+  return 'unit-info'
 }
 
 const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const { i18n } = useTranslation()
   const { setTitle } = useContext<TitleState>(TitleContext)
-  const { unitInformation, unitData, reloadUnitData, filters, setFilters } =
+  const { unitInformation, unitNotifications, filters, setFilters } =
     useContext(UnitContext)
 
   const [searchParams, setSearchParams] = useSearchParams()
@@ -117,7 +118,8 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
   const tabs = useMemo(
     () => [
       ...(unitInformation.isSuccess &&
-      (unitInformation.value.permittedActions.has('READ_ATTENDANCES') ||
+      (unitInformation.value.permittedActions.has('READ_OCCUPANCIES') ||
+        unitInformation.value.permittedActions.has('READ_ATTENDANCES') ||
         unitInformation.value.permittedActions.has('READ_CALENDAR_EVENTS'))
         ? [
             {
@@ -127,27 +129,30 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
             }
           ]
         : []),
-      {
-        id: 'groups',
-        link: `/units/${id}/groups`,
-        label: i18n.unit.tabs.groups,
-        counter: unitData
-          .map((data) => data.missingGroupPlacements.length)
-          .getOrElse(undefined)
-      },
       ...(unitInformation.isSuccess &&
-      unitInformation.value.permittedActions.has('READ_DETAILED')
+      unitInformation.value.permittedActions.has('READ_GROUP_DETAILS')
+        ? [
+            {
+              id: 'groups',
+              link: `/units/${id}/groups`,
+              label: i18n.unit.tabs.groups,
+              counter: unitNotifications
+                .map(({ groups }) => groups)
+                .getOrElse(0)
+            }
+          ]
+        : []),
+      ...(unitInformation.isSuccess &&
+      unitInformation.value.permittedActions.has(
+        'READ_APPLICATIONS_AND_PLACEMENT_PLANS'
+      )
         ? [
             {
               id: 'application-process',
               link: `/units/${id}/application-process`,
               label: i18n.unit.tabs.applicationProcess,
-              counter: unitData
-                .map(
-                  (data) =>
-                    (data.placementPlans?.filter((p) => !p.rejectedByCitizen)
-                      ?.length ?? 0) + (data.placementProposals?.length ?? 0)
-                )
+              counter: unitNotifications
+                .map(({ applications }) => applications)
                 .getOrElse(0)
             }
           ]
@@ -158,7 +163,7 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
         label: i18n.unit.tabs.unitInfo
       }
     ],
-    [id, i18n, unitData, unitInformation]
+    [id, i18n, unitInformation, unitNotifications]
   )
 
   if (unitInformation.isLoading) {
@@ -195,7 +200,6 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
             path="groups"
             element={
               <TabGroups
-                reloadUnitData={reloadUnitData}
                 openGroups={openGroups}
                 setOpenGroups={setOpenGroups}
               />
@@ -213,12 +217,7 @@ const UnitPage = React.memo(function UnitPage({ id }: { id: UUID }) {
           />
           <Route
             path="application-process"
-            element={
-              <TabApplicationProcess
-                isLoading={isLoading(unitData)}
-                reloadUnitData={reloadUnitData}
-              />
-            }
+            element={<TabApplicationProcess unitId={id} />}
           />
           <Route
             index

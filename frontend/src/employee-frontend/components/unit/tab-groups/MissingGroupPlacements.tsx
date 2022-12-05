@@ -79,7 +79,7 @@ function renderMissingGroupPlacementRow(
                         LocalDate.todayInSystemTz()
                       )
                     )
-                    .map((sn) => sn.option.nameFi)
+                    .map((sn) => sn.nameFi)
                     .join(' / ')
                 : i18n.placement.type[placementType]
             }
@@ -110,15 +110,15 @@ type Props = {
   groups: DaycareGroup[]
   missingGroupPlacements: MissingGroupPlacement[]
   backupCares: UnitBackupCare[]
-  reloadUnitData: () => void
-  permittedPlacementActions: Record<UUID, Set<Action.Placement>>
-  permittedBackupCareActions: Record<UUID, Set<Action.BackupCare>>
+  reloadGroupData: () => void
+  permittedPlacementActions: Record<UUID, Action.Placement[]>
+  permittedBackupCareActions: Record<UUID, Action.BackupCare[]>
 }
 
 export default React.memo(function MissingGroupPlacements({
   groups,
   missingGroupPlacements,
-  reloadUnitData,
+  reloadGroupData,
   permittedPlacementActions,
   permittedBackupCareActions
 }: Props) {
@@ -165,8 +165,10 @@ export default React.memo(function MissingGroupPlacements({
               () => addPlacementToGroup(row),
               i18n,
               row.backup
-                ? permittedBackupCareActions[row.placementId]?.has('UPDATE')
-                : permittedPlacementActions[row.placementId]?.has(
+                ? permittedBackupCareActions[row.placementId]?.includes(
+                    'UPDATE'
+                  )
+                : permittedPlacementActions[row.placementId]?.includes(
                     'CREATE_GROUP_PLACEMENT'
                   )
             )
@@ -178,7 +180,7 @@ export default React.memo(function MissingGroupPlacements({
           <GroupPlacementModal
             groups={groups}
             missingPlacement={activeMissingPlacement}
-            reload={reloadUnitData}
+            reload={reloadGroupData}
           />
         )}
     </>

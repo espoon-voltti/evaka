@@ -4,11 +4,10 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import sortBy from 'lodash/sortBy'
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { combine } from 'lib-common/api'
 import { PlacementPlanDetails } from 'lib-common/generated/api-types/placement'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import Title from 'lib-components/atoms/Title'
@@ -21,12 +20,10 @@ import { faFileAlt, faTimes } from 'lib-icons'
 
 import { getEmployeeUrlPrefix } from '../../constants'
 import { useTranslation } from '../../state/i18n'
-import { UnitContext } from '../../state/unit'
 import { formatName } from '../../utils'
 import { isPartDayPlacement } from '../../utils/placements'
 import { NotificationCounter } from '../UnitPage'
 import { CircleIconSmallOrange } from '../applications/CircleIcon'
-import { renderResult } from '../async-rendering'
 import { CareTypeChip } from '../common/CareTypeLabel'
 import { FlexRow } from '../common/styled/containers'
 
@@ -49,153 +46,145 @@ function latestEndDate(p: PlacementPlanDetails) {
     : p.period.end
 }
 
-export default React.memo(function TabWaitingConfirmation() {
-  const { i18n } = useTranslation()
+interface Props {
+  placementPlans: PlacementPlanDetails[]
+}
 
-  const { unitData } = useContext(UnitContext)
+export default React.memo(function TabWaitingConfirmation({
+  placementPlans
+}: Props) {
+  const { i18n } = useTranslation()
   const [open, setOpen] = useState<boolean>(true)
 
   const sortedRows = useMemo(
     () =>
-      unitData.map((unitData): PlacementPlanDetails[] =>
-        sortBy(unitData.placementPlans ?? [], [
-          (p: PlacementPlanDetails) => p.child.lastName,
-          (p: PlacementPlanDetails) => p.child.firstName,
-          (p: PlacementPlanDetails) => p.period.start
-        ])
-      ),
-    [unitData]
+      sortBy(placementPlans, [
+        (p) => p.child.lastName,
+        (p) => p.child.firstName,
+        (p) => p.period.start
+      ]),
+    [placementPlans]
   )
 
   const nonRejectedRowCount = useMemo(
-    () =>
-      unitData.map(
-        (unitData): number =>
-          unitData.placementPlans?.filter((p) => !p.rejectedByCitizen)
-            ?.length ?? 0
-      ),
-    [unitData]
+    () => placementPlans.filter((p) => !p.rejectedByCitizen).length,
+    [placementPlans]
   )
 
-  return renderResult(
-    combine(sortedRows, nonRejectedRowCount),
-    ([sortedRows, nonRejectedRowCount]) => (
-      <CollapsibleContentArea
-        opaque
-        open={open}
-        title={
-          <Title size={2}>
-            {i18n.unit.placementPlans.title}
-            {nonRejectedRowCount > 0 ? (
-              <NotificationCounter data-qa="notification-counter">
-                {nonRejectedRowCount}
-              </NotificationCounter>
-            ) : null}
-          </Title>
-        }
-        toggleOpen={() => setOpen(!open)}
-        data-qa="waiting-confirmation-section"
-      >
-        <div>
-          <Table>
-            <Thead>
-              <Tr>
-                <Th>{i18n.unit.placementPlans.name}</Th>
-                <Th>{i18n.unit.placementPlans.birthday}</Th>
-                <Th>{i18n.unit.placementPlans.placementDuration}</Th>
-                <Th>{i18n.unit.placementPlans.type}</Th>
-                <Th>{i18n.unit.placementPlans.subtype}</Th>
-                <Th>{i18n.unit.placementPlans.application}</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {sortedRows.map((p) => (
-                <Tr
-                  key={`${p.id}`}
-                  data-qa="placement-plan-row"
-                  data-application-id={p.applicationId}
-                  data-rejected={p.rejectedByCitizen}
+  return (
+    <CollapsibleContentArea
+      opaque
+      open={open}
+      title={
+        <Title size={2}>
+          {i18n.unit.placementPlans.title}
+          {nonRejectedRowCount > 0 ? (
+            <NotificationCounter data-qa="notification-counter">
+              {nonRejectedRowCount}
+            </NotificationCounter>
+          ) : null}
+        </Title>
+      }
+      toggleOpen={() => setOpen(!open)}
+      data-qa="waiting-confirmation-section"
+    >
+      <div>
+        <Table>
+          <Thead>
+            <Tr>
+              <Th>{i18n.unit.placementPlans.name}</Th>
+              <Th>{i18n.unit.placementPlans.birthday}</Th>
+              <Th>{i18n.unit.placementPlans.placementDuration}</Th>
+              <Th>{i18n.unit.placementPlans.type}</Th>
+              <Th>{i18n.unit.placementPlans.subtype}</Th>
+              <Th>{i18n.unit.placementPlans.application}</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {sortedRows.map((p) => (
+              <Tr
+                key={`${p.id}`}
+                data-qa="placement-plan-row"
+                data-application-id={p.applicationId}
+                data-rejected={p.rejectedByCitizen}
+              >
+                <Td data-qa="child-name">
+                  {!p.rejectedByCitizen ? (
+                    <Link to={`/child-information/${p.child.id}`}>
+                      {formatName(
+                        p.child.firstName,
+                        p.child.lastName,
+                        i18n,
+                        true
+                      )}
+                    </Link>
+                  ) : (
+                    <P noMargin color={colors.grayscale.g35}>
+                      {formatName(
+                        p.child.firstName,
+                        p.child.lastName,
+                        i18n,
+                        true
+                      )}
+                    </P>
+                  )}
+                </Td>
+                <Td
+                  data-qa="child-dob"
+                  color={p.rejectedByCitizen ? colors.grayscale.g35 : undefined}
                 >
-                  <Td data-qa="child-name">
-                    {!p.rejectedByCitizen ? (
-                      <Link to={`/child-information/${p.child.id}`}>
-                        {formatName(
-                          p.child.firstName,
-                          p.child.lastName,
-                          i18n,
-                          true
-                        )}
-                      </Link>
-                    ) : (
-                      <P noMargin color={colors.grayscale.g35}>
-                        {formatName(
-                          p.child.firstName,
-                          p.child.lastName,
-                          i18n,
-                          true
-                        )}
+                  {p.child.dateOfBirth.format()}
+                </Td>
+                <Td data-qa="placement-duration">
+                  {!p.rejectedByCitizen ? (
+                    `${earliestStartDate(p).format()} - ${latestEndDate(
+                      p
+                    ).format()}`
+                  ) : (
+                    <FlexRow>
+                      <CircleIconSmallOrange>
+                        <FontAwesomeIcon icon={faTimes} />
+                      </CircleIconSmallOrange>
+                      <P noMargin>
+                        {
+                          i18n.unit.placementProposals
+                            .citizenHasRejectedPlacement
+                        }
                       </P>
-                    )}
-                  </Td>
-                  <Td
-                    data-qa="child-dob"
-                    color={
-                      p.rejectedByCitizen ? colors.grayscale.g35 : undefined
-                    }
-                  >
-                    {p.child.dateOfBirth.format()}
-                  </Td>
-                  <Td data-qa="placement-duration">
-                    {!p.rejectedByCitizen ? (
-                      `${earliestStartDate(p).format()} - ${latestEndDate(
-                        p
-                      ).format()}`
-                    ) : (
-                      <FlexRow>
-                        <CircleIconSmallOrange>
-                          <FontAwesomeIcon icon={faTimes} />
-                        </CircleIconSmallOrange>
-                        <P noMargin>
-                          {
-                            i18n.unit.placementProposals
-                              .citizenHasRejectedPlacement
-                          }
-                        </P>
-                      </FlexRow>
-                    )}
-                  </Td>
-                  <Td data-qa="placement-type">
-                    <CareTypeChip type={p.type} />
-                  </Td>
-                  <Td data-qa="placement-subtype">
-                    <PlacementCircle
-                      type={isPartDayPlacement(p.type) ? 'half' : 'full'}
-                      label={i18n.placement.type[p.type]}
-                    />
-                  </Td>
-                  <Td data-qa="application-link">
-                    <CenteredDiv>
-                      <a
-                        href={`${getEmployeeUrlPrefix()}/employee/applications/${
-                          p.applicationId
-                        }`}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        <IconButton
-                          onClick={() => undefined}
-                          icon={faFileAlt}
-                          aria-label={i18n.personProfile.application.open}
-                        />
-                      </a>
-                    </CenteredDiv>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </div>
-      </CollapsibleContentArea>
-    )
+                    </FlexRow>
+                  )}
+                </Td>
+                <Td data-qa="placement-type">
+                  <CareTypeChip type={p.type} />
+                </Td>
+                <Td data-qa="placement-subtype">
+                  <PlacementCircle
+                    type={isPartDayPlacement(p.type) ? 'half' : 'full'}
+                    label={i18n.placement.type[p.type]}
+                  />
+                </Td>
+                <Td data-qa="application-link">
+                  <CenteredDiv>
+                    <a
+                      href={`${getEmployeeUrlPrefix()}/employee/applications/${
+                        p.applicationId
+                      }`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <IconButton
+                        onClick={() => undefined}
+                        icon={faFileAlt}
+                        aria-label={i18n.personProfile.application.open}
+                      />
+                    </a>
+                  </CenteredDiv>
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      </div>
+    </CollapsibleContentArea>
   )
 })

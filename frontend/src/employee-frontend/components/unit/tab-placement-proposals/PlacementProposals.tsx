@@ -24,7 +24,7 @@ import InputField from 'lib-components/atoms/form/InputField'
 import Radio from 'lib-components/atoms/form/Radio'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import FormModal from 'lib-components/molecules/modals/FormModal'
+import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { placementPlanRejectReasons } from 'lib-customizations/employee'
@@ -51,13 +51,13 @@ interface DynamicState {
 type Props = {
   unitId: UUID
   placementPlans: PlacementPlanDetails[]
-  loadUnitData: () => void
+  reloadApplications: () => void
 }
 
 export default React.memo(function PlacementProposals({
   unitId,
   placementPlans,
-  loadUnitData
+  reloadApplications
 }: Props) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
@@ -96,47 +96,49 @@ export default React.memo(function PlacementProposals({
     )
   }, [placementPlans, setConfirmationStates])
 
-  const sendConfirmation = async (
-    applicationId: UUID,
-    confirmation: PlacementPlanConfirmationStatus,
-    reason?: PlacementPlanRejectReason,
-    otherReason?: string
-  ) => {
-    setConfirmationStates((state) => ({
-      ...state,
-      [applicationId]: {
-        ...state[applicationId],
-        submitting: true
-      }
-    }))
-
-    try {
-      await respondToPlacementProposal(
+  const sendConfirmation = useCallback(
+    async (
+      applicationId: UUID,
+      confirmation: PlacementPlanConfirmationStatus,
+      reason?: PlacementPlanRejectReason,
+      otherReason?: string
+    ) => {
+      setConfirmationStates((state) => ({
+        ...state,
+        [applicationId]: {
+          ...state[applicationId],
+          submitting: true
+        }
+      }))
+      const result = await respondToPlacementProposal(
         applicationId,
         confirmation,
         reason,
         otherReason
       )
-      if (!isMounted.current) return
-      setConfirmationStates((state) => ({
-        ...state,
-        [applicationId]: {
-          confirmation,
-          submitting: false
-        }
-      }))
-    } catch (_err) {
-      if (!isMounted.current) return
-      setConfirmationStates((state) => ({
-        ...state,
-        [applicationId]: {
-          ...state[applicationId],
-          submitting: false
-        }
-      }))
-      void loadUnitData()
-    }
-  }
+      if (!isMounted.current) return result
+      if (result.isSuccess) {
+        setConfirmationStates((state) => ({
+          ...state,
+          [applicationId]: {
+            confirmation,
+            submitting: false
+          }
+        }))
+      } else {
+        setConfirmationStates((state) => ({
+          ...state,
+          [applicationId]: {
+            ...state[applicationId],
+            submitting: false
+          }
+        }))
+        void reloadApplications()
+      }
+      return result
+    },
+    [reloadApplications]
+  )
 
   const onAccept = useCallback(() => acceptPlacementProposal(unitId), [unitId])
 
@@ -165,27 +167,37 @@ export default React.memo(function PlacementProposals({
     (p: PlacementPlanDetails) => p.period.start
   ])
 
+  const closeModal = useCallback(() => {
+    setModalOpen(false)
+  }, [])
+
+  const resolveProposal = useCallback(() => {
+    if (reason != null && currentApplicationId != null) {
+      return sendConfirmation(
+        currentApplicationId,
+        'REJECTED_NOT_CONFIRMED',
+        reason,
+        otherReason
+      )
+    }
+    return undefined
+  }, [currentApplicationId, otherReason, reason, sendConfirmation])
+
+  const onConfirmationSuccess = useCallback(() => {
+    closeModal()
+    reloadApplications()
+  }, [closeModal, reloadApplications])
+
   return (
     <>
       {modalOpen && (
-        <FormModal
+        <AsyncFormModal
           title={i18n.unit.placementProposals.rejectTitle}
-          resolveAction={() => {
-            if (reason != null && currentApplicationId != null) {
-              void sendConfirmation(
-                currentApplicationId,
-                'REJECTED_NOT_CONFIRMED',
-                reason,
-                otherReason
-              )
-
-              setModalOpen(false)
-              loadUnitData()
-            }
-          }}
+          resolveAction={resolveProposal}
+          onSuccess={onConfirmationSuccess}
           resolveLabel={i18n.common.save}
           resolveDisabled={!reason || (reason === 'OTHER' && !otherReason)}
-          rejectAction={() => setModalOpen(false)}
+          rejectAction={closeModal}
           rejectLabel={i18n.common.cancel}
         >
           <FixedSpaceColumn>
@@ -210,7 +222,7 @@ export default React.memo(function PlacementProposals({
             )}
           </FixedSpaceColumn>
           <Gap />
-        </FormModal>
+        </AsyncFormModal>
       )}
 
       {placementPlans.length > 0 && (
@@ -271,7 +283,7 @@ export default React.memo(function PlacementProposals({
           <AsyncButton
             data-qa="placement-proposals-accept-button"
             onClick={onAccept}
-            onSuccess={loadUnitData}
+            onSuccess={reloadApplications}
             onFailure={onAcceptFailure}
             disabled={acceptDisabled}
             text={i18n.unit.placementProposals.acceptAllButton}

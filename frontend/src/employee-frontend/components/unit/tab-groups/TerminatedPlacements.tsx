@@ -6,11 +6,11 @@ import sortBy from 'lodash/sortBy'
 import React from 'react'
 import { Link } from 'react-router-dom'
 
+import { TerminatedPlacement } from 'lib-common/generated/api-types/placement'
 import Title from 'lib-components/atoms/Title'
 import { Table, Tbody, Td, Th, Thead, Tr } from 'lib-components/layout/Table'
 
 import { Translations, useTranslation } from '../../../state/i18n'
-import { TerminatedPlacement } from '../../../types/unit'
 import { formatName } from '../../../utils'
 import { CareTypeChip } from '../../common/CareTypeLabel'
 
@@ -34,7 +34,9 @@ function renderTerminatedPlacementRow(
       <Td data-qa="placement-type">
         <CareTypeChip type={placement.type} />
       </Td>
-      <Td data-qa="termination-requested-date">{`${placement.terminationRequestedDate.format()}`}</Td>
+      <Td data-qa="termination-requested-date">{`${
+        placement.terminationRequestedDate?.format() ?? ''
+      }`}</Td>
       <Td data-qa="placement-end-date">{`${placement.endDate.format()}`}</Td>
       <Td data-qa="group-name">{placement.currentDaycareGroupName}</Td>
     </Tr>

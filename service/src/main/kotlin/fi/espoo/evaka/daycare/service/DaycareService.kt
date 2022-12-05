@@ -79,4 +79,4 @@ data class DaycareGroup(
     val deletable: Boolean
 )
 
-data class Stats(val minimum: Double, val maximum: Double)
+data class Caretakers(val minimum: Double, val maximum: Double)

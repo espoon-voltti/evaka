@@ -11,6 +11,7 @@ import React, {
 } from 'react'
 
 import { Loading, Result, Success } from 'lib-common/api'
+import { UnitNotifications } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -19,8 +20,7 @@ import {
   DaycareAclRow,
   getDaycare,
   getDaycareAclRows,
-  getUnitData,
-  UnitData,
+  getUnitNotifications,
   UnitResponse
 } from '../api/unit'
 import { UnitFilters } from '../utils/UnitFilters'
@@ -28,8 +28,8 @@ import { UnitFilters } from '../utils/UnitFilters'
 export interface UnitState {
   unitId: UUID
   unitInformation: Result<UnitResponse>
-  unitData: Result<UnitData>
-  reloadUnitData: () => void
+  unitNotifications: Result<UnitNotifications>
+  reloadUnitNotifications: () => void
   filters: UnitFilters
   setFilters: Dispatch<SetStateAction<UnitFilters>>
   daycareAclRows: Result<DaycareAclRow[]>
@@ -39,8 +39,8 @@ export interface UnitState {
 const defaultState: UnitState = {
   unitId: '',
   unitInformation: Loading.of(),
-  unitData: Loading.of(),
-  reloadUnitData: () => undefined,
+  unitNotifications: Loading.of(),
+  reloadUnitNotifications: () => undefined,
   filters: new UnitFilters(LocalDate.todayInSystemTz(), '1 day'),
   setFilters: () => undefined,
   daycareAclRows: Loading.of(),
@@ -57,13 +57,11 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
   children: JSX.Element
 }) {
   const [filters, setFilters] = useState(defaultState.filters)
-
   const [unitInformation] = useApiState(() => getDaycare(id), [id])
-  const [unitData, reloadUnitData] = useApiState(
-    () => getUnitData(id, filters.startDate, filters.endDate),
-    [id, filters.startDate, filters.endDate]
+  const [unitNotifications, reloadUnitNotifications] = useApiState(
+    () => getUnitNotifications(id),
+    [id]
   )
-
   const [daycareAclRows, reloadDaycareAclRows] = useApiState(
     () =>
       unitInformation.isSuccess &&
@@ -77,8 +75,8 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
     () => ({
       unitId: id,
       unitInformation,
-      unitData,
-      reloadUnitData,
+      unitNotifications,
+      reloadUnitNotifications,
       filters,
       setFilters,
       daycareAclRows,
@@ -87,8 +85,8 @@ export const UnitContextProvider = React.memo(function UnitContextProvider({
     [
       id,
       unitInformation,
-      unitData,
-      reloadUnitData,
+      unitNotifications,
+      reloadUnitNotifications,
       filters,
       daycareAclRows,
       reloadDaycareAclRows

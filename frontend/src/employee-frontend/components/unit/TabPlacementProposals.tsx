@@ -2,40 +2,40 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 
 import { useTranslation } from 'employee-frontend/state/i18n'
+import { PlacementPlanDetails } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
-import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Title from 'lib-components/atoms/Title'
 import { CollapsibleContentArea } from 'lib-components/layout/Container'
 
 import PlacementProposals from '../../components/unit/tab-placement-proposals/PlacementProposals'
-import { UnitContext } from '../../state/unit'
 import { NotificationCounter } from '../UnitPage'
-import { renderResult } from '../async-rendering'
 
 interface Props {
-  reloadUnitData: () => void
+  unitId: UUID
+  placementProposals: PlacementPlanDetails[]
+  reloadApplications: () => void
 }
 
 export default React.memo(function TabPlacementProposals({
-  reloadUnitData
+  unitId,
+  placementProposals,
+  reloadApplications
 }: Props) {
-  const { id } = useNonNullableParams<{ id: UUID }>()
-  const { unitData } = useContext(UnitContext)
   const { i18n } = useTranslation()
   const [open, setOpen] = useState<boolean>(true)
 
-  return renderResult(unitData, (unitData) => (
+  return (
     <CollapsibleContentArea
       opaque
       title={
         <Title size={2}>
           {i18n.unit.placementProposals.title}
-          {unitData?.placementProposals?.length ?? 0 > 0 ? (
+          {placementProposals.length > 0 ? (
             <NotificationCounter>
-              {unitData?.placementProposals?.length}
+              {placementProposals.length}
             </NotificationCounter>
           ) : null}
         </Title>
@@ -44,10 +44,10 @@ export default React.memo(function TabPlacementProposals({
       toggleOpen={() => setOpen(!open)}
     >
       <PlacementProposals
-        unitId={id}
-        placementPlans={unitData.placementProposals ?? []}
-        loadUnitData={reloadUnitData}
+        unitId={unitId}
+        placementPlans={placementProposals}
+        reloadApplications={reloadApplications}
       />
     </CollapsibleContentArea>
-  ))
+  )
 })
