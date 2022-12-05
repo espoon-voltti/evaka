@@ -3221,6 +3221,7 @@ export const fi = {
       preferredUnit: 'Hakutoive',
       currentUnit: 'Nykyinen yksikkö',
       streetAddress: 'Osoite',
+      postalCode: 'Postinumero',
       tel: 'Puhelu',
       email: 'email',
       dob: 'Syntymäaika',

@@ -390,6 +390,7 @@ export interface PlacementSketchingReportRow {
   childFirstName: string
   childId: UUID
   childLastName: string
+  childPostalCode: string | null
   childStreetAddr: string | null
   connectedDaycare: boolean | null
   currentUnitId: UUID | null

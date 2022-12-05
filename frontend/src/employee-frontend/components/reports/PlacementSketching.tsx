@@ -179,6 +179,7 @@ export default React.memo(function PlacementSketching() {
                 { label: 'Lapsi', key: 'childName' },
                 { label: 'Lapsen syntymäpäivä', key: 'childDob' },
                 { label: 'Lapsen osoite', key: 'childStreetAddr' },
+                { label: 'Lapsen postinumero', key: 'childPostalCode' },
                 { label: 'Yhteystiedot', key: 'contact' },
                 { label: 'Tuen tarve', key: 'assistanceNeeded' },
                 { label: 'Valmistava', key: 'preparatoryEducation' },
@@ -201,6 +202,7 @@ export default React.memo(function PlacementSketching() {
                   <Th>{i18n.reports.common.childName}</Th>
                   <Th>{i18n.reports.placementSketching.dob}</Th>
                   <Th>{i18n.reports.placementSketching.streetAddress}</Th>
+                  <Th>{i18n.reports.placementSketching.postalCode}</Th>
                   <Th>
                     {i18n.reports.placementSketching.tel} /{' '}
                     {i18n.reports.placementSketching.email}
@@ -241,6 +243,7 @@ export default React.memo(function PlacementSketching() {
                     </Td>
                     <Td>{row.childDob.format()}</Td>
                     <Td>{row.childStreetAddr}</Td>
+                    <Td>{row.childPostalCode}</Td>
                     <Td>
                       {row.guardianPhoneNumber} / {row.guardianEmail}
                     </Td>
