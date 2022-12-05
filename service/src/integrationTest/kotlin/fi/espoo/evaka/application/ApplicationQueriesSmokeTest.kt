@@ -58,7 +58,8 @@ class ApplicationQueriesSmokeTest : PureJdbiTest(resetDbBeforeEach = false) {
                         id = snDefaultDaycare.id,
                         nameFi = snDefaultDaycare.nameFi,
                         nameEn = snDefaultDaycare.nameEn,
-                        nameSv = snDefaultDaycare.nameSv
+                        nameSv = snDefaultDaycare.nameSv,
+                        validPlacementType = null
                     )
             )
         db.transaction {

@@ -1012,7 +1012,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                     id = snPreschoolClub45.id,
                     nameFi = snPreschoolClub45.nameFi,
                     nameSv = snPreschoolClub45.nameSv,
-                    nameEn = snPreschoolClub45.nameEn
+                    nameEn = snPreschoolClub45.nameEn,
+                    validPlacementType = PlacementType.PRESCHOOL_CLUB
                 )
             tx.insertApplication(
                 appliedType = PlacementType.PRESCHOOL_CLUB,
@@ -2405,7 +2406,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 ServiceNeedOptionId(UUID.randomUUID()),
                 "unknown service need option",
                 "unknown service need option",
-                "unknown service need option"
+                "unknown service need option",
+                null
             )
         workflowForPreschoolDaycareDecisions(serviceNeedOption = serviceNeedOption)
 
@@ -2440,7 +2442,8 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
                 snPreschoolDaycare45.id,
                 snPreschoolDaycare45.nameFi,
                 snPreschoolDaycare45.nameSv,
-                snPreschoolDaycare45.nameEn
+                snPreschoolDaycare45.nameEn,
+                validPlacementType = null
             )
         workflowForPreschoolDaycareDecisions(serviceNeedOption = serviceNeedOption)
 

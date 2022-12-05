@@ -52,7 +52,7 @@ class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
             )
         }
 
-        val type = derivePlacementType(tx, application)
+        val type = application.derivePlacementType()
         val form = application.form
         val child =
             tx.getPlacementDraftChild(application.childId)
@@ -158,7 +158,7 @@ class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
         tx: Database.Transaction,
         application: ApplicationDetails,
         placementPlan: DaycarePlacementPlan
-    ) = tx.createPlacementPlan(application.id, derivePlacementType(tx, application), placementPlan)
+    ) = tx.createPlacementPlan(application.id, application.derivePlacementType(), placementPlan)
 
     fun getPlacementTypePeriods(
         tx: Database.Read,
@@ -273,7 +273,7 @@ class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
         period: FiniteDateRange,
         preschoolDaycarePeriod: FiniteDateRange?
     ): List<Placement> {
-        val placementType = derivePlacementType(tx, application)
+        val placementType = application.derivePlacementType()
 
         val placementTypePeriods =
             getPlacementTypePeriods(
@@ -336,31 +336,5 @@ class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
             .bind("unitId", unitId)
             .mapTo<Boolean>()
             .first()
-    }
-
-    private fun derivePlacementType(
-        tx: Database.Read,
-        application: ApplicationDetails
-    ): PlacementType {
-        val (_, type, form) = application
-        return when (type) {
-            ApplicationType.PRESCHOOL -> {
-                if (form.preferences.preparatory) {
-                    if (form.preferences.serviceNeed != null) PlacementType.PREPARATORY_DAYCARE
-                    else PlacementType.PREPARATORY
-                } else {
-                    if (form.preferences.serviceNeed != null)
-                        form.preferences.serviceNeed.serviceNeedOption
-                            ?.let { tx.findServiceNeedOptionById(it.id) }
-                            ?.validPlacementType
-                            ?: PlacementType.PRESCHOOL_DAYCARE
-                    else PlacementType.PRESCHOOL
-                }
-            }
-            ApplicationType.DAYCARE ->
-                if (form.preferences.serviceNeed?.partTime == true) PlacementType.DAYCARE_PART_TIME
-                else PlacementType.DAYCARE
-            ApplicationType.CLUB -> PlacementType.CLUB
-        }
     }
 }

@@ -353,6 +353,7 @@ fun Database.Read.fetchApplicationSummaries(
             f.document -> 'serviceNeedOption' ->> 'nameFi' as serviceNeedNameFi,
             f.document -> 'serviceNeedOption' ->> 'nameSv' as serviceNeedNameSv,
             f.document -> 'serviceNeedOption' ->> 'nameEn' as serviceNeedNameEn,
+            f.document -> 'serviceNeedOption' ->> 'validPlacementType' as serviceNeedValidPlacementType,
             a.duedate,
             (f.document ->> 'preferredStartDate')::date as preferredStartDate,
             f.document -> 'apply' -> 'preferredUnits' as preferredUnits,
@@ -469,7 +470,8 @@ fun Database.Read.fetchApplicationSummaries(
                                 it,
                                 row.mapColumn("serviceNeedNameFi"),
                                 row.mapColumn("serviceNeedNameSv"),
-                                row.mapColumn("serviceNeedNameEn")
+                                row.mapColumn("serviceNeedNameEn"),
+                                row.mapColumn("serviceNeedValidPlacementType")
                             )
                         },
                     dueDate = row.mapColumn("duedate"),
@@ -816,6 +818,7 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
             f.document -> 'serviceNeedOption' ->> 'nameFi' AS serviceNeedNameFi,
             f.document -> 'serviceNeedOption' ->> 'nameSv' AS serviceNeedNameSv,
             f.document -> 'serviceNeedOption' ->> 'nameEn' AS serviceNeedNameEn,
+            f.document -> 'serviceNeedOption' ->> 'validPlacementType' AS serviceNeedValidPlacementType,
             f.document,
             (f.document ->> 'preferredStartDate')::date as preferred_start_date,
             (array_position((
@@ -862,7 +865,8 @@ fun Database.Read.getApplicationUnitSummaries(unitId: DaycareId): List<Applicati
                             it,
                             row.mapColumn("serviceNeedNameFi"),
                             row.mapColumn("serviceNeedNameSv"),
-                            row.mapColumn("serviceNeedNameEn")
+                            row.mapColumn("serviceNeedNameEn"),
+                            row.mapColumn("serviceNeedValidPlacementType")
                         )
                     },
                 preferredStartDate = row.mapColumn("preferred_start_date"),
@@ -895,7 +899,7 @@ fun mapRequestedPlacementType(row: RowView, colName: String): PlacementType =
                     }
                 } else {
                     if (it.connectedDaycare == true) {
-                        PlacementType.PRESCHOOL_DAYCARE
+                        it.serviceNeedOption?.validPlacementType ?: PlacementType.PRESCHOOL_DAYCARE
                     } else {
                         PlacementType.PRESCHOOL
                     }

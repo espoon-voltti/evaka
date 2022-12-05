@@ -209,7 +209,8 @@ class ApplicationStateService(
                                         id = it.id,
                                         nameFi = it.nameFi,
                                         nameSv = it.nameSv,
-                                        nameEn = it.nameEn
+                                        nameEn = it.nameEn,
+                                        validPlacementType = it.validPlacementType
                                     )
                                 }
                         )

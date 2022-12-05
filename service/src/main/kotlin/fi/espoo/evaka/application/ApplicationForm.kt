@@ -9,6 +9,7 @@ import fi.espoo.evaka.application.persistence.club.ClubFormV0
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.identity.ExternalIdentifier
 import fi.espoo.evaka.pis.service.PersonDTO
+import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -196,7 +197,9 @@ data class ApplicationForm(
                                                         id = v0.serviceNeedOption.id,
                                                         nameFi = v0.serviceNeedOption.nameFi,
                                                         nameSv = v0.serviceNeedOption.nameSv,
-                                                        nameEn = v0.serviceNeedOption.nameEn
+                                                        nameEn = v0.serviceNeedOption.nameEn,
+                                                        validPlacementType =
+                                                            v0.serviceNeedOption.validPlacementType
                                                     )
                                                 } else {
                                                     null
@@ -518,5 +521,6 @@ data class ServiceNeedOption(
     val id: ServiceNeedOptionId,
     val nameFi: String,
     val nameSv: String,
-    val nameEn: String
+    val nameEn: String,
+    val validPlacementType: PlacementType?
 )
