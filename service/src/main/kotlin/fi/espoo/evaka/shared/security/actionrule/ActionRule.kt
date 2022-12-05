@@ -128,11 +128,7 @@ object DatabaseActionRule {
     }
 }
 
-internal data class IdRoleFeatures(
-    val id: Id<*>,
-    @Nested val roleFeatures: RoleAndFeatures,
-    val unitProviderType: ProviderType
-)
+internal data class IdRoleFeatures(val id: Id<*>, @Nested val roleFeatures: RoleAndFeatures)
 
 internal data class RoleAndFeatures(
     val role: UserRole,
