@@ -912,6 +912,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             )
             .let { assertEquals(200, it) }
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
+        assertEquals(1, attendances.staff.size)
         attendances.staff.first().let {
             assertEquals(employeeId, it.employeeId)
             assertEquals(null, it.present)

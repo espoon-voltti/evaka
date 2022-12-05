@@ -35,13 +35,13 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
         att.type AS attendance_type,
         coalesce(dgacl.group_ids, '{}'::uuid[]) AS group_ids,
         coalesce((
-            SELECT jsonb_agg(jsonb_build_object('id', a.id, 'employeeId', a.employee_id, 'groupId', a.group_id, 'arrived', a.arrived, 'departed', a.departed, 'type', a.type))
+            SELECT jsonb_agg(jsonb_build_object('id', a.id, 'employeeId', a.employee_id, 'groupId', a.group_id, 'arrived', a.arrived, 'departed', a.departed, 'type', a.type) ORDER BY a.arrived)
             FROM staff_attendance_realtime a
             LEFT JOIN daycare_group dg ON dg.id = a.group_id
             WHERE e.id = a.employee_id AND (dg.daycare_id = :unitId OR a.group_id IS NULL) AND tstzrange(a.arrived, a.departed) && tstzrange(:rangeStart, :rangeEnd)
         ), '[]'::jsonb) AS attendances,
         coalesce((
-            SELECT jsonb_agg(jsonb_build_object('start', p.start_time, 'end', p.end_time, 'type', p.type))
+            SELECT jsonb_agg(jsonb_build_object('start', p.start_time, 'end', p.end_time, 'type', p.type) ORDER BY p.start_time)
             FROM staff_attendance_plan p
             WHERE e.id = p.employee_id AND tstzrange(p.start_time, p.end_time) && tstzrange(:rangeStart, :rangeEnd)
         ), '[]'::jsonb) AS planned_attendances,
