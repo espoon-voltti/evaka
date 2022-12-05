@@ -42,7 +42,7 @@ FROM quay.io/keycloak/keycloak:20.0.1 AS keycloak
 
 USER root
 
-ARG CACHE_BUST=2022-10-25
+ARG CACHE_BUST=2022-12-05
 
 RUN microdnf upgrade -y \
  && microdnf install -y jq \
