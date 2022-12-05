@@ -7,12 +7,15 @@ package fi.espoo.evaka.reports
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
+import fi.espoo.evaka.shared.security.actionrule.forTable
 import java.time.LocalDate
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
@@ -35,14 +38,16 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
     ): List<PlacementSketchingReportRow> {
         return db.connect { dbc ->
                 dbc.read {
-                    accessControl.requirePermissionFor(
-                        it,
-                        user,
-                        clock,
-                        Action.Global.READ_PLACEMENT_SKETCHING_REPORT
-                    )
+                    val filter =
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            user,
+                            clock,
+                            Action.Unit.READ_PLACEMENT_SKETCHING_REPORT
+                        )
                     it.setStatementTimeout(REPORT_STATEMENT_TIMEOUT)
                     it.getPlacementSketchingReportRows(
+                        filter,
                         placementStartDate,
                         earliestPreferredStartDate
                     )
@@ -62,12 +67,14 @@ class PlacementSketchingReportController(private val accessControl: AccessContro
 }
 
 private fun Database.Read.getPlacementSketchingReportRows(
+    filter: AccessControlFilter<DaycareId>,
     placementStartDate: LocalDate,
     earliestPreferredStartDate: LocalDate?
 ): List<PlacementSketchingReportRow> {
     // language=sql
-    val sql =
-        """
+    return createQuery<DatabaseTable> {
+            sql(
+                """
 WITH active_placements AS (
 SELECT
     placement.child_id AS child_id,
@@ -77,8 +84,8 @@ FROM
     placement,
     daycare
 WHERE
-    start_date <= :placementStartDate
-    AND end_date >= :placementStartDate
+    start_date <= ${bind(placementStartDate)}
+    AND end_date >= ${bind(placementStartDate)}
     AND placement.unit_id = daycare.id
 )
 SELECT
@@ -116,16 +123,16 @@ LEFT JOIN
 LEFT JOIN
     application_form AS form ON application.id = form.application_id AND form.latest is TRUE 
 WHERE
-    (application.startDate >= :earliestPreferredStartDate OR application.startDate IS NULL)
+    ${predicate(filter.forTable("daycare"))} AND
+    (application.startDate >= ${bind(earliestPreferredStartDate)} OR application.startDate IS NULL)
     AND application.status = ANY ('{SENT,WAITING_PLACEMENT,WAITING_CONFIRMATION,WAITING_DECISION,WAITING_MAILING,WAITING_UNIT_CONFIRMATION, ACTIVE}'::application_status_type[])
     AND application.type = 'PRESCHOOL'
 ORDER BY
     area_name, requested_unit_name, application.childlastname, application.childfirstname
-        """
-            .trimIndent()
-    return createQuery(sql)
-        .bind("placementStartDate", placementStartDate)
-        .bind("earliestPreferredStartDate", earliestPreferredStartDate)
+    """
+                    .trimIndent()
+            )
+        }
         .mapTo<PlacementSketchingReportRow>()
         .toList()
 }
