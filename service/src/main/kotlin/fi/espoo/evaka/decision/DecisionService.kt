@@ -345,8 +345,8 @@ class DecisionService(
                     DecisionType.DAYCARE,
                     DecisionType.DAYCARE_PART_TIME -> "Beslut_om_småbarnspedagogisk_verksamhet"
                     DecisionType.PRESCHOOL -> "Beslut_om_förskoleplats"
-                    DecisionType.PRESCHOOL_DAYCARE,
-                    DecisionType.PRESCHOOL_CLUB -> "Anslutande_småbarnspedagogik"
+                    DecisionType.PRESCHOOL_DAYCARE -> "Anslutande_småbarnspedagogik"
+                    DecisionType.PRESCHOOL_CLUB -> "Esiopetuksen_kerhopäätös (sv)"
                     DecisionType.PREPARATORY_EDUCATION ->
                         "Valmistava_päätös" // Svebi does not offer preparatory education
                 }
@@ -356,8 +356,8 @@ class DecisionService(
                     DecisionType.DAYCARE,
                     DecisionType.DAYCARE_PART_TIME -> "Varhaiskasvatuspäätös"
                     DecisionType.PRESCHOOL -> "Esiopetuspäätös"
-                    DecisionType.PRESCHOOL_DAYCARE,
-                    DecisionType.PRESCHOOL_CLUB -> "Liittyvä_varhaiskasvatuspäätös"
+                    DecisionType.PRESCHOOL_DAYCARE -> "Liittyvä_varhaiskasvatuspäätös"
+                    DecisionType.PRESCHOOL_CLUB -> "Esiopetuksen_kerhopäätös"
                     DecisionType.PREPARATORY_EDUCATION -> "Valmistava_päätös"
                 }
         }
