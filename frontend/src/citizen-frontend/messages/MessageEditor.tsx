@@ -95,11 +95,13 @@ export default React.memo(function MessageEditor({
   const { children } = useContext(ChildrenContext)
 
   const validAccounts = useMemo(() => {
-    const validIds = message.children.flatMap(
-      (childId) => receiverOptions.childrenToMessageAccounts[childId] ?? []
-    )
     const accounts = receiverOptions.messageAccounts.filter((account) =>
-      validIds.includes(account.id)
+      message.children.every(
+        (childId) =>
+          receiverOptions.childrenToMessageAccounts[childId]?.includes(
+            account.id
+          ) ?? false
+      )
     )
     return partitionByType(accounts)
   }, [message.children, receiverOptions])
