@@ -4,8 +4,43 @@
 
 package fi.espoo.evaka.shared
 
-import io.opentracing.tag.StringTag
+import com.google.common.hash.HashCode
+import fi.espoo.evaka.shared.security.Action
+import io.opentracing.Span
+import io.opentracing.Tracer
+import io.opentracing.Tracer.SpanBuilder
+import io.opentracing.tag.AbstractTag
+import io.opentracing.tag.Tag
 
 object Tracing {
-    val enduserIdHash = StringTag("enduser.idhash")
+    val action = ToStringTag<Action>("action")
+    val actionClass = ToStringTag<Class<out Any>>("actionclass")
+    val enduserIdHash = ToStringTag<HashCode>("enduser.idhash")
 }
+
+@Suppress("NOTHING_TO_INLINE")
+inline infix fun <T> Tag<T>.withValue(value: T) = TagValue(this, value)
+
+class ToStringTag<T>(key: String) : AbstractTag<T>(key) {
+    override fun set(span: Span, tagValue: T) {
+        span.setTag(key, tagValue.toString())
+    }
+}
+
+data class TagValue<T>(val tag: Tag<T>, val value: T)
+
+fun <T> SpanBuilder.withTag(tagValue: TagValue<T>): SpanBuilder =
+    withTag(tagValue.tag, tagValue.value)
+
+inline fun <T> Tracer.withSpan(span: Span, crossinline f: () -> T): T =
+    activateSpan(span).use { f() }
+
+inline fun <T> Tracer.withSpan(
+    operationName: String,
+    vararg tags: TagValue<*>,
+    crossinline f: () -> T
+): T =
+    withSpan(
+        buildSpan(operationName).let { tags.fold(it) { span, tag -> span.withTag(tag) } }.start(),
+        f
+    )
