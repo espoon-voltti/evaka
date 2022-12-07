@@ -1,10 +1,6 @@
-{
-  /*
-SPDX-FileCopyrightText: 2017-2022 City of Espoo
-
-SPDX-License-Identifier: LGPL-2.1-or-later
-*/
-}
+// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from 'Icons'
@@ -60,7 +56,6 @@ export function ToggleableRecipient({
       onClick={onClick}
       selected={selected}
       toggleable={toggleable}
-      aria-disabled={!toggleable}
       disabled={!toggleable}
       data-qa={dataQa}
     >
