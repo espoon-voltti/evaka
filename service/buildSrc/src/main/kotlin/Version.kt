@@ -11,7 +11,7 @@ object Version {
         const val kotlin = "1.7.21"
         const val kotlinter = "3.12.0"
         const val ktfmt = "0.11.0"
-        const val owasp = "7.3.0"
+        const val owasp = "7.4.0"
         const val springBoot = "2.7.5"
         const val versions = "0.44.0"
     }

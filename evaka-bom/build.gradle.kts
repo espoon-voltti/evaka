@@ -26,6 +26,7 @@ javaPlatform {
 dependencies {
     constraints {
         api("com.auth0:java-jwt:4.2.1")
+        api("com.fasterxml.woodstox:woodstox-core:6.4.0")
         api("com.github.kagkarlsson:db-scheduler:11.5")
         api("com.github.kittinunf.fuel:fuel:${Version.fuel}")
         api("com.github.kittinunf.fuel:fuel-jackson:${Version.fuel}")
