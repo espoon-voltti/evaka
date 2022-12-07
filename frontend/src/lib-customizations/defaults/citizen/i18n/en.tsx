@@ -565,6 +565,18 @@ const en: Translations = {
       actions: {
         hasVerified:
           'I have checked that the information in the application is correct',
+        allowOtherGuardianAccess: (
+          <span>
+            I understand that the application will also be visible to the other
+            guardian. If the other guardian should not be able to see this
+            application, please contact the Early Childhood Education Service
+            Guidance, whose contact information can be found{' '}
+            <a href="https://www.espoo.fi/childcare-and-education/early-childhood-education/service-guidance-and-applying-early-childhood-education#section-38795">
+              here
+            </a>
+            .
+          </span>
+        ),
         verify: 'Verify application',
         returnToEdit: 'Return to editing',
         returnToEditBtn: 'Return to editing',

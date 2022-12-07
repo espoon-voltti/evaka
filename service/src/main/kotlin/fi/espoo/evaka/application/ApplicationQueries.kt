@@ -20,6 +20,7 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AttachmentId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
@@ -71,13 +72,13 @@ fun Database.Transaction.insertApplication(
     childId: ChildId,
     origin: ApplicationOrigin,
     hideFromGuardian: Boolean = false,
-    sentDate: LocalDate? = null
+    sentDate: LocalDate? = null,
 ): ApplicationId {
     // language=sql
     val sql =
         """
-        INSERT INTO application (type, status, guardian_id, child_id, origin, hidefromguardian, sentdate)
-        VALUES (:type, 'CREATED'::application_status_type, :guardianId, :childId, :origin::application_origin_type, :hideFromGuardian, :sentDate)
+        INSERT INTO application (type, status, guardian_id, child_id, origin, hidefromguardian, sentdate, allow_other_guardian_access)
+        VALUES (:type, 'CREATED'::application_status_type, :guardianId, :childId, :origin::application_origin_type, :hideFromGuardian, :sentDate, false)
         RETURNING id
         """
             .trimIndent()
@@ -631,7 +632,10 @@ fun Database.Read.fetchApplicationSummariesForCitizen(
             a.transferapplication
         FROM application_view a
         LEFT JOIN daycare d ON a.preferredUnit = d.id
-        WHERE guardianId = :guardianId AND NOT a.hidefromguardian AND a.status != 'CANCELLED'
+        WHERE (guardianId = :guardianId OR EXISTS (
+            SELECT 1 FROM application_other_guardian WHERE application_id = a.id AND guardian_id = :guardianId
+        ))
+        AND NOT a.hidefromguardian AND a.status != 'CANCELLED'
         ORDER BY sentDate DESC
         """
             .trimIndent()
@@ -704,6 +708,7 @@ fun Database.Read.fetchApplicationDetails(
             a.duedate,
             a.duedate_set_manually_at,
             a.checkedbyadmin,
+            a.allow_other_guardian_access,
             coalesce(att.json, '[]'::jsonb) attachments
         FROM application a
         JOIN application_form f ON f.application_id = a.id
@@ -768,6 +773,7 @@ fun Database.Read.fetchApplicationDetails(
                     dueDateSetManuallyAt = row.mapColumn("duedate_set_manually_at"),
                     checkedByAdmin = row.mapColumn("checkedbyadmin"),
                     hideFromGuardian = row.mapColumn("hidefromguardian"),
+                    allowOtherGuardianAccess = row.mapColumn("allow_other_guardian_access"),
                     attachments = row.mapJsonColumn("attachments")
                 )
             }
@@ -996,17 +1002,36 @@ fun Database.Transaction.updateApplicationDates(
 fun Database.Transaction.updateApplicationFlags(
     id: ApplicationId,
     applicationFlags: ApplicationFlags
-) {
-    // language=SQL
-    val sql =
-        "UPDATE application SET transferapplication = :transferApplication, additionaldaycareapplication = :additionalDaycareApplication WHERE id = :id"
-
-    createUpdate(sql)
+) =
+    createUpdate(
+            """
+                UPDATE application
+                SET
+                    transferapplication = :isTransferApplication,
+                    additionaldaycareapplication = :isAdditionalDaycareApplication
+                WHERE id = :id
+            """
+                .trimIndent()
+        )
         .bind("id", id)
-        .bind("transferApplication", applicationFlags.isTransferApplication)
-        .bind("additionalDaycareApplication", applicationFlags.isAdditionalDaycareApplication)
+        .bindKotlin(applicationFlags)
         .execute()
-}
+
+fun Database.Transaction.updateApplicationAllowOtherGuardianAccess(
+    id: ApplicationId,
+    allowOtherGuardianAccess: Boolean
+) =
+    createUpdate<DatabaseTable> {
+            sql(
+                """
+                    UPDATE application
+                    SET allow_other_guardian_access = ${bind(allowOtherGuardianAccess)}
+                    WHERE id = ${bind(id)}
+                """
+                    .trimIndent()
+            )
+        }
+        .execute()
 
 fun Database.Transaction.updateApplicationOtherGuardian(
     applicationId: ApplicationId,
@@ -1019,6 +1044,45 @@ fun Database.Transaction.updateApplicationOtherGuardian(
     createUpdate(sql)
         .bind("applicationId", applicationId)
         .bind("otherGuardianId", otherGuardianId)
+        .execute()
+}
+
+fun Database.Transaction.syncApplicationOtherGuardians(id: ApplicationId) {
+    createUpdate<DatabaseTable> {
+            sql("DELETE FROM application_other_guardian WHERE application_id = ${bind(id)}")
+        }
+        .execute()
+
+    createUpdate<DatabaseTable> {
+            sql(
+                """
+            INSERT INTO application_other_guardian (application_id, guardian_id)
+            SELECT application.id, other_citizen.id
+            FROM application
+            JOIN LATERAL (
+                SELECT guardian_id AS id
+                FROM guardian
+                WHERE application.child_id = guardian.child_id AND application.guardian_id != guardian.guardian_id
+                AND EXISTS (
+                    SELECT 1
+                    FROM guardian WHERE application.child_id = guardian.child_id AND guardian.guardian_id = application.guardian_id
+                )
+
+                UNION
+
+                SELECT parent_id AS id
+                FROM foster_parent
+                WHERE application.child_id = foster_parent.child_id AND application.guardian_id != foster_parent.parent_id
+                AND EXISTS (
+                    SELECT 1
+                    FROM foster_parent WHERE application.child_id = foster_parent.child_id AND foster_parent.parent_id = application.guardian_id
+                )
+            ) other_citizen ON true
+            WHERE application.id = ${bind(id)}
+        """
+                    .trimIndent()
+            )
+        }
         .execute()
 }
 

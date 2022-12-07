@@ -210,7 +210,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             citizen,
             clock,
             application.id,
-            ApplicationFormUpdate.from(updatedApplication.form)
+            CitizenApplicationUpdate(ApplicationFormUpdate.from(updatedApplication.form), false)
         )
 
         // then
@@ -322,7 +322,7 @@ class ApplicationUpdateIntegrationTest : FullApplicationTest(resetDbBeforeEach =
             citizen,
             clock,
             application.id,
-            ApplicationFormUpdate.from(updatedApplication.form)
+            CitizenApplicationUpdate(ApplicationFormUpdate.from(updatedApplication.form), false)
         )
 
         // then

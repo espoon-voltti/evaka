@@ -188,7 +188,7 @@ class ApplicationControllerCitizen(
                             type = body.type,
                             guardianId = user.id,
                             childId = body.childId,
-                            origin = ApplicationOrigin.ELECTRONIC
+                            origin = ApplicationOrigin.ELECTRONIC,
                         )
                         .also {
                             applicationStateService.initializeApplicationForm(
@@ -281,7 +281,7 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @RequestBody applicationForm: ApplicationFormUpdate
+        @RequestBody update: CitizenApplicationUpdate
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -296,7 +296,7 @@ class ApplicationControllerCitizen(
                     it,
                     user,
                     applicationId,
-                    applicationForm,
+                    update,
                     clock.today()
                 )
             }
@@ -325,7 +325,7 @@ class ApplicationControllerCitizen(
                     it,
                     user,
                     applicationId,
-                    applicationForm,
+                    CitizenApplicationUpdate(applicationForm, allowOtherGuardianAccess = false),
                     clock.today(),
                     asDraft = true
                 )

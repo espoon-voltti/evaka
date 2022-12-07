@@ -52,7 +52,7 @@ describe('Citizen club applications', () => {
     const applicationId = editorPage.getNewApplicationId()
 
     await editorPage.fillData(minimalClubForm.form)
-    await editorPage.verifyAndSend()
+    await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
     const application = await getApplication(applicationId)
     minimalClubForm.validateResult(application)
@@ -67,7 +67,7 @@ describe('Citizen club applications', () => {
     const applicationId = editorPage.getNewApplicationId()
 
     await editorPage.fillData(fullClubForm.form)
-    await editorPage.verifyAndSend()
+    await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
     const application = await getApplication(applicationId)
     fullClubForm.validateResult(application)

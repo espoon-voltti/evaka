@@ -239,6 +239,9 @@ class ApplicationStateService(
             strict = user is AuthenticatedUser.Citizen
         )
 
+        personService.getGuardians(tx, user, application.childId)
+        tx.syncApplicationOtherGuardians(application.id)
+
         val applicationFlags = tx.applicationFlags(application, currentDate)
         tx.updateApplicationFlags(application.id, applicationFlags)
 
@@ -824,7 +827,7 @@ class ApplicationStateService(
         tx: Database.Transaction,
         user: AuthenticatedUser.Citizen,
         applicationId: ApplicationId,
-        update: ApplicationFormUpdate,
+        update: CitizenApplicationUpdate,
         currentDate: LocalDate,
         asDraft: Boolean = false
     ): ApplicationDetails {
@@ -832,7 +835,7 @@ class ApplicationStateService(
             tx.fetchApplicationDetails(applicationId)?.takeIf { it.guardianId == user.id }
                 ?: throw NotFound("Application $applicationId of guardian ${user.id} not found")
 
-        val updatedForm = original.form.update(update)
+        val updatedForm = original.form.update(update.form)
 
         if (!updatedForm.preferences.urgent) {
             val deleted =
@@ -870,9 +873,11 @@ class ApplicationStateService(
                         }
                     }
                 }
+                tx.syncApplicationOtherGuardians(applicationId)
             }
         }
 
+        tx.updateApplicationAllowOtherGuardianAccess(applicationId, update.allowOtherGuardianAccess)
         tx.updateApplicationContents(currentDate, original, updatedForm)
         return getApplication(tx, applicationId)
     }

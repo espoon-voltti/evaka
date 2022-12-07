@@ -69,7 +69,7 @@ describe('Citizen daycare applications', () => {
     })
     await editorPage.fillData(applicationForm.form)
     await editorPage.assertChildAddress('Kamreerintie 1, 00340 Espoo')
-    await editorPage.verifyAndSend()
+    await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
     const application = await getApplication(applicationId)
     applicationForm.validateResult(application, [
@@ -90,7 +90,7 @@ describe('Citizen daycare applications', () => {
     })
     await editorPage.fillData(applicationForm.form)
     await editorPage.assertChildAddress('Kamreerintie 1, 00340 Espoo')
-    await editorPage.verifyAndSend()
+    await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
     const application = await getApplication(applicationId)
     applicationForm.validateResult(application, [
@@ -183,7 +183,7 @@ describe('Citizen daycare applications', () => {
         otherGuardianAgreementStatus: 'AGREED'
       }).form
     )
-    await editorPage.verifyAndSend()
+    await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
     await applicationsPage.editApplication(applicationId)
     await editorPage.setPreferredStartDate(mockedDate.subDays(1).format())
@@ -198,7 +198,7 @@ describe('Citizen daycare applications', () => {
     )
     await editorPage.fillData(minimalDaycareForm().form)
     await editorPage.assertChildAddress('')
-    await editorPage.verifyAndSend()
+    await editorPage.verifyAndSend({ hasOtherGuardian: false })
     await editorPage.waitUntilLoaded()
   })
 

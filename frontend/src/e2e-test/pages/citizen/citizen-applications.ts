@@ -127,6 +127,9 @@ class CitizenApplicationEditor {
 
   #verifyButton = this.page.find('[data-qa="verify-btn"]')
   #verifyCheckbox = new Checkbox(this.page.find('[data-qa="verify-checkbox"]'))
+  #allowOtherGuardianAccess = new Checkbox(
+    this.page.findByDataQa('allow-other-guardian-access')
+  )
   #sendButton = this.page.find('[data-qa="send-btn"]')
   #applicationSentModal = this.page.find(
     '[data-qa="info-message-application-sent"]'
@@ -163,9 +166,12 @@ class CitizenApplicationEditor {
     await this.#verifyButton.click()
   }
 
-  async verifyAndSend() {
+  async verifyAndSend({ hasOtherGuardian }: { hasOtherGuardian: boolean }) {
     await this.goToVerification()
-    await this.#verifyCheckbox.click()
+    await this.#verifyCheckbox.check()
+    if (hasOtherGuardian) {
+      await this.#allowOtherGuardianAccess.check()
+    }
     await this.#sendButton.click()
     await this.#applicationSentModal.waitUntilVisible()
     await this.#applicationSentModal.find('[data-qa="modal-okBtn"]').click()

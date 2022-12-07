@@ -278,7 +278,10 @@ sealed interface Action {
         enum class Application(
             override vararg val defaultRules: ScopedActionRule<in ApplicationId>
         ) : ScopedAction<ApplicationId> {
-            READ(IsCitizen(allowWeakLogin = false).ownerOfApplication()),
+            READ(
+                IsCitizen(allowWeakLogin = false).ownerOfApplication(),
+                IsCitizen(allowWeakLogin = false).otherGuardianOfApplication()
+            ),
             READ_DECISIONS(IsCitizen(allowWeakLogin = false).ownerOfApplication()),
             DELETE(IsCitizen(allowWeakLogin = false).ownerOfApplication()),
             UPDATE(IsCitizen(allowWeakLogin = false).ownerOfApplication()),

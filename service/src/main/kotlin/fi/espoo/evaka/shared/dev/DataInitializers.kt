@@ -355,12 +355,13 @@ fun Database.Transaction.insertTestApplication(
     childId: ChildId,
     otherGuardianId: PersonId? = null,
     hideFromGuardian: Boolean = false,
-    transferApplication: Boolean = false
+    transferApplication: Boolean = false,
+    allowOtherGuardianAccess: Boolean = true
 ): ApplicationId {
     createUpdate(
             """
-            INSERT INTO application (type, id, sentdate, duedate, status, guardian_id, child_id, other_guardian_id, origin, hidefromguardian, transferApplication)
-            VALUES (:type, :id, :sentDate, :dueDate, :status::application_status_type, :guardianId, :childId, :otherGuardianId, 'ELECTRONIC'::application_origin_type, :hideFromGuardian, :transferApplication)
+            INSERT INTO application (type, id, sentdate, duedate, status, guardian_id, child_id, other_guardian_id, origin, hidefromguardian, transferApplication, allow_other_guardian_access)
+            VALUES (:type, :id, :sentDate, :dueDate, :status::application_status_type, :guardianId, :childId, :otherGuardianId, 'ELECTRONIC'::application_origin_type, :hideFromGuardian, :transferApplication, :allowOtherGuardianAccess)
             """
         )
         .bind("id", id)
@@ -373,6 +374,7 @@ fun Database.Transaction.insertTestApplication(
         .bind("otherGuardianId", otherGuardianId)
         .bind("hideFromGuardian", hideFromGuardian)
         .bind("transferApplication", transferApplication)
+        .bind("allowOtherGuardianAccess", allowOtherGuardianAccess)
         .execute()
     return id
 }
@@ -1107,8 +1109,8 @@ fun Database.Transaction.insertApplication(application: DevApplicationWithForm):
     // language=sql
     val sql =
         """
-        INSERT INTO application(id, type, sentdate, duedate, status, guardian_id, child_id, origin, checkedbyadmin, hidefromguardian, transferapplication, other_guardian_id)
-        VALUES(:id, :type, :sentDate, :dueDate, :applicationStatus::application_status_type, :guardianId, :childId, :origin::application_origin_type, :checkedByAdmin, :hideFromGuardian, :transferApplication, :otherGuardianId)
+        INSERT INTO application(id, type, sentdate, duedate, status, guardian_id, child_id, origin, checkedbyadmin, hidefromguardian, transferapplication, other_guardian_id, allow_other_guardian_access)
+        VALUES(:id, :type, :sentDate, :dueDate, :applicationStatus::application_status_type, :guardianId, :childId, :origin::application_origin_type, :checkedByAdmin, :hideFromGuardian, :transferApplication, :otherGuardianId, :allowOtherGuardianAccess)
         """
             .trimIndent()
 
@@ -1125,6 +1127,7 @@ fun Database.Transaction.insertApplication(application: DevApplicationWithForm):
         .bind("hideFromGuardian", application.hideFromGuardian)
         .bind("transferApplication", application.transferApplication)
         .bind("otherGuardianId", application.otherGuardianId)
+        .bind("allowOtherGuardianAccess", application.allowOtherGuardianAccess)
         .execute()
 
     return application.id

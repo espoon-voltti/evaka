@@ -23,6 +23,11 @@ import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
 
+data class CitizenApplicationUpdate(
+    val form: ApplicationFormUpdate,
+    val allowOtherGuardianAccess: Boolean
+)
+
 data class ApplicationUpdate(val form: ApplicationFormUpdate, val dueDate: LocalDate? = null)
 
 data class ApplicationSummary(
@@ -102,6 +107,7 @@ data class ApplicationDetails(
     val transferApplication: Boolean,
     val additionalDaycareApplication: Boolean,
     val hideFromGuardian: Boolean,
+    val allowOtherGuardianAccess: Boolean,
     val attachments: List<ApplicationAttachment>
 ) {
     fun derivePlacementType(): PlacementType =

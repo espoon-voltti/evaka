@@ -88,5 +88,5 @@ fun Database.Read.applicationFlags(
 
 data class ApplicationFlags(
     val isTransferApplication: Boolean = false,
-    val isAdditionalDaycareApplication: Boolean = false
+    val isAdditionalDaycareApplication: Boolean = false,
 )

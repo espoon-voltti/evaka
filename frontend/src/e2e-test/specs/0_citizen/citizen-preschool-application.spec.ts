@@ -55,7 +55,7 @@ describe('Citizen preschool applications', () => {
     const applicationId = editorPage.getNewApplicationId()
 
     await editorPage.fillData(minimalPreschoolForm.form)
-    await editorPage.verifyAndSend()
+    await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
     const application = await getApplication(applicationId)
     minimalPreschoolForm.validateResult(application)
@@ -70,7 +70,7 @@ describe('Citizen preschool applications', () => {
     const applicationId = editorPage.getNewApplicationId()
 
     await editorPage.fillData(fullPreschoolForm.form)
-    await editorPage.verifyAndSend()
+    await editorPage.verifyAndSend({ hasOtherGuardian: true })
 
     const application = await getApplication(applicationId)
     fullPreschoolForm.validateResult(application, [

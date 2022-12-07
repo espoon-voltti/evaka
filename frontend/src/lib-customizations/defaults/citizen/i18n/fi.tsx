@@ -531,6 +531,17 @@ export default {
       actions: {
         verify: 'Tarkista hakemus',
         hasVerified: 'Olen tarkistanut hakemuksen tiedot oikeiksi',
+        allowOtherGuardianAccess: (
+          <span>
+            Ymmärrän, että tieto hakemuksesta menee myös lapsen toiselle
+            huoltajalle. Jos tieto ei saa mennä toiselle huoltajalle, ole
+            yhteydessä palveluohjaukseen. Palveluohjauksen yhteystiedot löydät{' '}
+            <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatukseen-hakeminen-ja-palveluohjaus#section-38795">
+              täältä
+            </a>
+            .
+          </span>
+        ),
         returnToEdit: 'Palaa muokkaamaan hakemusta',
         returnToEditBtn: 'Takaisin hakemusnäkymään',
         cancel: 'Peruuta',
