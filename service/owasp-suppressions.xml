@@ -58,4 +58,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         ]]></notes>
         <cve>CVE-2021-42550</cve>
     </suppress>
+    <suppress base="true">
+        <notes><![CDATA[
+        Misidentification (https://github.com/jeremylong/DependencyCheck/issues/5121)
+        ]]></notes>
+        <packageUrl regex="true">^(?!pkg:maven/commons-net/commons-net).*$</packageUrl>
+        <cpe>cpe:/a:apache:commons_net</cpe>
+    </suppress>
 </suppressions>
