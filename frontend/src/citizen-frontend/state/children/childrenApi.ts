@@ -1,5 +1,8 @@
 import { UnreadAssistanceNeedDecisionItem } from 'lib-common/generated/api-types/assistanceneed'
-import { CitizenChildConsent } from 'lib-common/generated/api-types/children'
+import {
+  Child,
+  CitizenChildConsent
+} from 'lib-common/generated/api-types/children'
 import { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
@@ -9,6 +12,9 @@ import { api, mutationResultHook, queryResultHook } from '../api'
 
 export const childrenApi = api.injectEndpoints({
   endpoints: (build) => ({
+    children: build.query<JsonOf<Child[]>, void>({
+      query: () => '/citizen/children'
+    }),
     unreadPedagogicalDocumentsCount: build.query<Record<UUID, number>, void>({
       query: () => '/citizen/pedagogical-documents/unread-count',
       providesTags: ['ChildUnreadPedagogicalDocumentsCount']
@@ -81,6 +87,7 @@ export const childrenApi = api.injectEndpoints({
 })
 
 export const {
+  useChildrenQuery,
   useUnreadPedagogicalDocumentsCountQuery,
   usePedagogicalDocumentsQuery,
   useMarkPedagogicalDocumentReadMutation,
@@ -92,6 +99,8 @@ export const {
   useChildConsentsQuery,
   useInsertChildConsentsMutation
 } = childrenApi
+
+export const useChildrenQueryResult = queryResultHook(useChildrenQuery)
 
 export const deserializePedagogicalDocuments = (
   data: JsonOf<PedagogicalDocumentCitizen[]>

@@ -3,10 +3,9 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sortBy from 'lodash/sortBy'
-import React, { Fragment, useContext, useMemo } from 'react'
+import React, { Fragment, useMemo } from 'react'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
-import { ChildrenContext } from 'citizen-frontend/children/state'
 import { combine } from 'lib-common/api'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -17,6 +16,7 @@ import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../localization'
+import { useChildren } from '../../state/children/childrenState'
 import useTitle from '../../useTitle'
 import { getDecisions, getAssistanceNeedDecisions } from '../api'
 import { applicationDecisionIsUnread } from '../shared'
@@ -26,7 +26,7 @@ import AssistanceDecision from './AssistanceDecision'
 
 export default React.memo(function Decisions() {
   const t = useTranslation()
-  const { children } = useContext(ChildrenContext)
+  const children = useChildren()
   const [applicationDecisions] = useApiState(getDecisions, [])
   const [assistanceDecisions] = useApiState(getAssistanceNeedDecisions, [])
 

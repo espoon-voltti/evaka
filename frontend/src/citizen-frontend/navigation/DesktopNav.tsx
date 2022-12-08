@@ -8,7 +8,6 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { ChildrenContext } from 'citizen-frontend/children/state'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
@@ -27,7 +26,10 @@ import {
 
 import { AuthContext, User } from '../auth/state'
 import { useTranslation } from '../localization'
-import { useChildUnreadNotifications } from '../state/children/childrenState'
+import {
+  useChildrenWithOwnPage,
+  useChildUnreadNotifications
+} from '../state/children/childrenState'
 
 import AttentionIndicator from './AttentionIndicator'
 import { getLogoutUri } from './const'
@@ -201,7 +203,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
 }) {
   const t = useTranslation()
   const location = useLocation()
-  const { childrenWithOwnPage } = useContext(ChildrenContext)
+  const childrenWithOwnPage = useChildrenWithOwnPage()
   const { unreadChildNotifications, totalUnreadChildNotifications } =
     useChildUnreadNotifications()
   const [open, setOpen] = useState(false)

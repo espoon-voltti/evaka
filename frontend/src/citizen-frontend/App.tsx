@@ -32,7 +32,6 @@ import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import CalendarPage from './calendar/CalendarPage'
 import ChildPage from './children/ChildPage'
 import VasuPage from './children/sections/vasu-and-leops/vasu/VasuPage'
-import { ChildrenContextProvider } from './children/state'
 import AssistanceDecisionPage from './decisions/assistance-decision-page/AssistanceDecisionPage'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
 import Decisions from './decisions/decisions-page/Decisions'
@@ -71,14 +70,12 @@ export default function App() {
                   <NotificationsContextProvider>
                     <MessageContextProvider>
                       <HolidayPeriodsContextProvider>
-                        <ChildrenContextProvider>
-                          <ApplicationsContextProvider>
-                            <Content />
-                            <GlobalDialog />
-                            <LoginErrorModal />
-                            <div id="modal-container" />
-                          </ApplicationsContextProvider>
-                        </ChildrenContextProvider>
+                        <ApplicationsContextProvider>
+                          <Content />
+                          <GlobalDialog />
+                          <LoginErrorModal />
+                          <div id="modal-container" />
+                        </ApplicationsContextProvider>
                       </HolidayPeriodsContextProvider>
                     </MessageContextProvider>
                   </NotificationsContextProvider>

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React from 'react'
 
 import { useUser } from 'citizen-frontend/auth/state'
 import { Failure, Success } from 'lib-common/api'
@@ -14,17 +14,17 @@ import { Gap } from 'lib-components/white-space'
 
 import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
+import { useChildren } from '../state/children/childrenState'
 
 import ChildHeader from './ChildHeader'
 import ChildConsentsSection from './sections/consents/ChildConsentsSection'
 import PedagogicalDocumentsSection from './sections/pedagogical-documents/PedagogicalDocumentsSection'
 import PlacementTerminationSection from './sections/placement-termination/PlacementTerminationSection'
 import VasuAndLeopsSection from './sections/vasu-and-leops/VasuAndLeopsSection'
-import { ChildrenContext } from './state'
 
 export default React.memo(function ChildPage() {
   const { childId } = useNonNullableParams<{ childId: string }>()
-  const { children } = useContext(ChildrenContext)
+  const children = useChildren()
   const child = children.chain<Child>((children) => {
     const child = children.find((child) => child.id === childId)
     return child ? Success.of(child) : Failure.of({ message: 'Not found' })

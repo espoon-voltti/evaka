@@ -2,18 +2,11 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import FocusLock from 'react-focus-lock'
 import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
-import { ChildrenContext } from 'citizen-frontend/children/state'
 import { Result } from 'lib-common/api'
 import {
   CitizenMessageBody,
@@ -36,6 +29,7 @@ import { faTimes } from 'lib-icons'
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
+import { useChildren } from '../state/children/childrenState'
 
 const emptyMessage: CitizenMessageBody = {
   title: '',
@@ -74,7 +68,7 @@ export default React.memo(function MessageEditor({
   const send = useCallback(() => onSend(message), [message, onSend])
   const sendEnabled = areRequiredFieldsFilledForMessage(message)
 
-  const { children } = useContext(ChildrenContext)
+  const children = useChildren()
 
   const childIds = useMemo(
     () =>

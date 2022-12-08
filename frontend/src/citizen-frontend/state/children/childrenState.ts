@@ -8,6 +8,7 @@ import { useUser } from '../../auth/state'
 
 import {
   useChildConsentNotificationsQuery,
+  useChildrenQueryResult,
   useUnreadPedagogicalDocumentsCountQuery,
   useUnreadVasuDocumentsCountQuery
 } from './childrenApi'
@@ -48,4 +49,25 @@ export function useChildUnreadNotifications() {
   )
 
   return { unreadChildNotifications, totalUnreadChildNotifications }
+}
+
+export function useChildren() {
+  const user = useUser()
+  return useChildrenQueryResult(!user ? skipToken : undefined)
+}
+
+export function useChildrenWithOwnPage() {
+  const childrenResponse = useChildren()
+  return useMemo(
+    () =>
+      childrenResponse.map((children) =>
+        children.filter(
+          (child) =>
+            child.hasUpcomingPlacements ||
+            child.hasPedagogicalDocuments ||
+            child.hasCurriculums
+        )
+      ),
+    [childrenResponse]
+  )
 }
