@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faChevronRight } from 'Icons'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
@@ -16,7 +16,6 @@ import {
   PedagogicalDocumentCitizen
 } from 'lib-common/generated/api-types/pedagogicaldocument'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -40,7 +39,10 @@ import {
   faChevronUp
 } from 'lib-icons'
 
-import { getPedagogicalDocuments, markPedagogicalDocumentRead } from './api'
+import {
+  useMarkPedagogicalDocumentReadMutation,
+  usePedagogicalDocumentsQueryResult
+} from '../../../state/children/childrenApi'
 
 const AttachmentLink = React.memo(function AttachmentLink({
   pedagogicalDocument,
@@ -377,24 +379,17 @@ export default React.memo(function PedagogicalDocumentsSection({
 }) {
   const [open, setOpen] = useState(false)
 
-  const [pedagogicalDocuments, loadData] = useApiState(
-    () => getPedagogicalDocuments(childId),
-    [childId]
+  const pedagogicalDocuments = usePedagogicalDocumentsQueryResult(childId)
+  const [markPedagogicalDocumentRead] = useMarkPedagogicalDocumentReadMutation()
+
+  const { unreadPedagogicalDocumentsCount } = useContext(ChildrenContext)
+
+  const onRead = useCallback(
+    (doc: PedagogicalDocumentCitizen) => {
+      void markPedagogicalDocumentRead(doc.id)
+    },
+    [markPedagogicalDocumentRead]
   )
-
-  const {
-    refreshUnreadPedagogicalDocumentsCount,
-    unreadPedagogicalDocumentsCount
-  } = useContext(ChildrenContext)
-
-  useEffect(refreshUnreadPedagogicalDocumentsCount, [
-    refreshUnreadPedagogicalDocumentsCount,
-    pedagogicalDocuments
-  ])
-
-  const onRead = (doc: PedagogicalDocumentCitizen) => {
-    void markPedagogicalDocumentRead(doc.id).then(loadData)
-  }
 
   const t = useTranslation()
 

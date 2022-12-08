@@ -16,11 +16,11 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 import {
   useChildConsentNotificationsQueryResult,
   useUnreadAssistanceNeedDecisionsCountQueryResult,
+  useUnreadPedagogicalDocumentsCountQueryResult,
   useUnreadVasuDocumentsCountQueryResult
 } from '../state/children/childrenApi'
 
 import { getChildren } from './api'
-import { getUnreadPedagogicalDocumentsCount } from './sections/pedagogical-documents/api'
 
 interface ChildrenContext {
   children: Result<Child[]>
@@ -28,7 +28,6 @@ interface ChildrenContext {
   unreadAssistanceNeedDecisionCounts: UnreadAssistanceNeedDecisionItem[]
   unreadPedagogicalDocumentsCount: Record<UUID, number> | undefined
   unreadVasuDocumentsCount: Record<UUID, number> | undefined
-  refreshUnreadPedagogicalDocumentsCount: () => void
   unreadChildNotifications: Record<UUID, number>
   totalUnreadChildNotifications: number
 }
@@ -39,7 +38,6 @@ const defaultValue: ChildrenContext = {
   unreadAssistanceNeedDecisionCounts: [],
   unreadPedagogicalDocumentsCount: undefined,
   unreadVasuDocumentsCount: undefined,
-  refreshUnreadPedagogicalDocumentsCount: () => undefined,
   unreadChildNotifications: {},
   totalUnreadChildNotifications: 0
 }
@@ -76,18 +74,10 @@ export const ChildrenContextProvider = React.memo(
       useUnreadAssistanceNeedDecisionsCountQueryResult(
         !user ? skipToken : undefined
       )
-
-    const [
-      unreadPedagogicalDocumentsCount,
-      refreshUnreadPedagogicalDocumentsCount
-    ] = useApiState(
-      () =>
-        !user
-          ? Promise.resolve(Success.of({}))
-          : getUnreadPedagogicalDocumentsCount(),
-      [user]
-    )
-
+    const unreadPedagogicalDocumentsCount =
+      useUnreadPedagogicalDocumentsCountQueryResult(
+        !user ? skipToken : undefined
+      )
     const unreadVasuDocumentsCount = useUnreadVasuDocumentsCountQueryResult(
       !user ? skipToken : undefined
     )
@@ -128,7 +118,6 @@ export const ChildrenContextProvider = React.memo(
             unreadPedagogicalDocumentsCount.getOrElse(undefined),
           unreadVasuDocumentsCount:
             unreadVasuDocumentsCount.getOrElse(undefined),
-          refreshUnreadPedagogicalDocumentsCount,
           unreadChildNotifications,
           totalUnreadChildNotifications
         }}

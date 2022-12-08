@@ -55,6 +55,8 @@ export const api = createApi({
   reducerPath: 'api',
   baseQuery: axiosBaseQuery(),
   tagTypes: [
+    'ChildUnreadPedagogicalDocumentsCount',
+    'ChildPedagogicalDocument',
     'ChildUnreadAssistanceNeedDecisionsCount',
     'ChildUnreadVasuDocumentsCount',
     'ChildConsents',
@@ -74,7 +76,39 @@ export function queryResultHook<
   arg:
     | QueryArgFrom<QueryDefinition<QueryArg, BaseQuery, TagTypes, ResultType>>
     | SkipToken
-) => Result<ResultType> {
+) => Result<ResultType>
+export function queryResultHook<
+  QueryArg,
+  BaseQuery extends BaseQueryFn,
+  TagTypes extends string,
+  ResultType,
+  TransformedResultType
+>(
+  useQuery: UseQuery<
+    QueryDefinition<QueryArg, BaseQuery, TagTypes, ResultType>
+  >,
+  transformResult: (data: ResultType) => TransformedResultType
+): (
+  arg:
+    | QueryArgFrom<QueryDefinition<QueryArg, BaseQuery, TagTypes, ResultType>>
+    | SkipToken
+) => Result<TransformedResultType>
+export function queryResultHook<
+  QueryArg,
+  BaseQuery extends BaseQueryFn,
+  TagTypes extends string,
+  ResultType,
+  TransformedResultType
+>(
+  useQuery: UseQuery<
+    QueryDefinition<QueryArg, BaseQuery, TagTypes, ResultType>
+  >,
+  transformResult?: (data: ResultType) => TransformedResultType
+): (
+  arg:
+    | QueryArgFrom<QueryDefinition<QueryArg, BaseQuery, TagTypes, ResultType>>
+    | SkipToken
+) => Result<TransformedResultType> {
   return (arg) => {
     const { data, error, isLoading, isFetching } = useQuery(arg)
     return useMemo(() => {
@@ -85,7 +119,10 @@ export function queryResultHook<
         return Failure.fromError(error)
       }
       if (data) {
-        const success = Success.of(data)
+        const transformedData = (
+          transformResult ? transformResult(data) : data
+        ) as TransformedResultType
+        const success = Success.of(transformedData)
         if (isFetching) return success.reloading()
         return success
       }
