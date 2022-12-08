@@ -23,6 +23,7 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
+import java.lang.Integer.max
 import java.time.LocalDate
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
@@ -403,30 +404,31 @@ private fun toChildDayRows(
             val child =
                 childData[childId]
                     ?: throw IllegalStateException("Child data not found for child $childId")
-            val hasMultipleRecordsOnSomeDay =
-                dailyData.any { placementStatus ->
-                    val date = placementStatus.date
-                    !placementStatus.inOtherUnit &&
-                        ((child.reservations[date] ?: listOf()).size > 1 ||
-                            (child.attendances[date] ?: listOf()).size > 1)
-                }
+            val maxRecordCountOnAnyDay =
+                max(
+                    1,
+                    dailyData.maxOf { placementStatus ->
+                        val date = placementStatus.date
+                        if (!placementStatus.inOtherUnit) {
+                            max(
+                                (child.reservations[date] ?: listOf()).size,
+                                (child.attendances[date] ?: listOf()).size
+                            )
+                        } else {
+                            0
+                        }
+                    }
+                )
+
             UnitAttendanceReservations.ChildDailyRecords(
                 child = child.child,
                 dailyData =
-                    listOfNotNull(
+                    (0 until maxRecordCountOnAnyDay).map { rowIndex ->
                         dailyData.associateBy(
                             { it.date },
-                            { dailyRecord(it, 0, child, serviceTimes[childId]) }
-                        ),
-                        if (hasMultipleRecordsOnSomeDay) {
-                            dailyData.associateBy(
-                                { it.date },
-                                { dailyRecord(it, 1, child, serviceTimes[childId]) }
-                            )
-                        } else {
-                            null
-                        }
-                    )
+                            { dailyRecord(it, rowIndex, child, serviceTimes[childId]) }
+                        )
+                    }
             )
         }
 }

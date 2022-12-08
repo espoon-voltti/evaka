@@ -194,6 +194,40 @@ describe('Unit group calendar', () => {
       )
     )
   })
+
+  test('Employee sees all attendances for a child during a day', async () => {
+    const attendances = [
+      [LocalTime.of(8, 15), LocalTime.of(9, 30)],
+      [LocalTime.of(10, 30), LocalTime.of(11, 45)],
+      [LocalTime.of(13, 0), LocalTime.of(14, 30)],
+      [LocalTime.of(15, 0), LocalTime.of(16, 0)]
+    ]
+    attendances.forEach(async ([arrival, departure]) => {
+      await Fixture.childAttendances()
+        .with({
+          childId: child1Fixture.id,
+          unitId: daycare2Fixture.id,
+          arrived: HelsinkiDateTime.fromLocal(
+            mockedToday,
+            arrival
+          ).toSystemTzDate(),
+          departed: HelsinkiDateTime.fromLocal(
+            mockedToday,
+            departure
+          ).toSystemTzDate()
+        })
+        .save()
+    })
+
+    const childReservations = (await loadUnitAttendancesSection())
+      .childReservations
+    await calendarPage.selectMode('week')
+
+    await waitUntilEqual(
+      () => childReservations.childRowCount(child1Fixture.id),
+      attendances.length
+    )
+  })
 })
 
 describe('Unit group calendar for shift care unit', () => {
