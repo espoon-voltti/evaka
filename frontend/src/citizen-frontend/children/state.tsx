@@ -15,17 +15,17 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 
 import {
   useChildConsentNotificationsQueryResult,
+  useUnreadAssistanceNeedDecisionsCountQueryResult,
   useUnreadVasuDocumentsCountQueryResult
 } from '../state/children/childrenApi'
 
-import { getChildren, getAssistanceNeedDecisionUnreadCounts } from './api'
+import { getChildren } from './api'
 import { getUnreadPedagogicalDocumentsCount } from './sections/pedagogical-documents/api'
 
 interface ChildrenContext {
   children: Result<Child[]>
   childrenWithOwnPage: Result<Child[]>
   unreadAssistanceNeedDecisionCounts: UnreadAssistanceNeedDecisionItem[]
-  refreshUnreadAssistanceNeedDecisionCounts: () => void
   unreadPedagogicalDocumentsCount: Record<UUID, number> | undefined
   unreadVasuDocumentsCount: Record<UUID, number> | undefined
   refreshUnreadPedagogicalDocumentsCount: () => void
@@ -37,7 +37,6 @@ const defaultValue: ChildrenContext = {
   children: Loading.of(),
   childrenWithOwnPage: Loading.of(),
   unreadAssistanceNeedDecisionCounts: [],
-  refreshUnreadAssistanceNeedDecisionCounts: () => undefined,
   unreadPedagogicalDocumentsCount: undefined,
   unreadVasuDocumentsCount: undefined,
   refreshUnreadPedagogicalDocumentsCount: () => undefined,
@@ -73,16 +72,10 @@ export const ChildrenContextProvider = React.memo(
       [childrenResponse]
     )
 
-    const [
-      unreadAssistanceNeedDecisionCounts,
-      refreshUnreadAssistanceNeedDecisionCounts
-    ] = useApiState(
-      () =>
-        !user
-          ? Promise.resolve(Success.of([]))
-          : getAssistanceNeedDecisionUnreadCounts(),
-      [user]
-    )
+    const unreadAssistanceNeedDecisionCounts =
+      useUnreadAssistanceNeedDecisionsCountQueryResult(
+        !user ? skipToken : undefined
+      )
 
     const [
       unreadPedagogicalDocumentsCount,
@@ -131,7 +124,6 @@ export const ChildrenContextProvider = React.memo(
           childrenWithOwnPage,
           unreadAssistanceNeedDecisionCounts:
             unreadAssistanceNeedDecisionCounts.getOrElse([]),
-          refreshUnreadAssistanceNeedDecisionCounts,
           unreadPedagogicalDocumentsCount:
             unreadPedagogicalDocumentsCount.getOrElse(undefined),
           unreadVasuDocumentsCount:

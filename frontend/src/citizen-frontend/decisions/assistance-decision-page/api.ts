@@ -34,12 +34,3 @@ export function getAssistanceNeedDecision(
     .then((res) => Success.of(mapToAssistanceNeedDecision(res.data)))
     .catch((e) => Failure.fromError(e))
 }
-
-export function markAssistanceNeedDecisionAsRead(
-  id: UUID
-): Promise<Result<void>> {
-  return client
-    .post(`/citizen/children/assistance-need-decision/${id}/read`)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
-}

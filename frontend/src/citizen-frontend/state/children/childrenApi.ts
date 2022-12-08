@@ -1,3 +1,4 @@
+import { UnreadAssistanceNeedDecisionItem } from 'lib-common/generated/api-types/assistanceneed'
 import { CitizenChildConsent } from 'lib-common/generated/api-types/children'
 import { UUID } from 'lib-common/types'
 
@@ -5,6 +6,20 @@ import { api, mutationResultHook, queryResultHook } from '../api'
 
 export const childrenApi = api.injectEndpoints({
   endpoints: (build) => ({
+    unreadAssistanceNeedDecisionsCount: build.query<
+      UnreadAssistanceNeedDecisionItem[],
+      void
+    >({
+      query: () => '/citizen/children/assistance-need-decisions/unread-counts',
+      providesTags: ['ChildUnreadAssistanceNeedDecisionsCount']
+    }),
+    markAssistanceNeedDecisionAsRead: build.mutation<void, UUID>({
+      query: (decisionId) => ({
+        method: 'POST',
+        url: `/citizen/children/assistance-need-decision/${decisionId}/read`
+      }),
+      invalidatesTags: ['ChildUnreadAssistanceNeedDecisionsCount']
+    }),
     unreadVasuDocumentsCount: build.query<Record<UUID, number>, void>({
       query: () => '/citizen/vasu/children/unread-count',
       providesTags: ['ChildUnreadVasuDocumentsCount']
@@ -42,6 +57,8 @@ export const childrenApi = api.injectEndpoints({
 })
 
 export const {
+  useUnreadAssistanceNeedDecisionsCountQuery,
+  useMarkAssistanceNeedDecisionAsReadMutation,
   useUnreadVasuDocumentsCountQuery,
   useGivePermissionToShareVasuMutation,
   useChildConsentNotificationsQuery,
@@ -49,6 +66,9 @@ export const {
   useInsertChildConsentsMutation
 } = childrenApi
 
+export const useUnreadAssistanceNeedDecisionsCountQueryResult = queryResultHook(
+  useUnreadAssistanceNeedDecisionsCountQuery
+)
 export const useUnreadVasuDocumentsCountQueryResult = queryResultHook(
   useUnreadVasuDocumentsCountQuery
 )
