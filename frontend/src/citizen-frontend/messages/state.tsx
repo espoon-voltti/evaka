@@ -12,11 +12,8 @@ import React, {
 } from 'react'
 
 import { Loading, Paged, Result } from 'lib-common/api'
-import {
-  MessageThread,
-  ThreadReply,
-  UnreadCountByAccount
-} from 'lib-common/generated/api-types/messaging'
+import { CitizenThread } from 'lib-common/api-types/messaging'
+import { ThreadReply } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
 import { useRestApi } from 'lib-common/utils/useRestApi'
@@ -27,6 +24,7 @@ import {
   getMessageAccount,
   getReceivedMessages,
   getUnreadMessagesCount,
+  markBulletinRead,
   markThreadRead,
   replyToThread,
   ReplyToThreadParams
@@ -41,7 +39,7 @@ const initialThreadState: ThreadsState = {
 }
 
 interface ThreadsState {
-  threads: MessageThread[]
+  threads: CitizenThread[]
   selectedThread: UUID | undefined
   loadingResult: Result<unknown>
   currentPage: number
@@ -51,11 +49,11 @@ interface ThreadsState {
 export interface MessagePageState {
   accountId: Result<UUID>
   loadAccount: () => void
-  threads: MessageThread[]
+  threads: CitizenThread[]
   refreshThreads: () => void
   threadLoadingResult: Result<unknown>
   loadMoreThreads: () => void
-  selectedThread: MessageThread | undefined
+  selectedThread: CitizenThread | undefined
   setSelectedThread: (threadId: UUID | undefined) => void
   sendReply: (params: ReplyToThreadParams) => void
   replyState: Result<void> | undefined
@@ -85,9 +83,9 @@ const defaultState: MessagePageState = {
 export const MessageContext = createContext<MessagePageState>(defaultState)
 
 const markMatchingThreadRead = (
-  threads: MessageThread[],
+  threads: CitizenThread[],
   id: UUID
-): MessageThread[] =>
+): CitizenThread[] =>
   threads.map((t) =>
     t.id === id
       ? {
@@ -109,7 +107,7 @@ export const MessageContextProvider = React.memo(
     const [threads, setThreads] = useState<ThreadsState>(initialThreadState)
 
     const setMessagesResult = useCallback(
-      (result: Result<Paged<MessageThread>>) =>
+      (result: Result<Paged<CitizenThread>>) =>
         setThreads((state) => ({
           ...result.mapAll({
             loading: () => state,
@@ -165,7 +163,7 @@ export const MessageContextProvider = React.memo(
         } = res
         setThreads(function appendMessageAndMoveThreadToTopOfList(state) {
           const thread = state.threads.find((t) => t.id === threadId)
-          if (!thread) return state
+          if (!thread || thread.type === 'BULLETIN') return state
           const otherThreads = state.threads.filter((t) => t.id !== threadId)
           return {
             ...state,
@@ -195,14 +193,11 @@ export const MessageContextProvider = React.memo(
     }, [])
 
     const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>()
-    const setUnreadResult = useCallback(
-      (res: Result<UnreadCountByAccount[]>) => {
-        if (res.isSuccess) {
-          setUnreadMessagesCount(res.value[0]?.unreadCount ?? 0)
-        }
-      },
-      []
-    )
+    const setUnreadResult = useCallback((res: Result<number>) => {
+      if (res.isSuccess) {
+        setUnreadMessagesCount(res.value)
+      }
+    }, [])
     const refreshUnreadMessagesCount = useRestApi(
       getUnreadMessagesCount,
       setUnreadResult
@@ -227,7 +222,7 @@ export const MessageContextProvider = React.memo(
 
       if (!accountId.isSuccess) return
 
-      const hasUnreadMessages = selectedThread?.messages.some(
+      const hasUnreadMessages = selectedThread.messages.some(
         (m) => !m.readAt && m.sender.id !== accountId.value
       )
 
@@ -239,7 +234,12 @@ export const MessageContextProvider = React.memo(
           }
         })
 
-        void markThreadRead(selectedThread.id).then(() => {
+        const markRead =
+          selectedThread.type === 'MESSAGE'
+            ? markThreadRead(selectedThread.id)
+            : markBulletinRead(selectedThread.id)
+
+        void markRead.then(() => {
           void refreshUnreadMessagesCount()
         })
       }

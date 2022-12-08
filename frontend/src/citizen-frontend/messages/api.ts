@@ -4,17 +4,16 @@
 
 import { Failure, Paged, Result, Success } from 'lib-common/api'
 import {
+  CitizenThread,
+  deserializeCitizenThread,
   deserializeMessageAccount,
-  deserializeMessageThread,
   deserializeReplyResponse
 } from 'lib-common/api-types/messaging'
 import {
   CitizenMessageBody,
   GetReceiversResponse,
-  MessageThread,
   ReplyToMessageBody,
-  ThreadReply,
-  UnreadCountByAccount
+  ThreadReply
 } from 'lib-common/generated/api-types/messaging'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
@@ -25,16 +24,16 @@ export async function getReceivedMessages(
   page: number,
   staffAnnotation: string,
   pageSize = 10
-): Promise<Result<Paged<MessageThread>>> {
+): Promise<Result<Paged<CitizenThread>>> {
   return client
-    .get<JsonOf<Paged<MessageThread>>>('/citizen/messages/received', {
+    .get<JsonOf<Paged<CitizenThread>>>('/citizen/messages/received', {
       params: { page, pageSize }
     })
     .then((res) =>
       Success.of({
         ...res.data,
         data: res.data.data.map((d) =>
-          deserializeMessageThread(d, staffAnnotation)
+          deserializeCitizenThread(d, staffAnnotation)
         )
       })
     )
@@ -71,11 +70,16 @@ export async function markThreadRead(id: string): Promise<Result<void>> {
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getUnreadMessagesCount(): Promise<
-  Result<UnreadCountByAccount[]>
-> {
+export async function markBulletinRead(id: string): Promise<Result<void>> {
   return client
-    .get<UnreadCountByAccount[]>(`/citizen/messages/unread-count`)
+    .put(`/citizen/messages/bulletins/${id}/read`)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getUnreadMessagesCount(): Promise<Result<number>> {
+  return client
+    .get<number>(`/citizen/messages/unread-count`)
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
@@ -115,5 +119,12 @@ export async function archiveThread(id: UUID): Promise<Result<void>> {
   return client
     .put(`/citizen/messages/threads/${id}/archive`)
     .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function archiveBulletin(id: UUID): Promise<Result<void>> {
+  return client
+    .put(`/citizen/messages/bulletins/${id}/archive`)
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }

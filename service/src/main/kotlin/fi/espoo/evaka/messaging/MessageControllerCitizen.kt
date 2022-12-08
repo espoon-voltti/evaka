@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.shared.BulletinId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.MessageAccountId
@@ -48,19 +49,15 @@ class MessageControllerCitizen(
     }
 
     @GetMapping("/unread-count")
-    fun getUnreadMessages(
-        db: Database,
-        user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
-    ): Set<UnreadCountByAccount> {
+    fun getUnreadMessages(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock): Int {
         return db.connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
-                dbc.read { it.getUnreadMessagesCounts(clock.now(), setOf(accountId)) }
+                dbc.read { it.getCitizenUnreadMessagesCount(clock.now(), accountId) }
             }
             .also {
                 Audit.MessagingUnreadMessagesRead.log(
                     targetId = user.id,
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it)
                 )
             }
     }
@@ -79,6 +76,20 @@ class MessageControllerCitizen(
         Audit.MessagingMarkMessagesReadWrite.log(targetId = threadId)
     }
 
+    @PutMapping("/bulletins/{bulletinId}/read")
+    fun markBulletinRead(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        clock: EvakaClock,
+        @PathVariable bulletinId: BulletinId
+    ) {
+        db.connect { dbc ->
+            val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
+            dbc.transaction { it.markBulletinRead(clock, accountId, bulletinId) }
+        }
+        Audit.MessagingMarkMessagesReadWrite.log(targetId = bulletinId)
+    }
+
     @PutMapping("/threads/{threadId}/archive")
     fun archiveThread(
         db: Database,
@@ -92,6 +103,19 @@ class MessageControllerCitizen(
         Audit.MessagingArchiveMessageWrite.log(targetId = threadId)
     }
 
+    @PutMapping("/bulletins/{bulletinId}/archive")
+    fun archiveBulletin(
+        db: Database,
+        user: AuthenticatedUser.Citizen,
+        @PathVariable bulletinId: BulletinId
+    ) {
+        db.connect { dbc ->
+            val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
+            dbc.transaction { it.archiveBulletin(accountId, bulletinId) }
+        }
+        Audit.MessagingArchiveMessageWrite.log(targetId = bulletinId)
+    }
+
     @GetMapping("/received")
     fun getReceivedMessages(
         db: Database,
@@ -99,11 +123,11 @@ class MessageControllerCitizen(
         clock: EvakaClock,
         @RequestParam pageSize: Int,
         @RequestParam page: Int
-    ): Paged<MessageThread> {
+    ): Paged<CitizenThread> {
         return db.connect { dbc ->
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
                 dbc.read {
-                    it.getThreads(
+                    it.getCitizenThreads(
                         clock.now(),
                         accountId,
                         pageSize,

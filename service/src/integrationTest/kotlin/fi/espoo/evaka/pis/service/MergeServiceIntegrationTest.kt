@@ -8,19 +8,19 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.messaging.MessageNotificationEmailService
 import fi.espoo.evaka.messaging.MessageService
-import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.messaging.archiveThread
 import fi.espoo.evaka.messaging.createPersonMessageAccount
 import fi.espoo.evaka.messaging.getArchiveFolderId
+import fi.espoo.evaka.messaging.getCitizenThreads
+import fi.espoo.evaka.messaging.getEmployeeReceivedThreads
 import fi.espoo.evaka.messaging.getMessagesSentByAccount
-import fi.espoo.evaka.messaging.getReceivedThreads
-import fi.espoo.evaka.messaging.getThreads
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
 import fi.espoo.evaka.messaging.upsertReceiverThreadParticipants
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
@@ -255,13 +255,10 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 RealEvakaClock(),
                 title = "Juhannus",
                 content = "Juhannus tulee kohta",
-                type = MessageType.MESSAGE,
                 urgent = false,
                 sender = senderDuplicateAccount,
                 messageRecipients = listOf(receiverAccount to testChild_1.id),
-                recipientNames = listOf(),
-                staffCopyRecipients = setOf(),
-                municipalAccountName = "Espoo"
+                recipientNames = listOf()
             )
         }
         assertEquals(listOf(0, 1), sentMessageCounts(senderAccount, senderDuplicateAccount))
@@ -302,15 +299,13 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 MockEvakaClock(now.minusMinutes(1)),
                 title = "Juhannus",
                 content = "Juhannus tulee kohta",
-                type = MessageType.MESSAGE,
                 urgent = false,
                 sender = senderAccount,
                 messageRecipients = listOf(receiverDuplicateAccount to testChild_1.id),
-                recipientNames = listOf(),
-                staffCopyRecipients = setOf(),
-                municipalAccountName = "Espoo"
+                recipientNames = listOf()
             )
-            val threadId = tx.getThreads(now, senderAccount, 1, 1, "Espoo").data.first().id
+            val threadId =
+                tx.createQuery("SELECT id FROM message_thread").mapTo<MessageThreadId>().first()
             tx.upsertReceiverThreadParticipants(threadId, setOf(receiverDuplicateAccount), now)
         }
         assertEquals(
@@ -333,7 +328,9 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         now: HelsinkiDateTime,
         accountIds: List<MessageAccountId>
     ): List<Int> =
-        db.read { tx -> accountIds.map { tx.getReceivedThreads(now, it, 10, 1, "Espoo").total } }
+        db.read { tx ->
+            accountIds.map { tx.getEmployeeReceivedThreads(now, it, 10, 1, "Espoo").total }
+        }
 
     private fun archivedThreadCounts(
         now: HelsinkiDateTime,
@@ -342,7 +339,7 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.read { tx ->
             accountIds.map {
                 val archiveFolderId = tx.getArchiveFolderId(it)
-                tx.getReceivedThreads(now, it, 10, 1, "Espoo", archiveFolderId).total
+                tx.getEmployeeReceivedThreads(now, it, 10, 1, "Espoo", archiveFolderId).total
             }
         }
 
@@ -371,15 +368,14 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 MockEvakaClock(now.minusMinutes(1)),
                 title = "Juhannus",
                 content = "Juhannus tulee kohta",
-                type = MessageType.MESSAGE,
                 urgent = false,
                 sender = senderAccount,
                 messageRecipients = listOf(receiverDuplicateAccount to testChild_1.id),
-                recipientNames = listOf(),
-                staffCopyRecipients = setOf(),
-                municipalAccountName = "Espoo"
+                recipientNames = listOf()
             )
-            val threadId = tx.getThreads(now, senderAccount, 1, 1, "Espoo").data.first().id
+            val threadId =
+                tx.getCitizenThreads(now, senderAccount, 1, 1, "Espoo").data.first().id
+                    as MessageThreadId
             tx.upsertReceiverThreadParticipants(threadId, setOf(receiverDuplicateAccount), now)
             tx.archiveThread(receiverDuplicateAccount, threadId)
         }

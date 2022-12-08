@@ -45,7 +45,7 @@ import { useTranslation } from '../../state/i18n'
 
 import { MessageCharacteristics } from './MessageCharacteristics'
 import { MessageContext } from './MessageContext'
-import { archiveThread } from './api'
+import { archiveBulletin, archiveThread } from './api'
 import { View } from './types-view'
 
 const MessageContainer = styled.div`
@@ -285,7 +285,11 @@ export function SingleThreadView({
                     aria-label={i18n.common.archive}
                     data-qa="delete-thread-btn"
                     className="delete-btn"
-                    onClick={() => archiveThread(accountId, threadId)}
+                    onClick={() =>
+                      type === 'MESSAGE'
+                        ? archiveThread(accountId, threadId)
+                        : archiveBulletin(accountId, threadId)
+                    }
                     onSuccess={onArchived}
                     text={i18n.messages.archiveThread}
                     stopPropagation

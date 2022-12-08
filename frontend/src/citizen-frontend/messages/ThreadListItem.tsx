@@ -5,8 +5,8 @@
 import React, { SyntheticEvent, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 
+import { CitizenThread } from 'lib-common/api-types/messaging'
 import { formatDateOrTime } from 'lib-common/date'
-import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
 import {
   FixedSpaceColumn,
@@ -27,7 +27,7 @@ import { useTranslation } from '../localization'
 import { MessageCharacteristics } from './MessageCharacteristics'
 
 interface Props {
-  thread: MessageThread
+  thread: CitizenThread
   active: boolean
   hasUnreadMessages: boolean
   onClick: () => void

@@ -90,6 +90,16 @@ export async function markThreadRead(
     .catch((e) => Failure.fromError(e))
 }
 
+export async function markBulletinRead(
+  accountId: UUID,
+  id: UUID
+): Promise<Result<void>> {
+  return client
+    .put(`/messages/${accountId}/bulletins/${id}/read`)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}
+
 export async function deleteDraft(
   accountId: UUID,
   draftId: UUID
@@ -105,7 +115,17 @@ export async function postMessage(
   body: PostMessageBody
 ): Promise<Result<void>> {
   return client
-    .post(`/messages/${accountId}`, body)
+    .post(`/messages/${accountId}/message`, body)
+    .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function postBulletin(
+  accountId: UUID,
+  body: PostMessageBody
+): Promise<Result<void>> {
+  return client
+    .post(`/messages/${accountId}/bulletin`, body)
     .then(() => Success.of(undefined))
     .catch((e) => Failure.fromError(e))
 }

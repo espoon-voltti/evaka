@@ -6,7 +6,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 
-import { MessageThread } from 'lib-common/generated/api-types/messaging'
+import { CitizenThread } from 'lib-common/api-types/messaging'
+import { MessageType } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import useIntersectionObserver from 'lib-common/utils/useIntersectionObserver'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -27,7 +28,7 @@ import { ConfirmDeleteThread } from './MessageComponents'
 import ThreadListItem from './ThreadListItem'
 import { MessageContext } from './state'
 
-const hasUnreadMessages = (thread: MessageThread, accountId: UUID) =>
+const hasUnreadMessages = (thread: CitizenThread, accountId: UUID) =>
   thread.messages.some((m) => !m.readAt && m.sender.id !== accountId)
 
 interface Props {
@@ -52,7 +53,10 @@ export default React.memo(function ThreadList({
     refreshThreads,
     refreshUnreadMessagesCount
   } = useContext(MessageContext)
-  const [confirmDelete, setConfirmDelete] = useState<UUID>()
+  const [confirmDelete, setConfirmDelete] = useState<{
+    id: UUID
+    type: MessageType
+  }>()
 
   const refreshEverything = useCallback(() => {
     refreshThreads()
@@ -121,7 +125,9 @@ export default React.memo(function ThreadList({
               <ThreadListItem
                 thread={thread}
                 onClick={() => selectThread(thread.id)}
-                onDelete={() => setConfirmDelete(thread.id)}
+                onDelete={() =>
+                  setConfirmDelete({ id: thread.id, type: thread.type })
+                }
                 active={selectedThread?.id === thread.id}
                 hasUnreadMessages={hasUnreadMessages(thread, accountId)}
               />
@@ -133,7 +139,7 @@ export default React.memo(function ThreadList({
         ))}
         {confirmDelete !== undefined ? (
           <ConfirmDeleteThread
-            threadId={confirmDelete}
+            {...confirmDelete}
             onClose={() => setConfirmDelete(undefined)}
             onSuccess={() => {
               setConfirmDelete(undefined)

@@ -7,12 +7,12 @@ package fi.espoo.evaka.messaging
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import fi.espoo.evaka.attachment.MessageAttachment
 import fi.espoo.evaka.shared.AreaId
+import fi.espoo.evaka.shared.BulletinId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.MessageAccountId
-import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -42,11 +42,56 @@ data class MessageThread(
     @Json val messages: List<Message>
 )
 
+sealed class CitizenThread {
+    abstract val id: Id<*>
+    abstract val title: String
+    abstract val type: MessageType
+    abstract val messages: List<Message>
+
+    data class MessageThread(
+        override val id: MessageThreadId,
+        override val title: String,
+        val urgent: Boolean,
+        @Json val children: List<MessageChild>,
+        @Json override val messages: List<Message>
+    ) : CitizenThread() {
+        override val type = MessageType.MESSAGE
+    }
+
+    data class Bulletin(
+        override val id: BulletinId,
+        override val title: String,
+        val urgent: Boolean,
+        val content: String,
+        val sentAt: HelsinkiDateTime,
+        val readAt: HelsinkiDateTime? = null,
+        @Json val sender: MessageAccount,
+        @Json val recipient: MessageAccount,
+        @Json val children: List<MessageChild>,
+        @Json val attachments: List<MessageAttachment>
+    ) : CitizenThread() {
+        override val type = MessageType.BULLETIN
+        override val messages =
+            listOf(
+                Message(
+                    id = MessageId(id.raw),
+                    threadId = MessageThreadId(id.raw),
+                    sender = sender,
+                    recipients = setOf(recipient),
+                    sentAt = sentAt,
+                    content = content,
+                    readAt = readAt,
+                    attachments = attachments
+                )
+            )
+    }
+}
+
 data class SentMessage(
-    val contentId: MessageContentId,
+    val id: Id<*>,
     val content: String,
     val sentAt: HelsinkiDateTime,
-    val threadTitle: String,
+    val title: String,
     val type: MessageType,
     val urgent: Boolean,
     @Json val recipients: Set<MessageAccount>,

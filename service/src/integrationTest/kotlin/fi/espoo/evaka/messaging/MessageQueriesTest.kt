@@ -157,12 +157,14 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         // employee is not a recipient in any threads
         assertEquals(
             0,
-            db.read { it.getReceivedThreads(readTime, accounts.employee1.id, 10, 1, "Espoo") }
+            db.read {
+                    it.getEmployeeReceivedThreads(readTime, accounts.employee1.id, 10, 1, "Espoo")
+                }
                 .data
                 .size
         )
         val personResult =
-            db.read { it.getThreads(readTime, accounts.employee1.id, 10, 1, "Espoo") }
+            db.read { it.getCitizenThreads(readTime, accounts.person1.id, 10, 1, "Espoo") }
         assertEquals(2, personResult.data.size)
 
         val thread = personResult.data.first()
@@ -174,20 +176,21 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // then the message has correct readAt
         val person1Threads =
-            db.read { it.getThreads(readTime, accounts.person1.id, 10, 1, "Espoo") }
+            db.read { it.getCitizenThreads(readTime, accounts.person1.id, 10, 1, "Espoo") }
         assertEquals(2, person1Threads.data.size)
-        val readMessages = person1Threads.data.flatMap { it.messages.mapNotNull { m -> m.readAt } }
-        assertEquals(1, readMessages.size)
-        assertTrue(HelsinkiDateTime.now().durationSince(readMessages[0]) < Duration.ofSeconds(5))
+        val person1ReadAtTimes =
+            person1Threads.data.flatMap { it.messages.mapNotNull { m -> m.readAt } }
+        assertEquals(1, person1ReadAtTimes.size)
+        assertTrue(
+            HelsinkiDateTime.now().durationSince(person1ReadAtTimes[0]) < Duration.ofSeconds(5)
+        )
 
         // then person 2 threads are not affected
-        assertEquals(
-            0,
-            db.read { it.getThreads(readTime, accounts.person2.id, 10, 1, "Espoo") }
-                .data
-                .flatMap { it.messages.mapNotNull { m -> m.readAt } }
-                .size
-        )
+        val person2Threads =
+            db.read { it.getCitizenThreads(readTime, accounts.person2.id, 10, 1, "Espoo") }
+        val person2ReadAtTimes =
+            person2Threads.data.flatMap { it.messages.mapNotNull { m -> m.readAt } }
+        assertEquals(0, person2ReadAtTimes.size)
 
         // when employee gets a reply
         replyToThread(
@@ -201,13 +204,16 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         // then employee sees the thread
         val employeeResult =
-            db.read { it.getReceivedThreads(readTime, accounts.employee1.id, 10, 1, "Espoo") }
+            db.read {
+                it.getEmployeeReceivedThreads(readTime, accounts.employee1.id, 10, 1, "Espoo")
+            }
         assertEquals(1, employeeResult.data.size)
         assertEquals("Newest thread", employeeResult.data[0].title)
         assertEquals(2, employeeResult.data[0].messages.size)
 
         // person 1 is recipient in both threads
-        val person1Result = db.read { it.getThreads(readTime, accounts.person1.id, 10, 1, "Espoo") }
+        val person1Result =
+            db.read { it.getCitizenThreads(readTime, accounts.person1.id, 10, 1, "Espoo") }
         assertEquals(2, person1Result.data.size)
 
         val newestThread = person1Result.data[0]
@@ -220,7 +226,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             ),
             newestThread.messages.map { Pair(it.sender, it.content) }
         )
-        assertEquals(employeeResult.data[0], newestThread)
+        assertEquals(employeeResult.data[0].id, newestThread.id)
 
         val oldestThread = person1Result.data[1]
         assertEquals(thread1Id, oldestThread.id)
@@ -228,14 +234,18 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertNull(oldestThread.messages.find { it.content == "Just replying here" }?.readAt)
 
         // person 2 is recipient in the oldest thread only
-        val person2Result = db.read { it.getThreads(readTime, accounts.person2.id, 10, 1, "Espoo") }
+        val person2Result =
+            db.read { it.getCitizenThreads(readTime, accounts.person2.id, 10, 1, "Espoo") }
         assertEquals(1, person2Result.data.size)
-        assertEquals(oldestThread.id, person2Result.data[0].id)
-        assertEquals(0, person2Result.data.flatMap { it.messages }.mapNotNull { it.readAt }.size)
+        val person2Thread = person2Result.data[0]
+        assertEquals(oldestThread.id, person2Thread.id)
+        assertTrue(person2Thread.messages.none { m -> m.readAt != null })
 
         // employee 2 is participating with himself
         val employee2Result =
-            db.read { it.getReceivedThreads(readTime, accounts.employee2.id, 10, 1, "Espoo") }
+            db.read {
+                it.getEmployeeReceivedThreads(readTime, accounts.employee2.id, 10, 1, "Espoo")
+            }
         assertEquals(1, employee2Result.data.size)
         assertEquals(1, employee2Result.data[0].messages.size)
         assertEquals(accounts.employee2, employee2Result.data[0].messages[0].sender)
@@ -247,7 +257,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         createThread("t1", "c1", accounts.employee1, listOf(accounts.person1))
         createThread("t2", "c2", accounts.employee1, listOf(accounts.person1))
 
-        val messages = db.read { it.getThreads(readTime, accounts.person1.id, 10, 1, "Espoo") }
+        val messages =
+            db.read { it.getCitizenThreads(readTime, accounts.person1.id, 10, 1, "Espoo") }
         assertEquals(2, messages.total)
         assertEquals(2, messages.data.size)
         assertEquals(setOf("t1", "t2"), messages.data.map { it.title }.toSet())
@@ -255,8 +266,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         val (page1, page2) =
             db.read {
                 listOf(
-                    it.getThreads(readTime, accounts.person1.id, 1, 1, "Espoo"),
-                    it.getThreads(readTime, accounts.person1.id, 1, 2, "Espoo")
+                    it.getCitizenThreads(readTime, accounts.person1.id, 1, 1, "Espoo"),
+                    it.getCitizenThreads(readTime, accounts.person1.id, 1, 2, "Espoo")
                 )
             }
         assertEquals(2, page1.total)
@@ -296,8 +307,8 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val newestMessage = firstPage.data[0]
         assertEquals("content 2", newestMessage.content)
-        assertEquals("thread 2", newestMessage.threadTitle)
-        assertEquals(setOf(accounts.person1), newestMessage.recipients)
+        assertEquals("thread 2", newestMessage.title)
+        assertEquals(setOf(accounts.person1.id), newestMessage.recipients.map { it.id }.toSet())
 
         val secondPage = db.read { it.getMessagesSentByAccount(accounts.employee1.id, 1, 2) }
         assertEquals(2, secondPage.total)
@@ -306,8 +317,11 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val oldestMessage = secondPage.data[0]
         assertEquals("content 1", oldestMessage.content)
-        assertEquals("thread 1", oldestMessage.threadTitle)
-        assertEquals(setOf(accounts.person1, accounts.person2), oldestMessage.recipients)
+        assertEquals("thread 1", oldestMessage.title)
+        assertEquals(
+            setOf(accounts.person1.id, accounts.person2.id),
+            oldestMessage.recipients.map { it.id }.toSet()
+        )
 
         // then fetching sent messages by recipient ids does not return the messages
         assertEquals(0, db.read { it.getMessagesSentByAccount(accounts.person1.id, 1, 1) }.total)
@@ -615,17 +629,31 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
 
         // then unread count is zero for sender and one for recipients
-        assertEquals(0, unreadMessagesCount(accounts.person1))
-        assertEquals(1, unreadMessagesCount(accounts.employee1))
-        assertEquals(1, unreadMessagesCount(accounts.person2))
+        assertEquals(0, db.read { it.getCitizenUnreadMessagesCount(readTime, accounts.person1.id) })
+        assertEquals(
+            1,
+            db.read {
+                it.getUnreadMessagesCounts(readTime, setOf(accounts.employee1.id))
+                    .first()
+                    .unreadCount
+            }
+        )
+        assertEquals(1, db.read { it.getCitizenUnreadMessagesCount(readTime, accounts.person2.id) })
 
         // when employee reads the message
         db.transaction { it.markThreadRead(RealEvakaClock(), accounts.employee1.id, thread1) }
 
         // then the thread does not count towards unread messages
-        assertEquals(0, unreadMessagesCount(accounts.person1))
-        assertEquals(0, unreadMessagesCount(accounts.employee1))
-        assertEquals(1, unreadMessagesCount(accounts.person2))
+        assertEquals(0, db.read { it.getCitizenUnreadMessagesCount(readTime, accounts.person1.id) })
+        assertEquals(
+            0,
+            db.read {
+                it.getUnreadMessagesCounts(readTime, setOf(accounts.employee1.id))
+                    .first()
+                    .unreadCount
+            }
+        )
+        assertEquals(1, db.read { it.getCitizenUnreadMessagesCount(readTime, accounts.person2.id) })
 
         // when a new thread is created
         val thread2 =
@@ -637,17 +665,31 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             )
 
         // then unread counts are bumped by one for recipients
-        assertEquals(1, unreadMessagesCount(accounts.person1))
-        assertEquals(0, unreadMessagesCount(accounts.employee1))
-        assertEquals(2, unreadMessagesCount(accounts.person2))
+        assertEquals(
+            0,
+            db.read {
+                it.getUnreadMessagesCounts(readTime, setOf(accounts.employee1.id))
+                    .first()
+                    .unreadCount
+            }
+        )
+        assertEquals(1, db.read { it.getCitizenUnreadMessagesCount(readTime, accounts.person1.id) })
+        assertEquals(2, db.read { it.getCitizenUnreadMessagesCount(readTime, accounts.person2.id) })
 
         // when person two reads a thread
         db.transaction { it.markThreadRead(RealEvakaClock(), accounts.person2.id, thread2) }
 
         // then unread count goes down by one
-        assertEquals(1, unreadMessagesCount(accounts.person1))
-        assertEquals(0, unreadMessagesCount(accounts.employee1))
-        assertEquals(1, unreadMessagesCount(accounts.person2))
+        assertEquals(
+            0,
+            db.read {
+                it.getUnreadMessagesCounts(readTime, setOf(accounts.employee1.id))
+                    .first()
+                    .unreadCount
+            }
+        )
+        assertEquals(1, db.read { it.getCitizenUnreadMessagesCount(readTime, accounts.person1.id) })
+        assertEquals(1, db.read { it.getCitizenUnreadMessagesCount(readTime, accounts.person2.id) })
     }
 
     @Test
@@ -666,7 +708,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             1,
             db.read {
                 val archiveFolderId = it.getArchiveFolderId(accounts.person1.id)
-                it.getReceivedThreads(
+                it.getEmployeeReceivedThreads(
                         readTime,
                         accounts.person1.id,
                         50,
@@ -689,7 +731,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             1,
             db.read {
                 val archiveFolderId = it.getArchiveFolderId(accounts.person1.id)
-                it.getReceivedThreads(
+                it.getEmployeeReceivedThreads(
                         readTime,
                         accounts.person1.id,
                         50,
@@ -706,14 +748,15 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         assertEquals(
             1,
             db.read {
-                it.getReceivedThreads(readTime, accounts.person1.id, 50, 1, "Espoo", null).total
+                it.getEmployeeReceivedThreads(readTime, accounts.person1.id, 50, 1, "Espoo", null)
+                    .total
             }
         )
         assertEquals(
             0,
             db.read {
                 val archiveFolderId = it.getArchiveFolderId(accounts.person1.id)
-                it.getReceivedThreads(
+                it.getEmployeeReceivedThreads(
                         readTime,
                         accounts.person1.id,
                         50,

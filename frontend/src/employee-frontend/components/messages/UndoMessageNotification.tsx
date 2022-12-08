@@ -13,7 +13,7 @@ import { faRedo } from 'lib-icons'
 import { useTranslation } from '../../state/i18n'
 
 import { CancelableMessage, MessageContext } from './MessageContext'
-import { undoMessage, undoMessageReply } from './api'
+import { undoBulletin, undoMessage, undoMessageReply } from './api'
 
 export const UndoMessage = React.memo(function UndoMessageToast({
   message,
@@ -36,13 +36,15 @@ export const UndoMessage = React.memo(function UndoMessageToast({
     const request =
       'contentId' in message
         ? undoMessage(message.accountId, message.contentId)
-        : undoMessageReply(message.accountId, message.messageId)
+        : 'messageId' in message
+        ? undoMessageReply(message.accountId, message.messageId)
+        : undoBulletin(message.accountId, message.bulletinId)
 
     void request.then((result) => {
       if (result.isSuccess) {
         close()
         refreshMessages(message.accountId)
-        if ('contentId' in message) {
+        if (!('messageId' in message)) {
           selectThread(undefined)
         }
       }

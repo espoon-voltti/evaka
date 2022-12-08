@@ -8,7 +8,10 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { MessageReceiver } from 'lib-common/api-types/messaging'
-import { PostMessageBody } from 'lib-common/generated/api-types/messaging'
+import {
+  MessageType,
+  PostMessageBody
+} from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -28,6 +31,7 @@ import {
   getAttachmentUrl,
   getReceivers,
   initDraft,
+  postBulletin,
   postMessage,
   saveDraft,
   saveMessageAttachment
@@ -66,9 +70,13 @@ export default function MessageEditorPage() {
   }, [childId, messageReceivers])
 
   const onSend = useCallback(
-    (accountId: UUID, messageBody: PostMessageBody) => {
+    (accountId: UUID, type: MessageType, messageBody: PostMessageBody) => {
       setSending(true)
-      void postMessage(accountId, messageBody).then((res) => {
+      const request =
+        type === 'MESSAGE'
+          ? postMessage(accountId, messageBody)
+          : postBulletin(accountId, messageBody)
+      void request.then((res) => {
         if (res.isSuccess) {
           navigate(-1)
         } else {

@@ -29,6 +29,7 @@ import { UnitContext } from '../common/unit'
 import {
   getMessagingAccounts,
   getReceivedMessages,
+  markBulletinRead,
   markThreadRead,
   replyToThread,
   ReplyToThreadParams
@@ -172,7 +173,9 @@ export const MessageContextProvider = React.memo(
         if (!thread) return
         if (!selectedAccount) throw new Error('Should never happen')
         const { id: accountId } = selectedAccount.account
-        void markThreadRead(accountId, thread.id)
+        void (thread.type === 'MESSAGE'
+          ? markThreadRead(accountId, thread.id)
+          : markBulletinRead(accountId, thread.id))
       },
       [selectedAccount]
     )

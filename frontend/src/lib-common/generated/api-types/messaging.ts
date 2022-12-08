@@ -188,7 +188,6 @@ export interface PostMessageBody {
   recipientNames: string[]
   recipients: MessageRecipient[]
   title: string
-  type: MessageType
   urgent: boolean
 }
 
@@ -216,11 +215,11 @@ export interface ReplyToMessageBody {
 export interface SentMessage {
   attachments: MessageAttachment[]
   content: string
-  contentId: UUID
+  id: UUID
   recipientNames: string[]
   recipients: MessageAccount[]
   sentAt: HelsinkiDateTime
-  threadTitle: string
+  title: string
   type: MessageType
   urgent: boolean
 }

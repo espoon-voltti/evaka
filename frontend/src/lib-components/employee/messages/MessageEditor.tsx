@@ -14,7 +14,8 @@ import {
   AuthorizedMessageAccount,
   PostMessageBody,
   UpdatableDraftContent,
-  MessageReceiversResponse
+  MessageReceiversResponse,
+  MessageType
 } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { useDebounce } from 'lib-common/utils/useDebounce'
@@ -140,7 +141,7 @@ interface Props {
   accounts: AuthorizedMessageAccount[]
   onClose: (didChanges: boolean) => void
   onDiscard: (accountId: UUID, draftId: UUID) => void
-  onSend: (accountId: UUID, msg: PostMessageBody) => void
+  onSend: (accountId: UUID, type: MessageType, msg: PostMessageBody) => void
   saveDraftRaw: (params: SaveDraftParams) => Promise<Result<void>>
   saveMessageAttachment: (
     draftId: UUID,
@@ -262,7 +263,7 @@ export default React.memo(function MessageEditor({
       ...rest
     } = message
     const attachmentIds = attachments.map(({ id }) => id)
-    onSend(senderId, {
+    onSend(senderId, message.type, {
       ...rest,
       attachmentIds,
       draftId,
@@ -362,6 +363,7 @@ export default React.memo(function MessageEditor({
             label={i18n.type.bulletin}
             checked={message.type === 'BULLETIN'}
             onChange={() => updateMessage({ type: 'BULLETIN' })}
+            data-qa="radio-bulletin"
           />
         </FixedSpaceRow>
       ) : (
@@ -370,11 +372,13 @@ export default React.memo(function MessageEditor({
             label={i18n.type.message}
             checked={message.type === 'MESSAGE'}
             onChange={() => updateMessage({ type: 'MESSAGE' })}
+            data-qa="radio-message"
           />
           <Radio
             label={i18n.type.bulletin}
             checked={message.type === 'BULLETIN'}
             onChange={() => updateMessage({ type: 'BULLETIN' })}
+            data-qa="radio-bulletin"
           />
         </FixedSpaceRow>
       )

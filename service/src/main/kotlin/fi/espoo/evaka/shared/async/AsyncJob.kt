@@ -13,6 +13,7 @@ import fi.espoo.evaka.koski.KoskiStudyRightKey
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
+import fi.espoo.evaka.shared.BulletinId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.FeeDecisionId
@@ -118,6 +119,13 @@ sealed interface AsyncJob : AsyncJobPayload {
         val personEmail: String,
         val language: Language,
         val urgent: Boolean = false
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class SendBulletinNotificationEmail(
+        val bulletinId: BulletinId,
+        val recipientId: MessageAccountId
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }

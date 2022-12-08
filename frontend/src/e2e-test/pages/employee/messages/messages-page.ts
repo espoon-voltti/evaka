@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { MessageType } from 'lib-common/generated/api-types/messaging'
+
 import { waitUntilEqual, waitUntilTrue } from '../../../utils'
 import {
   FileInput,
@@ -9,7 +11,8 @@ import {
   Page,
   Checkbox,
   Combobox,
-  TreeDropdown
+  TreeDropdown,
+  Radio
 } from '../../../utils/page'
 
 export default class MessagesPage {
@@ -47,6 +50,8 @@ export default class MessagesPage {
     this.page.find('[data-qa="message-reply-content"]')
   )
   #urgent = new Checkbox(this.page.findByDataQa('checkbox-urgent'))
+  #typeMessage = new Radio(this.page.findByDataQa('radio-message'))
+  #typeBulletin = new Radio(this.page.findByDataQa('radio-bulletin'))
   #emptyInboxText = this.page.findByDataQa('empty-inbox-text')
 
   async getReceivedMessageCount() {
@@ -110,6 +115,7 @@ export default class MessagesPage {
     attachmentCount?: number
     sender?: string
     receiver?: string
+    type?: MessageType
   }) {
     const attachmentCount = message.attachmentCount ?? 0
 
@@ -133,6 +139,11 @@ export default class MessagesPage {
     }
     if (message.urgent ?? false) {
       await this.#urgent.check()
+    }
+    if (message.type === 'BULLETIN') {
+      await this.#typeBulletin.check()
+    } else {
+      await this.#typeMessage.check()
     }
 
     if (attachmentCount > 0) {

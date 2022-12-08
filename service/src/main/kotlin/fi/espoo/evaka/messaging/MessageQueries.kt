@@ -7,6 +7,8 @@ package fi.espoo.evaka.messaging
 import fi.espoo.evaka.attachment.MessageAttachment
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.BulletinId
+import fi.espoo.evaka.shared.BulletinRecipientId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -27,12 +29,42 @@ import fi.espoo.evaka.shared.domain.formatName
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
+import java.util.UUID
 import mu.KotlinLogging
 import org.jdbi.v3.json.Json
 
 val logger = KotlinLogging.logger {}
 
 const val MESSAGE_UNDO_WINDOW_IN_SECONDS = 15L
+
+fun Database.Read.getCitizenUnreadMessagesCount(
+    now: HelsinkiDateTime,
+    accountId: MessageAccountId
+) =
+    createQuery(
+            """
+WITH counts AS (
+    SELECT COUNT(*)
+    FROM message_recipients mr
+    JOIN message m ON mr.message_id = m.id
+    JOIN message_thread mt ON m.thread_id = mt.id
+    JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = mr.recipient_id
+    WHERE mr.recipient_id = :accountId AND mr.read_at IS NULL AND m.sent_at < :undoThreshold AND mtp.folder_id IS NULL AND mt.message_type = 'MESSAGE'
+
+    UNION ALL
+
+    SELECT COUNT(*)
+    FROM bulletin_recipients br
+    JOIN bulletin b ON br.bulletin_id = b.id
+    WHERE br.recipient_id = :accountId AND br.read_at IS NULL AND b.sent_at < :undoThreshold AND br.folder_id IS NULL
+)
+SELECT SUM(count) FROM counts
+"""
+        )
+        .bind("accountId", accountId)
+        .bind("undoThreshold", now.minusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS))
+        .mapTo<Int>()
+        .first()
 
 fun Database.Read.getUnreadMessagesCounts(
     now: HelsinkiDateTime,
@@ -41,18 +73,36 @@ fun Database.Read.getUnreadMessagesCounts(
     // language=SQL
     val sql =
         """
-        SELECT 
-            acc.id as account_id,
-            SUM(CASE WHEN mtp.folder_id IS NULL AND mr.id IS NOT NULL AND mr.read_at IS NULL AND NOT mt.is_copy THEN 1 ELSE 0 END) as unread_count,
-            SUM(CASE WHEN mtp.folder_id IS NULL AND mr.id IS NOT NULL AND mr.read_at IS NULL AND mt.is_copy THEN 1 ELSE 0 END) as unread_copy_count
-        FROM message_account acc
-        LEFT JOIN message_recipients mr ON mr.recipient_id = acc.id
-        LEFT JOIN message m ON mr.message_id = m.id
-        LEFT JOIN message_thread mt ON m.thread_id = mt.id
-        LEFT JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id
-        WHERE acc.id = ANY(:accountIds) AND (m.id IS NULL OR m.sent_at < :undoThreshold)
-        GROUP BY acc.id
-    """
+WITH unread_messages AS (
+    SELECT
+        acc.id as account_id,
+        SUM(CASE WHEN mtp.folder_id IS NULL AND mr.id IS NOT NULL AND mr.read_at IS NULL AND m.sent_at < :undoThreshold THEN 1 ELSE 0 END) AS unread_count,
+        0 AS unread_copy_count
+    FROM message_account acc
+    LEFT JOIN message_recipients mr ON mr.recipient_id = acc.id
+    LEFT JOIN message m ON mr.message_id = m.id
+    LEFT JOIN message_thread mt ON m.thread_id = mt.id
+    LEFT JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id
+    WHERE acc.id = ANY(:accountIds) AND mt.message_type = 'MESSAGE'
+    GROUP BY acc.id
+), unread_copies AS (
+    SELECT
+        acc.id AS account_id,
+        0 AS unread_count,
+        SUM(CASE WHEN br.folder_id IS NULL AND br.id IS NOT NULL AND br.read_at IS NULL AND b.sent_at < :undoThreshold THEN 1 ELSE 0 END) AS unread_copy_count
+    FROM message_account acc
+    LEFT JOIN bulletin_recipients br ON acc.id = br.recipient_id
+    LEFT JOIN bulletin b ON br.bulletin_id = b.id
+    WHERE acc.id = ANY(:accountIds)
+    GROUP BY acc.id
+)
+SELECT
+    account_id,
+    SUM(COALESCE(unread_count, 0)) AS unread_count,
+    SUM(COALESCE(unread_copy_count, 0)) AS unread_copy_count
+FROM (SELECT * FROM unread_messages UNION ALL SELECT * FROM unread_copies) counts
+GROUP BY account_id
+"""
             .trimIndent()
 
     return this.createQuery(sql)
@@ -69,18 +119,36 @@ fun Database.Read.getUnreadMessagesCountsByDaycare(
     // language=SQL
     val sql =
         """
-        SELECT
-            acc.id as account_id,
-            acc.daycare_group_id as group_id,
-            SUM(CASE WHEN mr.id IS NOT NULL AND mr.read_at IS NULL AND NOT mt.is_copy THEN 1 ELSE 0 END) as unread_count,
-            SUM(CASE WHEN mr.id IS NOT NULL AND mr.read_at IS NULL AND mt.is_copy THEN 1 ELSE 0 END) as unread_copy_count
-        FROM message_account acc
-        LEFT JOIN message_recipients mr ON mr.recipient_id = acc.id
-        LEFT JOIN message m ON mr.message_id = m.id
-        LEFT JOIN message_thread mt ON m.thread_id = mt.id
-        JOIN daycare_group dg ON acc.daycare_group_id = dg.id AND dg.daycare_id = :daycareId
-        WHERE acc.active = true AND m.sent_at < :undoThreshold
-        GROUP BY acc.id, acc.daycare_group_id
+WITH unread_messages AS (
+    SELECT
+        acc.id as account_id,
+        acc.daycare_group_id,
+        SUM(CASE WHEN mtp.folder_id IS NULL AND mr.id IS NOT NULL AND mr.read_at IS NULL THEN 1 ELSE 0 END) AS unread_count,
+        0 AS unread_copy_count
+    FROM message_account acc
+    JOIN daycare_group g ON acc.daycare_group_id = g.id
+    LEFT JOIN message_recipients mr ON mr.recipient_id = acc.id
+    LEFT JOIN message m ON mr.message_id = m.id
+    LEFT JOIN message_thread mt ON m.thread_id = mt.id
+    LEFT JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id
+    WHERE g.daycare_id = :daycareId AND (m.id IS NULL OR m.sent_at < :undoThreshold) AND mr.read_at IS NULL AND mt.message_type = 'MESSAGE'
+    GROUP BY acc.id, acc.daycare_group_id
+), unread_copies AS (
+    SELECT acc.id AS account_id, acc.daycare_group_id, 0 AS unread_count, COUNT(b.id) AS unread_copy_count
+    FROM message_account acc
+    JOIN daycare_group g ON acc.daycare_group_id = g.id
+    LEFT JOIN bulletin_recipients br ON acc.id = br.recipient_id
+    LEFT JOIN bulletin b ON br.bulletin_id = b.id
+    WHERE g.daycare_id = :daycareId AND br.read_at IS NULL AND b.sent_at < :undoThreshold AND br.folder_id IS NULL
+    GROUP BY acc.id, acc.daycare_group_id
+)
+SELECT
+    account_id,
+    daycare_group_id AS group_id,
+    SUM(COALESCE(unread_count, 0)) AS unread_count,
+    SUM(COALESCE(unread_copy_count, 0)) AS unread_copy_count
+FROM (SELECT * FROM unread_messages UNION ALL SELECT * FROM unread_copies) counts
+GROUP BY account_id, daycare_group_id
     """
             .trimIndent()
 
@@ -116,6 +184,27 @@ WHERE rec.message_id = msg.id
         .execute()
 }
 
+fun Database.Transaction.markBulletinRead(
+    clock: EvakaClock,
+    accountId: MessageAccountId,
+    bulletinId: BulletinId
+): Int {
+    // language=SQL
+    val sql =
+        """
+UPDATE bulletin_recipients rec
+SET read_at = :now
+WHERE rec.bulletin_id = :bulletinId AND rec.recipient_id = :accountId AND read_at IS NULL
+    """
+            .trimIndent()
+
+    return this.createUpdate(sql)
+        .bind("now", clock.now())
+        .bind("accountId", accountId)
+        .bind("bulletinId", bulletinId)
+        .execute()
+}
+
 fun Database.Transaction.archiveThread(
     accountId: MessageAccountId,
     threadId: MessageThreadId
@@ -137,6 +226,26 @@ fun Database.Transaction.archiveThread(
         )
         .bind("accountId", accountId)
         .bind("threadId", threadId)
+        .bind("archiveFolderId", archiveFolderId)
+        .execute()
+}
+
+fun Database.Transaction.archiveBulletin(accountId: MessageAccountId, bulletinId: BulletinId): Int {
+    val archiveFolderId =
+        getArchiveFolderId(accountId)
+            ?: this.createUpdate(
+                    "INSERT INTO message_thread_folder (owner_id, name) VALUES (:accountId, 'ARCHIVE') ON CONFLICT DO NOTHING RETURNING id"
+                )
+                .bind("accountId", accountId)
+                .executeAndReturnGeneratedKeys()
+                .mapTo<MessageThreadFolderId>()
+                .single()
+
+    return this.createUpdate(
+            "UPDATE bulletin_recipients SET folder_id = :archiveFolderId WHERE bulletin_id = :bulletinId AND recipient_id = :accountId"
+        )
+        .bind("accountId", accountId)
+        .bind("bulletinId", bulletinId)
         .bind("archiveFolderId", archiveFolderId)
         .execute()
 }
@@ -277,14 +386,12 @@ fun Database.Transaction.upsertReceiverThreadParticipants(
 fun Database.Transaction.insertThreadsWithMessages(
     count: Int,
     now: HelsinkiDateTime,
-    type: MessageType,
     title: String,
     urgent: Boolean,
     isCopy: Boolean,
     contentId: MessageContentId,
     senderId: MessageAccountId,
-    recipientNames: List<String>,
-    municipalAccountName: String
+    recipientNames: List<String>
 ): List<Pair<MessageThreadId, MessageId>> {
     val batch =
         prepareBatch(
@@ -297,7 +404,7 @@ SELECT
     :contentId,
     new_thread.id,
     :senderId,
-    CASE WHEN name_view.type = 'MUNICIPAL' THEN :municipalAccountName ELSE name_view.name END,
+    name_view.name,
     NULL,
     :now,
     :recipientNames
@@ -309,14 +416,13 @@ RETURNING id, thread_id
     repeat(count) {
         batch
             .bind("now", now)
-            .bind("messageType", type)
+            .bind("messageType", MessageType.MESSAGE)
             .bind("title", title)
             .bind("urgent", urgent)
             .bind("isCopy", isCopy)
             .bind("contentId", contentId)
             .bind("senderId", senderId)
             .bind("recipientNames", recipientNames)
-            .bind("municipalAccountName", municipalAccountName)
             .add()
     }
     return batch
@@ -363,6 +469,26 @@ WHERE
         .execute()
 }
 
+fun Database.Transaction.reAssociateBulletinAttachments(
+    attachmentIds: Set<AttachmentId>,
+    bulletinId: BulletinId
+): Int {
+    return createUpdate(
+            """
+UPDATE attachment
+SET
+    bulletin_id = :bulletinId,
+    message_draft_id = NULL
+WHERE
+    id = ANY(:attachmentIds)
+        """
+                .trimIndent()
+        )
+        .bind("attachmentIds", attachmentIds)
+        .bind("bulletinId", bulletinId)
+        .execute()
+}
+
 private data class ReceivedThread(
     val id: MessageThreadId,
     val title: String,
@@ -372,24 +498,114 @@ private data class ReceivedThread(
     @Json val children: List<MessageChild>
 )
 
-/** Return all threads that are visible to the account through sent and received messages */
-fun Database.Read.getThreads(
+/**
+ * Return all message threads and bulletins that are visible to the account through sent and
+ * received messages
+ */
+fun Database.Read.getCitizenThreads(
     now: HelsinkiDateTime,
     accountId: MessageAccountId,
     pageSize: Int,
     page: Int,
     municipalAccountName: String
-): Paged<MessageThread> {
+): Paged<CitizenThread> {
+    val threadAndBulletinIds =
+        createQuery(
+                """
+WITH threads_and_bulletins AS (
+    SELECT t.id, tp.last_message_timestamp, TRUE AS is_message_thread
+    FROM message_thread_participant tp
+    JOIN message_thread t ON t.id = tp.thread_id
+    WHERE tp.participant_id = :accountId AND tp.folder_id IS NULL
+    AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = :accountId OR m.sent_at < :undoThreshold))
+    AND t.message_type = 'MESSAGE'
+
+    UNION ALL
+
+    SELECT b.id, b.sent_at AS last_message_timestamp, FALSE AS is_message_thread
+    FROM bulletin b
+    JOIN bulletin_recipients br ON b.id = br.bulletin_id
+    WHERE br.recipient_id = :accountId AND br.folder_id IS NULL AND b.sent_at < :undoThreshold
+)
+SELECT id, is_message_thread, COUNT(*) OVER () AS count FROM threads_and_bulletins
+ORDER BY last_message_timestamp DESC
+LIMIT :pageSize OFFSET :offset
+"""
+            )
+            .bind("accountId", accountId)
+            .bind("pageSize", pageSize)
+            .bind("offset", (page - 1) * pageSize)
+            .bind("undoThreshold", now.minusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS))
+            .map { rv ->
+                Triple(
+                    rv.mapColumn<UUID>("id"),
+                    rv.mapColumn<Boolean>("is_message_thread"),
+                    rv.mapColumn<Int>("count")
+                )
+            }
+            .toList()
+
+    val bulletins =
+        createQuery(
+                """
+SELECT
+    b.id,
+    title,
+    urgent,
+    content,
+    sent_at,
+    read_at,
+    (SELECT jsonb_build_object(
+        'id', mav.id,
+        'name', CASE WHEN mav.type = 'MUNICIPAL' THEN :municipalAccountName ELSE mav.name END,
+        'type', mav.type
+    )
+    FROM message_account_view mav
+    WHERE mav.id = b.sender_id) AS sender,
+    (SELECT jsonb_build_object(
+        'id', mav.id,
+        'name', CASE WHEN mav.type = 'MUNICIPAL' THEN :municipalAccountName ELSE mav.name END,
+        'type', mav.type
+    )
+    FROM message_account_view mav
+    WHERE mav.id = br.recipient_id) AS recipient,
+    (SELECT jsonb_agg(jsonb_build_object(
+        'childId', p.id,
+        'firstName', p.first_name,
+        'lastName', p.last_name,
+        'preferredName', p.preferred_name
+    ))
+    FROM bulletin_children bc
+    JOIN person p ON p.id = bc.child_id
+    WHERE bc.bulletin_recipients_id = br.id) AS children,
+    coalesce((
+        SELECT jsonb_agg(jsonb_build_object('id', a.id, 'name', a.name, 'contentType', a.content_type))
+        FROM attachment a
+        WHERE a.bulletin_id = b.id
+    ), '[]'::jsonb) AS attachments
+FROM bulletin b
+JOIN bulletin_recipients br ON b.id = br.bulletin_id
+WHERE br.recipient_id = :accountId AND b.id = ANY(:bulletinIds)
+"""
+            )
+            .bind("accountId", accountId)
+            .bind(
+                "bulletinIds",
+                threadAndBulletinIds
+                    .filter { (_, isMessageThread) -> !isMessageThread }
+                    .map { (id, _) -> id }
+            )
+            .bind("municipalAccountName", municipalAccountName)
+            .mapTo<CitizenThread.Bulletin>()
+            .associateBy { it.id }
+
     val threads =
         createQuery(
                 """
 SELECT
-    COUNT(*) OVER () AS count,
     t.id,
     t.title,
-    t.message_type AS type,
     t.urgent,
-    t.is_copy,
     coalesce((
         SELECT jsonb_agg(jsonb_build_object(
             'childId', mtc.child_id,
@@ -400,11 +616,13 @@ SELECT
         FROM message_thread_children mtc
         JOIN person p ON p.id = mtc.child_id
         WHERE mtc.thread_id = t.id
-    ), '[]'::jsonb) AS children
+    ), '[]'::jsonb) AS children,
+    '[]'::jsonb AS messages
 FROM message_thread_participant tp
 JOIN message_thread t on t.id = tp.thread_id
 WHERE tp.participant_id = :accountId AND tp.folder_id IS NULL
 AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = :accountId OR m.sent_at < :undoThreshold))
+AND t.message_type = 'MESSAGE'
 ORDER BY tp.last_message_timestamp DESC
 LIMIT :pageSize OFFSET :offset
         """
@@ -413,15 +631,27 @@ LIMIT :pageSize OFFSET :offset
             .bind("pageSize", pageSize)
             .bind("offset", (page - 1) * pageSize)
             .bind("undoThreshold", now.minusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS))
-            .mapToPaged<ReceivedThread>(pageSize)
+            .mapTo<CitizenThread.MessageThread>()
+            .associateBy { it.id }
 
-    val messagesByThread =
-        getThreadMessages(now, accountId, threads.data.map { it.id }, municipalAccountName)
-    return combineThreadsAndMessages(accountId, threads, messagesByThread)
+    val messagesByThread = getThreadMessages(now, accountId, threads.keys, municipalAccountName)
+    return Paged(
+        threadAndBulletinIds.mapNotNull { (id, isMessageThread) ->
+            if (isMessageThread)
+                threads[MessageThreadId(id)]?.let { thread ->
+                    val messages = messagesByThread[thread.id]
+                    messages?.let { thread.copy(messages = messages) }
+                }
+            else bulletins[BulletinId(id)]
+        },
+        total = if (threadAndBulletinIds.isEmpty()) 0 else threadAndBulletinIds.first().third,
+        pages =
+            if (threadAndBulletinIds.isEmpty()) 1 else threadAndBulletinIds.first().third / pageSize
+    )
 }
 
 /** Return all threads in which the account has received messages */
-fun Database.Read.getReceivedThreads(
+fun Database.Read.getEmployeeReceivedThreads(
     now: HelsinkiDateTime,
     accountId: MessageAccountId,
     pageSize: Int,
@@ -463,10 +693,11 @@ WHERE
             "tp.folder_id = :folderId"
         }
     } AND
-    EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND m.sent_at < :undoThreshold)
+    EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND m.sent_at < :undoThreshold) AND
+    t.message_type = 'MESSAGE'
 ORDER BY tp.last_received_timestamp DESC
 LIMIT :pageSize OFFSET :offset
-        """
+"""
             )
             .bind("accountId", accountId)
             .bind("pageSize", pageSize)
@@ -483,7 +714,7 @@ LIMIT :pageSize OFFSET :offset
 private fun Database.Read.getThreadMessages(
     now: HelsinkiDateTime,
     accountId: MessageAccountId,
-    threadIds: List<MessageThreadId>,
+    threadIds: Collection<MessageThreadId>,
     municipalAccountName: String
 ): Map<MessageThreadId, List<Message>> {
     if (threadIds.isEmpty()) return mapOf()
@@ -573,7 +804,6 @@ data class MessageCopy(
     val threadId: MessageThreadId,
     val messageId: MessageId,
     val title: String,
-    val type: MessageType,
     val urgent: Boolean,
     val sentAt: HelsinkiDateTime,
     val content: String,
@@ -586,7 +816,9 @@ data class MessageCopy(
     val recipientAccountType: AccountType,
     val recipientNames: List<String>,
     @Json val attachments: List<MessageAttachment>
-)
+) {
+    val type = MessageType.BULLETIN
+}
 
 fun Database.Read.getMessageCopiesByAccount(
     now: HelsinkiDateTime,
@@ -599,39 +831,35 @@ fun Database.Read.getMessageCopiesByAccount(
         """
 SELECT
     COUNT(*) OVER () AS count,
-    t.id AS thread_id,
-    m.id AS message_id,
-    t.title,
-    t.message_type AS type,
-    t.urgent,
-    m.sent_at,
-    m.sender_name,
-    m.sender_id,
+    b.id AS thread_id,
+    b.id AS message_id,
+    b.title,
+    b.urgent,
+    b.sent_at,
+    b.sender_name,
+    b.sender_id,
     sender_acc.type AS sender_account_type,
-    m.content_id,
-    c.content,
+    b.content,
     rec.read_at,
     rec.recipient_id,
     acc.name recipient_name,
     recipient_acc.type AS recipient_account_type,
-    m.recipient_names,
+    b.recipient_names,
     (
         SELECT coalesce(jsonb_agg(jsonb_build_object(
            'id', att.id,
            'name', att.name,
            'contentType', att.content_type
         )), '[]'::jsonb)
-        FROM attachment att WHERE att.message_content_id = m.content_id
+        FROM attachment att WHERE att.bulletin_id = b.id
     ) AS attachments
-FROM message_recipients rec
-JOIN message m ON rec.message_id = m.id
-JOIN message_content c ON m.content_id = c.id
+FROM bulletin_recipients rec
+JOIN bulletin b ON rec.bulletin_id = b.id
 JOIN message_account_view acc ON rec.recipient_id = acc.id
-JOIN message_account sender_acc ON sender_acc.id = m.sender_id
+JOIN message_account sender_acc ON sender_acc.id = b.sender_id
 JOIN message_account recipient_acc ON recipient_acc.id = rec.recipient_id
-JOIN message_thread t ON m.thread_id = t.id
-WHERE rec.recipient_id = :accountId AND t.is_copy AND m.sent_at < :undoThreshold
-ORDER BY m.sent_at DESC
+WHERE rec.recipient_id = :accountId AND b.sent_at < :undoThreshold
+ORDER BY b.sent_at DESC
 LIMIT :pageSize OFFSET :offset
 """
 
@@ -806,61 +1034,87 @@ fun Database.Read.getMessagesSentByAccount(
     // language=SQL
     val sql =
         """
-WITH pageable_messages AS (
-    SELECT
-        m.content_id,
-        m.sent_at,
-        m.recipient_names,
-        t.title,
-        t.message_type,
-        t.urgent,
-        COUNT(*) OVER () AS count
+WITH all_messages_and_bulletins AS (
+    SELECT c.id, 'MESSAGE' AS type, MIN(m.sent_at) AS sent_at
     FROM message m
+    JOIN message_content c ON m.content_id = c.id
     JOIN message_thread t ON m.thread_id = t.id
+    WHERE m.sender_id = :accountId AND t.message_type = 'MESSAGE'
+    GROUP BY c.id
+    UNION ALL
+    SELECT id, 'BULLETIN' AS type, sent_at
+    FROM bulletin
     WHERE sender_id = :accountId
-    GROUP BY content_id, sent_at, recipient_names, title, message_type, urgent
-    ORDER BY sent_at DESC
-    LIMIT :pageSize OFFSET :offset
-),
-recipients AS (
+), messages_and_bulletins AS (
+    SELECT *, COUNT(*) OVER () AS count FROM all_messages_and_bulletins ORDER BY sent_at DESC LIMIT :pageSize OFFSET :offset
+), messages AS (
     SELECT
-        m.content_id,
-        rec.recipient_id,
-        name_view.name,
-        acc.type AS account_type
-    FROM message_recipients rec
-    JOIN message m ON rec.message_id = m.id
-    JOIN message_account_view name_view ON rec.recipient_id = name_view.id
-    JOIN message_account acc ON acc.id = rec.recipient_id
+        count,
+        c.id,
+        c.content,
+        m.sent_at,
+        t.title,
+        t.urgent,
+        mb.type,
+        m.recipient_names,
+        (SELECT
+            jsonb_agg(jsonb_build_object(
+               'id', rec.id,
+               'name', rec.name,
+               'type', rec.type
+            ))
+        FROM message_recipients r
+        JOIN message ON r.message_id = message.id
+        JOIN message_account_view rec ON r.recipient_id = rec.id
+        WHERE message.content_id = c.id) AS recipients,
+        (SELECT
+            coalesce(jsonb_agg(jsonb_build_object(
+               'id', att.id,
+               'name', att.name,
+               'contentType', att.content_type
+            )), '[]'::jsonb)
+        FROM attachment att
+        WHERE att.message_content_id = c.id) AS attachments
+    FROM messages_and_bulletins mb
+    JOIN message_content c ON mb.id = c.id
+    JOIN LATERAL (SELECT * FROM message m WHERE m.content_id = c.id LIMIT 1) m ON true
+    JOIN LATERAL (SELECT * FROM message_thread t WHERE t.id = m.thread_id LIMIT 1) t ON true
+    WHERE mb.type = 'MESSAGE'
+), bulletins AS (
+    SELECT
+        count,
+        b.id,
+        b.content,
+        b.sent_at,
+        b.title,
+        b.urgent,
+        mb.type,
+        b.recipient_names,
+        (SELECT
+            jsonb_agg(jsonb_build_object(
+               'id', rec.id,
+               'name', rec.name,
+               'type', rec.type
+            ))
+        FROM bulletin_recipients r
+        JOIN message_account_view rec ON r.recipient_id = rec.id
+        WHERE r.bulletin_id = b.id) AS recipients,
+        (SELECT
+            coalesce(jsonb_agg(jsonb_build_object(
+               'id', att.id,
+               'name', att.name,
+               'contentType', att.content_type
+            )), '[]'::jsonb)
+        FROM attachment att
+        WHERE att.bulletin_id = b.id) AS attachments
+    FROM messages_and_bulletins mb
+    JOIN bulletin b ON mb.id = b.id
+    WHERE mb.type = 'BULLETIN'
 )
-
-SELECT
-    msg.count,
-    msg.content_id,
-    msg.sent_at,
-    msg.recipient_names,
-    msg.title AS thread_title,
-    msg.message_type AS type,
-    msg.urgent,
-    mc.content,
-    (SELECT jsonb_agg(jsonb_build_object(
-           'id', rec.recipient_id,
-           'name', rec.name,
-           'type', rec.account_type
-       ))) AS recipients,
-    (SELECT coalesce(jsonb_agg(jsonb_build_object(
-           'id', att.id,
-           'name', att.name,
-           'contentType', att.content_type
-        )), '[]'::jsonb)
-        FROM attachment att WHERE att.message_content_id = msg.content_id
-        ) AS attachments
-FROM pageable_messages msg
-JOIN recipients rec ON msg.content_id = rec.content_id
-JOIN message_content mc ON msg.content_id = mc.id
-GROUP BY msg.count, msg.content_id, msg.sent_at, msg.recipient_names, mc.content, msg.message_type, msg.urgent, msg.title
-ORDER BY msg.sent_at DESC
-    """
+SELECT *
+FROM (SELECT * FROM messages UNION ALL SELECT * FROM bulletins) a
+ORDER BY sent_at DESC
+"""
             .trimIndent()
 
     return this.createQuery(sql)
@@ -1154,7 +1408,7 @@ WHERE NOT EXISTS (
         .toList()
 }
 
-fun Database.Transaction.markNotificationAsSent(
+fun Database.Transaction.markMessageNotificationAsSent(
     id: MessageRecipientId,
     timestamp: HelsinkiDateTime
 ) {
@@ -1166,6 +1420,18 @@ fun Database.Transaction.markNotificationAsSent(
     """
             .trimIndent()
     this.createUpdate(sql).bind("id", id).bind("timestamp", timestamp).execute()
+}
+
+fun Database.Transaction.markBulletinNotificationAsSent(
+    id: BulletinRecipientId,
+    sentAt: HelsinkiDateTime
+) {
+    this.createUpdate(
+            "UPDATE bulletin_recipients SET notification_sent_at = :sentAt WHERE id = :id"
+        )
+        .bind("id", id)
+        .bind("sentAt", sentAt)
+        .execute()
 }
 
 fun Database.Read.getStaffCopyRecipients(
@@ -1343,6 +1609,69 @@ WHERE thread_id = :threadId AND participant_id = :senderId
         .execute()
 }
 
+data class BulletinToUndo(
+    val id: BulletinId,
+    val sentAt: HelsinkiDateTime,
+    val senderId: MessageAccountId
+)
+
+fun Database.Transaction.undoBulletin(
+    now: HelsinkiDateTime,
+    accountId: MessageAccountId,
+    bulletinId: BulletinId
+): MessageDraftId {
+    val bulletinToUndo =
+        this.createQuery(
+                "SELECT id, sent_at, sender_id FROM bulletin WHERE sender_id = :accountId AND id = :bulletinId"
+            )
+            .bind("accountId", accountId)
+            .bind("bulletinId", bulletinId)
+            .mapTo<BulletinToUndo>()
+            .firstOrNull()
+            ?: throw BadRequest("No bulletin found with id $bulletinId")
+
+    if (bulletinToUndo.sentAt.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS).isBefore(now)) {
+        throw BadRequest(
+            "Bulletins older than $MESSAGE_UNDO_WINDOW_IN_SECONDS seconds cannot be undone"
+        )
+    }
+
+    val draftContent =
+        this.createQuery(
+                """
+SELECT title, 'BULLETIN' AS type, urgent, content, '{}'::text[] AS recipient_ids, '{}'::text[] AS recipient_names
+FROM bulletin
+WHERE id = :bulletinId
+"""
+            )
+            .bind("bulletinId", bulletinId)
+            .mapTo<UpdatableDraftContent>()
+            .findOne()
+            .orElseThrow { error("Multiple draft contents found") }
+
+    this.deleteBulletin(bulletinToUndo)
+
+    val draftId = this.initDraft(accountId)
+    this.updateDraft(accountId, draftId, draftContent)
+    return draftId
+}
+
+private fun Database.Transaction.deleteBulletin(bulletinToUndo: BulletinToUndo) {
+    this.createUpdate(
+            """
+WITH deleted_bulletin AS (
+    DELETE FROM bulletin WHERE id = :bulletinId
+), deleted_recipients AS (
+    DELETE FROM bulletin_recipients WHERE bulletin_id = :bulletinId
+    RETURNING id
+)
+DELETE FROM bulletin_children WHERE bulletin_recipients_id IN (SELECT id FROM deleted_recipients)
+"""
+        )
+        .bind("bulletinId", bulletinToUndo.id)
+        .execute()
+}
+
 fun Database.Read.unreadMessageForRecipientExists(
     messageId: MessageId,
     recipientId: MessageAccountId
@@ -1359,3 +1688,76 @@ SELECT EXISTS (
         .mapTo<Boolean>()
         .first()
 }
+
+fun Database.Transaction.insertBulletin(
+    now: HelsinkiDateTime,
+    title: String,
+    content: String,
+    urgent: Boolean,
+    senderId: MessageAccountId,
+    recipientNames: List<String>,
+    municipalAccountName: String
+): BulletinId =
+    createUpdate(
+            """
+INSERT INTO bulletin (title, content, urgent, sender_id, sender_name, sent_at, recipient_names)
+SELECT
+    :title,
+    :content,
+    :urgent,
+    :senderId,
+    CASE WHEN name_view.type = 'MUNICIPAL' THEN :municipalAccountName ELSE name_view.name END,
+    :now,
+    :recipientNames
+FROM message_account_view name_view
+WHERE name_view.id = :senderId
+RETURNING id
+"""
+        )
+        .bind("title", title)
+        .bind("content", content)
+        .bind("urgent", urgent)
+        .bind("senderId", senderId)
+        .bind("municipalAccountName", municipalAccountName)
+        .bind("now", now)
+        .bind("recipientNames", recipientNames)
+        .executeAndReturnGeneratedKeys()
+        .mapTo<BulletinId>()
+        .first()
+
+fun Database.Transaction.insertBulletinRecipients(
+    bulletinId: BulletinId,
+    recipients: List<MessageAccountId>
+): Map<MessageAccountId, UUID> =
+    prepareBatch(
+            "INSERT INTO bulletin_recipients (bulletin_id, recipient_id) VALUES (:bulletinId, :recipientId) RETURNING id, recipient_id"
+        )
+        .let { batch ->
+            recipients.forEach { recipient ->
+                batch.bind("bulletinId", bulletinId).bind("recipientId", recipient).add()
+            }
+            batch
+                .executeAndReturn()
+                .map { rv ->
+                    rv.mapColumn<MessageAccountId>("recipient_id") to rv.mapColumn<UUID>("id")
+                }
+                .toMap()
+        }
+
+fun Database.Transaction.insertBulletinChildren(
+    recipientIdsWithChildIds: List<Pair<UUID, Set<ChildId>>>
+) =
+    prepareBatch(
+            "INSERT INTO bulletin_children (bulletin_recipients_id, child_id) VALUES (:bulletinRecipientsId, :childId)"
+        )
+        .let { batch ->
+            recipientIdsWithChildIds.forEach { (bulletinRecipientsId, children) ->
+                children.forEach { childId ->
+                    batch
+                        .bind("bulletinRecipientsId", bulletinRecipientsId)
+                        .bind("childId", childId)
+                        .add()
+                }
+            }
+            batch.execute()
+        }

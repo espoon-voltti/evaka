@@ -208,7 +208,8 @@ describe('Staff copies', () => {
     const message = {
       title: 'Ilmoitus',
       content: 'Ilmoituksen sisältö',
-      receiver: fixtures.daycareFixture.id
+      receiver: fixtures.daycareFixture.id,
+      type: 'BULLETIN' as const
     }
     await new MessagesPage(unitSupervisorPage).sendNewMessage(message)
 

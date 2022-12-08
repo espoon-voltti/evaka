@@ -29,6 +29,8 @@ sealed interface DatabaseTable {
     sealed class AttendanceReservation : DatabaseTable
     sealed class BackupCare : DatabaseTable
     sealed class BackupPickup : DatabaseTable
+    sealed class Bulletin : DatabaseTable
+    sealed class BulletinRecipient : DatabaseTable
     sealed class Daycare : DatabaseTable
     sealed class CalendarEvent : DatabaseTable
     sealed class ChildConsent : DatabaseTable
@@ -120,6 +122,10 @@ typealias AttendanceReservationId = Id<DatabaseTable.AttendanceReservation>
 typealias BackupCareId = Id<DatabaseTable.BackupCare>
 
 typealias BackupPickupId = Id<DatabaseTable.BackupPickup>
+
+typealias BulletinId = Id<DatabaseTable.Bulletin>
+
+typealias BulletinRecipientId = Id<DatabaseTable.BulletinRecipient>
 
 typealias ChildId = Id<DatabaseTable.Person>
 

@@ -184,7 +184,17 @@ export async function postMessage(
   body: PostMessageBody
 ): Promise<Result<UUID | null>> {
   return client
-    .post(`/messages/${accountId}`, body)
+    .post(`/messages/${accountId}/message`, body)
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function postBulletin(
+  accountId: UUID,
+  body: PostMessageBody
+): Promise<Result<UUID | null>> {
+  return client
+    .post(`/messages/${accountId}/bulletin`, body)
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
@@ -199,6 +209,16 @@ export async function markThreadRead(
     .catch((e) => Failure.fromError(e))
 }
 
+export async function markBulletinRead(
+  accountId: UUID,
+  id: UUID
+): Promise<Result<void>> {
+  return client
+    .put(`/messages/${accountId}/bulletins/${id}/read`)
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
 export async function archiveThread(
   accountId: UUID,
   id: UUID
@@ -206,6 +226,16 @@ export async function archiveThread(
   return client
     .put(`/messages/${accountId}/threads/${id}/archive`)
     .then(() => Success.of(undefined))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function archiveBulletin(
+  accountId: UUID,
+  id: UUID
+): Promise<Result<void>> {
+  return client
+    .put(`/messages/${accountId}/bulletins/${id}/archive`)
+    .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
 
@@ -228,6 +258,18 @@ export async function undoMessageReply(
   return client
     .post(`/messages/${accountId}/undo-reply`, null, {
       params: { messageId }
+    })
+    .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function undoBulletin(
+  accountId: UUID,
+  bulletinId: UUID
+): Promise<Result<UUID | null>> {
+  return client
+    .post(`/messages/${accountId}/undo-bulletin`, null, {
+      params: { bulletinId }
     })
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))

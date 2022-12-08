@@ -13,10 +13,8 @@ import React, {
 } from 'react'
 import styled from 'styled-components'
 
-import {
-  Message,
-  MessageThread
-} from 'lib-common/generated/api-types/messaging'
+import { CitizenThread } from 'lib-common/api-types/messaging'
+import { Message } from 'lib-common/generated/api-types/messaging'
 import { formatPreferredName } from 'lib-common/names'
 import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
@@ -170,7 +168,7 @@ const SingleMessage = React.memo(
 
 interface Props {
   accountId: UUID
-  thread: MessageThread
+  thread: CitizenThread
   closeThread: () => void
   onThreadDeleted: () => void
 }
@@ -215,14 +213,16 @@ export default React.memo(function ThreadView({
 
   const replyContent = getReplyContent(threadId)
   const onSubmit = () =>
-    sendReply({
-      content: replyContent,
-      messageId: messages.slice(-1)[0].id,
-      recipientAccountIds: recipients
-        .filter((r) => r.selected)
-        .map((r) => r.id),
-      staffAnnotation: i18n.messages.staffAnnotation
-    })
+    type === 'MESSAGE'
+      ? sendReply({
+          content: replyContent,
+          messageId: messages.slice(-1)[0].id,
+          recipientAccountIds: recipients
+            .filter((r) => r.selected)
+            .map((r) => r.id),
+          staffAnnotation: i18n.messages.staffAnnotation
+        })
+      : undefined
 
   const editorLabels = useMemo(
     () => ({
@@ -330,7 +330,8 @@ export default React.memo(function ThreadView({
       {replyEditorVisible && <span ref={autoScrollRef} />}
       {confirmDelete && (
         <ConfirmDeleteThread
-          threadId={threadId}
+          id={threadId}
+          type={type}
           onClose={() => setConfirmDelete(false)}
           onSuccess={() => {
             setConfirmDelete(false)

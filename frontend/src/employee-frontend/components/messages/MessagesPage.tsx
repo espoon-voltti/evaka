@@ -7,6 +7,7 @@ import styled from 'styled-components'
 
 import {
   MessageReceiversResponse,
+  MessageType,
   PostMessageBody
 } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -28,7 +29,13 @@ import { headerHeight } from '../Header'
 import { MessageContext } from './MessageContext'
 import Sidebar from './Sidebar'
 import MessageList from './ThreadListContainer'
-import { deleteDraft, initDraft, postMessage, saveDraft } from './api'
+import {
+  deleteDraft,
+  initDraft,
+  postBulletin,
+  postMessage,
+  saveDraft
+} from './api'
 
 const PanelContainer = styled.div`
   height: calc(
@@ -81,9 +88,13 @@ export default React.memo(function MessagesPage() {
   }, [setSelectedDraft])
 
   const onSend = useCallback(
-    (accountId: UUID, messageBody: PostMessageBody) => {
+    (accountId: UUID, type: MessageType, messageBody: PostMessageBody) => {
       setSending(true)
-      void postMessage(accountId, messageBody).then((res) => {
+      const request =
+        type === 'MESSAGE'
+          ? postMessage(accountId, messageBody)
+          : postBulletin(accountId, messageBody)
+      void request.then((res) => {
         if (res.isSuccess) {
           refreshMessages(accountId)
           const senderAccount = accounts
@@ -99,9 +110,13 @@ export default React.memo(function MessagesPage() {
             })
             if (res.value) {
               setSelectedThread(res.value)
+              const resultedId =
+                type === 'MESSAGE'
+                  ? { contentId: res.value }
+                  : { bulletinId: res.value }
               openMessageUndo({
+                ...resultedId,
                 accountId: senderAccount.account.id,
-                contentId: res.value,
                 sentAt: HelsinkiDateTime.now()
               })
             }

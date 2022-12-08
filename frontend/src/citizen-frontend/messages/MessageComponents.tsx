@@ -5,6 +5,7 @@
 import React, { useCallback } from 'react'
 import styled, { css } from 'styled-components'
 
+import { MessageType } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 import { desktopMin } from 'lib-components/breakpoints'
 import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
@@ -14,7 +15,7 @@ import { faQuestion } from 'lib-icons'
 
 import { useTranslation } from '../localization'
 
-import { archiveThread } from './api'
+import { archiveBulletin, archiveThread } from './api'
 
 const messageContainerStyles = css`
   background-color: ${colors.grayscale.g0};
@@ -41,18 +42,23 @@ export const ReplyEditorContainer = styled.div`
 `
 
 export interface ConfirmDeleteThreadProps {
-  threadId: UUID
+  id: UUID
+  type: MessageType
   onClose: () => void
   onSuccess: () => void
 }
 
 export const ConfirmDeleteThread = React.memo(function ConfirmDeleteThread({
-  threadId,
+  id,
+  type,
   onClose,
   onSuccess
 }: ConfirmDeleteThreadProps) {
   const t = useTranslation()
-  const onArchive = useCallback(() => archiveThread(threadId), [threadId])
+  const onArchive = useCallback(
+    () => (type === 'MESSAGE' ? archiveThread(id) : archiveBulletin(id)),
+    [id, type]
+  )
   return (
     <AsyncFormModal
       resolveAction={onArchive}

@@ -7,6 +7,7 @@ package fi.espoo.evaka.messaging
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.BulletinId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.GroupId
@@ -121,7 +122,7 @@ class MessageController(
         return db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 dbc.read {
-                    it.getReceivedThreads(
+                    it.getEmployeeReceivedThreads(
                         clock.now(),
                         accountId,
                         pageSize,
@@ -154,7 +155,7 @@ class MessageController(
                     if (archiveFolderId == null) {
                         Paged(emptyList(), 0, 0)
                     } else {
-                        it.getReceivedThreads(
+                        it.getEmployeeReceivedThreads(
                             clock.now(),
                             accountId,
                             pageSize,
@@ -266,7 +267,6 @@ class MessageController(
     data class PostMessageBody(
         val title: String,
         val content: String,
-        val type: MessageType,
         val urgent: Boolean,
         val recipients: Set<MessageRecipient>,
         val recipientNames: List<String>,
@@ -274,7 +274,7 @@ class MessageController(
         val draftId: MessageDraftId? = null
     )
 
-    @PostMapping("/{accountId}")
+    @PostMapping("/{accountId}/message")
     fun createMessage(
         db: Database,
         user: AuthenticatedUser,
@@ -286,15 +286,51 @@ class MessageController(
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 dbc.transaction { tx ->
                     val senderAccountType = tx.getMessageAccountType(accountId)
-                    if (
-                        senderAccountType == AccountType.MUNICIPAL &&
-                            body.type != MessageType.BULLETIN
-                    ) {
+                    if (senderAccountType == AccountType.MUNICIPAL) {
                         throw BadRequest(
                             "Municipal message accounts are only allowed to send bulletins"
                         )
                     }
 
+                    val messageRecipients =
+                        tx.getMessageAccountsForRecipients(
+                            accountId,
+                            body.recipients,
+                            clock.today()
+                        )
+                    if (messageRecipients.isEmpty()) return@transaction null
+
+                    val messageContentId =
+                        messageService.createMessageThreadsForRecipientGroups(
+                            tx,
+                            clock,
+                            title = body.title,
+                            content = body.content,
+                            sender = accountId,
+                            urgent = body.urgent,
+                            recipientNames = body.recipientNames,
+                            messageRecipients = messageRecipients,
+                            attachmentIds = body.attachmentIds
+                        )
+                    if (body.draftId != null)
+                        tx.deleteDraft(accountId = accountId, draftId = body.draftId)
+                    messageContentId
+                }
+            }
+            .also { Audit.MessagingNewMessageWrite.log(targetId = accountId, objectId = it) }
+    }
+
+    @PostMapping("/{accountId}/bulletin")
+    fun createBulletin(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @RequestBody body: PostMessageBody
+    ): BulletinId? {
+        return db.connect { dbc ->
+                requireMessageAccountAccess(dbc, user, clock, accountId)
+                dbc.transaction { tx ->
                     val messageRecipients =
                         tx.getMessageAccountsForRecipients(
                             accountId,
@@ -326,13 +362,12 @@ class MessageController(
                         }
 
                     val messageContentId =
-                        messageService.createMessageThreadsForRecipientGroups(
+                        messageService.createBulletinsForRecipientGroups(
                             tx,
                             clock,
                             title = body.title,
                             content = body.content,
                             sender = accountId,
-                            type = body.type,
                             urgent = body.urgent,
                             recipientNames = body.recipientNames,
                             messageRecipients = messageRecipients,
@@ -456,6 +491,21 @@ class MessageController(
         Audit.MessagingMarkMessagesReadWrite.log(targetId = accountId, objectId = threadId)
     }
 
+    @PutMapping("/{accountId}/bulletins/{bulletinId}/read")
+    fun markBulletinRead(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable bulletinId: BulletinId
+    ) {
+        db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, clock, accountId)
+            dbc.transaction { it.markBulletinRead(clock, accountId, bulletinId) }
+        }
+        Audit.MessagingMarkMessagesReadWrite.log(targetId = accountId, objectId = bulletinId)
+    }
+
     @PutMapping("/{accountId}/threads/{threadId}/archive")
     fun archiveThread(
         db: Database,
@@ -469,6 +519,21 @@ class MessageController(
             dbc.transaction { it.archiveThread(accountId, threadId) }
         }
         Audit.MessagingArchiveMessageWrite.log(targetId = accountId, objectId = threadId)
+    }
+
+    @PutMapping("/{accountId}/bulletins/{bulletinId}/archive")
+    fun archiveBulletin(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable bulletinId: BulletinId
+    ) {
+        db.connect { dbc ->
+            requireMessageAccountAccess(dbc, user, clock, accountId)
+            dbc.transaction { it.archiveBulletin(accountId, bulletinId) }
+        }
+        Audit.MessagingArchiveMessageWrite.log(targetId = accountId, objectId = bulletinId)
     }
 
     @GetMapping("/receivers")
@@ -520,6 +585,21 @@ class MessageController(
             dbc.transaction { it.undoMessageReply(clock.now(), accountId, messageId) }
         }
         Audit.MessagingUndoMessageReply.log(targetId = messageId)
+    }
+
+    @PostMapping("/{accountId}/undo-bulletin")
+    fun undoBulletin(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @RequestParam bulletinId: BulletinId
+    ): MessageDraftId {
+        return db.connect { dbc ->
+                requireMessageAccountAccess(dbc, user, clock, accountId)
+                dbc.transaction { it.undoBulletin(clock.now(), accountId, bulletinId) }
+            }
+            .also { Audit.MessagingUndoBulletin.log(targetId = bulletinId) }
     }
 
     private fun requireMessageAccountAccess(

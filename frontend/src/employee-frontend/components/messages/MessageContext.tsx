@@ -53,7 +53,8 @@ import {
   getUnreadCounts,
   markThreadRead,
   replyToThread,
-  ReplyToThreadParams
+  ReplyToThreadParams,
+  markBulletinRead
 } from './api'
 import {
   AccountView,
@@ -68,7 +69,7 @@ type RepliesByThread = Record<UUID, string>
 export type CancelableMessage = {
   accountId: UUID
   sentAt: HelsinkiDateTime
-} & ({ messageId: UUID } | { contentId: UUID })
+} & ({ messageId: UUID } | { contentId: UUID } | { bulletinId: UUID })
 
 export interface MessagesState {
   accounts: Result<AuthorizedMessageAccount[]>
@@ -399,17 +400,17 @@ export const MessageContextProvider = React.memo(
         sentMessages.map((value) =>
           selectedAccount
             ? value.map((message) => ({
-                id: message.contentId,
+                id: message.id,
                 type: message.type,
-                title: message.threadTitle,
+                title: message.title,
                 urgent: message.urgent,
                 isCopy: false,
                 participants: message.recipientNames,
                 children: [],
                 messages: [
                   {
-                    id: message.contentId,
-                    threadId: message.contentId,
+                    id: message.id,
+                    threadId: message.id,
                     sender: { ...selectedAccount.account },
                     sentAt: message.sentAt,
                     recipients: message.recipients,
@@ -482,7 +483,11 @@ export const MessageContextProvider = React.memo(
           (m) => !m.readAt && m.sender.id !== accountId
         )
         if (thread && hasUnreadMessages) {
-          void markThreadRead(accountId, thread.id).then(() => {
+          const request =
+            thread.type === 'MESSAGE'
+              ? markThreadRead(accountId, thread.id)
+              : markBulletinRead(accountId, thread.id)
+          void request.then(() => {
             refreshMessages(accountId)
             void refreshUnreadCounts()
           })

@@ -136,7 +136,8 @@ async function openCitizenPage(mockedTime: HelsinkiDateTime) {
 
 const defaultMessage = {
   title: 'Tiedote',
-  content: 'Viestin sisältö'
+  content: 'Viestin sisältö',
+  type: 'BULLETIN' as const
 }
 
 describe('Municipal messaging -', () => {

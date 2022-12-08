@@ -5,6 +5,7 @@
 package fi.espoo.evaka.messaging
 
 import fi.espoo.evaka.shared.AttachmentId
+import fi.espoo.evaka.shared.BulletinId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
@@ -45,37 +46,21 @@ class MessageService(
         clock: EvakaClock,
         title: String,
         content: String,
-        type: MessageType,
         urgent: Boolean,
         sender: MessageAccountId,
         messageRecipients: List<Pair<MessageAccountId, ChildId>>,
         recipientNames: List<String>,
-        attachmentIds: Set<AttachmentId> = setOf(),
-        staffCopyRecipients: Set<MessageAccountId>,
-        municipalAccountName: String
+        attachmentIds: Set<AttachmentId> = setOf()
     ): MessageContentId {
         val recipientGroups: List<Pair<Set<MessageAccountId>, Set<ChildId>>> =
-            if (type == MessageType.BULLETIN) {
-                // bulletins cannot be replied to so there is no need to group threads for families
-                messageRecipients
-                    .groupBy { (accountId, _) -> accountId }
-                    .map { (accountId, pairs) ->
-                        setOf(accountId) to pairs.map { (_, childId) -> childId }.toSet()
-                    }
-            } else {
-                // groupings where all the parents can read the messages of all the children
-                messageRecipients
-                    .groupBy { (_, childId) -> childId }
-                    .mapValues { (_, accountChildPairs) ->
-                        accountChildPairs.map { it.first }.toSet()
-                    }
-                    .toList()
-                    .groupBy { (_, accounts) -> accounts }
-                    .mapValues { (_, childAccountPairs) ->
-                        childAccountPairs.map { it.first }.toSet()
-                    }
-                    .toList()
-            }
+        // groupings where all the parents can read the messages of all the children
+        messageRecipients
+                .groupBy { (_, childId) -> childId }
+                .mapValues { (_, accountChildPairs) -> accountChildPairs.map { it.first }.toSet() }
+                .toList()
+                .groupBy { (_, accounts) -> accounts }
+                .mapValues { (_, childAccountPairs) -> childAccountPairs.map { it.first }.toSet() }
+                .toList()
 
         // for each recipient group, create a thread, message and message_recipients while re-using
         // content
@@ -86,14 +71,12 @@ class MessageService(
             tx.insertThreadsWithMessages(
                 recipientGroups.size,
                 now,
-                type,
                 title,
                 urgent,
                 false,
                 contentId,
                 sender,
-                recipientNames,
-                municipalAccountName
+                recipientNames
             )
         val recipientGroupsWithMessageIds = threadAndMessageIds.zip(recipientGroups)
         tx.insertMessageThreadChildren(
@@ -122,46 +105,65 @@ class MessageService(
         notificationEmailService.scheduleSendingMessageNotifications(
             tx,
             threadAndMessageIds.map { (_, messageId) -> messageId },
-            now.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5),
-            if (!urgent) SPREAD_MESSAGE_NOTIFICATION_SECONDS else 0
+            now.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5)
         )
 
-        if (staffCopyRecipients.isNotEmpty()) {
-            // a separate copy for staff
-            val staffThreadAndMessageIds =
-                tx.insertThreadsWithMessages(
-                    staffCopyRecipients.size,
-                    now,
-                    type,
-                    title,
-                    urgent,
-                    true,
-                    contentId,
-                    sender,
-                    recipientNames,
-                    municipalAccountName
-                )
-            val staffRecipientsWithMessageIds = staffThreadAndMessageIds.zip(staffCopyRecipients)
-            tx.upsertSenderThreadParticipants(
-                sender,
-                staffThreadAndMessageIds.map { (threadId, _) -> threadId },
-                now
-            )
-            tx.insertRecipients(
-                staffRecipientsWithMessageIds.map { (ids, recipient) ->
-                    ids.second to setOf(recipient)
-                }
-            )
-            asyncJobRunner.scheduleThreadRecipientsUpdate(
-                tx,
-                staffRecipientsWithMessageIds.map { (ids, recipient) ->
-                    ids.first to setOf(recipient)
-                },
-                now
-            )
-        }
-
         return contentId
+    }
+
+    fun createBulletinsForRecipientGroups(
+        tx: Database.Transaction,
+        clock: EvakaClock,
+        title: String,
+        content: String,
+        urgent: Boolean,
+        sender: MessageAccountId,
+        recipientNames: List<String>,
+        messageRecipients: List<Pair<MessageAccountId, ChildId>>,
+        attachmentIds: Set<AttachmentId> = setOf(),
+        staffCopyRecipients: Set<MessageAccountId>,
+        municipalAccountName: String
+    ): BulletinId {
+        val recipientGroups: List<Pair<Set<MessageAccountId>, Set<ChildId>>> =
+            messageRecipients
+                .groupBy { (accountId, _) -> accountId }
+                .map { (accountId, pairs) ->
+                    setOf(accountId) to pairs.map { (_, childId) -> childId }.toSet()
+                }
+
+        val now = clock.now()
+        val bulletinId =
+            tx.insertBulletin(
+                now,
+                title,
+                content,
+                urgent,
+                sender,
+                recipientNames,
+                municipalAccountName
+            )
+        val recipientIds =
+            tx.insertBulletinRecipients(
+                bulletinId,
+                recipientGroups.flatMap { (recipients, _) -> recipients } + staffCopyRecipients
+            )
+        tx.insertBulletinChildren(
+            recipientGroups.flatMap { (recipients, children) ->
+                recipients.mapNotNull { recipient ->
+                    recipientIds[recipient]?.let { it to children }
+                }
+            }
+        )
+        tx.reAssociateBulletinAttachments(attachmentIds, bulletinId)
+        notificationEmailService.scheduleSendingBulletinNotifications(
+            tx,
+            bulletinId,
+            recipientGroups.flatMap { (recipients, _) -> recipients },
+            now.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5),
+            if (urgent) 0 else SPREAD_MESSAGE_NOTIFICATION_SECONDS
+        )
+
+        return bulletinId
     }
 
     data class ThreadReply(val threadId: MessageThreadId, val message: Message)

@@ -7,9 +7,11 @@ import { UUID } from 'lib-common/types'
 import {
   Message,
   MessageAccount,
+  MessageChild,
   MessageCopy,
   MessageRecipientType,
   MessageThread,
+  MessageType,
   ThreadReply
 } from '../generated/api-types/messaging'
 import HelsinkiDateTime from '../helsinki-date-time'
@@ -44,6 +46,15 @@ interface MessageReceiverGroup extends MessageReceiverBase {
 
 type MessageReceiverChild = MessageReceiverBase
 
+export interface CitizenThread {
+  type: MessageType
+  id: UUID
+  title: string
+  urgent: boolean
+  children: MessageChild[]
+  messages: Message[]
+}
+
 export const deserializeMessageAccount = (
   account: JsonOf<MessageAccount>,
   staffAnnotation?: string
@@ -72,6 +83,14 @@ export const deserializeMessageThread = (
   json: JsonOf<MessageThread>,
   staffAnnotation?: string
 ): MessageThread => ({
+  ...json,
+  messages: json.messages.map((m) => deserializeMessage(m, staffAnnotation))
+})
+
+export const deserializeCitizenThread = (
+  json: JsonOf<CitizenThread>,
+  staffAnnotation?: string
+): CitizenThread => ({
   ...json,
   messages: json.messages.map((m) => deserializeMessage(m, staffAnnotation))
 })

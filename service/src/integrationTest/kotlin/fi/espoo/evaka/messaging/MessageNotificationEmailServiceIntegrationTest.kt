@@ -107,7 +107,7 @@ class MessageNotificationEmailServiceIntegrationTest :
     }
 
     @Test
-    fun `notifications are sent to citizens`() {
+    fun `message notifications are sent to citizens`() {
         val clock = MockEvakaClock(HelsinkiDateTime.now())
         val employeeAccount =
             db.read {
@@ -123,6 +123,49 @@ class MessageNotificationEmailServiceIntegrationTest :
             }
 
         postNewThread(
+            sender = employeeAccount,
+            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+            user = employee,
+            clock
+        )
+        asyncJobRunner.runPendingJobsSync(
+            MockEvakaClock(
+                clock.now().plusSeconds(MessageService.SPREAD_MESSAGE_NOTIFICATION_SECONDS)
+            )
+        )
+
+        assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
+        assertEquals(
+            "Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka",
+            getEmailFor(testPersonFi).subject
+        )
+        assertEquals(
+            "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
+            getEmailFor(testPersonSv).fromAddress
+        )
+        assertEquals(
+            "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
+            getEmailFor(testPersonEn).fromAddress
+        )
+    }
+
+    @Test
+    fun `bulletin notifications are sent to citizens`() {
+        val clock = MockEvakaClock(HelsinkiDateTime.now())
+        val employeeAccount =
+            db.read {
+                it.getEmployeeMessageAccountIds(
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            employee,
+                            clock,
+                            Action.MessageAccount.ACCESS
+                        )
+                    )
+                    .first()
+            }
+
+        postNewBulletin(
             sender = employeeAccount,
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
             user = employee,
@@ -235,7 +278,26 @@ class MessageNotificationEmailServiceIntegrationTest :
             MessageController.PostMessageBody(
                 title = "Juhannus",
                 content = "Juhannus tulee pian",
-                type = MessageType.MESSAGE,
+                recipients = recipients.toSet(),
+                recipientNames = listOf(),
+                urgent = false
+            )
+        )
+
+    private fun postNewBulletin(
+        sender: MessageAccountId,
+        recipients: List<MessageRecipient>,
+        user: AuthenticatedUser.Employee,
+        clock: EvakaClock
+    ) =
+        messageController.createBulletin(
+            dbInstance(),
+            user,
+            clock,
+            sender,
+            MessageController.PostMessageBody(
+                title = "Juhannus",
+                content = "Juhannus tulee pian",
                 recipients = recipients.toSet(),
                 recipientNames = listOf(),
                 urgent = false

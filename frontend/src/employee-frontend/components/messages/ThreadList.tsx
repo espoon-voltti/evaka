@@ -26,7 +26,7 @@ import {
   Truncated,
   TypeAndDate
 } from './MessageComponents'
-import { archiveThread } from './api'
+import { archiveBulletin, archiveThread } from './api'
 
 export type ThreadListItem = {
   id: UUID
@@ -82,7 +82,11 @@ export function ThreadList({ items: messages, accountId, onArchive }: Props) {
                 aria-label={i18n.common.archive}
                 data-qa="delete-thread-btn"
                 className="delete-btn"
-                onClick={() => archiveThread(accountId, item.id)}
+                onClick={() =>
+                  item.type === 'MESSAGE'
+                    ? archiveThread(accountId, item.id)
+                    : archiveBulletin(accountId, item.id)
+                }
                 onSuccess={onArchive}
                 stopPropagation
               />
