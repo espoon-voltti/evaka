@@ -44,7 +44,11 @@ val generatedFiles = listOf(
             generateEnum<Action.ServiceNeed>(),
             generateEnum<Action.Unit>(),
             generateEnum<Action.VasuDocument>(),
-            generateEnum<Action.VasuTemplate>()
+            generateEnum<Action.VasuTemplate>(),
+            generateNamespace(
+                "Citizen",
+                generateEnum<Action.Citizen.Application>()
+            )
         )
     ),
     defineFile(
