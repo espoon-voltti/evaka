@@ -26,13 +26,13 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import java.time.LocalDate
+import java.time.LocalTime
+import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.catchThrowable
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import java.time.LocalDate
-import java.time.LocalTime
-import java.util.UUID
 
 class PlacementSketchingReportControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired
