@@ -34,6 +34,7 @@ import { AuthContext, User } from '../auth/state'
 import { ChildrenContext } from '../children/state'
 import { langs, useLang, useTranslation } from '../localization'
 import { MessageContext } from '../messages/state'
+import { useChildUnreadNotifications } from '../state/children/childrenState'
 
 import AttentionIndicator from './AttentionIndicator'
 import {
@@ -238,8 +239,8 @@ const ChildrenLink = React.memo(function ChildrenLink({
 }) {
   const t = useTranslation()
   const location = useLocation()
-  const { childrenWithOwnPage, totalUnreadChildNotifications } =
-    useContext(ChildrenContext)
+  const { childrenWithOwnPage } = useContext(ChildrenContext)
+  const { totalUnreadChildNotifications } = useChildUnreadNotifications()
   const active = location.pathname.startsWith('/children')
 
   if (childrenWithOwnPage.getOrElse([]).length === 0) {
@@ -287,8 +288,8 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
   closeMenu: () => void
 }) {
   const t = useTranslation()
-  const { childrenWithOwnPage, unreadChildNotifications } =
-    useContext(ChildrenContext)
+  const { childrenWithOwnPage } = useContext(ChildrenContext)
+  const { unreadChildNotifications } = useChildUnreadNotifications()
   const lock = user.authLevel !== 'STRONG' && (
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )

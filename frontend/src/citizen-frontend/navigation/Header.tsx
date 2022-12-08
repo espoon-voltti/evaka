@@ -8,12 +8,12 @@ import { useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { ApplicationsContext } from 'citizen-frontend/applications/state'
-import { ChildrenContext } from 'citizen-frontend/children/state'
 import { desktopMin, desktopMinPx } from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
 
 import { useUser } from '../auth/state'
 import { MessageContext, MessagePageState } from '../messages/state'
+import { useUnreadAssistanceNeedDecisionsCountQuery } from '../state/children/childrenApi'
 
 import CityLogo from './CityLogo'
 import DesktopNav from './DesktopNav'
@@ -31,7 +31,8 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
     if (user) refreshUnreadMessagesCount()
   }, [refreshUnreadMessagesCount, user])
 
-  const { unreadAssistanceNeedDecisionCounts } = useContext(ChildrenContext)
+  const { data: unreadAssistanceNeedDecisionCounts } =
+    useUnreadAssistanceNeedDecisionsCountQuery()
   const { waitingConfirmationCount } = useContext(ApplicationsContext)
 
   const location = useLocation()

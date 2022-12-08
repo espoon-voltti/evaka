@@ -3,13 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faChevronRight } from 'Icons'
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { getAttachmentUrl } from 'citizen-frontend/attachments'
 import CollapsibleOrWholePageContainer from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
-import { ChildrenContext } from 'citizen-frontend/children/state'
 import { useTranslation } from 'citizen-frontend/localization'
 import {
   Attachment,
@@ -41,7 +40,8 @@ import {
 
 import {
   useMarkPedagogicalDocumentReadMutation,
-  usePedagogicalDocumentsQueryResult
+  usePedagogicalDocumentsQueryResult,
+  useUnreadPedagogicalDocumentsCountQuery
 } from '../../../state/children/childrenApi'
 
 const AttachmentLink = React.memo(function AttachmentLink({
@@ -382,7 +382,8 @@ export default React.memo(function PedagogicalDocumentsSection({
   const pedagogicalDocuments = usePedagogicalDocumentsQueryResult(childId)
   const [markPedagogicalDocumentRead] = useMarkPedagogicalDocumentReadMutation()
 
-  const { unreadPedagogicalDocumentsCount } = useContext(ChildrenContext)
+  const { data: unreadPedagogicalDocumentsCount } =
+    useUnreadPedagogicalDocumentsCountQuery()
 
   const onRead = useCallback(
     (doc: PedagogicalDocumentCitizen) => {

@@ -93,10 +93,6 @@ export const {
   useInsertChildConsentsMutation
 } = childrenApi
 
-export const useUnreadPedagogicalDocumentsCountQueryResult = queryResultHook(
-  useUnreadPedagogicalDocumentsCountQuery
-)
-
 export const deserializePedagogicalDocuments = (
   data: JsonOf<PedagogicalDocumentCitizen[]>
 ): PedagogicalDocumentCitizen[] =>
@@ -108,17 +104,8 @@ export const usePedagogicalDocumentsQueryResult = queryResultHook(
   usePedagogicalDocumentsQuery,
   deserializePedagogicalDocuments
 )
-export const useUnreadAssistanceNeedDecisionsCountQueryResult = queryResultHook(
-  useUnreadAssistanceNeedDecisionsCountQuery
-)
-export const useUnreadVasuDocumentsCountQueryResult = queryResultHook(
-  useUnreadVasuDocumentsCountQuery
-)
 export const useGivePermissionToShareVasuMutationResult = mutationResultHook(
   useGivePermissionToShareVasuMutation
-)
-export const useChildConsentNotificationsQueryResult = queryResultHook(
-  useChildConsentNotificationsQuery
 )
 export const useChildConsentsQueryResult = queryResultHook(
   useChildConsentsQuery

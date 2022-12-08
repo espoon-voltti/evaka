@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
@@ -10,7 +10,6 @@ import { renderResult } from 'citizen-frontend/async-rendering'
 import { useUser } from 'citizen-frontend/auth/state'
 import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { VasuStateChip } from 'citizen-frontend/children/sections/vasu-and-leops/vasu/components/VasuStateChip'
-import { ChildrenContext } from 'citizen-frontend/children/state'
 import { useTranslation } from 'citizen-frontend/localization'
 import { VasuDocumentSummary } from 'lib-common/generated/api-types/vasu'
 import { UUID } from 'lib-common/types'
@@ -29,6 +28,8 @@ import {
 import { Dimmed, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faExclamation } from 'lib-icons'
+
+import { useUnreadVasuDocumentsCountQuery } from '../../../state/children/childrenApi'
 
 import { getChildVasuSummaries } from './api'
 
@@ -163,7 +164,7 @@ export default React.memo(function VasuAndLeopsSection({
 
   const user = useUser()
 
-  const { unreadVasuDocumentsCount } = useContext(ChildrenContext)
+  const { data: unreadVasuDocumentsCount } = useUnreadVasuDocumentsCountQuery()
 
   return (
     <ResponsiveWholePageCollapsible

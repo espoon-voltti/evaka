@@ -27,6 +27,7 @@ import {
 
 import { AuthContext, User } from '../auth/state'
 import { useTranslation } from '../localization'
+import { useChildUnreadNotifications } from '../state/children/childrenState'
 
 import AttentionIndicator from './AttentionIndicator'
 import { getLogoutUri } from './const'
@@ -200,11 +201,9 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
 }) {
   const t = useTranslation()
   const location = useLocation()
-  const {
-    childrenWithOwnPage,
-    unreadChildNotifications,
-    totalUnreadChildNotifications
-  } = useContext(ChildrenContext)
+  const { childrenWithOwnPage } = useContext(ChildrenContext)
+  const { unreadChildNotifications, totalUnreadChildNotifications } =
+    useChildUnreadNotifications()
   const [open, setOpen] = useState(false)
   const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
   const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
