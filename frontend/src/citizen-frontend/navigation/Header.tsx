@@ -31,24 +31,8 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
     if (user) refreshUnreadMessagesCount()
   }, [refreshUnreadMessagesCount, user])
 
-  const {
-    unreadAssistanceNeedDecisionCounts,
-    refreshUnreadAssistanceNeedDecisionCounts,
-    refreshUnreadPedagogicalDocumentsCount,
-    refreshUnreadVasuDocumentsCount
-  } = useContext(ChildrenContext)
-
-  const { waitingConfirmationCount, refreshWaitingConfirmationCount } =
-    useContext(ApplicationsContext)
-
-  useEffect(() => {
-    if (user) {
-      refreshUnreadPedagogicalDocumentsCount()
-      refreshUnreadVasuDocumentsCount()
-      refreshUnreadAssistanceNeedDecisionCounts()
-      refreshWaitingConfirmationCount()
-    }
-  }, [refreshUnreadVasuDocumentsCount, refreshUnreadPedagogicalDocumentsCount, refreshUnreadAssistanceNeedDecisionCounts, refreshWaitingConfirmationCount, user])
+  const { unreadAssistanceNeedDecisionCounts } = useContext(ChildrenContext)
+  const { waitingConfirmationCount } = useContext(ApplicationsContext)
 
   const location = useLocation()
   const isLoginPage = location.pathname === '/login'
