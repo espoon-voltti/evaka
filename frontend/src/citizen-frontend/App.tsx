@@ -4,6 +4,7 @@
 
 import { ErrorBoundary } from '@sentry/react'
 import React, { ReactNode, useCallback, useContext } from 'react'
+import { Provider } from 'react-redux'
 import { Route, BrowserRouter, Navigate, Routes } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 import styled from 'styled-components'
@@ -50,6 +51,7 @@ import MobileNav from './navigation/MobileNav'
 import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import PersonalDetails from './personal-details/PersonalDetails'
+import { store } from './store'
 
 export default function App() {
   const i18n = useTranslation()
@@ -57,30 +59,34 @@ export default function App() {
   return (
     <BrowserRouter basename="/">
       <ThemeProvider theme={theme}>
-        <Localization>
-          <ErrorBoundary
-            fallback={() => <ErrorPage basePath="/" labels={i18n.errorPage} />}
-          >
-            <AuthContextProvider>
-              <OverlayContextProvider>
-                <NotificationsContextProvider>
-                  <MessageContextProvider>
-                    <HolidayPeriodsContextProvider>
-                      <ChildrenContextProvider>
-                        <ApplicationsContextProvider>
-                          <Content />
-                          <GlobalDialog />
-                          <LoginErrorModal />
-                          <div id="modal-container" />
-                        </ApplicationsContextProvider>
-                      </ChildrenContextProvider>
-                    </HolidayPeriodsContextProvider>
-                  </MessageContextProvider>
-                </NotificationsContextProvider>
-              </OverlayContextProvider>
-            </AuthContextProvider>
-          </ErrorBoundary>
-        </Localization>
+        <Provider store={store}>
+          <Localization>
+            <ErrorBoundary
+              fallback={() => (
+                <ErrorPage basePath="/" labels={i18n.errorPage} />
+              )}
+            >
+              <AuthContextProvider>
+                <OverlayContextProvider>
+                  <NotificationsContextProvider>
+                    <MessageContextProvider>
+                      <HolidayPeriodsContextProvider>
+                        <ChildrenContextProvider>
+                          <ApplicationsContextProvider>
+                            <Content />
+                            <GlobalDialog />
+                            <LoginErrorModal />
+                            <div id="modal-container" />
+                          </ApplicationsContextProvider>
+                        </ChildrenContextProvider>
+                      </HolidayPeriodsContextProvider>
+                    </MessageContextProvider>
+                  </NotificationsContextProvider>
+                </OverlayContextProvider>
+              </AuthContextProvider>
+            </ErrorBoundary>
+          </Localization>
+        </Provider>
       </ThemeProvider>
     </BrowserRouter>
   )
