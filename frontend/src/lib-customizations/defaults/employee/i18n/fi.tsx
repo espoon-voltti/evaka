@@ -3225,6 +3225,7 @@ export const fi = {
       tel: 'Puhelu',
       email: 'email',
       dob: 'Syntymäaika',
+      serviceNeedOption: 'Palveluntarve',
       assistanceNeed: 'Tuen tarve',
       preparatory: 'Valmistava',
       siblingBasis: 'sisarusperuste',

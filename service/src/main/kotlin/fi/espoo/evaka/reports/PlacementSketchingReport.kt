@@ -5,6 +5,7 @@
 package fi.espoo.evaka.reports
 
 import fi.espoo.evaka.Audit
+import fi.espoo.evaka.application.ServiceNeedOption
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
@@ -14,6 +15,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.LocalDate
+import org.jdbi.v3.json.Json
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -98,6 +100,7 @@ SELECT
     application.preparatoryeducation,
     application.siblingbasis,
     application.connecteddaycare,
+    application.serviceneedoption,
     application.startDate AS preferred_start_date,
     application.sentdate,
     application.guardianphonenumber,
@@ -148,6 +151,7 @@ data class PlacementSketchingReportRow(
     val preparatoryEducation: Boolean?,
     val siblingBasis: Boolean?,
     val connectedDaycare: Boolean?,
+    @Json val serviceNeedOption: ServiceNeedOption?,
     val preferredStartDate: LocalDate,
     val sentDate: LocalDate,
     val guardianPhoneNumber: String?,

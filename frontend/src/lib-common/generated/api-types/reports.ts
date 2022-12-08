@@ -17,6 +17,7 @@ import { AssistanceNeedDecisionStatus } from './assistanceneed'
 import { OccupancyValues } from './occupancy'
 import { PlacementType } from './placement'
 import { ProviderType } from './daycare'
+import { ServiceNeedOption } from './application'
 import { UUID } from '../../types'
 
 /**
@@ -403,6 +404,7 @@ export interface PlacementSketchingReportRow {
   requestedUnitId: UUID
   requestedUnitName: string
   sentDate: LocalDate
+  serviceNeedOption: ServiceNeedOption | null
   siblingBasis: boolean | null
 }
 

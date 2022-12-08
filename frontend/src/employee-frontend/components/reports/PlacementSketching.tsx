@@ -86,6 +86,10 @@ export default React.memo(function PlacementSketching() {
           .join(',')
       : ''
 
+  const showServiceNeedOption = filteredRows.some(
+    (item) => item.serviceNeedOption !== null
+  )
+
   return (
     <Container>
       <ReturnButton label={i18n.common.goBack} />
@@ -167,6 +171,7 @@ export default React.memo(function PlacementSketching() {
                 contact: `${
                   row.guardianPhoneNumber ? row.guardianPhoneNumber : ''
                 } / ${row.guardianEmail ? row.guardianEmail : ''}`,
+                serviceNeedOption: row.serviceNeedOption?.nameFi,
                 assistanceNeeded: row.assistanceNeeded ? 'k' : 'e',
                 preparatoryEducation: row.preparatoryEducation ? 'k' : 'e',
                 siblingBasis: row.siblingBasis ? 'k' : 'e',
@@ -181,6 +186,11 @@ export default React.memo(function PlacementSketching() {
                 { label: 'Lapsen osoite', key: 'childStreetAddr' },
                 { label: 'Lapsen postinumero', key: 'childPostalCode' },
                 { label: 'Yhteystiedot', key: 'contact' },
+                ...(showServiceNeedOption
+                  ? ([
+                      { label: 'Palveluntarve', key: 'serviceNeedOption' }
+                    ] as const)
+                  : []),
                 { label: 'Tuen tarve', key: 'assistanceNeeded' },
                 { label: 'Valmistava', key: 'preparatoryEducation' },
                 { label: 'Sisarusperuste', key: 'siblingBasis' },
@@ -207,6 +217,9 @@ export default React.memo(function PlacementSketching() {
                     {i18n.reports.placementSketching.tel} /{' '}
                     {i18n.reports.placementSketching.email}
                   </Th>
+                  {showServiceNeedOption ? (
+                    <Th>{i18n.reports.placementSketching.serviceNeedOption}</Th>
+                  ) : null}
                   <Th>{i18n.reports.placementSketching.assistanceNeed}</Th>
                   <Th>{i18n.reports.placementSketching.preparatory}</Th>
                   <Th>{i18n.reports.placementSketching.siblingBasis}</Th>
@@ -247,6 +260,9 @@ export default React.memo(function PlacementSketching() {
                     <Td>
                       {row.guardianPhoneNumber} / {row.guardianEmail}
                     </Td>
+                    {showServiceNeedOption ? (
+                      <Td>{row.serviceNeedOption?.nameFi}</Td>
+                    ) : null}
                     <Td>{yesNo(row.assistanceNeeded ?? false)}</Td>
                     <Td>{yesNo(row.preparatoryEducation ?? false)}</Td>
                     <Td>{yesNo(row.siblingBasis ?? false)}</Td>
