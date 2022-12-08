@@ -2,24 +2,20 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { skipToken } from '@reduxjs/toolkit/query'
 import sum from 'lodash/sum'
 import React, { createContext, useMemo } from 'react'
 
 import { useUser } from 'citizen-frontend/auth/state'
 import { Loading, Result, Success } from 'lib-common/api'
 import { UnreadAssistanceNeedDecisionItem } from 'lib-common/generated/api-types/assistanceneed'
-import {
-  Child,
-  CitizenChildConsent
-} from 'lib-common/generated/api-types/children'
+import { Child } from 'lib-common/generated/api-types/children'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
+import { useChildConsentNotificationsQueryResult } from '../state/children/childrenApi'
+
 import { getChildren, getAssistanceNeedDecisionUnreadCounts } from './api'
-import {
-  getChildConsentNotifications,
-  getChildConsents
-} from './sections/consents/api'
 import { getUnreadPedagogicalDocumentsCount } from './sections/pedagogical-documents/api'
 import { getUnreadVasuDocumentsCount } from './sections/vasu-and-leops/api'
 
@@ -28,9 +24,6 @@ interface ChildrenContext {
   childrenWithOwnPage: Result<Child[]>
   unreadAssistanceNeedDecisionCounts: UnreadAssistanceNeedDecisionItem[]
   refreshUnreadAssistanceNeedDecisionCounts: () => void
-  childConsents: Result<Record<UUID, CitizenChildConsent[]>>
-  refreshChildConsents: () => void
-  refreshChildConsentNotifications: () => void
   unreadPedagogicalDocumentsCount: Record<UUID, number> | undefined
   unreadVasuDocumentsCount: Record<UUID, number> | undefined
   refreshUnreadPedagogicalDocumentsCount: () => void
@@ -44,9 +37,6 @@ const defaultValue: ChildrenContext = {
   childrenWithOwnPage: Loading.of(),
   unreadAssistanceNeedDecisionCounts: [],
   refreshUnreadAssistanceNeedDecisionCounts: () => undefined,
-  childConsents: Loading.of(),
-  refreshChildConsents: () => undefined,
-  refreshChildConsentNotifications: () => undefined,
   unreadPedagogicalDocumentsCount: undefined,
   unreadVasuDocumentsCount: undefined,
   refreshUnreadPedagogicalDocumentsCount: () => undefined,
@@ -94,23 +84,6 @@ export const ChildrenContextProvider = React.memo(
       [user]
     )
 
-    const [childConsents, refreshChildConsents] = useApiState(
-      () =>
-        user?.authLevel === 'STRONG'
-          ? getChildConsents()
-          : Promise.resolve(Success.of({})),
-      [user]
-    )
-
-    const [childConsentNotifications, refreshChildConsentNotifications] =
-      useApiState(
-        () =>
-          !user
-            ? Promise.resolve(Success.of({}))
-            : getChildConsentNotifications(),
-        [user]
-      )
-
     const [
       unreadPedagogicalDocumentsCount,
       refreshUnreadPedagogicalDocumentsCount
@@ -130,6 +103,10 @@ export const ChildrenContextProvider = React.memo(
             : getUnreadVasuDocumentsCount(),
         [user]
       )
+
+    const childConsentNotifications = useChildConsentNotificationsQueryResult(
+      !user ? skipToken : undefined
+    )
 
     const unreadChildNotifications = useMemo(() => {
       const counts: Record<UUID, number> = {}
@@ -161,9 +138,6 @@ export const ChildrenContextProvider = React.memo(
           unreadAssistanceNeedDecisionCounts:
             unreadAssistanceNeedDecisionCounts.getOrElse([]),
           refreshUnreadAssistanceNeedDecisionCounts,
-          childConsents,
-          refreshChildConsents,
-          refreshChildConsentNotifications,
           unreadPedagogicalDocumentsCount:
             unreadPedagogicalDocumentsCount.getOrElse(undefined),
           unreadVasuDocumentsCount:
