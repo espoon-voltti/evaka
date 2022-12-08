@@ -54,7 +54,11 @@ const axiosBaseQuery =
 export const api = createApi({
   reducerPath: 'api',
   baseQuery: axiosBaseQuery(),
-  tagTypes: ['ChildConsents', 'ChildConsentNotifications'],
+  tagTypes: [
+    'ChildUnreadVasuDocumentsCount',
+    'ChildConsents',
+    'ChildConsentNotifications'
+  ],
   endpoints: () => ({})
 })
 

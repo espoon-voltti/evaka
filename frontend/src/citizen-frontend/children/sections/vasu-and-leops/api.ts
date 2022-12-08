@@ -43,16 +43,3 @@ export async function getChildVasuSummaries(
     )
     .catch((e) => Failure.fromError(e))
 }
-
-export async function getUnreadVasuDocumentsCount(): Promise<
-  Result<Record<UUID, number>>
-> {
-  try {
-    const count = await client
-      .get<JsonOf<Record<UUID, number>>>(`/citizen/vasu/children/unread-count`)
-      .then((res) => res.data)
-    return Success.of(count)
-  } catch (e) {
-    return Failure.fromError(e)
-  }
-}

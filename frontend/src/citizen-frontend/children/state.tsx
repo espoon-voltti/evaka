@@ -13,11 +13,13 @@ import { Child } from 'lib-common/generated/api-types/children'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
-import { useChildConsentNotificationsQueryResult } from '../state/children/childrenApi'
+import {
+  useChildConsentNotificationsQueryResult,
+  useUnreadVasuDocumentsCountQueryResult
+} from '../state/children/childrenApi'
 
 import { getChildren, getAssistanceNeedDecisionUnreadCounts } from './api'
 import { getUnreadPedagogicalDocumentsCount } from './sections/pedagogical-documents/api'
-import { getUnreadVasuDocumentsCount } from './sections/vasu-and-leops/api'
 
 interface ChildrenContext {
   children: Result<Child[]>
@@ -27,7 +29,6 @@ interface ChildrenContext {
   unreadPedagogicalDocumentsCount: Record<UUID, number> | undefined
   unreadVasuDocumentsCount: Record<UUID, number> | undefined
   refreshUnreadPedagogicalDocumentsCount: () => void
-  refreshUnreadVasuDocumentsCount: () => void
   unreadChildNotifications: Record<UUID, number>
   totalUnreadChildNotifications: number
 }
@@ -40,7 +41,6 @@ const defaultValue: ChildrenContext = {
   unreadPedagogicalDocumentsCount: undefined,
   unreadVasuDocumentsCount: undefined,
   refreshUnreadPedagogicalDocumentsCount: () => undefined,
-  refreshUnreadVasuDocumentsCount: () => undefined,
   unreadChildNotifications: {},
   totalUnreadChildNotifications: 0
 }
@@ -95,15 +95,9 @@ export const ChildrenContextProvider = React.memo(
       [user]
     )
 
-    const [unreadVasuDocumentsCount, refreshUnreadVasuDocumentsCount] =
-      useApiState(
-        () =>
-          !user
-            ? Promise.resolve(Success.of({}))
-            : getUnreadVasuDocumentsCount(),
-        [user]
-      )
-
+    const unreadVasuDocumentsCount = useUnreadVasuDocumentsCountQueryResult(
+      !user ? skipToken : undefined
+    )
     const childConsentNotifications = useChildConsentNotificationsQueryResult(
       !user ? skipToken : undefined
     )
@@ -143,7 +137,6 @@ export const ChildrenContextProvider = React.memo(
           unreadVasuDocumentsCount:
             unreadVasuDocumentsCount.getOrElse(undefined),
           refreshUnreadPedagogicalDocumentsCount,
-          refreshUnreadVasuDocumentsCount,
           unreadChildNotifications,
           totalUnreadChildNotifications
         }}

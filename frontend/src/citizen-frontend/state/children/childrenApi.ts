@@ -5,6 +5,17 @@ import { api, mutationResultHook, queryResultHook } from '../api'
 
 export const childrenApi = api.injectEndpoints({
   endpoints: (build) => ({
+    unreadVasuDocumentsCount: build.query<Record<UUID, number>, void>({
+      query: () => '/citizen/vasu/children/unread-count',
+      providesTags: ['ChildUnreadVasuDocumentsCount']
+    }),
+    givePermissionToShareVasu: build.mutation<void, UUID>({
+      query: (documentId) => ({
+        method: 'POST',
+        url: `/citizen/vasu/${documentId}/give-permission-to-share`
+      }),
+      invalidatesTags: ['ChildUnreadVasuDocumentsCount']
+    }),
     childConsentNotifications: build.query<Record<string, number>, void>({
       query: () => '/citizen/children/consents/notifications',
       providesTags: ['ChildConsentNotifications']
@@ -31,11 +42,19 @@ export const childrenApi = api.injectEndpoints({
 })
 
 export const {
+  useUnreadVasuDocumentsCountQuery,
+  useGivePermissionToShareVasuMutation,
   useChildConsentNotificationsQuery,
   useChildConsentsQuery,
   useInsertChildConsentsMutation
 } = childrenApi
 
+export const useUnreadVasuDocumentsCountQueryResult = queryResultHook(
+  useUnreadVasuDocumentsCountQuery
+)
+export const useGivePermissionToShareVasuMutationResult = mutationResultHook(
+  useGivePermissionToShareVasuMutation
+)
 export const useChildConsentNotificationsQueryResult = queryResultHook(
   useChildConsentNotificationsQuery
 )

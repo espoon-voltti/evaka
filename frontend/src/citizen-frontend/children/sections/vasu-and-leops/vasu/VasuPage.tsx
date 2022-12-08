@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { ChildrenContext } from 'citizen-frontend/children/state'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Main from 'lib-components/atoms/Main'
@@ -21,8 +20,8 @@ import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../../localization'
+import { useGivePermissionToShareVasuMutationResult } from '../../../../state/children/childrenApi'
 
-import { givePermissionToShareVasu } from './api'
 import { VasuContainer } from './components/VasuContainer'
 import { CitizenBasicsSection } from './sections/CitizenBasicsSection'
 import { CitizenDynamicSections } from './sections/CitizenDynamicSections'
@@ -47,8 +46,8 @@ export default React.memo(function VasuPage() {
 
   const [givePermissionToShareSelected, setGivePermissionToShareSelected] =
     useState<boolean>(false)
-
-  const { refreshUnreadVasuDocumentsCount } = useContext(ChildrenContext)
+  const [givePermissionToShareVasu] =
+    useGivePermissionToShareVasuMutationResult()
 
   const {
     vasu,
@@ -141,12 +140,7 @@ export default React.memo(function VasuPage() {
                 primary
                 text={t.common.confirm}
                 disabled={!givePermissionToShareSelected}
-                onClick={() => {
-                  return givePermissionToShareVasu(id).then((res) => {
-                    refreshUnreadVasuDocumentsCount()
-                    return res
-                  })
-                }}
+                onClick={() => givePermissionToShareVasu(id)}
                 onSuccess={() => {
                   setGuardianHasGivenPermissionToShare(true)
                 }}

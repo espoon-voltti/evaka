@@ -67,14 +67,3 @@ export async function getCitizenVasuDocument(
     )
     .catch((e) => Failure.fromError(e))
 }
-
-export async function givePermissionToShareVasu(
-  documentId: UUID
-): Promise<Result<void>> {
-  try {
-    await client.post(`/citizen/vasu/${documentId}/give-permission-to-share`)
-    return Success.of()
-  } catch (e) {
-    return Failure.fromError(e)
-  }
-}
