@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.AssistanceActionId
 import fi.espoo.evaka.shared.AssistanceNeedDecisionId
@@ -49,14 +50,19 @@ private typealias GetUnitRoles =
         user: AuthenticatedUser.Employee, now: HelsinkiDateTime
     ) -> QuerySql<IdRoleFeatures>
 
-data class HasUnitRole(val oneOf: EnumSet<UserRole>, val unitFeatures: EnumSet<PilotFeature>) :
-    DatabaseActionRule.Params {
+data class HasUnitRole(
+    val oneOf: EnumSet<UserRole>,
+    val unitFeatures: EnumSet<PilotFeature>,
+    val unitProviderTypes: EnumSet<ProviderType>?
+) : DatabaseActionRule.Params {
     init {
         oneOf.forEach { check(it.isUnitScopedRole()) { "Expected a unit-scoped role, got $it" } }
     }
-    constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet(), emptyEnumSet())
+    constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet(), emptyEnumSet(), null)
 
     fun withUnitFeatures(vararg allOf: PilotFeature) = copy(unitFeatures = allOf.toEnumSet())
+    fun withUnitProviderTypes(vararg allOf: ProviderType) =
+        copy(unitProviderTypes = allOf.toEnumSet())
 
     override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
         when (ctx.user) {
@@ -72,6 +78,7 @@ SELECT EXISTS (
     WHERE acl.employee_id = ${bind(ctx.user.id)}
     AND role = ANY(${bind(oneOf.toSet())})
     AND daycare.enabled_pilot_features @> ${bind(unitFeatures.toSet())}
+    ${if (unitProviderTypes != null) "AND daycare.provider_type = ANY(${bind(unitProviderTypes.toSet())})" else ""}
 )
                 """
                                 .trimIndent()
@@ -104,7 +111,7 @@ SELECT EXISTS (
                         .createQuery<T> {
                             sql(
                                 """
-                    SELECT id, role, unit_features
+                    SELECT id, role, unit_features, unit_provider_type
                     FROM (${subquery { getUnitRoles(ctx.user, ctx.now) } }) fragment
                     WHERE id = ANY(${bind(targets.map { it.raw })})
                     """
@@ -137,6 +144,7 @@ SELECT EXISTS (
                     FROM (${subquery { getUnitRoles(ctx.user, ctx.now) } }) fragment
                     WHERE role = ANY(${bind(params.oneOf.toSet())})
                     AND unit_features @> ${bind(params.unitFeatures.toSet())}
+                    ${if (params.unitProviderTypes != null) "AND unit_provider_type = ANY(${bind(params.unitProviderTypes.toSet())})" else ""}
                         """
                                 .trimIndent()
                         )
@@ -151,7 +159,9 @@ SELECT EXISTS (
             if (
                 queryResult.any {
                     params.oneOf.contains(it.role) &&
-                        it.unitFeatures.containsAll(params.unitFeatures)
+                        it.unitFeatures.containsAll(params.unitFeatures) &&
+                        (params.unitProviderTypes == null ||
+                            params.unitProviderTypes.contains(it.unitProviderType))
                 }
             ) {
                 AccessControlDecision.Permitted(params)
@@ -176,7 +186,7 @@ SELECT EXISTS (
                                     .createQuery<RoleAndFeatures> {
                                         sql(
                                             """
-SELECT role, enabled_pilot_features AS unit_features
+SELECT role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM daycare_acl acl
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(ctx.user.id)}
@@ -196,7 +206,7 @@ WHERE employee_id = ${bind(ctx.user.id)}
         rule<ApplicationId> { user, _ ->
             sql(
                 """
-SELECT av.id, role, daycare.enabled_pilot_features AS unit_features
+SELECT av.id, role, daycare.enabled_pilot_features AS unit_features, daycare.provider_type AS unit_provider_type
 FROM application_view av
 JOIN placement_plan pp ON pp.application_id = av.id
 JOIN daycare_acl acl ON acl.daycare_id = pp.unit_id
@@ -211,7 +221,7 @@ WHERE employee_id = ${bind(user.id)} AND av.status = ANY ('{WAITING_CONFIRMATION
         rule<AssistanceActionId> { user, now ->
             sql(
                 """
-SELECT aa.id, role, daycare.enabled_pilot_features AS unit_features
+SELECT aa.id, role, daycare.enabled_pilot_features AS unit_features, daycare.provider_type AS unit_provider_type
 FROM assistance_action aa
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -225,7 +235,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<AssistanceNeedId> { user, now ->
             sql(
                 """
-SELECT an.id, role, enabled_pilot_features AS unit_features
+SELECT an.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM assistance_need an
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -239,7 +249,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<AssistanceNeedDecisionId> { user, now ->
             sql(
                 """
-SELECT ad.id, role, enabled_pilot_features AS unit_features
+SELECT ad.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM assistance_need_decision ad
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -254,7 +264,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<AssistanceNeedDecisionId> { user, now ->
             sql(
                 """
-SELECT ad.id, acl.role, daycare.enabled_pilot_features AS unit_features
+SELECT ad.id, acl.role, daycare.enabled_pilot_features AS unit_features, daycare.provider_type AS unit_provider_type
 FROM assistance_need_decision ad
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -269,7 +279,7 @@ WHERE ad.decision_maker_employee_id = ${bind(user.id)}
         rule<AssistanceNeedVoucherCoefficientId> { user, now ->
             sql(
                 """
-SELECT avc.id, role, enabled_pilot_features AS unit_features
+SELECT avc.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM assistance_need_voucher_coefficient avc
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -288,7 +298,7 @@ WHERE employee_id = ${bind(user.id)} AND EXISTS(
         rule<BackupCareId> { user, now ->
             sql(
                 """
-SELECT bc.id, role, enabled_pilot_features AS unit_features
+SELECT bc.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM backup_care bc
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -302,7 +312,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<BackupPickupId> { user, now ->
             sql(
                 """
-SELECT bp.id, role, enabled_pilot_features AS unit_features
+SELECT bp.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM backup_pickup bp
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -316,7 +326,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<ChildId> { user, now ->
             sql(
                 """
-SELECT child_id AS id, role, enabled_pilot_features AS unit_features
+SELECT child_id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM employee_child_daycare_acl(${bind(now.toLocalDate())}) acl
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
@@ -329,7 +339,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<ChildDailyNoteId> { user, now ->
             sql(
                 """
-SELECT cdn.id, role, enabled_pilot_features AS unit_features
+SELECT cdn.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM child_daily_note cdn
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -343,7 +353,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<ChildStickyNoteId> { user, now ->
             sql(
                 """
-SELECT csn.id, role, enabled_pilot_features AS unit_features
+SELECT csn.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM child_sticky_note csn
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -357,7 +367,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<ChildImageId> { user, now ->
             sql(
                 """
-SELECT img.id, role, enabled_pilot_features AS unit_features
+SELECT img.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM child_images img
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -371,7 +381,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<DecisionId> { user, _ ->
             sql(
                 """
-SELECT decision.id, role, daycare.enabled_pilot_features AS unit_features
+SELECT decision.id, role, daycare.enabled_pilot_features AS unit_features, daycare.provider_type AS unit_provider_type
 FROM decision
 JOIN daycare_acl acl ON decision.unit_id = acl.daycare_id
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -385,7 +395,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<ParentshipId> { user, _ ->
             sql(
                 """
-SELECT fridge_child.id, role, enabled_pilot_features AS unit_features
+SELECT fridge_child.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM fridge_child
 JOIN person_acl_view acl ON fridge_child.head_of_child = acl.person_id OR fridge_child.child_id = acl.person_id
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -399,7 +409,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<PartnershipId> { user, _ ->
             sql(
                 """
-SELECT fridge_partner.partnership_id AS id, role, enabled_pilot_features AS unit_features
+SELECT fridge_partner.partnership_id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM fridge_partner
 JOIN person_acl_view acl ON fridge_partner.person_id = acl.person_id
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -413,7 +423,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<PedagogicalDocumentId> { user, now ->
             sql(
                 """
-SELECT pd.id, role, enabled_pilot_features AS unit_features
+SELECT pd.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM pedagogical_document pd
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -427,7 +437,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<AttachmentId> { user, now ->
             sql(
                 """
-SELECT attachment.id, role, enabled_pilot_features AS unit_features
+SELECT attachment.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM attachment
 JOIN pedagogical_document pd ON attachment.pedagogical_document_id = pd.id
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
@@ -442,7 +452,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<PersonId> { user, _ ->
             sql(
                 """
-SELECT person_id AS id, role, enabled_pilot_features AS unit_features
+SELECT person_id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM person_acl_view acl
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
@@ -455,7 +465,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<PlacementId> { user, _ ->
             sql(
                 """
-SELECT placement.id, role, enabled_pilot_features AS unit_features
+SELECT placement.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM placement
 JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -469,7 +479,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<ServiceNeedId> { user, _ ->
             sql(
                 """
-SELECT service_need.id, role, enabled_pilot_features AS unit_features
+SELECT service_need.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM service_need
 JOIN placement ON placement.id = service_need.placement_id
 JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
@@ -484,7 +494,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<VasuDocumentId> { user, now ->
             sql(
                 """
-SELECT curriculum_document.id AS id, role, enabled_pilot_features AS unit_features
+SELECT curriculum_document.id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM curriculum_document
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -498,7 +508,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<DailyServiceTimesId> { user, now ->
             sql(
                 """
-SELECT dst.id, role, enabled_pilot_features AS unit_features
+SELECT dst.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM daily_service_time dst
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -512,7 +522,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<DailyServiceTimesId> { user, now ->
             sql(
                 """
-SELECT dst.id, role, enabled_pilot_features AS unit_features
+SELECT dst.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM daily_service_time dst
 JOIN employee_child_daycare_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -527,7 +537,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<ApplicationId> { user, _ ->
             sql(
                 """
-SELECT av.id, role, enabled_pilot_features AS unit_features
+SELECT av.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM application_view av
 JOIN daycare_acl acl ON acl.daycare_id = ANY (av.preferredunits)
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -541,7 +551,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<GroupId> { user, _ ->
             sql(
                 """
-SELECT g.id, role, enabled_pilot_features AS unit_features
+SELECT g.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM daycare_group g
 JOIN daycare_acl acl USING (daycare_id)
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -555,7 +565,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<GroupNoteId> { user, _ ->
             sql(
                 """
-SELECT gn.id, role, enabled_pilot_features AS unit_features
+SELECT gn.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM group_note gn
 JOIN daycare_group g ON gn.group_id = g.id
 JOIN daycare_acl acl USING (daycare_id)
@@ -570,7 +580,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<GroupPlacementId> { user, _ ->
             sql(
                 """
-SELECT daycare_group_placement.id, role, enabled_pilot_features AS unit_features
+SELECT daycare_group_placement.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM placement
 JOIN daycare_acl acl ON placement.unit_id = acl.daycare_id
 JOIN daycare_group_placement on placement.id = daycare_group_placement.daycare_placement_id
@@ -585,7 +595,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<MobileDeviceId> { user, _ ->
             sql(
                 """
-SELECT d.id, role, enabled_pilot_features AS unit_features
+SELECT d.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM daycare_acl acl
 JOIN mobile_device d ON acl.daycare_id = d.unit_id
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -599,7 +609,7 @@ WHERE acl.employee_id = ${bind(user.id)}
         rule<PairingId> { user, _ ->
             sql(
                 """
-SELECT p.id, role, enabled_pilot_features AS unit_features
+SELECT p.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM daycare_acl acl
 JOIN pairing p ON acl.daycare_id = p.unit_id
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -613,7 +623,7 @@ WHERE acl.employee_id = ${bind(user.id)}
         rule<DaycareId> { user, _ ->
             sql(
                 """
-SELECT daycare_id AS id, role, enabled_pilot_features AS unit_features
+SELECT daycare_id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM daycare_acl acl
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
@@ -626,7 +636,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<AttachmentId> { user, _ ->
             sql(
                 """
-SELECT attachment.id, role, enabled_pilot_features AS unit_features
+SELECT attachment.id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM attachment
 JOIN placement_plan ON attachment.application_id = placement_plan.application_id
 JOIN daycare ON placement_plan.unit_id = daycare.id AND daycare.round_the_clock
@@ -642,7 +652,7 @@ AND attachment.type = 'EXTENDED_CARE'
         rule<ChildId> { user, now ->
             sql(
                 """
-SELECT child_id AS id, role, enabled_pilot_features AS unit_features
+SELECT child_id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM employee_child_daycare_acl(${bind(now.toLocalDate())}) acl
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)} AND EXISTS(
@@ -660,7 +670,7 @@ WHERE employee_id = ${bind(user.id)} AND EXISTS(
         rule<CalendarEventId> { user, _ ->
             sql(
                 """
-SELECT cea.calendar_event_id id, acl.role, enabled_pilot_features AS unit_features
+SELECT cea.calendar_event_id id, acl.role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM calendar_event_attendee cea
 JOIN daycare_acl acl ON acl.daycare_id = cea.unit_id
 JOIN daycare ON acl.daycare_id = daycare.id
@@ -674,7 +684,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<MessageAccountId> { user, _ ->
             sql(
                 """
-SELECT acc.id, acl.role, enabled_pilot_features AS unit_features
+SELECT acc.id, acl.role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM message_account acc
 JOIN daycare_group dg ON acc.daycare_group_id = dg.id
 JOIN daycare_acl acl ON acl.daycare_id = dg.daycare_id

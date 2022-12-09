@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.security.actionrule
 
+import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.Id
 import fi.espoo.evaka.shared.VasuDocumentId
@@ -22,14 +23,19 @@ private typealias GetGroupRoles =
         user: AuthenticatedUser.Employee, now: HelsinkiDateTime
     ) -> QuerySql<IdRoleFeatures>
 
-data class HasGroupRole(val oneOf: EnumSet<UserRole>, val unitFeatures: Set<PilotFeature>) :
-    DatabaseActionRule.Params {
+data class HasGroupRole(
+    val oneOf: EnumSet<UserRole>,
+    val unitFeatures: Set<PilotFeature>,
+    val unitProviderTypes: EnumSet<ProviderType>?
+) : DatabaseActionRule.Params {
     init {
         oneOf.forEach { check(it.isUnitScopedRole()) { "Expected a unit-scoped role, got $it" } }
     }
-    constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet(), emptyEnumSet())
+    constructor(vararg oneOf: UserRole) : this(oneOf.toEnumSet(), emptyEnumSet(), null)
 
     fun withUnitFeatures(vararg allOf: PilotFeature) = copy(unitFeatures = allOf.toEnumSet())
+    fun withUnitProviderTypes(vararg allOf: ProviderType) =
+        copy(unitProviderTypes = allOf.toEnumSet())
 
     override fun isPermittedForSomeTarget(ctx: DatabaseActionRule.QueryContext): Boolean =
         when (ctx.user) {
@@ -49,6 +55,7 @@ SELECT EXISTS (
     AND group_acl.employee_id = ${bind(ctx.user.id)}
     AND role = ANY(${bind(oneOf.toSet())})
     AND daycare.enabled_pilot_features @> ${bind(unitFeatures.toSet())}
+    ${if (unitProviderTypes != null) "AND daycare.provider_type = ANY(${bind(unitProviderTypes.toSet())})" else ""}
 )
                 """
                                 .trimIndent()
@@ -80,7 +87,7 @@ SELECT EXISTS (
                         .createQuery<T> {
                             sql(
                                 """
-                    SELECT id, role, unit_features
+                    SELECT id, role, unit_features, unit_provider_type
                     FROM (${subquery { getGroupRoles(ctx.user, ctx.now) } }) fragment
                     WHERE id = ANY(${bind(targets.map { it.raw })})
                     """
@@ -112,6 +119,7 @@ SELECT EXISTS (
                     FROM (${subquery { getGroupRoles(ctx.user, ctx.now) } }) fragment
                     WHERE role = ANY(${bind(params.oneOf.toSet())})
                     AND unit_features @> ${bind(params.unitFeatures.toSet())}
+                    ${if (params.unitProviderTypes != null) "AND unit_provider_type = ANY(${bind(params.unitProviderTypes.toSet())})" else ""}
                         """
                                 .trimIndent()
                         )
@@ -125,7 +133,9 @@ SELECT EXISTS (
             if (
                 queryResult.any {
                     params.oneOf.contains(it.role) &&
-                        it.unitFeatures.containsAll(params.unitFeatures)
+                        it.unitFeatures.containsAll(params.unitFeatures) &&
+                        (params.unitProviderTypes == null ||
+                            params.unitProviderTypes.contains(it.unitProviderType))
                 }
             ) {
                 AccessControlDecision.Permitted(params)
@@ -138,7 +148,7 @@ SELECT EXISTS (
         rule<ChildId> { user, now ->
             sql(
                 """
-SELECT child_id AS id, role, enabled_pilot_features AS unit_features
+SELECT child_id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM employee_child_group_acl(${bind(now.toLocalDate())}) acl
 JOIN daycare ON acl.daycare_id = daycare.id
 WHERE employee_id = ${bind(user.id)}
@@ -151,7 +161,7 @@ WHERE employee_id = ${bind(user.id)}
         rule<VasuDocumentId> { user, now ->
             sql(
                 """
-SELECT curriculum_document.id AS id, role, enabled_pilot_features AS unit_features
+SELECT curriculum_document.id AS id, role, enabled_pilot_features AS unit_features, provider_type AS unit_provider_type
 FROM curriculum_document
 JOIN employee_child_group_acl(${bind(now.toLocalDate())}) acl USING (child_id)
 JOIN daycare ON acl.daycare_id = daycare.id
