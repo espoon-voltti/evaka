@@ -26,7 +26,6 @@ import ApplicationCreation from './applications/ApplicationCreation'
 import Applications from './applications/Applications'
 import ApplicationEditor from './applications/editor/ApplicationEditor'
 import ApplicationReadView from './applications/read-view/ApplicationReadView'
-import { ApplicationsContextProvider } from './applications/state'
 import { UnwrapResult } from './async-rendering'
 import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import CalendarPage from './calendar/CalendarPage'
@@ -70,12 +69,10 @@ export default function App() {
                   <NotificationsContextProvider>
                     <MessageContextProvider>
                       <HolidayPeriodsContextProvider>
-                        <ApplicationsContextProvider>
-                          <Content />
-                          <GlobalDialog />
-                          <LoginErrorModal />
-                          <div id="modal-container" />
-                        </ApplicationsContextProvider>
+                        <Content />
+                        <GlobalDialog />
+                        <LoginErrorModal />
+                        <div id="modal-container" />
                       </HolidayPeriodsContextProvider>
                     </MessageContextProvider>
                   </NotificationsContextProvider>

@@ -5,7 +5,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { ApplicationsContext } from 'citizen-frontend/applications/state'
 import { Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Decision } from 'lib-common/generated/api-types/decision'
@@ -30,8 +29,11 @@ import { faExclamation } from 'lib-icons'
 import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
 import { useLang, useTranslation } from '../../localization'
 import { OverlayContext } from '../../overlay/state'
+import {
+  useAcceptDecisionMutationResult,
+  useRejectDecisionMutationResult
+} from '../../state/children/childrenApi'
 import { PdfLink } from '../PdfLink'
-import { acceptDecision, rejectDecision } from '../api'
 import { decisionStatusIcon, Status } from '../shared'
 
 interface SingleDecisionProps {
@@ -70,6 +72,8 @@ export default React.memo(function DecisionResponse({
   const [displayCascadeWarning, setDisplayCascadeWarning] =
     useState<boolean>(false)
   const [dateErrorMessage, setDateErrorMessage] = useState<string>('')
+  const [acceptDecision] = useAcceptDecisionMutationResult()
+  const [rejectDecision] = useRejectDecisionMutationResult()
   const { setErrorMessage } = useContext(OverlayContext)
   const getUnitName = () => {
     switch (decision.type) {
@@ -93,12 +97,12 @@ export default React.memo(function DecisionResponse({
       })
     }
     setSubmitting(true)
-    return acceptDecision(applicationId, decisionId, requestedStartDate)
+    return acceptDecision({ applicationId, decisionId, requestedStartDate })
   }
 
   const handleRejectDecision = async () => {
     setSubmitting(true)
-    return rejectDecision(applicationId, decisionId)
+    return rejectDecision({ applicationId, decisionId })
   }
 
   const onSubmit = async () => {
@@ -109,12 +113,9 @@ export default React.memo(function DecisionResponse({
     }
   }
 
-  const { refreshWaitingConfirmationCount } = useContext(ApplicationsContext)
-
   const onSuccess = () => {
     setSubmitting(false)
     refreshDecisionList()
-    refreshWaitingConfirmationCount()
   }
 
   const onFailure = () => {

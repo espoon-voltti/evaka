@@ -28,11 +28,11 @@ import {
 } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
-import { ApplicationsContext } from '../applications/state'
 import { UnwrapResult } from '../async-rendering'
 import { AuthContext, User } from '../auth/state'
 import { langs, useLang, useTranslation } from '../localization'
 import { MessageContext } from '../messages/state'
+import { useApplicationNotificationsQuery } from '../state/children/childrenApi'
 import {
   useChildrenWithOwnPage,
   useChildUnreadNotifications
@@ -54,8 +54,11 @@ export default React.memo(function MobileNav() {
   const t = useTranslation()
   const { user } = useContext(AuthContext)
   const { unreadMessagesCount } = useContext(MessageContext)
-  const { waitingConfirmationCount: unreadDecisions } =
-    useContext(ApplicationsContext)
+  const { data: waitingConfirmationCount } = useApplicationNotificationsQuery(
+    user.getOrElse(undefined)
+  )
+  const unreadDecisions = waitingConfirmationCount ?? 0
+
   const [menuOpen, setMenuOpen] = useState<'children' | 'submenu'>()
   const toggleSubMenu = useCallback(
     () => setMenuOpen((open) => (open === 'submenu' ? undefined : 'submenu')),

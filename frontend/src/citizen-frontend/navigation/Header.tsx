@@ -7,13 +7,15 @@ import React, { useContext, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { ApplicationsContext } from 'citizen-frontend/applications/state'
 import { desktopMin, desktopMinPx } from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
 
 import { useUser } from '../auth/state'
 import { MessageContext, MessagePageState } from '../messages/state'
-import { useUnreadAssistanceNeedDecisionsCountQuery } from '../state/children/childrenApi'
+import {
+  useApplicationNotificationsQuery,
+  useUnreadAssistanceNeedDecisionsCountQuery
+} from '../state/children/childrenApi'
 
 import CityLogo from './CityLogo'
 import DesktopNav from './DesktopNav'
@@ -33,7 +35,8 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
 
   const { data: unreadAssistanceNeedDecisionCounts } =
     useUnreadAssistanceNeedDecisionsCountQuery(user)
-  const { waitingConfirmationCount } = useContext(ApplicationsContext)
+  const { data: waitingConfirmationCount } =
+    useApplicationNotificationsQuery(user)
 
   const location = useLocation()
   const isLoginPage = location.pathname === '/login'
@@ -51,7 +54,7 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
         <DesktopNav
           unreadMessagesCount={unreadMessagesCount ?? 0}
           unreadDecisions={
-            waitingConfirmationCount +
+            (waitingConfirmationCount ?? 0) +
             sumBy(unreadAssistanceNeedDecisionCounts, ({ count }) => count)
           }
           hideLoginButton={isLoginPage}

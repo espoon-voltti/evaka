@@ -65,37 +65,6 @@ export async function getApplicationDecisions(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function acceptDecision(
-  applicationId: UUID,
-  decisionId: UUID,
-  requestedStartDate: LocalDate
-): Promise<Result<void>> {
-  return client
-    .post<void>(
-      `/citizen/applications/${applicationId}/actions/accept-decision`,
-      {
-        decisionId,
-        requestedStartDate
-      }
-    )
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function rejectDecision(
-  applicationId: UUID,
-  decisionId: UUID
-): Promise<Result<void>> {
-  const body = { decisionId }
-  return client
-    .post<void>(
-      `/citizen/applications/${applicationId}/actions/reject-decision`,
-      body
-    )
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
-}
-
 export function getAssistanceNeedDecisions(): Promise<
   Result<AssistanceNeedDecisionCitizenListItem[]>
 > {

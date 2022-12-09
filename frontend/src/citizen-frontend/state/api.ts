@@ -45,6 +45,7 @@ export const api = createApi({
   reducerPath: 'api',
   baseQuery: axiosBaseQuery(),
   tagTypes: [
+    'ApplicationNotifications',
     'ChildUnreadPedagogicalDocumentsCount',
     'ChildPedagogicalDocument',
     'ChildUnreadAssistanceNeedDecisionsCount',

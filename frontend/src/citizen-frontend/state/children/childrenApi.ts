@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { skipToken } from '@reduxjs/toolkit/query'
+
 import { UnreadAssistanceNeedDecisionItem } from 'lib-common/generated/api-types/assistanceneed'
 import {
   Child,
@@ -10,15 +12,43 @@ import {
 import { PedagogicalDocumentCitizen } from 'lib-common/generated/api-types/pedagogicaldocument'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { User } from '../../auth/state'
 import { api } from '../api'
 import { queryResultHook, mutationResultHook } from '../utils'
-import { skipToken } from '@reduxjs/toolkit/query'
 
 export const childrenApi = api.injectEndpoints({
   endpoints: (build) => ({
+    applicationNotifications: build.query<number, void>({
+      query: () => '/citizen/applications/by-guardian/notifications',
+      providesTags: ['ApplicationNotifications']
+    }),
+    acceptDecision: build.mutation<
+      void,
+      { applicationId: UUID; decisionId: UUID; requestedStartDate: LocalDate }
+    >({
+      query: ({ applicationId, decisionId, requestedStartDate }) => ({
+        method: 'POST',
+        url: `/citizen/applications/${applicationId}/actions/accept-decision`,
+        body: { decisionId, requestedStartDate }
+      }),
+      invalidatesTags: ['ApplicationNotifications']
+    }),
+    rejectDecision: build.mutation<
+      void,
+      { applicationId: UUID; decisionId: UUID }
+    >({
+      query: ({ applicationId, decisionId }) => ({
+        method: 'POST',
+        url: `/citizen/applications/${applicationId}/actions/reject-decision`,
+        body: {
+          decisionId
+        }
+      }),
+      invalidatesTags: ['ApplicationNotifications']
+    }),
     children: build.query<JsonOf<Child[]>, void>({
       query: () => '/citizen/children'
     }),
@@ -94,6 +124,8 @@ export const childrenApi = api.injectEndpoints({
 })
 
 export const {
+  useAcceptDecisionMutation,
+  useRejectDecisionMutation,
   useChildrenQuery,
   useUnreadPedagogicalDocumentsCountQuery,
   usePedagogicalDocumentsQuery,
@@ -105,6 +137,19 @@ export const {
   useChildConsentsQuery,
   useInsertChildConsentsMutation
 } = childrenApi
+
+export function useApplicationNotificationsQuery(user: User | undefined) {
+  return childrenApi.useApplicationNotificationsQuery(
+    !user ? skipToken : undefined
+  )
+}
+
+export const useAcceptDecisionMutationResult = mutationResultHook(
+  useAcceptDecisionMutation
+)
+export const useRejectDecisionMutationResult = mutationResultHook(
+  useRejectDecisionMutation
+)
 
 export const useChildrenQueryResult = queryResultHook(useChildrenQuery)
 
@@ -119,7 +164,7 @@ export const deserializePedagogicalDocuments = (
 export function useUnreadAssistanceNeedDecisionsCountQuery(
   user: User | undefined
 ) {
-  return childrenApi.endpoints.unreadAssistanceNeedDecisionsCount.useQuery(
+  return childrenApi.useUnreadAssistanceNeedDecisionsCountQuery(
     !user ? skipToken : undefined
   )
 }
