@@ -257,6 +257,7 @@ describe('Sending and receiving messages', () => {
         await citizenMessagesPage.sendNewMessage(
           'Test message',
           'Test message content',
+          [],
           ['Varayksikön ryhmä (Henkilökunta)']
         )
       })
@@ -366,6 +367,7 @@ describe('Sending and receiving messages', () => {
         await citizenMessagesPage.sendNewMessage(
           defaultTitle,
           defaultContent,
+          [],
           receivers
         )
 
@@ -386,6 +388,7 @@ describe('Sending and receiving messages', () => {
         await citizenMessagesPage.sendNewMessage(
           defaultTitle,
           defaultContent,
+          [],
           receivers
         )
 
@@ -429,7 +432,6 @@ describe('Sending and receiving messages', () => {
         await citizenPage.goto(config.enduserMessagesUrl)
         const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
         await citizenMessagesPage.clickNewMessage()
-        await citizenMessagesPage.selectNewMessageRecipients(recipients)
         await citizenMessagesPage.assertChildrenSelectable([
           fixtures.enduserChildFixtureJari.id,
           enduserChildFixtureKaarina.id
@@ -437,6 +439,7 @@ describe('Sending and receiving messages', () => {
         await citizenMessagesPage.selectMessageChildren([
           enduserChildFixtureKaarina.id
         ])
+        await citizenMessagesPage.selectNewMessageRecipients(recipients)
         await citizenMessagesPage.typeMessage(defaultTitle, defaultContent)
         await citizenMessagesPage.clickSendMessage()
 
@@ -451,6 +454,40 @@ describe('Sending and receiving messages', () => {
         )
       })
 
+      test('The guardian can select another guardian as an recipient', async () => {
+        const otherGuardian = fixtures.enduserChildJariOtherGuardianFixture
+        await insertGuardianFixtures([
+          {
+            childId,
+            guardianId: otherGuardian.id
+          }
+        ])
+
+        const recipients = ['Esimies Essi']
+        await openCitizen(mockedDateAt10)
+        await citizenPage.goto(config.enduserMessagesUrl)
+        const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
+        await citizenMessagesPage.clickNewMessage()
+        await citizenMessagesPage.selectNewMessageRecipients(recipients)
+        await citizenMessagesPage
+          .secondaryRecipient(
+            `${otherGuardian.lastName} ${otherGuardian.firstName}`
+          )
+          .click()
+        await citizenMessagesPage.typeMessage(defaultTitle, defaultContent)
+        await citizenMessagesPage.clickSendMessage()
+
+        await openSupervisorPage(mockedDateAt11)
+        await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
+        const messagesPage = new MessagesPage(unitSupervisorPage)
+        await messagesPage.openInbox(0)
+        await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+        await messagesPage.assertReceivedMessageParticipantsContains(
+          0,
+          `${otherGuardian.lastName} ${otherGuardian.firstName}`
+        )
+      })
+
       test('Citizen sends message to the unit supervisor and the group', async () => {
         const receivers = ['Esimies Essi', 'Kosmiset vakiot (Henkilökunta)']
         await openCitizen(mockedDateAt10)
@@ -459,6 +496,7 @@ describe('Sending and receiving messages', () => {
         await citizenMessagesPage.sendNewMessage(
           defaultTitle,
           defaultContent,
+          [],
           receivers
         )
 

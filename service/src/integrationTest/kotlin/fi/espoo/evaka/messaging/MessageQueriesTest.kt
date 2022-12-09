@@ -562,7 +562,10 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 .first { it != group1Account && it != group2Account }
 
         // when we get the receivers for the citizen person1
-        val receivers = db.read { it.getCitizenReceivers(LocalDate.now(), person1Account).keys }
+        val receivers =
+            db.read {
+                it.getCitizenReceivers(LocalDate.now(), person1Account).values.flatten().toSet()
+            }
 
         assertEquals(
             setOf(
@@ -644,7 +647,10 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
 
         val person1Account = db.read { it.getCitizenMessageAccount(person1Id) }
         // when we get the receivers for the citizen person1
-        val receivers = db.read { it.getCitizenReceivers(LocalDate.now(), person1Account).keys }
+        val receivers =
+            db.read {
+                it.getCitizenReceivers(LocalDate.now(), person1Account).values.flatten().toSet()
+            }
 
         // the result is empty
         assertEquals(setOf(), receivers.map { it.id }.toSet())

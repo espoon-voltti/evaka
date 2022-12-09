@@ -2,20 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React from 'react'
 import styled from 'styled-components'
 
 import { Result } from 'lib-common/api'
 import { UUID } from 'lib-common/types'
-import { faTimes, faTrash } from 'lib-icons'
+import { faTrash } from 'lib-icons'
 
 import Button from '../atoms/buttons/Button'
 import InlineButton from '../atoms/buttons/InlineButton'
 import TextArea from '../atoms/form/TextArea'
 import ButtonContainer from '../layout/ButtonContainer'
-import { fontWeights, Label } from '../typography'
+import { Label } from '../typography'
 import { defaultMargins } from '../white-space'
+
+import { ToggleableRecipient } from './ToggleableRecipient'
 
 const MultiRowTextArea = styled(TextArea)`
   height: unset;
@@ -32,66 +33,11 @@ const EditorRow = styled.div`
   }
 `
 
-const Recipient = styled.button<{ selected: boolean; toggleable: boolean }>`
-  cursor: ${(p) => (p.toggleable ? 'pointer' : 'default')};;
-  padding: 0 ${(p) => (p.selected ? '12px' : defaultMargins.xs)};
-  background-color: ${(p) =>
-    p.selected ? p.theme.colors.grayscale.g15 : 'unset'};
-  border-radius: 1000px;
-  border-width: 0;
-  font-weight: ${fontWeights.semibold};
-  color: ${(p) => (p.selected ? 'unset' : p.theme.colors.main.m2)};
-
-  & > :last-child {
-    margin-left: ${defaultMargins.xs};
-  }
-
-  :not(:last-child) {
-    margin-right: ${defaultMargins.xs};
-`
-
 export interface SelectableAccount {
   id: UUID
   name: string
   selected: boolean
   toggleable: boolean
-}
-
-interface ToggleableRecipientProps extends SelectableAccount {
-  onToggleRecipient: (id: UUID, selected: boolean) => void
-  labelAdd: string
-}
-
-function ToggleableRecipient({
-  id,
-  labelAdd,
-  name,
-  onToggleRecipient,
-  selected,
-  toggleable
-}: ToggleableRecipientProps) {
-  const onClick = toggleable
-    ? () => onToggleRecipient(id, !selected)
-    : undefined
-
-  return (
-    <Recipient
-      onClick={onClick}
-      selected={selected}
-      toggleable={toggleable}
-      aria-disabled={!toggleable}
-      disabled={!toggleable}
-    >
-      {selected ? (
-        <>
-          {name}
-          {toggleable && <FontAwesomeIcon icon={faTimes} />}
-        </>
-      ) : (
-        `+ ${labelAdd} ${name}`
-      )}
-    </Recipient>
-  )
 }
 
 interface Labels {

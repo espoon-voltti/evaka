@@ -368,6 +368,7 @@ export default {
     messageEditor: {
       newMessage: 'Uusi viesti',
       recipients: 'Vastaanottajat',
+      secondaryRecipients: 'Muut vastaanottajat',
       children: 'Viesti koskee',
       subject: 'Otsikko',
       message: 'Viesti',

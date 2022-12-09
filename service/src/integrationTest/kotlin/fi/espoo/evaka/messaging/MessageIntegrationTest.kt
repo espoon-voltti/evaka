@@ -45,8 +45,6 @@ import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.RealEvakaClock
-import fi.espoo.evaka.shared.security.AccessControl
-import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
@@ -79,31 +77,37 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private val clock = RealEvakaClock()
 
-    @Autowired private lateinit var accessControl: AccessControl
-
-    private val person1Id = testAdult_1.id
-    private val person2Id = testAdult_2.id
-    private val person3Id = testAdult_3.id
-    private val person4Id = testAdult_4.id
-    private val person5Id = testAdult_5.id
-    private val fridgeHeadId = person4Id
-    private val employee1Id = EmployeeId(UUID.randomUUID())
-    private val employee2Id = EmployeeId(UUID.randomUUID())
-    private val employee1 =
-        AuthenticatedUser.Employee(id = employee1Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
-    private val employee2 =
-        AuthenticatedUser.Employee(id = employee2Id, roles = setOf(UserRole.UNIT_SUPERVISOR))
-    private val person1 = AuthenticatedUser.Citizen(id = person1Id, CitizenAuthLevel.STRONG)
-    private val person2 = AuthenticatedUser.Citizen(id = person2Id, CitizenAuthLevel.STRONG)
-    private val person3 = AuthenticatedUser.Citizen(id = person3Id, CitizenAuthLevel.STRONG)
-    private val person4 = AuthenticatedUser.Citizen(id = person4Id, CitizenAuthLevel.STRONG)
-    private val person5 = AuthenticatedUser.Citizen(id = person5Id, CitizenAuthLevel.STRONG)
     private val groupId1 = GroupId(UUID.randomUUID())
     private val groupId2 = GroupId(UUID.randomUUID())
+    private val employee1 =
+        AuthenticatedUser.Employee(
+            id = EmployeeId(UUID.randomUUID()),
+            roles = setOf(UserRole.UNIT_SUPERVISOR)
+        )
+    private val employee2 =
+        AuthenticatedUser.Employee(
+            id = EmployeeId(UUID.randomUUID()),
+            roles = setOf(UserRole.UNIT_SUPERVISOR)
+        )
+    private val person1 = AuthenticatedUser.Citizen(id = testAdult_1.id, CitizenAuthLevel.STRONG)
+    private val person2 = AuthenticatedUser.Citizen(id = testAdult_2.id, CitizenAuthLevel.STRONG)
+    private val person3 = AuthenticatedUser.Citizen(id = testAdult_3.id, CitizenAuthLevel.STRONG)
+    private val person4 = AuthenticatedUser.Citizen(id = testAdult_4.id, CitizenAuthLevel.STRONG)
+    private val person5 = AuthenticatedUser.Citizen(id = testAdult_5.id, CitizenAuthLevel.STRONG)
     private val placementStart = LocalDate.of(2022, 5, 14)
     private val placementEnd = placementStart.plusMonths(1)
     private val sendTime = HelsinkiDateTime.of(placementStart, LocalTime.of(12, 11))
     private val readTime = sendTime.plusSeconds(30)
+
+    private lateinit var employee1Account: MessageAccountId
+    private lateinit var employee2Account: MessageAccountId
+    private lateinit var group1Account: MessageAccountId
+    private lateinit var group2Account: MessageAccountId
+    private lateinit var person1Account: MessageAccountId
+    private lateinit var person2Account: MessageAccountId
+    private lateinit var person3Account: MessageAccountId
+    private lateinit var person4Account: MessageAccountId
+    private lateinit var person5Account: MessageAccountId
 
     private fun insertChild(tx: Database.Transaction, child: DevPerson, groupId: GroupId) {
         tx.insertTestPerson(
@@ -148,33 +152,33 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                     enabledPilotFeatures = setOf(PilotFeature.MESSAGING)
                 )
             )
-            tx.insertTestDaycareGroup(
-                DevDaycareGroup(
-                    id = groupId1,
-                    daycareId = testDaycare.id,
-                    startDate = placementStart
-                )
-            )
-            tx.insertTestDaycareGroup(
-                DevDaycareGroup(
-                    id = groupId2,
-                    daycareId = testDaycare.id,
-                    startDate = placementStart
-                )
-            )
 
-            listOf(testAdult_1, testAdult_2, testAdult_3, testAdult_4, testAdult_5).map {
-                tx.insertTestPerson(
-                    DevPerson(id = it.id, firstName = it.firstName, lastName = it.lastName)
+            fun insertGroup(id: GroupId): MessageAccountId {
+                tx.insertTestDaycareGroup(
+                    DevDaycareGroup(id = id, daycareId = testDaycare.id, startDate = placementStart)
                 )
-                tx.createPersonMessageAccount(it.id)
+                return tx.createDaycareGroupMessageAccount(id)
             }
+            group1Account = insertGroup(groupId1)
+            group2Account = insertGroup(groupId2)
+
+            fun insertPerson(person: DevPerson): MessageAccountId {
+                tx.insertTestPerson(person)
+                return tx.createPersonMessageAccount(person.id)
+            }
+            person1Account = insertPerson(testAdult_1)
+            person2Account = insertPerson(testAdult_2)
+            person3Account = insertPerson(testAdult_3)
+            person4Account = insertPerson(testAdult_4)
+            person5Account = insertPerson(testAdult_5)
+
+            val fridgeHeadId = person4.id
 
             // person 1 and 2 are guardians of child 1
             testChild_1.let {
                 insertChild(tx, it, groupId1)
-                tx.insertGuardian(person1Id, it.id)
-                tx.insertGuardian(person2Id, it.id)
+                tx.insertGuardian(person1.id, it.id)
+                tx.insertGuardian(person2.id, it.id)
                 tx.insertTestParentship(
                     fridgeHeadId,
                     it.id
@@ -184,13 +188,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             // person 2 and 3 are guardian of child 3
             testChild_3.let {
                 insertChild(tx, it, groupId1)
-                tx.insertGuardian(person2Id, it.id)
-                tx.insertGuardian(person3Id, it.id)
+                tx.insertGuardian(person2.id, it.id)
+                tx.insertGuardian(person3.id, it.id)
             }
 
             testChild_4.let {
                 insertChild(tx, it, groupId2)
-                tx.insertGuardian(person4Id, it.id)
+                tx.insertGuardian(person4.id, it.id)
             }
 
             testChild_5.let {
@@ -201,46 +205,27 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             // person 3 and 5 are guardian of child 6
             testChild_6.let {
                 insertChild(tx, it, groupId1)
-                tx.insertGuardian(person3Id, it.id)
-                tx.insertGuardian(person5Id, it.id)
+                tx.insertGuardian(person3.id, it.id)
+                tx.insertGuardian(person5.id, it.id)
             }
 
             tx.insertTestEmployee(
-                DevEmployee(id = employee1Id, firstName = "Firstname", lastName = "Employee")
+                DevEmployee(id = employee1.id, firstName = "Firstname", lastName = "Employee")
             )
-            tx.upsertEmployeeMessageAccount(employee1Id)
-            tx.insertDaycareAclRow(testDaycare.id, employee1Id, UserRole.UNIT_SUPERVISOR)
-            tx.insertDaycareGroupAcl(testDaycare.id, employee1Id, listOf(groupId1, groupId2))
+            employee1Account = tx.upsertEmployeeMessageAccount(employee1.id)
+            tx.insertDaycareAclRow(testDaycare.id, employee1.id, UserRole.UNIT_SUPERVISOR)
+            tx.insertDaycareGroupAcl(testDaycare.id, employee1.id, listOf(groupId1, groupId2))
 
             tx.insertTestEmployee(
-                DevEmployee(id = employee2Id, firstName = "Foo", lastName = "Supervisor")
+                DevEmployee(id = employee2.id, firstName = "Foo", lastName = "Supervisor")
             )
-            tx.upsertEmployeeMessageAccount(employee2Id)
-            tx.insertDaycareAclRow(testDaycare2.id, employee2Id, UserRole.UNIT_SUPERVISOR)
+            employee2Account = tx.upsertEmployeeMessageAccount(employee2.id)
+            tx.insertDaycareAclRow(testDaycare2.id, employee2.id, UserRole.UNIT_SUPERVISOR)
         }
     }
 
     @Test
     fun `a thread is created, accessed and replied to by participants who are guardian of the same child`() {
-        // given
-        val clock = MockEvakaClock(HelsinkiDateTime.now())
-        val (employee1Account, person1Account, person2Account) =
-            db.read {
-                listOf(
-                    it.getEmployeeMessageAccountIds(
-                            accessControl.requireAuthorizationFilter(
-                                it,
-                                employee1,
-                                clock,
-                                Action.MessageAccount.ACCESS
-                            )
-                        )
-                        .first(),
-                    it.getCitizenMessageAccount(person1Id),
-                    it.getCitizenMessageAccount(person2Id)
-                )
-            }
-
         // when a message thread is created
         postNewThread(
             title = "Juhannus",
@@ -370,43 +355,18 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `guardian can send a message only to group, not group staff`() {
-        db.transaction { it.createDaycareGroupMessageAccount(groupId1) }
-        // Group account and the employee personal account
-        assertEquals(getCitizenReceivers(person1).messageAccounts.size, 2)
+    fun `guardian can send a message only to group and other guardian, not group staff`() {
+        fun getRecipients() = getCitizenReceivers(person1).messageAccounts.map { it.id }.toSet()
+
+        assertEquals(setOf(group1Account, person2Account, employee1Account), getRecipients())
 
         // When a supervisor works as staff, her account is deactivated
-        db.transaction { it.deactivateEmployeeMessageAccount(employee1Id) }
-        assertEquals(getCitizenReceivers(person1).messageAccounts.size, 1)
+        db.transaction { it.deactivateEmployeeMessageAccount(employee1.id) }
+        assertEquals(setOf(group1Account, person2Account), getRecipients())
     }
 
     @Test
     fun `a message is split to several threads by guardianship`() {
-        // given
-        val clock = MockEvakaClock(HelsinkiDateTime.now())
-        val employee1Account =
-            db.read {
-                it.getEmployeeMessageAccountIds(
-                        accessControl.requireAuthorizationFilter(
-                            it,
-                            employee1,
-                            clock,
-                            Action.MessageAccount.ACCESS
-                        )
-                    )
-                    .first()
-            }
-        val (person1Account, person2Account, person3Account, person4Account, person5Account) =
-            db.read {
-                listOf(
-                    it.getCitizenMessageAccount(person1Id),
-                    it.getCitizenMessageAccount(person2Id),
-                    it.getCitizenMessageAccount(person3Id),
-                    it.getCitizenMessageAccount(person4Id),
-                    it.getCitizenMessageAccount(person5Id)
-                )
-            }
-
         // when a new thread is created to several recipients who do not all have common children
         val title = "Thread splitting"
         val content = "This message is sent to several participants and split to threads"
@@ -513,24 +473,6 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `a bulletin cannot be replied to by the recipients`() {
-        // given
-        val clock = MockEvakaClock(HelsinkiDateTime.now())
-        val (employee1Account, person1Account) =
-            db.read {
-                listOf(
-                    it.getEmployeeMessageAccountIds(
-                            accessControl.requireAuthorizationFilter(
-                                it,
-                                employee1,
-                                clock,
-                                Action.MessageAccount.ACCESS
-                            )
-                        )
-                        .first(),
-                    it.getCitizenMessageAccount(person1Id)
-                )
-            }
-
         // when a bulletin thread is created
         postNewThread(
             title = "Tiedote",
@@ -594,25 +536,6 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `messages can be marked read`() {
-        // given
-        val clock = MockEvakaClock(HelsinkiDateTime.now())
-        val (employee1Account, person1Account, person2Account) =
-            db.read {
-                listOf(
-                    it.getEmployeeMessageAccountIds(
-                            accessControl.requireAuthorizationFilter(
-                                it,
-                                employee1,
-                                clock,
-                                Action.MessageAccount.ACCESS
-                            )
-                        )
-                        .first(),
-                    it.getCitizenMessageAccount(person1Id),
-                    it.getCitizenMessageAccount(person2Id)
-                )
-            }
-
         // when a message thread is created
         postNewThread(
             title = "t1",
@@ -657,24 +580,6 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `messages can have attachments`() {
-        // given
-        val clock = MockEvakaClock(HelsinkiDateTime.now())
-        val (employee1Account, person1Account) =
-            db.read {
-                listOf(
-                    it.getEmployeeMessageAccountIds(
-                            accessControl.requireAuthorizationFilter(
-                                it,
-                                employee1,
-                                clock,
-                                Action.MessageAccount.ACCESS
-                            )
-                        )
-                        .first(),
-                    it.getCitizenMessageAccount(person1Id)
-                )
-            }
-
         val draftId = db.transaction { it.initDraft(employee1Account) }
 
         assertEquals(1, db.read { it.getDrafts(employee1Account) }.size)
@@ -796,10 +701,6 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `employee with access to two groups cannot send messages as group1 to group2`() {
-        val group1Account = db.transaction { it.createDaycareGroupMessageAccount(groupId1) }
-        val group2Account = db.transaction { it.createDaycareGroupMessageAccount(groupId2) }
-        val person4Account = db.read { it.getCitizenMessageAccount(person4Id) }
-
         postNewThread(
             title = "Juhannus",
             message = "Juhannus tulee pian",
@@ -825,10 +726,6 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     @Test
     fun `employee with access to two groups cannot send messages as group1 to child in group2`() {
-        val group1Account = db.transaction { it.createDaycareGroupMessageAccount(groupId1) }
-        val group2Account = db.transaction { it.createDaycareGroupMessageAccount(groupId2) }
-        val person4Account = db.read { it.getCitizenMessageAccount(person4Id) }
-
         postNewThread(
             title = "Juhannus",
             message = "Juhannus tulee pian",
