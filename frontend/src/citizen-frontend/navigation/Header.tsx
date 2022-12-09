@@ -32,7 +32,7 @@ export default React.memo(function Header(props: { ariaHidden: boolean }) {
   }, [refreshUnreadMessagesCount, user])
 
   const { data: unreadAssistanceNeedDecisionCounts } =
-    useUnreadAssistanceNeedDecisionsCountQuery()
+    useUnreadAssistanceNeedDecisionsCountQuery(user)
   const { waitingConfirmationCount } = useContext(ApplicationsContext)
 
   const location = useLocation()

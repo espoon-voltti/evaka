@@ -14,7 +14,7 @@ import { Gap } from 'lib-components/white-space'
 
 import Footer from '../Footer'
 import { renderResult } from '../async-rendering'
-import { useChildren } from '../state/children/childrenState'
+import { useChildrenQueryResult } from '../state/children/childrenApi'
 
 import ChildHeader from './ChildHeader'
 import ChildConsentsSection from './sections/consents/ChildConsentsSection'
@@ -24,7 +24,7 @@ import VasuAndLeopsSection from './sections/vasu-and-leops/VasuAndLeopsSection'
 
 export default React.memo(function ChildPage() {
   const { childId } = useNonNullableParams<{ childId: string }>()
-  const children = useChildren()
+  const children = useChildrenQueryResult()
   const child = children.chain<Child>((children) => {
     const child = children.find((child) => child.id === childId)
     return child ? Success.of(child) : Failure.of({ message: 'Not found' })

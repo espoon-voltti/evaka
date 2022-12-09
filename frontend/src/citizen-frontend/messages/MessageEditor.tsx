@@ -29,7 +29,7 @@ import { faTimes } from 'lib-icons'
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
-import { useChildren } from '../state/children/childrenState'
+import { useChildrenQueryResult } from '../state/children/childrenApi'
 
 const emptyMessage: CitizenMessageBody = {
   title: '',
@@ -68,7 +68,7 @@ export default React.memo(function MessageEditor({
   const send = useCallback(() => onSend(message), [message, onSend])
   const sendEnabled = areRequiredFieldsFilledForMessage(message)
 
-  const children = useChildren()
+  const children = useChildrenQueryResult()
 
   const childIds = useMemo(
     () =>

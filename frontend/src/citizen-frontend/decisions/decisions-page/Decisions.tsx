@@ -16,7 +16,7 @@ import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../localization'
-import { useChildren } from '../../state/children/childrenState'
+import { useChildrenQueryResult } from '../../state/children/childrenApi'
 import useTitle from '../../useTitle'
 import { getDecisions, getAssistanceNeedDecisions } from '../api'
 import { applicationDecisionIsUnread } from '../shared'
@@ -26,7 +26,7 @@ import AssistanceDecision from './AssistanceDecision'
 
 export default React.memo(function Decisions() {
   const t = useTranslation()
-  const children = useChildren()
+  const children = useChildrenQueryResult()
   const [applicationDecisions] = useApiState(getDecisions, [])
   const [assistanceDecisions] = useApiState(getAssistanceNeedDecisions, [])
 

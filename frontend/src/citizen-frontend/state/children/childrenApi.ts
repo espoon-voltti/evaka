@@ -12,7 +12,10 @@ import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
 import { UUID } from 'lib-common/types'
 
-import { api, mutationResultHook, queryResultHook } from '../api'
+import { User } from '../../auth/state'
+import { api } from '../api'
+import { queryResultHook, mutationResultHook } from '../utils'
+import { skipToken } from '@reduxjs/toolkit/query'
 
 export const childrenApi = api.injectEndpoints({
   endpoints: (build) => ({
@@ -95,7 +98,6 @@ export const {
   useUnreadPedagogicalDocumentsCountQuery,
   usePedagogicalDocumentsQuery,
   useMarkPedagogicalDocumentReadMutation,
-  useUnreadAssistanceNeedDecisionsCountQuery,
   useMarkAssistanceNeedDecisionAsReadMutation,
   useUnreadVasuDocumentsCountQuery,
   useGivePermissionToShareVasuMutation,
@@ -113,6 +115,15 @@ export const deserializePedagogicalDocuments = (
     ...item,
     created: HelsinkiDateTime.parseIso(item.created)
   }))
+
+export function useUnreadAssistanceNeedDecisionsCountQuery(
+  user: User | undefined
+) {
+  return childrenApi.endpoints.unreadAssistanceNeedDecisionsCount.useQuery(
+    !user ? skipToken : undefined
+  )
+}
+
 export const usePedagogicalDocumentsQueryResult = queryResultHook(
   usePedagogicalDocumentsQuery,
   deserializePedagogicalDocuments
