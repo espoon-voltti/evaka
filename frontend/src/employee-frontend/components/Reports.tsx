@@ -239,7 +239,7 @@ export default React.memo(function Reports() {
               )}
               {reports.has('ENDED_PLACEMENTS') && (
                 <Report
-                  path="/reports/missing-service-need"
+                  path="/reports/ended-placements"
                   color={colors.main.m2}
                   icon={faHourglassEnd}
                   i18n={i18n.reports.endedPlacements}
