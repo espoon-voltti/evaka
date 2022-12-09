@@ -56,9 +56,7 @@ export default React.memo(function Applications() {
             (childApplications) => (
               <Fragment key={childApplications.childId}>
                 <ChildApplicationsBlock
-                  childId={childApplications.childId}
-                  childName={childApplications.childName}
-                  applicationSummaries={childApplications.applicationSummaries}
+                  data={childApplications}
                   reload={loadGuardianApplications}
                 />
                 <Gap size="s" />

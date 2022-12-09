@@ -282,6 +282,7 @@ export interface ApplicationsOfChild {
   applicationSummaries: CitizenApplicationSummary[]
   childId: UUID
   childName: string
+  permittedActions: Record<string, Action.Citizen.Application[]>
 }
 
 /**

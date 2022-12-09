@@ -9,8 +9,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import {
-  ApplicationStatus,
-  CitizenApplicationSummary
+  ApplicationsOfChild,
+  ApplicationStatus
 } from 'lib-common/generated/api-types/application'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
@@ -76,9 +76,7 @@ const Icon = styled(FontAwesomeIcon)`
 `
 
 interface ChildApplicationsBlockProps {
-  childId: string
-  childName: string
-  applicationSummaries: CitizenApplicationSummary[]
+  data: ApplicationsOfChild
   reload: () => void
 }
 
@@ -88,9 +86,7 @@ const ChildHeading = styled(H2)`
 `
 
 export default React.memo(function ChildApplicationsBlock({
-  childId,
-  childName,
-  applicationSummaries,
+  data: { childId, childName, applicationSummaries, permittedActions },
   reload
 }: ChildApplicationsBlockProps) {
   const navigate = useNavigate()
@@ -255,19 +251,22 @@ export default React.memo(function ChildApplicationsBlock({
                     </Status>
                   </div>
 
-                  {applicationStatus === 'WAITING_CONFIRMATION' && (
-                    <ConfirmationContainer>
-                      <div color={colors.main.m2}>
-                        {t.applicationsList.confirmationLinkInstructions}
-                      </div>
-                      <StyledLink
-                        to={`/decisions/by-application/${applicationId}`}
-                      >
-                        {t.applicationsList.confirmationLink}{' '}
-                        <Icon icon={faArrowRight} color={colors.main.m2} />
-                      </StyledLink>
-                    </ConfirmationContainer>
-                  )}
+                  {applicationStatus === 'WAITING_CONFIRMATION' &&
+                    permittedActions[applicationId]?.includes(
+                      'READ_DECISIONS'
+                    ) && (
+                      <ConfirmationContainer>
+                        <div color={colors.main.m2}>
+                          {t.applicationsList.confirmationLinkInstructions}
+                        </div>
+                        <StyledLink
+                          to={`/decisions/by-application/${applicationId}`}
+                        >
+                          {t.applicationsList.confirmationLink}{' '}
+                          <Icon icon={faArrowRight} color={colors.main.m2} />
+                        </StyledLink>
+                      </ConfirmationContainer>
+                    )}
                 </StatusContainer>
 
                 <Gap size="xs" horizontal />
@@ -275,7 +274,8 @@ export default React.memo(function ChildApplicationsBlock({
               <Gap size="s" />
               <FixedSpaceFlexWrap>
                 {applicationStatus === 'CREATED' ||
-                applicationStatus === 'SENT' ? (
+                (applicationStatus === 'SENT' &&
+                  permittedActions[applicationId]?.includes('UPDATE')) ? (
                   <Link to={`/applications/${applicationId}/edit`}>
                     <InlineButton
                       icon={faPen}
@@ -284,7 +284,7 @@ export default React.memo(function ChildApplicationsBlock({
                       data-qa={`button-open-application-${applicationId}`}
                     />
                   </Link>
-                ) : (
+                ) : permittedActions[applicationId]?.includes('READ') ? (
                   <Link to={`/applications/${applicationId}`}>
                     <InlineButton
                       icon={faFileAlt}
@@ -293,22 +293,23 @@ export default React.memo(function ChildApplicationsBlock({
                       data-qa={`button-open-application-${applicationId}`}
                     />
                   </Link>
-                )}
+                ) : undefined}
                 {(applicationStatus === 'CREATED' ||
-                  applicationStatus === 'SENT') && (
-                  <InlineButton
-                    icon={faTrash}
-                    text={
-                      applicationStatus === 'CREATED'
-                        ? t.applicationsList.removeApplicationBtn
-                        : t.applicationsList.cancelApplicationBtn
-                    }
-                    onClick={() =>
-                      onDeleteApplication(applicationId, applicationStatus)
-                    }
-                    data-qa={`button-remove-application-${applicationId}`}
-                  />
-                )}
+                  applicationStatus === 'SENT') &&
+                  permittedActions[applicationId]?.includes('DELETE') && (
+                    <InlineButton
+                      icon={faTrash}
+                      text={
+                        applicationStatus === 'CREATED'
+                          ? t.applicationsList.removeApplicationBtn
+                          : t.applicationsList.cancelApplicationBtn
+                      }
+                      onClick={() =>
+                        onDeleteApplication(applicationId, applicationStatus)
+                      }
+                      data-qa={`button-remove-application-${applicationId}`}
+                    />
+                  )}
               </FixedSpaceFlexWrap>
 
               {index != applicationSummaries.length - 1 && <LineBreak />}
