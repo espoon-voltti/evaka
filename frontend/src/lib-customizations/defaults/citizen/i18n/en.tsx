@@ -1008,7 +1008,8 @@ const en: Translations = {
           ssnPlaceholder: 'e.g. 010110A000P'
         },
         units: {
-          title: 'Preferred units',
+          title: (maxUnits: number) =>
+            maxUnits === 1 ? 'Preferred unit' : 'Preferred units',
           startDateMissing:
             'To select preferred units first set the preferred start date on "Service need" section',
           info: {
@@ -1076,14 +1077,18 @@ const en: Translations = {
             sv: 'swedish'
           },
           select: {
-            label: 'Select preferences',
+            label: (maxUnits: number) =>
+              maxUnits === 1 ? 'Select preference' : 'Select preferences',
             placeholder: 'Select units',
             maxSelected:
               'Maximum number of preferred units reached. Remove an unit so you can add a new one',
             noOptions: 'No matches'
           },
           preferences: {
-            label: 'Application preferences you selected',
+            label: (maxUnits: number) =>
+              maxUnits === 1
+                ? 'Application preference you selected'
+                : 'Application preferences you selected',
             noSelections: 'No selections',
             info: (maxUnits: number) =>
               maxUnits === 1

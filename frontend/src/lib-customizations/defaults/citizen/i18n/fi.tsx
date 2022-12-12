@@ -969,7 +969,8 @@ export default {
           ssnPlaceholder: 'Henkilötunnus'
         },
         units: {
-          title: 'Hakutoiveet',
+          title: (maxUnits: number): string =>
+            maxUnits === 1 ? 'Hakutoive' : 'Hakutoiveet',
           startDateMissing:
             'Päästäksesi valitsemaan hakutoiveet valitse ensin toivottu aloituspäivä "Palvelun tarve" -osiosta',
           info: {
@@ -1035,13 +1036,17 @@ export default {
             sv: 'ruotsi'
           },
           select: {
-            label: 'Valitse hakutoiveet',
+            label: (maxUnits: number): string =>
+              maxUnits === 1 ? 'Valitse hakutoive' : 'Valitse hakutoiveet',
             placeholder: 'Hae yksiköitä',
             maxSelected: 'Maksimimäärä yksiköitä valittu',
             noOptions: 'Ei hakuehtoja vastaavia yksiköitä'
           },
           preferences: {
-            label: 'Valitsemasi hakutoiveet',
+            label: (maxUnits: number): string =>
+              maxUnits === 1
+                ? 'Valitsemasi hakutoive'
+                : 'Valitsemasi hakutoiveet',
             noSelections: 'Ei valintoja',
             info: (maxUnits: number) =>
               maxUnits === 1
