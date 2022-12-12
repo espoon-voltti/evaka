@@ -60,6 +60,7 @@ const config = {
       'chromium'
   },
   apiUrl: `${browserUrl}/api/internal`,
+  citizenApiUrl: `${browserUrl}/api/application`,
   adminUrl: `${browserUrl}/employee/applications`,
   employeeUrl: `${browserUrl}/employee`,
   employeeLoginUrl: `${browserUrl}/employee/login`,

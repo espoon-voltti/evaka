@@ -8,7 +8,7 @@ import {
   Strategy as SamlStrategy,
   VerifiedCallback
 } from 'passport-saml'
-import DevPassportStrategy from './dev-passport-strategy'
+import DevAdStrategy from './dev-ad-strategy'
 import { SamlUser } from '../routes/auth/saml/types'
 import { adMock, adConfig, adExternalIdPrefix } from '../config'
 import certificates from '../certificates'
@@ -96,7 +96,7 @@ export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
 
 export default function createAdStrategy(
   config: SamlConfig
-): SamlStrategy | DevPassportStrategy {
+): SamlStrategy | DevAdStrategy {
   if (adMock) {
     const getter = async (userId: string) => {
       const employee = await getEmployeeByExternalId(userId)
@@ -135,7 +135,7 @@ export default function createAdStrategy(
       })
     }
 
-    return new DevPassportStrategy(getter, upserter)
+    return new DevAdStrategy(getter, upserter)
   } else {
     return new SamlStrategy(
       config,

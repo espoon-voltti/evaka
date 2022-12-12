@@ -28,6 +28,23 @@ export async function getEmployeeByExternalId(externalId: string) {
   return data
 }
 
+export async function getCitizenBySsn(ssn: string): Promise<Citizen> {
+  const { data } = await client.get<Citizen>(`/dev-api/citizen/ssn/${ssn}`)
+  return data
+}
+
+export async function getCitizens(): Promise<Citizen[]> {
+  const { data } = await client.get(`/dev-api/citizen`)
+  return data
+}
+
+interface Citizen {
+  ssn: string
+  firstName: string
+  lastName: string
+  dependantCount: number
+}
+
 interface Employee {
   id: UUID
   firstName: string

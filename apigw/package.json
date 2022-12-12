@@ -36,7 +36,6 @@
     "make-error-cause": "^2.3.0",
     "nocache": "^3.0.3",
     "passport": "^0.5.2",
-    "passport-dummy": "0.0.1",
     "passport-saml": "3.2.4",
     "pino": "^7.10.0",
     "pino-http": "^6.6.0",

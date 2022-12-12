@@ -8,8 +8,14 @@ import passport from 'passport'
 import path from 'path'
 import { AuthenticateOptions, SAML } from 'passport-saml'
 import { createLogoutToken, tryParseProfile } from '../../../auth'
-import { adMock, evakaBaseUrl, gatewayRole, nodeEnv } from '../../../config'
-import { getEmployees } from '../../../dev-api'
+import {
+  adMock,
+  evakaBaseUrl,
+  gatewayRole,
+  nodeEnv,
+  sfiMock
+} from '../../../config'
+import { getCitizens, getEmployees } from '../../../dev-api'
 import { toMiddleware, toRequestHandler } from '../../../express'
 import { logAuditEvent, logDebug, logError } from '../../../logging'
 import { fromCallback } from '../../../promise-utils'
@@ -148,10 +154,11 @@ function createLogoutHandler({
       req,
       'Logout endpoint called'
     )
-    if ('logout' in strategy && req.user) {
+    const logout = strategy.logout
+    if (logout && req.user) {
       try {
         const redirectUrl = await fromCallback<string | null>((cb) =>
-          strategy.logout(req as RequestWithUser, cb)
+          logout(req as RequestWithUser, cb)
         )
         logDebug('Logging user out from passport.', req)
         await logoutExpress(req, res, sessionType)
@@ -223,7 +230,10 @@ export default function createSamlRouter(config: SamlEndpointConfig): Router {
   )
 
   if (adMock) {
-    configureDevLogin(router)
+    configureDevAdLogin(router, config)
+  }
+  if (sfiMock) {
+    configureDevSfiLogin(router, config)
   }
 
   // Our application directs the browser to one of these endpoints to start
@@ -254,9 +264,9 @@ export default function createSamlRouter(config: SamlEndpointConfig): Router {
   return router
 }
 
-function configureDevLogin(router: Router) {
+function configureDevAdLogin(router: Router, config: SamlEndpointConfig) {
   router.get(
-    '/dev-auth/login',
+    '/dev-ad-auth/login',
     toRequestHandler(async (req, res) => {
       const employees = _.sortBy(await getEmployees(), ({ id }) => id)
       const employeeInputs = employees
@@ -271,7 +281,7 @@ function configureDevLogin(router: Router) {
         typeof req.query.RelayState === 'string'
           ? `?RelayState=${encodeURIComponent(req.query.RelayState)}`
           : ''
-      const formUri = `${req.baseUrl}/auth/saml/login/callback${formQuery}`
+      const formUri = `${req.baseUrl}/auth/${config.pathIdentifier}/login/callback${formQuery}`
 
       res.contentType('text/html').send(`
           <html>
@@ -305,6 +315,52 @@ function configureDevLogin(router: Router) {
                   <input id="evaka-espoo-director" type="checkbox" name="roles" value="DIRECTOR" /><label for="evaka-espoo-director">Raportointi (director)</label><br>
                   <input id="evaka-espoo-admin" type="checkbox" name="roles" value="ADMIN" /><label for="evaka-espoo-admin">Pääkäyttäjä</label><br>
                 </div>
+                <div style="margin-top: 20px">
+                  <button type="submit">Kirjaudu</button>
+                </div>
+            </form>
+          </body>
+          </html>
+        `)
+    })
+  )
+}
+
+function configureDevSfiLogin(router: Router, config: SamlEndpointConfig) {
+  router.get(
+    '/dev-sfi-auth/login',
+    toRequestHandler(async (req, res) => {
+      const defaultSsn = '070644-937X'
+
+      const citizens = _.orderBy(
+        await getCitizens(),
+        [
+          ({ ssn }) => defaultSsn === ssn,
+          ({ dependantCount }) => dependantCount,
+          ({ ssn }) => ssn
+        ],
+        ['desc', 'desc', 'asc']
+      )
+      const citizenInputs = citizens
+        .map(({ ssn, firstName, lastName, dependantCount }) => {
+          if (!ssn) return ''
+          const checked = ssn === defaultSsn ? 'checked' : ''
+          return `<div><input type="radio" id="${ssn}" name="preset" value="${ssn}" ${checked}/><label for="${ssn}">${firstName} ${lastName} (${dependantCount} huollettavaa)</label></div>`
+        })
+        .filter((line) => !!line)
+
+      const formQuery =
+        typeof req.query.RelayState === 'string'
+          ? `?RelayState=${encodeURIComponent(req.query.RelayState)}`
+          : ''
+      const formUri = `${req.baseUrl}/auth/${config.pathIdentifier}/login/callback${formQuery}`
+
+      res.contentType('text/html').send(`
+          <html>
+          <body>
+            <h1>Devausympäristön Suomi.fi-kirjautuminen</h1>
+            <form action="${formUri}" method="post">
+                ${citizenInputs.join('\n')}
                 <div style="margin-top: 20px">
                   <button type="submit">Kirjaudu</button>
                 </div>
