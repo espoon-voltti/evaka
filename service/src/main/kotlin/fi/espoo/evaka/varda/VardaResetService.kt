@@ -117,7 +117,8 @@ class VardaResetService(
             }
         } catch (e: Exception) {
             logger.info(
-                "VardaUpdate: failed to nuke varda children by report data: ${e.localizedMessage}"
+                "VardaUpdate: failed to nuke varda children by report data: ${e.localizedMessage}",
+                e
             )
         }
     }
@@ -154,7 +155,7 @@ private fun resetVardaChild(
                 "VardaUpdate: successfully sent ${childServiceNeeds.size} service needs for $childId"
             )
         } catch (e: Exception) {
-            logger.warn("VardaUpdate: failed to reset child $childId: ${e.message}")
+            logger.warn("VardaUpdate: failed to reset child $childId: ${e.message}", e)
         }
     }
 }
@@ -177,7 +178,8 @@ fun deleteChildDataFromVardaAndDb(
                 true
             } catch (e: Exception) {
                 logger.warn(
-                    "VardaUpdate: failed to delete varda data for child $evakaChildId (varda id $vardaChildId): ${e.localizedMessage}"
+                    "VardaUpdate: failed to delete varda data for child $evakaChildId (varda id $vardaChildId): ${e.localizedMessage}",
+                    e
                 )
                 false
             }
