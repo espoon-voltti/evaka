@@ -21,6 +21,7 @@ import fi.espoo.evaka.placement.PlacementType.PREPARATORY_DAYCARE
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_CLUB
 import fi.espoo.evaka.placement.PlacementType.PRESCHOOL_DAYCARE
+import fi.espoo.evaka.serviceneed.getChildContractDayOccurrenceForUnit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.FeatureConfig
@@ -32,6 +33,7 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.Duration
@@ -553,6 +555,7 @@ private fun Database.Read.getAttendancesResponse(
     val dailyNotesForChildrenInUnit = getChildDailyNotesInUnit(unitId, instant.toLocalDate())
     val stickyNotesForChildrenInUnit = getChildStickyNotesForUnit(unitId, instant.toLocalDate())
     val attendanceReservations = fetchAttendanceReservations(unitId, instant)
+    val childContractDays = getChildContractDayOccurrenceForUnit(unitId, instant.toLocalDate())
 
     val children =
         childrenBasics.map { child ->
@@ -578,7 +581,9 @@ private fun Database.Read.getAttendancesResponse(
                 stickyNotes = stickyNotes,
                 imageUrl = child.imageUrl,
                 reservations = attendanceReservations[child.id]?.sortedBy { it.startTime }
-                        ?: listOf()
+                        ?: listOf(),
+                hasContractDayServiceNeed = childContractDays[child.id]
+                        ?: throw NotFound("No placement connection found for child ${child.id}")
             )
         }
 
