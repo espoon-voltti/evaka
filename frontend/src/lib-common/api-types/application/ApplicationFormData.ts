@@ -14,6 +14,7 @@ import {
   OtherGuardianAgreementStatus,
   ServiceNeedOption
 } from 'lib-common/generated/api-types/application'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import LocalDate from 'lib-common/local-date'
 
 export type ServiceNeedFormData = {
@@ -32,6 +33,7 @@ export type ServiceNeedFormData = {
   urgencyAttachments: ApplicationAttachment[]
   wasOnClubCare: boolean
   wasOnDaycare: boolean
+  placementType: PlacementType | null
   serviceNeedOption: ServiceNeedOption | null
 }
 
@@ -191,6 +193,9 @@ export function apiDataToFormData(
       endTime: application.form.preferences.serviceNeed?.endTime ?? '',
       shiftCare: application.form.preferences.serviceNeed?.shiftCare ?? false,
       partTime: application.form.preferences.serviceNeed?.partTime ?? false,
+      placementType:
+        application.form.preferences.serviceNeed?.serviceNeedOption
+          ?.validPlacementType ?? null,
       serviceNeedOption:
         application.form.preferences.serviceNeed?.serviceNeedOption ?? null,
       preparatory: application.form.preferences.preparatory,
