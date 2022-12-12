@@ -51,7 +51,7 @@ fun updateUnits(
                 )
             }
         } catch (e: Exception) {
-            logger.error { "VardaUpdate: failed to update unit ${unit.name}: $e" }
+            logger.error("VardaUpdate: failed to update unit ${unit.name}: $e", e)
         }
     }
 }

@@ -162,7 +162,7 @@ fun updateVardaChild(
             }
         }
     } catch (e: Exception) {
-        logger.info("VardaUpdate: failed to update child $evakaChildId: ${e.localizedMessage}")
+        logger.info("VardaUpdate: failed to update child $evakaChildId: ${e.localizedMessage}", e)
     }
 }
 
@@ -185,7 +185,8 @@ private fun handleDeletedEvakaServiceNeed(
             it.markVardaServiceNeedUpdateFailed(evakaServiceNeedId, listOf(e.localizedMessage))
         }
         logger.error(
-            "VardaUpdate: error while processing deleted service need $evakaServiceNeedId: ${e.localizedMessage}"
+            "VardaUpdate: error while processing deleted service need $evakaServiceNeedId: ${e.localizedMessage}",
+            e
         )
     }
 }
@@ -219,7 +220,8 @@ private fun handleUpdatedEvakaServiceNeed(
             it.markVardaServiceNeedUpdateFailed(evakaServiceNeedId, listOf(e.localizedMessage))
         }
         logger.error(
-            "VardaUpdate: error while processing updated service need $evakaServiceNeedId: ${e.localizedMessage}"
+            "VardaUpdate: error while processing updated service need $evakaServiceNeedId: ${e.localizedMessage}",
+            e
         )
     }
 }
