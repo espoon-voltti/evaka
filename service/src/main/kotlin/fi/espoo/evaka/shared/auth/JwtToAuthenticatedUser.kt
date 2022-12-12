@@ -30,7 +30,7 @@ class JwtToAuthenticatedUser(private val tracer: Tracer) : HttpFilter() {
 
         if (user != null) {
             request.setAuthenticatedUser(user)
-            tracer.activeSpan()?.setTag(Tracing.enduserIdHash, user.rawIdHash.toString())
+            tracer.activeSpan()?.setTag(Tracing.enduserIdHash, user.rawIdHash)
             MdcKey.USER_ID.set(user.rawId().toString())
             MdcKey.USER_ID_HASH.set(user.rawIdHash.toString())
         }

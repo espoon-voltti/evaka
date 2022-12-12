@@ -7,6 +7,7 @@ package fi.espoo.evaka.shared.config
 import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
+import io.opentracing.Tracer
 import org.jdbi.v3.core.Jdbi
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -16,6 +17,6 @@ class SecurityConfig {
     @Bean fun accessControlList(jdbi: Jdbi): AccessControlList = AccessControlList(jdbi)
 
     @Bean
-    fun accessControl(actionRuleMapping: ActionRuleMapping): AccessControl =
-        AccessControl(actionRuleMapping)
+    fun accessControl(actionRuleMapping: ActionRuleMapping, tracer: Tracer): AccessControl =
+        AccessControl(actionRuleMapping, tracer)
 }

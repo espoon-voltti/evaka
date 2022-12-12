@@ -43,6 +43,7 @@ import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
+import io.opentracing.noop.NoopTracerFactory
 import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
@@ -118,7 +119,7 @@ class AclIntegrationTest : PureJdbiTest(resetDbBeforeEach = false) {
             mobileId = it.insertTestMobileDevice(DevMobileDevice(unitId = daycareId))
         }
         acl = AccessControlList(jdbi)
-        accessControl = AccessControl(DefaultActionRuleMapping())
+        accessControl = AccessControl(DefaultActionRuleMapping(), NoopTracerFactory.create())
     }
 
     @BeforeEach

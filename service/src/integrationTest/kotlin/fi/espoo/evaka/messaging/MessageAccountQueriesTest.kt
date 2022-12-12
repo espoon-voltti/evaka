@@ -28,6 +28,7 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
+import io.opentracing.noop.NoopTracerFactory
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -42,7 +43,8 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val supervisorId = EmployeeId(UUID.randomUUID())
     private val employee1Id = EmployeeId(UUID.randomUUID())
     private val employee2Id = EmployeeId(UUID.randomUUID())
-    private val accessControl = AccessControl(DefaultActionRuleMapping())
+    private val accessControl =
+        AccessControl(DefaultActionRuleMapping(), NoopTracerFactory.create())
     private lateinit var clock: EvakaClock
 
     @BeforeEach
