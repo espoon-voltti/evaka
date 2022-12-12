@@ -162,16 +162,20 @@ export default React.memo(function ChildConsentsSection({
             />
           </FixedSpaceRow>
           <Gap size="m" />
-          <AsyncButton
-            primary
-            text={t.children.consent.confirm}
-            onClick={onConfirm}
-            onSuccess={() => {
-              refreshChildConsents()
-              refreshChildConsentNotifications()
-            }}
-            data-qa="consent-confirm"
-          />
+          {consents
+            .map((c) => c.get('EVAKA_PROFILE_PICTURE') === null)
+            .getOrElse(true) ? (
+            <AsyncButton
+              primary
+              text={t.children.consent.confirm}
+              onClick={onConfirm}
+              onSuccess={() => {
+                refreshChildConsents()
+                refreshChildConsentNotifications()
+              }}
+              data-qa="consent-confirm"
+            />
+          ) : null}
         </>
       ) : (
         <SpinnerSegment />
