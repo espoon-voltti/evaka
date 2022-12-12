@@ -360,12 +360,18 @@ private fun Database.Read.getVasuPlacements(id: VasuDocumentId): List<VasuPlacem
         .list()
 }
 
+private fun Database.Read.getVasuDocumentBasics(id: VasuDocumentId): VasuBasics =
+    createQuery("SELECT basics FROM curriculum_document WHERE id = :id")
+        .bind("id", id)
+        .map { row -> row.mapJsonColumn<VasuBasics>("basics") }
+        .firstOrNull()
+        ?: throw NotFound("Vasu document $id not found")
+
 fun Database.Transaction.setVasuGuardianHasGivenPermissionToShare(
     docId: VasuDocumentId,
     guardianId: PersonId
 ) {
-    val currentBasics =
-        getVasuDocumentMaster(docId)?.basics ?: throw NotFound("Vasu document not found!")
+    val currentBasics = getVasuDocumentBasics(docId)
 
     val (guardianFromDocument, otherGuardiansFromDocument) =
         currentBasics.guardians.partition { g -> g.id == guardianId }
@@ -407,8 +413,7 @@ WHERE id = :id
 }
 
 fun Database.Transaction.revokeVasuGuardianHasGivenPermissionToShare(docId: VasuDocumentId) {
-    val currentBasics =
-        getVasuDocumentMaster(docId)?.basics ?: throw NotFound("Vasu document not found!")
+    val currentBasics = getVasuDocumentBasics(docId)
 
     createUpdate(
             """
