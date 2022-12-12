@@ -71,7 +71,8 @@ class VardaTempTokenProvider(
                 { d -> VardaApiToken.from(jsonMapper.readTree(d).get("token").asText()) },
                 { err ->
                     throw IllegalStateException(
-                        "Requesting Varda API token failed: ${String(err.errorData)}. Aborting update"
+                        "Requesting Varda API token failed: status code ${err.response.statusCode}, error ${String(err.errorData)}. Aborting update",
+                        err
                     )
                 }
             )
