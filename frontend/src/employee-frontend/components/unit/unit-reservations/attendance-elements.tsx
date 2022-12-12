@@ -12,7 +12,7 @@ import IconButton from 'lib-components/atoms/buttons/IconButton'
 import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { Td, Th, Thead, Tr, TrProps } from 'lib-components/layout/Table'
 import { LabelLike } from 'lib-components/typography'
-import { defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, SpacingSize } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faCheck } from 'lib-icons'
 
@@ -126,6 +126,16 @@ export const NameWrapper = styled.div`
 
   a {
     margin-left: ${defaultMargins.xs};
+  }
+`
+
+export const ChipWrapper = styled.div<{ spacing?: SpacingSize }>`
+  > * {
+    margin-right: ${(p) =>
+      p.spacing ? defaultMargins[p.spacing] : defaultMargins.s};
+    &:last-child {
+      margin-right: 0;
+    }
   }
 `
 

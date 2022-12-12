@@ -91,6 +91,15 @@ const GroupName = styled(InformationText)`
   text-align: right;
 `
 
+const LeftDetailsDiv = styled.div`
+  > * {
+    margin-left: ${defaultMargins.xs};
+    &:first-child {
+      margin-left: 0;
+    }
+  }
+`
+
 interface ChildListItemProps {
   child: Child
   onClick?: () => void
@@ -152,12 +161,12 @@ export default React.memo(function ChildListItem({
             </GroupName>
           </NameRow>
           <DetailsRow>
-            <div>
+            <LeftDetailsDiv>
               {infoText}
               {child.backup && (
                 <RoundIcon content="V" size="m" color={colors.main.m1} />
               )}
-            </div>
+            </LeftDetailsDiv>
             <FixedSpaceRowWithLeftMargin>
               {child.dailyNote && (
                 <Link
@@ -182,6 +191,13 @@ export default React.memo(function ChildListItem({
                     size="m"
                   />
                 </Link>
+              )}
+              {child.hasContractDayServiceNeed && (
+                <RoundIcon
+                  content="S"
+                  color={colors.accents.a1greenDark}
+                  size="m"
+                />
               )}
             </FixedSpaceRowWithLeftMargin>
           </DetailsRow>

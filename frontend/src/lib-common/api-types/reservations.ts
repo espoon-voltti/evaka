@@ -2,7 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { AbsenceType } from '../generated/api-types/daycare'
+import { UUID } from 'lib-common/types'
+
+import {
+  AbsenceType,
+  ChildServiceNeedInfo
+} from '../generated/api-types/daycare'
 import { TimeRange } from '../generated/api-types/reservations'
 import { JsonOf } from '../json'
 import LocalDate from '../local-date'
@@ -14,6 +19,7 @@ export interface UnitAttendanceReservations {
   operationalDays: OperationalDay[]
   groups: GroupAttendanceReservations[]
   ungrouped: ChildDailyRecords[]
+  unitServiceNeedInfo: UnitServiceNeedInfo
 }
 
 export interface OperationalDay {
@@ -54,4 +60,15 @@ export interface Child {
 export interface AttendanceTimes {
   startTime: string
   endTime: string | null
+}
+
+export interface GroupServiceNeedInfo {
+  childInfos: ChildServiceNeedInfo[]
+  groupId: UUID
+}
+
+export interface UnitServiceNeedInfo {
+  groups: GroupServiceNeedInfo[]
+  ungrouped: ChildServiceNeedInfo[]
+  unitId: UUID
 }

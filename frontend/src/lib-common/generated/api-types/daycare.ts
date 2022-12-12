@@ -46,6 +46,7 @@ export type AbsenceCategory =
 */
 export interface AbsenceChild {
   absences: Record<string, AbsenceWithModifierInfo[]>
+  actualServiceNeeds: ChildServiceNeedInfo[]
   attendanceTotalHours: number | null
   backupCares: Record<string, boolean>
   child: Child
@@ -207,6 +208,16 @@ export interface ChildResponse {
   permittedActions: Action.Child[]
   permittedPersonActions: Action.Person[]
   person: PersonJSON
+}
+
+/**
+* Generated from fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
+*/
+export interface ChildServiceNeedInfo {
+  childId: UUID
+  hasContractDays: boolean
+  optionName: string
+  validDuring: FiniteDateRange
 }
 
 /**

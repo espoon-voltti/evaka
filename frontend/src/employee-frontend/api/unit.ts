@@ -8,7 +8,8 @@ import { Failure, Result, Success } from 'lib-common/api'
 import { AdRole } from 'lib-common/api-types/employee-auth'
 import {
   ChildDailyRecords,
-  UnitAttendanceReservations
+  UnitAttendanceReservations,
+  UnitServiceNeedInfo
 } from 'lib-common/api-types/reservations'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -787,7 +788,10 @@ export async function getUnitAttendanceReservations(
           group,
           children: children.map(toChildDayRows)
         })),
-        ungrouped: data.ungrouped.map(toChildDayRows)
+        ungrouped: data.ungrouped.map(toChildDayRows),
+        unitServiceNeedInfo: deserializeGroupedActualServiceNeeds(
+          data.unitServiceNeedInfo
+        )
       })
     )
     .catch((e) => Failure.fromError(e))
@@ -813,3 +817,22 @@ const toChildDayRows = (
     }))
   )
 })
+
+const deserializeGroupedActualServiceNeeds = (
+  info: JsonOf<UnitServiceNeedInfo>
+): UnitServiceNeedInfo => {
+  return {
+    ...info,
+    groups: info.groups.map((group) => ({
+      ...group,
+      childInfos: group.childInfos.map((cinfo) => ({
+        ...cinfo,
+        validDuring: FiniteDateRange.parseJson(cinfo.validDuring)
+      }))
+    })),
+    ungrouped: info.ungrouped.map((uci) => ({
+      ...uci,
+      validDuring: FiniteDateRange.parseJson(uci.validDuring)
+    }))
+  }
+}

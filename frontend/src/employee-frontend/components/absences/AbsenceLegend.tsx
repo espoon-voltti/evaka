@@ -10,14 +10,24 @@ import RoundIcon from 'lib-components/atoms/RoundIcon'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { LabelLike } from 'lib-components/typography'
 import { defaultMargins } from 'lib-components/white-space'
-import { absenceColors, absenceIcons } from 'lib-customizations/common'
+import {
+  absenceColors,
+  absenceIcons,
+  additionalLegendItemColors,
+  additionalLegendItemIcons
+} from 'lib-customizations/common'
 import { absenceTypes } from 'lib-customizations/employee'
 
 import { useTranslation } from '../../state/i18n'
 
-type CalendarAbsenceType = AbsenceType | 'TEMPORARY_RELOCATION' | 'NO_ABSENCE'
+type LegendItemType =
+  | AbsenceType
+  | 'TEMPORARY_RELOCATION'
+  | 'NO_ABSENCE'
+  | AdditionalLegendItem
+type AdditionalLegendItem = 'CONTRACT_DAYS'
 
-const absenceTypesInLegend: CalendarAbsenceType[] = [
+const allLegendItems: LegendItemType[] = [
   'NO_ABSENCE',
   'OTHER_ABSENCE',
   'UNKNOWN_ABSENCE',
@@ -27,8 +37,15 @@ const absenceTypesInLegend: CalendarAbsenceType[] = [
   'PARENTLEAVE',
   'FORCE_MAJEURE',
   'FREE_ABSENCE',
-  'UNAUTHORIZED_ABSENCE'
+  'UNAUTHORIZED_ABSENCE',
+  'CONTRACT_DAYS'
 ]
+
+const allAbsenceTypes: LegendItemType[] = [
+  ...absenceTypes,
+  'TEMPORARY_RELOCATION'
+]
+const allAdditionalItems: LegendItemType[] = ['CONTRACT_DAYS']
 
 const AbsenceLegendRow = styled.div`
   display: flex;
@@ -46,22 +63,24 @@ const AbsenceLegendSquare = styled.div<{ color: string }>`
 interface Props {
   showNoAbsence?: boolean
   icons?: boolean
+  showAdditionalLegendItems?: boolean
 }
 
 export const AbsenceLegend = React.memo(function AbsenceLegend({
   showNoAbsence = false,
-  icons = false
+  icons = false,
+  showAdditionalLegendItems = false
 }: Props) {
   const { i18n } = useTranslation()
 
   const visibleAbsenceTypes = useMemo(
     () =>
-      absenceTypesInLegend.filter((a) =>
-        a === 'NO_ABSENCE'
-          ? showNoAbsence
-          : a === 'TEMPORARY_RELOCATION' || absenceTypes.includes(a)
-      ),
-    [showNoAbsence]
+      allLegendItems.filter((a) => {
+        if (a === 'NO_ABSENCE') return showNoAbsence
+        if (allAdditionalItems.includes(a)) return showAdditionalLegendItems
+        else return allAbsenceTypes.includes(a)
+      }),
+    [showNoAbsence, showAdditionalLegendItems]
   )
 
   return (
@@ -69,7 +88,12 @@ export const AbsenceLegend = React.memo(function AbsenceLegend({
       {visibleAbsenceTypes.map((t) => (
         <ExpandingInfo
           key={t}
-          info={i18n.absences.absenceTypeInfo[t]}
+          info={
+            {
+              ...i18n.absences.absenceTypeInfo,
+              ...i18n.absences.additionalLegendItemInfos
+            }[t]
+          }
           ariaLabel={i18n.common.openExpandingInfo}
           closeLabel={i18n.common.close}
         >
@@ -77,14 +101,23 @@ export const AbsenceLegend = React.memo(function AbsenceLegend({
             {icons ? (
               <RoundIcon
                 size="m"
-                color={absenceColors[t]}
-                content={absenceIcons[t]}
+                color={{ ...absenceColors, ...additionalLegendItemColors }[t]}
+                content={{ ...absenceIcons, ...additionalLegendItemIcons }[t]}
               />
             ) : (
-              <AbsenceLegendSquare color={absenceColors[t]} />
+              <AbsenceLegendSquare
+                color={{ ...absenceColors, ...additionalLegendItemColors }[t]}
+              />
             )}
 
-            <LabelLike>{i18n.absences.absenceTypes[t]}</LabelLike>
+            <LabelLike>
+              {
+                {
+                  ...i18n.absences.absenceTypes,
+                  ...i18n.absences.additionalLegendItems
+                }[t]
+              }
+            </LabelLike>
           </AbsenceLegendRow>
         </ExpandingInfo>
       ))}
