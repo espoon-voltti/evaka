@@ -11,6 +11,7 @@ import io.opentracing.Tracer
 import io.opentracing.Tracer.SpanBuilder
 import io.opentracing.tag.AbstractTag
 import io.opentracing.tag.Tag
+import io.opentracing.tag.Tags
 
 object Tracing {
     val action = ToStringTag<Action>("action")
@@ -33,7 +34,14 @@ fun <T> SpanBuilder.withTag(tagValue: TagValue<T>): SpanBuilder =
     withTag(tagValue.tag, tagValue.value)
 
 inline fun <T> Tracer.withSpan(span: Span, crossinline f: () -> T): T =
-    activateSpan(span).use { f() }
+    try {
+        activateSpan(span).use { f() }
+    } catch (e: Exception) {
+        span.setTag(Tags.ERROR, true)
+        throw e
+    } finally {
+        span.finish()
+    }
 
 inline fun <T> Tracer.withSpan(
     operationName: String,
