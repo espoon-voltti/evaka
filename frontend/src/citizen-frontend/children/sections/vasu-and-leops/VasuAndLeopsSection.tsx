@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
@@ -10,11 +10,10 @@ import { renderResult } from 'citizen-frontend/async-rendering'
 import { useUser } from 'citizen-frontend/auth/state'
 import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { VasuStateChip } from 'citizen-frontend/children/sections/vasu-and-leops/vasu/components/VasuStateChip'
-import { ChildrenContext } from 'citizen-frontend/children/state'
 import { useTranslation } from 'citizen-frontend/localization'
 import { VasuDocumentSummary } from 'lib-common/generated/api-types/vasu'
+import { useQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { tabletMin } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -30,7 +29,10 @@ import { Dimmed, P } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faExclamation } from 'lib-icons'
 
-import { getChildVasuSummaries } from './api'
+import {
+  childVasuSummariesQuery,
+  unreadVasuDocumentsCountQuery
+} from './queries'
 
 const VasuTableContainer = styled.table`
   width: 100%;
@@ -154,8 +156,7 @@ export default React.memo(function VasuAndLeopsSection({
 }: {
   childId: UUID
 }) {
-  const [vasus] = useApiState(() => getChildVasuSummaries(childId), [childId])
-
+  const vasus = useQueryResult(childVasuSummariesQuery(childId))
   const i18n = useTranslation()
 
   const [open, setOpen] = useState(false)
@@ -163,7 +164,9 @@ export default React.memo(function VasuAndLeopsSection({
 
   const user = useUser()
 
-  const { unreadVasuDocumentsCount } = useContext(ChildrenContext)
+  const { data: unreadVasuDocumentsCount } = useQuery(
+    unreadVasuDocumentsCountQuery
+  )
 
   return (
     <ResponsiveWholePageCollapsible

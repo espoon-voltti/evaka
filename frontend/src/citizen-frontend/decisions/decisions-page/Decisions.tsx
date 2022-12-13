@@ -3,12 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import sortBy from 'lodash/sortBy'
-import React, { Fragment, useContext, useMemo } from 'react'
+import React, { Fragment, useMemo } from 'react'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
-import { ChildrenContext } from 'citizen-frontend/children/state'
 import { combine } from 'lib-common/api'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -16,9 +15,11 @@ import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import { H1, H2 } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
+import { childrenQuery } from '../../children/queries'
 import { useTranslation } from '../../localization'
 import useTitle from '../../useTitle'
-import { getDecisions, getAssistanceNeedDecisions } from '../api'
+import { assistanceDecisionsQuery } from '../assistance-decision-page/queries'
+import { decisionsQuery } from '../queries'
 import { applicationDecisionIsUnread } from '../shared'
 
 import ApplicationDecision from './ApplicationDecision'
@@ -26,9 +27,9 @@ import AssistanceDecision from './AssistanceDecision'
 
 export default React.memo(function Decisions() {
   const t = useTranslation()
-  const { children } = useContext(ChildrenContext)
-  const [applicationDecisions] = useApiState(getDecisions, [])
-  const [assistanceDecisions] = useApiState(getAssistanceNeedDecisions, [])
+  const children = useQueryResult(childrenQuery)
+  const applicationDecisions = useQueryResult(decisionsQuery)
+  const assistanceDecisions = useQueryResult(assistanceDecisionsQuery)
 
   useTitle(t, t.decisions.title)
 

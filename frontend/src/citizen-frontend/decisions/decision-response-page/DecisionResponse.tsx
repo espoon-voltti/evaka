@@ -5,11 +5,11 @@
 import React, { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-import { ApplicationsContext } from 'citizen-frontend/applications/state'
 import { Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Decision } from 'lib-common/generated/api-types/decision'
 import LocalDate from 'lib-common/local-date'
+import { useMutationResult } from 'lib-common/query'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -31,7 +31,7 @@ import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
 import { useLang, useTranslation } from '../../localization'
 import { OverlayContext } from '../../overlay/state'
 import { PdfLink } from '../PdfLink'
-import { acceptDecision, rejectDecision } from '../api'
+import { acceptDecisionMutation, rejectDecisionMutation } from '../queries'
 import { decisionStatusIcon, Status } from '../shared'
 
 interface SingleDecisionProps {
@@ -39,7 +39,6 @@ interface SingleDecisionProps {
   validRequestedStartDatePeriod: FiniteDateRange
   blocked: boolean
   rejectCascade: boolean
-  refreshDecisionList: () => void
   handleReturnToPreviousPage: () => void
 }
 
@@ -48,7 +47,6 @@ export default React.memo(function DecisionResponse({
   validRequestedStartDatePeriod,
   blocked,
   rejectCascade,
-  refreshDecisionList,
   handleReturnToPreviousPage
 }: SingleDecisionProps) {
   const t = useTranslation()
@@ -86,6 +84,9 @@ export default React.memo(function DecisionResponse({
     }
   }
 
+  const acceptDecision = useMutationResult(acceptDecisionMutation)
+  const rejectDecision = useMutationResult(rejectDecisionMutation)
+
   const handleAcceptDecision = async () => {
     if (requestedStartDate === null) {
       return Failure.of({
@@ -93,12 +94,16 @@ export default React.memo(function DecisionResponse({
       })
     }
     setSubmitting(true)
-    return acceptDecision(applicationId, decisionId, requestedStartDate)
+    return acceptDecision.mutateAsync({
+      applicationId,
+      decisionId,
+      requestedStartDate
+    })
   }
 
   const handleRejectDecision = async () => {
     setSubmitting(true)
-    return rejectDecision(applicationId, decisionId)
+    return rejectDecision.mutateAsync({ applicationId, decisionId })
   }
 
   const onSubmit = async () => {
@@ -109,12 +114,8 @@ export default React.memo(function DecisionResponse({
     }
   }
 
-  const { refreshWaitingConfirmationCount } = useContext(ApplicationsContext)
-
   const onSuccess = () => {
     setSubmitting(false)
-    refreshDecisionList()
-    refreshWaitingConfirmationCount()
   }
 
   const onFailure = () => {
@@ -124,7 +125,6 @@ export default React.memo(function DecisionResponse({
       resolveLabel: t.common.ok
     })
     setSubmitting(false)
-    refreshDecisionList()
   }
 
   useEffect(() => {

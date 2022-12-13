@@ -2,26 +2,21 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
-import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   ApplicationDecisions,
   DecisionWithValidStartDatePeriod
 } from 'lib-common/generated/api-types/application'
-import { AssistanceNeedDecisionCitizenListItem } from 'lib-common/generated/api-types/assistanceneed'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { client } from '../api-client'
 
-export async function getDecisions(): Promise<Result<ApplicationDecisions[]>> {
+export async function getDecisions(): Promise<ApplicationDecisions[]> {
   return client
     .get<JsonOf<ApplicationDecisions[]>>('/citizen/decisions')
     .then((res) => res.data.map(deserializeApplicationDecisions))
-    .then((data) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
 }
 
 function deserializeApplicationDecisions(
@@ -37,9 +32,9 @@ function deserializeApplicationDecisions(
   }
 }
 
-export async function getApplicationDecisions(
+export function getDecisionsOfApplication(
   applicationId: UUID
-): Promise<Result<DecisionWithValidStartDatePeriod[]>> {
+): Promise<DecisionWithValidStartDatePeriod[]> {
   return client
     .get<JsonOf<DecisionWithValidStartDatePeriod[]>>(
       `/citizen/applications/${applicationId}/decisions`
@@ -61,56 +56,40 @@ export async function getApplicationDecisions(
         )
       }))
     )
-    .then((data) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
 }
 
-export async function acceptDecision(
-  applicationId: UUID,
-  decisionId: UUID,
-  requestedStartDate: LocalDate
-): Promise<Result<void>> {
-  return client
-    .post<void>(
-      `/citizen/applications/${applicationId}/actions/accept-decision`,
-      {
-        decisionId,
-        requestedStartDate
-      }
-    )
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function rejectDecision(
-  applicationId: UUID,
+export function acceptDecision({
+  applicationId,
+  ...body
+}: {
+  applicationId: UUID
   decisionId: UUID
-): Promise<Result<void>> {
-  const body = { decisionId }
+  requestedStartDate: LocalDate
+}): Promise<void> {
   return client
-    .post<void>(
-      `/citizen/applications/${applicationId}/actions/reject-decision`,
+    .post(
+      `/citizen/applications/${applicationId}/actions/accept-decision`,
       body
     )
-    .then(() => Success.of(undefined))
-    .catch((e) => Failure.fromError(e))
+    .then(() => undefined)
 }
 
-export function getAssistanceNeedDecisions(): Promise<
-  Result<AssistanceNeedDecisionCitizenListItem[]>
-> {
+export function rejectDecision({
+  applicationId,
+  decisionId
+}: {
+  applicationId: UUID
+  decisionId: UUID
+}): Promise<void> {
   return client
-    .get<JsonOf<AssistanceNeedDecisionCitizenListItem[]>>(
-      `/citizen/assistance-need-decisions`
-    )
-    .then(({ data }) =>
-      Success.of(
-        data.map((decision) => ({
-          ...decision,
-          decisionMade: LocalDate.parseIso(decision.decisionMade),
-          validityPeriod: DateRange.parseJson(decision.validityPeriod)
-        }))
-      )
-    )
-    .catch((e) => Failure.fromError(e))
+    .post(`/citizen/applications/${applicationId}/actions/reject-decision`, {
+      decisionId
+    })
+    .then(() => undefined)
+}
+
+export function getApplicationNotifications(): Promise<number> {
+  return client
+    .get<JsonOf<number>>('/citizen/applications/by-guardian/notifications')
+    .then((res) => res.data)
 }

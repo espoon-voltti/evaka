@@ -228,10 +228,3 @@ export async function getServiceNeedOptionPublicInfos(
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
-
-export async function getApplicationNotifications(): Promise<Result<number>> {
-  return client
-    .get<JsonOf<number>>('/citizen/applications/by-guardian/notifications')
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
-}

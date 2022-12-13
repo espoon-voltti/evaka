@@ -7,9 +7,9 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { DecisionWithValidStartDatePeriod } from 'lib-common/generated/api-types/application'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Main from 'lib-components/atoms/Main'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -24,7 +24,7 @@ import Footer from '../../Footer'
 import { renderResult } from '../../async-rendering'
 import { useTranslation } from '../../localization'
 import useTitle from '../../useTitle'
-import { getApplicationDecisions } from '../api'
+import { decisionsOfApplicationQuery } from '../queries'
 
 import DecisionResponse from './DecisionResponse'
 
@@ -33,10 +33,10 @@ export default React.memo(function DecisionResponseList() {
   const t = useTranslation()
   const navigate = useNavigate()
 
-  const [decisionsRequest, loadDecisions] = useApiState(
-    () => getApplicationDecisions(applicationId),
-    [applicationId]
+  const decisionsRequest = useQueryResult(
+    decisionsOfApplicationQuery(applicationId)
   )
+
   const [
     displayDecisionWithNoResponseWarning,
     setDisplayDecisionWithNoResponseWarning
@@ -99,7 +99,6 @@ export default React.memo(function DecisionResponseList() {
                       }
                       blocked={isDecisionBlocked(decision, decisions)}
                       rejectCascade={isRejectCascaded(decision, decisions)}
-                      refreshDecisionList={loadDecisions}
                       handleReturnToPreviousPage={handleReturnToPreviousPage}
                     />
                     {i < decisions.length - 1 ? <HorizontalLine /> : null}

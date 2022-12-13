@@ -8,6 +8,7 @@ import React, { useCallback, useContext, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
+import { useQuery } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { desktopMin } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
@@ -28,10 +29,9 @@ import {
 } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
-import { ApplicationsContext } from '../applications/state'
 import { UnwrapResult } from '../async-rendering'
 import { AuthContext, User } from '../auth/state'
-import { ChildrenContext } from '../children/state'
+import { applicationNotificationsQuery } from '../decisions/queries'
 import { langs, useLang, useTranslation } from '../localization'
 import { MessageContext } from '../messages/state'
 
@@ -46,13 +46,18 @@ import {
   DropDownLink,
   DropDownLocalLink
 } from './shared-components'
+import { useChildrenWithOwnPage, useUnreadChildNotifications } from './utils'
 
 export default React.memo(function MobileNav() {
   const t = useTranslation()
   const { user } = useContext(AuthContext)
+  const loggedIn = user.map((u) => u !== undefined).getOrElse(false)
   const { unreadMessagesCount } = useContext(MessageContext)
-  const { waitingConfirmationCount: unreadDecisions } =
-    useContext(ApplicationsContext)
+  const { data: unreadDecisions = 0 } = useQuery(
+    applicationNotificationsQuery,
+    { enabled: loggedIn }
+  )
+
   const [menuOpen, setMenuOpen] = useState<'children' | 'submenu'>()
   const toggleSubMenu = useCallback(
     () => setMenuOpen((open) => (open === 'submenu' ? undefined : 'submenu')),
@@ -238,16 +243,16 @@ const ChildrenLink = React.memo(function ChildrenLink({
 }) {
   const t = useTranslation()
   const location = useLocation()
-  const { childrenWithOwnPage, totalUnreadChildNotifications } =
-    useContext(ChildrenContext)
+  const childrenWithOwnPage = useChildrenWithOwnPage()
+  const { totalUnreadChildNotifications } = useUnreadChildNotifications()
   const active = location.pathname.startsWith('/children')
 
-  if (childrenWithOwnPage.getOrElse([]).length === 0) {
+  if (childrenWithOwnPage.length === 0) {
     return null
   }
 
-  if (childrenWithOwnPage.getOrElse([]).length === 1) {
-    const childId = childrenWithOwnPage.getOrElse([])[0].id
+  if (childrenWithOwnPage.length === 1) {
+    const childId = childrenWithOwnPage[0].id
     return (
       <BottomBarLink
         to={`/children/${childId}`}
@@ -287,15 +292,15 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
   closeMenu: () => void
 }) {
   const t = useTranslation()
-  const { childrenWithOwnPage, unreadChildNotifications } =
-    useContext(ChildrenContext)
+  const childrenWithOwnPage = useChildrenWithOwnPage()
+  const { unreadChildNotifications } = useUnreadChildNotifications()
   const lock = user.authLevel !== 'STRONG' && (
     <FontAwesomeIcon icon={faLockAlt} size="xs" />
   )
   return (
     <ModalAccessibilityWrapper>
       <MenuContainer>
-        {childrenWithOwnPage.getOrElse([]).map((child) => (
+        {childrenWithOwnPage.map((child) => (
           <DropDownLink
             key={child.id}
             data-qa={`children-menu-${child.id}`}

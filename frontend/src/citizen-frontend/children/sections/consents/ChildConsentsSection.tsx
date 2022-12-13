@@ -2,13 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import ResponsiveWholePageCollapsible from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
 import { Failure } from 'lib-common/api'
@@ -16,6 +10,7 @@ import {
   ChildConsentType,
   childConsentTypes
 } from 'lib-common/generated/api-types/children'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Radio from 'lib-components/atoms/form/Radio'
@@ -25,9 +20,8 @@ import { H3, LabelLike, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 
 import { useTranslation } from '../../../localization'
-import { ChildrenContext } from '../../state'
 
-import { insertChildConsents } from './api'
+import { childConsentsQuery, insertChildConsentsMutation } from './queries'
 
 interface ChildConsentsProps {
   childId: UUID
@@ -38,11 +32,8 @@ export default React.memo(function ChildConsentsSection({
 }: ChildConsentsProps) {
   const t = useTranslation()
 
-  const {
-    childConsents,
-    refreshChildConsents,
-    refreshChildConsentNotifications
-  } = useContext(ChildrenContext)
+  const childConsents = useQueryResult(childConsentsQuery)
+  const insertChildConsents = useMutationResult(insertChildConsentsMutation)
 
   const [open, setOpen] = useState(false)
 
@@ -102,9 +93,9 @@ export default React.memo(function ChildConsentsSection({
       return Promise.resolve(Failure.of({ message: 'Form not loaded' }))
     }
 
-    return insertChildConsents(
+    return insertChildConsents.mutateAsync({
       childId,
-      Object.entries(form)
+      consents: Object.entries(form)
         .filter(
           ([, consent]) => typeof consent.value === 'boolean' && consent.dirty
         )
@@ -112,8 +103,8 @@ export default React.memo(function ChildConsentsSection({
           type: type as ChildConsentType,
           given: consent.value as boolean
         }))
-    )
-  }, [childId, form])
+    })
+  }, [childId, form, insertChildConsents])
 
   // hide section if no consents are enabled
   if (!consents.map((c) => c.size > 0).getOrElse(true)) return null
@@ -169,10 +160,7 @@ export default React.memo(function ChildConsentsSection({
               primary
               text={t.children.consent.confirm}
               onClick={onConfirm}
-              onSuccess={() => {
-                refreshChildConsents()
-                refreshChildConsentNotifications()
-              }}
+              onSuccess={() => undefined}
               data-qa="consent-confirm"
             />
           ) : null}

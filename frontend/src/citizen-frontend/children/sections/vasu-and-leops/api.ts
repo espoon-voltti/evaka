@@ -3,14 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { client } from 'citizen-frontend/api-client'
-import { Failure, Result, Success } from 'lib-common/api'
+import FiniteDateRange from 'lib-common/finite-date-range'
 import {
+  CitizenGetVasuDocumentResponse,
   CitizenGetVasuDocumentSummariesResponse,
+  VasuDocument,
   VasuDocumentEvent
 } from 'lib-common/generated/api-types/vasu'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
+
+import { mapVasuContent } from './vasu/vasu-content'
 
 const mapVasuDocumentEvent = (
   e: JsonOf<VasuDocumentEvent>
@@ -19,40 +24,76 @@ const mapVasuDocumentEvent = (
   created: HelsinkiDateTime.parseIso(e.created)
 })
 
-export async function getChildVasuSummaries(
+export function getChildVasuSummaries(
   childId: UUID
-): Promise<Result<CitizenGetVasuDocumentSummariesResponse>> {
+): Promise<CitizenGetVasuDocumentSummariesResponse> {
   return client
     .get<JsonOf<CitizenGetVasuDocumentSummariesResponse>>(
       `/citizen/vasu/children/${childId}/vasu-summaries`
     )
-    .then((res) =>
-      Success.of({
-        data: res.data.data.map(
-          ({ events, modifiedAt, publishedAt, ...rest }) => ({
-            ...rest,
-            events: events.map(mapVasuDocumentEvent),
-            modifiedAt: HelsinkiDateTime.parseIso(modifiedAt),
-            publishedAt: publishedAt
-              ? HelsinkiDateTime.parseIso(publishedAt)
-              : null
-          })
-        ),
-        permissionToShareRequired: res.data.permissionToShareRequired
-      })
-    )
-    .catch((e) => Failure.fromError(e))
+    .then((res) => ({
+      data: res.data.data.map(
+        ({ events, modifiedAt, publishedAt, ...rest }) => ({
+          ...rest,
+          events: events.map(mapVasuDocumentEvent),
+          modifiedAt: HelsinkiDateTime.parseIso(modifiedAt),
+          publishedAt: publishedAt
+            ? HelsinkiDateTime.parseIso(publishedAt)
+            : null
+        })
+      ),
+      permissionToShareRequired: res.data.permissionToShareRequired
+    }))
 }
 
-export async function getUnreadVasuDocumentsCount(): Promise<
-  Result<Record<UUID, number>>
-> {
-  try {
-    const count = await client
-      .get<JsonOf<Record<UUID, number>>>(`/citizen/vasu/children/unread-count`)
-      .then((res) => res.data)
-    return Success.of(count)
-  } catch (e) {
-    return Failure.fromError(e)
+const mapVasuDocumentResponse = ({
+  events,
+  modifiedAt,
+  templateRange,
+  basics,
+  content,
+  ...rest
+}: JsonOf<VasuDocument>): VasuDocument => ({
+  ...rest,
+  content: mapVasuContent(content),
+  events: events.map(mapVasuDocumentEvent),
+  modifiedAt: HelsinkiDateTime.parseIso(modifiedAt),
+  templateRange: FiniteDateRange.parseJson(templateRange),
+  basics: {
+    ...basics,
+    child: {
+      ...basics.child,
+      dateOfBirth: LocalDate.parseIso(basics.child.dateOfBirth)
+    },
+    placements:
+      basics.placements?.map((pl) => ({
+        ...pl,
+        range: FiniteDateRange.parseJson(pl.range)
+      })) ?? null
   }
+})
+
+export function getVasuDocument(
+  id: UUID
+): Promise<CitizenGetVasuDocumentResponse> {
+  return client
+    .get<JsonOf<CitizenGetVasuDocumentResponse>>(`/citizen/vasu/${id}`)
+    .then((res) => ({
+      vasu: mapVasuDocumentResponse(res.data.vasu),
+      permissionToShareRequired: res.data.permissionToShareRequired,
+      guardianHasGivenPermissionToShare:
+        res.data.guardianHasGivenPermissionToShare
+    }))
+}
+
+export function getUnreadVasuDocumentsCount(): Promise<Record<UUID, number>> {
+  return client
+    .get<JsonOf<Record<UUID, number>>>(`/citizen/vasu/children/unread-count`)
+    .then((res) => res.data)
+}
+
+export function givePermissionToShareVasu(documentId: UUID): Promise<void> {
+  return client
+    .post(`/citizen/vasu/${documentId}/give-permission-to-share`)
+    .then(() => undefined)
 }

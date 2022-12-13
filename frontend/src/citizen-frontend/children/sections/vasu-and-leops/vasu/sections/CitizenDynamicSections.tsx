@@ -8,7 +8,8 @@ import styled, { css } from 'styled-components'
 
 import {
   VasuSection,
-  VasuDocumentState
+  VasuDocumentState,
+  VasuDocument
 } from 'lib-common/generated/api-types/vasu'
 import { ContentArea } from 'lib-components/layout/Container'
 import { H2 } from 'lib-components/typography'
@@ -25,7 +26,6 @@ import ParagraphElem from '../components/Paragraph'
 import { RadioGroupQuestion as RadioGroupQuestionElem } from '../components/RadioGroupQuestion'
 import StaticInfoSubsection from '../components/StaticInfoSubsection'
 import { TextQuestion as TextQuestionElem } from '../components/TextQuestion'
-import { CitizenVasuMetadata } from '../use-vasu'
 import {
   getQuestionNumber,
   isCheckboxQuestion,
@@ -39,6 +39,14 @@ import {
   isStaticInfoSubsection,
   isTextQuestion
 } from '../vasu-content'
+
+export type CitizenVasuMetadata = Omit<
+  VasuDocument,
+  | 'content'
+  | 'authorsContent'
+  | 'vasuDiscussionContent'
+  | 'evaluationDiscussionContent'
+>
 
 interface Props {
   sections: VasuSection[]

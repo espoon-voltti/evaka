@@ -8,7 +8,6 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { ChildrenContext } from 'citizen-frontend/children/state'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
@@ -40,6 +39,7 @@ import {
   LanguageMenu,
   DropDownLocalLink
 } from './shared-components'
+import { useChildrenWithOwnPage, useUnreadChildNotifications } from './utils'
 
 interface Props {
   unreadMessagesCount: number
@@ -200,11 +200,9 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
 }) {
   const t = useTranslation()
   const location = useLocation()
-  const {
-    childrenWithOwnPage,
-    unreadChildNotifications,
-    totalUnreadChildNotifications
-  } = useContext(ChildrenContext)
+  const childrenWithOwnPage = useChildrenWithOwnPage()
+  const { unreadChildNotifications, totalUnreadChildNotifications } =
+    useUnreadChildNotifications()
   const [open, setOpen] = useState(false)
   const toggleOpen = useCallback(() => setOpen((state) => !state), [setOpen])
   const dropDownRef = useCloseOnOutsideClick<HTMLDivElement>(() =>
@@ -219,12 +217,12 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
     [user]
   )
 
-  if (childrenWithOwnPage.getOrElse([]).length === 0) {
+  if (childrenWithOwnPage.length === 0) {
     return null
   }
 
-  if (childrenWithOwnPage.getOrElse([]).length === 1) {
-    const childId = childrenWithOwnPage.getOrElse([])[0].id
+  if (childrenWithOwnPage.length === 1) {
+    const childId = childrenWithOwnPage[0].id
     return (
       <HeaderNavLink
         to={`/children/${childId}`}
@@ -270,7 +268,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
       </DropDownButton>
       {open ? (
         <DropDown $align="left" data-qa="select-child">
-          {childrenWithOwnPage.getOrElse([]).map((child) => (
+          {childrenWithOwnPage.map((child) => (
             <DropDownLink
               key={child.id}
               to={`/children/${child.id}`}

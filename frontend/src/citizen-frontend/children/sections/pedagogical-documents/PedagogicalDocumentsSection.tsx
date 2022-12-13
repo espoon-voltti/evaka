@@ -3,20 +3,19 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { faChevronRight } from 'Icons'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { getAttachmentUrl } from 'citizen-frontend/attachments'
 import CollapsibleOrWholePageContainer from 'citizen-frontend/children/ResponsiveWholePageCollapsible'
-import { ChildrenContext } from 'citizen-frontend/children/state'
 import { useTranslation } from 'citizen-frontend/localization'
 import {
   Attachment,
   PedagogicalDocumentCitizen
 } from 'lib-common/generated/api-types/pedagogicaldocument'
+import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -40,7 +39,11 @@ import {
   faChevronUp
 } from 'lib-icons'
 
-import { getPedagogicalDocuments, markPedagogicalDocumentRead } from './api'
+import {
+  markPedagogicalDocumentAsReadMutation,
+  pedagogicalDocumentsQuery,
+  unreadPedagogicalDocumentsCountQuery
+} from './queries'
 
 const AttachmentLink = React.memo(function AttachmentLink({
   pedagogicalDocument,
@@ -377,23 +380,19 @@ export default React.memo(function PedagogicalDocumentsSection({
 }) {
   const [open, setOpen] = useState(false)
 
-  const [pedagogicalDocuments, loadData] = useApiState(
-    () => getPedagogicalDocuments(childId),
-    [childId]
+  const pedagogicalDocuments = useQueryResult(
+    pedagogicalDocumentsQuery(childId)
+  )
+  const markPedagogicalDocumentAsRead = useMutation(
+    markPedagogicalDocumentAsReadMutation
   )
 
-  const {
-    refreshUnreadPedagogicalDocumentsCount,
-    unreadPedagogicalDocumentsCount
-  } = useContext(ChildrenContext)
-
-  useEffect(refreshUnreadPedagogicalDocumentsCount, [
-    refreshUnreadPedagogicalDocumentsCount,
-    pedagogicalDocuments
-  ])
+  const { data: unreadPedagogicalDocumentsCount } = useQuery(
+    unreadPedagogicalDocumentsCountQuery
+  )
 
   const onRead = (doc: PedagogicalDocumentCitizen) => {
-    void markPedagogicalDocumentRead(doc.id).then(loadData)
+    void markPedagogicalDocumentAsRead.mutate({ childId, documentId: doc.id })
   }
 
   const t = useTranslation()

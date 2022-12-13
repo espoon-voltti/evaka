@@ -25,13 +25,11 @@ import ApplicationCreation from './applications/ApplicationCreation'
 import Applications from './applications/Applications'
 import ApplicationEditor from './applications/editor/ApplicationEditor'
 import ApplicationReadView from './applications/read-view/ApplicationReadView'
-import { ApplicationsContextProvider } from './applications/state'
 import { UnwrapResult } from './async-rendering'
 import { AuthContext, AuthContextProvider, useUser } from './auth/state'
 import CalendarPage from './calendar/CalendarPage'
 import ChildPage from './children/ChildPage'
 import VasuPage from './children/sections/vasu-and-leops/vasu/VasuPage'
-import { ChildrenContextProvider } from './children/state'
 import AssistanceDecisionPage from './decisions/assistance-decision-page/AssistanceDecisionPage'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
 import Decisions from './decisions/decisions-page/Decisions'
@@ -50,39 +48,40 @@ import MobileNav from './navigation/MobileNav'
 import GlobalDialog from './overlay/GlobalDialog'
 import { OverlayContext, OverlayContextProvider } from './overlay/state'
 import PersonalDetails from './personal-details/PersonalDetails'
+import { queryClient, QueryClientProvider } from './query'
 
 export default function App() {
   const i18n = useTranslation()
 
   return (
-    <BrowserRouter basename="/">
-      <ThemeProvider theme={theme}>
-        <Localization>
-          <ErrorBoundary
-            fallback={() => <ErrorPage basePath="/" labels={i18n.errorPage} />}
-          >
-            <AuthContextProvider>
-              <OverlayContextProvider>
-                <NotificationsContextProvider>
-                  <MessageContextProvider>
-                    <HolidayPeriodsContextProvider>
-                      <ChildrenContextProvider>
-                        <ApplicationsContextProvider>
-                          <Content />
-                          <GlobalDialog />
-                          <LoginErrorModal />
-                          <div id="modal-container" />
-                        </ApplicationsContextProvider>
-                      </ChildrenContextProvider>
-                    </HolidayPeriodsContextProvider>
-                  </MessageContextProvider>
-                </NotificationsContextProvider>
-              </OverlayContextProvider>
-            </AuthContextProvider>
-          </ErrorBoundary>
-        </Localization>
-      </ThemeProvider>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter basename="/">
+        <ThemeProvider theme={theme}>
+          <Localization>
+            <ErrorBoundary
+              fallback={() => (
+                <ErrorPage basePath="/" labels={i18n.errorPage} />
+              )}
+            >
+              <AuthContextProvider>
+                <OverlayContextProvider>
+                  <NotificationsContextProvider>
+                    <MessageContextProvider>
+                      <HolidayPeriodsContextProvider>
+                        <Content />
+                        <GlobalDialog />
+                        <LoginErrorModal />
+                        <div id="modal-container" />
+                      </HolidayPeriodsContextProvider>
+                    </MessageContextProvider>
+                  </NotificationsContextProvider>
+                </OverlayContextProvider>
+              </AuthContextProvider>
+            </ErrorBoundary>
+          </Localization>
+        </ThemeProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
   )
 }
 
