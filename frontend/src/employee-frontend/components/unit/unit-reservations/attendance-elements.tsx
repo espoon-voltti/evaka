@@ -137,6 +137,11 @@ export const ChipWrapper = styled.div<{ spacing?: SpacingSize }>`
       margin-right: 0;
     }
   }
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: center;
 `
 
 interface AttendanceTableHeaderProps {
