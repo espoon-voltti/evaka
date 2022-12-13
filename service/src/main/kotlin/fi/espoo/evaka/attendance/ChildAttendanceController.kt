@@ -583,7 +583,7 @@ private fun Database.Read.getAttendancesResponse(
                 reservations = attendanceReservations[child.id]?.sortedBy { it.startTime }
                         ?: listOf(),
                 hasContractDayServiceNeed = childContractDays[child.id]
-                        ?: throw NotFound("No placement connection found for child ${child.id}")
+                        ?: false
             )
         }
 
