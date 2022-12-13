@@ -40,6 +40,7 @@ export interface EvakaSamlConfig {
   issuer: string
   publicCert: string | TrustedCertificates[]
   privateCert: string
+  validateInResponseTo: boolean
 }
 
 export const gatewayRoles = ['enduser', 'internal'] as const
@@ -120,7 +121,7 @@ export function configFromEnv(): Config {
     ifNodeEnv(['local', 'test'], true) ??
     false
   const adCallbackUrl = process.env.AD_SAML_CALLBACK_URL
-  const ad = {
+  const ad: Config['ad'] = {
     mock: adMock,
     externalIdPrefix: process.env.AD_SAML_EXTERNAL_ID_PREFIX ?? 'espoo-ad',
     saml:
@@ -133,7 +134,8 @@ export function configFromEnv(): Config {
             publicCert: required(
               envArray('AD_SAML_PUBLIC_CERT', parseEnum(certificateNames))
             ),
-            privateCert: required(process.env.AD_SAML_PRIVATE_CERT)
+            privateCert: required(process.env.AD_SAML_PRIVATE_CERT),
+            validateInResponseTo: true
           }
         : undefined
   }
@@ -141,7 +143,7 @@ export function configFromEnv(): Config {
   const sfiMock =
     env('SFI_MOCK', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
   const sfiCallbackUrl = process.env.SFI_SAML_CALLBACK_URL
-  const sfi = {
+  const sfi: Config['sfi'] = {
     mock: sfiMock,
     saml:
       sfiCallbackUrl && !sfiMock
@@ -153,7 +155,8 @@ export function configFromEnv(): Config {
             publicCert: required(
               envArray('SFI_SAML_PUBLIC_CERT', parseEnum(certificateNames))
             ),
-            privateCert: required(process.env.SFI_SAML_PRIVATE_CERT)
+            privateCert: required(process.env.SFI_SAML_PRIVATE_CERT),
+            validateInResponseTo: true
           }
         : undefined
   }
@@ -277,7 +280,8 @@ export const evakaSamlConfig: EvakaSamlConfig | undefined = evakaCallbackUrl
       privateCert: required(
         process.env.EVAKA_SAML_PRIVATE_CERT ??
           ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
-      )
+      ),
+      validateInResponseTo: true
     }
   : undefined
 
@@ -310,7 +314,8 @@ export const evakaCustomerSamlConfig: EvakaSamlConfig | undefined =
         privateCert: required(
           process.env.EVAKA_CUSTOMER_SAML_PRIVATE_CERT ??
             ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
-        )
+        ),
+        validateInResponseTo: true
       }
     : undefined
 

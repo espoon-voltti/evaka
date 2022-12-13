@@ -6,7 +6,7 @@ import fs from 'fs'
 import { Profile, SamlConfig, Strategy, VerifiedCallback } from 'passport-saml'
 import { RedisClient } from 'redis'
 import certificates from '../certificates'
-import { Config, nodeEnv } from '../config'
+import { Config } from '../config'
 import { SamlUser } from '../routes/auth/saml/types'
 import { citizenLogin } from '../service-client'
 import redisCacheProvider from './passport-saml-cache-redis'
@@ -83,8 +83,7 @@ export function createSamlConfig(
     logoutUrl: config.saml.logoutUrl,
     privateKey: privateCert,
     signatureAlgorithm: 'sha256',
-    // InResponseTo validation unnecessarily complicates testing
-    validateInResponseTo: nodeEnv === 'test' ? false : true
+    validateInResponseTo: config.saml.validateInResponseTo
   }
 }
 

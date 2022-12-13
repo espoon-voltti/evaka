@@ -96,7 +96,7 @@ export function createSamlConfig(
     logoutUrl: config.saml.logoutUrl,
     privateKey: readFileSync(config.saml.privateCert, { encoding: 'utf8' }),
     signatureAlgorithm: 'sha256',
-    validateInResponseTo: true
+    validateInResponseTo: config.saml.validateInResponseTo
   }
 }
 

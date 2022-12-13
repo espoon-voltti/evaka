@@ -70,7 +70,8 @@ describe('SAML Single Logout', () => {
           logoutUrl: IDP_ENTRY_POINT_URL,
           issuer: SP_ISSUER,
           publicCert: 'config/test-cert/slo-test-idp-cert.pem',
-          privateCert: 'config/test-cert/saml-private.pem'
+          privateCert: 'config/test-cert/saml-private.pem',
+          validateInResponseTo: false
         }
       }
     }
