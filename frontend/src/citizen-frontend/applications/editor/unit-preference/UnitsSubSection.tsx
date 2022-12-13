@@ -87,7 +87,7 @@ export default React.memo(function UnitsSubSection({
 
   return (
     <>
-      <H3>{t.applications.editor.unitPreference.units.title}</H3>
+      <H3>{t.applications.editor.unitPreference.units.title(maxUnits)}</H3>
       {t.applications.editor.unitPreference.units.info[applicationType]}
 
       <ExternalLink
@@ -136,7 +136,10 @@ export default React.memo(function UnitsSubSection({
               <FixedSpaceFlexWrap horizontalSpacing="L" verticalSpacing="s">
                 <FixedWidthDiv>
                   <Label htmlFor="unit-selector">
-                    {t.applications.editor.unitPreference.units.select.label} *
+                    {t.applications.editor.unitPreference.units.select.label(
+                      maxUnits
+                    )}{' '}
+                    *
                   </Label>
                   <Gap size="xs" />
                   <MultiSelect
@@ -187,10 +190,9 @@ export default React.memo(function UnitsSubSection({
                 </FixedWidthDiv>
                 <FixedWidthDiv>
                   <Label>
-                    {
-                      t.applications.editor.unitPreference.units.preferences
-                        .label
-                    }
+                    {t.applications.editor.unitPreference.units.preferences.label(
+                      maxUnits
+                    )}
                   </Label>
                   <Gap size="xs" />
                   {!verificationRequested &&

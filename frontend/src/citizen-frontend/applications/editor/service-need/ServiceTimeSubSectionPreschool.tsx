@@ -24,7 +24,7 @@ import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import FileUpload from 'lib-components/molecules/FileUpload'
 import DatePicker from 'lib-components/molecules/date-picker/DatePicker'
 import { H3, Label, P } from 'lib-components/typography'
-import { Gap } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import {
@@ -179,27 +179,46 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
 
           {featureFlags.preschoolApplication.serviceNeedOption ? (
             <>
-              {[...serviceNeedOptionsByType].map(([type, options]) => (
-                <FixedSpaceColumn key={type}>
-                  <Gap size="m" />
-                  <div>{t.placement.type[type]}</div>
-                  {options.map((opt) => (
+              <Gap size="m" />
+              <FixedSpaceColumn>
+                {[...serviceNeedOptionsByType].map(([type, options]) => (
+                  <React.Fragment key={type}>
                     <Radio
-                      key={opt.id}
-                      label={
-                        (lang === 'fi' && opt.nameFi) ||
-                        (lang === 'sv' && opt.nameSv) ||
-                        (lang === 'en' && opt.nameEn) ||
-                        opt.id
-                      }
-                      checked={formData.serviceNeedOption?.id === opt.id}
-                      onChange={() =>
-                        updateFormData({ serviceNeedOption: opt })
-                      }
+                      label={t.placement.type[type]}
+                      checked={formData.placementType === type}
+                      onChange={() => {
+                        updateFormData({
+                          placementType: type,
+                          serviceNeedOption: null
+                        })
+                      }}
                     />
-                  ))}
-                </FixedSpaceColumn>
-              ))}
+                    {formData.placementType === type && (
+                      <SubRadios>
+                        <FixedSpaceColumn spacing="xs">
+                          {options.map((opt) => (
+                            <Radio
+                              key={opt.id}
+                              label={
+                                (lang === 'fi' && opt.nameFi) ||
+                                (lang === 'sv' && opt.nameSv) ||
+                                (lang === 'en' && opt.nameEn) ||
+                                opt.id
+                              }
+                              checked={
+                                formData.serviceNeedOption?.id === opt.id
+                              }
+                              onChange={() =>
+                                updateFormData({ serviceNeedOption: opt })
+                              }
+                            />
+                          ))}
+                        </FixedSpaceColumn>
+                      </SubRadios>
+                    )}
+                  </React.Fragment>
+                ))}
+              </FixedSpaceColumn>
             </>
           ) : (
             <>
@@ -314,3 +333,8 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
     </>
   )
 })
+
+const SubRadios = styled.div`
+  margin-bottom: ${defaultMargins.s};
+  margin-left: ${defaultMargins.XL};
+`

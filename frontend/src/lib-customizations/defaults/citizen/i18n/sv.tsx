@@ -974,7 +974,7 @@ const sv: Translations = {
           ssnPlaceholder: 'Personbeteckning'
         },
         units: {
-          title: 'Ansökningsönskemål',
+          title: () => 'Ansökningsönskemål',
           startDateMissing:
             'För att kunna välja önskade enheter, välj först det önskade startdatumet i avsnittet om "Behov av småbarnspedagogisk verksamhet"',
           info: {
@@ -1033,13 +1033,17 @@ const sv: Translations = {
             sv: 'svenska'
           },
           select: {
-            label: 'Välj önskade enheter',
+            label: (maxUnits: number) =>
+              maxUnits === 1 ? 'Välj önskad enhet' : 'Välj önskade enheter',
             placeholder: 'Sök enheter',
             maxSelected: 'Max antal valda enheter.',
             noOptions: 'Inga ansökningar som motsvarar sökkriterier.'
           },
           preferences: {
-            label: 'Enheter som du har valt',
+            label: (maxUnits: number) =>
+              maxUnits === 1
+                ? 'Enhet som du har valt'
+                : 'Enheter som du har valt',
             noSelections: 'Inga val',
             info: (maxUnits: number) =>
               maxUnits === 1
