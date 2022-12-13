@@ -3,12 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { GatewayTester } from '../../shared/test/gateway-tester'
-import app from '../app'
 import { mobileLongTermCookieName } from '../mobile-device-session'
 import { sessionCookie } from '../../shared/session'
 import { v4 as uuid } from 'uuid'
 import { UUID } from '../../shared/service-client'
 import { appCommit } from '../../shared/config'
+import internalGwApp from '../app'
+import { createRedisClient } from '../../shared/redis-client'
 
 const pairingId = '009da566-19ca-432e-ad2d-3041481b5bae'
 const mobileDeviceId = '7f81ec05-657a-4d18-8196-67f4c8a33989'
@@ -16,6 +17,7 @@ const mobileDeviceId = '7f81ec05-657a-4d18-8196-67f4c8a33989'
 describe('Mobile device pairing process', () => {
   let tester: GatewayTester
   beforeAll(async () => {
+    const app = internalGwApp(createRedisClient())
     tester = await GatewayTester.start(app, 'employee')
   })
   afterEach(async () => tester.afterEach())

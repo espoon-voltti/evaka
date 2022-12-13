@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { GatewayTester } from '../../shared/test/gateway-tester'
-import app from '../app'
 import { csrfCookieName } from '../../shared/middleware/csrf'
 import { EmployeeUser } from '../../shared/service-client'
+import internalGwApp from '../app'
+import { createRedisClient } from '../../shared/redis-client'
 
 const mockUser: EmployeeUser = {
   id: '8fc11215-6d55-4059-bd59-038bfa36f294',
@@ -18,6 +19,7 @@ const mockUser: EmployeeUser = {
 describe('CSRF middleware and cookie handling in internal-gw', () => {
   let tester: GatewayTester
   beforeAll(async () => {
+    const app = internalGwApp(createRedisClient())
     tester = await GatewayTester.start(app, 'employee')
   })
   beforeEach(async () => tester.login(mockUser))
