@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import redisMock from 'redis-mock'
+
 import { GatewayTester } from '../../shared/test/gateway-tester'
 import { csrfCookieName } from '../../shared/middleware/csrf'
 import { CitizenUser } from '../../shared/service-client'
 import enduserGwApp from '../app'
-import { createRedisClient } from '../../shared/redis-client'
-import { emptyRedisConfig } from '../../shared/test/config'
 
 const mockUser: CitizenUser = {
   id: '4f73e4f8-8759-46c6-9b9d-4da860138ce2'
@@ -16,7 +16,7 @@ const mockUser: CitizenUser = {
 describe('CSRF middleware and cookie handling in enduser-gw', () => {
   let tester: GatewayTester
   beforeAll(async () => {
-    const app = enduserGwApp(createRedisClient(emptyRedisConfig))
+    const app = enduserGwApp(redisMock.createClient())
     tester = await GatewayTester.start(app, 'enduser')
   })
   beforeEach(async () => tester.login(mockUser))

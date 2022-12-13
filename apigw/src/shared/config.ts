@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import certificates, { TrustedCertificates } from './certificates'
+import type redis from 'redis'
 
 export interface Config {
   redis: {
@@ -13,6 +14,16 @@ export interface Config {
     disableSecurity: boolean
   }
 }
+
+export const toRedisClientOpts = (config: Config): redis.ClientOpts => ({
+  host: config.redis.host,
+  port: config.redis.port,
+  ...(!config.redis.disableSecurity && {
+    tls: { servername: config.redis.tlsServerName },
+    password: config.redis.password
+  })
+})
+
 export interface EvakaSamlConfig {
   callbackUrl: string
   entryPoint: string
