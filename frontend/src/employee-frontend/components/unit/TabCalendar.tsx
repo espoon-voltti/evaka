@@ -128,10 +128,7 @@ export default React.memo(function TabCalendar() {
           <Gap size="s" />
         </>
       ) : null}
-
-      {unitInformation.permittedActions.has('READ_CHILD_ATTENDANCES') ? (
-        <Calendar unitId={unitId} unitInformation={unitInformation} />
-      ) : null}
+      <Calendar unitId={unitId} unitInformation={unitInformation} />
     </>
   ))
 })
@@ -165,6 +162,12 @@ const CalendarContent = React.memo(function CalendarContent({
     'REALTIME_STAFF_ATTENDANCE'
   )
 
+  // Using READ_CHILD_ATTENDANCES to check if the user can see the week view is not exactly accurate,
+  // but it's hard to do a finer grained check with the current UX.
+  const hasPermissionToReadAttendances = unitInformation.permittedActions.has(
+    'READ_CHILD_ATTENDANCES'
+  )
+
   const [searchParams] = useSearchParams()
 
   const selectedDateParam = searchParams.get('date')
@@ -183,17 +186,19 @@ const CalendarContent = React.memo(function CalendarContent({
   const [requestedMode, setRequestedMode] = useState<CalendarMode>(
     modeParam && ['month', 'week'].includes(modeParam)
       ? (modeParam as CalendarMode)
-      : realtimeStaffAttendanceEnabled
+      : realtimeStaffAttendanceEnabled && hasPermissionToReadAttendances
       ? 'week'
       : 'month'
   )
 
   const [mode, availableModes]: [CalendarMode, CalendarMode[]] =
-    selectedGroup.type === 'staff' ||
-    selectedGroup.type === 'no-group' ||
-    selectedGroup.type === 'all-children'
-      ? ['week', ['week']]
-      : [requestedMode, ['month', 'week']]
+    hasPermissionToReadAttendances
+      ? selectedGroup.type === 'staff' ||
+        selectedGroup.type === 'no-group' ||
+        selectedGroup.type === 'all-children'
+        ? ['week', ['week']]
+        : [requestedMode, ['month', 'week']]
+      : ['month', ['month']]
 
   useSyncQueryParams({
     group: attendanceGroupToString(selectedGroup),
@@ -291,8 +296,9 @@ const CalendarContent = React.memo(function CalendarContent({
         ) : null}
       </CollapsibleContentArea>
 
-      {selectedGroup.type === 'group' ||
-      (selectedGroup.type === 'all-children' && mode === 'week') ? (
+      {unitInformation.permittedActions.has('READ_CALENDAR_EVENTS') &&
+      (selectedGroup.type === 'group' ||
+        (selectedGroup.type === 'all-children' && mode === 'week')) ? (
         <>
           <HorizontalLine dashed slim />
 
