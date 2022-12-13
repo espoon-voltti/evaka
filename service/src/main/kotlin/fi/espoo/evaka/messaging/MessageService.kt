@@ -36,6 +36,8 @@ class MessageService(
         }
     }
 
+    val SPREAD_MESSAGE_NOTIFICATION_SECONDS: Long = 60 * 60 * 24
+
     fun createMessageThreadsForRecipientGroups(
         tx: Database.Transaction,
         clock: EvakaClock,
@@ -114,10 +116,12 @@ class MessageService(
             },
             now
         )
+
         notificationEmailService.scheduleSendingMessageNotifications(
             tx,
             threadAndMessageIds.map { (_, messageId) -> messageId },
-            now.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5)
+            now.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5),
+            if (!urgent) SPREAD_MESSAGE_NOTIFICATION_SECONDS else 0
         )
 
         if (staffCopyRecipients.isNotEmpty()) {

@@ -118,6 +118,11 @@ class AsyncJobRunner<T : AsyncJobPayload>(
         tx.afterCommit(wakeUpHook)
     }
 
+    fun plan(tx: Database.Transaction, jobs: List<JobParams<*>>) {
+        jobs.forEach { job -> tx.insertJob(job) }
+        tx.afterCommit(wakeUpHook)
+    }
+
     fun start(pollingInterval: Duration) {
         val newRunner =
             this.executor.scheduleWithFixedDelay(

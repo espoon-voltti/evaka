@@ -106,6 +106,8 @@ class MessageNotificationEmailServiceIntegrationTest :
         }
     }
 
+    val SPREAD_MESSAGE_NOTIFICATION_SECONDS: Long = 60 * 60 * 24
+
     @Test
     fun `notifications are sent to citizens`() {
         val clock = MockEvakaClock(HelsinkiDateTime.now())
@@ -128,7 +130,9 @@ class MessageNotificationEmailServiceIntegrationTest :
             user = employee,
             clock
         )
-        asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusSeconds(30)))
+        asyncJobRunner.runPendingJobsSync(
+            MockEvakaClock(clock.now().plusSeconds(SPREAD_MESSAGE_NOTIFICATION_SECONDS))
+        )
 
         assertEquals(0, asyncJobRunner.getPendingJobCount())
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
@@ -171,7 +175,10 @@ class MessageNotificationEmailServiceIntegrationTest :
             )
         assertNotNull(contentId)
         undoMessage(employeeAccount, contentId, employee, clock)
-        asyncJobRunner.runPendingJobsSync(MockEvakaClock(clock.now().plusSeconds(30)))
+
+        asyncJobRunner.runPendingJobsSync(
+            MockEvakaClock(clock.now().plusSeconds(SPREAD_MESSAGE_NOTIFICATION_SECONDS))
+        )
 
         assertTrue(MockEmailClient.emails.isEmpty())
         assertEquals(0, asyncJobRunner.getPendingJobCount())
