@@ -8,13 +8,7 @@ import passport from 'passport'
 import path from 'path'
 import { AuthenticateOptions, SAML } from 'passport-saml'
 import { createLogoutToken, tryParseProfile } from '../../../auth'
-import {
-  adMock,
-  evakaBaseUrl,
-  gatewayRole,
-  nodeEnv,
-  sfiMock
-} from '../../../config'
+import { Config, evakaBaseUrl, gatewayRole, nodeEnv } from '../../../config'
 import { getCitizens, getEmployees } from '../../../dev-api'
 import { toMiddleware, toRequestHandler } from '../../../express'
 import { logAuditEvent, logDebug, logError } from '../../../logging'
@@ -192,15 +186,18 @@ function createLogoutHandler({
 // browser to the SP (us) and the IDP.
 // * HTTP redirect: the browser makes a GET request with query parameters
 // * HTTP POST: the browser makes a POST request with URI-encoded form body
-export default function createSamlRouter(config: SamlEndpointConfig): Router {
-  const { strategyName, strategy, samlConfig, pathIdentifier } = config
+export default function createSamlRouter(
+  config: Config,
+  endpointConfig: SamlEndpointConfig
+): Router {
+  const { strategyName, strategy, samlConfig, pathIdentifier } = endpointConfig
   // For parsing SAML messages outside the strategy
   const saml = new SAML(samlConfig)
 
   passport.use(strategyName, strategy)
 
-  const loginHandler = createLoginHandler(config)
-  const logoutHandler = createLogoutHandler(config)
+  const loginHandler = createLoginHandler(endpointConfig)
+  const logoutHandler = createLogoutHandler(endpointConfig)
   const logoutCallback = toMiddleware(async (req, res) => {
     logAuditEvent(
       `evaka.saml.${strategyName}.sign_out`,
@@ -211,7 +208,7 @@ export default function createSamlRouter(config: SamlEndpointConfig): Router {
     await logoutExpress(
       req,
       res,
-      config.sessionType,
+      endpointConfig.sessionType,
       profile?.nameID && createLogoutToken(profile.nameID, profile.sessionIndex)
     )
   })
@@ -229,11 +226,11 @@ export default function createSamlRouter(config: SamlEndpointConfig): Router {
     loginHandler
   )
 
-  if (adMock) {
-    configureDevAdLogin(router, config)
+  if (config.ad.mock) {
+    configureDevAdLogin(router, endpointConfig)
   }
-  if (sfiMock) {
-    configureDevSfiLogin(router, config)
+  if (config.sfi.mock) {
+    configureDevSfiLogin(router, endpointConfig)
   }
 
   // Our application directs the browser to one of these endpoints to start

@@ -15,6 +15,7 @@ import createEvakaSamlStrategy, {
 } from '../shared/auth/keycloak-saml'
 import {
   appCommit,
+  Config,
   cookieSecret,
   enableDevApi,
   titaniaConfig
@@ -44,7 +45,10 @@ import expressBasicAuth from 'express-basic-auth'
 import { cacheControl } from '../shared/middleware/cache-control'
 import { RedisClient } from 'redis'
 
-export default function internalGwApp(redisClient: RedisClient) {
+export default function internalGwApp(
+  config: Config,
+  redisClient: RedisClient
+) {
   const app = express()
   trustReverseProxy(app)
   app.set('etag', false)
@@ -98,11 +102,11 @@ export default function internalGwApp(redisClient: RedisClient) {
       next()
     })
 
-    const adSamlConfig = createAdSamlConfig(redisClient)
+    const adSamlConfig = createAdSamlConfig(config.ad, redisClient)
     router.use(
-      createSamlRouter({
+      createSamlRouter(config, {
         strategyName: 'ead',
-        strategy: createAdSamlStrategy(adSamlConfig),
+        strategy: createAdSamlStrategy(config.ad, adSamlConfig),
         samlConfig: adSamlConfig,
         sessionType: 'employee',
         pathIdentifier: 'saml'
@@ -111,7 +115,7 @@ export default function internalGwApp(redisClient: RedisClient) {
 
     const evakaSamlConfig = createEvakaSamlconfig(redisClient)
     router.use(
-      createSamlRouter({
+      createSamlRouter(config, {
         strategyName: 'evaka',
         strategy: createEvakaSamlStrategy(evakaSamlConfig),
         samlConfig: evakaSamlConfig,

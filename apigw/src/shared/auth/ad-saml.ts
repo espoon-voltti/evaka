@@ -10,13 +10,13 @@ import {
 } from 'passport-saml'
 import DevAdStrategy from './dev-ad-strategy'
 import { SamlUser } from '../routes/auth/saml/types'
-import { adMock, adConfig, adExternalIdPrefix } from '../config'
 import certificates from '../certificates'
 import { readFileSync } from 'fs'
 import { getEmployeeByExternalId, upsertEmployee } from '../dev-api'
 import { employeeLogin, UserRole } from '../service-client'
 import { RedisClient } from 'redis'
 import redisCacheProvider from './passport-saml-cache-redis'
+import { Config } from '../config'
 
 const AD_USER_ID_KEY =
   'http://schemas.microsoft.com/identity/claims/objectidentifier'
@@ -45,11 +45,14 @@ interface AdProfile {
   [AD_EMPLOYEE_NUMBER_KEY]?: string
 }
 
-async function verifyProfile(profile: AdProfile): Promise<SamlUser> {
+async function verifyProfile(
+  idPrefix: string,
+  profile: AdProfile
+): Promise<SamlUser> {
   const aad = profile[AD_USER_ID_KEY]
   if (!aad) throw Error('No user ID in SAML data')
   const person = await employeeLogin({
-    externalId: `${adExternalIdPrefix}:${aad}`,
+    externalId: `${idPrefix}:${aad}`,
     firstName: profile[AD_GIVEN_NAME_KEY],
     lastName: profile[AD_FAMILY_NAME_KEY],
     email: profile[AD_EMAIL_KEY],
@@ -68,39 +71,45 @@ async function verifyProfile(profile: AdProfile): Promise<SamlUser> {
   }
 }
 
-export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
-  if (adMock) return { cert: 'mock-certificate' }
-  if (!adConfig) throw Error('Missing AD SAML configuration')
+export function createSamlConfig(
+  config: Config['ad'],
+  redisClient?: RedisClient
+): SamlConfig {
+  if (config.mock) return { cert: 'mock-certificate' }
+  if (!config.saml) throw Error('Missing AD SAML configuration')
   return {
     acceptedClockSkewMs: 0,
-    audience: adConfig.issuer,
+    audience: config.saml.issuer,
     cacheProvider: redisClient
       ? redisCacheProvider(redisClient, { keyPrefix: 'ad-saml-resp:' })
       : undefined,
-    callbackUrl: adConfig.callbackUrl,
-    cert: Array.isArray(adConfig.publicCert)
-      ? adConfig.publicCert.map(
+    callbackUrl: config.saml.callbackUrl,
+    cert: Array.isArray(config.saml.publicCert)
+      ? config.saml.publicCert.map(
           (certificateName) => certificates[certificateName]
         )
-      : adConfig.publicCert,
+      : config.saml.publicCert,
     disableRequestedAuthnContext: true,
-    entryPoint: adConfig.entryPoint,
+    entryPoint: config.saml.entryPoint,
     identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
-    issuer: adConfig.issuer,
-    logoutUrl: adConfig.logoutUrl,
-    privateKey: readFileSync(adConfig.privateCert, { encoding: 'utf8' }),
+    issuer: config.saml.issuer,
+    logoutUrl: config.saml.logoutUrl,
+    privateKey: readFileSync(config.saml.privateCert, { encoding: 'utf8' }),
     signatureAlgorithm: 'sha256',
     validateInResponseTo: true
   }
 }
 
 export default function createAdStrategy(
-  config: SamlConfig
+  config: Config['ad'],
+  samlConfig: SamlConfig
 ): SamlStrategy | DevAdStrategy {
-  if (adMock) {
+  if (config.mock) {
     const getter = async (userId: string) => {
-      const employee = await getEmployeeByExternalId(userId)
-      return verifyProfile({
+      const employee = await getEmployeeByExternalId(
+        `${config.externalIdPrefix}:${userId}`
+      )
+      return verifyProfile(config.externalIdPrefix, {
         nameID: 'dummyid',
         [AD_USER_ID_KEY]: userId,
         [AD_ROLES_KEY]: [],
@@ -122,10 +131,10 @@ export default function createAdStrategy(
         firstName,
         lastName,
         email,
-        externalId: `${adExternalIdPrefix}:${userId}`,
+        externalId: `${config.externalIdPrefix}:${userId}`,
         roles: roles as UserRole[]
       })
-      return verifyProfile({
+      return verifyProfile(config.externalIdPrefix, {
         nameID: 'dummyid',
         [AD_USER_ID_KEY]: userId,
         [AD_ROLES_KEY]: roles,
@@ -138,10 +147,10 @@ export default function createAdStrategy(
     return new DevAdStrategy(getter, upserter)
   } else {
     return new SamlStrategy(
-      config,
+      samlConfig,
       (profile: Profile | null | undefined, done: VerifiedCallback) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        verifyProfile(profile as any as AdProfile)
+        verifyProfile(config.externalIdPrefix, profile as any as AdProfile)
           .then((user) => done(null, user))
           .catch(done)
       }

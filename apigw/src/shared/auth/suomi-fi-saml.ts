@@ -6,7 +6,7 @@ import fs from 'fs'
 import { Profile, SamlConfig, Strategy, VerifiedCallback } from 'passport-saml'
 import { RedisClient } from 'redis'
 import certificates from '../certificates'
-import { nodeEnv, sfiConfig, sfiMock } from '../config'
+import { Config, nodeEnv } from '../config'
 import { SamlUser } from '../routes/auth/saml/types'
 import { citizenLogin } from '../service-client'
 import redisCacheProvider from './passport-saml-cache-redis'
@@ -50,34 +50,37 @@ async function verifyProfile(profile: SuomiFiProfile): Promise<SamlUser> {
   }
 }
 
-export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
-  if (sfiMock) return { cert: 'mock-certificate' }
-  if (!sfiConfig) throw new Error('Missing Suomi.fi SAML configuration')
-  const publicCert = Array.isArray(sfiConfig.publicCert)
-    ? sfiConfig.publicCert.map(
+export function createSamlConfig(
+  config: Config['sfi'],
+  redisClient?: RedisClient
+): SamlConfig {
+  if (config.mock) return { cert: 'mock-certificate' }
+  if (!config.saml) throw new Error('Missing Suomi.fi SAML configuration')
+  const publicCert = Array.isArray(config.saml.publicCert)
+    ? config.saml.publicCert.map(
         (certificateName) => certificates[certificateName]
       )
-    : fs.readFileSync(sfiConfig.publicCert, {
+    : fs.readFileSync(config.saml.publicCert, {
         encoding: 'utf8'
       })
-  const privateCert = fs.readFileSync(sfiConfig.privateCert, {
+  const privateCert = fs.readFileSync(config.saml.privateCert, {
     encoding: 'utf8'
   })
 
   return {
     acceptedClockSkewMs: 0,
-    audience: sfiConfig.issuer,
+    audience: config.saml.issuer,
     cacheProvider: redisClient
       ? redisCacheProvider(redisClient, { keyPrefix: 'suomifi-saml-resp:' })
       : undefined,
-    callbackUrl: sfiConfig.callbackUrl,
+    callbackUrl: config.saml.callbackUrl,
     cert: publicCert,
     decryptionPvk: privateCert,
     disableRequestedAuthnContext: true,
-    entryPoint: sfiConfig.entryPoint,
+    entryPoint: config.saml.entryPoint,
     identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
-    issuer: sfiConfig.issuer,
-    logoutUrl: sfiConfig.logoutUrl,
+    issuer: config.saml.issuer,
+    logoutUrl: config.saml.logoutUrl,
     privateKey: privateCert,
     signatureAlgorithm: 'sha256',
     // InResponseTo validation unnecessarily complicates testing
@@ -86,9 +89,10 @@ export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
 }
 
 export default function createSuomiFiStrategy(
-  config: SamlConfig
+  config: Config['sfi'],
+  samlConfig: SamlConfig
 ): Strategy | DevSfiStrategy {
-  if (sfiMock) {
+  if (config.mock) {
     const getter = async (ssn: string) => {
       const citizen = await getCitizenBySsn(ssn)
       return verifyProfile({
@@ -102,7 +106,7 @@ export default function createSuomiFiStrategy(
     return new DevSfiStrategy(getter)
   } else {
     return new Strategy(
-      config,
+      samlConfig,
       (profile: Profile | null | undefined, done: VerifiedCallback) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         verifyProfile(profile as any as SuomiFiProfile)

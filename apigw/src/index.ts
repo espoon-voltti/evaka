@@ -25,7 +25,7 @@ redisClient.on('error', (err) =>
 redisClient.unref()
 
 if (!gatewayRole || gatewayRole === 'enduser') {
-  const app = enduserGwApp(redisClient)
+  const app = enduserGwApp(config, redisClient)
   app.listen(httpPort.enduser, () =>
     logInfo(
       `Evaka Application API Gateway listening on port ${httpPort.enduser}`
@@ -33,7 +33,7 @@ if (!gatewayRole || gatewayRole === 'enduser') {
   )
 }
 if (!gatewayRole || gatewayRole === 'internal') {
-  const app = internalGwApp(redisClient)
+  const app = internalGwApp(config, redisClient)
   const server = app.listen(httpPort.internal, () =>
     logInfo(`Evaka Internal API Gateway listening on port ${httpPort.internal}`)
   )

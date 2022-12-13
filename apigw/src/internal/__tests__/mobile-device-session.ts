@@ -7,7 +7,7 @@ import { mobileLongTermCookieName } from '../mobile-device-session'
 import { sessionCookie } from '../../shared/session'
 import { v4 as uuid } from 'uuid'
 import { UUID } from '../../shared/service-client'
-import { appCommit } from '../../shared/config'
+import { appCommit, configFromEnv } from '../../shared/config'
 import internalGwApp from '../app'
 import redisMock from 'redis-mock'
 
@@ -17,7 +17,8 @@ const mobileDeviceId = '7f81ec05-657a-4d18-8196-67f4c8a33989'
 describe('Mobile device pairing process', () => {
   let tester: GatewayTester
   beforeAll(async () => {
-    const app = internalGwApp(redisMock.createClient())
+    const config = configFromEnv()
+    const app = internalGwApp(config, redisMock.createClient())
     tester = await GatewayTester.start(app, 'employee')
   })
   afterEach(async () => tester.afterEach())

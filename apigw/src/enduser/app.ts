@@ -28,8 +28,9 @@ import routes from './routes'
 import authStatus from './routes/auth-status'
 import { cacheControl } from '../shared/middleware/cache-control'
 import { RedisClient } from 'redis'
+import { Config } from '../shared/config'
 
-export default function enduserGwApp(redisClient: RedisClient) {
+export default function enduserGwApp(config: Config, redisClient: RedisClient) {
   const app = express()
   trustReverseProxy(app)
   app.set('etag', false)
@@ -68,11 +69,11 @@ export default function enduserGwApp(redisClient: RedisClient) {
     const router = Router()
 
     router.use(publicRoutes)
-    const suomifiSamlConfig = createSuomiFiSamlConfig(redisClient)
+    const suomifiSamlConfig = createSuomiFiSamlConfig(config.sfi, redisClient)
     router.use(
-      createSamlRouter({
+      createSamlRouter(config, {
         strategyName: 'suomifi',
-        strategy: createSuomiFiStrategy(suomifiSamlConfig),
+        strategy: createSuomiFiStrategy(config.sfi, suomifiSamlConfig),
         samlConfig: suomifiSamlConfig,
         sessionType: 'enduser',
         pathIdentifier: 'saml'
@@ -80,7 +81,7 @@ export default function enduserGwApp(redisClient: RedisClient) {
     )
     const evakaCustomerSamlConfig = createEvakaCustomerSamlConfig(redisClient)
     router.use(
-      createSamlRouter({
+      createSamlRouter(config, {
         strategyName: 'evaka-customer',
         strategy: createEvakaCustomerSamlStrategy(evakaCustomerSamlConfig),
         samlConfig: evakaCustomerSamlConfig,
