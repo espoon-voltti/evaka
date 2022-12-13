@@ -1299,4 +1299,46 @@ class PlacementServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = 
             placements
         )
     }
+
+    @Test
+    fun `only missing group placements after evaka launch are included`() {
+        val evakaLaunch = LocalDate.of(2020, 3, 1)
+        val placement =
+            db.transaction { tx ->
+                val placement =
+                    tx.insertPlacement(
+                        PlacementType.DAYCARE,
+                        testChild_1.id,
+                        testDaycare.id,
+                        evakaLaunch.minusYears(1),
+                        evakaLaunch.plusYears(1)
+                    )
+                tx.insertTestDaycareGroupPlacement(
+                    placement.id,
+                    groupId1,
+                    startDate = evakaLaunch,
+                    endDate = evakaLaunch.plusMonths(6)
+                )
+                placement
+            }
+
+        val result = db.read { tx -> getMissingGroupPlacements(tx, testDaycare.id) }
+        assertEquals(
+            listOf(
+                MissingGroupPlacement(
+                    placement.id,
+                    placement.type,
+                    false,
+                    FiniteDateRange(placement.startDate, placement.endDate),
+                    testChild_1.id,
+                    testChild_1.firstName,
+                    testChild_1.lastName,
+                    testChild_1.dateOfBirth,
+                    listOf(),
+                    FiniteDateRange(evakaLaunch.plusMonths(6).plusDays(1), evakaLaunch.plusYears(1))
+                )
+            ),
+            result
+        )
+    }
 }
