@@ -974,8 +974,7 @@ const sv: Translations = {
           ssnPlaceholder: 'Personbeteckning'
         },
         units: {
-          title: (maxUnits: number) =>
-            maxUnits === 1 ? 'Ansökningsönskemål' : 'Ansökningsönskemål',
+          title: () => 'Ansökningsönskemål',
           startDateMissing:
             'För att kunna välja önskade enheter, välj först det önskade startdatumet i avsnittet om "Behov av småbarnspedagogisk verksamhet"',
           info: {
