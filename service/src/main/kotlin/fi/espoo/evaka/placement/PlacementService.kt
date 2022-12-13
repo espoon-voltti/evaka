@@ -545,7 +545,7 @@ fun getMissingGroupPlacements(tx: Database.Read, unitId: DaycareId): List<Missin
                 """
 WITH missing_group_placement AS (
     SELECT p.id, p.type, daterange(p.start_date, p.end_date, '[]') AS placement_period, p.child_id,
-        multirange(daterange(p.start_date, p.end_date, '[]')) - coalesce(dgp.ranges, '{}'::datemultirange) AS ranges
+        multirange(daterange(greatest(p.start_date, :evakaLaunch), p.end_date, '[]')) - coalesce(dgp.ranges, '{}'::datemultirange) AS ranges
     FROM placement p
     LEFT JOIN LATERAL (
         SELECT range_agg(daterange(dgp.start_date, dgp.end_date, '[]')) AS ranges
@@ -553,7 +553,7 @@ WITH missing_group_placement AS (
         WHERE p.id = dgp.daycare_placement_id
     ) dgp ON true
     WHERE p.unit_id = :unitId AND daterange(p.start_date, p.end_date, '[]') && daterange(:evakaLaunch, NULL)
-    AND NOT isempty(multirange(daterange(p.start_date, p.end_date, '[]')) - coalesce(dgp.ranges, '{}'::datemultirange))
+    AND NOT isempty(multirange(daterange(greatest(p.start_date, :evakaLaunch), p.end_date, '[]')) - coalesce(dgp.ranges, '{}'::datemultirange))
 )
 SELECT
     FALSE AS backup,
