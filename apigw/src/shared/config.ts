@@ -4,6 +4,15 @@
 
 import certificates, { TrustedCertificates } from './certificates'
 
+export interface Config {
+  redis: {
+    host: string | undefined
+    port: number | undefined
+    password: string | undefined
+    tlsServerName: string | undefined
+    disableSecurity: boolean
+  }
+}
 export interface EvakaSamlConfig {
   callbackUrl: string
   entryPoint: string
@@ -84,6 +93,21 @@ function envArray<T>(
   }
 }
 
+export function configFromEnv(): Config {
+  return {
+    redis: {
+      host: process.env.REDIS_HOST ?? ifNodeEnv(['local'], 'localhost'),
+      port: env('REDIS_PORT', parseInteger) ?? ifNodeEnv(['local'], 6379),
+      password: process.env.REDIS_PASSWORD,
+      tlsServerName: process.env.REDIS_TLS_SERVER_NAME,
+      disableSecurity:
+        env('REDIS_DISABLE_SECURITY', parseBoolean) ??
+        ifNodeEnv(['local'], true) ??
+        false
+    }
+  }
+}
+
 export const gatewayRole = env('GATEWAY_ROLE', parseEnum(gatewayRoles))
 export const nodeEnv = env('NODE_ENV', parseEnum(nodeEnvs))
 export const appBuild = process.env.APP_BUILD ?? 'UNDEFINED'
@@ -129,19 +153,6 @@ export const prettyLogs =
   env('PRETTY_LOGS', parseBoolean) ?? ifNodeEnv(['local'], true) ?? false
 
 export const volttiEnv = process.env.VOLTTI_ENV ?? ifNodeEnv(['local'], 'local')
-
-export const redisHost =
-  process.env.REDIS_HOST ?? ifNodeEnv(['local'], 'localhost')
-
-export const redisPort =
-  env('REDIS_PORT', parseInteger) ?? ifNodeEnv(['local'], 6379)
-
-export const redisPassword = process.env.REDIS_PASSWORD
-export const redisTlsServerName = process.env.REDIS_TLS_SERVER_NAME
-export const redisDisableSecurity =
-  env('REDIS_DISABLE_SECURITY', parseBoolean) ??
-  ifNodeEnv(['local'], true) ??
-  false
 
 export const httpPort = {
   enduser: env('HTTP_PORT', parseInteger) ?? 3010,

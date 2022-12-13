@@ -3,14 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import 'source-map-support/register'
-import { gatewayRole, httpPort } from './shared/config'
+import { configFromEnv, gatewayRole, httpPort } from './shared/config'
 import './tracer'
 import { logInfo } from './shared/logging'
 import enduserGwApp from './enduser/app'
 import internalGwApp from './internal/app'
 import { createRedisClient } from './shared/redis-client'
 
-const redisClient = createRedisClient()
+const config = configFromEnv()
+const redisClient = createRedisClient(config.redis)
 
 if (!gatewayRole || gatewayRole === 'enduser') {
   const app = enduserGwApp(redisClient)

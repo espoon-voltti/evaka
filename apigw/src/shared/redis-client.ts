@@ -3,26 +3,20 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import redis from 'redis'
-import {
-  redisHost,
-  redisPort,
-  redisDisableSecurity,
-  redisTlsServerName,
-  redisPassword
-} from './config'
+import { Config } from './config'
 import { logError } from './logging'
 
 /**
  * Create an instance of a Redis client targeting a shared Redis instance.
  * It is recommended to create only a single instance of this client per app.
  */
-export function createRedisClient() {
+export function createRedisClient(config: Config['redis']) {
   const redisClient = redis.createClient({
-    host: redisHost,
-    port: redisPort,
-    ...(!redisDisableSecurity && {
-      tls: { servername: redisTlsServerName },
-      password: redisPassword
+    host: config.host,
+    port: config.port,
+    ...(!config.disableSecurity && {
+      tls: { servername: config.tlsServerName },
+      password: config.password
     })
   })
 

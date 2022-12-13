@@ -10,6 +10,7 @@ import { UUID } from '../../shared/service-client'
 import { appCommit } from '../../shared/config'
 import internalGwApp from '../app'
 import { createRedisClient } from '../../shared/redis-client'
+import { emptyRedisConfig } from '../../shared/test/config'
 
 const pairingId = '009da566-19ca-432e-ad2d-3041481b5bae'
 const mobileDeviceId = '7f81ec05-657a-4d18-8196-67f4c8a33989'
@@ -17,7 +18,7 @@ const mobileDeviceId = '7f81ec05-657a-4d18-8196-67f4c8a33989'
 describe('Mobile device pairing process', () => {
   let tester: GatewayTester
   beforeAll(async () => {
-    const app = internalGwApp(createRedisClient())
+    const app = internalGwApp(createRedisClient(emptyRedisConfig))
     tester = await GatewayTester.start(app, 'employee')
   })
   afterEach(async () => tester.afterEach())

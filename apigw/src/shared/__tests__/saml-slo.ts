@@ -18,6 +18,7 @@ import type { CitizenUser } from '../service-client'
 import { sessionCookie } from '../session'
 import { GatewayTester } from '../test/gateway-tester'
 import { createRedisClient } from '../redis-client'
+import { emptyRedisConfig } from '../test/config'
 
 const mockUser: CitizenUser = {
   id: '942b9cab-210d-4d49-b4c9-65f26390eed3'
@@ -60,7 +61,7 @@ describe('SAML Single Logout', () => {
   const sfiMock = config.sfiMock
 
   beforeEach(async () => {
-    redisClient = createRedisClient()
+    redisClient = createRedisClient(emptyRedisConfig)
     // In order to enable the REAL Suomi.fi passport-saml Strategy only for
     // these tests, config.sfiMock should be true in every other case but this
     // test suite + as Strategy vs. DummyStrategy selection is done at app
