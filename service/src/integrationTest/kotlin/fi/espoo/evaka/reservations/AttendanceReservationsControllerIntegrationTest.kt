@@ -9,7 +9,9 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesType
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.Timeline
@@ -33,6 +35,8 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.snDaycareContractDays15
+import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_4
 import fi.espoo.evaka.testChild_5
@@ -92,6 +96,24 @@ class AttendanceReservationsControllerIntegrationTest :
                     startDate = mon,
                     endDate = fri
                 )
+            it.insertServiceNeed(
+                placementId = child1PlacementId,
+                startDate = mon,
+                endDate = wed,
+                optionId = snDaycareContractDays15.id,
+                shiftCare = false,
+                confirmedBy = null,
+                confirmedAt = null
+            )
+            it.insertServiceNeed(
+                placementId = child1PlacementId,
+                startDate = thu,
+                endDate = fri,
+                optionId = snDaycareFullDay35.id,
+                shiftCare = false,
+                confirmedBy = null,
+                confirmedAt = null
+            )
             it.insertTestDaycareGroupPlacement(
                 daycarePlacementId = child1PlacementId,
                 groupId = testGroup1.id,
@@ -137,7 +159,7 @@ class AttendanceReservationsControllerIntegrationTest :
             )
 
             // Placement in other unit, backup in this unit's group 2
-            it.insertTestPlacement(
+            val testChild5PlacementId = it.insertTestPlacement(
                 childId = testChild_5.id,
                 unitId = testDaycare2.id,
                 startDate = mon,
@@ -150,6 +172,16 @@ class AttendanceReservationsControllerIntegrationTest :
                 startDate = fri,
                 endDate = fri
             )
+            it.insertServiceNeed(
+                placementId = testChild5PlacementId,
+                startDate = mon,
+                endDate = fri,
+                optionId = snDaycareContractDays15.id,
+                shiftCare = false,
+                confirmedBy = null,
+                confirmedAt = null
+            )
+
             it.insertTestDailyServiceTimes(
                 DevDailyServiceTimes(
                     childId = testChild_5.id,
@@ -213,6 +245,36 @@ class AttendanceReservationsControllerIntegrationTest :
         val attendanceReservations = getAttendanceReservations()
         assertEquals(testDaycare.name, attendanceReservations.unit)
         assertEquals(unitOperationalDays, attendanceReservations.operationalDays)
+
+        val group1SnInfos = attendanceReservations.unitServiceNeedInfo.groups.find { it.groupId == testGroup1.id }!!
+        assertEquals(UnitAttendanceReservations.GroupServiceNeedInfo(
+            groupId = testGroup1.id,
+            childInfos = listOf(
+                ChildServiceNeedInfo(
+                    childId = testChild_1.id,
+                    hasContractDays = true,
+                    optionName = snDaycareContractDays15.nameFi,
+                    validDuring = FiniteDateRange(mon, wed)
+                )
+            )
+        ), group1SnInfos)
+
+        val group2SnInfos = attendanceReservations.unitServiceNeedInfo.groups.find { it.groupId == testGroup2.id }!!
+        assertEquals(
+            listOf(
+                ChildServiceNeedInfo(
+                    childId = testChild_5.id,
+                    hasContractDays = true,
+                    optionName = snDaycareContractDays15.nameFi,
+                    validDuring = FiniteDateRange(mon, fri)
+                ),
+                ChildServiceNeedInfo(
+                    childId = testChild_1.id,
+                    hasContractDays = false,
+                    optionName = snDaycareFullDay35.nameFi,
+                    validDuring = FiniteDateRange(thu, fri)
+                )
+            ), group2SnInfos.childInfos.sortedBy { it.validDuring.start })
 
         val group1 = attendanceReservations.groups.find { it.group.id == testGroup1.id }!!
         assertEquals(
