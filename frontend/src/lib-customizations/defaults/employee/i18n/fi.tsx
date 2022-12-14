@@ -2682,8 +2682,7 @@ export const fi = {
       NO_ABSENCE: 'Jos lapsi on paikalla, älä merkitse mitään.'
     },
     additionalLegendItemInfos: {
-      CONTRACT_DAYS:
-        'Käytetään merkitsemään lapsi, jolle on valitun tarkastelujakson aikana voimassa sopimuspäivällinen palveluntarve'
+      CONTRACT_DAYS: 'Lapsi, jolla palveluntarpeena sopimuspäivä'
     },
     careTypes: {
       SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito',
