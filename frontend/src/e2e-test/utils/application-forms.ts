@@ -522,6 +522,7 @@ export const fullPreschoolForm: {
     serviceNeed: {
       preferredStartDate: '16.08.2021',
       connectedDaycare: true,
+      connectedDaycarePreferredStartDate: '16.08.2021',
       startTime: '09:00',
       endTime: '17:00',
       shiftCare: true,
