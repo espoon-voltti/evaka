@@ -33,7 +33,6 @@ import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
-import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.Duration
@@ -582,8 +581,7 @@ private fun Database.Read.getAttendancesResponse(
                 imageUrl = child.imageUrl,
                 reservations = attendanceReservations[child.id]?.sortedBy { it.startTime }
                         ?: listOf(),
-                hasContractDayServiceNeed = childContractDays[child.id]
-                        ?: false
+                hasContractDayServiceNeed = childContractDays[child.id] ?: false
             )
         }
 

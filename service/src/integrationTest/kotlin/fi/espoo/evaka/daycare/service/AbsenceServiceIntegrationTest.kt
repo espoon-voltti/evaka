@@ -9,11 +9,13 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.createChildDailyServiceTimes
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.GroupId
+import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.dev.DevBackupCare
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -36,9 +38,13 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.TimeRange
+import fi.espoo.evaka.snDaycareContractDays15
+import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -46,8 +52,6 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 
 class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     val childId = testChild_1.id
@@ -1035,6 +1039,143 @@ class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
 
         val result = db.read { getAbsencesInGroupByMonth(it, groupId, 2019, 8) }
         assertEquals(listOf(null), result.children.map { it.attendanceTotalHours })
+    }
+
+    @Test
+    fun `backup care children have correct service needs`() {
+        db.transaction { tx ->
+            val placementId =
+                tx.insertTestPlacement(
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                    type = PlacementType.DAYCARE
+                )
+            tx.insertTestBackupCare(
+                DevBackupCare(
+                    childId = childId,
+                    unitId = daycareId,
+                    groupId = groupId,
+                    period = FiniteDateRange(placementStart, placementEnd)
+                )
+            )
+
+            tx.insertServiceNeed(
+                placementId = placementId,
+                startDate = placementStart,
+                endDate = placementEnd,
+                optionId = snDaycareContractDays15.id,
+                shiftCare = false,
+                confirmedBy = null,
+                confirmedAt = null
+            )
+        }
+
+        val placementDate = placementStart
+        val result =
+            db.read {
+                getAbsencesInGroupByMonth(it, groupId, placementDate.year, placementDate.monthValue)
+            }
+
+        assertEquals(groupId, result.groupId)
+        assertEquals(daycareName, result.daycareName)
+        assertEquals(groupName, result.groupName)
+        assertEquals(1, result.children.size)
+        assertEquals(
+            listOf(
+                ChildServiceNeedInfo(
+                    childId = childId,
+                    hasContractDays = true,
+                    optionName = snDaycareContractDays15.nameFi,
+                    validDuring = FiniteDateRange(placementStart, placementEnd)
+                )
+            ),
+            result.children.find { it.child.id == childId }?.actualServiceNeeds!!
+        )
+    }
+
+    @Test
+    fun `placed children have correct service needs`() {
+        val sn1Period = FiniteDateRange(placementStart, placementStart.plusDays(10))
+        val sn2Period = FiniteDateRange(placementStart.plusDays(11), placementEnd.minusDays(11))
+        val sn3Period = FiniteDateRange(placementEnd.minusDays(10), placementEnd)
+
+        db.transaction { tx ->
+            val placementId =
+                tx.insertTestPlacement(
+                    childId = childId,
+                    unitId = daycareId,
+                    startDate = placementStart,
+                    endDate = placementEnd,
+                    type = PlacementType.DAYCARE
+                )
+            tx.insertTestDaycareGroupPlacement(
+                id = GroupPlacementId(UUID.randomUUID()),
+                daycarePlacementId = placementId,
+                groupId = groupId,
+                startDate = placementStart,
+                endDate = placementEnd
+            )
+
+            tx.insertServiceNeed(
+                placementId = placementId,
+                startDate = sn1Period.start,
+                endDate = sn1Period.end,
+                optionId = snDaycareContractDays15.id,
+                shiftCare = false,
+                confirmedBy = null,
+                confirmedAt = null
+            )
+
+            tx.insertServiceNeed(
+                placementId = placementId,
+                startDate = sn2Period.start,
+                endDate = sn2Period.end,
+                optionId = snDaycareFullDay35.id,
+                shiftCare = false,
+                confirmedBy = null,
+                confirmedAt = null
+            )
+
+            tx.insertServiceNeed(
+                placementId = placementId,
+                startDate = sn3Period.start,
+                endDate = sn3Period.end,
+                optionId = snDaycareContractDays15.id,
+                shiftCare = false,
+                confirmedBy = null,
+                confirmedAt = null
+            )
+        }
+
+        val placementDate = placementStart
+        val result =
+            db.read {
+                getAbsencesInGroupByMonth(it, groupId, placementDate.year, placementDate.monthValue)
+            }
+
+        assertEquals(groupId, result.groupId)
+        assertEquals(daycareName, result.daycareName)
+        assertEquals(groupName, result.groupName)
+        assertEquals(1, result.children.size)
+        assertEquals(
+            listOf(
+                ChildServiceNeedInfo(
+                    childId = childId,
+                    hasContractDays = true,
+                    optionName = snDaycareContractDays15.nameFi,
+                    validDuring = sn1Period
+                ),
+                ChildServiceNeedInfo(
+                    childId = childId,
+                    hasContractDays = false,
+                    optionName = snDaycareFullDay35.nameFi,
+                    validDuring = sn2Period
+                ),
+            ),
+            result.children.find { it.child.id == childId }?.actualServiceNeeds!!
+        )
     }
 
     private fun insertChildAndGroupPlacement(
