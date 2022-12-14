@@ -471,10 +471,10 @@ export default {
           PRESCHOOL: (
             <>
               <P>
-                Esiopetukseen osallistutaan vuosi ennen oppivelvollisuuden
-                alkamista. Esiopetus on maksutonta. Lukuvuoden 2022–2023
-                esiopetukseen ilmoittaudutaan 10.–21.1.2022. Suomen- ja
-                ruotsinkielinen esiopetus alkaa 11.8.2022.
+                Esiopetukseen osallistutaan oppivelvollisuuden alkamista
+                edeltävänä vuonna. Esiopetus on maksutonta. Lukuvuoden 2023–2024
+                esiopetukseen ilmoittaudutaan 10.–20.1.2023. Suomen- ja
+                ruotsinkielinen esiopetus alkaa 10.8.2023.
               </P>
               <P>
                 Päätökset tulevat{' '}
@@ -711,7 +711,7 @@ export default {
           info: {
             DAYCARE: [],
             PRESCHOOL: [
-              'Suomen- ja ruotsinkielinen esiopetus alkaa 11.8.2022. Jos tarvitsette varhaiskasvatusta 1.8.2022 lähtien ennen esiopetuksen alkua, voitte hakea sitä tällä hakemuksella valitsemalla ”Haen myös esiopetukseen liittyvää varhaiskasvatusta”.'
+              'Suomen- ja ruotsinkielinen esiopetus alkaa 10.8.2023. Jos tarvitsette varhaiskasvatusta 1.8.2023 lähtien ennen esiopetuksen alkua, voitte hakea sitä tällä hakemuksella valitsemalla ”Haen myös esiopetukseen liittyvää varhaiskasvatusta”.'
             ],
             CLUB: [
               'Kerhot noudattavat esiopetuksen työ- ja loma-aikoja. Kerhon toimintakausi on elokuusta toukokuun loppuun, ja kullekin toimintakaudelle haetaan erikseen. Eri kerhot kokoontuvat eri viikonpäivinä.'
@@ -799,28 +799,35 @@ export default {
                 Voit hakea lapselle tarvittaessa{' '}
                 <strong>
                   esiopetukseen liittyvää varhaiskasvatusta, joka on
-                  maksullista, ja jota annetaan esiopetuksen (4 tuntia/päivä)
-                  lisäksi
+                  maksullista.
                 </strong>{' '}
-                aamuisin ja/tai iltapäivisin samassa paikassa kuin esiopetus.
-                Jos haluat aloittaa varhaiskasvatuksen myöhemmin kuin esiopetus
-                alkaa, kirjoita haluttu aloituspäivämäärä hakemuksen “Muut
-                lisätiedot” -kohtaan.
+                Liittyvää varhaiskasvatusta järjestetään aamuisin ennen
+                esiopetusta ja esiopetuksen jälkeen esiopetusyksikön
+                aukioloaikojen mukaisesti.
               </P>
               <P>
-                Yksityisiin esiopetusyksiköihin haettassa, liittyvä
-                varhaiskasvatus haetaan suoraan yksiköstä (pois lukien
-                palveluseteliyksiköt), yksiköt informoivat asiakkaita
-                hakutavasta. Näissä tapauksissa palveluohjaus muuttaa hakemuksen
-                pelkäksi esiopetushakemukseksi.
+                Jos tarvitset varhaiskasvatusta 1.8.2023 lähtien ennen
+                esiopetuksen alkua huomioi tämä toivotun aloituspäivämäärän
+                valinnassa. Mikäli lapsen liittyvän varhaiskasvatuksen tarve on
+                myöhemmin kuin esiopetus alkaa, kirjoita aloituspäivämäärä
+                hakemuksen &quot;Muut lisätiedot&quot; –kohtaan.
               </P>
               <P>
-                Palveluseteliä haetaan valitsemalla hakutoiveeksi se
+                Palveluseteliyksiköhin haettaessa, liittyvän varhaiskasvatuksen
+                palveluseteliä haetaan valitsemalla hakutoiveeksi se
                 palveluseteliyksikkö, johon halutaan hakea.
               </P>
               <P>
-                Saat varhaiskasvatuspaikasta erillisen kirjallisen päätöksen, ja
-                päätös tulee{' '}
+                Yksityisiin esiopetusyksiköihin haettaessa, liittyvä
+                varhaiskasvatus haetaan suoraan yksiköstä (pois lukien
+                palveluseteliyksiköt), yksiköt informoivat asiakkaita
+                hakutavasta. Jos esiopetushakemuksessa on haettu liityvää
+                varhaiskasvatusta yksityisestä yksiköstä, palveluohjaus muuttaa
+                hakemuksen vain esiopetushakemukseksi.
+              </P>
+              <P>
+                Saat varhaiskasvatuspaikasta erillisen kirjallisen päätöksen.
+                Päätös tulee{' '}
                 <a
                   href="https://www.suomi.fi/viestit"
                   target="_blank"
@@ -872,12 +879,12 @@ export default {
             'Lapsen tuen tarpeella tarkoitetaan sellaisten tukitoimien tarvetta, jotka on osoitettu asiantuntijalausunnoin. Tukitoimet toteutuvat lapsen arjessa osana varhaiskasvatuksen muuta toimintaa. Osa varhaiskasvatuspaikoista on varattu tukea tarvitseville lapsille. Jos lapsellanne on kehityksen tai oppimisen tuen tarvetta, varhaiskasvatuksen erityisopettaja ottaa hakijaan yhteyttä, jotta lapsen tarpeet voidaan ottaa huomioon varhaiskasvatuspaikkaa myönnettäessä.',
           CLUB: 'Lapsen tuen tarpeella tarkoitetaan sellaisten tukitoimien tarvetta, jotka on osoitettu asiantuntijalausunnoin. Tukitoimet toteutuvat lapsen arjessa osana varhaiskasvatuksen muuta toimintaa. Osa varhaiskasvatuspaikoista on varattu tukea tarvitseville lapsille. Jos lapsellanne on kehityksen tai oppimisen tuen tarvetta, varhaiskasvatuksen erityisopettaja ottaa hakijaan yhteyttä, jotta lapsen tarpeet voidaan ottaa huomioon varhaiskasvatuspaikkaa myönnettäessä.',
           PRESCHOOL:
-            'Valitse hakemuksesta tämä kohta, jos lapsi tarvitsee kehitykselleen ja/tai oppimiselleen tukea esiopetusvuonna. Tukea toteutetaan lapsen arjessa osana esiopetuksen ja varhaiskasvatuksen muuta toimintaa. Osa esiopetuspaikoista on varattu tukea tarvitseville lapsille. Jos lapsellanne on kehityksen ja/tai oppimisen tuen tarvetta, varhaiskasvatuksen erityisopettaja ottaa hakijaan yhteyttä, jotta lapsen tarpeet voidaan ottaa huomioon esiopetuspaikkaa osoitettaessa.'
+            'Valitse hakemuksesta tämä kohta, jos lapsi tarvitsee kasvulleen ja/tai oppimiselleen tukea esiopetusvuonna. Tukea toteutetaan lapsen arjessa osana esiopetuksen ja varhaiskasvatuksen muuta toimintaa. Jos lapsellanne on kasvun ja/tai oppimisen tuen tarvetta, varhaiskasvatuksen erityisopettaja ottaa hakijaan yhteyttä, jotta lapsen tarpeet voidaan ottaa huomioon esiopetuspaikkaa osoitettaessa.'
         },
         preparatory:
           'Lapsi tarvitsee tukea suomen kielen oppimisessa. Haen myös perusopetukseen valmistavaan opetukseen. Ei koske ruotsinkielistä esiopetusta.',
         preparatoryInfo:
-          'Esiopetusikäisten perusopetukseen valmistavaan opetukseen voivat hakeutua maahanmuuttajataustaiset lapset, paluumuuttajalapset, kaksikielisten perheiden lapset (paitsi suomi-ruotsi) ja adoptiolapset, jotka tarvitsevat tukea suomen kielen oppimisessa ennen perusopetukseen siirtymistä. Perusopetukseen valmistavaa opetusta annetaan esiopetuksessa 5h/päivä. Opetus on maksutonta.'
+          'Esiopetuksessa toteutettavaan perusopetukseen valmistavaan opetukseen voivat hakeutua lapset, joilla ei ole vielä suomen kielen taitoa tai jotka osaavat jo jonkin verran suomea. Jos lapselle on nykyisestä päiväkodista suositeltu valmistavaa esiopetusta, hae sitä hakulomakkeella tässä kohdassa. Valmistavaa esiopetusta järjestetään kunnallisissa suomenkielisissä esiopetusryhmissä. Valmistava esiopetus on maksutonta ja sitä annetaan 5 h/päivä.'
       },
       unitPreference: {
         title: 'Hakutoive',
@@ -920,8 +927,6 @@ export default {
                   Huoltaja voi valita, käyttääkö hän sisarusperustetta kohdan a
                   vai b mukaisesti, jos esioppilaalla on sisarusperuste
                   molempien kohtien mukaan. Valinta ilmoitetaan alla.
-                  Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat
-                  lapset.
                 </P>
                 <P>
                   Täytä nämä tiedot vain, jos käytät sisarusperustetta, sekä
@@ -997,10 +1002,10 @@ export default {
             PRESCHOOL: (
               <>
                 <P>
-                  Voit hakea 1-3 paikka paikkaa toivomassasi järjestyksessä.
-                  Hakutoiveet eivät takaa paikkaa toivotussa yksikössä, mutta
+                  Voit hakea 1-3 eri yksikköön toivomassasi järjestyksessä.
+                  Hakutoiveet eivät takaa paikkaa toivotusta yksiköstä, mutta
                   mahdollisuus toivotun paikan saamiseen kasvaa antamalla
-                  useamman vaihtoehdon.
+                  useamman vaitoehdon.
                 </P>
                 <P>
                   Näet eri yksiköiden sijainnin valitsemalla ‘Yksiköt kartalla’.
@@ -1126,9 +1131,7 @@ export default {
           </>
         ),
         allergiesLabel: 'Allergiat',
-        allergiesPlaceholder: 'Voit halutessasi ilmoittaa lapsen allergiat',
-        allergiesInfo:
-          'Allergiatieto tarvitaan lähinnä perhepäivähoitoa haettaessa.'
+        allergiesPlaceholder: 'Voit halutessasi ilmoittaa lapsen allergiat'
       },
       contactInfo: {
         title: 'Henkilötiedot',

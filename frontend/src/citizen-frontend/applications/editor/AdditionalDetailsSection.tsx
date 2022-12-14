@@ -83,16 +83,9 @@ export default React.memo(function AdditionalDetailsSection({
           <Gap size="L" />
 
           <FixedSpaceColumn spacing="xs">
-            <ExpandingInfo
-              info={t.applications.editor.additionalDetails.allergiesInfo}
-              ariaLabel={t.common.openExpandingInfo}
-              closeLabel={t.common.close}
-              inlineChildren
-            >
-              <Label>
-                {t.applications.editor.additionalDetails.allergiesLabel}
-              </Label>
-            </ExpandingInfo>
+            <Label>
+              {t.applications.editor.additionalDetails.allergiesLabel}
+            </Label>
             <NarrowTextArea
               value={formData.allergies}
               data-qa="allergies-input"

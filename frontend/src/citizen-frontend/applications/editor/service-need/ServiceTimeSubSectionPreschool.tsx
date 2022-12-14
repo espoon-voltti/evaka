@@ -174,12 +174,12 @@ export default React.memo(function ServiceTimeSubSectionPreschool({
                 id={labelId}
                 required={true}
               />
+              <Gap size="m" />
             </>
           ) : null}
 
           {featureFlags.preschoolApplication.serviceNeedOption ? (
             <>
-              <Gap size="m" />
               <FixedSpaceColumn>
                 {[...serviceNeedOptionsByType].map(([type, options]) => (
                   <React.Fragment key={type}>

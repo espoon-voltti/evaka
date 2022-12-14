@@ -473,9 +473,9 @@ const sv: Translations = {
             <>
               <P>
                 Barn deltar i förskoleundervisning året innan läroplikten
-                börjar. Förskoleundervisningen är avgiftsfri. Anmälningstiden
-                till förskoleundervisningen 2022–2023 är 10.–21.1.2022.
-                Förskolan börjar i <strong>11.8.2022</strong>. Beslutet delges
+                inleds. Förskoleundervisningen är avgiftsfri. Anmälningstiden
+                till förskoleundervisningen 2023–2024 är 10.–20.1.2023.
+                Förskolan börjar i <strong>10.8.2023</strong>. Beslutet delges
                 inom mars i{' '}
                 <a
                   href="https://www.suomi.fi/meddelanden"
@@ -730,7 +730,7 @@ const sv: Translations = {
           info: {
             DAYCARE: [],
             PRESCHOOL: [
-              'Förskolan börjar i 11.8.2022. Om ditt barn behöver småbarnspedagogisk verksamhet fr.o.m. 1.8.2022 före förskolan börjar kan du ansöka om sådan med denna blankett. Välj ”Jag ansöker om småbarnspedagogik i samband med förskoleundervisning”.'
+              'Den finsk- och den svenskspråkiga förskoleundervisningen börjar den 10 augusti 2023.'
             ],
             CLUB: [
               'Klubbar följer förskolans arbetstid och semester. Klubbens verksamhetsperiod är från augusti till slutet av maj och ansökas om separat för varje operationsperiod. Olika klubbar möts olika veckodagar.'
@@ -809,29 +809,37 @@ const sv: Translations = {
           connectedDaycareInfo: (
             <>
               <P>
-                Du kan vid behov ansöka om avgiftsbelagd småbarnspedagogik i
-                samband med förskoleundervisningen. Småbarnspedagogik erbjuds
-                utöver förskoleundervisningen (fyra timmar per dag) på morgnar
-                och eftermiddagar på samma ställe som förskoleundervisningen. Om
-                barnet börjar senare, meddela detta under{' '}
-                <i>Tilläggsuppgifter</i>.
+                Du kan ansöka om avgiftsbelagd småbarnspedagogik i samband med
+                förskolan för ditt barn. Denna småbarnspedagogik ordnas på
+                morgonen före förskolan och efter förskolan enligt öppettiderna
+                för enheten för förskoleundervisning.
               </P>
               <P>
-                Plats i anslutning till förskoleundervisningen i en privat enhet
-                för småbarnspedagogik ska sökas direkt hos enheten (med undantag
-                för servicesedelenheter), enheten informerar om hur man ansöker.
-                I dessa fall omvandlar servicehänvisningen ansökan till en
-                ansökan om endast förskoleundervisning.
+                Om du behöver småbarnspedagogik från och med den 1 augusti 2023
+                innan förskolan börjar, beakta detta när du väljer önskat
+                startdatum. Om barnets behov av småbarnspedagogik i samband med
+                förskolan börjar senare än förskolan, skriv startdatumet i
+                ”Andra kompletterande uppgifter” i ansökan.
               </P>
               <P>
-                Du ansöker om en servicesedel genom att som ansökningsönskemål
-                välja den servicesedelenhet du vill söka till.
+                När du söker till en servicesedelenhet, ansök om servicesedeln
+                för småbarnspedagogik genom att välja önskad servicesedelenhet
+                som ansökningsönskemål.
+              </P>
+              <P>
+                När du söker till privata enheter för förskoleundervisning
+                ansöker du om småbarnspedagogik i samband med förskolan direkt
+                hos enheten (exklusive servicesedelenheter). Enheterna
+                informerar kunderna om ansökningssättet. Om det i ansökan om
+                förskoleplats har ansökts om småbarnspedagogik i en privat
+                enhet, ändrar servicehanledningen ansökan till bara ansökan om
+                förskoleplats.
               </P>
               <P>
                 Du får ett separat skriftligt beslut om platsen inom
-                småbarnspedagogik. Beslutet delges i tjänsten
-                Suomi.fi-meddelanden eller per post, om du inte har tagit
-                tjänsten i bruk.
+                småbarnspedagogiken. Beslutet kommer till tjänsten
+                Suomi.fi-meddelanden eller per post om du inte har tagit
+                tjänsten Suomi.fi-meddelanden i bruk.
               </P>
             </>
           ),
@@ -875,12 +883,12 @@ const sv: Translations = {
             'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn behöver stöd för utveckling eller lärande, kontaktar specialläraren inom småbarnspedagogik dig, så att vi ska kunna beakta barnets behov vid beviljandet av plats inom småbarnspedagogik.',
           CLUB: 'Med behov av stöd för utveckling och lärande avses behov av sådana stödåtgärder som har konstaterats i ett sakkunnigutlåtande. Om ditt barn behöver stöd för utveckling eller lärande, kontaktar specialläraren inom småbarnspedagogik dig, så att vi ska kunna beakta barnets behov vid beviljandet av plats inom småbarnspedagogik.',
           PRESCHOOL:
-            'Om ditt barn behöver stöd för utveckling eller lärande, kontaktar specialläraren inom småbarnspedagogik dig, så att vi ska kunna beakta barnets behov vid beviljandet av plats inom  förskoleundervisning.'
+            'Välj denna punkt i ansökan om barnet behöver stöd för växande och/eller sitt lärande under förskoleåret. Stödet genomförs i barnets vardag som en del av förskoleundervisningens och småbarnspedagogikens övriga verksamhet. Om ditt barn behöver stöd för växande och/eller lärande, kontaktar en speciallärare inom småbarnspedagogiken den sökande för att barnets behov kan beaktas när förskoleplatsen anvisas.'
         },
         preparatory:
-          'Barnet behöver stöd för att lära sig finska. Barnet söker också till undervisning som förbereder för den grundläggande utbildningen.',
+          'Barnet behöver stöd för att lära sig finska. Barnet söker också till undervisning som förbereder för den grundläggande utbildningen. Gäller inte svenskspråkig förskoleundervisning.',
         preparatoryInfo:
-          'Den förberedande undervisningen för förskoleelever är avsedd för barn med invandrarbakgrund, återinvandrare, barn i tvåspråkiga familjer (med undantag av finska-svenska) och adoptivbarn som behöver stöd i det finska språket innan de inleder den grundläggande utbildningen. Barnet har rätt att delta i undervisning som förbereder för den grundläggande utbildningen under ett läsårs tid. Förberedande undervisning ordnas 5 timmar per dag. Undervisningen är avgiftsfri.'
+          'Förberedande förskoleundervisning på finska ordnas i kommunala finskspråkiga förskolegrupper.'
       },
       unitPreference: {
         title: 'Ansökningsönskemål',
@@ -930,8 +938,7 @@ const sv: Translations = {
                     placeras i samma enhet som äldre syskon. För barn i
                     förskolan tillämpas principen om eleven har syskon i årskurs
                     1–6 i skolan som finns i samma elevupptagningsområde som
-                    förskolan. Som syskon betraktas barn som är folkbokförda på
-                    samma adress.
+                    förskolan.
                   </li>
                 </ol>
                 <P>
@@ -998,11 +1005,10 @@ const sv: Translations = {
             PRESCHOOL: (
               <>
                 <P>
-                  Du kan ange 1-3 platser i önskad ordning. Önskemålen
-                  garanterar inte en plats i den önskade enheten, men
-                  möjligheterna att få en önskad plats ökar om du anger flera
-                  alternativ. Du kan se var enheterna är belägna, genom att
-                  välja <i>Enheter på kartan</i>.
+                  Du kan söka till 1–3 olika enheter i önskad ordning.
+                  Önskemålen i ansökan garanterar inte en plats vid önskad
+                  enhet, men möjligheten att få önskad plats ökar om du ger
+                  flera alternativ.
                 </P>
                 <P>
                   Du ansöker om en servicesedel genom att som ansökningsönskemål
@@ -1126,9 +1132,7 @@ const sv: Translations = {
         ),
         allergiesLabel: 'Allergier',
         allergiesPlaceholder:
-          'Du kan meddela barnets allergier i det här fältet',
-        allergiesInfo:
-          'Information om allergier behövs när du ansöker till familjedagvård.'
+          'Du kan meddela barnets allergier i det här fältet'
       },
       contactInfo: {
         title: 'Personuppgifter',
