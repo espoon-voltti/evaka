@@ -37,14 +37,12 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
-@RequestMapping("/attachments")
 class AttachmentsController(
     private val documentClient: DocumentService,
     private val stateService: ApplicationStateService,
@@ -56,7 +54,10 @@ class AttachmentsController(
     private val filesBucket = bucketEnv.attachments
     private val maxAttachmentsPerUser = evakaEnv.maxAttachmentsPerUser
 
-    @PostMapping("/applications/{applicationId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PostMapping(
+        "/attachments/applications/{applicationId}",
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+    )
     fun uploadApplicationAttachmentEmployee(
         db: Database,
         user: AuthenticatedUser,
@@ -99,7 +100,7 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        "/income-statements/{incomeStatementId}",
+        "/attachments/income-statements/{incomeStatementId}",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
     fun uploadIncomeStatementAttachmentEmployee(
@@ -137,7 +138,7 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        value = ["/income/{incomeId}", "/income"],
+        value = ["/attachments/income/{incomeId}", "/attachments/income"],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
     fun uploadIncomeAttachment(
@@ -174,7 +175,10 @@ class AttachmentsController(
             }
     }
 
-    @PostMapping("/messages/{draftId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PostMapping(
+        "/attachments/messages/{draftId}",
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
+    )
     fun uploadMessageAttachment(
         db: Database,
         user: AuthenticatedUser,
@@ -211,7 +215,7 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        "/pedagogical-documents/{documentId}",
+        "/attachments/pedagogical-documents/{documentId}",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
     fun uploadPedagogicalDocumentAttachment(
@@ -254,7 +258,11 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        "/citizen/applications/{applicationId}",
+        value =
+            [
+                "/attachments/citizen/applications/{applicationId}", // deprecated
+                "/citizen/attachments/applications/{applicationId}",
+            ],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
     fun uploadApplicationAttachmentCitizen(
@@ -300,7 +308,13 @@ class AttachmentsController(
     }
 
     @PostMapping(
-        value = ["/citizen/income-statements/{incomeStatementId}", "/citizen/income-statements"],
+        value =
+            [
+                "/attachments/citizen/income-statements/{incomeStatementId}", // deprecated
+                "/attachments/citizen/income-statements", // deprecated
+                "/citizen/attachments/income-statements/{incomeStatementId}",
+                "/citizen/attachments/income-statements",
+            ],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE]
     )
     fun uploadIncomeStatementAttachmentCitizen(
@@ -414,7 +428,13 @@ class AttachmentsController(
         return id
     }
 
-    @GetMapping("/{attachmentId}/download/{requestedFilename}")
+    @GetMapping(
+        value =
+            [
+                "/attachments/{attachmentId}/download/{requestedFilename}", // deprecated
+                "/citizen/attachments/{attachmentId}/download/{requestedFilename}"
+            ]
+    )
     fun getAttachment(
         db: Database,
         user: AuthenticatedUser,
@@ -499,7 +519,14 @@ class AttachmentsController(
         }
     }
 
-    @DeleteMapping(value = ["/{attachmentId}", "/citizen/{attachmentId}"])
+    @DeleteMapping(
+        value =
+            [
+                "/attachments/{attachmentId}",
+                "/attachments/citizen/{attachmentId}", // deprecated
+                "/citizen/attachments/{attachmentId}",
+            ]
+    )
     fun deleteAttachmentHandler(
         db: Database,
         user: AuthenticatedUser,

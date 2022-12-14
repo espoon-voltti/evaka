@@ -21,18 +21,16 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/decisions2")
 class DecisionController(
     private val decisionService: DecisionService,
     private val decisionDraftService: DecisionDraftService,
     private val accessControl: AccessControl
 ) {
-    @GetMapping("/by-guardian")
+    @GetMapping("/decisions2/by-guardian")
     fun getDecisionsByGuardian(
         db: Database,
         user: AuthenticatedUser,
@@ -63,7 +61,7 @@ class DecisionController(
         return DecisionListResponse(decisions)
     }
 
-    @GetMapping("/by-child")
+    @GetMapping("/decisions2/by-child")
     fun getDecisionsByChild(
         db: Database,
         user: AuthenticatedUser,
@@ -94,7 +92,7 @@ class DecisionController(
         return DecisionListResponse(decisions)
     }
 
-    @GetMapping("/by-application")
+    @GetMapping("/decisions2/by-application")
     fun getDecisionsByApplication(
         db: Database,
         user: AuthenticatedUser,
@@ -126,7 +124,7 @@ class DecisionController(
         return DecisionListResponse(decisions)
     }
 
-    @GetMapping("/units")
+    @GetMapping("/decisions2/units")
     fun getDecisionUnits(
         db: Database,
         user: AuthenticatedUser,
@@ -146,7 +144,10 @@ class DecisionController(
             .also { Audit.UnitRead.log(meta = mapOf("count" to it.size)) }
     }
 
-    @GetMapping("/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
+    @GetMapping(
+        value = ["/decisions2/{id}/download", "/citizen/decision/{id}/download"],
+        produces = [MediaType.APPLICATION_PDF_VALUE]
+    )
     fun downloadDecisionPdf(
         db: Database,
         user: AuthenticatedUser,

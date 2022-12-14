@@ -12,7 +12,8 @@ const proxy = createProxy()
 router.get('/version', (_, res) => {
   res.send({ commitId: appCommit })
 })
-router.get('/units', proxy)
+router.get('/units', proxy) // deprecated
+router.get('/public/units', proxy)
 router.get('/public/units/*', proxy)
 router.get('/public/club-terms', proxy)
 router.get('/public/preschool-terms', proxy)
