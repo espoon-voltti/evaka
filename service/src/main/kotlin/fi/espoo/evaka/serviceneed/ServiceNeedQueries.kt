@@ -319,6 +319,7 @@ FROM backup_care bc
 WHERE daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.end_date, '[]') && :examPeriod
   AND daterange(bc.start_date, bc.end_date, '[]') * daterange(sn.start_date, sn.end_date, '[]') && :examPeriod
   AND bc.unit_id = :unitId
+  ORDER BY group_id, valid_during
         """
 
     val groupMap =
@@ -430,6 +431,7 @@ FROM backup_care bc
 WHERE daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.end_date, '[]') && :examPeriod
   AND daterange(bc.start_date, bc.end_date, '[]') * daterange(sn.start_date, sn.end_date, '[]') && :examPeriod
   AND group_id = :groupId
+ORDER BY child_id, valid_during
         """
 
     return createQuery(sql)
