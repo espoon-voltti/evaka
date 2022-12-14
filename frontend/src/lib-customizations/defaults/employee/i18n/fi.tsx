@@ -3228,7 +3228,7 @@ export const fi = {
       serviceNeedOption: 'Palveluntarve',
       assistanceNeed: 'Tuen tarve',
       preparatory: 'Valmistava',
-      siblingBasis: 'sisarusperuste',
+      siblingBasis: 'Sisarusperuste',
       connected: 'Liittyvä',
       preferredStartDate: 'Toivottu aloituspäivä',
       sentDate: 'Lähetyspäivä',

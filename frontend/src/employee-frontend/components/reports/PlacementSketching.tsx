@@ -179,26 +179,66 @@ export default React.memo(function PlacementSketching() {
                 otherPreferredUnits: formatOtherPreferredUnits(row)
               }))}
               headers={[
-                { label: 'Haettu yksikkö', key: 'requestedUnitName' },
-                { label: 'Nykyinen yksikkö', key: 'currentUnitName' },
-                { label: 'Lapsi', key: 'childName' },
-                { label: 'Lapsen syntymäpäivä', key: 'childDob' },
-                { label: 'Lapsen osoite', key: 'childStreetAddr' },
-                { label: 'Lapsen postinumero', key: 'childPostalCode' },
-                { label: 'Yhteystiedot', key: 'contact' },
+                {
+                  label: i18n.reports.placementSketching.preferredUnit,
+                  key: 'requestedUnitName'
+                },
+                {
+                  label: i18n.reports.placementSketching.currentUnit,
+                  key: 'currentUnitName'
+                },
+                { label: i18n.reports.common.childName, key: 'childName' },
+                { label: i18n.reports.placementSketching.dob, key: 'childDob' },
+                {
+                  label: i18n.reports.placementSketching.streetAddress,
+                  key: 'childStreetAddr'
+                },
+                {
+                  label: i18n.reports.placementSketching.postalCode,
+                  key: 'childPostalCode'
+                },
+                {
+                  label: `${i18n.reports.placementSketching.tel} / ${i18n.reports.placementSketching.email}`,
+                  key: 'contact'
+                },
                 ...(showServiceNeedOption
                   ? ([
-                      { label: 'Palveluntarve', key: 'serviceNeedOption' }
+                      {
+                        label:
+                          i18n.reports.placementSketching.serviceNeedOption,
+                        key: 'serviceNeedOption'
+                      }
                     ] as const)
                   : []),
-                { label: 'Tuen tarve', key: 'assistanceNeeded' },
-                { label: 'Valmistava', key: 'preparatoryEducation' },
-                { label: 'Sisarusperuste', key: 'siblingBasis' },
-                { label: 'Liittyvä vaka', key: 'connectedDaycare' },
-                { label: 'Toivottu aloituspäivä', key: 'preferredStartDate' },
-                { label: 'Lähetyspäivä', key: 'sentDate' },
-                { label: 'Palvelualue', key: 'areaName' },
-                { label: 'Muut toiveet', key: 'otherPreferredUnits' }
+                {
+                  label: i18n.reports.placementSketching.assistanceNeed,
+                  key: 'assistanceNeeded'
+                },
+                {
+                  label: i18n.reports.placementSketching.preparatory,
+                  key: 'preparatoryEducation'
+                },
+                {
+                  label: i18n.reports.placementSketching.siblingBasis,
+                  key: 'siblingBasis'
+                },
+                {
+                  label: i18n.reports.placementSketching.connected,
+                  key: 'connectedDaycare'
+                },
+                {
+                  label: i18n.reports.placementSketching.preferredStartDate,
+                  key: 'preferredStartDate'
+                },
+                {
+                  label: i18n.reports.placementSketching.sentDate,
+                  key: 'sentDate'
+                },
+                { label: i18n.reports.common.careAreaName, key: 'areaName' },
+                {
+                  label: i18n.reports.placementSketching.otherPreferredUnits,
+                  key: 'otherPreferredUnits'
+                }
               ]}
               filename={`sijoitushahmottelu_${filters.placementStartDate.formatIso()}-${
                 filters.earliestPreferredStartDate?.formatIso() ?? ''
