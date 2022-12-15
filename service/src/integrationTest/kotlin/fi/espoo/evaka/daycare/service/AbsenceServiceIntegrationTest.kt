@@ -43,8 +43,6 @@ import fi.espoo.evaka.snDaycareFullDay35
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -52,6 +50,8 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class AbsenceServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     val childId = testChild_1.id
