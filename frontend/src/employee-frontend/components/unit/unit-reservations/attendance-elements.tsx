@@ -71,10 +71,17 @@ const Date = styled(LabelLike)<{ highlight: boolean }>`
     `}
 `
 
-export const StyledTd = styled(Td)<{ partialRow: boolean; rowIndex: number }>`
+export const StyledTd = styled(Td)<{
+  partialRow: boolean
+  rowIndex: number
+  maxRows?: number
+}>`
   border-right: 1px solid ${colors.grayscale.g15};
   vertical-align: middle;
-  ${(p) => p.partialRow && p.rowIndex === 0 && `border-bottom-style: dashed;`}
+  ${(p) =>
+    p.partialRow &&
+    p.rowIndex < (p.maxRows ?? 1) &&
+    `border-bottom-style: dashed;`}
   ${(p) => p.partialRow && p.rowIndex > 0 && `border-top-style: dashed;`}
 `
 
@@ -103,7 +110,10 @@ export const DayTr = styled(Tr)<TrProps>`
 
 export const NameTd = styled(StyledTd)`
   width: 350px;
-  ${(p) => p.partialRow && p.rowIndex === 0 && `border-bottom-style: none;`}
+  ${(p) =>
+    p.partialRow &&
+    p.rowIndex < (p.maxRows ?? 1) &&
+    `border-bottom-style: none;`}
   ${(p) => p.partialRow && p.rowIndex > 0 && `border-top-style: none;`}
 `
 

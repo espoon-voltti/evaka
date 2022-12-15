@@ -90,7 +90,11 @@ const ChildReservations = React.memo(function ChildReservations(props: Props) {
                 key={`${child.id}-${index}`}
                 data-qa={`reservation-row-child-${child.id}`}
               >
-                <NameTd partialRow={multipleRows} rowIndex={index}>
+                <NameTd
+                  partialRow={multipleRows}
+                  rowIndex={index}
+                  maxRows={dailyData.length - 1}
+                >
                   {index == 0 && (
                     <NameWrapper>
                       <AgeIndicatorChip
@@ -113,6 +117,7 @@ const ChildReservations = React.memo(function ChildReservations(props: Props) {
                     className={classNames({ 'is-today': day.date.isToday() })}
                     partialRow={multipleRows}
                     rowIndex={index}
+                    maxRows={dailyData.length - 1}
                   >
                     <ChildDay
                       day={day}
@@ -127,7 +132,8 @@ const ChildReservations = React.memo(function ChildReservations(props: Props) {
                   <StyledTd
                     partialRow={multipleRows}
                     rowIndex={index}
-                    rowSpan={multipleRows ? 2 : 1}
+                    maxRows={1}
+                    rowSpan={dailyData.length}
                   >
                     {childEditState ? (
                       <EditStateIndicator
