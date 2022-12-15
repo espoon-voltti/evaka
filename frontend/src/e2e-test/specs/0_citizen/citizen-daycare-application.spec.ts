@@ -214,4 +214,30 @@ describe('Citizen daycare applications', () => {
     await editorPage.goToVerification()
     await editorPage.assertUrgencyFileDownload()
   })
+
+  test('Other guardian can see an application after it has been sent', async () => {
+    await header.selectTab('applications')
+    const editorPage = await applicationsPage.createApplication(
+      fixtures.enduserChildFixtureJari.id,
+      'DAYCARE'
+    )
+    const applicationId = editorPage.getNewApplicationId()
+
+    const applicationForm = minimalDaycareForm({
+      otherGuardianAgreementStatus: 'AGREED'
+    })
+    await editorPage.fillData(applicationForm.form)
+    await editorPage.verifyAndSend({ hasOtherGuardian: true })
+
+    const otherGuardianPage = await Page.open({
+      mockedTime: mockedNow.toSystemTzDate()
+    })
+    await enduserLogin(
+      otherGuardianPage,
+      fixtures.enduserChildJariOtherGuardianFixture.ssn
+    )
+    await new CitizenApplicationsPage(
+      otherGuardianPage
+    ).assertApplicationExists(applicationId)
+  })
 })
