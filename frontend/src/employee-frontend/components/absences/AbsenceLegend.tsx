@@ -83,16 +83,18 @@ export const AbsenceLegend = React.memo(function AbsenceLegend({
     [showNoAbsence, showAdditionalLegendItems]
   )
 
+  const allLegendColors = {...absenceColors, ...additionalLegendItemColors}
+  const allLegendInfos = {...i18n.absences.absenceTypeInfo, ...i18n.absences.additionalLegendItemInfos}
+  const allLegendIcons = {...absenceIcons, ...additionalLegendItemIcons}
+  const allLegendLabels = {...i18n.absences.absenceTypes, ...i18n.absences.additionalLegendItems}
+
   return (
     <>
       {visibleAbsenceTypes.map((t) => (
         <ExpandingInfo
           key={t}
           info={
-            {
-              ...i18n.absences.absenceTypeInfo,
-              ...i18n.absences.additionalLegendItemInfos
-            }[t]
+            allLegendInfos[t]
           }
           ariaLabel={i18n.common.openExpandingInfo}
           closeLabel={i18n.common.close}
@@ -101,21 +103,18 @@ export const AbsenceLegend = React.memo(function AbsenceLegend({
             {icons ? (
               <RoundIcon
                 size="m"
-                color={{ ...absenceColors, ...additionalLegendItemColors }[t]}
-                content={{ ...absenceIcons, ...additionalLegendItemIcons }[t]}
+                color={allLegendColors[t]}
+                content={allLegendIcons[t]}
               />
             ) : (
               <AbsenceLegendSquare
-                color={{ ...absenceColors, ...additionalLegendItemColors }[t]}
+                color={allLegendColors[t]}
               />
             )}
 
             <LabelLike>
               {
-                {
-                  ...i18n.absences.absenceTypes,
-                  ...i18n.absences.additionalLegendItems
-                }[t]
+                allLegendLabels[t]
               }
             </LabelLike>
           </AbsenceLegendRow>

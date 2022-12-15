@@ -7,7 +7,7 @@ import styled from 'styled-components'
 import { StaticChip } from 'lib-components/atoms/Chip'
 
 export const OneLetterChip = styled(StaticChip)`
-  padding: 3px 7px 5px 7px;
+  padding: 4px 7px 4px 7px;
   font-size: 18px;
   font-weight: bold;
 `
