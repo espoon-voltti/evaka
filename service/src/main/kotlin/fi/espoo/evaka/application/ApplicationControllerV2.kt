@@ -497,7 +497,7 @@ class ApplicationControllerV2(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable(value = "applicationId") applicationId: ApplicationId
-    ): DecisionDraftJSON {
+    ): DecisionDraftGroup {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
@@ -535,7 +535,7 @@ class ApplicationControllerV2(
                         vtjGuardians.any { it.id == application.guardianId }
                     val otherGuardian = application.otherGuardianId?.let { tx.getPersonById(it) }
 
-                    DecisionDraftJSON(
+                    DecisionDraftGroup(
                         decisions = decisionDrafts,
                         placementUnitName = placementUnitName,
                         unit = unit,
@@ -867,7 +867,7 @@ data class AcceptDecisionRequest(val decisionId: DecisionId, val requestedStartD
 
 data class RejectDecisionRequest(val decisionId: DecisionId)
 
-data class DecisionDraftJSON(
+data class DecisionDraftGroup(
     val decisions: List<DecisionDraft>,
     val placementUnitName: String,
     val unit: DecisionUnit,

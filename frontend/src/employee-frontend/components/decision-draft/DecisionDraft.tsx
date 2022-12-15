@@ -15,8 +15,8 @@ import React, {
 import { NavigateFunction, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { DecisionDraftGroup } from 'employee-frontend/types/decision'
 import { Loading, Result } from 'lib-common/api'
+import { DecisionDraftGroup } from 'lib-common/generated/api-types/application'
 import {
   DecisionDraft,
   DecisionDraftUpdate,
