@@ -463,10 +463,30 @@ const sv: Translations = {
                   Suomi.fi
                 </a>
                 -meddelanden, eller per post om du inte tagit i bruk
-                meddelandetjänsten i Suomi.fi. * Informationen markerad med en
-                stjärna krävs.
+                meddelandetjänsten i Suomi.fi.
               </P>
-              <P fitted={true}>* Informationen markerad med en stjärna krävs</P>
+              <P>
+                Klientavgiften inom den kommunala småbarnspedagogiken och för
+                servicesedelns självriskandel är en procentandel av familjens
+                bruttoinkomster. Utöver inkomsterna inverkar familjens storlek
+                och den överenskomna tiden i småbarnspedagogik avgiften.
+                Servicesedel enheterna kan dock ta ut tilläggspris, information
+                om eventuell tilläggspris hittas på enhetens hemsida. Familjen
+                ska lämna in en utredning över sina bruttoinkomster, senast inom
+                två veckor från det att barnet har inlett småbarnspedagogiken.
+              </P>
+              <P>
+                Mer information om småbarnspedagogikens avgifter, hur man gör
+                inkomstutredningen och servicesedelns tilläggspris hittar du
+                här:{' '}
+                <a href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/klientavgifter-i-smabarnspedagogik">
+                  Avgifter för småbarnspedagogik
+                </a>
+                .
+              </P>
+              <P fitted={true}>
+                * Informationen markerad med en stjärna är obligatorisk
+              </P>
             </>
           ),
           PRESCHOOL: (

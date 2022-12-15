@@ -470,6 +470,26 @@ const en: Translations = {
                 or by post if the applicant has not taken in use the Messages
                 service of Suomi.fi.
               </P>
+              <P>
+                The client fees for municipal early childhood education and the
+                client charges for service voucher users are calculated as a
+                percentage of the family’s gross income. The fees vary depending
+                on the family’s size and the hours of early childhood education.
+                Service voucher units may charge an additional monthly fee,
+                information of the possible additional fee can be found from
+                units own website. Each family must provide information about
+                their gross income, no later than two weeks after their child’s
+                early childhood education has started.
+              </P>
+              <P>
+                You can find further information about early childhood education
+                fees, additional fees for service voucher users and how to
+                deliver the income statement form here:{' '}
+                <a href="https://www.espoo.fi/en/childcare-and-education/early-childhood-education/early-childhood-education-fees">
+                  Early childhood education fees
+                </a>
+                .
+              </P>
               <P fitted={true}>* Information marked with a star is required</P>
             </>
           ),

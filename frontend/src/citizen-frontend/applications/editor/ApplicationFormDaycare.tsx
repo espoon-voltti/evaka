@@ -12,7 +12,6 @@ import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 
 import AdditionalDetailsSection from '../../applications/editor/AdditionalDetailsSection'
-import FeeSection from '../../applications/editor/FeeSection'
 import Heading from '../../applications/editor/Heading'
 import ContactInfoSection from '../../applications/editor/contact-info/ContactInfoSection'
 import ServiceNeedSection from '../../applications/editor/service-need/ServiceNeedSection'
@@ -150,26 +149,6 @@ export default React.memo(function ApplicationFormDaycare({
                   : 'DIFFERENT_ADDRESS'
                 : 'NO'
             }
-          />
-
-          <FeeSection
-            applicationType={applicationType}
-            formData={formData.fee}
-            updateFormData={(data) =>
-              setFormData((old) =>
-                old
-                  ? {
-                      ...old,
-                      fee: {
-                        ...old?.fee,
-                        ...data
-                      }
-                    }
-                  : old
-              )
-            }
-            errors={errors.fee}
-            verificationRequested={verificationRequested}
           />
 
           <AdditionalDetailsSection
