@@ -476,12 +476,13 @@ const en: Translations = {
           PRESCHOOL: (
             <>
               <P>
-                Pre-primary education is attended one year before the start of
-                compulsory education. Pre-primary education is free of charge.
-                Enrolment for pre-primary education in the 2022–2023 school year
-                takes place on 10–21 January 2022. Finnish and swedish
-                pre-primary education begins on <strong>11 August 2022</strong>.
-                The decisions will be sent to the{' '}
+                Children attend pre-primary education in the year preceding the
+                start of their compulsory education. Pre-primary education is
+                free of charge. Enrolment for pre-primary education in the
+                2023–2024 school year takes place on 10–20 January 2023. Finnish
+                and swedish pre-primary education begins on{' '}
+                <strong>10 August 2023</strong>. The decisions will be sent to
+                the{' '}
                 <a
                   href="https://www.suomi.fi/messages"
                   target="_blank"
@@ -749,7 +750,7 @@ const en: Translations = {
           info: {
             DAYCARE: [],
             PRESCHOOL: [
-              'Finnish and Swedish pre-primary education begins on 11 August 2022. If you need early childhood education starting from 1 August 2022 before the start of pre-primary education, you can apply for it with this application by selecting “I also apply for early childhood education related to pre-primary education”.'
+              'Finnish and Swedish-language pre-primary education starts on 10 August 2023.'
             ],
             CLUB: [
               'Clubs follow pre-primary education work and vacation times.'
@@ -832,26 +833,36 @@ const en: Translations = {
           connectedDaycareInfo: (
             <>
               <P>
-                If necessary, you can apply for early childhood education
-                related to pre-primary education for the child, which is subject
-                to a charge and provided in addition to pre-primary education (4
-                h/day) in the mornings and/or afternoons in the same place as
-                pre-primary education. If you wish early childhood education to
-                start later than pre-primary education, enter the desired start
-                date in the additional information field.
+                You can apply for your child early childhood education related
+                to pre-primary education, which is subject to a charge. Related
+                early childhood education is provided in the mornings before
+                pre-primary education and in the afternoons after pre-primary
+                education in accordance with the opening hours of the
+                pre-primary education unit.
               </P>
               <P>
-                When you apply for a place at a private pre-primary education
-                unit, you must apply for connected early childhood education
-                directly from the unit (with the exception of service voucher
-                units). The units will provide you with application
-                instructions. In these cases, the service guidance team will
-                convert the application into an application for pre-primary
-                education only.
+                If your child needs early childhood education as of 1 August
+                2023 before pre-primary education starts, please take this into
+                account when selecting the desired starting date. If your child
+                needs early childhood education only after pre-primary education
+                has started, please enter the start date under “Other additional
+                information” on the application.
               </P>
               <P>
-                Apply for a service voucher by selecting the service voucher
-                unit to which you want to apply as your preferred unit.
+                When applying for a service voucher unit, apply for a service
+                voucher for related early childhood education by selecting as
+                your preferred unit the service voucher unit you want to apply
+                for.
+              </P>
+              <P>
+                When applying for private pre-primary education units, apply for
+                related early childhood education directly from the unit (with
+                the exception of service voucher units); the units inform
+                customers about the application procedure. If you have applied
+                for related early childhood education from a private unit on the
+                pre-primary education application, the service guidance will
+                change your application to a pre-primary education application
+                only.
               </P>
               <P>
                 A separate written decision will be issued on the early
@@ -914,12 +925,12 @@ const en: Translations = {
             'The support need refers to such a need for support measures that has been indicated by an expert opinion. If your child needs support for development or learning, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in early childhood education.',
           CLUB: 'The support need refers to such a need for support measures that has been indicated by an expert opinion. If your child needs support for development or learning, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in early childhood education.',
           PRESCHOOL:
-            'If your child needs support for development or learning, a special needs teacher will contact you to ensure that your child’s needs are taken into account when granting a place in pre-primary education.'
+            'Check this item on the application if your child needs support for his or her development and/or learning during the pre-primary education year. The support will be implemented in the child’s daily life as part of the other activities of pre-primary and early childhood education. If your child has developmental and/or learning support needs, the early childhood special education teacher will contact you so that your child’s needs can be taken into account when allocating a place for pre-primary education.'
         },
         preparatory:
           'The child needs support with learning Finnish. I am also applying for preparatory education. Not applicable for Swedish pre-primary education.',
         preparatoryInfo:
-          'The preparatory education for children in the pre-primary education age is intended for children with an immigrant background, Finnish returnee children, children of bilingual families (excl. Finnish/Swedish) and adopted children who need support with the Finnish language before their transition to basic education. Preparatory education is provided for 5 hours per day. Education is free of charge.'
+          'Children who do not have Finnish language skills or who only speak a little Finnish can apply for preparatory pre-primary education. If your current day-care centre has recommended preparatory pre-primary education for your child, you can apply for it at this point using the application form. Preparatory pre-primary education is organised in municipal Finnish-language pre-primary education groups. Preparatory pre-primary education is free of charge and provided for 5 hours per day.'
       },
       unitPreference: {
         title: 'Preferred units',
@@ -1036,10 +1047,10 @@ const en: Translations = {
             PRESCHOOL: (
               <>
                 <P>
-                  You can apply for 1 to 3 locations in your order of
+                  You can apply for 1–3 different units in your order of
                   preference. Application preferences do not guarantee a place
-                  at the desired location, but the possibility of obtaining a
-                  desired location increases by giving more than one option.
+                  at the desired unit, but your chances of getting a preferred
+                  place increase if you list several options.
                 </P>
                 <P>
                   You can display the unit locations by choosing &lsquo;Unit map
@@ -1173,9 +1184,7 @@ const en: Translations = {
         ),
         allergiesLabel: 'Allergies',
         allergiesPlaceholder:
-          'If you wish, you can indicate your child’s allergies in this field',
-        allergiesInfo:
-          'Information on allergies is mainly needed when applying for family daycare.'
+          'If you wish, you can indicate your child’s allergies in this field'
       },
       contactInfo: {
         title: 'Personal information',
