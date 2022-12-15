@@ -7,7 +7,6 @@ import sortBy from 'lodash/sortBy'
 import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
-import { ContractDaysIndicatorChip } from 'employee-frontend/components/common/ContractDaysIndicatorChip'
 import {
   Child,
   ChildDailyRecords,
@@ -22,6 +21,7 @@ import EllipsisMenu from '../../../components/common/EllipsisMenu'
 import { Translations, useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
 import { AgeIndicatorChip } from '../../common/AgeIndicatorChip'
+import { ContractDaysIndicatorChip } from '../../common/ContractDaysIndicatorChip'
 
 import ChildDay from './ChildDay'
 import {
