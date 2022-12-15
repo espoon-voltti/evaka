@@ -6,7 +6,6 @@ import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, {
   Fragment,
-  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -37,6 +36,7 @@ import { DatePickerDeprecated } from 'lib-components/molecules/DatePickerDepreca
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { fontWeights } from 'lib-components/typography'
 import colors from 'lib-customizations/common'
+import { featureFlags } from 'lib-customizations/employee'
 import { faEnvelope } from 'lib-icons'
 
 import {
@@ -165,7 +165,6 @@ export default React.memo(function Decision() {
   >(Loading.of())
   const { setTitle, formatTitleName } = useContext<TitleState>(TitleContext)
   const [decisions, setDecisions] = useState<DecisionDraft[]>([])
-  const [selectedUnit, setSelectedUnit] = useState<DecisionUnit>()
   const [units, setUnits] = useState<Result<DecisionUnit[]>>(Loading.of())
 
   useEffect(() => {
@@ -174,7 +173,6 @@ export default React.memo(function Decision() {
       setDecisionDraftGroup(result)
       if (result.isSuccess) {
         setDecisions(result.value.decisions)
-        setSelectedUnit(result.value.unit)
       }
 
       // Application has already changed its status
@@ -203,19 +201,13 @@ export default React.memo(function Decision() {
     [units]
   )
 
-  const onUnitSelect = useCallback(
-    (value: DecisionUnit) => {
-      if (decisionDraftGroup.isSuccess && units.isSuccess) {
-        setSelectedUnit(value ?? decisionDraftGroup.value.unit)
-      }
-    },
-    [decisionDraftGroup, units, setSelectedUnit]
-  )
-
-  function updateState(type: DecisionType, values: Partial<DecisionDraft>) {
+  function updateState(
+    type: DecisionType | null,
+    values: Partial<DecisionDraft>
+  ) {
     setDecisions(
       decisions.map((decision) =>
-        decision.type === type
+        decision.type === type || type === null
           ? {
               ...decision,
               ...values
@@ -245,16 +237,25 @@ export default React.memo(function Decision() {
 
   const isClubDecision = decisions.some(({ type }) => type === 'CLUB')
 
-  const unitDataIsComplete =
-    !!selectedUnit &&
-    !!(!requiresDaycareDecisionName || selectedUnit.daycareDecisionName) &&
-    !!(!requiresPreschoolDecisionName || selectedUnit.preschoolDecisionName) &&
-    !!selectedUnit.manager &&
-    !!selectedUnit.streetAddress &&
-    !!selectedUnit.postalCode &&
-    !!selectedUnit.postOffice &&
-    (isClubDecision ||
-      (!!selectedUnit.decisionHandler && !!selectedUnit.decisionHandlerAddress))
+  const unitDataIsComplete = decisions.map((decision) => {
+    const selectedUnit = unitOptions.find(
+      (unitOption) => unitOption.id === decision.unitId
+    )
+    return (
+      !!selectedUnit &&
+      !!(!requiresDaycareDecisionName || selectedUnit.daycareDecisionName) &&
+      !!(
+        !requiresPreschoolDecisionName || selectedUnit.preschoolDecisionName
+      ) &&
+      !!selectedUnit.manager &&
+      !!selectedUnit.streetAddress &&
+      !!selectedUnit.postalCode &&
+      !!selectedUnit.postOffice &&
+      (isClubDecision ||
+        (!!selectedUnit.decisionHandler &&
+          !!selectedUnit.decisionHandlerAddress))
+    )
+  })
 
   const noDecisionsPlanned =
     decisions.filter(({ planned }) => planned).length === 0
@@ -283,6 +284,46 @@ export default React.memo(function Decision() {
               spacing="large"
               contents={[
                 {
+                  label: i18n.decisionDraft.placementUnit,
+                  value: decisionDraftGroup.value.placementUnitName
+                },
+                {
+                  label: i18n.decisionDraft.receiver,
+                  value: (
+                    <MissingValuePlaceholder
+                      i18n={i18n}
+                      values={[
+                        decisionDraftGroup.value.guardian.firstName,
+                        decisionDraftGroup.value.guardian.lastName
+                      ]}
+                    />
+                  ),
+                  dataQa: 'guardian-name'
+                },
+                ...(!isClubDecision
+                  ? [
+                      {
+                        label: i18n.decisionDraft.otherReceiver,
+                        value: (
+                          <DefaultValuePlaceholder
+                            i18n={i18n}
+                            values={[
+                              decisionDraftGroup.value.otherGuardian
+                                ? decisionDraftGroup.value.otherGuardian
+                                    .firstName
+                                : '',
+                              decisionDraftGroup.value.otherGuardian
+                                ? decisionDraftGroup.value.otherGuardian
+                                    .lastName
+                                : ''
+                            ]}
+                          />
+                        ),
+                        dataQa: 'other-guardian-name'
+                      }
+                    ]
+                  : []),
+                {
                   label: (
                     <ColumnTitle>
                       {i18n.decisionDraft.decisionLabelHeading}
@@ -294,198 +335,218 @@ export default React.memo(function Decision() {
                     </ColumnTitle>
                   )
                 },
-                ...decisions.map((decision) => ({
-                  label: (
-                    <Checkbox
-                      label={
-                        i18n.decisionDraft.types[
-                          decisionTypeForLabel(decision.type, decisions)
-                        ]
-                      }
-                      checked={decision.planned}
-                      onChange={(planned: boolean) => {
-                        updateState(decision.type, { planned })
-                      }}
-                      data-qa={`toggle-service-need-part-day-${decision.type}`}
-                    />
-                  ),
-                  value: (
-                    <DateRangeContainer>
-                      <DatePickerDeprecated
-                        date={decision.startDate}
-                        type="full-width"
-                        disabled={decision.type !== 'PREPARATORY_EDUCATION'}
-                        onChange={(startDate) =>
-                          updateState(decision.type, { startDate })
-                        }
-                        minDate={minDate(decision.type)}
-                        maxDate={maxDate(decision.type)}
-                      />
-                      <DateRangeSpacer>-</DateRangeSpacer>
-                      <DatePickerDeprecated
-                        date={decision.endDate}
-                        disabled={decision.type !== 'PREPARATORY_EDUCATION'}
-                        type="full-width"
-                        onChange={(endDate) =>
-                          updateState(decision.type, { endDate })
-                        }
-                        minDate={minDate(decision.type)}
-                        maxDate={maxDate(decision.type)}
-                      />
-                    </DateRangeContainer>
+                ...decisions.flatMap((decision, index) => {
+                  const selectedUnit = unitOptions.find(
+                    (unitOption) => unitOption.id === decision.unitId
                   )
-                })),
-                { label: null, value: null },
-                ...(selectedUnit
-                  ? [
-                      {
-                        label: i18n.decisionDraft.placementUnit,
-                        value: decisionDraftGroup.value.placementUnitName
-                      },
-                      {
-                        label: i18n.decisionDraft.selectedUnit,
-                        value: (
-                          <UnitSelectContainer>
-                            {units.isSuccess && (
-                              <Combobox
-                                onChange={(unit) =>
-                                  unit ? onUnitSelect(unit) : undefined
+                  return [
+                    {
+                      label: (
+                        <Checkbox
+                          label={
+                            i18n.decisionDraft.types[
+                              decisionTypeForLabel(decision.type, decisions)
+                            ]
+                          }
+                          checked={decision.planned}
+                          onChange={(planned: boolean) => {
+                            updateState(decision.type, { planned })
+                          }}
+                          data-qa={`toggle-service-need-part-day-${decision.type}`}
+                        />
+                      ),
+                      value: (
+                        <DateRangeContainer>
+                          <DatePickerDeprecated
+                            date={decision.startDate}
+                            type="full-width"
+                            disabled={decision.type !== 'PREPARATORY_EDUCATION'}
+                            onChange={(startDate) =>
+                              updateState(decision.type, { startDate })
+                            }
+                            minDate={minDate(decision.type)}
+                            maxDate={maxDate(decision.type)}
+                          />
+                          <DateRangeSpacer>-</DateRangeSpacer>
+                          <DatePickerDeprecated
+                            date={decision.endDate}
+                            disabled={decision.type !== 'PREPARATORY_EDUCATION'}
+                            type="full-width"
+                            onChange={(endDate) =>
+                              updateState(decision.type, { endDate })
+                            }
+                            minDate={minDate(decision.type)}
+                            maxDate={maxDate(decision.type)}
+                          />
+                        </DateRangeContainer>
+                      )
+                    },
+                    ...(featureFlags.decisionDraftMultipleUnits ||
+                    index === decisions.length - 1
+                      ? [
+                          {
+                            label: i18n.decisionDraft.selectedUnit,
+                            value: (
+                              <UnitSelectContainer>
+                                {units.isSuccess && (
+                                  <Combobox
+                                    onChange={(unit) =>
+                                      unit
+                                        ? updateState(
+                                            featureFlags.decisionDraftMultipleUnits
+                                              ? decision.type
+                                              : null,
+                                            {
+                                              unitId: unit.id
+                                            }
+                                          )
+                                        : undefined
+                                    }
+                                    items={unitOptions}
+                                    selectedItem={selectedUnit}
+                                    getItemLabel={(unit) => unit?.name ?? ''}
+                                  />
+                                )}
+                                <WarningContainer
+                                  visible={
+                                    decisionDraftGroup.value.unit.id !==
+                                    decision.unitId
+                                  }
+                                >
+                                  <WarningIcon />
+                                  <WarningText smaller>
+                                    {i18n.decisionDraft.differentUnit}
+                                  </WarningText>
+                                </WarningContainer>
+                              </UnitSelectContainer>
+                            )
+                          },
+                          ...(selectedUnit
+                            ? [
+                                {
+                                  value: (
+                                    <Heading size={4}>
+                                      {i18n.decisionDraft.unitDetailsHeading}
+                                    </Heading>
+                                  )
+                                },
+                                {
+                                  label: null,
+                                  value: (
+                                    <LabelValueList
+                                      spacing="small"
+                                      contents={[
+                                        ...(requiresDaycareDecisionName
+                                          ? [
+                                              {
+                                                label:
+                                                  i18n.decisionDraft
+                                                    .daycareDecisionName,
+                                                value: (
+                                                  <MissingValuePlaceholder
+                                                    i18n={i18n}
+                                                    values={[
+                                                      selectedUnit.daycareDecisionName
+                                                    ]}
+                                                  />
+                                                )
+                                              }
+                                            ]
+                                          : []),
+                                        ...(requiresPreschoolDecisionName
+                                          ? [
+                                              {
+                                                label:
+                                                  i18n.decisionDraft
+                                                    .preschoolDecisionName,
+                                                value: (
+                                                  <MissingValuePlaceholder
+                                                    i18n={i18n}
+                                                    values={[
+                                                      selectedUnit.preschoolDecisionName
+                                                    ]}
+                                                  />
+                                                )
+                                              }
+                                            ]
+                                          : []),
+                                        {
+                                          label: i18n.decisionDraft.unitManager,
+                                          value: (
+                                            <MissingValuePlaceholder
+                                              i18n={i18n}
+                                              values={[
+                                                selectedUnit.manager || ''
+                                              ]}
+                                            />
+                                          )
+                                        },
+                                        {
+                                          label: i18n.decisionDraft.unitAddress,
+                                          value: (
+                                            <MissingValuePlaceholder
+                                              i18n={i18n}
+                                              values={[
+                                                selectedUnit.streetAddress,
+                                                selectedUnit.postalCode,
+                                                selectedUnit.postOffice
+                                              ]}
+                                            />
+                                          )
+                                        },
+                                        ...(!isClubDecision
+                                          ? [
+                                              {
+                                                label:
+                                                  i18n.decisionDraft
+                                                    .handlerName,
+                                                value: (
+                                                  <MissingValuePlaceholder
+                                                    i18n={i18n}
+                                                    values={[
+                                                      selectedUnit.decisionHandler
+                                                    ]}
+                                                  />
+                                                )
+                                              },
+                                              {
+                                                label:
+                                                  i18n.decisionDraft
+                                                    .handlerAddress,
+                                                value: (
+                                                  <MissingValuePlaceholder
+                                                    i18n={i18n}
+                                                    values={[
+                                                      selectedUnit.decisionHandlerAddress
+                                                    ]}
+                                                  />
+                                                )
+                                              }
+                                            ]
+                                          : []),
+                                        {
+                                          value: !unitDataIsComplete[index] && (
+                                            <AlertBox
+                                              title={
+                                                i18n.decisionDraft.unitInfo1
+                                              }
+                                              message={
+                                                i18n.decisionDraft.unitInfo2
+                                              }
+                                            />
+                                          ),
+                                          onlyValue: true
+                                        }
+                                      ]}
+                                    />
+                                  )
                                 }
-                                items={unitOptions}
-                                selectedItem={selectedUnit}
-                                getItemLabel={(unit) => unit.name}
-                              />
-                            )}
-                            <WarningContainer
-                              visible={
-                                decisionDraftGroup.value.unit.id !==
-                                selectedUnit.id
-                              }
-                            >
-                              <WarningIcon />
-                              <WarningText smaller>
-                                {i18n.decisionDraft.differentUnit}
-                              </WarningText>
-                            </WarningContainer>
-                          </UnitSelectContainer>
-                        )
-                      },
-                      {
-                        label: (
-                          <Heading size={4}>
-                            {i18n.decisionDraft.unitDetailsHeading}
-                          </Heading>
-                        ),
-                        value: null
-                      },
-                      ...(requiresDaycareDecisionName
-                        ? [
-                            {
-                              label: i18n.decisionDraft.daycareDecisionName,
-                              value: (
-                                <MissingValuePlaceholder
-                                  i18n={i18n}
-                                  values={[selectedUnit.daycareDecisionName]}
-                                />
-                              )
-                            }
-                          ]
-                        : []),
-                      ...(requiresPreschoolDecisionName
-                        ? [
-                            {
-                              label: i18n.decisionDraft.preschoolDecisionName,
-                              value: (
-                                <MissingValuePlaceholder
-                                  i18n={i18n}
-                                  values={[selectedUnit.preschoolDecisionName]}
-                                />
-                              )
-                            }
-                          ]
-                        : []),
-                      {
-                        label: i18n.decisionDraft.unitManager,
-                        value: (
-                          <MissingValuePlaceholder
-                            i18n={i18n}
-                            values={[selectedUnit.manager || '']}
-                          />
-                        )
-                      },
-                      {
-                        label: i18n.decisionDraft.unitAddress,
-                        value: (
-                          <MissingValuePlaceholder
-                            i18n={i18n}
-                            values={[
-                              selectedUnit.streetAddress,
-                              selectedUnit.postalCode,
-                              selectedUnit.postOffice
-                            ]}
-                          />
-                        )
-                      },
-                      ...(!isClubDecision
-                        ? [
-                            {
-                              label: i18n.decisionDraft.handlerName,
-                              value: (
-                                <MissingValuePlaceholder
-                                  i18n={i18n}
-                                  values={[selectedUnit.decisionHandler]}
-                                />
-                              )
-                            },
-                            {
-                              label: i18n.decisionDraft.handlerAddress,
-                              value: (
-                                <MissingValuePlaceholder
-                                  i18n={i18n}
-                                  values={[selectedUnit.decisionHandlerAddress]}
-                                />
-                              )
-                            }
-                          ]
-                        : []),
-                      {
-                        label: i18n.decisionDraft.receiver,
-                        value: (
-                          <MissingValuePlaceholder
-                            i18n={i18n}
-                            values={[
-                              decisionDraftGroup.value.guardian.firstName,
-                              decisionDraftGroup.value.guardian.lastName
-                            ]}
-                          />
-                        ),
-                        dataQa: 'guardian-name'
-                      },
-                      ...(!isClubDecision
-                        ? [
-                            {
-                              label: i18n.decisionDraft.otherReceiver,
-                              value: (
-                                <DefaultValuePlaceholder
-                                  i18n={i18n}
-                                  values={[
-                                    decisionDraftGroup.value.otherGuardian
-                                      ? decisionDraftGroup.value.otherGuardian
-                                          .firstName
-                                      : '',
-                                    decisionDraftGroup.value.otherGuardian
-                                      ? decisionDraftGroup.value.otherGuardian
-                                          .lastName
-                                      : ''
-                                  ]}
-                                />
-                              ),
-                              dataQa: 'other-guardian-name'
-                            }
-                          ]
-                        : [])
-                    ]
-                  : [])
+                              ]
+                            : [])
+                        ]
+                      : [])
+                  ]
+                })
               ]}
             />
             {!(
@@ -496,13 +557,6 @@ export default React.memo(function Decision() {
                 title={i18n.decisionDraft.ssnInfo1}
                 message={i18n.decisionDraft.ssnInfo2}
                 icon={faEnvelope}
-              />
-            )}
-
-            {!unitDataIsComplete && (
-              <AlertBox
-                title={i18n.decisionDraft.unitInfo1}
-                message={i18n.decisionDraft.unitInfo2}
               />
             )}
 
@@ -522,12 +576,15 @@ export default React.memo(function Decision() {
                 <AsyncButton
                   primary
                   data-qa="save-decisions-button"
-                  disabled={!unitDataIsComplete || noDecisionsPlanned}
+                  disabled={
+                    unitDataIsComplete.some((complete) => !complete) ||
+                    noDecisionsPlanned
+                  }
                   onClick={() => {
                     const updatedDrafts: DecisionDraftUpdate[] = decisions.map(
                       (decisionDraft) => ({
                         id: decisionDraft.id,
-                        unitId: selectedUnit?.id ?? '',
+                        unitId: decisionDraft.unitId,
                         startDate: decisionDraft.startDate,
                         endDate: decisionDraft.endDate,
                         planned: decisionDraft.planned
