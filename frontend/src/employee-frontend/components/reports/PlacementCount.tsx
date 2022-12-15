@@ -76,7 +76,7 @@ interface CsvReportRow {
   placementCountUnder3v: number
   placementCount3vAndOver: number
   placementCount: number
-  calculatedPlacements: number
+  calculatedPlacements: string
 }
 
 export default React.memo(function PlacementCount() {
@@ -158,6 +158,9 @@ export default React.memo(function PlacementCount() {
         ...areaResult.daycareResults.map((daycareResult) => {
           return {
             ...daycareResult,
+            calculatedPlacements: daycareResult.calculatedPlacements
+              .toString()
+              .replace('.', ','),
             areaName: areaResult.areaName
           }
         }),
@@ -168,6 +171,8 @@ export default React.memo(function PlacementCount() {
           placementCountUnder3v: areaResult.placementCountUnder3v,
           placementCount3vAndOver: areaResult.placementCount3vAndOver,
           calculatedPlacements: areaResult.calculatedPlacements
+            .toString()
+            .replace('.', ',')
         }
       ]
     })
@@ -182,6 +187,8 @@ export default React.memo(function PlacementCount() {
             placementCountUnder3v: filteredTotals.placementCountUnder3v,
             placementCount3vAndOver: filteredTotals.placementCount3vAndOver,
             calculatedPlacements: filteredTotals.calculatedPlacements
+              .toString()
+              .replace('.', ',')
           }
         ]
       : []
