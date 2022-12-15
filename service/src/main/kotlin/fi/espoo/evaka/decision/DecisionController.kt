@@ -144,10 +144,7 @@ class DecisionController(
             .also { Audit.UnitRead.log(meta = mapOf("count" to it.size)) }
     }
 
-    @GetMapping(
-        value = ["/decisions2/{id}/download", "/citizen/decision/{id}/download"],
-        produces = [MediaType.APPLICATION_PDF_VALUE]
-    )
+    @GetMapping("/decisions2/{id}/download", produces = [MediaType.APPLICATION_PDF_VALUE])
     fun downloadDecisionPdf(
         db: Database,
         user: AuthenticatedUser,

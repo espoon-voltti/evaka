@@ -19,9 +19,6 @@ router.post(
 router.all('/citizen/*', createProxy())
 
 // deprecated
-router.get('/decisions2/:decisionId/download', proxy)
-
-// deprecated
 router.get('/attachments/:applicationId/download/:filename', proxy)
 router.get('/attachments/:attachmentId/download/:filename', proxy)
 
