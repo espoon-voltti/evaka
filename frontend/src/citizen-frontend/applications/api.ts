@@ -43,7 +43,7 @@ export async function getApplicationUnits(
   shiftCare: boolean | null
 ): Promise<Result<PublicUnit[]>> {
   try {
-    const { data } = await client.get<JsonOf<PublicUnit[]>>('/units', {
+    const { data } = await client.get<JsonOf<PublicUnit[]>>('/public/units', {
       params: {
         type,
         date: date.formatIso(),

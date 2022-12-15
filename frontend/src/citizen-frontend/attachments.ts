@@ -33,7 +33,7 @@ export async function saveIncomeStatementAttachment(
   onUploadProgress: (progressEvent: ProgressEvent) => void
 ): Promise<Result<UUID>> {
   return doSaveAttachment(
-    `/attachments/citizen/income-statements/${incomeStatementId ?? ''}`,
+    `/citizen/attachments/income-statements/${incomeStatementId ?? ''}`,
     file,
     onUploadProgress
   )
@@ -46,7 +46,7 @@ export async function saveApplicationAttachment(
   onUploadProgress: (progressEvent: ProgressEvent) => void
 ): Promise<Result<UUID>> {
   return doSaveAttachment(
-    `/attachments/citizen/applications/${applicationId}?type=${attachmentType}`,
+    `/citizen/attachments/applications/${applicationId}?type=${attachmentType}`,
     file,
     onUploadProgress
   )
@@ -54,7 +54,7 @@ export async function saveApplicationAttachment(
 
 export async function deleteAttachment(id: UUID): Promise<Result<void>> {
   try {
-    await client.delete(`/attachments/citizen/${id}`)
+    await client.delete(`/citizen/attachments/${id}`)
     return Success.of(void 0)
   } catch (e) {
     return Failure.fromError(e)
@@ -66,5 +66,5 @@ export function getAttachmentUrl(
   requestedFilename: string
 ): string {
   const encodedFilename = encodeURIComponent(requestedFilename)
-  return `${API_URL}/attachments/${attachmentId}/download/${encodedFilename}`
+  return `${API_URL}/citizen/attachments/${attachmentId}/download/${encodedFilename}`
 }
