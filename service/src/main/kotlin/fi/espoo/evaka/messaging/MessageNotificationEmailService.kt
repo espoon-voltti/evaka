@@ -120,7 +120,7 @@ class MessageNotificationEmailService(
             if (
                 messageId != null &&
                     recipientId != null &&
-                    !tx.messageForRecipientExists(messageId, recipientId)
+                    !tx.unreadMessageForRecipientExists(messageId, recipientId)
             ) {
                 return@transaction
             }

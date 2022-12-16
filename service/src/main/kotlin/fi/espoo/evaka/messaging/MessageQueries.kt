@@ -1342,7 +1342,7 @@ WHERE thread_id = :threadId AND participant_id = :senderId
         .execute()
 }
 
-fun Database.Read.messageForRecipientExists(
+fun Database.Read.unreadMessageForRecipientExists(
     messageId: MessageId,
     recipientId: MessageAccountId
 ): Boolean {
@@ -1350,7 +1350,7 @@ fun Database.Read.messageForRecipientExists(
             sql(
                 """
 SELECT EXISTS (
-    SELECT * FROM message_recipients WHERE message_id = ${bind(messageId)} AND recipient_id = ${bind(recipientId)}
+    SELECT * FROM message_recipients WHERE message_id = ${bind(messageId)} AND recipient_id = ${bind(recipientId)} AND read_at IS NULL
 )
 """
             )
