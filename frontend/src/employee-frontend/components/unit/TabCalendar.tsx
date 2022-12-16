@@ -128,7 +128,9 @@ export default React.memo(function TabCalendar() {
           <Gap size="s" />
         </>
       ) : null}
-      <Calendar unitId={unitId} unitInformation={unitInformation} />
+      {unitInformation.permittedActions.has('READ_GROUP_DETAILS') ? (
+        <Calendar unitId={unitId} unitInformation={unitInformation} />
+      ) : null}
     </>
   ))
 })
