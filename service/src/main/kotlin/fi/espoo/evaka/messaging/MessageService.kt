@@ -36,7 +36,9 @@ class MessageService(
         }
     }
 
-    val SPREAD_MESSAGE_NOTIFICATION_SECONDS: Long = 60 * 60 * 24
+    companion object {
+        val SPREAD_MESSAGE_NOTIFICATION_SECONDS: Long = 60 * 60 * 24
+    }
 
     fun createMessageThreadsForRecipientGroups(
         tx: Database.Transaction,

@@ -118,7 +118,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
         tx.afterCommit(wakeUpHook)
     }
 
-    fun plan(tx: Database.Transaction, jobs: List<JobParams<*>>) {
+    fun plan(tx: Database.Transaction, jobs: List<JobParams<out T>>) {
         jobs.forEach { job -> tx.insertJob(job) }
         tx.afterCommit(wakeUpHook)
     }
