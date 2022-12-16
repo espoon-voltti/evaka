@@ -186,6 +186,44 @@ class MessageNotificationEmailServiceIntegrationTest :
         assertEquals(0, asyncJobRunner.getPendingJobCount())
     }
 
+    @Test
+    fun `a notification is not sent when the message has been already read`() {
+        val clock = MockEvakaClock(HelsinkiDateTime.now())
+        val employeeAccount =
+            db.read {
+                it.getEmployeeMessageAccountIds(
+                        accessControl.requireAuthorizationFilter(
+                            it,
+                            employee,
+                            clock,
+                            Action.MessageAccount.ACCESS
+                        )
+                    )
+                    .first()
+            }
+
+        val contentId =
+            postNewThread(
+                sender = employeeAccount,
+                recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+                user = employee,
+                clock = clock
+            )
+        assertNotNull(contentId)
+
+        markAllRecipientMessagesRead(testPersonFi, clock)
+
+        asyncJobRunner.runPendingJobsSync(
+            MockEvakaClock(
+                clock.now().plusSeconds(MessageService.SPREAD_MESSAGE_NOTIFICATION_SECONDS)
+            )
+        )
+
+        assertEquals(2, MockEmailClient.emails.size)
+        assertTrue(MockEmailClient.emails.none { email -> email.toAddress == testPersonFi.email })
+        assertEquals(0, asyncJobRunner.getPendingJobCount())
+    }
+
     private fun postNewThread(
         sender: MessageAccountId,
         recipients: List<MessageRecipient>,
@@ -217,5 +255,24 @@ class MessageNotificationEmailServiceIntegrationTest :
     private fun getEmailFor(person: DevPerson): MockEmail {
         val address = person.email ?: throw Error("$person has no email")
         return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
+    }
+
+    private fun markAllRecipientMessagesRead(person: DevPerson, clock: EvakaClock) {
+        db.transaction { tx ->
+            tx.createUpdate(
+                    """
+                UPDATE message_recipients mr SET read_at = :now
+                WHERE mr.id IN (
+                    SELECT mr.id 
+                    FROM message_recipients mr LEFT JOIN message_account ma ON mr.recipient_id = ma.id 
+                    WHERE ma.person_id = :recipientId
+                )
+            """
+                        .trimIndent()
+                )
+                .bind("now", clock.now())
+                .bind("recipientId", person.id)
+                .execute()
+        }
     }
 }
