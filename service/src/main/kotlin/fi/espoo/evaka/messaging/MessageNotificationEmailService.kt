@@ -12,10 +12,13 @@ import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.JobParams
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import java.time.Duration
+import kotlin.random.Random
 import org.springframework.stereotype.Service
 
 @Service
@@ -77,14 +80,22 @@ class MessageNotificationEmailService(
     fun scheduleSendingMessageNotifications(
         tx: Database.Transaction,
         messageIds: List<MessageId>,
-        runAt: HelsinkiDateTime
+        runAt: HelsinkiDateTime,
+        spreadSeconds: Long = 0
     ) {
-        asyncJobRunner.plan(
-            tx,
-            payloads = getMessageNotifications(tx, messageIds),
-            runAt = runAt,
-            retryCount = 10
-        )
+        val asyncJobs =
+            getMessageNotifications(tx, messageIds).map { payload ->
+                JobParams(
+                    payload = payload,
+                    retryCount = 10,
+                    retryInterval = Duration.ofMinutes(5),
+                    runAt =
+                        if (spreadSeconds == 0L) runAt
+                        else runAt.plusSeconds(Random.nextLong(spreadSeconds))
+                )
+            }
+
+        asyncJobRunner.plan(tx, asyncJobs)
     }
 
     private fun getLanguage(languageStr: String?): Language {
@@ -109,7 +120,7 @@ class MessageNotificationEmailService(
             if (
                 messageId != null &&
                     recipientId != null &&
-                    !tx.messageForRecipientExists(messageId, recipientId)
+                    !tx.unreadMessageForRecipientExists(messageId, recipientId)
             ) {
                 return@transaction
             }
