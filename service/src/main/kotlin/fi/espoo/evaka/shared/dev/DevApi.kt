@@ -622,6 +622,16 @@ RETURNING id
             }
         }
 
+    @GetMapping("/citizen/ssn/{ssn}")
+    fun getCitizen(@PathVariable ssn: String): Citizen =
+        Citizen.from(MockPersonDetailsService.getPerson(ssn) ?: throw NotFound())
+
+    @GetMapping("/citizen")
+    fun getCitizens(): List<Citizen> =
+        MockPersonDetailsService.allPersons.values
+            .filter { it.guardians.isEmpty() }
+            .map(Citizen::from)
+
     @PostMapping("/guardian")
     fun insertGuardians(db: Database, @RequestBody guardians: List<DevGuardian>) {
         db.connect { dbc ->
@@ -1919,3 +1929,20 @@ data class DevAbsenceBody(
 )
 
 data class DevGuardian(val guardianId: PersonId, val childId: ChildId)
+
+data class Citizen(
+    val ssn: String,
+    val firstName: String,
+    val lastName: String,
+    val dependantCount: Int
+) {
+    companion object {
+        fun from(vtjPerson: VtjPerson) =
+            Citizen(
+                ssn = vtjPerson.socialSecurityNumber,
+                firstName = vtjPerson.firstNames,
+                lastName = vtjPerson.lastName,
+                dependantCount = vtjPerson.dependants.size
+            )
+    }
+}

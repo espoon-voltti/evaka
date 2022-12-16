@@ -3,6 +3,35 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import certificates, { TrustedCertificates } from './certificates'
+import type redis from 'redis'
+
+export interface Config {
+  ad: {
+    mock: boolean
+    externalIdPrefix: string
+    saml: EvakaSamlConfig | undefined
+  }
+  sfi: {
+    mock: boolean
+    saml: EvakaSamlConfig | undefined
+  }
+  redis: {
+    host: string | undefined
+    port: number | undefined
+    password: string | undefined
+    tlsServerName: string | undefined
+    disableSecurity: boolean
+  }
+}
+
+export const toRedisClientOpts = (config: Config): redis.ClientOpts => ({
+  host: config.redis.host,
+  port: config.redis.port,
+  ...(!config.redis.disableSecurity && {
+    tls: { servername: config.redis.tlsServerName },
+    password: config.redis.password
+  })
+})
 
 export interface EvakaSamlConfig {
   callbackUrl: string
@@ -11,6 +40,7 @@ export interface EvakaSamlConfig {
   issuer: string
   publicCert: string | TrustedCertificates[]
   privateCert: string
+  validateInResponseTo: boolean
 }
 
 export const gatewayRoles = ['enduser', 'internal'] as const
@@ -84,6 +114,69 @@ function envArray<T>(
   }
 }
 
+export function configFromEnv(): Config {
+  const adMock =
+    env('AD_MOCK', parseBoolean) ??
+    env('DEV_LOGIN', parseBoolean) ??
+    ifNodeEnv(['local', 'test'], true) ??
+    false
+  const adCallbackUrl = process.env.AD_SAML_CALLBACK_URL
+  const ad: Config['ad'] = {
+    mock: adMock,
+    externalIdPrefix: process.env.AD_SAML_EXTERNAL_ID_PREFIX ?? 'espoo-ad',
+    saml:
+      adCallbackUrl && !adMock
+        ? {
+            callbackUrl: required(adCallbackUrl),
+            entryPoint: required(process.env.AD_SAML_ENTRYPOINT_URL),
+            logoutUrl: required(process.env.AD_SAML_LOGOUT_URL),
+            issuer: required(process.env.AD_SAML_ISSUER),
+            publicCert: required(
+              envArray('AD_SAML_PUBLIC_CERT', parseEnum(certificateNames))
+            ),
+            privateCert: required(process.env.AD_SAML_PRIVATE_CERT),
+            validateInResponseTo: true
+          }
+        : undefined
+  }
+
+  const sfiMock =
+    env('SFI_MOCK', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
+  const sfiCallbackUrl = process.env.SFI_SAML_CALLBACK_URL
+  const sfi: Config['sfi'] = {
+    mock: sfiMock,
+    saml:
+      sfiCallbackUrl && !sfiMock
+        ? {
+            callbackUrl: required(sfiCallbackUrl),
+            entryPoint: required(process.env.SFI_SAML_ENTRYPOINT),
+            logoutUrl: required(process.env.SFI_SAML_LOGOUT_URL),
+            issuer: required(process.env.SFI_SAML_ISSUER),
+            publicCert: required(
+              envArray('SFI_SAML_PUBLIC_CERT', parseEnum(certificateNames))
+            ),
+            privateCert: required(process.env.SFI_SAML_PRIVATE_CERT),
+            validateInResponseTo: true
+          }
+        : undefined
+  }
+
+  return {
+    ad,
+    sfi,
+    redis: {
+      host: process.env.REDIS_HOST ?? ifNodeEnv(['local'], 'localhost'),
+      port: env('REDIS_PORT', parseInteger) ?? ifNodeEnv(['local'], 6379),
+      password: process.env.REDIS_PASSWORD,
+      tlsServerName: process.env.REDIS_TLS_SERVER_NAME,
+      disableSecurity:
+        env('REDIS_DISABLE_SECURITY', parseBoolean) ??
+        ifNodeEnv(['local'], true) ??
+        false
+    }
+  }
+}
+
 export const gatewayRole = env('GATEWAY_ROLE', parseEnum(gatewayRoles))
 export const nodeEnv = env('NODE_ENV', parseEnum(nodeEnvs))
 export const appBuild = process.env.APP_BUILD ?? 'UNDEFINED'
@@ -112,10 +205,6 @@ export const evakaServiceUrl = required(
   process.env.EVAKA_SERVICE_URL ??
     ifNodeEnv(['local', 'test'], 'http://localhost:8888')
 )
-export const evakaAIUrl =
-  process.env.EVAKA_AI_URL ??
-  ifNodeEnv(['local', 'test'], 'http://localhost:8889')
-
 export const cookieSecret = required(
   process.env.COOKIE_SECRET ??
     ifNodeEnv(['local', 'test'], 'A very hush hush cookie secret.')
@@ -129,19 +218,6 @@ export const prettyLogs =
   env('PRETTY_LOGS', parseBoolean) ?? ifNodeEnv(['local'], true) ?? false
 
 export const volttiEnv = process.env.VOLTTI_ENV ?? ifNodeEnv(['local'], 'local')
-
-export const redisHost =
-  process.env.REDIS_HOST ?? ifNodeEnv(['local'], 'localhost')
-
-export const redisPort =
-  env('REDIS_PORT', parseInteger) ?? ifNodeEnv(['local'], 6379)
-
-export const redisPassword = process.env.REDIS_PASSWORD
-export const redisTlsServerName = process.env.REDIS_TLS_SERVER_NAME
-export const redisDisableSecurity =
-  env('REDIS_DISABLE_SECURITY', parseBoolean) ??
-  ifNodeEnv(['local'], true) ??
-  false
 
 export const httpPort = {
   enduser: env('HTTP_PORT', parseInteger) ?? 3010,
@@ -161,74 +237,6 @@ export const enableDevApi =
 const certificateNames = Object.keys(
   certificates
 ) as ReadonlyArray<TrustedCertificates>
-
-export const adMock =
-  env('AD_MOCK', parseBoolean) ??
-  env('DEV_LOGIN', parseBoolean) ??
-  ifNodeEnv(['local', 'test'], true) ??
-  false
-
-const adCallbackUrl = process.env.AD_SAML_CALLBACK_URL
-const adEntryPointUrl = process.env.AD_SAML_ENTRYPOINT_URL
-const adLogoutUrl = process.env.AD_SAML_LOGOUT_URL
-
-export const adConfig: EvakaSamlConfig | undefined =
-  adCallbackUrl && !adMock
-    ? {
-        callbackUrl: required(adCallbackUrl),
-        entryPoint: required(adEntryPointUrl),
-        logoutUrl: required(adLogoutUrl),
-        issuer: required(process.env.AD_SAML_ISSUER),
-        publicCert: required(
-          envArray('AD_SAML_PUBLIC_CERT', parseEnum(certificateNames))
-        ),
-        privateCert: required(process.env.AD_SAML_PRIVATE_CERT)
-      }
-    : undefined
-
-export const adExternalIdPrefix =
-  process.env.AD_SAML_EXTERNAL_ID_PREFIX ?? 'espoo-ad'
-
-export const sfiMock =
-  env('SFI_MOCK', parseBoolean) ?? ifNodeEnv(['local', 'test'], true) ?? false
-
-// For local development & testing:
-// Explicitly use separate domains for the simulated SP and IdP to replicate
-// 3rd party cookie and SAML message parsing issues only present in those
-// conditions. SP must be in a domain that, from a browser's cookie handling
-// point of view, is a third party site to the IdP managing SSO / Single Logout.
-//
-// See also:
-// https://wiki.shibboleth.net/confluence/display/IDP30/LogoutConfiguration#LogoutConfiguration-Overview
-// https://simplesamlphp.org/docs/stable/simplesamlphp-idp-more#section_1
-const sfiCallbackUrl =
-  process.env.SFI_SAML_CALLBACK_URL ??
-  ifNodeEnv(
-    ['local', 'test'],
-    'https://saml-sp.qwerty.local/api/application/auth/saml/logout/callback'
-  )
-const sfiEntryPointUrl =
-  process.env.SFI_SAML_ENTRYPOINT ??
-  ifNodeEnv(['local', 'test'], 'https://identity-provider.asdf.local/idp')
-const sfiLogoutUrl = process.env.SFI_SAML_LOGOUT_URL ?? sfiEntryPointUrl
-const sfiIssuer = process.env.SFI_SAML_ISSUER ?? 'evaka-local'
-
-export const sfiConfig: EvakaSamlConfig | undefined = sfiCallbackUrl
-  ? {
-      callbackUrl: required(sfiCallbackUrl),
-      entryPoint: required(sfiEntryPointUrl),
-      logoutUrl: required(sfiLogoutUrl),
-      issuer: required(sfiIssuer),
-      publicCert: required(
-        envArray('SFI_SAML_PUBLIC_CERT', parseEnum(certificateNames)) ??
-          ifNodeEnv(['local', 'test'], 'config/test-cert/slo-test-idp-cert.pem')
-      ),
-      privateCert: required(
-        process.env.SFI_SAML_PRIVATE_CERT ??
-          ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
-      )
-    }
-  : undefined
 
 const evakaCallbackUrl =
   process.env.EVAKA_SAML_CALLBACK_URL ??
@@ -272,7 +280,8 @@ export const evakaSamlConfig: EvakaSamlConfig | undefined = evakaCallbackUrl
       privateCert: required(
         process.env.EVAKA_SAML_PRIVATE_CERT ??
           ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
-      )
+      ),
+      validateInResponseTo: true
     }
   : undefined
 
@@ -305,7 +314,8 @@ export const evakaCustomerSamlConfig: EvakaSamlConfig | undefined =
         privateCert: required(
           process.env.EVAKA_CUSTOMER_SAML_PRIVATE_CERT ??
             ifNodeEnv(['local', 'test'], 'config/test-cert/saml-private.pem')
-        )
+        ),
+        validateInResponseTo: true
       }
     : undefined
 

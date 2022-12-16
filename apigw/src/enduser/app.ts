@@ -17,7 +17,6 @@ import setupLoggingMiddleware from '../shared/logging'
 import { csrf, csrfCookie } from '../shared/middleware/csrf'
 import { errorHandler } from '../shared/middleware/error-handler'
 import tracing from '../shared/middleware/tracing'
-import { createRedisClient } from '../shared/redis-client'
 import { trustReverseProxy } from '../shared/reverse-proxy'
 import createSamlRouter from '../shared/routes/auth/saml'
 import session, {
@@ -28,75 +27,77 @@ import publicRoutes from './publicRoutes'
 import routes from './routes'
 import authStatus from './routes/auth-status'
 import { cacheControl } from '../shared/middleware/cache-control'
+import { RedisClient } from 'redis'
+import { Config } from '../shared/config'
 
-const app = express()
-const redisClient = createRedisClient()
-trustReverseProxy(app)
-app.set('etag', false)
+export default function enduserGwApp(config: Config, redisClient: RedisClient) {
+  const app = express()
+  trustReverseProxy(app)
+  app.set('etag', false)
 
-app.use(
-  cacheControl((req) =>
-    req.path.startsWith('/api/application/citizen/child-images/')
-      ? 'allow-cache'
-      : 'forbid-cache'
+  app.use(
+    cacheControl((req) =>
+      req.path.startsWith('/api/application/citizen/child-images/')
+        ? 'allow-cache'
+        : 'forbid-cache'
+    )
   )
-)
 
-app.use(
-  helmet({
-    // Content-Security-Policy is set by the nginx proxy
-    contentSecurityPolicy: false
+  app.use(
+    helmet({
+      // Content-Security-Policy is set by the nginx proxy
+      contentSecurityPolicy: false
+    })
+  )
+  app.get('/health', (_, res) => {
+    redisClient.connected !== true && redisClient.ping() !== true
+      ? res.status(503).json({ status: 'DOWN' })
+      : res.status(200).json({ status: 'UP' })
   })
-)
-app.get('/health', (_, res) => {
-  redisClient.connected !== true && redisClient.ping() !== true
-    ? res.status(503).json({ status: 'DOWN' })
-    : res.status(200).json({ status: 'UP' })
-})
-app.use(tracing)
-app.use(cookieParser())
-app.use(session('enduser', redisClient))
-app.use(touchSessionMaxAge)
-app.use(passport.initialize())
-app.use(passport.session())
-passport.serializeUser<Express.User>((user, done) => done(null, user))
-passport.deserializeUser<Express.User>((user, done) => done(null, user))
-app.use(refreshLogoutToken())
-setupLoggingMiddleware(app)
+  app.use(tracing)
+  app.use(cookieParser())
+  app.use(session('enduser', redisClient))
+  app.use(touchSessionMaxAge)
+  app.use(passport.initialize())
+  app.use(passport.session())
+  passport.serializeUser<Express.User>((user, done) => done(null, user))
+  passport.deserializeUser<Express.User>((user, done) => done(null, user))
+  app.use(refreshLogoutToken())
+  setupLoggingMiddleware(app)
 
-function apiRouter() {
-  const router = Router()
+  function apiRouter() {
+    const router = Router()
 
-  router.use(publicRoutes)
-  const suomifiSamlConfig = createSuomiFiSamlConfig(redisClient)
-  router.use(
-    createSamlRouter({
-      strategyName: 'suomifi',
-      strategy: createSuomiFiStrategy(suomifiSamlConfig),
-      samlConfig: suomifiSamlConfig,
-      sessionType: 'enduser',
-      pathIdentifier: 'saml'
-    })
-  )
-  const evakaCustomerSamlConfig = createEvakaCustomerSamlConfig(redisClient)
-  router.use(
-    createSamlRouter({
-      strategyName: 'evaka-customer',
-      strategy: createEvakaCustomerSamlStrategy(evakaCustomerSamlConfig),
-      samlConfig: evakaCustomerSamlConfig,
-      sessionType: 'enduser',
-      pathIdentifier: 'evaka-customer'
-    })
-  )
-  router.get('/auth/status', csrf, csrfCookie('enduser'), authStatus)
-  router.use(requireAuthentication)
-  router.use(csrf)
-  router.use(routes)
-  return router
+    router.use(publicRoutes)
+    const suomifiSamlConfig = createSuomiFiSamlConfig(config.sfi, redisClient)
+    router.use(
+      createSamlRouter(config, {
+        strategyName: 'suomifi',
+        strategy: createSuomiFiStrategy(config.sfi, suomifiSamlConfig),
+        samlConfig: suomifiSamlConfig,
+        sessionType: 'enduser',
+        pathIdentifier: 'saml'
+      })
+    )
+    const evakaCustomerSamlConfig = createEvakaCustomerSamlConfig(redisClient)
+    router.use(
+      createSamlRouter(config, {
+        strategyName: 'evaka-customer',
+        strategy: createEvakaCustomerSamlStrategy(evakaCustomerSamlConfig),
+        samlConfig: evakaCustomerSamlConfig,
+        sessionType: 'enduser',
+        pathIdentifier: 'evaka-customer'
+      })
+    )
+    router.get('/auth/status', csrf, csrfCookie('enduser'), authStatus)
+    router.use(requireAuthentication)
+    router.use(csrf)
+    router.use(routes)
+    return router
+  }
+
+  app.use('/api/application', apiRouter())
+  app.use(errorHandler(false))
+
+  return app
 }
-
-app.use('/api/application', apiRouter())
-app.use(errorHandler(false))
-
-export default app
-export const _TEST_ONLY_redisClient = redisClient

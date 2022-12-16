@@ -42,7 +42,7 @@ export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
     logoutUrl: evakaCustomerSamlConfig.entryPoint,
     privateKey: privateCert,
     signatureAlgorithm: 'sha256',
-    validateInResponseTo: true
+    validateInResponseTo: evakaCustomerSamlConfig.validateInResponseTo
   }
 }
 

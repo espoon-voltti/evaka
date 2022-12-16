@@ -11,40 +11,32 @@ import { SignedXml } from 'xml-crypto'
 import xml2js from 'xml2js'
 import xmldom from '@xmldom/xmldom'
 import zlib from 'zlib'
-import * as config from '../config'
-import { sfiConfig } from '../config'
+import { configFromEnv } from '../config'
 import { fromCallback } from '../promise-utils'
 import type { CitizenUser } from '../service-client'
 import { sessionCookie } from '../session'
 import { GatewayTester } from '../test/gateway-tester'
+import redisMock from 'redis-mock'
 
 const mockUser: CitizenUser = {
   id: '942b9cab-210d-4d49-b4c9-65f26390eed3'
 }
 
-// Explicitly use separate domains for the simulated SP and IdP to replicate
-// 3rd party cookie and SAML message parsing issues only present in those
-// conditions. SP must be in a domain that, from a browser's cookie handling
-// point of view, is a third party site to the IdP managing SSO / Single Logout.
-//
-// See also:
-// https://wiki.shibboleth.net/confluence/display/IDP30/LogoutConfiguration#LogoutConfiguration-Overview
-// https://simplesamlphp.org/docs/stable/simplesamlphp-idp-more#section_1
-if (!sfiConfig)
-  throw new Error('sfiConfig must be defined for these tests to run')
-const SAML_SP_DOMAIN = new URL(sfiConfig.callbackUrl).origin
-const IDP_ENTRY_POINT_URL = sfiConfig.entryPoint
+const SP_CALLBACK_URL =
+  'https://saml-sp.qwerty.local/api/application/auth/saml/logout/callback'
+const SP_DOMAIN = new URL(SP_CALLBACK_URL).origin
+const IDP_ENTRY_POINT_URL = 'https://identity-provider.asdf.local/idp'
 
 // Helper constants to ensure correct endpoints in all cases
 const SP_LOGIN_CALLBACK_ENDPOINT = '/api/application/auth/saml/login/callback'
 const SP_LOGOUT_CALLBACK_ENDPOINT = '/api/application/auth/saml/logout/callback'
-const SP_LOGIN_CALLBACK_URL = `${SAML_SP_DOMAIN}${SP_LOGIN_CALLBACK_ENDPOINT}`
-const SP_LOGOUT_CALLBACK_URL = `${SAML_SP_DOMAIN}${SP_LOGOUT_CALLBACK_ENDPOINT}`
+const SP_LOGIN_CALLBACK_URL = `${SP_DOMAIN}${SP_LOGIN_CALLBACK_ENDPOINT}`
+const SP_LOGOUT_CALLBACK_URL = `${SP_DOMAIN}${SP_LOGOUT_CALLBACK_ENDPOINT}`
 const SECURED_ENDPOINT = `/api/application/auth/status`
 
 // Use test certificates to validate actual SAML message parsing while not using
 // any real certificates/domains.
-const SP_ISSUER = sfiConfig.issuer
+const SP_ISSUER = 'evaka-local'
 const IDP_ISSUER = 'evaka-slo-test'
 const IDP_PVK = fs
   .readFileSync(
@@ -56,30 +48,40 @@ const IDP_PVK = fs
 describe('SAML Single Logout', () => {
   let tester: GatewayTester
   let redisClient: RedisClient
-  const sfiMock = config.sfiMock
 
   beforeEach(async () => {
-    // In order to enable the REAL Suomi.fi passport-saml Strategy only for
-    // these tests, config.sfiMock should be true in every other case but this
-    // test suite + as Strategy vs. DummyStrategy selection is done at app
-    // import-time -> override the config and re-import app for all of these
-    // tests to prevent affecting other test suites. Theoretically tests from
-    // other test suites could be run in-between, so must be done beforeEach
-    // instead of beforeAll.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(config as any).sfiMock = false
-    const { default: app, _TEST_ONLY_redisClient } = await import(
-      '../../enduser/app'
-    )
-    redisClient = _TEST_ONLY_redisClient
+    redisClient = redisMock.createClient()
+    const { default: enduserGwApp } = await import('../../enduser/app')
+    const config = {
+      ...configFromEnv(),
+      sfi: {
+        mock: false,
+        // Explicitly use separate domains for the simulated SP and IdP to replicate
+        // 3rd party cookie and SAML message parsing issues only present in those
+        // conditions. SP must be in a domain that, from a browser's cookie handling
+        // point of view, is a third party site to the IdP managing SSO / Single Logout.
+        //
+        // See also:
+        // https://wiki.shibboleth.net/confluence/display/IDP30/LogoutConfiguration#LogoutConfiguration-Overview
+        // https://simplesamlphp.org/docs/stable/simplesamlphp-idp-more#section_1
+        saml: {
+          callbackUrl: SP_CALLBACK_URL,
+          entryPoint: IDP_ENTRY_POINT_URL,
+          logoutUrl: IDP_ENTRY_POINT_URL,
+          issuer: SP_ISSUER,
+          publicCert: 'config/test-cert/slo-test-idp-cert.pem',
+          privateCert: 'config/test-cert/saml-private.pem',
+          validateInResponseTo: false
+        }
+      }
+    }
+    const app = enduserGwApp(config, redisClient)
     tester = await GatewayTester.start(app, 'enduser')
   })
   afterEach(async () => {
     await tester?.afterEach()
     await tester?.stop()
     await fromCallback((cb) => redisClient?.flushall(cb))
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(config as any).sfiMock = sfiMock
   })
 
   test('reference case (3rd party cookies available)', async () => {

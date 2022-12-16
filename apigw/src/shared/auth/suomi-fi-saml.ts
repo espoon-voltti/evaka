@@ -3,14 +3,15 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import fs from 'fs'
-import { Strategy as DummyStrategy } from 'passport-dummy'
 import { Profile, SamlConfig, Strategy, VerifiedCallback } from 'passport-saml'
 import { RedisClient } from 'redis'
 import certificates from '../certificates'
-import { nodeEnv, sfiConfig, sfiMock } from '../config'
+import { Config } from '../config'
 import { SamlUser } from '../routes/auth/saml/types'
 import { citizenLogin } from '../service-client'
 import redisCacheProvider from './passport-saml-cache-redis'
+import { getCitizenBySsn } from '../dev-api'
+import DevSfiStrategy from './dev-sfi-strategy'
 
 // Suomi.fi e-Identification – Attributes transmitted on an identified user:
 //   https://esuomi.fi/suomi-fi-services/suomi-fi-e-identification/14247-2/?lang=en
@@ -28,13 +29,6 @@ interface SuomiFiProfile {
   [SUOMI_FI_SSN_KEY]: string
   [SUOMI_FI_SURNAME_KEY]: string
   [SUOMI_FI_GIVEN_NAME_KEY]: string
-}
-
-const dummySuomiFiProfile: SuomiFiProfile = {
-  nameID: 'dummyid',
-  [SUOMI_FI_SSN_KEY]: '070644-937X',
-  [SUOMI_FI_GIVEN_NAME_KEY]: 'Seppo',
-  [SUOMI_FI_SURNAME_KEY]: 'Sorsa'
 }
 
 async function verifyProfile(profile: SuomiFiProfile): Promise<SamlUser> {
@@ -56,53 +50,62 @@ async function verifyProfile(profile: SuomiFiProfile): Promise<SamlUser> {
   }
 }
 
-export function createSamlConfig(redisClient?: RedisClient): SamlConfig {
-  if (sfiMock) return { cert: 'mock-certificate' }
-  if (!sfiConfig) throw new Error('Missing Suomi.fi SAML configuration')
-  const publicCert = Array.isArray(sfiConfig.publicCert)
-    ? sfiConfig.publicCert.map(
+export function createSamlConfig(
+  config: Config['sfi'],
+  redisClient?: RedisClient
+): SamlConfig {
+  if (config.mock) return { cert: 'mock-certificate' }
+  if (!config.saml) throw new Error('Missing Suomi.fi SAML configuration')
+  const publicCert = Array.isArray(config.saml.publicCert)
+    ? config.saml.publicCert.map(
         (certificateName) => certificates[certificateName]
       )
-    : fs.readFileSync(sfiConfig.publicCert, {
+    : fs.readFileSync(config.saml.publicCert, {
         encoding: 'utf8'
       })
-  const privateCert = fs.readFileSync(sfiConfig.privateCert, {
+  const privateCert = fs.readFileSync(config.saml.privateCert, {
     encoding: 'utf8'
   })
 
   return {
     acceptedClockSkewMs: 0,
-    audience: sfiConfig.issuer,
+    audience: config.saml.issuer,
     cacheProvider: redisClient
       ? redisCacheProvider(redisClient, { keyPrefix: 'suomifi-saml-resp:' })
       : undefined,
-    callbackUrl: sfiConfig.callbackUrl,
+    callbackUrl: config.saml.callbackUrl,
     cert: publicCert,
     decryptionPvk: privateCert,
     disableRequestedAuthnContext: true,
-    entryPoint: sfiConfig.entryPoint,
+    entryPoint: config.saml.entryPoint,
     identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
-    issuer: sfiConfig.issuer,
-    logoutUrl: sfiConfig.logoutUrl,
+    issuer: config.saml.issuer,
+    logoutUrl: config.saml.logoutUrl,
     privateKey: privateCert,
     signatureAlgorithm: 'sha256',
-    // InResponseTo validation unnecessarily complicates testing
-    validateInResponseTo: nodeEnv === 'test' ? false : true
+    validateInResponseTo: config.saml.validateInResponseTo
   }
 }
 
 export default function createSuomiFiStrategy(
-  config: SamlConfig
-): Strategy | DummyStrategy {
-  if (sfiMock) {
-    return new DummyStrategy((done) => {
-      verifyProfile(dummySuomiFiProfile)
-        .then((user) => done(null, user))
-        .catch(done)
-    })
+  config: Config['sfi'],
+  samlConfig: SamlConfig
+): Strategy | DevSfiStrategy {
+  if (config.mock) {
+    const getter = async (ssn: string) => {
+      const citizen = await getCitizenBySsn(ssn)
+      return verifyProfile({
+        nameID: 'dummyid',
+        [SUOMI_FI_SSN_KEY]: citizen.ssn,
+        [SUOMI_FI_GIVEN_NAME_KEY]: citizen.firstName,
+        [SUOMI_FI_SURNAME_KEY]: citizen.lastName
+      })
+    }
+
+    return new DevSfiStrategy(getter)
   } else {
     return new Strategy(
-      config,
+      samlConfig,
       (profile: Profile | null | undefined, done: VerifiedCallback) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         verifyProfile(profile as any as SuomiFiProfile)

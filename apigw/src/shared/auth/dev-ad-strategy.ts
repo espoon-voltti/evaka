@@ -17,13 +17,12 @@ type ProfileUpserter = (
   email: string
 ) => Promise<SamlUser>
 
-export default class DevPassportStrategy extends Strategy {
-  private profileGetter: ProfileGetter
-  private profileUpserter: ProfileUpserter
-  constructor(profileGetter: ProfileGetter, profileUpserter: ProfileUpserter) {
+export default class DevAdStrategy extends Strategy {
+  constructor(
+    private profileGetter: ProfileGetter,
+    private profileUpserter: ProfileUpserter
+  ) {
     super()
-    this.profileGetter = profileGetter
-    this.profileUpserter = profileUpserter
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,7 +31,7 @@ export default class DevPassportStrategy extends Strategy {
 
     if (shouldRedirect) {
       return this.redirect(
-        `${req.baseUrl}/dev-auth/login?RelayState=${req.query.RelayState}`
+        `${req.baseUrl}/dev-ad-auth/login?RelayState=${req.query.RelayState}`
       )
     }
 

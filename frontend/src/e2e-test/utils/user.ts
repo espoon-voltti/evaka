@@ -6,8 +6,6 @@ import config from '../config'
 
 import { Page, TextInput } from './page'
 
-import { waitUntilEqual } from './index'
-
 export type DevLoginRole = typeof devLoginRoles[number]
 const devLoginRoles = [
   'SERVICE_WORKER',
@@ -17,13 +15,32 @@ const devLoginRoles = [
   'ADMIN'
 ] as const
 
-export async function enduserLogin(page: Page) {
-  await page.goto(config.enduserUrl)
-  await page.findByDataQa('strong-login').click()
-  await waitUntilEqual(
-    () => page.findByDataQa('applications-list').getAttribute('data-isloading'),
-    'false'
+export async function enduserLogin(page: Page, ssn = '070644-937X') {
+  const authUrl = `${config.citizenApiUrl}/auth/saml/login/callback?RelayState=%2Fapplications`
+  if (!page.url.startsWith(config.enduserUrl)) {
+    // We must be in the correct domain to be able to fetch()
+    await page.goto(config.enduserLoginUrl)
+  }
+
+  await page.page.evaluate(
+    ({ ssn, authUrl }: { ssn: string; authUrl: string }) => {
+      const params = new URLSearchParams()
+      params.append('preset', ssn)
+      return fetch(authUrl, {
+        method: 'POST',
+        body: params,
+        redirect: 'manual'
+      }).then((response) => {
+        if (response.status >= 400) {
+          throw new Error(
+            `Fetch to {authUrl} failed with status ${response.status}`
+          )
+        }
+      })
+    },
+    { ssn, authUrl }
   )
+  await page.goto(config.enduserUrl + '/applications')
 }
 
 export async function enduserLoginWeak(page: Page) {
