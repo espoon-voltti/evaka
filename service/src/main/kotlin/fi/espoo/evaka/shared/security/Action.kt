@@ -1516,7 +1516,13 @@ sealed interface Action {
         UPDATE(HasGlobalRole(ADMIN)),
         READ_CHILD_ATTENDANCES(
             HasGlobalRole(ADMIN, SERVICE_WORKER),
-            HasUnitRole(UNIT_SUPERVISOR, STAFF, EARLY_CHILDHOOD_EDUCATION_SECRETARY).inUnit(),
+            HasUnitRole(
+                    UNIT_SUPERVISOR,
+                    STAFF,
+                    SPECIAL_EDUCATION_TEACHER,
+                    EARLY_CHILDHOOD_EDUCATION_SECRETARY
+                )
+                .inUnit(),
             IsMobile(requirePinLogin = false).inUnit()
         ),
         UPDATE_CHILD_ATTENDANCES(
