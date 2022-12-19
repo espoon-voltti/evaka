@@ -10,13 +10,16 @@ import io.opentracing.Span
 import io.opentracing.Tracer
 import io.opentracing.Tracer.SpanBuilder
 import io.opentracing.tag.AbstractTag
+import io.opentracing.tag.StringTag
 import io.opentracing.tag.Tag
 import io.opentracing.tag.Tags
+import java.util.UUID
 
 object Tracing {
     val action = ToStringTag<Action>("action")
     val actionClass = ToStringTag<Class<out Any>>("actionclass")
     val enduserIdHash = ToStringTag<HashCode>("enduser.idhash")
+    val evakaTraceId = StringTag("evaka.traceid")
 }
 
 @Suppress("NOTHING_TO_INLINE")
