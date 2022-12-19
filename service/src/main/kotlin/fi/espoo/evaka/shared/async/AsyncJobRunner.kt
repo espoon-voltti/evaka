@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.randomTracingId
 import fi.espoo.voltti.logging.MdcKey
 import fi.espoo.voltti.logging.loggers.error
 import fi.espoo.voltti.logging.loggers.info
@@ -187,8 +188,8 @@ class AsyncJobRunner<T : AsyncJobPayload>(
                 "remainingAttempts" to job.remainingAttempts
             )
         try {
-            MdcKey.TRACE_ID.set(job.jobId.toString())
-            MdcKey.SPAN_ID.set(job.jobId.toString())
+            MdcKey.TRACE_ID.set(randomTracingId())
+            MdcKey.SPAN_ID.set(randomTracingId())
             logger.info(logMeta) { "Running async job $job" }
             val completed =
                 db.transaction { tx ->

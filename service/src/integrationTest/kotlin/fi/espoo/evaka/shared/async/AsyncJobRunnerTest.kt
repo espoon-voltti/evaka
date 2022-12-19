@@ -74,7 +74,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
                 val traceId = MdcKey.TRACE_ID.get()
                 val spanId = MdcKey.SPAN_ID.get()
                 assertNotNull(traceId)
-                assertEquals(traceId, spanId)
+                assertNotNull(spanId)
                 assertEquals(
                     AuthenticatedUser.SystemInternalUser.rawId().toString(),
                     MdcKey.USER_ID.get()
