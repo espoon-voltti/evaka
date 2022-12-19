@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 data class CitizenMessageBody(
-    val recipients: Set<MessageAccount>,
+    val recipients: Set<MessageAccountId>,
     val children: Set<ChildId>,
     val content: String,
     val title: String
@@ -185,11 +185,11 @@ class MessageControllerCitizen(
                 val allReceiversValid =
                     body.recipients.all { recipient ->
                         body.children.all { child ->
-                            validReceivers[child]?.contains(recipient.id) ?: false
+                            validReceivers[child]?.contains(recipient) ?: false
                         }
                     }
                 if (allReceiversValid) {
-                    val recipientIds = body.recipients.map { it.id }.toSet()
+                    val recipientIds = body.recipients
                     dbc.transaction { tx ->
                         val contentId = tx.insertMessageContent(body.content, senderId)
                         val threadId =
@@ -205,13 +205,14 @@ class MessageControllerCitizen(
                             listOf(threadId to recipientIds),
                             now
                         )
+                        val recipientNames = tx.getAccountNames(recipientIds)
                         val messageId =
                             tx.insertMessage(
                                 now = clock.now(),
                                 contentId = contentId,
                                 threadId = threadId,
                                 sender = senderId,
-                                recipientNames = body.recipients.map { it.name },
+                                recipientNames = recipientNames,
                                 municipalAccountName = featureConfig.municipalMessageAccountName
                             )
                         tx.insertMessageThreadChildren(listOf(body.children to threadId))
