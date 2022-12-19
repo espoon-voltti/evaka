@@ -550,6 +550,18 @@ const sv: Translations = {
       actions: {
         verify: 'Granska ansökan',
         hasVerified: 'Jag har granskat att uppgifterna är rätt',
+        allowOtherGuardianAccess: (
+          <span>
+            Jag förstår att denna ansökan också kommer att vara synlig för den
+            andra vårdnadshavaren. Om den andra vårdnadshavaren inte ska kunna
+            se denna ansökan, vänligen ta kontakt med servicehandledningen.
+            Kontaktinformation hittar du{' '}
+            <a href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/ansokan-till-smabarnspedagogik-och-servicehandledning#section-38795">
+              här
+            </a>
+            .
+          </span>
+        ),
         returnToEdit: 'Gå tillbaka och bearbeta ansökan',
         returnToEditBtn: 'Gå tillbaka till vyn Ansökningar',
         cancel: 'Tillbaka',

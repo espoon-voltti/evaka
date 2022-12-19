@@ -69,6 +69,7 @@ export interface ApplicationDecisions {
 */
 export interface ApplicationDetails {
   additionalDaycareApplication: boolean
+  allowOtherGuardianAccess: boolean
   attachments: ApplicationAttachment[]
   checkedByAdmin: boolean
   childId: UUID
@@ -281,6 +282,7 @@ export interface ApplicationsOfChild {
   applicationSummaries: CitizenApplicationSummary[]
   childId: UUID
   childName: string
+  permittedActions: Record<string, Action.Citizen.Application[]>
 }
 
 /**
@@ -335,6 +337,14 @@ export interface CitizenApplicationSummary {
   startDate: LocalDate | null
   transferApplication: boolean
   type: ApplicationType
+}
+
+/**
+* Generated from fi.espoo.evaka.application.CitizenApplicationUpdate
+*/
+export interface CitizenApplicationUpdate {
+  allowOtherGuardianAccess: boolean
+  form: ApplicationFormUpdate
 }
 
 /**

@@ -64,28 +64,29 @@ class ApplicationControllerCitizen(
                         Action.Citizen.Person.READ_APPLICATIONS,
                         user.id
                     )
-                    val existingApplicationsByChild =
-                        tx.fetchApplicationSummariesForCitizen(user.id)
-                            .groupBy { it.childId }
-                            .map {
-                                ApplicationsOfChild(
-                                    it.key,
-                                    it.value.first().childName ?: "",
-                                    it.value
-                                )
-                            }
+                    val allApplications = tx.fetchApplicationSummariesForCitizen(user.id)
+                    val allPermittedActions: Map<ApplicationId, Set<Action.Citizen.Application>> =
+                        accessControl.getPermittedActions(
+                            tx,
+                            user,
+                            clock,
+                            allApplications.map { it.applicationId }
+                        )
+                    val existingApplicationsByChild = allApplications.groupBy { it.childId }
 
                     // Some children might not have applications, so add 0 application children
-                    tx.getCitizenChildren(clock.today(), user.id).map { citizenChild ->
-                        val childApplications =
-                            existingApplicationsByChild
-                                .findLast { it.childId == citizenChild.id }
-                                ?.applicationSummaries
-                                ?: emptyList()
+                    tx.getCitizenChildren(clock.today(), user.id).map { child ->
+                        val applications = existingApplicationsByChild[child.id] ?: emptyList()
+                        val permittedActions =
+                            applications.associate { application ->
+                                application.applicationId to
+                                    (allPermittedActions[application.applicationId] ?: emptySet())
+                            }
                         ApplicationsOfChild(
-                            childId = citizenChild.id,
-                            childName = "${citizenChild.firstName} ${citizenChild.lastName}",
-                            applicationSummaries = childApplications
+                            childId = child.id,
+                            childName = "${child.firstName} ${child.lastName}",
+                            applicationSummaries = applications,
+                            permittedActions = permittedActions,
                         )
                     }
                 }
@@ -142,7 +143,7 @@ class ApplicationControllerCitizen(
             }
         Audit.ApplicationRead.log(targetId = applicationId)
 
-        return if (application?.guardianId == user.id && !application.hideFromGuardian) {
+        return if (application?.hideFromGuardian == false) {
             application
         } else {
             throw NotFound("Application not found")
@@ -188,7 +189,7 @@ class ApplicationControllerCitizen(
                             type = body.type,
                             guardianId = user.id,
                             childId = body.childId,
-                            origin = ApplicationOrigin.ELECTRONIC
+                            origin = ApplicationOrigin.ELECTRONIC,
                         )
                         .also {
                             applicationStateService.initializeApplicationForm(
@@ -281,7 +282,7 @@ class ApplicationControllerCitizen(
         user: AuthenticatedUser.Citizen,
         clock: EvakaClock,
         @PathVariable applicationId: ApplicationId,
-        @RequestBody applicationForm: ApplicationFormUpdate
+        @RequestBody update: CitizenApplicationUpdate
     ) {
         db.connect { dbc ->
             dbc.transaction {
@@ -296,7 +297,7 @@ class ApplicationControllerCitizen(
                     it,
                     user,
                     applicationId,
-                    applicationForm,
+                    update,
                     clock.today()
                 )
             }
@@ -325,7 +326,7 @@ class ApplicationControllerCitizen(
                     it,
                     user,
                     applicationId,
-                    applicationForm,
+                    CitizenApplicationUpdate(applicationForm, allowOtherGuardianAccess = false),
                     clock.today(),
                     asDraft = true
                 )
@@ -541,7 +542,8 @@ class ApplicationControllerCitizen(
 data class ApplicationsOfChild(
     val childId: ChildId,
     val childName: String,
-    val applicationSummaries: List<CitizenApplicationSummary>
+    val applicationSummaries: List<CitizenApplicationSummary>,
+    val permittedActions: Map<ApplicationId, Set<Action.Citizen.Application>>
 )
 
 data class CreateApplicationBody(val childId: ChildId, val type: ApplicationType)

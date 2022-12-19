@@ -38,6 +38,8 @@ private val customClassesMapping: Map<String, TSMapping> = mapOf(
 
 private val actionsMapping: Map<String, TSMapping> = Action::class.nestedClasses.associate { action ->
     action.qualifiedName!! to TSMapping("Action.${action.simpleName}", "import { Action } from '../action'")
+} + Action.Citizen::class.nestedClasses.associate { action ->
+    action.qualifiedName!! to TSMapping("Action.Citizen.${action.simpleName}", "import { Action } from '../action'")
 }
 
 val tsMapping: Map<String, TSMapping> = standardTsMapping.mapValues { TSMapping(it.value) } + customClassesMapping + actionsMapping

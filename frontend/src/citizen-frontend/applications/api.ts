@@ -16,6 +16,7 @@ import {
 import {
   ApplicationsOfChild,
   ApplicationType,
+  CitizenApplicationUpdate,
   CitizenChildren
 } from 'lib-common/generated/api-types/application'
 import {
@@ -71,7 +72,7 @@ export async function getApplication(
 
 export async function updateApplication(
   applicationId: string,
-  data: ApplicationFormUpdate
+  data: CitizenApplicationUpdate
 ): Promise<Result<void>> {
   try {
     await client.put(`/citizen/applications/${applicationId}`, data)

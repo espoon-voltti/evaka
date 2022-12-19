@@ -39,6 +39,7 @@ export interface ApplicationDetails {
   transferApplication: boolean
   additionalDaycareApplication: boolean
   hideFromGuardian: boolean
+  allowOtherGuardianAccess: boolean
   attachments: ApplicationAttachment[]
 }
 

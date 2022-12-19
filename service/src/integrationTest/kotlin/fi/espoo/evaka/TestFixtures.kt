@@ -810,6 +810,7 @@ fun Database.Transaction.insertApplication(
             otherGuardianLivesInSameAddress = null,
             checkedByAdmin = false,
             hideFromGuardian = false,
+            allowOtherGuardianAccess = true,
             attachments = listOf()
         )
     insertTestApplicationForm(

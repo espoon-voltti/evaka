@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
-import React, { useRef } from 'react'
+import React, { ReactNode, useRef } from 'react'
 import styled from 'styled-components'
 
 import { useUniqueId } from 'lib-common/utils/useUniqueId'
@@ -122,7 +122,7 @@ export const StaticCheckBox = React.memo(function StaticCheckBox({
 })
 
 interface CheckboxProps extends CommonProps {
-  label: string
+  label: ReactNode
   hiddenLabel?: boolean
   onChange?: (checked: boolean) => void
   disabled?: boolean

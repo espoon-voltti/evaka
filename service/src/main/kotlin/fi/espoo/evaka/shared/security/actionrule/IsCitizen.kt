@@ -350,6 +350,20 @@ WHERE guardian_id = ${bind(citizenId)}
             )
         }
 
+    fun otherGuardianOfApplication() =
+        rule<ApplicationId> { citizenId, _ ->
+            sql(
+                """
+SELECT a.id
+FROM application a
+JOIN application_other_guardian aog ON a.id = aog.application_id
+WHERE aog.guardian_id = ${bind(citizenId)}
+AND allow_other_guardian_access IS TRUE
+            """
+                    .trimIndent()
+            )
+        }
+
     fun ownerOfApplicationOfSentDecision() =
         rule<DecisionId> { citizenId, _ ->
             sql(

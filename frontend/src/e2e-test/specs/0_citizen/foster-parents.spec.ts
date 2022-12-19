@@ -96,7 +96,7 @@ test('Foster parent can create a daycare application and accept a daycare decisi
       fosterChild.postOffice ?? ''
     }`
   )
-  await editorPage.verifyAndSend()
+  await editorPage.verifyAndSend({ hasOtherGuardian: false })
 
   await applicationsPage.assertApplicationIsListed(
     applicationId,
@@ -172,7 +172,7 @@ test('Foster parent can create a daycare application and accept a daycare decisi
       fosterChild.postOffice ?? ''
     }`
   )
-  await editorPage.verifyAndSend()
+  await editorPage.verifyAndSend({ hasOtherGuardian: false })
 
   await applicationsPage.assertApplicationIsListed(
     applicationId,

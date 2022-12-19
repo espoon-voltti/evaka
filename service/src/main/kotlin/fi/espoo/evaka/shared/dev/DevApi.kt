@@ -1813,6 +1813,7 @@ data class DevApplicationWithForm(
     val hideFromGuardian: Boolean,
     val transferApplication: Boolean,
     val otherGuardianId: PersonId?,
+    val allowOtherGuardianAccess: Boolean = true,
     val form: ApplicationForm
 )
 

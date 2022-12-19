@@ -387,4 +387,15 @@ export type VasuTemplate =
   | 'READ'
   | 'UPDATE'
 
+export namespace Citizen {
+
+export type Application =
+  | 'DELETE'
+  | 'READ'
+  | 'READ_DECISIONS'
+  | 'UPDATE'
+  | 'UPLOAD_ATTACHMENT'
+
+}
+
 }

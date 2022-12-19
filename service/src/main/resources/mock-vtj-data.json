@@ -3207,7 +3207,93 @@
       "streetAddressSe": "Andervägen 33",
       "postOfficeSe": "Esbo"
     },
-    "dependants": []
+    "dependants": [
+      {
+        "firstNames": "Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani",
+        "lastName": "Karhula",
+        "socialSecurityNumber": "070714A9126",
+        "nationalities": [
+          {
+            "countryName": "Suomi",
+            "countryCode": "FIN"
+          }
+        ],
+        "nativeLanguage": {
+          "languageName": "suomi",
+          "code": "fi"
+        },
+        "restrictedDetails": {
+          "enabled": false,
+          "endDate": null
+        },
+        "residenceCode": "hogfors_kamreerintie1",
+        "address": {
+          "streetAddress": "Kamreerintie 1",
+          "postalCode": "00340",
+          "postOffice": "Espoo",
+          "streetAddressSe": "Kamrersgatan 1",
+          "postOfficeSe": "Esbo"
+        },
+        "dependants": [],
+        "guardians": [
+          {
+            "firstNames": "Johannes Olavi Antero Tapio",
+            "lastName": "Karhula",
+            "socialSecurityNumber": "070644-937X",
+            "nationalities": [
+              {
+                "countryName": "Suomi",
+                "countryCode": "FIN"
+              }
+            ],
+            "nativeLanguage": {
+              "languageName": "suomi",
+              "code": "fi"
+            },
+            "restrictedDetails": {
+              "enabled": false,
+              "endDate": null
+            },
+            "residenceCode": "hogfors_kamreerintie1",
+            "address": {
+              "streetAddress": "Kamreerintie 1",
+              "postalCode": "00340",
+              "postOffice": "Espoo",
+              "streetAddressSe": "Kamrersgatan 1",
+              "postOfficeSe": "Esbo"
+            }
+          },
+          {
+            "firstNames": "Ville",
+            "lastName": "Vilkas",
+            "socialSecurityNumber": "311299-999E",
+            "nationalities": [
+              {
+                "countryName": "Suomi",
+                "countryCode": "FIN"
+              }
+            ],
+            "nativeLanguage": {
+              "languageName": "suomi",
+              "code": "fi"
+            },
+            "restrictedDetails": {
+              "enabled": false,
+              "endDate": null
+            },
+            "residenceCode": "hogfors_toistie33",
+            "address": {
+              "streetAddress": "Toistie 33",
+              "postalCode": "02230",
+              "postOffice": "Espoo",
+              "streetAddressSe": "Andervägen 33",
+              "postOfficeSe": "Esbo"
+            },
+            "dependants": []
+          }
+        ]
+      }
+    ]
   },
   {
     "firstNames": "",

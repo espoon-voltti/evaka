@@ -138,6 +138,8 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   const [verifying, setVerifying] = useState<boolean>(false)
   const [verified, setVerified] = useState<boolean>(false)
   const [submitting, setSubmitting] = useState<boolean>(false)
+  const [allowOtherGuardianAccess, setAllowOtherGuardianAccess] =
+    useState<boolean>(apiData.allowOtherGuardianAccess)
 
   const [errors, setErrors] = useState<ApplicationFormDataErrors>(
     validateApplication(apiData, formData)
@@ -164,6 +166,8 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 
     return maxTermDate?.isBefore(maxPreferred) ? maxTermDate : maxPreferred
   }, [terms])
+
+  const hasOtherGuardian = !!apiData.otherGuardianId
 
   const onVerify = () => {
     setErrors(validateApplication(apiData, formData, terms))
@@ -208,7 +212,10 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   }
 
   const onSend = () => {
-    const reqBody = formDataToApiData(apiData, formData)
+    const reqBody = {
+      form: formDataToApiData(apiData, formData),
+      allowOtherGuardianAccess
+    }
     setSubmitting(true)
     void updateApplication(apiData.id, reqBody).then((res) => {
       if (res.isFailure) {
@@ -250,7 +257,10 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   }
 
   const onUpdate = () => {
-    const reqBody = formDataToApiData(apiData, formData)
+    const reqBody = {
+      form: formDataToApiData(apiData, formData),
+      allowOtherGuardianAccess
+    }
     setSubmitting(true)
     void updateApplication(apiData.id, reqBody).then((res) => {
       if (res.isFailure) {
@@ -370,6 +380,17 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
             data-qa="verify-checkbox"
           />
           <Gap size="s" />
+          {hasOtherGuardian && (
+            <>
+              <Checkbox
+                label={t.applications.editor.actions.allowOtherGuardianAccess}
+                checked={allowOtherGuardianAccess}
+                onChange={setAllowOtherGuardianAccess}
+                data-qa="allow-other-guardian-access"
+              />
+              <Gap size="s" />
+            </>
+          )}
         </div>
       )}
 
@@ -405,7 +426,11 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
               <Button
                 text={t.applications.editor.actions.send}
                 onClick={onSend}
-                disabled={submitting || !verified}
+                disabled={
+                  submitting ||
+                  !verified ||
+                  (hasOtherGuardian && !allowOtherGuardianAccess)
+                }
                 primary
                 data-qa="send-btn"
               />
@@ -413,7 +438,11 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
               <Button
                 text={t.applications.editor.actions.update}
                 onClick={onUpdate}
-                disabled={submitting || !verified}
+                disabled={
+                  submitting ||
+                  !verified ||
+                  (hasOtherGuardian && !allowOtherGuardianAccess)
+                }
                 primary
                 data-qa="save-btn"
               />

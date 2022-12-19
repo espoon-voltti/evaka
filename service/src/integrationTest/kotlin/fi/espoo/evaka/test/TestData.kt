@@ -58,6 +58,7 @@ private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: 
         transferApplication = false,
         additionalDaycareApplication = false,
         hideFromGuardian = false,
+        allowOtherGuardianAccess = true,
         attachments = listOf(),
         form =
             ApplicationForm(
@@ -124,7 +125,7 @@ private fun applicationDetails(vararg preferredUnits: PreferredUnit, shiftCare: 
                     ),
                 maxFeeAccepted = false,
                 otherInfo = "other info",
-                clubDetails = null
+                clubDetails = null,
             )
     )
 
@@ -150,6 +151,7 @@ val validPreschoolApplication =
         transferApplication = false,
         additionalDaycareApplication = false,
         hideFromGuardian = false,
+        allowOtherGuardianAccess = true,
         attachments = listOf(),
         form =
             ApplicationForm(
@@ -243,6 +245,7 @@ val validClubApplication =
         transferApplication = false,
         additionalDaycareApplication = false,
         hideFromGuardian = false,
+        allowOtherGuardianAccess = true,
         attachments = listOf(),
         form =
             ApplicationForm(
