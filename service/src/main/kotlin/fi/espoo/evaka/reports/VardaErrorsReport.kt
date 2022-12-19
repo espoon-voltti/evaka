@@ -50,7 +50,7 @@ SELECT
     sno.name_fi as service_need_option_name,
     vsn.evaka_child_id AS child_id,
     vsn.updated,
-    CASE WHEN vrc.reset_timestamp IS NULL THEN vrc.created ELSE vsn.created END AS created,
+    CASE WHEN vrc.reset_timestamp IS NULL THEN vrc.updated ELSE vsn.created END AS created,
     vsn.errors,
     vrc.reset_timestamp
 FROM varda_service_need vsn
