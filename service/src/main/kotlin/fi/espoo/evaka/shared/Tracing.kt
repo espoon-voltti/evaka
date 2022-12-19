@@ -52,3 +52,6 @@ inline fun <T> Tracer.withSpan(
         buildSpan(operationName).let { tags.fold(it) { span, tag -> span.withTag(tag) } }.start(),
         f
     )
+
+// Generates a random 64-bit tracing ID in hex format
+fun randomTracingId(): String = "%016x".format(UUID.randomUUID().leastSignificantBits)
