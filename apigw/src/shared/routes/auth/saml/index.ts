@@ -148,34 +148,20 @@ function createLogoutHandler({
       req,
       'Logout endpoint called'
     )
-    const logout = strategy.logout
-    if (logout && req.user) {
-      try {
-        const redirectUrl = await fromCallback<string | null>((cb) =>
-          logout(req as RequestWithUser, cb)
-        )
-        logDebug('Logging user out from passport.', req)
-        await logoutExpress(req, res, sessionType)
-        if (redirectUrl) {
-          res.redirect(redirectUrl)
-        }
-      } catch (err) {
-        logAuditEvent(
-          `evaka.saml.${strategyName}.sign_out_failed`,
-          req,
-          `Log out failed. Description: Failed before redirecting user to IdP. Error: ${err}.`
-        )
-        throw err
-      }
-    } else {
-      logAuditEvent(
-        `evaka.saml.${strategyName}.sign_out`,
-        req,
-        'User signed out'
+    try {
+      const redirectUrl = await fromCallback<string | null>((cb) =>
+        strategy.logout(req as RequestWithUser, cb)
       )
       logDebug('Logging user out from passport.', req)
       await logoutExpress(req, res, sessionType)
-      res.redirect(getRedirectUrl(req))
+      res.redirect(redirectUrl ?? getDefaultPageUrl(req))
+    } catch (err) {
+      logAuditEvent(
+        `evaka.saml.${strategyName}.sign_out_failed`,
+        req,
+        `Log out failed. Description: Failed before redirecting user to IdP. Error: ${err}.`
+      )
+      throw err
     }
   })
 }
