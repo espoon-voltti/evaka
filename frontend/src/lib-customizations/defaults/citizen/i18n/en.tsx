@@ -855,10 +855,7 @@ const en: Translations = {
               <P>
                 If your child needs early childhood education as of 1 August
                 2023 before pre-primary education starts, please take this into
-                account when selecting the desired starting date. If your child
-                needs early childhood education only after pre-primary education
-                has started, please enter the start date under “Other additional
-                information” on the application.
+                account when selecting the desired starting date.
               </P>
               <P>
                 When applying for a service voucher unit, apply for a service
