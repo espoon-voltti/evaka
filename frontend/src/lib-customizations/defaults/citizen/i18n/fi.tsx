@@ -819,9 +819,7 @@ export default {
               <P>
                 Jos tarvitset varhaiskasvatusta 1.8.2023 lähtien ennen
                 esiopetuksen alkua huomioi tämä toivotun aloituspäivämäärän
-                valinnassa. Mikäli lapsen liittyvän varhaiskasvatuksen tarve on
-                myöhemmin kuin esiopetus alkaa, kirjoita aloituspäivämäärä
-                hakemuksen &quot;Muut lisätiedot&quot; –kohtaan.
+                valinnassa.
               </P>
               <P>
                 Palveluseteliyksiköhin haettaessa, liittyvän varhaiskasvatuksen

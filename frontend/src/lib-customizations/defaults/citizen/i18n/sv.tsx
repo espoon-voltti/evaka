@@ -829,9 +829,7 @@ const sv: Translations = {
               <P>
                 Om du behöver småbarnspedagogik från och med den 1 augusti 2023
                 innan förskolan börjar, beakta detta när du väljer önskat
-                startdatum. Om barnets behov av småbarnspedagogik i samband med
-                förskolan börjar senare än förskolan, skriv startdatumet i
-                ”Andra kompletterande uppgifter” i ansökan.
+                startdatum.
               </P>
               <P>
                 När du söker till en servicesedelenhet, ansök om servicesedeln
