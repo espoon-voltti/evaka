@@ -4,6 +4,7 @@
 
 package fi.espoo.evaka.shared.async
 
+import fi.espoo.evaka.shared.Tracing
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
@@ -12,6 +13,7 @@ import fi.espoo.evaka.shared.randomTracingId
 import fi.espoo.voltti.logging.MdcKey
 import fi.espoo.voltti.logging.loggers.error
 import fi.espoo.voltti.logging.loggers.info
+import io.opentracing.Tracer
 import java.lang.reflect.UndeclaredThrowableException
 import java.time.Duration
 import java.time.Instant
@@ -49,7 +51,8 @@ data class AsyncJobRunnerConfig(
 class AsyncJobRunner<T : AsyncJobPayload>(
     val payloadType: KClass<T>,
     private val jdbi: Jdbi,
-    private val config: AsyncJobRunnerConfig
+    private val config: AsyncJobRunnerConfig,
+    private val tracer: Tracer
 ) : AutoCloseable {
     private val logger =
         KotlinLogging.logger("${AsyncJobRunner::class.qualifiedName}.${payloadType.simpleName}")
@@ -188,8 +191,10 @@ class AsyncJobRunner<T : AsyncJobPayload>(
                 "remainingAttempts" to job.remainingAttempts
             )
         try {
-            MdcKey.TRACE_ID.set(randomTracingId())
+            val traceId = randomTracingId()
+            MdcKey.TRACE_ID.set(traceId)
             MdcKey.SPAN_ID.set(randomTracingId())
+            tracer.activeSpan()?.setTag(Tracing.evakaTraceId, traceId)
             logger.info(logMeta) { "Running async job $job" }
             val completed =
                 db.transaction { tx ->
