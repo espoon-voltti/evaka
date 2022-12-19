@@ -156,4 +156,9 @@ export default class CitizenHeader {
   async assertNoChildrenTab() {
     await this.#childrenNav.waitUntilHidden()
   }
+
+  async logout() {
+    await this.#subNavMenu.click()
+    await this.page.findByDataQa(`sub-nav-menu-logout`).click()
+  }
 }

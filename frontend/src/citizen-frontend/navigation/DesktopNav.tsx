@@ -377,7 +377,7 @@ const SubNavigationMenu = React.memo(function SubNavigationMenu({
             )}
           </DropDownLink>
           <DropDownLocalLink
-            key="sub-nav-menu-logout"
+            data-qa="sub-nav-menu-logout"
             href={getLogoutUri(user)}
           >
             {t.header.logout}
