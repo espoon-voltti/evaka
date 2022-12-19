@@ -11,7 +11,7 @@ import passport from 'passport'
 export interface SamlEndpointConfig {
   strategyName: string
   strategy: passport.Strategy & {
-    logout?: passportSaml.Strategy['logout']
+    logout: passportSaml.Strategy['logout']
   }
   samlConfig: SamlConfig
   sessionType: SessionType
