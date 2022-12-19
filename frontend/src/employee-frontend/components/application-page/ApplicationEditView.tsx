@@ -108,7 +108,6 @@ export default React.memo(function ApplicationEditView({
         preparatory
       },
       otherInfo,
-      maxFeeAccepted,
       clubDetails
     },
     childId,
@@ -1122,21 +1121,6 @@ export default React.memo(function ApplicationEditView({
             </>
           )}
         </ListGrid>
-
-        {type !== 'CLUB' && (
-          <>
-            <Gap />
-            <Checkbox
-              label={i18n.application.additionalInfo.maxFeeAccepted}
-              checked={maxFeeAccepted}
-              onChange={(value) =>
-                setApplication(set('form.maxFeeAccepted', value))
-              }
-              data-qa="checkbox-maxFeeAccepted"
-              disabled={application.origin !== 'PAPER'}
-            />
-          </>
-        )}
       </CollapsibleSection>
 
       <ApplicationStatusSection

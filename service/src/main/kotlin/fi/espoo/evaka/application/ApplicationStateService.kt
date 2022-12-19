@@ -39,12 +39,6 @@ import fi.espoo.evaka.decision.markApplicationDecisionsSent
 import fi.espoo.evaka.decision.markDecisionAccepted
 import fi.espoo.evaka.decision.markDecisionRejected
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.invoicing.controller.validateIncome
-import fi.espoo.evaka.invoicing.data.getIncomesForPerson
-import fi.espoo.evaka.invoicing.data.splitEarlierIncome
-import fi.espoo.evaka.invoicing.data.upsertIncome
-import fi.espoo.evaka.invoicing.domain.Income
-import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
@@ -66,14 +60,12 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.FeatureConfig
-import fi.espoo.evaka.shared.IncomeId
 import fi.espoo.evaka.shared.PlacementPlanId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
@@ -81,7 +73,6 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
-import java.util.UUID
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -759,8 +750,6 @@ class ApplicationStateService(
         placementPlanService.softDeleteUnusedPlacementPlanByApplication(tx, applicationId)
 
         if (application.status == WAITING_CONFIRMATION) {
-            if (application.form.maxFeeAccepted)
-                setHighestFeeForUser(tx, clock, application, requestedStartDate)
             tx.updateApplicationStatus(application.id, ACTIVE)
         }
         Audit.DecisionAccept.log(
@@ -1171,50 +1160,4 @@ class ApplicationStateService(
         !residenceCode1.isNullOrBlank() &&
             !residenceCode2.isNullOrBlank() &&
             residenceCode1 == residenceCode2
-
-    private fun setHighestFeeForUser(
-        tx: Database.Transaction,
-        clock: EvakaClock,
-        application: ApplicationDetails,
-        validFrom: LocalDate
-    ) {
-        val incomes = tx.getIncomesForPerson(mapper, incomeTypesProvider, application.guardianId)
-
-        val hasOverlappingDefiniteIncome =
-            incomes.any { income ->
-                income.validTo != null &&
-                    DateRange(income.validFrom, income.validTo).overlaps(DateRange(validFrom, null))
-            }
-
-        val hasLaterIncome =
-            incomes.any { income -> income.validFrom.plusDays(1).isAfter(validFrom) }
-
-        if (hasOverlappingDefiniteIncome || hasLaterIncome) {
-            logger.debug {
-                "Could not add a new max fee accepted income from application ${application.id}"
-            }
-        } else {
-            val period = DateRange(start = validFrom, end = null)
-            val incomeTypes = incomeTypesProvider.get()
-            val validIncome =
-                Income(
-                        id = IncomeId(UUID.randomUUID()),
-                        data = mapOf(),
-                        effect = IncomeEffect.MAX_FEE_ACCEPTED,
-                        notes = "",
-                        personId = application.guardianId,
-                        validFrom = validFrom,
-                        validTo = null,
-                        applicationId = application.id
-                    )
-                    .let { validateIncome(it, incomeTypes) }
-            tx.splitEarlierIncome(validIncome.personId, period)
-            tx.upsertIncome(clock, mapper, validIncome, EvakaUserId(application.guardianId.raw))
-            asyncJobRunner.plan(
-                tx,
-                listOf(AsyncJob.GenerateFinanceDecisions.forAdult(validIncome.personId, period)),
-                runAt = clock.now()
-            )
-        }
-    }
 }
