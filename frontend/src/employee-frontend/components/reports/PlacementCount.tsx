@@ -158,9 +158,8 @@ export default React.memo(function PlacementCount() {
         ...areaResult.daycareResults.map((daycareResult) => {
           return {
             ...daycareResult,
-            calculatedPlacements: daycareResult.calculatedPlacements
-              .toString()
-              .replace('.', ','),
+            calculatedPlacements:
+              daycareResult.calculatedPlacements.toLocaleString('fi-FI'),
             areaName: areaResult.areaName
           }
         }),
@@ -170,9 +169,8 @@ export default React.memo(function PlacementCount() {
           placementCount: areaResult.placementCount,
           placementCountUnder3v: areaResult.placementCountUnder3v,
           placementCount3vAndOver: areaResult.placementCount3vAndOver,
-          calculatedPlacements: areaResult.calculatedPlacements
-            .toString()
-            .replace('.', ',')
+          calculatedPlacements:
+            areaResult.calculatedPlacements.toLocaleString('fi-FI')
         }
       ]
     })
@@ -186,9 +184,8 @@ export default React.memo(function PlacementCount() {
             placementCount: filteredTotals.placementCount,
             placementCountUnder3v: filteredTotals.placementCountUnder3v,
             placementCount3vAndOver: filteredTotals.placementCount3vAndOver,
-            calculatedPlacements: filteredTotals.calculatedPlacements
-              .toString()
-              .replace('.', ',')
+            calculatedPlacements:
+              filteredTotals.calculatedPlacements.toLocaleString('fi-FI')
           }
         ]
       : []
