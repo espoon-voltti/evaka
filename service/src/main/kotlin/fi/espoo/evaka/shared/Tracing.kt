@@ -10,6 +10,7 @@ import io.opentracing.Span
 import io.opentracing.Tracer
 import io.opentracing.Tracer.SpanBuilder
 import io.opentracing.tag.AbstractTag
+import io.opentracing.tag.IntTag
 import io.opentracing.tag.StringTag
 import io.opentracing.tag.Tag
 import io.opentracing.tag.Tags
@@ -20,6 +21,8 @@ object Tracing {
     val actionClass = ToStringTag<Class<out Any>>("actionclass")
     val enduserIdHash = ToStringTag<HashCode>("enduser.idhash")
     val evakaTraceId = StringTag("evaka.traceid")
+    val asyncJobId = ToStringTag<UUID>("asyncjob.id")
+    val asyncJobRemainingAttempts = IntTag("asyncjob.remainingattempts")
 }
 
 @Suppress("NOTHING_TO_INLINE")
@@ -53,6 +56,19 @@ inline fun <T> Tracer.withSpan(
 ): T =
     withSpan(
         buildSpan(operationName).let { tags.fold(it) { span, tag -> span.withTag(tag) } }.start(),
+        f
+    )
+
+inline fun <T> Tracer.withDetachedSpan(
+    operationName: String,
+    vararg tags: TagValue<*>,
+    crossinline f: () -> T
+): T =
+    withSpan(
+        buildSpan(operationName)
+            .ignoreActiveSpan()
+            .let { tags.fold(it) { span, tag -> span.withTag(tag) } }
+            .start(),
         f
     )
 

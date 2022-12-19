@@ -10,6 +10,8 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.randomTracingId
+import fi.espoo.evaka.shared.withDetachedSpan
+import fi.espoo.evaka.shared.withValue
 import fi.espoo.voltti.logging.MdcKey
 import fi.espoo.voltti.logging.loggers.error
 import fi.espoo.voltti.logging.loggers.info
@@ -54,8 +56,8 @@ class AsyncJobRunner<T : AsyncJobPayload>(
     private val config: AsyncJobRunnerConfig,
     private val tracer: Tracer
 ) : AutoCloseable {
-    private val logger =
-        KotlinLogging.logger("${AsyncJobRunner::class.qualifiedName}.${payloadType.simpleName}")
+    private val runnerName = "${AsyncJobRunner::class.qualifiedName}.${payloadType.simpleName}"
+    private val logger = KotlinLogging.logger(runnerName)
 
     private val executor: ScheduledThreadPoolExecutor =
         ScheduledThreadPoolExecutor(
@@ -130,7 +132,11 @@ class AsyncJobRunner<T : AsyncJobPayload>(
     fun start(pollingInterval: Duration) {
         val newRunner =
             this.executor.scheduleWithFixedDelay(
-                { this.runPendingJobs(RealEvakaClock()) },
+                {
+                    tracer.withDetachedSpan("asyncjob.poll $runnerName") {
+                        this.runPendingJobs(RealEvakaClock())
+                    }
+                },
                 0,
                 pollingInterval.toNanos(),
                 TimeUnit.NANOSECONDS
@@ -140,12 +146,22 @@ class AsyncJobRunner<T : AsyncJobPayload>(
 
     fun wakeUp() {
         if (isStarted) {
-            executor.execute { this.runPendingJobs(RealEvakaClock()) }
+            executor.execute {
+                tracer.withDetachedSpan("asyncjob.wakeup $runnerName") {
+                    this.runPendingJobs(RealEvakaClock())
+                }
+            }
         }
     }
 
     fun runPendingJobsSync(clock: EvakaClock, maxCount: Int = 1_000) {
-        this.executor.submit { this.runPendingJobs(clock, maxCount) }.get()
+        this.executor
+            .submit {
+                tracer.withDetachedSpan("asyncjob.sync $runnerName") {
+                    this.runPendingJobs(clock, maxCount)
+                }
+            }
+            .get()
     }
 
     fun getPendingJobCount(): Int =
@@ -168,7 +184,13 @@ class AsyncJobRunner<T : AsyncJobPayload>(
                 do {
                     val job = db.transaction { it.claimJob(clock.now(), handlers.keys) }
                     if (job != null) {
-                        runPendingJob(db, clock, job)
+                        tracer.withDetachedSpan(
+                            "asyncjob.run ${job.jobType.name}",
+                            Tracing.asyncJobId withValue job.jobId,
+                            Tracing.asyncJobRemainingAttempts withValue job.remainingAttempts,
+                        ) {
+                            runPendingJob(db, clock, job)
+                        }
                     }
                     remaining -= 1
                     config.throttleInterval?.toMillis()?.run { Thread.sleep(this) }
@@ -206,6 +228,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
                         msg.user?.let {
                             MdcKey.USER_ID.set(it.rawId().toString())
                             MdcKey.USER_ID_HASH.set(it.rawIdHash.toString())
+                            tracer.activeSpan()?.setTag(Tracing.enduserIdHash, it.rawIdHash)
                         }
                         registration.run(Database(jdbi), clock, msg)
                         tx.completeJob(job, clock.now())
