@@ -8,7 +8,6 @@ import { Link } from 'react-router-dom'
 import { formatDateOrTime } from 'lib-common/date'
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
 import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
-import IconButton from 'lib-components/atoms/buttons/IconButton'
 import {
   FixedSpaceColumn,
   FixedSpaceRow
@@ -16,11 +15,11 @@ import {
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import {
   Container,
+  DeleteThreadButton,
   Header,
   TitleAndDate,
   Truncated
 } from 'lib-components/molecules/ThreadListItem'
-import { faTrash } from 'lib-icons'
 
 import { getAttachmentUrl } from '../attachments'
 import { useTranslation } from '../localization'
@@ -59,20 +58,20 @@ export default React.memo(function ThreadListItem({
       isRead={!hasUnreadMessages}
       active={active}
       onClick={onClick}
+      onKeyDown={(e) => e.key === 'Enter' && onClick()}
       data-qa="thread-list-item"
       tabIndex={0}
     >
       <FixedSpaceColumn>
         <Header isRead={!hasUnreadMessages}>
           <Truncated data-qa="message-participants">
+            <ScreenReaderOnly>Osallistujat:</ScreenReaderOnly>
             {participants.join(', ')}
           </Truncated>
           <FixedSpaceRow>
-            <IconButton
-              icon={faTrash}
+            <DeleteThreadButton
               aria-label={i18n.common.delete}
               data-qa="delete-thread-btn"
-              className="delete-btn"
               onClick={handleDelete}
             />
             <MessageCharacteristics
@@ -88,12 +87,19 @@ export default React.memo(function ThreadListItem({
           </Link>
         </ScreenReaderOnly>
         <TitleAndDate isRead={!hasUnreadMessages}>
-          <Truncated>{thread.title}</Truncated>
-          <time dateTime={lastMessage.sentAt.formatIso()}>
-            {formatDateOrTime(lastMessage.sentAt)}
-          </time>
+          <Truncated>
+            <ScreenReaderOnly>Aihe:</ScreenReaderOnly>
+            {thread.title}
+          </Truncated>
+          <div>
+            <ScreenReaderOnly>Lähetetty:</ScreenReaderOnly>
+            <time dateTime={lastMessage.sentAt.formatIso()}>
+              {formatDateOrTime(lastMessage.sentAt)}
+            </time>
+          </div>
         </TitleAndDate>
         <Truncated>
+          <ScreenReaderOnly>Viesti:</ScreenReaderOnly>
           {lastMessage.content
             .substring(0, 200)
             .replace(new RegExp('\\n', 'g'), ' ')}

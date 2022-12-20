@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import React, { useCallback, useContext, useState } from 'react'
 import styled from 'styled-components'
 
 import { MessageThread } from 'lib-common/generated/api-types/messaging'
@@ -33,21 +32,20 @@ const hasUnreadMessages = (thread: MessageThread, accountId: UUID) =>
 
 interface Props {
   accountId: UUID
+  selectThread: (threadId: UUID | undefined) => void
   setEditorVisible: (value: boolean) => void
   newMessageButtonEnabled: boolean
 }
 
 export default React.memo(function ThreadList({
   accountId,
+  selectThread,
   setEditorVisible,
   newMessageButtonEnabled
 }: Props) {
-  const navigate = useNavigate()
-  const params = useParams<{ threadId: UUID | undefined }>()
   const t = useTranslation()
   const {
     selectedThread,
-    setSelectedThread,
     threads,
     threadLoadingResult,
     loadMoreThreads,
@@ -55,21 +53,6 @@ export default React.memo(function ThreadList({
     refreshUnreadMessagesCount
   } = useContext(MessageContext)
   const [confirmDelete, setConfirmDelete] = useState<UUID>()
-
-  useEffect(() => {
-    setSelectedThread(params.threadId)
-  }, [setSelectedThread, params.threadId])
-
-  const selectThread = useCallback(
-    (threadId: UUID | undefined) => {
-      if (!threadId) {
-        navigate('/messages')
-      } else {
-        navigate(`/messages/${threadId}`)
-      }
-    },
-    [navigate]
-  )
 
   const refreshEverything = useCallback(() => {
     refreshThreads()

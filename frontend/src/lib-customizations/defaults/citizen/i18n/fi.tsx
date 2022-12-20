@@ -362,9 +362,21 @@ export default {
       MESSAGE: 'Viesti',
       BULLETIN: 'Tiedote'
     },
-    replyToThread: 'Vastaa viestiin',
     deleteThread: 'Poista viestiketju',
     staffAnnotation: 'Henkilökunta',
+    thread: {
+      type: 'Tyyppi',
+      urgent: 'Kiireellinen',
+      children: 'Koskee lapsia',
+      title: 'Otsikko',
+      reply: 'Vastaa viestiin',
+      jumpToLastMessage: 'Siirry viimeiseen viestiin',
+      jumpToBeginning: 'Takaisin alkuun',
+      close: 'Takaisin listaan',
+      sender: 'Lähettäjä',
+      sentAt: 'Lähetetty',
+      recipients: 'Vastaanottajat'
+    },
     messageEditor: {
       newMessage: 'Uusi viesti',
       recipients: 'Vastaanottajat',

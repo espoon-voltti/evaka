@@ -363,8 +363,20 @@ const sv: Translations = {
       BULLETIN: 'Bulletin'
     },
     staffAnnotation: 'Personal',
-    replyToThread: 'Svar',
     deleteThread: 'Radera meddelandetråden',
+    thread: {
+      type: 'Meddelandetyp',
+      urgent: 'Akut',
+      children: 'Angår barn',
+      title: 'Ämne',
+      reply: 'Svar',
+      jumpToLastMessage: 'Gå till sista meddelandet',
+      jumpToBeginning: 'Gå till början',
+      close: 'Gå tillbaka till listan',
+      sender: 'Avsändare',
+      sentAt: 'Skickat',
+      recipients: 'Mottagare'
+    },
     messageEditor: {
       newMessage: 'Nytt Meddelande',
       recipients: 'Mottagare',
