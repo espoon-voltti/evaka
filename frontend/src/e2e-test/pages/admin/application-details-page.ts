@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilEqual } from '../../utils'
 import { Page, TextInput } from '../../utils/page'
 
 export default class ApplicationDetailsPage {
@@ -54,11 +53,10 @@ export default class ApplicationDetailsPage {
   }
 
   async assertNote(index: number, note: string) {
-    await waitUntilEqual(
-      () =>
-        this.#notes.nth(index).findByDataQa('application-note-content').text,
-      note
-    )
+    await this.#notes
+      .nth(index)
+      .findByDataQa('application-note-content')
+      .assertTextEquals(note)
   }
 
   async assertNoNote(index: number) {

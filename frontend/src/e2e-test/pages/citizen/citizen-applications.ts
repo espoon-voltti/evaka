@@ -55,7 +55,7 @@ export default class CitizenApplicationsPage {
         : type === 'CLUB'
         ? 'Kerhohakemus'
         : ''
-    await waitUntilEqual(() => this.#applicationTitle.text, title)
+    await this.#applicationTitle.assertTextEquals(title)
 
     return new CitizenApplicationEditor(this.page)
   }
@@ -85,7 +85,7 @@ export default class CitizenApplicationsPage {
   }
 
   async assertChildIsShown(childId: string, childName: string) {
-    await waitUntilEqual(() => this.#childTitle(childId).text, childName)
+    await this.#childTitle(childId).assertTextEquals(childName)
   }
 
   async assertApplicationIsListed(
@@ -95,14 +95,13 @@ export default class CitizenApplicationsPage {
     preferredStartDate: string,
     status: string
   ) {
-    await waitUntilEqual(() => this.#applicationType(id).text, title)
-    await waitUntilEqual(() => this.#applicationUnit(id).text, unitName)
-    await waitUntilEqual(
-      () => this.#applicationPreferredStartDate(id).text,
+    await this.#applicationType(id).assertTextEquals(title)
+    await this.#applicationUnit(id).assertTextEquals(unitName)
+    await this.#applicationPreferredStartDate(id).assertTextEquals(
       preferredStartDate
     )
     await waitUntilTrue(async () =>
-      (await this.#applicationStatus(id).text)
+      (await this.#applicationStatus(id).innerText)
         .toLowerCase()
         .includes(status.toLowerCase())
     )
@@ -305,10 +304,9 @@ class CitizenApplicationEditor {
 
   async assertChildAddress(fullAddress: string) {
     await this.openSection('contactInfo')
-    await waitUntilEqual(
-      () => this.page.find('[data-qa="child-street-address"]').text,
-      fullAddress
-    )
+    await this.page
+      .find('[data-qa="child-street-address"]')
+      .assertTextEquals(fullAddress)
   }
 
   async setPreferredStartDate(formattedDate: string) {
@@ -328,7 +326,7 @@ class CitizenApplicationEditor {
       await this.#preferredStartDateInfo.waitUntilHidden()
       return
     }
-    await waitUntilEqual(() => this.#preferredStartDateInfo.text, infoText)
+    await this.#preferredStartDateInfo.assertTextEquals(infoText)
   }
 
   async markApplicationUrgentAndAddAttachment(attachmentFilePath: string) {

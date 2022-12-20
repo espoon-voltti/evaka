@@ -4,7 +4,7 @@
 
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 
-import { waitUntilEqual, waitUntilTrue } from '../../utils'
+import { waitUntilTrue } from '../../utils'
 import { Checkbox, Page } from '../../utils/page'
 import ApplicationListView from '../employee/applications/application-list-view'
 import { PlacementDraftPage } from '../employee/placement-draft-page'
@@ -189,23 +189,21 @@ export class ApplicationWorkbenchPage {
   }
 
   async assertContactDetails(expectedTel: string, expectedEmail: string) {
-    await waitUntilEqual(() => this.#otherGuardianTel.text, expectedTel)
-    await waitUntilEqual(() => this.#otherGuardianEmail.text, expectedEmail)
+    await this.#otherGuardianTel.assertTextEquals(expectedTel)
+    await this.#otherGuardianEmail.assertTextEquals(expectedEmail)
   }
 
   async assertDecisionGuardians(
     expectedGuardian: string,
     expectedOtherGuardian?: string
   ) {
-    await waitUntilEqual(
-      () => this.page.findByDataQa('guardian-name').text,
-      expectedGuardian
-    )
+    await this.page
+      .findByDataQa('guardian-name')
+      .assertTextEquals(expectedGuardian)
     if (expectedOtherGuardian !== undefined) {
-      await waitUntilEqual(
-        () => this.page.findByDataQa('other-guardian-name').text,
-        expectedOtherGuardian
-      )
+      await this.page
+        .findByDataQa('other-guardian-name')
+        .assertTextEquals(expectedOtherGuardian)
     }
   }
 }

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 
 export default class AssistanceNeedDecisionPage {
@@ -22,7 +21,7 @@ export default class AssistanceNeedDecisionPage {
       .waitUntilVisible()
   readonly structuralMotivationDescription = this.page.findByDataQa(
     'structural-motivation-description'
-  ).text
+  )
   readonly careMotivation = this.getLabelledValue('care-motivation')
   readonly assertServiceOption = (opt: string) =>
     this.page
@@ -30,13 +29,9 @@ export default class AssistanceNeedDecisionPage {
       .findByDataQa(`list-option-${opt}`)
       .waitUntilVisible()
   readonly guardiansHeardOn = this.getLabelledValue('guardians-heard-at')
-  readonly heardGuardian = (id: string) =>
-    this.page
-      .findByDataQa('guardians-heard-section')
-      .findByDataQa(`guardian-${id}`).text
   readonly otherRepresentativeDetails = this.page.findByDataQa(
     'other-representative-details'
-  ).text
+  )
   readonly viewOfGuardians = this.getLabelledValue('view-of-the-guardians')
   readonly futureLevelOfAssistance = this.getLabelledValue(
     'future-level-of-assistance'
@@ -48,13 +43,4 @@ export default class AssistanceNeedDecisionPage {
   )
   readonly preparedBy1 = this.getLabelledValue('prepared-by-1')
   readonly decisionMaker = this.getLabelledValue('decision-maker')
-
-  readonly sendDecisionButton = this.page.findByDataQa('send-decision')
-  get decisionSentAt() {
-    return this.page.findByDataQa('decision-sent-at')
-  }
-
-  async assertPageTitle(title: string): Promise<void> {
-    await waitUntilEqual(() => this.page.findByDataQa('page-title').text, title)
-  }
 }

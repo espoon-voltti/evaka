@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilEqual, waitUntilTrue } from '../../utils'
+import { waitUntilTrue } from '../../utils'
 import { Page, TextInput } from '../../utils/page'
 
 export default class CitizenMessagesPage {
@@ -42,8 +42,8 @@ export default class CitizenMessagesPage {
     urgent?: boolean
   }) {
     await this.#threadListItem.click()
-    await waitUntilEqual(() => this.#threadTitle.text, message.title)
-    await waitUntilEqual(() => this.#threadContent.elem().text, message.content)
+    await this.#threadTitle.assertTextEquals(message.title)
+    await this.#threadContent.only().assertTextEquals(message.content)
     if (message.urgent ?? false) {
       await this.#threadUrgent.waitUntilVisible()
     } else {
@@ -81,7 +81,7 @@ export default class CitizenMessagesPage {
   }
 
   async assertReplyContentIsEmpty() {
-    return waitUntilEqual(() => this.#messageReplyContent.text, '')
+    return this.#messageReplyContent.assertTextEquals('')
   }
 
   async replyToFirstThread(content: string) {

@@ -60,10 +60,9 @@ export default class CitizenCalendarPage {
   }
 
   async assertEventCount(date: LocalDate, count: number) {
-    await waitUntilEqual(
-      () => this.#dayCell(date).findByDataQa('event-count').text,
-      count.toString()
-    )
+    await this.#dayCell(date)
+      .findByDataQa('event-count')
+      .assertTextEquals(count.toString())
   }
 
   async openReservationsModal() {
@@ -133,16 +132,17 @@ export default class CitizenCalendarPage {
           .find(`[data-qa="child-image"][data-qa-child-id="${childId}"]`)
           .waitUntilVisible()
       }
-      await waitUntilEqual(
-        () => row.findByDataQa('reservation-text').text,
-        'absence' in reservation
-          ? 'Poissa'
-          : 'freeAbsence' in reservation
-          ? 'Maksuton poissaolo'
-          : 'missing' in reservation
-          ? 'Ilmoitus puuttuu'
-          : `${reservation.startTime}–${reservation.endTime}`
-      )
+      await row
+        .findByDataQa('reservation-text')
+        .assertTextEquals(
+          'absence' in reservation
+            ? 'Poissa'
+            : 'freeAbsence' in reservation
+            ? 'Maksuton poissaolo'
+            : 'missing' in reservation
+            ? 'Ilmoitus puuttuu'
+            : `${reservation.startTime}–${reservation.endTime}`
+        )
     }
   }
 
@@ -363,17 +363,15 @@ class DayView extends Element {
   }
 
   async assertReservations(childId: UUID, value: string) {
-    await waitUntilEqual(
-      () => this.#childSection(childId).findByDataQa('reservations').text,
-      value
-    )
+    await this.#childSection(childId)
+      .findByDataQa('reservations')
+      .assertTextEquals(value)
   }
 
   async assertAbsence(childId: UUID, value: string) {
-    await waitUntilEqual(
-      () => this.#childSection(childId).findByDataQa('absence').text,
-      value
-    )
+    await this.#childSection(childId)
+      .findByDataQa('absence')
+      .assertTextEquals(value)
   }
 
   async assertNoActivePlacementsMsgVisible() {
@@ -400,11 +398,8 @@ class DayView extends Element {
     { title, description }: { title: string; description: string }
   ) {
     const event = this.#childSection(childId).findByDataQa(`event-${eventId}`)
-    await waitUntilEqual(() => event.findByDataQa('event-title').text, title)
-    await waitUntilEqual(
-      () => event.findByDataQa('event-description').text,
-      description
-    )
+    await event.findByDataQa('event-title').assertTextEquals(title)
+    await event.findByDataQa('event-description').assertTextEquals(description)
   }
 }
 

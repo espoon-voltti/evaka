@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
-import { Page, Checkbox, Select, TextInput } from '../../utils/page'
+import { waitUntilFalse, waitUntilTrue } from '../../utils'
+import { Checkbox, Page, Select, TextInput } from '../../utils/page'
 
 export default class CitizenPersonalDetails {
   constructor(private readonly page: Page) {}
@@ -81,14 +81,12 @@ export default class CitizenPersonalDetails {
     backupPhone: string
     email: string | null
   }) {
-    await waitUntilEqual(() => this.#preferredName.text, data.preferredName)
-    await waitUntilEqual(
-      () => this.#phone.text,
+    await this.#preferredName.assertTextEquals(data.preferredName)
+    await this.#phone.assertTextEquals(
       data.phone === null ? 'Puhelinnumerosi puuttuu' : data.phone
     )
-    await waitUntilEqual(() => this.#backupPhone.text, data.backupPhone)
-    await waitUntilEqual(
-      () => this.#email.text,
+    await this.#backupPhone.assertTextEquals(data.backupPhone)
+    await this.#email.assertTextEquals(
       data.email === null ? 'Sähköpostiosoite puuttuu' : data.email
     )
   }

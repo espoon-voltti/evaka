@@ -9,6 +9,7 @@ import { AsyncButton, Page, Radio, TextInput } from '../../utils/page'
 
 export class CitizenChildPage {
   constructor(private readonly page: Page) {}
+
   #placements = this.page.findAllByDataQa('placement')
   #terminatedPlacements = this.page.findAllByDataQa('terminated-placement')
 
@@ -93,13 +94,10 @@ export class CitizenChildPage {
   }
 
   async assertUnconsentedCount(count: number) {
-    await waitUntilEqual(
-      () =>
-        this.page
-          .findByDataQa('collapsible-consents')
-          .findByDataQa('count-indicator').text,
-      count.toString()
-    )
+    await this.page
+      .findByDataQa('collapsible-consents')
+      .findByDataQa('count-indicator')
+      .assertTextEquals(count.toString())
   }
 
   readonly #vasuRowStateChip = (vasuId: string) =>
@@ -115,14 +113,8 @@ export class CitizenChildPage {
     expectedStatus: string,
     expectedPublishedAt: string
   ) {
-    await waitUntilEqual(
-      () => this.#vasuRowStateChip(vasuId).text,
-      expectedStatus
-    )
-    await waitUntilEqual(
-      () => this.#vasuRowPublishedAt(vasuId).text,
-      expectedPublishedAt
-    )
+    await this.#vasuRowStateChip(vasuId).assertTextEquals(expectedStatus)
+    await this.#vasuRowPublishedAt(vasuId).assertTextEquals(expectedPublishedAt)
   }
 
   async openVasu(vasuId: string) {

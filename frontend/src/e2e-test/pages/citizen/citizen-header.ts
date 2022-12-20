@@ -127,8 +127,7 @@ export default class CitizenHeader {
   async assertUnreadChildrenCount(expectedCount: number) {
     await this.#childrenNav.waitUntilVisible()
     expectedCount != 0
-      ? await waitUntilEqual(
-          () => this.#unreadChildrenCount.text,
+      ? await this.#unreadChildrenCount.assertTextEquals(
           expectedCount.toString()
         )
       : await waitUntilFalse(() => this.#unreadChildrenCount.visible)

@@ -126,7 +126,7 @@ export class ElementCollection {
     return this.locator.evaluateAll(fn)
   }
 
-  elem() {
+  only() {
     return new Element(this.locator)
   }
 
@@ -204,6 +204,10 @@ export class Element {
 
   get textAsFloat(): Promise<number | null> {
     return this.text.then((str) => (str ? parseFloat(str) : null))
+  }
+
+  async assertTextEquals(content: string): Promise<void> {
+    await waitUntilEqual(() => this.text, content)
   }
 
   get visible(): Promise<boolean> {

@@ -363,8 +363,7 @@ describe('Citizen assistance decisions', () => {
     await assistanceNeedDecisionPage.assertStructuralMotivationOption(
       'smallerGroup'
     )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPage.structuralMotivationDescription,
+    await assistanceNeedDecisionPage.structuralMotivationDescription.assertTextEquals(
       'Structural motivation description text'
     )
     await assistanceNeedDecisionPage.assertServiceOption(
@@ -379,8 +378,7 @@ describe('Citizen assistance decisions', () => {
       () => assistanceNeedDecisionPage.guardiansHeardOn,
       '05.04.2020'
     )
-    await waitUntilEqual(
-      () => assistanceNeedDecisionPage.otherRepresentativeDetails,
+    await assistanceNeedDecisionPage.otherRepresentativeDetails.assertTextEquals(
       'John Doe, 01020304050, via phone'
     )
     await waitUntilEqual(
