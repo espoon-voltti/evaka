@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobRunnerConfig
 import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.async.VardaAsyncJob
+import io.opentracing.Tracer
 import java.time.Duration
 import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
@@ -22,23 +23,28 @@ import org.springframework.core.env.Environment
 @Configuration
 class AsyncJobConfig {
     @Bean
-    fun asyncJobRunner(jdbi: Jdbi): AsyncJobRunner<AsyncJob> =
-        AsyncJobRunner(AsyncJob::class, jdbi, AsyncJobRunnerConfig())
+    fun asyncJobRunner(jdbi: Jdbi, tracer: Tracer): AsyncJobRunner<AsyncJob> =
+        AsyncJobRunner(AsyncJob::class, jdbi, AsyncJobRunnerConfig(), tracer)
 
     @Bean
-    fun vardaAsyncJobRunner(jdbi: Jdbi): AsyncJobRunner<VardaAsyncJob> =
-        AsyncJobRunner(VardaAsyncJob::class, jdbi, AsyncJobRunnerConfig(threadPoolSize = 1))
+    fun vardaAsyncJobRunner(jdbi: Jdbi, tracer: Tracer): AsyncJobRunner<VardaAsyncJob> =
+        AsyncJobRunner(VardaAsyncJob::class, jdbi, AsyncJobRunnerConfig(threadPoolSize = 1), tracer)
 
     @Bean
-    fun sfiAsyncJobRunner(jdbi: Jdbi, env: Environment): AsyncJobRunner<SuomiFiAsyncJob> =
+    fun sfiAsyncJobRunner(
+        jdbi: Jdbi,
+        tracer: Tracer,
+        env: Environment
+    ): AsyncJobRunner<SuomiFiAsyncJob> =
         AsyncJobRunner(
             SuomiFiAsyncJob::class,
             jdbi,
             AsyncJobRunnerConfig(
                 threadPoolSize = 1,
                 throttleInterval =
-                    Duration.ofSeconds(1).takeIf { env.activeProfiles.contains("production") }
-            )
+                    Duration.ofSeconds(1).takeIf { env.activeProfiles.contains("production") },
+            ),
+            tracer
         )
 
     @Bean

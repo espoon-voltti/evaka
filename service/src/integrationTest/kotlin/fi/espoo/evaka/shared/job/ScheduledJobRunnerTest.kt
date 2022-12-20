@@ -11,6 +11,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunnerConfig
 import fi.espoo.evaka.shared.config.getTestDataSource
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.europeHelsinki
+import io.opentracing.noop.NoopTracerFactory
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalTime
@@ -35,7 +36,13 @@ class ScheduledJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun beforeEach() {
-        asyncJobRunner = AsyncJobRunner(AsyncJob::class, jdbi, AsyncJobRunnerConfig())
+        asyncJobRunner =
+            AsyncJobRunner(
+                AsyncJob::class,
+                jdbi,
+                AsyncJobRunnerConfig(),
+                NoopTracerFactory.create()
+            )
     }
 
     @Test

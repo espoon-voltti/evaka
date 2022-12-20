@@ -5,11 +5,13 @@
 package fi.espoo.evaka.shared.config
 
 import com.auth0.jwt.interfaces.JWTVerifier
+import fi.espoo.evaka.shared.Tracing
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.JwtToAuthenticatedUser
 import fi.espoo.evaka.shared.auth.getAuthenticatedUser
+import fi.espoo.evaka.shared.randomTracingId
 import fi.espoo.voltti.auth.JwtTokenDecoder
-import fi.espoo.voltti.logging.filter.BasicMdcFilter
+import fi.espoo.voltti.logging.MdcKey
 import io.opentracing.Tracer
 import javax.servlet.FilterChain
 import javax.servlet.http.HttpFilter
@@ -23,8 +25,8 @@ import org.springframework.core.env.Environment
 @Configuration
 class HttpFilterConfig {
     @Bean
-    fun basicMdcFilter() =
-        FilterRegistrationBean(BasicMdcFilter()).apply {
+    fun basicMdcFilter(tracer: Tracer) =
+        FilterRegistrationBean(BasicMdcFilter(tracer)).apply {
             setName("basicMdcFilter")
             urlPatterns = listOf("/*")
             order = Int.MIN_VALUE
@@ -91,6 +93,29 @@ class HttpFilterConfig {
                 requestURI.startsWith("/integration/") -> user is AuthenticatedUser.Integration
                 else -> true
             }
+    }
+
+    class BasicMdcFilter(private val tracer: Tracer) : HttpFilter() {
+        override fun doFilter(
+            request: HttpServletRequest,
+            response: HttpServletResponse,
+            chain: FilterChain
+        ) {
+            val (traceId, spanId) =
+                request.getHeader("x-request-id")?.let { Pair(it, randomTracingId()) }
+                    ?: randomTracingId().let { Pair(it, it) }
+            MdcKey.TRACE_ID.set(traceId)
+            tracer.activeSpan()?.setTag(Tracing.evakaTraceId, traceId)
+            MdcKey.SPAN_ID.set(spanId)
+            MdcKey.REQ_IP.set(request.getHeader("x-real-ip") ?: request.remoteAddr)
+            try {
+                chain.doFilter(request, response)
+            } finally {
+                MdcKey.REQ_IP.unset()
+                MdcKey.SPAN_ID.unset()
+                MdcKey.TRACE_ID.unset()
+            }
+        }
     }
 }
 

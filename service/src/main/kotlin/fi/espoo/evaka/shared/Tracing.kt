@@ -10,13 +10,19 @@ import io.opentracing.Span
 import io.opentracing.Tracer
 import io.opentracing.Tracer.SpanBuilder
 import io.opentracing.tag.AbstractTag
+import io.opentracing.tag.IntTag
+import io.opentracing.tag.StringTag
 import io.opentracing.tag.Tag
 import io.opentracing.tag.Tags
+import java.util.UUID
 
 object Tracing {
     val action = ToStringTag<Action>("action")
     val actionClass = ToStringTag<Class<out Any>>("actionclass")
     val enduserIdHash = ToStringTag<HashCode>("enduser.idhash")
+    val evakaTraceId = StringTag("evaka.traceid")
+    val asyncJobId = ToStringTag<UUID>("asyncjob.id")
+    val asyncJobRemainingAttempts = IntTag("asyncjob.remainingattempts")
 }
 
 @Suppress("NOTHING_TO_INLINE")
@@ -52,3 +58,19 @@ inline fun <T> Tracer.withSpan(
         buildSpan(operationName).let { tags.fold(it) { span, tag -> span.withTag(tag) } }.start(),
         f
     )
+
+inline fun <T> Tracer.withDetachedSpan(
+    operationName: String,
+    vararg tags: TagValue<*>,
+    crossinline f: () -> T
+): T =
+    withSpan(
+        buildSpan(operationName)
+            .ignoreActiveSpan()
+            .let { tags.fold(it) { span, tag -> span.withTag(tag) } }
+            .start(),
+        f
+    )
+
+// Generates a random 64-bit tracing ID in hex format
+fun randomTracingId(): String = "%016x".format(UUID.randomUUID().leastSignificantBits)

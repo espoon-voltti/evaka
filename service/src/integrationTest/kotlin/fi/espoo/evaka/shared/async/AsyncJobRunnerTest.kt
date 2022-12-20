@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.voltti.logging.MdcKey
+import io.opentracing.noop.NoopTracerFactory
 import java.time.Duration
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
@@ -46,7 +47,8 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun clean() {
-        asyncJobRunner = AsyncJobRunner(TestJob::class, jdbi, AsyncJobRunnerConfig())
+        asyncJobRunner =
+            AsyncJobRunner(TestJob::class, jdbi, AsyncJobRunnerConfig(), NoopTracerFactory.create())
         asyncJobRunner.registerHandler { _, _, msg: TestJob -> currentCallback.get()(msg) }
     }
 
@@ -74,7 +76,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
                 val traceId = MdcKey.TRACE_ID.get()
                 val spanId = MdcKey.SPAN_ID.get()
                 assertNotNull(traceId)
-                assertEquals(traceId, spanId)
+                assertNotNull(spanId)
                 assertEquals(
                     AuthenticatedUser.SystemInternalUser.rawId().toString(),
                     MdcKey.USER_ID.get()
