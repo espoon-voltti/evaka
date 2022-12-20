@@ -274,6 +274,10 @@ export class TextInput extends Element {
   get inputValue(): Promise<string> {
     return this.locator.inputValue()
   }
+
+  async assertValueEquals(expectedValue: string): Promise<void> {
+    await waitUntilEqual(() => this.inputValue, expectedValue)
+  }
 }
 
 export class DatePicker extends Element {

@@ -99,7 +99,7 @@ export class UnitDiaryPage {
 
   async assertStaffAttendance(n: number, staffCount: number) {
     const input = new TextInput(this.#staffAttendanceCells.nth(n).find('input'))
-    await waitUntilEqual(() => input.inputValue, staffCount.toString())
+    await input.assertValueEquals(staffCount.toString())
   }
 }
 

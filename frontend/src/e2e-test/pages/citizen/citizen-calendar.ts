@@ -299,8 +299,8 @@ class AbsencesModal {
   #childCheckbox = (childId: string) =>
     new Checkbox(this.page.find(`[data-qa="child-${childId}"]`))
 
-  #startDateInput = new TextInput(this.page.find('[data-qa="start-date"]'))
-  #endDateInput = new TextInput(this.page.find('[data-qa="end-date"]'))
+  startDateInput = new TextInput(this.page.find('[data-qa="start-date"]'))
+  endDateInput = new TextInput(this.page.find('[data-qa="end-date"]'))
   #absenceChip = (type: string) =>
     new Checkbox(this.page.find(`[data-qa="absence-${type}"]`))
   #modalSendButton = this.page.find('[data-qa="modal-okBtn"]')
@@ -313,9 +313,9 @@ class AbsencesModal {
   ) {
     await this.deselectChildren(3)
     await this.#childCheckbox(child.id).click()
-    await this.#startDateInput.fill(dateRange.start.format())
-    await this.#endDateInput.fill(dateRange.end.format())
-    await this.#endDateInput.press('Enter')
+    await this.startDateInput.fill(dateRange.start.format())
+    await this.endDateInput.fill(dateRange.end.format())
+    await this.endDateInput.press('Enter')
     await this.#absenceChip(absenceType).click()
 
     await this.#modalSendButton.click()
@@ -329,14 +329,6 @@ class AbsencesModal {
         .nth(i)
         .click()
     }
-  }
-
-  async assertStartDate(text: string) {
-    await waitUntilEqual(() => this.#startDateInput.inputValue, text)
-  }
-
-  async assertEndDate(text: string) {
-    await waitUntilEqual(() => this.#endDateInput.inputValue, text)
   }
 }
 

@@ -342,51 +342,20 @@ export class GroupCollapsibleChildRow extends Element {
 }
 
 export class ChildDailyNoteModal extends Modal {
-  #noteInput = new TextInput(this.find('[data-qa="note-input"]'))
-  #sleepingHoursInput = new TextInput(
+  noteInput = new TextInput(this.find('[data-qa="note-input"]'))
+  sleepingHoursInput = new TextInput(
     this.find('[data-qa="sleeping-hours-input"]')
   )
-  #sleepingMinutesInput = new TextInput(
+  sleepingMinutesInput = new TextInput(
     this.find('[data-qa="sleeping-minutes-input"]')
   )
-  #reminderNoteInput = new TextInput(
+  reminderNoteInput = new TextInput(
     this.find('[data-qa="reminder-note-input"]')
   )
-  #submit = this.find('[data-qa="btn-submit"]')
+  submitButton = this.find('[data-qa="btn-submit"]')
 
   async openTab(tab: 'child' | 'sticky' | 'group') {
     await this.find(`[data-qa="tab-${tab}"]`).click()
-  }
-
-  // Child
-  async fillNote(text: string) {
-    await this.#noteInput.fill(text)
-  }
-
-  async assertNote(expectedText: string) {
-    await waitUntilEqual(() => this.#noteInput.inputValue, expectedText)
-  }
-
-  async assertSleepingHours(expectedText: string) {
-    await waitUntilEqual(
-      () => this.#sleepingHoursInput.inputValue,
-      expectedText
-    )
-  }
-
-  async assertSleepingMinutes(expectedText: string) {
-    await waitUntilEqual(
-      () => this.#sleepingMinutesInput.inputValue,
-      expectedText
-    )
-  }
-
-  async assertReminderNote(expectedText: string) {
-    await waitUntilEqual(() => this.#reminderNoteInput.inputValue, expectedText)
-  }
-
-  async submit() {
-    await this.#submit.click()
   }
 
   // Group
