@@ -94,10 +94,6 @@ export type OtherChildFormData = {
   socialSecurityNumber: string
 }
 
-export type FeeFormData = {
-  maxFeeAccepted: boolean
-}
-
 export type AdditionalDetailsFormData = {
   otherInfo: string
   diet: string
@@ -108,7 +104,6 @@ export type ApplicationFormData = {
   serviceNeed: ServiceNeedFormData
   unitPreference: UnitPreferenceFormData
   contactInfo: ContactInfoFormData
-  fee: FeeFormData
   additionalDetails: AdditionalDetailsFormData
 }
 
@@ -274,7 +269,6 @@ export function apiDataToFormData(
       otherChildrenExists: otherChildren.length > 0,
       otherChildren
     },
-    fee: { maxFeeAccepted: application.form.maxFeeAccepted },
     additionalDetails: {
       otherInfo: application.form.otherInfo,
       diet: application.form.child.diet,
@@ -397,7 +391,7 @@ export function formDataToApiData(
       preparatory: type === 'PRESCHOOL' && form.serviceNeed.preparatory,
       urgent: type === 'DAYCARE' && form.serviceNeed.urgent
     },
-    maxFeeAccepted: form.fee.maxFeeAccepted,
+    maxFeeAccepted: false,
     otherInfo: form.additionalDetails.otherInfo,
     clubDetails:
       type === 'CLUB'

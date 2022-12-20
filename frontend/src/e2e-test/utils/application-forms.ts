@@ -40,7 +40,6 @@ export const sections = [
   'serviceNeed',
   'unitPreference',
   'contactInfo',
-  'fee',
   'additionalDetails'
 ] as const
 
@@ -130,8 +129,6 @@ export const minimalDaycareForm = ({
     assertFalse(res.form.preferences.preparatory)
     assertFalse(res.form.preferences.urgent)
 
-    assertFalse(res.form.maxFeeAccepted)
-
     assertBlank(res.form.otherInfo)
 
     assertNull(res.form.clubDetails)
@@ -200,9 +197,6 @@ export const fullDaycareForm = ({
           socialSecurityNumber: '101017A479B'
         }
       ]
-    },
-    fee: {
-      maxFeeAccepted: true
     },
     additionalDetails: {
       otherInfo: 'Olipa hakeminen helppoa!',
@@ -289,8 +283,6 @@ export const fullDaycareForm = ({
     assertFalse(res.form.preferences.preparatory)
     assertTrue(res.form.preferences.urgent)
 
-    assertTrue(res.form.maxFeeAccepted)
-
     assertEquals('Olipa hakeminen helppoa!', res.form.otherInfo)
 
     assertNull(res.form.clubDetails)
@@ -347,8 +339,6 @@ export const minimalClubForm: {
     assertNull(res.form.preferences.siblingBasis)
     assertFalse(res.form.preferences.preparatory)
     assertFalse(res.form.preferences.urgent)
-
-    assertFalse(res.form.maxFeeAccepted)
 
     assertBlank(res.form.otherInfo)
 
@@ -440,8 +430,6 @@ export const fullClubForm: {
     assertFalse(res.form.preferences.preparatory)
     assertFalse(res.form.preferences.urgent)
 
-    assertFalse(res.form.maxFeeAccepted)
-
     assertEquals('Olipa hakeminen helppoa!', res.form.otherInfo)
 
     assertTrue(res.form.clubDetails?.wasOnClubCare)
@@ -502,8 +490,6 @@ export const minimalPreschoolForm: {
     assertNull(res.form.preferences.siblingBasis)
     assertFalse(res.form.preferences.preparatory)
     assertFalse(res.form.preferences.urgent)
-
-    assertFalse(res.form.maxFeeAccepted)
 
     assertBlank(res.form.otherInfo)
 
@@ -567,9 +553,6 @@ export const fullPreschoolForm: {
           socialSecurityNumber: '250718A809H'
         }
       ]
-    },
-    fee: {
-      maxFeeAccepted: true
     },
     additionalDetails: {
       otherInfo: 'Olipa hakeminen helppoa!',
@@ -643,8 +626,6 @@ export const fullPreschoolForm: {
     assertEquals('110814A812B', res.form.preferences.siblingBasis?.siblingSsn)
     assertTrue(res.form.preferences.preparatory)
     assertFalse(res.form.preferences.urgent)
-
-    assertTrue(res.form.maxFeeAccepted)
 
     assertEquals('Olipa hakeminen helppoa!', res.form.otherInfo)
 

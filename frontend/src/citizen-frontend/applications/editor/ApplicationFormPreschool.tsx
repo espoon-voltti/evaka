@@ -15,7 +15,6 @@ import { featureFlags } from 'lib-customizations/citizen'
 
 import AdditionalDetailsSection from '../../applications/editor/AdditionalDetailsSection'
 import { ApplicationFormProps } from '../../applications/editor/ApplicationEditor'
-import FeeSection from '../../applications/editor/FeeSection'
 import Heading from '../../applications/editor/Heading'
 import ContactInfoSection from '../../applications/editor/contact-info/ContactInfoSection'
 import ServiceNeedSection from '../../applications/editor/service-need/ServiceNeedSection'
@@ -153,28 +152,6 @@ export default React.memo(function ApplicationFormPreschool({
             : 'NO'
         }
       />
-
-      {formData.serviceNeed.connectedDaycare && (
-        <FeeSection
-          applicationType={applicationType}
-          formData={formData.fee}
-          updateFormData={(data) =>
-            setFormData((old) =>
-              old
-                ? {
-                    ...old,
-                    fee: {
-                      ...old?.fee,
-                      ...data
-                    }
-                  }
-                : old
-            )
-          }
-          errors={errors.fee}
-          verificationRequested={verificationRequested}
-        />
-      )}
 
       <AdditionalDetailsSection
         formData={formData.additionalDetails}

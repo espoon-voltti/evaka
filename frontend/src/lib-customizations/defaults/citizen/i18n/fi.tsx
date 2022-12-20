@@ -465,6 +465,24 @@ export default {
                 -palveluun tai postitse, mikäli et ole ottanut Suomi.fi
                 -palvelua käyttöön.
               </P>
+              <P>
+                Kunnallisen varhaiskasvatuksen asiakasmaksut ja palvelusetelin
+                omavastuuosuus määräytyvät prosenttiosuutena perheen
+                bruttotuloista. Tulojen lisäksi maksuihin vaikuttaa perheen koko
+                ja sovittu varhaiskasvatusaika. Palveluseteliyksiköissä voidaan
+                periä lisämaksu, tiedot mahdollisesta lisämaksusta löytyy
+                yksikön nettisivuilta. Perhe toimittaa tuloselvityksen
+                bruttotuloistaan viimeistään kahden viikon kuluessa siitä, kun
+                lapsi on aloittanut varhaiskasvatuksessa.
+              </P>
+              <P>
+                Lisätietoa varhaiskasvatuksen maksuista, tuloselvityksen
+                toimittamisesta ja palvelusetelin lisämaksusta löydät täältä:{' '}
+                <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/maksut-varhaiskasvatuksessa">
+                  Maksut varhaiskasvatuksessa
+                </a>
+                .
+              </P>
               <P fitted={true}>* Tähdellä merkityt tiedot ovat pakollisia</P>
             </>
           ),

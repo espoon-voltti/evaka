@@ -252,7 +252,6 @@ export const validateApplication = (
         )
       }
     },
-    fee: {},
     additionalDetails: {}
   }
 }

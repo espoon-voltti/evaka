@@ -31,6 +31,7 @@ data class Income(
     val notes: String,
     val updatedAt: HelsinkiDateTime? = null,
     val updatedBy: String? = null,
+    // applicationId is no longer used, but left here for historical reasons
     val applicationId: ApplicationId? = null,
     @Json val attachments: List<IncomeAttachment> = listOf()
 ) {

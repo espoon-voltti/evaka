@@ -40,15 +40,6 @@ import { ApplicationResponse } from '../../types/application'
 import { formatName } from '../../utils'
 import { formatParagraphs } from '../../utils/html-utils'
 
-function YesNoValue({ value }: { value: boolean | null | undefined }) {
-  const { i18n } = useTranslation()
-  return value ? (
-    <span>{i18n.common.yes}</span>
-  ) : (
-    <Dimmed>{i18n.common.no}</Dimmed>
-  )
-}
-
 const AttachmentContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -105,7 +96,6 @@ export default React.memo(function ApplicationReadView({
           preparatory
         },
         otherInfo,
-        maxFeeAccepted,
         clubDetails
       },
       childId,
@@ -576,9 +566,6 @@ export default React.memo(function ApplicationReadView({
 
               <Label>{i18n.application.additionalInfo.diet}</Label>
               <span>{child.diet}</span>
-
-              <Label>{i18n.application.additionalInfo.maxFeeAccepted}</Label>
-              <YesNoValue value={maxFeeAccepted} />
             </>
           )}
         </ListGrid>
