@@ -238,6 +238,13 @@ export class Element {
     return this.locator.getAttribute(name)
   }
 
+  async assertAttributeEquals(
+    name: string,
+    value: string | null
+  ): Promise<void> {
+    await waitUntilEqual(() => this.getAttribute(name), value)
+  }
+
   async hasAttribute(name: string): Promise<boolean> {
     return (await this.getAttribute(name)) !== null
   }

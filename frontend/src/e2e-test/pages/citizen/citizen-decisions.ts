@@ -143,8 +143,8 @@ class CitizenDecisionResponsePage {
   }
 
   async assertDecisionCannotBeAccepted(decisionId: string) {
-    await waitUntilEqual(
-      () => this.#submitResponseButton(decisionId).getAttribute('disabled'),
+    await this.#submitResponseButton(decisionId).assertAttributeEquals(
+      'disabled',
       ''
     )
   }

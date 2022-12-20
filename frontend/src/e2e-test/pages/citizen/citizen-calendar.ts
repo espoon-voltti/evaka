@@ -157,13 +157,9 @@ export default class CitizenCalendarPage {
   }
 
   async assertHolidayCtaNotVisible(): Promise<void> {
-    await waitUntilEqual(
-      () =>
-        this.page
-          .find('[data-holiday-period-cta-status]')
-          .getAttribute('data-holiday-period-cta-status'),
-      'success'
-    )
+    await this.page
+      .find('[data-holiday-period-cta-status]')
+      .assertAttributeEquals('data-holiday-period-cta-status', 'success')
     await this.#ctas.assertCount(0)
   }
 
