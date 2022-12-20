@@ -12,7 +12,7 @@ export default class MobileMessagesPage {
 
   async getThreadTitle(index: number) {
     const titles = this.page.findAll('[data-qa="message-preview-title"]')
-    return titles.nth(index).innerText
+    return titles.nth(index).text
   }
 
   async messagesExist() {

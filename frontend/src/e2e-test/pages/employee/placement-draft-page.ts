@@ -44,19 +44,19 @@ export class PlacementDraftPage {
       '[data-qa="speculated-occupancies"]'
     )
     await waitUntilEqual(
-      () => current.find('[data-qa="3months"]').innerText,
+      () => current.find('[data-qa="3months"]').text,
       occupancies.max3Months
     )
     await waitUntilEqual(
-      () => current.find('[data-qa="6months"]').innerText,
+      () => current.find('[data-qa="6months"]').text,
       occupancies.max6Months
     )
     await waitUntilEqual(
-      () => speculated.find('[data-qa="3months"]').innerText,
+      () => speculated.find('[data-qa="3months"]').text,
       occupancies.max3MonthsSpeculated
     )
     await waitUntilEqual(
-      () => speculated.find('[data-qa="6months"]').innerText,
+      () => speculated.find('[data-qa="6months"]').text,
       occupancies.max6MonthsSpeculated
     )
   }

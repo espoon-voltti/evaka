@@ -22,10 +22,7 @@ export class IncomeStatementPage {
     expectedOtherInfo: string,
     expectedAttachmentsCount: number
   ) {
-    await waitUntilEqual(
-      () => this.#childOtherInfo.textContent,
-      expectedOtherInfo
-    )
+    await waitUntilEqual(() => this.#childOtherInfo.text, expectedOtherInfo)
     expectedAttachmentsCount > 0
       ? await this.#attachments.assertCount(expectedAttachmentsCount)
       : await this.#noAttachments.waitUntilVisible()

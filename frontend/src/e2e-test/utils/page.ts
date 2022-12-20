@@ -197,18 +197,13 @@ export class Element {
       .then((value) => (value ? new BoundingBox(value) : null))
   }
 
-  get innerText(): Promise<string> {
+  // Visible text content
+  get text(): Promise<string> {
     return this.locator.innerText()
   }
 
-  get textContent(): Promise<string | null> {
-    return this.locator.textContent()
-  }
-
-  get textContentAsFloat(): Promise<number | null> {
-    return this.locator
-      .textContent()
-      .then((str) => (str ? parseFloat(str) : null))
+  get textAsFloat(): Promise<number | null> {
+    return this.text.then((str) => (str ? parseFloat(str) : null))
   }
 
   get visible(): Promise<boolean> {

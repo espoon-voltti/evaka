@@ -21,7 +21,7 @@ export default class MobileNav {
   readonly #staff = this.page.find('[data-qa="bottomnav-staff"]')
 
   get selectedGroupName() {
-    return this.#groupSelectorButton.innerText
+    return this.#groupSelectorButton.text
   }
 
   async selectGroup(id: UUID) {

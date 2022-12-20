@@ -97,7 +97,7 @@ export class CitizenChildPage {
       () =>
         this.page
           .findByDataQa('collapsible-consents')
-          .findByDataQa('count-indicator').innerText,
+          .findByDataQa('count-indicator').text,
       count.toString()
     )
   }
@@ -116,11 +116,11 @@ export class CitizenChildPage {
     expectedPublishedAt: string
   ) {
     await waitUntilEqual(
-      () => this.#vasuRowStateChip(vasuId).textContent,
+      () => this.#vasuRowStateChip(vasuId).text,
       expectedStatus
     )
     await waitUntilEqual(
-      () => this.#vasuRowPublishedAt(vasuId).textContent,
+      () => this.#vasuRowPublishedAt(vasuId).text,
       expectedPublishedAt
     )
   }

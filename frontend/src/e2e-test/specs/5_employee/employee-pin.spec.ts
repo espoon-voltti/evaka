@@ -36,7 +36,7 @@ describe('Employees PIN', () => {
   test('shows a warning if PIN is too easy, and warning disappears once PIN is valid', async () => {
     await pinPage.pinInput.fill('1111')
     await waitUntilEqual(
-      () => pinPage.inputInfo.innerText,
+      () => pinPage.inputInfo.text,
       'Liian helppo PIN-koodi tai PIN-koodi sisältää kirjaimia'
     )
 

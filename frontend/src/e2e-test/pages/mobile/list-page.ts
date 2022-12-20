@@ -22,7 +22,7 @@ export default class MobileListPage {
 
   async readChildGroupName(childId: UUID) {
     const elem = this.page.find(`[data-qa="child-group-name-${childId}"]`)
-    return elem.innerText
+    return elem.text
   }
 
   async assertChildExists(childId: UUID) {
@@ -56,13 +56,11 @@ export default class MobileListPage {
     const tabToDataQa = (t: string) => `[data-qa="${t}-tab"] [data-qa="count"]`
 
     const counts: Promise<[string, number]>[] = tabs.map((tab) =>
-      this.page
-        .find(tabToDataQa(tab))
-        .innerText.then((val) => [tab, Number(val)])
+      this.page.find(tabToDataQa(tab)).text.then((val) => [tab, Number(val)])
     )
     const total: Promise<[string, number]> = this.page
       .find(`[data-qa="coming-tab"] [data-qa="total"]`)
-      .innerText.then((val) => ['total', Number(val)])
+      .text.then((val) => ['total', Number(val)])
 
     return Object.fromEntries(await Promise.all([...counts, total]))
   }

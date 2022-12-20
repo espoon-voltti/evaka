@@ -55,7 +55,7 @@ export default class CitizenApplicationsPage {
         : type === 'CLUB'
         ? 'Kerhohakemus'
         : ''
-    await waitUntilEqual(() => this.#applicationTitle.innerText, title)
+    await waitUntilEqual(() => this.#applicationTitle.text, title)
 
     return new CitizenApplicationEditor(this.page)
   }
@@ -85,7 +85,7 @@ export default class CitizenApplicationsPage {
   }
 
   async assertChildIsShown(childId: string, childName: string) {
-    await waitUntilEqual(() => this.#childTitle(childId).innerText, childName)
+    await waitUntilEqual(() => this.#childTitle(childId).text, childName)
   }
 
   async assertApplicationIsListed(
@@ -95,14 +95,14 @@ export default class CitizenApplicationsPage {
     preferredStartDate: string,
     status: string
   ) {
-    await waitUntilEqual(() => this.#applicationType(id).innerText, title)
-    await waitUntilEqual(() => this.#applicationUnit(id).innerText, unitName)
+    await waitUntilEqual(() => this.#applicationType(id).text, title)
+    await waitUntilEqual(() => this.#applicationUnit(id).text, unitName)
     await waitUntilEqual(
-      () => this.#applicationPreferredStartDate(id).innerText,
+      () => this.#applicationPreferredStartDate(id).text,
       preferredStartDate
     )
     await waitUntilTrue(async () =>
-      (await this.#applicationStatus(id).innerText)
+      (await this.#applicationStatus(id).text)
         .toLowerCase()
         .includes(status.toLowerCase())
     )
@@ -306,7 +306,7 @@ class CitizenApplicationEditor {
   async assertChildAddress(fullAddress: string) {
     await this.openSection('contactInfo')
     await waitUntilEqual(
-      () => this.page.find('[data-qa="child-street-address"]').innerText,
+      () => this.page.find('[data-qa="child-street-address"]').text,
       fullAddress
     )
   }
@@ -328,7 +328,7 @@ class CitizenApplicationEditor {
       await this.#preferredStartDateInfo.waitUntilHidden()
       return
     }
-    await waitUntilEqual(() => this.#preferredStartDateInfo.innerText, infoText)
+    await waitUntilEqual(() => this.#preferredStartDateInfo.text, infoText)
   }
 
   async markApplicationUrgentAndAddAttachment(attachmentFilePath: string) {
@@ -346,7 +346,7 @@ class CitizenApplicationEditor {
       (
         await this.page.find(
           '[data-qa="uploaded-files"] [data-qa="file-download-button"]'
-        ).innerText
+        ).text
       ).includes(attachmentFileName)
     )
   }

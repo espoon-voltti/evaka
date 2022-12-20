@@ -90,7 +90,7 @@ describe('Finance basics', () => {
     await financeBasicsPage.feesSection.editor.fillInThresholds(data)
     await financeBasicsPage.feesSection.editor.assertSaveIsDisabled()
     await waitUntilEqual(
-      () => financeBasicsPage.feesSection.editor.maxFeeError(2).innerText,
+      () => financeBasicsPage.feesSection.editor.maxFeeError(2).text,
       'Enimmäismaksu ei täsmää (200 €)'
     )
   })

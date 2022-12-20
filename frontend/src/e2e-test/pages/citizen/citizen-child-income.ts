@@ -16,7 +16,7 @@ export class CitizenChildIncomeStatementViewPage {
   }
 
   async assertOtherInfo(expected: string) {
-    await waitUntilEqual(() => this.otherInfo.innerText, expected)
+    await waitUntilEqual(() => this.otherInfo.text, expected)
   }
 
   async assertAttachmentExists(name: string) {
@@ -90,9 +90,7 @@ export class CitizenChildIncomeStatementListPage {
 
   async assertChildName(expectedName: string) {
     await waitUntilEqual(
-      () =>
-        this.childIncomeStatementList.find('[data-qa="child-name"]')
-          .textContent,
+      () => this.childIncomeStatementList.find('[data-qa="child-name"]').text,
       expectedName
     )
   }

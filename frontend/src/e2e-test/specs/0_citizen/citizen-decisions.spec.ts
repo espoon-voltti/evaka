@@ -242,7 +242,7 @@ describe('Citizen assistance decisions', () => {
       {
         assistanceLevel: 'Tehostettu tuki',
         selectedUnit: fixtures.daycareFixture.name,
-        validityPeriod: '10.02.2022 - ',
+        validityPeriod: '10.02.2022 -',
         decisionMade: '17.01.2021',
         status: 'Hylätty'
       }

@@ -51,7 +51,7 @@ describe('Employee preferred first name', () => {
     await employeePreferredFirstNamePage.preferredFirstName('Teppo')
     await employeePreferredFirstNamePage.confirm()
     await waitUntilEqual(
-      () => page.findByDataQa('username').textContent,
+      () => page.findByDataQa('username').text,
       'Teppo Sorsa'
     )
 

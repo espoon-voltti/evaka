@@ -22,7 +22,7 @@ export default class CitizenPersonalDetails {
   async checkMissingEmailWarningIsShown() {
     await waitUntilTrue(() => this.#missingEmailOrPhoneBox.visible)
     await waitUntilTrue(async () =>
-      ((await this.#missingEmailOrPhoneBox.textContent) ?? '').includes(
+      ((await this.#missingEmailOrPhoneBox.text) ?? '').includes(
         'Sähköpostiosoitteesi puuttuu'
       )
     )
@@ -31,7 +31,7 @@ export default class CitizenPersonalDetails {
   async checkMissingPhoneWarningIsShown() {
     await waitUntilTrue(() => this.#missingEmailOrPhoneBox.visible)
     await waitUntilTrue(async () =>
-      ((await this.#missingEmailOrPhoneBox.textContent) ?? '').includes(
+      ((await this.#missingEmailOrPhoneBox.text) ?? '').includes(
         'Puhelinnumerosi puuttuu'
       )
     )
@@ -81,17 +81,14 @@ export default class CitizenPersonalDetails {
     backupPhone: string
     email: string | null
   }) {
+    await waitUntilEqual(() => this.#preferredName.text, data.preferredName)
     await waitUntilEqual(
-      () => this.#preferredName.textContent,
-      data.preferredName
-    )
-    await waitUntilEqual(
-      () => this.#phone.textContent,
+      () => this.#phone.text,
       data.phone === null ? 'Puhelinnumerosi puuttuu' : data.phone
     )
-    await waitUntilEqual(() => this.#backupPhone.textContent, data.backupPhone)
+    await waitUntilEqual(() => this.#backupPhone.text, data.backupPhone)
     await waitUntilEqual(
-      () => this.#email.textContent,
+      () => this.#email.text,
       data.email === null ? 'Sähköpostiosoite puuttuu' : data.email
     )
   }

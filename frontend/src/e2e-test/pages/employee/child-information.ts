@@ -63,7 +63,7 @@ export default class ChildInformationPage {
   }
 
   async assertOphPersonOid(expected: string) {
-    await waitUntilEqual(() => this.#ophPersonOidInput.innerText, expected)
+    await waitUntilEqual(() => this.#ophPersonOidInput.text, expected)
   }
 
   async setOphPersonOid(text: string) {
@@ -119,7 +119,7 @@ export class AdditionalInformationSection extends Section {
   #confirmBtn = this.find('[data-qa="confirm-edited-child-button"]')
 
   async assertMedication(text: string) {
-    await waitUntilEqual(() => this.#medication.textContent, text)
+    await waitUntilEqual(() => this.#medication.text, text)
   }
 
   async fillMedication(text: string) {
@@ -184,7 +184,7 @@ export class DailyServiceTimeSection extends Section {
     const row = this.findAllByDataQa('daily-service-times-row').nth(nth)
 
     await waitUntilEqual(
-      () => row.findByDataQa('daily-service-times-row-title').innerText,
+      () => row.findByDataQa('daily-service-times-row-title').text,
       title
     )
     await waitUntilEqual(
@@ -206,7 +206,7 @@ export class DailyServiceTimeSection extends Section {
       }) + [data-qa="daily-service-times-row-collapsible"]`
     )
 
-    await waitUntilEqual(() => collapsible.innerText, text)
+    await waitUntilEqual(() => collapsible.text, text)
   }
 
   async editTableRow(nth: number) {
@@ -332,15 +332,15 @@ export class PedagogicalDocumentsSection extends Section {
   }
 
   get startDate(): Promise<string> {
-    return this.#startDate.innerText
+    return this.#startDate.text
   }
 
   get document(): Promise<string> {
-    return this.#document.innerText
+    return this.#document.text
   }
 
   get description(): Promise<string> {
-    return this.#description.innerText
+    return this.#description.text
   }
 
   async setDescription(text: string) {
@@ -436,7 +436,7 @@ export class BackupCaresSection extends Section {
   }
 
   async assertError(expectedError: string) {
-    await waitUntilEqual(() => this.#error.innerText, expectedError)
+    await waitUntilEqual(() => this.#error.text, expectedError)
   }
 
   async getBackupCares(): Promise<Array<{ unit: string; period: string }>> {
@@ -512,7 +512,7 @@ export class FamilyContactsSection extends Section {
 
     if (data.email) {
       await waitUntilEqual(
-        () => row.findByDataQa('family-contact-email').textContent,
+        () => row.findByDataQa('family-contact-email').text,
         data.email
       )
     } else {
@@ -520,7 +520,7 @@ export class FamilyContactsSection extends Section {
     }
     if (data.phone) {
       await waitUntilEqual(
-        () => row.findByDataQa('family-contact-phone').textContent,
+        () => row.findByDataQa('family-contact-phone').text,
         data.phone
       )
     } else {
@@ -528,7 +528,7 @@ export class FamilyContactsSection extends Section {
     }
     if (data.backupPhone) {
       await waitUntilEqual(
-        () => row.findByDataQa('family-contact-backup-phone').textContent,
+        () => row.findByDataQa('family-contact-backup-phone').text,
         `${data.backupPhone} (Varanro)`
       )
     } else {
@@ -571,12 +571,9 @@ export class GuardiansSection extends Section {
     end: LocalDate | null
   ) {
     const row = this.findByDataQa(`foster-parent-row-${parentId}`)
+    await waitUntilEqual(() => row.findByDataQa('start').text, start.format())
     await waitUntilEqual(
-      () => row.findByDataQa('start').textContent,
-      start.format()
-    )
-    await waitUntilEqual(
-      () => row.findByDataQa('end').textContent,
+      () => row.findByDataQa('end').text,
       end?.format() ?? ''
     )
   }
@@ -616,8 +613,7 @@ export class GuardiansSection extends Section {
   async assertGuardianStatusAllowed(id: UUID) {
     await this.waitUntilNotLoading()
     await waitUntilEqual(
-      () =>
-        this.guardianRow(id).findByDataQa('evaka-rights-status').textContent,
+      () => this.guardianRow(id).findByDataQa('evaka-rights-status').text,
       'Sallittu'
     )
   }
@@ -625,8 +621,7 @@ export class GuardiansSection extends Section {
   async assertGuardianStatusDenied(id: UUID) {
     await this.waitUntilNotLoading()
     await waitUntilEqual(
-      () =>
-        this.guardianRow(id).findByDataQa('evaka-rights-status').textContent,
+      () => this.guardianRow(id).findByDataQa('evaka-rights-status').text,
       'Kielletty'
     )
   }
@@ -664,7 +659,7 @@ export class PlacementsSection extends Section {
 
   async assertNthServiceNeedName(index: number, optionName: string) {
     await waitUntilEqual(
-      () => this.#serviceNeedRowOptionName(index).textContent,
+      () => this.#serviceNeedRowOptionName(index).text,
       optionName
     )
   }
@@ -757,7 +752,7 @@ export class AssistanceNeedSection extends Section {
 
   async assertAssistanceNeedMultiplier(expected: string, nth = 0) {
     await waitUntilEqual(
-      () => this.#assistanceNeedMultiplier.nth(nth).innerText,
+      () => this.#assistanceNeedMultiplier.nth(nth).text,
       expected
     )
   }
@@ -779,14 +774,14 @@ export class AssistanceNeedSection extends Section {
       .nth(nth)
 
     return {
-      date: await row.findByDataQa('assistance-need-decision-date').innerText,
+      date: await row.findByDataQa('assistance-need-decision-date').text,
       unitName: await row.findByDataQa('assistance-need-decision-unit-name')
-        .innerText,
+        .text,
       sentDate: await row.findByDataQa('assistance-need-decision-sent-date')
-        .innerText,
+        .text,
       decisionMadeDate: await row.findByDataQa(
         'assistance-need-decision-made-date'
-      ).innerText,
+      ).text,
       status: await row
         .findByDataQa('decision-status')
         .getAttribute('data-qa-status'),
@@ -812,10 +807,10 @@ export class AssistanceNeedSection extends Section {
     return {
       coefficient: await row.findByDataQa(
         'assistance-need-voucher-coefficient-coefficient'
-      ).innerText,
+      ).text,
       validityPeriod: await row.findByDataQa(
         'assistance-need-voucher-coefficient-validity-period'
-      ).innerText,
+      ).text,
       status: await row
         .findByDataQa('assistance-need-voucher-coefficient-status')
         .getAttribute('data-qa-status'),

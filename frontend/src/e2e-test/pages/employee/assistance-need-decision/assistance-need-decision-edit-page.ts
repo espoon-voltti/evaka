@@ -25,14 +25,14 @@ export default class AssistanceNeedDecisionEditPage {
 
   async assertDecisionStatus(status: string) {
     await waitUntilEqual(
-      () => this.page.findByDataQa('decision-status').innerText,
+      () => this.page.findByDataQa('decision-status').text,
       status
     )
   }
 
   async assertDecisionNumber(decisionNumber: number | null) {
     await waitUntilEqual(
-      () => this.page.findByDataQa('decision-number').innerText,
+      () => this.page.findByDataQa('decision-number').text,
       `${decisionNumber ?? 'null'}`
     )
   }
@@ -62,10 +62,7 @@ export default class AssistanceNeedDecisionEditPage {
   }
 
   async assertPageTitle(title: string): Promise<void> {
-    await waitUntilEqual(
-      () => this.page.findByDataQa('page-title').innerText,
-      title
-    )
+    await waitUntilEqual(() => this.page.findByDataQa('page-title').text, title)
   }
 
   async selectUnit(unit: string): Promise<void> {

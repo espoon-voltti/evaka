@@ -56,8 +56,7 @@ export default class ApplicationDetailsPage {
   async assertNote(index: number, note: string) {
     await waitUntilEqual(
       () =>
-        this.#notes.nth(index).findByDataQa('application-note-content')
-          .textContent,
+        this.#notes.nth(index).findByDataQa('application-note-content').text,
       note
     )
   }

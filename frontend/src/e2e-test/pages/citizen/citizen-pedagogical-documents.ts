@@ -22,11 +22,8 @@ export default class CitizenPedagogicalDocumentsPage {
     expectedDate: string,
     expectedDescription: string
   ) {
-    await waitUntilEqual(() => this.#date(id).innerText, expectedDate)
-    await waitUntilEqual(
-      () => this.#description(id).innerText,
-      expectedDescription
-    )
+    await waitUntilEqual(() => this.#date(id).text, expectedDate)
+    await waitUntilEqual(() => this.#description(id).text, expectedDescription)
   }
 
   async downloadAttachment(id: string) {
@@ -42,6 +39,6 @@ export default class CitizenPedagogicalDocumentsPage {
   }
 
   async assertChildNameIs(id: string, expectedName: string) {
-    await waitUntilEqual(() => this.#childName(id).innerText, expectedName)
+    await waitUntilEqual(() => this.#childName(id).text, expectedName)
   }
 }

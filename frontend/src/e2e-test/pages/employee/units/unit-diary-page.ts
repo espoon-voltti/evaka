@@ -36,7 +36,7 @@ export class UnitDiaryPage {
   #addAbsencesButton = this.page.find('[data-qa="add-absences-button"]')
 
   async assertUnitName(expectedName: string) {
-    await waitUntilEqual(() => this.#unitName.innerText, expectedName)
+    await waitUntilEqual(() => this.#unitName.text, expectedName)
   }
 
   async assertSelectedGroup(groupId: UUID) {
@@ -129,9 +129,7 @@ export class AbsenceCell extends Element {
 
   async hoverAndGetTooltip(): Promise<string> {
     await this.cell.hover()
-    return (
-      (await this.cell.findByDataQa('absence-cell-tooltip').textContent) || ''
-    )
+    return (await this.cell.findByDataQa('absence-cell-tooltip').text) || ''
   }
 }
 

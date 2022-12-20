@@ -101,7 +101,7 @@ export default class MobileChildPage {
   }
 
   async assertSensitiveInfoIsShown(name: string) {
-    await waitUntilEqual(() => this.#sensitiveInfo.name.innerText, name)
+    await waitUntilEqual(() => this.#sensitiveInfo.name.text, name)
   }
 
   async assertSensitiveInfo(
@@ -118,33 +118,33 @@ export default class MobileChildPage {
     }>
   ) {
     await waitUntilEqual(
-      () => this.#sensitiveInfo.allergies.innerText,
+      () => this.#sensitiveInfo.allergies.text,
       additionalInfo.allergies
     )
     await waitUntilEqual(
-      () => this.#sensitiveInfo.diet.innerText,
+      () => this.#sensitiveInfo.diet.text,
       additionalInfo.diet
     )
     await waitUntilEqual(
-      () => this.#sensitiveInfo.medication.innerText,
+      () => this.#sensitiveInfo.medication.text,
       additionalInfo.medication
     )
 
     for (let i = 0; i < contacts.length; i++) {
       const contact = contacts[i]
       await waitUntilEqual(
-        () => this.#sensitiveInfo.contactName(i).innerText,
+        () => this.#sensitiveInfo.contactName(i).text,
         `${contact.firstName} ${contact.lastName}`
       )
       if (contact.phone) {
         await waitUntilEqual(
-          () => this.#sensitiveInfo.contactPhone(i).innerText,
+          () => this.#sensitiveInfo.contactPhone(i).text,
           contact.phone
         )
       }
       if (contact.email) {
         await waitUntilEqual(
-          () => this.#sensitiveInfo.contactEmail(i).innerText,
+          () => this.#sensitiveInfo.contactEmail(i).text,
           contact.email
         )
       }
@@ -153,11 +153,11 @@ export default class MobileChildPage {
     for (let i = 0; i < backupPickups.length; i++) {
       const backupPickup = backupPickups[i]
       await waitUntilEqual(
-        () => this.#sensitiveInfo.backupPickupName(i).innerText,
+        () => this.#sensitiveInfo.backupPickupName(i).text,
         backupPickup.name
       )
       await waitUntilEqual(
-        () => this.#sensitiveInfo.backupPickupPhone(i).innerText,
+        () => this.#sensitiveInfo.backupPickupPhone(i).text,
         backupPickup.phone
       )
     }

@@ -9,7 +9,7 @@ export default class AssistanceNeedDecisionPage {
   constructor(private readonly page: Page) {}
 
   private getLabelledValue(label: string) {
-    return this.page.findByDataQa(`labelled-value-${label}`).innerText
+    return this.page.findByDataQa(`labelled-value-${label}`).text
   }
 
   readonly pedagogicalMotivation = this.getLabelledValue(
@@ -22,7 +22,7 @@ export default class AssistanceNeedDecisionPage {
       .waitUntilVisible()
   readonly structuralMotivationDescription = this.page.findByDataQa(
     'structural-motivation-description'
-  ).innerText
+  ).text
   readonly careMotivation = this.getLabelledValue('care-motivation')
   readonly assertServiceOption = (opt: string) =>
     this.page
@@ -33,10 +33,10 @@ export default class AssistanceNeedDecisionPage {
   readonly heardGuardian = (id: string) =>
     this.page
       .findByDataQa('guardians-heard-section')
-      .findByDataQa(`guardian-${id}`).innerText
+      .findByDataQa(`guardian-${id}`).text
   readonly otherRepresentativeDetails = this.page.findByDataQa(
     'other-representative-details'
-  ).innerText
+  ).text
   readonly viewOfGuardians = this.getLabelledValue('view-of-the-guardians')
   readonly futureLevelOfAssistance = this.getLabelledValue(
     'future-level-of-assistance'
@@ -55,9 +55,6 @@ export default class AssistanceNeedDecisionPage {
   }
 
   async assertPageTitle(title: string): Promise<void> {
-    await waitUntilEqual(
-      () => this.page.findByDataQa('page-title').innerText,
-      title
-    )
+    await waitUntilEqual(() => this.page.findByDataQa('page-title').text, title)
   }
 }

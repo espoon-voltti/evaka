@@ -42,11 +42,8 @@ export default class CitizenMessagesPage {
     urgent?: boolean
   }) {
     await this.#threadListItem.click()
-    await waitUntilEqual(() => this.#threadTitle.innerText, message.title)
-    await waitUntilEqual(
-      () => this.#threadContent.elem().innerText,
-      message.content
-    )
+    await waitUntilEqual(() => this.#threadTitle.text, message.title)
+    await waitUntilEqual(() => this.#threadContent.elem().text, message.content)
     if (message.urgent ?? false) {
       await this.#threadUrgent.waitUntilVisible()
     } else {
@@ -84,7 +81,7 @@ export default class CitizenMessagesPage {
   }
 
   async assertReplyContentIsEmpty() {
-    return waitUntilEqual(() => this.#messageReplyContent.textContent, '')
+    return waitUntilEqual(() => this.#messageReplyContent.text, '')
   }
 
   async replyToFirstThread(content: string) {

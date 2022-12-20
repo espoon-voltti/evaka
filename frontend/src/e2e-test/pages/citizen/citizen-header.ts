@@ -128,7 +128,7 @@ export default class CitizenHeader {
     await this.#childrenNav.waitUntilVisible()
     expectedCount != 0
       ? await waitUntilEqual(
-          () => this.#unreadChildrenCount.textContent,
+          () => this.#unreadChildrenCount.text,
           expectedCount.toString()
         )
       : await waitUntilFalse(() => this.#unreadChildrenCount.visible)
@@ -143,7 +143,7 @@ export default class CitizenHeader {
       )
       expectedCount != 0
         ? await waitUntilEqual(
-            () => notification.textContent,
+            () => notification.text,
             expectedCount.toString()
           )
         : await notification.waitUntilHidden()

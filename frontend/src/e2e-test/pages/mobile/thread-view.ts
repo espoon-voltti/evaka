@@ -24,11 +24,11 @@ export default class ThreadViewPage {
   }
 
   async getMessageContent(index: number): Promise<string> {
-    return this.#singleMessageContents.nth(index).innerText
+    return this.#singleMessageContents.nth(index).text
   }
 
   async getMessageSender(index: number): Promise<string> {
-    return this.#singleMessageSenderName.nth(index).innerText
+    return this.#singleMessageSenderName.nth(index).text
   }
 
   async replyThread(content: string) {

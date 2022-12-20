@@ -36,7 +36,7 @@ export class PairingFlow {
 
   async getResponseKey() {
     await this.#responseKey.waitUntilVisible()
-    return this.#responseKey.innerText
+    return this.#responseKey.text
   }
 
   isPairingWizardFinished() {

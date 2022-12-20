@@ -72,7 +72,7 @@ export default class MobileNotePage {
 
   async assertStickyNote(expected: string, nth = 0) {
     await waitUntilEqual(
-      () => this.#stickyNote.note.nth(nth).find('p').textContent,
+      () => this.#stickyNote.note.nth(nth).find('p').text,
       expected
     )
   }
@@ -82,7 +82,7 @@ export default class MobileNotePage {
       this.#stickyNote.note
         .nth(nth)
         .find('[data-qa="sticky-note-expires"]')
-        .textContent.then((t) => !!t?.includes(date.format()))
+        .text.then((t) => !!t?.includes(date.format()))
     )
   }
 

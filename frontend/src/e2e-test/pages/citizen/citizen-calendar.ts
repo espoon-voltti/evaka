@@ -61,7 +61,7 @@ export default class CitizenCalendarPage {
 
   async assertEventCount(date: LocalDate, count: number) {
     await waitUntilEqual(
-      () => this.#dayCell(date).findByDataQa('event-count').innerText,
+      () => this.#dayCell(date).findByDataQa('event-count').text,
       count.toString()
     )
   }
@@ -134,7 +134,7 @@ export default class CitizenCalendarPage {
           .waitUntilVisible()
       }
       await waitUntilEqual(
-        () => row.findByDataQa('reservation-text').innerText,
+        () => row.findByDataQa('reservation-text').text,
         'absence' in reservation
           ? 'Poissa'
           : 'freeAbsence' in reservation
@@ -149,7 +149,7 @@ export default class CitizenCalendarPage {
   #ctas = this.page.findAllByDataQa('holiday-period-cta')
 
   async getHolidayCtaContent(): Promise<string> {
-    return this.#ctas.nth(0).innerText
+    return this.#ctas.nth(0).text
   }
 
   async clickHolidayCta(): Promise<void> {
@@ -172,7 +172,7 @@ export default class CitizenCalendarPage {
   )
 
   async getDailyServiceTimeNotificationContent(nth: number): Promise<string> {
-    return this.#dailyServiceTimeNotifications.nth(nth).innerText
+    return this.#dailyServiceTimeNotifications.nth(nth).text
   }
 
   #dailyServiceTimeNotificationModal = this.page.findByDataQa(
@@ -180,8 +180,7 @@ export default class CitizenCalendarPage {
   )
 
   async getDailyServiceTimeNotificationModalContent(): Promise<string> {
-    return this.#dailyServiceTimeNotificationModal.findByDataQa('text')
-      .innerText
+    return this.#dailyServiceTimeNotificationModal.findByDataQa('text').text
   }
 
   async assertChildCountOnDay(date: LocalDate, expectedCount: number) {
@@ -365,15 +364,14 @@ class DayView extends Element {
 
   async assertReservations(childId: UUID, value: string) {
     await waitUntilEqual(
-      () =>
-        this.#childSection(childId).findByDataQa('reservations').textContent,
+      () => this.#childSection(childId).findByDataQa('reservations').text,
       value
     )
   }
 
   async assertAbsence(childId: UUID, value: string) {
     await waitUntilEqual(
-      () => this.#childSection(childId).findByDataQa('absence').textContent,
+      () => this.#childSection(childId).findByDataQa('absence').text,
       value
     )
   }
@@ -402,12 +400,9 @@ class DayView extends Element {
     { title, description }: { title: string; description: string }
   ) {
     const event = this.#childSection(childId).findByDataQa(`event-${eventId}`)
+    await waitUntilEqual(() => event.findByDataQa('event-title').text, title)
     await waitUntilEqual(
-      () => event.findByDataQa('event-title').innerText,
-      title
-    )
-    await waitUntilEqual(
-      () => event.findByDataQa('event-description').innerText,
+      () => event.findByDataQa('event-description').text,
       description
     )
   }

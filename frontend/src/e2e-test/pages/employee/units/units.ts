@@ -74,11 +74,11 @@ export class UnitRow extends Element {
 
   async assertFields(fields: { name?: string; visitingAddress?: string }) {
     if (fields.name !== undefined) {
-      await waitUntilEqual(() => this.#name.innerText, fields.name)
+      await waitUntilEqual(() => this.#name.text, fields.name)
     }
     if (fields.visitingAddress !== undefined) {
       await waitUntilEqual(
-        () => this.#visitingAddress.innerText,
+        () => this.#visitingAddress.text,
         fields.visitingAddress
       )
     }

@@ -86,19 +86,19 @@ export default class PersonSearchPage {
     ssn?: string
   }) {
     await waitUntilEqual(
-      () => this.#personData.firstName.innerText,
+      () => this.#personData.firstName.text,
       personData.firstName
     )
     await waitUntilEqual(
-      () => this.#personData.lastName.innerText,
+      () => this.#personData.lastName.text,
       personData.lastName
     )
     await waitUntilEqual(
-      () => this.#personData.dateOfBirth.innerText,
+      () => this.#personData.dateOfBirth.text,
       personData.dateOfBirth.format()
     )
     await waitUntilEqual(
-      () => this.#personData.address.innerText,
+      () => this.#personData.address.text,
       `${personData.streetAddress}, ${personData.postalCode} ${personData.postOffice}`
     )
     if (personData.ssn === undefined) {
@@ -106,11 +106,11 @@ export default class PersonSearchPage {
         .findByDataQa('add-ssn-button')
         .waitUntilVisible()
       await waitUntilEqual(
-        () => this.#personData.ssn.findByDataQa('add-ssn-button').innerText,
+        () => this.#personData.ssn.findByDataQa('add-ssn-button').text,
         'Aseta hetu'
       )
     } else {
-      await waitUntilEqual(() => this.#personData.ssn.innerText, personData.ssn)
+      await waitUntilEqual(() => this.#personData.ssn.text, personData.ssn)
     }
   }
 

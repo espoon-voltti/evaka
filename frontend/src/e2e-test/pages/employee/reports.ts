@@ -106,17 +106,17 @@ export class PlacementSketchingReport {
     await element.waitUntilVisible()
 
     await waitUntilEqual(
-      () => element.find('[data-qa="requested-unit"]').innerText,
+      () => element.find('[data-qa="requested-unit"]').text,
       requestedUnitName
     )
     if (currentUnitName) {
       await waitUntilEqual(
-        () => element.find('[data-qa="current-unit"]').innerText,
+        () => element.find('[data-qa="current-unit"]').text,
         currentUnitName
       )
     }
     await waitUntilEqual(
-      () => element.find('[data-qa="child-name"]').innerText,
+      () => element.find('[data-qa="child-name"]').text,
       childName
     )
   }
@@ -157,10 +157,10 @@ export class VoucherServiceProvidersReport {
   ) {
     const row = this.page.find(`[data-qa="${unitId}"]`)
     await row.waitUntilVisible()
-    expect(await row.find(`[data-qa="child-count"]`).innerText).toStrictEqual(
+    expect(await row.find(`[data-qa="child-count"]`).text).toStrictEqual(
       expectedChildCount
     )
-    expect(await row.find(`[data-qa="child-sum"]`).innerText).toStrictEqual(
+    expect(await row.find(`[data-qa="child-sum"]`).text).toStrictEqual(
       expectedMonthlySum
     )
   }
@@ -194,22 +194,19 @@ export class ServiceVoucherUnitReport {
     expectedRealizedAmount: number
   ) {
     await waitUntilEqual(
-      () => this.page.findAllByDataQa('child-name').nth(nth).textContent,
+      () => this.page.findAllByDataQa('child-name').nth(nth).text,
       expectedName
     )
     await waitUntilEqual(
-      () =>
-        this.page.findAllByDataQa('voucher-value').nth(nth).textContentAsFloat,
+      () => this.page.findAllByDataQa('voucher-value').nth(nth).textAsFloat,
       expectedVoucherValue
     )
     await waitUntilEqual(
-      () => this.page.findAllByDataQa('co-payment').nth(nth).textContentAsFloat,
+      () => this.page.findAllByDataQa('co-payment').nth(nth).textAsFloat,
       expectedCoPayment
     )
     await waitUntilEqual(
-      () =>
-        this.page.findAllByDataQa('realized-amount').nth(nth)
-          .textContentAsFloat,
+      () => this.page.findAllByDataQa('realized-amount').nth(nth).textAsFloat,
       expectedRealizedAmount
     )
   }
@@ -226,7 +223,7 @@ export class VardaErrorsReport {
 
   async assertErrorsContains(childId: string, expected: string) {
     await waitUntilTrue(async () =>
-      ((await this.#errors(childId).textContent) || '').includes(expected)
+      ((await this.#errors(childId).text) || '').includes(expected)
     )
   }
 
@@ -249,11 +246,11 @@ export class AssistanceNeedDecisionsReport {
       .nth(nth)
 
     return {
-      sentForDecision: await row.findByDataQa('sent-for-decision').innerText,
-      childName: await row.findByDataQa('child-name').innerText,
-      careAreaName: await row.findByDataQa('care-area-name').innerText,
-      unitName: await row.findByDataQa('unit-name').innerText,
-      decisionMade: await row.findByDataQa('decision-made').innerText,
+      sentForDecision: await row.findByDataQa('sent-for-decision').text,
+      childName: await row.findByDataQa('child-name').text,
+      careAreaName: await row.findByDataQa('care-area-name').text,
+      unitName: await row.findByDataQa('unit-name').text,
+      decisionMade: await row.findByDataQa('decision-made').text,
       status: await row
         .findByDataQa('decision-chip')
         .getAttribute('data-qa-status'),
@@ -269,7 +266,7 @@ export class AssistanceNeedDecisionsReportDecision {
   constructor(private page: Page) {}
 
   decisionMaker = () =>
-    this.page.findByDataQa('labelled-value-decision-maker').innerText
+    this.page.findByDataQa('labelled-value-decision-maker').text
   decisionStatus = () =>
     this.page.findByDataQa('decision-status').getAttribute('data-qa-status')
   readonly returnForEditBtn = this.page.findByDataQa('return-for-edit')

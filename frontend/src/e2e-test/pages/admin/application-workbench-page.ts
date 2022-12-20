@@ -171,8 +171,7 @@ export class ApplicationWorkbenchPage {
     matchingText: string
   ) {
     await this.#applicationPlacementProposalStatusIndicator.hover()
-    const tooltip = await this.#applicationPlacementProposalStatusTooltip
-      .innerText
+    const tooltip = await this.#applicationPlacementProposalStatusTooltip.text
     const match = tooltip.match(matchingText)
     return match ? match.length > 0 : false
   }
@@ -185,16 +184,13 @@ export class ApplicationWorkbenchPage {
 
   async assertAgreementStatusNotAgreed() {
     await waitUntilTrue(async () =>
-      (await this.#agreementStatus.innerText).includes('Ei ole sovittu yhdessä')
+      (await this.#agreementStatus.text).includes('Ei ole sovittu yhdessä')
     )
   }
 
   async assertContactDetails(expectedTel: string, expectedEmail: string) {
-    await waitUntilEqual(() => this.#otherGuardianTel.innerText, expectedTel)
-    await waitUntilEqual(
-      () => this.#otherGuardianEmail.innerText,
-      expectedEmail
-    )
+    await waitUntilEqual(() => this.#otherGuardianTel.text, expectedTel)
+    await waitUntilEqual(() => this.#otherGuardianEmail.text, expectedEmail)
   }
 
   async assertDecisionGuardians(
@@ -202,12 +198,12 @@ export class ApplicationWorkbenchPage {
     expectedOtherGuardian?: string
   ) {
     await waitUntilEqual(
-      () => this.page.findByDataQa('guardian-name').innerText,
+      () => this.page.findByDataQa('guardian-name').text,
       expectedGuardian
     )
     if (expectedOtherGuardian !== undefined) {
       await waitUntilEqual(
-        () => this.page.findByDataQa('other-guardian-name').innerText,
+        () => this.page.findByDataQa('other-guardian-name').text,
         expectedOtherGuardian
       )
     }
