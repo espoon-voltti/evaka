@@ -65,4 +65,10 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         <packageUrl regex="true">^(?!pkg:maven/commons-net/commons-net).*$</packageUrl>
         <cpe>cpe:/a:apache:commons_net</cpe>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Fixed version in use, but misidentified as vulnerable
+        ]]></notes>
+        <cve>CVE-2022-41915</cve>
+    </suppress>
 </suppressions>
