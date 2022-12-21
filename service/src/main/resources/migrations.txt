@@ -287,3 +287,4 @@ V287__personal_message_accounts.sql
 V288__staff_attendance_realtime_optional_group_id.sql
 V289__placement_type_preschool_club.sql
 V290__application_other_guardian_access.sql
+V291__application_other_guardian_cascade.sql
