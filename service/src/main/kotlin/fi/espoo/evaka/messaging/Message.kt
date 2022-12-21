@@ -98,7 +98,14 @@ enum class AccountType {
     PERSONAL,
     GROUP,
     CITIZEN,
-    MUNICIPAL
+    MUNICIPAL;
+
+    fun isPrimaryRecipientForCitizenMessage(): Boolean = when (this) {
+        PERSONAL -> true
+        GROUP -> true
+        CITIZEN -> false
+        MUNICIPAL -> false
+    }
 }
 
 data class MessageAccount(val id: MessageAccountId, val name: String, val type: AccountType)
