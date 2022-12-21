@@ -364,13 +364,13 @@ test('Foster parent can read a daycare curriculum and give permission to share i
   )
   await childPage.openVasu(vasuDocId)
   const vasuPage = new VasuPreviewPage(activeRelationshipPage)
-  await activeRelationshipHeader.assertUnreadChildrenCount(1)
+  await activeRelationshipHeader.assertUnreadChildrenCount(2)
   await vasuPage.assertTitleChildName(
     `${fosterChild.firstName} ${fosterChild.lastName}`
   )
   await vasuPage.givePermissionToShare()
   await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
-  await activeRelationshipHeader.assertUnreadChildrenCount(0)
+  await activeRelationshipHeader.assertUnreadChildrenCount(1)
 
   const { endedRelationshipHeader } = await openEndedRelationshipPage()
   await endedRelationshipHeader.assertNoChildrenTab()
@@ -450,4 +450,32 @@ test('Foster parent can create a repeating reservation', async () => {
 
   const { endedRelationshipHeader } = await openEndedRelationshipPage()
   await endedRelationshipHeader.assertNoTab('calendar')
+})
+
+test('Foster parent can see and give photo consent', async () => {
+  await Fixture.placement()
+    .with({
+      childId: fosterChild.id,
+      unitId: fixtures.daycareFixture.id,
+      startDate: mockedDate.formatIso(),
+      endDate: mockedDate.addYears(1).formatIso()
+    })
+    .save()
+
+  await activeRelationshipPage.reload()
+  await activeRelationshipHeader.openChildPage(fosterChild.id)
+
+  const childPage = new CitizenChildPage(activeRelationshipPage)
+  await childPage.openCollapsible('consents')
+  await childPage.evakaProfilePicYes.check()
+  await childPage.saveConsent()
+  await waitUntilEqual(() => childPage.evakaProfilePicYes.disabled, true)
+
+  await activeRelationshipPage.reload()
+  await activeRelationshipHeader.openChildPage(fosterChild.id)
+  await childPage.openCollapsible('consents')
+  await childPage.evakaProfilePicYes.waitUntilChecked(true)
+  await childPage.evakaProfilePicNo.waitUntilChecked(false)
+  await waitUntilEqual(() => childPage.evakaProfilePicYes.disabled, true)
+  await waitUntilEqual(() => childPage.evakaProfilePicNo.disabled, true)
 })

@@ -38,13 +38,18 @@ fun Database.Read.getCitizenChildConsentsForGuardian(
 ): Map<ChildId, List<CitizenChildConsent>> =
     this.createQuery(
             """
-SELECT g.child_id, cc.type, cc.given
-FROM guardian g
-LEFT JOIN child_consent cc ON cc.child_id = g.child_id
-WHERE g.guardian_id = :guardianId AND EXISTS(
+WITH children AS (
+    SELECT child_id FROM guardian WHERE guardian_id = :guardianId
+    UNION
+    SELECT child_id FROM foster_parent WHERE parent_id = :guardianId AND valid_during @> :today
+)
+SELECT c.child_id, cc.type, cc.given
+FROM children c
+LEFT JOIN child_consent cc ON cc.child_id = c.child_id
+WHERE EXISTS(
     SELECT 1 FROM placement p
     WHERE daterange(p.start_date, p.end_date, '[]') @> :today
-      AND p.child_id = g.child_id
+      AND p.child_id = c.child_id
 )
         """
                 .trimIndent()
@@ -124,13 +129,18 @@ fun Database.Read.getCitizenConsentedChildConsentTypes(
 ): Map<ChildId, List<ChildConsentType>> =
     this.createQuery(
             """
-SELECT g.child_id, cc.type
-FROM guardian g
-LEFT JOIN child_consent cc ON cc.child_id = g.child_id
-WHERE g.guardian_id = :guardianId AND EXISTS(
+WITH children AS (
+    SELECT child_id FROM guardian WHERE guardian_id = :guardianId
+    UNION
+    SELECT child_id FROM foster_parent WHERE parent_id = :guardianId AND valid_during @> :today
+)
+SELECT c.child_id, cc.type
+FROM children c
+LEFT JOIN child_consent cc ON cc.child_id = c.child_id
+WHERE EXISTS(
     SELECT 1 FROM placement p
     WHERE daterange(p.start_date, p.end_date, '[]') @> :today
-      AND p.child_id = g.child_id
+      AND p.child_id = c.child_id
 )
         """
                 .trimIndent()

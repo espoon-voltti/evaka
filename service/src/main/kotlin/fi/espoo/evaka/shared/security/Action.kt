@@ -348,7 +348,10 @@ sealed interface Action {
                 IsCitizen(allowWeakLogin = true).guardianOfChild(),
                 IsCitizen(allowWeakLogin = true).fosterParentOfChild()
             ),
-            INSERT_CHILD_CONSENTS(IsCitizen(allowWeakLogin = false).guardianOfChild());
+            INSERT_CHILD_CONSENTS(
+                IsCitizen(allowWeakLogin = false).guardianOfChild(),
+                IsCitizen(allowWeakLogin = false).fosterParentOfChild()
+            );
 
             override fun toString(): String = "${javaClass.name}.$name"
         }
