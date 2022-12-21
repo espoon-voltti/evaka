@@ -22,7 +22,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+import { Fixture, uuidv4 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
@@ -478,4 +478,57 @@ test('Foster parent can see and give photo consent', async () => {
   await childPage.evakaProfilePicNo.waitUntilChecked(false)
   await waitUntilEqual(() => childPage.evakaProfilePicYes.disabled, true)
   await waitUntilEqual(() => childPage.evakaProfilePicNo.disabled, true)
+})
+
+test('Foster parent can see calendar events for foster children', async () => {
+  const { data: placement } = await Fixture.placement()
+    .with({
+      childId: fosterChild.id,
+      unitId: fixtures.daycareFixture.id,
+      startDate: mockedDate.formatIso(),
+      endDate: mockedDate.addYears(1).formatIso()
+    })
+    .save()
+  const { data: daycareGroup } = await Fixture.daycareGroup()
+    .with({
+      daycareId: fixtures.daycareFixture.id,
+      name: 'Group 1'
+    })
+    .save()
+  await Fixture.groupPlacement()
+    .with({
+      startDate: mockedDate.formatIso(),
+      endDate: mockedDate.addYears(1).formatIso(),
+      daycareGroupId: daycareGroup.id,
+      daycarePlacementId: placement.id
+    })
+    .save()
+  const groupEventId = uuidv4()
+  await Fixture.calendarEvent()
+    .with({
+      id: groupEventId,
+      title: 'Group-wide event',
+      description: 'Whole group',
+      period: new FiniteDateRange(mockedDate, mockedDate)
+    })
+    .save()
+  await Fixture.calendarEventAttendee()
+    .with({
+      calendarEventId: groupEventId,
+      unitId: fixtures.daycareFixture.id,
+      groupId: daycareGroup.id
+    })
+    .save()
+  await activeRelationshipPage.reload()
+  await activeRelationshipHeader.selectTab('calendar')
+  const calendarPage = new CitizenCalendarPage(
+    activeRelationshipPage,
+    'desktop'
+  )
+  await calendarPage.assertEventCount(mockedDate, 1)
+  const dayView = await calendarPage.openDayView(mockedDate)
+  await dayView.assertEvent(fosterChild.id, groupEventId, {
+    title: 'Group-wide event / Group 1',
+    description: 'Whole group'
+  })
 })
