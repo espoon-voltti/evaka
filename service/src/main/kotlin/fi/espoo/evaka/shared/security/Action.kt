@@ -885,7 +885,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR, EARLY_CHILDHOOD_EDUCATION_SECRETARY)
                 .inPlacementUnitOfChild()
         ),
-        READ_BLOCKED_GUARDIANS(HasGlobalRole(ADMIN, SERVICE_WORKER)),
+        READ_GUARDIANS_AND_BLOCKED_GUARDIANS(HasGlobalRole(ADMIN, SERVICE_WORKER)),
         CREATE_FEE_ALTERATION(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         READ_FEE_ALTERATIONS(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         READ_CHILD_RECIPIENTS(

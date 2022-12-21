@@ -188,30 +188,43 @@ class PersonController(
             }
     }
 
-    @GetMapping("/blocked-guardians/{personId}")
-    fun getPersonBlockedGuardians(
+    data class GuardiansAndBlockedGuardians(
+        val guardians: List<PersonJSON>,
+        val blockedGuardians: List<PersonJSON>
+    )
+
+    @GetMapping("/guardians-and-blocked-guardians/{personId}")
+    fun getPersonGuardiansAndBlockedGuardians(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable(value = "personId") childId: ChildId
-    ): List<PersonJSON> {
+    ): GuardiansAndBlockedGuardians {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
                         clock,
-                        Action.Child.READ_BLOCKED_GUARDIANS,
+                        Action.Child.READ_GUARDIANS_AND_BLOCKED_GUARDIANS,
                         childId
                     )
-                    tx.getBlockedGuardians(childId).mapNotNull { tx.getPersonById(it) }
+                    GuardiansAndBlockedGuardians(
+                        guardians =
+                            personService.getGuardians(tx, user, childId).map { personDTO ->
+                                PersonJSON.from(personDTO)
+                            },
+                        blockedGuardians =
+                            tx.getBlockedGuardians(childId)
+                                .mapNotNull { tx.getPersonById(it) }
+                                .map { personDTO -> PersonJSON.from(personDTO) }
+                    )
                 }
             }
-            .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
             .also {
-                Audit.PersonBlockedGuardiansRead.log(
+                Audit.PersonGuardiansAndBlockedGuardiansRead.log(
                     targetId = childId,
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it.guardians.size + it.blockedGuardians.size)
                 )
             }
     }

@@ -12,6 +12,7 @@ import {
 } from 'lib-common/generated/api-types/messaging'
 import {
   CreatePersonBody,
+  GuardiansAndBlockedGuardians,
   PersonJSON,
   PersonResponse,
   PersonSummary,
@@ -219,12 +220,18 @@ export async function getPersonGuardians(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getPersonBlockedGuardians(
+export async function getPersonGuardiansAndBlockedGuardians(
   personId: UUID
-): Promise<Result<PersonJSON[]>> {
+): Promise<Result<GuardiansAndBlockedGuardians>> {
   return client
-    .get<JsonOf<PersonJSON[]>>(`/person/blocked-guardians/${personId}`)
-    .then((res) => Success.of(res.data.map(deserializePersonJSON)))
+    .get<JsonOf<GuardiansAndBlockedGuardians>>(
+      `/person/guardians-and-blocked-guardians/${personId}`
+    )
+    .then(({ data }) => ({
+      guardians: data.guardians.map(deserializePersonJSON),
+      blockedGuardians: data.blockedGuardians.map(deserializePersonJSON)
+    }))
+    .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }
 

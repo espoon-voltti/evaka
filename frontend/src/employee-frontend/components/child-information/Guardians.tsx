@@ -8,11 +8,14 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import {
-  getPersonBlockedGuardians,
+  getPersonGuardiansAndBlockedGuardians,
   updateEvakaRights
 } from 'employee-frontend/api/person'
-import { combine, Success } from 'lib-common/api'
-import { PersonJSON } from 'lib-common/generated/api-types/pis'
+import { Result, Success } from 'lib-common/api'
+import {
+  GuardiansAndBlockedGuardians,
+  PersonJSON
+} from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { getAge } from 'lib-common/utils/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -35,32 +38,40 @@ import { renderResult } from '../async-rendering'
 
 export default React.memo(function Guardians() {
   const { i18n } = useTranslation()
-  const { childId, guardians, reloadGuardians, permittedActions } =
-    useContext(ChildContext)
-  const [blockedGuardians, reloadBlockedGuardians] = useApiState(
-    () =>
-      childId && permittedActions.has('READ_BLOCKED_GUARDIANS')
-        ? getPersonBlockedGuardians(childId)
-        : Promise.resolve(Success.of<PersonJSON[]>([])),
-    [childId, permittedActions]
-  )
+  const { childId, permittedActions } = useContext(ChildContext)
+  const [guardiansAndBlockedGuardians, reloadGuardiansAndBlockedGuardians] =
+    useApiState(
+      () =>
+        childId && permittedActions.has('READ_GUARDIANS_AND_BLOCKED_GUARDIANS')
+          ? getPersonGuardiansAndBlockedGuardians(childId)
+          : Promise.resolve(
+              Success.of<GuardiansAndBlockedGuardians>({
+                guardians: [],
+                blockedGuardians: []
+              })
+            ),
+      [childId, permittedActions]
+    )
   const [editingEvakaRights, setEditingEvakaRights] = useState<UUID>()
-  const allGuardians = combine(guardians, blockedGuardians).map(
-    ([guardians, blockedGuardians]) =>
-      orderBy(
-        [
-          ...guardians.map((g) => ({ ...g, evakaRightsDenied: false })),
-          ...blockedGuardians.map((g) => ({ ...g, evakaRightsDenied: true }))
-        ],
-        ['lastName', 'firstName'],
-        ['asc']
-      )
-  )
+
+  const allGuardians: Result<(PersonJSON & { evakaRightsDenied: boolean })[]> =
+    guardiansAndBlockedGuardians.isSuccess
+      ? Success.of(
+          orderBy(
+            guardiansAndBlockedGuardians.value.guardians
+              .map((g) => ({ ...g, evakaRightsDenied: false }))
+              .concat(
+                guardiansAndBlockedGuardians.value.blockedGuardians.map(
+                  (g) => ({ ...g, evakaRightsDenied: true })
+                )
+              ),
+            ['lastName', 'firstName'],
+            ['asc']
+          )
+        )
+      : Success.of<(PersonJSON & { evakaRightsDenied: boolean })[]>([])
+
   const stopEditing = useCallback(() => setEditingEvakaRights(undefined), [])
-  const reloadAllGuardians = useCallback(
-    () => Promise.all([reloadGuardians(), reloadBlockedGuardians()]),
-    [reloadGuardians, reloadBlockedGuardians]
-  )
 
   if (!childId) {
     return null
@@ -80,7 +91,7 @@ export default React.memo(function Guardians() {
             )
             .getOrElse(false)}
           stopEditing={stopEditing}
-          reloadGuardians={reloadAllGuardians}
+          reloadGuardians={reloadGuardiansAndBlockedGuardians}
         />
       )}
       <H3 noMargin>{i18n.personProfile.guardians}</H3>
