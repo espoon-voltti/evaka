@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { ChildrenContext } from 'citizen-frontend/children/state'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Main from 'lib-components/atoms/Main'
@@ -19,16 +19,20 @@ import StickyFooter from 'lib-components/layout/StickyFooter'
 import ExpandingInfo from 'lib-components/molecules/ExpandingInfo'
 import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
+import { vasuTranslations } from 'lib-customizations/employee'
 
+import { UnwrapResult } from '../../../../async-rendering'
 import { useTranslation } from '../../../../localization'
+import {
+  vasuDocumentQuery,
+  givePermissionToShareVasuMutation
+} from '../queries'
 
-import { givePermissionToShareVasu } from './api'
 import { VasuContainer } from './components/VasuContainer'
 import { CitizenBasicsSection } from './sections/CitizenBasicsSection'
 import { CitizenDynamicSections } from './sections/CitizenDynamicSections'
 import { CitizenVasuEvents } from './sections/CitizenVasuEvents'
 import { CitizenVasuHeader } from './sections/CitizenVasuHeader'
-import { useVasu } from './use-vasu'
 
 const ButtonContainer = styled.div`
   display: flex;
@@ -47,115 +51,123 @@ export default React.memo(function VasuPage() {
 
   const [givePermissionToShareSelected, setGivePermissionToShareSelected] =
     useState<boolean>(false)
-
-  const { refreshUnreadVasuDocumentsCount } = useContext(ChildrenContext)
-
-  const {
-    vasu,
-    content,
-    translations,
-    permissionToShareRequired,
-    guardianHasGivenPermissionToShare,
-    setGuardianHasGivenPermissionToShare
-  } = useVasu(id)
-
-  const dynamicSectionsOffset = content.hasDynamicFirstSection ? 0 : 1
+  const vasuDocument = useQueryResult(vasuDocumentQuery(id))
+  const givePermissionToShareVasu = useMutationResult(
+    givePermissionToShareVasuMutation
+  )
 
   return (
-    <>
-      <VasuContainer gapSize="zero" data-qa="vasu-preview">
-        {vasu && (
+    <UnwrapResult result={vasuDocument}>
+      {({
+        vasu: { content, ...vasu },
+        permissionToShareRequired,
+        guardianHasGivenPermissionToShare
+      }) => {
+        const translations =
+          vasu !== undefined
+            ? vasuTranslations[vasu.language]
+            : vasuTranslations.FI
+        const dynamicSectionsOffset =
+          content?.hasDynamicFirstSection ?? false ? 0 : 1
+        return (
           <>
-            <ButtonContainer>
-              <ReturnButton label={t.common.return} />
-              <MobileDownloadButtonContainer>
-                <DownloadButton label={t.common.download} />
-              </MobileDownloadButtonContainer>
-            </ButtonContainer>
-            <Main>
-              <CitizenVasuHeader document={vasu} />
-              {!content.hasDynamicFirstSection && (
-                <CitizenBasicsSection
-                  sectionIndex={0}
-                  type={vasu.type}
-                  basics={vasu.basics}
-                  childLanguage={vasu.basics.childLanguage}
-                  templateRange={vasu.templateRange}
-                  translations={translations}
-                />
+            <VasuContainer gapSize="zero" data-qa="vasu-preview">
+              {vasu && (
+                <>
+                  <ButtonContainer>
+                    <ReturnButton label={t.common.return} />
+                    <MobileDownloadButtonContainer>
+                      <DownloadButton label={t.common.download} />
+                    </MobileDownloadButtonContainer>
+                  </ButtonContainer>
+                  <Main>
+                    <CitizenVasuHeader document={vasu} />
+                    {!content.hasDynamicFirstSection && (
+                      <CitizenBasicsSection
+                        sectionIndex={0}
+                        type={vasu.type}
+                        basics={vasu.basics}
+                        childLanguage={vasu.basics.childLanguage}
+                        templateRange={vasu.templateRange}
+                        translations={translations}
+                      />
+                    )}
+                    <CitizenDynamicSections
+                      sections={content.sections}
+                      sectionIndex={dynamicSectionsOffset}
+                      state={vasu.documentState}
+                      translations={translations}
+                      vasu={vasu}
+                    />
+                    <Gap size="s" />
+                    <CitizenVasuEvents document={vasu} content={content} />
+                  </Main>
+                </>
               )}
-              <CitizenDynamicSections
-                sections={content.sections}
-                sectionIndex={dynamicSectionsOffset}
-                state={vasu.documentState}
-                translations={translations}
-                vasu={vasu}
-              />
-              <Gap size="s" />
-              <CitizenVasuEvents document={vasu} content={content} />
-            </Main>
+            </VasuContainer>
+            {vasu &&
+              permissionToShareRequired &&
+              !guardianHasGivenPermissionToShare && (
+                <StickyFooter>
+                  <Container>
+                    <ContentArea
+                      opaque
+                      paddingVertical="m"
+                      paddingHorizontal="L"
+                    >
+                      <Label>
+                        {vasu.type === 'DAYCARE'
+                          ? t.children.vasu.givePermissionToShareTitleVasu
+                          : t.children.vasu.givePermissionToShareTitleLeops}
+                      </Label>
+                      <Gap size="s" />
+                      <ExpandingInfo
+                        info={
+                          <div>
+                            {vasu.type === 'DAYCARE'
+                              ? `${t.children.vasu.givePermissionToShareInfoBase} ${t.children.vasu.sharingVasuDisclaimer}`
+                              : `${t.children.vasu.givePermissionToShareInfoBase} ${t.children.vasu.sharingLeopsDisclaimer}`}
+                          </div>
+                        }
+                        ariaLabel={t.common.openExpandingInfo}
+                        closeLabel={t.common.close}
+                        inlineChildren
+                      >
+                        <span>
+                          {vasu.type === 'DAYCARE'
+                            ? t.children.vasu.givePermissionToShareVasuBrief
+                            : t.children.vasu.givePermissionToShareLeopsBrief}
+                        </span>
+                      </ExpandingInfo>
+                      <Gap size="s" />
+                      <Checkbox
+                        checked={givePermissionToShareSelected}
+                        label={
+                          vasu.type === 'DAYCARE'
+                            ? t.children.vasu.givePermissionToShareVasu
+                            : t.children.vasu.givePermissionToShareLeops
+                        }
+                        onChange={(value) => {
+                          setGivePermissionToShareSelected(value)
+                        }}
+                        data-qa="confirm-checkbox"
+                      />
+                      <Gap />
+                      <AsyncButton
+                        primary
+                        text={t.common.confirm}
+                        disabled={!givePermissionToShareSelected}
+                        onClick={() => givePermissionToShareVasu.mutate(id)}
+                        onSuccess={() => undefined}
+                        data-qa="confirm-button"
+                      />
+                    </ContentArea>
+                  </Container>
+                </StickyFooter>
+              )}
           </>
-        )}
-      </VasuContainer>
-      {vasu && permissionToShareRequired && !guardianHasGivenPermissionToShare && (
-        <StickyFooter>
-          <Container>
-            <ContentArea opaque paddingVertical="m" paddingHorizontal="L">
-              <Label>
-                {vasu.type === 'DAYCARE'
-                  ? t.children.vasu.givePermissionToShareTitleVasu
-                  : t.children.vasu.givePermissionToShareTitleLeops}
-              </Label>
-              <Gap size="s" />
-              <ExpandingInfo
-                info={
-                  <div>
-                    {vasu.type === 'DAYCARE'
-                      ? `${t.children.vasu.givePermissionToShareInfoBase} ${t.children.vasu.sharingVasuDisclaimer}`
-                      : `${t.children.vasu.givePermissionToShareInfoBase} ${t.children.vasu.sharingLeopsDisclaimer}`}
-                  </div>
-                }
-                ariaLabel={t.common.openExpandingInfo}
-                closeLabel={t.common.close}
-                inlineChildren
-              >
-                <span>
-                  {vasu.type === 'DAYCARE'
-                    ? t.children.vasu.givePermissionToShareVasuBrief
-                    : t.children.vasu.givePermissionToShareLeopsBrief}
-                </span>
-              </ExpandingInfo>
-              <Gap size="s" />
-              <Checkbox
-                checked={givePermissionToShareSelected}
-                label={
-                  vasu.type === 'DAYCARE'
-                    ? t.children.vasu.givePermissionToShareVasu
-                    : t.children.vasu.givePermissionToShareLeops
-                }
-                onChange={setGivePermissionToShareSelected}
-                data-qa="confirm-checkbox"
-              />
-              <Gap />
-              <AsyncButton
-                primary
-                text={t.common.confirm}
-                disabled={!givePermissionToShareSelected}
-                onClick={() => {
-                  return givePermissionToShareVasu(id).then((res) => {
-                    refreshUnreadVasuDocumentsCount()
-                    return res
-                  })
-                }}
-                onSuccess={() => {
-                  setGuardianHasGivenPermissionToShare(true)
-                }}
-                data-qa="confirm-button"
-              />
-            </ContentArea>
-          </Container>
-        </StickyFooter>
-      )}
-    </>
+        )
+      }}
+    </UnwrapResult>
   )
 })

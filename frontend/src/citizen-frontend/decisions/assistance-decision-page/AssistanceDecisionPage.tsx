@@ -2,16 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect } from 'react'
+import React, { useEffect } from 'react'
 
 import Footer from 'citizen-frontend/Footer'
 import { renderResult } from 'citizen-frontend/async-rendering'
 import { useTranslation } from 'citizen-frontend/localization'
 import { LocalizationContext } from 'citizen-frontend/localization/state'
 import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import AssistanceNeedDecisionReadOnly from 'lib-components/assistance-need-decision/AssistanceNeedDecisionReadOnly'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
@@ -21,31 +21,23 @@ import { Gap } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faArrowDownToLine } from 'lib-icons'
 
-import { ChildrenContext } from '../../children/state'
-
 import {
-  getAssistanceNeedDecision,
-  markAssistanceNeedDecisionAsRead
-} from './api'
+  assistanceDecisionQuery,
+  markAssistanceNeedDecisionAsReadMutation
+} from './queries'
 
 export default React.memo(function AssistanceNeedDecisionPage() {
   const { id } = useNonNullableParams<{ id: UUID }>()
 
-  const [assistanceNeedDecision] = useApiState(
-    () => getAssistanceNeedDecision(id),
-    [id]
-  )
-
+  const assistanceNeedDecision = useQueryResult(assistanceDecisionQuery(id))
   const i18n = useTranslation()
 
-  const { refreshUnreadAssistanceNeedDecisionCounts } =
-    useContext(ChildrenContext)
-
+  const markAssistanceNeedDecisionAsRead = useMutationResult(
+    markAssistanceNeedDecisionAsReadMutation
+  )
   useEffect(() => {
-    void markAssistanceNeedDecisionAsRead(id).then(() => {
-      refreshUnreadAssistanceNeedDecisionCounts()
-    })
-  }, [id, refreshUnreadAssistanceNeedDecisionCounts])
+    markAssistanceNeedDecisionAsRead.mutate(id)
+  }, [id, markAssistanceNeedDecisionAsRead])
 
   return (
     <>

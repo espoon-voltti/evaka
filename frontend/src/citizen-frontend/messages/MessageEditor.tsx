@@ -3,12 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import partition from 'lodash/partition'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import FocusLock from 'react-focus-lock'
 import styled from 'styled-components'
 
 import { renderResult } from 'citizen-frontend/async-rendering'
-import { ChildrenContext } from 'citizen-frontend/children/state'
 import { Result } from 'lib-common/api'
 import {
   CitizenMessageBody,
@@ -16,6 +15,7 @@ import {
   MessageAccount
 } from 'lib-common/generated/api-types/messaging'
 import { formatPreferredName } from 'lib-common/names'
+import { useQueryResult } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -32,6 +32,7 @@ import { faTimes } from 'lib-icons'
 
 import ModalAccessibilityWrapper from '../ModalAccessibilityWrapper'
 import { useUser } from '../auth/state'
+import { childrenQuery } from '../children/queries'
 import { useTranslation } from '../localization'
 
 const emptyMessage: CitizenMessageBody = {
@@ -92,7 +93,7 @@ export default React.memo(function MessageEditor({
   const send = useCallback(() => onSend(message), [message, onSend])
   const sendEnabled = areRequiredFieldsFilledForMessage(message)
 
-  const { children } = useContext(ChildrenContext)
+  const children = useQueryResult(childrenQuery)
 
   const validAccounts = useMemo(() => {
     const accounts = receiverOptions.messageAccounts.filter((account) =>

@@ -7,12 +7,13 @@ import React, { useContext, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { ApplicationsContext } from 'citizen-frontend/applications/state'
-import { ChildrenContext } from 'citizen-frontend/children/state'
+import { useQuery } from 'lib-common/query'
 import { desktopMin, desktopMinPx } from 'lib-components/breakpoints'
 import colors from 'lib-customizations/common'
 
 import { useUser } from '../auth/state'
+import { assistanceDecisionUnreadCountsQuery } from '../decisions/assistance-decision-page/queries'
+import { applicationNotificationsQuery } from '../decisions/queries'
 import { MessageContext, MessagePageState } from '../messages/state'
 
 import CityLogo from './CityLogo'
@@ -22,17 +23,24 @@ import { headerHeightDesktop, headerHeightMobile } from './const'
 import { LanguageMenu } from './shared-components'
 
 export default React.memo(function Header(props: { ariaHidden: boolean }) {
-  const user = useUser()
+  const loggedIn = useUser() !== undefined
 
   const { unreadMessagesCount, refreshUnreadMessagesCount } =
     useContext<MessagePageState>(MessageContext)
 
   useEffect(() => {
-    if (user) refreshUnreadMessagesCount()
-  }, [refreshUnreadMessagesCount, user])
+    if (loggedIn) refreshUnreadMessagesCount()
+  }, [refreshUnreadMessagesCount, loggedIn])
 
-  const { unreadAssistanceNeedDecisionCounts } = useContext(ChildrenContext)
-  const { waitingConfirmationCount } = useContext(ApplicationsContext)
+  const { data: unreadAssistanceNeedDecisionCounts = [] } = useQuery(
+    assistanceDecisionUnreadCountsQuery,
+    { enabled: loggedIn }
+  )
+
+  const { data: waitingConfirmationCount = 0 } = useQuery(
+    applicationNotificationsQuery,
+    { enabled: loggedIn }
+  )
 
   const location = useLocation()
   const isLoginPage = location.pathname === '/login'

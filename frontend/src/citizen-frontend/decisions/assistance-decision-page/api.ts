@@ -3,9 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { client } from 'citizen-frontend/api-client'
-import { Failure, Result, Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
-import { AssistanceNeedDecision } from 'lib-common/generated/api-types/assistanceneed'
+import {
+  AssistanceNeedDecision,
+  AssistanceNeedDecisionCitizenListItem,
+  UnreadAssistanceNeedDecisionItem
+} from 'lib-common/generated/api-types/assistanceneed'
 import { JsonOf } from 'lib-common/json'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -24,22 +27,44 @@ const mapToAssistanceNeedDecision = (
   }
 })
 
-export function getAssistanceNeedDecision(
+export function getAssistanceDecisions(): Promise<
+  AssistanceNeedDecisionCitizenListItem[]
+> {
+  return client
+    .get<JsonOf<AssistanceNeedDecisionCitizenListItem[]>>(
+      `/citizen/assistance-need-decisions`
+    )
+    .then(({ data }) =>
+      data.map((decision) => ({
+        ...decision,
+        decisionMade: LocalDate.parseIso(decision.decisionMade),
+        validityPeriod: DateRange.parseJson(decision.validityPeriod)
+      }))
+    )
+}
+
+export function getAssitanceDecision(
   id: UUID
-): Promise<Result<AssistanceNeedDecision>> {
+): Promise<AssistanceNeedDecision> {
   return client
     .get<JsonOf<AssistanceNeedDecision>>(
       `/citizen/children/assistance-need-decision/${id}`
     )
-    .then((res) => Success.of(mapToAssistanceNeedDecision(res.data)))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => mapToAssistanceNeedDecision(res.data))
 }
 
-export function markAssistanceNeedDecisionAsRead(
-  id: UUID
-): Promise<Result<void>> {
+export function getAssistanceDecisionUnreadCounts(): Promise<
+  UnreadAssistanceNeedDecisionItem[]
+> {
+  return client
+    .get<JsonOf<UnreadAssistanceNeedDecisionItem[]>>(
+      `/citizen/children/assistance-need-decisions/unread-counts`
+    )
+    .then((res) => res.data)
+}
+
+export function markAssistanceNeedDecisionAsRead(id: UUID): Promise<void> {
   return client
     .post(`/citizen/children/assistance-need-decision/${id}/read`)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .then(() => undefined)
 }
