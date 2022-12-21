@@ -206,8 +206,12 @@ export class Element {
     return this.text.then((str) => (str ? parseFloat(str) : null))
   }
 
-  async assertTextEquals(content: string): Promise<void> {
-    await waitUntilEqual(() => this.text, content)
+  async assertText(assertion: (text: string) => boolean): Promise<void> {
+    await waitUntilTrue(async () => assertion(await this.text))
+  }
+
+  async assertTextEquals(expected: string): Promise<void> {
+    await this.assertText((text) => text === expected)
   }
 
   get visible(): Promise<boolean> {

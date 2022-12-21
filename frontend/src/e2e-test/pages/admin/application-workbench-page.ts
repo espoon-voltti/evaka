@@ -183,8 +183,8 @@ export class ApplicationWorkbenchPage {
   }
 
   async assertAgreementStatusNotAgreed() {
-    await waitUntilTrue(async () =>
-      (await this.#agreementStatus.text).includes('Ei ole sovittu yhdessä')
+    await this.#agreementStatus.assertText((text) =>
+      text.includes('Ei ole sovittu yhdessä')
     )
   }
 

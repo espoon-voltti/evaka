@@ -20,11 +20,9 @@ export default class CitizenPersonalDetails {
   #save = this.page.find('[data-qa="save"]')
 
   async checkMissingEmailWarningIsShown() {
-    await waitUntilTrue(() => this.#missingEmailOrPhoneBox.visible)
-    await waitUntilTrue(async () =>
-      ((await this.#missingEmailOrPhoneBox.text) ?? '').includes(
-        'Sähköpostiosoitteesi puuttuu'
-      )
+    await this.#missingEmailOrPhoneBox.waitUntilVisible()
+    await this.#missingEmailOrPhoneBox.assertText((text) =>
+      text.includes('Sähköpostiosoitteesi puuttuu')
     )
   }
 

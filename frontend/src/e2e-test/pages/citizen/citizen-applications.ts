@@ -5,9 +5,9 @@
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import { JsonOf } from 'lib-common/json'
 
-import { waitUntilEqual, waitUntilDefined, waitUntilTrue } from '../../utils'
+import { waitUntilDefined, waitUntilEqual } from '../../utils'
 import { FormInput, Section, sections } from '../../utils/application-forms'
-import { Page, Checkbox, Radio, TextInput, FileInput } from '../../utils/page'
+import { Checkbox, FileInput, Page, Radio, TextInput } from '../../utils/page'
 
 export default class CitizenApplicationsPage {
   constructor(private readonly page: Page) {}
@@ -100,10 +100,8 @@ export default class CitizenApplicationsPage {
     await this.#applicationPreferredStartDate(id).assertTextEquals(
       preferredStartDate
     )
-    await waitUntilTrue(async () =>
-      (await this.#applicationStatus(id).innerText)
-        .toLowerCase()
-        .includes(status.toLowerCase())
+    await this.#applicationStatus(id).assertText((text) =>
+      text.toLowerCase().includes(status.toLowerCase())
     )
   }
 
@@ -340,13 +338,9 @@ class CitizenApplicationEditor {
   }
 
   async assertAttachmentUploaded(attachmentFileName: string) {
-    await waitUntilTrue(async () =>
-      (
-        await this.page.find(
-          '[data-qa="uploaded-files"] [data-qa="file-download-button"]'
-        ).text
-      ).includes(attachmentFileName)
-    )
+    await this.page
+      .find('[data-qa="uploaded-files"] [data-qa="file-download-button"]')
+      .assertText((text) => text.includes(attachmentFileName))
   }
 
   async assertUrgencyFileDownload() {

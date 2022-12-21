@@ -33,11 +33,9 @@ export default class CitizenDecisionsPage {
     await decision
       .findByDataQa('decision-sent-date')
       .assertTextEquals(expectedSentDate)
-    await waitUntilEqual(
-      async () =>
-        (await decision.findByDataQa('decision-status').text).toLowerCase(),
-      expectedStatus.toLowerCase()
-    )
+    await decision
+      .findByDataQa('decision-status')
+      .assertText((text) => text.toLowerCase() === expectedStatus.toLowerCase())
   }
 
   async navigateToDecisionResponse(applicationId: string) {

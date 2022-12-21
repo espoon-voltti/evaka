@@ -4,7 +4,7 @@
 
 import { Lang } from 'lib-customizations/citizen'
 
-import { waitUntilEqual, waitUntilFalse } from '../../utils'
+import { waitUntilFalse } from '../../utils'
 import { Page } from '../../utils/page'
 
 export default class CitizenHeader {
@@ -141,9 +141,8 @@ export default class CitizenHeader {
         `children-menu-${childId}-notification-count`
       )
       expectedCount != 0
-        ? await waitUntilEqual(
-            () => notification.text,
-            expectedCount.toString()
+        ? await notification.assertText(
+            (text) => text === expectedCount.toString()
           )
         : await notification.waitUntilHidden()
       await this.#toggleChildrenMenu()
