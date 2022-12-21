@@ -43,6 +43,7 @@ export default React.memo(function MessagesPage() {
     selectedDraft,
     setSelectedDraft,
     selectedAccount,
+    selectDefaultAccount,
     selectAccount,
     setSelectedThread,
     refreshMessages,
@@ -55,6 +56,15 @@ export default React.memo(function MessagesPage() {
   useEffect(() => refreshMessages(), [refreshMessages])
   const [sending, setSending] = useState(false)
   const [showEditor, setShowEditor] = useState<boolean>(false)
+
+  // Select first account if no account is selected. This modifies MessageContextProvider state and so has
+  // to be in useEffect. Calling setState() directly in the render function is only allowed if the state
+  // lives in the same component.
+  useEffect(() => {
+    if (accounts.isSuccess && selectedAccount === undefined) {
+      selectDefaultAccount()
+    }
+  }, [accounts, selectedAccount, selectDefaultAccount])
 
   // open editor when draft is selected
   useEffect(() => {

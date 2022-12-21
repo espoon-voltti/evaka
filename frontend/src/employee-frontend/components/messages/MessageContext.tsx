@@ -8,7 +8,6 @@ import React, {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState
 } from 'react'
@@ -81,6 +80,7 @@ export interface MessagesState {
   setSelectedDraft: (draft: DraftContent | undefined) => void
   selectedAccount: AccountView | undefined
   selectAccount: (v: AccountView) => void
+  selectDefaultAccount: () => void
   selectUnit: (v: string) => void
   page: number
   setPage: (page: number) => void
@@ -115,6 +115,7 @@ const defaultState: MessagesState = {
   setSelectedDraft: () => undefined,
   selectedAccount: undefined,
   selectAccount: () => undefined,
+  selectDefaultAccount: () => undefined,
   selectUnit: () => undefined,
   page: 1,
   setPage: () => undefined,
@@ -589,49 +590,32 @@ export const MessageContextProvider = React.memo(
         setParams({
           accountId: accountView.account.id,
           messageBox: accountView.view,
-          unitId
+          unitId: accountView.unitId
         }),
-      [setParams, unitId]
+      [setParams]
     )
 
-    // select first account if no account is selected
-    useEffect(() => {
-      if (!accounts.isSuccess || selectedAccount) {
-        return
-      }
-
+    const selectDefaultAccount = useCallback(() => {
       if (municipalAccount) {
-        return selectAccount({
+        selectAccount({
           view: municipalMessageBoxes[0],
           account: municipalAccount.account,
           unitId: null
         })
-      }
-
-      if (personalAccount) {
-        return selectAccount({
+      } else if (personalAccount) {
+        selectAccount({
           view: personalMessageBoxes[0],
           account: personalAccount.account,
           unitId: null
         })
-      }
-
-      const firstGroupAccount = groupAccounts[0]
-      if (firstGroupAccount) {
+      } else if (groupAccounts.length > 0) {
         return selectAccount({
           view: groupMessageBoxes[0],
-          account: firstGroupAccount.account,
-          unitId: firstGroupAccount.daycareGroup.unitId
+          account: groupAccounts[0].account,
+          unitId: groupAccounts[0].daycareGroup.unitId
         })
       }
-    }, [
-      accounts,
-      groupAccounts,
-      municipalAccount,
-      personalAccount,
-      selectAccount,
-      selectedAccount
-    ])
+    }, [groupAccounts, municipalAccount, personalAccount, selectAccount])
 
     const value = useMemo(
       () => ({
@@ -644,6 +628,7 @@ export const MessageContextProvider = React.memo(
         setSelectedDraft,
         selectedAccount,
         selectAccount,
+        selectDefaultAccount,
         selectUnit,
         page,
         setPage,
@@ -676,6 +661,7 @@ export const MessageContextProvider = React.memo(
         selectedDraft,
         selectedAccount,
         selectAccount,
+        selectDefaultAccount,
         selectUnit,
         page,
         pages,
