@@ -24,6 +24,6 @@ export default class PinLoginPage {
   }
 
   async assertWrongPinError() {
-    await waitUntilEqual(() => this.#pinInfo.innerText, 'Väärä PIN-koodi')
+    await waitUntilEqual(() => this.#pinInfo.text, 'Väärä PIN-koodi')
   }
 }

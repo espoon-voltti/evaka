@@ -213,7 +213,7 @@ describe('Sending and receiving messages', () => {
 
         await messagesPage.assertMessageIsSentForParticipants(
           0,
-          `${enduserChildFixtureKaarina.lastName} ${enduserChildFixtureKaarina.firstName} `
+          `${enduserChildFixtureKaarina.lastName} ${enduserChildFixtureKaarina.firstName}`
         )
 
         await openCitizen(mockedDateAt11)

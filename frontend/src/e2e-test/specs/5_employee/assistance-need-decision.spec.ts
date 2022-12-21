@@ -280,9 +280,9 @@ describe('Assistance Need Decisions - Preview page', () => {
 
   test('Decision can be sent to the decision maker', async () => {
     await assistanceNeedDecisionPreviewPage.sendDecisionButton.click()
-    expect(
-      await assistanceNeedDecisionPreviewPage.decisionSentAt.innerText
-    ).toEqual(LocalDate.todayInSystemTz().format())
+    expect(await assistanceNeedDecisionPreviewPage.decisionSentAt.text).toEqual(
+      LocalDate.todayInSystemTz().format()
+    )
     expect(
       await assistanceNeedDecisionPreviewPage.sendDecisionButton.getAttribute(
         'disabled'

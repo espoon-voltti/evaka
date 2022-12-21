@@ -132,13 +132,9 @@ test('Foster parent can create a daycare application and accept a daycare decisi
   const { endedRelationshipPage, endedRelationshipHeader } =
     await openEndedRelationshipPage()
   await endedRelationshipHeader.selectTab('applications')
-  await waitUntilEqual(
-    () =>
-      endedRelationshipPage
-        .findByDataQa('applications-list')
-        .getAttribute('data-isloading'),
-    'false'
-  )
+  await endedRelationshipPage
+    .findByDataQa('applications-list')
+    .assertAttributeEquals('data-isloading', 'false')
   await endedRelationshipPage
     .findByDataQa(`child-${fosterChild.id}`)
     .waitUntilHidden()
@@ -208,13 +204,9 @@ test('Foster parent can create a daycare application and accept a daycare decisi
   const { endedRelationshipPage, endedRelationshipHeader } =
     await openEndedRelationshipPage()
   await endedRelationshipHeader.selectTab('applications')
-  await waitUntilEqual(
-    () =>
-      endedRelationshipPage
-        .findByDataQa('applications-list')
-        .getAttribute('data-isloading'),
-    'false'
-  )
+  await endedRelationshipPage
+    .findByDataQa('applications-list')
+    .assertAttributeEquals('data-isloading', 'false')
   await endedRelationshipPage
     .findByDataQa(`child-${fosterChild.id}`)
     .waitUntilHidden()

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 
 export default class CitizenPedagogicalDocumentsPage {
@@ -22,11 +21,8 @@ export default class CitizenPedagogicalDocumentsPage {
     expectedDate: string,
     expectedDescription: string
   ) {
-    await waitUntilEqual(() => this.#date(id).innerText, expectedDate)
-    await waitUntilEqual(
-      () => this.#description(id).innerText,
-      expectedDescription
-    )
+    await this.#date(id).assertTextEquals(expectedDate)
+    await this.#description(id).assertTextEquals(expectedDescription)
   }
 
   async downloadAttachment(id: string) {
@@ -42,6 +38,6 @@ export default class CitizenPedagogicalDocumentsPage {
   }
 
   async assertChildNameIs(id: string, expectedName: string) {
-    await waitUntilEqual(() => this.#childName(id).innerText, expectedName)
+    await this.#childName(id).assertTextEquals(expectedName)
   }
 }

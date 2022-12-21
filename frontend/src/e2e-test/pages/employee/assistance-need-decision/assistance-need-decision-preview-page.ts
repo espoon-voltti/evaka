@@ -9,7 +9,7 @@ export default class AssistanceNeedDecisionPreviewPage {
   constructor(private readonly page: Page) {}
 
   private getLabelledValue(label: string) {
-    return this.page.findByDataQa(`labelled-value-${label}`).innerText
+    return this.page.findByDataQa(`labelled-value-${label}`).text
   }
 
   get pedagogicalMotivation() {
@@ -22,7 +22,7 @@ export default class AssistanceNeedDecisionPreviewPage {
       .waitUntilVisible()
   }
   get structuralMotivationDescription() {
-    return this.page.findByDataQa('structural-motivation-description').innerText
+    return this.page.findByDataQa('structural-motivation-description').text
   }
   get careMotivation() {
     return this.getLabelledValue('care-motivation')
@@ -39,10 +39,10 @@ export default class AssistanceNeedDecisionPreviewPage {
   async heardGuardian(id: string) {
     return this.page
       .findByDataQa('guardians-heard-section')
-      .findByDataQa(`guardian-${id}`).innerText
+      .findByDataQa(`guardian-${id}`).text
   }
   get otherRepresentativeDetails() {
-    return this.page.findByDataQa('other-representative-details').innerText
+    return this.page.findByDataQa('other-representative-details').text
   }
   get viewOfGuardians() {
     return this.getLabelledValue('view-of-the-guardians')
@@ -72,9 +72,6 @@ export default class AssistanceNeedDecisionPreviewPage {
   }
 
   async assertPageTitle(title: string): Promise<void> {
-    await waitUntilEqual(
-      () => this.page.findByDataQa('page-title').innerText,
-      title
-    )
+    await waitUntilEqual(() => this.page.findByDataQa('page-title').text, title)
   }
 }

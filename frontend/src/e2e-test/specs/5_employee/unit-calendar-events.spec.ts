@@ -140,7 +140,7 @@ describe('Calendar events', () => {
         calendarPage.calendarEventsSection.getEventOfDay(
           mockedToday.addDays(1),
           0
-        ).innerText,
+        ).text,
       'Testailijat: Test event (G)'
     )
   })
@@ -164,14 +164,11 @@ describe('Calendar events', () => {
     await creationModal.submit()
 
     await waitUntilEqual(
-      () =>
-        calendarPage.calendarEventsSection.getEventOfDay(startDate, 0)
-          .innerText,
+      () => calendarPage.calendarEventsSection.getEventOfDay(startDate, 0).text,
       'Osa ryhmästä: Test event (P)'
     )
     await waitUntilEqual(
-      () =>
-        calendarPage.calendarEventsSection.getEventOfDay(endDate, 0).innerText,
+      () => calendarPage.calendarEventsSection.getEventOfDay(endDate, 0).text,
       'Osa ryhmästä: Test event (P)'
     )
 
@@ -188,14 +185,11 @@ describe('Calendar events', () => {
     await editModal.submit()
 
     await waitUntilEqual(
-      () =>
-        calendarPage.calendarEventsSection.getEventOfDay(startDate, 0)
-          .innerText,
+      () => calendarPage.calendarEventsSection.getEventOfDay(startDate, 0).text,
       'Osa ryhmästä: Edited event title'
     )
     await waitUntilEqual(
-      () =>
-        calendarPage.calendarEventsSection.getEventOfDay(endDate, 0).innerText,
+      () => calendarPage.calendarEventsSection.getEventOfDay(endDate, 0).text,
       'Osa ryhmästä: Edited event title'
     )
 

@@ -90,7 +90,7 @@ export default class ApplicationEditView {
       () =>
         this.#urgentAttachmentFileUpload.find(
           '[data-qa="file-download-button"]'
-        ).innerText,
+        ).text,
       fileName
     )
   }
@@ -129,7 +129,7 @@ export default class ApplicationEditView {
       () =>
         this.#shiftCareAttachmentFileUpload.find(
           '[data-qa="file-download-button"]'
-        ).innerText,
+        ).text,
       fileName
     )
   }

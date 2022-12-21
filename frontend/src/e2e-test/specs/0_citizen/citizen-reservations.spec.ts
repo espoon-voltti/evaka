@@ -296,8 +296,10 @@ describe.each(e)('Citizen attendance reservations (%s)', (env) => {
     const dayView = await calendarPage.openDayView(reservationDay)
     const absencesModal = await dayView.createAbsence()
 
-    await absencesModal.assertStartDate(reservationDay.format())
-    await absencesModal.assertEndDate(reservationDay.format())
+    await absencesModal.startDateInput.assertValueEquals(
+      reservationDay.format()
+    )
+    await absencesModal.endDateInput.assertValueEquals(reservationDay.format())
   })
 
   test('Children are grouped correctly in calendar', async () => {

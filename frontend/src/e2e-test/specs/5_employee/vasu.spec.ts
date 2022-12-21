@@ -145,7 +145,7 @@ describe('Child Information - Vasu language', () => {
   test('Child placed in a Swedish unit can only use Swedish templates', async () => {
     await section.addNew()
     await waitUntilEqual(
-      () => page.findAllByDataQa('vasu-state-chip').nth(1).textContent,
+      () => page.findAllByDataQa('vasu-state-chip').nth(1).text,
       'Utkast'
     )
   })
@@ -425,11 +425,11 @@ describe('Vasu document page', () => {
       await vasuEditPage.waitUntilSaved()
       const vasuPage = await openDocument()
       await waitUntilEqual(
-        () => vasuPage.infoSharedToSection.recipients.innerText,
+        () => vasuPage.infoSharedToSection.recipients.text,
         'Neuvolaan, Lasten terapiapalveluihin'
       )
       await waitUntilEqual(
-        () => vasuPage.infoSharedToSection.other.innerText,
+        () => vasuPage.infoSharedToSection.other.text,
         'Police'
       )
     })

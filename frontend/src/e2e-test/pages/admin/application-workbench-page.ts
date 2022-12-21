@@ -4,7 +4,7 @@
 
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
 
-import { waitUntilEqual, waitUntilTrue } from '../../utils'
+import { waitUntilTrue } from '../../utils'
 import { Checkbox, Page } from '../../utils/page'
 import ApplicationListView from '../employee/applications/application-list-view'
 import { PlacementDraftPage } from '../employee/placement-draft-page'
@@ -171,8 +171,7 @@ export class ApplicationWorkbenchPage {
     matchingText: string
   ) {
     await this.#applicationPlacementProposalStatusIndicator.hover()
-    const tooltip = await this.#applicationPlacementProposalStatusTooltip
-      .innerText
+    const tooltip = await this.#applicationPlacementProposalStatusTooltip.text
     const match = tooltip.match(matchingText)
     return match ? match.length > 0 : false
   }
@@ -184,32 +183,27 @@ export class ApplicationWorkbenchPage {
   }
 
   async assertAgreementStatusNotAgreed() {
-    await waitUntilTrue(async () =>
-      (await this.#agreementStatus.innerText).includes('Ei ole sovittu yhdessä')
+    await this.#agreementStatus.assertText((text) =>
+      text.includes('Ei ole sovittu yhdessä')
     )
   }
 
   async assertContactDetails(expectedTel: string, expectedEmail: string) {
-    await waitUntilEqual(() => this.#otherGuardianTel.innerText, expectedTel)
-    await waitUntilEqual(
-      () => this.#otherGuardianEmail.innerText,
-      expectedEmail
-    )
+    await this.#otherGuardianTel.assertTextEquals(expectedTel)
+    await this.#otherGuardianEmail.assertTextEquals(expectedEmail)
   }
 
   async assertDecisionGuardians(
     expectedGuardian: string,
     expectedOtherGuardian?: string
   ) {
-    await waitUntilEqual(
-      () => this.page.findByDataQa('guardian-name').innerText,
-      expectedGuardian
-    )
+    await this.page
+      .findByDataQa('guardian-name')
+      .assertTextEquals(expectedGuardian)
     if (expectedOtherGuardian !== undefined) {
-      await waitUntilEqual(
-        () => this.page.findByDataQa('other-guardian-name').innerText,
-        expectedOtherGuardian
-      )
+      await this.page
+        .findByDataQa('other-guardian-name')
+        .assertTextEquals(expectedOtherGuardian)
     }
   }
 }

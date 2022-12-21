@@ -28,19 +28,19 @@ async function assertIncomeStatementCreated(
   startDate = LocalDate.todayInSystemTz().format()
 ) {
   await waitUntilEqual(async () => await incomeStatementsPage.rows.count(), 1)
-  await waitUntilTrue(async () =>
-    (await incomeStatementsPage.rows.elem().innerText).includes(startDate)
-  )
+  await incomeStatementsPage.rows
+    .only()
+    .assertText((text) => text.includes(startDate))
 }
 
 const assertRequiredAttachment = async (attachment: string, present = true) =>
   waitUntilTrue(async () =>
     present
-      ? (await incomeStatementsPage.requiredAttachments.innerText).includes(
+      ? (await incomeStatementsPage.requiredAttachments.text).includes(
           attachment
         )
       : !(await incomeStatementsPage.requiredAttachments.visible) ||
-        !(await incomeStatementsPage.requiredAttachments.innerText).includes(
+        !(await incomeStatementsPage.requiredAttachments.text).includes(
           attachment
         )
   )

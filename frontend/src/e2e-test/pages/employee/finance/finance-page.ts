@@ -119,12 +119,12 @@ export class FeeDecisionDetailsPage {
   #childIncome = this.page.findAll('[data-qa="child-income"]')
 
   async assertPartnerName(expectedName: string) {
-    await waitUntilEqual(() => this.#partnerName.innerText, expectedName)
+    await waitUntilEqual(() => this.#partnerName.text, expectedName)
   }
 
   async assertChildIncome(nth: number, expectedTotalText: string) {
     await waitUntilTrue(async () =>
-      (await this.#childIncome.nth(nth).innerText).includes(expectedTotalText)
+      (await this.#childIncome.nth(nth).text).includes(expectedTotalText)
     )
   }
 
@@ -226,7 +226,7 @@ export class ValueDecisionDetailsPage {
   }
 
   async assertPartnerName(expectedName: string) {
-    await waitUntilEqual(() => this.#partnerName.innerText, expectedName)
+    await waitUntilEqual(() => this.#partnerName.text, expectedName)
   }
 
   async assertPartnerNameNotShown() {
@@ -236,7 +236,7 @@ export class ValueDecisionDetailsPage {
 
   async assertChildIncome(nth: number, expectedTotalText: string) {
     await waitUntilTrue(async () =>
-      (await this.#childIncome.nth(nth).innerText).includes(expectedTotalText)
+      (await this.#childIncome.nth(nth).text).includes(expectedTotalText)
     )
   }
 }
@@ -333,10 +333,7 @@ export class InvoicesPage {
 
   async assertInvoiceHeadOfFamily(fullName: string) {
     await this.#invoiceDetailsPage.waitUntilVisible()
-    await waitUntilEqual(
-      () => this.#invoiceDetailsHeadOfFamily.innerText,
-      fullName
-    )
+    await waitUntilEqual(() => this.#invoiceDetailsHeadOfFamily.text, fullName)
   }
 
   async navigateBackToInvoices() {
@@ -378,7 +375,7 @@ export class InvoicesPage {
 
   async assertInvoiceTotal(total: number) {
     await waitUntilEqual(
-      () => this.#invoiceInList.find('[data-qa="invoice-total"]').innerText,
+      () => this.#invoiceInList.find('[data-qa="invoice-total"]').text,
       this.formatFinnishDecimal(total)
     )
   }
@@ -438,14 +435,14 @@ export class IncomeStatementsPage {
     expecteTypeText: string
   ) {
     await waitUntilEqual(
-      () => this.#incomeStatementRows.nth(nth).find('a').textContent,
+      () => this.#incomeStatementRows.nth(nth).find('a').text,
       expectedName
     )
     await waitUntilEqual(
       () =>
         this.#incomeStatementRows
           .nth(nth)
-          .find('[data-qa="income-statement-type"]').textContent,
+          .find('[data-qa="income-statement-type"]').text,
       expecteTypeText
     )
   }

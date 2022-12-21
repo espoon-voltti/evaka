@@ -4,7 +4,7 @@
 
 import { Lang } from 'lib-customizations/citizen'
 
-import { waitUntilEqual, waitUntilFalse } from '../../utils'
+import { waitUntilFalse } from '../../utils'
 import { Page } from '../../utils/page'
 
 export default class CitizenHeader {
@@ -127,8 +127,7 @@ export default class CitizenHeader {
   async assertUnreadChildrenCount(expectedCount: number) {
     await this.#childrenNav.waitUntilVisible()
     expectedCount != 0
-      ? await waitUntilEqual(
-          () => this.#unreadChildrenCount.textContent,
+      ? await this.#unreadChildrenCount.assertTextEquals(
           expectedCount.toString()
         )
       : await waitUntilFalse(() => this.#unreadChildrenCount.visible)
@@ -142,9 +141,8 @@ export default class CitizenHeader {
         `children-menu-${childId}-notification-count`
       )
       expectedCount != 0
-        ? await waitUntilEqual(
-            () => notification.textContent,
-            expectedCount.toString()
+        ? await notification.assertText(
+            (text) => text === expectedCount.toString()
           )
         : await notification.waitUntilHidden()
       await this.#toggleChildrenMenu()

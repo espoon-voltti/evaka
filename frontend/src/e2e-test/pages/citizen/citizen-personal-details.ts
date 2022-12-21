@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilEqual, waitUntilFalse, waitUntilTrue } from '../../utils'
-import { Page, Checkbox, Select, TextInput } from '../../utils/page'
+import { waitUntilFalse, waitUntilTrue } from '../../utils'
+import { Checkbox, Page, Select, TextInput } from '../../utils/page'
 
 export default class CitizenPersonalDetails {
   constructor(private readonly page: Page) {}
@@ -20,18 +20,16 @@ export default class CitizenPersonalDetails {
   #save = this.page.find('[data-qa="save"]')
 
   async checkMissingEmailWarningIsShown() {
-    await waitUntilTrue(() => this.#missingEmailOrPhoneBox.visible)
-    await waitUntilTrue(async () =>
-      ((await this.#missingEmailOrPhoneBox.textContent) ?? '').includes(
-        'Sähköpostiosoitteesi puuttuu'
-      )
+    await this.#missingEmailOrPhoneBox.waitUntilVisible()
+    await this.#missingEmailOrPhoneBox.assertText((text) =>
+      text.includes('Sähköpostiosoitteesi puuttuu')
     )
   }
 
   async checkMissingPhoneWarningIsShown() {
     await waitUntilTrue(() => this.#missingEmailOrPhoneBox.visible)
     await waitUntilTrue(async () =>
-      ((await this.#missingEmailOrPhoneBox.textContent) ?? '').includes(
+      ((await this.#missingEmailOrPhoneBox.text) ?? '').includes(
         'Puhelinnumerosi puuttuu'
       )
     )
@@ -81,17 +79,12 @@ export default class CitizenPersonalDetails {
     backupPhone: string
     email: string | null
   }) {
-    await waitUntilEqual(
-      () => this.#preferredName.textContent,
-      data.preferredName
-    )
-    await waitUntilEqual(
-      () => this.#phone.textContent,
+    await this.#preferredName.assertTextEquals(data.preferredName)
+    await this.#phone.assertTextEquals(
       data.phone === null ? 'Puhelinnumerosi puuttuu' : data.phone
     )
-    await waitUntilEqual(() => this.#backupPhone.textContent, data.backupPhone)
-    await waitUntilEqual(
-      () => this.#email.textContent,
+    await this.#backupPhone.assertTextEquals(data.backupPhone)
+    await this.#email.assertTextEquals(
       data.email === null ? 'Sähköpostiosoite puuttuu' : data.email
     )
   }

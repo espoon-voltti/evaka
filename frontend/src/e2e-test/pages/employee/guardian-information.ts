@@ -52,14 +52,14 @@ export default class GuardianInformationPage {
       case true:
         await this.#restrictedDetailsEnabledLabel.waitUntilVisible()
         await waitUntilEqual(
-          () => this.#personStreetAddress.innerText,
+          () => this.#personStreetAddress.text,
           'Osoite ei ole saatavilla turvakiellon vuoksi'
         )
         break
       default:
         await this.#restrictedDetailsEnabledLabel.waitUntilHidden()
         await waitUntilNotEqual(
-          () => this.#personStreetAddress.innerText,
+          () => this.#personStreetAddress.text,
           'Osoite ei ole saatavilla turvakiellon vuoksi'
         )
     }
@@ -118,14 +118,14 @@ class FamilyOverviewSection extends Section {
 
     if (age !== undefined) {
       const personAge = person.find('[data-qa="person-age"]')
-      await waitUntilEqual(() => personAge.textContent, age.toString())
+      await waitUntilEqual(() => personAge.text, age.toString())
     }
 
     if (incomeCents !== undefined) {
       const personIncome = person.find('[data-qa="person-income-total"]')
       const expectedIncome = formatCents(incomeCents)
       await waitUntilEqual(
-        async () => ((await personIncome.textContent) ?? '').split(' ')[0],
+        async () => ((await personIncome.text) ?? '').split(' ')[0],
         expectedIncome
       )
     }
@@ -177,7 +177,7 @@ class ChildrenSection extends Section {
 
   async verifyChildAge(age: number) {
     const childAge = this.#childrenTableRow.nth(0).find('[data-qa="child-age"]')
-    await waitUntilEqual(() => childAge.textContent, age.toString())
+    await waitUntilEqual(() => childAge.text, age.toString())
   }
 }
 
@@ -251,12 +251,9 @@ class FosterChildrenSection extends Section {
     end: LocalDate | null
   ) {
     const row = this.findByDataQa(`foster-child-row-${childId}`)
+    await waitUntilEqual(() => row.findByDataQa('start').text, start.format())
     await waitUntilEqual(
-      () => row.findByDataQa('start').textContent,
-      start.format()
-    )
-    await waitUntilEqual(
-      () => row.findByDataQa('end').textContent,
+      () => row.findByDataQa('end').text,
       end?.format() ?? ''
     )
   }
@@ -314,7 +311,7 @@ export class IncomeSection extends Section {
 
   async assertIncomeStatementChildName(nth: number, childName: string) {
     await waitUntilEqual(
-      () => this.#childIncomeStatementsTitles.nth(nth).textContent,
+      () => this.#childIncomeStatementsTitles.nth(nth).text,
       childName
     )
   }
@@ -335,7 +332,7 @@ export class IncomeSection extends Section {
   }
 
   async getIncomeStatementInnerText(nth = 0) {
-    return this.#incomeStatementRows.nth(nth).innerText
+    return this.#incomeStatementRows.nth(nth).text
   }
 
   // Incomes
@@ -425,13 +422,13 @@ export class IncomeSection extends Section {
   #incomeSum = this.page.find('[data-qa="income-sum-income"]')
 
   async getIncomeSum() {
-    return await this.#incomeSum.textContent
+    return await this.#incomeSum.text
   }
 
   #expensesSum = this.page.find('[data-qa="income-sum-expenses"]')
 
   async getExpensesSum() {
-    return await this.#expensesSum.textContent
+    return await this.#expensesSum.text
   }
 
   #editIncomeItemButton = this.page.find('[data-qa="edit-income-item"]')
@@ -487,12 +484,12 @@ class FeeDecisionsSection extends Section {
   ) {
     const decision = this.#feeDecisionTableRows.nth(n)
     await waitUntilTrue(async () =>
-      ((await decision.textContent) ?? '').includes(
+      ((await decision.text) ?? '').includes(
         `Maksupäätös ${startDate} - ${endDate}`
       )
     )
     await waitUntilTrue(async () =>
-      ((await decision.textContent) ?? '').includes(status)
+      ((await decision.text) ?? '').includes(status)
     )
   }
 
@@ -512,7 +509,7 @@ class FeeDecisionsSection extends Section {
 
   async checkFeeDecisionSentAt(nth: number, expectedSentAt: LocalDate) {
     await waitUntilEqual(
-      () => this.#feeDecisionSentAt.nth(nth).innerText,
+      () => this.#feeDecisionSentAt.nth(nth).text,
       expectedSentAt.format('dd.MM.yyyy')
     )
   }
@@ -536,7 +533,7 @@ class VoucherValueDecisionsSection extends Section {
     expectedSentAt: LocalDate
   ) {
     await waitUntilEqual(
-      () => this.#voucherValueDecisionSentAt.nth(nth).innerText,
+      () => this.#voucherValueDecisionSentAt.nth(nth).text,
       expectedSentAt.format('dd.MM.yyyy')
     )
   }

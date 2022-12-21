@@ -227,7 +227,7 @@ export class UnitStaffAttendancesTable extends Element {
   }
 
   personCountSum(nth: number) {
-    return this.findAllByDataQa('person-count-sum').nth(nth).innerText
+    return this.findAllByDataQa('person-count-sum').nth(nth).text
   }
 
   #attendanceCell = (date: LocalDate, row: number) =>
@@ -251,7 +251,7 @@ export class UnitStaffAttendancesTable extends Element {
 
     if (name !== undefined) {
       await waitUntilEqual(
-        () => row.findByDataQa('staff-attendance-name').innerText,
+        () => row.findByDataQa('staff-attendance-name').text,
         name
       )
     }
@@ -265,14 +265,14 @@ export class UnitStaffAttendancesTable extends Element {
           () =>
             plannedAttendanceDay
               .findAllByDataQa('planned-attendance-start')
-              .nth(i).innerText,
+              .nth(i).text,
           arrival
         )
         await waitUntilEqual(
           () =>
             plannedAttendanceDay
               .findAllByDataQa('planned-attendance-end')
-              .nth(i).innerText,
+              .nth(i).text,
           departure
         )
       }
@@ -281,12 +281,11 @@ export class UnitStaffAttendancesTable extends Element {
       const attendanceDay = row.findAllByDataQa('attendance-day').nth(nth)
       for (const [i, [arrival, departure]] of attendances.entries()) {
         await waitUntilEqual(
-          () => attendanceDay.findAllByDataQa('arrival-time').nth(i).innerText,
+          () => attendanceDay.findAllByDataQa('arrival-time').nth(i).text,
           arrival
         )
         await waitUntilEqual(
-          () =>
-            attendanceDay.findAllByDataQa('departure-time').nth(i).innerText,
+          () => attendanceDay.findAllByDataQa('departure-time').nth(i).text,
           departure
         )
       }
@@ -336,16 +335,16 @@ export class UnitChildReservationsTable extends Element {
   getReservation(date: LocalDate, row: number): Promise<[string, string]> {
     const cell = this.#reservationCell(date, row)
     return Promise.all([
-      cell.findByDataQa('reservation-start').innerText,
-      cell.findByDataQa('reservation-end').innerText
+      cell.findByDataQa('reservation-start').text,
+      cell.findByDataQa('reservation-end').text
     ])
   }
 
   getAttendance(date: LocalDate, row: number): Promise<[string, string]> {
     const cell = this.#attendanceCell(date, row)
     return Promise.all([
-      cell.findByDataQa('attendance-start').innerText,
-      cell.findByDataQa('attendance-end').innerText
+      cell.findByDataQa('attendance-start').text,
+      cell.findByDataQa('attendance-end').text
     ])
   }
 
@@ -469,25 +468,13 @@ export class UnitOccupanciesSection extends Element {
   }
 
   async assertConfirmed(minimum: string, maximum: string) {
-    await waitUntilEqual(
-      () => this.#elem('minimum', 'confirmed').innerText,
-      minimum
-    )
-    await waitUntilEqual(
-      () => this.#elem('maximum', 'confirmed').innerText,
-      maximum
-    )
+    await waitUntilEqual(() => this.#elem('minimum', 'confirmed').text, minimum)
+    await waitUntilEqual(() => this.#elem('maximum', 'confirmed').text, maximum)
   }
 
   async assertPlanned(minimum: string, maximum: string) {
-    await waitUntilEqual(
-      () => this.#elem('minimum', 'planned').innerText,
-      minimum
-    )
-    await waitUntilEqual(
-      () => this.#elem('maximum', 'planned').innerText,
-      maximum
-    )
+    await waitUntilEqual(() => this.#elem('minimum', 'planned').text, minimum)
+    await waitUntilEqual(() => this.#elem('maximum', 'planned').text, maximum)
   }
 }
 
@@ -538,24 +525,23 @@ export class StaffAttendanceDetailsModal extends Element {
 
   async summary() {
     return {
-      plan: await this.findByDataQa('staff-attendance-summary-plan').innerText,
+      plan: await this.findByDataQa('staff-attendance-summary-plan').text,
       realized: await this.findByDataQa('staff-attendance-summary-realized')
-        .innerText,
-      hours: await this.findByDataQa('staff-attendance-summary-hours').innerText
+        .text,
+      hours: await this.findByDataQa('staff-attendance-summary-hours').text
     }
   }
 
   gapWarning(index: number) {
-    return this.findByDataQa(`attendance-gap-warning-${index}`).innerText
+    return this.findByDataQa(`attendance-gap-warning-${index}`).text
   }
 
   arrivalTimeInfo(index: number) {
-    return this.findAllByDataQa('arrival-time-input-info').nth(index).innerText
+    return this.findAllByDataQa('arrival-time-input-info').nth(index).text
   }
 
   departureTimeInfo(index: number) {
-    return this.findAllByDataQa('departure-time-input-info').nth(index)
-      .innerText
+    return this.findAllByDataQa('departure-time-input-info').nth(index).text
   }
 
   async assertDepartureTimeInfoHidden(index: number) {

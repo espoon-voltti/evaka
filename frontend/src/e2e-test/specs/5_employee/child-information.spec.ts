@@ -451,7 +451,7 @@ describe('Child information - consent', () => {
     await section.evakaProfilePicYes.check()
     await section.save()
     await waitUntilEqual(
-      () => section.evakaProfilePicModifiedBy.innerText,
+      () => section.evakaProfilePicModifiedBy.text,
       `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
     )
     await page.reload()
@@ -459,7 +459,7 @@ describe('Child information - consent', () => {
     await section.evakaProfilePicYes.waitUntilChecked(true)
     await section.evakaProfilePicNo.waitUntilChecked(false)
     await waitUntilEqual(
-      () => section.evakaProfilePicModifiedBy.innerText,
+      () => section.evakaProfilePicModifiedBy.text,
       `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
     )
   })
@@ -468,7 +468,7 @@ describe('Child information - consent', () => {
     await section.evakaProfilePicNo.check()
     await section.save()
     await waitUntilEqual(
-      () => section.evakaProfilePicModifiedBy.innerText,
+      () => section.evakaProfilePicModifiedBy.text,
       `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
     )
     await page.reload()
@@ -476,7 +476,7 @@ describe('Child information - consent', () => {
     await section.evakaProfilePicYes.waitUntilChecked(false)
     await section.evakaProfilePicNo.waitUntilChecked(true)
     await waitUntilEqual(
-      () => section.evakaProfilePicModifiedBy.innerText,
+      () => section.evakaProfilePicModifiedBy.text,
       `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
     )
   })
@@ -485,7 +485,7 @@ describe('Child information - consent', () => {
     await section.evakaProfilePicNo.check()
     await section.save()
     await waitUntilEqual(
-      () => section.evakaProfilePicModifiedBy.innerText,
+      () => section.evakaProfilePicModifiedBy.text,
       `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
     )
     await section.evakaProfilePicClear.click()

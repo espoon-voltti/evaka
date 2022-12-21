@@ -50,7 +50,7 @@ export default class ApplicationReadView {
   }
 
   async assertPageTitle(expectedTitle: string) {
-    await waitUntilEqual(() => this.#title.innerText, expectedTitle)
+    await waitUntilEqual(() => this.#title.text, expectedTitle)
   }
 
   async assertOtherVtjGuardian(
@@ -58,9 +58,9 @@ export default class ApplicationReadView {
     expectedPhone: string,
     expectedEmail: string
   ) {
-    await waitUntilEqual(() => this.#vtjGuardianName.innerText, expectedName)
-    await waitUntilEqual(() => this.#vtjGuardianPhone.innerText, expectedPhone)
-    await waitUntilEqual(() => this.#vtjGuardianEmail.innerText, expectedEmail)
+    await waitUntilEqual(() => this.#vtjGuardianName.text, expectedName)
+    await waitUntilEqual(() => this.#vtjGuardianPhone.text, expectedPhone)
+    await waitUntilEqual(() => this.#vtjGuardianEmail.text, expectedEmail)
   }
 
   async assertOtherVtjGuardianMissing() {
@@ -72,13 +72,10 @@ export default class ApplicationReadView {
     expectedEmail: string
   ) {
     await waitUntilEqual(
-      () => this.#givenOtherGuardianPhone.innerText,
+      () => this.#givenOtherGuardianPhone.text,
       expectedPhone
     )
-    await waitUntilEqual(
-      () => this.#giveOtherGuardianEmail.innerText,
-      expectedEmail
-    )
+    await waitUntilEqual(() => this.#giveOtherGuardianEmail.text, expectedEmail)
   }
 
   async setDecisionStartDate(type: DecisionType, startDate: string) {
@@ -126,7 +123,7 @@ export default class ApplicationReadView {
     await text.waitUntilVisible()
 
     await waitUntilTrue(async () =>
-      ((await text.textContent) ?? '').startsWith(
+      ((await text.text) ?? '').startsWith(
         byPaper ? 'Toimitettu paperisena' : 'Toimitettu sähköisesti'
       )
     )
@@ -156,7 +153,7 @@ export default class ApplicationReadView {
 
   async assertDueDate(dueDate: LocalDate) {
     await waitUntilEqual(
-      () => this.page.findByDataQa('application-due-date').textContent,
+      () => this.page.findByDataQa('application-due-date').text,
       dueDate.format()
     )
   }

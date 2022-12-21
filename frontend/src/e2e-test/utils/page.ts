@@ -126,7 +126,7 @@ export class ElementCollection {
     return this.locator.evaluateAll(fn)
   }
 
-  elem() {
+  only() {
     return new Element(this.locator)
   }
 
@@ -197,18 +197,21 @@ export class Element {
       .then((value) => (value ? new BoundingBox(value) : null))
   }
 
-  get innerText(): Promise<string> {
+  // Visible text content
+  get text(): Promise<string> {
     return this.locator.innerText()
   }
 
-  get textContent(): Promise<string | null> {
-    return this.locator.textContent()
+  get textAsFloat(): Promise<number | null> {
+    return this.text.then((str) => (str ? parseFloat(str) : null))
   }
 
-  get textContentAsFloat(): Promise<number | null> {
-    return this.locator
-      .textContent()
-      .then((str) => (str ? parseFloat(str) : null))
+  async assertText(assertion: (text: string) => boolean): Promise<void> {
+    await waitUntilTrue(async () => assertion(await this.text))
+  }
+
+  async assertTextEquals(expected: string): Promise<void> {
+    await this.assertText((text) => text === expected)
   }
 
   get visible(): Promise<boolean> {
@@ -239,6 +242,13 @@ export class Element {
     return this.locator.getAttribute(name)
   }
 
+  async assertAttributeEquals(
+    name: string,
+    value: string | null
+  ): Promise<void> {
+    await waitUntilEqual(() => this.getAttribute(name), value)
+  }
+
   async hasAttribute(name: string): Promise<boolean> {
     return (await this.getAttribute(name)) !== null
   }
@@ -267,6 +277,10 @@ export class TextInput extends Element {
 
   get inputValue(): Promise<string> {
     return this.locator.inputValue()
+  }
+
+  async assertValueEquals(expectedValue: string): Promise<void> {
+    await waitUntilEqual(() => this.inputValue, expectedValue)
   }
 }
 

@@ -35,9 +35,9 @@ export default class FinanceBasicsPage {
             key: keyof FeeThresholds,
             expected: string
           ) => {
-            return expect(
-              await element.find(`[data-qa="${key}"]`).innerText
-            ).toBe(expected)
+            return expect(await element.find(`[data-qa="${key}"]`).text).toBe(
+              expected
+            )
           }
 
           const formatEuros = (cents: number) => `${formatCents(cents)} €`

@@ -44,6 +44,6 @@ export class ApplicationRow extends Element {
   }
 
   async assertStatus(expectedStatus: string) {
-    await waitUntilEqual(() => this.#status.innerText, expectedStatus)
+    await waitUntilEqual(() => this.#status.text, expectedStatus)
   }
 }

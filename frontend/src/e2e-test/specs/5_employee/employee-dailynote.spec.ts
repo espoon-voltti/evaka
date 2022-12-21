@@ -100,13 +100,15 @@ describe('Mobile employee daily notes', () => {
     await childRow.assertDailyNoteContainsText(daycareDailyNote.note)
 
     const noteModal = await childRow.openDailyNoteModal()
-    await noteModal.assertNote(daycareDailyNote.note)
-    await noteModal.assertSleepingHours(hours)
-    await noteModal.assertSleepingMinutes(minutes)
-    await noteModal.assertReminderNote(daycareDailyNote.reminderNote)
+    await noteModal.noteInput.assertValueEquals(daycareDailyNote.note)
+    await noteModal.sleepingHoursInput.assertValueEquals(hours)
+    await noteModal.sleepingMinutesInput.assertValueEquals(minutes)
+    await noteModal.reminderNoteInput.assertValueEquals(
+      daycareDailyNote.reminderNote
+    )
 
-    await noteModal.fillNote('aardvark')
-    await noteModal.submit()
+    await noteModal.noteInput.fill('aardvark')
+    await noteModal.submitButton.click()
 
     await childRow.assertDailyNoteContainsText('aardvark')
   })

@@ -22,9 +22,7 @@ export class VasuTemplatesListPage {
 
   async assertTemplate(nth: number, expectedName: string) {
     await waitUntilEqual(
-      () =>
-        this.templateRows.nth(nth).find('[data-qa="template-name"]')
-          .textContent,
+      () => this.templateRows.nth(nth).find('[data-qa="template-name"]').text,
       expectedName
     )
   }

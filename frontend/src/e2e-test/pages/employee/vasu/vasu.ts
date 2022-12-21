@@ -94,8 +94,7 @@ export class VasuEditPage extends VasuPageCommon {
         new TextInput(question.findByDataQa(`follow-up-${nth}-input`)),
       entryDateInput: (nth: number) =>
         new TextInput(question.findByDataQa(`follow-up-${nth}-date`)),
-      meta: (nth: number) =>
-        question.findByDataQa(`follow-up-${nth}-meta`).innerText
+      meta: (nth: number) => question.findByDataQa(`follow-up-${nth}-meta`).text
     }
   }
 
@@ -187,7 +186,7 @@ export class VasuPage extends VasuPageCommon {
   readonly #templateName = this.page.find('[data-qa="template-name"]')
   readonly #editButton = this.page.find('[data-qa="edit-button"]')
 
-  documentState = () => this.#vasuEventListDocState.innerText
+  documentState = () => this.#vasuEventListDocState.text
 
   // The (first) label for the state chip has no corresponding span, so the index is off by one.
   #valueForLabel = (label: string): Promise<string> =>
@@ -197,7 +196,7 @@ export class VasuPage extends VasuPageCommon {
         labels.reduce(
           async (acc, l, ix) =>
             l === label
-              ? await this.#vasuEventListValues.nth(ix - 1).innerText
+              ? await this.#vasuEventListValues.nth(ix - 1).text
               : acc,
           Promise.resolve('')
         )
@@ -210,7 +209,7 @@ export class VasuPage extends VasuPageCommon {
   closedDate = () => this.#valueForLabel('Päättynyt')
 
   async assertTemplateName(expected: string) {
-    await waitUntilEqual(() => this.#templateName.textContent, expected)
+    await waitUntilEqual(() => this.#templateName.text, expected)
   }
 
   async edit() {
@@ -222,7 +221,7 @@ export class VasuPage extends VasuPageCommon {
       .findAllByDataQa('vasu-followup-question')
       .nth(sectionNth)
       .findAllByDataQa('follow-up-entry')
-      .nth(entryNth).innerText
+      .nth(entryNth).text
   }
 }
 
@@ -237,7 +236,7 @@ export class VasuPreviewPage extends VasuPageCommon {
   readonly #confirmButton = this.page.findByDataQa('confirm-button')
 
   async assertTitleChildName(expectedName: string) {
-    await waitUntilEqual(() => this.#titleChildName.textContent, expectedName)
+    await waitUntilEqual(() => this.#titleChildName.text, expectedName)
   }
 
   async assertGivePermissionToShareSectionIsVisible() {
@@ -260,7 +259,7 @@ export class VasuPreviewPage extends VasuPageCommon {
   ) {
     await waitUntilTrue(async () =>
       (
-        await this.#multiselectAnswer(questionNumber).innerText
+        await this.#multiselectAnswer(questionNumber).text
       ).includes(expectedText)
     )
   }

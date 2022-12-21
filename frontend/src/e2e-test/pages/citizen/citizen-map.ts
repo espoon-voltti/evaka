@@ -118,7 +118,7 @@ class UnitDetailsPanel extends Element {
   readonly backButton = this.find('[data-qa="map-unit-details-back"]')
 
   get name(): Promise<string | null> {
-    return this.find('[data-qa="map-unit-details-name"]').textContent
+    return this.find('[data-qa="map-unit-details-name"]').text
   }
 }
 
@@ -127,11 +127,11 @@ class MapPopup extends Element {
   readonly #noApplying = this.find('[data-qa="map-popup-no-applying"]')
 
   get name(): Promise<string | null> {
-    return this.#name.textContent
+    return this.#name.text
   }
 
   get noApplying(): Promise<string | null> {
-    return this.#noApplying.textContent
+    return this.#noApplying.text
   }
 }
 

@@ -68,7 +68,7 @@ export default class MessagesPage {
         this.page
           .findAllByDataQa('sent-message-row')
           .nth(nth)
-          .findByDataQa('participants').textContent,
+          .findByDataQa('participants').text,
       participants
     )
   }
@@ -103,7 +103,7 @@ export default class MessagesPage {
   }
 
   async assertReplyContentIsEmpty() {
-    return waitUntilEqual(() => this.#messageReplyContent.textContent, '')
+    return waitUntilEqual(() => this.#messageReplyContent.text, '')
   }
 
   async sendNewMessage(message: {
@@ -201,20 +201,18 @@ export default class MessagesPage {
 
   async assertMessageContent(index: number, content: string) {
     await this.#receivedMessage.click()
-    await waitUntilEqual(() => this.#messageContent(index).innerText, content)
+    await waitUntilEqual(() => this.#messageContent(index).text, content)
   }
 
   async assertDraftContent(title: string, content: string) {
     await this.#draftMessagesBoxRow.click()
     await waitUntilEqual(
-      () =>
-        this.#draftMessage.find('[data-qa="thread-list-item-title"]').innerText,
+      () => this.#draftMessage.find('[data-qa="thread-list-item-title"]').text,
       title
     )
     await waitUntilEqual(
       () =>
-        this.#draftMessage.find('[data-qa="thread-list-item-content"]')
-          .innerText,
+        this.#draftMessage.find('[data-qa="thread-list-item-content"]').text,
       content
     )
   }
@@ -227,11 +225,11 @@ export default class MessagesPage {
   async assertCopyContent(title: string, content: string) {
     await this.#messageCopiesInbox.click()
     await waitUntilEqual(
-      () => this.page.findByDataQa('thread-list-item-title').innerText,
+      () => this.page.findByDataQa('thread-list-item-title').text,
       title
     )
     await waitUntilEqual(
-      () => this.page.findByDataQa('thread-list-item-content').innerText,
+      () => this.page.findByDataQa('thread-list-item-content').text,
       content
     )
   }

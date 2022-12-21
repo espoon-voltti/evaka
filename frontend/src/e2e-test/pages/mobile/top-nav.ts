@@ -18,10 +18,10 @@ export default class TopNav {
   }
 
   getUserInitials(): Promise<string> {
-    return this.#userMenu.innerText
+    return this.#userMenu.text
   }
 
   getFullName(): Promise<string> {
-    return this.#userMenu.find('[data-qa="full-name"]').innerText
+    return this.#userMenu.find('[data-qa="full-name"]').text
   }
 }

@@ -60,10 +60,9 @@ export default class CitizenCalendarPage {
   }
 
   async assertEventCount(date: LocalDate, count: number) {
-    await waitUntilEqual(
-      () => this.#dayCell(date).findByDataQa('event-count').innerText,
-      count.toString()
-    )
+    await this.#dayCell(date)
+      .findByDataQa('event-count')
+      .assertTextEquals(count.toString())
   }
 
   async openReservationsModal() {
@@ -133,23 +132,24 @@ export default class CitizenCalendarPage {
           .find(`[data-qa="child-image"][data-qa-child-id="${childId}"]`)
           .waitUntilVisible()
       }
-      await waitUntilEqual(
-        () => row.findByDataQa('reservation-text').innerText,
-        'absence' in reservation
-          ? 'Poissa'
-          : 'freeAbsence' in reservation
-          ? 'Maksuton poissaolo'
-          : 'missing' in reservation
-          ? 'Ilmoitus puuttuu'
-          : `${reservation.startTime}–${reservation.endTime}`
-      )
+      await row
+        .findByDataQa('reservation-text')
+        .assertTextEquals(
+          'absence' in reservation
+            ? 'Poissa'
+            : 'freeAbsence' in reservation
+            ? 'Maksuton poissaolo'
+            : 'missing' in reservation
+            ? 'Ilmoitus puuttuu'
+            : `${reservation.startTime}–${reservation.endTime}`
+        )
     }
   }
 
   #ctas = this.page.findAllByDataQa('holiday-period-cta')
 
   async getHolidayCtaContent(): Promise<string> {
-    return this.#ctas.nth(0).innerText
+    return this.#ctas.nth(0).text
   }
 
   async clickHolidayCta(): Promise<void> {
@@ -157,13 +157,9 @@ export default class CitizenCalendarPage {
   }
 
   async assertHolidayCtaNotVisible(): Promise<void> {
-    await waitUntilEqual(
-      () =>
-        this.page
-          .find('[data-holiday-period-cta-status]')
-          .getAttribute('data-holiday-period-cta-status'),
-      'success'
-    )
+    await this.page
+      .find('[data-holiday-period-cta-status]')
+      .assertAttributeEquals('data-holiday-period-cta-status', 'success')
     await this.#ctas.assertCount(0)
   }
 
@@ -172,7 +168,7 @@ export default class CitizenCalendarPage {
   )
 
   async getDailyServiceTimeNotificationContent(nth: number): Promise<string> {
-    return this.#dailyServiceTimeNotifications.nth(nth).innerText
+    return this.#dailyServiceTimeNotifications.nth(nth).text
   }
 
   #dailyServiceTimeNotificationModal = this.page.findByDataQa(
@@ -180,8 +176,7 @@ export default class CitizenCalendarPage {
   )
 
   async getDailyServiceTimeNotificationModalContent(): Promise<string> {
-    return this.#dailyServiceTimeNotificationModal.findByDataQa('text')
-      .innerText
+    return this.#dailyServiceTimeNotificationModal.findByDataQa('text').text
   }
 
   async assertChildCountOnDay(date: LocalDate, expectedCount: number) {
@@ -304,8 +299,8 @@ class AbsencesModal {
   #childCheckbox = (childId: string) =>
     new Checkbox(this.page.find(`[data-qa="child-${childId}"]`))
 
-  #startDateInput = new TextInput(this.page.find('[data-qa="start-date"]'))
-  #endDateInput = new TextInput(this.page.find('[data-qa="end-date"]'))
+  startDateInput = new TextInput(this.page.find('[data-qa="start-date"]'))
+  endDateInput = new TextInput(this.page.find('[data-qa="end-date"]'))
   #absenceChip = (type: string) =>
     new Checkbox(this.page.find(`[data-qa="absence-${type}"]`))
   #modalSendButton = this.page.find('[data-qa="modal-okBtn"]')
@@ -318,9 +313,9 @@ class AbsencesModal {
   ) {
     await this.deselectChildren(3)
     await this.#childCheckbox(child.id).click()
-    await this.#startDateInput.fill(dateRange.start.format())
-    await this.#endDateInput.fill(dateRange.end.format())
-    await this.#endDateInput.press('Enter')
+    await this.startDateInput.fill(dateRange.start.format())
+    await this.endDateInput.fill(dateRange.end.format())
+    await this.endDateInput.press('Enter')
     await this.#absenceChip(absenceType).click()
 
     await this.#modalSendButton.click()
@@ -334,14 +329,6 @@ class AbsencesModal {
         .nth(i)
         .click()
     }
-  }
-
-  async assertStartDate(text: string) {
-    await waitUntilEqual(() => this.#startDateInput.inputValue, text)
-  }
-
-  async assertEndDate(text: string) {
-    await waitUntilEqual(() => this.#endDateInput.inputValue, text)
   }
 }
 
@@ -364,18 +351,15 @@ class DayView extends Element {
   }
 
   async assertReservations(childId: UUID, value: string) {
-    await waitUntilEqual(
-      () =>
-        this.#childSection(childId).findByDataQa('reservations').textContent,
-      value
-    )
+    await this.#childSection(childId)
+      .findByDataQa('reservations')
+      .assertTextEquals(value)
   }
 
   async assertAbsence(childId: UUID, value: string) {
-    await waitUntilEqual(
-      () => this.#childSection(childId).findByDataQa('absence').textContent,
-      value
-    )
+    await this.#childSection(childId)
+      .findByDataQa('absence')
+      .assertTextEquals(value)
   }
 
   async assertNoActivePlacementsMsgVisible() {
@@ -402,14 +386,8 @@ class DayView extends Element {
     { title, description }: { title: string; description: string }
   ) {
     const event = this.#childSection(childId).findByDataQa(`event-${eventId}`)
-    await waitUntilEqual(
-      () => event.findByDataQa('event-title').innerText,
-      title
-    )
-    await waitUntilEqual(
-      () => event.findByDataQa('event-description').innerText,
-      description
-    )
+    await event.findByDataQa('event-title').assertTextEquals(title)
+    await event.findByDataQa('event-description').assertTextEquals(description)
   }
 }
 

@@ -14,9 +14,6 @@ export default class UnitListPage {
     const staffCount = this.page
       .findByDataQa(`unit-${unitId}`)
       .findByDataQa('staff-count')
-    await waitUntilEqual(
-      () => staffCount.textContent,
-      `${present}/${allocated}`
-    )
+    await waitUntilEqual(() => staffCount.text, `${present}/${allocated}`)
   }
 }

@@ -90,11 +90,11 @@ export class UnitInfoPage {
   }
 
   async assertUnitName(expectedName: string) {
-    await waitUntilEqual(() => this.#unitName.innerText, expectedName)
+    await waitUntilEqual(() => this.#unitName.text, expectedName)
   }
 
   async assertVisitingAddress(expectedAddress: string) {
-    await waitUntilEqual(() => this.#visitingAddress.innerText, expectedAddress)
+    await waitUntilEqual(() => this.#visitingAddress.text, expectedAddress)
   }
 
   supervisorAcl = new AclSection(
@@ -137,7 +137,7 @@ export class UnitDetailsPage {
   }
 
   async assertUnitName(expectedName: string) {
-    await waitUntilEqual(() => this.#unitName.innerText, expectedName)
+    await waitUntilEqual(() => this.#unitName.text, expectedName)
   }
 
   readonly #unitManagerName = this.page.find('[data-qa="unit-manager-name"]')
@@ -145,9 +145,9 @@ export class UnitDetailsPage {
   readonly #unitManagerEmail = this.page.find('[data-qa="unit-manager-email"]')
 
   async assertManagerData(name: string, phone: string, email: string) {
-    await waitUntilEqual(() => this.#unitManagerName.innerText, name)
-    await waitUntilEqual(() => this.#unitManagerPhone.innerText, phone)
-    await waitUntilEqual(() => this.#unitManagerEmail.innerText, email)
+    await waitUntilEqual(() => this.#unitManagerName.text, name)
+    await waitUntilEqual(() => this.#unitManagerPhone.text, phone)
+    await waitUntilEqual(() => this.#unitManagerEmail.text, email)
   }
 
   async edit() {
@@ -362,14 +362,8 @@ class AclSection extends Element {
 
   async assertRowFields(fields: { id: UUID; name: string; email: string }) {
     const row = this.#tableRow(fields.id)
-    await waitUntilEqual(
-      () => row.find('[data-qa="name"]').innerText,
-      fields.name
-    )
-    await waitUntilEqual(
-      () => row.find('[data-qa="email"]').innerText,
-      fields.email
-    )
+    await waitUntilEqual(() => row.find('[data-qa="name"]').text, fields.name)
+    await waitUntilEqual(() => row.find('[data-qa="email"]').text, fields.email)
   }
 
   async assertRows(rows: { id: UUID; name: string; email: string }[]) {
@@ -389,14 +383,8 @@ class StaffAclSection extends AclSection {
     groups: string[]
   }) {
     const row = this.#tableRow(fields.id)
-    await waitUntilEqual(
-      () => row.find('[data-qa="name"]').innerText,
-      fields.name
-    )
-    await waitUntilEqual(
-      () => row.find('[data-qa="email"]').innerText,
-      fields.email
-    )
+    await waitUntilEqual(() => row.find('[data-qa="name"]').text, fields.name)
+    await waitUntilEqual(() => row.find('[data-qa="email"]').text, fields.email)
     await waitUntilEqual(
       () => row.find('[data-qa="groups"] > div').findAll('div').allInnerTexts(),
       fields.groups
@@ -424,7 +412,7 @@ class MobileDevicesSection extends Element {
 
   async assertDeviceExists(deviceName: string) {
     await waitUntilEqual(
-      () => this.#rows.find('[data-qa="name"]').innerText,
+      () => this.#rows.find('[data-qa="name"]').text,
       deviceName
     )
   }
@@ -436,8 +424,7 @@ class MobileDevicesSection extends Element {
       this.page.find('[data-qa="mobile-pairing-modal-phase-1"]')
     )
 
-    const challengeKey = await phase1.find('[data-qa="challenge-key"]')
-      .innerText
+    const challengeKey = await phase1.find('[data-qa="challenge-key"]').text
     const { responseKey } = await postPairingChallenge(challengeKey)
     if (!responseKey) {
       throw new Error(
@@ -518,10 +505,7 @@ class WaitingConfirmationSection extends Element {
   )
 
   async assertNotificationCounter(value: number) {
-    await waitUntilEqual(
-      () => this.#notificationCounter.innerText,
-      value.toString()
-    )
+    await waitUntilEqual(() => this.#notificationCounter.text, value.toString())
   }
 
   async assertRowCount(count: number) {

@@ -27,21 +27,15 @@ export default class CitizenDecisionsPage {
     const decision = this.page
       .findByDataQa(`child-decisions-${childId}`)
       .findByDataQa(`application-decision-${decisionId}`)
-    await waitUntilEqual(
-      () => decision.findByDataQa('title-decision-type').innerText,
-      expectedTitle
-    )
-    await waitUntilEqual(
-      () => decision.findByDataQa('decision-sent-date').innerText,
-      expectedSentDate
-    )
-    await waitUntilEqual(
-      async () =>
-        (
-          await decision.findByDataQa('decision-status').innerText
-        ).toLowerCase(),
-      expectedStatus.toLowerCase()
-    )
+    await decision
+      .findByDataQa('title-decision-type')
+      .assertTextEquals(expectedTitle)
+    await decision
+      .findByDataQa('decision-sent-date')
+      .assertTextEquals(expectedSentDate)
+    await decision
+      .findByDataQa('decision-status')
+      .assertText((text) => text.toLowerCase() === expectedStatus.toLowerCase())
   }
 
   async navigateToDecisionResponse(applicationId: string) {
@@ -85,26 +79,21 @@ export default class CitizenDecisionsPage {
     const decision = this.page
       .findByDataQa(`child-decisions-${childId}`)
       .findByDataQa(`assistance-decision-${decisionId}`)
-    await waitUntilEqual(
-      () => decision.findByDataQa('assistance-level').textContent,
-      contents.assistanceLevel
-    )
-    await waitUntilEqual(
-      () => decision.findByDataQa('selected-unit').textContent,
-      contents.selectedUnit
-    )
-    await waitUntilEqual(
-      () => decision.findByDataQa('validity-period').textContent,
-      contents.validityPeriod
-    )
-    await waitUntilEqual(
-      () => decision.findByDataQa('decision-made').textContent,
-      contents.decisionMade
-    )
-    await waitUntilEqual(
-      () => decision.findByDataQa('decision-status').textContent,
-      contents.status
-    )
+    await decision
+      .findByDataQa('assistance-level')
+      .assertTextEquals(contents.assistanceLevel)
+    await decision
+      .findByDataQa('selected-unit')
+      .assertTextEquals(contents.selectedUnit)
+    await decision
+      .findByDataQa('validity-period')
+      .assertTextEquals(contents.validityPeriod)
+    await decision
+      .findByDataQa('decision-made')
+      .assertTextEquals(contents.decisionMade)
+    await decision
+      .findByDataQa('decision-status')
+      .assertTextEquals(contents.status)
   }
 
   async assertUnreadAssistanceNeedDecisions(childId: string, count: number) {
@@ -144,7 +133,7 @@ class CitizenDecisionResponsePage {
     this.#decisionBlock(decisionId).find('[data-qa="decision-status"]')
 
   async assertPageTitle() {
-    await waitUntilEqual(() => this.#title.innerText, 'Päätökset')
+    await this.#title.assertTextEquals('Päätökset')
   }
 
   async assertUnresolvedDecisionsCount(count: number) {
@@ -152,8 +141,8 @@ class CitizenDecisionResponsePage {
   }
 
   async assertDecisionCannotBeAccepted(decisionId: string) {
-    await waitUntilEqual(
-      () => this.#submitResponseButton(decisionId).getAttribute('disabled'),
+    await this.#submitResponseButton(decisionId).assertAttributeEquals(
+      'disabled',
       ''
     )
   }
@@ -164,21 +153,14 @@ class CitizenDecisionResponsePage {
     decisionUnitText: string,
     decisionStatusText: string
   ) {
-    await waitUntilEqual(
-      () => this.#decisionTitle(decisionId).innerText,
-      decisionTypeText
-    )
-    await waitUntilEqual(
-      () => this.#decisionUnit(decisionId).innerText,
-      decisionUnitText
-    )
+    await this.#decisionTitle(decisionId).assertTextEquals(decisionTypeText)
+    await this.#decisionUnit(decisionId).assertTextEquals(decisionUnitText)
     await this.assertDecisionStatus(decisionId, decisionStatusText)
   }
 
   async assertDecisionStatus(decisionId: string, statusText: string) {
     await waitUntilEqual(
-      async () =>
-        (await this.#decisionStatus(decisionId).innerText).toLowerCase(),
+      async () => (await this.#decisionStatus(decisionId).text).toLowerCase(),
       statusText.toLowerCase()
     )
   }
@@ -208,14 +190,10 @@ async function assertUnresolvedDecisionsCount(page: Page, count: number) {
   }
 
   if (count === 1) {
-    return await waitUntilEqual(
-      () => element.innerText,
-      '1 päätös odottaa vahvistustasi'
-    )
+    return await element.assertTextEquals('1 päätös odottaa vahvistustasi')
   }
 
-  return await waitUntilEqual(
-    () => element.innerText,
+  return await element.assertTextEquals(
     `${count} päätöstä odottaa vahvistustasi`
   )
 }
