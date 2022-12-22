@@ -19,7 +19,6 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.ScopedActionRule
 import fi.espoo.evaka.shared.security.actionrule.UnscopedActionRule
-import io.opentracing.noop.NoopTracerFactory
 import org.junit.jupiter.api.BeforeEach
 
 abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
@@ -29,7 +28,7 @@ abstract class AccessControlTest : PureJdbiTest(resetDbBeforeEach = true) {
     @BeforeEach
     fun prepareRules() {
         rules = TestActionRuleMapping()
-        accessControl = AccessControl(rules, NoopTracerFactory.create())
+        accessControl = AccessControl(rules, noopTracer)
     }
 
     class TestActionRuleMapping : ActionRuleMapping {

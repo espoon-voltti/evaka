@@ -22,6 +22,7 @@ import fi.espoo.evaka.shared.db.configureJdbi
 import fi.espoo.evaka.shared.dev.resetDatabase
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.vtjclient.VtjIntegrationTestConfig
+import io.opentracing.Tracer
 import java.io.File
 import java.net.URL
 import org.jdbi.v3.core.Jdbi
@@ -53,9 +54,11 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
 
     @Autowired protected lateinit var evakaEnv: EvakaEnv
 
+    @Autowired protected lateinit var tracer: Tracer
+
     protected lateinit var db: Database.Connection
 
-    protected fun dbInstance(): Database = Database(jdbi)
+    protected fun dbInstance(): Database = Database(jdbi, tracer)
 
     protected val pngFile =
         this::class.java.getResource("/attachments-fixtures/evaka-logo.png") as URL
@@ -66,7 +69,7 @@ abstract class FullApplicationTest(private val resetDbBeforeEach: Boolean) {
         http.forceMethods = true // use actual PATCH requests
         http.basePath = "http://localhost:$httpPort/"
         jdbi = configureJdbi(Jdbi.create(getTestDataSource()))
-        db = Database(jdbi).connectWithManualLifecycle()
+        db = Database(jdbi, tracer).connectWithManualLifecycle()
         if (!resetDbBeforeEach) {
             db.transaction { it.resetDatabase() }
         }

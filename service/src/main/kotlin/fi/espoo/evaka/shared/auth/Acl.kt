@@ -6,6 +6,7 @@ package fi.espoo.evaka.shared.auth
 
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.db.Database
+import io.opentracing.Tracer
 import org.jdbi.v3.core.Jdbi
 
 sealed class AclAuthorization {
@@ -26,7 +27,7 @@ sealed class AclAuthorization {
     }
 }
 
-class AccessControlList(private val jdbi: Jdbi) {
+class AccessControlList(private val jdbi: Jdbi, private val tracer: Tracer) {
     fun getAuthorizedUnits(user: AuthenticatedUser): AclAuthorization =
         getAuthorizedUnits(user, UserRole.SCOPED_ROLES)
 
@@ -45,7 +46,7 @@ class AccessControlList(private val jdbi: Jdbi) {
             AclAuthorization.All
         } else {
             AclAuthorization.Subset(
-                Database(jdbi).connect { db ->
+                Database(jdbi, tracer).connect { db ->
                     db.read { it.selectAuthorizedDaycares(user, roles) }
                 }
             )

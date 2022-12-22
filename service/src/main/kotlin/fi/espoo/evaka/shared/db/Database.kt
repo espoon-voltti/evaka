@@ -5,6 +5,8 @@
 package fi.espoo.evaka.shared.db
 
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.withSpan
+import io.opentracing.Tracer
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.reflect.KClass
@@ -42,7 +44,7 @@ import org.jdbi.v3.core.result.ResultIterable
  * Tied to the thread that created it, and throws `IllegalStateException` if used in the wrong
  * thread.
  */
-class Database(private val jdbi: Jdbi) {
+class Database(private val jdbi: Jdbi, private val tracer: Tracer) {
     private val threadId = ThreadId()
     private var connected = AtomicBoolean()
 
@@ -61,7 +63,12 @@ class Database(private val jdbi: Jdbi) {
     fun connectWithManualLifecycle(): Connection {
         threadId.assertCurrentThread()
         check(!connected.get()) { "Already connected to database" }
-        return Connection(threadId, connected, lazy(LazyThreadSafetyMode.NONE) { jdbi.open() })
+        return Connection(
+            threadId,
+            connected,
+            tracer,
+            lazy(LazyThreadSafetyMode.NONE) { jdbi.open() }
+        )
     }
 
     /** A single lazily initialized database connection tied to a single thread */
@@ -69,6 +76,7 @@ class Database(private val jdbi: Jdbi) {
     internal constructor(
         private val threadId: ThreadId,
         private val connected: AtomicBoolean,
+        private val tracer: Tracer,
         private val lazyHandle: Lazy<Handle>
     ) : AutoCloseable {
         private fun getHandle(): Handle {
@@ -94,7 +102,9 @@ class Database(private val jdbi: Jdbi) {
             check(!handle.isInTransaction) { "Already in a transaction" }
             handle.isReadOnly = true
             try {
-                return handle.inTransaction<T, Exception> { f(Read(handle)) }
+                return tracer.withSpan("db.transaction read") {
+                    handle.inTransaction<T, Exception> { f(Read(handle)) }
+                }
             } finally {
                 handle.isReadOnly = false
             }
@@ -111,8 +121,10 @@ class Database(private val jdbi: Jdbi) {
             val handle = this.getHandle()
             check(!handle.isInTransaction) { "Already in a transaction" }
             val hooks = TransactionHooks()
-            return handle
-                .inTransaction<T, Exception> { f(Transaction(it, hooks)) }
+            return tracer
+                .withSpan("db.transaction read/write") {
+                    handle.inTransaction<T, Exception> { f(Transaction(it, hooks)) }
+                }
                 .also { hooks.afterCommit.forEach { it() } }
         }
 

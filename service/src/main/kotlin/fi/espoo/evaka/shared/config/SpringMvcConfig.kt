@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.Unauthorized
 import fi.espoo.evaka.shared.utils.asArgumentResolver
 import fi.espoo.evaka.shared.utils.convertFrom
+import io.opentracing.Tracer
 import java.time.ZonedDateTime
 import java.util.UUID
 import javax.servlet.http.HttpServletRequest
@@ -43,7 +44,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
  * - `Id<*>`: a type-safe identifier, which is serialized/deserialized as UUID (= string)
  */
 @Configuration
-class SpringMvcConfig(private val jdbi: Jdbi, private val env: EvakaEnv) : WebMvcConfigurer {
+class SpringMvcConfig(
+    private val jdbi: Jdbi,
+    private val tracer: Tracer,
+    private val env: EvakaEnv
+) : WebMvcConfigurer {
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
         resolvers.add(asArgumentResolver<AuthenticatedUser.Citizen?>(::resolveAuthenticatedUser))
         resolvers.add(asArgumentResolver<AuthenticatedUser.Employee?>(::resolveAuthenticatedUser))
@@ -64,7 +69,7 @@ class SpringMvcConfig(private val jdbi: Jdbi, private val env: EvakaEnv) : WebMv
     }
 
     private fun WebRequest.getDatabaseInstance(): Database =
-        getDatabase() ?: Database(jdbi).also(::setDatabase)
+        getDatabase() ?: Database(jdbi, tracer).also(::setDatabase)
 
     private inline fun <reified T : AuthenticatedUser> resolveAuthenticatedUser(
         parameter: MethodParameter,
