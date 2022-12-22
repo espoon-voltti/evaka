@@ -22,9 +22,11 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.removeOldAsyncJobs
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
+import fi.espoo.evaka.shared.withSpan
 import fi.espoo.evaka.varda.VardaResetService
 import fi.espoo.evaka.varda.VardaUpdateService
 import fi.espoo.voltti.logging.loggers.info
+import io.opentracing.Tracer
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 
@@ -58,14 +60,15 @@ class ScheduledJobs(
     private val pendingDecisionEmailService: PendingDecisionEmailService,
     private val koskiUpdateService: KoskiUpdateService,
     private val missingReservationsReminders: MissingReservationsReminders,
-    asyncJobRunner: AsyncJobRunner<AsyncJob>
+    asyncJobRunner: AsyncJobRunner<AsyncJob>,
+    tracer: Tracer
 ) {
 
     init {
         asyncJobRunner.registerHandler { db, clock: EvakaClock, msg: AsyncJob.RunScheduledJob ->
             val logMeta = mapOf("jobName" to msg.job.name)
             logger.info(logMeta) { "Running scheduled job ${msg.job.name}" }
-            msg.job.fn(this, db, clock)
+            tracer.withSpan("scheduledjob ${msg.job.name}") { msg.job.fn(this, db, clock) }
         }
     }
 
