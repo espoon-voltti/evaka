@@ -133,6 +133,7 @@ const OuterContainer = styled.div`
 
 const ColumnContainer = styled(FixedSpaceColumn)`
   margin: ${defaultMargins.s};
+  pointer-events: none;
 `
 
 function useReloadNotification(
