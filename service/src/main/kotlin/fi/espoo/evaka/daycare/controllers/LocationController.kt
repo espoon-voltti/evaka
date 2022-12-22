@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class LocationController {
-    @GetMapping("/units")
+    @GetMapping(value = ["/units", "/public/units"])
     fun getApplicationUnits(
         db: Database,
         user: AuthenticatedUser,
