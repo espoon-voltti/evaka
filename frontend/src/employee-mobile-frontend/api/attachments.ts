@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { Failure, Result, Success } from 'lib-common/api'
-import { AttachmentType } from 'lib-common/generated/api-types/attachment'
 import { UUID } from 'lib-common/types'
 
 import { API_URL, client } from './client'
@@ -28,31 +27,6 @@ async function doSaveAttachment(
   }
 }
 
-export async function saveApplicationAttachment(
-  applicationId: UUID,
-  file: File,
-  type: AttachmentType,
-  onUploadProgress: (progressEvent: ProgressEvent) => void
-): Promise<Result<UUID>> {
-  return await doSaveAttachment(
-    { path: `/attachments/applications/${applicationId}`, params: { type } },
-    file,
-    onUploadProgress
-  )
-}
-
-export async function saveIncomeStatementAttachment(
-  incomeStatementId: UUID,
-  file: File,
-  onUploadProgress: (progressEvent: ProgressEvent) => void
-): Promise<Result<UUID>> {
-  return await doSaveAttachment(
-    { path: `/attachments/income-statements/${incomeStatementId}` },
-    file,
-    onUploadProgress
-  )
-}
-
 export const saveMessageAttachment = (
   draftId: UUID,
   file: File,
@@ -60,17 +34,6 @@ export const saveMessageAttachment = (
 ): Promise<Result<UUID>> =>
   doSaveAttachment(
     { path: `/attachments/messages/${draftId}` },
-    file,
-    onUploadProgress
-  )
-
-export const savePedagogicalDocumentAttachment = (
-  documentId: UUID,
-  file: File,
-  onUploadProgress: (progressEvent: ProgressEvent) => void
-): Promise<Result<UUID>> =>
-  doSaveAttachment(
-    { path: `/attachments/pedagogical-documents/${documentId}` },
     file,
     onUploadProgress
   )

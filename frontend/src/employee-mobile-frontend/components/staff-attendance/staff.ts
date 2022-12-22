@@ -20,12 +20,6 @@ export function isStaffMember(
   return 'employeeId' in staff && 'groupIds' in staff
 }
 
-export function isExternalStaffMember(
-  staff: StaffMember | ExternalStaffMember
-): staff is ExternalStaffMember {
-  return 'name' in staff && 'id' in staff && 'groupId' in staff
-}
-
 export function toStaff(staff: StaffMember | ExternalStaffMember): Staff {
   if (isStaffMember(staff)) {
     return {

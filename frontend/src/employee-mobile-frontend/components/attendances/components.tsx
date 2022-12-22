@@ -29,15 +29,6 @@ export const InlineWideAsyncButton = styled(WideAsyncButton)`
   border: none;
 `
 
-export const Flex = styled.div`
-  @media screen and (max-width: 1023px) {
-    justify-content: space-between;
-  }
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-`
-
 export const FlexColumn = styled.div<{
   paddingHorizontal?: SpacingSize | string
 }>`
