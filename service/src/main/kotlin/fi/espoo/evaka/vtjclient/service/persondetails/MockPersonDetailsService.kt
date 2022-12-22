@@ -21,7 +21,19 @@ class MockPersonDetailsService : IPersonDetailsService {
             persons.forEach {
                 allPersons[it.socialSecurityNumber] = it
                 it.dependants.forEach { dependant ->
-                    allPersons[dependant.socialSecurityNumber] = dependant
+                    if (dependant.guardians.isEmpty()) {
+                        allPersons[dependant.socialSecurityNumber] =
+                            dependant.copy(guardians = listOf(it))
+                    } else if (
+                        dependant.guardians.none { g ->
+                            g.socialSecurityNumber == it.socialSecurityNumber
+                        }
+                    ) {
+                        allPersons[dependant.socialSecurityNumber] =
+                            dependant.copy(guardians = dependant.guardians + it)
+                    } else {
+                        allPersons[dependant.socialSecurityNumber] = dependant
+                    }
                 }
                 it.guardians.forEach { guardian ->
                     allPersons[guardian.socialSecurityNumber] = guardian
