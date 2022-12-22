@@ -364,6 +364,12 @@ const sv: Translations = {
     },
     staffAnnotation: 'Personal',
     deleteThread: 'Radera meddelandetråden',
+    threadList: {
+      participants: 'Deltagare',
+      title: 'Ämne',
+      sentAt: 'Skickat',
+      message: 'Meddelande'
+    },
     thread: {
       type: 'Meddelandetyp',
       urgent: 'Akut',

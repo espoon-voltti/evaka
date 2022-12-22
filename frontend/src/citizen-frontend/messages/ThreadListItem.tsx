@@ -65,7 +65,9 @@ export default React.memo(function ThreadListItem({
       <FixedSpaceColumn>
         <Header isRead={!hasUnreadMessages}>
           <Truncated data-qa="message-participants">
-            <ScreenReaderOnly>Osallistujat:</ScreenReaderOnly>
+            <ScreenReaderOnly>
+              {i18n.messages.threadList.participants}:
+            </ScreenReaderOnly>
             {participants.join(', ')}
           </Truncated>
           <FixedSpaceRow>
@@ -88,18 +90,24 @@ export default React.memo(function ThreadListItem({
         </ScreenReaderOnly>
         <TitleAndDate isRead={!hasUnreadMessages}>
           <Truncated>
-            <ScreenReaderOnly>Aihe:</ScreenReaderOnly>
+            <ScreenReaderOnly>
+              {i18n.messages.threadList.title}:
+            </ScreenReaderOnly>
             {thread.title}
           </Truncated>
           <div>
-            <ScreenReaderOnly>Lähetetty:</ScreenReaderOnly>
+            <ScreenReaderOnly>
+              {i18n.messages.threadList.sentAt}:
+            </ScreenReaderOnly>
             <time dateTime={lastMessage.sentAt.formatIso()}>
               {formatDateOrTime(lastMessage.sentAt)}
             </time>
           </div>
         </TitleAndDate>
         <Truncated>
-          <ScreenReaderOnly>Viesti:</ScreenReaderOnly>
+          <ScreenReaderOnly>
+            {i18n.messages.threadList.message}:
+          </ScreenReaderOnly>
           {lastMessage.content
             .substring(0, 200)
             .replace(new RegExp('\\n', 'g'), ' ')}

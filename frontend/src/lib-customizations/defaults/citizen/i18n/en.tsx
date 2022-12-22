@@ -367,6 +367,12 @@ const en: Translations = {
     },
     deleteThread: 'Delete thread',
     staffAnnotation: 'Staff',
+    threadList: {
+      participants: 'Participants',
+      title: 'Title',
+      sentAt: 'Sent',
+      message: 'Message'
+    },
     thread: {
       type: 'Type',
       urgent: 'Urgent',

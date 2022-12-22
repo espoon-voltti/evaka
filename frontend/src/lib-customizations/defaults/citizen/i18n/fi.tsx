@@ -364,6 +364,12 @@ export default {
     },
     deleteThread: 'Poista viestiketju',
     staffAnnotation: 'Henkilökunta',
+    threadList: {
+      participants: 'Osallistujat',
+      title: 'Otsikko',
+      sentAt: 'Lähetetty',
+      message: 'Viesti'
+    },
     thread: {
       type: 'Tyyppi',
       urgent: 'Kiireellinen',
