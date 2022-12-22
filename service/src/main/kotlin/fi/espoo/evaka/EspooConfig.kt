@@ -32,6 +32,7 @@ import fi.espoo.evaka.shared.security.actionrule.ActionRuleMapping
 import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
 import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
+import io.opentracing.Tracer
 import org.jdbi.v3.core.Jdbi
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory
@@ -113,7 +114,9 @@ class EspooConfig {
 
     @Bean fun jobSchedule(env: ScheduledJobsEnv): JobSchedule = DefaultJobSchedule(env)
 
-    @Bean @Profile("local") fun devDataInitializer(jdbi: Jdbi) = DevDataInitializer(jdbi)
+    @Bean
+    @Profile("local")
+    fun devDataInitializer(jdbi: Jdbi, tracer: Tracer) = DevDataInitializer(jdbi, tracer)
 
     @Bean fun incomeTypesProvider(): IncomeTypesProvider = EspooIncomeTypesProvider()
 

@@ -34,6 +34,7 @@ import fi.espoo.evaka.shared.template.EvakaTemplateProvider
 import fi.espoo.evaka.shared.template.ITemplateProvider
 import fi.espoo.voltti.auth.JwtKeys
 import fi.espoo.voltti.auth.loadPublicKeys
+import io.opentracing.noop.NoopTracerFactory
 import javax.sql.DataSource
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig
 import org.flywaydb.core.Flyway
@@ -78,7 +79,7 @@ fun getTestDataSource(): TestDataSource =
                                 .placeholders(mapOf("application_user" to "evaka_it"))
                                 .load()
                                 .run { migrate() }
-                            Database(Jdbi.create(it)).connect { db ->
+                            Database(Jdbi.create(it), NoopTracerFactory.create()).connect { db ->
                                 db.transaction { tx ->
                                     tx.runDevScript("reset-database.sql")
                                     tx.resetDatabase()

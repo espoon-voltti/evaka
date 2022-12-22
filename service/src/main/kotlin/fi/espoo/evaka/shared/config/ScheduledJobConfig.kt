@@ -8,6 +8,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.job.JobSchedule
 import fi.espoo.evaka.shared.job.ScheduledJobRunner
+import io.opentracing.Tracer
 import javax.sql.DataSource
 import org.jdbi.v3.core.Jdbi
 import org.springframework.boot.context.event.ApplicationReadyEvent
@@ -22,10 +23,11 @@ class ScheduledJobConfig {
     @Bean
     fun scheduledJobRunner(
         jdbi: Jdbi,
+        tracer: Tracer,
         asyncJobRunner: AsyncJobRunner<AsyncJob>,
         dataSource: DataSource,
         schedule: JobSchedule
-    ) = ScheduledJobRunner(jdbi, asyncJobRunner, dataSource, schedule)
+    ) = ScheduledJobRunner(jdbi, tracer, asyncJobRunner, dataSource, schedule)
 
     @Bean
     fun scheduledJobRunnerStart(runner: ScheduledJobRunner) =

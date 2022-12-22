@@ -8,10 +8,8 @@ import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobRunnerConfig
-import fi.espoo.evaka.shared.config.getTestDataSource
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.europeHelsinki
-import io.opentracing.noop.NoopTracerFactory
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalTime
@@ -36,13 +34,7 @@ class ScheduledJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun beforeEach() {
-        asyncJobRunner =
-            AsyncJobRunner(
-                AsyncJob::class,
-                jdbi,
-                AsyncJobRunnerConfig(),
-                NoopTracerFactory.create()
-            )
+        asyncJobRunner = AsyncJobRunner(AsyncJob::class, jdbi, AsyncJobRunnerConfig(), noopTracer)
     }
 
     @Test
@@ -52,7 +44,8 @@ class ScheduledJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
             val previous = executedJob.getAndSet(msg.job)
             assertNull(previous)
         }
-        ScheduledJobRunner(jdbi, asyncJobRunner, getTestDataSource(), testSchedule).use { runner ->
+        ScheduledJobRunner(jdbi, noopTracer, asyncJobRunner, dataSource, testSchedule).use { runner
+            ->
             runner.scheduler.start()
             val exec =
                 runner

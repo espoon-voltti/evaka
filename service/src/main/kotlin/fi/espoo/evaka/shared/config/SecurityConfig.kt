@@ -14,7 +14,9 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class SecurityConfig {
-    @Bean fun accessControlList(jdbi: Jdbi): AccessControlList = AccessControlList(jdbi)
+    @Bean
+    fun accessControlList(jdbi: Jdbi, tracer: Tracer): AccessControlList =
+        AccessControlList(jdbi, tracer)
 
     @Bean
     fun accessControl(actionRuleMapping: ActionRuleMapping, tracer: Tracer): AccessControl =

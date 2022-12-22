@@ -165,7 +165,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
     }
 
     fun getPendingJobCount(): Int =
-        Database(jdbi).connect { db -> db.read { it.getPendingJobCount(handlers.keys) } }
+        Database(jdbi, tracer).connect { db -> db.read { it.getPendingJobCount(handlers.keys) } }
 
     fun waitUntilNoRunningJobs(timeout: Duration = Duration.ofSeconds(10)) {
         val start = Instant.now()
@@ -177,7 +177,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
     }
 
     private fun runPendingJobs(clock: EvakaClock, maxCount: Int = 1_000) {
-        Database(jdbi).connect { db ->
+        Database(jdbi, tracer).connect { db ->
             var remaining = maxCount
             activeWorkerCount.incrementAndGet()
             try {
@@ -230,7 +230,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
                             MdcKey.USER_ID_HASH.set(it.rawIdHash.toString())
                             tracer.activeSpan()?.setTag(Tracing.enduserIdHash, it.rawIdHash)
                         }
-                        registration.run(Database(jdbi), clock, msg)
+                        registration.run(Database(jdbi, tracer), clock, msg)
                         tx.completeJob(job, clock.now())
                         true
                     }

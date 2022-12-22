@@ -12,6 +12,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.voltti.logging.loggers.info
+import io.opentracing.Tracer
 import java.time.Duration
 import javax.sql.DataSource
 import mu.KotlinLogging
@@ -25,6 +26,7 @@ private val logger = KotlinLogging.logger {}
 
 class ScheduledJobRunner(
     private val jdbi: Jdbi,
+    private val tracer: Tracer,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     dataSource: DataSource,
     schedule: JobSchedule
@@ -45,7 +47,7 @@ class ScheduledJobRunner(
                         val logMeta = mapOf("jobName" to job.name)
                         logger.info(logMeta) { "Scheduling job ${job.name}: $schedule" }
                         Tasks.recurring(job.name, settings.schedule).execute { _, _ ->
-                            Database(jdbi).connect {
+                            Database(jdbi, tracer).connect {
                                 this.planAsyncJob(
                                     it,
                                     job,

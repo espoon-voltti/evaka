@@ -45,7 +45,6 @@ import fi.espoo.evaka.shared.security.actionrule.DefaultActionRuleMapping
 import fi.espoo.evaka.testArea
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
-import io.opentracing.noop.NoopTracerFactory
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -63,8 +62,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val person2Id = PersonId(UUID.randomUUID())
     private val employee1Id = EmployeeId(UUID.randomUUID())
     private val employee2Id = EmployeeId(UUID.randomUUID())
-    private val accessControl =
-        AccessControl(DefaultActionRuleMapping(), NoopTracerFactory.create())
+    private val accessControl = AccessControl(DefaultActionRuleMapping(), noopTracer)
     private lateinit var clock: EvakaClock
     private val sendTime = HelsinkiDateTime.of(LocalDate.of(2022, 5, 14), LocalTime.of(12, 11))
     private val readTime = sendTime.plusSeconds(30)

@@ -5,6 +5,7 @@
 package fi.espoo.evaka.shared.config
 
 import fi.espoo.evaka.shared.db.Database
+import io.opentracing.Tracer
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.JdbiException
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,15 +20,16 @@ class ActuatorConfig {
 
     @Bean
     @Autowired
-    fun databaseHealthEndpoint(jdbi: Jdbi): HealthIndicator {
-        return DatabaseHealthIndicator(jdbi)
+    fun databaseHealthEndpoint(jdbi: Jdbi, tracer: Tracer): HealthIndicator {
+        return DatabaseHealthIndicator(jdbi, tracer)
     }
 }
 
-class DatabaseHealthIndicator(private val jdbi: Jdbi) : AbstractHealthIndicator() {
+class DatabaseHealthIndicator(private val jdbi: Jdbi, private val tracer: Tracer) :
+    AbstractHealthIndicator() {
     override fun doHealthCheck(builder: Health.Builder) {
         try {
-            Database(jdbi).connect { db ->
+            Database(jdbi, tracer).connect { db ->
                 db.read { tx -> tx.createQuery("SELECT 1").mapTo<Int>().first() }
             }
             builder.up()
