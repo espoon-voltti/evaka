@@ -562,12 +562,9 @@ class DevApi(
     }
 
     @PostMapping("/parentship")
-    fun createParentships(
-        db: Database,
-        @RequestBody parentships: List<DevParentship>
-    ): List<DevParentship> {
-        return db.connect { dbc ->
-            dbc.transaction { tx -> parentships.map { tx.insertTestParentship(it) } }
+    fun createParentships(db: Database, @RequestBody parentships: List<DevParentship>) {
+        db.connect { dbc ->
+            dbc.transaction { tx -> parentships.forEach { tx.insertTestParentship(it) } }
         }
     }
 
@@ -1756,7 +1753,7 @@ data class DevPerson(
 }
 
 data class DevParentship(
-    val id: ParentshipId?,
+    val id: ParentshipId = ParentshipId(UUID.randomUUID()),
     val childId: ChildId,
     val headOfChildId: PersonId,
     val startDate: LocalDate,
