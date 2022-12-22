@@ -22,7 +22,7 @@ import {
   AreaAndPersonFixtures,
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
-import { Fixture } from '../../dev-api/fixtures'
+import { Fixture, uuidv4 } from '../../dev-api/fixtures'
 import { PersonDetail } from '../../dev-api/types'
 import CitizenApplicationsPage from '../../pages/citizen/citizen-applications'
 import CitizenCalendarPage from '../../pages/citizen/citizen-calendar'
@@ -52,7 +52,7 @@ beforeEach(async () => {
   fixtures = await initializeAreaAndPersonData()
 
   fosterParent = fixtures.enduserGuardianFixture
-  fosterChild = (await Fixture.person().with({ ssn: '290413A902C' }).save())
+  fosterChild = (await Fixture.person().with({ ssn: '120220A995L' }).save())
     .data
   await Fixture.child(fosterChild.id).save()
   await insertFosterParents([
@@ -364,13 +364,13 @@ test('Foster parent can read a daycare curriculum and give permission to share i
   )
   await childPage.openVasu(vasuDocId)
   const vasuPage = new VasuPreviewPage(activeRelationshipPage)
-  await activeRelationshipHeader.assertUnreadChildrenCount(1)
+  await activeRelationshipHeader.assertUnreadChildrenCount(2)
   await vasuPage.assertTitleChildName(
     `${fosterChild.firstName} ${fosterChild.lastName}`
   )
   await vasuPage.givePermissionToShare()
   await vasuPage.assertGivePermissionToShareSectionIsNotVisible()
-  await activeRelationshipHeader.assertUnreadChildrenCount(0)
+  await activeRelationshipHeader.assertUnreadChildrenCount(1)
 
   const { endedRelationshipHeader } = await openEndedRelationshipPage()
   await endedRelationshipHeader.assertNoChildrenTab()
@@ -450,4 +450,85 @@ test('Foster parent can create a repeating reservation', async () => {
 
   const { endedRelationshipHeader } = await openEndedRelationshipPage()
   await endedRelationshipHeader.assertNoTab('calendar')
+})
+
+test('Foster parent can see and give photo consent', async () => {
+  await Fixture.placement()
+    .with({
+      childId: fosterChild.id,
+      unitId: fixtures.daycareFixture.id,
+      startDate: mockedDate.formatIso(),
+      endDate: mockedDate.addYears(1).formatIso()
+    })
+    .save()
+
+  await activeRelationshipPage.reload()
+  await activeRelationshipHeader.openChildPage(fosterChild.id)
+
+  const childPage = new CitizenChildPage(activeRelationshipPage)
+  await childPage.openCollapsible('consents')
+  await childPage.evakaProfilePicYes.check()
+  await childPage.saveConsent()
+  await waitUntilEqual(() => childPage.evakaProfilePicYes.disabled, true)
+
+  await activeRelationshipPage.reload()
+  await activeRelationshipHeader.openChildPage(fosterChild.id)
+  await childPage.openCollapsible('consents')
+  await childPage.evakaProfilePicYes.waitUntilChecked(true)
+  await childPage.evakaProfilePicNo.waitUntilChecked(false)
+  await waitUntilEqual(() => childPage.evakaProfilePicYes.disabled, true)
+  await waitUntilEqual(() => childPage.evakaProfilePicNo.disabled, true)
+})
+
+test('Foster parent can see calendar events for foster children', async () => {
+  const { data: placement } = await Fixture.placement()
+    .with({
+      childId: fosterChild.id,
+      unitId: fixtures.daycareFixture.id,
+      startDate: mockedDate.formatIso(),
+      endDate: mockedDate.addYears(1).formatIso()
+    })
+    .save()
+  const { data: daycareGroup } = await Fixture.daycareGroup()
+    .with({
+      daycareId: fixtures.daycareFixture.id,
+      name: 'Group 1'
+    })
+    .save()
+  await Fixture.groupPlacement()
+    .with({
+      startDate: mockedDate.formatIso(),
+      endDate: mockedDate.addYears(1).formatIso(),
+      daycareGroupId: daycareGroup.id,
+      daycarePlacementId: placement.id
+    })
+    .save()
+  const groupEventId = uuidv4()
+  await Fixture.calendarEvent()
+    .with({
+      id: groupEventId,
+      title: 'Group-wide event',
+      description: 'Whole group',
+      period: new FiniteDateRange(mockedDate, mockedDate)
+    })
+    .save()
+  await Fixture.calendarEventAttendee()
+    .with({
+      calendarEventId: groupEventId,
+      unitId: fixtures.daycareFixture.id,
+      groupId: daycareGroup.id
+    })
+    .save()
+  await activeRelationshipPage.reload()
+  await activeRelationshipHeader.selectTab('calendar')
+  const calendarPage = new CitizenCalendarPage(
+    activeRelationshipPage,
+    'desktop'
+  )
+  await calendarPage.assertEventCount(mockedDate, 1)
+  const dayView = await calendarPage.openDayView(mockedDate)
+  await dayView.assertEvent(fosterChild.id, groupEventId, {
+    title: 'Group-wide event / Group 1',
+    description: 'Whole group'
+  })
 })

@@ -151,7 +151,11 @@ fun Database.Read.getCalendarEventsForGuardian(
 ): List<CitizenCalendarEventRow> =
     this.createQuery(
             """
-WITH child AS NOT MATERIALIZED (SELECT g.child_id id FROM guardian g WHERE g.guardian_id = :guardianId),
+WITH child AS NOT MATERIALIZED (
+    SELECT g.child_id id FROM guardian g WHERE g.guardian_id = :guardianId
+    UNION
+    SELECT fp.child_id FROM foster_parent fp WHERE parent_id = :guardianId AND valid_during && :range
+),
 child_placement AS NOT MATERIALIZED (
     SELECT p.id, p.unit_id, p.child_id, placement_without_backup.range period, null backup_group_id
     FROM placement p
