@@ -449,6 +449,7 @@ export interface RawReportRow {
   partWeek: boolean
   placementType: PlacementType
   postOffice: string
+  postalCode: string
   shiftCare: boolean
   staffDimensioning: number
   unitId: UUID

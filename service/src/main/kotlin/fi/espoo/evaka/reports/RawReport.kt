@@ -70,6 +70,7 @@ SELECT
     date_part('year', p.date_of_birth) as birth_year,
     date_part('year', age(t::date, p.date_of_birth)) as age,
     p.language,
+    p.postal_code,
     p.post_office,
 
     pl.type as placement_type,
@@ -142,6 +143,7 @@ data class RawReportRow(
     val firstName: String,
     val lastName: String,
     val dateOfBirth: LocalDate,
+    val postalCode: String,
     val postOffice: String,
     val age: Int,
     val language: String?,
