@@ -160,7 +160,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
         periodicTimer.getAndSet(newTimer)?.cancel()
     }
 
-    fun runPendingJobsSync(clock: EvakaClock, maxCount: Int = 1_000) {
+    fun runPendingJobsSync(clock: EvakaClock, maxCount: Int = 1_000): Int {
         val task = FutureTask { runWorker(clock, maxCount) }
         while (!workerExecutor.queue.offer(task)) {
             // no available workers
@@ -171,9 +171,6 @@ class AsyncJobRunner<T : AsyncJobPayload>(
         }
         return task.get()
     }
-
-    fun getPendingJobCount(): Int =
-        Database(jdbi, tracer).connect { db -> db.read { it.getPendingJobCount(handlers.keys) } }
 
     fun waitUntilNoRunningJobs(timeout: Duration = Duration.ofSeconds(10)) {
         val start = Instant.now()
@@ -186,6 +183,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
 
     private fun runWorker(clock: EvakaClock, maxCount: Int = 1_000) =
         tracer.withDetachedSpan("asyncjob.worker $name") {
+            var executed = 0
             Database(jdbi, tracer).connect { dbc ->
                 var remaining = maxCount
                 do {
@@ -198,11 +196,13 @@ class AsyncJobRunner<T : AsyncJobPayload>(
                         ) {
                             runPendingJob(dbc, clock, job)
                         }
+                        executed += 1
                     }
                     remaining -= 1
                     config.throttleInterval?.toMillis()?.run { Thread.sleep(this) }
                 } while (job != null && remaining > 0 && !workerExecutor.isTerminating)
             }
+            executed
         }
 
     private fun runPendingJob(

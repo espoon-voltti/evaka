@@ -71,7 +71,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
     @Test
     fun `Pending decision newer than one week does not get reminder email`() {
         createPendingDecision(LocalDate.now(), null, null, 0)
-        assertEquals(0, runPendingDecisionEmailAsyncJobs())
+        runPendingDecisionEmailAsyncJobs()
         assertEquals(0, MockEmailClient.emails.size)
     }
 
@@ -92,7 +92,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
             type = DecisionType.PRESCHOOL_DAYCARE
         )
 
-        assertEquals(1, runPendingDecisionEmailAsyncJobs())
+        runPendingDecisionEmailAsyncJobs()
 
         val sentMails = MockEmailClient.emails
         assertEquals(1, sentMails.size)
@@ -109,7 +109,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
     @Test
     fun `Pending decision older than one week with sent reminder less than week ago does not send a new one`() {
         createPendingDecision(LocalDate.now().minusDays(8), null, HelsinkiDateTime.now(), 1)
-        assertEquals(0, runPendingDecisionEmailAsyncJobs())
+        runPendingDecisionEmailAsyncJobs()
         assertEquals(0, MockEmailClient.emails.size)
     }
 
@@ -123,7 +123,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
             HelsinkiDateTime.now().minusSeconds(eightDaySeconds),
             1
         )
-        assertEquals(1, runPendingDecisionEmailAsyncJobs())
+        runPendingDecisionEmailAsyncJobs()
 
         val sentMails = MockEmailClient.emails
         assertEquals(1, sentMails.size)
@@ -140,7 +140,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
     @Test
     fun `Pending decision older than one week but already two reminders does not send third`() {
         createPendingDecision(LocalDate.now().minusDays(8), null, null, 2)
-        assertEquals(0, runPendingDecisionEmailAsyncJobs())
+        runPendingDecisionEmailAsyncJobs()
         val sentMails = MockEmailClient.emails
         assertEquals(0, sentMails.size)
     }
@@ -155,7 +155,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
             ),
             2
         )
-        assertEquals(0, runPendingDecisionEmailAsyncJobs())
+        runPendingDecisionEmailAsyncJobs()
         val sentMails = MockEmailClient.emails
         assertEquals(0, sentMails.size)
     }
@@ -163,7 +163,7 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
     @Test
     fun `Pending decision older than two months does not send an email`() {
         createPendingDecision(LocalDate.now().minusMonths(2), null, null, 0)
-        assertEquals(0, runPendingDecisionEmailAsyncJobs())
+        runPendingDecisionEmailAsyncJobs()
         val sentMails = MockEmailClient.emails
         assertEquals(0, sentMails.size)
     }
@@ -213,9 +213,6 @@ class PendingDecisionEmailServiceIntegrationTest : FullApplicationTest(resetDbBe
 
     private fun runPendingDecisionEmailAsyncJobs(clock: EvakaClock = RealEvakaClock()): Int {
         scheduledJobs.sendPendingDecisionReminderEmails(db, clock)
-        val jobCount = asyncJobRunner.getPendingJobCount()
-        asyncJobRunner.runPendingJobsSync(clock)
-
-        return jobCount
+        return asyncJobRunner.runPendingJobsSync(clock)
     }
 }

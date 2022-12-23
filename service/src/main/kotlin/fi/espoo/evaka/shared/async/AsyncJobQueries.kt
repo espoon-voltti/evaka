@@ -37,20 +37,6 @@ RETURNING id
         .mapTo<UUID>()
         .one()
 
-fun Database.Read.getPendingJobCount(jobTypes: Collection<AsyncJobType<*>>): Int =
-    createQuery(
-            // language=SQL
-            """
-SELECT count(*)
-FROM async_job
-WHERE completed_at IS NULL
-AND type = ANY(:jobTypes)
-"""
-        )
-        .bind("jobTypes", jobTypes.map { it.name })
-        .mapTo<Int>()
-        .one()
-
 fun <T : AsyncJobPayload> Database.Transaction.claimJob(
     now: HelsinkiDateTime,
     jobTypes: Collection<AsyncJobType<out T>>
