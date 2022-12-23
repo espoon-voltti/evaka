@@ -202,10 +202,6 @@ export class Element {
     return this.locator.innerText()
   }
 
-  get textAsFloat(): Promise<number | null> {
-    return this.text.then((str) => (str ? parseFloat(str) : null))
-  }
-
   async assertText(assertion: (text: string) => boolean): Promise<void> {
     await waitUntilTrue(async () => assertion(await this.text))
   }
@@ -516,5 +512,15 @@ export class TreeDropdown extends Element {
         await toggle.click()
       }
     }
+  }
+}
+
+export class StaticChip extends Element {
+  get status(): Promise<string | null> {
+    return this.getAttribute('data-qa-status')
+  }
+
+  async assertStatus(status: string) {
+    await waitUntilEqual(() => this.status, status)
   }
 }

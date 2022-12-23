@@ -10,7 +10,6 @@ import { insertFeeThresholds, resetDatabase } from '../../dev-api'
 import { Fixture } from '../../dev-api/fixtures'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import FinanceBasicsPage from '../../pages/employee/finance-basics'
-import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -89,10 +88,9 @@ describe('Finance basics', () => {
     await financeBasicsPage.feesSection.createFeeThresholdsButton.click()
     await financeBasicsPage.feesSection.editor.fillInThresholds(data)
     await financeBasicsPage.feesSection.editor.assertSaveIsDisabled()
-    await waitUntilEqual(
-      () => financeBasicsPage.feesSection.editor.maxFeeError(2).text,
-      'Enimmäismaksu ei täsmää (200 €)'
-    )
+    await financeBasicsPage.feesSection.editor
+      .maxFeeError(2)
+      .assertTextEquals('Enimmäismaksu ei täsmää (200 €)')
   })
 
   test('Copying existing fee thresholds', async () => {

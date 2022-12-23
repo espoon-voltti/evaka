@@ -94,7 +94,7 @@ export class VasuEditPage extends VasuPageCommon {
         new TextInput(question.findByDataQa(`follow-up-${nth}-input`)),
       entryDateInput: (nth: number) =>
         new TextInput(question.findByDataQa(`follow-up-${nth}-date`)),
-      meta: (nth: number) => question.findByDataQa(`follow-up-${nth}-meta`).text
+      meta: (nth: number) => question.findByDataQa(`follow-up-${nth}-meta`)
     }
   }
 
@@ -146,7 +146,7 @@ export class VasuEditPage extends VasuPageCommon {
     await waitUntilEqual(() => input.inputValue, comment)
   }
 
-  followupEntryMetadata(nth: number, entryNth: number): Promise<string> {
+  followupEntryMetadata(nth: number, entryNth: number): Element {
     return this.#followup(nth).meta(entryNth)
   }
 
@@ -179,14 +179,12 @@ export class VasuPage extends VasuPageCommon {
   readonly #vasuEventListValues = this.page.findAll(
     '[data-qa="vasu-event-list"] span'
   )
-  readonly #vasuEventListDocState = this.page.find(
+  readonly documentState = this.page.find(
     '[data-qa="vasu-event-list"] [data-qa="vasu-state-chip"]'
   )
 
   readonly #templateName = this.page.find('[data-qa="template-name"]')
   readonly #editButton = this.page.find('[data-qa="edit-button"]')
-
-  documentState = () => this.#vasuEventListDocState.text
 
   // The (first) label for the state chip has no corresponding span, so the index is off by one.
   #valueForLabel = (label: string): Promise<string> =>
@@ -209,7 +207,7 @@ export class VasuPage extends VasuPageCommon {
   closedDate = () => this.#valueForLabel('Päättynyt')
 
   async assertTemplateName(expected: string) {
-    await waitUntilEqual(() => this.#templateName.text, expected)
+    await this.#templateName.assertTextEquals(expected)
   }
 
   async edit() {
@@ -236,7 +234,7 @@ export class VasuPreviewPage extends VasuPageCommon {
   readonly #confirmButton = this.page.findByDataQa('confirm-button')
 
   async assertTitleChildName(expectedName: string) {
-    await waitUntilEqual(() => this.#titleChildName.text, expectedName)
+    await this.#titleChildName.assertTextEquals(expectedName)
   }
 
   async assertGivePermissionToShareSectionIsVisible() {

@@ -24,17 +24,13 @@ export default class AssistanceNeedDecisionEditPage {
   }
 
   async assertDecisionStatus(status: string) {
-    await waitUntilEqual(
-      () => this.page.findByDataQa('decision-status').text,
-      status
-    )
+    await this.page.findByDataQa('decision-status').assertTextEquals(status)
   }
 
   async assertDecisionNumber(decisionNumber: number | null) {
-    await waitUntilEqual(
-      () => this.page.findByDataQa('decision-number').text,
-      `${decisionNumber ?? 'null'}`
-    )
+    await this.page
+      .findByDataQa('decision-number')
+      .assertTextEquals(`${decisionNumber ?? 'null'}`)
   }
 
   async waitUntilSaved(): Promise<void> {
@@ -62,7 +58,7 @@ export default class AssistanceNeedDecisionEditPage {
   }
 
   async assertPageTitle(title: string): Promise<void> {
-    await waitUntilEqual(() => this.page.findByDataQa('page-title').text, title)
+    await this.page.findByDataQa('page-title').assertTextEquals(title)
   }
 
   async selectUnit(unit: string): Promise<void> {

@@ -144,10 +144,10 @@ describe('Child Information - Vasu language', () => {
 
   test('Child placed in a Swedish unit can only use Swedish templates', async () => {
     await section.addNew()
-    await waitUntilEqual(
-      () => page.findAllByDataQa('vasu-state-chip').nth(1).text,
-      'Utkast'
-    )
+    await page
+      .findAllByDataQa('vasu-state-chip')
+      .nth(1)
+      .assertTextEquals('Utkast')
   })
 })
 
@@ -424,14 +424,10 @@ describe('Vasu document page', () => {
 
       await vasuEditPage.waitUntilSaved()
       const vasuPage = await openDocument()
-      await waitUntilEqual(
-        () => vasuPage.infoSharedToSection.recipients.text,
+      await vasuPage.infoSharedToSection.recipients.assertTextEquals(
         'Neuvolaan, Lasten terapiapalveluihin'
       )
-      await waitUntilEqual(
-        () => vasuPage.infoSharedToSection.other.text,
-        'Police'
-      )
+      await vasuPage.infoSharedToSection.other.assertTextEquals('Police')
     })
 
     test('Fill the discussion section', async () => {
@@ -518,14 +514,12 @@ describe('Vasu document page', () => {
         const refreshedVasuEditPage = await editDocument()
 
         const expectedMetadataStr = `${LocalDate.todayInSystemTz().format()} Seppo Sorsa`
-        await waitUntilEqual(
-          () => refreshedVasuEditPage.followupEntryMetadata(0, 0),
-          expectedMetadataStr
-        )
-        await waitUntilEqual(
-          () => refreshedVasuEditPage.followupEntryMetadata(0, 1),
-          expectedMetadataStr
-        )
+        await refreshedVasuEditPage
+          .followupEntryMetadata(0, 0)
+          .assertTextEquals(expectedMetadataStr)
+        await refreshedVasuEditPage
+          .followupEntryMetadata(0, 1)
+          .assertTextEquals(expectedMetadataStr)
 
         await refreshedVasuEditPage.waitUntilSaved()
         const vasuPage = await openDocument()
@@ -556,14 +550,12 @@ describe('Vasu document page', () => {
         const refreshedVasuEditPage = await editDocument()
 
         const expectedMetadataStr = `${LocalDate.todayInSystemTz().format()} Seppo Sorsa, muokattu ${LocalDate.todayInSystemTz().format()} Essi Esimies`
-        await waitUntilEqual(
-          () => refreshedVasuEditPage.followupEntryMetadata(0, 0),
-          expectedMetadataStr
-        )
-        await waitUntilEqual(
-          () => refreshedVasuEditPage.followupEntryMetadata(0, 1),
-          expectedMetadataStr
-        )
+        await refreshedVasuEditPage
+          .followupEntryMetadata(0, 0)
+          .assertTextEquals(expectedMetadataStr)
+        await refreshedVasuEditPage
+          .followupEntryMetadata(0, 1)
+          .assertTextEquals(expectedMetadataStr)
 
         await refreshedVasuEditPage.waitUntilSaved()
         const vasuPage = await openDocument()
@@ -594,7 +586,7 @@ describe('Vasu document page', () => {
       await finalizeDocument()
       vasuPage = await openDocument()
 
-      await waitUntilEqual(() => vasuPage.documentState(), 'Laadittu')
+      await vasuPage.documentState.assertTextEquals('Laadittu')
       await waitUntilEqual(
         () => vasuPage.publishedDate(),
         LocalDate.todayInSystemTz().format()
@@ -633,7 +625,7 @@ describe('Vasu document page', () => {
       vasuPage = await openDocument()
       await vasuPage.assertDocumentVisible()
 
-      await waitUntilEqual(() => vasuPage.documentState(), 'Arvioitu')
+      await vasuPage.documentState.assertTextEquals('Arvioitu')
       await waitUntilEqual(
         () => vasuPage.reviewedDate(),
         LocalDate.todayInSystemTz().format()
@@ -657,7 +649,7 @@ describe('Vasu document page', () => {
       vasuPage = await openDocument()
       await vasuPage.assertDocumentVisible()
 
-      await waitUntilEqual(() => vasuPage.documentState(), 'Päättynyt')
+      await vasuPage.documentState.assertTextEquals('Päättynyt')
       await waitUntilEqual(
         () => vasuPage.closedDate(),
         LocalDate.todayInSystemTz().format()

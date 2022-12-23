@@ -4,8 +4,7 @@
 
 import LocalDate from 'lib-common/local-date'
 
-import { waitUntilEqual } from '../../utils'
-import { Page, Checkbox, TextInput } from '../../utils/page'
+import { Checkbox, Page, TextInput } from '../../utils/page'
 
 export default class PersonSearchPage {
   constructor(private readonly page: Page) {}
@@ -85,32 +84,23 @@ export default class PersonSearchPage {
     postOffice: string
     ssn?: string
   }) {
-    await waitUntilEqual(
-      () => this.#personData.firstName.text,
-      personData.firstName
-    )
-    await waitUntilEqual(
-      () => this.#personData.lastName.text,
-      personData.lastName
-    )
-    await waitUntilEqual(
-      () => this.#personData.dateOfBirth.text,
+    await this.#personData.firstName.assertTextEquals(personData.firstName)
+    await this.#personData.lastName.assertTextEquals(personData.lastName)
+    await this.#personData.dateOfBirth.assertTextEquals(
       personData.dateOfBirth.format()
     )
-    await waitUntilEqual(
-      () => this.#personData.address.text,
+    await this.#personData.address.assertTextEquals(
       `${personData.streetAddress}, ${personData.postalCode} ${personData.postOffice}`
     )
     if (personData.ssn === undefined) {
       await this.#personData.ssn
         .findByDataQa('add-ssn-button')
         .waitUntilVisible()
-      await waitUntilEqual(
-        () => this.#personData.ssn.findByDataQa('add-ssn-button').text,
-        'Aseta hetu'
-      )
+      await this.#personData.ssn
+        .findByDataQa('add-ssn-button')
+        .assertTextEquals('Aseta hetu')
     } else {
-      await waitUntilEqual(() => this.#personData.ssn.text, personData.ssn)
+      await this.#personData.ssn.assertTextEquals(personData.ssn)
     }
   }
 

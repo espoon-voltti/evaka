@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilEqual } from '../../utils'
-import { Page, Checkbox, TextInput } from '../../utils/page'
+import { Checkbox, Page, TextInput } from '../../utils/page'
 
 export class IncomeStatementPage {
   constructor(private readonly page: Page) {}
@@ -22,7 +21,7 @@ export class IncomeStatementPage {
     expectedOtherInfo: string,
     expectedAttachmentsCount: number
   ) {
-    await waitUntilEqual(() => this.#childOtherInfo.text, expectedOtherInfo)
+    await this.#childOtherInfo.assertTextEquals(expectedOtherInfo)
     expectedAttachmentsCount > 0
       ? await this.#attachments.assertCount(expectedAttachmentsCount)
       : await this.#noAttachments.waitUntilVisible()

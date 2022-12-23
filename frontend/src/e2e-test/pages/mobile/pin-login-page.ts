@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilEqual } from '../../utils'
 import { Page, Select, TextInput } from '../../utils/page'
 
 export default class PinLoginPage {
@@ -24,6 +23,6 @@ export default class PinLoginPage {
   }
 
   async assertWrongPinError() {
-    await waitUntilEqual(() => this.#pinInfo.text, 'Väärä PIN-koodi')
+    await this.#pinInfo.assertTextEquals('Väärä PIN-koodi')
   }
 }

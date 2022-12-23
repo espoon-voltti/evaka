@@ -135,14 +135,9 @@ describe('Calendar events', () => {
     await creationModal.attendees.close()
     await creationModal.submit()
 
-    await waitUntilEqual(
-      () =>
-        calendarPage.calendarEventsSection.getEventOfDay(
-          mockedToday.addDays(1),
-          0
-        ).text,
-      'Testailijat: Test event (G)'
-    )
+    await calendarPage.calendarEventsSection
+      .getEventOfDay(mockedToday.addDays(1), 0)
+      .assertTextEquals('Testailijat: Test event (G)')
   })
 
   test('Employee can add multi-day event for individual child and edit and delete it', async () => {
@@ -163,14 +158,12 @@ describe('Calendar events', () => {
     await creationModal.attendees.close()
     await creationModal.submit()
 
-    await waitUntilEqual(
-      () => calendarPage.calendarEventsSection.getEventOfDay(startDate, 0).text,
-      'Osa ryhmästä: Test event (P)'
-    )
-    await waitUntilEqual(
-      () => calendarPage.calendarEventsSection.getEventOfDay(endDate, 0).text,
-      'Osa ryhmästä: Test event (P)'
-    )
+    await calendarPage.calendarEventsSection
+      .getEventOfDay(startDate, 0)
+      .assertTextEquals('Osa ryhmästä: Test event (P)')
+    await calendarPage.calendarEventsSection
+      .getEventOfDay(endDate, 0)
+      .assertTextEquals('Osa ryhmästä: Test event (P)')
 
     await calendarPage.calendarEventsSection.getEventOfDay(startDate, 0).click()
 
@@ -184,14 +177,12 @@ describe('Calendar events', () => {
     await editModal.description.fill('Edited event description')
     await editModal.submit()
 
-    await waitUntilEqual(
-      () => calendarPage.calendarEventsSection.getEventOfDay(startDate, 0).text,
-      'Osa ryhmästä: Edited event title'
-    )
-    await waitUntilEqual(
-      () => calendarPage.calendarEventsSection.getEventOfDay(endDate, 0).text,
-      'Osa ryhmästä: Edited event title'
-    )
+    await calendarPage.calendarEventsSection
+      .getEventOfDay(startDate, 0)
+      .assertTextEquals('Osa ryhmästä: Edited event title')
+    await calendarPage.calendarEventsSection
+      .getEventOfDay(endDate, 0)
+      .assertTextEquals('Osa ryhmästä: Edited event title')
 
     await calendarPage.calendarEventsSection.getEventOfDay(startDate, 0).click()
 

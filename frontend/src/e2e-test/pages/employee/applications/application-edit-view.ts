@@ -5,7 +5,7 @@
 import { OtherGuardianAgreementStatus } from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
 
-import { waitUntilEqual, waitUntilFalse } from '../../../utils'
+import { waitUntilFalse } from '../../../utils'
 import {
   Checkbox,
   Combobox,
@@ -86,13 +86,9 @@ export default class ApplicationEditView {
   }
 
   async assertUrgentAttachmentUploaded(fileName: string) {
-    await waitUntilEqual(
-      () =>
-        this.#urgentAttachmentFileUpload.find(
-          '[data-qa="file-download-button"]'
-        ).text,
-      fileName
-    )
+    await this.#urgentAttachmentFileUpload
+      .find('[data-qa="file-download-button"]')
+      .assertTextEquals(fileName)
   }
 
   async assertUrgencyAttachmentReceivedAtVisible(fileName: string) {
@@ -125,13 +121,9 @@ export default class ApplicationEditView {
   }
 
   async assertShiftCareAttachmentUploaded(fileName: string) {
-    await waitUntilEqual(
-      () =>
-        this.#shiftCareAttachmentFileUpload.find(
-          '[data-qa="file-download-button"]'
-        ).text,
-      fileName
-    )
+    await this.#shiftCareAttachmentFileUpload
+      .find('[data-qa="file-download-button"]')
+      .assertTextEquals(fileName)
   }
 
   async assertShiftCareAttachmentsDeleted() {

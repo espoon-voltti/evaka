@@ -53,10 +53,9 @@ export class UnitGroupsPage {
   )
 
   async assertChildCapacityFactor(childId: string, factor: string) {
-    await waitUntilEqual(
-      () => this.page.find(`[data-qa="child-capacity-factor-${childId}"]`).text,
-      factor
-    )
+    await this.page
+      .find(`[data-qa="child-capacity-factor-${childId}"]`)
+      .assertTextEquals(factor)
   }
 
   readonly childCapacityFactorColumnHeading = this.page.find(
@@ -169,20 +168,16 @@ export class MissingPlacementRow extends Element {
     groupMissingDuration?: string
   }) {
     if (fields.childName !== undefined) {
-      await waitUntilEqual(() => this.#childName.text, fields.childName)
+      await this.#childName.assertTextEquals(fields.childName)
     }
     if (fields.dateOfBirth !== undefined) {
-      await waitUntilEqual(() => this.#dateOfBirth.text, fields.dateOfBirth)
+      await this.#dateOfBirth.assertTextEquals(fields.dateOfBirth)
     }
     if (fields.placementDuration !== undefined) {
-      await waitUntilEqual(
-        () => this.#placementDuration.text,
-        fields.placementDuration
-      )
+      await this.#placementDuration.assertTextEquals(fields.placementDuration)
     }
     if (fields.groupMissingDuration !== undefined) {
-      await waitUntilEqual(
-        () => this.#groupMissingDuration.text,
+      await this.#groupMissingDuration.assertTextEquals(
         fields.groupMissingDuration
       )
     }
@@ -218,15 +213,15 @@ export class GroupCollapsible extends Element {
   #noChildren = this.find('[data-qa="no-children-placeholder"]')
 
   async assertGroupName(expectedName: string) {
-    await waitUntilEqual(() => this.#groupName.text, expectedName)
+    await this.#groupName.assertTextEquals(expectedName)
   }
 
   async assertGroupStartDate(expectedStartDate: string) {
-    await waitUntilEqual(() => this.#groupStartDate.text, expectedStartDate)
+    await this.#groupStartDate.assertTextEquals(expectedStartDate)
   }
 
   async assertGroupEndDate(expectedEndDate: string) {
-    await waitUntilEqual(() => this.#groupEndDate.text, expectedEndDate)
+    await this.#groupEndDate.assertTextEquals(expectedEndDate)
   }
 
   childRow(childId: string) {
@@ -305,13 +300,10 @@ export class GroupCollapsibleChildRow extends Element {
     placementDuration?: string
   }) {
     if (fields.childName !== undefined) {
-      await waitUntilEqual(() => this.#childName.text, fields.childName)
+      await this.#childName.assertTextEquals(fields.childName)
     }
     if (fields.placementDuration !== undefined) {
-      await waitUntilEqual(
-        () => this.#placementDuration.text,
-        fields.placementDuration
-      )
+      await this.#placementDuration.assertTextEquals(fields.placementDuration)
     }
   }
 
@@ -363,7 +355,7 @@ export class ChildDailyNoteModal extends Modal {
   #groupNoteInput = this.find('[data-qa="sticky-note"]')
 
   async assertGroupNote(expectedText: string) {
-    await waitUntilEqual(() => this.#groupNote.text, expectedText)
+    await this.#groupNote.assertTextEquals(expectedText)
   }
 
   async assertNoGroupNote() {
