@@ -4,18 +4,15 @@
 
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useContext } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
-import { AdRole } from 'lib-common/api-types/employee-auth'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import colors from 'lib-customizations/common'
 import { faCopy, faPen, faSync, faTrash } from 'lib-icons'
 
 import StatusLabel from '../../components/common/StatusLabel'
-import { UserContext } from '../../state/user'
 import { DateRangeOpen, getStatusLabelByDateRange } from '../../utils/date'
-import { requireRole } from '../../utils/roles'
 
 const ToolbarWrapper = styled.div`
   display: flex;
@@ -46,16 +43,8 @@ interface ToolbarProps {
   onDelete?: () => undefined | void
   onRetry?: () => undefined | void
   onCopy?: () => undefined | void
-  editable?: boolean
-  /**
-   * @deprecated use editable-prop with actions
-   */
-  editableFor?: AdRole[]
-  deletable?: boolean
-  /**
-   * @deprecated use deletable-prop with actions
-   */
-  deletableFor?: AdRole[]
+  editable: boolean
+  deletable: boolean
   dataQaEdit?: string
   dataQaDelete?: string
   dataQaRetry?: string
@@ -71,25 +60,14 @@ function Toolbar({
   warning,
   conflict,
   disableAll,
-  editable,
-  editableFor,
-  deletable,
-  deletableFor,
+  editable: editAllowed,
+  deletable: deleteAllowed,
   dataQaEdit,
   dataQaDelete,
   dataQaRetry,
   dataQaCopy,
   dataQa
 }: ToolbarProps) {
-  const { roles } = useContext(UserContext)
-
-  const editAllowed: boolean =
-    editable !== false &&
-    (editableFor === undefined || requireRole(roles, ...editableFor))
-  const deleteAllowed: boolean =
-    deletable !== false &&
-    (deletableFor === undefined || requireRole(roles, ...deletableFor))
-
   return (
     <ToolbarWrapper data-qa={dataQa}>
       {!!warning && (

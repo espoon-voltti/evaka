@@ -8,6 +8,7 @@
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import { Action } from '../action'
 import { EvakaUser } from './user'
 import { Language } from './daycare'
 import { PilotFeature } from './shared'
@@ -85,6 +86,25 @@ export interface DaycarePlacementWithDetails {
   isRestrictedFromUser: boolean
   missingServiceNeedDays: number
   serviceNeeds: ServiceNeed[]
+  startDate: LocalDate
+  terminatedBy: EvakaUser | null
+  terminationRequestedDate: LocalDate | null
+  type: PlacementType
+  updated: HelsinkiDateTime | null
+}
+
+/**
+* Generated from fi.espoo.evaka.placement.DaycarePlacementWithDetailsAndPermittedActions
+*/
+export interface DaycarePlacementWithDetailsAndPermittedActions {
+  child: ChildBasics
+  daycare: DaycareBasics
+  endDate: LocalDate
+  groupPlacements: DaycareGroupPlacement[]
+  id: UUID
+  isRestrictedFromUser: boolean
+  missingServiceNeedDays: number
+  serviceNeeds: ServiceNeedResponse[]
   startDate: LocalDate
   terminatedBy: EvakaUser | null
   terminationRequestedDate: LocalDate | null
@@ -234,6 +254,14 @@ export type PlacementPlanRejectReason =
   | 'REASON_3'
 
 /**
+* Generated from fi.espoo.evaka.placement.PlacementResponse
+*/
+export interface PlacementResponse {
+  data: DaycarePlacementWithDetailsAndPermittedActions
+  permittedActions: Action.Placement[]
+}
+
+/**
 * Generated from fi.espoo.evaka.placement.PlacementControllerCitizen.PlacementTerminationRequestBody
 */
 export interface PlacementTerminationRequestBody {
@@ -267,6 +295,14 @@ export type PlacementType =
 export interface PlacementUpdateRequestBody {
   endDate: LocalDate
   startDate: LocalDate
+}
+
+/**
+* Generated from fi.espoo.evaka.placement.ServiceNeedResponse
+*/
+export interface ServiceNeedResponse {
+  data: ServiceNeed
+  permittedActions: Action.ServiceNeed[]
 }
 
 /**

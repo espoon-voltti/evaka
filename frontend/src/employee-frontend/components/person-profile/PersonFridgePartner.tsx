@@ -189,6 +189,8 @@ const PersonFridgePartner = React.memo(function PersonFridgePartner({
                                 `remove-fridge-partner-${fridgePartner.id}`
                               )
                             }}
+                            editable={true}
+                            deletable={true}
                           />
                         </ButtonsTd>
                       </Tr>

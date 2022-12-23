@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AccessControlList
@@ -64,7 +65,7 @@ class PlacementController(
         @RequestParam(value = "to", required = false)
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         endDate: LocalDate? = null
-    ): Set<DaycarePlacementWithDetails> {
+    ): Set<PlacementResponse> {
         return db.connect { dbc ->
                 dbc.read {
                     when {
@@ -102,7 +103,54 @@ class PlacementController(
                                 placement
                             }
                         }
-                        .toSet()
+                        .let { placements ->
+                            val permittedPlacementActions =
+                                accessControl.getPermittedActions<PlacementId, Action.Placement>(
+                                    it,
+                                    user,
+                                    clock,
+                                    placements.map { placement -> placement.id }
+                                )
+                            val permittedServiceNeedActions =
+                                accessControl.getPermittedActions<
+                                    ServiceNeedId, Action.ServiceNeed
+                                >(
+                                    it,
+                                    user,
+                                    clock,
+                                    placements.flatMap { placement ->
+                                        placement.serviceNeeds.map { serviceNeed -> serviceNeed.id }
+                                    }
+                                )
+                            placements
+                                .map { placement ->
+                                    PlacementResponse(
+                                        DaycarePlacementWithDetailsAndPermittedActions(
+                                            placement.id,
+                                            placement.child,
+                                            placement.daycare,
+                                            placement.startDate,
+                                            placement.endDate,
+                                            placement.type,
+                                            placement.missingServiceNeedDays,
+                                            placement.groupPlacements,
+                                            placement.serviceNeeds.map { serviceNeed ->
+                                                ServiceNeedResponse(
+                                                    serviceNeed,
+                                                    permittedServiceNeedActions[serviceNeed.id]
+                                                        ?: emptySet()
+                                                )
+                                            },
+                                            placement.isRestrictedFromUser,
+                                            placement.terminationRequestedDate,
+                                            placement.terminatedBy,
+                                            placement.updated
+                                        ),
+                                        permittedPlacementActions[placement.id] ?: emptySet()
+                                    )
+                                }
+                                .toSet()
+                        }
                 }
             }
             .also {

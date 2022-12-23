@@ -21,7 +21,7 @@ import {
   ParentshipWithPermittedActions,
   PersonJSON
 } from 'lib-common/generated/api-types/pis'
-import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
+import { PlacementResponse } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
 import { useApiState, useRestApi } from 'lib-common/utils/useRestApi'
 
@@ -34,7 +34,7 @@ export interface ChildState {
   person: Result<PersonJSON>
   setPerson: (value: PersonJSON) => void
   permittedActions: Set<Action.Child | Action.Person>
-  placements: Result<DaycarePlacementWithDetails[]>
+  placements: Result<PlacementResponse[]>
   loadPlacements: () => void
   parentships: Result<ParentshipWithPermittedActions[]>
   backupCares: Result<ChildBackupCareResponse[]>
@@ -159,9 +159,9 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
     () =>
       placements
         .map((p) =>
-          sortBy(p, (placement) =>
+          sortBy(p, ({ data: placement }) =>
             placement.startDate.toSystemTzDate().getTime()
-          ).reduce((prev, curr) => {
+          ).reduce((prev, { data: curr }) => {
             const currentRange = new FiniteDateRange(
               curr.startDate,
               curr.endDate
