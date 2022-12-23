@@ -52,19 +52,19 @@ export default React.memo(function TabUnitInformation() {
         />
       )}
 
-      {daycare.enabledPilotFeatures.includes('MOBILE') &&
-        permittedActions.has('READ_MOBILE_DEVICES') && (
-          <UnitMobileDevices
-            canAddNew={permittedActions.has('CREATE_MOBILE_DEVICE_PAIRING')}
-          />
-        )}
-
       {daycare.enabledPilotFeatures.includes('REALTIME_STAFF_ATTENDANCE') &&
         permittedActions.has('READ_STAFF_OCCUPANCY_COEFFICIENTS') && (
           <StaffOccupancyCoefficients
             allowEditing={permittedActions.has(
               'UPSERT_STAFF_OCCUPANCY_COEFFICIENTS'
             )}
+          />
+        )}
+
+      {daycare.enabledPilotFeatures.includes('MOBILE') &&
+        permittedActions.has('READ_MOBILE_DEVICES') && (
+          <UnitMobileDevices
+            canAddNew={permittedActions.has('CREATE_MOBILE_DEVICE_PAIRING')}
           />
         )}
     </FixedSpaceColumn>
