@@ -74,6 +74,7 @@ const ToastRoot = styled.div<{
     -2px 0 4px rgba(15, 15, 15, 0.15);
   z-index: ${modalZIndex - 5};
   cursor: ${(p) => (p.showPointer ? 'pointer' : 'auto')};
+  pointer-events: auto;
 `
 
 const ToastContent = styled.div`
