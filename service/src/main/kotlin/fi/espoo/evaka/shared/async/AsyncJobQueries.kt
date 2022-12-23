@@ -148,10 +148,11 @@ AND type = ANY(${bind(jobTypes.map { it.name })})
         }
         .execute()
 
-fun Database.Transaction.removeJobs(runBefore: HelsinkiDateTime): Int =
+fun Database.Transaction.removeUncompletedJobs(runBefore: HelsinkiDateTime): Int =
     createUpdate("""
 DELETE FROM async_job
-WHERE run_at < :runBefore
+WHERE completed_at IS NULL
+AND run_at < :runBefore
 """)
         .bind("runBefore", runBefore)
         .execute()
@@ -162,6 +163,6 @@ fun Database.Connection.removeOldAsyncJobs(now: HelsinkiDateTime) {
     logger.info { "Removed $completedCount async jobs completed before $completedBefore" }
 
     val runBefore = now.minusMonths(6)
-    val oldCount = transaction { it.removeJobs(runBefore = runBefore) }
+    val oldCount = transaction { it.removeUncompletedJobs(runBefore = runBefore) }
     logger.info("Removed $oldCount async jobs originally planned to be run before $runBefore")
 }
