@@ -3,12 +3,13 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 
 import Footer, { footerHeightDesktop } from 'citizen-frontend/Footer'
 import { UnwrapResult } from 'citizen-frontend/async-rendering'
 import { combine } from 'lib-common/api'
+import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import Main from 'lib-components/atoms/Main'
 import { desktopMin, tabletMin } from 'lib-components/breakpoints'
@@ -46,6 +47,7 @@ export default React.memo(function MessagesPage() {
     accountId,
     loadAccount,
     selectedThread,
+    setSelectedThread,
     refreshThreads,
     threads,
     threadLoadingResult
@@ -86,6 +88,22 @@ export default React.memo(function MessagesPage() {
     [navigate]
   )
 
+  const params = useParams<{ threadId: UUID | undefined }>()
+  useEffect(() => {
+    setSelectedThread(params.threadId)
+  }, [setSelectedThread, params.threadId])
+
+  const selectThread = useCallback(
+    (threadId: UUID | undefined) => {
+      if (!threadId) {
+        navigate('/messages')
+      } else {
+        navigate(`/messages/${threadId}`)
+      }
+    },
+    [navigate]
+  )
+
   const onSelectedThreadDeleted = useCallback(() => {
     refreshThreads()
     changeEditorVisibility(false)
@@ -103,12 +121,14 @@ export default React.memo(function MessagesPage() {
               <StyledFlex breakpoint={tabletMin} horizontalSpacing="L">
                 <ThreadList
                   accountId={id}
+                  selectThread={selectThread}
                   setEditorVisible={changeEditorVisibility}
                   newMessageButtonEnabled={!editorVisible}
                 />
                 {selectedThread ? (
                   <ThreadView
                     accountId={id}
+                    closeThread={() => selectThread(undefined)}
                     thread={selectedThread}
                     onThreadDeleted={() => onSelectedThreadDeleted()}
                   />

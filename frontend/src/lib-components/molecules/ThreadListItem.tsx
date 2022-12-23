@@ -4,6 +4,9 @@
 
 import styled from 'styled-components'
 
+import { faTrash } from 'lib-icons'
+
+import IconButton from '../atoms/buttons/IconButton'
 import { fontWeights } from '../typography'
 import { defaultMargins } from '../white-space'
 
@@ -31,7 +34,13 @@ export const Truncated = styled.span`
     margin-right: ${defaultMargins.s};
   }
 `
+export const DeleteThreadButton = styled(IconButton).attrs({
+  icon: faTrash
+})``
 export const Container = styled.div<{ isRead: boolean; active: boolean }>`
+  display: block;
+  border: 0;
+
   text-align: left;
   width: 100%;
 
@@ -45,15 +54,19 @@ export const Container = styled.div<{ isRead: boolean; active: boolean }>`
   &:focus {
     outline: none;
     border: 2px solid ${(p) => p.theme.colors.main.m2Focus};
-    padding: calc(${defaultMargins.s} - 1px) calc(${defaultMargins.m} - 1px);
+    padding: calc(${defaultMargins.s} - 1px) calc(${defaultMargins.m} - 2px);
   }
 
-  .delete-btn {
+  ${DeleteThreadButton} {
     opacity: 0;
   }
 
+  ${DeleteThreadButton}:focus {
+    opacity: 1;
+  }
+
   &:hover {
-    .delete-btn {
+    ${DeleteThreadButton} {
       opacity: 1;
     }
   }

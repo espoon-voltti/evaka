@@ -23,6 +23,7 @@ import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import Linkify from 'lib-components/atoms/Linkify'
+import { ScreenReaderOnly } from 'lib-components/atoms/ScreenReaderOnly'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { desktopMin } from 'lib-components/breakpoints'
 import {
@@ -32,6 +33,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import FileDownloadButton from 'lib-components/molecules/FileDownloadButton'
 import { MessageReplyEditor } from 'lib-components/molecules/MessageReplyEditor'
+import { ScreenReaderButton } from 'lib-components/molecules/ScreenReaderButton'
 import { ThreadContainer } from 'lib-components/molecules/ThreadListItem'
 import { fontWeights, H2, InformationText } from 'lib-components/typography'
 import { useRecipients } from 'lib-components/utils/useReplyRecipients'
@@ -43,7 +45,11 @@ import { getAttachmentUrl } from '../attachments'
 import { useTranslation } from '../localization'
 
 import { MessageCharacteristics } from './MessageCharacteristics'
-import { ConfirmDeleteThread, MessageContainer } from './MessageComponents'
+import {
+  ConfirmDeleteThread,
+  MessageContainer,
+  ReplyEditorContainer
+} from './MessageComponents'
 import { MessageContext } from './state'
 
 const TitleRow = styled.div`
@@ -56,10 +62,8 @@ const TitleRow = styled.div`
   }
 `
 
-const StickyTitleRow = styled(TitleRow)`
-  position: sticky;
-  top: 0;
-  background: ${colors.grayscale.g0};
+const ThreadTitleRow = styled.div`
+  background-color: ${colors.grayscale.g0};
   max-height: 215px; // fits roughly 5 rows of heading text with the chip and paddings
   overflow: auto;
 
@@ -75,6 +79,18 @@ const StickyTitleRow = styled(TitleRow)`
     gap: ${defaultMargins.s};
     padding: ${defaultMargins.L};
   }
+
+  margin: ${defaultMargins.xxs};
+
+  & + & {
+    margin-top: ${defaultMargins.L};
+  }
+`
+
+const MessageList = styled.ul`
+  margin: 0;
+  padding: 0;
+  list-style: none;
 `
 
 const SenderName = styled.div`
@@ -94,64 +110,75 @@ const ReplyToThreadButton = styled(InlineButton)`
   align-self: flex-start;
 `
 
-const SingleMessage = React.memo(function SingleMessage({
-  message
-}: {
-  message: Message
-}) {
-  return (
-    <MessageContainer role="comment">
-      <TitleRow>
-        <SenderName>{message.sender.name}</SenderName>
+// eslint-disable-next-line react/display-name
+const SingleMessage = React.memo(
+  React.forwardRef(function SingleMessage(
+    {
+      message
+    }: {
+      message: Message
+    },
+    ref: React.ForwardedRef<HTMLLIElement>
+  ) {
+    const i18n = useTranslation()
+    return (
+      <MessageContainer tabIndex={-1} ref={ref}>
+        <TitleRow>
+          <SenderName>
+            <ScreenReaderOnly>{i18n.messages.thread.sender}:</ScreenReaderOnly>
+            {message.sender.name}
+          </SenderName>
+          <InformationText>
+            <ScreenReaderOnly>{i18n.messages.thread.sentAt}:</ScreenReaderOnly>
+            <time dateTime={message.sentAt.formatIso()}>
+              {message.sentAt.toLocalDate().format()}
+            </time>
+          </InformationText>
+        </TitleRow>
         <InformationText>
-          <time dateTime={message.sentAt.formatIso()}>
-            {message.sentAt.toLocalDate().format()}
-          </time>
+          <ScreenReaderOnly>
+            {i18n.messages.thread.recipients}:
+          </ScreenReaderOnly>
+          {(message.recipientNames
+            ? message.recipientNames
+            : message.recipients.map((r) => r.name)
+          ).join(', ')}
         </InformationText>
-      </TitleRow>
-      <InformationText>
-        {(message.recipientNames
-          ? message.recipientNames
-          : message.recipients.map((r) => r.name)
-        ).join(', ')}
-      </InformationText>
-      <MessageContent data-qa="thread-reader-content">
-        <Linkify>{message.content}</Linkify>
-      </MessageContent>
-      {message.attachments.length > 0 && (
-        <>
-          <HorizontalLine slim />
-          <FixedSpaceColumn spacing="xs">
-            {message.attachments.map((attachment) => (
-              <FileDownloadButton
-                key={attachment.id}
-                file={attachment}
-                getFileUrl={getAttachmentUrl}
-                icon
-                data-qa="attachment"
-              />
-            ))}
-          </FixedSpaceColumn>
-        </>
-      )}
-    </MessageContainer>
-  )
-})
-
-const AutoScrollPositionSpan = styled.span<{ top: string }>`
-  position: absolute;
-  top: ${(p) => p.top};
-`
+        <MessageContent data-qa="thread-reader-content">
+          <Linkify>{message.content}</Linkify>
+        </MessageContent>
+        {message.attachments.length > 0 && (
+          <>
+            <HorizontalLine slim />
+            <FixedSpaceColumn spacing="xs">
+              {message.attachments.map((attachment) => (
+                <FileDownloadButton
+                  key={attachment.id}
+                  file={attachment}
+                  getFileUrl={getAttachmentUrl}
+                  icon
+                  data-qa="attachment"
+                />
+              ))}
+            </FixedSpaceColumn>
+          </>
+        )}
+      </MessageContainer>
+    )
+  })
+)
 
 interface Props {
   accountId: UUID
   thread: MessageThread
+  closeThread: () => void
   onThreadDeleted: () => void
 }
 
 export default React.memo(function ThreadView({
   accountId,
   thread: { id: threadId, messages, title, type, urgent, children },
+  closeThread,
   onThreadDeleted
 }: Props) {
   const i18n = useTranslation()
@@ -161,12 +188,6 @@ export default React.memo(function ThreadView({
   const { onToggleRecipient, recipients } = useRecipients(messages, accountId)
   const [replyEditorVisible, setReplyEditorVisible] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const [stickyTitleRowHeight, setStickyTitleRowHeight] = useState(0)
-  const stickyTitleRowRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    setStickyTitleRowHeight(stickyTitleRowRef.current?.clientHeight || 0)
-  }, [setStickyTitleRowHeight, stickyTitleRowRef])
 
   useEffect(() => setReplyEditorVisible(false), [threadId])
 
@@ -175,10 +196,12 @@ export default React.memo(function ThreadView({
     scrollRefIntoView(autoScrollRef)
   }, [messages, replyEditorVisible])
 
-  const autoFocusRef = useRef<HTMLButtonElement>(null)
+  const titleRowRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    autoFocusRef.current?.focus()
-  }, [messages, replyEditorVisible])
+    titleRowRef.current?.focus()
+  }, [threadId])
+
+  const lastMessageRef = useRef<HTMLLIElement>(null)
 
   const onUpdateContent = useCallback(
     (content: string) => setReplyContent(threadId, content),
@@ -216,39 +239,48 @@ export default React.memo(function ThreadView({
 
   return (
     <ThreadContainer data-qa="thread-reader">
-      <StickyTitleRow ref={stickyTitleRowRef}>
+      <ThreadTitleRow tabIndex={-1} ref={titleRowRef}>
         <FixedSpaceFlexWrap>
           <MessageCharacteristics
             type={type}
             urgent={urgent}
             labels={i18n.messages.types}
           />
-          {children.map((child) => (
-            <StaticChip key={child.childId} color={theme.colors.main.m2}>
-              {formatPreferredName(child) || ''}
-            </StaticChip>
-          ))}
+          {children.length > 0 ? (
+            <>
+              <ScreenReaderOnly>
+                {i18n.messages.thread.children}:
+              </ScreenReaderOnly>
+              {children.map((child) => (
+                <StaticChip key={child.childId} color={theme.colors.main.m2}>
+                  {formatPreferredName(child) || ''}
+                </StaticChip>
+              ))}
+            </>
+          ) : null}
         </FixedSpaceFlexWrap>
         <H2 noMargin data-qa="thread-reader-title">
+          <ScreenReaderOnly>{i18n.messages.thread.title}:</ScreenReaderOnly>
           {title}
         </H2>
-      </StickyTitleRow>
+        <ScreenReaderButton
+          data-qa="jump-to-end"
+          onClick={() => lastMessageRef.current?.focus()}
+          text={i18n.messages.thread.jumpToLastMessage}
+        />
+      </ThreadTitleRow>
       <Gap size="s" />
-      {messages.map((message, idx) => (
-        <React.Fragment key={`${message.id}-fragment`}>
-          {idx === messages.length - 1 && !replyEditorVisible && (
-            <div style={{ position: 'relative' }}>
-              <AutoScrollPositionSpan
-                top={`-${stickyTitleRowHeight}px`}
-                ref={autoScrollRef}
-              />
-            </div>
-          )}
-          <SingleMessage key={message.id} message={message} />
-        </React.Fragment>
-      ))}
+      <MessageList>
+        {messages.map((message, i) => (
+          <SingleMessage
+            key={message.id}
+            message={message}
+            ref={i === messages.length - 1 ? lastMessageRef : undefined}
+          />
+        ))}
+      </MessageList>
       {replyEditorVisible ? (
-        <MessageContainer>
+        <ReplyEditorContainer>
           <MessageReplyEditor
             replyState={replyState}
             onSubmit={onSubmit}
@@ -259,7 +291,7 @@ export default React.memo(function ThreadView({
             replyContent={replyContent}
             i18n={editorLabels}
           />
-        </MessageContainer>
+        </ReplyEditorContainer>
       ) : (
         messages.length > 0 && (
           <>
@@ -270,15 +302,21 @@ export default React.memo(function ThreadView({
                   icon={faReply}
                   onClick={() => setReplyEditorVisible(true)}
                   data-qa="message-reply-editor-btn"
-                  text={i18n.messages.replyToThread}
-                  ref={autoFocusRef}
+                  text={i18n.messages.thread.reply}
                 />
               ) : (
                 <div />
               )}
+              <ScreenReaderButton
+                onClick={() => titleRowRef.current?.focus()}
+                text={i18n.messages.thread.jumpToBeginning}
+              />
+              <ScreenReaderButton
+                onClick={closeThread}
+                text={i18n.messages.thread.close}
+              />
               <InlineButton
                 icon={faTrash}
-                aria-label={i18n.common.delete}
                 data-qa="delete-thread-btn"
                 className="delete-btn"
                 onClick={() => setConfirmDelete(true)}

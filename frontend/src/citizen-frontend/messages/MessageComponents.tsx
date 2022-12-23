@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useCallback } from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 import { UUID } from 'lib-common/types'
 import { desktopMin } from 'lib-components/breakpoints'
@@ -16,7 +16,7 @@ import { useTranslation } from '../localization'
 
 import { archiveThread } from './api'
 
-export const MessageContainer = styled.div`
+const messageContainerStyles = css`
   background-color: ${colors.grayscale.g0};
   padding: ${defaultMargins.s};
 
@@ -24,11 +24,20 @@ export const MessageContainer = styled.div`
     padding: ${defaultMargins.L};
   }
 
-  margin-bottom: ${defaultMargins.s};
+  margin: ${defaultMargins.xxs} ${defaultMargins.xxs} ${defaultMargins.s}
+    ${defaultMargins.xxs};
+`
+
+export const MessageContainer = styled.li`
+  ${messageContainerStyles}
 
   h2 {
     margin: 0;
   }
+`
+
+export const ReplyEditorContainer = styled.div`
+  ${messageContainerStyles}
 `
 
 export interface ConfirmDeleteThreadProps {

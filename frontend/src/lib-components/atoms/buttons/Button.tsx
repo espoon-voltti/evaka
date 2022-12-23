@@ -79,7 +79,7 @@ export const StyledButton = styled.button`
   letter-spacing: 0.2px;
 `
 
-interface ButtonProps extends BaseProps {
+export interface ButtonProps extends BaseProps {
   onClick?: (e: React.MouseEvent) => unknown
   children?: React.ReactNode | React.ReactNodeArray
   text?: string

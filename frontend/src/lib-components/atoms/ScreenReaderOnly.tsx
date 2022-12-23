@@ -4,11 +4,17 @@
 
 import styled from 'styled-components'
 
-export const ScreenReaderOnly = styled.div`
-  position: absolute;
-  left: -10000px;
-  top: auto;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-`
+import { isAutomatedTest } from 'lib-common/utils/helpers'
+
+export const ScreenReaderOnly = isAutomatedTest
+  ? styled.div`
+      display: none;
+    `
+  : styled.div`
+      position: absolute;
+      left: -10000px;
+      top: auto;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    `

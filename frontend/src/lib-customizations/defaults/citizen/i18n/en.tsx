@@ -365,9 +365,27 @@ const en: Translations = {
       MESSAGE: 'Message',
       BULLETIN: 'Bulletin'
     },
-    replyToThread: 'Reply',
     deleteThread: 'Delete thread',
     staffAnnotation: 'Staff',
+    threadList: {
+      participants: 'Participants',
+      title: 'Title',
+      sentAt: 'Sent',
+      message: 'Message'
+    },
+    thread: {
+      type: 'Type',
+      urgent: 'Urgent',
+      children: 'Regarding children',
+      title: 'Subject',
+      reply: 'Reply',
+      jumpToLastMessage: 'Jump to last message',
+      jumpToBeginning: 'Jump to beginning',
+      close: 'Back to list',
+      sender: 'Sender',
+      sentAt: 'Sent at',
+      recipients: 'Recipients'
+    },
     messageEditor: {
       newMessage: 'New message',
       recipients: 'Recipients',
