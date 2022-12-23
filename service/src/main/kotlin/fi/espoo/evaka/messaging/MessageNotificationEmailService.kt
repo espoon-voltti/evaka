@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.JobParams
+import fi.espoo.evaka.shared.async.MessageNotificationAsyncJob
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -38,7 +39,7 @@ class MessageNotificationEmailService(
     fun getMessageNotifications(
         tx: Database.Transaction,
         messageIds: List<MessageId>
-    ): List<AsyncJob.SendMessageNotificationEmail> {
+    ): List<MessageNotificationAsyncJob.SendMessageNotificationEmail> {
         return tx.createQuery(
                 """
             SELECT DISTINCT
@@ -64,7 +65,7 @@ class MessageNotificationEmailService(
             )
             .bind("messageIds", messageIds)
             .map { row ->
-                AsyncJob.SendMessageNotificationEmail(
+                MessageNotificationAsyncJob.SendMessageNotificationEmail(
                     threadId = row.mapColumn("thread_id"),
                     messageId = row.mapColumn("message_id"),
                     messageRecipientId = row.mapColumn("message_recipient_id"),
@@ -109,7 +110,7 @@ class MessageNotificationEmailService(
     fun sendMessageNotification(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: AsyncJob.SendMessageNotificationEmail
+        msg: MessageNotificationAsyncJob.SendMessageNotificationEmail
     ) {
         val (threadId, messageId, recipientId, messageRecipientId, personEmail, language, urgent) =
             msg

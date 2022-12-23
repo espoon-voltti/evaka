@@ -8,6 +8,7 @@ import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobRunnerConfig
+import fi.espoo.evaka.shared.async.MessageNotificationAsyncJob
 import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.async.VardaAsyncJob
 import io.opentracing.Tracer
@@ -29,6 +30,18 @@ class AsyncJobConfig {
     @Bean
     fun vardaAsyncJobRunner(jdbi: Jdbi, tracer: Tracer): AsyncJobRunner<VardaAsyncJob> =
         AsyncJobRunner(VardaAsyncJob::class, jdbi, AsyncJobRunnerConfig(threadPoolSize = 1), tracer)
+
+    @Bean
+    fun messageNotificationAsyncJobRunner(
+        jdbi: Jdbi,
+        tracer: Tracer
+    ): AsyncJobRunner<MessageNotificationAsyncJob> =
+        AsyncJobRunner(
+            MessageNotificationAsyncJob::class,
+            jdbi,
+            AsyncJobRunnerConfig(),
+            tracer
+        )
 
     @Bean
     fun sfiAsyncJobRunner(

@@ -71,6 +71,22 @@ sealed interface SuomiFiAsyncJob : AsyncJobPayload {
     }
 }
 
+sealed interface MessageNotificationAsyncJob : AsyncJobPayload {
+    // threadId, messageId and recipientId are nullable for backwards compatibility
+
+    data class SendMessageNotificationEmail(
+        val threadId: MessageThreadId?,
+        val messageId: MessageId?,
+        val recipientId: MessageAccountId?,
+        val messageRecipientId: MessageRecipientId,
+        val personEmail: String,
+        val language: Language,
+        val urgent: Boolean = false
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+}
+
 sealed interface AsyncJob : AsyncJobPayload {
     data class DvvModificationsRefresh(val ssns: List<String>, val requestingUserId: UUID) :
         AsyncJob {
@@ -95,19 +111,6 @@ sealed interface AsyncJob : AsyncJobPayload {
         val email: String,
         val language: String?,
         val decisionIds: List<DecisionId>
-    ) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    // threadId, messageId and recipientId are nullable for backwards compatibility
-    data class SendMessageNotificationEmail(
-        val threadId: MessageThreadId?,
-        val messageId: MessageId?,
-        val recipientId: MessageAccountId?,
-        val messageRecipientId: MessageRecipientId,
-        val personEmail: String,
-        val language: Language,
-        val urgent: Boolean = false
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
