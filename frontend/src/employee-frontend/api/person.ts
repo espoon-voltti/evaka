@@ -12,7 +12,6 @@ import {
 } from 'lib-common/generated/api-types/messaging'
 import {
   CreatePersonBody,
-  GuardiansAndBlockedGuardians,
   PersonJSON,
   PersonResponse,
   PersonSummary,
@@ -220,19 +219,39 @@ export async function getPersonGuardians(
     .catch((e) => Failure.fromError(e))
 }
 
+export interface GuardiansAndBlockedGuardians {
+  blockedGuardians: PersonJSON[]
+  guardians: PersonJSON[]
+}
+
+export async function getPersonBlockedGuardians(
+  personId: UUID
+): Promise<Result<PersonJSON[]>> {
+  return client
+    .get<JsonOf<PersonJSON[]>>(`/person/blocked-guardians/${personId}`)
+    .then((res) => Success.of(res.data.map(deserializePersonJSON)))
+    .catch((e) => Failure.fromError(e))
+}
+
 export async function getPersonGuardiansAndBlockedGuardians(
   personId: UUID
 ): Promise<Result<GuardiansAndBlockedGuardians>> {
-  return client
-    .get<JsonOf<GuardiansAndBlockedGuardians>>(
-      `/person/guardians-and-blocked-guardians/${personId}`
-    )
-    .then(({ data }) => ({
-      guardians: data.guardians.map(deserializePersonJSON),
-      blockedGuardians: data.blockedGuardians.map(deserializePersonJSON)
-    }))
-    .then((v) => Success.of(v))
-    .catch((e) => Failure.fromError(e))
+  const [guardians, blockedGuardians] = await Promise.all([
+    getPersonGuardians(personId),
+    getPersonBlockedGuardians(personId)
+  ])
+  return guardians.isSuccess && blockedGuardians.isSuccess
+    ? Success.of({
+        guardians: guardians.value,
+        blockedGuardians: blockedGuardians.value
+      })
+    : Failure.of(
+        guardians.isFailure
+          ? guardians
+          : blockedGuardians.isFailure
+          ? blockedGuardians
+          : Failure.of({ message: 'Fetching guardians failed' })
+      )
 }
 
 interface DecisionsResponse {

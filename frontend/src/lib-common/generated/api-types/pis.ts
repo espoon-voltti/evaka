@@ -254,14 +254,6 @@ export interface GetOrCreatePersonBySsnRequest {
 }
 
 /**
-* Generated from fi.espoo.evaka.pis.controllers.PersonController.GuardiansAndBlockedGuardians
-*/
-export interface GuardiansAndBlockedGuardians {
-  blockedGuardians: PersonJSON[]
-  guardians: PersonJSON[]
-}
-
-/**
 * Generated from fi.espoo.evaka.pis.controllers.PersonController.MergeRequest
 */
 export interface MergeRequest {

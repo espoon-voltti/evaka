@@ -188,43 +188,30 @@ class PersonController(
             }
     }
 
-    data class GuardiansAndBlockedGuardians(
-        val guardians: List<PersonJSON>,
-        val blockedGuardians: List<PersonJSON>
-    )
-
-    @GetMapping("/guardians-and-blocked-guardians/{personId}")
-    fun getPersonGuardiansAndBlockedGuardians(
+    @GetMapping("/blocked-guardians/{personId}")
+    fun getPersonBlockedGuardians(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable(value = "personId") childId: ChildId
-    ): GuardiansAndBlockedGuardians {
+    ): List<PersonJSON> {
         return db.connect { dbc ->
                 dbc.transaction { tx ->
                     accessControl.requirePermissionFor(
                         tx,
                         user,
                         clock,
-                        Action.Child.READ_GUARDIANS_AND_BLOCKED_GUARDIANS,
+                        Action.Child.READ_BLOCKED_GUARDIANS,
                         childId
                     )
-                    GuardiansAndBlockedGuardians(
-                        guardians =
-                            personService.getGuardians(tx, user, childId).map { personDTO ->
-                                PersonJSON.from(personDTO)
-                            },
-                        blockedGuardians =
-                            tx.getBlockedGuardians(childId)
-                                .mapNotNull { tx.getPersonById(it) }
-                                .map { personDTO -> PersonJSON.from(personDTO) }
-                    )
+                    tx.getBlockedGuardians(childId).mapNotNull { tx.getPersonById(it) }
                 }
             }
+            .let { it.map { personDTO -> PersonJSON.from(personDTO) } }
             .also {
-                Audit.PersonGuardiansAndBlockedGuardiansRead.log(
+                Audit.PersonBlockedGuardiansRead.log(
                     targetId = childId,
-                    meta = mapOf("count" to it.guardians.size + it.blockedGuardians.size)
+                    meta = mapOf("count" to it.size)
                 )
             }
     }

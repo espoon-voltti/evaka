@@ -9,13 +9,11 @@ import styled from 'styled-components'
 
 import {
   getPersonGuardiansAndBlockedGuardians,
+  GuardiansAndBlockedGuardians,
   updateEvakaRights
 } from 'employee-frontend/api/person'
 import { Result, Success } from 'lib-common/api'
-import {
-  GuardiansAndBlockedGuardians,
-  PersonJSON
-} from 'lib-common/generated/api-types/pis'
+import { PersonJSON } from 'lib-common/generated/api-types/pis'
 import { UUID } from 'lib-common/types'
 import { getAge } from 'lib-common/utils/local-date'
 import { useApiState } from 'lib-common/utils/useRestApi'
@@ -42,7 +40,7 @@ export default React.memo(function Guardians() {
   const [guardiansAndBlockedGuardians, reloadGuardiansAndBlockedGuardians] =
     useApiState(
       () =>
-        childId && permittedActions.has('READ_GUARDIANS_AND_BLOCKED_GUARDIANS')
+        childId && permittedActions.has('READ_BLOCKED_GUARDIANS')
           ? getPersonGuardiansAndBlockedGuardians(childId)
           : Promise.resolve(
               Success.of<GuardiansAndBlockedGuardians>({
