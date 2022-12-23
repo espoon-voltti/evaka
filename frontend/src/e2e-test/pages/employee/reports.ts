@@ -11,6 +11,7 @@ import {
   DatePickerDeprecated,
   Page,
   Select,
+  StaticChip,
   TextInput
 } from '../../utils/page'
 
@@ -105,20 +106,15 @@ export class PlacementSketchingReport {
     const element = this.page.find(`[data-qa="${applicationId}"]`)
     await element.waitUntilVisible()
 
-    await waitUntilEqual(
-      () => element.find('[data-qa="requested-unit"]').text,
-      requestedUnitName
-    )
+    await element
+      .find('[data-qa="requested-unit"]')
+      .assertTextEquals(requestedUnitName)
     if (currentUnitName) {
-      await waitUntilEqual(
-        () => element.find('[data-qa="current-unit"]').text,
-        currentUnitName
-      )
+      await element
+        .find('[data-qa="current-unit"]')
+        .assertTextEquals(currentUnitName)
     }
-    await waitUntilEqual(
-      () => element.find('[data-qa="child-name"]').text,
-      childName
-    )
+    await element.find('[data-qa="child-name"]').assertTextEquals(childName)
   }
 }
 
@@ -180,6 +176,7 @@ export class VoucherServiceProvidersReport {
 
 export class ServiceVoucherUnitReport {
   constructor(private page: Page) {}
+
   #childRows = this.page.findAllByDataQa('child-row')
 
   async assertChildRowCount(expected: number) {
@@ -265,11 +262,10 @@ export class AssistanceNeedDecisionsReport {
 export class AssistanceNeedDecisionsReportDecision {
   constructor(private page: Page) {}
 
-  decisionMaker = () =>
-    this.page.findByDataQa('labelled-value-decision-maker').text
-  decisionStatus = () =>
-    this.page.findByDataQa('decision-status').getAttribute('data-qa-status')
+  decisionMaker = this.page.findByDataQa('labelled-value-decision-maker')
+  decisionStatus = new StaticChip(this.page.findByDataQa('decision-status'))
   readonly returnForEditBtn = this.page.findByDataQa('return-for-edit')
+
   get returnForEditModal() {
     return {
       okBtn: this.page.findByDataQa('modal-okBtn')
@@ -281,6 +277,7 @@ export class AssistanceNeedDecisionsReportDecision {
   readonly modalOkBtn = this.page.findByDataQa('modal-okBtn')
 
   readonly mismatchModalLink = this.page.findByDataQa('mismatch-modal-link')
+
   get mismatchModal() {
     return {
       titleInput: new TextInput(this.page.findByDataQa('title-input')),

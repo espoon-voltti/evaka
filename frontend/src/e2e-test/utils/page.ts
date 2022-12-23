@@ -514,3 +514,13 @@ export class TreeDropdown extends Element {
     }
   }
 }
+
+export class StaticChip extends Element {
+  get status(): Promise<string | null> {
+    return this.getAttribute('data-qa-status')
+  }
+
+  async assertStatus(status: string) {
+    await waitUntilEqual(() => this.status, status)
+  }
+}
