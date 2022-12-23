@@ -193,22 +193,22 @@ export class ServiceVoucherUnitReport {
     expectedCoPayment: number,
     expectedRealizedAmount: number
   ) {
-    await waitUntilEqual(
-      () => this.page.findAllByDataQa('child-name').nth(nth).text,
-      expectedName
-    )
-    await waitUntilEqual(
-      () => this.page.findAllByDataQa('voucher-value').nth(nth).textAsFloat,
-      expectedVoucherValue
-    )
-    await waitUntilEqual(
-      () => this.page.findAllByDataQa('co-payment').nth(nth).textAsFloat,
-      expectedCoPayment
-    )
-    await waitUntilEqual(
-      () => this.page.findAllByDataQa('realized-amount').nth(nth).textAsFloat,
-      expectedRealizedAmount
-    )
+    await this.page
+      .findAllByDataQa('child-name')
+      .nth(nth)
+      .assertTextEquals(expectedName)
+    await this.page
+      .findAllByDataQa('voucher-value')
+      .nth(nth)
+      .assertText((text) => parseFloat(text) === expectedVoucherValue)
+    await this.page
+      .findAllByDataQa('co-payment')
+      .nth(nth)
+      .assertText((text) => parseFloat(text) === expectedCoPayment)
+    await this.page
+      .findAllByDataQa('realized-amount')
+      .nth(nth)
+      .assertText((text) => parseFloat(text) === expectedRealizedAmount)
   }
 }
 

@@ -202,10 +202,6 @@ export class Element {
     return this.locator.innerText()
   }
 
-  get textAsFloat(): Promise<number | null> {
-    return this.text.then((str) => (str ? parseFloat(str) : null))
-  }
-
   async assertText(assertion: (text: string) => boolean): Promise<void> {
     await waitUntilTrue(async () => assertion(await this.text))
   }
