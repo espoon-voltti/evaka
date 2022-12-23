@@ -219,6 +219,11 @@ export async function getPersonGuardians(
     .catch((e) => Failure.fromError(e))
 }
 
+export interface GuardiansAndBlockedGuardians {
+  blockedGuardians: PersonJSON[]
+  guardians: PersonJSON[]
+}
+
 export async function getPersonBlockedGuardians(
   personId: UUID
 ): Promise<Result<PersonJSON[]>> {
@@ -226,6 +231,27 @@ export async function getPersonBlockedGuardians(
     .get<JsonOf<PersonJSON[]>>(`/person/blocked-guardians/${personId}`)
     .then((res) => Success.of(res.data.map(deserializePersonJSON)))
     .catch((e) => Failure.fromError(e))
+}
+
+export async function getPersonGuardiansAndBlockedGuardians(
+  personId: UUID
+): Promise<Result<GuardiansAndBlockedGuardians>> {
+  const [guardians, blockedGuardians] = await Promise.all([
+    getPersonGuardians(personId),
+    getPersonBlockedGuardians(personId)
+  ])
+  return guardians.isSuccess && blockedGuardians.isSuccess
+    ? Success.of({
+        guardians: guardians.value,
+        blockedGuardians: blockedGuardians.value
+      })
+    : Failure.of(
+        guardians.isFailure
+          ? guardians
+          : blockedGuardians.isFailure
+          ? blockedGuardians
+          : Failure.of({ message: 'Fetching guardians failed' })
+      )
 }
 
 interface DecisionsResponse {
