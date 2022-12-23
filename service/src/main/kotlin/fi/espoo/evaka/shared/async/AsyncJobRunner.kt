@@ -19,16 +19,18 @@ import io.opentracing.Tracer
 import java.lang.reflect.UndeclaredThrowableException
 import java.time.Duration
 import java.time.Instant
+import java.util.Timer
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledFuture
-import java.util.concurrent.ScheduledThreadPoolExecutor
-import java.util.concurrent.ThreadFactory
+import java.util.concurrent.FutureTask
+import java.util.concurrent.SynchronousQueue
+import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.fixedRateTimer
+import kotlin.concurrent.thread
 import kotlin.concurrent.withLock
 import kotlin.reflect.KClass
 import mu.KotlinLogging
@@ -57,30 +59,51 @@ class AsyncJobRunner<T : AsyncJobPayload>(
     private val tracer: Tracer
 ) : AutoCloseable {
     val name = "${AsyncJobRunner::class.simpleName}.${payloadType.simpleName}"
-    private val logger = KotlinLogging.logger("${AsyncJobRunner::class.qualifiedName}.${payloadType.simpleName}")
-
-    private val executor: ScheduledThreadPoolExecutor =
-        ScheduledThreadPoolExecutor(
-            config.threadPoolSize,
-            object : ThreadFactory {
-                private val default = Executors.defaultThreadFactory()
-                override fun newThread(r: Runnable): Thread =
-                    default.newThread(r).also { it.priority = Thread.MIN_PRIORITY }
-            }
-        )
-    private val periodicRunner: AtomicReference<ScheduledFuture<*>> = AtomicReference()
-    private val activeWorkerCount: AtomicInteger = AtomicInteger(0)
+    private val logger =
+        KotlinLogging.logger("${AsyncJobRunner::class.qualifiedName}.${payloadType.simpleName}")
 
     private val handlersLock: Lock = ReentrantLock()
     private val handlers: ConcurrentHashMap<AsyncJobType<out T>, Registration<*>> =
         ConcurrentHashMap()
-    private val wakeUpHook: () -> Unit = { wakeUp() }
 
-    val isStarted: Boolean
-        get() = periodicRunner.get() != null
+    private val periodicTimer: AtomicReference<Timer> = AtomicReference()
+    private val wakeUpHook: () -> Unit = {
+        if (isStarted) {
+            workerExecutor.execute { runWorker(RealEvakaClock()) }
+        }
+    }
 
-    val isBusy: Boolean
-        get() = activeWorkerCount.get() > 0
+    private val workerExecutor =
+        config.let {
+            val corePoolSize = 1
+            val maximumPoolSize = it.threadPoolSize
+            val keepAliveTime = Pair(1L, TimeUnit.MINUTES)
+            val workQueue = SynchronousQueue<Runnable>()
+            val threadNumber = AtomicInteger(1)
+            val threadFactory = { r: Runnable ->
+                thread(
+                    start = false,
+                    name = "$name.worker-${threadNumber.getAndIncrement()}",
+                    priority = Thread.MIN_PRIORITY,
+                    block = r::run
+                )
+            }
+            ThreadPoolExecutor(
+                corePoolSize,
+                maximumPoolSize,
+                keepAliveTime.first,
+                keepAliveTime.second,
+                workQueue,
+                threadFactory,
+                ThreadPoolExecutor.DiscardPolicy()
+            )
+        }
+
+    private val isStarted: Boolean
+        get() = periodicTimer.get() != null
+
+    private val isBusy: Boolean
+        get() = workerExecutor.activeCount > 0
 
     inline fun <reified P : T> registerHandler(
         noinline handler: (db: Database.Connection, clock: EvakaClock, msg: P) -> Unit
@@ -130,38 +153,23 @@ class AsyncJobRunner<T : AsyncJobPayload>(
     }
 
     fun start(pollingInterval: Duration) {
-        val newRunner =
-            this.executor.scheduleWithFixedDelay(
-                {
-                    tracer.withDetachedSpan("asyncjob.poll $name") {
-                        this.runPendingJobs(RealEvakaClock())
-                    }
-                },
-                0,
-                pollingInterval.toNanos(),
-                TimeUnit.NANOSECONDS
-            )
-        this.periodicRunner.getAndSet(newRunner)?.cancel(false)
-    }
-
-    fun wakeUp() {
-        if (isStarted) {
-            executor.execute {
-                tracer.withDetachedSpan("asyncjob.wakeup $name") {
-                    this.runPendingJobs(RealEvakaClock())
-                }
+        val newTimer =
+            fixedRateTimer("$name.timer", daemon = true, period = pollingInterval.toMillis()) {
+                workerExecutor.execute { runWorker(RealEvakaClock()) }
             }
-        }
+        periodicTimer.getAndSet(newTimer)?.cancel()
     }
 
     fun runPendingJobsSync(clock: EvakaClock, maxCount: Int = 1_000) {
-        this.executor
-            .submit {
-                tracer.withDetachedSpan("asyncjob.sync $name") {
-                    this.runPendingJobs(clock, maxCount)
-                }
+        val task = FutureTask { runWorker(clock, maxCount) }
+        while (!workerExecutor.queue.offer(task)) {
+            // no available workers
+            if (!workerExecutor.prestartCoreThread()) {
+                // worker capacity full
+                TimeUnit.MILLISECONDS.sleep(100)
             }
-            .get()
+        }
+        return task.get()
     }
 
     fun getPendingJobCount(): Int =
@@ -176,30 +184,26 @@ class AsyncJobRunner<T : AsyncJobPayload>(
         error { "Timed out while waiting for running jobs to finish" }
     }
 
-    private fun runPendingJobs(clock: EvakaClock, maxCount: Int = 1_000) {
-        Database(jdbi, tracer).connect { db ->
-            var remaining = maxCount
-            activeWorkerCount.incrementAndGet()
-            try {
+    private fun runWorker(clock: EvakaClock, maxCount: Int = 1_000) =
+        tracer.withDetachedSpan("asyncjob.worker $name") {
+            Database(jdbi, tracer).connect { dbc ->
+                var remaining = maxCount
                 do {
-                    val job = db.transaction { it.claimJob(clock.now(), handlers.keys) }
+                    val job = dbc.transaction { it.claimJob(clock.now(), handlers.keys) }
                     if (job != null) {
                         tracer.withDetachedSpan(
                             "asyncjob.run ${job.jobType.name}",
                             Tracing.asyncJobId withValue job.jobId,
                             Tracing.asyncJobRemainingAttempts withValue job.remainingAttempts,
                         ) {
-                            runPendingJob(db, clock, job)
+                            runPendingJob(dbc, clock, job)
                         }
                     }
                     remaining -= 1
                     config.throttleInterval?.toMillis()?.run { Thread.sleep(this) }
-                } while (job != null && remaining > 0 && !executor.isTerminating)
-            } finally {
-                activeWorkerCount.decrementAndGet()
+                } while (job != null && remaining > 0 && !workerExecutor.isTerminating)
             }
         }
-    }
 
     private fun runPendingJob(
         db: Database.Connection,
@@ -253,10 +257,12 @@ class AsyncJobRunner<T : AsyncJobPayload>(
     }
 
     override fun close() {
-        this.executor.shutdown()
-        if (!this.executor.awaitTermination(10, TimeUnit.SECONDS)) {
+        periodicTimer.get()?.cancel()
+
+        workerExecutor.shutdown()
+        if (!workerExecutor.awaitTermination(10, TimeUnit.SECONDS)) {
             logger.error { "Some async jobs did not terminate in time during shutdown" }
         }
-        this.executor.shutdownNow()
+        workerExecutor.shutdownNow()
     }
 }

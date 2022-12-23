@@ -55,16 +55,16 @@ fun <T : AsyncJobPayload> Database.Transaction.claimJob(
     now: HelsinkiDateTime,
     jobTypes: Collection<AsyncJobType<out T>>
 ): ClaimedJobRef<out T>? =
-    createUpdate(
-            // language=SQL
-            """
+    createUpdate<Any> {
+            sql(
+                """
 WITH claimed_job AS (
   SELECT id
   FROM async_job
-  WHERE run_at <= :now
+  WHERE run_at <= ${bind(now)}
   AND retry_count > 0
   AND completed_at IS NULL
-  AND type = ANY(:jobTypes)
+  AND type = ANY(${bind(jobTypes.map { it.name })})
   ORDER BY run_at ASC
   LIMIT 1
   FOR UPDATE SKIP LOCKED
@@ -72,15 +72,14 @@ WITH claimed_job AS (
 UPDATE async_job
 SET
   retry_count = greatest(0, retry_count - 1),
-  run_at = :now + retry_interval,
-  claimed_at = :now,
+  run_at = ${bind(now)} + retry_interval,
+  claimed_at = ${bind(now)},
   claimed_by = txid_current()
 WHERE id = (SELECT id FROM claimed_job)
 RETURNING id AS jobId, type AS jobType, txid_current() AS txId, retry_count AS remainingAttempts
-"""
-        )
-        .bind("jobTypes", jobTypes.map { it.name })
-        .bind("now", now)
+        """
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .map { row ->
             ClaimedJobRef(

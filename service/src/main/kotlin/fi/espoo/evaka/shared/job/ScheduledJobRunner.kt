@@ -72,7 +72,6 @@ class ScheduledJobRunner(
                 runAt = HelsinkiDateTime.now()
             )
         }
-        asyncJobRunner.wakeUp()
     }
 
     fun getScheduledExecutionsForTask(job: ScheduledJob): List<ScheduledExecution<Unit>> =
