@@ -300,20 +300,15 @@ fun Database.Transaction.insertTestParentship(
     return id
 }
 
-fun Database.Transaction.insertTestParentship(parentship: DevParentship): DevParentship {
-    val withId =
-        if (parentship.id == null) parentship.copy(id = ParentshipId(UUID.randomUUID()))
-        else parentship
-    // language=sql
-    val sql =
+fun Database.Transaction.insertTestParentship(parentship: DevParentship): ParentshipId =
+    insertTestDataRow(
+            parentship,
+            """
+INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date)
+VALUES (:id, :headOfChildId, :childId, :startDate, :endDate)
         """
-        INSERT INTO fridge_child (id, head_of_child, child_id, start_date, end_date)
-        VALUES (:id, :headOfChildId, :childId, :startDate, :endDate)
-        """
-            .trimIndent()
-    createUpdate(sql).bindKotlin(withId).execute()
-    return withId
-}
+        )
+        .let(::ParentshipId)
 
 fun Database.Transaction.insertTestPartnership(
     adult1: PersonId,
@@ -667,6 +662,16 @@ VALUES (:id, :daycareId, :name, :startDate, :endDate)
 """
         )
         .let(::GroupId)
+
+fun Database.Transaction.insertTestDaycareGroupPlacement(groupPlacement: DevDaycareGroupPlacement) =
+    insertTestDataRow(
+            groupPlacement,
+            """
+INSERT INTO daycare_group_placement (id, daycare_placement_id, daycare_group_id, start_date, end_date)
+VALUES (:id, :daycarePlacementId, :daycareGroupId, :startDate, :endDate)
+    """
+        )
+        .let(::GroupPlacementId)
 
 fun Database.Transaction.insertTestDaycareGroupPlacement(
     daycarePlacementId: PlacementId = PlacementId(UUID.randomUUID()),

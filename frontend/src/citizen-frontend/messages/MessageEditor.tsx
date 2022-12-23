@@ -44,16 +44,6 @@ const emptyMessage: CitizenMessageBody = {
 
 const isPrimaryRecipient = ({ type }: MessageAccount) => type !== 'CITIZEN'
 
-const partitionByType = (
-  accounts: MessageAccount[]
-): { primary: MessageAccount[]; secondary: MessageAccount[] } => {
-  const [primary, secondary] = partition(accounts, isPrimaryRecipient)
-  return { primary, secondary }
-}
-
-const areRequiredFieldsFilledForMessage = (msg: CitizenMessageBody): boolean =>
-  !!(msg.recipients.some(isPrimaryRecipient) && msg.content && msg.title)
-
 interface Props {
   receiverOptions: GetReceiversResponse
   onSend: (messageBody: CitizenMessageBody) => Promise<Result<unknown>>
@@ -87,11 +77,9 @@ export default React.memo(function MessageEditor({
         }
       : emptyMessage
   )
-
   const title = message.title || i18n.messages.messageEditor.newMessage
 
   const send = useCallback(() => onSend(message), [message, onSend])
-  const sendEnabled = areRequiredFieldsFilledForMessage(message)
 
   const children = useQueryResult(childrenQuery)
 
@@ -104,15 +92,25 @@ export default React.memo(function MessageEditor({
           ) ?? false
       )
     )
-    return partitionByType(accounts)
+    const [primary, secondary] = partition(accounts, isPrimaryRecipient)
+    return { primary, secondary }
   }, [message.children, receiverOptions])
 
-  const recipients = useMemo(
-    () => partitionByType(message.recipients),
-    [message.recipients]
-  )
+  const recipients = useMemo(() => {
+    const isMessageRecipient = (account: MessageAccount) =>
+      message.recipients.includes(account.id)
+    return {
+      primary: validAccounts.primary.filter(isMessageRecipient),
+      secondary: validAccounts.secondary.filter(isMessageRecipient)
+    }
+  }, [message.recipients, validAccounts])
 
   const showSecondaryRecipientSelection = validAccounts.secondary.length > 0
+  const sendEnabled = !!(
+    recipients.primary.length > 0 &&
+    message.content &&
+    message.title
+  )
 
   const required = (text: string) => `${text}*`
 
@@ -159,12 +157,12 @@ export default React.memo(function MessageEditor({
                                     (id) => id !== child.id
                                   )
                               const recipients = message.recipients.filter(
-                                (account) =>
+                                (accountId) =>
                                   children.every(
                                     (childId) =>
                                       receiverOptions.childrenToMessageAccounts[
                                         childId
-                                      ]?.includes(account.id) ?? false
+                                      ]?.includes(accountId) ?? false
                                   )
                               )
                               setMessage((message) => ({
@@ -193,7 +191,9 @@ export default React.memo(function MessageEditor({
                 onChange={(primary) =>
                   setMessage((message) => ({
                     ...message,
-                    recipients: [...primary, ...recipients.secondary]
+                    recipients: [...primary, ...recipients.secondary].map(
+                      ({ id }) => id
+                    )
                   }))
                 }
                 noOptionsMessage={i18n.messages.messageEditor.noResults}
@@ -229,9 +229,9 @@ export default React.memo(function MessageEditor({
                           setMessage((message) => ({
                             ...message,
                             recipients: selected
-                              ? [...message.recipients, recipient]
+                              ? [...message.recipients, recipient.id]
                               : message.recipients.filter(
-                                  (acc) => acc.id !== recipient.id
+                                  (accountId) => accountId !== recipient.id
                                 )
                           }))
                         }

@@ -795,6 +795,7 @@ ORDER BY type, name  -- groups first
         .bind("today", today)
         .mapTo<MessageAccountWithChildId>()
         .groupBy({ it.childId }, { MessageAccount(it.id, it.name, it.type) })
+        .filterValues { accounts -> accounts.any { it.type.isPrimaryRecipientForCitizenMessage() } }
 }
 
 fun Database.Read.getMessagesSentByAccount(

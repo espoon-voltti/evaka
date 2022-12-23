@@ -33,7 +33,7 @@ export interface AuthorizedMessageAccount {
 export interface CitizenMessageBody {
   children: UUID[]
   content: string
-  recipients: MessageAccount[]
+  recipients: UUID[]
   title: string
 }
 
