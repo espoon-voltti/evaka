@@ -4,7 +4,6 @@
 
 import { UUID } from 'lib-common/types'
 
-import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 
 export default class UnitListPage {
@@ -14,6 +13,6 @@ export default class UnitListPage {
     const staffCount = this.page
       .findByDataQa(`unit-${unitId}`)
       .findByDataQa('staff-count')
-    await waitUntilEqual(() => staffCount.text, `${present}/${allocated}`)
+    await staffCount.assertTextEquals(`${present}/${allocated}`)
   }
 }

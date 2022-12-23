@@ -7,7 +7,7 @@ import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import config from '../../../config'
-import { waitUntilEqual, waitUntilTrue } from '../../../utils'
+import { waitUntilTrue } from '../../../utils'
 import { DatePickerDeprecated, Page, Radio } from '../../../utils/page'
 
 import ApplicationEditView from './application-edit-view'
@@ -50,7 +50,7 @@ export default class ApplicationReadView {
   }
 
   async assertPageTitle(expectedTitle: string) {
-    await waitUntilEqual(() => this.#title.text, expectedTitle)
+    await this.#title.assertTextEquals(expectedTitle)
   }
 
   async assertOtherVtjGuardian(
@@ -58,9 +58,9 @@ export default class ApplicationReadView {
     expectedPhone: string,
     expectedEmail: string
   ) {
-    await waitUntilEqual(() => this.#vtjGuardianName.text, expectedName)
-    await waitUntilEqual(() => this.#vtjGuardianPhone.text, expectedPhone)
-    await waitUntilEqual(() => this.#vtjGuardianEmail.text, expectedEmail)
+    await this.#vtjGuardianName.assertTextEquals(expectedName)
+    await this.#vtjGuardianPhone.assertTextEquals(expectedPhone)
+    await this.#vtjGuardianEmail.assertTextEquals(expectedEmail)
   }
 
   async assertOtherVtjGuardianMissing() {
@@ -71,11 +71,8 @@ export default class ApplicationReadView {
     expectedPhone: string,
     expectedEmail: string
   ) {
-    await waitUntilEqual(
-      () => this.#givenOtherGuardianPhone.text,
-      expectedPhone
-    )
-    await waitUntilEqual(() => this.#giveOtherGuardianEmail.text, expectedEmail)
+    await this.#givenOtherGuardianPhone.assertTextEquals(expectedPhone)
+    await this.#giveOtherGuardianEmail.assertTextEquals(expectedEmail)
   }
 
   async setDecisionStartDate(type: DecisionType, startDate: string) {
@@ -152,10 +149,9 @@ export default class ApplicationReadView {
   }
 
   async assertDueDate(dueDate: LocalDate) {
-    await waitUntilEqual(
-      () => this.page.findByDataQa('application-due-date').text,
-      dueDate.format()
-    )
+    await this.page
+      .findByDataQa('application-due-date')
+      .assertTextEquals(dueDate.format())
   }
 
   async startEditing(): Promise<ApplicationEditView> {

@@ -92,17 +92,17 @@ describe('Child Information - edit additional information', () => {
   test('medication info and be added and removed', async () => {
     const medication = 'Epipen'
 
-    await section.assertMedication('')
+    await section.medication.assertTextEquals('')
 
-    await section.edit()
-    await section.fillMedication(medication)
-    await section.save()
-    await section.assertMedication(medication)
+    await section.editBtn.click()
+    await section.medicationInput.fill(medication)
+    await section.confirmBtn.click()
+    await section.medication.assertTextEquals(medication)
 
-    await section.edit()
-    await section.fillMedication('')
-    await section.save()
-    await section.assertMedication('')
+    await section.editBtn.click()
+    await section.medicationInput.fill('')
+    await section.confirmBtn.click()
+    await section.medication.assertTextEquals('')
   })
 })
 
@@ -450,16 +450,14 @@ describe('Child information - consent', () => {
   test('profile photo consent can be consented to', async () => {
     await section.evakaProfilePicYes.check()
     await section.save()
-    await waitUntilEqual(
-      () => section.evakaProfilePicModifiedBy.text,
+    await section.evakaProfilePicModifiedBy.assertTextEquals(
       `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
     )
     await page.reload()
     section = await childInformationPage.openCollapsible('consents')
     await section.evakaProfilePicYes.waitUntilChecked(true)
     await section.evakaProfilePicNo.waitUntilChecked(false)
-    await waitUntilEqual(
-      () => section.evakaProfilePicModifiedBy.text,
+    await section.evakaProfilePicModifiedBy.assertTextEquals(
       `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
     )
   })
@@ -467,16 +465,15 @@ describe('Child information - consent', () => {
   test('profile photo consent can be not consented to', async () => {
     await section.evakaProfilePicNo.check()
     await section.save()
-    await waitUntilEqual(
-      () => section.evakaProfilePicModifiedBy.text,
+
+    await section.evakaProfilePicModifiedBy.assertTextEquals(
       `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
     )
     await page.reload()
     section = await childInformationPage.openCollapsible('consents')
     await section.evakaProfilePicYes.waitUntilChecked(false)
     await section.evakaProfilePicNo.waitUntilChecked(true)
-    await waitUntilEqual(
-      () => section.evakaProfilePicModifiedBy.text,
+    await section.evakaProfilePicModifiedBy.assertTextEquals(
       `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
     )
   })
@@ -484,8 +481,7 @@ describe('Child information - consent', () => {
   test('profile photo consent can be cleared', async () => {
     await section.evakaProfilePicNo.check()
     await section.save()
-    await waitUntilEqual(
-      () => section.evakaProfilePicModifiedBy.text,
+    await section.evakaProfilePicModifiedBy.assertTextEquals(
       `Merkintä: ${mockedDate.format()} ${admin.firstName} ${admin.lastName}`
     )
     await section.evakaProfilePicClear.click()

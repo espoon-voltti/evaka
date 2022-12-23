@@ -58,7 +58,7 @@ describe('Applications', () => {
     await applicationsPage.toggleApplicationStatusFilter('ALL')
     await applicationsPage
       .applicationRow(application.id)
-      .assertStatus('Odottaa postitusta')
+      .status.assertTextEquals('Odottaa postitusta')
   })
 
   test('Application with a dead applicant has an indicator for the date of death', async () => {

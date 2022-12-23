@@ -8,7 +8,6 @@ import { Fixture } from '../../dev-api/fixtures'
 import { EmployeeDetail } from '../../dev-api/types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { EmployeePreferredFirstNamePage } from '../../pages/employee/employee-preferred-first-name'
-import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -50,10 +49,7 @@ describe('Employee preferred first name', () => {
 
     await employeePreferredFirstNamePage.preferredFirstName('Teppo')
     await employeePreferredFirstNamePage.confirm()
-    await waitUntilEqual(
-      () => page.findByDataQa('username').text,
-      'Teppo Sorsa'
-    )
+    await page.findByDataQa('username').assertTextEquals('Teppo Sorsa')
 
     await employeePreferredFirstNamePage.assertSelectedPreferredFirstName(
       'Teppo'

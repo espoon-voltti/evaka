@@ -119,7 +119,7 @@ export class FeeDecisionDetailsPage {
   #childIncome = this.page.findAll('[data-qa="child-income"]')
 
   async assertPartnerName(expectedName: string) {
-    await waitUntilEqual(() => this.#partnerName.text, expectedName)
+    await this.#partnerName.assertTextEquals(expectedName)
   }
 
   async assertChildIncome(nth: number, expectedTotalText: string) {
@@ -226,7 +226,7 @@ export class ValueDecisionDetailsPage {
   }
 
   async assertPartnerName(expectedName: string) {
-    await waitUntilEqual(() => this.#partnerName.text, expectedName)
+    await this.#partnerName.assertTextEquals(expectedName)
   }
 
   async assertPartnerNameNotShown() {
@@ -333,7 +333,7 @@ export class InvoicesPage {
 
   async assertInvoiceHeadOfFamily(fullName: string) {
     await this.#invoiceDetailsPage.waitUntilVisible()
-    await waitUntilEqual(() => this.#invoiceDetailsHeadOfFamily.text, fullName)
+    await this.#invoiceDetailsHeadOfFamily.assertTextEquals(fullName)
   }
 
   async navigateBackToInvoices() {
@@ -374,10 +374,9 @@ export class InvoicesPage {
   }
 
   async assertInvoiceTotal(total: number) {
-    await waitUntilEqual(
-      () => this.#invoiceInList.find('[data-qa="invoice-total"]').text,
-      this.formatFinnishDecimal(total)
-    )
+    await this.#invoiceInList
+      .find('[data-qa="invoice-total"]')
+      .assertTextEquals(this.formatFinnishDecimal(total))
   }
 
   async freeTextFilter(text: string) {
@@ -434,17 +433,14 @@ export class IncomeStatementsPage {
     expectedName: string,
     expecteTypeText: string
   ) {
-    await waitUntilEqual(
-      () => this.#incomeStatementRows.nth(nth).find('a').text,
-      expectedName
-    )
-    await waitUntilEqual(
-      () =>
-        this.#incomeStatementRows
-          .nth(nth)
-          .find('[data-qa="income-statement-type"]').text,
-      expecteTypeText
-    )
+    await this.#incomeStatementRows
+      .nth(nth)
+      .find('a')
+      .assertTextEquals(expectedName)
+    await this.#incomeStatementRows
+      .nth(nth)
+      .find('[data-qa="income-statement-type"]')
+      .assertTextEquals(expecteTypeText)
   }
 }
 

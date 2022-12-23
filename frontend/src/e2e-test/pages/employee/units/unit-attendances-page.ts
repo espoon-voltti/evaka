@@ -250,10 +250,7 @@ export class UnitStaffAttendancesTable extends Element {
     const row = this.findByDataQa(`attendance-row-${rowIx}`)
 
     if (name !== undefined) {
-      await waitUntilEqual(
-        () => row.findByDataQa('staff-attendance-name').text,
-        name
-      )
+      await row.findByDataQa('staff-attendance-name').assertTextEquals(name)
     }
 
     if (plannedAttendances !== undefined) {
@@ -261,33 +258,27 @@ export class UnitStaffAttendancesTable extends Element {
         .findAllByDataQa('planned-attendance-day')
         .nth(nth)
       for (const [i, [arrival, departure]] of plannedAttendances.entries()) {
-        await waitUntilEqual(
-          () =>
-            plannedAttendanceDay
-              .findAllByDataQa('planned-attendance-start')
-              .nth(i).text,
-          arrival
-        )
-        await waitUntilEqual(
-          () =>
-            plannedAttendanceDay
-              .findAllByDataQa('planned-attendance-end')
-              .nth(i).text,
-          departure
-        )
+        await plannedAttendanceDay
+          .findAllByDataQa('planned-attendance-start')
+          .nth(i)
+          .assertTextEquals(arrival)
+        await plannedAttendanceDay
+          .findAllByDataQa('planned-attendance-end')
+          .nth(i)
+          .assertTextEquals(departure)
       }
     }
     if (attendances !== undefined) {
       const attendanceDay = row.findAllByDataQa('attendance-day').nth(nth)
       for (const [i, [arrival, departure]] of attendances.entries()) {
-        await waitUntilEqual(
-          () => attendanceDay.findAllByDataQa('arrival-time').nth(i).text,
-          arrival
-        )
-        await waitUntilEqual(
-          () => attendanceDay.findAllByDataQa('departure-time').nth(i).text,
-          departure
-        )
+        await attendanceDay
+          .findAllByDataQa('arrival-time')
+          .nth(i)
+          .assertTextEquals(arrival)
+        await attendanceDay
+          .findAllByDataQa('departure-time')
+          .nth(i)
+          .assertTextEquals(departure)
       }
     }
   }
@@ -468,13 +459,13 @@ export class UnitOccupanciesSection extends Element {
   }
 
   async assertConfirmed(minimum: string, maximum: string) {
-    await waitUntilEqual(() => this.#elem('minimum', 'confirmed').text, minimum)
-    await waitUntilEqual(() => this.#elem('maximum', 'confirmed').text, maximum)
+    await this.#elem('minimum', 'confirmed').assertTextEquals(minimum)
+    await this.#elem('maximum', 'confirmed').assertTextEquals(maximum)
   }
 
   async assertPlanned(minimum: string, maximum: string) {
-    await waitUntilEqual(() => this.#elem('minimum', 'planned').text, minimum)
-    await waitUntilEqual(() => this.#elem('maximum', 'planned').text, maximum)
+    await this.#elem('minimum', 'planned').assertTextEquals(minimum)
+    await this.#elem('maximum', 'planned').assertTextEquals(maximum)
   }
 }
 
