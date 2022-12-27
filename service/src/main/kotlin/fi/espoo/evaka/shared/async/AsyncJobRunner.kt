@@ -19,6 +19,7 @@ import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.Gauge
 import io.micrometer.core.instrument.MeterRegistry
 import io.opentracing.Tracer
+import io.opentracing.tag.Tags
 import java.lang.reflect.UndeclaredThrowableException
 import java.time.Duration
 import java.time.Instant
@@ -270,6 +271,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
             }
         } catch (e: Throwable) {
             failedJobs.get()?.increment()
+            tracer.activeSpan()?.setTag(Tags.ERROR, true)
             val exception = (e as? UndeclaredThrowableException)?.cause ?: e
             logger.error(exception, logMeta) { "Failed to run async job $job" }
         } finally {
