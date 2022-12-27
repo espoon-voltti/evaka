@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.attendance
 
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.createChildDailyServiceTimes
@@ -17,7 +16,6 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
@@ -30,11 +28,11 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
-import fi.espoo.evaka.withMockedTime
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -45,8 +43,11 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var childAttendanceController: ChildAttendanceController
+
     private val mobileUser = AuthenticatedUser.MobileDevice(MobileDeviceId(UUID.randomUUID()))
     private val mobileUser2 = AuthenticatedUser.MobileDevice(MobileDeviceId(UUID.randomUUID()))
     private val groupId = GroupId(UUID.randomUUID())
@@ -84,17 +85,6 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             tx.createMobileDeviceToUnit(mobileUser.id, testDaycare.id)
             tx.createMobileDeviceToUnit(mobileUser2.id, testDaycare2.id)
         }
-    }
-
-    // TODO move elsewhere too
-    @Test
-    fun `unit info is correct`() {
-        val response = fetchUnitInfo()
-        assertEquals(testDaycare.name, response.name)
-        assertEquals(1, response.groups.size)
-        assertEquals(groupId, response.groups.first().id)
-        assertEquals(groupName, response.groups.first().name)
-        assertEquals("Supervisor", response.staff.first().lastName)
     }
 
     @Test
@@ -433,31 +423,16 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         )
     }
 
-    private fun fetchUnitInfo(): UnitInfo {
-        val (_, res, result) =
-            http
-                .get("/mobile/units/${testDaycare.id}")
-                .asUser(mobileUser)
-                .withMockedTime(now)
-                .responseObject<UnitInfo>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-        return result.get()
-    }
-
     private fun fetchAttendances(
         unitId: DaycareId = testDaycare.id,
         user: AuthenticatedUser = mobileUser
     ): AttendanceResponse {
-        val (_, res, result) =
-            http
-                .get("/attendances/units/$unitId")
-                .asUser(user)
-                .withMockedTime(now)
-                .responseObject<AttendanceResponse>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-        return result.get()
+        return childAttendanceController.getAttendances(
+            dbInstance(),
+            user,
+            MockEvakaClock(now),
+            unitId
+        )
     }
 
     private fun expectOneChild(
