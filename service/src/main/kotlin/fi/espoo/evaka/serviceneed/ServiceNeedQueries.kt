@@ -301,7 +301,7 @@ FROM placement p
                                                  daterange(p.start_date, p.end_date, '[]') &&
                                                  daterange(gp.start_date, gp.end_date, '[]')
 WHERE daterange(sn.start_date, sn.end_date, '[]') *
-      daterange(COALESCE(gp.start_date, p.start_date), COALESCE(gp.end_date, p.end_date), '[]') && :examPeriod
+      daterange(COALESCE(gp.start_date, p.start_date), COALESCE(gp.end_date, p.end_date), '[]') && :range
   AND p.unit_id = :unitId
 
 UNION ALL
@@ -316,8 +316,8 @@ FROM backup_care bc
                              daterange(bc.start_date, bc.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
          JOIN service_need sn ON sn.placement_id = p.id
          JOIN service_need_option sno ON sn.option_id = sno.id
-WHERE daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.end_date, '[]') && :examPeriod
-  AND daterange(bc.start_date, bc.end_date, '[]') * daterange(sn.start_date, sn.end_date, '[]') && :examPeriod
+WHERE daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.end_date, '[]') && :range
+  AND daterange(bc.start_date, bc.end_date, '[]') * daterange(sn.start_date, sn.end_date, '[]') && :range
   AND bc.unit_id = :unitId
   ORDER BY group_id, valid_during
         """
@@ -325,7 +325,7 @@ WHERE daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.en
     val groupMap =
         createQuery(sql)
             .bind("unitId", unitId)
-            .bind("examPeriod", range)
+            .bind("range", range)
             .mapTo<QueryResult>()
             .toList()
             .groupBy { it.groupId }
@@ -361,7 +361,7 @@ WHERE daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.en
 
 fun Database.Read.getChildContractDayOccurrenceForUnit(
     unitId: DaycareId,
-    today: LocalDate
+    date: LocalDate
 ): Map<ChildId, Boolean> {
     data class QueryResult(val childId: ChildId, val contractDaysPerMonth: Int?)
     val sql =
@@ -370,9 +370,9 @@ SELECT pl.child_id, sno.contract_days_per_month
 FROM placement pl
          LEFT JOIN service_need sn ON sn.placement_id = pl.id AND daterange(pl.start_date, pl.end_date, '[]') &&
                                                                   daterange(sn.start_date, sn.end_date, '[]') AND
-                                      daterange(sn.start_date, sn.end_date, '[]') @> :examDate
+                                      daterange(sn.start_date, sn.end_date, '[]') @> :date
          LEFT JOIN service_need_option sno ON sn.option_id = sno.id
-WHERE daterange(pl.start_date, pl.end_date, '[]') @> :examDate
+WHERE daterange(pl.start_date, pl.end_date, '[]') @> :date
   AND pl.unit_id = :unitId
 
 UNION ALL
@@ -380,17 +380,17 @@ UNION ALL
 SELECT bc.child_id, o.contract_days_per_month
 FROM backup_care bc
          JOIN placement p on bc.child_id = p.child_id AND
-                             daterange(p.start_date, p.end_date, '[]') @> :examDate
+                             daterange(p.start_date, p.end_date, '[]') @> :date
          LEFT JOIN service_need s ON p.id = s.placement_id AND daterange(bc.start_date, bc.end_date, '[]') &&
                                                                daterange(s.start_date, s.end_date, '[]') AND
-                                     daterange(s.start_date, s.end_date, '[]') @> :examDate
+                                     daterange(s.start_date, s.end_date, '[]') @> :date
          LEFT JOIN service_need_option o ON s.option_id = o.id
 WHERE bc.unit_id = :unitId
-  AND daterange(bc.start_date, bc.end_date, '[]') @> :examDate    
+  AND daterange(bc.start_date, bc.end_date, '[]') @> :date
     """
     return createQuery(sql.trimIndent())
         .bind("unitId", unitId)
-        .bind("examDate", today)
+        .bind("date", date)
         .mapTo<QueryResult>()
         .toList()
         .groupBy { it.childId }
@@ -413,8 +413,8 @@ FROM daycare_group_placement AS gp
     AND daterange(p.start_date, p.end_date, '[]') && daterange(gp.start_date, gp.end_date, '[]')
          JOIN service_need sn ON sn.placement_id = p.id
          JOIN service_need_option sno ON sn.option_id = sno.id
-WHERE daterange(p.start_date, p.end_date, '[]') * daterange(gp.start_date, gp.end_date, '[]') && :examPeriod
-  AND daterange(sn.start_date, sn.end_date, '[]') * daterange(gp.start_date, gp.end_date, '[]') && :examPeriod
+WHERE daterange(p.start_date, p.end_date, '[]') * daterange(gp.start_date, gp.end_date, '[]') && :range
+  AND daterange(sn.start_date, sn.end_date, '[]') * daterange(gp.start_date, gp.end_date, '[]') && :range
   AND gp.daycare_group_id = :groupId
 
 UNION ALL
@@ -428,15 +428,15 @@ FROM backup_care bc
     AND daterange(bc.start_date, bc.end_date, '[]') && daterange(p.start_date, p.end_date, '[]')
          JOIN service_need sn ON sn.placement_id = p.id
          JOIN service_need_option sno ON sn.option_id = sno.id
-WHERE daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.end_date, '[]') && :examPeriod
-  AND daterange(bc.start_date, bc.end_date, '[]') * daterange(sn.start_date, sn.end_date, '[]') && :examPeriod
+WHERE daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.end_date, '[]') && :range
+  AND daterange(bc.start_date, bc.end_date, '[]') * daterange(sn.start_date, sn.end_date, '[]') && :range
   AND group_id = :groupId
 ORDER BY child_id, valid_during
         """
 
     return createQuery(sql)
         .bind("groupId", groupId)
-        .bind("examPeriod", range)
+        .bind("range", range)
         .mapTo<ChildServiceNeedInfo>()
         .toList()
 }
