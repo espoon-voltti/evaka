@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobRunnerConfig
 import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.async.VardaAsyncJob
+import io.micrometer.core.instrument.MeterRegistry
 import io.opentracing.Tracer
 import java.time.Duration
 import mu.KotlinLogging
@@ -48,13 +49,18 @@ class AsyncJobConfig {
         )
 
     @Bean
-    fun asyncJobRunnerStarter(asyncJobRunners: List<AsyncJobRunner<*>>, evakaEnv: EvakaEnv) =
+    fun asyncJobRunnerStarter(
+        asyncJobRunners: List<AsyncJobRunner<*>>,
+        evakaEnv: EvakaEnv,
+        meterRegistry: MeterRegistry
+    ) =
         ApplicationListener<ApplicationReadyEvent> {
             val logger = KotlinLogging.logger {}
             if (evakaEnv.asyncJobRunnerDisabled) {
                 logger.info("Async job runners disabled")
             } else {
                 asyncJobRunners.forEach {
+                    it.registerMeters(meterRegistry)
                     it.start(pollingInterval = Duration.ofMinutes(1))
                     logger.info("Async job runner ${it.name} started")
                 }

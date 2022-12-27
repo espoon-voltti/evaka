@@ -15,6 +15,9 @@ import fi.espoo.evaka.shared.withValue
 import fi.espoo.voltti.logging.MdcKey
 import fi.espoo.voltti.logging.loggers.error
 import fi.espoo.voltti.logging.loggers.info
+import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.Gauge
+import io.micrometer.core.instrument.MeterRegistry
 import io.opentracing.Tracer
 import java.lang.reflect.UndeclaredThrowableException
 import java.time.Duration
@@ -53,7 +56,7 @@ data class AsyncJobRunnerConfig(
 )
 
 class AsyncJobRunner<T : AsyncJobPayload>(
-    payloadType: KClass<T>,
+    private val payloadType: KClass<T>,
     private val jdbi: Jdbi,
     private val config: AsyncJobRunnerConfig,
     private val tracer: Tracer
@@ -104,6 +107,25 @@ class AsyncJobRunner<T : AsyncJobPayload>(
 
     private val isBusy: Boolean
         get() = workerExecutor.activeCount > 0
+
+    private val executedJobs: AtomicReference<Counter> = AtomicReference()
+    private val failedJobs: AtomicReference<Counter> = AtomicReference()
+
+    fun registerMeters(meterRegistry: MeterRegistry) {
+        Gauge.builder("asyncJobWorkersActive") { workerExecutor.activeCount }
+            .tag("payloadType", payloadType.simpleName!!)
+            .register(meterRegistry)
+        executedJobs.set(
+            Counter.builder("asyncJobsExecuted")
+                .tag("payloadType", payloadType.simpleName!!)
+                .register(meterRegistry)
+        )
+        failedJobs.set(
+            Counter.builder("asyncJobsFailed")
+                .tag("payloadType", payloadType.simpleName!!)
+                .register(meterRegistry)
+        )
+    }
 
     inline fun <reified P : T> registerHandler(
         noinline handler: (db: Database.Connection, clock: EvakaClock, msg: P) -> Unit
@@ -196,6 +218,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
                         ) {
                             runPendingJob(dbc, clock, job)
                         }
+                        executedJobs.get()?.increment()
                         executed += 1
                     }
                     remaining -= 1
@@ -246,6 +269,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
                 logger.info(logMeta) { "Skipped async job $job due to contention" }
             }
         } catch (e: Throwable) {
+            failedJobs.get()?.increment()
             val exception = (e as? UndeclaredThrowableException)?.cause ?: e
             logger.error(exception, logMeta) { "Failed to run async job $job" }
         } finally {
