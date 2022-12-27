@@ -789,7 +789,7 @@ export async function getUnitAttendanceReservations(
           children: children.map(toChildDayRows)
         })),
         ungrouped: data.ungrouped.map(toChildDayRows),
-        unitServiceNeedInfo: deserializeGroupedActualServiceNeeds(
+        unitServiceNeedInfo: deserializeUnitServiceNeedInfo(
           data.unitServiceNeedInfo
         )
       })
@@ -818,7 +818,7 @@ const toChildDayRows = (
   )
 })
 
-const deserializeGroupedActualServiceNeeds = (
+const deserializeUnitServiceNeedInfo = (
   info: JsonOf<UnitServiceNeedInfo>
 ): UnitServiceNeedInfo => {
   return {
