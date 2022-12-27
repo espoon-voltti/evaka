@@ -5,6 +5,8 @@
 package fi.espoo.evaka.pis
 
 import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.application.ApplicationType
+import fi.espoo.evaka.application.syncApplicationOtherGuardians
 import fi.espoo.evaka.incomestatement.IncomeStatementType
 import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.messaging.createPersonMessageAccount
@@ -13,7 +15,9 @@ import fi.espoo.evaka.messaging.insertMessageContent
 import fi.espoo.evaka.messaging.insertRecipients
 import fi.espoo.evaka.messaging.insertThread
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
+import fi.espoo.evaka.pis.service.deleteGuardianRelationship
 import fi.espoo.evaka.pis.service.insertGuardian
+import fi.espoo.evaka.shared.DatabaseTable
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.IncomeStatementId
 import fi.espoo.evaka.shared.PersonId
@@ -21,13 +25,16 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.dev.DevChild
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevEmployee
+import fi.espoo.evaka.shared.dev.DevGuardian
 import fi.espoo.evaka.shared.dev.DevIncomeStatement
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertIncomeStatement
+import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestCareArea
 import fi.espoo.evaka.shared.dev.insertTestChild
 import fi.espoo.evaka.shared.dev.insertTestDaycare
 import fi.espoo.evaka.shared.dev.insertTestEmployee
+import fi.espoo.evaka.shared.dev.insertTestGuardian
 import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.insertTestPerson
@@ -127,6 +134,37 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         }
 
         assertCleanedUpPeople(testDate, setOf())
+    }
+
+    @Test
+    fun `adult who is saved in the application other guardian table is not cleaned up`() {
+        lateinit var otherGuardian: PersonId
+        db.transaction { tx ->
+            val applicationOwner = tx.insertPerson(DevPerson())
+            otherGuardian = tx.insertPerson(DevPerson())
+            val child = tx.insertPerson(DevPerson())
+            tx.insertTestGuardian(DevGuardian(guardianId = applicationOwner, childId = child))
+            tx.insertTestGuardian(DevGuardian(guardianId = otherGuardian, childId = child))
+            val application =
+                tx.insertTestApplication(
+                    type = ApplicationType.DAYCARE,
+                    guardianId = applicationOwner,
+                    childId = child
+                )
+            tx.syncApplicationOtherGuardians(application)
+            tx.deleteGuardianRelationship(childId = child, guardianId = otherGuardian)
+        }
+        assertCleanedUpPeople(testDate, setOf())
+
+        db.transaction { tx ->
+            tx.createUpdate<DatabaseTable> {
+                    sql(
+                        "DELETE FROM application_other_guardian WHERE guardian_id = ${bind(otherGuardian)}"
+                    )
+                }
+                .execute()
+        }
+        assertCleanedUpPeople(testDate, setOf(otherGuardian))
     }
 
     @Test
