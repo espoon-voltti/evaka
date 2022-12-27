@@ -5,7 +5,6 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { formatDate } from 'lib-common/date'
 import { ChildServiceNeedInfo } from 'lib-common/generated/api-types/daycare'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { defaultMargins } from 'lib-components/white-space'
@@ -38,13 +37,7 @@ export const ContractDaysIndicatorChip = React.memo(
           <TooltipDiv key={`${c.childId}-sn-tooltip-${i}`}>
             <TooltipP>{`${c.optionName}:`}</TooltipP>
             <TooltipP>
-              {`${formatDate(
-                c.validDuring.start.toSystemTzDate(),
-                'dd.MM.yyyy'
-              )} - ${formatDate(
-                c.validDuring.end.toSystemTzDate(),
-                'dd.MM.yyyy'
-              )}`}
+              {c.validDuring.start.format()} - {c.validDuring.end.format()}
             </TooltipP>
           </TooltipDiv>
         ))}
