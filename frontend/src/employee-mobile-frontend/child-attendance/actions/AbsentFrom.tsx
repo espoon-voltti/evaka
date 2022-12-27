@@ -5,8 +5,8 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { Child } from 'lib-common/generated/api-types/attendance'
 import { AbsenceCategory } from 'lib-common/generated/api-types/daycare'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import Title from 'lib-components/atoms/Title'
 import { fontWeights } from 'lib-components/typography'
 
@@ -33,11 +33,11 @@ const AbsenceTitle = styled(Title)`
 const InfoText = styled.div``
 
 interface AbsentFromProps {
-  child: Child
+  placementType: PlacementType
   absentFrom: AbsenceCategory[]
 }
 
-export function AbsentFrom({ child, absentFrom }: AbsentFromProps) {
+export function AbsentFrom({ placementType, absentFrom }: AbsentFromProps) {
   const { i18n } = useTranslation()
 
   return (
@@ -51,7 +51,7 @@ export function AbsentFrom({ child, absentFrom }: AbsentFromProps) {
         :{' '}
         {absentFrom.map((category) => (
           <div key={category}>
-            {formatCategory(category, child.placementType, i18n)}
+            {formatCategory(category, placementType, i18n)}
           </div>
         ))}
       </InfoText>

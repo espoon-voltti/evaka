@@ -4,10 +4,7 @@
 
 import React, { useMemo } from 'react'
 
-import {
-  AttendanceResponse,
-  AttendanceStatus
-} from 'lib-common/generated/api-types/attendance'
+import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import Tabs from 'lib-components/molecules/Tabs'
@@ -15,6 +12,7 @@ import Tabs from 'lib-components/molecules/Tabs'
 import { useTranslation } from '../common/i18n'
 
 import ChildList from './ChildList'
+import { AttendanceResponse } from './state'
 
 interface Props {
   unitId: UUID

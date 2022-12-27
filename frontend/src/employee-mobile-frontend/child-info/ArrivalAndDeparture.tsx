@@ -6,17 +6,17 @@ import { faArrowRotateLeft } from 'Icons'
 import React from 'react'
 import styled from 'styled-components'
 
-import { Child } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import colors from 'lib-customizations/common'
 
+import { AttendanceResponseChild } from '../child-attendance/state'
 import { ArrivalTime } from '../common/components'
 import { useTranslation } from '../common/i18n'
 
 interface Props {
-  child: Child
+  child: AttendanceResponseChild
   returnToComing: () => void
 }
 

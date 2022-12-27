@@ -2,13 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import mapValues from 'lodash/mapValues'
+
 import { Failure, Result, Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AbsenceThreshold,
-  AttendanceResponse,
   Child,
+  ChildAttendanceStatusResponse,
+  ChildrenResponse,
   DepartureRequest
 } from 'lib-common/generated/api-types/attendance'
 import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
@@ -19,12 +22,26 @@ import { UUID } from 'lib-common/types'
 
 import { client } from '../client'
 
-export async function getDaycareAttendances(
+export async function getUnitChildren(
   unitId: string
-): Promise<Result<AttendanceResponse>> {
+): Promise<Result<ChildrenResponse>> {
   return client
-    .get<JsonOf<AttendanceResponse>>(`/attendances/units/${unitId}`)
-    .then((res) => deserializeAttendanceResponse(res.data))
+    .get<JsonOf<ChildrenResponse>>(`/attendances/units/${unitId}/children`)
+    .then((res) => deserializeChildrenResponse(res.data))
+    .then((v) => Success.of(v))
+    .catch((e) => Failure.fromError(e))
+}
+
+export async function getUnitAttendanceStatuses(
+  unitId: string
+): Promise<Result<Record<UUID, ChildAttendanceStatusResponse>>> {
+  return client
+    .get<JsonOf<Record<UUID, ChildAttendanceStatusResponse>>>(
+      `/attendances/units/${unitId}/attendances`
+    )
+    .then((res) =>
+      mapValues(res.data, deserializeChildAttendanceStatusResponse)
+    )
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }
@@ -155,10 +172,7 @@ export async function postDeparture(
   body: DepartureRequest
 ): Promise<Result<void>> {
   return client
-    .post<JsonOf<AttendanceResponse>>(
-      `/attendances/units/${unitId}/children/${childId}/departure`,
-      body
-    )
+    .post(`/attendances/units/${unitId}/children/${childId}/departure`, body)
     .then(() => Success.of())
     .catch((e) => Failure.fromError(e))
 }
@@ -193,21 +207,15 @@ function compareByProperty(
   return 0
 }
 
-function deserializeAttendanceResponse(
-  data: JsonOf<AttendanceResponse>
-): AttendanceResponse {
+function deserializeChildrenResponse(
+  data: JsonOf<ChildrenResponse>
+): ChildrenResponse {
   {
     return {
       children: data.children
         .map((attendanceChild) => {
           return {
             ...attendanceChild,
-            attendances: attendanceChild.attendances.map((attendance) => ({
-              arrived: HelsinkiDateTime.parseIso(attendance.arrived),
-              departed: attendance.departed
-                ? HelsinkiDateTime.parseIso(attendance.departed)
-                : null
-            })),
             dailyNote: attendanceChild.dailyNote
               ? {
                   ...attendanceChild.dailyNote,
@@ -241,5 +249,19 @@ function deserializeAttendanceResponse(
         expires: LocalDate.parseIso(groupNote.expires)
       }))
     }
+  }
+}
+
+function deserializeChildAttendanceStatusResponse(
+  data: JsonOf<ChildAttendanceStatusResponse>
+): ChildAttendanceStatusResponse {
+  return {
+    ...data,
+    attendances: data.attendances.map((attendance) => ({
+      arrived: HelsinkiDateTime.parseIso(attendance.arrived),
+      departed: attendance.departed
+        ? HelsinkiDateTime.parseIso(attendance.departed)
+        : null
+    }))
   }
 }

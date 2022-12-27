@@ -21,10 +21,11 @@ import colors from 'lib-customizations/common'
 import { useTranslation } from '../common/i18n'
 
 import ChildListItem from './ChildListItem'
+import { AttendanceResponseChild } from './state'
 
 interface Props {
   unitId: string
-  attendanceChildren: Child[]
+  attendanceChildren: AttendanceResponseChild[]
   groupsNotes: GroupNote[]
   type?: AttendanceStatus
 }

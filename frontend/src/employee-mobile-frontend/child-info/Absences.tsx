@@ -5,10 +5,10 @@
 import React from 'react'
 import styled from 'styled-components'
 
-import { Child } from 'lib-common/generated/api-types/attendance'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Label } from 'lib-components/typography'
 
+import { AttendanceResponseChild } from '../child-attendance/state'
 import { useTranslation } from '../common/i18n'
 import { formatCategory } from '../types'
 
@@ -17,7 +17,7 @@ const AbsenceLabels = styled.div`
 `
 
 interface Props {
-  child: Child
+  child: AttendanceResponseChild
 }
 
 export default React.memo(function Absences({ child }: Props) {

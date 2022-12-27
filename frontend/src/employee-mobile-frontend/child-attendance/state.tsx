@@ -2,10 +2,16 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { createContext, useEffect, useMemo } from 'react'
+import React, { createContext, useCallback, useEffect, useMemo } from 'react'
 
-import { Loading, Result } from 'lib-common/api'
-import { AttendanceResponse } from 'lib-common/generated/api-types/attendance'
+import { combine, Loading, Result } from 'lib-common/api'
+import {
+  AttendanceStatus,
+  AttendanceTimes,
+  Child,
+  ChildAbsence
+} from 'lib-common/generated/api-types/attendance'
+import { GroupNote } from 'lib-common/generated/api-types/note'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { idleTracker } from 'lib-common/utils/idleTracker'
@@ -13,7 +19,18 @@ import { useApiState } from 'lib-common/utils/useRestApi'
 
 import { client } from '../client'
 
-import { getDaycareAttendances } from './api'
+import { getUnitAttendanceStatuses, getUnitChildren } from './api'
+
+export interface AttendanceResponseChild extends Child {
+  absences: ChildAbsence[]
+  attendances: AttendanceTimes[]
+  status: AttendanceStatus
+}
+
+export interface AttendanceResponse {
+  children: AttendanceResponseChild[]
+  groupNotes: GroupNote[]
+}
 
 interface ChildAttendanceState {
   attendanceResponse: Result<AttendanceResponse>
@@ -36,9 +53,36 @@ export const ChildAttendanceContextProvider = React.memo(
   }) {
     const { unitId } = useNonNullableParams<{ unitId: UUID }>()
 
-    const [attendanceResponse, reloadAttendances] = useApiState(
-      () => getDaycareAttendances(unitId),
+    const [unitChildren, reloadChildren] = useApiState(
+      () => getUnitChildren(unitId),
       [unitId]
+    )
+
+    const [attendanceStatuses, reloadAttendanceStatuses] = useApiState(
+      () => getUnitAttendanceStatuses(unitId),
+      [unitId]
+    )
+
+    const reloadAttendances = useCallback(() => {
+      void reloadChildren()
+      void reloadAttendanceStatuses()
+    }, [reloadChildren, reloadAttendanceStatuses])
+
+    const attendanceResponse: Result<AttendanceResponse> = useMemo(
+      () =>
+        combine(unitChildren, attendanceStatuses).map(
+          ([childrenResponse, attendanceStatusResponses]) => ({
+            ...childrenResponse,
+            children: childrenResponse.children.map((child) => ({
+              ...child,
+              absences: attendanceStatusResponses[child.id]?.absences ?? [],
+              attendances:
+                attendanceStatusResponses[child.id]?.attendances ?? [],
+              status: attendanceStatusResponses[child.id]?.status ?? 'COMING'
+            }))
+          })
+        ),
+      [unitChildren, attendanceStatuses]
     )
 
     useEffect(

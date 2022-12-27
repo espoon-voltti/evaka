@@ -13,11 +13,7 @@ import { useNavigate } from 'react-router-dom'
 import { animated, useSpring } from 'react-spring'
 import styled from 'styled-components'
 
-import {
-  AttendanceResponse,
-  Child,
-  GroupInfo
-} from 'lib-common/generated/api-types/attendance'
+import { GroupInfo } from 'lib-common/generated/api-types/attendance'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { ContentArea } from 'lib-components/layout/Container'
 import colors from 'lib-customizations/common'
@@ -32,7 +28,11 @@ import { ChildAttendanceUIState, mapChildAttendanceUIState } from '../types'
 
 import AttendanceList from './AttendanceList'
 import ChildList from './ChildList'
-import { ChildAttendanceContext } from './state'
+import {
+  AttendanceResponse,
+  AttendanceResponseChild,
+  ChildAttendanceContext
+} from './state'
 
 export default React.memo(function AttendancePageWrapper() {
   const { unitId, groupId, attendanceStatus } = useNonNullableParams<{
@@ -141,7 +141,9 @@ const ChildSearch = React.memo(function Search({
   const { i18n } = useTranslation()
   const containerSpring = useSpring<{ x: number }>({ x: show ? 1 : 0 })
   const [freeText, setFreeText] = useState<string>('')
-  const [searchResults, setSearchResults] = useState<Child[]>([])
+  const [searchResults, setSearchResults] = useState<AttendanceResponseChild[]>(
+    []
+  )
 
   useEffect(() => {
     if (freeText === '') {

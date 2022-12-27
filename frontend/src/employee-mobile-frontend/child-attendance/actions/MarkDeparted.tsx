@@ -182,7 +182,10 @@ export default React.memo(function MarkDeparted() {
               <Gap size="xs" />
               {child && absentFrom.length > 0 ? (
                 <FixedSpaceColumn>
-                  <AbsentFrom child={child} absentFrom={absentFrom} />
+                  <AbsentFrom
+                    placementType={child.placementType}
+                    absentFrom={absentFrom}
+                  />
                   <AbsenceSelector
                     selectedAbsenceType={selectedAbsenceType}
                     setSelectedAbsenceType={setSelectedAbsenceType}

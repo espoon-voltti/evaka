@@ -25,6 +25,7 @@ import { Translations, useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
 
 import { Reservations } from './Reservations'
+import { AttendanceResponseChild } from './state'
 
 const ChildBox = styled.div`
   align-items: center;
@@ -92,7 +93,7 @@ const GroupName = styled(InformationText)`
 `
 
 interface ChildListItemProps {
-  child: Child
+  child: AttendanceResponseChild
   onClick?: () => void
   type?: AttendanceStatus
   childAttendanceUrl: string
