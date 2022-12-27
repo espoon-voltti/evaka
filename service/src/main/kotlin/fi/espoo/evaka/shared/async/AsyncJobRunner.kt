@@ -51,13 +51,13 @@ data class AsyncJobRunnerConfig(
 )
 
 class AsyncJobRunner<T : AsyncJobPayload>(
-    val payloadType: KClass<T>,
+    payloadType: KClass<T>,
     private val jdbi: Jdbi,
     private val config: AsyncJobRunnerConfig,
     private val tracer: Tracer
 ) : AutoCloseable {
-    private val runnerName = "${AsyncJobRunner::class.qualifiedName}.${payloadType.simpleName}"
-    private val logger = KotlinLogging.logger(runnerName)
+    val name = "${AsyncJobRunner::class.simpleName}.${payloadType.simpleName}"
+    private val logger = KotlinLogging.logger("${AsyncJobRunner::class.qualifiedName}.${payloadType.simpleName}")
 
     private val executor: ScheduledThreadPoolExecutor =
         ScheduledThreadPoolExecutor(
@@ -133,7 +133,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
         val newRunner =
             this.executor.scheduleWithFixedDelay(
                 {
-                    tracer.withDetachedSpan("asyncjob.poll $runnerName") {
+                    tracer.withDetachedSpan("asyncjob.poll $name") {
                         this.runPendingJobs(RealEvakaClock())
                     }
                 },
@@ -147,7 +147,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
     fun wakeUp() {
         if (isStarted) {
             executor.execute {
-                tracer.withDetachedSpan("asyncjob.wakeup $runnerName") {
+                tracer.withDetachedSpan("asyncjob.wakeup $name") {
                     this.runPendingJobs(RealEvakaClock())
                 }
             }
@@ -157,7 +157,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
     fun runPendingJobsSync(clock: EvakaClock, maxCount: Int = 1_000) {
         this.executor
             .submit {
-                tracer.withDetachedSpan("asyncjob.sync $runnerName") {
+                tracer.withDetachedSpan("asyncjob.sync $name") {
                     this.runPendingJobs(clock, maxCount)
                 }
             }

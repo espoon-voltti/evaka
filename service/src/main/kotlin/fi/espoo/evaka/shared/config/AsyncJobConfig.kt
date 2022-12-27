@@ -56,9 +56,7 @@ class AsyncJobConfig {
             } else {
                 asyncJobRunners.forEach {
                     it.start(pollingInterval = Duration.ofMinutes(1))
-                    logger.info(
-                        "Async job runner AsyncJobRunner<${it.payloadType.simpleName}> started"
-                    )
+                    logger.info("Async job runner ${it.name} started")
                 }
             }
         }
