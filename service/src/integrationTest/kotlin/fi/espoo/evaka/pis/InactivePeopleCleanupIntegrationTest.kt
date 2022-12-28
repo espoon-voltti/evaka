@@ -15,6 +15,7 @@ import fi.espoo.evaka.messaging.insertMessageContent
 import fi.espoo.evaka.messaging.insertRecipients
 import fi.espoo.evaka.messaging.insertThread
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
+import fi.espoo.evaka.pis.service.addToGuardianBlocklist
 import fi.espoo.evaka.pis.service.deleteGuardianRelationship
 import fi.espoo.evaka.pis.service.insertGuardian
 import fi.espoo.evaka.shared.DatabaseTable
@@ -82,6 +83,18 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
         }
 
         assertCleanedUpPeople(testDate, setOf(testAdult_1.id, testChild_1.id))
+    }
+
+    @Test
+    fun `blocked guardian is not cleaned up without any archived data`() {
+        db.transaction { tx ->
+            tx.insertPerson(testAdult_1)
+            tx.insertPerson(testChild_1)
+            tx.insertGuardian(testAdult_1.id, testChild_1.id)
+            tx.addToGuardianBlocklist(testChild_1.id, testAdult_1.id)
+        }
+
+        assertCleanedUpPeople(testDate, setOf(testChild_1.id))
     }
 
     @Test
