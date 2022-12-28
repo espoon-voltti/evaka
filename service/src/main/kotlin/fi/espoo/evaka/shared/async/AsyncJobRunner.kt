@@ -23,33 +23,17 @@ private const val defaultRetryCount =
     24 * 60 / 5 // 24h when used with default 5 minute retry interval
 private val defaultRetryInterval = Duration.ofMinutes(5)
 
-data class AsyncJobRunnerConfig(
-    val threadPoolSize: Int = 4,
-    val throttleInterval: Duration? = null
-)
-
 class AsyncJobRunner<T : AsyncJobPayload>(
     private val payloadType: KClass<T>,
+    config: AsyncJobPoolConfig,
     jdbi: Jdbi,
-    config: AsyncJobRunnerConfig,
     tracer: Tracer
 ) : AutoCloseable {
     val name = "${AsyncJobRunner::class.simpleName}.${payloadType.simpleName}"
 
     private val metrics: AtomicReference<AsyncJobMetrics> = AtomicReference()
     private val pool: AsyncJobPool<T> =
-        AsyncJobPool(
-            name = payloadType.simpleName!!,
-            config =
-                AsyncJobPoolConfig(
-                    concurrency = config.threadPoolSize,
-                    backgroundPollingInterval = Duration.ofMinutes(1),
-                    throttleInterval = config.throttleInterval
-                ),
-            jdbi,
-            tracer,
-            metrics
-        )
+        AsyncJobPool(name = payloadType.simpleName!!, config = config, jdbi, tracer, metrics)
 
     private val wakeUpHook: AtomicReference<() -> Unit> = AtomicReference()
 
@@ -108,10 +92,10 @@ class AsyncJobRunner<T : AsyncJobPayload>(
         wakeUpHook.get()?.let { tx.afterCommit(it) }
     }
 
-    fun start() {
-        pool.startBackgroundPolling()
+    fun startBackgroundPolling() = pool.startBackgroundPolling()
+
+    fun enableAfterCommitHook() =
         wakeUpHook.set { pool.runPendingJobs(RealEvakaClock(), maxCount = 1_000) }
-    }
 
     fun runPendingJobsSync(clock: EvakaClock, maxCount: Int = 1_000): Int =
         pool.runPendingJobsSync(clock, maxCount)

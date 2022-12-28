@@ -36,8 +36,8 @@ import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
 
 data class AsyncJobPoolConfig(
-    val concurrency: Int,
-    val backgroundPollingInterval: Duration,
+    val concurrency: Int = 1,
+    val backgroundPollingInterval: Duration = Duration.ofMinutes(1),
     val throttleInterval: Duration? = null
 )
 
