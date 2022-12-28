@@ -57,6 +57,10 @@ AND NOT EXISTS (
     UNION ALL
     SELECT guardian_id FROM guardian WHERE child_id = p.id AND NOT guardian_id IN (SELECT id FROM people_with_no_archive_data)
 )
+-- blocked guardianship
+AND NOT EXISTS (
+    SELECT guardian_id FROM guardian_blocklist WHERE guardian_id = p.id
+)
 -- own fridge child
 AND NOT EXISTS (
     SELECT child_id FROM fridge_child
