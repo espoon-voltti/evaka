@@ -11,6 +11,7 @@ import { combine } from 'lib-common/api'
 import { formatTime } from 'lib-common/date'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
+import { useMutationResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { mockNow } from 'lib-common/utils/helpers'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -29,16 +30,14 @@ import { Actions, BackButtonInline, TimeWrapper } from '../../common/components'
 import { useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import DailyNote from '../DailyNote'
-import { childArrivesPOST, returnToPresent } from '../api'
+import { createArrivalMutation, returnToPresentMutation } from '../queries'
 import { ChildAttendanceContext } from '../state'
 
 export default React.memo(function MarkPresent() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
-  const { attendanceResponse, reloadAttendances } = useContext(
-    ChildAttendanceContext
-  )
+  const { attendanceResponse } = useContext(ChildAttendanceContext)
 
   const now = mockNow() ?? new Date()
   const [time, setTime] = useState<string>(formatTime(now))
@@ -49,9 +48,8 @@ export default React.memo(function MarkPresent() {
     groupId: string
   }>()
 
-  const childArrives = useCallback(
-    () => childArrivesPOST(unitId, childId, time),
-    [childId, time, unitId]
+  const { mutateAsync: createArrival } = useMutationResult(
+    createArrivalMutation
   )
 
   const child = useMemo(
@@ -92,9 +90,14 @@ export default React.memo(function MarkPresent() {
     [attendanceResponse, groupId]
   )
 
-  function returnToPresentCall() {
-    return returnToPresent(unitId, childId)
-  }
+  const { mutateAsync: returnToPresent } = useMutationResult(
+    returnToPresentMutation
+  )
+
+  // Prevent the "return to present" AsyncButton from unmounting while the success animation is in progress.
+  // It would unmount because childLatestDeparture vanishes after returnToPresent succeeds. The button needs
+  // to remain mounted because onSuccess handles navigation back to list.
+  const [returningToPresent, setReturningToPresent] = useState(false)
 
   return (
     <TallContentArea
@@ -136,26 +139,28 @@ export default React.memo(function MarkPresent() {
                   primary
                   text={i18n.common.confirm}
                   disabled={!isValidTime()}
-                  onClick={childArrives}
+                  onClick={() =>
+                    createArrival({ unitId, childId, arrived: time })
+                  }
                   onSuccess={() => {
-                    reloadAttendances()
                     navigate(-2)
                   }}
                   data-qa="mark-present-btn"
                 />
               </FixedSpaceRow>
             </Actions>
-            {childLatestDeparture && (
+            {(childLatestDeparture || returningToPresent) && (
               <>
                 <Gap size="s" />
                 <JustifyContainer>
                   <InlineWideAsyncButton
                     text={i18n.attendances.actions.returnToPresentNoTimeNeeded}
-                    onClick={() => returnToPresentCall()}
-                    onSuccess={() => {
-                      reloadAttendances()
-                      navigate(-2)
+                    onClick={() => {
+                      setReturningToPresent(true)
+                      return returnToPresent({ unitId, childId })
                     }}
+                    onSuccess={() => navigate(-2)}
+                    onFailure={() => setReturningToPresent(false)}
                     data-qa="return-to-present-btn"
                   />
                 </JustifyContainer>

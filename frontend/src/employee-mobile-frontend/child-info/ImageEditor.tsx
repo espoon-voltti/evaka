@@ -8,6 +8,8 @@ import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { Failure, Result } from 'lib-common/api'
+import { useMutationResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import StickyFooter from 'lib-components/layout/StickyFooter'
@@ -15,8 +17,9 @@ import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { InformationText } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { uploadChildImage } from '../child-attendance/childImages'
+import { uploadChildImageMutation } from '../child-attendance/queries'
 import { useTranslation } from '../common/i18n'
+
 import 'react-image-crop/dist/ReactCrop.css'
 
 const defaultCrop: Partial<Crop> = {
@@ -28,12 +31,14 @@ const defaultCrop: Partial<Crop> = {
 }
 
 interface Props {
-  childId: string
+  unitId: UUID
+  childId: UUID
   image: string
   onReturn: () => void
 }
 
 export default React.memo(function ImageEditor({
+  unitId,
   childId,
   image,
   onReturn
@@ -45,6 +50,10 @@ export default React.memo(function ImageEditor({
   const previewCanvasRef = useRef<HTMLCanvasElement>(null)
   const [submitting, setSubmitting] = useState(false)
   const navigate = useNavigate()
+
+  const { mutateAsync: uploadChildImage } = useMutationResult(
+    uploadChildImageMutation
+  )
 
   useEffect(() => {
     const htmlNode = document.querySelector('html')
@@ -91,7 +100,7 @@ export default React.memo(function ImageEditor({
             const file = new File([blob], 'cropped-image.jpeg', {
               type: blob.type
             })
-            resolve(uploadChildImage(childId, file))
+            resolve(uploadChildImage({ unitId, childId, file }))
           } else {
             resolve(Failure.of({ message: 'Could not convert canvas to blob' }))
           }
@@ -100,7 +109,7 @@ export default React.memo(function ImageEditor({
         0.7
       )
     )
-  }, [childId, crop])
+  }, [uploadChildImage, unitId, childId, crop])
 
   const onSuccess = useCallback(() => {
     setSubmitting(false)

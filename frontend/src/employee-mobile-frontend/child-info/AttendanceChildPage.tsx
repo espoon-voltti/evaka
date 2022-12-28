@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
+import { useMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { StaticChip } from 'lib-components/atoms/Chip'
@@ -22,8 +23,10 @@ import { faArrowLeft, faCalendarTimes, faQuestion, farUser } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
 import { IconBox } from '../child-attendance/ChildListItem'
-import { returnToComing } from '../child-attendance/api'
-import { deleteChildImage } from '../child-attendance/childImages'
+import {
+  deleteChildImageMutation,
+  returnToComingMutation
+} from '../child-attendance/queries'
 import { ChildAttendanceContext } from '../child-attendance/state'
 import BottomModalMenu from '../common/BottomModalMenu'
 import { FlexColumn } from '../common/components'
@@ -53,9 +56,7 @@ export default React.memo(function AttendanceChildPage() {
 
   const { unitInfoResponse } = useContext(UnitContext)
 
-  const { attendanceResponse, reloadAttendances } = useContext(
-    ChildAttendanceContext
-  )
+  const { attendanceResponse } = useContext(ChildAttendanceContext)
 
   const [uiMode, setUiMode] = useState<
     | 'default'
@@ -68,6 +69,11 @@ export default React.memo(function AttendanceChildPage() {
   const [rawImage, setRawImage] = useState<string | null>(null)
 
   const uploadInputRef = useRef<HTMLInputElement>(null)
+
+  const { mutateAsync: returnToComing } = useMutation(returnToComingMutation)
+  const { mutateAsync: deleteChildImage } = useMutation(
+    deleteChildImageMutation
+  )
 
   const childInfoResult = useMemo(
     () =>
@@ -97,9 +103,9 @@ export default React.memo(function AttendanceChildPage() {
     return (
       <ImageEditor
         image={rawImage}
+        unitId={unitId}
         childId={childId}
         onReturn={() => {
-          reloadAttendances()
           setRawImage(null)
           setUiMode('default')
         }}
@@ -212,7 +218,7 @@ export default React.memo(function AttendanceChildPage() {
                     />
                   )}
                   {child.status === 'ABSENT' && (
-                    <AttendanceChildAbsent child={child} unitId={unitId} />
+                    <AttendanceChildAbsent childId={child.id} unitId={unitId} />
                   )}
                 </FlexColumn>
               </Shadow>
@@ -290,13 +296,8 @@ export default React.memo(function AttendanceChildPage() {
           resolve={{
             label: i18n.childInfo.image.modalMenu.deleteConfirm.resolve,
             action: () => {
-              void deleteChildImage(childId).then((res) => {
-                if (res.isFailure) {
-                  console.error('Deleting image failed', res.message)
-                } else {
-                  reloadAttendances()
-                  setUiMode('default')
-                }
+              deleteChildImage({ unitId, childId }).finally(() => {
+                setUiMode('default')
               })
             }
           }}
@@ -314,17 +315,9 @@ export default React.memo(function AttendanceChildPage() {
           resolve={{
             label: i18n.common.yesIDo,
             action: () => {
-              void returnToComing(unitId, childId).then((res) => {
-                if (res.isFailure) {
-                  console.error(
-                    'Cancelling attendance change failed',
-                    res.message
-                  )
-                } else {
-                  reloadAttendances()
-                  setUiMode('default')
-                  navigate(-1)
-                }
+              returnToComing({ unitId, childId }).finally(() => {
+                setUiMode('default')
+                navigate(-1)
               })
             }
           }}

@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
+import { useMutationResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -31,7 +32,7 @@ import {
 import { useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import DailyNote from '../DailyNote'
-import { postFullDayAbsence } from '../api'
+import { createFullDayAbsenceMutation } from '../queries'
 import { ChildAttendanceContext } from '../state'
 
 import AbsenceSelector from './AbsenceSelector'
@@ -40,9 +41,7 @@ export default React.memo(function MarkAbsent() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
-  const { attendanceResponse, reloadAttendances } = useContext(
-    ChildAttendanceContext
-  )
+  const { attendanceResponse } = useContext(ChildAttendanceContext)
 
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<
     AbsenceType | undefined
@@ -54,10 +53,8 @@ export default React.memo(function MarkAbsent() {
     childId: string
   }>()
 
-  const postAbsence = useCallback(
-    (absenceType: AbsenceType) =>
-      postFullDayAbsence(unitId, childId, absenceType),
-    [childId, unitId]
+  const { mutateAsync: createAbsence } = useMutationResult(
+    createFullDayAbsenceMutation
   )
 
   const child = useMemo(
@@ -118,9 +115,14 @@ export default React.memo(function MarkAbsent() {
                   <AsyncButton
                     primary
                     text={i18n.common.confirm}
-                    onClick={() => postAbsence(selectedAbsenceType)}
+                    onClick={() =>
+                      createAbsence({
+                        unitId,
+                        childId,
+                        absenceType: selectedAbsenceType
+                      })
+                    }
                     onSuccess={() => {
-                      reloadAttendances()
                       navigate(-1)
                     }}
                     data-qa="mark-absent-btn"

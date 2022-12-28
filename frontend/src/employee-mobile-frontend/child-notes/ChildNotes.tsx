@@ -84,7 +84,8 @@ export default React.memo(function ChildNotes() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { childId, groupId } = useNonNullableParams<{
+  const { unitId, childId, groupId } = useNonNullableParams<{
+    unitId: string
     childId: string
     groupId: string
   }>()
@@ -191,16 +192,21 @@ export default React.memo(function ChildNotes() {
 
         {selectedTab === 'NOTE' && (
           <DailyNotesTab
+            unitId={unitId}
             childId={childId}
             dailyNoteId={dailyNote?.id}
             formData={dailyNote?.form}
           />
         )}
         {selectedTab === 'STICKY' && (
-          <ChildStickyNotesTab childId={childId} notes={stickyNotes} />
+          <ChildStickyNotesTab
+            unitId={unitId}
+            childId={childId}
+            notes={stickyNotes}
+          />
         )}
         {selectedTab === 'GROUP' && (
-          <GroupNotesTab groupId={groupId} notes={groupNotes} />
+          <GroupNotesTab unitId={unitId} groupId={groupId} notes={groupNotes} />
         )}
       </FixedSpaceColumn>
     </TallContentArea>

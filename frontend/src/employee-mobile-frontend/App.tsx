@@ -41,6 +41,7 @@ import { UnreadMessagesPage } from './messages/UnreadMessagesPage'
 import { MessageContextProvider } from './messages/state'
 import MobileLander from './pairing/MobileLander'
 import PairingWizard from './pairing/PairingWizard'
+import { queryClient, QueryClientProvider } from './query'
 import ExternalStaffMemberPage from './staff-attendance/ExternalStaffMemberPage'
 import MarkExternalStaffMemberArrivalPage from './staff-attendance/MarkExternalStaffMemberArrivalPage'
 import StaffAttendancesPage from './staff-attendance/StaffAttendancesPage'
@@ -55,44 +56,46 @@ export default function App() {
   const { apiVersion } = useContext(UserContext)
 
   return (
-    <I18nContextProvider>
-      <ThemeProvider theme={theme}>
-        <ErrorBoundary
-          fallback={() => (
-            <ErrorPage basePath="/employee/mobile" labels={i18n.errorPage} />
-          )}
-        >
-          <UserContextProvider>
-            <NotificationsContextProvider>
-              <Notifications apiVersion={apiVersion} />
-              <Router basename="/employee/mobile">
-                <Routes>
-                  <Route path="/landing" element={<MobileLander />} />
-                  <Route path="/pairing" element={<PairingWizard />} />
-                  <Route
-                    path="/units"
-                    element={
-                      <RequireAuth>
-                        <UnitList />
-                      </RequireAuth>
-                    }
-                  />
-                  <Route
-                    path="/units/:unitId/*"
-                    element={
-                      <RequireAuth>
-                        <UnitRouter />
-                      </RequireAuth>
-                    }
-                  />
-                  <Route index element={<Navigate replace to="/landing" />} />
-                </Routes>
-              </Router>
-            </NotificationsContextProvider>
-          </UserContextProvider>
-        </ErrorBoundary>
-      </ThemeProvider>
-    </I18nContextProvider>
+    <QueryClientProvider client={queryClient}>
+      <I18nContextProvider>
+        <ThemeProvider theme={theme}>
+          <ErrorBoundary
+            fallback={() => (
+              <ErrorPage basePath="/employee/mobile" labels={i18n.errorPage} />
+            )}
+          >
+            <UserContextProvider>
+              <NotificationsContextProvider>
+                <Notifications apiVersion={apiVersion} />
+                <Router basename="/employee/mobile">
+                  <Routes>
+                    <Route path="/landing" element={<MobileLander />} />
+                    <Route path="/pairing" element={<PairingWizard />} />
+                    <Route
+                      path="/units"
+                      element={
+                        <RequireAuth>
+                          <UnitList />
+                        </RequireAuth>
+                      }
+                    />
+                    <Route
+                      path="/units/:unitId/*"
+                      element={
+                        <RequireAuth>
+                          <UnitRouter />
+                        </RequireAuth>
+                      }
+                    />
+                    <Route index element={<Navigate replace to="/landing" />} />
+                  </Routes>
+                </Router>
+              </NotificationsContextProvider>
+            </UserContextProvider>
+          </ErrorBoundary>
+        </ThemeProvider>
+      </I18nContextProvider>
+    </QueryClientProvider>
   )
 }
 

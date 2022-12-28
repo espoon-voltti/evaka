@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { createContext, useCallback, useEffect, useMemo } from 'react'
+import React, { createContext, useMemo } from 'react'
 
 import { combine, Loading, Result } from 'lib-common/api'
 import {
@@ -12,14 +12,11 @@ import {
   ChildAbsence
 } from 'lib-common/generated/api-types/attendance'
 import { GroupNote } from 'lib-common/generated/api-types/note'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { idleTracker } from 'lib-common/utils/idleTracker'
-import { useApiState } from 'lib-common/utils/useRestApi'
 
-import { client } from '../client'
-
-import { getUnitAttendanceStatuses, getUnitChildren } from './api'
+import { attendanceStatusesQuery, childrenQuery } from './queries'
 
 export interface AttendanceResponseChild extends Child {
   absences: ChildAbsence[]
@@ -34,12 +31,10 @@ export interface AttendanceResponse {
 
 interface ChildAttendanceState {
   attendanceResponse: Result<AttendanceResponse>
-  reloadAttendances: () => void
 }
 
 const defaultState: ChildAttendanceState = {
-  attendanceResponse: Loading.of(),
-  reloadAttendances: () => undefined
+  attendanceResponse: Loading.of()
 }
 
 export const ChildAttendanceContext =
@@ -53,20 +48,10 @@ export const ChildAttendanceContextProvider = React.memo(
   }) {
     const { unitId } = useNonNullableParams<{ unitId: UUID }>()
 
-    const [unitChildren, reloadChildren] = useApiState(
-      () => getUnitChildren(unitId),
-      [unitId]
-    )
-
-    const [attendanceStatuses, reloadAttendanceStatuses] = useApiState(
-      () => getUnitAttendanceStatuses(unitId),
-      [unitId]
-    )
-
-    const reloadAttendances = useCallback(() => {
-      void reloadChildren()
-      void reloadAttendanceStatuses()
-    }, [reloadChildren, reloadAttendanceStatuses])
+    const unitChildren = useQueryResult(childrenQuery(unitId))
+    const attendanceStatuses = useQueryResult(attendanceStatusesQuery(unitId), {
+      refetchInterval: 5 * 60 * 1000
+    })
 
     const attendanceResponse: Result<AttendanceResponse> = useMemo(
       () =>
@@ -85,17 +70,11 @@ export const ChildAttendanceContextProvider = React.memo(
       [unitChildren, attendanceStatuses]
     )
 
-    useEffect(
-      () => idleTracker(client, reloadAttendances, { thresholdInMinutes: 5 }),
-      [reloadAttendances]
-    )
-
     const value = useMemo(
       () => ({
-        attendanceResponse,
-        reloadAttendances
+        attendanceResponse
       }),
-      [attendanceResponse, reloadAttendances]
+      [attendanceResponse]
     )
 
     return (

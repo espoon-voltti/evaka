@@ -11,8 +11,7 @@ import {
   AbsenceThreshold,
   Child,
   ChildAttendanceStatusResponse,
-  ChildrenResponse,
-  DepartureRequest
+  ChildrenResponse
 } from 'lib-common/generated/api-types/attendance'
 import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -24,17 +23,15 @@ import { client } from '../client'
 
 export async function getUnitChildren(
   unitId: string
-): Promise<Result<ChildrenResponse>> {
+): Promise<ChildrenResponse> {
   return client
     .get<JsonOf<ChildrenResponse>>(`/attendances/units/${unitId}/children`)
     .then((res) => deserializeChildrenResponse(res.data))
-    .then((v) => Success.of(v))
-    .catch((e) => Failure.fromError(e))
 }
 
 export async function getUnitAttendanceStatuses(
   unitId: string
-): Promise<Result<Record<UUID, ChildAttendanceStatusResponse>>> {
+): Promise<Record<UUID, ChildAttendanceStatusResponse>> {
   return client
     .get<JsonOf<Record<UUID, ChildAttendanceStatusResponse>>>(
       `/attendances/units/${unitId}/attendances`
@@ -42,80 +39,62 @@ export async function getUnitAttendanceStatuses(
     .then((res) =>
       mapValues(res.data, deserializeChildAttendanceStatusResponse)
     )
-    .then((v) => Success.of(v))
-    .catch((e) => Failure.fromError(e))
 }
 
-export async function childArrivesPOST(
-  unitId: string,
-  childId: string,
-  time: string
-): Promise<Result<void>> {
-  return client
-    .post<JsonOf<void>>(
-      `/attendances/units/${unitId}/children/${childId}/arrival`,
-      {
-        arrived: time
-      }
-    )
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function childDeparts(
-  unitId: string,
-  childId: string,
-  time: string
-): Promise<Result<void>> {
-  return client
-    .post<JsonOf<void>>(
-      `/attendances/units/${unitId}/children/${childId}/departure`,
-      {
-        departed: time
-      }
-    )
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function returnToComing(
-  unitId: string,
+export async function createArrival({
+  unitId,
+  childId,
+  arrived
+}: {
+  unitId: string
   childId: string
-): Promise<Result<void>> {
+  arrived: string
+}): Promise<void> {
   return client
-    .post<JsonOf<void>>(
-      `/attendances/units/${unitId}/children/${childId}/return-to-coming`
-    )
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .post(`/attendances/units/${unitId}/children/${childId}/arrival`, {
+      arrived
+    })
+    .then(() => undefined)
 }
 
-export async function returnToPresent(
-  unitId: string,
+export async function returnToComing({
+  unitId,
+  childId
+}: {
+  unitId: string
   childId: string
-): Promise<Result<void>> {
+}): Promise<void> {
   return client
-    .post<JsonOf<void>>(
-      `/attendances/units/${unitId}/children/${childId}/return-to-present`
-    )
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .post(`/attendances/units/${unitId}/children/${childId}/return-to-coming`)
+    .then(() => undefined)
 }
 
-export async function postFullDayAbsence(
-  unitId: string,
-  childId: string,
+export async function returnToPresent({
+  unitId,
+  childId
+}: {
+  unitId: string
+  childId: string
+}): Promise<void> {
+  return client
+    .post(`/attendances/units/${unitId}/children/${childId}/return-to-present`)
+    .then(() => undefined)
+}
+
+export async function createFullDayAbsence({
+  unitId,
+  childId,
+  absenceType
+}: {
+  unitId: string
+  childId: string
   absenceType: AbsenceType
-): Promise<Result<void>> {
+}): Promise<void> {
   return client
-    .post<JsonOf<void>>(
-      `/attendances/units/${unitId}/children/${childId}/full-day-absence`,
-      {
-        absenceType
-      }
-    )
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .post(`/attendances/units/${unitId}/children/${childId}/full-day-absence`, {
+      absenceType
+    })
+    .then(() => undefined)
 }
 
 export async function postAbsenceRange(
@@ -166,15 +145,23 @@ export async function getChildDeparture(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function postDeparture(
-  unitId: string,
-  childId: string,
-  body: DepartureRequest
-): Promise<Result<void>> {
+export async function createDeparture({
+  unitId,
+  childId,
+  absenceType,
+  departed
+}: {
+  unitId: string
+  childId: string
+  absenceType: AbsenceType | null
+  departed: string
+}): Promise<void> {
   return client
-    .post(`/attendances/units/${unitId}/children/${childId}/departure`, body)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .post(`/attendances/units/${unitId}/children/${childId}/departure`, {
+      absenceType,
+      departed
+    })
+    .then(() => undefined)
 }
 
 export async function deleteAbsenceRange(
@@ -264,4 +251,27 @@ function deserializeChildAttendanceStatusResponse(
         : null
     }))
   }
+}
+
+export async function uploadChildImage({
+  childId,
+  file
+}: {
+  childId: string
+  file: File
+}): Promise<void> {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  return client
+    .put(`/children/${childId}/image`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    .then(() => undefined)
+}
+
+export async function deleteChildImage(childId: string): Promise<void> {
+  return client.delete(`/children/${childId}/image`).then(() => undefined)
 }
