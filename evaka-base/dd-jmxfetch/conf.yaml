@@ -147,6 +147,14 @@ instances:
       - include:
           domain: metrics
           type: gauges
+          name: asyncJobWorkersActive.payloadType.UrgentAsyncJob
+          attribute:
+            Value:
+              alias: asyncjob.workers.urgent
+              metric_type: gauge
+      - include:
+          domain: metrics
+          type: gauges
           name: asyncJobWorkersActive.payloadType.VardaAsyncJob
           attribute:
             Value:
@@ -171,6 +179,14 @@ instances:
       - include:
           domain: metrics
           type: meters
+          name: asyncJobsExecuted.payloadType.UrgentAsyncJob
+          attribute:
+            Value:
+              alias: asyncjobs.executed.urgent
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
           name: asyncJobsExecuted.payloadType.VardaAsyncJob
           attribute:
             Value:
@@ -191,6 +207,14 @@ instances:
           attribute:
             Value:
               alias: asyncjobs.failed.suomifi
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsFailed.payloadType.UrgentAsyncJob
+          attribute:
+            Value:
+              alias: asyncjobs.failed.urgent
               metric_type: counter
       - include:
           domain: metrics

@@ -9,6 +9,7 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobRunnerConfig
 import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
+import fi.espoo.evaka.shared.async.UrgentAsyncJob
 import fi.espoo.evaka.shared.async.VardaAsyncJob
 import io.micrometer.core.instrument.MeterRegistry
 import io.opentracing.Tracer
@@ -26,6 +27,10 @@ class AsyncJobConfig {
     @Bean
     fun asyncJobRunner(jdbi: Jdbi, tracer: Tracer): AsyncJobRunner<AsyncJob> =
         AsyncJobRunner(AsyncJob::class, jdbi, AsyncJobRunnerConfig(), tracer)
+
+    @Bean
+    fun urgentAsyncJobRunner(jdbi: Jdbi, tracer: Tracer): AsyncJobRunner<UrgentAsyncJob> =
+        AsyncJobRunner(UrgentAsyncJob::class, jdbi, AsyncJobRunnerConfig(), tracer)
 
     @Bean
     fun vardaAsyncJobRunner(jdbi: Jdbi, tracer: Tracer): AsyncJobRunner<VardaAsyncJob> =

@@ -19,6 +19,7 @@ import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
+import fi.espoo.evaka.shared.async.UrgentAsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -74,6 +75,7 @@ import org.springframework.mock.web.MockMultipartFile
 class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var attachmentsController: AttachmentsController
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired lateinit var urgentAsyncJobRunner: AsyncJobRunner<UrgentAsyncJob>
 
     private val clock = RealEvakaClock()
 
@@ -799,6 +801,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             .response()
             .also { assertEquals(statusCode, it.second.statusCode) }
             .also { asyncJobRunner.runPendingJobsSync(MockEvakaClock(readTime)) }
+            .also { urgentAsyncJobRunner.runPendingJobsSync(MockEvakaClock(readTime)) }
 
     private fun replyAsCitizen(
         user: AuthenticatedUser.Citizen,
@@ -817,6 +820,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             .withMockedTime(sendTime)
             .response()
             .also { asyncJobRunner.runPendingJobsSync(MockEvakaClock(readTime)) }
+            .also { urgentAsyncJobRunner.runPendingJobsSync(MockEvakaClock(readTime)) }
 
     private fun replyAsEmployee(
         user: AuthenticatedUser.Employee,
@@ -836,6 +840,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             .withMockedTime(sendTime)
             .response()
             .also { asyncJobRunner.runPendingJobsSync(MockEvakaClock(readTime)) }
+            .also { urgentAsyncJobRunner.runPendingJobsSync(MockEvakaClock(readTime)) }
 
     private fun markThreadRead(
         user: AuthenticatedUser,

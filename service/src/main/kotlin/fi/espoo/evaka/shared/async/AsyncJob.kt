@@ -71,6 +71,16 @@ sealed interface SuomiFiAsyncJob : AsyncJobPayload {
     }
 }
 
+sealed interface UrgentAsyncJob : AsyncJobPayload {
+    data class UpdateMessageThreadRecipients(
+        val threadId: MessageThreadId,
+        val recipientIds: Set<MessageAccountId>,
+        val sentAt: HelsinkiDateTime
+    ) : UrgentAsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+}
+
 sealed interface AsyncJob : AsyncJobPayload {
     data class DvvModificationsRefresh(val ssns: List<String>, val requestingUserId: UUID) :
         AsyncJob {
@@ -230,14 +240,6 @@ sealed interface AsyncJob : AsyncJobPayload {
 
     data class SendMissingReservationsReminder(val guardian: PersonId, val range: FiniteDateRange) :
         AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    data class UpdateMessageThreadRecipients(
-        val threadId: MessageThreadId,
-        val recipientIds: Set<MessageAccountId>,
-        val sentAt: HelsinkiDateTime
-    ) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
 }
