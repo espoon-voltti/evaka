@@ -216,7 +216,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
     }
 
     override fun close() {
-        backgroundTimer.get()?.cancel()
+        backgroundTimer.getAndSet(null)?.cancel()
 
         executor.shutdown()
         if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
