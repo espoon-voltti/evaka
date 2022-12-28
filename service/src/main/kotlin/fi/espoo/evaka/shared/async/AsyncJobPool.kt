@@ -31,17 +31,9 @@ import kotlin.concurrent.thread
 import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
 
-data class AsyncJobPoolConfig(
-    val concurrency: Int = 1,
-    val backgroundPollingInterval: Duration = Duration.ofMinutes(1),
-    val throttleInterval: Duration? = null
-)
-
-class AsyncJobMetrics(val executedJobs: Counter, val failedJobs: Counter)
-
 class AsyncJobPool<T : AsyncJobPayload>(
     name: String,
-    private val config: AsyncJobPoolConfig,
+    private val config: Config,
     private val jdbi: Jdbi,
     private val tracer: Tracer,
     private val metrics: AtomicReference<AsyncJobMetrics>,
@@ -192,6 +184,12 @@ class AsyncJobPool<T : AsyncJobPayload>(
         }
         executor.shutdownNow()
     }
+
+    data class Config(
+        val concurrency: Int = 1,
+        val backgroundPollingInterval: Duration = Duration.ofMinutes(1),
+        val throttleInterval: Duration? = null
+    )
 
     data class Handler<T : AsyncJobPayload>(
         val handler: (db: Database, clock: EvakaClock, msg: T) -> Unit

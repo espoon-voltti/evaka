@@ -6,7 +6,7 @@ package fi.espoo.evaka.shared.config
 
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.shared.async.AsyncJob
-import fi.espoo.evaka.shared.async.AsyncJobPoolConfig
+import fi.espoo.evaka.shared.async.AsyncJobPool
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.async.UrgentAsyncJob
@@ -26,15 +26,15 @@ import org.springframework.core.env.Environment
 class AsyncJobConfig {
     @Bean
     fun asyncJobRunner(jdbi: Jdbi, tracer: Tracer): AsyncJobRunner<AsyncJob> =
-        AsyncJobRunner(AsyncJob::class, AsyncJobPoolConfig(concurrency = 4), jdbi, tracer)
+        AsyncJobRunner(AsyncJob::class, AsyncJobPool.Config(concurrency = 4), jdbi, tracer)
 
     @Bean
     fun urgentAsyncJobRunner(jdbi: Jdbi, tracer: Tracer): AsyncJobRunner<UrgentAsyncJob> =
-        AsyncJobRunner(UrgentAsyncJob::class, AsyncJobPoolConfig(concurrency = 4), jdbi, tracer)
+        AsyncJobRunner(UrgentAsyncJob::class, AsyncJobPool.Config(concurrency = 4), jdbi, tracer)
 
     @Bean
     fun vardaAsyncJobRunner(jdbi: Jdbi, tracer: Tracer): AsyncJobRunner<VardaAsyncJob> =
-        AsyncJobRunner(VardaAsyncJob::class, AsyncJobPoolConfig(concurrency = 1), jdbi, tracer)
+        AsyncJobRunner(VardaAsyncJob::class, AsyncJobPool.Config(concurrency = 1), jdbi, tracer)
 
     @Bean
     fun sfiAsyncJobRunner(
@@ -44,7 +44,7 @@ class AsyncJobConfig {
     ): AsyncJobRunner<SuomiFiAsyncJob> =
         AsyncJobRunner(
             SuomiFiAsyncJob::class,
-            AsyncJobPoolConfig(
+            AsyncJobPool.Config(
                 concurrency = 1,
                 throttleInterval =
                     Duration.ofSeconds(1).takeIf { env.activeProfiles.contains("production") },

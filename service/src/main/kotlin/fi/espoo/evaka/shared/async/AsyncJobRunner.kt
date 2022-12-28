@@ -27,7 +27,7 @@ private val defaultRetryInterval = Duration.ofMinutes(5)
 
 class AsyncJobRunner<T : AsyncJobPayload>(
     private val payloadType: KClass<T>,
-    config: AsyncJobPoolConfig,
+    config: AsyncJobPool.Config,
     jdbi: Jdbi,
     tracer: Tracer
 ) : AutoCloseable {

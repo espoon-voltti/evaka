@@ -49,7 +49,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
         asyncJobRunner =
             AsyncJobRunner(
                 TestJob::class,
-                AsyncJobPoolConfig(backgroundPollingInterval = Duration.ofSeconds(1)),
+                AsyncJobPool.Config(backgroundPollingInterval = Duration.ofSeconds(1)),
                 jdbi,
                 noopTracer
             )
