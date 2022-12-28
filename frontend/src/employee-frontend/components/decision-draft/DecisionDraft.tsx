@@ -405,6 +405,8 @@ export default React.memo(function Decision() {
                                     items={unitOptions}
                                     selectedItem={selectedUnit}
                                     getItemLabel={(unit) => unit?.name ?? ''}
+                                    getItemDataQa={(unit) => unit?.id ?? ''}
+                                    data-qa={`unit-selector-${decision.type}`}
                                   />
                                 )}
                                 <WarningContainer
