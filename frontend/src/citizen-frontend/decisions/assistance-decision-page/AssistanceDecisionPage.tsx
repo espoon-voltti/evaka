@@ -32,11 +32,11 @@ export default React.memo(function AssistanceNeedDecisionPage() {
   const assistanceNeedDecision = useQueryResult(assistanceDecisionQuery(id))
   const i18n = useTranslation()
 
-  const markAssistanceNeedDecisionAsRead = useMutationResult(
+  const { mutate: markAssistanceNeedDecisionAsRead } = useMutationResult(
     markAssistanceNeedDecisionAsReadMutation
   )
   useEffect(() => {
-    markAssistanceNeedDecisionAsRead.mutate(id)
+    markAssistanceNeedDecisionAsRead(id)
   }, [id, markAssistanceNeedDecisionAsRead])
 
   return (

@@ -33,7 +33,9 @@ export default React.memo(function ChildConsentsSection({
   const t = useTranslation()
 
   const childConsents = useQueryResult(childConsentsQuery)
-  const insertChildConsents = useMutationResult(insertChildConsentsMutation)
+  const { mutateAsync: insertChildConsents } = useMutationResult(
+    insertChildConsentsMutation
+  )
 
   const [open, setOpen] = useState(false)
 
@@ -93,7 +95,7 @@ export default React.memo(function ChildConsentsSection({
       return Promise.resolve(Failure.of({ message: 'Form not loaded' }))
     }
 
-    return insertChildConsents.mutateAsync({
+    return insertChildConsents({
       childId,
       consents: Object.entries(form)
         .filter(

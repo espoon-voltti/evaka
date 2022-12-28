@@ -383,7 +383,7 @@ export default React.memo(function PedagogicalDocumentsSection({
   const pedagogicalDocuments = useQueryResult(
     pedagogicalDocumentsQuery(childId)
   )
-  const markPedagogicalDocumentAsRead = useMutation(
+  const { mutate: markPedagogicalDocumentAsRead } = useMutation(
     markPedagogicalDocumentAsReadMutation
   )
 
@@ -392,7 +392,7 @@ export default React.memo(function PedagogicalDocumentsSection({
   )
 
   const onRead = (doc: PedagogicalDocumentCitizen) => {
-    void markPedagogicalDocumentAsRead.mutate({ childId, documentId: doc.id })
+    markPedagogicalDocumentAsRead({ childId, documentId: doc.id })
   }
 
   const t = useTranslation()
