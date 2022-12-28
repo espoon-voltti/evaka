@@ -84,8 +84,12 @@ export default React.memo(function DecisionResponse({
     }
   }
 
-  const acceptDecision = useMutationResult(acceptDecisionMutation)
-  const rejectDecision = useMutationResult(rejectDecisionMutation)
+  const { mutateAsync: acceptDecision } = useMutationResult(
+    acceptDecisionMutation
+  )
+  const { mutateAsync: rejectDecision } = useMutationResult(
+    rejectDecisionMutation
+  )
 
   const handleAcceptDecision = async () => {
     if (requestedStartDate === null) {
@@ -94,7 +98,7 @@ export default React.memo(function DecisionResponse({
       })
     }
     setSubmitting(true)
-    return acceptDecision.mutateAsync({
+    return acceptDecision({
       applicationId,
       decisionId,
       requestedStartDate
@@ -103,7 +107,7 @@ export default React.memo(function DecisionResponse({
 
   const handleRejectDecision = async () => {
     setSubmitting(true)
-    return rejectDecision.mutateAsync({ applicationId, decisionId })
+    return rejectDecision({ applicationId, decisionId })
   }
 
   const onSubmit = async () => {
