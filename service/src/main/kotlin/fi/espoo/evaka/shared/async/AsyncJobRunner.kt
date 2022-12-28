@@ -15,7 +15,9 @@ import io.opentracing.Tracer
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.read
+import kotlin.concurrent.write
 import kotlin.reflect.KClass
 import org.jdbi.v3.core.Jdbi
 
@@ -31,9 +33,26 @@ class AsyncJobRunner<T : AsyncJobPayload>(
 ) : AutoCloseable {
     val name = "${AsyncJobRunner::class.simpleName}.${payloadType.simpleName}"
 
+    private val handlersLock = ReentrantReadWriteLock()
+    private var handlers: Map<AsyncJobType<out T>, AsyncJobPool.Handler<*>> = emptyMap()
+
     private val metrics: AtomicReference<AsyncJobMetrics> = AtomicReference()
     private val pool: AsyncJobPool<T> =
-        AsyncJobPool(name = payloadType.simpleName!!, config = config, jdbi, tracer, metrics)
+        AsyncJobPool(
+            name = payloadType.simpleName!!,
+            config = config,
+            jdbi,
+            tracer,
+            metrics,
+            object : AsyncJobPool.Registration<T> {
+                override fun jobTypes(): Collection<AsyncJobType<out T>> =
+                    handlersLock.read { handlers.keys }
+                override fun handlerFor(jobType: AsyncJobType<out T>): AsyncJobPool.Handler<*> =
+                    handlersLock.read {
+                        requireNotNull(handlers[jobType]) { "No handler found for $jobType" }
+                    }
+            }
+        )
 
     private val wakeUpHook: AtomicReference<() -> Unit> = AtomicReference()
 
@@ -66,7 +85,17 @@ class AsyncJobRunner<T : AsyncJobPayload>(
     fun <P : T> registerHandler(
         jobType: AsyncJobType<out P>,
         handler: (db: Database, clock: EvakaClock, msg: P) -> Unit
-    ): Unit = pool.registerHandler(jobType, handler)
+    ): Unit =
+        handlersLock.write {
+            require(!handlers.containsKey(jobType)) {
+                "handler for $jobType has already been registered"
+            }
+            val ambiguousKey = handlers.keys.find { it.name == jobType.name }
+            require(ambiguousKey == null) {
+                "handlers for $jobType and $ambiguousKey have a name conflict"
+            }
+            handlers = handlers + mapOf(jobType to AsyncJobPool.Handler(handler))
+        }
 
     fun plan(
         tx: Database.Transaction,

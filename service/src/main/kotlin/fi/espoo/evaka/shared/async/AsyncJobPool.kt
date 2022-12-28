@@ -20,18 +20,14 @@ import io.opentracing.tag.Tags
 import java.lang.reflect.UndeclaredThrowableException
 import java.time.Duration
 import java.util.Timer
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.FutureTask
 import java.util.concurrent.SynchronousQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
-import java.util.concurrent.locks.Lock
-import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.fixedRateTimer
 import kotlin.concurrent.thread
-import kotlin.concurrent.withLock
 import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
 
@@ -41,13 +37,6 @@ data class AsyncJobPoolConfig(
     val throttleInterval: Duration? = null
 )
 
-private data class Registration<T : AsyncJobPayload>(
-    val handler: (db: Database, clock: EvakaClock, msg: T) -> Unit
-) {
-    fun run(db: Database, clock: EvakaClock, msg: AsyncJobPayload) =
-        @Suppress("UNCHECKED_CAST") handler(db, clock, msg as T)
-}
-
 class AsyncJobMetrics(val executedJobs: Counter, val failedJobs: Counter)
 
 class AsyncJobPool<T : AsyncJobPayload>(
@@ -55,14 +44,11 @@ class AsyncJobPool<T : AsyncJobPayload>(
     private val config: AsyncJobPoolConfig,
     private val jdbi: Jdbi,
     private val tracer: Tracer,
-    private val metrics: AtomicReference<AsyncJobMetrics>
+    private val metrics: AtomicReference<AsyncJobMetrics>,
+    private val registration: Registration<T>
 ) : AutoCloseable {
     private val fullName: String = "${AsyncJobPool::class.simpleName}.$name"
     private val logger = KotlinLogging.logger("${AsyncJobPool::class.qualifiedName}.$name")
-
-    private val handlersLock: Lock = ReentrantLock()
-    private val handlers: ConcurrentHashMap<AsyncJobType<out T>, Registration<*>> =
-        ConcurrentHashMap()
 
     private val backgroundTimer: AtomicReference<Timer> = AtomicReference()
     private val executor =
@@ -93,21 +79,6 @@ class AsyncJobPool<T : AsyncJobPayload>(
 
     val activeWorkerCount: Int
         get() = executor.activeCount
-
-    fun <P : T> registerHandler(
-        jobType: AsyncJobType<out P>,
-        handler: (db: Database, clock: EvakaClock, msg: P) -> Unit
-    ): Unit =
-        handlersLock.withLock {
-            require(!handlers.containsKey(jobType)) {
-                "handler for $jobType has already been registered"
-            }
-            val ambiguousKey = handlers.keys.find { it.name == jobType.name }
-            require(ambiguousKey == null) {
-                "handlers for $jobType and $ambiguousKey have a name conflict"
-            }
-            handlers[jobType] = Registration(handler)
-        }
 
     fun startBackgroundPolling() {
         val newTimer =
@@ -143,7 +114,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
             Database(jdbi, tracer).connect { dbc ->
                 var remaining = maxCount
                 do {
-                    val job = dbc.transaction { it.claimJob(clock.now(), handlers.keys) }
+                    val job = dbc.transaction { it.claimJob(clock.now(), registration.jobTypes()) }
                     if (job != null) {
                         tracer.withDetachedSpan(
                             "asyncjob.run ${job.jobType.name}",
@@ -165,7 +136,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
     private fun runPendingJob(
         db: Database.Connection,
         clock: EvakaClock,
-        job: ClaimedJobRef<out T>
+        job: ClaimedJobRef<out T>,
     ) {
         val logMeta =
             mapOf(
@@ -182,16 +153,13 @@ class AsyncJobPool<T : AsyncJobPayload>(
             val completed =
                 db.transaction { tx ->
                     tx.setLockTimeout(Duration.ofSeconds(5))
-                    val registration =
-                        handlers[job.jobType]
-                            ?: throw IllegalStateException("No handler found for ${job.jobType}")
                     tx.startJob(job, clock.now())?.let { msg ->
                         msg.user?.let {
                             MdcKey.USER_ID.set(it.rawId().toString())
                             MdcKey.USER_ID_HASH.set(it.rawIdHash.toString())
                             tracer.activeSpan()?.setTag(Tracing.enduserIdHash, it.rawIdHash)
                         }
-                        registration.run(Database(jdbi, tracer), clock, msg)
+                        registration.handlerFor(job.jobType).run(Database(jdbi, tracer), clock, msg)
                         tx.completeJob(job, clock.now())
                         true
                     }
@@ -223,5 +191,17 @@ class AsyncJobPool<T : AsyncJobPayload>(
             logger.error { "Some async jobs did not terminate in time during shutdown" }
         }
         executor.shutdownNow()
+    }
+
+    data class Handler<T : AsyncJobPayload>(
+        val handler: (db: Database, clock: EvakaClock, msg: T) -> Unit
+    ) {
+        fun run(db: Database, clock: EvakaClock, msg: AsyncJobPayload) =
+            @Suppress("UNCHECKED_CAST") handler(db, clock, msg as T)
+    }
+
+    interface Registration<T : AsyncJobPayload> {
+        fun jobTypes(): Collection<AsyncJobType<out T>>
+        fun handlerFor(jobType: AsyncJobType<out T>): Handler<*>
     }
 }
