@@ -66,7 +66,7 @@ class AsyncJobConfig {
             } else {
                 asyncJobRunners.forEach {
                     it.registerMeters(meterRegistry)
-                    it.start(pollingInterval = Duration.ofMinutes(1))
+                    it.start()
                     logger.info("Async job runner ${it.name} started")
                 }
             }
