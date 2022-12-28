@@ -16,12 +16,18 @@ import {
   returnToPresent,
   returnToComing,
   deleteChildImage,
-  uploadChildImage
+  uploadChildImage,
+  getChildDeparture
 } from './api'
 
 export const queryKeys = createQueryKeys('childAttendance', {
   children: (unitId: string) => ['children', unitId],
-  attendanceStatus: (unitId: string) => ['attendanceStatus', unitId]
+  attendanceStatus: (unitId: string) => ['attendanceStatus', unitId],
+  childDeparture: ({ unitId, childId }: { unitId: UUID; childId: UUID }) => [
+    'childDeparture',
+    unitId,
+    childId
+  ]
 })
 
 export const childrenQuery = query({
@@ -32,6 +38,12 @@ export const childrenQuery = query({
 export const attendanceStatusesQuery = query({
   api: getUnitAttendanceStatuses,
   queryKey: queryKeys.attendanceStatus
+})
+
+export const childDepartureQuery = query({
+  api: getChildDeparture,
+  queryKey: ({ unitId, childId }) =>
+    queryKeys.childDeparture({ unitId, childId })
 })
 
 export const createFullDayAbsenceMutation = mutation({

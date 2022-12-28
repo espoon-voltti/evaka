@@ -2,13 +2,14 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
+import { ChildAbsence } from 'lib-common/generated/api-types/attendance'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import { Label } from 'lib-components/typography'
 
-import { AttendanceResponseChild } from '../child-attendance/state'
 import { useTranslation } from '../common/i18n'
 import { formatCategory } from '../types'
 
@@ -17,17 +18,25 @@ const AbsenceLabels = styled.div`
 `
 
 interface Props {
-  child: AttendanceResponseChild
+  absences: ChildAbsence[]
+  placementType: PlacementType
 }
 
-export default React.memo(function Absences({ child }: Props) {
+export default React.memo(function Absences({
+  absences,
+  placementType
+}: Props) {
   const { i18n } = useTranslation()
 
-  if (child.absences.length === 0) return null
+  const absenceCareTypes = useMemo(
+    () =>
+      absences
+        .map(({ category }) => formatCategory(category, placementType, i18n))
+        .join(', '),
+    [absences, i18n, placementType]
+  )
+  if (absences.length === 0) return null
 
-  const absenceCareTypes = child.absences
-    .map(({ category }) => formatCategory(category, child.placementType, i18n))
-    .join(', ')
   return (
     <>
       <HorizontalLine slim />

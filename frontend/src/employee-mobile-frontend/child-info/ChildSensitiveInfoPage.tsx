@@ -22,17 +22,17 @@ export default React.memo(function ChildSensitiveInfoPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { attendanceResponse } = useContext(ChildAttendanceContext)
+  const { unitChildren } = useContext(ChildAttendanceContext)
 
   const { childId } = useNonNullableParams<{ childId: string }>()
 
   const childName = useMemo(
     () =>
-      attendanceResponse
+      unitChildren
         .map(({ children }) => children.find((ac) => ac.id === childId))
         .map((c) => (c ? `${c.firstName} ${c.lastName}` : null))
         .getOrElse(null),
-    [attendanceResponse, childId]
+    [unitChildren, childId]
   )
 
   const [childSensitiveResult] = useApiState(

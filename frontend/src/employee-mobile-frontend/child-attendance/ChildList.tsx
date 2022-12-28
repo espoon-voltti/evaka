@@ -21,11 +21,12 @@ import colors from 'lib-customizations/common'
 import { useTranslation } from '../common/i18n'
 
 import ChildListItem from './ChildListItem'
-import { AttendanceResponseChild } from './state'
+import { ChildAttendanceStatuses } from './state'
 
 interface Props {
   unitId: string
-  attendanceChildren: AttendanceResponseChild[]
+  attendanceChildren: Child[]
+  childAttendanceStatuses: ChildAttendanceStatuses
   groupsNotes: GroupNote[]
   type?: AttendanceStatus
 }
@@ -38,6 +39,7 @@ const NoChildrenOnList = styled.div`
 export default React.memo(function ChildList({
   unitId,
   attendanceChildren,
+  childAttendanceStatuses,
   type,
   groupsNotes
 }: Props) {
@@ -56,6 +58,9 @@ export default React.memo(function ChildList({
                 type={type}
                 key={ac.id}
                 child={ac}
+                attendanceStatus={
+                  childAttendanceStatuses.forChild(ac.id).status
+                }
                 groupNote={getGroupNote(ac)}
                 childAttendanceUrl={`/units/${unitId}/groups/${
                   ac.groupId ?? 'all'

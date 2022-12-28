@@ -25,7 +25,6 @@ import { Translations, useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
 
 import { Reservations } from './Reservations'
-import { AttendanceResponseChild } from './state'
 
 const ChildBox = styled.div`
   align-items: center;
@@ -93,7 +92,8 @@ const GroupName = styled(InformationText)`
 `
 
 interface ChildListItemProps {
-  child: AttendanceResponseChild
+  child: Child
+  attendanceStatus: AttendanceStatus
   onClick?: () => void
   type?: AttendanceStatus
   childAttendanceUrl: string
@@ -102,6 +102,7 @@ interface ChildListItemProps {
 
 export default React.memo(function ChildListItem({
   child,
+  attendanceStatus,
   onClick,
   type,
   childAttendanceUrl,
@@ -132,7 +133,7 @@ export default React.memo(function ChildListItem({
   return (
     <ChildBox data-qa={`child-${child.id}`}>
       <AttendanceLinkBox to={childAttendanceUrl}>
-        <IconBox type={child.status}>
+        <IconBox type={attendanceStatus}>
           {child.imageUrl ? (
             <RoundImage src={child.imageUrl} />
           ) : (

@@ -56,7 +56,9 @@ export default React.memo(function AttendanceChildPage() {
 
   const { unitInfoResponse } = useContext(UnitContext)
 
-  const { attendanceResponse } = useContext(ChildAttendanceContext)
+  const { unitChildren, childAttendanceStatuses } = useContext(
+    ChildAttendanceContext
+  )
 
   const [uiMode, setUiMode] = useState<
     | 'default'
@@ -77,24 +79,22 @@ export default React.memo(function AttendanceChildPage() {
 
   const childInfoResult = useMemo(
     () =>
-      combine(attendanceResponse, unitInfoResponse).map(
-        ([attendance, unitInfo]) => {
-          const child = attendance.children.find(
-            (child) => child.id === childId
-          )
+      combine(unitChildren, unitInfoResponse).map(
+        ([{ children, groupNotes }, unitInfo]) => {
+          const child = children.find((child) => child.id === childId)
 
           const group = child
             ? unitInfo.groups.find((group) => group.id === child.groupId)
             : undefined
 
           const hasGroupNote = child
-            ? !!attendance.groupNotes.find((g) => g.groupId === child.groupId)
+            ? !!groupNotes.find((g) => g.groupId === child.groupId)
             : false
 
           return { child, group, hasGroupNote }
         }
       ),
-    [attendanceResponse, unitInfoResponse, childId]
+    [unitChildren, unitInfoResponse, childId]
   )
 
   const returnToComingModal = () => setUiMode('attendance-change-cancel')
@@ -127,118 +127,129 @@ export default React.memo(function AttendanceChildPage() {
           data-qa="back-btn"
           aria-label={i18n.common.back}
         />
-        {renderResult(childInfoResult, ({ child, group, hasGroupNote }) =>
-          child ? (
-            <>
-              <Shadow>
-                <Zindex>
-                  <ChildBackground status={child.status}>
-                    <Center>
-                      <IconBox
-                        type={child.status}
-                        onClick={() => setUiMode('img-modal')}
-                      >
-                        {child.imageUrl ? (
-                          <RoundImage src={child.imageUrl} />
-                        ) : (
-                          <RoundIcon
-                            content={farUser}
-                            color={attendanceColors[child.status]}
-                            size="XXL"
-                          />
-                        )}
-                      </IconBox>
-
-                      <Gap size="s" />
-
-                      <CustomTitle data-qa="child-name">
-                        {child.firstName} {child.lastName}
-                      </CustomTitle>
-
-                      {!!child.preferredName && (
-                        <CustomTitle data-qa="child-preferred-name">
-                          ({child.preferredName})
-                        </CustomTitle>
-                      )}
-
-                      <GroupName>
-                        {group?.name ?? i18n.attendances.noGroup}
-                      </GroupName>
-
-                      <ChildStatus>
-                        <StaticChip
-                          color={attendanceColors[child.status]}
-                          data-qa="child-status"
+        {renderResult(
+          combine(childInfoResult, childAttendanceStatuses),
+          ([{ child, group, hasGroupNote }, childAttendanceStatuses]) => {
+            if (!child) return null
+            const childAttendance = childAttendanceStatuses.forChild(child.id)
+            return (
+              <>
+                <Shadow>
+                  <Zindex>
+                    <ChildBackground status={childAttendance.status}>
+                      <Center>
+                        <IconBox
+                          type={childAttendance.status}
+                          onClick={() => setUiMode('img-modal')}
                         >
-                          {i18n.attendances.types[child.status]}
-                        </StaticChip>
-                      </ChildStatus>
-                    </Center>
-                  </ChildBackground>
+                          {child.imageUrl ? (
+                            <RoundImage src={child.imageUrl} />
+                          ) : (
+                            <RoundIcon
+                              content={farUser}
+                              color={attendanceColors[childAttendance.status]}
+                              size="XXL"
+                            />
+                          )}
+                        </IconBox>
 
-                  <ChildButtons
-                    unitId={unitId}
-                    groupId={groupId}
-                    child={child}
-                    hasGroupNote={hasGroupNote}
-                  />
-                </Zindex>
+                        <Gap size="s" />
 
-                <FlexColumn paddingHorizontal="s">
-                  <AttendanceDailyServiceTimes
-                    times={child.dailyServiceTimes}
-                    reservations={child.reservations}
-                  />
-                  <ArrivalAndDeparture
-                    child={child}
-                    returnToComing={returnToComingModal}
-                  />
-                  <Gap size="m" />
-                  <Absences child={child} />
-                  <Gap size="xs" />
-                  {child.status === 'COMING' && (
-                    <AttendanceChildComing
+                        <CustomTitle data-qa="child-name">
+                          {child.firstName} {child.lastName}
+                        </CustomTitle>
+
+                        {!!child.preferredName && (
+                          <CustomTitle data-qa="child-preferred-name">
+                            ({child.preferredName})
+                          </CustomTitle>
+                        )}
+
+                        <GroupName>
+                          {group?.name ?? i18n.attendances.noGroup}
+                        </GroupName>
+
+                        <ChildStatus>
+                          <StaticChip
+                            color={attendanceColors[childAttendance.status]}
+                            data-qa="child-status"
+                          >
+                            {i18n.attendances.types[childAttendance.status]}
+                          </StaticChip>
+                        </ChildStatus>
+                      </Center>
+                    </ChildBackground>
+
+                    <ChildButtons
                       unitId={unitId}
+                      groupId={groupId}
                       child={child}
-                      groupIdOrAll={groupId}
+                      hasGroupNote={hasGroupNote}
                     />
-                  )}
-                  {child.status === 'PRESENT' && (
-                    <AttendanceChildPresent
-                      child={child}
-                      unitId={unitId}
-                      groupIdOrAll={groupId}
+                  </Zindex>
+
+                  <FlexColumn paddingHorizontal="s">
+                    <AttendanceDailyServiceTimes
+                      times={child.dailyServiceTimes}
+                      reservations={child.reservations}
                     />
-                  )}
-                  {child.status === 'DEPARTED' && (
-                    <AttendanceChildDeparted
-                      child={child}
-                      unitId={unitId}
-                      groupIdOrAll={groupId}
+                    <ArrivalAndDeparture
+                      attendances={childAttendance.attendances}
+                      returnToComing={returnToComingModal}
                     />
-                  )}
-                  {child.status === 'ABSENT' && (
-                    <AttendanceChildAbsent childId={child.id} unitId={unitId} />
-                  )}
-                </FlexColumn>
-              </Shadow>
-              <BottomButtonWrapper>
-                <LinkButtonWithIcon
-                  data-qa="mark-absent-beforehand"
-                  to={`/units/${unitId}/groups/${groupId}/child-attendance/${childId}/mark-absent-beforehand`}
-                >
-                  <RoundIcon
-                    size="L"
-                    content={faCalendarTimes}
-                    color={colors.main.m2}
-                  />
-                  <LinkButtonText>
-                    {i18n.attendances.actions.markAbsentBeforehand}
-                  </LinkButtonText>
-                </LinkButtonWithIcon>
-              </BottomButtonWrapper>
-            </>
-          ) : null
+                    <Gap size="m" />
+                    <Absences
+                      absences={childAttendance.absences}
+                      placementType={child.placementType}
+                    />
+                    <Gap size="xs" />
+                    {childAttendance.status === 'COMING' && (
+                      <AttendanceChildComing
+                        unitId={unitId}
+                        child={child}
+                        groupIdOrAll={groupId}
+                      />
+                    )}
+                    {childAttendance.status === 'PRESENT' && (
+                      <AttendanceChildPresent
+                        child={child}
+                        unitId={unitId}
+                        groupIdOrAll={groupId}
+                      />
+                    )}
+                    {childAttendance.status === 'DEPARTED' && (
+                      <AttendanceChildDeparted
+                        child={child}
+                        unitId={unitId}
+                        groupIdOrAll={groupId}
+                      />
+                    )}
+                    {childAttendance.status === 'ABSENT' && (
+                      <AttendanceChildAbsent
+                        childId={child.id}
+                        unitId={unitId}
+                      />
+                    )}
+                  </FlexColumn>
+                </Shadow>
+                <BottomButtonWrapper>
+                  <LinkButtonWithIcon
+                    data-qa="mark-absent-beforehand"
+                    to={`/units/${unitId}/groups/${groupId}/child-attendance/${childId}/mark-absent-beforehand`}
+                  >
+                    <RoundIcon
+                      size="L"
+                      content={faCalendarTimes}
+                      color={colors.main.m2}
+                    />
+                    <LinkButtonText>
+                      {i18n.attendances.actions.markAbsentBeforehand}
+                    </LinkButtonText>
+                  </LinkButtonWithIcon>
+                </BottomButtonWrapper>
+              </>
+            )
+          }
         )}
       </TallContentAreaNoOverflow>
       {uiMode === 'img-modal' && (

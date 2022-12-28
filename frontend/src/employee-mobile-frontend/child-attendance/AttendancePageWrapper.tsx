@@ -13,7 +13,12 @@ import { useNavigate } from 'react-router-dom'
 import { animated, useSpring } from 'react-spring'
 import styled from 'styled-components'
 
-import { GroupInfo } from 'lib-common/generated/api-types/attendance'
+import { combine } from 'lib-common/api'
+import {
+  Child,
+  ChildrenResponse,
+  GroupInfo
+} from 'lib-common/generated/api-types/attendance'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { ContentArea } from 'lib-components/layout/Container'
 import colors from 'lib-customizations/common'
@@ -28,11 +33,7 @@ import { ChildAttendanceUIState, mapChildAttendanceUIState } from '../types'
 
 import AttendanceList from './AttendanceList'
 import ChildList from './ChildList'
-import {
-  AttendanceResponse,
-  AttendanceResponseChild,
-  ChildAttendanceContext
-} from './state'
+import { ChildAttendanceContext, ChildAttendanceStatuses } from './state'
 
 export default React.memo(function AttendancePageWrapper() {
   const { unitId, groupId, attendanceStatus } = useNonNullableParams<{
@@ -54,7 +55,9 @@ export default React.memo(function AttendancePageWrapper() {
     [groupId, unitInfoResponse]
   )
 
-  const { attendanceResponse } = useContext(ChildAttendanceContext)
+  const { unitChildren, childAttendanceStatuses } = useContext(
+    ChildAttendanceContext
+  )
 
   const [showSearch, setShowSearch] = useState<boolean>(false)
 
@@ -74,7 +77,7 @@ export default React.memo(function AttendancePageWrapper() {
   const countInfo = useMemo(
     () => ({
       getTotalCount: (groupId: string | undefined) =>
-        attendanceResponse
+        unitChildren
           .map((res) =>
             groupId === undefined
               ? res.children.length
@@ -82,9 +85,12 @@ export default React.memo(function AttendancePageWrapper() {
           )
           .getOrElse(0),
       getPresentCount: (groupId: string | undefined) =>
-        attendanceResponse
-          .map((res) =>
-            res.children.filter((child) => child.status === 'PRESENT')
+        combine(unitChildren, childAttendanceStatuses)
+          .map(([{ children }, attendanceStatuses]) =>
+            children.filter(
+              (child) =>
+                attendanceStatuses.forChild(child.id).status === 'PRESENT'
+            )
           )
           .map((children) =>
             groupId === undefined
@@ -94,17 +100,18 @@ export default React.memo(function AttendancePageWrapper() {
           .getOrElse(0),
       infoText: i18n.attendances.chooseGroupInfo
     }),
-    [i18n, attendanceResponse]
+    [childAttendanceStatuses, i18n, unitChildren]
   )
 
   return (
     <>
-      {attendanceResponse.isSuccess && (
+      {unitChildren.isSuccess && childAttendanceStatuses.isSuccess && (
         <ChildSearch
           unitId={unitId}
           show={showSearch}
           toggleShow={toggleSearch}
-          attendanceResponse={attendanceResponse.value}
+          unitChildren={unitChildren.value}
+          childAttendanceStatuses={childAttendanceStatuses.value}
         />
       )}
       <PageWithNavigation
@@ -114,14 +121,18 @@ export default React.memo(function AttendancePageWrapper() {
         toggleSearch={toggleSearch}
         countInfo={countInfo}
       >
-        {renderResult(attendanceResponse, (attendance) => (
-          <AttendanceList
-            unitId={unitId}
-            groupId={groupId}
-            attendanceStatus={mapChildAttendanceUIState(attendanceStatus)}
-            attendanceResponse={attendance}
-          />
-        ))}
+        {renderResult(
+          combine(unitChildren, childAttendanceStatuses),
+          ([children, attendanceStatuses]) => (
+            <AttendanceList
+              unitId={unitId}
+              groupId={groupId}
+              attendanceStatus={mapChildAttendanceUIState(attendanceStatus)}
+              unitChildren={children}
+              childAttendanceStatuses={attendanceStatuses}
+            />
+          )
+        )}
       </PageWithNavigation>
     </>
   )
@@ -131,32 +142,32 @@ const ChildSearch = React.memo(function Search({
   unitId,
   show,
   toggleShow,
-  attendanceResponse
+  unitChildren,
+  childAttendanceStatuses
 }: {
   unitId: string
   show: boolean
   toggleShow: () => void
-  attendanceResponse: AttendanceResponse
+  unitChildren: ChildrenResponse
+  childAttendanceStatuses: ChildAttendanceStatuses
 }) {
   const { i18n } = useTranslation()
   const containerSpring = useSpring<{ x: number }>({ x: show ? 1 : 0 })
   const [freeText, setFreeText] = useState<string>('')
-  const [searchResults, setSearchResults] = useState<AttendanceResponseChild[]>(
-    []
-  )
+  const [searchResults, setSearchResults] = useState<Child[]>([])
 
   useEffect(() => {
     if (freeText === '') {
       setSearchResults([])
     } else {
-      const filteredData = attendanceResponse.children.filter(
+      const filteredData = unitChildren.children.filter(
         (ac) =>
           ac.firstName.toLowerCase().includes(freeText.toLowerCase()) ||
           ac.lastName.toLowerCase().includes(freeText.toLowerCase())
       )
       setSearchResults(filteredData)
     }
-  }, [freeText, attendanceResponse])
+  }, [freeText, unitChildren])
 
   return (
     <SearchContainer
@@ -178,7 +189,8 @@ const ChildSearch = React.memo(function Search({
         <ChildList
           unitId={unitId}
           attendanceChildren={searchResults}
-          groupsNotes={attendanceResponse.groupNotes}
+          childAttendanceStatuses={childAttendanceStatuses}
+          groupsNotes={unitChildren.groupNotes}
         />
       </ContentArea>
     </SearchContainer>

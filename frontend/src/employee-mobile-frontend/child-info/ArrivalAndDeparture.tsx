@@ -6,28 +6,27 @@ import { faArrowRotateLeft } from 'Icons'
 import React from 'react'
 import styled from 'styled-components'
 
+import { AttendanceTimes } from 'lib-common/generated/api-types/attendance'
 import LocalDate from 'lib-common/local-date'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import colors from 'lib-customizations/common'
 
-import { AttendanceResponseChild } from '../child-attendance/state'
 import { ArrivalTime } from '../common/components'
 import { useTranslation } from '../common/i18n'
 
 interface Props {
-  child: AttendanceResponseChild
+  attendances: AttendanceTimes[]
   returnToComing: () => void
 }
 
 export default React.memo(function ArrivalAndDeparture({
-  child,
+  attendances,
   returnToComing
 }: Props) {
   const { i18n } = useTranslation()
 
-  const latestArrival =
-    child.attendances.length > 0 ? child.attendances[0].arrived : null
+  const latestArrival = attendances.length > 0 ? attendances[0].arrived : null
 
   if (!latestArrival) {
     return null
@@ -42,7 +41,7 @@ export default React.memo(function ArrivalAndDeparture({
 
   return (
     <ArrivalTimeContainer>
-      {child.attendances.reverse().map(({ arrived, departed }) => (
+      {attendances.reverse().map(({ arrived, departed }) => (
         <AttendanceRowContainer key={arrived.toSystemTzDate().toISOString()}>
           {arrived ? (
             <FixedSpaceRow justifyContent="center" alignItems="center">

@@ -151,14 +151,14 @@ const PinLoginForm = React.memo(function PinLoginForm() {
 
 export const PinLogin = React.memo(function PinLogin() {
   const { unitInfoResponse } = useContext(UnitContext)
-  const { attendanceResponse } = useContext(ChildAttendanceContext)
+  const { unitChildren } = useContext(ChildAttendanceContext)
   const { childId } = useNonNullableParams<{ childId: UUID }>()
 
   const navigate = useNavigate()
   const onClose = useCallback(() => navigate(-1), [navigate])
 
   const title = childId
-    ? attendanceResponse
+    ? unitChildren
         .map((a) => a.children.find((c) => c.id === childId))
         .map((c) => (c ? `${c.firstName} ${c.lastName}` : ''))
         .getOrElse('')

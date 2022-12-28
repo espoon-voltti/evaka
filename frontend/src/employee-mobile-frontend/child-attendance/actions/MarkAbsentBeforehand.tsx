@@ -47,7 +47,7 @@ export default React.memo(function MarkAbsentBeforehand() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
-  const { attendanceResponse } = useContext(ChildAttendanceContext)
+  const { unitChildren } = useContext(ChildAttendanceContext)
 
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<
     AbsenceType | undefined
@@ -92,10 +92,10 @@ export default React.memo(function MarkAbsentBeforehand() {
 
   const child = useMemo(
     () =>
-      attendanceResponse.map((response) =>
+      unitChildren.map((response) =>
         response.children.find((ac) => ac.id === childId)
       ),
-    [attendanceResponse, childId]
+    [unitChildren, childId]
   )
 
   const createAbsence = useCallback(async () => {

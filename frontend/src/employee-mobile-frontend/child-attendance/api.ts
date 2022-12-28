@@ -31,7 +31,7 @@ export async function getUnitChildren(
 
 export async function getUnitAttendanceStatuses(
   unitId: string
-): Promise<Record<UUID, ChildAttendanceStatusResponse>> {
+): Promise<Record<UUID, ChildAttendanceStatusResponse | undefined>> {
   return client
     .get<JsonOf<Record<UUID, ChildAttendanceStatusResponse>>>(
       `/attendances/units/${unitId}/attendances`
@@ -132,17 +132,18 @@ export async function getFutureAbsencesByChild(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getChildDeparture(
-  unitId: string,
+export async function getChildDeparture({
+  unitId,
+  childId
+}: {
+  unitId: string
   childId: string
-): Promise<Result<AbsenceThreshold[]>> {
+}): Promise<AbsenceThreshold[]> {
   return client
     .get<JsonOf<AbsenceThreshold[]>>(
       `/attendances/units/${unitId}/children/${childId}/departure`
     )
     .then((res) => res.data)
-    .then((v) => Success.of(v))
-    .catch((e) => Failure.fromError(e))
 }
 
 export async function createDeparture({

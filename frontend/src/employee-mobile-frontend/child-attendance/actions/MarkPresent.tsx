@@ -37,7 +37,9 @@ export default React.memo(function MarkPresent() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
-  const { attendanceResponse } = useContext(ChildAttendanceContext)
+  const { unitChildren, childAttendanceStatuses } = useContext(
+    ChildAttendanceContext
+  )
 
   const now = mockNow() ?? new Date()
   const [time, setTime] = useState<string>(formatTime(now))
@@ -54,21 +56,21 @@ export default React.memo(function MarkPresent() {
 
   const child = useMemo(
     () =>
-      attendanceResponse.map((response) =>
+      unitChildren.map((response) =>
         response.children.find((ac) => ac.id === childId)
       ),
-    [attendanceResponse, childId]
+    [unitChildren, childId]
   )
 
   const childLatestDeparture = useMemo(
     () =>
-      child.isSuccess &&
-      child.value &&
-      child.value.attendances &&
-      child.value.attendances.length > 0
-        ? child.value.attendances[0].departed
-        : null,
-    [child]
+      childAttendanceStatuses
+        .map((a) => {
+          const attendances = a.forChild(childId).attendances
+          return attendances.length > 0 ? attendances[0].departed : null
+        })
+        .getOrElse(null),
+    [childAttendanceStatuses, childId]
   )
 
   const isValidTime = useCallback(() => {
@@ -84,10 +86,10 @@ export default React.memo(function MarkPresent() {
 
   const groupNote = useMemo(
     () =>
-      attendanceResponse.map((response) =>
+      unitChildren.map((response) =>
         response.groupNotes.find((g) => g.groupId === groupId)
       ),
-    [attendanceResponse, groupId]
+    [unitChildren, groupId]
   )
 
   const { mutateAsync: returnToPresent } = useMutationResult(

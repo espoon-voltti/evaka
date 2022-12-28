@@ -90,18 +90,18 @@ export default React.memo(function ChildNotes() {
     groupId: string
   }>()
 
-  const { attendanceResponse } = useContext(ChildAttendanceContext)
+  const { unitChildren } = useContext(ChildAttendanceContext)
 
   const [selectedTab, setSelectedTab] = useState<NoteType>('NOTE')
 
   const childResult: Result<Child> = useMemo(
     () =>
-      attendanceResponse
+      unitChildren
         .map((v) => v.children.find((c) => c.id === childId))
         .chain((c) =>
           c ? Success.of(c) : Failure.of({ message: 'Child not found' })
         ),
-    [attendanceResponse, childId]
+    [unitChildren, childId]
   )
 
   const dailyNote = useMemo(
@@ -126,10 +126,10 @@ export default React.memo(function ChildNotes() {
 
   const groupNotes = useMemo<GroupNote[]>(
     () =>
-      attendanceResponse
+      unitChildren
         .map((v) => v.groupNotes.filter((n) => n.groupId === groupId))
         .getOrElse([]),
-    [attendanceResponse, groupId]
+    [unitChildren, groupId]
   )
 
   const noteTabs = useMemo(() => {

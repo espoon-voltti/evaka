@@ -11,10 +11,9 @@ import { AttendanceTimes } from 'lib-common/generated/api-types/attendance'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import LocalTime from 'lib-common/local-time'
-import { useMutationResult } from 'lib-common/query'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { mockNow } from 'lib-common/utils/helpers'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -39,8 +38,7 @@ import {
 import { Translations, useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import DailyNote from '../DailyNote'
-import { getChildDeparture } from '../api'
-import { createDepartureMutation } from '../queries'
+import { childDepartureQuery, createDepartureMutation } from '../queries'
 import { ChildAttendanceContext } from '../state'
 
 import AbsenceSelector from './AbsenceSelector'
@@ -77,7 +75,9 @@ export default React.memo(function MarkDeparted() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
-  const { attendanceResponse } = useContext(ChildAttendanceContext)
+  const { unitChildren, childAttendanceStatuses } = useContext(
+    ChildAttendanceContext
+  )
 
   const { childId, unitId, groupId } = useNonNullableParams<{
     unitId: string
@@ -86,9 +86,8 @@ export default React.memo(function MarkDeparted() {
   }>()
 
   const [time, setTime] = useState<string>(formatTime(mockNow() ?? new Date()))
-  const [childDepartureInfo] = useApiState(
-    () => getChildDeparture(unitId, childId),
-    [childId, unitId]
+  const childDepartureInfo = useQueryResult(
+    childDepartureQuery({ unitId, childId })
   )
 
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<
@@ -97,18 +96,18 @@ export default React.memo(function MarkDeparted() {
 
   const child = useMemo(
     () =>
-      attendanceResponse.map((response) =>
+      unitChildren.map((response) =>
         response.children.find((ac) => ac.id === childId)
       ),
-    [attendanceResponse, childId]
+    [unitChildren, childId]
   )
 
   const groupNote = useMemo(
     () =>
-      attendanceResponse.map((response) =>
+      unitChildren.map((response) =>
         response.groupNotes.find((g) => g.groupId === groupId)
       ),
-    [attendanceResponse, groupId]
+    [unitChildren, groupId]
   )
 
   const absentFrom = useMemo(
@@ -122,8 +121,11 @@ export default React.memo(function MarkDeparted() {
   )
 
   const timeError = useMemo(
-    () => child.map((child) => validateTime(i18n, time, child?.attendances)),
-    [child, i18n, time]
+    () =>
+      childAttendanceStatuses.map((a) =>
+        validateTime(i18n, time, a.forChild(childId).attendances)
+      ),
+    [childAttendanceStatuses, childId, i18n, time]
   )
 
   const { mutateAsync: createDeparture } = useMutationResult(

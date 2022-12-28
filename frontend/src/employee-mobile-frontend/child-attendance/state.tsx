@@ -4,37 +4,44 @@
 
 import React, { createContext, useMemo } from 'react'
 
-import { combine, Loading, Result } from 'lib-common/api'
+import { Loading, Result } from 'lib-common/api'
 import {
-  AttendanceStatus,
-  AttendanceTimes,
-  Child,
-  ChildAbsence
+  ChildAttendanceStatusResponse,
+  ChildrenResponse
 } from 'lib-common/generated/api-types/attendance'
-import { GroupNote } from 'lib-common/generated/api-types/note'
 import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 
 import { attendanceStatusesQuery, childrenQuery } from './queries'
 
-export interface AttendanceResponseChild extends Child {
-  absences: ChildAbsence[]
-  attendances: AttendanceTimes[]
-  status: AttendanceStatus
+export class ChildAttendanceStatuses {
+  constructor(
+    private readonly statuses: Record<
+      UUID,
+      ChildAttendanceStatusResponse | undefined
+    >
+  ) {}
+
+  forChild(childId: UUID): ChildAttendanceStatusResponse {
+    return this.statuses[childId] ?? defaultChildAttendanceStatus
+  }
 }
 
-export interface AttendanceResponse {
-  children: AttendanceResponseChild[]
-  groupNotes: GroupNote[]
+const defaultChildAttendanceStatus: ChildAttendanceStatusResponse = {
+  status: 'COMING',
+  attendances: [],
+  absences: []
 }
 
 interface ChildAttendanceState {
-  attendanceResponse: Result<AttendanceResponse>
+  unitChildren: Result<ChildrenResponse>
+  childAttendanceStatuses: Result<ChildAttendanceStatuses>
 }
 
 const defaultState: ChildAttendanceState = {
-  attendanceResponse: Loading.of()
+  unitChildren: Loading.of(),
+  childAttendanceStatuses: Loading.of()
 }
 
 export const ChildAttendanceContext =
@@ -53,28 +60,18 @@ export const ChildAttendanceContextProvider = React.memo(
       refetchInterval: 5 * 60 * 1000
     })
 
-    const attendanceResponse: Result<AttendanceResponse> = useMemo(
+    const childAttendanceStatuses = useMemo(
       () =>
-        combine(unitChildren, attendanceStatuses).map(
-          ([childrenResponse, attendanceStatusResponses]) => ({
-            ...childrenResponse,
-            children: childrenResponse.children.map((child) => ({
-              ...child,
-              absences: attendanceStatusResponses[child.id]?.absences ?? [],
-              attendances:
-                attendanceStatusResponses[child.id]?.attendances ?? [],
-              status: attendanceStatusResponses[child.id]?.status ?? 'COMING'
-            }))
-          })
-        ),
-      [unitChildren, attendanceStatuses]
+        attendanceStatuses.map((value) => new ChildAttendanceStatuses(value)),
+      [attendanceStatuses]
     )
 
     const value = useMemo(
       () => ({
-        attendanceResponse
+        unitChildren,
+        childAttendanceStatuses
       }),
-      [attendanceResponse]
+      [childAttendanceStatuses, unitChildren]
     )
 
     return (

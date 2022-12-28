@@ -4,7 +4,10 @@
 
 import React, { useMemo } from 'react'
 
-import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
+import {
+  AttendanceStatus,
+  ChildrenResponse
+} from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
 import Tabs from 'lib-components/molecules/Tabs'
@@ -12,29 +15,31 @@ import Tabs from 'lib-components/molecules/Tabs'
 import { useTranslation } from '../common/i18n'
 
 import ChildList from './ChildList'
-import { AttendanceResponse } from './state'
+import { ChildAttendanceStatuses } from './state'
 
 interface Props {
   unitId: UUID
   groupId: UUID | 'all'
   attendanceStatus: AttendanceStatus
-  attendanceResponse: AttendanceResponse
+  unitChildren: ChildrenResponse
+  childAttendanceStatuses: ChildAttendanceStatuses
 }
 
 export default React.memo(function AttendanceList({
   unitId,
   groupId,
   attendanceStatus,
-  attendanceResponse
+  unitChildren,
+  childAttendanceStatuses
 }: Props) {
   const { i18n } = useTranslation()
 
   const groupChildren = useMemo(
     () =>
       groupId === 'all'
-        ? attendanceResponse.children
-        : attendanceResponse.children.filter((c) => c.groupId === groupId),
-    [groupId, attendanceResponse]
+        ? unitChildren.children
+        : unitChildren.children.filter((c) => c.groupId === groupId),
+    [groupId, unitChildren]
   )
 
   const {
@@ -46,14 +51,20 @@ export default React.memo(function AttendanceList({
   } = useMemo(
     () => ({
       totalAttendances: groupChildren.length,
-      totalComing: groupChildren.filter((ac) => ac.status === 'COMING').length,
-      totalPresent: groupChildren.filter((ac) => ac.status === 'PRESENT')
-        .length,
-      totalDeparted: groupChildren.filter((ac) => ac.status === 'DEPARTED')
-        .length,
-      totalAbsent: groupChildren.filter((ac) => ac.status === 'ABSENT').length
+      totalComing: groupChildren.filter(
+        (ac) => childAttendanceStatuses.forChild(ac.id).status === 'COMING'
+      ).length,
+      totalPresent: groupChildren.filter(
+        (ac) => childAttendanceStatuses.forChild(ac.id).status === 'PRESENT'
+      ).length,
+      totalDeparted: groupChildren.filter(
+        (ac) => childAttendanceStatuses.forChild(ac.id).status === 'DEPARTED'
+      ).length,
+      totalAbsent: groupChildren.filter(
+        (ac) => childAttendanceStatuses.forChild(ac.id).status === 'ABSENT'
+      ).length
     }),
-    [groupChildren]
+    [childAttendanceStatuses, groupChildren]
   )
 
   const tabs = useMemo(() => {
@@ -102,8 +113,12 @@ export default React.memo(function AttendanceList({
   ])
 
   const filteredChildren = useMemo(
-    () => groupChildren.filter(({ status }) => status === attendanceStatus),
-    [attendanceStatus, groupChildren]
+    () =>
+      groupChildren.filter(
+        (child) =>
+          childAttendanceStatuses.forChild(child.id).status === attendanceStatus
+      ),
+    [attendanceStatus, childAttendanceStatuses, groupChildren]
   )
 
   return (
@@ -117,7 +132,8 @@ export default React.memo(function AttendanceList({
         <ChildList
           unitId={unitId}
           attendanceChildren={filteredChildren}
-          groupsNotes={attendanceResponse.groupNotes}
+          childAttendanceStatuses={childAttendanceStatuses}
+          groupsNotes={unitChildren.groupNotes}
           type={attendanceStatus}
         />
       </ContentArea>
