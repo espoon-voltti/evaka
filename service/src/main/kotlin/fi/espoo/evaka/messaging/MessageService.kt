@@ -10,8 +10,8 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.UrgentAsyncJob
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -22,14 +22,14 @@ import org.springframework.stereotype.Component
 
 @Component
 class MessageService(
-    private val asyncJobRunner: AsyncJobRunner<UrgentAsyncJob>,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val notificationEmailService: MessageNotificationEmailService
 ) {
     init {
         asyncJobRunner.registerHandler {
             db: Database.Connection,
             _: EvakaClock,
-            msg: UrgentAsyncJob.UpdateMessageThreadRecipients ->
+            msg: AsyncJob.UpdateMessageThreadRecipients ->
             db.transaction {
                 it.upsertReceiverThreadParticipants(msg.threadId, msg.recipientIds, msg.sentAt)
             }
@@ -221,7 +221,7 @@ class MessageService(
     }
 }
 
-fun AsyncJobRunner<UrgentAsyncJob>.scheduleThreadRecipientsUpdate(
+fun AsyncJobRunner<AsyncJob>.scheduleThreadRecipientsUpdate(
     tx: Database.Transaction,
     threadRecipientsPairs: List<Pair<MessageThreadId, Set<MessageAccountId>>>,
     sentAt: HelsinkiDateTime
@@ -229,7 +229,7 @@ fun AsyncJobRunner<UrgentAsyncJob>.scheduleThreadRecipientsUpdate(
     this.plan(
         tx,
         threadRecipientsPairs.map { (threadId, recipients) ->
-            UrgentAsyncJob.UpdateMessageThreadRecipients(threadId, recipients, sentAt)
+            AsyncJob.UpdateMessageThreadRecipients(threadId, recipients, sentAt)
         },
         runAt = sentAt.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS)
     )

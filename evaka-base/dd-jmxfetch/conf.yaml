@@ -131,15 +131,23 @@ instances:
       - include:
           domain: metrics
           type: gauges
-          name: asyncJobWorkersActive.payloadType.AsyncJob
+          name: asyncJobWorkersActive.jobType.AsyncJob.pool.main
           attribute:
             Value:
-              alias: asyncjob.workers.asyncjob
+              alias: asyncjob.workers.main
               metric_type: gauge
       - include:
           domain: metrics
           type: gauges
-          name: asyncJobWorkersActive.payloadType.SuomiFiAsyncJob
+          name: asyncJobWorkersActive.jobType.AsyncJob.pool.email
+          attribute:
+            Value:
+              alias: asyncjob.workers.email
+              metric_type: gauge
+      - include:
+          domain: metrics
+          type: gauges
+          name: asyncJobWorkersActive.jobtype.AsyncJob.pool.suomiFi
           attribute:
             Value:
               alias: asyncjob.workers.suomifi
@@ -147,7 +155,7 @@ instances:
       - include:
           domain: metrics
           type: gauges
-          name: asyncJobWorkersActive.payloadType.UrgentAsyncJob
+          name: asyncJobWorkersActive.jobtype.AsyncJob.pool.urgent
           attribute:
             Value:
               alias: asyncjob.workers.urgent
@@ -155,7 +163,7 @@ instances:
       - include:
           domain: metrics
           type: gauges
-          name: asyncJobWorkersActive.payloadType.VardaAsyncJob
+          name: asyncJobWorkersActive.jobtype.AsyncJob.pool.varda
           attribute:
             Value:
               alias: asyncjob.workers.varda
@@ -163,15 +171,15 @@ instances:
       - include:
           domain: metrics
           type: meters
-          name: asyncJobsExecuted.payloadType.AsyncJob
+          name: asyncJobsExecuted.jobType.AsyncJob.pool.main
           attribute:
             Count:
-              alias: asyncjobs.executed.asyncjob
+              alias: asyncjobs.executed.main
               metric_type: counter
       - include:
           domain: metrics
           type: meters
-          name: asyncJobsExecuted.payloadType.SuomiFiAsyncJob
+          name: asyncJobsExecuted.jobType.AsyncJob.pool.email
           attribute:
             Count:
               alias: asyncjobs.executed.suomifi
@@ -179,7 +187,15 @@ instances:
       - include:
           domain: metrics
           type: meters
-          name: asyncJobsExecuted.payloadType.UrgentAsyncJob
+          name: asyncJobsExecuted.jobType.AsyncJob.pool.suomiFi
+          attribute:
+            Count:
+              alias: asyncjobs.executed.suomifi
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsExecuted.jobType.AsyncJob.pool.urgent
           attribute:
             Count:
               alias: asyncjobs.executed.urgent
@@ -187,7 +203,7 @@ instances:
       - include:
           domain: metrics
           type: meters
-          name: asyncJobsExecuted.payloadType.VardaAsyncJob
+          name: asyncJobsExecuted.jobType.AsyncJob.pool.varda
           attribute:
             Count:
               alias: asyncjobs.executed.varda
@@ -195,15 +211,23 @@ instances:
       - include:
           domain: metrics
           type: meters
-          name: asyncJobsFailed.payloadType.AsyncJob
+          name: asyncJobsFailed.jobType.AsyncJob.pool.main
           attribute:
             Count:
-              alias: asyncjobs.failed.asyncjob
+              alias: asyncjobs.failed.main
               metric_type: counter
       - include:
           domain: metrics
           type: meters
-          name: asyncJobsFailed.payloadType.SuomiFiAsyncJob
+          name: asyncJobsFailed.jobType.AsyncJob.pool.email
+          attribute:
+            Count:
+              alias: asyncjobs.failed.email
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsFailed.jobType.AsyncJob.pool.suomiFi
           attribute:
             Count:
               alias: asyncjobs.failed.suomifi
@@ -211,7 +235,7 @@ instances:
       - include:
           domain: metrics
           type: meters
-          name: asyncJobsFailed.payloadType.UrgentAsyncJob
+          name: asyncJobsFailed.jobType.AsyncJob.pool.urgent
           attribute:
             Count:
               alias: asyncjobs.failed.urgent
@@ -219,7 +243,7 @@ instances:
       - include:
           domain: metrics
           type: meters
-          name: asyncJobsFailed.payloadType.VardaAsyncJob
+          name: asyncJobsFailed.jobType.AsyncJob.pool.varda
           attribute:
             Count:
               alias: asyncjobs.failed.varda

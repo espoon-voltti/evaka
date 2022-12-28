@@ -10,8 +10,8 @@ import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.OphEnv
 import fi.espoo.evaka.VardaEnv
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.VardaAsyncJob
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.varda.integration.VardaClient
@@ -26,7 +26,7 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class VardaResetService(
-    private val asyncJobRunner: AsyncJobRunner<VardaAsyncJob>,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val tokenProvider: VardaTokenProvider,
     private val fuel: FuelManager,
     private val mapper: JsonMapper,
@@ -60,7 +60,7 @@ class VardaResetService(
         db.transaction { tx ->
             asyncJobRunner.plan(
                 tx,
-                resetChildIds.map { VardaAsyncJob.ResetVardaChild(it) },
+                resetChildIds.map { AsyncJob.ResetVardaChild(it) },
                 retryCount = 2,
                 retryInterval = Duration.ofMinutes(10),
                 runAt = clock.now()
@@ -71,7 +71,7 @@ class VardaResetService(
     fun resetVardaChildByAsyncJob(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: VardaAsyncJob.ResetVardaChild
+        msg: AsyncJob.ResetVardaChild
     ) {
         logger.info("VardaUpdate: starting to reset child ${msg.childId}")
         resetVardaChild(db, clock, client, msg.childId, feeDecisionMinDate, municipalOrganizerOid)
@@ -80,7 +80,7 @@ class VardaResetService(
     fun deleteVardaChildByAsyncJob(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: VardaAsyncJob.DeleteVardaChild
+        msg: AsyncJob.DeleteVardaChild
     ) {
         logger.info("VardaUpdate: starting to delete child ${msg.vardaChildId}")
         deleteChildDataFromVardaAndDbByVardaId(db, client, msg.vardaChildId)
@@ -109,7 +109,7 @@ class VardaResetService(
             db.transaction { tx ->
                 asyncJobRunner.plan(
                     tx,
-                    childrenWithoutId.map { VardaAsyncJob.DeleteVardaChild(it) },
+                    childrenWithoutId.map { AsyncJob.DeleteVardaChild(it) },
                     retryCount = 2,
                     retryInterval = Duration.ofMinutes(1),
                     runAt = clock.now()

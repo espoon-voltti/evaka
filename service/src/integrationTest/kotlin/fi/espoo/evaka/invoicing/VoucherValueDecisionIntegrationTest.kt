@@ -32,7 +32,6 @@ import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -68,8 +67,6 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @Autowired lateinit var voucherValueDecisionService: VoucherValueDecisionService
-
-    @Autowired private lateinit var sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>
 
     @BeforeEach
     fun beforeEach() {
@@ -430,7 +427,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(403, getPdfStatus(decisionIds[0], financeWorker))
 
         // Check that message is still sent via sfi
-        sfiAsyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
         assertEquals(1, MockSfiMessagesClient.getMessages().size)
     }
 

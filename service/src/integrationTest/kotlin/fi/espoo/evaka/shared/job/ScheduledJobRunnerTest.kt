@@ -6,7 +6,6 @@ package fi.espoo.evaka.shared.job
 
 import fi.espoo.evaka.PureJdbiTest
 import fi.espoo.evaka.shared.async.AsyncJob
-import fi.espoo.evaka.shared.async.AsyncJobPool
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.domain.europeHelsinki
@@ -34,7 +33,7 @@ class ScheduledJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun beforeEach() {
-        asyncJobRunner = AsyncJobRunner(AsyncJob::class, AsyncJobPool.Config(), jdbi, noopTracer)
+        asyncJobRunner = AsyncJobRunner(AsyncJob::class, listOf(AsyncJob.main), jdbi, noopTracer)
     }
 
     @Test

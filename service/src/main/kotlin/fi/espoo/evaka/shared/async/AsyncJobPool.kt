@@ -15,6 +15,8 @@ import fi.espoo.voltti.logging.MdcKey
 import fi.espoo.voltti.logging.loggers.error
 import fi.espoo.voltti.logging.loggers.info
 import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.Gauge
+import io.micrometer.core.instrument.MeterRegistry
 import io.opentracing.Tracer
 import io.opentracing.tag.Tags
 import java.lang.reflect.UndeclaredThrowableException
@@ -28,19 +30,43 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.fixedRateTimer
 import kotlin.concurrent.thread
+import kotlin.reflect.KClass
 import mu.KotlinLogging
 import org.jdbi.v3.core.Jdbi
 
 class AsyncJobPool<T : AsyncJobPayload>(
-    name: String,
+    val id: Id<T>,
     private val config: Config,
     private val jdbi: Jdbi,
     private val tracer: Tracer,
-    private val metrics: AtomicReference<AsyncJobMetrics>,
     private val registration: Registration<T>
 ) : AutoCloseable {
-    private val fullName: String = "${AsyncJobPool::class.simpleName}.$name"
-    private val logger = KotlinLogging.logger("${AsyncJobPool::class.qualifiedName}.$name")
+    data class Id<T : Any>(val jobType: KClass<T>, val pool: String) {
+        override fun toString(): String = "${jobType.simpleName}.$pool"
+    }
+    private data class Metrics(val executedJobs: Counter, val failedJobs: Counter)
+
+    data class Config(
+        val concurrency: Int = 1,
+        val backgroundPollingInterval: Duration = Duration.ofMinutes(1),
+        val throttleInterval: Duration? = null
+    )
+
+    data class Handler<T : AsyncJobPayload>(
+        val handler: (db: Database, clock: EvakaClock, msg: T) -> Unit
+    ) {
+        fun run(db: Database, clock: EvakaClock, msg: AsyncJobPayload) =
+            @Suppress("UNCHECKED_CAST") handler(db, clock, msg as T)
+    }
+
+    interface Registration<T : AsyncJobPayload> {
+        fun jobTypes(): Collection<AsyncJobType<out T>>
+        fun handlerFor(jobType: AsyncJobType<out T>): Handler<*>
+    }
+
+    private val fullName: String = "${AsyncJobPool::class.simpleName}.$id"
+    private val logger = KotlinLogging.logger("${AsyncJobPool::class.qualifiedName}.$id")
+    private val metrics: AtomicReference<Metrics> = AtomicReference()
 
     private val backgroundTimer: AtomicReference<Timer> = AtomicReference()
     private val executor =
@@ -71,6 +97,25 @@ class AsyncJobPool<T : AsyncJobPayload>(
 
     val activeWorkerCount: Int
         get() = executor.activeCount
+
+    fun registerMeters(meterRegistry: MeterRegistry) {
+        Gauge.builder("asyncJobWorkersActive") { activeWorkerCount }
+            .tag("jobType", id.jobType.simpleName!!)
+            .tag("pool", id.pool)
+            .register(meterRegistry)
+        metrics.set(
+            Metrics(
+                Counter.builder("asyncJobsExecuted")
+                    .tag("jobType", id.jobType.simpleName!!)
+                    .tag("pool", id.pool)
+                    .register(meterRegistry),
+                Counter.builder("asyncJobsFailed")
+                    .tag("jobType", id.jobType.simpleName!!)
+                    .tag("pool", id.pool)
+                    .register(meterRegistry)
+            )
+        )
+    }
 
     fun startBackgroundPolling() {
         val newTimer =
@@ -183,23 +228,5 @@ class AsyncJobPool<T : AsyncJobPayload>(
             logger.error { "Some async jobs did not terminate in time during shutdown" }
         }
         executor.shutdownNow()
-    }
-
-    data class Config(
-        val concurrency: Int = 1,
-        val backgroundPollingInterval: Duration = Duration.ofMinutes(1),
-        val throttleInterval: Duration? = null
-    )
-
-    data class Handler<T : AsyncJobPayload>(
-        val handler: (db: Database, clock: EvakaClock, msg: T) -> Unit
-    ) {
-        fun run(db: Database, clock: EvakaClock, msg: AsyncJobPayload) =
-            @Suppress("UNCHECKED_CAST") handler(db, clock, msg as T)
-    }
-
-    interface Registration<T : AsyncJobPayload> {
-        fun jobTypes(): Collection<AsyncJobType<out T>>
-        fun handlerFor(jobType: AsyncJobType<out T>): Handler<*>
     }
 }

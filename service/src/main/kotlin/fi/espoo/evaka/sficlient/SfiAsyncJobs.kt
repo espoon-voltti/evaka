@@ -4,17 +4,17 @@
 
 package fi.espoo.evaka.sficlient
 
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import org.springframework.stereotype.Service
 
 @Service
 class SfiAsyncJobs(
     private val sfiClient: SfiMessagesClient,
-    asyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>
+    asyncJobRunner: AsyncJobRunner<AsyncJob>
 ) {
     init {
-        asyncJobRunner.registerHandler { _, _, payload: SuomiFiAsyncJob.SendMessage ->
+        asyncJobRunner.registerHandler { _, _, payload: AsyncJob.SendMessage ->
             sendMessagePDF(payload.message)
         }
     }

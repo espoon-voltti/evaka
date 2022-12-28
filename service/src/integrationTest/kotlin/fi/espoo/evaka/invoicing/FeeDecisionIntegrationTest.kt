@@ -28,7 +28,6 @@ import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -71,7 +70,6 @@ import org.springframework.beans.factory.annotation.Autowired
 class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var feeDecisionController: FeeDecisionController
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
-    @Autowired private lateinit var sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>
 
     private val user =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.FINANCE_ADMIN))
@@ -1846,7 +1844,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
         assertThrows<Forbidden> { getPdf(decision.id, user) }
 
         // Check that message is still sent via sfi
-        sfiAsyncJobRunner.runPendingJobsSync(MockEvakaClock(HelsinkiDateTime.now()))
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(HelsinkiDateTime.now()))
         assertEquals(1, MockSfiMessagesClient.getMessages().size)
     }
 
@@ -1874,7 +1872,7 @@ class FeeDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
 
         assertThrows<Forbidden> { getPdf(decision.id, user) }
 
-        sfiAsyncJobRunner.runPendingJobsSync(MockEvakaClock(HelsinkiDateTime.now()))
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(HelsinkiDateTime.now()))
         assertEquals(1, MockSfiMessagesClient.getMessages().size)
     }
 

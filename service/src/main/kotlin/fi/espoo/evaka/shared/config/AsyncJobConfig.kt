@@ -6,11 +6,7 @@ package fi.espoo.evaka.shared.config
 
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.shared.async.AsyncJob
-import fi.espoo.evaka.shared.async.AsyncJobPool
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
-import fi.espoo.evaka.shared.async.UrgentAsyncJob
-import fi.espoo.evaka.shared.async.VardaAsyncJob
 import io.micrometer.core.instrument.MeterRegistry
 import io.opentracing.Tracer
 import java.time.Duration
@@ -25,29 +21,17 @@ import org.springframework.core.env.Environment
 @Configuration
 class AsyncJobConfig {
     @Bean
-    fun asyncJobRunner(jdbi: Jdbi, tracer: Tracer): AsyncJobRunner<AsyncJob> =
-        AsyncJobRunner(AsyncJob::class, AsyncJobPool.Config(concurrency = 4), jdbi, tracer)
-
-    @Bean
-    fun urgentAsyncJobRunner(jdbi: Jdbi, tracer: Tracer): AsyncJobRunner<UrgentAsyncJob> =
-        AsyncJobRunner(UrgentAsyncJob::class, AsyncJobPool.Config(concurrency = 4), jdbi, tracer)
-
-    @Bean
-    fun vardaAsyncJobRunner(jdbi: Jdbi, tracer: Tracer): AsyncJobRunner<VardaAsyncJob> =
-        AsyncJobRunner(VardaAsyncJob::class, AsyncJobPool.Config(concurrency = 1), jdbi, tracer)
-
-    @Bean
-    fun sfiAsyncJobRunner(
-        jdbi: Jdbi,
-        tracer: Tracer,
-        env: Environment
-    ): AsyncJobRunner<SuomiFiAsyncJob> =
+    fun asyncJobRunner(jdbi: Jdbi, tracer: Tracer, env: Environment): AsyncJobRunner<AsyncJob> =
         AsyncJobRunner(
-            SuomiFiAsyncJob::class,
-            AsyncJobPool.Config(
-                concurrency = 1,
-                throttleInterval =
-                    Duration.ofSeconds(1).takeIf { env.activeProfiles.contains("production") },
+            AsyncJob::class,
+            listOf(
+                AsyncJob.main,
+                AsyncJob.email,
+                AsyncJob.urgent,
+                AsyncJob.varda,
+                AsyncJob.suomiFi.withThrottleInterval(
+                    Duration.ofSeconds(1).takeIf { env.activeProfiles.contains("production") }
+                )
             ),
             jdbi,
             tracer
@@ -66,7 +50,7 @@ class AsyncJobConfig {
             } else {
                 asyncJobRunners.forEach {
                     it.registerMeters(meterRegistry)
-                    it.enableAfterCommitHook()
+                    it.enableAfterCommitHooks()
                     it.startBackgroundPolling()
                     logger.info("Async job runner ${it.name} started")
                 }
