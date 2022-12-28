@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { combine } from 'lib-common/api'
@@ -38,8 +38,12 @@ import {
 import { Translations, useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import DailyNote from '../DailyNote'
-import { childDepartureQuery, createDepartureMutation } from '../queries'
-import { ChildAttendanceContext } from '../state'
+import {
+  childDepartureQuery,
+  childrenQuery,
+  createDepartureMutation
+} from '../queries'
+import { useAttendanceStatuses } from '../state'
 
 import AbsenceSelector from './AbsenceSelector'
 import { AbsentFrom } from './AbsentFrom'
@@ -75,15 +79,13 @@ export default React.memo(function MarkDeparted() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
-  const { unitChildren, childAttendanceStatuses } = useContext(
-    ChildAttendanceContext
-  )
-
   const { childId, unitId, groupId } = useNonNullableParams<{
     unitId: string
     childId: string
     groupId: string
   }>()
+  const unitChildren = useQueryResult(childrenQuery(unitId))
+  const childAttendanceStatuses = useAttendanceStatuses(unitId)
 
   const [time, setTime] = useState<string>(formatTime(mockNow() ?? new Date()))
   const childDepartureInfo = useQueryResult(

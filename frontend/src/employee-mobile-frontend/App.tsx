@@ -29,7 +29,6 @@ import MarkAbsent from './child-attendance/actions/MarkAbsent'
 import MarkAbsentBeforehand from './child-attendance/actions/MarkAbsentBeforehand'
 import MarkDeparted from './child-attendance/actions/MarkDeparted'
 import MarkPresent from './child-attendance/actions/MarkPresent'
-import { ChildAttendanceContextProvider } from './child-attendance/state'
 import AttendanceChildPage from './child-info/AttendanceChildPage'
 import ChildSensitiveInfoPage from './child-info/ChildSensitiveInfoPage'
 import ChildNotes from './child-notes/ChildNotes'
@@ -130,40 +129,38 @@ function GroupRouter() {
 
 function ChildAttendanceRouter() {
   return (
-    <ChildAttendanceContextProvider>
-      <Routes>
-        <Route
-          path="list/:attendanceStatus"
-          element={<AttendancePageWrapper />}
-        />
-        <Route path=":childId" element={<AttendanceChildPage />} />
-        <Route path=":childId/mark-present" element={<MarkPresent />} />
-        <Route path=":childId/mark-absent" element={<MarkAbsent />} />
-        <Route
-          path=":childId/mark-absent-beforehand"
-          element={<MarkAbsentBeforehand />}
-        />
-        <Route path=":childId/mark-departed" element={<MarkDeparted />} />
-        <Route path=":childId/note" element={<ChildNotes />} />
-        <Route
-          path=":childId/info"
-          element={
-            <RequireAuth strength="PIN">
-              <ChildSensitiveInfoPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path=":childId/new-message"
-          element={
-            <RequireAuth strength="PIN">
-              <MessageEditorPage />
-            </RequireAuth>
-          }
-        />
-        <Route index element={<Navigate replace to="list/coming" />} />
-      </Routes>
-    </ChildAttendanceContextProvider>
+    <Routes>
+      <Route
+        path="list/:attendanceStatus"
+        element={<AttendancePageWrapper />}
+      />
+      <Route path=":childId" element={<AttendanceChildPage />} />
+      <Route path=":childId/mark-present" element={<MarkPresent />} />
+      <Route path=":childId/mark-absent" element={<MarkAbsent />} />
+      <Route
+        path=":childId/mark-absent-beforehand"
+        element={<MarkAbsentBeforehand />}
+      />
+      <Route path=":childId/mark-departed" element={<MarkDeparted />} />
+      <Route path=":childId/note" element={<ChildNotes />} />
+      <Route
+        path=":childId/info"
+        element={
+          <RequireAuth strength="PIN">
+            <ChildSensitiveInfoPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path=":childId/new-message"
+        element={
+          <RequireAuth strength="PIN">
+            <MessageEditorPage />
+          </RequireAuth>
+        }
+      />
+      <Route index element={<Navigate replace to="list/coming" />} />
+    </Routes>
   )
 }
 

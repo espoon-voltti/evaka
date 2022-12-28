@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
-import { useMutationResult } from 'lib-common/query'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -32,8 +32,7 @@ import {
 import { useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import DailyNote from '../DailyNote'
-import { createFullDayAbsenceMutation } from '../queries'
-import { ChildAttendanceContext } from '../state'
+import { childrenQuery, createFullDayAbsenceMutation } from '../queries'
 
 import AbsenceSelector from './AbsenceSelector'
 
@@ -41,17 +40,16 @@ export default React.memo(function MarkAbsent() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
-  const { unitChildren } = useContext(ChildAttendanceContext)
-
-  const [selectedAbsenceType, setSelectedAbsenceType] = useState<
-    AbsenceType | undefined
-  >(undefined)
-
   const { childId, unitId, groupId } = useNonNullableParams<{
     unitId: string
     groupId: string
     childId: string
   }>()
+  const unitChildren = useQueryResult(childrenQuery(unitId))
+
+  const [selectedAbsenceType, setSelectedAbsenceType] = useState<
+    AbsenceType | undefined
+  >(undefined)
 
   const { mutateAsync: createAbsence } = useMutationResult(
     createFullDayAbsenceMutation

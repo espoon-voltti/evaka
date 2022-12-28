@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { isAfter } from 'date-fns'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -11,7 +11,7 @@ import { combine } from 'lib-common/api'
 import { formatTime } from 'lib-common/date'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
-import { useMutationResult } from 'lib-common/query'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { mockNow } from 'lib-common/utils/helpers'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -30,25 +30,28 @@ import { Actions, BackButtonInline, TimeWrapper } from '../../common/components'
 import { useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import DailyNote from '../DailyNote'
-import { createArrivalMutation, returnToPresentMutation } from '../queries'
-import { ChildAttendanceContext } from '../state'
+import {
+  childrenQuery,
+  createArrivalMutation,
+  returnToPresentMutation
+} from '../queries'
+import { useAttendanceStatuses } from '../state'
 
 export default React.memo(function MarkPresent() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
-
-  const { unitChildren, childAttendanceStatuses } = useContext(
-    ChildAttendanceContext
-  )
-
-  const now = mockNow() ?? new Date()
-  const [time, setTime] = useState<string>(formatTime(now))
 
   const { childId, unitId, groupId } = useNonNullableParams<{
     unitId: string
     childId: string
     groupId: string
   }>()
+
+  const unitChildren = useQueryResult(childrenQuery(unitId))
+  const childAttendanceStatuses = useAttendanceStatuses(unitId)
+
+  const now = mockNow() ?? new Date()
+  const [time, setTime] = useState<string>(formatTime(now))
 
   const { mutateAsync: createArrival } = useMutationResult(
     createArrivalMutation

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -13,6 +13,7 @@ import {
   ChildStickyNote,
   GroupNote
 } from 'lib-common/generated/api-types/note'
+import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
@@ -23,7 +24,7 @@ import colors from 'lib-customizations/common'
 import { faArrowLeft } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
-import { ChildAttendanceContext } from '../child-attendance/state'
+import { childrenQuery } from '../child-attendance/queries'
 import { BackButtonInline } from '../common/components'
 import { useTranslation } from '../common/i18n'
 import { TallContentArea } from '../pairing/components'
@@ -89,8 +90,7 @@ export default React.memo(function ChildNotes() {
     childId: string
     groupId: string
   }>()
-
-  const { unitChildren } = useContext(ChildAttendanceContext)
+  const unitChildren = useQueryResult(childrenQuery(unitId))
 
   const [selectedTab, setSelectedTab] = useState<NoteType>('NOTE')
 

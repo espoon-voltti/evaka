@@ -2,15 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { useQueryResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
 import { renderPinRequiringResult } from '../auth/renderPinRequiringResult'
-import { ChildAttendanceContext } from '../child-attendance/state'
+import { childrenQuery } from '../child-attendance/queries'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
 import { TallContentArea } from '../pairing/components'
@@ -22,9 +24,11 @@ export default React.memo(function ChildSensitiveInfoPage() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { unitChildren } = useContext(ChildAttendanceContext)
-
-  const { childId } = useNonNullableParams<{ childId: string }>()
+  const { childId, unitId } = useNonNullableParams<{
+    childId: UUID
+    unitId: UUID
+  }>()
+  const unitChildren = useQueryResult(childrenQuery(unitId))
 
   const childName = useMemo(
     () =>

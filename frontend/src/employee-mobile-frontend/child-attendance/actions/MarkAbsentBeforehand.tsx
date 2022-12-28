@@ -3,13 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { addDays, isAfter, isBefore, subDays } from 'date-fns'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { groupAbsencesByDateRange } from 'lib-common/utils/absences'
 import { mockNow } from 'lib-common/utils/helpers'
@@ -39,7 +40,7 @@ import {
   getFutureAbsencesByChild,
   postAbsenceRange
 } from '../api'
-import { ChildAttendanceContext } from '../state'
+import { childrenQuery } from '../queries'
 
 import AbsenceSelector from './AbsenceSelector'
 
@@ -47,7 +48,11 @@ export default React.memo(function MarkAbsentBeforehand() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
-  const { unitChildren } = useContext(ChildAttendanceContext)
+  const { childId, unitId } = useNonNullableParams<{
+    unitId: string
+    childId: string
+  }>()
+  const unitChildren = useQueryResult(childrenQuery(unitId))
 
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<
     AbsenceType | undefined
@@ -59,10 +64,6 @@ export default React.memo(function MarkAbsentBeforehand() {
     undefined
   )
 
-  const { childId, unitId } = useNonNullableParams<{
-    unitId: string
-    childId: string
-  }>()
   const [absences, loadFutureAbsences] = useApiState(
     () => getFutureAbsencesByChild(childId),
     [childId]
