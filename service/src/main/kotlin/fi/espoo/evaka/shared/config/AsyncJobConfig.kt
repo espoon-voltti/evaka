@@ -9,7 +9,9 @@ import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.async.AsyncJobRunnerConfig
 import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
+import fi.espoo.evaka.shared.async.UrgentAsyncJob
 import fi.espoo.evaka.shared.async.VardaAsyncJob
+import io.micrometer.core.instrument.MeterRegistry
 import io.opentracing.Tracer
 import java.time.Duration
 import mu.KotlinLogging
@@ -25,6 +27,10 @@ class AsyncJobConfig {
     @Bean
     fun asyncJobRunner(jdbi: Jdbi, tracer: Tracer): AsyncJobRunner<AsyncJob> =
         AsyncJobRunner(AsyncJob::class, jdbi, AsyncJobRunnerConfig(), tracer)
+
+    @Bean
+    fun urgentAsyncJobRunner(jdbi: Jdbi, tracer: Tracer): AsyncJobRunner<UrgentAsyncJob> =
+        AsyncJobRunner(UrgentAsyncJob::class, jdbi, AsyncJobRunnerConfig(), tracer)
 
     @Bean
     fun vardaAsyncJobRunner(jdbi: Jdbi, tracer: Tracer): AsyncJobRunner<VardaAsyncJob> =
@@ -48,17 +54,20 @@ class AsyncJobConfig {
         )
 
     @Bean
-    fun asyncJobRunnerStarter(asyncJobRunners: List<AsyncJobRunner<*>>, evakaEnv: EvakaEnv) =
+    fun asyncJobRunnerStarter(
+        asyncJobRunners: List<AsyncJobRunner<*>>,
+        evakaEnv: EvakaEnv,
+        meterRegistry: MeterRegistry
+    ) =
         ApplicationListener<ApplicationReadyEvent> {
             val logger = KotlinLogging.logger {}
             if (evakaEnv.asyncJobRunnerDisabled) {
                 logger.info("Async job runners disabled")
             } else {
                 asyncJobRunners.forEach {
+                    it.registerMeters(meterRegistry)
                     it.start(pollingInterval = Duration.ofMinutes(1))
-                    logger.info(
-                        "Async job runner AsyncJobRunner<${it.payloadType.simpleName}> started"
-                    )
+                    logger.info("Async job runner ${it.name} started")
                 }
             }
         }

@@ -62,7 +62,10 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
                 throw LetsRollbackException()
             }
         }
-        assertEquals(0, asyncJobRunner.getPendingJobCount())
+        assertEquals(
+            0,
+            db.read { it.createQuery("SELECT count(*) FROM async_job").mapTo<Int>().single() }
+        )
     }
 
     @Test
@@ -124,16 +127,16 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction {
             asyncJobRunner.plan(it, listOf(job), 20, Duration.ZERO, runAt = HelsinkiDateTime.now())
         }
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1)
+        assertEquals(1, asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1))
 
         val exception = assertThrows<ExecutionException> { failingFuture.get(10, TimeUnit.SECONDS) }
         assertTrue(exception.cause is LetsRollbackException)
-        assertEquals(1, asyncJobRunner.getPendingJobCount())
 
         val future = this.setAsyncJobCallback { assertEquals(job, it) }
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1)
+        assertEquals(1, asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1))
         future.get(10, TimeUnit.SECONDS)
-        assertEquals(0, asyncJobRunner.getPendingJobCount())
+
+        assertEquals(0, asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1))
     }
 
     private fun <R> setAsyncJobCallback(f: (msg: TestJob) -> R): Future<R> {

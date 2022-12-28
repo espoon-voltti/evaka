@@ -128,3 +128,99 @@ instances:
             MaxTotal:
               alias: jedis.clients.total
               metric_type: gauge
+      - include:
+          domain: metrics
+          type: gauges
+          name: asyncJobWorkersActive.payloadType.AsyncJob
+          attribute:
+            Value:
+              alias: asyncjob.workers.asyncjob
+              metric_type: gauge
+      - include:
+          domain: metrics
+          type: gauges
+          name: asyncJobWorkersActive.payloadType.SuomiFiAsyncJob
+          attribute:
+            Value:
+              alias: asyncjob.workers.suomifi
+              metric_type: gauge
+      - include:
+          domain: metrics
+          type: gauges
+          name: asyncJobWorkersActive.payloadType.UrgentAsyncJob
+          attribute:
+            Value:
+              alias: asyncjob.workers.urgent
+              metric_type: gauge
+      - include:
+          domain: metrics
+          type: gauges
+          name: asyncJobWorkersActive.payloadType.VardaAsyncJob
+          attribute:
+            Value:
+              alias: asyncjob.workers.varda
+              metric_type: gauge
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsExecuted.payloadType.AsyncJob
+          attribute:
+            Value:
+              alias: asyncjobs.executed.asyncjob
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsExecuted.payloadType.SuomiFiAsyncJob
+          attribute:
+            Value:
+              alias: asyncjobs.executed.suomifi
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsExecuted.payloadType.UrgentAsyncJob
+          attribute:
+            Value:
+              alias: asyncjobs.executed.urgent
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsExecuted.payloadType.VardaAsyncJob
+          attribute:
+            Value:
+              alias: asyncjobs.executed.varda
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsFailed.payloadType.AsyncJob
+          attribute:
+            Value:
+              alias: asyncjobs.failed.asyncjob
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsFailed.payloadType.SuomiFiAsyncJob
+          attribute:
+            Value:
+              alias: asyncjobs.failed.suomifi
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsFailed.payloadType.UrgentAsyncJob
+          attribute:
+            Value:
+              alias: asyncjobs.failed.urgent
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsFailed.payloadType.VardaAsyncJob
+          attribute:
+            Value:
+              alias: asyncjobs.failed.varda
+              metric_type: counter

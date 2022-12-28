@@ -114,7 +114,6 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
 
-        assertEquals(1, asyncJobRunner.getPendingJobCount())
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         val sentMails = MockEmailClient.emails
@@ -164,7 +163,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         assertEquals(200, res.statusCode)
 
         assertApplicationIsSent(applicationId)
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1)
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         val sentMails = MockEmailClient.emails
         assertEquals(1, sentMails.size)
@@ -213,10 +212,8 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
 
         assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
-        assertEquals(1, asyncJobRunner.getPendingJobCount())
 
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1)
-        assertEquals(0, asyncJobRunner.getPendingJobCount())
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         val sentMails = MockEmailClient.emails
         assertEquals(1, sentMails.size)
@@ -254,8 +251,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
 
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1)
-        assertEquals(0, asyncJobRunner.getPendingJobCount())
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         val sentMails = MockEmailClient.emails
 
@@ -291,8 +287,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
         assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
 
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1)
-        assertEquals(0, asyncJobRunner.getPendingJobCount())
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         val sentMails = MockEmailClient.emails
 
@@ -340,7 +335,7 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
 
         assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
-        assertEquals(0, asyncJobRunner.getPendingJobCount())
+        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         val sentMails = MockEmailClient.emails
         assertEquals(0, sentMails.size)
@@ -380,7 +375,6 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
 
         assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
-        assertEquals(1, asyncJobRunner.getPendingJobCount())
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
@@ -417,7 +411,6 @@ class ApplicationReceivedEmailIntegrationTest : FullApplicationTest(resetDbBefor
 
         assertEquals(200, res.statusCode)
         assertApplicationIsSent(applicationId)
-        assertEquals(1, asyncJobRunner.getPendingJobCount())
 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 

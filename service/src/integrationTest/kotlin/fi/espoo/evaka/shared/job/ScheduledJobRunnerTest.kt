@@ -57,14 +57,13 @@ class ScheduledJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
             runner.scheduler.triggerCheckForDueExecutions()
 
             val start = Instant.now()
-            while (asyncJobRunner.getPendingJobCount() == 0) {
+            while (asyncJobRunner.runPendingJobsSync(RealEvakaClock()) == 0) {
                 Thread.sleep(100)
 
                 assert(Duration.between(start, Instant.now()) < Duration.ofSeconds(10))
             }
         }
 
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock())
         assertEquals(executedJob.get(), ScheduledJob.EndOfDayAttendanceUpkeep)
     }
 }
