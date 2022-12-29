@@ -10,7 +10,7 @@ import {
   ChildDailyNote,
   ChildStickyNote
 } from 'lib-common/generated/api-types/note'
-import { useQuery } from 'lib-common/query'
+import { useQuery, useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
@@ -21,7 +21,8 @@ import colors from 'lib-customizations/common'
 import { faArrowLeft } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
-import { useChild } from '../child-attendance/state'
+import { childrenQuery } from '../child-attendance/queries'
+import { useChild } from '../child-attendance/utils'
 import { BackButtonInline } from '../common/components'
 import { useTranslation } from '../common/i18n'
 import { TallContentArea } from '../pairing/components'
@@ -88,7 +89,7 @@ export default React.memo(function ChildNotes() {
     childId: string
     groupId: string
   }>()
-  const child = useChild(unitId, childId)
+  const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 
   const [selectedTab, setSelectedTab] = useState<NoteType>('NOTE')
 

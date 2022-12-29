@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
-import { useMutation } from 'lib-common/query'
+import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { StaticChip } from 'lib-components/atoms/Chip'
@@ -24,10 +24,12 @@ import { faArrowLeft, faCalendarTimes, faQuestion, farUser } from 'lib-icons'
 import { renderResult } from '../async-rendering'
 import { IconBox } from '../child-attendance/ChildListItem'
 import {
+  attendanceStatusesQuery,
+  childrenQuery,
   deleteChildImageMutation,
   returnToComingMutation
 } from '../child-attendance/queries'
-import { useAttendanceStatuses, useChild } from '../child-attendance/state'
+import { childAttendanceStatus, useChild } from '../child-attendance/utils'
 import BottomModalMenu from '../common/BottomModalMenu'
 import { FlexColumn } from '../common/components'
 import { useTranslation } from '../common/i18n'
@@ -55,8 +57,8 @@ export default React.memo(function AttendanceChildPage() {
   }>()
 
   const { unitInfoResponse } = useContext(UnitContext)
-  const child = useChild(unitId, childId)
-  const childAttendanceStatuses = useAttendanceStatuses(unitId)
+  const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
+  const attendanceStatuses = useQueryResult(attendanceStatusesQuery(unitId))
 
   const [uiMode, setUiMode] = useState<
     | 'default'
@@ -114,10 +116,13 @@ export default React.memo(function AttendanceChildPage() {
           aria-label={i18n.common.back}
         />
         {renderResult(
-          combine(child, group, childAttendanceStatuses),
-          ([child, group, childAttendanceStatuses]) => {
+          combine(child, group, attendanceStatuses),
+          ([child, group, attendanceStatuses]) => {
             if (!child) return null
-            const childAttendance = childAttendanceStatuses.forChild(child.id)
+            const childAttendance = childAttendanceStatus(
+              attendanceStatuses,
+              child.id
+            )
             return (
               <>
                 <Shadow>

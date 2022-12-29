@@ -12,6 +12,7 @@ import React, {
 } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -22,7 +23,7 @@ import { PlainPinInput } from 'lib-components/molecules/PinInput'
 import { H1, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { useChildren } from '../child-attendance/state'
+import { childrenQuery } from '../child-attendance/queries'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
@@ -155,7 +156,7 @@ export const PinLogin = React.memo(function PinLogin() {
     unitId: UUID
     childId: UUID
   }>()
-  const unitChildren = useChildren(unitId)
+  const unitChildren = useQueryResult(childrenQuery(unitId))
 
   const navigate = useNavigate()
   const onClose = useCallback(() => navigate(-1), [navigate])

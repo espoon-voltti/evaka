@@ -11,7 +11,7 @@ import { combine } from 'lib-common/api'
 import { formatTime } from 'lib-common/date'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
-import { useMutationResult, useQueryResult } from 'lib-common/query'
+import { useMutationResult, useQuery, useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { mockNow } from 'lib-common/utils/helpers'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -31,8 +31,13 @@ import { Actions, BackButtonInline, TimeWrapper } from '../../common/components'
 import { useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import DailyNote from '../DailyNote'
-import { createArrivalMutation, returnToPresentMutation } from '../queries'
-import { useAttendanceStatuses, useChild } from '../state'
+import {
+  attendanceStatusesQuery,
+  childrenQuery,
+  createArrivalMutation,
+  returnToPresentMutation
+} from '../queries'
+import { childAttendanceStatus, useChild } from '../utils'
 
 export default React.memo(function MarkPresent() {
   const navigate = useNavigate()
@@ -44,8 +49,7 @@ export default React.memo(function MarkPresent() {
     groupId: string
   }>()
 
-  const child = useChild(unitId, childId)
-  const childAttendanceStatuses = useAttendanceStatuses(unitId)
+  const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 
   const now = mockNow() ?? new Date()
   const [time, setTime] = useState<string>(formatTime(now))
@@ -54,16 +58,15 @@ export default React.memo(function MarkPresent() {
     createArrivalMutation
   )
 
-  const childLatestDeparture = useMemo(
-    () =>
-      childAttendanceStatuses
-        .map((a) => {
-          const attendances = a.forChild(childId).attendances
-          return attendances.length > 0 ? attendances[0].departed : null
-        })
-        .getOrElse(null),
-    [childAttendanceStatuses, childId]
-  )
+  const { data: attendanceStatuses } = useQuery(attendanceStatusesQuery(unitId))
+  const childLatestDeparture = useMemo(() => {
+    if (!attendanceStatuses) return null
+    const attendances = childAttendanceStatus(
+      attendanceStatuses,
+      childId
+    ).attendances
+    return attendances.length > 0 ? attendances[0].departed : null
+  }, [attendanceStatuses, childId])
 
   const isValidTime = useCallback(() => {
     const parsedTime = LocalTime.tryParse(time, 'HH:mm')

@@ -32,12 +32,18 @@ export const queryKeys = createQueryKeys('childAttendance', {
 
 export const childrenQuery = query({
   api: getUnitChildren,
-  queryKey: queryKeys.children
+  queryKey: queryKeys.children,
+  options: {
+    staleTime: 5 * 60 * 1000
+  }
 })
 
 export const attendanceStatusesQuery = query({
   api: getUnitAttendanceStatuses,
-  queryKey: queryKeys.attendanceStatus
+  queryKey: queryKeys.attendanceStatus,
+  options: {
+    staleTime: 5 * 60 * 1000
+  }
 })
 
 export const childDepartureQuery = query({

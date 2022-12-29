@@ -6,12 +6,14 @@ import React, { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
 import { renderPinRequiringResult } from '../auth/renderPinRequiringResult'
-import { useChild } from '../child-attendance/state'
+import { childrenQuery } from '../child-attendance/queries'
+import { useChild } from '../child-attendance/utils'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
 import { TallContentArea } from '../pairing/components'
@@ -27,7 +29,7 @@ export default React.memo(function ChildSensitiveInfoPage() {
     childId: UUID
     unitId: UUID
   }>()
-  const child = useChild(unitId, childId)
+  const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
   const childName = useMemo(
     () =>
       child

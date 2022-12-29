@@ -15,6 +15,7 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { Child, GroupInfo } from 'lib-common/generated/api-types/attendance'
+import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { ContentArea } from 'lib-components/layout/Container'
 import colors from 'lib-customizations/common'
@@ -29,11 +30,8 @@ import { ChildAttendanceUIState, mapChildAttendanceUIState } from '../types'
 
 import AttendanceList from './AttendanceList'
 import ChildList from './ChildList'
-import {
-  ChildAttendanceStatuses,
-  useAttendanceStatuses,
-  useChildren
-} from './state'
+import { attendanceStatusesQuery, childrenQuery } from './queries'
+import { AttendanceStatuses, childAttendanceStatus } from './utils'
 
 export default React.memo(function AttendancePageWrapper() {
   const { unitId, groupId, attendanceStatus } = useNonNullableParams<{
@@ -55,8 +53,8 @@ export default React.memo(function AttendancePageWrapper() {
     [groupId, unitInfoResponse]
   )
 
-  const unitChildren = useChildren(unitId)
-  const childAttendanceStatuses = useAttendanceStatuses(unitId)
+  const unitChildren = useQueryResult(childrenQuery(unitId))
+  const attendanceStatuses = useQueryResult(attendanceStatusesQuery(unitId))
 
   const [showSearch, setShowSearch] = useState<boolean>(false)
 
@@ -84,11 +82,12 @@ export default React.memo(function AttendancePageWrapper() {
           )
           .getOrElse(0),
       getPresentCount: (groupId: string | undefined) =>
-        combine(unitChildren, childAttendanceStatuses)
+        combine(unitChildren, attendanceStatuses)
           .map(([children, attendanceStatuses]) =>
             children.filter(
               (child) =>
-                attendanceStatuses.forChild(child.id).status === 'PRESENT'
+                childAttendanceStatus(attendanceStatuses, child.id).status ===
+                'PRESENT'
             )
           )
           .map((children) =>
@@ -99,18 +98,18 @@ export default React.memo(function AttendancePageWrapper() {
           .getOrElse(0),
       infoText: i18n.attendances.chooseGroupInfo
     }),
-    [childAttendanceStatuses, i18n, unitChildren]
+    [attendanceStatuses, i18n, unitChildren]
   )
 
   return (
     <>
-      {unitChildren.isSuccess && childAttendanceStatuses.isSuccess && (
+      {unitChildren.isSuccess && attendanceStatuses.isSuccess && (
         <ChildSearch
           unitId={unitId}
           show={showSearch}
           toggleShow={toggleSearch}
           unitChildren={unitChildren.value}
-          childAttendanceStatuses={childAttendanceStatuses.value}
+          attendanceStatuses={attendanceStatuses.value}
         />
       )}
       <PageWithNavigation
@@ -121,14 +120,14 @@ export default React.memo(function AttendancePageWrapper() {
         countInfo={countInfo}
       >
         {renderResult(
-          combine(unitChildren, childAttendanceStatuses),
+          combine(unitChildren, attendanceStatuses),
           ([children, attendanceStatuses]) => (
             <AttendanceList
               unitId={unitId}
               groupId={groupId}
               attendanceStatus={mapChildAttendanceUIState(attendanceStatus)}
               unitChildren={children}
-              childAttendanceStatuses={attendanceStatuses}
+              attendanceStatuses={attendanceStatuses}
             />
           )
         )}
@@ -142,13 +141,13 @@ const ChildSearch = React.memo(function Search({
   show,
   toggleShow,
   unitChildren,
-  childAttendanceStatuses
+  attendanceStatuses
 }: {
   unitId: string
   show: boolean
   toggleShow: () => void
   unitChildren: Child[]
-  childAttendanceStatuses: ChildAttendanceStatuses
+  attendanceStatuses: AttendanceStatuses
 }) {
   const { i18n } = useTranslation()
   const containerSpring = useSpring<{ x: number }>({ x: show ? 1 : 0 })
@@ -188,7 +187,7 @@ const ChildSearch = React.memo(function Search({
         <ChildList
           unitId={unitId}
           attendanceChildren={searchResults}
-          childAttendanceStatuses={childAttendanceStatuses}
+          attendanceStatuses={attendanceStatuses}
         />
       </ContentArea>
     </SearchContainer>

@@ -15,14 +15,14 @@ import Tabs from 'lib-components/molecules/Tabs'
 import { useTranslation } from '../common/i18n'
 
 import ChildList from './ChildList'
-import { ChildAttendanceStatuses } from './state'
+import { AttendanceStatuses, childAttendanceStatus } from './utils'
 
 interface Props {
   unitId: UUID
   groupId: UUID | 'all'
   attendanceStatus: AttendanceStatus
   unitChildren: Child[]
-  childAttendanceStatuses: ChildAttendanceStatuses
+  attendanceStatuses: AttendanceStatuses
 }
 
 export default React.memo(function AttendanceList({
@@ -30,7 +30,7 @@ export default React.memo(function AttendanceList({
   groupId,
   attendanceStatus,
   unitChildren,
-  childAttendanceStatuses
+  attendanceStatuses
 }: Props) {
   const { i18n } = useTranslation()
 
@@ -52,19 +52,23 @@ export default React.memo(function AttendanceList({
     () => ({
       totalAttendances: groupChildren.length,
       totalComing: groupChildren.filter(
-        (ac) => childAttendanceStatuses.forChild(ac.id).status === 'COMING'
+        (ac) =>
+          childAttendanceStatus(attendanceStatuses, ac.id).status === 'COMING'
       ).length,
       totalPresent: groupChildren.filter(
-        (ac) => childAttendanceStatuses.forChild(ac.id).status === 'PRESENT'
+        (ac) =>
+          childAttendanceStatus(attendanceStatuses, ac.id).status === 'PRESENT'
       ).length,
       totalDeparted: groupChildren.filter(
-        (ac) => childAttendanceStatuses.forChild(ac.id).status === 'DEPARTED'
+        (ac) =>
+          childAttendanceStatus(attendanceStatuses, ac.id).status === 'DEPARTED'
       ).length,
       totalAbsent: groupChildren.filter(
-        (ac) => childAttendanceStatuses.forChild(ac.id).status === 'ABSENT'
+        (ac) =>
+          childAttendanceStatus(attendanceStatuses, ac.id).status === 'ABSENT'
       ).length
     }),
-    [childAttendanceStatuses, groupChildren]
+    [attendanceStatuses, groupChildren]
   )
 
   const tabs = useMemo(() => {
@@ -116,9 +120,10 @@ export default React.memo(function AttendanceList({
     () =>
       groupChildren.filter(
         (child) =>
-          childAttendanceStatuses.forChild(child.id).status === attendanceStatus
+          childAttendanceStatus(attendanceStatuses, child.id).status ===
+          attendanceStatus
       ),
-    [attendanceStatus, childAttendanceStatuses, groupChildren]
+    [attendanceStatus, attendanceStatuses, groupChildren]
   )
 
   return (
@@ -132,7 +137,7 @@ export default React.memo(function AttendanceList({
         <ChildList
           unitId={unitId}
           attendanceChildren={filteredChildren}
-          childAttendanceStatuses={childAttendanceStatuses}
+          attendanceStatuses={attendanceStatuses}
           type={attendanceStatus}
         />
       </ContentArea>

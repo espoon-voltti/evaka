@@ -33,8 +33,8 @@ import {
 import { useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import DailyNote from '../DailyNote'
-import { createFullDayAbsenceMutation } from '../queries'
-import { useChild } from '../state'
+import { childrenQuery, createFullDayAbsenceMutation } from '../queries'
+import { useChild } from '../utils'
 
 import AbsenceSelector from './AbsenceSelector'
 
@@ -47,7 +47,7 @@ export default React.memo(function MarkAbsent() {
     groupId: string
     childId: string
   }>()
-  const child = useChild(unitId, childId)
+  const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<
     AbsenceType | undefined
