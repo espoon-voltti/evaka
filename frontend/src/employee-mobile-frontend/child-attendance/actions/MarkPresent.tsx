@@ -31,12 +31,8 @@ import { Actions, BackButtonInline, TimeWrapper } from '../../common/components'
 import { useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import DailyNote from '../DailyNote'
-import {
-  childrenQuery,
-  createArrivalMutation,
-  returnToPresentMutation
-} from '../queries'
-import { useAttendanceStatuses } from '../state'
+import { createArrivalMutation, returnToPresentMutation } from '../queries'
+import { useAttendanceStatuses, useChild } from '../state'
 
 export default React.memo(function MarkPresent() {
   const navigate = useNavigate()
@@ -48,7 +44,7 @@ export default React.memo(function MarkPresent() {
     groupId: string
   }>()
 
-  const unitChildren = useQueryResult(childrenQuery(unitId))
+  const child = useChild(unitId, childId)
   const childAttendanceStatuses = useAttendanceStatuses(unitId)
 
   const now = mockNow() ?? new Date()
@@ -56,12 +52,6 @@ export default React.memo(function MarkPresent() {
 
   const { mutateAsync: createArrival } = useMutationResult(
     createArrivalMutation
-  )
-
-  const child = useMemo(
-    () =>
-      unitChildren.map((children) => children.find((ac) => ac.id === childId)),
-    [unitChildren, childId]
   )
 
   const childLatestDeparture = useMemo(

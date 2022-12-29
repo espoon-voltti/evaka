@@ -10,7 +10,6 @@ import styled from 'styled-components'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { groupAbsencesByDateRange } from 'lib-common/utils/absences'
 import { mockNow } from 'lib-common/utils/helpers'
@@ -40,7 +39,7 @@ import {
   getFutureAbsencesByChild,
   postAbsenceRange
 } from '../api'
-import { childrenQuery } from '../queries'
+import { useChild } from '../state'
 
 import AbsenceSelector from './AbsenceSelector'
 
@@ -52,7 +51,7 @@ export default React.memo(function MarkAbsentBeforehand() {
     unitId: string
     childId: string
   }>()
-  const unitChildren = useQueryResult(childrenQuery(unitId))
+  const child = useChild(unitId, childId)
 
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<
     AbsenceType | undefined
@@ -90,12 +89,6 @@ export default React.memo(function MarkAbsentBeforehand() {
       isBefore(new Date(startDate), addDays(new Date(endDate), 1))
     )
   }, [endDate, startDate])
-
-  const child = useMemo(
-    () =>
-      unitChildren.map((children) => children.find((ac) => ac.id === childId)),
-    [unitChildren, childId]
-  )
 
   const createAbsence = useCallback(async () => {
     if (selectedAbsenceType) {

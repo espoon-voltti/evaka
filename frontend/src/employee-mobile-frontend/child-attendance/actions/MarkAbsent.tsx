@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -33,7 +33,8 @@ import {
 import { useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import DailyNote from '../DailyNote'
-import { childrenQuery, createFullDayAbsenceMutation } from '../queries'
+import { createFullDayAbsenceMutation } from '../queries'
+import { useChild } from '../state'
 
 import AbsenceSelector from './AbsenceSelector'
 
@@ -46,7 +47,7 @@ export default React.memo(function MarkAbsent() {
     groupId: string
     childId: string
   }>()
-  const unitChildren = useQueryResult(childrenQuery(unitId))
+  const child = useChild(unitId, childId)
 
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<
     AbsenceType | undefined
@@ -56,11 +57,6 @@ export default React.memo(function MarkAbsent() {
     createFullDayAbsenceMutation
   )
 
-  const child = useMemo(
-    () =>
-      unitChildren.map((children) => children.find((ac) => ac.id === childId)),
-    [unitChildren, childId]
-  )
   const groupNotes = useQueryResult(groupNotesQuery(groupId))
 
   return (

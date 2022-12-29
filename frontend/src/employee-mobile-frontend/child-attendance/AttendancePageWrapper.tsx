@@ -15,7 +15,6 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { Child, GroupInfo } from 'lib-common/generated/api-types/attendance'
-import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { ContentArea } from 'lib-components/layout/Container'
 import colors from 'lib-customizations/common'
@@ -30,8 +29,11 @@ import { ChildAttendanceUIState, mapChildAttendanceUIState } from '../types'
 
 import AttendanceList from './AttendanceList'
 import ChildList from './ChildList'
-import { childrenQuery } from './queries'
-import { ChildAttendanceStatuses, useAttendanceStatuses } from './state'
+import {
+  ChildAttendanceStatuses,
+  useAttendanceStatuses,
+  useChildren
+} from './state'
 
 export default React.memo(function AttendancePageWrapper() {
   const { unitId, groupId, attendanceStatus } = useNonNullableParams<{
@@ -53,7 +55,7 @@ export default React.memo(function AttendancePageWrapper() {
     [groupId, unitInfoResponse]
   )
 
-  const unitChildren = useQueryResult(childrenQuery(unitId))
+  const unitChildren = useChildren(unitId)
   const childAttendanceStatuses = useAttendanceStatuses(unitId)
 
   const [showSearch, setShowSearch] = useState<boolean>(false)

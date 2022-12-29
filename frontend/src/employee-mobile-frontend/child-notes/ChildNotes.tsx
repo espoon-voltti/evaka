@@ -6,13 +6,11 @@ import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Failure, Result, Success } from 'lib-common/api'
-import { Child } from 'lib-common/generated/api-types/attendance'
 import {
   ChildDailyNote,
   ChildStickyNote
 } from 'lib-common/generated/api-types/note'
-import { useQuery, useQueryResult } from 'lib-common/query'
+import { useQuery } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
@@ -23,7 +21,7 @@ import colors from 'lib-customizations/common'
 import { faArrowLeft } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
-import { childrenQuery } from '../child-attendance/queries'
+import { useChild } from '../child-attendance/state'
 import { BackButtonInline } from '../common/components'
 import { useTranslation } from '../common/i18n'
 import { TallContentArea } from '../pairing/components'
@@ -90,23 +88,13 @@ export default React.memo(function ChildNotes() {
     childId: string
     groupId: string
   }>()
-  const unitChildren = useQueryResult(childrenQuery(unitId))
+  const child = useChild(unitId, childId)
 
   const [selectedTab, setSelectedTab] = useState<NoteType>('NOTE')
 
-  const childResult: Result<Child> = useMemo(
-    () =>
-      unitChildren
-        .map((children) => children.find((c) => c.id === childId))
-        .chain((c) =>
-          c ? Success.of(c) : Failure.of({ message: 'Child not found' })
-        ),
-    [unitChildren, childId]
-  )
-
   const dailyNote = useMemo(
     () =>
-      childResult
+      child
         .map((child) =>
           child.dailyNote
             ? {
@@ -116,12 +104,12 @@ export default React.memo(function ChildNotes() {
             : undefined
         )
         .getOrElse(undefined),
-    [childResult]
+    [child]
   )
 
   const stickyNotes = useMemo<ChildStickyNote[]>(
-    () => childResult.map((c) => c.stickyNotes).getOrElse([]),
-    [childResult]
+    () => child.map((c) => c.stickyNotes).getOrElse([]),
+    [child]
   )
 
   const { data: groupNotes } = useQuery(groupNotesQuery(groupId), {
@@ -171,7 +159,7 @@ export default React.memo(function ChildNotes() {
     selectedTab
   ])
 
-  return renderResult(childResult, (child) => (
+  return renderResult(child, (child) => (
     <TallContentArea
       opaque={false}
       paddingHorizontal="zero"

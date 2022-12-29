@@ -6,13 +6,12 @@ import React, { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { useApiState } from 'lib-common/utils/useRestApi'
 
 import { renderPinRequiringResult } from '../auth/renderPinRequiringResult'
-import { childrenQuery } from '../child-attendance/queries'
+import { useChild } from '../child-attendance/state'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
 import { TallContentArea } from '../pairing/components'
@@ -28,15 +27,13 @@ export default React.memo(function ChildSensitiveInfoPage() {
     childId: UUID
     unitId: UUID
   }>()
-  const unitChildren = useQueryResult(childrenQuery(unitId))
-
+  const child = useChild(unitId, childId)
   const childName = useMemo(
     () =>
-      unitChildren
-        .map((children) => children.find((ac) => ac.id === childId))
+      child
         .map((c) => (c ? `${c.firstName} ${c.lastName}` : null))
         .getOrElse(null),
-    [unitChildren, childId]
+    [child]
   )
 
   const [childSensitiveResult] = useApiState(

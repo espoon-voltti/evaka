@@ -8,7 +8,7 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
-import { useMutation, useQueryResult } from 'lib-common/query'
+import { useMutation } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { StaticChip } from 'lib-components/atoms/Chip'
@@ -24,11 +24,10 @@ import { faArrowLeft, faCalendarTimes, faQuestion, farUser } from 'lib-icons'
 import { renderResult } from '../async-rendering'
 import { IconBox } from '../child-attendance/ChildListItem'
 import {
-  childrenQuery,
   deleteChildImageMutation,
   returnToComingMutation
 } from '../child-attendance/queries'
-import { useAttendanceStatuses } from '../child-attendance/state'
+import { useAttendanceStatuses, useChild } from '../child-attendance/state'
 import BottomModalMenu from '../common/BottomModalMenu'
 import { FlexColumn } from '../common/components'
 import { useTranslation } from '../common/i18n'
@@ -56,7 +55,7 @@ export default React.memo(function AttendanceChildPage() {
   }>()
 
   const { unitInfoResponse } = useContext(UnitContext)
-  const unitChildren = useQueryResult(childrenQuery(unitId))
+  const child = useChild(unitId, childId)
   const childAttendanceStatuses = useAttendanceStatuses(unitId)
 
   const [uiMode, setUiMode] = useState<
@@ -76,16 +75,12 @@ export default React.memo(function AttendanceChildPage() {
     deleteChildImageMutation
   )
 
-  const childInfoResult = useMemo(
+  const group = useMemo(
     () =>
-      combine(unitChildren, unitInfoResponse).map(([children, unitInfo]) => {
-        const child = children.find((child) => child.id === childId)
-        const group = child
-          ? unitInfo.groups.find((group) => group.id === child.groupId)
-          : undefined
-        return { child, group }
-      }),
-    [unitChildren, unitInfoResponse, childId]
+      combine(child, unitInfoResponse).map(([child, unitInfo]) =>
+        unitInfo.groups.find((group) => group.id === child.groupId)
+      ),
+    [child, unitInfoResponse]
   )
 
   const returnToComingModal = () => setUiMode('attendance-change-cancel')
@@ -119,8 +114,8 @@ export default React.memo(function AttendanceChildPage() {
           aria-label={i18n.common.back}
         />
         {renderResult(
-          combine(childInfoResult, childAttendanceStatuses),
-          ([{ child, group }, childAttendanceStatuses]) => {
+          combine(child, group, childAttendanceStatuses),
+          ([child, group, childAttendanceStatuses]) => {
             if (!child) return null
             const childAttendance = childAttendanceStatuses.forChild(child.id)
             return (
@@ -256,13 +251,12 @@ export default React.memo(function AttendanceChildPage() {
                   if (uploadInputRef.current) uploadInputRef.current.click()
                 }}
               />
-              {childInfoResult.isSuccess &&
-                !!childInfoResult.value.child?.imageUrl && (
-                  <Button
-                    text={i18n.childInfo.image.modalMenu.deleteImageButton}
-                    onClick={() => setUiMode('img-delete')}
-                  />
-                )}
+              {child.isSuccess && !!child.value.imageUrl && (
+                <Button
+                  text={i18n.childInfo.image.modalMenu.deleteImageButton}
+                  onClick={() => setUiMode('img-delete')}
+                />
+              )}
             </FixedSpaceColumn>
           </BottomModalMenu>
           <input
