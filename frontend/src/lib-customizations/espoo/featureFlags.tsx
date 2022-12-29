@@ -23,6 +23,7 @@ const features: Features = {
       connectedDaycarePreferredStartDate: true,
       serviceNeedOption: false
     },
+    decisionDraftMultipleUnits: false,
     groupsTableServiceNeeds: false,
     preschool: true,
     preparatory: true,
@@ -47,6 +48,7 @@ const features: Features = {
       connectedDaycarePreferredStartDate: true,
       serviceNeedOption: false
     },
+    decisionDraftMultipleUnits: false,
     groupsTableServiceNeeds: false,
     preschool: true,
     preparatory: true,
@@ -70,6 +72,7 @@ const features: Features = {
       connectedDaycarePreferredStartDate: true,
       serviceNeedOption: false
     },
+    decisionDraftMultipleUnits: false,
     groupsTableServiceNeeds: false,
     preschool: true,
     preparatory: true,

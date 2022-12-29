@@ -112,6 +112,7 @@ interface BaseFeatureFlags {
     connectedDaycarePreferredStartDate: boolean
     serviceNeedOption: boolean
   }
+  decisionDraftMultipleUnits: boolean
   groupsTableServiceNeeds: boolean
   preschool: boolean
   preparatory: boolean

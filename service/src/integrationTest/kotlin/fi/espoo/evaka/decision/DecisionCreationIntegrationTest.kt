@@ -11,7 +11,7 @@ import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ChildInfo
 import fi.espoo.evaka.application.DaycarePlacementPlan
-import fi.espoo.evaka.application.DecisionDraftJSON
+import fi.espoo.evaka.application.DecisionDraftGroup
 import fi.espoo.evaka.application.GuardianInfo
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.CareDetails
@@ -299,9 +299,9 @@ WHERE id = :unitId
             http
                 .get("/v2/applications/$applicationId/decision-drafts")
                 .asUser(serviceWorker)
-                .responseObject<DecisionDraftJSON>(jsonMapper)
+                .responseObject<DecisionDraftGroup>(jsonMapper)
         assertEquals(
-            DecisionDraftJSON(
+            DecisionDraftGroup(
                 decisions = decisions.sortedBy { it.type },
                 placementUnitName = "Test Daycare",
                 unit =

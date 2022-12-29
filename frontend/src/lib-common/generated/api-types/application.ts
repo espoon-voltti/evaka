@@ -384,9 +384,9 @@ export interface DaycarePlacementPlan {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.DecisionDraftJSON
+* Generated from fi.espoo.evaka.application.DecisionDraftGroup
 */
-export interface DecisionDraftJSON {
+export interface DecisionDraftGroup {
   child: ChildInfo
   decisions: DecisionDraft[]
   guardian: GuardianInfo
