@@ -9,6 +9,7 @@ import styled from 'styled-components'
 import { ChildContext } from 'employee-frontend/state'
 import { Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { Action } from 'lib-common/generated/action'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
@@ -43,6 +44,8 @@ import ServiceNeeds from './ServiceNeeds'
 
 interface Props {
   placement: DaycarePlacementWithDetails
+  permittedActions: Action.Placement[]
+  permittedServiceNeedActions: Record<string, Action.ServiceNeed[]>
   onRefreshNeeded: () => void
   checkOverlaps: (
     range: DateRange,
@@ -89,6 +92,8 @@ const CompactDatePicker = styled(DatePickerDeprecated)`
 
 export default React.memo(function PlacementRow({
   placement,
+  permittedActions,
+  permittedServiceNeedActions,
   onRefreshNeeded,
   checkOverlaps,
   serviceNeedOptions
@@ -254,23 +259,9 @@ export default React.memo(function PlacementRow({
             dateRange={placement}
             onEdit={() => startEdit()}
             dataQaEdit="btn-edit-placement"
-            editableFor={[
-              'ADMIN',
-              'SERVICE_WORKER',
-              'FINANCE_ADMIN',
-              'UNIT_SUPERVISOR'
-            ]}
+            editable={permittedActions.includes('UPDATE')}
             onDelete={() => setConfirmingDelete(true)}
-            deletableFor={
-              placement.startDate.isAfter(LocalDate.todayInSystemTz())
-                ? [
-                    'ADMIN',
-                    'SERVICE_WORKER',
-                    'FINANCE_ADMIN',
-                    'UNIT_SUPERVISOR'
-                  ]
-                : ['ADMIN', 'SERVICE_WORKER', 'FINANCE_ADMIN']
-            }
+            deletable={permittedActions.includes('DELETE')}
             dataQaDelete="btn-remove-placement"
             warning={
               placement.missingServiceNeedDays > 0
@@ -445,6 +436,8 @@ export default React.memo(function PlacementRow({
 
         <ServiceNeeds
           placement={placement}
+          permittedPlacementActions={permittedActions}
+          permittedServiceNeedActions={permittedServiceNeedActions}
           reload={onRefreshNeeded}
           serviceNeedOptions={serviceNeedOptions}
         />

@@ -5,7 +5,7 @@
 import { Failure, Result, Success } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
-  DaycarePlacementWithDetails,
+  PlacementResponse,
   PlacementType
 } from 'lib-common/generated/api-types/placement'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -43,55 +43,58 @@ export async function createPlacement(
 
 export async function getPlacements(
   childId: UUID
-): Promise<Result<DaycarePlacementWithDetails[]>> {
+): Promise<Result<PlacementResponse>> {
   const config = {
     params: {
       childId
     }
   }
   return client
-    .get<JsonOf<DaycarePlacementWithDetails[]>>('/placements', config)
+    .get<JsonOf<PlacementResponse>>('/placements', config)
     .then((res) => res.data)
-    .then((data) =>
-      data.map((p) => ({
-        ...p,
-        child: {
-          ...p.child,
-          dateOfBirth: LocalDate.parseIso(p.child.dateOfBirth)
-        },
-        startDate: LocalDate.parseIso(p.startDate),
-        endDate: LocalDate.parseIso(p.endDate),
-        terminationRequestedDate: p.terminationRequestedDate
-          ? LocalDate.parseIso(p.terminationRequestedDate)
-          : null,
-        groupPlacements: p.groupPlacements.map((gp) => ({
-          ...gp,
-          startDate: LocalDate.parseIso(gp.startDate),
-          endDate: LocalDate.parseIso(gp.endDate)
-        })),
-        updated: p.updated ? HelsinkiDateTime.parseIso(p.updated) : null,
-        serviceNeeds: p.serviceNeeds.map((sn) => ({
-          ...sn,
-          startDate: LocalDate.parseIso(sn.startDate),
-          endDate: LocalDate.parseIso(sn.endDate),
-          option: {
-            ...sn.option,
-            updated: HelsinkiDateTime.parseIso(sn.option.updated)
+    .then((data) => {
+      return {
+        ...data,
+        placements: data.placements.map((p) => ({
+          ...p,
+          child: {
+            ...p.child,
+            dateOfBirth: LocalDate.parseIso(p.child.dateOfBirth)
           },
-          updated: HelsinkiDateTime.parseIso(sn.updated),
-          confirmed:
-            sn.confirmed != null
-              ? {
-                  ...sn.confirmed,
-                  at:
-                    sn.confirmed.at != null
-                      ? HelsinkiDateTime.parseIso(sn.confirmed.at)
-                      : null
-                }
-              : null
+          startDate: LocalDate.parseIso(p.startDate),
+          endDate: LocalDate.parseIso(p.endDate),
+          terminationRequestedDate: p.terminationRequestedDate
+            ? LocalDate.parseIso(p.terminationRequestedDate)
+            : null,
+          groupPlacements: p.groupPlacements.map((gp) => ({
+            ...gp,
+            startDate: LocalDate.parseIso(gp.startDate),
+            endDate: LocalDate.parseIso(gp.endDate)
+          })),
+          updated: p.updated ? HelsinkiDateTime.parseIso(p.updated) : null,
+          serviceNeeds: p.serviceNeeds.map((sn) => ({
+            ...sn,
+            startDate: LocalDate.parseIso(sn.startDate),
+            endDate: LocalDate.parseIso(sn.endDate),
+            option: {
+              ...sn.option,
+              updated: HelsinkiDateTime.parseIso(sn.option.updated)
+            },
+            updated: HelsinkiDateTime.parseIso(sn.updated),
+            confirmed:
+              sn.confirmed != null
+                ? {
+                    ...sn.confirmed,
+                    at:
+                      sn.confirmed.at != null
+                        ? HelsinkiDateTime.parseIso(sn.confirmed.at)
+                        : null
+                  }
+                : null
+          }))
         }))
-      }))
-    )
+      }
+    })
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }

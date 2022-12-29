@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
@@ -30,6 +31,7 @@ import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.user.EvakaUser
 import java.time.LocalDate
@@ -649,6 +651,12 @@ data class DaycarePlacementWithDetails(
     val terminationRequestedDate: LocalDate?,
     val terminatedBy: EvakaUser?,
     val updated: HelsinkiDateTime?
+)
+
+data class PlacementResponse(
+    val placements: Set<DaycarePlacementWithDetails>,
+    val permittedPlacementActions: Map<PlacementId, Set<Action.Placement>>,
+    val permittedServiceNeedActions: Map<ServiceNeedId, Set<Action.ServiceNeed>>,
 )
 
 data class DaycareGroupPlacement(

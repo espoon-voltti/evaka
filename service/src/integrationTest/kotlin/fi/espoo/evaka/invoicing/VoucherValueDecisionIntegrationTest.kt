@@ -16,9 +16,9 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.pis.controllers.ParentshipController
-import fi.espoo.evaka.placement.DaycarePlacementWithDetails
 import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementCreateRequestBody
+import fi.espoo.evaka.placement.PlacementResponse
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementUpdateRequestBody
 import fi.espoo.evaka.serviceneed.ServiceNeedController
@@ -549,11 +549,11 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             http
                 .get("/placements", listOf("childId" to childId))
                 .asUser(serviceWorker)
-                .responseObject<List<DaycarePlacementWithDetails>>(jsonMapper)
+                .responseObject<PlacementResponse>(jsonMapper)
 
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
 
-        return data.get().first().id
+        return data.get().placements.first().id
     }
 
     private fun addServiceNeed(

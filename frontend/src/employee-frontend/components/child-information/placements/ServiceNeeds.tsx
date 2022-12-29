@@ -7,12 +7,14 @@ import React, { useMemo, useState } from 'react'
 import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { Action } from 'lib-common/generated/action'
 import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import {
   ServiceNeed,
   ServiceNeedOption
 } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -22,7 +24,6 @@ import { faPlus, faQuestion } from 'lib-icons'
 import { deleteServiceNeed } from '../../../api/child/service-needs'
 import { useTranslation } from '../../../state/i18n'
 import { DateRange } from '../../../utils/date'
-import { RequireRole } from '../../../utils/roles'
 
 import MissingServiceNeedRow from './service-needs/MissingServiceNeedRow'
 import ServiceNeedEditorRow from './service-needs/ServiceNeedEditorRow'
@@ -30,12 +31,16 @@ import ServiceNeedReadRow from './service-needs/ServiceNeedReadRow'
 
 interface Props {
   placement: DaycarePlacementWithDetails
+  permittedPlacementActions: Action.Placement[]
+  permittedServiceNeedActions: Record<UUID, Action.ServiceNeed[]>
   reload: () => void
   serviceNeedOptions: ServiceNeedOption[]
 }
 
 export default React.memo(function ServiceNeeds({
   placement,
+  permittedPlacementActions,
+  permittedServiceNeedActions,
   reload,
   serviceNeedOptions
 }: Props) {
@@ -48,7 +53,7 @@ export default React.memo(function ServiceNeeds({
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
-  const gaps: DateRange[] = useMemo(
+  const gaps = useMemo(
     () =>
       new FiniteDateRange(placement.startDate, placement.endDate)
         .getGaps(
@@ -73,19 +78,23 @@ export default React.memo(function ServiceNeeds({
     (opt) => opt.validPlacementType === placementType && !opt.defaultOption
   )
 
+  const createAllowed = permittedPlacementActions.includes(
+    'CREATE_SERVICE_NEED'
+  )
+
   // if only default option exists service needs are not relevant and do not need to be rendered
   return placementHasNonDefaultServiceNeedOptions ? (
     <div>
       <HeaderRow>
         <H4 noMargin>{t.title}</H4>
-        <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
+        {createAllowed && (
           <InlineButton
             onClick={() => setCreatingNew(true)}
             text={t.createNewBtn}
             icon={faPlus}
             disabled={creatingNew !== false || editingId !== null}
           />
-        </RequireRole>
+        )}
       </HeaderRow>
 
       <Table>
@@ -143,6 +152,7 @@ export default React.memo(function ServiceNeeds({
                 <ServiceNeedReadRow
                   key={sn.id}
                   serviceNeed={sn}
+                  permittedActions={permittedServiceNeedActions[sn.id] ?? []}
                   onEdit={() => setEditingId(sn.id)}
                   onDelete={() => setDeletingId(sn.id)}
                   disabled={creatingNew !== false || editingId !== null}
@@ -168,6 +178,7 @@ export default React.memo(function ServiceNeeds({
               />
             ) : (
               <MissingServiceNeedRow
+                createAllowed={createAllowed}
                 key={sn.startDate.toJSON()}
                 startDate={sn.startDate}
                 endDate={sn.endDate}

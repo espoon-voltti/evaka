@@ -8,6 +8,7 @@
 import FiniteDateRange from '../../finite-date-range'
 import HelsinkiDateTime from '../../helsinki-date-time'
 import LocalDate from '../../local-date'
+import { Action } from '../action'
 import { EvakaUser } from './user'
 import { Language } from './daycare'
 import { PilotFeature } from './shared'
@@ -232,6 +233,15 @@ export type PlacementPlanRejectReason =
   | 'REASON_1'
   | 'REASON_2'
   | 'REASON_3'
+
+/**
+* Generated from fi.espoo.evaka.placement.PlacementResponse
+*/
+export interface PlacementResponse {
+  permittedPlacementActions: Record<string, Action.Placement[]>
+  permittedServiceNeedActions: Record<string, Action.ServiceNeed[]>
+  placements: DaycarePlacementWithDetails[]
+}
 
 /**
 * Generated from fi.espoo.evaka.placement.PlacementControllerCitizen.PlacementTerminationRequestBody

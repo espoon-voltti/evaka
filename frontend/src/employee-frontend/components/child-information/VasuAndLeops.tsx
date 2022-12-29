@@ -15,7 +15,7 @@ import styled from 'styled-components'
 import { combine, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
-  DaycarePlacementWithDetails,
+  PlacementResponse,
   PlacementType
 } from 'lib-common/generated/api-types/placement'
 import {
@@ -116,7 +116,7 @@ function VasuInitialization({
 }: {
   childId: UUID
   allowCreation: boolean
-  placements: Result<DaycarePlacementWithDetails[]>
+  placements: Result<PlacementResponse>
 }) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
@@ -128,7 +128,7 @@ function VasuInitialization({
   const filteredTemplates = useMemo(
     () =>
       templates
-        ? combine(placements, templates).map(([placements, templates]) => {
+        ? combine(placements, templates).map(([{ placements }, templates]) => {
             const currentPlacement = placements.find(({ startDate, endDate }) =>
               new FiniteDateRange(startDate, endDate).includes(
                 LocalDate.todayInHelsinkiTz()
@@ -284,7 +284,7 @@ export default React.memo(function VasuAndLeops({
       placements
         .map(
           (ps) =>
-            !ps.some((placement) =>
+            !ps.placements.some((placement) =>
               placement.daycare.enabledPilotFeatures.includes(
                 'VASU_AND_PEDADOC'
               )

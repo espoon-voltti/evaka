@@ -50,7 +50,7 @@ export default React.memo(function Placements({ id, startOpen }: Props) {
     placements
       .map(
         (ps) =>
-          ps
+          ps.placements
             .filter((p) => p.id !== placement.id)
             .filter((p) => rangesOverlap(range, p)).length > 0
       )
@@ -89,23 +89,31 @@ export default React.memo(function Placements({ id, startOpen }: Props) {
           combine(serviceNeedOptions, placements),
           ([serviceNeedOptions, placements]) => (
             <div>
-              {orderBy(placements, ['startDate'], ['desc']).map((p, i) => (
-                <Fragment key={p.id}>
-                  <PlacementRow
-                    placement={p}
-                    onRefreshNeeded={() => {
-                      loadPlacements()
-                      void loadBackupCares()
-                      reloadPermittedActions()
-                    }}
-                    checkOverlaps={checkOverlaps}
-                    serviceNeedOptions={serviceNeedOptions}
-                  />
-                  {i < placements.length - 1 && (
-                    <div className="separator large" />
-                  )}
-                </Fragment>
-              ))}
+              {orderBy(placements.placements, ['startDate'], ['desc']).map(
+                (p, i) => (
+                  <Fragment key={p.id}>
+                    <PlacementRow
+                      placement={p}
+                      permittedActions={
+                        placements.permittedPlacementActions[p.id] ?? []
+                      }
+                      permittedServiceNeedActions={
+                        placements.permittedServiceNeedActions
+                      }
+                      onRefreshNeeded={() => {
+                        loadPlacements()
+                        void loadBackupCares()
+                        reloadPermittedActions()
+                      }}
+                      checkOverlaps={checkOverlaps}
+                      serviceNeedOptions={serviceNeedOptions}
+                    />
+                    {i < placements.placements.length - 1 && (
+                      <div className="separator large" />
+                    )}
+                  </Fragment>
+                )
+              )}
             </div>
           )
         )}

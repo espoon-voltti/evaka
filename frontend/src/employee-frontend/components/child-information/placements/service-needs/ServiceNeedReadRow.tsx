@@ -4,6 +4,7 @@
 
 import React from 'react'
 
+import { Action } from 'lib-common/generated/action'
 import { ServiceNeed } from 'lib-common/generated/api-types/serviceneed'
 import Tooltip from 'lib-components/atoms/Tooltip'
 import { Td, Tr } from 'lib-components/layout/Table'
@@ -13,6 +14,7 @@ import Toolbar from '../../../common/Toolbar'
 
 interface ServiceNeedReadRowProps {
   serviceNeed: ServiceNeed
+  permittedActions: Action.ServiceNeed[]
   onEdit: () => void
   onDelete: () => void
   disabled?: boolean
@@ -20,6 +22,7 @@ interface ServiceNeedReadRowProps {
 
 function ServiceNeedReadRow({
   serviceNeed,
+  permittedActions,
   onEdit,
   onDelete,
   disabled
@@ -41,9 +44,9 @@ function ServiceNeedReadRow({
         <Toolbar
           dateRange={serviceNeed}
           onEdit={onEdit}
-          editableFor={['ADMIN', 'UNIT_SUPERVISOR']}
+          editable={permittedActions.includes('UPDATE')}
           onDelete={onDelete}
-          deletableFor={['ADMIN', 'UNIT_SUPERVISOR']}
+          deletable={permittedActions.includes('DELETE')}
           disableAll={disabled}
         />
       </Td>
