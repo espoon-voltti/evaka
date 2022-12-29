@@ -32,7 +32,10 @@ const queryKeys = createQueryKeys('notes', {
 
 export const groupNotesQuery = query({
   api: getGroupNotes,
-  queryKey: queryKeys.ofGroup
+  queryKey: queryKeys.ofGroup,
+  options: {
+    staleTime: 5 * 60 * 1000
+  }
 })
 
 export const createGroupNoteMutation = mutation({
