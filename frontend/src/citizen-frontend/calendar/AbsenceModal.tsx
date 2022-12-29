@@ -98,6 +98,9 @@ export default React.memo(function AbsenceModal({
         : false,
     [availableChildren]
   )
+  const showContractDayAbsenceType = availableChildren.some(
+    ({ hasContractDays }) => hasContractDays
+  )
 
   return (
     <ModalAccessibilityWrapper>
@@ -198,7 +201,7 @@ export default React.memo(function AbsenceModal({
                     }
                     data-qa="absence-OTHER_ABSENCE"
                   />
-                  {showShiftCareAbsenceType && (
+                  {(showShiftCareAbsenceType || showContractDayAbsenceType) && (
                     <ChoiceChip
                       text={
                         i18n.calendar.absenceModal.absenceTypes.PLANNED_ABSENCE

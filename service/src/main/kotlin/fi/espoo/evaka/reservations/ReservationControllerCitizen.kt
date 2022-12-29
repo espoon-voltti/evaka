@@ -228,7 +228,8 @@ data class ReservationChild(
     val imageId: ChildImageId?,
     val placements: List<FiniteDateRange>,
     val maxOperationalDays: Set<Int>,
-    val inShiftCareUnit: Boolean
+    val inShiftCareUnit: Boolean,
+    val hasContractDays: Boolean
 )
 
 data class AbsenceRequest(
@@ -335,7 +336,8 @@ SELECT
     ci.id AS image_id,
     p.placements,
     p.max_operational_days,
-    p.in_shift_care_unit
+    p.in_shift_care_unit,
+    p.has_contract_days
 FROM person ch
 JOIN children c ON ch.id = c.child_id
 LEFT JOIN child_images ci ON ci.child_id = ch.id
@@ -344,16 +346,20 @@ LEFT JOIN (
         p.child_id,
         array_agg(DISTINCT daterange(p.start_date, p.end_date, '[]')) as placements,
         array_agg(DISTINCT p.operation_days) AS max_operational_days,
-        bool_or(p.round_the_clock) AS in_shift_care_unit
+        bool_or(p.round_the_clock) AS in_shift_care_unit,
+        bool_or(p.contract_days_per_month IS NOT NULL) AS has_contract_days
     FROM (
-             SELECT pl.start_date, pl.end_date, unnest(u.operation_days) AS operation_days, u.round_the_clock, pl.child_id
+             SELECT pl.start_date, pl.end_date, unnest(u.operation_days) AS operation_days, u.round_the_clock, pl.child_id, coalesce(sno.contract_days_per_month, sno_default.contract_days_per_month) AS contract_days_per_month
              FROM placement pl
              JOIN daycare u ON pl.unit_id = u.id
+             LEFT JOIN service_need sn ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') && :range
+             LEFT JOIN service_need_option sno ON sno.id = sn.option_id
+             LEFT JOIN service_need_option sno_default ON sno_default.valid_placement_type = pl.type AND sno_default.default_option
              WHERE daterange(pl.start_date, pl.end_date, '[]') && :range AND 'RESERVATIONS' = ANY(u.enabled_pilot_features)
 
              UNION ALL
 
-             SELECT bc.start_date, bc.end_date, unnest(u.operation_days) AS operation_days, u.round_the_clock, bc.child_id
+             SELECT bc.start_date, bc.end_date, unnest(u.operation_days) AS operation_days, u.round_the_clock, bc.child_id, NULL AS contract_days_per_month
              FROM backup_care bc
              JOIN daycare u ON bc.unit_id = u.id
              WHERE daterange(bc.start_date, bc.end_date, '[]') && :range AND 'RESERVATIONS' = ANY(u.enabled_pilot_features)
