@@ -9,7 +9,6 @@ import {
   AttendanceStatus,
   Child
 } from 'lib-common/generated/api-types/attendance'
-import { GroupNote } from 'lib-common/generated/api-types/note'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import {
   defaultMargins,
@@ -27,7 +26,6 @@ interface Props {
   unitId: string
   attendanceChildren: Child[]
   childAttendanceStatuses: ChildAttendanceStatuses
-  groupsNotes: GroupNote[]
   type?: AttendanceStatus
 }
 
@@ -40,13 +38,9 @@ export default React.memo(function ChildList({
   unitId,
   attendanceChildren,
   childAttendanceStatuses,
-  type,
-  groupsNotes
+  type
 }: Props) {
   const { i18n } = useTranslation()
-
-  const getGroupNote = (child: Child): GroupNote | undefined =>
-    groupsNotes.find(({ groupId }) => groupId == child.groupId)
 
   return (
     <FixedSpaceColumn>
@@ -61,7 +55,6 @@ export default React.memo(function ChildList({
                 attendanceStatus={
                   childAttendanceStatuses.forChild(ac.id).status
                 }
-                groupNote={getGroupNote(ac)}
                 childAttendanceUrl={`/units/${unitId}/groups/${
                   ac.groupId ?? 'all'
                 }/child-attendance/${ac.id}`}

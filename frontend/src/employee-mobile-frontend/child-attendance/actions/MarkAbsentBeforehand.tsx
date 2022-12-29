@@ -93,9 +93,7 @@ export default React.memo(function MarkAbsentBeforehand() {
 
   const child = useMemo(
     () =>
-      unitChildren.map((response) =>
-        response.children.find((ac) => ac.id === childId)
-      ),
+      unitChildren.map((children) => children.find((ac) => ac.id === childId)),
     [unitChildren, childId]
   )
 

@@ -37,13 +37,11 @@ const getStickyNoteTabLabels = (i18n: Translations): StickyNoteTabLabels => ({
 })
 
 interface Props {
-  unitId: UUID
   groupId: UUID
   notes: GroupNote[]
 }
 
 export const GroupNotesTab = React.memo(function GroupNotesTab({
-  unitId,
   groupId,
   notes
 }: Props) {
@@ -61,13 +59,13 @@ export const GroupNotesTab = React.memo(function GroupNotesTab({
   const onSave = useCallback(
     ({ id, ...body }: EditedNote) =>
       id
-        ? updateGroupNote({ unitId, id, body })
-        : createGroupNote({ unitId, groupId, body }),
-    [createGroupNote, updateGroupNote, unitId, groupId]
+        ? updateGroupNote({ groupId, id, body })
+        : createGroupNote({ groupId, body }),
+    [createGroupNote, updateGroupNote, groupId]
   )
   const onRemove = useCallback(
-    (id: string) => deleteGroupNote({ unitId, id }),
-    [deleteGroupNote, unitId]
+    (id: string) => deleteGroupNote({ groupId, id }),
+    [deleteGroupNote, groupId]
   )
   const labels = useMemo<StickyNoteTabLabels>(
     () => getStickyNoteTabLabels(i18n),

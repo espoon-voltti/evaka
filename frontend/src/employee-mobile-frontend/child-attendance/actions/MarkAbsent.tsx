@@ -23,6 +23,7 @@ import colors from 'lib-customizations/common'
 import { faArrowLeft, farStickyNote } from 'lib-icons'
 
 import { renderResult } from '../../async-rendering'
+import { groupNotesQuery } from '../../child-notes/queries'
 import {
   Actions,
   BackButtonInline,
@@ -57,19 +58,10 @@ export default React.memo(function MarkAbsent() {
 
   const child = useMemo(
     () =>
-      unitChildren.map((attendance) =>
-        attendance.children.find((ac) => ac.id === childId)
-      ),
+      unitChildren.map((children) => children.find((ac) => ac.id === childId)),
     [unitChildren, childId]
   )
-
-  const groupNote = useMemo(
-    () =>
-      unitChildren.map((attendance) =>
-        attendance.groupNotes.find((g) => g.groupId === groupId)
-      ),
-    [unitChildren, groupId]
-  )
+  const groupNotes = useQueryResult(groupNotesQuery(groupId))
 
   return (
     <TallContentArea
@@ -77,7 +69,7 @@ export default React.memo(function MarkAbsent() {
       paddingHorizontal="zero"
       paddingVertical="zero"
     >
-      {renderResult(combine(child, groupNote), ([child, groupNote]) => (
+      {renderResult(combine(child, groupNotes), ([child, groupNotes]) => (
         <>
           <BackButtonInline
             onClick={() => navigate(-2)}
@@ -149,7 +141,7 @@ export default React.memo(function MarkAbsent() {
               </span>
               <DailyNote
                 child={child ? child : undefined}
-                groupNote={groupNote ? groupNote : undefined}
+                groupNote={groupNotes.length > 0 ? groupNotes[0] : undefined}
               />
             </DailyNotes>
           </ContentArea>

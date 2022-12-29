@@ -5,11 +5,29 @@
 import {
   ChildDailyNoteBody,
   ChildStickyNoteBody,
+  GroupNote,
   GroupNoteBody
 } from 'lib-common/generated/api-types/note'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { client } from '../client'
+
+export function getGroupNotes(groupId: UUID): Promise<GroupNote[]> {
+  return client
+    .get<JsonOf<GroupNote[]>>(`/daycare-groups/${groupId}/group-notes`)
+    .then((res) => res.data.map(deserializeGroupNote))
+}
+
+function deserializeGroupNote(data: JsonOf<GroupNote>): GroupNote {
+  return {
+    ...data,
+    expires: LocalDate.parseIso(data.expires),
+    modifiedAt: HelsinkiDateTime.parseIso(data.modifiedAt)
+  }
+}
 
 export function createGroupNote({
   groupId,

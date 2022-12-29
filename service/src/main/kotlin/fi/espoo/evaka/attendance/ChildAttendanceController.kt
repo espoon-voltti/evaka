@@ -12,7 +12,6 @@ import fi.espoo.evaka.daycare.service.AbsenceUpsert
 import fi.espoo.evaka.daycare.service.insertAbsences
 import fi.espoo.evaka.note.child.daily.getChildDailyNotesInUnit
 import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForUnit
-import fi.espoo.evaka.note.group.getGroupNotesForUnit
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementType.DAYCARE_FIVE_YEAR_OLDS
 import fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
@@ -31,7 +30,6 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.Duration
@@ -70,28 +68,53 @@ class ChildAttendanceController(
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId
-    ): ChildrenResponse {
+    ): List<Child> {
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Unit.READ_CHILD_ATTENDANCES,
                         unitId
                     )
+                    val now = clock.now()
+                    val today = now.toLocalDate()
 
-                    it.getChildrenResponse(unitId, clock.now())
+                    val childrenBasics = tx.fetchChildrenBasics(unitId, now)
+                    val dailyNotesForChildrenInUnit = tx.getChildDailyNotesInUnit(unitId, today)
+                    val stickyNotesForChildrenInUnit = tx.getChildStickyNotesForUnit(unitId, today)
+                    val attendanceReservations = tx.fetchAttendanceReservations(unitId, now)
+
+                    childrenBasics.map { child ->
+                        val dailyNote =
+                            dailyNotesForChildrenInUnit.firstOrNull { it.childId == child.id }
+                        val stickyNotes =
+                            stickyNotesForChildrenInUnit.filter { it.childId == child.id }
+
+                        Child(
+                            id = child.id,
+                            firstName = child.firstName,
+                            lastName = child.lastName,
+                            preferredName = child.preferredName,
+                            placementType = child.placementType,
+                            groupId = child.groupId,
+                            backup = child.backup,
+                            dailyServiceTimes = child.dailyServiceTimes?.times,
+                            dailyNote = dailyNote,
+                            stickyNotes = stickyNotes,
+                            imageUrl = child.imageUrl,
+                            reservations =
+                                attendanceReservations[child.id]?.sortedBy { it.startTime }
+                                    ?: listOf()
+                        )
+                    }
                 }
             }
             .also {
                 Audit.ChildAttendanceChildrenRead.log(
                     targetId = unitId,
-                    meta =
-                        mapOf(
-                            "childCount" to it.children.size,
-                            "groupNoteCount" to it.groupNotes.size
-                        )
+                    meta = mapOf("childCount" to it.size)
                 )
             }
     }
@@ -598,42 +621,6 @@ private fun Database.Read.fetchChildPlacementTypeDates(
         .bind("endDate", endDate)
         .mapTo<PlacementTypeDate>()
         .list()
-}
-
-private fun Database.Read.getChildrenResponse(
-    unitId: DaycareId,
-    now: HelsinkiDateTime
-): ChildrenResponse {
-    val today = now.toLocalDate()
-    val childrenBasics = fetchChildrenBasics(unitId, now)
-    val dailyNotesForChildrenInUnit = getChildDailyNotesInUnit(unitId, today)
-    val stickyNotesForChildrenInUnit = getChildStickyNotesForUnit(unitId, today)
-    val attendanceReservations = fetchAttendanceReservations(unitId, now)
-
-    val children =
-        childrenBasics.map { child ->
-            val dailyNote = dailyNotesForChildrenInUnit.firstOrNull { it.childId == child.id }
-            val stickyNotes = stickyNotesForChildrenInUnit.filter { it.childId == child.id }
-
-            Child(
-                id = child.id,
-                firstName = child.firstName,
-                lastName = child.lastName,
-                preferredName = child.preferredName,
-                placementType = child.placementType,
-                groupId = child.groupId,
-                backup = child.backup,
-                dailyServiceTimes = child.dailyServiceTimes?.times,
-                dailyNote = dailyNote,
-                stickyNotes = stickyNotes,
-                imageUrl = child.imageUrl,
-                reservations = attendanceReservations[child.id]?.sortedBy { it.startTime }
-                        ?: listOf()
-            )
-        }
-
-    val groupNotes = getGroupNotesForUnit(unitId)
-    return ChildrenResponse(children, groupNotes)
 }
 
 private fun getChildAttendanceStatus(

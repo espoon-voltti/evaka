@@ -421,7 +421,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
     private fun getChildren(
         unitId: DaycareId = testDaycare.id,
         user: AuthenticatedUser = mobileUser
-    ): ChildrenResponse {
+    ): List<Child> {
         return childAttendanceController.getChildren(
             dbInstance(),
             user,
@@ -434,17 +434,17 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         unitId: DaycareId = testDaycare.id,
         user: AuthenticatedUser = mobileUser
     ): Child {
-        val response = getChildren(unitId, user)
-        assertEquals(1, response.children.size)
-        return response.children[0]
+        val children = getChildren(unitId, user)
+        assertEquals(1, children.size)
+        return children[0]
     }
 
     private fun expectNoChildren(
         unitId: DaycareId = testDaycare.id,
         user: AuthenticatedUser = mobileUser
     ) {
-        val response = getChildren(unitId, user)
-        assertEquals(0, response.children.size)
+        val children = getChildren(unitId, user)
+        assertEquals(0, children.size)
     }
 
     private fun getAttendanceStatuses(

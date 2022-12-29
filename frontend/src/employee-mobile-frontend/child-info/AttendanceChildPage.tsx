@@ -78,21 +78,13 @@ export default React.memo(function AttendanceChildPage() {
 
   const childInfoResult = useMemo(
     () =>
-      combine(unitChildren, unitInfoResponse).map(
-        ([{ children, groupNotes }, unitInfo]) => {
-          const child = children.find((child) => child.id === childId)
-
-          const group = child
-            ? unitInfo.groups.find((group) => group.id === child.groupId)
-            : undefined
-
-          const hasGroupNote = child
-            ? !!groupNotes.find((g) => g.groupId === child.groupId)
-            : false
-
-          return { child, group, hasGroupNote }
-        }
-      ),
+      combine(unitChildren, unitInfoResponse).map(([children, unitInfo]) => {
+        const child = children.find((child) => child.id === childId)
+        const group = child
+          ? unitInfo.groups.find((group) => group.id === child.groupId)
+          : undefined
+        return { child, group }
+      }),
     [unitChildren, unitInfoResponse, childId]
   )
 
@@ -128,7 +120,7 @@ export default React.memo(function AttendanceChildPage() {
         />
         {renderResult(
           combine(childInfoResult, childAttendanceStatuses),
-          ([{ child, group, hasGroupNote }, childAttendanceStatuses]) => {
+          ([{ child, group }, childAttendanceStatuses]) => {
             if (!child) return null
             const childAttendance = childAttendanceStatuses.forChild(child.id)
             return (
@@ -183,7 +175,6 @@ export default React.memo(function AttendanceChildPage() {
                       unitId={unitId}
                       groupId={groupId}
                       child={child}
-                      hasGroupNote={hasGroupNote}
                     />
                   </Zindex>
 

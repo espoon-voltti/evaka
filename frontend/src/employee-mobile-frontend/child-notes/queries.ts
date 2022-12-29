@@ -7,10 +7,11 @@ import {
   ChildStickyNoteBody,
   GroupNoteBody
 } from 'lib-common/generated/api-types/note'
-import { mutation } from 'lib-common/query'
+import { mutation, query } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 
 import { childrenQuery } from '../child-attendance/queries'
+import { createQueryKeys } from '../query'
 
 import {
   createChildDailyNote,
@@ -19,32 +20,36 @@ import {
   deleteChildDailyNote,
   deleteChildStickyNote,
   deleteGroupNote,
+  getGroupNotes,
   updateChildDailyNote,
   updateChildStickyNote,
   updateGroupNote
 } from './api'
 
+const queryKeys = createQueryKeys('notes', {
+  ofGroup: (groupId: UUID) => ['group', groupId]
+})
+
+export const groupNotesQuery = query({
+  api: getGroupNotes,
+  queryKey: queryKeys.ofGroup
+})
+
 export const createGroupNoteMutation = mutation({
-  api: ({
-    groupId,
-    body
-  }: {
-    unitId: UUID
-    groupId: UUID
-    body: GroupNoteBody
-  }) => createGroupNote({ groupId, body }),
-  invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
+  api: ({ groupId, body }: { groupId: UUID; body: GroupNoteBody }) =>
+    createGroupNote({ groupId, body }),
+  invalidateQueryKeys: ({ groupId }) => [groupNotesQuery(groupId).queryKey]
 })
 
 export const updateGroupNoteMutation = mutation({
-  api: ({ id, body }: { unitId: UUID; id: UUID; body: GroupNoteBody }) =>
+  api: ({ id, body }: { groupId: UUID; id: UUID; body: GroupNoteBody }) =>
     updateGroupNote({ id, body }),
-  invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
+  invalidateQueryKeys: ({ groupId }) => [groupNotesQuery(groupId).queryKey]
 })
 
 export const deleteGroupNoteMutation = mutation({
-  api: ({ id }: { unitId: UUID; id: UUID }) => deleteGroupNote(id),
-  invalidateQueryKeys: ({ unitId }) => [childrenQuery(unitId).queryKey]
+  api: ({ id }: { groupId: UUID; id: UUID }) => deleteGroupNote(id),
+  invalidateQueryKeys: ({ groupId }) => [groupNotesQuery(groupId).queryKey]
 })
 
 export const createChildDailyNoteMutation = mutation({

@@ -10,8 +10,7 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AbsenceThreshold,
   Child,
-  ChildAttendanceStatusResponse,
-  ChildrenResponse
+  ChildAttendanceStatusResponse
 } from 'lib-common/generated/api-types/attendance'
 import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -21,12 +20,10 @@ import { UUID } from 'lib-common/types'
 
 import { client } from '../client'
 
-export async function getUnitChildren(
-  unitId: string
-): Promise<ChildrenResponse> {
+export async function getUnitChildren(unitId: string): Promise<Child[]> {
   return client
-    .get<JsonOf<ChildrenResponse>>(`/attendances/units/${unitId}/children`)
-    .then((res) => deserializeChildrenResponse(res.data))
+    .get<JsonOf<Child[]>>(`/attendances/units/${unitId}/children`)
+    .then((res) => deserializeChildren(res.data))
 }
 
 export async function getUnitAttendanceStatuses(
@@ -195,49 +192,33 @@ function compareByProperty(
   return 0
 }
 
-function deserializeChildrenResponse(
-  data: JsonOf<ChildrenResponse>
-): ChildrenResponse {
-  {
-    return {
-      children: data.children
-        .map((attendanceChild) => {
-          return {
-            ...attendanceChild,
-            dailyNote: attendanceChild.dailyNote
-              ? {
-                  ...attendanceChild.dailyNote,
-                  modifiedAt: HelsinkiDateTime.parseIso(
-                    attendanceChild.dailyNote.modifiedAt
-                  )
-                }
-              : null,
-            stickyNotes: attendanceChild.stickyNotes.map((note) => ({
-              ...note,
-              modifiedAt: HelsinkiDateTime.parseIso(note.modifiedAt),
-              expires: LocalDate.parseIso(note.expires)
-            })),
-            reservations: attendanceChild.reservations.map((reservation) => ({
-              startTime: HelsinkiDateTime.parseIso(reservation.startTime),
-              endTime: HelsinkiDateTime.parseIso(reservation.endTime)
-            })),
-            dailyServiceTimes: attendanceChild.dailyServiceTimes && {
-              ...attendanceChild.dailyServiceTimes,
-              validityPeriod: DateRange.parseJson(
-                attendanceChild.dailyServiceTimes.validityPeriod
-              )
-            }
+function deserializeChildren(data: JsonOf<Child[]>): Child[] {
+  return data
+    .map((child) => ({
+      ...child,
+      dailyNote: child.dailyNote
+        ? {
+            ...child.dailyNote,
+            modifiedAt: HelsinkiDateTime.parseIso(child.dailyNote.modifiedAt)
           }
-        })
-        .sort((a, b) => compareByProperty(a, b, 'lastName'))
-        .sort((a, b) => compareByProperty(a, b, 'firstName')),
-      groupNotes: data.groupNotes.map((groupNote) => ({
-        ...groupNote,
-        modifiedAt: HelsinkiDateTime.parseIso(groupNote.modifiedAt),
-        expires: LocalDate.parseIso(groupNote.expires)
-      }))
-    }
-  }
+        : null,
+      stickyNotes: child.stickyNotes.map((note) => ({
+        ...note,
+        modifiedAt: HelsinkiDateTime.parseIso(note.modifiedAt),
+        expires: LocalDate.parseIso(note.expires)
+      })),
+      reservations: child.reservations.map((reservation) => ({
+        startTime: HelsinkiDateTime.parseIso(reservation.startTime),
+        endTime: HelsinkiDateTime.parseIso(reservation.endTime)
+      })),
+      dailyServiceTimes: child.dailyServiceTimes && {
+        ...child.dailyServiceTimes,
+        validityPeriod: DateRange.parseJson(
+          child.dailyServiceTimes.validityPeriod
+        )
+      }
+    }))
+    .sort((a, b) => compareByProperty(a, b, 'firstName'))
 }
 
 function deserializeChildAttendanceStatusResponse(

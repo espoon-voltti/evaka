@@ -163,7 +163,7 @@ export const PinLogin = React.memo(function PinLogin() {
 
   const title = childId
     ? unitChildren
-        .map((a) => a.children.find((c) => c.id === childId))
+        .map((children) => children.find((c) => c.id === childId))
         .map((c) => (c ? `${c.firstName} ${c.lastName}` : ''))
         .getOrElse('')
     : unitInfoResponse.map((u) => u.name).getOrElse('')

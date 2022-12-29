@@ -6,7 +6,7 @@ import React, { useMemo } from 'react'
 
 import {
   AttendanceStatus,
-  ChildrenResponse
+  Child
 } from 'lib-common/generated/api-types/attendance'
 import { UUID } from 'lib-common/types'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -21,7 +21,7 @@ interface Props {
   unitId: UUID
   groupId: UUID | 'all'
   attendanceStatus: AttendanceStatus
-  unitChildren: ChildrenResponse
+  unitChildren: Child[]
   childAttendanceStatuses: ChildAttendanceStatuses
 }
 
@@ -37,8 +37,8 @@ export default React.memo(function AttendanceList({
   const groupChildren = useMemo(
     () =>
       groupId === 'all'
-        ? unitChildren.children
-        : unitChildren.children.filter((c) => c.groupId === groupId),
+        ? unitChildren
+        : unitChildren.filter((c) => c.groupId === groupId),
     [groupId, unitChildren]
   )
 
@@ -133,7 +133,6 @@ export default React.memo(function AttendanceList({
           unitId={unitId}
           attendanceChildren={filteredChildren}
           childAttendanceStatuses={childAttendanceStatuses}
-          groupsNotes={unitChildren.groupNotes}
           type={attendanceStatus}
         />
       </ContentArea>

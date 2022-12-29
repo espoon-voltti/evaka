@@ -26,6 +26,7 @@ import colors from 'lib-customizations/common'
 import { faArrowLeft, farStickyNote } from 'lib-icons'
 
 import { renderResult } from '../../async-rendering'
+import { groupNotesQuery } from '../../child-notes/queries'
 import { Actions, BackButtonInline, TimeWrapper } from '../../common/components'
 import { useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
@@ -59,9 +60,7 @@ export default React.memo(function MarkPresent() {
 
   const child = useMemo(
     () =>
-      unitChildren.map((response) =>
-        response.children.find((ac) => ac.id === childId)
-      ),
+      unitChildren.map((children) => children.find((ac) => ac.id === childId)),
     [unitChildren, childId]
   )
 
@@ -87,13 +86,7 @@ export default React.memo(function MarkPresent() {
     } else return true
   }, [childLatestDeparture, time])
 
-  const groupNote = useMemo(
-    () =>
-      unitChildren.map((response) =>
-        response.groupNotes.find((g) => g.groupId === groupId)
-      ),
-    [unitChildren, groupId]
-  )
+  const groupNotes = useQueryResult(groupNotesQuery(groupId))
 
   const { mutateAsync: returnToPresent } = useMutationResult(
     returnToPresentMutation
@@ -110,7 +103,7 @@ export default React.memo(function MarkPresent() {
       paddingHorizontal="zero"
       paddingVertical="zero"
     >
-      {renderResult(combine(child, groupNote), ([child, groupNote]) => (
+      {renderResult(combine(child, groupNotes), ([child, groupNotes]) => (
         <>
           <div>
             <BackButtonInline
@@ -190,7 +183,7 @@ export default React.memo(function MarkPresent() {
               </span>
               <DailyNote
                 child={child ? child : undefined}
-                groupNote={groupNote ? groupNote : undefined}
+                groupNote={groupNotes.length > 0 ? groupNotes[0] : undefined}
               />
             </DailyNotes>
           </ContentArea>

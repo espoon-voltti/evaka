@@ -14,11 +14,7 @@ import { animated, useSpring } from 'react-spring'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
-import {
-  Child,
-  ChildrenResponse,
-  GroupInfo
-} from 'lib-common/generated/api-types/attendance'
+import { Child, GroupInfo } from 'lib-common/generated/api-types/attendance'
 import { useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { ContentArea } from 'lib-components/layout/Container'
@@ -79,15 +75,15 @@ export default React.memo(function AttendancePageWrapper() {
     () => ({
       getTotalCount: (groupId: string | undefined) =>
         unitChildren
-          .map((res) =>
+          .map((children) =>
             groupId === undefined
-              ? res.children.length
-              : res.children.filter((child) => child.groupId === groupId).length
+              ? children.length
+              : children.filter((child) => child.groupId === groupId).length
           )
           .getOrElse(0),
       getPresentCount: (groupId: string | undefined) =>
         combine(unitChildren, childAttendanceStatuses)
-          .map(([{ children }, attendanceStatuses]) =>
+          .map(([children, attendanceStatuses]) =>
             children.filter(
               (child) =>
                 attendanceStatuses.forChild(child.id).status === 'PRESENT'
@@ -149,7 +145,7 @@ const ChildSearch = React.memo(function Search({
   unitId: string
   show: boolean
   toggleShow: () => void
-  unitChildren: ChildrenResponse
+  unitChildren: Child[]
   childAttendanceStatuses: ChildAttendanceStatuses
 }) {
   const { i18n } = useTranslation()
@@ -161,7 +157,7 @@ const ChildSearch = React.memo(function Search({
     if (freeText === '') {
       setSearchResults([])
     } else {
-      const filteredData = unitChildren.children.filter(
+      const filteredData = unitChildren.filter(
         (ac) =>
           ac.firstName.toLowerCase().includes(freeText.toLowerCase()) ||
           ac.lastName.toLowerCase().includes(freeText.toLowerCase())
@@ -191,7 +187,6 @@ const ChildSearch = React.memo(function Search({
           unitId={unitId}
           attendanceChildren={searchResults}
           childAttendanceStatuses={childAttendanceStatuses}
-          groupsNotes={unitChildren.groupNotes}
         />
       </ContentArea>
     </SearchContainer>

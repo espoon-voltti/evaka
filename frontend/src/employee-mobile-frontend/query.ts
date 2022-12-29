@@ -6,7 +6,7 @@ import { QueryClient } from '@tanstack/react-query'
 
 import { queryKeysNamespace } from 'lib-common/query'
 
-export type QueryKeyPrefix = 'childAttendance'
+export type QueryKeyPrefix = 'childAttendance' | 'notes'
 
 export const queryClient = new QueryClient()
 export { QueryClientProvider } from '@tanstack/react-query'

@@ -33,7 +33,7 @@ export default React.memo(function ChildSensitiveInfoPage() {
   const childName = useMemo(
     () =>
       unitChildren
-        .map(({ children }) => children.find((ac) => ac.id === childId))
+        .map((children) => children.find((ac) => ac.id === childId))
         .map((c) => (c ? `${c.firstName} ${c.lastName}` : null))
         .getOrElse(null),
     [unitChildren, childId]

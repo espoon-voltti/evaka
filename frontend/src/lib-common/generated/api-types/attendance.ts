@@ -13,7 +13,6 @@ import { AbsenceType } from './daycare'
 import { ChildDailyNote } from './note'
 import { ChildStickyNote } from './note'
 import { DailyServiceTimesValue } from '../../api-types/child/common'
-import { GroupNote } from './note'
 import { HelsinkiDateTimeRange } from './shared'
 import { PilotFeature } from './shared'
 import { PlacementType } from './placement'
@@ -128,14 +127,6 @@ export interface ChildAttendanceStatusResponse {
   absences: ChildAbsence[]
   attendances: AttendanceTimes[]
   status: AttendanceStatus
-}
-
-/**
-* Generated from fi.espoo.evaka.attendance.ChildrenResponse
-*/
-export interface ChildrenResponse {
-  children: Child[]
-  groupNotes: GroupNote[]
 }
 
 /**

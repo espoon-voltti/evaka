@@ -10,7 +10,7 @@ import {
   AttendanceStatus,
   Child
 } from 'lib-common/generated/api-types/attendance'
-import { GroupNote } from 'lib-common/generated/api-types/note'
+import { useQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -20,6 +20,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors, { attendanceColors } from 'lib-customizations/common'
 import { farStickyNote, farUser, farUsers } from 'lib-icons'
 
+import { groupNotesQuery } from '../child-notes/queries'
 import { getTodaysServiceTimes } from '../common/dailyServiceTimes'
 import { Translations, useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
@@ -97,7 +98,6 @@ interface ChildListItemProps {
   onClick?: () => void
   type?: AttendanceStatus
   childAttendanceUrl: string
-  groupNote?: GroupNote | null
 }
 
 export default React.memo(function ChildListItem({
@@ -105,8 +105,7 @@ export default React.memo(function ChildListItem({
   attendanceStatus,
   onClick,
   type,
-  childAttendanceUrl,
-  groupNote
+  childAttendanceUrl
 }: ChildListItemProps) {
   const { i18n } = useTranslation()
   const { unitInfoResponse } = useContext(UnitContext)
@@ -116,6 +115,9 @@ export default React.memo(function ChildListItem({
     groupId: UUID | 'all'
   }>()
 
+  const { data: groupNotes } = useQuery(groupNotesQuery(child.groupId ?? ''), {
+    enabled: child.groupId != null
+  })
   const groupName = unitInfoResponse
     .map(
       ({ groups }) =>
@@ -163,7 +165,9 @@ export default React.memo(function ChildListItem({
             <FixedSpaceRowWithLeftMargin>
               {child.dailyNote && (
                 <Link
-                  to={`/units/${unitId}/groups/${groupId}/child-attendance/${child.id}/note`}
+                  to={`/units/${unitId}/groups/${
+                    child.groupId ?? 'all'
+                  }/child-attendance/${child.id}/note`}
                   data-qa="link-child-daycare-daily-note"
                 >
                   <RoundIcon
@@ -173,9 +177,9 @@ export default React.memo(function ChildListItem({
                   />
                 </Link>
               )}
-              {groupNote && (
+              {child.groupId && groupNotes && groupNotes.length > 0 ? (
                 <Link
-                  to={`/units/${unitId}/groups/${groupId}/child-attendance/${child.id}/note`}
+                  to={`/units/${unitId}/groups/${child.groupId}/child-attendance/${child.id}/note`}
                   data-qa="link-child-daycare-daily-note"
                 >
                   <RoundIcon
@@ -184,7 +188,7 @@ export default React.memo(function ChildListItem({
                     size="m"
                   />
                 </Link>
-              )}
+              ) : null}
             </FixedSpaceRowWithLeftMargin>
           </DetailsRow>
         </ChildBoxInfo>
