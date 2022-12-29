@@ -34,7 +34,7 @@ export interface ChildState {
   person: Result<PersonJSON>
   setPerson: (value: PersonJSON) => void
   permittedActions: Set<Action.Child | Action.Person>
-  placements: Result<PlacementResponse[]>
+  placements: Result<PlacementResponse>
   loadPlacements: () => void
   parentships: Result<ParentshipWithPermittedActions[]>
   backupCares: Result<ChildBackupCareResponse[]>
@@ -158,10 +158,10 @@ export const ChildContextProvider = React.memo(function ChildContextProvider({
   const consecutivePlacementRanges = useMemo(
     () =>
       placements
-        .map((p) =>
-          sortBy(p, ({ data: placement }) =>
+        .map(({ placements: p }) =>
+          sortBy(p, (placement) =>
             placement.startDate.toSystemTzDate().getTime()
-          ).reduce((prev, { data: curr }) => {
+          ).reduce((prev, curr) => {
             const currentRange = new FiniteDateRange(
               curr.startDate,
               curr.endDate

@@ -20,6 +20,7 @@ import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupPlacementId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.PlacementId
+import fi.espoo.evaka.shared.ServiceNeedId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AclAuthorization
 import fi.espoo.evaka.shared.db.Database
@@ -653,29 +654,9 @@ data class DaycarePlacementWithDetails(
 )
 
 data class PlacementResponse(
-    val data: DaycarePlacementWithDetailsAndPermittedActions,
-    val permittedActions: Set<Action.Placement>
-)
-
-data class DaycarePlacementWithDetailsAndPermittedActions(
-    val id: PlacementId,
-    val child: ChildBasics,
-    val daycare: DaycareBasics,
-    val startDate: LocalDate,
-    val endDate: LocalDate,
-    val type: PlacementType,
-    val missingServiceNeedDays: Int,
-    val groupPlacements: List<DaycareGroupPlacement>,
-    val serviceNeeds: List<ServiceNeedResponse>,
-    val isRestrictedFromUser: Boolean = false,
-    val terminationRequestedDate: LocalDate?,
-    val terminatedBy: EvakaUser?,
-    val updated: HelsinkiDateTime?
-)
-
-data class ServiceNeedResponse(
-    val data: ServiceNeed,
-    val permittedActions: Set<Action.ServiceNeed>
+    val placements: Set<DaycarePlacementWithDetails>,
+    val permittedPlacementActions: Map<PlacementId, Set<Action.Placement>>,
+    val permittedServiceNeedActions: Map<ServiceNeedId, Set<Action.ServiceNeed>>,
 )
 
 data class DaycareGroupPlacement(

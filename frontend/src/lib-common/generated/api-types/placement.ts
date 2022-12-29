@@ -94,25 +94,6 @@ export interface DaycarePlacementWithDetails {
 }
 
 /**
-* Generated from fi.espoo.evaka.placement.DaycarePlacementWithDetailsAndPermittedActions
-*/
-export interface DaycarePlacementWithDetailsAndPermittedActions {
-  child: ChildBasics
-  daycare: DaycareBasics
-  endDate: LocalDate
-  groupPlacements: DaycareGroupPlacement[]
-  id: UUID
-  isRestrictedFromUser: boolean
-  missingServiceNeedDays: number
-  serviceNeeds: ServiceNeedResponse[]
-  startDate: LocalDate
-  terminatedBy: EvakaUser | null
-  terminationRequestedDate: LocalDate | null
-  type: PlacementType
-  updated: HelsinkiDateTime | null
-}
-
-/**
 * Generated from fi.espoo.evaka.placement.GroupPlacementRequestBody
 */
 export interface GroupPlacementRequestBody {
@@ -257,8 +238,9 @@ export type PlacementPlanRejectReason =
 * Generated from fi.espoo.evaka.placement.PlacementResponse
 */
 export interface PlacementResponse {
-  data: DaycarePlacementWithDetailsAndPermittedActions
-  permittedActions: Action.Placement[]
+  permittedPlacementActions: Record<string, Action.Placement[]>
+  permittedServiceNeedActions: Record<string, Action.ServiceNeed[]>
+  placements: DaycarePlacementWithDetails[]
 }
 
 /**
@@ -295,14 +277,6 @@ export type PlacementType =
 export interface PlacementUpdateRequestBody {
   endDate: LocalDate
   startDate: LocalDate
-}
-
-/**
-* Generated from fi.espoo.evaka.placement.ServiceNeedResponse
-*/
-export interface ServiceNeedResponse {
-  data: ServiceNeed
-  permittedActions: Action.ServiceNeed[]
 }
 
 /**

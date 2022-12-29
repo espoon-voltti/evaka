@@ -8,12 +8,13 @@ import styled from 'styled-components'
 
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
+import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import {
-  DaycarePlacementWithDetailsAndPermittedActions,
-  ServiceNeedResponse
-} from 'lib-common/generated/api-types/placement'
-import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
+  ServiceNeed,
+  ServiceNeedOption
+} from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
+import { UUID } from 'lib-common/types'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import { Table, Tbody, Th, Thead, Tr } from 'lib-components/layout/Table'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
@@ -29,15 +30,17 @@ import ServiceNeedEditorRow from './service-needs/ServiceNeedEditorRow'
 import ServiceNeedReadRow from './service-needs/ServiceNeedReadRow'
 
 interface Props {
-  placement: DaycarePlacementWithDetailsAndPermittedActions
-  permittedActions: Action.Placement[]
+  placement: DaycarePlacementWithDetails
+  permittedPlacementActions: Action.Placement[]
+  permittedServiceNeedActions: Record<UUID, Action.ServiceNeed[]>
   reload: () => void
   serviceNeedOptions: ServiceNeedOption[]
 }
 
 export default React.memo(function ServiceNeeds({
   placement,
-  permittedActions,
+  permittedPlacementActions,
+  permittedServiceNeedActions,
   reload,
   serviceNeedOptions
 }: Props) {
@@ -55,13 +58,10 @@ export default React.memo(function ServiceNeeds({
       new FiniteDateRange(placement.startDate, placement.endDate)
         .getGaps(
           placement.serviceNeeds.map(
-            ({ data: sn }) => new FiniteDateRange(sn.startDate, sn.endDate)
+            (sn) => new FiniteDateRange(sn.startDate, sn.endDate)
           )
         )
-        .map((gap) => ({
-          data: { startDate: gap.start, endDate: gap.end },
-          permittedActions: []
-        })),
+        .map((gap) => ({ startDate: gap.start, endDate: gap.end })),
     [placement]
   )
 
@@ -78,7 +78,9 @@ export default React.memo(function ServiceNeeds({
     (opt) => opt.validPlacementType === placementType && !opt.defaultOption
   )
 
-  const createAllowed = permittedActions.includes('CREATE_SERVICE_NEED')
+  const createAllowed = permittedPlacementActions.includes(
+    'CREATE_SERVICE_NEED'
+  )
 
   // if only default option exists service needs are not relevant and do not need to be rendered
   return placementHasNonDefaultServiceNeedOptions ? (
@@ -126,65 +128,64 @@ export default React.memo(function ServiceNeeds({
             />
           )}
 
-          {orderBy(rows, ['startDate'], ['desc']).map(
-            ({ data: sn, permittedActions }) =>
-              'id' in sn ? (
-                editingId === sn.id ? (
-                  <ServiceNeedEditorRow
-                    key={sn.id}
-                    placement={placement}
-                    options={options}
-                    initialForm={{
-                      startDate: sn.startDate,
-                      endDate: sn.endDate,
-                      optionId: sn.option.id,
-                      shiftCare: sn.shiftCare
-                    }}
-                    onSuccess={() => {
-                      setEditingId(null)
-                      reload()
-                    }}
-                    onCancel={() => setEditingId(null)}
-                    editingId={editingId}
-                  />
-                ) : (
-                  <ServiceNeedReadRow
-                    key={sn.id}
-                    serviceNeed={sn}
-                    permittedActions={permittedActions}
-                    onEdit={() => setEditingId(sn.id)}
-                    onDelete={() => setDeletingId(sn.id)}
-                    disabled={creatingNew !== false || editingId !== null}
-                  />
-                )
-              ) : creatingNew instanceof LocalDate &&
-                sn.startDate.isEqual(creatingNew) ? (
+          {orderBy(rows, ['startDate'], ['desc']).map((sn) =>
+            'id' in sn ? (
+              editingId === sn.id ? (
                 <ServiceNeedEditorRow
-                  key={sn.startDate.toJSON()}
+                  key={sn.id}
                   placement={placement}
                   options={options}
                   initialForm={{
                     startDate: sn.startDate,
                     endDate: sn.endDate,
-                    optionId: undefined,
-                    shiftCare: false
+                    optionId: sn.option.id,
+                    shiftCare: sn.shiftCare
                   }}
                   onSuccess={() => {
-                    setCreatingNew(false)
+                    setEditingId(null)
                     reload()
                   }}
-                  onCancel={() => setCreatingNew(false)}
+                  onCancel={() => setEditingId(null)}
+                  editingId={editingId}
                 />
               ) : (
-                <MissingServiceNeedRow
-                  createAllowed={createAllowed}
-                  key={sn.startDate.toJSON()}
-                  startDate={sn.startDate}
-                  endDate={sn.endDate}
-                  onEdit={() => setCreatingNew(sn.startDate)}
+                <ServiceNeedReadRow
+                  key={sn.id}
+                  serviceNeed={sn}
+                  permittedActions={permittedServiceNeedActions[sn.id] ?? []}
+                  onEdit={() => setEditingId(sn.id)}
+                  onDelete={() => setDeletingId(sn.id)}
                   disabled={creatingNew !== false || editingId !== null}
                 />
               )
+            ) : creatingNew instanceof LocalDate &&
+              sn.startDate.isEqual(creatingNew) ? (
+              <ServiceNeedEditorRow
+                key={sn.startDate.toJSON()}
+                placement={placement}
+                options={options}
+                initialForm={{
+                  startDate: sn.startDate,
+                  endDate: sn.endDate,
+                  optionId: undefined,
+                  shiftCare: false
+                }}
+                onSuccess={() => {
+                  setCreatingNew(false)
+                  reload()
+                }}
+                onCancel={() => setCreatingNew(false)}
+              />
+            ) : (
+              <MissingServiceNeedRow
+                createAllowed={createAllowed}
+                key={sn.startDate.toJSON()}
+                startDate={sn.startDate}
+                endDate={sn.endDate}
+                onEdit={() => setCreatingNew(sn.startDate)}
+                disabled={creatingNew !== false || editingId !== null}
+              />
+            )
           )}
         </Tbody>
       </Table>
@@ -211,9 +212,7 @@ export default React.memo(function ServiceNeeds({
   ) : null
 })
 
-type ServiceNeedOrGap =
-  | ServiceNeedResponse
-  | { data: DateRange; permittedActions: Action.ServiceNeed[] }
+type ServiceNeedOrGap = ServiceNeed | DateRange
 
 const HeaderRow = styled.div`
   display: flex;

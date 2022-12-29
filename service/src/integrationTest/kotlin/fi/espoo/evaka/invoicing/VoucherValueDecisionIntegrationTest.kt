@@ -549,11 +549,11 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             http
                 .get("/placements", listOf("childId" to childId))
                 .asUser(serviceWorker)
-                .responseObject<List<PlacementResponse>>(jsonMapper)
+                .responseObject<PlacementResponse>(jsonMapper)
 
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
 
-        return data.get().first().data.id
+        return data.get().placements.first().id
     }
 
     private fun addServiceNeed(

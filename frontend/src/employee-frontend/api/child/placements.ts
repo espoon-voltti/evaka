@@ -43,18 +43,19 @@ export async function createPlacement(
 
 export async function getPlacements(
   childId: UUID
-): Promise<Result<PlacementResponse[]>> {
+): Promise<Result<PlacementResponse>> {
   const config = {
     params: {
       childId
     }
   }
   return client
-    .get<JsonOf<PlacementResponse[]>>('/placements', config)
+    .get<JsonOf<PlacementResponse>>('/placements', config)
     .then((res) => res.data)
-    .then((data) =>
-      data.map(({ data: p, permittedActions }) => ({
-        data: {
+    .then((data) => {
+      return {
+        ...data,
+        placements: data.placements.map((p) => ({
           ...p,
           child: {
             ...p.child,
@@ -71,35 +72,29 @@ export async function getPlacements(
             endDate: LocalDate.parseIso(gp.endDate)
           })),
           updated: p.updated ? HelsinkiDateTime.parseIso(p.updated) : null,
-          serviceNeeds: p.serviceNeeds.map(
-            ({ data: sn, permittedActions: pa }) => ({
-              data: {
-                ...sn,
-                startDate: LocalDate.parseIso(sn.startDate),
-                endDate: LocalDate.parseIso(sn.endDate),
-                option: {
-                  ...sn.option,
-                  updated: HelsinkiDateTime.parseIso(sn.option.updated)
-                },
-                updated: HelsinkiDateTime.parseIso(sn.updated),
-                confirmed:
-                  sn.confirmed != null
-                    ? {
-                        ...sn.confirmed,
-                        at:
-                          sn.confirmed.at != null
-                            ? HelsinkiDateTime.parseIso(sn.confirmed.at)
-                            : null
-                      }
-                    : null
-              },
-              permittedActions: pa
-            })
-          )
-        },
-        permittedActions
-      }))
-    )
+          serviceNeeds: p.serviceNeeds.map((sn) => ({
+            ...sn,
+            startDate: LocalDate.parseIso(sn.startDate),
+            endDate: LocalDate.parseIso(sn.endDate),
+            option: {
+              ...sn.option,
+              updated: HelsinkiDateTime.parseIso(sn.option.updated)
+            },
+            updated: HelsinkiDateTime.parseIso(sn.updated),
+            confirmed:
+              sn.confirmed != null
+                ? {
+                    ...sn.confirmed,
+                    at:
+                      sn.confirmed.at != null
+                        ? HelsinkiDateTime.parseIso(sn.confirmed.at)
+                        : null
+                  }
+                : null
+          }))
+        }))
+      }
+    })
     .then((v) => Success.of(v))
     .catch((e) => Failure.fromError(e))
 }

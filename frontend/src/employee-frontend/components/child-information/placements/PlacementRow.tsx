@@ -10,7 +10,7 @@ import { ChildContext } from 'employee-frontend/state'
 import { Failure } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
-import { DaycarePlacementWithDetailsAndPermittedActions } from 'lib-common/generated/api-types/placement'
+import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -43,12 +43,13 @@ import { InputWarning } from '../../common/InputWarning'
 import ServiceNeeds from './ServiceNeeds'
 
 interface Props {
-  placement: DaycarePlacementWithDetailsAndPermittedActions
+  placement: DaycarePlacementWithDetails
   permittedActions: Action.Placement[]
+  permittedServiceNeedActions: Record<string, Action.ServiceNeed[]>
   onRefreshNeeded: () => void
   checkOverlaps: (
     range: DateRange,
-    placement: DaycarePlacementWithDetailsAndPermittedActions
+    placement: DaycarePlacementWithDetails
   ) => boolean | undefined
   serviceNeedOptions: ServiceNeedOption[]
 }
@@ -92,6 +93,7 @@ const CompactDatePicker = styled(DatePickerDeprecated)`
 export default React.memo(function PlacementRow({
   placement,
   permittedActions,
+  permittedServiceNeedActions,
   onRefreshNeeded,
   checkOverlaps,
   serviceNeedOptions
@@ -434,7 +436,8 @@ export default React.memo(function PlacementRow({
 
         <ServiceNeeds
           placement={placement}
-          permittedActions={permittedActions}
+          permittedPlacementActions={permittedActions}
+          permittedServiceNeedActions={permittedServiceNeedActions}
           reload={onRefreshNeeded}
           serviceNeedOptions={serviceNeedOptions}
         />

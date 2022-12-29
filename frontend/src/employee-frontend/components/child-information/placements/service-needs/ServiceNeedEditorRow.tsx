@@ -5,7 +5,7 @@
 import React, { useContext, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { DaycarePlacementWithDetailsAndPermittedActions } from 'lib-common/generated/api-types/placement'
+import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOption } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -26,7 +26,7 @@ import { useTranslation } from '../../../../state/i18n'
 import { UIContext } from '../../../../state/ui'
 
 interface ServiceNeedCreateRowProps {
-  placement: DaycarePlacementWithDetailsAndPermittedActions
+  placement: DaycarePlacementWithDetails
   options: ServiceNeedOption[]
   initialForm: FormData
   onSuccess: () => void
@@ -63,7 +63,7 @@ function ServiceNeedEditorRow({
     if (startDate !== undefined && endDate !== undefined && form.optionId) {
       if (
         placement.serviceNeeds.find(
-          ({ data: sn }) =>
+          (sn) =>
             sn.id !== editingId &&
             sn.startDate.isEqualOrBefore(endDate) &&
             sn.endDate.isEqualOrAfter(startDate)

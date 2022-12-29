@@ -393,8 +393,7 @@ class ServiceNeedIntegrationTest : FullApplicationTest(resetDbBeforeEach = true)
     private fun getServiceNeeds(childId: ChildId, placementId: PlacementId): List<ServiceNeed> =
         placementController
             .getPlacements(dbInstance(), unitSupervisor, clock, childId = childId)
-            .map { it.data }
+            .placements
             .first { it.id == placementId }
             .serviceNeeds
-            .map { it.data }
 }

@@ -116,7 +116,7 @@ function VasuInitialization({
 }: {
   childId: UUID
   allowCreation: boolean
-  placements: Result<PlacementResponse[]>
+  placements: Result<PlacementResponse>
 }) {
   const { i18n } = useTranslation()
   const { setErrorMessage } = useContext(UIContext)
@@ -128,13 +128,12 @@ function VasuInitialization({
   const filteredTemplates = useMemo(
     () =>
       templates
-        ? combine(placements, templates).map(([placements, templates]) => {
-            const currentPlacement = placements.find(
-              ({ data: { startDate, endDate } }) =>
-                new FiniteDateRange(startDate, endDate).includes(
-                  LocalDate.todayInHelsinkiTz()
-                )
-            )?.data
+        ? combine(placements, templates).map(([{ placements }, templates]) => {
+            const currentPlacement = placements.find(({ startDate, endDate }) =>
+              new FiniteDateRange(startDate, endDate).includes(
+                LocalDate.todayInHelsinkiTz()
+              )
+            )
 
             if (!currentPlacement) {
               return []
@@ -285,7 +284,7 @@ export default React.memo(function VasuAndLeops({
       placements
         .map(
           (ps) =>
-            !ps.some(({ data: placement }) =>
+            !ps.placements.some((placement) =>
               placement.daycare.enabledPilotFeatures.includes(
                 'VASU_AND_PEDADOC'
               )

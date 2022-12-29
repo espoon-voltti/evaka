@@ -6,7 +6,7 @@ import orderBy from 'lodash/orderBy'
 import React, { Fragment, useContext, useState } from 'react'
 
 import { combine } from 'lib-common/api'
-import { DaycarePlacementWithDetailsAndPermittedActions } from 'lib-common/generated/api-types/placement'
+import { DaycarePlacementWithDetails } from 'lib-common/generated/api-types/placement'
 import { UUID } from 'lib-common/types'
 import { useApiState } from 'lib-common/utils/useRestApi'
 import { AddButtonRow } from 'lib-components/atoms/buttons/AddButton'
@@ -45,14 +45,14 @@ export default React.memo(function Placements({ id, startOpen }: Props) {
 
   const checkOverlaps = (
     range: DateRange,
-    placement: DaycarePlacementWithDetailsAndPermittedActions
+    placement: DaycarePlacementWithDetails
   ): boolean =>
     placements
       .map(
         (ps) =>
-          ps
-            .filter(({ data: p }) => p.id !== placement.id)
-            .filter(({ data: p }) => rangesOverlap(range, p)).length > 0
+          ps.placements
+            .filter((p) => p.id !== placement.id)
+            .filter((p) => rangesOverlap(range, p)).length > 0
       )
       .getOrElse(false)
 
@@ -89,24 +89,31 @@ export default React.memo(function Placements({ id, startOpen }: Props) {
           combine(serviceNeedOptions, placements),
           ([serviceNeedOptions, placements]) => (
             <div>
-              {orderBy(placements, ['startDate'], ['desc']).map((p, i) => (
-                <Fragment key={p.data.id}>
-                  <PlacementRow
-                    placement={p.data}
-                    permittedActions={p.permittedActions}
-                    onRefreshNeeded={() => {
-                      loadPlacements()
-                      void loadBackupCares()
-                      reloadPermittedActions()
-                    }}
-                    checkOverlaps={checkOverlaps}
-                    serviceNeedOptions={serviceNeedOptions}
-                  />
-                  {i < placements.length - 1 && (
-                    <div className="separator large" />
-                  )}
-                </Fragment>
-              ))}
+              {orderBy(placements.placements, ['startDate'], ['desc']).map(
+                (p, i) => (
+                  <Fragment key={p.id}>
+                    <PlacementRow
+                      placement={p}
+                      permittedActions={
+                        placements.permittedPlacementActions[p.id] ?? []
+                      }
+                      permittedServiceNeedActions={
+                        placements.permittedServiceNeedActions
+                      }
+                      onRefreshNeeded={() => {
+                        loadPlacements()
+                        void loadBackupCares()
+                        reloadPermittedActions()
+                      }}
+                      checkOverlaps={checkOverlaps}
+                      serviceNeedOptions={serviceNeedOptions}
+                    />
+                    {i < placements.placements.length - 1 && (
+                      <div className="separator large" />
+                    )}
+                  </Fragment>
+                )
+              )}
             </div>
           )
         )}
