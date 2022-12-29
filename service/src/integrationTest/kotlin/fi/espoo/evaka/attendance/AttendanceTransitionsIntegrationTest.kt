@@ -231,17 +231,17 @@ class AttendanceTransitionsIntegrationTest : FullApplicationTest(resetDbBeforeEa
     }
 
     @Test
-    fun `get child departure info - not yet present is error`() {
+    fun `get child departure info - not yet present`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildComing()
-        assertThrows<Conflict> { getDepartureInfo() }
+        assertEquals(emptyList(), getDepartureInfo())
     }
 
     @Test
-    fun `get child departure info - already departed is error`() {
+    fun `get child departure info - already departed`() {
         givenChildPlacement(PlacementType.PRESCHOOL_DAYCARE)
         givenChildDeparted()
-        assertThrows<Conflict> { getDepartureInfo() }
+        assertEquals(emptyList(), getDepartureInfo())
     }
 
     @Test

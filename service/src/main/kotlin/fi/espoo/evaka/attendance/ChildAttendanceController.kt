@@ -302,8 +302,9 @@ class ChildAttendanceController(
                         Action.Unit.READ_CHILD_ATTENDANCES,
                         unitId
                     )
-                    val attendance = getChildOngoingAttendance(tx, childId, unitId)
-                    getPartialAbsenceThresholds(tx, clock, childId, unitId, attendance)
+                    val attendance = tx.getChildOngoingAttendance(childId, unitId)
+                    if (attendance == null) emptyList()
+                    else getPartialAbsenceThresholds(tx, clock, childId, unitId, attendance)
                 }
             }
             .also {
@@ -341,7 +342,10 @@ class ChildAttendanceController(
                 val now = clock.now()
                 val today = clock.today()
 
-                val attendance = getChildOngoingAttendance(tx, childId, unitId)
+                val attendance =
+                    tx.getChildOngoingAttendance(childId, unitId)
+                        ?: throw Conflict("Cannot depart, has not yet arrived")
+
                 val absentFrom =
                     getPartialAbsenceThresholds(tx, clock, childId, unitId, attendance).filter {
                         body.departed <= it.time
@@ -541,10 +545,6 @@ class ChildAttendanceController(
             meta = mapOf("from" to from, "to" to to)
         )
     }
-
-    private fun getChildOngoingAttendance(tx: Database.Read, childId: ChildId, unitId: DaycareId) =
-        tx.getChildOngoingAttendance(childId, unitId)
-            ?: throw Conflict("Cannot depart, has not yet arrived")
 
     private fun getPartialAbsenceThresholds(
         tx: Database.Read,
