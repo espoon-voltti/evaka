@@ -246,7 +246,8 @@ fun Database.Read.fetchApplicationSummaries(
                 data class PreschoolFlags(
                     val preparatory: Boolean,
                     val connectedDaycare: Boolean,
-                    val additionalDaycareApplication: Boolean
+                    val additionalDaycareApplication: Boolean,
+                    val serviceNeedOptionType: PlacementType? = null
                 )
                 when {
                     preschoolType.isEmpty() -> "FALSE"
@@ -263,12 +264,19 @@ fun Database.Read.fetchApplicationSummaries(
                                         connectedDaycare = false,
                                         additionalDaycareApplication = false
                                     )
-                                PRESCHOOL_DAYCARE,
+                                PRESCHOOL_DAYCARE ->
+                                    PreschoolFlags(
+                                        preparatory = false,
+                                        connectedDaycare = true,
+                                        additionalDaycareApplication = false,
+                                        serviceNeedOptionType = PlacementType.PRESCHOOL_DAYCARE
+                                    )
                                 PRESCHOOL_CLUB ->
                                     PreschoolFlags(
                                         preparatory = false,
                                         connectedDaycare = true,
-                                        additionalDaycareApplication = false
+                                        additionalDaycareApplication = false,
+                                        serviceNeedOptionType = PlacementType.PRESCHOOL_CLUB
                                     )
                                 PREPARATORY_ONLY ->
                                     PreschoolFlags(
@@ -289,7 +297,18 @@ fun Database.Read.fetchApplicationSummaries(
                                         additionalDaycareApplication = true
                                     )
                             }.run {
-                                "((f.document->'careDetails'->>'preparatory')::boolean, (f.document->>'connectedDaycare')::boolean, a.additionalDaycareApplication) = ($preparatory, $connectedDaycare, $additionalDaycareApplication)"
+                                """
+                                    ((f.document->'careDetails'->>'preparatory')::boolean, (f.document->>'connectedDaycare')::boolean, a.additionalDaycareApplication) = ($preparatory, $connectedDaycare, $additionalDaycareApplication)
+                                    ${
+                                    when (serviceNeedOptionType) {
+                                        null -> ""
+                                        PlacementType.PRESCHOOL_DAYCARE -> "AND (f.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_DAYCARE' OR f.document->'serviceNeedOption'->>'validPlacementType' IS NULL)"
+                                        PlacementType.PRESCHOOL_CLUB -> "AND f.document->'serviceNeedOption'->>'validPlacementType' = 'PRESCHOOL_CLUB'"
+                                        else -> throw Error("Unsupported preschool type: $serviceNeedOptionType")
+                                    }
+                                }
+                                """
+                                    .trimIndent()
                             }
                         }
                 }
