@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 
 import {
   AttendanceStatus,
@@ -14,13 +14,13 @@ import Tabs from 'lib-components/molecules/Tabs'
 
 import { useTranslation } from '../common/i18n'
 
-import ChildList from './ChildList'
+import ChildList, { ListItem } from './ChildList'
 import { AttendanceStatuses, childAttendanceStatus } from './utils'
 
 interface Props {
   unitId: UUID
   groupId: UUID | 'all'
-  attendanceStatus: AttendanceStatus
+  activeStatus: AttendanceStatus
   unitChildren: Child[]
   attendanceStatuses: AttendanceStatuses
 }
@@ -28,7 +28,7 @@ interface Props {
 export default React.memo(function AttendanceList({
   unitId,
   groupId,
-  attendanceStatus,
+  activeStatus,
   unitChildren,
   attendanceStatuses
 }: Props) {
@@ -42,6 +42,15 @@ export default React.memo(function AttendanceList({
     [groupId, unitChildren]
   )
 
+  const childrenWithStatus = useCallback(
+    (status: AttendanceStatus) =>
+      groupChildren.filter(
+        (child) =>
+          childAttendanceStatus(attendanceStatuses, child.id).status === status
+      ),
+    [groupChildren, attendanceStatuses]
+  )
+
   const {
     totalAttendances,
     totalComing,
@@ -51,24 +60,12 @@ export default React.memo(function AttendanceList({
   } = useMemo(
     () => ({
       totalAttendances: groupChildren.length,
-      totalComing: groupChildren.filter(
-        (ac) =>
-          childAttendanceStatus(attendanceStatuses, ac.id).status === 'COMING'
-      ).length,
-      totalPresent: groupChildren.filter(
-        (ac) =>
-          childAttendanceStatus(attendanceStatuses, ac.id).status === 'PRESENT'
-      ).length,
-      totalDeparted: groupChildren.filter(
-        (ac) =>
-          childAttendanceStatus(attendanceStatuses, ac.id).status === 'DEPARTED'
-      ).length,
-      totalAbsent: groupChildren.filter(
-        (ac) =>
-          childAttendanceStatus(attendanceStatuses, ac.id).status === 'ABSENT'
-      ).length
+      totalComing: childrenWithStatus('COMING').length,
+      totalPresent: childrenWithStatus('PRESENT').length,
+      totalDeparted: childrenWithStatus('DEPARTED').length,
+      totalAbsent: childrenWithStatus('ABSENT').length
     }),
-    [attendanceStatuses, groupChildren]
+    [childrenWithStatus, groupChildren.length]
   )
 
   const tabs = useMemo(() => {
@@ -116,14 +113,13 @@ export default React.memo(function AttendanceList({
     totalAbsent
   ])
 
-  const filteredChildren = useMemo(
+  const filteredChildren: ListItem[] = useMemo(
     () =>
-      groupChildren.filter(
-        (child) =>
-          childAttendanceStatus(attendanceStatuses, child.id).status ===
-          attendanceStatus
-      ),
-    [attendanceStatus, attendanceStatuses, groupChildren]
+      childrenWithStatus(activeStatus).map((child) => ({
+        ...child,
+        status: activeStatus
+      })),
+    [activeStatus, childrenWithStatus]
   )
 
   return (
@@ -136,9 +132,8 @@ export default React.memo(function AttendanceList({
       >
         <ChildList
           unitId={unitId}
-          attendanceChildren={filteredChildren}
-          attendanceStatuses={attendanceStatuses}
-          type={attendanceStatus}
+          items={filteredChildren}
+          type={activeStatus}
         />
       </ContentArea>
     </>

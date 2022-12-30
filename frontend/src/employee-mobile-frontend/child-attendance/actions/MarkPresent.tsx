@@ -51,8 +51,7 @@ export default React.memo(function MarkPresent() {
 
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 
-  const now = mockNow() ?? new Date()
-  const [time, setTime] = useState<string>(formatTime(now))
+  const [time, setTime] = useState(() => formatTime(mockNow() ?? new Date()))
 
   const { mutateAsync: createArrival } = useMutationResult(
     createArrivalMutation

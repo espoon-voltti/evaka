@@ -20,9 +20,9 @@ import {
   getChildDeparture
 } from './api'
 
-export const queryKeys = createQueryKeys('childAttendance', {
+const queryKeys = createQueryKeys('childAttendance', {
   children: (unitId: string) => ['children', unitId],
-  attendanceStatus: (unitId: string) => ['attendanceStatus', unitId],
+  attendanceStatuses: (unitId: string) => ['attendanceStatuses', unitId],
   childDeparture: ({ unitId, childId }: { unitId: UUID; childId: UUID }) => [
     'childDeparture',
     unitId,
@@ -40,7 +40,7 @@ export const childrenQuery = query({
 
 export const attendanceStatusesQuery = query({
   api: getUnitAttendanceStatuses,
-  queryKey: queryKeys.attendanceStatus,
+  queryKey: queryKeys.attendanceStatuses,
   options: {
     staleTime: 5 * 60 * 1000
   }

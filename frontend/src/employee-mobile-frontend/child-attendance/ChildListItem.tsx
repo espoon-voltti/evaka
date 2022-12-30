@@ -25,6 +25,7 @@ import { getTodaysServiceTimes } from '../common/dailyServiceTimes'
 import { Translations, useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
 
+import { ListItem } from './ChildList'
 import { Reservations } from './Reservations'
 
 const ChildBox = styled.div`
@@ -93,8 +94,7 @@ const GroupName = styled(InformationText)`
 `
 
 interface ChildListItemProps {
-  child: Child
-  attendanceStatus: AttendanceStatus
+  child: ListItem
   onClick?: () => void
   type?: AttendanceStatus
   childAttendanceUrl: string
@@ -102,7 +102,6 @@ interface ChildListItemProps {
 
 export default React.memo(function ChildListItem({
   child,
-  attendanceStatus,
   onClick,
   type,
   childAttendanceUrl
@@ -135,7 +134,7 @@ export default React.memo(function ChildListItem({
   return (
     <ChildBox data-qa={`child-${child.id}`}>
       <AttendanceLinkBox to={childAttendanceUrl}>
-        <IconBox type={attendanceStatus}>
+        <IconBox type={child.status}>
           {child.imageUrl ? (
             <RoundImage src={child.imageUrl} />
           ) : (

@@ -2,13 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { animated, useSpring } from 'react-spring'
 import styled from 'styled-components'
@@ -22,6 +16,7 @@ import colors from 'lib-customizations/common'
 
 import { renderResult } from '../async-rendering'
 import FreeTextSearch from '../common/FreeTextSearch'
+import { CountInfo } from '../common/GroupSelector'
 import { PageWithNavigation } from '../common/PageWithNavigation'
 import { useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
@@ -71,33 +66,28 @@ export default React.memo(function AttendancePageWrapper() {
 
   const toggleSearch = useCallback(() => setShowSearch((show) => !show), [])
 
-  const countInfo = useMemo(
-    () => ({
-      getTotalCount: (groupId: string | undefined) =>
-        unitChildren
-          .map((children) =>
+  const countInfo: CountInfo | undefined = useMemo(
+    () =>
+      combine(unitChildren, attendanceStatuses)
+        .map(([children, attendanceStatuses]) => ({
+          getTotalCount: (groupId: string | undefined) =>
             groupId === undefined
               ? children.length
-              : children.filter((child) => child.groupId === groupId).length
-          )
-          .getOrElse(0),
-      getPresentCount: (groupId: string | undefined) =>
-        combine(unitChildren, attendanceStatuses)
-          .map(([children, attendanceStatuses]) =>
-            children.filter(
+              : children.filter((child) => child.groupId === groupId).length,
+          getPresentCount: (groupId: string | undefined) => {
+            const presentChildren = children.filter(
               (child) =>
                 childAttendanceStatus(attendanceStatuses, child.id).status ===
                 'PRESENT'
             )
-          )
-          .map((children) =>
-            groupId === undefined
-              ? children.length
-              : children.filter((child) => child.groupId === groupId).length
-          )
-          .getOrElse(0),
-      infoText: i18n.attendances.chooseGroupInfo
-    }),
+            return groupId === undefined
+              ? presentChildren.length
+              : presentChildren.filter((child) => child.groupId === groupId)
+                  .length
+          },
+          infoText: i18n.attendances.chooseGroupInfo
+        }))
+        .getOrElse(undefined),
     [attendanceStatuses, i18n, unitChildren]
   )
 
@@ -125,7 +115,7 @@ export default React.memo(function AttendancePageWrapper() {
             <AttendanceList
               unitId={unitId}
               groupId={groupId}
-              attendanceStatus={mapChildAttendanceUIState(attendanceStatus)}
+              activeStatus={mapChildAttendanceUIState(attendanceStatus)}
               unitChildren={children}
               attendanceStatuses={attendanceStatuses}
             />
@@ -152,20 +142,23 @@ const ChildSearch = React.memo(function Search({
   const { i18n } = useTranslation()
   const containerSpring = useSpring<{ x: number }>({ x: show ? 1 : 0 })
   const [freeText, setFreeText] = useState<string>('')
-  const [searchResults, setSearchResults] = useState<Child[]>([])
 
-  useEffect(() => {
-    if (freeText === '') {
-      setSearchResults([])
-    } else {
-      const filteredData = unitChildren.filter(
-        (ac) =>
-          ac.firstName.toLowerCase().includes(freeText.toLowerCase()) ||
-          ac.lastName.toLowerCase().includes(freeText.toLowerCase())
-      )
-      setSearchResults(filteredData)
-    }
-  }, [freeText, unitChildren])
+  const searchResults = useMemo(
+    () =>
+      freeText === ''
+        ? []
+        : unitChildren
+            .filter(
+              (ac) =>
+                ac.firstName.toLowerCase().includes(freeText.toLowerCase()) ||
+                ac.lastName.toLowerCase().includes(freeText.toLowerCase())
+            )
+            .map((child) => ({
+              ...child,
+              status: childAttendanceStatus(attendanceStatuses, child.id).status
+            })),
+    [attendanceStatuses, freeText, unitChildren]
+  )
 
   return (
     <SearchContainer
@@ -184,11 +177,7 @@ const ChildSearch = React.memo(function Search({
           setShowSearch={toggleShow}
           searchResults={searchResults}
         />
-        <ChildList
-          unitId={unitId}
-          attendanceChildren={searchResults}
-          attendanceStatuses={attendanceStatuses}
-        />
+        <ChildList unitId={unitId} items={searchResults} />
       </ContentArea>
     </SearchContainer>
   )

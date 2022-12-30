@@ -20,12 +20,14 @@ import colors from 'lib-customizations/common'
 import { useTranslation } from '../common/i18n'
 
 import ChildListItem from './ChildListItem'
-import { AttendanceStatuses, childAttendanceStatus } from './utils'
+
+export interface ListItem extends Child {
+  status: AttendanceStatus
+}
 
 interface Props {
   unitId: string
-  attendanceChildren: Child[]
-  attendanceStatuses: AttendanceStatuses
+  items: ListItem[]
   type?: AttendanceStatus
 }
 
@@ -34,27 +36,19 @@ const NoChildrenOnList = styled.div`
   margin-top: 40px;
 `
 
-export default React.memo(function ChildList({
-  unitId,
-  attendanceChildren,
-  attendanceStatuses,
-  type
-}: Props) {
+export default React.memo(function ChildList({ unitId, items, type }: Props) {
   const { i18n } = useTranslation()
 
   return (
     <FixedSpaceColumn>
       <OrderedList spacing="zero">
-        {attendanceChildren.length > 0 ? (
-          attendanceChildren.map((ac) => (
+        {items.length > 0 ? (
+          items.map((ac) => (
             <Li key={ac.id}>
               <ChildListItem
                 type={type}
                 key={ac.id}
                 child={ac}
-                attendanceStatus={
-                  childAttendanceStatus(attendanceStatuses, ac.id).status
-                }
                 childAttendanceUrl={`/units/${unitId}/groups/${
                   ac.groupId ?? 'all'
                 }/child-attendance/${ac.id}`}

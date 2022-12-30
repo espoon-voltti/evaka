@@ -88,7 +88,7 @@ export default React.memo(function MarkDeparted() {
   }>()
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 
-  const [time, setTime] = useState<string>(formatTime(mockNow() ?? new Date()))
+  const [time, setTime] = useState(() => formatTime(mockNow() ?? new Date()))
   const childDepartureInfo = useQueryResult(
     childDepartureQuery({ unitId, childId })
   )
@@ -109,7 +109,9 @@ export default React.memo(function MarkDeparted() {
     [childDepartureInfo, time]
   )
 
-  const { data: attendanceStatuses } = useQuery(attendanceStatusesQuery(unitId))
+  const { data: attendanceStatuses, isError } = useQuery(
+    attendanceStatusesQuery(unitId)
+  )
   const timeError = useMemo(
     () =>
       attendanceStatuses
@@ -118,8 +120,10 @@ export default React.memo(function MarkDeparted() {
             time,
             childAttendanceStatus(attendanceStatuses, childId).attendances
           )
+        : isError
+        ? i18n.common.loadingFailed
         : undefined,
-    [attendanceStatuses, childId, i18n, time]
+    [attendanceStatuses, childId, i18n, isError, time]
   )
 
   const { mutateAsync: createDeparture } = useMutationResult(
