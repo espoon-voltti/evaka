@@ -7,6 +7,7 @@ import path from 'path'
 
 const names = [
   'espooad-internal-prod.pem',
+  'espooad-internal-prod.2022.pem',
   'espooad-internal-staging.pem',
   'espooad-internal-staging.2022.pem',
   'idp.test.espoon-voltti.fi.pem',
