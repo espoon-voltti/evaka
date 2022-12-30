@@ -45,7 +45,7 @@ import { DatePickerClearableDeprecated } from 'lib-components/molecules/DatePick
 import { Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import colors, { applicationBasisColors } from 'lib-customizations/common'
-import { applicationTypes } from 'lib-customizations/employee'
+import { applicationTypes, featureFlags } from 'lib-customizations/employee'
 import {
   faAngleDown,
   faAngleUp,
@@ -796,8 +796,9 @@ export const preschoolTypes = [
   'PRESCHOOL_ONLY',
   'PRESCHOOL_DAYCARE',
   'PRESCHOOL_CLUB',
-  'PREPARATORY_ONLY',
-  'PREPARATORY_DAYCARE',
+  ...(featureFlags.preparatory
+    ? (['PREPARATORY_ONLY', 'PREPARATORY_DAYCARE'] as const)
+    : ([] as const)),
   'DAYCARE_ONLY'
 ] as const
 
