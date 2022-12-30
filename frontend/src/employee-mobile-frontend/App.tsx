@@ -13,6 +13,8 @@ import {
 } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 
+import { useQuery } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import {
   Notifications,
@@ -29,6 +31,10 @@ import MarkAbsent from './child-attendance/actions/MarkAbsent'
 import MarkAbsentBeforehand from './child-attendance/actions/MarkAbsentBeforehand'
 import MarkDeparted from './child-attendance/actions/MarkDeparted'
 import MarkPresent from './child-attendance/actions/MarkPresent'
+import {
+  attendanceStatusesQuery,
+  childrenQuery
+} from './child-attendance/queries'
 import AttendanceChildPage from './child-info/AttendanceChildPage'
 import ChildSensitiveInfoPage from './child-info/ChildSensitiveInfoPage'
 import ChildNotes from './child-notes/ChildNotes'
@@ -128,6 +134,11 @@ function GroupRouter() {
 }
 
 function ChildAttendanceRouter() {
+  // Re-fetch child data when navigating to the attendance section
+  const { unitId } = useNonNullableParams<{ unitId: UUID }>()
+  useQuery(childrenQuery(unitId), { refetchOnMount: 'always' })
+  useQuery(attendanceStatusesQuery(unitId), { refetchOnMount: 'always' })
+
   return (
     <Routes>
       <Route
