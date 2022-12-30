@@ -2,11 +2,9 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 
-import { Loading, Result, Success } from 'lib-common/api'
-import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -17,12 +15,12 @@ import ContactInfoSection from '../../applications/editor/contact-info/ContactIn
 import ServiceNeedSection from '../../applications/editor/service-need/ServiceNeedSection'
 import UnitPreferenceSection from '../../applications/editor/unit-preference/UnitPreferenceSection'
 import { useTranslation } from '../../localization'
-import { getServiceNeedOptionPublicInfos } from '../api'
+import { serviceNeedOptionPublicInfosQuery } from '../queries'
 
 import { ApplicationFormProps } from './ApplicationEditor'
 
 export default React.memo(function ApplicationFormDaycare({
-  apiData,
+  application,
   formData,
   setFormData,
   errors,
@@ -34,30 +32,14 @@ export default React.memo(function ApplicationFormDaycare({
   const applicationType = 'DAYCARE'
   const t = useTranslation()
 
-  const [serviceNeedOptions, setServiceNeedOptions] = useState<
-    Result<ServiceNeedOptionPublicInfo[]>
-  >(Loading.of())
-
-  const loadServiceNeedOptions = useRestApi(
-    getServiceNeedOptionPublicInfos,
-    setServiceNeedOptions
-  )
-
-  // If service need options are not enabled, backend sets to null
-  const shouldLoadServiceNeedOptions =
-    formData.serviceNeed.serviceNeedOption !== null
-
-  useEffect(() => {
-    if (shouldLoadServiceNeedOptions) {
-      void loadServiceNeedOptions(['DAYCARE', 'DAYCARE_PART_TIME'])
-    } else {
-      setServiceNeedOptions((prev) => (prev.isLoading ? Success.of([]) : prev))
+  const serviceNeedOptions = useQueryResult(
+    serviceNeedOptionPublicInfosQuery(['DAYCARE', 'DAYCARE_PART_TIME']),
+    {
+      // If service need options are not enabled, backend sets to null
+      enabled: formData.serviceNeed.serviceNeedOption !== null,
+      initialData: []
     }
-  }, [
-    setServiceNeedOptions,
-    loadServiceNeedOptions,
-    shouldLoadServiceNeedOptions
-  ])
+  )
 
   return (
     <>
@@ -69,14 +51,14 @@ export default React.memo(function ApplicationFormDaycare({
         <FixedSpaceColumn spacing="s">
           <Heading
             type={applicationType}
-            transferApplication={apiData.transferApplication}
-            firstName={apiData.form.child.person.firstName}
-            lastName={apiData.form.child.person.lastName}
+            transferApplication={application.transferApplication}
+            firstName={application.form.child.person.firstName}
+            lastName={application.form.child.person.lastName}
             errors={verificationRequested ? errors : undefined}
           />
 
           <ServiceNeedSection
-            status={apiData.status}
+            status={application.status}
             minDate={minDate}
             maxDate={maxDate}
             originalPreferredStartDate={originalPreferredStartDate}
@@ -143,8 +125,8 @@ export default React.memo(function ApplicationFormDaycare({
             verificationRequested={verificationRequested}
             fullFamily={true}
             otherGuardianStatus={
-              apiData.otherGuardianId
-                ? apiData.otherGuardianLivesInSameAddress
+              application.otherGuardianId
+                ? application.otherGuardianLivesInSameAddress
                   ? 'SAME_ADDRESS'
                   : 'DIFFERENT_ADDRESS'
                 : 'NO'

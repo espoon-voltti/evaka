@@ -83,7 +83,7 @@ export function useQueryResult<Data, Key extends QueryKey>(
 
 export interface MutationDescription<Arg, Data, Key extends QueryKey> {
   api: (arg: Arg) => Promise<Data>
-  invalidateQueryKeys: (arg: Arg) => Key[]
+  invalidateQueryKeys?: ((arg: Arg) => Key[]) | undefined
 }
 
 export function mutation<Arg, Data, Key extends QueryKey>(
@@ -103,8 +103,10 @@ export function useMutation<Arg, Data, Key extends QueryKey>(
     ...options,
     onSuccess: async (data, arg, context) => {
       await options?.onSuccess?.(data, arg, context)
-      for (const key of invalidateQueryKeys(arg)) {
-        await queryClient.invalidateQueries(key)
+      if (invalidateQueryKeys) {
+        for (const key of invalidateQueryKeys(arg)) {
+          await queryClient.invalidateQueries(key)
+        }
       }
     }
   })

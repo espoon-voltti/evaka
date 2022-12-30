@@ -6,9 +6,9 @@ import React from 'react'
 
 import { combine } from 'lib-common/api'
 import { apiDataToFormData } from 'lib-common/api-types/application/ApplicationFormData'
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import Container from 'lib-components/layout/Container'
 
 import Footer from '../../Footer'
@@ -16,20 +16,17 @@ import ApplicationReadViewContents from '../../applications/read-view/Applicatio
 import { renderResult } from '../../async-rendering'
 import { useTranslation } from '../../localization'
 import useTitle from '../../useTitle'
-import { getApplication, getApplicationChildren } from '../api'
+import { applicationChildrenQuery, applicationQuery } from '../queries'
 
 export default React.memo(function ApplicationReadView() {
   const { applicationId } = useNonNullableParams<{ applicationId: UUID }>()
   const t = useTranslation()
-  const [apiData] = useApiState(
-    () => getApplication(applicationId),
-    [applicationId]
-  )
-  const [children] = useApiState(getApplicationChildren, [])
+  const application = useQueryResult(applicationQuery(applicationId))
+  const children = useQueryResult(applicationChildrenQuery)
 
   useTitle(
     t,
-    apiData
+    application
       .map(({ type }) => t.applications.editor.heading.title[type])
       .getOrElse('')
   )
@@ -37,7 +34,7 @@ export default React.memo(function ApplicationReadView() {
   return (
     <>
       <Container>
-        {renderResult(combine(apiData, children), ([apiData, children]) => (
+        {renderResult(combine(application, children), ([apiData, children]) => (
           <ApplicationReadViewContents
             application={apiData}
             formData={apiDataToFormData(apiData, children)}

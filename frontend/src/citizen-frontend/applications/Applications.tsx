@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { isLoading } from 'lib-common/api'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import Container, { ContentArea } from 'lib-components/layout/Container'
 import { fontWeights, H1, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
@@ -20,14 +20,11 @@ import { renderResult } from '../async-rendering'
 import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
 
-import { getGuardianApplications } from './api'
+import { guardianApplicationsQuery } from './queries'
 
 export default React.memo(function Applications() {
   const t = useTranslation()
-  const [guardianApplications, loadGuardianApplications] = useApiState(
-    getGuardianApplications,
-    []
-  )
+  const guardianApplications = useQueryResult(guardianApplicationsQuery)
 
   useTitle(t, t.applicationsList.title)
 
@@ -55,10 +52,7 @@ export default React.memo(function Applications() {
           {sortBy(guardianApplications, (a) => a.childName).map(
             (childApplications) => (
               <Fragment key={childApplications.childId}>
-                <ChildApplicationsBlock
-                  data={childApplications}
-                  reload={loadGuardianApplications}
-                />
+                <ChildApplicationsBlock data={childApplications} />
                 <Gap size="s" />
               </Fragment>
             )
