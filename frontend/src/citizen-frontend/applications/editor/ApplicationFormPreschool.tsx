@@ -2,27 +2,26 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 
 import { useTranslation } from 'citizen-frontend/localization'
-import { Loading, Result, Success } from 'lib-common/api'
-import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
-import { useRestApi } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import Loader from 'lib-components/atoms/Loader'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import AdditionalDetailsSection from '../../applications/editor/AdditionalDetailsSection'
-import { ApplicationFormProps } from '../../applications/editor/ApplicationEditor'
 import Heading from '../../applications/editor/Heading'
 import ContactInfoSection from '../../applications/editor/contact-info/ContactInfoSection'
 import ServiceNeedSection from '../../applications/editor/service-need/ServiceNeedSection'
 import UnitPreferenceSection from '../../applications/editor/unit-preference/UnitPreferenceSection'
-import { getServiceNeedOptionPublicInfos } from '../api'
+import { serviceNeedOptionPublicInfosQuery } from '../queries'
+
+import { ApplicationFormProps } from './ApplicationEditor'
 
 export default React.memo(function ApplicationFormPreschool({
-  apiData,
+  application,
   formData,
   setFormData,
   errors,
@@ -35,29 +34,13 @@ export default React.memo(function ApplicationFormPreschool({
   const applicationType = 'PRESCHOOL'
   const t = useTranslation()
 
-  const [serviceNeedOptions, setServiceNeedOptions] = useState<
-    Result<ServiceNeedOptionPublicInfo[]>
-  >(Loading.of())
-
-  const loadServiceNeedOptions = useRestApi(
-    getServiceNeedOptionPublicInfos,
-    setServiceNeedOptions
-  )
-
-  const shouldLoadServiceNeedOptions =
-    featureFlags.preschoolApplication.serviceNeedOption
-
-  useEffect(() => {
-    if (shouldLoadServiceNeedOptions) {
-      void loadServiceNeedOptions(['PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'])
-    } else {
-      setServiceNeedOptions((prev) => (prev.isLoading ? Success.of([]) : prev))
+  const serviceNeedOptions = useQueryResult(
+    serviceNeedOptionPublicInfosQuery(['PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB']),
+    {
+      enabled: featureFlags.preschoolApplication.serviceNeedOption,
+      initialData: []
     }
-  }, [
-    setServiceNeedOptions,
-    loadServiceNeedOptions,
-    shouldLoadServiceNeedOptions
-  ])
+  )
 
   if (serviceNeedOptions.isLoading) {
     return <Loader />
@@ -70,14 +53,14 @@ export default React.memo(function ApplicationFormPreschool({
     <FixedSpaceColumn spacing="s">
       <Heading
         type={applicationType}
-        transferApplication={apiData.transferApplication}
-        firstName={apiData.form.child.person.firstName}
-        lastName={apiData.form.child.person.lastName}
+        transferApplication={application.transferApplication}
+        firstName={application.form.child.person.firstName}
+        lastName={application.form.child.person.lastName}
         errors={verificationRequested ? errors : undefined}
       />
 
       <ServiceNeedSection
-        status={apiData.status}
+        status={application.status}
         originalPreferredStartDate={originalPreferredStartDate}
         minDate={minDate}
         maxDate={maxDate}
@@ -145,8 +128,8 @@ export default React.memo(function ApplicationFormPreschool({
         verificationRequested={verificationRequested}
         fullFamily={formData.serviceNeed.connectedDaycare}
         otherGuardianStatus={
-          apiData.otherGuardianId
-            ? apiData.otherGuardianLivesInSameAddress
+          application.otherGuardianId
+            ? application.otherGuardianLivesInSameAddress
               ? 'SAME_ADDRESS'
               : 'DIFFERENT_ADDRESS'
             : 'NO'
