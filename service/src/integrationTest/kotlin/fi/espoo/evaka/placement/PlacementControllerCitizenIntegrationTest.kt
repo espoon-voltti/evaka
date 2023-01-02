@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.placement
 
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.backupcare.getBackupCaresForChild
@@ -19,11 +17,12 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestBackUpCare
 import fi.espoo.evaka.shared.dev.insertTestDaycareGroup
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.domain.Forbidden
+import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.security.PilotFeature
 import fi.espoo.evaka.snPreschoolDaycare45
 import fi.espoo.evaka.snPreschoolDaycarePartDay35
@@ -33,6 +32,10 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -40,23 +43,22 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 
 class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
-    private final val child = testChild_1
-    private final val child2 = testChild_2
-    private final val parent = testAdult_1
-    private final val authenticatedParent =
-        AuthenticatedUser.Citizen(parent.id, CitizenAuthLevel.STRONG)
+    @Autowired private lateinit var placementControllerCitizen: PlacementControllerCitizen
 
-    private final val daycareId = testDaycare.id
-    private final val daycare2Id = testDaycare2.id
+    private val child = testChild_1
+    private val child2 = testChild_2
+    private val parent = testAdult_1
+    private val authenticatedParent = AuthenticatedUser.Citizen(parent.id, CitizenAuthLevel.STRONG)
 
-    private final val today = LocalDate.now()
+    private val daycareId = testDaycare.id
+    private val daycare2Id = testDaycare2.id
 
-    private final val placementStart = today.minusMonths(3)
-    private final val placementEnd = placementStart.plusMonths(6)
+    private val today = LocalDate.now()
+
+    private val placementStart = today.minusMonths(3)
+    private val placementEnd = placementStart.plusMonths(6)
 
     @BeforeEach
     fun setUp() {
@@ -594,11 +596,11 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
                 unitId = daycare2Id,
                 terminateDaycareOnly = false
             )
-        terminatePlacements(child.id, body, 403)
+        assertThrows<Forbidden> { terminatePlacements(child.id, body) }
         db.transaction {
             it.addUnitFeatures(listOf(daycare2Id), listOf(PilotFeature.PLACEMENT_TERMINATION))
         }
-        terminatePlacements(child.id, body, 200)
+        terminatePlacements(child.id, body)
     }
 
     @Test
@@ -716,24 +718,19 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
     private fun terminatePlacements(
         childId: ChildId,
         termination: PlacementControllerCitizen.PlacementTerminationRequestBody,
-        expectedStatus: Int = 200
     ) {
-        http
-            .post("/citizen/children/$childId/placements/terminate")
-            .jsonBody(jsonMapper.writeValueAsString(termination))
-            .asUser(authenticatedParent)
-            .response()
-            .also { assertEquals(expectedStatus, it.second.statusCode) }
+        placementControllerCitizen.postPlacementTermination(
+            dbInstance(),
+            authenticatedParent,
+            RealEvakaClock(),
+            childId,
+            termination
+        )
     }
 
     private fun getChildPlacements(childId: ChildId): List<TerminatablePlacementGroup> {
-        return http
-            .get("/citizen/children/$childId/placements")
-            .asUser(authenticatedParent)
-            .responseObject<PlacementControllerCitizen.ChildPlacementResponse>(jsonMapper)
-            .also { assertEquals(200, it.second.statusCode) }
-            .third
-            .get()
+        return placementControllerCitizen
+            .getPlacements(dbInstance(), authenticatedParent, RealEvakaClock(), childId)
             .placements
     }
 }
