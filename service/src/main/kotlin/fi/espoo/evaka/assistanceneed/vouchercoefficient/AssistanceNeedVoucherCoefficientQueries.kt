@@ -87,18 +87,15 @@ fun Database.Transaction.updateAssistanceNeedVoucherCoefficient(
 
 fun Database.Transaction.deleteAssistanceNeedVoucherCoefficient(
     id: AssistanceNeedVoucherCoefficientId
-): Boolean {
+): AssistanceNeedVoucherCoefficient? {
     val sql =
         """
         DELETE FROM assistance_need_voucher_coefficient
         WHERE id = :id
-        RETURNING id
+        RETURNING id, child_id, coefficient, validity_period
         """
             .trimIndent()
-    return createQuery(sql)
-        .bind("id", id)
-        .mapTo<AssistanceNeedVoucherCoefficientId>()
-        .firstOrNull() != null
+    return createQuery(sql).bind("id", id).mapTo<AssistanceNeedVoucherCoefficient>().firstOrNull()
 }
 
 fun Database.Read.getOverlappingAssistanceNeedVoucherCoefficientsForChild(

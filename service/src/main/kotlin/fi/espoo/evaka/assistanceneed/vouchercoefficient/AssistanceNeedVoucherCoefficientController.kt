@@ -7,6 +7,9 @@ package fi.espoo.evaka.assistanceneed.vouchercoefficient
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.shared.AssistanceNeedVoucherCoefficientId
 import fi.espoo.evaka.shared.ChildId
+import fi.espoo.evaka.shared.Timeline
+import fi.espoo.evaka.shared.async.AsyncJob
+import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -23,7 +26,10 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class AssistanceNeedVoucherCoefficientController(private val accessControl: AccessControl) {
+class AssistanceNeedVoucherCoefficientController(
+    private val accessControl: AccessControl,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>
+) {
     @PostMapping("/children/{childId}/assistance-need-voucher-coefficients")
     fun createAssistanceNeedVoucherCoefficient(
         db: Database,
@@ -42,7 +48,18 @@ class AssistanceNeedVoucherCoefficientController(private val accessControl: Acce
                         childId
                     )
                     adjustExistingCoefficients(tx, childId, body.validityPeriod, null)
-                    tx.insertAssistanceNeedVoucherCoefficient(childId, body)
+                    tx.insertAssistanceNeedVoucherCoefficient(childId, body).also {
+                        asyncJobRunner.plan(
+                            tx,
+                            listOf(
+                                AsyncJob.GenerateFinanceDecisions.forChild(
+                                    childId,
+                                    body.validityPeriod.asDateRange(),
+                                )
+                            ),
+                            runAt = clock.now()
+                        )
+                    }
                 }
             }
             .also { coefficient ->
@@ -103,19 +120,37 @@ class AssistanceNeedVoucherCoefficientController(private val accessControl: Acce
                         Action.AssistanceNeedVoucherCoefficient.UPDATE,
                         assistanceNeedVoucherCoefficientId
                     )
+                    val existing =
+                        tx.getAssistanceNeedVoucherCoefficientById(
+                            assistanceNeedVoucherCoefficientId
+                        )
                     adjustExistingCoefficients(
                         tx,
-                        tx.getAssistanceNeedVoucherCoefficientById(
-                                assistanceNeedVoucherCoefficientId
-                            )
-                            .childId,
+                        existing.childId,
                         body.validityPeriod,
                         assistanceNeedVoucherCoefficientId
                     )
+
+                    val combinedRange =
+                        Timeline.of(existing.validityPeriod, body.validityPeriod)
+                            .spanningRange()!!
+                            .asDateRange()
                     tx.updateAssistanceNeedVoucherCoefficient(
-                        id = assistanceNeedVoucherCoefficientId,
-                        data = body
-                    )
+                            id = assistanceNeedVoucherCoefficientId,
+                            data = body
+                        )
+                        .also {
+                            asyncJobRunner.plan(
+                                tx,
+                                listOf(
+                                    AsyncJob.GenerateFinanceDecisions.forChild(
+                                        existing.childId,
+                                        combinedRange
+                                    )
+                                ),
+                                runAt = clock.now()
+                            )
+                        }
                 }
             }
             .also {
@@ -141,14 +176,22 @@ class AssistanceNeedVoucherCoefficientController(private val accessControl: Acce
                     Action.AssistanceNeedVoucherCoefficient.DELETE,
                     assistanceNeedVoucherCoefficientId
                 )
-                if (
-                    !tx.deleteAssistanceNeedVoucherCoefficient(assistanceNeedVoucherCoefficientId)
-                ) {
-                    throw NotFound(
-                        "Assistance need voucher coefficient $assistanceNeedVoucherCoefficientId cannot found or cannot be deleted",
-                        "VOUCHER_COEFFICIENT_NOT_FOUND"
-                    )
-                }
+                val existing =
+                    tx.deleteAssistanceNeedVoucherCoefficient(assistanceNeedVoucherCoefficientId)
+                        ?: throw NotFound(
+                            "Assistance need voucher coefficient $assistanceNeedVoucherCoefficientId cannot found or cannot be deleted",
+                            "VOUCHER_COEFFICIENT_NOT_FOUND"
+                        )
+                asyncJobRunner.plan(
+                    tx,
+                    listOf(
+                        AsyncJob.GenerateFinanceDecisions.forChild(
+                            existing.childId,
+                            existing.validityPeriod.asDateRange(),
+                        )
+                    ),
+                    runAt = clock.now()
+                )
             }
         }
         Audit.ChildAssistanceNeedVoucherCoefficientDelete.log(
