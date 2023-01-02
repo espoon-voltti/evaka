@@ -32,10 +32,6 @@ import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -43,6 +39,10 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
 
 class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired private lateinit var placementControllerCitizen: PlacementControllerCitizen
@@ -305,14 +305,13 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
     @Test
     fun `terminating PRESCHOOL_DAYCARE with daycare only changes the remainder of the preschool to PRESCHOOL and terminates upcoming daycare`() {
-        // |------------ PRESCHOOL_DAYCARE -------------||--------- DAYCARE --------||---
-        // PRESCHOOL_DAYCARE ---|
-        // 1. terminateDaycareOnly = true
-        // |--- PRESCHOOL_DAYCARE -------||- PRESCHOOL -|                            |-------
-        // PRESCHOOL -------|
-        // 2. terminate again terminateDaycareOnly = true
-        // |--- PRESCHOOL_DAYCARE --||------ PRESCHOOL -|                            |-------
-        // PRESCHOOL -------|
+        /*
+        |------------ PRESCHOOL_DAYCARE -------------||--------- DAYCARE --------||--- PRESCHOOL_DAYCARE ---|
+        1. terminateDaycareOnly = true
+        |--- PRESCHOOL_DAYCARE -------||- PRESCHOOL -|                            |------- PRESCHOOL -------|
+        2. terminate again terminateDaycareOnly = true
+        |--- PRESCHOOL_DAYCARE --||------ PRESCHOOL -|                            |------- PRESCHOOL -------|
+         */
 
         val startPreschool = today.minusWeeks(2)
         val endPreschool = startPreschool.plusMonths(1)
@@ -423,13 +422,15 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
 
     @Test
     fun `terminating PRESCHOOL_DAYCARE with daycare only does not affect anything before termination date`() {
-        // |--- PRESCHOOL_DAYCARE ---||--------- DAYCARE --------||--- PRESCHOOL_DAYCARE ---|
-        // 1. terminateDaycareOnly = true
-        //                                                          terminationDate   x
-        // |--- PRESCHOOL_DAYCARE ---||--------- DAYCARE --------||------ P_D --------|--P--|
-        // 2. terminate again terminateDaycareOnly = true
-        //                      terminationDate   x
-        // |--- PRESCHOOL_DAYCARE ---||- DAYCARE -|               |------- PRESCHOOL -------|
+        /*
+        |--- PRESCHOOL_DAYCARE ---||--------- DAYCARE --------||--- PRESCHOOL_DAYCARE ---|
+        1. terminateDaycareOnly = true
+                                                                 terminationDate   x
+        |--- PRESCHOOL_DAYCARE ---||--------- DAYCARE --------||------ P_D --------|--P--|
+        2. terminate again terminateDaycareOnly = true
+                             terminationDate   x
+        |--- PRESCHOOL_DAYCARE ---||- DAYCARE -|               |------- PRESCHOOL -------|
+        */
 
         val startPreschool = today.minusWeeks(2)
         val endPreschool = startPreschool.plusMonths(1)
@@ -531,8 +532,9 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         assertEquals(expected.size, placements.size)
     }
 
-    // |------------ PRESCHOOL_DAYCARE -------------||--------- DAYCARE --------||---
-    // PRESCHOOL_DAYCARE ---|
+    /*
+    |------------ PRESCHOOL_DAYCARE -------------||--------- DAYCARE --------||--- PRESCHOOL_DAYCARE ---|
+    */
     private fun insertComplexPlacements(
         childId: PersonId,
         startPreschool: LocalDate,
