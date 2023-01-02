@@ -145,25 +145,36 @@ class ChildAttendanceController(
                         unitId
                     )
 
-                    // Do not return anything for children that have no attendances or absences;
-                    // the implicit attendance status is COMING for children returned by the
-                    // getChildren() endpoint
+                    // Do not return anything for children that have no placement, attendances or
+                    // absences; the implicit attendance status is COMING for children returned
+                    // by the getChildren() endpoint
                     val childrenAttendances = tx.getUnitChildAttendances(unitId, now)
                     val childrenAbsences = tx.getUnitChildAbsences(unitId, today)
                     val childIds = childrenAttendances.keys + childrenAbsences.keys
                     val childPlacementTypes = tx.getChildPlacementTypes(childIds, today)
-                    childIds.associateWith { childId ->
-                        val placementType =
-                            childPlacementTypes[childId]
-                                ?: throw BadRequest("Child $childId has no placement")
-                        val absences = childrenAbsences[childId] ?: emptyList()
-                        val attendances = childrenAttendances[childId] ?: emptyList()
-                        ChildAttendanceStatusResponse(
-                            absences,
-                            attendances,
-                            getChildAttendanceStatus(placementType, attendances, absences)
-                        )
-                    }
+                    childIds
+                        .asSequence()
+                        .map { childId ->
+                            val placementType = childPlacementTypes[childId]
+                            if (placementType == null) {
+                                null
+                            } else {
+                                val absences = childrenAbsences[childId] ?: emptyList()
+                                val attendances = childrenAttendances[childId] ?: emptyList()
+                                childId to
+                                    ChildAttendanceStatusResponse(
+                                        absences,
+                                        attendances,
+                                        getChildAttendanceStatus(
+                                            placementType,
+                                            attendances,
+                                            absences
+                                        )
+                                    )
+                            }
+                        }
+                        .filterNotNull()
+                        .toMap()
                 }
             }
             .also {
