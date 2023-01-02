@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import LocalDate from 'lib-common/local-date'
+
 import config from '../../config'
 import { insertApplications, resetDatabase } from '../../dev-api'
 import {
@@ -28,9 +30,9 @@ beforeEach(async () => {
   admin = (await Fixture.employeeAdmin().save()).data
 })
 
-async function openPage() {
+async function openPage(employee: EmployeeDetail = admin) {
   const page = await Page.open()
-  await employeeLogin(page, admin)
+  await employeeLogin(page, employee)
   await page.goto(config.adminUrl)
   return new ApplicationListView(page)
 }
@@ -133,6 +135,57 @@ describe('Employee searches applications', () => {
 
     await applicationListView.toggleUnit(daycare1.data.name)
     await applicationListView.assertApplicationIsVisible(app1.id)
+    await applicationListView.assertApplicationCount(1)
+  })
+
+  test('Special education teacher (VEO) sees only allowed applications', async () => {
+    const careArea1 = await Fixture.careArea().save()
+    const daycare1 = await Fixture.daycare().careArea(careArea1).save()
+    const daycare2 = await Fixture.daycare().careArea(careArea1).save()
+
+    const specialEducationTeacher = (
+      await Fixture.employeeSpecialEducationTeacher(daycare1.data.id).save()
+    ).data
+
+    const createApplicationForUnit = (
+      unitId: string,
+      assistanceNeeded: boolean
+    ) => ({
+      ...applicationFixture(
+        fixtures.enduserChildFixtureJari,
+        fixtures.enduserGuardianFixture,
+        undefined,
+        'DAYCARE',
+        null,
+        [unitId],
+        false,
+        'SENT',
+        LocalDate.of(2021, 8, 16),
+        false,
+        assistanceNeeded
+      ),
+      id: uuidv4()
+    })
+
+    const appWithAssistanceNeeded = createApplicationForUnit(
+      daycare1.data.id,
+      true
+    )
+    const appWithoutAssistanceNeeded = createApplicationForUnit(
+      daycare1.data.id,
+      false
+    )
+    const appWithAssistanceNeededWrongUnit = createApplicationForUnit(
+      daycare2.data.id,
+      true
+    )
+
+    await insertApplications([
+      appWithAssistanceNeeded,
+      appWithoutAssistanceNeeded,
+      appWithAssistanceNeededWrongUnit
+    ])
+    const applicationListView = await openPage(specialEducationTeacher)
     await applicationListView.assertApplicationCount(1)
   })
 

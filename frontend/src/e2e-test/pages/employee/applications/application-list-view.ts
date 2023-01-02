@@ -74,4 +74,8 @@ export default class ApplicationListView {
   async filterByApplicationType(type: ApplicationTypeToggle) {
     await this.page.find(`[data-qa="application-type-filter-${type}"]`).click()
   }
+
+  async pause() {
+    await this.page.pause()
+  }
 }

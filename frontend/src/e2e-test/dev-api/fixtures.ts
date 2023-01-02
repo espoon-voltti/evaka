@@ -665,7 +665,8 @@ const applicationForm = (
   otherGuardianAgreementStatus: OtherGuardianAgreementStatus | null,
   preferredStartDate: LocalDate,
   preferredUnits: string[],
-  connectedDaycare = false
+  connectedDaycare = false,
+  assistanceNeeded = false
 ): ApplicationForm => {
   const secondGuardian =
     guardian2Phone || guardian2Email || otherGuardianAgreementStatus
@@ -704,7 +705,7 @@ const applicationForm = (
       language: 'fi',
       allergies: '',
       diet: '',
-      assistanceNeeded: false,
+      assistanceNeeded,
       assistanceDescription: ''
     },
     guardian: {
@@ -753,7 +754,8 @@ export const applicationFixture = (
   connectedDaycare = false,
   status: ApplicationStatus = 'SENT',
   preferredStartDate: LocalDate = LocalDate.of(2021, 8, 16),
-  transferApplication = false
+  transferApplication = false,
+  assistanceNeeded = false
 ): Application => ({
   id: applicationFixtureId,
   type: type,
@@ -769,7 +771,8 @@ export const applicationFixture = (
     otherGuardianAgreementStatus,
     preferredStartDate,
     preferredUnits,
-    connectedDaycare
+    connectedDaycare,
+    assistanceNeeded
   ),
   checkedByAdmin: false,
   hideFromGuardian: false,
