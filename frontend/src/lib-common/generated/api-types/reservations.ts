@@ -62,6 +62,7 @@ export interface OpenTimeRange {
 */
 export interface ReservationChild {
   firstName: string
+  hasContractDays: boolean
   id: UUID
   imageId: UUID | null
   inShiftCareUnit: boolean
