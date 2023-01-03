@@ -901,6 +901,25 @@ WHERE id = :placementId
         .execute()
 }
 
+fun Database.Transaction.updatePlacementTermination(
+    placementId: PlacementId,
+    terminationDate: LocalDate,
+    terminatedBy: EvakaUserId
+) {
+    createUpdate(
+            """
+UPDATE placement SET
+    termination_requested_date = :placementTerminationDate,
+    terminated_by = :terminatedBy
+WHERE id = :placementId
+"""
+        )
+        .bind("placementTerminationDate", terminationDate)
+        .bind("terminatedBy", terminatedBy)
+        .bind("placementId", placementId)
+        .execute()
+}
+
 fun Database.Read.childPlacementsHasConsecutiveRange(
     childId: ChildId,
     range: FiniteDateRange

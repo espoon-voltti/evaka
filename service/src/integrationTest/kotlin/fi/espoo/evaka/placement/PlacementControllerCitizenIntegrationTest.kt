@@ -305,8 +305,8 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         assertEquals(startPreschool, currentPlacement.startDate)
         assertEquals(placementTerminationDate, currentPlacement.endDate)
         assertEquals(PlacementType.PRESCHOOL_DAYCARE, currentPlacement.type)
-        assertNull(currentPlacement.terminationRequestedDate)
-        assertNull(currentPlacement.terminatedBy)
+        assertEquals(today, currentPlacement.terminationRequestedDate)
+        assertEquals("${parent.lastName} ${parent.firstName}", currentPlacement.terminatedBy?.name)
 
         val remainderOfPreschool = first.placements[1]
         assertNull(remainderOfPreschool.terminationRequestedDate)
@@ -382,8 +382,11 @@ class PlacementControllerCitizenIntegrationTest : FullApplicationTest(resetDbBef
         assertEquals(startPreschool, currentPlacement.startDate)
         assertEquals(placementTerminationDate, currentPlacement.endDate)
         assertEquals(PlacementType.PRESCHOOL_DAYCARE, currentPlacement.type)
-        assertNull(currentPlacement.terminationRequestedDate)
-        assertNull(currentPlacement.terminatedBy)
+        assertEquals(today, currentPlacement.terminationRequestedDate)
+        assertEquals(
+            "${parent.lastName} ${parent.firstName}",
+            childPlacements[0].placements[0].terminatedBy?.name
+        )
 
         val remainderOfPreschool = first.placements[1]
         assertNull(remainderOfPreschool.terminationRequestedDate)
