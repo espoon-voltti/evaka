@@ -523,15 +523,4 @@ data class ServiceNeedOption(
     val nameSv: String,
     val nameEn: String,
     val validPlacementType: PlacementType?
-) {
-    companion object {
-        fun of(option: fi.espoo.evaka.serviceneed.ServiceNeedOption) =
-            ServiceNeedOption(
-                option.id,
-                option.nameFi,
-                option.nameSv,
-                option.nameEn,
-                option.validPlacementType
-            )
-    }
-}
+)

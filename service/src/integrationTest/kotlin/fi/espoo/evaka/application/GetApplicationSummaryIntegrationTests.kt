@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.snPreschoolClub45
@@ -69,25 +68,21 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeE
             type = ApplicationType.PRESCHOOL,
             connectedDaycare = true,
             serviceNeedOption =
-                ServiceNeedOption.of(snPreschoolDaycare45) // service need option enabled (=tampere)
+                ofServiceNeedOption(snPreschoolDaycare45) // service need option enabled (=tampere)
         )
         createApplication(
             testChild_6,
             testAdult_1,
             type = ApplicationType.PRESCHOOL,
             connectedDaycare = true,
-            serviceNeedOption = ServiceNeedOption.of(snPreschoolClub45)
+            serviceNeedOption = ofServiceNeedOption(snPreschoolClub45)
         )
     }
 
     @Test
     fun `application summary with minimal parameters returns data`() {
-        val clock =
-            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 12, 30), LocalTime.of(11, 48)))
         val summary =
             getApplicationSummaries(
-                user = serviceWorker,
-                clock = clock,
                 type = ApplicationTypeToggle.ALL,
                 status = setOf(ApplicationStatusOption.SENT)
             )
@@ -96,12 +91,8 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `application summary can be be filtered by attachments`() {
-        val clock =
-            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 12, 30), LocalTime.of(11, 48)))
         val summary =
             getApplicationSummaries(
-                user = serviceWorker,
-                clock = clock,
                 type = ApplicationTypeToggle.ALL,
                 status = setOf(ApplicationStatusOption.SENT),
                 basis = setOf(ApplicationBasis.HAS_ATTACHMENTS)
@@ -112,12 +103,8 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `application summary can be be filtered by urgency`() {
-        val clock =
-            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 12, 30), LocalTime.of(11, 48)))
         val summary =
             getApplicationSummaries(
-                user = serviceWorker,
-                clock = clock,
                 type = ApplicationTypeToggle.ALL,
                 status = setOf(ApplicationStatusOption.SENT),
                 basis = setOf(ApplicationBasis.URGENT)
@@ -128,12 +115,8 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `application summary can be filtered by preschool types`() {
-        val clock =
-            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 12, 30), LocalTime.of(11, 48)))
         fun getPreschoolApplications(vararg preschoolTypes: ApplicationPreschoolTypeToggle) =
             getApplicationSummaries(
-                    user = serviceWorker,
-                    clock = clock,
                     type = ApplicationTypeToggle.PRESCHOOL,
                     status = ApplicationStatusOption.values().toSet(),
                     preschoolType = preschoolTypes.toSet()
@@ -159,8 +142,6 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeE
     }
 
     private fun getApplicationSummaries(
-        user: AuthenticatedUser,
-        clock: EvakaClock,
         page: Int? = null,
         pageSize: Int? = null,
         sortBy: ApplicationSortColumn? = null,
@@ -181,8 +162,8 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeE
     ): Paged<ApplicationSummary> =
         applicationControllerV2.getApplicationSummaries(
             dbInstance(),
-            user,
-            clock,
+            serviceWorker,
+            MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2022, 12, 30), LocalTime.of(11, 48))),
             SearchApplicationRequest(
                 page = page,
                 pageSize = pageSize,
@@ -242,3 +223,12 @@ class GetApplicationSummaryIntegrationTests : FullApplicationTest(resetDbBeforeE
         }
     }
 }
+
+private fun ofServiceNeedOption(option: fi.espoo.evaka.serviceneed.ServiceNeedOption) =
+    ServiceNeedOption(
+        option.id,
+        option.nameFi,
+        option.nameSv,
+        option.nameEn,
+        option.validPlacementType
+    )
