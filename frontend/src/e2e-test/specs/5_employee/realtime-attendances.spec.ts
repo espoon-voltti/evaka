@@ -501,6 +501,46 @@ describe('Realtime staff attendances', () => {
       await waitUntilEqual(() => staffAttendances.rowCount, 1)
     })
 
+    test('Can an add multiple entries to an external', async () => {
+      const addPersonModal = await attendancesSection.clickAddPersonButton()
+      await addPersonModal.setArrivalDate(mockedToday.format())
+      await addPersonModal.setArrivalTime('11:00')
+      await addPersonModal.setDepartureTime('13:00')
+      await addPersonModal.typeName('Sijainen Saija')
+      await addPersonModal.selectGroup(groupId)
+      await addPersonModal.save()
+
+      let modal = await staffAttendances.openDetails(1, mockedToday.addDays(1))
+      await modal.addNewAttendance()
+      await modal.setArrivalTime(0, '08:00')
+      await modal.setDepartureTime(0, '12:30')
+      await modal.save()
+
+      modal = await staffAttendances.openDetails(1, mockedToday.addDays(2))
+      await modal.addNewAttendance()
+      await modal.setArrivalTime(0, '09:00')
+      await modal.setDepartureTime(0, '17:30')
+      await modal.save()
+
+      await waitUntilEqual(() => staffAttendances.rowCount, 2)
+      await staffAttendances.assertTableRow({
+        rowIx: 1,
+        nth: 0,
+        name: 'Sijainen Saija',
+        attendances: [['11:00', '13:00']]
+      })
+      await staffAttendances.assertTableRow({
+        rowIx: 1,
+        nth: 1,
+        attendances: [['08:00', '12:30']]
+      })
+      await staffAttendances.assertTableRow({
+        rowIx: 1,
+        nth: 2,
+        attendances: [['09:00', '17:30']]
+      })
+    })
+
     test('Can an add new external with arrival and departure times', async () => {
       const addPersonModal = await attendancesSection.clickAddPersonButton()
       await addPersonModal.setArrivalDate(mockedToday.format())
