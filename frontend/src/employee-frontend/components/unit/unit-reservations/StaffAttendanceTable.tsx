@@ -674,7 +674,10 @@ function computeModalAttendances(
   } else {
     const name = detailsModalConfig.target.name
     const attendances: ModalAttendance[] = externalAttendances.filter(
-      (attendance) => attendance.name === name
+      (attendance) =>
+        attendance.name === name &&
+        attendance.arrived <= endOfDay &&
+        (attendance.departed === null || startOfDay <= attendance.departed)
     )
     return { attendances, plannedAttendances: [] }
   }
