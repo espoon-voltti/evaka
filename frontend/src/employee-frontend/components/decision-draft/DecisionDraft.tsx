@@ -323,6 +323,7 @@ export default React.memo(function Decision() {
                       }
                     ]
                   : []),
+                { label: null, value: null },
                 {
                   label: (
                     <ColumnTitle>
