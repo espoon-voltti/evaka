@@ -541,6 +541,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         http
             .post("/placements")
             .asUser(serviceWorker)
+            .withMockedTime(now)
             .objectBody(body, mapper = jsonMapper)
             .response()
             .also { (_, res, _) -> assertEquals(200, res.statusCode) }
@@ -587,6 +588,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         http
             .put("/placements/$id")
             .asUser(serviceWorker)
+            .withMockedTime(now)
             .objectBody(body, mapper = jsonMapper)
             .responseObject<Placement>(jsonMapper)
             .also { (_, res, _) -> assertEquals(200, res.statusCode) }
@@ -595,7 +597,8 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     private fun deletePlacement(id: PlacementId) {
-        http.delete("/placements/$id").asUser(serviceWorker).response().also { (_, res, _) ->
+        http.delete("/placements/$id").asUser(serviceWorker).withMockedTime(now).response().also {
+            (_, res, _) ->
             assertEquals(200, res.statusCode)
         }
 
@@ -616,6 +619,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         http
             .post("/parentships")
             .asUser(serviceWorker)
+            .withMockedTime(now)
             .objectBody(body, mapper = jsonMapper)
             .response()
 
