@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.attendance
 
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.createChildDailyServiceTimes
@@ -12,12 +11,12 @@ import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.daycare.service.AbsenceType
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.placement.PlacementType
+import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.MobileDeviceId
 import fi.espoo.evaka.shared.PlacementId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycareGroup
 import fi.espoo.evaka.shared.dev.DevReservation
 import fi.espoo.evaka.shared.dev.createMobileDeviceToUnit
@@ -30,11 +29,11 @@ import fi.espoo.evaka.shared.dev.insertTestPlacement
 import fi.espoo.evaka.shared.dev.insertTestReservation
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.MockEvakaClock
 import fi.espoo.evaka.shared.domain.TimeRange
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
-import fi.espoo.evaka.withMockedTime
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -45,8 +44,11 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 
 class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var childAttendanceController: ChildAttendanceController
+
     private val mobileUser = AuthenticatedUser.MobileDevice(MobileDeviceId(UUID.randomUUID()))
     private val mobileUser2 = AuthenticatedUser.MobileDevice(MobileDeviceId(UUID.randomUUID()))
     private val groupId = GroupId(UUID.randomUUID())
@@ -86,17 +88,6 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         }
     }
 
-    // TODO move elsewhere too
-    @Test
-    fun `unit info is correct`() {
-        val response = fetchUnitInfo()
-        assertEquals(testDaycare.name, response.name)
-        assertEquals(1, response.groups.size)
-        assertEquals(groupId, response.groups.first().id)
-        assertEquals(groupName, response.groups.first().name)
-        assertEquals("Supervisor", response.staff.first().lastName)
-    }
-
     @Test
     fun `child is coming`() {
         db.transaction {
@@ -108,10 +99,9 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         }
         val child = expectOneChild()
-        assertEquals(AttendanceStatus.COMING, child.status)
-        assertEquals(emptyList(), child.attendances)
-        assertEquals(0, child.absences.size)
         assertFalse(child.backup)
+
+        expectNoChildAttendances()
     }
 
     @Test
@@ -125,12 +115,12 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 endDate = now.toLocalDate()
             )
         }
-        val response = fetchAttendances()
-        assertEquals(0, response.children.size)
+        expectNoChildren()
+        expectNoChildAttendances()
     }
 
     @Test
-    fun `child is in backup care in same another unit`() {
+    fun `child is in backup care in same unit`() {
         db.transaction {
             it.insertTestBackUpCare(
                 childId = testChild_1.id,
@@ -141,9 +131,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
             )
         }
         val child = expectOneChild()
-        assertEquals(AttendanceStatus.COMING, child.status)
-        assertEquals(emptyList(), child.attendances)
-        assertEquals(0, child.absences.size)
+        expectNoChildAttendances()
         assertTrue(child.backup)
     }
 
@@ -158,7 +146,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 departed = null
             )
         }
-        val child = expectOneChild()
+        val child = expectOneChildAttendance()
         assertEquals(AttendanceStatus.PRESENT, child.status)
         assertNotNull(child.attendances)
         assertEquals(
@@ -181,7 +169,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 departed = departed
             )
         }
-        val child = expectOneChild()
+        val child = expectOneChildAttendance()
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendances)
         assertEquals(
@@ -211,7 +199,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 absenceType = AbsenceType.SICKLEAVE
             )
         }
-        val child = expectOneChild()
+        val child = expectOneChildAttendance()
         assertEquals(AttendanceStatus.ABSENT, child.status)
         assertEquals(emptyList(), child.attendances)
         assertEquals(
@@ -271,7 +259,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 departed = null
             )
         }
-        val child = expectOneChild()
+        val child = expectOneChildAttendance()
         assertEquals(AttendanceStatus.PRESENT, child.status)
         assertNotNull(child.attendances)
         assertEquals(
@@ -294,7 +282,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 departed = departed
             )
         }
-        val child = expectOneChild()
+        val child = expectOneChildAttendance()
         assertEquals(AttendanceStatus.DEPARTED, child.status)
         assertNotNull(child.attendances)
         assertEquals(
@@ -320,10 +308,7 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 departed = departed
             )
         }
-        val child = expectOneChild()
-        assertEquals(AttendanceStatus.COMING, child.status)
-        assertEquals(emptyList(), child.attendances)
-        assertEquals(0, child.absences.size)
+        expectNoChildAttendances()
     }
 
     @Test
@@ -345,13 +330,13 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 departed = null
             )
         }
-        val childInBackup = expectOneChild(backupUnitId, mobileUser2)
+        val childInBackup = expectOneChildAttendance(backupUnitId, mobileUser2)
         assertEquals(AttendanceStatus.PRESENT, childInBackup.status)
         assertNotNull(childInBackup.attendances)
         assertNull(childInBackup.attendances[0].departed)
 
-        val childrenInPlacementUnit = fetchAttendances()
-        assertEquals(0, childrenInPlacementUnit.children.size)
+        // No children in placement unit
+        expectNoChildren(testDaycare.id, mobileUser)
     }
 
     @Test
@@ -372,13 +357,13 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
                 departed = null
             )
         }
-        val childInBackup = expectOneChild(backupUnitId, mobileUser2)
+        val childInBackup = expectOneChildAttendance(backupUnitId, mobileUser2)
         assertEquals(AttendanceStatus.PRESENT, childInBackup.status)
         assertNotNull(childInBackup.attendances)
         assertNull(childInBackup.attendances[0].departed)
 
-        val childrenInPlacementUnit = fetchAttendances()
-        assertEquals(0, childrenInPlacementUnit.children.size)
+        // No children in placement unit
+        expectNoChildren(testDaycare.id, mobileUser)
     }
 
     @Test
@@ -433,39 +418,61 @@ class GetAttendancesIntegrationTest : FullApplicationTest(resetDbBeforeEach = tr
         )
     }
 
-    private fun fetchUnitInfo(): UnitInfo {
-        val (_, res, result) =
-            http
-                .get("/mobile/units/${testDaycare.id}")
-                .asUser(mobileUser)
-                .withMockedTime(now)
-                .responseObject<UnitInfo>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-        return result.get()
-    }
-
-    private fun fetchAttendances(
+    private fun getChildren(
         unitId: DaycareId = testDaycare.id,
         user: AuthenticatedUser = mobileUser
-    ): AttendanceResponse {
-        val (_, res, result) =
-            http
-                .get("/attendances/units/$unitId")
-                .asUser(user)
-                .withMockedTime(now)
-                .responseObject<AttendanceResponse>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-        return result.get()
+    ): List<Child> {
+        return childAttendanceController.getChildren(
+            dbInstance(),
+            user,
+            MockEvakaClock(now),
+            unitId
+        )
     }
 
     private fun expectOneChild(
         unitId: DaycareId = testDaycare.id,
         user: AuthenticatedUser = mobileUser
     ): Child {
-        val response = fetchAttendances(unitId, user)
-        assertEquals(1, response.children.size)
-        return response.children.first()
+        val children = getChildren(unitId, user)
+        assertEquals(1, children.size)
+        return children[0]
+    }
+
+    private fun expectNoChildren(
+        unitId: DaycareId = testDaycare.id,
+        user: AuthenticatedUser = mobileUser
+    ) {
+        val children = getChildren(unitId, user)
+        assertEquals(0, children.size)
+    }
+
+    private fun getAttendanceStatuses(
+        unitId: DaycareId = testDaycare.id,
+        user: AuthenticatedUser = mobileUser
+    ): Map<ChildId, ChildAttendanceController.ChildAttendanceStatusResponse> {
+        return childAttendanceController.getAttendanceStatuses(
+            dbInstance(),
+            user,
+            MockEvakaClock(now),
+            unitId
+        )
+    }
+
+    private fun expectOneChildAttendance(
+        unitId: DaycareId = testDaycare.id,
+        user: AuthenticatedUser = mobileUser
+    ): ChildAttendanceController.ChildAttendanceStatusResponse {
+        val response = getAttendanceStatuses(unitId, user)
+        assertEquals(1, response.size)
+        return response.values.first()
+    }
+
+    private fun expectNoChildAttendances(
+        unitId: DaycareId = testDaycare.id,
+        user: AuthenticatedUser = mobileUser
+    ) {
+        val response = getAttendanceStatuses(unitId, user)
+        assertEquals(0, response.size)
     }
 }

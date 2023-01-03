@@ -19,6 +19,7 @@ import { Failure, Loading, Result, Success } from 'lib-common/api'
 export interface QueryDescription<Data, Key extends QueryKey> {
   api: () => Promise<Data>
   queryKey: Key
+  queryOptions: UseQueryOptions<Data, unknown, Data, Key> | undefined
 }
 
 export function query<
@@ -28,17 +29,19 @@ export function query<
 >(opts: {
   api: (...arg: Args) => Promise<Data>
   queryKey: (...arg: Args) => Key
+  options?: UseQueryOptions<Data, unknown, Data, Key>
 }): Args extends []
   ? QueryDescription<Data, Key>
   : (...arg: Args) => QueryDescription<Data, Key> {
   /* eslint-disable */
-  const { api, queryKey } = opts
+  const { api, queryKey, options } = opts
   return (
     api.length === 0
       ? { api, queryKey: (queryKey as any)() }
       : (...args: Args) => ({
           api: () => api(...args),
-          queryKey: queryKey(...args)
+          queryKey: queryKey(...args),
+          queryOptions: options
         })
   ) as any
   /* eslint-enable */
@@ -51,8 +54,8 @@ export function useQuery<Data, Key extends QueryKey>(
     'queryKey' | 'queryFn'
   >
 ): UseQueryResult<Data> {
-  const { api, queryKey } = queryDescription
-  return useQueryOriginal(queryKey, api, options)
+  const { api, queryKey, queryOptions } = queryDescription
+  return useQueryOriginal(queryKey, api, { ...queryOptions, ...options })
 }
 
 function toResult<T>(

@@ -9,7 +9,6 @@ import {
   AttendanceStatus,
   Child
 } from 'lib-common/generated/api-types/attendance'
-import { GroupNote } from 'lib-common/generated/api-types/note'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import {
   defaultMargins,
@@ -22,10 +21,13 @@ import { useTranslation } from '../common/i18n'
 
 import ChildListItem from './ChildListItem'
 
+export interface ListItem extends Child {
+  status: AttendanceStatus
+}
+
 interface Props {
   unitId: string
-  attendanceChildren: Child[]
-  groupsNotes: GroupNote[]
+  items: ListItem[]
   type?: AttendanceStatus
 }
 
@@ -34,28 +36,19 @@ const NoChildrenOnList = styled.div`
   margin-top: 40px;
 `
 
-export default React.memo(function ChildList({
-  unitId,
-  attendanceChildren,
-  type,
-  groupsNotes
-}: Props) {
+export default React.memo(function ChildList({ unitId, items, type }: Props) {
   const { i18n } = useTranslation()
-
-  const getGroupNote = (child: Child): GroupNote | undefined =>
-    groupsNotes.find(({ groupId }) => groupId == child.groupId)
 
   return (
     <FixedSpaceColumn>
       <OrderedList spacing="zero">
-        {attendanceChildren.length > 0 ? (
-          attendanceChildren.map((ac) => (
+        {items.length > 0 ? (
+          items.map((ac) => (
             <Li key={ac.id}>
               <ChildListItem
                 type={type}
                 key={ac.id}
                 child={ac}
-                groupNote={getGroupNote(ac)}
                 childAttendanceUrl={`/units/${unitId}/groups/${
                   ac.groupId ?? 'all'
                 }/child-attendance/${ac.id}`}

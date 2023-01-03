@@ -2,36 +2,35 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext } from 'react'
+import React from 'react'
 
-import { Child } from 'lib-common/generated/api-types/attendance'
+import { useMutationResult } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 
-import { returnToComing } from '../../child-attendance/api'
-import { ChildAttendanceContext } from '../../child-attendance/state'
+import { returnToComingMutation } from '../../child-attendance/queries'
 import { InlineWideAsyncButton } from '../../common/components'
 import { useTranslation } from '../../common/i18n'
 
 interface Props {
-  child: Child
-  unitId: string
+  childId: UUID
+  unitId: UUID
 }
 
 export default React.memo(function AttendanceChildAbsent({
-  child,
+  childId,
   unitId
 }: Props) {
   const { i18n } = useTranslation()
-  const { reloadAttendances } = useContext(ChildAttendanceContext)
 
-  function returnToComingCall() {
-    return returnToComing(unitId, child.id)
-  }
+  const { mutateAsync: returnToComing } = useMutationResult(
+    returnToComingMutation
+  )
 
   return (
     <InlineWideAsyncButton
       text={i18n.attendances.actions.returnToComing}
-      onClick={() => returnToComingCall()}
-      onSuccess={reloadAttendances}
+      onClick={() => returnToComing({ unitId, childId })}
+      onSuccess={() => undefined}
       data-qa="delete-attendance"
     />
   )

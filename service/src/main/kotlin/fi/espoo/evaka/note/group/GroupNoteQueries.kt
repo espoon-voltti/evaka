@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.note.group
 
-import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
 import fi.espoo.evaka.shared.db.Database
@@ -12,14 +11,6 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 
 fun Database.Read.getGroupNotesForGroup(groupId: GroupId): List<GroupNote> {
     return getGroupNotesForGroups(listOf(groupId))
-}
-
-fun Database.Read.getGroupNotesForUnit(unitId: DaycareId): List<GroupNote> {
-    return createQuery("SELECT id FROM daycare_group WHERE daycare_id = :unitId")
-        .bind("unitId", unitId)
-        .mapTo<GroupId>()
-        .list()
-        .let { groupIds -> getGroupNotesForGroups(groupIds) }
 }
 
 private fun Database.Read.getGroupNotesForGroups(groupIds: List<GroupId>): List<GroupNote> =

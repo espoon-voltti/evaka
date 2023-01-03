@@ -13,7 +13,6 @@ import { AbsenceType } from './daycare'
 import { ChildDailyNote } from './note'
 import { ChildStickyNote } from './note'
 import { DailyServiceTimesValue } from '../../api-types/child/common'
-import { GroupNote } from './note'
 import { HelsinkiDateTimeRange } from './shared'
 import { PilotFeature } from './shared'
 import { PlacementType } from './placement'
@@ -64,14 +63,6 @@ export interface AttendanceReservation {
 }
 
 /**
-* Generated from fi.espoo.evaka.attendance.AttendanceResponse
-*/
-export interface AttendanceResponse {
-  children: Child[]
-  groupNotes: GroupNote[]
-}
-
-/**
 * Generated from fi.espoo.evaka.attendance.AttendanceStatus
 */
 export type AttendanceStatus =
@@ -108,8 +99,6 @@ export interface AttendancesRequest {
 * Generated from fi.espoo.evaka.attendance.Child
 */
 export interface Child {
-  absences: ChildAbsence[]
-  attendances: AttendanceTimes[]
   backup: boolean
   dailyNote: ChildDailyNote | null
   dailyServiceTimes: DailyServiceTimesValue | null
@@ -121,7 +110,6 @@ export interface Child {
   placementType: PlacementType
   preferredName: string | null
   reservations: AttendanceReservation[]
-  status: AttendanceStatus
   stickyNotes: ChildStickyNote[]
 }
 
@@ -130,6 +118,15 @@ export interface Child {
 */
 export interface ChildAbsence {
   category: AbsenceCategory
+}
+
+/**
+* Generated from fi.espoo.evaka.attendance.ChildAttendanceController.ChildAttendanceStatusResponse
+*/
+export interface ChildAttendanceStatusResponse {
+  absences: ChildAbsence[]
+  attendances: AttendanceTimes[]
+  status: AttendanceStatus
 }
 
 /**
