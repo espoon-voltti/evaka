@@ -306,7 +306,7 @@ export default React.memo(function ApplicationReadView({
             </>
           )}
 
-          {type === 'PRESCHOOL' && (
+          {type === 'PRESCHOOL' && featureFlags.preparatory && (
             <>
               <Label>{i18n.application.serviceNeed.preparatoryLabel}</Label>
               <BooleanValue

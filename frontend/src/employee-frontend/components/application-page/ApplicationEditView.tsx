@@ -610,7 +610,7 @@ export default React.memo(function ApplicationEditView({
             </>
           )}
 
-          {type === 'PRESCHOOL' && (
+          {type === 'PRESCHOOL' && featureFlags.preparatory && (
             <>
               <Label>{i18n.application.serviceNeed.preparatoryLabel}</Label>
               <Checkbox
