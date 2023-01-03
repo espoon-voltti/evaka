@@ -160,4 +160,25 @@ describe('Employee - paper application', () => {
     await applicationViewPage.waitUntilLoaded()
     await applicationViewPage.assertDueDate(dueDate)
   })
+
+  test('Service worker fills preschool application with minimal info and saves it', async () => {
+    await createApplicationModal.selectApplicationType('PRESCHOOL')
+    const applicationEditPage = await createApplicationModal.submit()
+
+    await applicationEditPage.fillStartDate(
+      LocalDate.todayInSystemTz().format()
+    )
+    await applicationEditPage.checkConnectedDaycare()
+    await applicationEditPage.fillTimes()
+    await applicationEditPage.fillConnectedDaycarePreferredStartDate(
+      LocalDate.todayInSystemTz().format()
+    )
+    await applicationEditPage.pickUnit(fixtures.daycareFixture.name)
+    await applicationEditPage.fillApplicantPhoneAndEmail(
+      '123456',
+      'email@evaka.test'
+    )
+    const applicationViewPage = await applicationEditPage.saveApplication()
+    await applicationViewPage.waitUntilLoaded()
+  })
 })

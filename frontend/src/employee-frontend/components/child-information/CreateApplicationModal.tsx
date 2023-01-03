@@ -258,6 +258,7 @@ function CreateApplicationModal({
           <Label>{i18nView.applicationType}</Label>
           <div>
             <Select
+              data-qa="select-application-type"
               items={applicationTypes}
               onChange={(value) => (value ? setType(value) : undefined)}
               selectedItem={type}

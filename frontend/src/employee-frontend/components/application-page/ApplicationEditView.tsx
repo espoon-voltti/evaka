@@ -4,7 +4,7 @@
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { flow, set } from 'lodash/fp'
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -18,6 +18,7 @@ import {
 import { AttachmentType } from 'lib-common/generated/api-types/attachment'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
 import { PersonJSON } from 'lib-common/generated/api-types/pis'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalDate from 'lib-common/local-date'
@@ -90,6 +91,10 @@ export default React.memo(function ApplicationEditView({
   serviceNeedOptions
 }: PreschoolApplicationProps) {
   const { i18n } = useTranslation()
+  const [placementType, setPlacementType] = useState<PlacementType | null>(
+    application.form.preferences.serviceNeed?.serviceNeedOption
+      ?.validPlacementType ?? null
+  )
 
   const {
     type,
@@ -102,6 +107,7 @@ export default React.memo(function ApplicationEditView({
       preferences: {
         preferredUnits,
         preferredStartDate,
+        connectedDaycarePreferredStartDate,
         urgent,
         serviceNeed,
         siblingBasis,
@@ -131,6 +137,18 @@ export default React.memo(function ApplicationEditView({
       ) ?? [],
     [serviceNeedOptions]
   )
+
+  const serviceNeedOptionsByType =
+    serviceNeedOptions?.reduce<
+      Map<PlacementType, ServiceNeedOptionPublicInfo[]>
+    >((map, item) => {
+      const key = item.validPlacementType
+      const list = map.get(key) ?? []
+      list.push(item)
+      map.set(key, list)
+      return map
+    }, new Map<PlacementType, ServiceNeedOptionPublicInfo[]>()) ??
+    new Map<PlacementType, ServiceNeedOptionPublicInfo[]>()
 
   const preferencesInUnitsList = units
     .map((us) =>
@@ -382,7 +400,8 @@ export default React.memo(function ApplicationEditView({
             <>
               {((type === 'DAYCARE' &&
                 featureFlags.daycareApplication.dailyTimes) ||
-                type === 'PRESCHOOL') && (
+                (type === 'PRESCHOOL' &&
+                  !featureFlags.preschoolApplication.serviceNeedOption)) && (
                 <>
                   <Label>{i18n.application.serviceNeed.dailyTime}</Label>
                   <div>
@@ -425,6 +444,119 @@ export default React.memo(function ApplicationEditView({
                   </div>
                 </>
               )}
+
+              {type === 'PRESCHOOL' &&
+                featureFlags.preschoolApplication
+                  .connectedDaycarePreferredStartDate && (
+                  <>
+                    <Label>
+                      {
+                        i18n.application.serviceNeed
+                          .connectedDaycarePreferredStartDateLabel
+                      }
+                    </Label>
+                    <div>
+                      <DatePickerDeprecated
+                        type="short"
+                        date={connectedDaycarePreferredStartDate ?? undefined}
+                        onChange={(value) => {
+                          setApplication(
+                            set(
+                              'form.preferences.connectedDaycarePreferredStartDate',
+                              value
+                            )
+                          )
+                        }}
+                        data-qa="datepicker-connected-daycare-preferred-start-date"
+                      />
+                      {errors[
+                        'form.preferences.connectedDaycarePreferredStartDate'
+                      ] ? (
+                        <>
+                          <Gap size="s" horizontal />
+                          <InputWarning
+                            text={
+                              errors[
+                                'form.preferences.connectedDaycarePreferredStartDate'
+                              ]
+                            }
+                          />
+                        </>
+                      ) : null}
+                    </div>
+                  </>
+                )}
+
+              {type === 'PRESCHOOL' &&
+                featureFlags.preschoolApplication.serviceNeedOption && (
+                  <>
+                    <Label>
+                      {
+                        i18n.application.serviceNeed
+                          .connectedDaycareServiceNeedOptionLabel
+                      }
+                    </Label>
+                    <FixedSpaceColumn>
+                      {[...serviceNeedOptionsByType].map(([type, options]) => (
+                        <React.Fragment key={type}>
+                          <Radio
+                            data-qa={`preschool-placement-type-${type}`}
+                            label={i18n.placement.type[type]}
+                            checked={placementType === type}
+                            onChange={() => {
+                              setPlacementType(type)
+                              setApplication(
+                                set(
+                                  'form.preferences.serviceNeed.serviceNeedOption',
+                                  null
+                                )
+                              )
+                            }}
+                          />
+                          {placementType === type && (
+                            <SubRadios>
+                              <FixedSpaceColumn spacing="xs">
+                                {options.map((option) => (
+                                  <Radio
+                                    data-qa={`preschool-service-need-option-${option.nameFi}`}
+                                    key={option.id}
+                                    label={option.nameFi}
+                                    checked={
+                                      serviceNeed.serviceNeedOption?.id ===
+                                      option.id
+                                    }
+                                    onChange={() =>
+                                      setApplication(
+                                        set(
+                                          'form.preferences.serviceNeed.serviceNeedOption',
+                                          option
+                                        )
+                                      )
+                                    }
+                                  />
+                                ))}
+                              </FixedSpaceColumn>
+                            </SubRadios>
+                          )}
+                        </React.Fragment>
+                      ))}
+                      {errors[
+                        'form.preferences.serviceNeed.serviceNeedOption'
+                      ] ? (
+                        <>
+                          <Gap size="s" horizontal />
+                          <InputWarning
+                            text={
+                              errors[
+                                'form.preferences.serviceNeed.serviceNeedOption'
+                              ]
+                            }
+                          />
+                        </>
+                      ) : null}
+                    </FixedSpaceColumn>
+                  </>
+                )}
 
               <Label>{i18n.application.serviceNeed.shiftCareLabel}</Label>
               <Checkbox
