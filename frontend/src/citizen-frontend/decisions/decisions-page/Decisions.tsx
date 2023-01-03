@@ -69,7 +69,7 @@ export default React.memo(function Decisions() {
                 (decision) =>
                   'decisionMade' in decision
                     ? decision.decisionMade?.formatIso()
-                    : decision.sentDate.formatIso()
+                    : [decision.sentDate.formatIso(), decision.type]
               )
               return {
                 ...child,
