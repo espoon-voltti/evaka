@@ -63,7 +63,7 @@ function toResult<T>(
   error: unknown,
   isFetching: boolean
 ): Result<T> {
-  if (data) {
+  if (data !== undefined) {
     const result = Success.of(data)
     return isFetching ? result.reloading() : result
   }

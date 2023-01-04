@@ -2,14 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useEffect } from 'react'
+import React, { useContext } from 'react'
 
 import { useTranslation } from 'citizen-frontend/localization'
-import { combine } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
-import { useDataStatus } from 'lib-common/utils/result-to-data-status'
+import { useQuery } from 'lib-common/query'
 import { NotificationsContext } from 'lib-components/Notifications'
 import { Translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
@@ -31,67 +29,66 @@ export default React.memo(function CalendarNotifications() {
 
   const { openHolidayModal, openReservationModal } = useCalendarModalState()
 
-  const activeQuestionnaire = useQueryResult(activeQuestionnaireQuery)
-  const holidayPeriods = useQueryResult(holidayPeriodsQuery, {
-    enabled: activeQuestionnaire.isSuccess
-  })
-
-  const holidayCta = combine(
-    activeQuestionnaire,
-    holidayPeriods
-  ).map<HolidayCta>(([questionnaire, periods]) => {
-    if (questionnaire) {
-      return {
-        type: 'questionnaire',
-        deadline: questionnaire.questionnaire.active.end
-      }
-    }
-
-    const today = LocalDate.todayInSystemTz()
-    const activeHolidayPeriod = periods.find((p) =>
-      p.reservationDeadline?.isEqualOrAfter(today)
-    )
-    return activeHolidayPeriod?.reservationDeadline
-      ? {
-          type: 'holiday',
-          deadline: activeHolidayPeriod.reservationDeadline,
-          period: activeHolidayPeriod.period
+  const { data: activeQuestionnaire } = useQuery(activeQuestionnaireQuery)
+  const { data: holidayPeriods } = useQuery(holidayPeriodsQuery, {
+    enabled: activeQuestionnaire !== undefined,
+    onSuccess: (periods) => {
+      let cta: HolidayCta
+      if (activeQuestionnaire) {
+        cta = {
+          type: 'questionnaire',
+          deadline: activeQuestionnaire.questionnaire.active.end
         }
-      : { type: 'none' }
-  })
+      } else {
+        const today = LocalDate.todayInSystemTz()
+        const activeHolidayPeriod = periods.find((p) =>
+          p.reservationDeadline?.isEqualOrAfter(today)
+        )
+        cta = activeHolidayPeriod?.reservationDeadline
+          ? {
+              type: 'holiday',
+              deadline: activeHolidayPeriod.reservationDeadline,
+              period: activeHolidayPeriod.period
+            }
+          : { type: 'none' }
+      }
 
-  useEffect(() => {
-    holidayCta.map((cta) => {
       if (cta.type === 'none') {
         removeNotification('holiday-period-cta')
-        return
-      }
-
-      addNotification(
-        {
-          icon: faTreePalm,
-          iconColor: colors.status.warning,
-          onClick() {
-            switch (cta.type) {
-              case 'questionnaire':
-                openHolidayModal()
-                return 'close'
-              case 'holiday':
-                openReservationModal(cta.period)
-                return 'close'
-            }
+      } else {
+        addNotification(
+          {
+            icon: faTreePalm,
+            iconColor: colors.status.warning,
+            onClick() {
+              switch (cta.type) {
+                case 'questionnaire':
+                  openHolidayModal()
+                  break
+                case 'holiday':
+                  openReservationModal(cta.period)
+                  break
+              }
+              return 'close'
+            },
+            children: getHolidayCtaText(cta, i18n),
+            dataQa: 'holiday-period-cta'
           },
-          children: getHolidayCtaText(cta, i18n),
-          dataQa: 'holiday-period-cta'
-        },
-        'holiday-period-cta'
-      )
-    })
-  }, [addNotification, holidayCta, i18n, openHolidayModal, openReservationModal, removeNotification])
+          'holiday-period-cta'
+        )
+      }
+    }
+  })
 
-  const holidayCtaStatus = useDataStatus(holidayCta)
-
-  return <div data-holiday-period-cta-status={holidayCtaStatus} />
+  return (
+    <div
+      data-holiday-period-cta-status={
+        activeQuestionnaire !== undefined && holidayPeriods !== undefined
+          ? 'success'
+          : 'loading'
+      }
+    />
+  )
 })
 
 function getHolidayCtaText(
