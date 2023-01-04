@@ -8,14 +8,17 @@ import { mutation, query } from 'lib-common/query'
 import { createQueryKeys } from '../query'
 
 import {
+  getActiveQuestionnaires,
   getCalendarEvents,
   getDailyServiceTimeNotifications,
+  getHolidayPeriods,
   getReservations,
   postAbsences,
+  postFixedPeriodQuestionnaireAnswer,
   postReservations
 } from './api'
 
-export const queryKeys = createQueryKeys('calendar', {
+const queryKeys = createQueryKeys('calendar', {
   allReservations: () => ['reservations'],
   reservations: (from: LocalDate, to: LocalDate) => [
     'reservations',
@@ -27,7 +30,9 @@ export const queryKeys = createQueryKeys('calendar', {
     from.formatIso(),
     to.formatIso()
   ],
-  dailyServiceTimeNotifications: () => ['dailyServiceTimeNotifications']
+  dailyServiceTimeNotifications: () => ['dailyServiceTimeNotifications'],
+  holidayPeriods: () => ['holidayPeriods'],
+  activeQuestionnaires: () => ['activeQuestionnaires']
 })
 
 export const reservationsQuery = query({
@@ -53,4 +58,22 @@ export const postReservationsMutation = mutation({
 export const postAbsencesMutation = mutation({
   api: postAbsences,
   invalidateQueryKeys: () => [queryKeys.allReservations()]
+})
+
+export const holidayPeriodsQuery = query({
+  api: getHolidayPeriods,
+  queryKey: queryKeys.holidayPeriods
+})
+
+export const activeQuestionnairesQuery = query({
+  api: getActiveQuestionnaires,
+  queryKey: queryKeys.activeQuestionnaires
+})
+
+export const answerFixedPeriodQuestionnaireMutation = mutation({
+  api: postFixedPeriodQuestionnaireAnswer,
+  invalidateQueryKeys: () => [
+    activeQuestionnairesQuery.queryKey,
+    queryKeys.allReservations()
+  ]
 })

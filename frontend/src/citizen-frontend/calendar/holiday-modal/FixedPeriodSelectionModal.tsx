@@ -22,7 +22,7 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2 } from 'lib-components/typography'
 
 import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
-import { answerFixedPeriodQuestionnaireMutation } from '../../holiday-periods/queries'
+import { answerFixedPeriodQuestionnaireMutation } from '../queries'
 
 import { PeriodSelector } from './PeriodSelector'
 

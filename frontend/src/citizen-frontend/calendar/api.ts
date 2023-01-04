@@ -4,9 +4,18 @@
 
 import mapValues from 'lodash/mapValues'
 
+import {
+  deserializeActiveQuestionnaire,
+  deserializeHolidayPeriod
+} from 'lib-common/api-types/holiday-period'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { CitizenCalendarEvent } from 'lib-common/generated/api-types/calendarevent'
 import { DailyServiceTimeNotification } from 'lib-common/generated/api-types/dailyservicetimes'
+import {
+  ActiveQuestionnaire,
+  FixedPeriodsBody,
+  HolidayPeriod
+} from 'lib-common/generated/api-types/holidayperiod'
 import {
   AbsenceRequest,
   DailyReservationRequest,
@@ -101,4 +110,28 @@ export async function getCalendarEvents(
         )
       }))
     )
+}
+
+export function getHolidayPeriods(): Promise<HolidayPeriod[]> {
+  return client
+    .get<JsonOf<HolidayPeriod[]>>(`/citizen/holiday-period`)
+    .then((res) => res.data.map(deserializeHolidayPeriod))
+}
+
+export function getActiveQuestionnaires(): Promise<ActiveQuestionnaire[]> {
+  return client
+    .get<JsonOf<ActiveQuestionnaire[]>>(`/citizen/holiday-period/questionnaire`)
+    .then((res) => res.data.map(deserializeActiveQuestionnaire))
+}
+
+export async function postFixedPeriodQuestionnaireAnswer({
+  id,
+  body
+}: {
+  id: UUID
+  body: FixedPeriodsBody
+}): Promise<void> {
+  return client
+    .post(`/citizen/holiday-period/questionnaire/fixed-period/${id}`, body)
+    .then(() => undefined)
 }

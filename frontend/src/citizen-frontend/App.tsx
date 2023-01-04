@@ -4,9 +4,8 @@
 
 import { ErrorBoundary } from '@sentry/react'
 import React, { ReactNode, useCallback, useContext } from 'react'
-import { Route, BrowserRouter, Navigate, Routes } from 'react-router-dom'
-import { ThemeProvider } from 'styled-components'
-import styled from 'styled-components'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import styled, { ThemeProvider } from 'styled-components'
 
 import {
   Notifications,
@@ -33,7 +32,6 @@ import VasuPage from './children/sections/vasu-and-leops/vasu/VasuPage'
 import AssistanceDecisionPage from './decisions/assistance-decision-page/AssistanceDecisionPage'
 import DecisionResponseList from './decisions/decision-response-page/DecisionResponseList'
 import Decisions from './decisions/decisions-page/Decisions'
-import { HolidayPeriodsContextProvider } from './holiday-periods/state'
 import ChildIncomeStatementEditor from './income-statements/ChildIncomeStatementEditor'
 import ChildIncomeStatementView from './income-statements/ChildIncomeStatementView'
 import IncomeStatementEditor from './income-statements/IncomeStatementEditor'
@@ -67,12 +65,10 @@ export default function App() {
                 <OverlayContextProvider>
                   <NotificationsContextProvider>
                     <MessageContextProvider>
-                      <HolidayPeriodsContextProvider>
-                        <Content />
-                        <GlobalDialog />
-                        <LoginErrorModal />
-                        <div id="modal-container" />
-                      </HolidayPeriodsContextProvider>
+                      <Content />
+                      <GlobalDialog />
+                      <LoginErrorModal />
+                      <div id="modal-container" />
                     </MessageContextProvider>
                   </NotificationsContextProvider>
                 </OverlayContextProvider>

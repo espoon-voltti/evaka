@@ -4,7 +4,6 @@
 
 import React, { useContext, useEffect } from 'react'
 
-import { useHolidayPeriods } from 'citizen-frontend/holiday-periods/state'
 import { useTranslation } from 'citizen-frontend/localization'
 import { combine } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
@@ -16,9 +15,8 @@ import { Translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import { faTreePalm } from 'lib-icons'
 
-import { holidayPeriodsQuery } from '../holiday-periods/queries'
-
 import { useCalendarModalState } from './CalendarPage'
+import { activeQuestionnairesQuery, holidayPeriodsQuery } from './queries'
 
 type NoCta = { type: 'none' }
 type HolidayCta =
@@ -33,19 +31,19 @@ export default React.memo(function CalendarNotifications() {
 
   const { openHolidayModal, openReservationModal } = useCalendarModalState()
 
-  const { activeFixedPeriodQuestionnaire } = useHolidayPeriods()
+  const activeQuestionnaires = useQueryResult(activeQuestionnairesQuery)
   const holidayPeriods = useQueryResult(holidayPeriodsQuery, {
-    enabled: activeFixedPeriodQuestionnaire.isSuccess
+    enabled: activeQuestionnaires.isSuccess
   })
 
   const holidayCta = combine(
-    activeFixedPeriodQuestionnaire,
+    activeQuestionnaires,
     holidayPeriods
-  ).map<HolidayCta>(([questionnaire, periods]) => {
-    if (questionnaire) {
+  ).map<HolidayCta>(([questionnaires, periods]) => {
+    if (questionnaires.length > 0) {
       return {
         type: 'questionnaire',
-        deadline: questionnaire.questionnaire.active.end
+        deadline: questionnaires[0].questionnaire.active.end
       }
     }
 

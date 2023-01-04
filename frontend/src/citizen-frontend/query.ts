@@ -13,7 +13,6 @@ export type QueryKeyPrefix =
   | 'calendar'
   | 'childConsents'
   | 'children'
-  | 'holidayPeriods'
   | 'pedagogicalDocuments'
   | 'vasuAndLeops'
 

@@ -27,7 +27,6 @@ import Footer from '../Footer'
 import RequireAuth from '../RequireAuth'
 import { renderResult } from '../async-rendering'
 import { useUser } from '../auth/state'
-import { useHolidayPeriods } from '../holiday-periods/state'
 
 import AbsenceModal from './AbsenceModal'
 import ActionPickerModal from './ActionPickerModal'
@@ -39,7 +38,12 @@ import DayView from './DayView'
 import NonReservableDaysWarningModal from './NonReservableDaysWarningModal'
 import ReservationModal from './ReservationModal'
 import FixedPeriodSelectionModal from './holiday-modal/FixedPeriodSelectionModal'
-import { calendarEventsQuery, reservationsQuery } from './queries'
+import {
+  activeQuestionnairesQuery,
+  calendarEventsQuery,
+  holidayPeriodsQuery,
+  reservationsQuery
+} from './queries'
 
 function useReservationsDefaultRange(): Result<ReservationsResponse> {
   return useQueryResult(
@@ -61,8 +65,6 @@ function useEventsDefaultRange(): Result<CitizenCalendarEvent[]> {
 
 const CalendarPage = React.memo(function CalendarPage() {
   const user = useUser()
-
-  const { holidayPeriods, activeFixedPeriodQuestionnaire } = useHolidayPeriods()
 
   const data = useReservationsDefaultRange()
   const events = useEventsDefaultRange()
@@ -96,6 +98,7 @@ const CalendarPage = React.memo(function CalendarPage() {
     [data]
   )
 
+  const holidayPeriods = useQueryResult(holidayPeriodsQuery)
   const dayIsHolidayPeriod = useCallback(
     (date: LocalDate) =>
       holidayPeriods
@@ -104,9 +107,15 @@ const CalendarPage = React.memo(function CalendarPage() {
     [holidayPeriods]
   )
 
+  const activeQuestionnaires = useQueryResult(activeQuestionnairesQuery)
   const questionnaire = useMemo(
-    () => activeFixedPeriodQuestionnaire.getOrElse(undefined),
-    [activeFixedPeriodQuestionnaire]
+    () =>
+      activeQuestionnaires
+        .map((questionnaires) =>
+          questionnaires.length > 0 ? questionnaires[0] : undefined
+        )
+        .getOrElse(undefined),
+    [activeQuestionnaires]
   )
 
   const firstReservableDate = useMemo(() => {
