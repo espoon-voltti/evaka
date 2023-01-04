@@ -83,7 +83,10 @@ export default React.memo(function ServiceNeedSection({
       <Gap size="s" />
 
       {type === 'PRESCHOOL' && (
-        <ServiceNeedConnectedDaycare formData={formData} />
+        <>
+          <ServiceNeedConnectedDaycare formData={formData} />
+          <Gap size="s" />
+        </>
       )}
 
       <ListGrid

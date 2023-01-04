@@ -7,8 +7,9 @@ import React from 'react'
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { Label } from 'lib-components/typography'
+import { featureFlags } from 'lib-customizations/citizen'
 
-import { useTranslation } from '../../../localization'
+import { useLang, useTranslation } from '../../../localization'
 
 import { ApplicationDataGridLabelWidth } from './const'
 
@@ -19,6 +20,7 @@ type Props = {
 export default React.memo(function ServiceNeedConnectedDaycare({
   formData
 }: Props) {
+  const [lang] = useLang()
   const t = useTranslation()
   const tLocal = t.applications.editor.verification.serviceNeed
 
@@ -37,10 +39,36 @@ export default React.memo(function ServiceNeedConnectedDaycare({
 
       {formData.serviceNeed.connectedDaycare && (
         <>
-          <Label>{tLocal.dailyTime.dailyTime}</Label>
-          <span>
-            {formData.serviceNeed.startTime} - {formData.serviceNeed.endTime}
-          </span>
+          {featureFlags.preschoolApplication
+            .connectedDaycarePreferredStartDate && (
+            <>
+              <Label>{tLocal.connectedDaycare.startDate}</Label>
+              <span>
+                {formData.serviceNeed.connectedDaycarePreferredStartDate?.format()}
+              </span>
+            </>
+          )}
+          {featureFlags.preschoolApplication.serviceNeedOption ? (
+            <>
+              <Label>{tLocal.connectedDaycare.serviceNeed}</Label>
+              <span>
+                {(lang === 'fi' &&
+                  formData.serviceNeed.serviceNeedOption?.nameFi) ||
+                  (lang === 'sv' &&
+                    formData.serviceNeed.serviceNeedOption?.nameSv) ||
+                  (lang === 'en' &&
+                    formData.serviceNeed.serviceNeedOption?.nameEn)}
+              </span>
+            </>
+          ) : (
+            <>
+              <Label>{tLocal.dailyTime.dailyTime}</Label>
+              <span>
+                {formData.serviceNeed.startTime} -{' '}
+                {formData.serviceNeed.endTime}
+              </span>
+            </>
+          )}
         </>
       )}
     </ListGrid>

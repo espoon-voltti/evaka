@@ -671,7 +671,9 @@ const en: Translations = {
             label: 'Early childhood education',
             withConnectedDaycare:
               'I also apply for early childhood education related to pre-primary education.',
-            withoutConnectedDaycare: 'No'
+            withoutConnectedDaycare: 'No',
+            startDate: 'Desired start date',
+            serviceNeed: 'Service need'
           },
           attachments: {
             label: 'Required attachments',
