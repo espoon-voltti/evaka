@@ -53,14 +53,14 @@ export const isDayReservableForSomeone = (
 export type QuestionnaireAvailability = boolean | 'with-strong-auth'
 
 export function isQuestionnaireAvailable(
-  activeQuestionnaires: Result<ActiveQuestionnaire[]>,
+  activeQuestionnaires: Result<ActiveQuestionnaire | null>,
   user: User | undefined
 ): QuestionnaireAvailability {
   return activeQuestionnaires
     .map<QuestionnaireAvailability>((val) =>
-      val.length === 0 || !user
+      !val || !user
         ? false
-        : val[0].questionnaire.requiresStrongAuth && user.authLevel !== 'STRONG'
+        : val.questionnaire.requiresStrongAuth && user.authLevel !== 'STRONG'
         ? 'with-strong-auth'
         : true
     )

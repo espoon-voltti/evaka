@@ -14,7 +14,7 @@ import {
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { useQueryResult } from 'lib-common/query'
+import { useQuery, useQueryResult } from 'lib-common/query'
 import Main from 'lib-components/atoms/Main'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
@@ -39,7 +39,7 @@ import NonReservableDaysWarningModal from './NonReservableDaysWarningModal'
 import ReservationModal from './ReservationModal'
 import FixedPeriodSelectionModal from './holiday-modal/FixedPeriodSelectionModal'
 import {
-  activeQuestionnairesQuery,
+  activeQuestionnaireQuery,
   calendarEventsQuery,
   holidayPeriodsQuery,
   reservationsQuery
@@ -107,16 +107,7 @@ const CalendarPage = React.memo(function CalendarPage() {
     [holidayPeriods]
   )
 
-  const activeQuestionnaires = useQueryResult(activeQuestionnairesQuery)
-  const questionnaire = useMemo(
-    () =>
-      activeQuestionnaires
-        .map((questionnaires) =>
-          questionnaires.length > 0 ? questionnaires[0] : undefined
-        )
-        .getOrElse(undefined),
-    [activeQuestionnaires]
-  )
+  const { data: questionnaire } = useQuery(activeQuestionnaireQuery)
 
   const firstReservableDate = useMemo(() => {
     if (data.isSuccess) {

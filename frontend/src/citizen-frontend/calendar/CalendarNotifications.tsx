@@ -16,7 +16,7 @@ import colors from 'lib-customizations/common'
 import { faTreePalm } from 'lib-icons'
 
 import { useCalendarModalState } from './CalendarPage'
-import { activeQuestionnairesQuery, holidayPeriodsQuery } from './queries'
+import { activeQuestionnaireQuery, holidayPeriodsQuery } from './queries'
 
 type NoCta = { type: 'none' }
 type HolidayCta =
@@ -31,19 +31,19 @@ export default React.memo(function CalendarNotifications() {
 
   const { openHolidayModal, openReservationModal } = useCalendarModalState()
 
-  const activeQuestionnaires = useQueryResult(activeQuestionnairesQuery)
+  const activeQuestionnaire = useQueryResult(activeQuestionnaireQuery)
   const holidayPeriods = useQueryResult(holidayPeriodsQuery, {
-    enabled: activeQuestionnaires.isSuccess
+    enabled: activeQuestionnaire.isSuccess
   })
 
   const holidayCta = combine(
-    activeQuestionnaires,
+    activeQuestionnaire,
     holidayPeriods
-  ).map<HolidayCta>(([questionnaires, periods]) => {
-    if (questionnaires.length > 0) {
+  ).map<HolidayCta>(([questionnaire, periods]) => {
+    if (questionnaire) {
       return {
         type: 'questionnaire',
-        deadline: questionnaires[0].questionnaire.active.end
+        deadline: questionnaire.questionnaire.active.end
       }
     }
 

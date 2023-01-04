@@ -19,7 +19,7 @@ import { useTranslation } from '../localization'
 import { mobileBottomNavHeight } from '../navigation/const'
 
 import ReportHolidayLabel from './ReportHolidayLabel'
-import { activeQuestionnairesQuery } from './queries'
+import { activeQuestionnaireQuery } from './queries'
 import { isQuestionnaireAvailable } from './utils'
 
 interface Props {
@@ -41,7 +41,7 @@ export default React.memo(function ActionPickerModal({
     [openAbsences]
   )
   const questionnaireAvailable = isQuestionnaireAvailable(
-    useQueryResult(activeQuestionnairesQuery),
+    useQueryResult(activeQuestionnaireQuery),
     useUser()
   )
 

@@ -38,7 +38,7 @@ import { HistoryOverlay } from './HistoryOverlay'
 import ReportHolidayLabel from './ReportHolidayLabel'
 import { ChildImageData, getChildImages } from './RoundChildImages'
 import { Reservations } from './calendar-elements'
-import { activeQuestionnairesQuery, holidayPeriodsQuery } from './queries'
+import { activeQuestionnaireQuery, holidayPeriodsQuery } from './queries'
 import { isQuestionnaireAvailable } from './utils'
 
 export interface Props {
@@ -92,7 +92,7 @@ export default React.memo(function CalendarGridView({
   )
 
   const questionnaireAvailable = isQuestionnaireAvailable(
-    useQueryResult(activeQuestionnairesQuery),
+    useQueryResult(activeQuestionnaireQuery),
     useUser()
   )
 

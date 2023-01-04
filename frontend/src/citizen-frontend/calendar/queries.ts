@@ -65,15 +65,18 @@ export const holidayPeriodsQuery = query({
   queryKey: queryKeys.holidayPeriods
 })
 
-export const activeQuestionnairesQuery = query({
-  api: getActiveQuestionnaires,
+export const activeQuestionnaireQuery = query({
+  api: () =>
+    getActiveQuestionnaires().then((questionnaires) =>
+      questionnaires.length > 0 ? questionnaires[0] : null
+    ),
   queryKey: queryKeys.activeQuestionnaires
 })
 
 export const answerFixedPeriodQuestionnaireMutation = mutation({
   api: postFixedPeriodQuestionnaireAnswer,
   invalidateQueryKeys: () => [
-    activeQuestionnairesQuery.queryKey,
+    activeQuestionnaireQuery.queryKey,
     queryKeys.allReservations()
   ]
 })
