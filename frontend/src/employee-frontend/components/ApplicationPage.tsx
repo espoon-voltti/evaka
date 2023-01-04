@@ -8,7 +8,9 @@ import styled from 'styled-components'
 import { combine, Loading, Result, Success } from 'lib-common/api'
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { ApplicationType } from 'lib-common/generated/api-types/application'
 import { PublicUnit } from 'lib-common/generated/api-types/daycare'
+import { PlacementType } from 'lib-common/generated/api-types/placement'
 import { ServiceNeedOptionPublicInfo } from 'lib-common/generated/api-types/serviceneed'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
@@ -47,6 +49,12 @@ const NotesArea = styled(ContentArea)`
   width: 23%;
   padding: 0;
 `
+
+const placementTypeFilters: Record<ApplicationType, PlacementType[]> = {
+  DAYCARE: ['DAYCARE', 'DAYCARE_PART_TIME'],
+  PRESCHOOL: ['PRESCHOOL_DAYCARE', 'PRESCHOOL_CLUB'],
+  CLUB: []
+}
 
 export default React.memo(function ApplicationPage() {
   const { id: applicationId } = useNonNullableParams<{ id: UUID }>()
@@ -159,18 +167,21 @@ export default React.memo(function ApplicationPage() {
 
   const shouldLoadServiceNeedOptions =
     editedApplication !== undefined &&
-    editedApplication.type === 'DAYCARE' &&
-    editedApplication.form.preferences.serviceNeed !== null &&
-    // If service need options are not enabled, backend sets to null
-    editedApplication.form.preferences.serviceNeed.serviceNeedOption !== null
+    ((editedApplication.type === 'DAYCARE' &&
+      editedApplication.form.preferences.serviceNeed !== null &&
+      // If service need options are not enabled, backend sets to null
+      editedApplication.form.preferences.serviceNeed.serviceNeedOption !==
+        null) ||
+      (editedApplication.type === 'PRESCHOOL' &&
+        featureFlags.preschoolApplication.serviceNeedOption))
 
   useEffect(() => {
     if (shouldLoadServiceNeedOptions) {
-      void loadServiceNeedOptions(['DAYCARE', 'DAYCARE_PART_TIME'])
+      void loadServiceNeedOptions(placementTypeFilters[editedApplication.type])
     } else {
       setServiceNeedOptions((prev) => (prev.isLoading ? Success.of([]) : prev))
     }
-  }, [setServiceNeedOptions, loadServiceNeedOptions, shouldLoadServiceNeedOptions])
+  }, [setServiceNeedOptions, loadServiceNeedOptions, shouldLoadServiceNeedOptions, editedApplication?.type])
 
   return (
     <>
@@ -284,7 +295,8 @@ function validateApplication(
     preferences.serviceNeed !== null &&
     ((application.type === 'DAYCARE' &&
       featureFlags.daycareApplication.dailyTimes) ||
-      application.type === 'PRESCHOOL')
+      (application.type === 'PRESCHOOL' &&
+        !featureFlags.preschoolApplication.serviceNeedOption))
   ) {
     if (!preferences.serviceNeed.startTime) {
       errors['form.preferences.serviceNeed.startTime'] =
@@ -299,6 +311,30 @@ function validateApplication(
         i18n.validationError.mandatoryField
     } else if (!isTimeValid(preferences.serviceNeed.endTime)) {
       errors['form.preferences.serviceNeed.endTime'] = i18n.validationError.time
+    }
+  }
+
+  if (
+    application.type === 'PRESCHOOL' &&
+    preferences.serviceNeed !== null &&
+    featureFlags.preschoolApplication.connectedDaycarePreferredStartDate
+  ) {
+    const connectedDaycarePreferredStartDate =
+      preferences.connectedDaycarePreferredStartDate
+    if (!connectedDaycarePreferredStartDate) {
+      errors['form.preferences.connectedDaycarePreferredStartDate'] =
+        i18n.validationError.mandatoryField
+    }
+  }
+
+  if (
+    application.type === 'PRESCHOOL' &&
+    preferences.serviceNeed !== null &&
+    featureFlags.preschoolApplication.serviceNeedOption
+  ) {
+    if (!preferences.serviceNeed?.serviceNeedOption) {
+      errors['form.preferences.serviceNeed.serviceNeedOption'] =
+        i18n.validationError.mandatoryField
     }
   }
 
