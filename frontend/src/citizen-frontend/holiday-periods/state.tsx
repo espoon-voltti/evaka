@@ -6,36 +6,27 @@ import head from 'lodash/head'
 import React, { createContext, useContext, useMemo } from 'react'
 
 import { useUser } from 'citizen-frontend/auth/state'
-import { combine, Loading, Result } from 'lib-common/api'
-import FiniteDateRange from 'lib-common/finite-date-range'
+import { Loading, Result } from 'lib-common/api'
 import {
   ActiveQuestionnaire,
   HolidayPeriod
 } from 'lib-common/generated/api-types/holidayperiod'
-import LocalDate from 'lib-common/local-date'
 import { useQueryResult } from 'lib-common/query'
 
 import { activeQuestionnairesQuery, holidayPeriodsQuery } from './queries'
 
 type QuestionnaireAvailability = boolean | 'with-strong-auth'
-export type NoCta = { type: 'none' }
-export type HolidayCta =
-  | NoCta
-  | { type: 'holiday'; period: FiniteDateRange; deadline: LocalDate }
-  | { type: 'questionnaire'; deadline: LocalDate }
 
 export interface HolidayPeriodsState {
   holidayPeriods: Result<HolidayPeriod[]>
   activeFixedPeriodQuestionnaire: Result<ActiveQuestionnaire | undefined>
   questionnaireAvailable: QuestionnaireAvailability
-  holidayCta: Result<HolidayCta>
 }
 
 const defaultState: HolidayPeriodsState = {
   holidayPeriods: Loading.of(),
   activeFixedPeriodQuestionnaire: Loading.of(),
-  questionnaireAvailable: false,
-  holidayCta: Loading.of()
+  questionnaireAvailable: false
 }
 
 export const HolidayPeriodsContext =
@@ -66,43 +57,13 @@ export const HolidayPeriodsContextProvider = React.memo(
       )
       .getOrElse(false)
 
-    const holidayCta = combine(
-      activeFixedPeriodQuestionnaire,
-      holidayPeriods
-    ).map<HolidayCta>(([questionnaire, periods]) => {
-      if (questionnaire) {
-        return {
-          type: 'questionnaire',
-          deadline: questionnaire.questionnaire.active.end
-        }
-      }
-
-      const today = LocalDate.todayInSystemTz()
-      const activeHolidayPeriod = periods.find((p) =>
-        p.reservationDeadline?.isEqualOrAfter(today)
-      )
-      return activeHolidayPeriod?.reservationDeadline
-        ? {
-            type: 'holiday',
-            deadline: activeHolidayPeriod.reservationDeadline,
-            period: activeHolidayPeriod.period
-          }
-        : { type: 'none' }
-    })
-
     const value = useMemo(
       () => ({
         activeFixedPeriodQuestionnaire,
         holidayPeriods,
-        questionnaireAvailable,
-        holidayCta
+        questionnaireAvailable
       }),
-      [
-        activeFixedPeriodQuestionnaire,
-        holidayPeriods,
-        questionnaireAvailable,
-        holidayCta
-      ]
+      [activeFixedPeriodQuestionnaire, holidayPeriods, questionnaireAvailable]
     )
 
     return (

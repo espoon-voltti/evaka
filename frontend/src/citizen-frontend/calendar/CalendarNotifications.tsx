@@ -2,43 +2,65 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect } from 'react'
+import React, { useContext, useEffect } from 'react'
 
-import {
-  HolidayCta,
-  NoCta,
-  useHolidayPeriods
-} from 'citizen-frontend/holiday-periods/state'
+import { useHolidayPeriods } from 'citizen-frontend/holiday-periods/state'
 import { useTranslation } from 'citizen-frontend/localization'
+import { combine } from 'lib-common/api'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { useDataStatus } from 'lib-common/utils/result-to-data-status'
 import { NotificationsContext } from 'lib-components/Notifications'
+import { Translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import { faTreePalm } from 'lib-icons'
 
+import { holidayPeriodsQuery } from '../holiday-periods/queries'
+
 import { useCalendarModalState } from './CalendarPage'
+
+type NoCta = { type: 'none' }
+type HolidayCta =
+  | NoCta
+  | { type: 'holiday'; period: FiniteDateRange; deadline: LocalDate }
+  | { type: 'questionnaire'; deadline: LocalDate }
 
 export default React.memo(function CalendarNotifications() {
   const { addNotification, removeNotification } =
     useContext(NotificationsContext)
   const i18n = useTranslation()
 
-  const getHolidayCtaText = useCallback(
-    (cta: Exclude<HolidayCta, NoCta>) => {
-      switch (cta.type) {
-        case 'holiday':
-          return i18n.ctaToast.holidayPeriodCta(
-            cta.period.formatCompact(''),
-            cta.deadline.format()
-          )
-        case 'questionnaire':
-          return i18n.ctaToast.fixedPeriodCta(cta.deadline.format())
-      }
-    },
-    [i18n]
-  )
-
   const { openHolidayModal, openReservationModal } = useCalendarModalState()
-  const { holidayCta } = useHolidayPeriods()
+
+  const { activeFixedPeriodQuestionnaire } = useHolidayPeriods()
+  const holidayPeriods = useQueryResult(holidayPeriodsQuery, {
+    enabled: activeFixedPeriodQuestionnaire.isSuccess
+  })
+
+  const holidayCta = combine(
+    activeFixedPeriodQuestionnaire,
+    holidayPeriods
+  ).map<HolidayCta>(([questionnaire, periods]) => {
+    if (questionnaire) {
+      return {
+        type: 'questionnaire',
+        deadline: questionnaire.questionnaire.active.end
+      }
+    }
+
+    const today = LocalDate.todayInSystemTz()
+    const activeHolidayPeriod = periods.find((p) =>
+      p.reservationDeadline?.isEqualOrAfter(today)
+    )
+    return activeHolidayPeriod?.reservationDeadline
+      ? {
+          type: 'holiday',
+          deadline: activeHolidayPeriod.reservationDeadline,
+          period: activeHolidayPeriod.period
+        }
+      : { type: 'none' }
+  })
 
   useEffect(() => {
     holidayCta.map((cta) => {
@@ -61,15 +83,30 @@ export default React.memo(function CalendarNotifications() {
                 return 'close'
             }
           },
-          children: getHolidayCtaText(cta),
+          children: getHolidayCtaText(cta, i18n),
           dataQa: 'holiday-period-cta'
         },
         'holiday-period-cta'
       )
     })
-  }, [addNotification, getHolidayCtaText, holidayCta, i18n.ctaToast, openHolidayModal, openReservationModal, removeNotification])
+  }, [addNotification, holidayCta, i18n, openHolidayModal, openReservationModal, removeNotification])
 
   const holidayCtaStatus = useDataStatus(holidayCta)
 
   return <div data-holiday-period-cta-status={holidayCtaStatus} />
 })
+
+function getHolidayCtaText(
+  cta: Exclude<HolidayCta, NoCta>,
+  i18n: Translations
+) {
+  switch (cta.type) {
+    case 'holiday':
+      return i18n.ctaToast.holidayPeriodCta(
+        cta.period.formatCompact(''),
+        cta.deadline.format()
+      )
+    case 'questionnaire':
+      return i18n.ctaToast.fixedPeriodCta(cta.deadline.format())
+  }
+}
