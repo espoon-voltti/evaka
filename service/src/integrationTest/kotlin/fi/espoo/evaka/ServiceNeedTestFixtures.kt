@@ -544,6 +544,28 @@ val snDaycareContractDays15 =
         active = true
     )
 
+val snPreschoolDaycareContractDays15 =
+    ServiceNeedOption(
+        id = ServiceNeedOptionId(UUID.randomUUID()),
+        nameFi = "Varhaiskasvatuksen liittyvä 15 pv/kk",
+        nameSv = "Varhaiskasvatuksen liittyvä 15 pv/kk",
+        nameEn = "Varhaiskasvatuksen liittyvä 15 pv/kk",
+        validPlacementType = PlacementType.PRESCHOOL_DAYCARE,
+        defaultOption = false,
+        feeCoefficient = BigDecimal("0.75"),
+        occupancyCoefficient = BigDecimal("1.00"),
+        occupancyCoefficientUnder3y = BigDecimal("1.75"),
+        daycareHoursPerWeek = 18,
+        contractDaysPerMonth = 15,
+        partDay = false,
+        partWeek = true,
+        feeDescriptionFi = "",
+        feeDescriptionSv = "",
+        voucherValueDescriptionFi = "",
+        voucherValueDescriptionSv = "",
+        active = true
+    )
+
 val snDaycareContractDays10 =
     ServiceNeedOption(
         id = ServiceNeedOptionId(UUID.randomUUID()),

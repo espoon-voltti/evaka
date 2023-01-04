@@ -50,6 +50,8 @@ import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.snDaycareContractDays15
 import fi.espoo.evaka.snDaycareFullDay35
+import fi.espoo.evaka.snDefaultPreschoolDaycare
+import fi.espoo.evaka.snPreschoolDaycareContractDays15
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testChild_1
@@ -4670,6 +4672,75 @@ class InvoiceGeneratorIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 assertEquals(1, invoiceRow.amount)
                 assertEquals(7200, invoiceRow.unitPrice) // 28900 - 21700
                 assertEquals(7200, invoiceRow.price)
+            }
+        }
+    }
+
+    @Test
+    fun `invoice generation with 15 contract days and 7 surplus days in preschool daycare results in a monthly maximum invoice no greater than the daycare maximum`() {
+        // 22 operational days
+        val period = DateRange(LocalDate.of(2019, 1, 1), LocalDate.of(2019, 1, 31))
+        val serviceNeed = snPreschoolDaycareContractDays15
+        val baseFee = 28900
+        val decision =
+            createFeeDecisionFixture(
+                FeeDecisionStatus.SENT,
+                FeeDecisionType.NORMAL,
+                period,
+                testAdult_1.id,
+                listOf(
+                    createFeeDecisionChildFixture(
+                        childId = testChild_1.id,
+                        dateOfBirth = testChild_1.dateOfBirth,
+                        placementUnitId = testDaycare.id,
+                        placementType = PlacementType.PRESCHOOL_DAYCARE,
+                        serviceNeed = serviceNeed.toFeeDecisionServiceNeed(),
+                        baseFee = baseFee,
+                        fee =
+                            roundToEuros(serviceNeed.feeCoefficient * BigDecimal(baseFee)).toInt(),
+                        feeAlterations = listOf()
+                    )
+                )
+            )
+
+        db.transaction(insertChildParentRelation(testAdult_1.id, testChild_1.id, period))
+        db.transaction { tx -> tx.upsertFeeDecisions(listOf(decision)) }
+
+        val placementId = db.transaction(insertPlacement(testChild_1.id, period))
+        val groupId =
+            db.transaction {
+                it.insertTestDaycareGroup(DevDaycareGroup(daycareId = testDaycare.id))
+            }
+        db.transaction { tx ->
+            tx.insertTestDaycareGroupPlacement(
+                daycarePlacementId = placementId,
+                groupId = groupId,
+                startDate = period.start,
+                endDate = period.end!!
+            )
+        }
+
+        db.transaction { generator.createAndStoreAllDraftInvoices(it, period) }
+
+        val result = db.read(getAllInvoices)
+        assertEquals(1, result.size)
+
+        result.first().let { invoice ->
+            assertEquals(
+                (snDefaultPreschoolDaycare.feeCoefficient * BigDecimal(baseFee)).toInt(),
+                invoice.totalPrice
+            )
+            assertEquals(2, invoice.rows.size)
+            invoice.rows[0].let { invoiceRow ->
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(21700, invoiceRow.unitPrice)
+                assertEquals(21700, invoiceRow.price)
+            }
+            invoice.rows[1].let { invoiceRow ->
+                assertEquals(productProvider.contractSurplusDay, invoiceRow.product)
+                assertEquals(1, invoiceRow.amount)
+                assertEquals(1420, invoiceRow.unitPrice) // 23120 - 21700
+                assertEquals(1420, invoiceRow.price)
             }
         }
     }
