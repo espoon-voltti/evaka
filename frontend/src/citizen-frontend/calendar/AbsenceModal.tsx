@@ -98,8 +98,12 @@ export default React.memo(function AbsenceModal({
         : false,
     [availableChildren]
   )
-  const showContractDayAbsenceType = availableChildren.some(
-    ({ hasContractDays }) => hasContractDays
+  const showContractDayAbsenceType = useMemo(
+    () =>
+      featureFlags.citizenContractDayAbsence
+        ? availableChildren.some(({ hasContractDays }) => hasContractDays)
+        : false,
+    [availableChildren]
   )
 
   return (
