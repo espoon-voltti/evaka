@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
 import {
   deserializeActiveQuestionnaire,
   deserializeHolidayPeriod
@@ -17,28 +16,26 @@ import { UUID } from 'lib-common/types'
 
 import { client } from '../api-client'
 
-export function getHolidayPeriods(): Promise<Result<HolidayPeriod[]>> {
+export function getHolidayPeriods(): Promise<HolidayPeriod[]> {
   return client
     .get<JsonOf<HolidayPeriod[]>>(`/citizen/holiday-period`)
-    .then((res) => Success.of(res.data.map(deserializeHolidayPeriod)))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => res.data.map(deserializeHolidayPeriod))
 }
 
-export function getActiveQuestionnaires(): Promise<
-  Result<ActiveQuestionnaire[]>
-> {
+export function getActiveQuestionnaires(): Promise<ActiveQuestionnaire[]> {
   return client
     .get<JsonOf<ActiveQuestionnaire[]>>(`/citizen/holiday-period/questionnaire`)
-    .then((res) => Success.of(res.data.map(deserializeActiveQuestionnaire)))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => res.data.map(deserializeActiveQuestionnaire))
 }
 
-export async function postFixedPeriodQuestionnaireAnswer(
-  id: UUID,
-  request: FixedPeriodsBody
-): Promise<Result<void>> {
+export async function postFixedPeriodQuestionnaireAnswer({
+  id,
+  body
+}: {
+  id: UUID
+  body: FixedPeriodsBody
+}): Promise<void> {
   return client
-    .post(`/citizen/holiday-period/questionnaire/fixed-period/${id}`, request)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .post(`/citizen/holiday-period/questionnaire/fixed-period/${id}`, body)
+    .then(() => undefined)
 }

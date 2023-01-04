@@ -6,16 +6,16 @@ import head from 'lodash/head'
 import React, { createContext, useContext, useMemo } from 'react'
 
 import { useUser } from 'citizen-frontend/auth/state'
-import { combine, Loading, Result, Success } from 'lib-common/api'
+import { combine, Loading, Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   ActiveQuestionnaire,
   HolidayPeriod
 } from 'lib-common/generated/api-types/holidayperiod'
 import LocalDate from 'lib-common/local-date'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 
-import { getActiveQuestionnaires, getHolidayPeriods } from './api'
+import { activeQuestionnairesQuery, holidayPeriodsQuery } from './queries'
 
 type QuestionnaireAvailability = boolean | 'with-strong-auth'
 export type NoCta = { type: 'none' }
@@ -29,15 +29,13 @@ export interface HolidayPeriodsState {
   activeFixedPeriodQuestionnaire: Result<ActiveQuestionnaire | undefined>
   questionnaireAvailable: QuestionnaireAvailability
   holidayCta: Result<HolidayCta>
-  refreshQuestionnaires: () => void
 }
 
 const defaultState: HolidayPeriodsState = {
   holidayPeriods: Loading.of(),
   activeFixedPeriodQuestionnaire: Loading.of(),
   questionnaireAvailable: false,
-  holidayCta: Loading.of(),
-  refreshQuestionnaires: () => null
+  holidayCta: Loading.of()
 }
 
 export const HolidayPeriodsContext =
@@ -50,15 +48,12 @@ export const HolidayPeriodsContextProvider = React.memo(
     children: React.ReactNode
   }) {
     const user = useUser()
-    const [holidayPeriods] = useApiState(
-      () => (user ? getHolidayPeriods() : Promise.resolve(Success.of([]))),
-      [user]
-    )
-    const [activeQuestionnaires, refreshQuestionnaires] = useApiState(
-      () =>
-        user ? getActiveQuestionnaires() : Promise.resolve(Success.of([])),
-      [user]
-    )
+    const holidayPeriods = useQueryResult(holidayPeriodsQuery, {
+      enabled: !!user
+    })
+    const activeQuestionnaires = useQueryResult(activeQuestionnairesQuery, {
+      enabled: !!user
+    })
 
     const activeFixedPeriodQuestionnaire = activeQuestionnaires.map(head)
     const questionnaireAvailable = activeFixedPeriodQuestionnaire
@@ -100,15 +95,13 @@ export const HolidayPeriodsContextProvider = React.memo(
         activeFixedPeriodQuestionnaire,
         holidayPeriods,
         questionnaireAvailable,
-        holidayCta,
-        refreshQuestionnaires
+        holidayCta
       }),
       [
         activeFixedPeriodQuestionnaire,
         holidayPeriods,
         questionnaireAvailable,
-        holidayCta,
-        refreshQuestionnaires
+        holidayCta
       ]
     )
 

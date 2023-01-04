@@ -14,7 +14,7 @@ import {
   ReservationsResponse
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import Main from 'lib-components/atoms/Main'
 import { ContentArea } from 'lib-components/layout/Container'
 import {
@@ -38,38 +38,34 @@ import DailyServiceTimeNotifications from './DailyServiceTimeNotifications'
 import DayView from './DayView'
 import NonReservableDaysWarningModal from './NonReservableDaysWarningModal'
 import ReservationModal from './ReservationModal'
-import { getCalendarEvents, getReservations } from './api'
 import FixedPeriodSelectionModal from './holiday-modal/FixedPeriodSelectionModal'
+import { calendarEventsQuery, reservationsQuery } from './queries'
 
-async function getReservationsDefaultRange(): Promise<
-  Result<ReservationsResponse>
-> {
-  return await getReservations(
-    LocalDate.todayInSystemTz().subMonths(1).startOfMonth().startOfWeek(),
-    LocalDate.todayInSystemTz().addYears(1).lastDayOfMonth()
+function useReservationsDefaultRange(): Result<ReservationsResponse> {
+  return useQueryResult(
+    reservationsQuery(
+      LocalDate.todayInSystemTz().subMonths(1).startOfMonth().startOfWeek(),
+      LocalDate.todayInSystemTz().addYears(1).lastDayOfMonth()
+    )
   )
 }
 
-async function getEventsDefaultRange(): Promise<
-  Result<CitizenCalendarEvent[]>
-> {
-  return await getCalendarEvents(
-    LocalDate.todayInSystemTz().subMonths(1).startOfMonth().startOfWeek(),
-    LocalDate.todayInSystemTz().addYears(1).lastDayOfMonth()
+function useEventsDefaultRange(): Result<CitizenCalendarEvent[]> {
+  return useQueryResult(
+    calendarEventsQuery(
+      LocalDate.todayInSystemTz().subMonths(1).startOfMonth().startOfWeek(),
+      LocalDate.todayInSystemTz().addYears(1).lastDayOfMonth()
+    )
   )
 }
 
 const CalendarPage = React.memo(function CalendarPage() {
   const user = useUser()
 
-  const {
-    holidayPeriods,
-    activeFixedPeriodQuestionnaire,
-    refreshQuestionnaires
-  } = useHolidayPeriods()
+  const { holidayPeriods, activeFixedPeriodQuestionnaire } = useHolidayPeriods()
 
-  const [data, loadDefaultRange] = useApiState(getReservationsDefaultRange, [])
-  const [events] = useApiState(getEventsDefaultRange, [])
+  const data = useReservationsDefaultRange()
+  const events = useEventsDefaultRange()
 
   const {
     modalState,
@@ -85,11 +81,6 @@ const CalendarPage = React.memo(function CalendarPage() {
   const openReservationModalWithoutInitialRange = useCallback(() => {
     openReservationModal(undefined)
   }, [openReservationModal])
-
-  const refreshOnQuestionnaireAnswer = useCallback(() => {
-    refreshQuestionnaires()
-    void loadDefaultRange()
-  }, [loadDefaultRange, refreshQuestionnaires])
 
   const dayIsReservable = useCallback(
     ({ date, isHoliday }: DailyReservationData) =>
@@ -181,7 +172,6 @@ const CalendarPage = React.memo(function CalendarPage() {
               date={modalState.date}
               reservationsResponse={response}
               selectDate={openDayModal}
-              reloadData={loadDefaultRange}
               close={closeModal}
               openAbsenceModal={openAbsenceModal}
               events={events}
@@ -205,7 +195,6 @@ const CalendarPage = React.memo(function CalendarPage() {
                 } else {
                   closeModal()
                 }
-                void loadDefaultRange()
               }}
               reservableDays={response.reservableDays}
               initialStart={
@@ -219,7 +208,6 @@ const CalendarPage = React.memo(function CalendarPage() {
             <AbsenceModal
               close={closeModal}
               initialDate={modalState.initialDate}
-              reload={loadDefaultRange}
               availableChildren={response.children}
             />
           )}
@@ -233,7 +221,6 @@ const CalendarPage = React.memo(function CalendarPage() {
             >
               <FixedPeriodSelectionModal
                 close={closeModal}
-                reload={refreshOnQuestionnaireAnswer}
                 questionnaire={questionnaire.questionnaire}
                 availableChildren={response.children}
                 eligibleChildren={questionnaire.eligibleChildren}

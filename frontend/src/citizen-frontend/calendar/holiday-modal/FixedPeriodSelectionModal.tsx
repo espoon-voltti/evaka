@@ -5,7 +5,6 @@
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
 
-import { postFixedPeriodQuestionnaireAnswer } from 'citizen-frontend/holiday-periods/api'
 import { useLang, useTranslation } from 'citizen-frontend/localization'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
@@ -15,6 +14,7 @@ import {
 } from 'lib-common/generated/api-types/holidayperiod'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import { formatPreferredName } from 'lib-common/names'
+import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
@@ -22,6 +22,7 @@ import { AsyncFormModal } from 'lib-components/molecules/modals/FormModal'
 import { H2 } from 'lib-components/typography'
 
 import ModalAccessibilityWrapper from '../../ModalAccessibilityWrapper'
+import { answerFixedPeriodQuestionnaireMutation } from '../../holiday-periods/queries'
 
 import { PeriodSelector } from './PeriodSelector'
 
@@ -42,7 +43,6 @@ const initializeForm = (
 
 interface Props {
   close: () => void
-  reload: () => void
   questionnaire: FixedPeriodQuestionnaire
   availableChildren: ReservationChild[]
   eligibleChildren: UUID[]
@@ -51,7 +51,6 @@ interface Props {
 
 export default React.memo(function FixedPeriodSelectionModal({
   close,
-  reload,
   questionnaire,
   availableChildren,
   eligibleChildren,
@@ -70,15 +69,17 @@ export default React.memo(function FixedPeriodSelectionModal({
     [setFixedPeriods]
   )
 
+  const { mutateAsync: answerFixedPeriodQuestionnaire } = useMutationResult(
+    answerFixedPeriodQuestionnaireMutation
+  )
   const onSubmit = useCallback(
     () =>
-      postFixedPeriodQuestionnaireAnswer(questionnaire.id, { fixedPeriods }),
-    [fixedPeriods, questionnaire.id]
+      answerFixedPeriodQuestionnaire({
+        id: questionnaire.id,
+        body: { fixedPeriods }
+      }),
+    [answerFixedPeriodQuestionnaire, fixedPeriods, questionnaire.id]
   )
-  const closeAndReload = useCallback(() => {
-    close()
-    reload()
-  }, [close, reload])
 
   return (
     <ModalAccessibilityWrapper>
@@ -86,7 +87,7 @@ export default React.memo(function FixedPeriodSelectionModal({
         mobileFullScreen
         title={questionnaire.title[lang]}
         resolveAction={onSubmit}
-        onSuccess={closeAndReload}
+        onSuccess={close}
         resolveLabel={i18n.common.confirm}
         rejectAction={close}
         rejectLabel={i18n.common.cancel}

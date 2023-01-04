@@ -20,6 +20,7 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { formatPreferredName } from 'lib-common/names'
+import { useMutation } from 'lib-common/query'
 import {
   reservationsAndAttendancesDiffer,
   validateTimeRange
@@ -56,14 +57,13 @@ import { BottomFooterContainer } from './BottomFooterContainer'
 import { CalendarModalBackground, CalendarModalSection } from './CalendarModal'
 import { RoundChildImage } from './RoundChildImages'
 import TimeRangeInput, { TimeRangeWithErrors } from './TimeRangeInput'
-import { postReservations } from './api'
+import { postReservationsMutation } from './queries'
 import { isDayReservableForSomeone } from './utils'
 
 interface Props {
   date: LocalDate
   reservationsResponse: ReservationsResponse
   selectDate: (date: LocalDate) => void
-  reloadData: () => void
   close: () => void
   openAbsenceModal: (initialDate: LocalDate) => void
   events: CitizenCalendarEvent[]
@@ -131,7 +131,6 @@ export default React.memo(function DayView({
   date,
   reservationsResponse,
   selectDate,
-  reloadData,
   close,
   openAbsenceModal,
   events
@@ -167,8 +166,7 @@ export default React.memo(function DayView({
   } = useEditState(
     date,
     childrenWithReservations,
-    reservationsResponse.reservableDays,
-    reloadData
+    reservationsResponse.reservableDays
   )
 
   const navigateToPrevDate = useCallback(
@@ -501,8 +499,7 @@ const emptyReservation: TimeRangeWithErrors = {
 function useEditState(
   date: LocalDate,
   childrenWithReservations: ChildWithReservations[],
-  reservableDays: Record<string, FiniteDateRange[]>,
-  reloadData: () => void
+  reservableDays: Record<string, FiniteDateRange[]>
 ) {
   const today = LocalDate.todayInSystemTz()
 
@@ -640,11 +637,12 @@ function useEditState(
     [editorState]
   )
 
-  const [saving, setSaving] = useState(false)
+  const { mutateAsync: postReservations, isLoading: saving } = useMutation(
+    postReservationsMutation
+  )
+
   const save = useCallback(() => {
     if (!stateIsValid) return Promise.resolve()
-
-    setSaving(true)
     return postReservations(
       editorState.map(({ child, reservations, absent }) => ({
         childId: child.id,
@@ -655,11 +653,8 @@ function useEditState(
           ) ?? [],
         absent
       }))
-    )
-      .then(() => setEditing(false))
-      .then(() => reloadData())
-      .finally(() => setSaving(false))
-  }, [date, editorState, reloadData, stateIsValid])
+    ).then(() => setEditing(false))
+  }, [date, editorState, postReservations, stateIsValid])
 
   const [confirmationModal, setConfirmationModal] = useState<{
     close: () => void

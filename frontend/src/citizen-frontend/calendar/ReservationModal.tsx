@@ -13,6 +13,7 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { formatPreferredName } from 'lib-common/names'
+import { useMutationResult } from 'lib-common/query'
 import {
   Repetition,
   ReservationFormDataForValidation,
@@ -47,7 +48,7 @@ import {
   CalendarModalCloseButton,
   CalendarModalSection
 } from './CalendarModal'
-import { postReservations } from './api'
+import { postReservationsMutation } from './queries'
 import RepetitionTimeInputGrid from './reservation-modal/RepetitionTimeInputGrid'
 import { getEarliestReservableDate, getLatestReservableDate } from './utils'
 
@@ -73,6 +74,9 @@ export default React.memo(function ReservationModal({
   const i18n = useTranslation()
   const [lang] = useLang()
 
+  const { mutateAsync: postReservations } = useMutationResult(
+    postReservationsMutation
+  )
   const [formData, setFormData] = useState<ReservationFormDataForValidation>({
     selectedChildren: availableChildren.map((child) => child.id),
     startDate: initialStart,
