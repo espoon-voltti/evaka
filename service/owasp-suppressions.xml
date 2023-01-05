@@ -71,4 +71,11 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         ]]></notes>
         <cve>CVE-2022-41915</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Misidentification (https://github.com/jeremylong/DependencyCheck/issues/5213)
+        ]]></notes>
+        <packageUrl regex="true">^(?!pkg:maven//software.amazon.awssdk//utils).*$</packageUrl>
+        <cpe>cpe:/a:utils_project:utils</cpe>
+    </suppress>
 </suppressions>
