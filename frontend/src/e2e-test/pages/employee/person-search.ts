@@ -9,7 +9,8 @@ import { Checkbox, Page, TextInput } from '../../utils/page'
 export default class PersonSearchPage {
   constructor(private readonly page: Page) {}
 
-  #searchInput = new TextInput(this.page.find('[data-qa="search-input"]'))
+  searchInput = new TextInput(this.page.find('[data-qa="search-input"]'))
+  searchResults = this.page.findAllByDataQa('person-row')
   #personLink = this.page.find('[data-qa="person-row"] a')
   #createPersonButton = this.page.find('[data-qa="create-person-button"]')
   #createPersonModal = {
@@ -71,7 +72,7 @@ export default class PersonSearchPage {
   }
 
   async findPerson(searchString: string) {
-    await this.#searchInput.fill(searchString)
+    await this.searchInput.fill(searchString)
     await this.#personLink.click()
   }
 
