@@ -55,6 +55,10 @@ import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
+/*
+ * TODO: These tests should be moved to MessageIntegrationTest because inserting directly to the database doesn't
+ * reflect reality: it's controllers' and MessageService's job but these tests don't invoke them
+ */
 class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     private val person1 = DevPerson(firstName = "Firstname", lastName = "Person")
     private val person2 = DevPerson(firstName = "Firstname", lastName = "Person Two")
@@ -604,53 +608,6 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
     }
 
     @Test
-    fun `unread messages and marking messages read`() {
-        // given
-        val thread1 =
-            createThread(
-                "Title",
-                "Content",
-                accounts.person1,
-                listOf(accounts.employee1, accounts.person2)
-            )
-
-        // then unread count is zero for sender and one for recipients
-        assertEquals(0, unreadMessagesCount(accounts.person1))
-        assertEquals(1, unreadMessagesCount(accounts.employee1))
-        assertEquals(1, unreadMessagesCount(accounts.person2))
-
-        // when employee reads the message
-        db.transaction { it.markThreadRead(RealEvakaClock(), accounts.employee1.id, thread1) }
-
-        // then the thread does not count towards unread messages
-        assertEquals(0, unreadMessagesCount(accounts.person1))
-        assertEquals(0, unreadMessagesCount(accounts.employee1))
-        assertEquals(1, unreadMessagesCount(accounts.person2))
-
-        // when a new thread is created
-        val thread2 =
-            createThread(
-                "Title",
-                "Content",
-                accounts.employee1,
-                listOf(accounts.person1, accounts.person2)
-            )
-
-        // then unread counts are bumped by one for recipients
-        assertEquals(1, unreadMessagesCount(accounts.person1))
-        assertEquals(0, unreadMessagesCount(accounts.employee1))
-        assertEquals(2, unreadMessagesCount(accounts.person2))
-
-        // when person two reads a thread
-        db.transaction { it.markThreadRead(RealEvakaClock(), accounts.person2.id, thread2) }
-
-        // then unread count goes down by one
-        assertEquals(1, unreadMessagesCount(accounts.person1))
-        assertEquals(0, unreadMessagesCount(accounts.employee1))
-        assertEquals(1, unreadMessagesCount(accounts.person2))
-    }
-
-    @Test
     fun `a thread can be archived`() {
         val content = "Content"
         val title = "Hello"
@@ -726,7 +683,10 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
         )
     }
 
-    // TODO: Remove this function, creating threads should be MessageService's job
+    /*
+     * TODO: Tests in this file should be moved to MessageIntegrationTest because creating a thread like this
+     * doesn't reflect reality
+     */
     private fun createThread(
         title: String,
         content: String,
@@ -754,7 +714,10 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
             threadId
         }
 
-    // TODO: Remove this function; replying to a thread should be MessageService's job
+    /*
+     * TODO: Tests in this file should be moved to MessageIntegrationTest because replying to a thread like this
+     * doesn't reflect reality
+     */
     private fun replyToThread(
         threadId: MessageThreadId,
         sender: MessageAccount,

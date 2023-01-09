@@ -730,6 +730,38 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(1, getMessageThreads(person4).size)
     }
 
+    @Test
+    fun `unread message counts and marking messages read`() {
+        postNewThread(
+            title = "Juhannus",
+            message = "Juhannus tulee pian",
+            messageType = MessageType.MESSAGE,
+            sender = employee1Account,
+            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+            user = employee1
+        )
+        assertEquals(0, unreadMessagesCount(employee1Account, employee1))
+        assertEquals(1, unreadMessagesCount(person1))
+        assertEquals(1, unreadMessagesCount(person2))
+
+        // citizen reads the message
+        markThreadRead(person1, getMessageThreads(person1).first().id)
+        assertEquals(0, unreadMessagesCount(employee1Account, employee1))
+        assertEquals(0, unreadMessagesCount(person1))
+        assertEquals(1, unreadMessagesCount(person2))
+
+        // thread is replied
+        replyToMessage(
+            user = person1,
+            messageId = getMessageThreads(person1).first().messages.last().id,
+            recipientAccountIds = setOf(person2Account, employee1Account),
+            content = "Juhannus on jo ohi"
+        )
+        assertEquals(1, unreadMessagesCount(employee1Account, employee1))
+        assertEquals(0, unreadMessagesCount(person1))
+        assertEquals(2, unreadMessagesCount(person2))
+    }
+
     private fun getUnreadReceivedMessages(
         accountId: MessageAccountId,
         user: AuthenticatedUser.Citizen
@@ -881,6 +913,24 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         user: AuthenticatedUser.Citizen
     ): MessageControllerCitizen.GetReceiversResponse {
         return messageControllerCitizen.getReceivers(dbInstance(), user, MockEvakaClock(readTime))
+    }
+
+    private fun unreadMessagesCount(user: AuthenticatedUser.Citizen): Int {
+        return messageControllerCitizen
+            .getUnreadMessages(dbInstance(), user, MockEvakaClock(readTime))
+            .first()
+            .unreadCount
+    }
+
+    private fun unreadMessagesCount(
+        accountId: MessageAccountId,
+        user: AuthenticatedUser.Employee
+    ): Int {
+        return messageController
+            .getUnreadMessages(dbInstance(), user, MockEvakaClock(readTime))
+            .find { it.accountId == accountId }
+            ?.unreadCount
+            ?: throw Exception("No unread count for account $accountId")
     }
 }
 
