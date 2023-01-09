@@ -4,8 +4,6 @@
 
 package fi.espoo.evaka.messaging
 
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.attachment.AttachmentsController
 import fi.espoo.evaka.pis.service.insertGuardian
@@ -16,13 +14,11 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageDraftId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
-import fi.espoo.evaka.shared.Paged
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.auth.insertDaycareGroupAcl
 import fi.espoo.evaka.shared.db.Database
@@ -59,7 +55,6 @@ import fi.espoo.evaka.testChild_5
 import fi.espoo.evaka.testChild_6
 import fi.espoo.evaka.testDaycare
 import fi.espoo.evaka.testDaycare2
-import fi.espoo.evaka.withMockedTime
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -73,6 +68,8 @@ import org.springframework.mock.web.MockMultipartFile
 
 class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var attachmentsController: AttachmentsController
+    @Autowired lateinit var messageController: MessageController
+    @Autowired lateinit var messageControllerCitizen: MessageControllerCitizen
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     private val clock = RealEvakaClock()
@@ -240,7 +237,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(listOf(), getMessageThreads(employee1Account, employee1))
 
         // then recipient can see it in received messages
-        val threadWithOneReply = getMessageThreads(person1Account, person1)[0]
+        val threadWithOneReply = getMessageThreads(person1)[0]
         assertEquals("Juhannus", threadWithOneReply.title)
         assertEquals(MessageType.MESSAGE, threadWithOneReply.type)
         assertEquals(
@@ -249,7 +246,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
 
         // when
-        replyAsCitizen(
+        replyToMessage(
             person1,
             threadWithOneReply.messages[0].id,
             setOf(employee1Account, person2Account),
@@ -257,8 +254,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
 
         // then recipients see the same data
-        val person2Threads = getMessageThreads(person2Account, person2)
-        assertEquals(getMessageThreads(person1Account, person1), person2Threads)
+        val person2Threads = getMessageThreads(person2)
+        assertEquals(getMessageThreads(person1), person2Threads)
         assertEquals(getMessageThreads(employee1Account, employee1), person2Threads)
 
         // then thread has both messages in correct order
@@ -274,7 +271,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
 
         // when person one replies to the employee only
-        replyAsCitizen(
+        replyToMessage(
             person1,
             person2Thread.messages.last().id,
             setOf(employee1Account),
@@ -290,7 +287,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             )
         assertEquals(
             threadContentWithTwoReplies,
-            getMessageThreads(person1Account, person1)[0].toSenderContentPairs()
+            getMessageThreads(person1)[0].toSenderContentPairs()
         )
         assertEquals(
             threadContentWithTwoReplies,
@@ -303,11 +300,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 Pair(employee1Account, "Juhannus tulee pian"),
                 Pair(person1Account, "No niinpä näyttää tulevan")
             ),
-            getMessageThreads(person2Account, person2)[0].toSenderContentPairs()
+            getMessageThreads(person2)[0].toSenderContentPairs()
         )
 
         // when author replies to person two
-        replyAsEmployee(
+        replyToMessage(
             user = employee1,
             sender = employee1Account,
             messageId = threadWithOneReply.messages.last().id,
@@ -322,13 +319,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 Pair(person1Account, "No niinpä näyttää tulevan"),
                 Pair(employee1Account, "person 1 does not see this")
             ),
-            getMessageThreads(person2Account, person2)[0].toSenderContentPairs()
+            getMessageThreads(person2)[0].toSenderContentPairs()
         )
 
         // then person one does not see that
         assertEquals(
             threadContentWithTwoReplies,
-            getMessageThreads(person1Account, person1)[0].toSenderContentPairs()
+            getMessageThreads(person1)[0].toSenderContentPairs()
         )
 
         // then employee sees all the messages
@@ -421,11 +418,11 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         // person 1 and 2: common child
         // person 2 and 3: common child
         // person 4: no child
-        val person1Threads = getMessageThreads(person1Account, person1)
-        val person2Threads = getMessageThreads(person2Account, person2)
-        val person3Threads = getMessageThreads(person3Account, person3)
-        val person4Threads = getMessageThreads(person4Account, person4)
-        val person5Threads = getMessageThreads(person5Account, person5)
+        val person1Threads = getMessageThreads(person1)
+        val person2Threads = getMessageThreads(person2)
+        val person3Threads = getMessageThreads(person3)
+        val person4Threads = getMessageThreads(person4)
+        val person5Threads = getMessageThreads(person5)
 
         assertEquals(1, person1Threads.size)
         assertEquals(1, person2Threads.size)
@@ -448,7 +445,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
 
         // when person 1 replies to thread
-        replyAsCitizen(
+        replyToMessage(
             person1,
             person1Threads.first().messages.first().id,
             setOf(employee1Account, person2Account),
@@ -461,14 +458,14 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             listOf(Pair(employee1Account, content), Pair(person1Account, "Hello")),
             employeeThreads.map { it.toSenderContentPairs() }.flatten()
         )
-        assertEquals(employeeThreads, getMessageThreads(person1Account, person1))
+        assertEquals(employeeThreads, getMessageThreads(person1))
         assertEquals(
             listOf(Pair(employee1Account, content), Pair(person1Account, "Hello")),
-            getMessageThreads(person2Account, person2).map { it.toSenderContentPairs() }.flatten()
+            getMessageThreads(person2).map { it.toSenderContentPairs() }.flatten()
         )
 
-        assertEquals(person3Threads, getMessageThreads(person3Account, person3))
-        assertEquals(person4Threads, getMessageThreads(person4Account, person4))
+        assertEquals(person3Threads, getMessageThreads(person3))
+        assertEquals(person4Threads, getMessageThreads(person4))
     }
 
     @Test
@@ -484,7 +481,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
 
         // then the recipient can see it
-        val thread = getMessageThreads(person1Account, person1).first()
+        val thread = getMessageThreads(person1).first()
         assertEquals("Tiedote", thread.title)
         assertEquals(MessageType.BULLETIN, thread.type)
         assertEquals(
@@ -493,17 +490,14 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
 
         // when the recipient tries to reply to the bulletin, it is denied
-        assertEquals(
-            403,
-            replyAsCitizen(
-                    user = person1,
-                    messageId = thread.messages.first().id,
-                    recipientAccountIds = setOf(thread.messages.first().sender.id),
-                    content = "Kiitos tiedosta"
-                )
-                .second
-                .statusCode
-        )
+        assertThrows<Forbidden> {
+            replyToMessage(
+                user = person1,
+                messageId = thread.messages.first().id,
+                recipientAccountIds = setOf(thread.messages.first().sender.id),
+                content = "Kiitos tiedosta"
+            )
+        }
 
         // when the author himself replies to the bulletin, it succeeds
         //
@@ -511,17 +505,12 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         //       replying to their own message (without other replies)
         //       lacks spec. It would be bad UX to only allow replies
         //       to own bulletin only. (Date 25.11.2021)
-        assertEquals(
-            200,
-            replyAsEmployee(
-                    sender = employee1Account,
-                    user = employee1,
-                    messageId = thread.messages.last().id,
-                    recipientAccountIds = setOf(person1Account),
-                    content = "Nauttikaa siitä"
-                )
-                .second
-                .statusCode
+        replyToMessage(
+            sender = employee1Account,
+            user = employee1,
+            messageId = thread.messages.last().id,
+            recipientAccountIds = setOf(person1Account),
+            content = "Nauttikaa siitä"
         )
 
         // then the recipient can see it
@@ -530,7 +519,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 Pair(employee1Account, "Juhannus tulee pian"),
                 Pair(employee1Account, "Nauttikaa siitä")
             ),
-            getMessageThreads(person1Account, person1).first().toSenderContentPairs()
+            getMessageThreads(person1).first().toSenderContentPairs()
         )
     }
 
@@ -547,13 +536,13 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
 
         // then
-        val person1UnreadMessages = getUnreadMessages(person1Account, person1)
+        val person1UnreadMessages = getUnreadReceivedMessages(person1Account, person1)
         assertEquals(1, person1UnreadMessages.size)
-        assertEquals(1, getUnreadMessages(person2Account, person2).size)
-        assertEquals(0, getUnreadMessages(employee1Account, employee1).size)
+        assertEquals(1, getUnreadReceivedMessages(person2Account, person2).size)
+        assertEquals(0, getUnreadReceivedMessages(employee1Account, employee1).size)
 
         // when a person replies to the thread
-        replyAsCitizen(
+        replyToMessage(
             person1,
             person1UnreadMessages.first().id,
             setOf(employee1Account, person2Account),
@@ -561,21 +550,17 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         )
 
         // then
-        assertEquals(1, getUnreadMessages(employee1Account, employee1).size)
-        assertEquals(1, getUnreadMessages(person1Account, person1).size)
-        assertEquals(2, getUnreadMessages(person2Account, person2).size)
+        assertEquals(1, getUnreadReceivedMessages(employee1Account, employee1).size)
+        assertEquals(1, getUnreadReceivedMessages(person1Account, person1).size)
+        assertEquals(2, getUnreadReceivedMessages(person2Account, person2).size)
 
         // when a thread is marked read
-        markThreadRead(
-            person2,
-            person2Account,
-            getMessageThreads(person2Account, person2).first().id
-        )
+        markThreadRead(person2, getMessageThreads(person2).first().id)
 
         // then the thread is marked read
-        assertEquals(1, getUnreadMessages(employee1Account, employee1).size)
-        assertEquals(1, getUnreadMessages(person1Account, person1).size)
-        assertEquals(0, getUnreadMessages(person2Account, person2).size)
+        assertEquals(1, getUnreadReceivedMessages(employee1Account, employee1).size)
+        assertEquals(1, getUnreadReceivedMessages(person1Account, person1).size)
+        assertEquals(0, getUnreadReceivedMessages(person2Account, person2).size)
     }
 
     @Test
@@ -673,7 +658,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         }
 
         // the recipient can read the attachment
-        val threads = getMessageThreads(person1Account, person1)
+        val threads = getMessageThreads(person1)
         assertEquals(1, threads.size)
         val messages = threads.first().messages
         assertEquals(1, messages.size)
@@ -708,9 +693,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             sender = group1Account,
             recipients = listOf(MessageRecipient(MessageRecipientType.GROUP, groupId2)),
             user = employee1,
-            statusCode = 200
         )
-        assertEquals(0, getMessageThreads(person4Account, person4).size)
+        assertEquals(0, getMessageThreads(person4).size)
 
         postNewThread(
             title = "Juhannus",
@@ -719,9 +703,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             sender = group2Account,
             recipients = listOf(MessageRecipient(MessageRecipientType.GROUP, groupId2)),
             user = employee1,
-            statusCode = 200
         )
-        assertEquals(1, getMessageThreads(person4Account, person4).size)
+        assertEquals(1, getMessageThreads(person4).size)
     }
 
     @Test
@@ -733,9 +716,8 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             sender = group1Account,
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_4.id)),
             user = employee1,
-            statusCode = 200
         )
-        assertEquals(0, getMessageThreads(person4Account, person4).size)
+        assertEquals(0, getMessageThreads(person4).size)
 
         postNewThread(
             title = "Juhannus",
@@ -744,12 +726,22 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
             sender = group2Account,
             recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_4.id)),
             user = employee1,
-            statusCode = 200
         )
-        assertEquals(1, getMessageThreads(person4Account, person4).size)
+        assertEquals(1, getMessageThreads(person4).size)
     }
 
-    private fun getUnreadMessages(accountId: MessageAccountId, user: AuthenticatedUser) =
+    private fun getUnreadReceivedMessages(
+        accountId: MessageAccountId,
+        user: AuthenticatedUser.Citizen
+    ) =
+        getMessageThreads(user).flatMap {
+            it.messages.filter { m -> m.sender.id != accountId && m.readAt == null }
+        }
+
+    private fun getUnreadReceivedMessages(
+        accountId: MessageAccountId,
+        user: AuthenticatedUser.Employee
+    ) =
         getMessageThreads(accountId, user).flatMap {
             it.messages.filter { m -> m.sender.id != accountId && m.readAt == null }
         }
@@ -776,121 +768,120 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         user: AuthenticatedUser.Employee,
         attachmentIds: Set<AttachmentId> = setOf(),
         draftId: MessageDraftId? = null,
-        statusCode: Int = 200
-    ) =
-        http
-            .post("/messages/$sender")
-            .jsonBody(
-                jsonMapper.writeValueAsString(
-                    MessageController.PostMessageBody(
-                        title = title,
-                        content = message,
-                        type = messageType,
-                        recipients = recipients.toSet(),
-                        recipientNames = recipientNames,
-                        attachmentIds = attachmentIds,
-                        draftId = draftId,
-                        urgent = false
-                    )
-                )
+    ) {
+        messageController.createMessage(
+            dbInstance(),
+            user,
+            MockEvakaClock(sendTime),
+            sender,
+            MessageController.PostMessageBody(
+                title = title,
+                content = message,
+                type = messageType,
+                recipients = recipients.toSet(),
+                recipientNames = recipientNames,
+                attachmentIds = attachmentIds,
+                draftId = draftId,
+                urgent = false
             )
-            .asUser(user)
-            .withMockedTime(sendTime)
-            .response()
-            .also { assertEquals(statusCode, it.second.statusCode) }
-            .also { asyncJobRunner.runPendingJobsSync(MockEvakaClock(readTime)) }
+        )
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(readTime))
+    }
 
-    private fun replyAsCitizen(
+    private fun replyToMessage(
         user: AuthenticatedUser.Citizen,
         messageId: MessageId,
         recipientAccountIds: Set<MessageAccountId>,
         content: String
-    ) =
-        http
-            .post("/citizen/messages/$messageId/reply")
-            .jsonBody(
-                jsonMapper.writeValueAsString(
-                    ReplyToMessageBody(content = content, recipientAccountIds = recipientAccountIds)
-                )
-            )
-            .asUser(user)
-            .withMockedTime(sendTime)
-            .response()
-            .also { asyncJobRunner.runPendingJobsSync(MockEvakaClock(readTime)) }
+    ) {
+        messageControllerCitizen.replyToThread(
+            dbInstance(),
+            user,
+            MockEvakaClock(sendTime),
+            messageId,
+            ReplyToMessageBody(content = content, recipientAccountIds = recipientAccountIds)
+        )
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(readTime))
+    }
 
-    private fun replyAsEmployee(
+    private fun replyToMessage(
         user: AuthenticatedUser.Employee,
         sender: MessageAccountId,
         messageId: MessageId,
         recipientAccountIds: Set<MessageAccountId>,
         content: String
-    ) =
-        http
-            .post("/messages/$sender/$messageId/reply")
-            .jsonBody(
-                jsonMapper.writeValueAsString(
-                    ReplyToMessageBody(content = content, recipientAccountIds = recipientAccountIds)
-                )
-            )
-            .asUser(user)
-            .withMockedTime(sendTime)
-            .response()
-            .also { asyncJobRunner.runPendingJobsSync(MockEvakaClock(readTime)) }
+    ) {
+        messageController.replyToThread(
+            dbInstance(),
+            user,
+            MockEvakaClock(sendTime),
+            sender,
+            messageId,
+            ReplyToMessageBody(content = content, recipientAccountIds = recipientAccountIds)
+        )
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(readTime))
+    }
 
-    private fun markThreadRead(
-        user: AuthenticatedUser,
-        accountId: MessageAccountId,
-        threadId: MessageThreadId
-    ) =
-        http
-            .put(
-                if (user is AuthenticatedUser.Citizen) "/citizen/messages/threads/$threadId/read"
-                else "/messages/$accountId/threads/$threadId/read"
+    private fun markThreadRead(user: AuthenticatedUser.Citizen, threadId: MessageThreadId) {
+        messageControllerCitizen.markThreadRead(
+            dbInstance(),
+            user,
+            MockEvakaClock(readTime),
+            threadId
+        )
+    }
+
+    private fun getMessageThreads(
+        user: AuthenticatedUser.Citizen,
+    ): List<MessageThread> {
+        return messageControllerCitizen
+            .getReceivedMessages(
+                dbInstance(),
+                user,
+                MockEvakaClock(readTime),
+                page = 1,
+                pageSize = 100
             )
-            .asUser(user)
-            .withMockedTime(readTime)
-            .response()
+            .data
+    }
 
     private fun getMessageThreads(
         accountId: MessageAccountId,
-        user: AuthenticatedUser
-    ): List<MessageThread> =
-        http
-            .get(
-                if (user is AuthenticatedUser.Citizen) "/citizen/messages/received"
-                else "/messages/$accountId/received",
-                listOf("page" to 1, "pageSize" to 100)
+        user: AuthenticatedUser.Employee,
+    ): List<MessageThread> {
+        return messageController
+            .getReceivedMessages(
+                dbInstance(),
+                user,
+                MockEvakaClock(readTime),
+                accountId,
+                page = 1,
+                pageSize = 100
             )
-            .asUser(user)
-            .withMockedTime(readTime)
-            .responseObject<Paged<MessageThread>>(jsonMapper)
-            .third
-            .get()
             .data
+    }
 
     private fun getSentMessages(
         accountId: MessageAccountId,
         user: AuthenticatedUser.Employee
-    ): List<SentMessage> =
-        http
-            .get("/messages/$accountId/sent", listOf("page" to 1, "pageSize" to 100))
-            .asUser(user)
-            .withMockedTime(readTime)
-            .responseObject<Paged<SentMessage>>(jsonMapper)
-            .third
-            .get()
+    ): List<SentMessage> {
+        return messageController
+            .getSentMessages(
+                dbInstance(),
+                user,
+                MockEvakaClock(readTime),
+                accountId,
+                page = 1,
+                pageSize = 100
+            )
             .data
+    }
 
     private fun getCitizenReceivers(
-        user: AuthenticatedUser
-    ): MessageControllerCitizen.GetReceiversResponse =
-        http
-            .get("/citizen/messages/receivers")
-            .asUser(user)
-            .withMockedTime(readTime)
-            .responseObject<MessageControllerCitizen.GetReceiversResponse>(jsonMapper)
-            .third
-            .get()
+        user: AuthenticatedUser.Citizen
+    ): MessageControllerCitizen.GetReceiversResponse {
+        return messageControllerCitizen.getReceivers(dbInstance(), user, MockEvakaClock(readTime))
+    }
 }
 
 fun MessageThread.toSenderContentPairs(): List<Pair<MessageAccountId, String>> =
