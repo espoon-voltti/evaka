@@ -165,7 +165,7 @@ instances:
           type: meters
           name: asyncJobsExecuted.payloadType.AsyncJob
           attribute:
-            Value:
+            Count:
               alias: asyncjobs.executed.asyncjob
               metric_type: counter
       - include:
@@ -173,7 +173,7 @@ instances:
           type: meters
           name: asyncJobsExecuted.payloadType.SuomiFiAsyncJob
           attribute:
-            Value:
+            Count:
               alias: asyncjobs.executed.suomifi
               metric_type: counter
       - include:
@@ -181,7 +181,7 @@ instances:
           type: meters
           name: asyncJobsExecuted.payloadType.UrgentAsyncJob
           attribute:
-            Value:
+            Count:
               alias: asyncjobs.executed.urgent
               metric_type: counter
       - include:
@@ -189,7 +189,7 @@ instances:
           type: meters
           name: asyncJobsExecuted.payloadType.VardaAsyncJob
           attribute:
-            Value:
+            Count:
               alias: asyncjobs.executed.varda
               metric_type: counter
       - include:
@@ -197,7 +197,7 @@ instances:
           type: meters
           name: asyncJobsFailed.payloadType.AsyncJob
           attribute:
-            Value:
+            Count:
               alias: asyncjobs.failed.asyncjob
               metric_type: counter
       - include:
@@ -205,7 +205,7 @@ instances:
           type: meters
           name: asyncJobsFailed.payloadType.SuomiFiAsyncJob
           attribute:
-            Value:
+            Count:
               alias: asyncjobs.failed.suomifi
               metric_type: counter
       - include:
@@ -213,7 +213,7 @@ instances:
           type: meters
           name: asyncJobsFailed.payloadType.UrgentAsyncJob
           attribute:
-            Value:
+            Count:
               alias: asyncjobs.failed.urgent
               metric_type: counter
       - include:
@@ -221,6 +221,6 @@ instances:
           type: meters
           name: asyncJobsFailed.payloadType.VardaAsyncJob
           attribute:
-            Value:
+            Count:
               alias: asyncjobs.failed.varda
               metric_type: counter
