@@ -93,7 +93,7 @@ TABLE (
     END)
     FROM child_daycare_acl(today)
     JOIN daycare_acl USING (daycare_id)
-    WHERE NOT from_application OR role <> 'SPECIAL_EDUCATION_TEACHER' OR is_assistance_needed
+    WHERE NOT (from_application AND role = 'SPECIAL_EDUCATION_TEACHER' AND is_assistance_needed IS FALSE)
 $$ LANGUAGE SQL STABLE;
 
 CREATE VIEW person_acl_view(employee_id, person_id, daycare_id, role) AS (
