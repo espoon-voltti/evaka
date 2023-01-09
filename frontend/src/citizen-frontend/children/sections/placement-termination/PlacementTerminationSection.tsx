@@ -42,10 +42,10 @@ export default React.memo(function PlacementTerminationSection({
       data-qa="collapsible-termination"
     >
       {renderResult(placementsResponse, ({ placements }) => {
-        const terminatedPlacements = placements.filter((p) =>
-          p.placements
-            .concat(p.additionalPlacements)
-            .find((p2) => !!p2.terminationRequestedDate)
+        const terminatedPlacements = placements.filter((placementGroup) =>
+          placementGroup.placements
+            .concat(placementGroup.additionalPlacements)
+            .find((placement) => !!placement.terminationRequestedDate)
         )
         const groups = placements.filter((p) =>
           p.endDate.isAfter(LocalDate.todayInSystemTz())

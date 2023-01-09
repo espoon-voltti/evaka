@@ -438,7 +438,10 @@ describe('Citizen children page', () => {
         `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, voimassa ${terminationDate.format()}`
       ])
 
-      await childPage.assertTerminatedPlacementCount(0) // the paid daycare is not terminated, just split to PRESCHOOL_DAYCARE and PRESCHOOL
+      await childPage.assertTerminatedPlacementCount(1) // the paid daycare is not terminated, just split to PRESCHOOL_DAYCARE and PRESCHOOL
+      await assertTerminatedPlacements([
+        `Maksullinen varhaiskasvatus, Alkuräjähdyksen eskari, viimeinen läsnäolopäivä: ${terminationDate.format()}`
+      ])
     })
   })
 
