@@ -14,6 +14,7 @@ import {
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
 import { formatPreferredName } from 'lib-common/names'
+import { useMutationResult } from 'lib-common/query'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { ChoiceChip, SelectionChip } from 'lib-components/atoms/Chip'
 import HorizontalLine from 'lib-components/atoms/HorizontalLine'
@@ -37,15 +38,14 @@ import { useLang, useTranslation } from '../localization'
 import { BottomFooterContainer } from './BottomFooterContainer'
 import {
   CalendarModalBackground,
+  CalendarModalButtons,
   CalendarModalCloseButton,
-  CalendarModalSection,
-  CalendarModalButtons
+  CalendarModalSection
 } from './CalendarModal'
-import { postAbsences } from './api'
+import { postAbsencesMutation } from './queries'
 
 interface Props {
   close: () => void
-  reload: () => void
   availableChildren: ReservationChild[]
   initialDate: LocalDate | undefined
 }
@@ -71,13 +71,13 @@ function initialForm(
 
 export default React.memo(function AbsenceModal({
   close,
-  reload,
   availableChildren,
   initialDate
 }: Props) {
   const i18n = useTranslation()
   const [lang] = useLang()
 
+  const { mutateAsync: postAbsences } = useMutationResult(postAbsencesMutation)
   const [form, setForm] = useState<Form>(() =>
     initialForm(initialDate, availableChildren)
   )
@@ -243,10 +243,7 @@ export default React.memo(function AbsenceModal({
 
                   return postAbsences(request)
                 }}
-                onSuccess={() => {
-                  close()
-                  reload()
-                }}
+                onSuccess={close}
                 data-qa="modal-okBtn"
               />
             </CalendarModalButtons>

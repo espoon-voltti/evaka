@@ -2,74 +2,106 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect } from 'react'
+import React, { useContext } from 'react'
 
-import {
-  HolidayCta,
-  NoCta,
-  useHolidayPeriods
-} from 'citizen-frontend/holiday-periods/state'
 import { useTranslation } from 'citizen-frontend/localization'
-import { useDataStatus } from 'lib-common/utils/result-to-data-status'
+import FiniteDateRange from 'lib-common/finite-date-range'
+import LocalDate from 'lib-common/local-date'
+import { useQuery } from 'lib-common/query'
 import { NotificationsContext } from 'lib-components/Notifications'
+import { Translations } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import { faTreePalm } from 'lib-icons'
 
 import { useCalendarModalState } from './CalendarPage'
+import { activeQuestionnaireQuery, holidayPeriodsQuery } from './queries'
+
+type NoCta = { type: 'none' }
+type HolidayCta =
+  | NoCta
+  | { type: 'holiday'; period: FiniteDateRange; deadline: LocalDate }
+  | { type: 'questionnaire'; deadline: LocalDate }
 
 export default React.memo(function CalendarNotifications() {
   const { addNotification, removeNotification } =
     useContext(NotificationsContext)
   const i18n = useTranslation()
 
-  const getHolidayCtaText = useCallback(
-    (cta: Exclude<HolidayCta, NoCta>) => {
-      switch (cta.type) {
-        case 'holiday':
-          return i18n.ctaToast.holidayPeriodCta(
-            cta.period.formatCompact(''),
-            cta.deadline.format()
-          )
-        case 'questionnaire':
-          return i18n.ctaToast.fixedPeriodCta(cta.deadline.format())
-      }
-    },
-    [i18n]
-  )
-
   const { openHolidayModal, openReservationModal } = useCalendarModalState()
-  const { holidayCta } = useHolidayPeriods()
 
-  useEffect(() => {
-    holidayCta.map((cta) => {
+  const { data: activeQuestionnaire } = useQuery(activeQuestionnaireQuery)
+  const { data: holidayPeriods } = useQuery(holidayPeriodsQuery, {
+    enabled: activeQuestionnaire !== undefined,
+    onSuccess: (periods) => {
+      let cta: HolidayCta
+      if (activeQuestionnaire) {
+        cta = {
+          type: 'questionnaire',
+          deadline: activeQuestionnaire.questionnaire.active.end
+        }
+      } else {
+        const today = LocalDate.todayInSystemTz()
+        const activeHolidayPeriod = periods.find((p) =>
+          p.reservationDeadline?.isEqualOrAfter(today)
+        )
+        cta = activeHolidayPeriod?.reservationDeadline
+          ? {
+              type: 'holiday',
+              deadline: activeHolidayPeriod.reservationDeadline,
+              period: activeHolidayPeriod.period
+            }
+          : { type: 'none' }
+      }
+
       if (cta.type === 'none') {
         removeNotification('holiday-period-cta')
-        return
-      }
-
-      addNotification(
-        {
-          icon: faTreePalm,
-          iconColor: colors.status.warning,
-          onClick() {
-            switch (cta.type) {
-              case 'questionnaire':
-                openHolidayModal()
-                return 'close'
-              case 'holiday':
-                openReservationModal(cta.period)
-                return 'close'
-            }
+      } else {
+        addNotification(
+          {
+            icon: faTreePalm,
+            iconColor: colors.status.warning,
+            onClick() {
+              switch (cta.type) {
+                case 'questionnaire':
+                  openHolidayModal()
+                  break
+                case 'holiday':
+                  openReservationModal(cta.period)
+                  break
+              }
+              return 'close'
+            },
+            children: getHolidayCtaText(cta, i18n),
+            dataQa: 'holiday-period-cta'
           },
-          children: getHolidayCtaText(cta),
-          dataQa: 'holiday-period-cta'
-        },
-        'holiday-period-cta'
-      )
-    })
-  }, [addNotification, getHolidayCtaText, holidayCta, i18n.ctaToast, openHolidayModal, openReservationModal, removeNotification])
+          'holiday-period-cta'
+        )
+      }
+    }
+  })
 
-  const holidayCtaStatus = useDataStatus(holidayCta)
-
-  return <div data-holiday-period-cta-status={holidayCtaStatus} />
+  return (
+    <div
+      data-holiday-period-cta-status={
+        activeQuestionnaire !== undefined && holidayPeriods !== undefined
+          ? 'success'
+          : 'loading'
+      }
+    />
+  )
 })
+
+function getHolidayCtaText(
+  cta: Exclude<HolidayCta, NoCta>,
+  i18n: Translations
+) {
+  switch (cta.type) {
+    case 'holiday':
+      return i18n.ctaToast.holidayPeriodCta(
+        cta.period.formatCompact(''),
+        cta.deadline.format()
+      )
+    case 'questionnaire':
+      return i18n.ctaToast.fixedPeriodCta(cta.deadline.format())
+  }
+}

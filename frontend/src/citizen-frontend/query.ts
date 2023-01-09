@@ -10,6 +10,7 @@ export type QueryKeyPrefix =
   | 'applications'
   | 'applicationDecisions'
   | 'assistanceDecisions'
+  | 'calendar'
   | 'childConsents'
   | 'children'
   | 'pedagogicalDocuments'

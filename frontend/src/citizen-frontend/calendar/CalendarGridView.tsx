@@ -20,6 +20,7 @@ import {
   ReservationChild
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import { scrollToPos } from 'lib-common/utils/scrolling'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
 import Container, { ContentArea } from 'lib-components/layout/Container'
@@ -28,7 +29,7 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors from 'lib-customizations/common'
 import { faCalendar, faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
-import { useHolidayPeriods } from '../holiday-periods/state'
+import { useUser } from '../auth/state'
 import { useLang, useTranslation } from '../localization'
 import { headerHeightDesktop } from '../navigation/const'
 
@@ -37,6 +38,8 @@ import { HistoryOverlay } from './HistoryOverlay'
 import ReportHolidayLabel from './ReportHolidayLabel'
 import { ChildImageData, getChildImages } from './RoundChildImages'
 import { Reservations } from './calendar-elements'
+import { activeQuestionnaireQuery, holidayPeriodsQuery } from './queries'
+import { isQuestionnaireAvailable } from './utils'
 
 export interface Props {
   childData: ReservationChild[]
@@ -82,11 +85,15 @@ export default React.memo(function CalendarGridView({
     [onCreateAbsencesClicked]
   )
 
-  const { holidayPeriods: holidayPeriodResult, questionnaireAvailable } =
-    useHolidayPeriods()
+  const holidayPeriodResult = useQueryResult(holidayPeriodsQuery)
   const holidayPeriods = useMemo<FiniteDateRange[]>(
     () => holidayPeriodResult.map((p) => p.map((i) => i.period)).getOrElse([]),
     [holidayPeriodResult]
+  )
+
+  const questionnaireAvailable = isQuestionnaireAvailable(
+    useQueryResult(activeQuestionnaireQuery),
+    useUser()
   )
 
   const childImages = useMemo(() => getChildImages(childData), [childData])
@@ -98,7 +105,12 @@ export default React.memo(function CalendarGridView({
           {questionnaireAvailable && (
             <InlineButton
               onClick={onReportHolidaysClicked}
-              text={<ReportHolidayLabel iconRight />}
+              text={
+                <ReportHolidayLabel
+                  questionnaireAvailable={questionnaireAvailable}
+                  iconRight
+                />
+              }
               icon={faTreePalm}
               data-qa="open-holiday-modal"
             />

@@ -9,8 +9,9 @@ import styled from 'styled-components'
 import { defaultMargins } from 'lib-components/white-space'
 import { faLockAlt } from 'lib-icons'
 
-import { useHolidayPeriods } from '../holiday-periods/state'
 import { useTranslation } from '../localization'
+
+import { QuestionnaireAvailability } from './utils'
 
 const LabelContainer = styled.span`
   display: inline-flex;
@@ -19,22 +20,22 @@ const LabelContainer = styled.span`
 `
 
 interface Props {
+  questionnaireAvailable: QuestionnaireAvailability
   iconRight?: boolean
 }
 
-export default React.memo(function ReportHolidayLabel({ iconRight }: Props) {
+export default React.memo(function ReportHolidayLabel({
+  questionnaireAvailable,
+  iconRight
+}: Props) {
   const i18n = useTranslation()
-  const { questionnaireAvailable } = useHolidayPeriods()
-
-  if (!questionnaireAvailable) return null
-
   return questionnaireAvailable === 'with-strong-auth' ? (
     <LabelContainer>
       {!iconRight && <FontAwesomeIcon icon={faLockAlt} size="xs" />}
       {i18n.calendar.newHoliday}
       {iconRight && <FontAwesomeIcon icon={faLockAlt} size="xs" />}
     </LabelContainer>
-  ) : (
+  ) : questionnaireAvailable ? (
     <>{i18n.calendar.newHoliday}</>
-  )
+  ) : null
 })
