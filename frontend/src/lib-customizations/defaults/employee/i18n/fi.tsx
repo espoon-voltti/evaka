@@ -398,7 +398,7 @@ export const fi = {
       connectedLabel: 'Liittyvä varhaiskasvatus',
       connectedValue: 'Haen myös liittyvää varhaiskasvatusta',
       connectedDaycarePreferredStartDateLabel:
-        'Täydentävän toivottu aloituspäivä',
+        'Liittyvän varhaiskasvatuksen toivottu aloituspäivä',
       connectedDaycareServiceNeedOptionLabel: 'Täydentävän palveluntarve',
       dailyTime: 'Päivittäinen läsnäoloaika',
       startTimePlaceholder: '08:00',
