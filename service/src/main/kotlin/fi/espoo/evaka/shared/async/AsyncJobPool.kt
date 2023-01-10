@@ -147,27 +147,25 @@ class AsyncJobPool<T : AsyncJobPayload>(
 
     private fun runWorker(clock: EvakaClock, maxCount: Int = 1_000) =
         tracer.withDetachedSpan("asyncjob.worker $fullName") {
-            var executed = 0
             Database(jdbi, tracer).connect { dbc ->
-                var remaining = maxCount
-                do {
-                    val job = dbc.transaction { it.claimJob(clock.now(), registration.jobTypes()) }
-                    if (job != null) {
-                        tracer.withDetachedSpan(
-                            "asyncjob.run ${job.jobType.name}",
-                            Tracing.asyncJobId withValue job.jobId,
-                            Tracing.asyncJobRemainingAttempts withValue job.remainingAttempts,
-                        ) {
-                            runPendingJob(dbc, clock, job)
-                        }
-                        metrics.get()?.executedJobs?.increment()
-                        executed += 1
+                var executed = 0
+                while (maxCount - executed > 0 && !executor.isTerminating) {
+                    val job =
+                        dbc.transaction { it.claimJob(clock.now(), registration.jobTypes()) }
+                            ?: break
+                    tracer.withDetachedSpan(
+                        "asyncjob.run ${job.jobType.name}",
+                        Tracing.asyncJobId withValue job.jobId,
+                        Tracing.asyncJobRemainingAttempts withValue job.remainingAttempts,
+                    ) {
+                        runPendingJob(dbc, clock, job)
                     }
-                    remaining -= 1
+                    metrics.get()?.executedJobs?.increment()
+                    executed += 1
                     config.throttleInterval?.toMillis()?.run { Thread.sleep(this) }
-                } while (job != null && remaining > 0 && !executor.isTerminating)
+                }
+                executed
             }
-            executed
         }
 
     private fun runPendingJob(
