@@ -14,8 +14,7 @@ import React, {
 import { Loading, Paged, Result } from 'lib-common/api'
 import {
   MessageThread,
-  ThreadReply,
-  UnreadCountByAccount
+  ThreadReply
 } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
@@ -195,14 +194,11 @@ export const MessageContextProvider = React.memo(
     }, [])
 
     const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>()
-    const setUnreadResult = useCallback(
-      (res: Result<UnreadCountByAccount[]>) => {
-        if (res.isSuccess) {
-          setUnreadMessagesCount(res.value[0]?.unreadCount ?? 0)
-        }
-      },
-      []
-    )
+    const setUnreadResult = useCallback((res: Result<number>) => {
+      if (res.isSuccess) {
+        setUnreadMessagesCount(res.value)
+      }
+    }, [])
     const refreshUnreadMessagesCount = useRestApi(
       getUnreadMessagesCount,
       setUnreadResult
