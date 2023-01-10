@@ -18,10 +18,13 @@ import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { scrollToPos } from 'lib-common/utils/scrolling'
 import { useDebounce } from 'lib-common/utils/useDebounce'
 import { useRestApi } from 'lib-common/utils/useRestApi'
+import AddButton from 'lib-components/atoms/buttons/AddButton'
 import ReturnButton from 'lib-components/atoms/buttons/ReturnButton'
 import { Container, ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/employee'
+import { faEnvelope } from 'lib-icons'
 
 import {
   getApplication,
@@ -34,6 +37,7 @@ import ApplicationActionsBar from '../components/application-page/ApplicationAct
 import ApplicationEditView from '../components/application-page/ApplicationEditView'
 import ApplicationNotes from '../components/application-page/ApplicationNotes'
 import ApplicationReadView from '../components/application-page/ApplicationReadView'
+import { getEmployeeUrlPrefix } from '../constants'
 import { Translations, useTranslation } from '../state/i18n'
 import { TitleContext, TitleState } from '../state/title'
 import { ApplicationResponse } from '../types/application'
@@ -45,7 +49,7 @@ const ApplicationArea = styled(ContentArea)`
   width: 77%;
 `
 
-const NotesArea = styled(ContentArea)`
+const SidebarArea = styled(ContentArea)`
   width: 23%;
   padding: 0;
 `
@@ -214,14 +218,31 @@ export default React.memo(function ApplicationPage() {
                 applicationData.permittedActions.has(
                   'READ_SPECIAL_EDUCATION_TEACHER_NOTES'
                 )) && (
-                <NotesArea opaque={false}>
+                <SidebarArea opaque={false}>
                   <ApplicationNotes
                     applicationId={applicationId}
                     allowCreate={applicationData.permittedActions.has(
                       'CREATE_NOTE'
                     )}
                   />
-                </NotesArea>
+                  {featureFlags.experimental?.serviceWorkerMessaging && (
+                    <>
+                      <Gap size="m" />
+                      <AddButton
+                        onClick={() =>
+                          window.open(
+                            `${getEmployeeUrlPrefix()}/employee/messages`,
+                            '_blank'
+                          )
+                        }
+                        text={i18n.application.messaging.sendMessage}
+                        darker
+                        icon={faEnvelope}
+                        data-qa="send-message-button"
+                      />
+                    </>
+                  )}
+                </SidebarArea>
               )}
             </FixedSpaceRow>
           )

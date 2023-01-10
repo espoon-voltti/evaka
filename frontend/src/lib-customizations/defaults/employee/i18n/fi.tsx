@@ -544,6 +544,9 @@ export const fi = {
         save: 'Muistiinpanon tallentaminen epäonnnistui',
         remove: 'Muistiinpanon poistaminen epäonnnistui'
       }
+    },
+    messaging: {
+      sendMessage: 'Lähetä viesti'
     }
   },
   childInformation: {
