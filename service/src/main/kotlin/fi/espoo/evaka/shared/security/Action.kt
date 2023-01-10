@@ -1767,7 +1767,15 @@ sealed interface Action {
                 .inPlacementGroupOfChildOfVasuDocument()
         ),
         EVENT_RETURNED_TO_REVIEWED(HasGlobalRole(ADMIN)),
-        EVENT_MOVED_TO_CLOSED(HasGlobalRole(ADMIN));
+        EVENT_MOVED_TO_CLOSED(
+            HasGlobalRole(ADMIN),
+            HasUnitRole(UNIT_SUPERVISOR, SPECIAL_EDUCATION_TEACHER)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementUnitOfChildOfVasuDocument(),
+            HasGroupRole(STAFF)
+                .withUnitFeatures(PilotFeature.VASU_AND_PEDADOC)
+                .inPlacementGroupOfChildOfVasuDocument()
+        );
 
         override fun toString(): String = "${javaClass.name}.$name"
     }
