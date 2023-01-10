@@ -150,8 +150,11 @@ const sortDecisions = (
 ): DecisionWithValidStartDatePeriod[] =>
   orderBy(
     decisions,
-    ({ decision: { sentDate } }) => sentDate?.toSystemTzDate(),
-    'desc'
+    [
+      ({ decision: { sentDate } }) => sentDate?.toSystemTzDate(),
+      ({ decision: { type } }) => type
+    ],
+    ['desc', 'asc']
   )
 
 const isDecisionBlocked = (
