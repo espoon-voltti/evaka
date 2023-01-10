@@ -139,6 +139,7 @@ interface BaseFeatureFlags {
     assistanceNeedDecisionsLanguageSelect?: boolean
     staffAttendanceTypes?: boolean
     fosterParents?: boolean
+    serviceWorkerMessaging?: boolean
   }
 }
 
