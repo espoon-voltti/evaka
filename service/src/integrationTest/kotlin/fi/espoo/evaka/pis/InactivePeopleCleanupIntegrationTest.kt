@@ -40,7 +40,7 @@ import fi.espoo.evaka.shared.dev.insertTestParentship
 import fi.espoo.evaka.shared.dev.insertTestPartnership
 import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.dev.insertTestPlacement
-import fi.espoo.evaka.shared.domain.RealEvakaClock
+import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testAdult_2
 import fi.espoo.evaka.testArea
@@ -258,6 +258,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
 
     @Test
     fun `adult with received messages is cleaned up`() {
+        val now = HelsinkiDateTime.now()
         db.transaction { tx ->
             val supervisorId = EmployeeId(UUID.randomUUID())
             tx.insertTestEmployee(
@@ -273,12 +274,13 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                 tx.insertThread(MessageType.MESSAGE, "title", urgent = false, isCopy = false)
             val messageId =
                 tx.insertMessage(
-                    RealEvakaClock().now(),
-                    contentId,
-                    threadId,
-                    employeeAccount,
-                    listOf("recipient name"),
-                    "Espoo"
+                    now = now,
+                    contentId = contentId,
+                    threadId = threadId,
+                    sender = employeeAccount,
+                    sentAt = now,
+                    recipientNames = listOf("recipient name"),
+                    municipalAccountName = "Espoo"
                 )
             tx.insertRecipients(listOf(messageId to setOf(personAccount)))
         }
@@ -288,6 +290,7 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
 
     @Test
     fun `adult with sent messages is not cleaned up`() {
+        val now = HelsinkiDateTime.now()
         db.transaction { tx ->
             val supervisorId = EmployeeId(UUID.randomUUID())
             tx.insertTestEmployee(
@@ -303,12 +306,13 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                 tx.insertThread(MessageType.MESSAGE, "title", urgent = false, isCopy = false)
             val messageId =
                 tx.insertMessage(
-                    RealEvakaClock().now(),
-                    contentId,
-                    threadId,
-                    personAccount,
-                    listOf("employee name"),
-                    "Espoo"
+                    now = now,
+                    contentId = contentId,
+                    threadId = threadId,
+                    sender = personAccount,
+                    sentAt = now,
+                    recipientNames = listOf("employee name"),
+                    municipalAccountName = "Espoo"
                 )
             tx.insertRecipients(listOf(messageId to setOf(employeeAccount)))
         }

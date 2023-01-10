@@ -29,6 +29,17 @@ class MessageService(
         asyncJobRunner.registerHandler {
             db: Database.Connection,
             _: EvakaClock,
+            msg: AsyncJob.MarkMessageAsSent ->
+            db.transaction {
+                it.upsertReceiverThreadParticipants(msg.threadId, msg.recipientIds, msg.sentAt)
+                it.markMessagesAsSent(msg.messageIds, msg.sentAt)
+            }
+        }
+
+        // TODO: Not used anymore, remove after the above job has been deployed
+        asyncJobRunner.registerHandler {
+            db: Database.Connection,
+            _: EvakaClock,
             msg: AsyncJob.UpdateMessageThreadRecipients ->
             db.transaction {
                 it.upsertReceiverThreadParticipants(msg.threadId, msg.recipientIds, msg.sentAt)
@@ -111,11 +122,12 @@ class MessageService(
                 ids.second to recipients.first
             }
         )
-        asyncJobRunner.scheduleThreadRecipientsUpdate(
+        asyncJobRunner.scheduleMarkMessagesAsSent(
             tx,
             recipientGroupsWithMessageIds.map { (ids, recipients) ->
                 ids.first to recipients.first
             },
+            threadAndMessageIds.map { it.second }.toSet(),
             now
         )
 
@@ -152,11 +164,12 @@ class MessageService(
                     ids.second to setOf(recipient)
                 }
             )
-            asyncJobRunner.scheduleThreadRecipientsUpdate(
+            asyncJobRunner.scheduleMarkMessagesAsSent(
                 tx,
                 staffRecipientsWithMessageIds.map { (ids, recipient) ->
                     ids.first to setOf(recipient)
                 },
+                staffThreadAndMessageIds.map { it.second }.toSet(),
                 now
             )
         }
@@ -192,28 +205,29 @@ class MessageService(
         val message =
             db.transaction { tx ->
                 tx.upsertSenderThreadParticipants(senderAccount, listOf(threadId), now)
-                asyncJobRunner.scheduleThreadRecipientsUpdate(
-                    tx,
-                    listOf(threadId to recipientAccountIds),
-                    now
-                )
                 val recipientNames = tx.getAccountNames(recipientAccountIds)
                 val contentId = tx.insertMessageContent(content, senderAccount)
                 val messageId =
                     tx.insertMessage(
-                        now,
-                        contentId,
-                        threadId,
-                        senderAccount,
+                        now = now,
+                        contentId = contentId,
+                        threadId = threadId,
+                        sender = senderAccount,
                         repliesToMessageId = replyToMessageId,
                         recipientNames = recipientNames,
                         municipalAccountName = municipalAccountName
                     )
                 tx.insertRecipients(listOf(messageId to recipientAccountIds))
+                asyncJobRunner.scheduleMarkMessagesAsSent(
+                    tx,
+                    listOf(threadId to recipientAccountIds),
+                    setOf(messageId),
+                    now
+                )
                 notificationEmailService.scheduleSendingMessageNotifications(
                     tx,
                     listOf(messageId),
-                    now.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5)
+                    now,
                 )
                 tx.getSentMessage(senderAccount, messageId)
             }
@@ -221,15 +235,16 @@ class MessageService(
     }
 }
 
-fun AsyncJobRunner<AsyncJob>.scheduleThreadRecipientsUpdate(
+fun AsyncJobRunner<AsyncJob>.scheduleMarkMessagesAsSent(
     tx: Database.Transaction,
     threadRecipientsPairs: List<Pair<MessageThreadId, Set<MessageAccountId>>>,
+    messageIds: Set<MessageId>,
     sentAt: HelsinkiDateTime
 ) =
     this.plan(
         tx,
         threadRecipientsPairs.map { (threadId, recipients) ->
-            AsyncJob.UpdateMessageThreadRecipients(threadId, recipients, sentAt)
+            AsyncJob.MarkMessageAsSent(threadId, recipients, messageIds, sentAt)
         },
         runAt = sentAt.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS)
     )

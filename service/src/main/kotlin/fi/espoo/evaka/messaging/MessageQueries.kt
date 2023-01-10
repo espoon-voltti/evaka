@@ -50,14 +50,14 @@ fun Database.Read.getUnreadMessagesCounts(
         LEFT JOIN message m ON mr.message_id = m.id
         LEFT JOIN message_thread mt ON m.thread_id = mt.id
         LEFT JOIN message_thread_participant mtp ON m.thread_id = mtp.thread_id AND mtp.participant_id = acc.id
-        WHERE acc.id = ANY(:accountIds) AND (m.id IS NULL OR m.sent_at < :undoThreshold)
+        WHERE acc.id = ANY(:accountIds) AND (m.id IS NULL OR m.sent_at IS NOT NULL)
         GROUP BY acc.id
     """
             .trimIndent()
 
     return this.createQuery(sql)
         .bind("accountIds", accountIds)
-        .bind("undoThreshold", now.minusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS))
+        .bind("now", now)
         .mapTo<UnreadCountByAccount>()
         .toSet()
 }
@@ -79,7 +79,7 @@ fun Database.Read.getUnreadMessagesCountsByDaycare(
         LEFT JOIN message m ON mr.message_id = m.id
         LEFT JOIN message_thread mt ON m.thread_id = mt.id
         JOIN daycare_group dg ON acc.daycare_group_id = dg.id AND dg.daycare_id = :daycareId
-        WHERE acc.active = true AND m.sent_at < :undoThreshold
+        WHERE acc.active = true AND m.sent_at IS NOT NULL
         GROUP BY acc.id, acc.daycare_group_id
     """
             .trimIndent()
@@ -148,19 +148,22 @@ fun Database.Transaction.insertMessage(
     sender: MessageAccountId,
     recipientNames: List<String>,
     municipalAccountName: String,
+    sentAt: HelsinkiDateTime? =
+        null, // Only needed because some tests bypass the message service and controllers
     repliesToMessageId: MessageId? = null
 ): MessageId {
     // language=SQL
     val insertMessageSql =
         """
-        INSERT INTO message (content_id, thread_id, sender_id, sender_name, replies_to, sent_at, recipient_names)
+        INSERT INTO message (created, content_id, thread_id, sender_id, sender_name, replies_to, sent_at, recipient_names)
         SELECT
+            :now,
             :contentId,
             :threadId,
             :senderId,
             CASE WHEN name_view.type = 'MUNICIPAL' THEN :municipalAccountName ELSE name_view.name END,
             :repliesToId,
-            :now,
+            :sentAt,
             :recipientNames
         FROM message_account_view name_view
         WHERE name_view.id = :senderId
@@ -173,6 +176,7 @@ fun Database.Transaction.insertMessage(
         .bind("threadId", threadId)
         .bind("repliesToId", repliesToMessageId)
         .bind("senderId", sender)
+        .bind("sentAt", sentAt)
         .bind("recipientNames", recipientNames)
         .bind("municipalAccountName", municipalAccountName)
         .mapTo<MessageId>()
@@ -274,6 +278,16 @@ fun Database.Transaction.upsertReceiverThreadParticipants(
         .execute()
 }
 
+fun Database.Transaction.markMessagesAsSent(messageIds: Set<MessageId>, sentAt: HelsinkiDateTime) {
+    createUpdate("""
+UPDATE message
+SET sent_at = :sentAt WHERE id = ANY(:messageIds)
+""")
+        .bind("messageIds", messageIds)
+        .bind("sentAt", sentAt)
+        .execute()
+}
+
 fun Database.Transaction.insertThreadsWithMessages(
     count: Int,
     now: HelsinkiDateTime,
@@ -292,14 +306,14 @@ fun Database.Transaction.insertThreadsWithMessages(
 WITH new_thread AS (
     INSERT INTO message_thread (message_type, title, urgent, is_copy) VALUES (:messageType, :title, :urgent, :isCopy) RETURNING id
 )
-INSERT INTO message (content_id, thread_id, sender_id, sender_name, replies_to, sent_at, recipient_names)
+INSERT INTO message (created, content_id, thread_id, sender_id, sender_name, replies_to, recipient_names)
 SELECT
+    :now,
     :contentId,
     new_thread.id,
     :senderId,
     CASE WHEN name_view.type = 'MUNICIPAL' THEN :municipalAccountName ELSE name_view.name END,
     NULL,
-    :now,
     :recipientNames
 FROM message_account_view name_view, new_thread
 WHERE name_view.id = :senderId
@@ -531,14 +545,14 @@ WHERE
         FROM message_recipients mr
         WHERE mr.message_id = m.id AND mr.recipient_id = :accountId
     )) AND
-    (m.sender_id = :accountId OR m.sent_at < :undoThreshold)
+    (m.sender_id = :accountId OR m.sent_at IS NOT NULL)
 ORDER BY m.sent_at
             """
         )
         .bind("accountId", accountId)
         .bind("threadIds", threadIds)
         .bind("municipalAccountName", municipalAccountName)
-        .bind("undoThreshold", now.minusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS))
+        .bind("now", now)
         .mapTo<Message>()
         .groupBy { it.threadId }
 }
@@ -630,7 +644,7 @@ JOIN message_account_view acc ON rec.recipient_id = acc.id
 JOIN message_account sender_acc ON sender_acc.id = m.sender_id
 JOIN message_account recipient_acc ON recipient_acc.id = rec.recipient_id
 JOIN message_thread t ON m.thread_id = t.id
-WHERE rec.recipient_id = :accountId AND t.is_copy AND m.sent_at < :undoThreshold
+WHERE rec.recipient_id = :accountId AND t.is_copy AND m.sent_at IS NOT NULL
 ORDER BY m.sent_at DESC
 LIMIT :pageSize OFFSET :offset
 """
@@ -649,7 +663,7 @@ fun Database.Read.getSentMessage(senderId: MessageAccountId, messageId: MessageI
 SELECT
     m.id,
     m.thread_id,
-    m.sent_at,
+    COALESCE(m.sent_at, m.created) AS sent_at,  -- use the created timestamp until the asyncjob marks the message as sent
     mc.content,
     (
         SELECT jsonb_build_object('id', mav.id, 'name', mav.name, 'type', mav.type)
@@ -809,7 +823,7 @@ fun Database.Read.getMessagesSentByAccount(
 WITH pageable_messages AS (
     SELECT
         m.content_id,
-        m.sent_at,
+        COALESCE(m.sent_at, m.created) AS sent_at,  -- use the created timestamp until the asyncjob marks the message as sent
         m.recipient_names,
         t.title,
         t.message_type,
@@ -818,7 +832,7 @@ WITH pageable_messages AS (
     FROM message m
     JOIN message_thread t ON m.thread_id = t.id
     WHERE sender_id = :accountId
-    GROUP BY content_id, sent_at, recipient_names, title, message_type, urgent
+    GROUP BY m.content_id, m.sent_at, m.created, m.recipient_names, t.title, t.message_type, t.urgent
     ORDER BY sent_at DESC
     LIMIT :pageSize OFFSET :offset
 ),
@@ -1204,7 +1218,7 @@ fun Database.Read.getArchiveFolderId(accountId: MessageAccountId): MessageThread
         .firstOrNull()
 
 data class MessageToUndo(
-    val sentAt: HelsinkiDateTime,
+    val created: HelsinkiDateTime,
     val messageId: MessageId,
     val contentId: MessageContentId,
     val threadId: MessageThreadId,
@@ -1220,7 +1234,7 @@ fun Database.Transaction.undoMessageReply(
     val messageToUndo =
         this.createQuery(
                 """
-SELECT sent_at, id AS message_id, content_id, thread_id, sender_id, FALSE AS only_message_in_thread
+SELECT created, id AS message_id, content_id, thread_id, sender_id, FALSE AS only_message_in_thread
 FROM message WHERE sender_id = :accountId AND id = :messageId
 """
             )
@@ -1230,7 +1244,7 @@ FROM message WHERE sender_id = :accountId AND id = :messageId
             .findOne()
             .orElseThrow { throw BadRequest("No message found with messageId $messageId") }
 
-    if (messageToUndo.sentAt.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS).isBefore(now)) {
+    if (messageToUndo.created.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS).isBefore(now)) {
         throw BadRequest(
             "Messages older than $MESSAGE_UNDO_WINDOW_IN_SECONDS seconds cannot be undone"
         )
@@ -1248,7 +1262,7 @@ fun Database.Transaction.undoMessageAndAllThreads(
     val messagesToUndo =
         this.createQuery(
                 """
-SELECT m.sent_at, m.id AS message_id, m.content_id, m.thread_id, m.sender_id,
+SELECT m.created, m.id AS message_id, m.content_id, m.thread_id, m.sender_id,
     NOT EXISTS (SELECT 1 FROM message m2 WHERE m.thread_id = m2.thread_id AND m2.content_id != :contentId) AS only_message_in_thread
 FROM message m
 WHERE sender_id = :accountId AND content_id = :contentId
@@ -1264,7 +1278,7 @@ WHERE sender_id = :accountId AND content_id = :contentId
     }
 
     if (
-        messagesToUndo.any { it.sentAt.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS).isBefore(now) }
+        messagesToUndo.any { it.created.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS).isBefore(now) }
     ) {
         throw BadRequest(
             "Messages older than $MESSAGE_UNDO_WINDOW_IN_SECONDS seconds cannot be undone"

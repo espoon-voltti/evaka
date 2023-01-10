@@ -219,6 +219,15 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
+    data class MarkMessageAsSent(
+        val threadId: MessageThreadId,
+        val recipientIds: Set<MessageAccountId>,
+        val messageIds: Set<MessageId>,
+        val sentAt: HelsinkiDateTime
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
     data class SendMessage(val message: SfiMessage) : AsyncJob {
         override val user: AuthenticatedUser? = null
     }
@@ -283,7 +292,7 @@ sealed interface AsyncJob : AsyncJobPayload {
             AsyncJobRunner.Pool(
                 AsyncJobPool.Id(AsyncJob::class, "urgent"),
                 AsyncJobPool.Config(concurrency = 4),
-                setOf(UpdateMessageThreadRecipients::class)
+                setOf(UpdateMessageThreadRecipients::class, MarkMessageAsSent::class)
             )
         val suomiFi =
             AsyncJobRunner.Pool(

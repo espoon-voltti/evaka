@@ -4,9 +4,8 @@
 
 package fi.espoo.evaka.pis.service
 
-import fi.espoo.evaka.PureJdbiTest
+import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.insertGeneralTestFixtures
-import fi.espoo.evaka.messaging.MessageNotificationEmailService
 import fi.espoo.evaka.messaging.MessageService
 import fi.espoo.evaka.messaging.MessageType
 import fi.espoo.evaka.messaging.archiveThread
@@ -16,7 +15,6 @@ import fi.espoo.evaka.messaging.getMessagesSentByAccount
 import fi.espoo.evaka.messaging.getReceivedThreads
 import fi.espoo.evaka.messaging.getThreads
 import fi.espoo.evaka.messaging.upsertEmployeeMessageAccount
-import fi.espoo.evaka.messaging.upsertReceiverThreadParticipants
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
@@ -52,21 +50,19 @@ import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
+import org.springframework.beans.factory.annotation.Autowired
 
-class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
-    lateinit var mergeService: MergeService
+class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    @Autowired private lateinit var messageService: MessageService
 
+    private lateinit var mergeService: MergeService
     private lateinit var mergeServiceAsyncJobRunnerMock: AsyncJobRunner<AsyncJob>
-    private val messageNotificationEmailService =
-        Mockito.mock(MessageNotificationEmailService::class.java)
-    private val messageService: MessageService =
-        MessageService(mock {}, messageNotificationEmailService)
 
     @BeforeEach
     fun setUp() {
@@ -291,11 +287,14 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
         val receiverIdDuplicate = PersonId(UUID.randomUUID())
         val (receiverAccount, receiverDuplicateAccount) =
             db.transaction { tx ->
-                listOf(receiverId, receiverIdDuplicate).map {
-                    tx.insertTestPerson(DevPerson(id = it))
-                    tx.createPersonMessageAccount(it)
-                }
+                listOf(receiverId, receiverIdDuplicate)
+                    .map {
+                        tx.insertTestPerson(DevPerson(id = it))
+                        tx.createPersonMessageAccount(it)
+                    }
+                    .also { tx.insertGuardian(receiverIdDuplicate, testChild_1.id) }
             }
+
         db.transaction { tx ->
             messageService.createMessageThreadsForRecipientGroups(
                 tx,
@@ -310,9 +309,9 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 staffCopyRecipients = setOf(),
                 municipalAccountName = "Espoo"
             )
-            val threadId = tx.getThreads(now, senderAccount, 1, 1, "Espoo").data.first().id
-            tx.upsertReceiverThreadParticipants(threadId, setOf(receiverDuplicateAccount), now)
         }
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
+
         assertEquals(
             listOf(0, 1),
             receivedThreadCounts(now, listOf(receiverAccount, receiverDuplicateAccount))
@@ -379,10 +378,13 @@ class MergeServiceIntegrationTest : PureJdbiTest(resetDbBeforeEach = true) {
                 staffCopyRecipients = setOf(),
                 municipalAccountName = "Espoo"
             )
+        }
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
+        db.transaction { tx ->
             val threadId = tx.getThreads(now, senderAccount, 1, 1, "Espoo").data.first().id
-            tx.upsertReceiverThreadParticipants(threadId, setOf(receiverDuplicateAccount), now)
             tx.archiveThread(receiverDuplicateAccount, threadId)
         }
+
         assertEquals(
             listOf(0, 0),
             receivedThreadCounts(now, listOf(receiverAccount, receiverDuplicateAccount))

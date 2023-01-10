@@ -199,15 +199,10 @@ class MessageControllerCitizen(
                                 isCopy = false
                             )
                         tx.upsertSenderThreadParticipants(senderId, listOf(threadId), now)
-                        asyncJobRunner.scheduleThreadRecipientsUpdate(
-                            tx,
-                            listOf(threadId to recipientIds),
-                            now
-                        )
                         val recipientNames = tx.getAccountNames(recipientIds)
                         val messageId =
                             tx.insertMessage(
-                                now = clock.now(),
+                                now = now,
                                 contentId = contentId,
                                 threadId = threadId,
                                 sender = senderId,
@@ -216,6 +211,12 @@ class MessageControllerCitizen(
                             )
                         tx.insertMessageThreadChildren(listOf(body.children to threadId))
                         tx.insertRecipients(listOf(messageId to recipientIds))
+                        asyncJobRunner.scheduleMarkMessagesAsSent(
+                            tx,
+                            listOf(threadId to recipientIds),
+                            setOf(messageId),
+                            now
+                        )
                         threadId
                     }
                 } else {

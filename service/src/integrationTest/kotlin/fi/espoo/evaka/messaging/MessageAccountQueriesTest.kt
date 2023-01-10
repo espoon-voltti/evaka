@@ -306,12 +306,13 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 tx.insertThread(MessageType.MESSAGE, "title", urgent = false, isCopy = false)
             val messageId =
                 tx.insertMessage(
-                    now.minusSeconds(30),
-                    contentId,
-                    threadId,
-                    employeeAccount,
-                    allAccounts.map { it.name },
-                    "Espoo"
+                    now = now.minusSeconds(30),
+                    contentId = contentId,
+                    threadId = threadId,
+                    sender = employeeAccount,
+                    sentAt = now.minusSeconds(30),
+                    recipientNames = allAccounts.map { it.name },
+                    municipalAccountName = "Espoo"
                 )
             tx.insertRecipients(listOf(messageId to allAccounts.map { it.id }.toSet()))
         }

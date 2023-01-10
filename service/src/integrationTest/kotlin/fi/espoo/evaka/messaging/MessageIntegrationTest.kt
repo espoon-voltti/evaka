@@ -60,6 +60,7 @@ import java.time.LocalTime
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -71,6 +72,7 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     @Autowired lateinit var messageController: MessageController
     @Autowired lateinit var messageControllerCitizen: MessageControllerCitizen
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
+    private var asyncJobRunningEnabled = true
 
     private val clock = RealEvakaClock()
 
@@ -762,19 +764,101 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         assertEquals(2, unreadMessagesCount(person2))
     }
 
+    @Test
+    fun `message sent by employee should not be visible to citizen before the undo time has passed (and asyncjob run)`() {
+        disableAsyncJobRunning {
+            postNewThread(
+                title = "Juhannus",
+                message = "Juhannus tulee pian",
+                messageType = MessageType.MESSAGE,
+                sender = employee1Account,
+                recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+                user = employee1,
+                now = sendTime,
+            )
+        }
+
+        // Message is not visible to citizen before undo time has passed
+        val beforeUndo = sendTime.plusSeconds(5)
+        assertEquals(0, unreadMessagesCount(person1, now = beforeUndo))
+        assertTrue(getUnreadReceivedMessages(person1Account, person1, now = beforeUndo).isEmpty())
+
+        // Message is still not visible to citizen if the async job hasn't run
+        assertEquals(0, unreadMessagesCount(person1, now = readTime))
+        assertTrue(getUnreadReceivedMessages(person1Account, person1, now = readTime).isEmpty())
+
+        // Messages are visible to citizen after the async job has run
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(readTime))
+        assertEquals(1, unreadMessagesCount(person1, now = readTime))
+        val personUnreadMessages =
+            getUnreadReceivedMessages(person1Account, person1, now = readTime)
+        assertEquals(1, personUnreadMessages.size)
+
+        // Citizen replies
+        replyToMessage(
+            messageId = personUnreadMessages.first().id,
+            content = "Ihanko totta?",
+            recipientAccountIds = setOf(employee1Account),
+            user = person1,
+            now = readTime,
+        )
+
+        // Employee replies
+        val sendReplyTime = readTime.plusMinutes(5)
+        disableAsyncJobRunning {
+            replyToMessage(
+                messageId =
+                    getUnreadReceivedMessages(employee1Account, employee1, now = sendReplyTime)
+                        .first()
+                        .id,
+                content = "Ei sittenkään, väärä hälytys",
+                recipientAccountIds = setOf(person1Account),
+                sender = employee1Account,
+                user = employee1,
+                now = sendReplyTime,
+            )
+        }
+
+        // Reply is not visible to citizen before undo time has passed
+        val beforeReplyUndo = sendReplyTime.plusSeconds(5)
+        assertEquals(1, unreadMessagesCount(person1, now = beforeReplyUndo))
+        assertEquals(
+            1,
+            getUnreadReceivedMessages(person1Account, person1, now = beforeReplyUndo).size
+        )
+
+        // Reply is still not visible to citizen if the async job hasn't run
+        val readReplyTime = sendReplyTime.plusSeconds(30)
+        assertEquals(1, unreadMessagesCount(person1, now = readReplyTime))
+        assertEquals(
+            1,
+            getUnreadReceivedMessages(person1Account, person1, now = readReplyTime).size
+        )
+
+        // Reply is visible to citizen after the async job has run
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(readReplyTime))
+        assertEquals(2, unreadMessagesCount(person1, now = readReplyTime))
+        assertEquals(
+            2,
+            getUnreadReceivedMessages(person1Account, person1, now = readReplyTime).size
+        )
+    }
+
     private fun getUnreadReceivedMessages(
         accountId: MessageAccountId,
-        user: AuthenticatedUser.Citizen
+        user: AuthenticatedUser.Citizen,
+        now: HelsinkiDateTime = readTime,
     ) =
-        getMessageThreads(user).flatMap {
+        getMessageThreads(user, now).flatMap {
             it.messages.filter { m -> m.sender.id != accountId && m.readAt == null }
         }
 
     private fun getUnreadReceivedMessages(
         accountId: MessageAccountId,
-        user: AuthenticatedUser.Employee
+        user: AuthenticatedUser.Employee,
+        now: HelsinkiDateTime = readTime,
     ) =
-        getMessageThreads(accountId, user).flatMap {
+        getMessageThreads(accountId, user, now).flatMap {
             it.messages.filter { m -> m.sender.id != accountId && m.readAt == null }
         }
 
@@ -800,11 +884,12 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         user: AuthenticatedUser.Employee,
         attachmentIds: Set<AttachmentId> = setOf(),
         draftId: MessageDraftId? = null,
+        now: HelsinkiDateTime = sendTime,
     ) {
         messageController.createMessage(
             dbInstance(),
             user,
-            MockEvakaClock(sendTime),
+            MockEvakaClock(now),
             sender,
             MessageController.PostMessageBody(
                 title = title,
@@ -817,23 +902,28 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
                 urgent = false
             )
         )
-        asyncJobRunner.runPendingJobsSync(MockEvakaClock(readTime))
+        if (asyncJobRunningEnabled) {
+            asyncJobRunner.runPendingJobsSync(MockEvakaClock(now.plusSeconds(30)))
+        }
     }
 
     private fun replyToMessage(
         user: AuthenticatedUser.Citizen,
         messageId: MessageId,
         recipientAccountIds: Set<MessageAccountId>,
-        content: String
+        content: String,
+        now: HelsinkiDateTime = sendTime,
     ) {
         messageControllerCitizen.replyToThread(
             dbInstance(),
             user,
-            MockEvakaClock(sendTime),
+            MockEvakaClock(now),
             messageId,
             ReplyToMessageBody(content = content, recipientAccountIds = recipientAccountIds)
         )
-        asyncJobRunner.runPendingJobsSync(MockEvakaClock(readTime))
+        if (asyncJobRunningEnabled) {
+            asyncJobRunner.runPendingJobsSync(MockEvakaClock(now.plusSeconds(30)))
+        }
     }
 
     private fun replyToMessage(
@@ -841,17 +931,20 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         sender: MessageAccountId,
         messageId: MessageId,
         recipientAccountIds: Set<MessageAccountId>,
-        content: String
+        content: String,
+        now: HelsinkiDateTime = sendTime,
     ) {
         messageController.replyToThread(
             dbInstance(),
             user,
-            MockEvakaClock(sendTime),
+            MockEvakaClock(now),
             sender,
             messageId,
             ReplyToMessageBody(content = content, recipientAccountIds = recipientAccountIds)
         )
-        asyncJobRunner.runPendingJobsSync(MockEvakaClock(readTime))
+        if (asyncJobRunningEnabled) {
+            asyncJobRunner.runPendingJobsSync(MockEvakaClock(now.plusSeconds(30)))
+        }
     }
 
     private fun markThreadRead(user: AuthenticatedUser.Citizen, threadId: MessageThreadId) {
@@ -865,27 +958,23 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
 
     private fun getMessageThreads(
         user: AuthenticatedUser.Citizen,
+        now: HelsinkiDateTime = readTime,
     ): List<MessageThread> {
         return messageControllerCitizen
-            .getReceivedMessages(
-                dbInstance(),
-                user,
-                MockEvakaClock(readTime),
-                page = 1,
-                pageSize = 100
-            )
+            .getReceivedMessages(dbInstance(), user, MockEvakaClock(now), page = 1, pageSize = 100)
             .data
     }
 
     private fun getMessageThreads(
         accountId: MessageAccountId,
         user: AuthenticatedUser.Employee,
+        now: HelsinkiDateTime = readTime,
     ): List<MessageThread> {
         return messageController
             .getReceivedMessages(
                 dbInstance(),
                 user,
-                MockEvakaClock(readTime),
+                MockEvakaClock(now),
                 accountId,
                 page = 1,
                 pageSize = 100
@@ -915,22 +1004,32 @@ class MessageIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
         return messageControllerCitizen.getReceivers(dbInstance(), user, MockEvakaClock(readTime))
     }
 
-    private fun unreadMessagesCount(user: AuthenticatedUser.Citizen): Int {
-        return messageControllerCitizen
-            .getUnreadMessages(dbInstance(), user, MockEvakaClock(readTime))
-            .first()
-            .unreadCount
+    private fun unreadMessagesCount(
+        user: AuthenticatedUser.Citizen,
+        now: HelsinkiDateTime = readTime
+    ): Int {
+        return messageControllerCitizen.getUnreadMessages(dbInstance(), user, MockEvakaClock(now))
     }
 
     private fun unreadMessagesCount(
         accountId: MessageAccountId,
-        user: AuthenticatedUser.Employee
+        user: AuthenticatedUser.Employee,
+        now: HelsinkiDateTime = readTime,
     ): Int {
         return messageController
-            .getUnreadMessages(dbInstance(), user, MockEvakaClock(readTime))
+            .getUnreadMessages(dbInstance(), user, MockEvakaClock(now))
             .find { it.accountId == accountId }
             ?.unreadCount
             ?: throw Exception("No unread count for account $accountId")
+    }
+
+    private fun disableAsyncJobRunning(f: () -> Unit) {
+        asyncJobRunningEnabled = false
+        try {
+            f()
+        } finally {
+            asyncJobRunningEnabled = true
+        }
     }
 }
 
