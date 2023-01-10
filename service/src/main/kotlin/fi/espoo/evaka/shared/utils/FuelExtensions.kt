@@ -110,11 +110,13 @@ fun Request.responseStringWithRetries(
                         TimeUnit.SECONDS.sleep(retryAfter)
                         this.responseStringWithRetries(remainingTries - 1, maxRetryAfterWaitSeconds)
                     }
-                false ->
-                    errorCallback(
+                false -> {
+                    logger.error("Varda returned error, full response: $response")
+                    return errorCallback(
                         ErrorResponseResultOf(request, response, result),
                         remainingTries - 1
                     )
+                }
             }
     }
 }
