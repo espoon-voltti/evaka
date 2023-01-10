@@ -147,19 +147,18 @@ class DraftInvoiceGenerator(
         val childrenFullMonthAbsences =
             getFullMonthAbsences(placements, decisions, operationalDays, absences, plannedAbsences)
 
-        val getChildDecisions: (ChildId) -> List<Pair<DateRange, FeeDecisionChild>> = { childId ->
-            decisions.mapNotNull { decision ->
-                val childDecisionPart = decision.children.find { it.child.id == childId }
-                val dateRange = invoicePeriod.intersection(decision.validDuring)
-                if (dateRange != null && childDecisionPart != null) {
-                    dateRange to childDecisionPart
-                } else {
-                    null
+        val getInvoiceMaxFee: (ChildId, Boolean) -> Int = { childId, capMaxFeeAtDefault ->
+            val allServiceNeedOptions = tx.getServiceNeedOptions()
+            val childDecisions =
+                decisions.mapNotNull { decision ->
+                    val childDecisionPart = decision.children.find { it.child.id == childId }
+                    val dateRange = invoicePeriod.intersection(decision.validDuring)
+                    if (dateRange != null && childDecisionPart != null) {
+                        dateRange to childDecisionPart
+                    } else {
+                        null
+                    }
                 }
-            }
-        }
-        val getInvoiceMaxFee: (ChildId) -> Int = { childId ->
-            val childDecisions = getChildDecisions(childId)
 
             val getDecisionPartMaxFee: (FeeDecisionChild) -> Int = { part ->
                 val maxFeeBeforeFeeAlterations = calculateMaxFee(part.baseFee, part.siblingDiscount)
@@ -173,9 +172,24 @@ class DraftInvoiceGenerator(
                         )
                 }
             }
+            val getDefaultMaxFee: (FeeDecisionChild, Int) -> Int = { part, discountedFee ->
+                val feeCoefficient =
+                    allServiceNeedOptions
+                        .find { it.defaultOption && it.validPlacementType == part.placement.type }
+                        ?.feeCoefficient
+                        ?: BigDecimal.ZERO
+                (feeCoefficient * BigDecimal(discountedFee)).toInt()
+            }
 
             if (featureConfig.useContractDaysAsDailyFeeDivisor) {
-                childDecisions.maxOf { getDecisionPartMaxFee(it.second) }
+                childDecisions.maxOf { (_, decisionPart) ->
+                    minOf(
+                        if (capMaxFeeAtDefault)
+                            getDefaultMaxFee(decisionPart, getDecisionPartMaxFee(decisionPart))
+                        else Int.MAX_VALUE,
+                        getDecisionPartMaxFee(decisionPart)
+                    )
+                }
             } else {
                 childDecisions
                     .map { (dateRange, decisionPart) ->
@@ -191,25 +205,6 @@ class DraftInvoiceGenerator(
                     .fold(BigDecimal.ZERO) { sum, maxFee -> sum + maxFee }
                     .toInt()
             }
-        }
-
-        val getDefaultInvoiceMaxFee: (ChildId) -> Int = { childId ->
-            val childDecisions = getChildDecisions(childId)
-            val allServiceNeedOptions = tx.getServiceNeedOptions()
-            childDecisions
-                .map { (_, decisionPart) ->
-                    val feeCoefficient =
-                        allServiceNeedOptions
-                            .find {
-                                it.defaultOption &&
-                                    it.validPlacementType == decisionPart.placement.type
-                            }
-                            ?.feeCoefficient
-                            ?: BigDecimal.ZERO
-                    feeCoefficient * BigDecimal(decisionPart.baseFee)
-                }
-                .fold(BigDecimal.ZERO) { sum, maxFee -> sum + maxFee }
-                .toInt()
         }
 
         val rowStubs =
@@ -350,8 +345,7 @@ class DraftInvoiceGenerator(
                                     attendanceDates,
                                     relevantAbsences,
                                     fullMonthAbsenceType,
-                                    getInvoiceMaxFee,
-                                    getDefaultInvoiceMaxFee
+                                    getInvoiceMaxFee
                                 )
                         }
                 }
@@ -558,8 +552,7 @@ class DraftInvoiceGenerator(
         attendanceDates: List<LocalDate>,
         absences: List<AbsenceStub>,
         fullMonthAbsenceType: FullMonthAbsenceType,
-        getInvoiceMaxFee: (ChildId) -> Int,
-        getDefaultInvoiceMaxFee: (ChildId) -> Int
+        getInvoiceMaxFee: (ChildId, Boolean) -> Int
     ): List<InvoiceRow> {
         return when (invoiceRowStub.placement.type) {
             PlacementType.TEMPORARY_DAYCARE,
@@ -590,8 +583,7 @@ class DraftInvoiceGenerator(
                     invoiceRowStub.feeAlterations,
                     absences,
                     fullMonthAbsenceType,
-                    getInvoiceMaxFee,
-                    getDefaultInvoiceMaxFee
+                    getInvoiceMaxFee
                 )
         }
     }
@@ -650,8 +642,7 @@ class DraftInvoiceGenerator(
         feeAlterations: List<Pair<FeeAlteration.Type, Int>>,
         absences: List<AbsenceStub>,
         fullMonthAbsenceType: FullMonthAbsenceType,
-        getInvoiceMaxFee: (ChildId) -> Int,
-        getDefaultInvoiceMaxFee: (ChildId) -> Int
+        getInvoiceMaxFee: (ChildId, Boolean) -> Int
     ): List<InvoiceRow> {
         // Make sure the number of operational days in a month doesn't exceed `dailyFeeDivisor`.
         //
@@ -724,7 +715,6 @@ class DraftInvoiceGenerator(
                             FullMonthAbsenceType.ABSENCE_FULL_MONTH
                         ),
                     getInvoiceMaxFee,
-                    getDefaultInvoiceMaxFee,
                     placement.type
                 ) +
                 dailyAbsenceRefund(
@@ -782,8 +772,7 @@ class DraftInvoiceGenerator(
         attendanceDates: List<LocalDate>,
         absences: List<AbsenceStub>,
         isAbsentFullMonth: Boolean,
-        getInvoiceMaxFee: (ChildId) -> Int,
-        getDefaultInvoiceMaxFee: (ChildId) -> Int,
+        getInvoiceMaxFee: (ChildId, Boolean) -> Int,
         placementType: PlacementType
     ): List<InvoiceRow> {
         if (contractDaysPerMonth == null || isAbsentFullMonth) return listOf()
@@ -817,14 +806,11 @@ class DraftInvoiceGenerator(
                 calculateDailyPriceForInvoiceRow(monthlyPrice, contractDaysPerMonth)
             val totalAddition = surplusAttendanceDays * surplusDailyPrice
             val maxPrice =
-                if (
+                getInvoiceMaxFee(
+                    child.id,
                     listOf(PlacementType.PREPARATORY_DAYCARE, PlacementType.PRESCHOOL_DAYCARE)
                         .contains(placementType)
-                ) {
-                    minOf(getDefaultInvoiceMaxFee(child.id), getInvoiceMaxFee(child.id))
-                } else {
-                    getInvoiceMaxFee(child.id)
-                }
+                )
 
             val (amount, unitPrice) =
                 when {
