@@ -7,7 +7,6 @@ package fi.espoo.evaka.shared.async
 import fi.espoo.evaka.shared.Tracing
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.randomTracingId
 import fi.espoo.evaka.shared.withDetachedSpan
 import fi.espoo.evaka.shared.withValue
@@ -21,14 +20,12 @@ import io.opentracing.Tracer
 import io.opentracing.tag.Tags
 import java.lang.reflect.UndeclaredThrowableException
 import java.time.Duration
-import java.util.Timer
 import java.util.concurrent.FutureTask
 import java.util.concurrent.SynchronousQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.concurrent.fixedRateTimer
 import kotlin.concurrent.thread
 import kotlin.reflect.KClass
 import mu.KotlinLogging
@@ -46,11 +43,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
     }
     private data class Metrics(val executedJobs: Counter, val failedJobs: Counter)
 
-    data class Config(
-        val concurrency: Int = 1,
-        val backgroundPollingInterval: Duration = Duration.ofMinutes(1),
-        val throttleInterval: Duration? = null
-    )
+    data class Config(val concurrency: Int = 1, val throttleInterval: Duration? = null)
 
     data class Handler<T : AsyncJobPayload>(
         val handler: (db: Database, clock: EvakaClock, msg: T) -> Unit
@@ -68,7 +61,6 @@ class AsyncJobPool<T : AsyncJobPayload>(
     private val logger = KotlinLogging.logger("${AsyncJobPool::class.qualifiedName}.$id")
     private val metrics: AtomicReference<Metrics> = AtomicReference()
 
-    private val backgroundTimer: AtomicReference<Timer> = AtomicReference()
     private val executor =
         config.let {
             val corePoolSize = 1
@@ -117,21 +109,8 @@ class AsyncJobPool<T : AsyncJobPayload>(
         )
     }
 
-    fun startBackgroundPolling() {
-        val newTimer =
-            fixedRateTimer(
-                "$fullName.timer",
-                daemon = true,
-                period = config.backgroundPollingInterval.toMillis()
-            ) {
-                executor.execute { runWorker(RealEvakaClock()) }
-            }
-        backgroundTimer.getAndSet(newTimer)?.cancel()
-    }
-
-    fun runPendingJobs(clock: EvakaClock, maxCount: Int) {
+    fun runPendingJobs(clock: EvakaClock, maxCount: Int) =
         executor.execute { runWorker(clock, maxCount) }
-    }
 
     fun runPendingJobsSync(clock: EvakaClock, maxCount: Int): Int {
         val task = FutureTask { runWorker(clock, maxCount) }
@@ -145,7 +124,7 @@ class AsyncJobPool<T : AsyncJobPayload>(
         return task.get()
     }
 
-    private fun runWorker(clock: EvakaClock, maxCount: Int = 1_000) =
+    private fun runWorker(clock: EvakaClock, maxCount: Int) =
         tracer.withDetachedSpan("asyncjob.worker $fullName") {
             Database(jdbi, tracer).connect { dbc ->
                 var executed = 0
@@ -219,8 +198,6 @@ class AsyncJobPool<T : AsyncJobPayload>(
     }
 
     override fun close() {
-        backgroundTimer.getAndSet(null)?.cancel()
-
         executor.shutdown()
         if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
             logger.error { "Some async jobs did not terminate in time during shutdown" }

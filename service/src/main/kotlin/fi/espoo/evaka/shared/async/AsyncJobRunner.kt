@@ -12,8 +12,11 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.opentracing.Tracer
 import java.time.Duration
 import java.time.Instant
+import java.util.Timer
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.fixedRateTimer
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 import kotlin.math.max
@@ -47,6 +50,7 @@ class AsyncJobRunner<T : AsyncJobPayload>(
 
     private val pools: List<AsyncJobPool<T>>
     private val jobsPerPool: Map<AsyncJobPool.Id<T>, Set<AsyncJobType<out T>>>
+    private val backgroundTimer: AtomicReference<Timer> = AtomicReference()
 
     init {
         this.jobsPerPool =
@@ -119,7 +123,13 @@ class AsyncJobRunner<T : AsyncJobPayload>(
             }
         }
 
-    fun startBackgroundPolling() = pools.forEach { it.startBackgroundPolling() }
+    fun startBackgroundPolling(pollingInterval: Duration) {
+        val newTimer =
+            fixedRateTimer("$name.timer", period = pollingInterval.toMillis()) {
+                pools.forEach { it.runPendingJobs(RealEvakaClock(), maxCount = 1_000) }
+            }
+        backgroundTimer.getAndSet(newTimer)?.cancel()
+    }
 
     fun enableAfterCommitHooks() =
         stateLock.write {
@@ -156,5 +166,8 @@ class AsyncJobRunner<T : AsyncJobPayload>(
         error { "Timed out while waiting for running jobs to finish" }
     }
 
-    override fun close() = pools.forEach { it.close() }
+    override fun close() {
+        backgroundTimer.getAndSet(null)?.cancel()
+        pools.forEach { it.close() }
+    }
 }

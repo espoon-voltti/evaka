@@ -52,7 +52,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
                 listOf(
                     AsyncJobRunner.Pool(
                         AsyncJobPool.Id(TestJob::class, "default"),
-                        AsyncJobPool.Config(backgroundPollingInterval = Duration.ofSeconds(1)),
+                        AsyncJobPool.Config(),
                         setOf(TestJob::class)
                     )
                 ),
@@ -118,7 +118,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
         val job = TestJob()
         val future = this.setAsyncJobCallback { assertEquals(job, it) }
         db.transaction { asyncJobRunner.plan(it, listOf(job), runAt = HelsinkiDateTime.now()) }
-        asyncJobRunner.startBackgroundPolling()
+        asyncJobRunner.startBackgroundPolling(Duration.ofSeconds(1))
         future.get(10, TimeUnit.SECONDS)
     }
 
