@@ -14,7 +14,7 @@ import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Button from 'lib-components/atoms/buttons/Button'
-import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
+import { FixedSpaceColumn, FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -45,6 +45,7 @@ import AttendanceChildAbsent from './child-state-pages/AttendanceChildAbsent'
 import AttendanceChildComing from './child-state-pages/AttendanceChildComing'
 import AttendanceChildDeparted from './child-state-pages/AttendanceChildDeparted'
 import AttendanceChildPresent from './child-state-pages/AttendanceChildPresent'
+import LocalDate from 'lib-common/local-date'
 
 export default React.memo(function AttendanceChildPage() {
   const { i18n } = useTranslation()
@@ -76,6 +77,7 @@ export default React.memo(function AttendanceChildPage() {
   const { mutateAsync: deleteChildImage } = useMutation(
     deleteChildImageMutation
   )
+
 
   const group = useMemo(
     () =>
@@ -123,6 +125,8 @@ export default React.memo(function AttendanceChildPage() {
               attendanceStatuses,
               child.id
             )
+            const today = LocalDate.todayInSystemTz()
+            const childAge = today.differenceInYears(child.dateOfBirth)
             return (
               <>
                 <Shadow>
@@ -142,13 +146,26 @@ export default React.memo(function AttendanceChildPage() {
                               size="XXL"
                             />
                           )}
+                          <IconPlacementBox>
+                            <RoundIconOnTop
+                              content={`${childAge}v`}
+                              color={childAge < 3 ? colors.accents.a6turquoise : colors.main.m1}
+                              size="L"
+                            />
+                          </IconPlacementBox>
                         </IconBox>
 
                         <Gap size="s" />
-
-                        <CustomTitle data-qa="child-name">
-                          {child.firstName} {child.lastName}
-                        </CustomTitle>
+                        <FixedSpaceRow spacing="xs" alignItems="center">
+                          <RoundIcon
+                            content={`${childAge}v`}
+                            color={childAge < 3 ? colors.accents.a6turquoise : colors.main.m1}
+                            size="L"
+                          />
+                          <CustomTitle data-qa="child-name">
+                            {child.firstName} {child.lastName}
+                          </CustomTitle>
+                        </FixedSpaceRow>
 
                         {!!child.preferredName && (
                           <CustomTitle data-qa="child-preferred-name">
@@ -338,7 +355,7 @@ const ChildStatus = styled.div`
 `
 
 const RoundImage = styled.img`
-  display: block;
+  display: flex;
   border-radius: 100%;
   width: 128px;
   height: 128px;
@@ -353,7 +370,7 @@ const CustomTitle = styled.h2`
   margin-top: 0;
   color: ${colors.main.m1};
   text-align: center;
-  margin-bottom: ${defaultMargins.xs};
+  margin-bottom: 0;
 `
 
 const GroupName = styled.div`
@@ -424,4 +441,15 @@ const Shadow = styled.div`
   flex-direction: column;
   justify-content: space-between;
   min-height: calc(100vh - 74px);
+`
+const RoundIconOnTop = styled(RoundIcon)`
+  position: absolute;
+  left: 100px;
+  top: -34px;
+  z-index: 2;
+`
+const IconPlacementBox = styled.div`
+  position: relative;
+  width: 0;
+  height: 0;
 `

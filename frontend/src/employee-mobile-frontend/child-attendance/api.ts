@@ -196,6 +196,7 @@ function deserializeChildren(data: JsonOf<Child[]>): Child[] {
   return data
     .map((child) => ({
       ...child,
+      dateOfBirth: LocalDate.parseIso(child.dateOfBirth),
       dailyNote: child.dailyNote
         ? {
             ...child.dailyNote,

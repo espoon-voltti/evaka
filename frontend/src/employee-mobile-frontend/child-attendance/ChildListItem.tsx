@@ -27,6 +27,7 @@ import { UnitContext } from '../common/unit'
 
 import { ListItem } from './ChildList'
 import { Reservations } from './Reservations'
+import LocalDate from 'lib-common/local-date'
 
 const ChildBox = styled.div`
   align-items: center;
@@ -130,6 +131,8 @@ export default React.memo(function ChildListItem({
     : childReservationInfo(i18n, child)
 
   const maybeGroupName = type && groupId === 'all' ? groupName : undefined
+  const today = LocalDate.todayInSystemTz()
+  const childAge = today.differenceInYears(child.dateOfBirth)
 
   return (
     <ChildBox data-qa={`child-${child.id}`}>
@@ -161,7 +164,7 @@ export default React.memo(function ChildListItem({
                 <RoundIcon content="V" size="m" color={colors.main.m1} />
               )}
             </div>
-            <FixedSpaceRowWithLeftMargin>
+            <FixedSpaceRowWithLeftMargin alignItems="center">
               {child.dailyNote && (
                 <Link
                   to={`/units/${unitId}/groups/${
@@ -188,6 +191,11 @@ export default React.memo(function ChildListItem({
                   />
                 </Link>
               ) : null}
+              <RoundIcon
+                content={`${childAge}v`}
+                color={childAge < 3 ? colors.accents.a6turquoise : colors.main.m1}
+                size="L"
+              />
             </FixedSpaceRowWithLeftMargin>
           </DetailsRow>
         </ChildBoxInfo>
