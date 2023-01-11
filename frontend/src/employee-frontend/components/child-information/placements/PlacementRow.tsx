@@ -279,6 +279,7 @@ export default React.memo(function PlacementRow({
               <DatepickerContainer>
                 <CompactDatePicker
                   date={form.startDate}
+                  maxDate={form.endDate}
                   onChange={(startDate) => {
                     setForm({ ...form, startDate })
                     calculateOverlapWarnings(startDate, placement.endDate)
@@ -309,6 +310,7 @@ export default React.memo(function PlacementRow({
                   <DatepickerContainer>
                     <CompactDatePicker
                       date={form.endDate}
+                      minDate={form.startDate}
                       onChange={(endDate) => {
                         setForm({ ...form, endDate })
                         calculateOverlapWarnings(placement.startDate, endDate)
