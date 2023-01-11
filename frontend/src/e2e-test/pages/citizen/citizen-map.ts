@@ -16,12 +16,12 @@ export default class CitizenMapPage {
   constructor(private readonly page: Page) {}
 
   readonly daycareFilter = new Radio(
-    this.page.find('[data-qa="map-filter-daycare"]')
+    this.page.find('[data-qa="map-filter-DAYCARE"]')
   )
   readonly preschoolFilter = new Radio(
-    this.page.find('[data-qa="map-filter-preschool"]')
+    this.page.find('[data-qa="map-filter-PRESCHOOL"]')
   )
-  readonly clubFilter = new Radio(this.page.find('[data-qa="map-filter-club"]'))
+  readonly clubFilter = new Radio(this.page.find('[data-qa="map-filter-CLUB"]'))
 
   readonly unitDetailsPanel = new UnitDetailsPanel(
     this.page.find('[data-qa="map-unit-details"]')

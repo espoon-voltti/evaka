@@ -20,7 +20,7 @@ import {
 } from 'lib-components/layout/flex-helpers'
 import { fontWeights, H1, Label, P } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
-import { featureFlags } from 'lib-customizations/citizen'
+import { mapConfig } from 'lib-customizations/citizen'
 import colors from 'lib-customizations/common'
 import { faAngleDown, faAngleUp } from 'lib-icons'
 import { faArrowLeft } from 'lib-icons'
@@ -98,26 +98,15 @@ export default React.memo(function SearchSection({
       <FixedSpaceColumn spacing="xs">
         <Label>{t.map.careType}</Label>
         <FixedSpaceFlexWrap>
-          <Radio
-            data-qa="map-filter-daycare"
-            checked={careType === 'DAYCARE'}
-            label={t.map.careTypes.DAYCARE}
-            onChange={() => setCareType('DAYCARE')}
-          />
-          {featureFlags.preschool && (
+          {mapConfig.careTypeFilters.map((careTypeFilter) => (
             <Radio
-              data-qa="map-filter-preschool"
-              checked={careType === 'PRESCHOOL'}
-              label={t.map.careTypes.PRESCHOOL}
-              onChange={() => setCareType('PRESCHOOL')}
+              key={`map-filter-${careTypeFilter}`}
+              data-qa={`map-filter-${careTypeFilter}`}
+              checked={careType === careTypeFilter}
+              label={t.map.careTypes[careTypeFilter]}
+              onChange={() => setCareType(careTypeFilter)}
             />
-          )}
-          <Radio
-            data-qa="map-filter-club"
-            checked={careType === 'CLUB'}
-            label={t.map.careTypes.CLUB}
-            onChange={() => setCareType('CLUB')}
-          />
+          ))}
         </FixedSpaceFlexWrap>
       </FixedSpaceColumn>
 

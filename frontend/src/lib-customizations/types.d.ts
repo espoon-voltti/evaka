@@ -89,6 +89,7 @@ interface MapConfig {
     minLatitude: number
     maxLatitude: number
   }
+  careTypeFilters: ApplicationType[]
 }
 
 /**
