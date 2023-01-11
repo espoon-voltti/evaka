@@ -82,7 +82,7 @@ export default React.memo(function ExternalStaffMemberPage() {
                 <AsyncButton
                   primary
                   text={i18n.attendances.actions.markDeparted}
-                  data-qa="mark-departed-link"
+                  data-qa="mark-departed-btn"
                   disabled={!parsedTime}
                   onClick={() =>
                     parsedTime &&

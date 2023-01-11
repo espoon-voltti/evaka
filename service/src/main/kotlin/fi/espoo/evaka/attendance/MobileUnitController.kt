@@ -13,9 +13,13 @@ import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.NotFound
+import fi.espoo.evaka.shared.domain.getHolidays
+import fi.espoo.evaka.shared.domain.isOperationalDate
+import fi.espoo.evaka.shared.domain.toFiniteDateRange
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.PilotFeature
+import java.time.DayOfWeek
 import java.time.LocalDate
 import kotlin.math.roundToInt
 import org.springframework.web.bind.annotation.GetMapping
@@ -78,7 +82,8 @@ data class UnitInfo(
     val groups: List<GroupInfo>,
     val staff: List<Staff>,
     val features: List<PilotFeature>,
-    val utilization: Double
+    val utilization: Double,
+    val isOperationalDate: Boolean
 )
 
 data class GroupInfo(val id: GroupId, val name: String, val utilization: Double)
@@ -93,11 +98,16 @@ data class Staff(
 )
 
 fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
-    data class UnitBasics(val id: DaycareId, val name: String, val features: List<PilotFeature>)
+    data class UnitBasics(
+        val id: DaycareId,
+        val name: String,
+        val features: List<PilotFeature>,
+        val operationDays: Set<Int>
+    )
     // language=sql
     val unitSql =
         """
-        SELECT u.id, u.name, u.enabled_pilot_features AS features
+        SELECT u.id, u.name, u.enabled_pilot_features AS features, operation_days
         FROM daycare u
         WHERE u.id = :unitId
         """
@@ -106,6 +116,11 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
     val unit =
         createQuery(unitSql).bind("unitId", unitId).mapTo<UnitBasics>().list().firstOrNull()
             ?: throw NotFound("Unit $unitId not found")
+
+    val holidays = getHolidays(date.toFiniteDateRange())
+
+    val isOperationalDate =
+        date.isOperationalDate(unit.operationDays.map { DayOfWeek.of(it) }.toSet(), holidays)
 
     // language=sql
     val groupsSql =
@@ -242,7 +257,8 @@ fun Database.Read.fetchUnitInfo(unitId: DaycareId, date: LocalDate): UnitInfo {
         groups = groups,
         staff = staff,
         features = unit.features,
-        utilization = unitUtilization
+        utilization = unitUtilization,
+        isOperationalDate
     )
 }
 

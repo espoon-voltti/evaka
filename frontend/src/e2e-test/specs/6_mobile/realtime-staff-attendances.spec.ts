@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import LocalDate from 'lib-common/local-date'
+import LocalTime from 'lib-common/local-time'
 
 import { insertDefaultServiceNeedOptions, resetDatabase } from '../../dev-api'
 import { initializeAreaAndPersonData } from '../../dev-api/data-init'
@@ -42,7 +44,8 @@ beforeEach(async () => {
     .with({
       ...daycare2Fixture,
       areaId: fixtures.careAreaFixture.id,
-      enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE']
+      enabledPilotFeatures: ['REALTIME_STAFF_ATTENDANCE'],
+      operationDays: [1, 2, 3, 4, 5]
     })
     .save()
 
@@ -124,6 +127,22 @@ describe('Realtime staff attendance page', () => {
     )
     await staffAttendancePage.goBackFromMemberPage()
     await staffAttendancePage.assertPresentStaffCount(0)
+  })
+
+  test('Staff member cannot be marked as arrived on a non-operational day', async () => {
+    const saturday = LocalDate.of(2022, 5, 7)
+    await initPages(
+      HelsinkiDateTime.fromLocal(saturday, LocalTime.of(16, 0)).toSystemTzDate()
+    )
+    const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
+
+    await staffAttendancePage.assertPresentStaffCount(0)
+    await staffAttendancePage.selectTab('absent')
+    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.assertEmployeeStatus('Poissa')
+    await staffAttendancePage.staffMemberPage.markArrivedBtn.assertDisabled(
+      true
+    )
   })
 
   test('Staff arrival page behaves correctly with different time values when no plan exists', async () => {
@@ -468,5 +487,14 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.assertExternalStaffArrivalTime(arrivalTime)
     await staffAttendancePage.markExternalStaffDeparted('11:09')
     await staffAttendancePage.assertPresentStaffCount(0)
+  })
+  test('New external staff member cannot be added on a non-operational day', async () => {
+    const saturday = LocalDate.of(2022, 5, 7)
+    await initPages(
+      HelsinkiDateTime.fromLocal(saturday, LocalTime.of(16, 0)).toSystemTzDate()
+    )
+
+    await staffAttendancePage.assertPresentStaffCount(0)
+    await staffAttendancePage.assertMarkNewExternalStaffDisabled()
   })
 })

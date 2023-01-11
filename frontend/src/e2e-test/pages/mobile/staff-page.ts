@@ -109,7 +109,7 @@ export class StaffAttendancePage {
 
   #anyArrivalPage = {
     arrivedInput: new TextInput(this.page.findByDataQa('input-arrived')),
-    markArrivedBtn: this.page.findByDataQa('mark-arrived-btn')
+    markArrived: this.page.findByDataQa('mark-arrived-btn')
   }
   #externalArrivalPage = {
     nameInput: new TextInput(this.page.findByDataQa('input-name')),
@@ -132,11 +132,11 @@ export class StaffAttendancePage {
   #anyMemberPage = {
     back: this.page.findByDataQa('back-btn'),
     status: this.page.findByDataQa('employee-status'),
-    markDepartedLink: this.page.findByDataQa('mark-departed-link')
+    markDeparted: this.page.findByDataQa('mark-departed-btn')
   }
-  #staffMemberPage = {
+  staffMemberPage = {
     attendanceTimes: this.page.findAllByDataQa('attendance-time'),
-    markArrivedBtn: this.page.findByDataQa('mark-arrived-link'),
+    markArrivedBtn: this.page.findByDataQa('mark-arrived-btn'),
     shiftTimeText: this.page.findByDataQa('shift-time'),
     attendanceTimeTexts: this.page.findAllByDataQa('attendance-time')
   }
@@ -151,13 +151,13 @@ export class StaffAttendancePage {
     this.page.find(`[data-qa="staff-link"]`, { hasText: name })
 
   async assertShiftTimeTextShown(expectedText: string) {
-    await this.#staffMemberPage.shiftTimeText.assertTextEquals(expectedText)
+    await this.staffMemberPage.shiftTimeText.assertTextEquals(expectedText)
   }
 
   async assertAttendanceTimeTextShown(expectedText: string) {
     await waitUntilEqual(
       () =>
-        this.#staffMemberPage.attendanceTimeTexts
+        this.staffMemberPage.attendanceTimeTexts
           .allInnerTexts()
           .then((texts) => texts.join(',')),
       expectedText
@@ -178,7 +178,13 @@ export class StaffAttendancePage {
       group.id
     )
 
-    await this.#anyArrivalPage.markArrivedBtn.click()
+    await this.#anyArrivalPage.markArrived.click()
+  }
+
+  async assertMarkNewExternalStaffDisabled() {
+    await this.#addNewExternalMemberButton.click()
+    await this.#anyArrivalPage.markArrived.assertDisabled(true)
+    await this.#anyArrivalPage.arrivedInput.waitUntilHidden()
   }
 
   async assertPresentStaffCount(expected: number) {
@@ -202,7 +208,7 @@ export class StaffAttendancePage {
   }
 
   async assertEmployeeAttendanceTimes(index: number, expected: string) {
-    await this.#staffMemberPage.attendanceTimes
+    await this.staffMemberPage.attendanceTimes
       .nth(index)
       .assertTextEquals(expected)
   }
@@ -224,15 +230,19 @@ export class StaffAttendancePage {
     time: string
     group: DaycareGroup
   }) {
-    await this.#staffMemberPage.markArrivedBtn.click()
+    await this.staffMemberPage.markArrivedBtn.click()
     await this.#pinInput.locator.type(args.pin)
     await this.#anyArrivalPage.arrivedInput.fill(args.time)
     await this.#staffArrivalPage.groupSelect.selectOption(args.group.id)
-    await this.#anyArrivalPage.markArrivedBtn.click()
+    await this.#anyArrivalPage.markArrived.click()
+  }
+
+  async assertMarkStaffArrivedDisabled() {
+    await this.staffMemberPage.markArrivedBtn.assertDisabled(true)
   }
 
   async markStaffDeparted(args: { pin: string; time?: string }) {
-    await this.#anyMemberPage.markDepartedLink.click()
+    await this.#anyMemberPage.markDeparted.click()
     await this.#pinInput.locator.type(args.pin)
     if (args.time) {
       await this.#staffDeparturePage.departureTime.fill(args.time)
@@ -248,16 +258,16 @@ export class StaffAttendancePage {
     if (time) {
       await this.#externalMemberPage.departureTimeInput.fill(time)
     }
-    await this.#anyMemberPage.markDepartedLink.click()
+    await this.#anyMemberPage.markDeparted.click()
   }
 
   async clickStaffArrivedAndSetPin(pin: string) {
-    await this.#staffMemberPage.markArrivedBtn.click()
+    await this.staffMemberPage.markArrivedBtn.click()
     await this.#pinInput.locator.type(pin)
   }
 
   async clickStaffDepartedAndSetPin(pin: string) {
-    await this.#anyMemberPage.markDepartedLink.click()
+    await this.#anyMemberPage.markDeparted.click()
     await this.#pinInput.locator.type(pin)
   }
 
@@ -271,13 +281,13 @@ export class StaffAttendancePage {
 
   async assertDoneButtonEnabled(enabled: boolean) {
     await waitUntilEqual(
-      () => this.#anyArrivalPage.markArrivedBtn.disabled,
+      () => this.#anyArrivalPage.markArrived.disabled,
       !enabled
     )
   }
 
   async clickDoneButton() {
-    await this.#anyArrivalPage.markArrivedBtn.click()
+    await this.#anyArrivalPage.markArrived.click()
   }
 
   async assertMarkDepartedButtonEnabled(enabled: boolean) {

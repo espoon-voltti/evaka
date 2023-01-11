@@ -4,16 +4,20 @@
 
 import orderBy from 'lodash/orderBy'
 import React, { useContext, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 
+import { combine } from 'lib-common/api'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
+import Button from 'lib-components/atoms/buttons/Button'
 import ErrorSegment from 'lib-components/atoms/state/ErrorSegment'
+import { ContentArea } from 'lib-components/layout/Container'
 import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
-import { Label } from 'lib-components/typography'
+import { H4, Label } from 'lib-components/typography'
 import { featureFlags } from 'lib-customizations/employeeMobile'
 
 import { UnwrapResult } from '../async-rendering'
 import { useTranslation } from '../common/i18n'
-import { WideLinkButton } from '../pairing/components'
+import { UnitContext } from '../common/unit'
 
 import { EmployeeCardBackground } from './components/EmployeeCardBackground'
 import { StaffMemberPageContainer } from './components/StaffMemberPageContainer'
@@ -28,21 +32,26 @@ export default React.memo(function StaffMemberPage() {
     employeeId: string
   }>()
   const { i18n } = useTranslation()
+  const navigate = useNavigate()
 
   const { staffAttendanceResponse } = useContext(StaffAttendanceContext)
+  const { unitInfoResponse } = useContext(UnitContext)
 
-  const staffMember = useMemo(
+  const employeeResponse = useMemo(
     () =>
-      staffAttendanceResponse.map((res) =>
-        res.staff.find((s) => s.employeeId === employeeId)
+      combine(unitInfoResponse, staffAttendanceResponse).map(
+        ([{ isOperationalDate }, { staff }]) => ({
+          isOperationalDate,
+          staffMember: staff.find((s) => s.employeeId === employeeId)
+        })
       ),
-    [employeeId, staffAttendanceResponse]
+    [employeeId, unitInfoResponse, staffAttendanceResponse]
   )
 
   return (
     <StaffMemberPageContainer>
-      <UnwrapResult result={staffMember}>
-        {(staffMember) =>
+      <UnwrapResult result={employeeResponse}>
+        {({ isOperationalDate, staffMember }) =>
           staffMember === undefined ? (
             <ErrorSegment
               title={i18n.attendances.staff.errors.employeeNotFound}
@@ -104,23 +113,43 @@ export default React.memo(function StaffMemberPage() {
                     </>
                   )
                 )}
-                {staffMember.present ? (
-                  <WideLinkButton
-                    $primary
-                    data-qa="mark-departed-link"
-                    to={`/units/${unitId}/groups/${groupId}/staff-attendance/${staffMember.employeeId}/mark-departed`}
-                  >
-                    {i18n.attendances.staff.markDeparted}
-                  </WideLinkButton>
-                ) : (
-                  <WideLinkButton
-                    $primary
-                    data-qa="mark-arrived-link"
-                    to={`/units/${unitId}/groups/${groupId}/staff-attendance/${staffMember.employeeId}/mark-arrived`}
-                  >
-                    {i18n.attendances.staff.markArrived}
-                  </WideLinkButton>
-                )}
+                <ContentArea opaque paddingHorizontal="s">
+                  <FixedSpaceColumn>
+                    {staffMember.present ? (
+                      <Button
+                        primary
+                        data-qa="mark-departed-btn"
+                        onClick={() =>
+                          navigate(
+                            `/units/${unitId}/groups/${groupId}/staff-attendance/${staffMember.employeeId}/mark-departed`
+                          )
+                        }
+                      >
+                        {i18n.attendances.staff.markDeparted}
+                      </Button>
+                    ) : (
+                      <>
+                        {!isOperationalDate && (
+                          <H4 centered={true}>
+                            {i18n.attendances.notOperationalDate}
+                          </H4>
+                        )}
+                        <Button
+                          primary
+                          data-qa="mark-arrived-btn"
+                          disabled={!isOperationalDate}
+                          onClick={() =>
+                            navigate(
+                              `/units/${unitId}/groups/${groupId}/staff-attendance/${staffMember.employeeId}/mark-arrived`
+                            )
+                          }
+                        >
+                          {i18n.attendances.staff.markArrived}
+                        </Button>
+                      </>
+                    )}
+                  </FixedSpaceColumn>
+                </ContentArea>
               </FixedSpaceColumn>
             </>
           )
