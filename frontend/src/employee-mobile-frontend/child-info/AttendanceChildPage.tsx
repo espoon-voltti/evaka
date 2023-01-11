@@ -58,7 +58,9 @@ export default React.memo(function AttendanceChildPage() {
 
   const { unitInfoResponse } = useContext(UnitContext)
   const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
-  const attendanceStatuses = useQueryResult(attendanceStatusesQuery(unitId))
+  const attendanceStatuses = useQueryResult(attendanceStatusesQuery(unitId), {
+    staleTime: 0
+  })
 
   const [uiMode, setUiMode] = useState<
     | 'default'
