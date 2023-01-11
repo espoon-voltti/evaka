@@ -26,10 +26,7 @@ data class OperationalDays(
 
 fun Database.Read.operationalDays(year: Int, month: Month): OperationalDays {
     val range = FiniteDateRange.ofMonth(year, month)
-    val firstDayOfMonth = LocalDate.of(year, month, 1)
-    val daysOfMonth =
-        generateSequence(firstDayOfMonth) { it.plusDays(1) }
-            .takeWhile { date -> date.month == month }
+    val daysOfMonth = range.dates()
 
     // Only includes units that don't have regular monday to friday operational days
     val specialUnitOperationalDays =
