@@ -147,7 +147,8 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         clock,
                         Action.MessageAccount.ACCESS
                     ),
-                    "Espoo"
+                    "Espoo",
+                    "Espoo palveluohjaus"
                 )
             }
         assertEquals(3, accounts2.size)
@@ -199,7 +200,8 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         clock,
                         Action.MessageAccount.ACCESS
                     ),
-                    "Espoo"
+                    "Espoo",
+                    "Espoo palveluohjaus"
                 )
             }
         assertEquals(1, accounts2.size)
@@ -237,7 +239,8 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                         clock,
                         Action.MessageAccount.ACCESS
                     ),
-                    "Espoo"
+                    "Espoo",
+                    "Espoo palveluohjaus"
                 )
             }
         assertEquals(0, accounts2.size)
@@ -312,7 +315,8 @@ class MessageAccountQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                     sender = employeeAccount,
                     sentAt = now.minusSeconds(30),
                     recipientNames = allAccounts.map { it.name },
-                    municipalAccountName = "Espoo"
+                    municipalAccountName = "Espoo",
+                    serviceWorkerAccountName = "Espoo palveluohjaus"
                 )
             tx.insertRecipients(listOf(messageId to allAccounts.map { it.id }.toSet()))
         }

@@ -55,7 +55,8 @@ WHERE (${predicate(idFilter.forTable("message_account"))})
 
 fun Database.Read.getAuthorizedMessageAccountsForEmployee(
     idFilter: AccessControlFilter<MessageAccountId>,
-    municipalAccountName: String
+    municipalAccountName: String,
+    serviceWorkerAccountName: String
 ): Set<AuthorizedMessageAccount> {
     val accountIds = getEmployeeMessageAccountIds(idFilter)
 
@@ -65,6 +66,7 @@ SELECT
     acc.id AS account_id,
     (CASE
         WHEN acc.type = 'MUNICIPAL'::message_account_type THEN :municipalAccountName
+        WHEN acc.type = 'SERVICE_WORKER'::message_account_type THEN :serviceWorkerAccountName
         ELSE name_view.name
     END) AS account_name,
     acc.type AS account_type,
@@ -88,6 +90,7 @@ AND (
     return this.createQuery(sql)
         .bind("accountIds", accountIds)
         .bind("municipalAccountName", municipalAccountName)
+        .bind("serviceWorkerAccountName", serviceWorkerAccountName)
         .mapTo<AuthorizedMessageAccount>()
         .toSet()
 }
@@ -110,7 +113,7 @@ fun Database.Transaction.createDaycareGroupMessageAccount(
     // language=SQL
     val sql =
         """
-        INSERT INTO message_account (daycare_group_id) VALUES (:daycareGroupId)
+        INSERT INTO message_account (daycare_group_id, type) VALUES (:daycareGroupId, 'GROUP')
         RETURNING id
     """
             .trimIndent()
@@ -131,7 +134,7 @@ fun Database.Transaction.createPersonMessageAccount(personId: PersonId): Message
     // language=SQL
     val sql =
         """
-        INSERT INTO message_account (person_id) VALUES (:personId)
+        INSERT INTO message_account (person_id, type) VALUES (:personId, 'CITIZEN')
         RETURNING id
     """
             .trimIndent()
@@ -142,7 +145,7 @@ fun Database.Transaction.upsertEmployeeMessageAccount(employeeId: EmployeeId): M
     // language=SQL
     val sql =
         """
-        INSERT INTO message_account (employee_id) VALUES (:employeeId)
+        INSERT INTO message_account (employee_id, type) VALUES (:employeeId, 'PERSONAL')
         ON CONFLICT (employee_id) WHERE employee_id IS NOT NULL DO UPDATE SET active = true
         RETURNING id
     """

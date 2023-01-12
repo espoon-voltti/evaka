@@ -18,6 +18,7 @@ export type AccountType =
   | 'GROUP'
   | 'CITIZEN'
   | 'MUNICIPAL'
+  | 'SERVICE_WORKER'
 
 /**
 * Generated from fi.espoo.evaka.messaging.AuthorizedMessageAccount

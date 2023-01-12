@@ -215,5 +215,7 @@ val testFeatureConfig =
         requestedStartUpperLimit = 14,
         partialAbsenceThresholdsEnabled = true,
         postOffice = "ESPOO",
-        municipalMessageAccountName = "Espoon kaupunki - Esbo stad - City of Espoo"
+        municipalMessageAccountName = "Espoon kaupunki - Esbo stad - City of Espoo",
+        serviceWorkerMessageAccountName =
+            "Espoon kaupungin palveluohjaus - Esbo stads serviceledning - City of Espoo service guidance"
     )

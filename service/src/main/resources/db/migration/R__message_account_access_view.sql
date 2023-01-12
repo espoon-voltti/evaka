@@ -27,4 +27,11 @@ CREATE VIEW message_account_access_view(employee_id, account_id) AS (
     FROM employee e
     JOIN message_account acc ON acc.type = 'MUNICIPAL'
     WHERE e.roles && '{ADMIN, MESSAGING}'::user_role[]
+
+    UNION
+
+   SELECT e.id AS employee_id, acc.id AS account_id
+   FROM employee e
+   JOIN message_account acc ON acc.type = 'SERVICE_WORKER'
+   WHERE e.roles && '{SERVICE_WORKER}'::user_role[]
 );

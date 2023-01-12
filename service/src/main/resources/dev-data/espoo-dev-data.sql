@@ -30,7 +30,7 @@ INSERT INTO daycare_caretaker (group_id, amount, start_date, end_date) VALUES
     ('b4bd39f6-5963-11ea-b4da-ebed8135a791', 3, '2020-03-01', NULL),
     ('4539f160-a616-41cb-ac51-6a12ba2c9645', 3, '2020-03-01', NULL);
 
-INSERT INTO message_account (daycare_group_id) SELECT id FROM daycare_group;
+INSERT INTO message_account (daycare_group_id, type) SELECT id, 'GROUP'::message_account_type as type FROM daycare_group;
 
 INSERT INTO assistance_action_option (value, name_fi, display_order) VALUES
     ('ASSISTANCE_SERVICE_CHILD', 'Avustamispalvelut yhdelle lapselle', 10),

@@ -85,7 +85,8 @@ class MessageService(
         recipientNames: List<String>,
         attachmentIds: Set<AttachmentId> = setOf(),
         staffCopyRecipients: Set<MessageAccountId>,
-        municipalAccountName: String
+        municipalAccountName: String,
+        serviceWorkerAccountName: String
     ): MessageContentId {
         val recipientGroups: List<Pair<Set<MessageAccountId>, Set<ChildId>>> =
             if (type == MessageType.BULLETIN) {
@@ -126,7 +127,8 @@ class MessageService(
                 contentId,
                 sender,
                 recipientNames,
-                municipalAccountName
+                municipalAccountName,
+                serviceWorkerAccountName
             )
         val recipientGroupsWithMessageIds = threadAndMessageIds.zip(recipientGroups)
         tx.insertMessageThreadChildren(
@@ -165,7 +167,8 @@ class MessageService(
                     contentId,
                     sender,
                     recipientNames,
-                    municipalAccountName
+                    municipalAccountName,
+                    serviceWorkerAccountName
                 )
             val staffRecipientsWithMessageIds = staffThreadAndMessageIds.zip(staffCopyRecipients)
             tx.upsertSenderThreadParticipants(
@@ -193,7 +196,8 @@ class MessageService(
         senderAccount: MessageAccountId,
         recipientAccountIds: Set<MessageAccountId>,
         content: String,
-        municipalAccountName: String
+        municipalAccountName: String,
+        serviceWorkerAccountName: String
     ): ThreadReply {
         val (threadId, type, isCopy, senders, recipients) =
             db.read { it.getThreadByMessageId(replyToMessageId) }
@@ -222,7 +226,8 @@ class MessageService(
                         sender = senderAccount,
                         repliesToMessageId = replyToMessageId,
                         recipientNames = recipientNames,
-                        municipalAccountName = municipalAccountName
+                        municipalAccountName = municipalAccountName,
+                        serviceWorkerAccountName = serviceWorkerAccountName
                     )
                 tx.insertRecipients(listOf(messageId to recipientAccountIds))
                 asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)

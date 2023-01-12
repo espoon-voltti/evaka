@@ -106,7 +106,8 @@ class MessageControllerCitizen(
                         accountId,
                         pageSize,
                         page,
-                        featureConfig.municipalMessageAccountName
+                        featureConfig.municipalMessageAccountName,
+                        featureConfig.serviceWorkerMessageAccountName
                     )
                 }
             }
@@ -159,7 +160,8 @@ class MessageControllerCitizen(
                     senderAccount = accountId,
                     recipientAccountIds = body.recipientAccountIds,
                     content = body.content,
-                    municipalAccountName = featureConfig.municipalMessageAccountName
+                    municipalAccountName = featureConfig.municipalMessageAccountName,
+                    serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName
                 )
             }
             .also { Audit.MessagingReplyToMessageWrite.log(targetId = messageId) }
@@ -206,7 +208,9 @@ class MessageControllerCitizen(
                                 threadId = threadId,
                                 sender = senderId,
                                 recipientNames = recipientNames,
-                                municipalAccountName = featureConfig.municipalMessageAccountName
+                                municipalAccountName = featureConfig.municipalMessageAccountName,
+                                serviceWorkerAccountName =
+                                    featureConfig.serviceWorkerMessageAccountName
                             )
                         tx.insertMessageThreadChildren(listOf(body.children to threadId))
                         tx.insertRecipients(listOf(messageId to recipientIds))

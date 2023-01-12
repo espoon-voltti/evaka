@@ -98,7 +98,8 @@ enum class AccountType {
     PERSONAL,
     GROUP,
     CITIZEN,
-    MUNICIPAL;
+    MUNICIPAL,
+    SERVICE_WORKER;
 
     fun isPrimaryRecipientForCitizenMessage(): Boolean =
         when (this) {
@@ -106,6 +107,7 @@ enum class AccountType {
             GROUP -> true
             CITIZEN -> false
             MUNICIPAL -> false
+            SERVICE_WORKER -> false
         }
 }
 

@@ -146,6 +146,7 @@ fun Database.Transaction.insertMessage(
     sender: MessageAccountId,
     recipientNames: List<String>,
     municipalAccountName: String,
+    serviceWorkerAccountName: String,
     sentAt: HelsinkiDateTime? =
         null, // Only needed because some tests bypass the message service and controllers
     repliesToMessageId: MessageId? = null
@@ -159,7 +160,11 @@ fun Database.Transaction.insertMessage(
             :contentId,
             :threadId,
             :senderId,
-            CASE WHEN name_view.type = 'MUNICIPAL' THEN :municipalAccountName ELSE name_view.name END,
+            CASE 
+                WHEN name_view.type = 'MUNICIPAL' THEN :municipalAccountName 
+                WHEN name_view.type = 'SERVICE_WORKER' THEN :serviceWorkerAccountName 
+                ELSE name_view.name 
+            END,
             :repliesToId,
             :sentAt,
             :recipientNames
@@ -177,6 +182,7 @@ fun Database.Transaction.insertMessage(
         .bind("sentAt", sentAt)
         .bind("recipientNames", recipientNames)
         .bind("municipalAccountName", municipalAccountName)
+        .bind("serviceWorkerAccountName", serviceWorkerAccountName)
         .mapTo<MessageId>()
         .one()
 }
@@ -304,7 +310,8 @@ fun Database.Transaction.insertThreadsWithMessages(
     contentId: MessageContentId,
     senderId: MessageAccountId,
     recipientNames: List<String>,
-    municipalAccountName: String
+    municipalAccountName: String,
+    serviceWorkerAccountName: String
 ): List<Pair<MessageThreadId, MessageId>> {
     val batch =
         prepareBatch(
@@ -318,7 +325,11 @@ SELECT
     :contentId,
     new_thread.id,
     :senderId,
-    CASE WHEN name_view.type = 'MUNICIPAL' THEN :municipalAccountName ELSE name_view.name END,
+    CASE 
+        WHEN name_view.type = 'MUNICIPAL' THEN :municipalAccountName
+        WHEN name_view.type = 'SERVICE_WORKER' THEN :serviceWorkerAccountName
+        ELSE name_view.name
+    END,
     NULL,
     :recipientNames
 FROM message_account_view name_view, new_thread
@@ -337,6 +348,7 @@ RETURNING id, thread_id
             .bind("senderId", senderId)
             .bind("recipientNames", recipientNames)
             .bind("municipalAccountName", municipalAccountName)
+            .bind("serviceWorkerAccountName", serviceWorkerAccountName)
             .add()
     }
     return batch
@@ -397,7 +409,8 @@ fun Database.Read.getThreads(
     accountId: MessageAccountId,
     pageSize: Int,
     page: Int,
-    municipalAccountName: String
+    municipalAccountName: String,
+    serviceWorkerAccountName: String
 ): Paged<MessageThread> {
     val threads =
         createQuery(
@@ -434,7 +447,12 @@ LIMIT :pageSize OFFSET :offset
             .mapToPaged<ReceivedThread>(pageSize)
 
     val messagesByThread =
-        getThreadMessages(accountId, threads.data.map { it.id }, municipalAccountName)
+        getThreadMessages(
+            accountId,
+            threads.data.map { it.id },
+            municipalAccountName,
+            serviceWorkerAccountName
+        )
     return combineThreadsAndMessages(accountId, threads, messagesByThread)
 }
 
@@ -444,6 +462,7 @@ fun Database.Read.getReceivedThreads(
     pageSize: Int,
     page: Int,
     municipalAccountName: String,
+    serviceWorkerAccountName: String,
     folderId: MessageThreadFolderId? = null
 ): Paged<MessageThread> {
     val threads =
@@ -492,14 +511,20 @@ LIMIT :pageSize OFFSET :offset
             .mapToPaged<ReceivedThread>(pageSize)
 
     val messagesByThread =
-        getThreadMessages(accountId, threads.data.map { it.id }, municipalAccountName)
+        getThreadMessages(
+            accountId,
+            threads.data.map { it.id },
+            municipalAccountName,
+            serviceWorkerAccountName
+        )
     return combineThreadsAndMessages(accountId, threads, messagesByThread)
 }
 
 private fun Database.Read.getThreadMessages(
     accountId: MessageAccountId,
     threadIds: List<MessageThreadId>,
-    municipalAccountName: String
+    municipalAccountName: String,
+    serviceWorkerAccountName: String
 ): Map<MessageThreadId, List<Message>> {
     if (threadIds.isEmpty()) return mapOf()
     return createQuery(
@@ -513,7 +538,11 @@ SELECT
     (
         SELECT jsonb_build_object(
             'id', mav.id,
-            'name', CASE WHEN mav.type = 'MUNICIPAL' THEN :municipalAccountName ELSE mav.name END,
+            'name', CASE 
+                WHEN mav.type = 'MUNICIPAL' THEN :municipalAccountName
+                WHEN mav.type = 'SERVICE_WORKER' THEN :serviceWorkerAccountName
+                ELSE mav.name 
+            END,
             'type', mav.type
         )
         FROM message_account_view mav
@@ -553,6 +582,7 @@ ORDER BY m.sent_at
         .bind("accountId", accountId)
         .bind("threadIds", threadIds)
         .bind("municipalAccountName", municipalAccountName)
+        .bind("serviceWorkerAccountName", serviceWorkerAccountName)
         .mapTo<Message>()
         .groupBy { it.threadId }
 }

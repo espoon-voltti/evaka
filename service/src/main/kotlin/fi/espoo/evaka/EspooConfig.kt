@@ -143,7 +143,9 @@ class EspooConfig {
             requestedStartUpperLimit = 14,
             partialAbsenceThresholdsEnabled = true,
             postOffice = "ESPOO",
-            municipalMessageAccountName = "Espoon kaupunki - Esbo stad - City of Espoo"
+            municipalMessageAccountName = "Espoon kaupunki - Esbo stad - City of Espoo",
+            serviceWorkerMessageAccountName =
+                "Espoon kaupungin palveluohjaus - Esbo stads servicehandledning - City of Espoo service guidance"
         )
 
     @Bean
