@@ -115,7 +115,6 @@ export interface Child {
   dailyServiceTimes: DailyServiceTimesValue | null
   firstName: string
   groupId: UUID | null
-  hasContractDayServiceNeed: boolean
   id: UUID
   imageUrl: string | null
   lastName: string

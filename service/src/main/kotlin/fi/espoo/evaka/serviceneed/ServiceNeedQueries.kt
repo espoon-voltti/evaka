@@ -359,45 +359,6 @@ WHERE daterange(p.start_date, p.end_date, '[]') * daterange(bc.start_date, bc.en
     )
 }
 
-fun Database.Read.getChildContractDayOccurrenceForUnit(
-    unitId: DaycareId,
-    date: LocalDate
-): Map<ChildId, Boolean> {
-    data class QueryResult(val childId: ChildId, val contractDaysPerMonth: Int?)
-    val sql =
-        """
-SELECT pl.child_id, sno.contract_days_per_month
-FROM placement pl
-         LEFT JOIN service_need sn ON sn.placement_id = pl.id AND daterange(pl.start_date, pl.end_date, '[]') &&
-                                                                  daterange(sn.start_date, sn.end_date, '[]') AND
-                                      daterange(sn.start_date, sn.end_date, '[]') @> :date
-         LEFT JOIN service_need_option sno ON sn.option_id = sno.id
-WHERE daterange(pl.start_date, pl.end_date, '[]') @> :date
-  AND pl.unit_id = :unitId
-
-UNION ALL
-
-SELECT bc.child_id, o.contract_days_per_month
-FROM backup_care bc
-         JOIN placement p on bc.child_id = p.child_id AND
-                             daterange(p.start_date, p.end_date, '[]') @> :date
-         LEFT JOIN service_need s ON p.id = s.placement_id AND daterange(bc.start_date, bc.end_date, '[]') &&
-                                                               daterange(s.start_date, s.end_date, '[]') AND
-                                     daterange(s.start_date, s.end_date, '[]') @> :date
-         LEFT JOIN service_need_option o ON s.option_id = o.id
-WHERE bc.unit_id = :unitId
-  AND daterange(bc.start_date, bc.end_date, '[]') @> :date
-    """
-    return createQuery(sql.trimIndent())
-        .bind("unitId", unitId)
-        .bind("date", date)
-        .mapTo<QueryResult>()
-        .toList()
-        .groupBy { it.childId }
-        .map { (childId, results) -> childId to results.any { it.contractDaysPerMonth != null } }
-        .toMap()
-}
-
 fun Database.Read.getActualServiceNeedInfosByRangeAndGroup(
     groupId: GroupId,
     range: FiniteDateRange

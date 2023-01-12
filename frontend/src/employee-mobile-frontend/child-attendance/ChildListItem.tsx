@@ -20,9 +20,9 @@ import { defaultMargins } from 'lib-components/white-space'
 import colors, { attendanceColors } from 'lib-customizations/common'
 import { farStickyNote, farUser, farUsers } from 'lib-icons'
 
-import { getTodaysServiceTimes } from '../common/dailyServiceTimes'
-import { Translations, useTranslation } from '../common/i18n'
-import { UnitContext } from '../common/unit'
+import { Translations, useTranslation } from '../../state/i18n'
+import { UnitContext } from '../../state/unit'
+import { getTodaysServiceTimes } from '../../utils/dailyServiceTimes'
 
 import { Reservations } from './Reservations'
 
@@ -91,15 +91,6 @@ const GroupName = styled(InformationText)`
   text-align: right;
 `
 
-const LeftDetailsDiv = styled.div`
-  > * {
-    margin-left: ${defaultMargins.xs};
-    &:first-child {
-      margin-left: 0;
-    }
-  }
-`
-
 interface ChildListItemProps {
   child: Child
   onClick?: () => void
@@ -161,12 +152,12 @@ export default React.memo(function ChildListItem({
             </GroupName>
           </NameRow>
           <DetailsRow>
-            <LeftDetailsDiv>
+            <div>
               {infoText}
               {child.backup && (
                 <RoundIcon content="V" size="m" color={colors.main.m1} />
               )}
-            </LeftDetailsDiv>
+            </div>
             <FixedSpaceRowWithLeftMargin>
               {child.dailyNote && (
                 <Link
@@ -191,13 +182,6 @@ export default React.memo(function ChildListItem({
                     size="m"
                   />
                 </Link>
-              )}
-              {child.hasContractDayServiceNeed && (
-                <RoundIcon
-                  content="S"
-                  color={colors.accents.a1greenDark}
-                  size="m"
-                />
               )}
             </FixedSpaceRowWithLeftMargin>
           </DetailsRow>
