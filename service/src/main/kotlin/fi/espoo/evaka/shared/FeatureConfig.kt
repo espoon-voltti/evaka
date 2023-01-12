@@ -33,11 +33,11 @@ data class FeatureConfig(
      *
      * Daily daycare price is used for partial month invoices, daily refunds, etc. By default, it's
      * computed by dividing the daycare fee by the number of operating days in a month. For example,
-     * Decemper 2021 had 21 operating days (31 days minus 9 days of weekends, independence day and
-     * Christmas eve).
+     * December 2021 had 21 operating days (31 days minus 9 days of weekends, independence day and
+     * Christmas Eve).
      *
-     * If this this option is not null, the daily daycare price is calculated by dividing by its
-     * value regardless of the month's actual operating days.
+     * If this option is not null, the daily daycare price is calculated by dividing by its value
+     * regardless of the month's actual operating days.
      */
     val dailyFeeDivisorOperationalDaysOverride: Int?,
 
