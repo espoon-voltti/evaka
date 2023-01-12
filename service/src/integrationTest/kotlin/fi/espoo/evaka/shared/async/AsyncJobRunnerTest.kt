@@ -46,7 +46,19 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun clean() {
-        asyncJobRunner = AsyncJobRunner(TestJob::class, jdbi, AsyncJobRunnerConfig(), noopTracer)
+        asyncJobRunner =
+            AsyncJobRunner(
+                TestJob::class,
+                listOf(
+                    AsyncJobRunner.Pool(
+                        AsyncJobPool.Id(TestJob::class, "default"),
+                        AsyncJobPool.Config(),
+                        setOf(TestJob::class)
+                    )
+                ),
+                jdbi,
+                noopTracer
+            )
         asyncJobRunner.registerHandler { _, _, msg: TestJob -> currentCallback.get()(msg) }
     }
 
@@ -106,7 +118,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
         val job = TestJob()
         val future = this.setAsyncJobCallback { assertEquals(job, it) }
         db.transaction { asyncJobRunner.plan(it, listOf(job), runAt = HelsinkiDateTime.now()) }
-        asyncJobRunner.start(pollingInterval = Duration.ofSeconds(1))
+        asyncJobRunner.startBackgroundPolling(Duration.ofSeconds(1))
         future.get(10, TimeUnit.SECONDS)
     }
 
@@ -114,8 +126,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `AsyncJobRunner wakes up automatically after a transaction plans jobs`() {
         val job = TestJob()
         val future = this.setAsyncJobCallback { assertEquals(job, it) }
-        asyncJobRunner.start(pollingInterval = Duration.ofDays(1))
-        TimeUnit.MILLISECONDS.sleep(100)
+        asyncJobRunner.enableAfterCommitHooks()
         db.transaction { asyncJobRunner.plan(it, listOf(job), runAt = HelsinkiDateTime.now()) }
         future.get(10, TimeUnit.SECONDS)
     }

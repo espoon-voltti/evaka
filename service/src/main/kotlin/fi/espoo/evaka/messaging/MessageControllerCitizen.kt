@@ -11,8 +11,8 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.UrgentAsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -36,7 +36,7 @@ data class CitizenMessageBody(
 @RestController
 @RequestMapping("/citizen/messages")
 class MessageControllerCitizen(
-    private val urgentAsyncJobRunner: AsyncJobRunner<UrgentAsyncJob>,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val featureConfig: FeatureConfig,
     private val messageService: MessageService
 ) {
@@ -200,7 +200,7 @@ class MessageControllerCitizen(
                                 isCopy = false
                             )
                         tx.upsertSenderThreadParticipants(senderId, listOf(threadId), now)
-                        urgentAsyncJobRunner.scheduleThreadRecipientsUpdate(
+                        asyncJobRunner.scheduleThreadRecipientsUpdate(
                             tx,
                             listOf(threadId to recipientIds),
                             now

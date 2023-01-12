@@ -22,8 +22,8 @@ import fi.espoo.evaka.setting.SettingType
 import fi.espoo.evaka.setting.getSettings
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.VoucherValueDecisionId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.DateRange
@@ -38,7 +38,7 @@ class VoucherValueDecisionService(
     private val pdfService: PDFService,
     private val documentClient: DocumentService,
     private val messageProvider: IMessageProvider,
-    private val sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     env: BucketEnv
 ) {
     private val bucket = env.voucherValueDecisions
@@ -101,10 +101,10 @@ class VoucherValueDecisionService(
         val documentDisplayName = suomiFiDocumentFileName(lang)
         val messageHeader = messageProvider.getVoucherValueDecisionHeader(lang.messageLang)
         val messageContent = messageProvider.getVoucherValueDecisionContent(lang.messageLang)
-        sfiAsyncJobRunner.plan(
+        asyncJobRunner.plan(
             tx,
             listOf(
-                SuomiFiAsyncJob.SendMessage(
+                AsyncJob.SendMessage(
                     SfiMessage(
                         messageId = decision.id.toString(),
                         documentId = decision.id.toString(),

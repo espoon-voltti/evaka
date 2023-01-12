@@ -37,7 +37,6 @@ import fi.espoo.evaka.shared.PartnershipId
 import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -93,8 +92,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
     @Autowired private lateinit var decisionDraftService: DecisionDraftService
 
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
-
-    @Autowired private lateinit var sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>
 
     @Autowired lateinit var mapper: JsonMapper
 
@@ -1209,8 +1206,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.sendDecisionsWithoutProposal(tx, serviceWorker, clock, applicationId)
         }
         asyncJobRunner.runPendingJobsSync(clock)
-        asyncJobRunner.runPendingJobsSync(clock)
-        sfiAsyncJobRunner.runPendingJobsSync(clock)
 
         // then
         db.read {
@@ -1361,8 +1356,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.confirmPlacementProposalChanges(tx, serviceWorker, clock, testDaycare.id)
         }
         asyncJobRunner.runPendingJobsSync(clock)
-        asyncJobRunner.runPendingJobsSync(clock)
-        sfiAsyncJobRunner.runPendingJobsSync(clock)
         db.read { tx ->
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!
@@ -1432,7 +1425,6 @@ class ApplicationStateServiceIntegrationTests : FullApplicationTest(resetDbBefor
             service.confirmPlacementProposalChanges(tx, serviceWorker, clock, testDaycare.id)
         }
         asyncJobRunner.runPendingJobsSync(clock)
-        sfiAsyncJobRunner.runPendingJobsSync(clock)
         db.read { tx ->
             // then
             val application = tx.fetchApplicationDetails(applicationId)!!

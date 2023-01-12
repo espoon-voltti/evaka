@@ -19,8 +19,8 @@ import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.ServiceNeedId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.VardaAsyncJob
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -37,7 +37,7 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class VardaUpdateService(
-    private val asyncJobRunner: AsyncJobRunner<VardaAsyncJob>,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val tokenProvider: VardaTokenProvider,
     private val fuel: FuelManager,
     private val mapper: JsonMapper,
@@ -81,7 +81,7 @@ class VardaUpdateService(
         db.transaction { tx ->
             asyncJobRunner.plan(
                 tx,
-                serviceNeedDiffsByChild.values.map { VardaAsyncJob.UpdateVardaChild(it) },
+                serviceNeedDiffsByChild.values.map { AsyncJob.UpdateVardaChild(it) },
                 runAt = clock.now(),
                 retryCount = 2,
                 retryInterval = Duration.ofMinutes(10)
@@ -92,7 +92,7 @@ class VardaUpdateService(
     fun updateVardaChildByAsyncJob(
         db: Database.Connection,
         clock: EvakaClock,
-        msg: VardaAsyncJob.UpdateVardaChild
+        msg: AsyncJob.UpdateVardaChild
     ) {
         logger.info("VardaUpdate: starting to update child ${msg.serviceNeedDiffByChild.childId}")
         updateVardaChild(
