@@ -45,8 +45,6 @@ export type MapAddress = {
 
 export type CareTypeOption = ApplicationType
 
-export type ProviderTypeOption = Exclude<ProviderType, 'MUNICIPAL_SCHOOL'>
-
 interface MapContainerProps {
   loggedIn: boolean
   children: ReactNode
@@ -99,7 +97,7 @@ export default React.memo(function MapView() {
   )
   const [careType, setCareType] = useState<CareTypeOption>('DAYCARE')
   const [languages, setLanguages] = useState<Language[]>([])
-  const [providerTypes, setProviderTypes] = useState<ProviderTypeOption[]>([])
+  const [providerTypes, setProviderTypes] = useState<ProviderType[]>([])
   const [shiftCare, setShiftCare] = useState<boolean>(false)
 
   const [allUnits] = useApiState(() => fetchUnits(careType), [careType])
@@ -186,7 +184,7 @@ const filterUnits = (
   unitsResult: Result<PublicUnit[]>,
   careType: CareTypeOption,
   languages: Language[],
-  providerTypes: ProviderTypeOption[],
+  providerTypes: ProviderType[],
   shiftCare: boolean
 ): Result<PublicUnit[]> =>
   unitsResult.map((value) => {

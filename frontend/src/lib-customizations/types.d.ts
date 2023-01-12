@@ -90,6 +90,7 @@ interface MapConfig {
     maxLatitude: number
   }
   careTypeFilters: ApplicationType[]
+  unitProviderTypeFilters: ProviderType[]
 }
 
 /**

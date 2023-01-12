@@ -224,7 +224,8 @@ export default {
       PURCHASED: 'ostopalvelu',
       EXTERNAL_PURCHASED: 'ostopalvelu',
       PRIVATE: 'yksityiset',
-      PRIVATE_SERVICE_VOUCHER: 'palveluseteli'
+      PRIVATE_SERVICE_VOUCHER: 'palveluseteli',
+      MUNICIPAL_SCHOOL: 'koulu'
     },
     homepage: 'Kotisivu',
     unitHomepage: 'Yksikön kotisivu',
