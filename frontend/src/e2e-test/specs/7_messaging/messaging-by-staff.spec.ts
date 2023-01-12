@@ -194,6 +194,7 @@ describe('Sending and receiving messages', () => {
         await staffPage.goto(`${config.employeeUrl}/messages`)
         messagesPage = new MessagesPage(staffPage)
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+
         await messagesPage.deleteFirstThread()
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 0)
       })
