@@ -48,6 +48,7 @@ interface Props {
   close: () => void
   availableChildren: ReservationChild[]
   initialDate: LocalDate | undefined
+  firstPlannedAbsenceDate: LocalDate | null
 }
 
 function initialForm(
@@ -72,7 +73,8 @@ function initialForm(
 export default React.memo(function AbsenceModal({
   close,
   availableChildren,
-  initialDate
+  initialDate,
+  firstPlannedAbsenceDate
 }: Props) {
   const i18n = useTranslation()
   const [lang] = useLang()
@@ -84,8 +86,25 @@ export default React.memo(function AbsenceModal({
 
   const updateForm = useCallback(
     (partialForm: Partial<Form>) =>
-      setForm((previous) => ({ ...previous, ...partialForm })),
-    [setForm]
+      setForm((previous) => {
+        const form = { ...previous, ...partialForm }
+        const contractDayAbsenceTypeSettings =
+          getContractDayAbsenceTypeSettings(
+            form,
+            firstPlannedAbsenceDate,
+            availableChildren
+          )
+        return {
+          ...form,
+          ...(form.absenceType === 'PLANNED_ABSENCE' &&
+          featureFlags.citizenContractDayAbsence &&
+          (!contractDayAbsenceTypeSettings.visible ||
+            !contractDayAbsenceTypeSettings.enabled)
+            ? { absenceType: undefined }
+            : undefined)
+        }
+      }),
+    [setForm, firstPlannedAbsenceDate, availableChildren]
   )
 
   const [showAllErrors, setShowAllErrors] = useState(false)
@@ -98,12 +117,14 @@ export default React.memo(function AbsenceModal({
         : false,
     [availableChildren]
   )
-  const showContractDayAbsenceType = useMemo(
+  const contractDayAbsenceTypeSettings = useMemo(
     () =>
-      featureFlags.citizenContractDayAbsence
-        ? availableChildren.some(({ hasContractDays }) => hasContractDays)
-        : false,
-    [availableChildren]
+      getContractDayAbsenceTypeSettings(
+        form,
+        firstPlannedAbsenceDate,
+        availableChildren
+      ),
+    [form, firstPlannedAbsenceDate, availableChildren]
   )
 
   return (
@@ -185,6 +206,15 @@ export default React.memo(function AbsenceModal({
               <CalendarModalSection>
                 <H2>{i18n.calendar.absenceModal.absenceType}</H2>
                 <FixedSpaceFlexWrap verticalSpacing="xs">
+                  {contractDayAbsenceTypeSettings.visible &&
+                    !contractDayAbsenceTypeSettings.enabled && (
+                      <Warning>
+                        {
+                          i18n.calendar.absenceModal
+                            .contractDayAbsenceTypeWarning
+                        }
+                      </Warning>
+                    )}
                   <ChoiceChip
                     text={i18n.calendar.absenceModal.absenceTypes.SICKLEAVE}
                     selected={form.absenceType === 'SICKLEAVE'}
@@ -205,23 +235,35 @@ export default React.memo(function AbsenceModal({
                     }
                     data-qa="absence-OTHER_ABSENCE"
                   />
-                  {(showShiftCareAbsenceType || showContractDayAbsenceType) && (
-                    <ChoiceChip
-                      text={
-                        i18n.calendar.absenceModal.absenceTypes.PLANNED_ABSENCE
-                      }
-                      selected={form.absenceType === 'PLANNED_ABSENCE'}
-                      onChange={(selected) =>
-                        updateForm({
-                          absenceType: selected ? 'PLANNED_ABSENCE' : undefined
-                        })
-                      }
-                      data-qa="absence-PLANNED_ABSENCE"
-                    />
+                  {(showShiftCareAbsenceType ||
+                    contractDayAbsenceTypeSettings.visible) && (
+                    <>
+                      <ChoiceChip
+                        text={
+                          i18n.calendar.absenceModal.absenceTypes
+                            .PLANNED_ABSENCE
+                        }
+                        selected={form.absenceType === 'PLANNED_ABSENCE'}
+                        onChange={(selected) =>
+                          updateForm({
+                            absenceType: selected
+                              ? 'PLANNED_ABSENCE'
+                              : undefined
+                          })
+                        }
+                        disabled={
+                          contractDayAbsenceTypeSettings.visible &&
+                          !contractDayAbsenceTypeSettings.enabled
+                        }
+                        data-qa="absence-PLANNED_ABSENCE"
+                      />
+                    </>
                   )}
                 </FixedSpaceFlexWrap>
                 {showAllErrors && !form.absenceType ? (
-                  <Warning>{i18n.validationErrors.requiredSelection}</Warning>
+                  <Warning data-qa="modal-absence-type-required-error">
+                    {i18n.validationErrors.requiredSelection}
+                  </Warning>
                 ) : null}
               </CalendarModalSection>
             </div>
@@ -288,6 +330,30 @@ const validateForm = (
       absenceType: form.absenceType!
     }
   ]
+}
+
+const getContractDayAbsenceTypeSettings = (
+  form: Form,
+  firstPlannedAbsenceDate: LocalDate | null,
+  availableChildren: ReservationChild[]
+) => {
+  if (
+    featureFlags.citizenContractDayAbsence &&
+    form.startDate !== null &&
+    firstPlannedAbsenceDate !== null &&
+    form.startDate >= firstPlannedAbsenceDate
+  ) {
+    const selectedChildren = availableChildren.filter(({ id }) =>
+      form.selectedChildren.includes(id)
+    )
+    return {
+      visible: selectedChildren.some(({ hasContractDays }) => hasContractDays),
+      enabled:
+        selectedChildren.length > 0 &&
+        selectedChildren.every(({ hasContractDays }) => hasContractDays)
+    }
+  }
+  return { visible: false, enabled: false }
 }
 
 const Warning = styled.div`

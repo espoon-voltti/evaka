@@ -46,6 +46,7 @@ type SelectionChipProps = {
   text: string
   selected: boolean
   onChange: (selected: boolean) => void
+  disabled?: boolean
   'data-qa'?: string
   showIcon?: boolean
 }
@@ -58,6 +59,7 @@ export const SelectionChip = React.memo(function SelectionChip({
   text,
   selected,
   onChange,
+  disabled,
   'data-qa': dataQa,
   showIcon = true
 }: SelectionChipProps) {
@@ -74,19 +76,21 @@ export const SelectionChip = React.memo(function SelectionChip({
       role="checkbox"
       aria-label={text}
       aria-checked={selected}
-      onClick={onClick}
+      onClick={(e) => (!disabled ? onClick(e) : undefined)}
       onKeyUp={(ev) => ev.key === 'Enter' && onClick(ev)}
       data-qa={dataQa}
       tabIndex={0}
     >
-      <SelectionChipInnerWrapper className={classNames({ checked: selected })}>
+      <SelectionChipInnerWrapper
+        className={classNames({ checked: selected, disabled })}
+      >
         {showIcon && selected && (
           <IconWrapper>
             <FontAwesomeIcon icon={faCheck} />
           </IconWrapper>
         )}
         <StyledLabel
-          className={classNames({ checked: showIcon && selected })}
+          className={classNames({ checked: showIcon && selected, disabled })}
           aria-hidden="true"
           onClick={preventDefault}
         >
@@ -101,6 +105,7 @@ export const ChoiceChip = React.memo(function ChoiceChip({
   text,
   selected,
   onChange,
+  disabled,
   'data-qa': dataQa
 }: SelectionChipProps) {
   return (
@@ -108,6 +113,7 @@ export const ChoiceChip = React.memo(function ChoiceChip({
       text={text}
       selected={selected}
       onChange={onChange}
+      disabled={disabled}
       data-qa={dataQa}
       showIcon={false}
     />
@@ -116,6 +122,9 @@ export const ChoiceChip = React.memo(function ChoiceChip({
 
 const StyledLabel = styled.label`
   cursor: pointer;
+  &.disabled {
+    cursor: not-allowed;
+  }
 `
 
 const SelectionChipWrapper = styled.div`
@@ -151,6 +160,9 @@ const SelectionChipInnerWrapper = styled.div`
   &.checked {
     background-color: ${(p) => p.theme.colors.main.m2};
     color: ${(p) => p.theme.colors.grayscale.g0};
+  }
+  &.disabled {
+    background-color: ${(p) => p.theme.colors.grayscale.g4};
   }
 
   @media (max-width: ${tabletMin}) {

@@ -444,8 +444,8 @@ export interface PedagogicalDocument {
 export interface ServiceNeedFixture {
   id: string
   placementId: string
-  startDate: Date
-  endDate: Date
+  startDate: string
+  endDate: string
   optionId: string
   shiftCare: boolean
   confirmedBy: UUID

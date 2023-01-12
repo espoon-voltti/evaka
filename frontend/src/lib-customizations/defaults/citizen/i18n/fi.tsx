@@ -311,7 +311,9 @@ export default {
         SICKLEAVE: 'Sairaus',
         OTHER_ABSENCE: 'Poissaolo',
         PLANNED_ABSENCE: 'Vuorotyöpoissaolo'
-      }
+      },
+      contractDayAbsenceTypeWarning:
+        'Vain osalla lapsista on sopimuspäivät käytössä, joten sopimuspäivien poissaoloa ei voida tallentaa kaikille lapsille samaan aikaan.'
     },
     holidayModal: {
       additionalInformation: 'Lisätietoja',

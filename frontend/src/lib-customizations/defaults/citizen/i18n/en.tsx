@@ -314,7 +314,9 @@ const en: Translations = {
         SICKLEAVE: 'Sickness',
         OTHER_ABSENCE: 'Absence',
         PLANNED_ABSENCE: 'Shift work absence'
-      }
+      },
+      contractDayAbsenceTypeWarning:
+        'Only some of the children have contract days in use, so the absence of contract days cannot be recorded for all children at the same time'
     },
     holidayModal: {
       additionalInformation: 'Read more',

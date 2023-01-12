@@ -304,6 +304,9 @@ class AbsencesModal {
   #absenceChip = (type: string) =>
     new Checkbox(this.page.find(`[data-qa="absence-${type}"]`))
   #modalSendButton = this.page.find('[data-qa="modal-okBtn"]')
+  absenceTypeRequiredError = this.page.find(
+    '[data-qa="modal-absence-type-required-error"]'
+  )
 
   async markAbsence(
     child: { id: string },
@@ -311,14 +314,11 @@ class AbsencesModal {
     dateRange: FiniteDateRange,
     absenceType: 'SICKLEAVE' | 'OTHER_ABSENCE' | 'PLANNED_ABSENCE'
   ) {
-    await this.deselectChildren(3)
-    await this.#childCheckbox(child.id).click()
-    await this.startDateInput.fill(dateRange.start.format())
-    await this.endDateInput.fill(dateRange.end.format())
-    await this.endDateInput.press('Enter')
-    await this.#absenceChip(absenceType).click()
-
-    await this.#modalSendButton.click()
+    await this.deselectChildren(totalChildren)
+    await this.toggleChildren([child])
+    await this.selectDates(dateRange)
+    await this.selectAbsenceType(absenceType)
+    await this.submit()
   }
 
   async deselectChildren(n: number) {
@@ -329,6 +329,38 @@ class AbsencesModal {
         .nth(i)
         .click()
     }
+  }
+
+  async toggleChildren(children: { id: string }[]) {
+    for await (const child of children) {
+      await this.#childCheckbox(child.id).click()
+    }
+  }
+
+  async selectDates(dateRange: FiniteDateRange) {
+    await this.startDateInput.fill(dateRange.start.format())
+    await this.endDateInput.fill(dateRange.end.format())
+    await this.endDateInput.press('Enter')
+  }
+
+  async selectAbsenceType(
+    absenceType: 'SICKLEAVE' | 'OTHER_ABSENCE' | 'PLANNED_ABSENCE'
+  ) {
+    await this.getAbsenceChip(absenceType).click()
+  }
+
+  getAbsenceChip(
+    absenceType: 'SICKLEAVE' | 'OTHER_ABSENCE' | 'PLANNED_ABSENCE'
+  ) {
+    return this.#absenceChip(absenceType)
+  }
+
+  async submit() {
+    await this.#modalSendButton.click()
+  }
+
+  getAbsenceTypeRequiredError() {
+    return this.absenceTypeRequiredError
   }
 }
 

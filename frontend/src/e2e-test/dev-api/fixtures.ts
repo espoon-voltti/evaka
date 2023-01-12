@@ -1291,8 +1291,8 @@ export class Fixture {
     return new ServiceNeedBuilder({
       id: uuidv4(),
       placementId: 'not set',
-      startDate: new Date(),
-      endDate: new Date(),
+      startDate: LocalDate.todayInSystemTz().formatIso(),
+      endDate: LocalDate.todayInSystemTz().formatIso(),
       optionId: 'not set',
       shiftCare: false,
       confirmedBy: 'not set',
