@@ -655,7 +655,9 @@ const sv: Translations = {
             label: 'Småbarnspedagogik i samband med förskoleundervisning',
             withConnectedDaycare:
               'Jag ansöker också om kompletterande småbarnspedagogik utöver förskolan.',
-            withoutConnectedDaycare: 'Nej'
+            withoutConnectedDaycare: 'Nej',
+            startDate: 'Önskat inledningsdatum',
+            serviceNeed: 'Behov av småbarnspedagogisk verksamhet'
           },
           attachments: {
             label: 'Nödvändiga bilagor',

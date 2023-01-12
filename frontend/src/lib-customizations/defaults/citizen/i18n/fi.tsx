@@ -632,7 +632,9 @@ export default {
             label: 'Liittyvä varhaiskasvatus',
             withConnectedDaycare:
               'Haen myös esiopetukseen liittyvää varhaiskasvatusta.',
-            withoutConnectedDaycare: 'Ei'
+            withoutConnectedDaycare: 'Ei',
+            startDate: 'Toivottu aloituspäivä',
+            serviceNeed: 'Palveluntarve'
           },
           attachments: {
             label: 'Tarvittavat liitteet',
