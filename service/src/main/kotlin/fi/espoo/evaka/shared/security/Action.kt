@@ -988,7 +988,8 @@ sealed interface Action {
                 )
                 .inPlacementUnitOfChildOfChildImage(),
             IsMobile(requirePinLogin = false).inPlacementUnitOfChildOfChildImage(),
-            IsCitizen(allowWeakLogin = true).guardianOfChildOfChildImage()
+            IsCitizen(allowWeakLogin = true).guardianOfChildOfChildImage(),
+            IsCitizen(allowWeakLogin = true).fosterParentOfChildOfChildImage()
         );
 
         override fun toString(): String = "${javaClass.name}.$name"
