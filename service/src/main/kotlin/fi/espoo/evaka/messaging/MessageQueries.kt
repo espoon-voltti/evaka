@@ -246,45 +246,53 @@ ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = :
 }
 
 fun Database.Transaction.upsertReceiverThreadParticipants(
-    threadId: MessageThreadId,
-    receiverIds: Set<MessageAccountId>,
+    contentId: MessageContentId,
     now: HelsinkiDateTime
 ) {
-    val batch =
-        prepareBatch(
+    createUpdate(
             """
         INSERT INTO message_thread_participant as tp (thread_id, participant_id, last_message_timestamp, last_received_timestamp)
-        SELECT id, :accountId, :now, :now FROM message_thread WHERE id = :threadId
+        SELECT m.thread_id, mr.recipient_id, :now, :now
+        FROM message m
+        JOIN message_recipients mr ON mr.message_id = m.id
+        WHERE m.content_id = :contentId
         ON CONFLICT (thread_id, participant_id) DO UPDATE SET last_message_timestamp = :now, last_received_timestamp = :now
-    """
+"""
         )
-    receiverIds.forEach {
-        batch.bind("threadId", threadId).bind("accountId", it).bind("now", now).add()
-    }
-    batch.execute()
+        .bind("now", now)
+        .bind("contentId", contentId)
+        .execute()
 
     // If the receiver has archived the thread, move it back to inbox
     createUpdate(
             """
         UPDATE message_thread_participant mtp
         SET folder_id = NULL
-        WHERE thread_id = :threadId
-          AND participant_id = ANY(:receiverIds)
-          AND folder_id = (SELECT id FROM message_thread_folder mtf WHERE mtf.owner_id = mtp.participant_id AND mtf.name = 'ARCHIVE')
-    """
+        WHERE
+            (thread_id, participant_id) = ANY(
+                SELECT m.thread_id, mr.recipient_id
+                FROM message m
+                JOIN message_recipients mr ON mr.message_id = m.id
+                WHERE m.content_id = :contentId
+            )
+            AND folder_id = (
+                SELECT id FROM message_thread_folder mtf
+                WHERE mtf.owner_id = mtp.participant_id
+                AND mtf.name = 'ARCHIVE'
+            )
+"""
         )
-        .bind("threadId", threadId)
-        .bind("receiverIds", receiverIds)
+        .bind("contentId", contentId)
         .execute()
 }
 
-fun Database.Transaction.markMessagesAsSent(messageIds: Set<MessageId>, sentAt: HelsinkiDateTime) {
+fun Database.Transaction.markMessagesAsSent(contentId: MessageContentId, sentAt: HelsinkiDateTime) {
     createUpdate("""
-UPDATE message
-SET sent_at = :sentAt WHERE id = ANY(:messageIds)
+UPDATE message SET sent_at = :sentAt
+WHERE content_id = :contentId
 """)
-        .bind("messageIds", messageIds)
         .bind("sentAt", sentAt)
+        .bind("contentId", contentId)
         .execute()
 }
 

@@ -17,6 +17,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.FeeDecisionId
 import fi.espoo.evaka.shared.MessageAccountId
+import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageRecipientId
 import fi.espoo.evaka.shared.MessageThreadId
@@ -219,10 +220,8 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class MarkMessageAsSent(
-        val threadId: MessageThreadId,
-        val recipientIds: Set<MessageAccountId>,
-        val messageIds: Set<MessageId>,
+    data class MarkMessagesAsSent(
+        val messageContentId: MessageContentId,
         val sentAt: HelsinkiDateTime
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
@@ -292,7 +291,7 @@ sealed interface AsyncJob : AsyncJobPayload {
             AsyncJobRunner.Pool(
                 AsyncJobPool.Id(AsyncJob::class, "urgent"),
                 AsyncJobPool.Config(concurrency = 4),
-                setOf(UpdateMessageThreadRecipients::class, MarkMessageAsSent::class)
+                setOf(UpdateMessageThreadRecipients::class, MarkMessagesAsSent::class)
             )
         val suomiFi =
             AsyncJobRunner.Pool(

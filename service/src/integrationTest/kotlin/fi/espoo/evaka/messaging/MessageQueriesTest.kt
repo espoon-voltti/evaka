@@ -713,7 +713,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             tx.insertRecipients(listOf(messageId to recipientAccounts.map { it.id }.toSet()))
             tx.upsertSenderThreadParticipants(sender.id, listOf(threadId), now)
-            tx.upsertReceiverThreadParticipants(threadId, recipientIds, now)
+            tx.upsertReceiverThreadParticipants(contentId, now)
             threadId
         }
 
@@ -745,7 +745,7 @@ class MessageQueriesTest : PureJdbiTest(resetDbBeforeEach = true) {
                 )
             tx.insertRecipients(listOf(messageId to recipientIds))
             tx.upsertSenderThreadParticipants(sender.id, listOf(threadId), now)
-            tx.upsertReceiverThreadParticipants(threadId, recipientIds, now)
+            tx.upsertReceiverThreadParticipants(contentId, now)
         }
 
     private fun unreadMessagesCount(account: MessageAccount) =

@@ -211,12 +211,7 @@ class MessageControllerCitizen(
                             )
                         tx.insertMessageThreadChildren(listOf(body.children to threadId))
                         tx.insertRecipients(listOf(messageId to recipientIds))
-                        asyncJobRunner.scheduleMarkMessagesAsSent(
-                            tx,
-                            listOf(threadId to recipientIds),
-                            setOf(messageId),
-                            now
-                        )
+                        asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)
                         threadId
                     }
                 } else {
