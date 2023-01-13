@@ -21,7 +21,11 @@ import GroupMessageAccountList from './GroupMessageAccountList'
 import MessageBox from './MessageBox'
 import { MessageContext } from './MessageContext'
 import { getReceivers } from './api'
-import { municipalMessageBoxes, personalMessageBoxes } from './types-view'
+import {
+  municipalMessageBoxes,
+  personalMessageBoxes,
+  serviceWorkerMessageBoxes
+} from './types-view'
 
 const Container = styled.div`
   flex: 0 1 260px;
@@ -83,6 +87,7 @@ function Accounts({ setReceivers }: AccountsProps) {
   const {
     selectedAccount,
     municipalAccount,
+    serviceWorkerAccount,
     personalAccount,
     groupAccounts,
     unitOptions,
@@ -121,9 +126,12 @@ function Accounts({ setReceivers }: AccountsProps) {
 
   return (
     <>
-      {!municipalAccount && !personalAccount && groupAccounts.length === 0 && (
-        <NoAccounts>{i18n.messages.sidePanel.noAccountAccess}</NoAccounts>
-      )}
+      {!municipalAccount &&
+        !serviceWorkerAccount &&
+        !personalAccount &&
+        groupAccounts.length === 0 && (
+          <NoAccounts>{i18n.messages.sidePanel.noAccountAccess}</NoAccounts>
+        )}
 
       {municipalAccount && (
         <AccountSection data-qa="municipal-account">
@@ -135,6 +143,24 @@ function Accounts({ setReceivers }: AccountsProps) {
               key={view}
               view={view}
               account={municipalAccount.account}
+              unitId={null}
+              activeView={selectedAccount}
+              selectAccount={selectAccount}
+            />
+          ))}
+        </AccountSection>
+      )}
+
+      {serviceWorkerAccount && (
+        <AccountSection data-qa="service-worker-account">
+          <AccountHeader>
+            {i18n.messages.sidePanel.serviceWorkerMessages}
+          </AccountHeader>
+          {serviceWorkerMessageBoxes.map((view) => (
+            <MessageBox
+              key={view}
+              view={view}
+              account={serviceWorkerAccount.account}
               unitId={null}
               activeView={selectedAccount}
               selectAccount={selectAccount}

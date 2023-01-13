@@ -223,6 +223,19 @@ WHERE e.id = ${bind(user.id)} AND e.roles && '{ADMIN, MESSAGING}'::user_role[]
             )
         }
 
+    fun hasServiceWorkerMessageAccount() =
+        rule<MessageAccountId> { user, _ ->
+            sql(
+                """
+SELECT acc.id
+FROM employee e
+JOIN message_account acc ON acc.type = 'SERVICE_WORKER'
+WHERE e.id = ${bind(user.id)} AND e.roles && '{SERVICE_WORKER}'::user_role[]
+                """
+                    .trimIndent()
+            )
+        }
+
     fun andIsDecisionMakerForAssistanceNeedDecision() =
         rule<AssistanceNeedDecisionId> { employee, _ ->
             sql(

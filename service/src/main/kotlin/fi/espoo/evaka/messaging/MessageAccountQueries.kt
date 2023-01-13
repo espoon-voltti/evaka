@@ -85,6 +85,7 @@ AND (
     'MESSAGING' = ANY(dc.enabled_pilot_features)
     OR 'MESSAGING' = ANY(supervisor_dc.enabled_pilot_features)
     OR acc.type = 'MUNICIPAL'
+    OR acc.type = 'SERVICE_WORKER'
 )
 """
     return this.createQuery(sql)

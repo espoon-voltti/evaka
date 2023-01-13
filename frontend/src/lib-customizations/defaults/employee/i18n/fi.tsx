@@ -3455,6 +3455,7 @@ export const fi = {
     },
     sidePanel: {
       municipalMessages: 'Kunnan tiedotteet',
+      serviceWorkerMessages: 'Palveluohjauksen viestit',
       ownMessages: 'Omat viestit',
       groupsMessages: 'Ryhmien viestit',
       noAccountAccess:
