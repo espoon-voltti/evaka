@@ -38,7 +38,7 @@ COPY ./theme/ /work/
 
 RUN npm run build
 
-FROM quay.io/keycloak/keycloak:20.0.2 AS keycloak
+FROM quay.io/keycloak/keycloak:20.0.3 AS keycloak
 
 USER root
 
