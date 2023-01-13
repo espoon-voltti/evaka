@@ -20,8 +20,6 @@ import { Config } from '../config'
 
 const AD_OID_KEY =
   'http://schemas.microsoft.com/identity/claims/objectidentifier'
-const AD_ROLES_KEY =
-  'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
 const AD_GIVEN_NAME_KEY =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'
 const AD_FAMILY_NAME_KEY =
@@ -101,7 +99,6 @@ export default function createAdStrategy(
       return verifyProfile(config.externalIdPrefix, {
         nameID: 'dummyid',
         [AD_OID_KEY]: userId,
-        [AD_ROLES_KEY]: [],
         [AD_GIVEN_NAME_KEY]: employee.firstName,
         [AD_FAMILY_NAME_KEY]: employee.lastName,
         [AD_EMAIL_KEY]: employee.email ? employee.email : ''
@@ -126,7 +123,6 @@ export default function createAdStrategy(
       return verifyProfile(config.externalIdPrefix, {
         nameID: 'dummyid',
         [AD_OID_KEY]: userId,
-        [AD_ROLES_KEY]: roles,
         [AD_GIVEN_NAME_KEY]: firstName,
         [AD_FAMILY_NAME_KEY]: lastName,
         [AD_EMAIL_KEY]: email
