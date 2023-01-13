@@ -7,9 +7,7 @@ package fi.espoo.evaka.shared.config
 import fi.espoo.evaka.EvakaEnv
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.AsyncJobRunnerConfig
-import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
-import fi.espoo.evaka.shared.async.VardaAsyncJob
+import io.micrometer.core.instrument.MeterRegistry
 import io.opentracing.Tracer
 import java.time.Duration
 import mu.KotlinLogging
@@ -23,42 +21,38 @@ import org.springframework.core.env.Environment
 @Configuration
 class AsyncJobConfig {
     @Bean
-    fun asyncJobRunner(jdbi: Jdbi, tracer: Tracer): AsyncJobRunner<AsyncJob> =
-        AsyncJobRunner(AsyncJob::class, jdbi, AsyncJobRunnerConfig(), tracer)
-
-    @Bean
-    fun vardaAsyncJobRunner(jdbi: Jdbi, tracer: Tracer): AsyncJobRunner<VardaAsyncJob> =
-        AsyncJobRunner(VardaAsyncJob::class, jdbi, AsyncJobRunnerConfig(threadPoolSize = 1), tracer)
-
-    @Bean
-    fun sfiAsyncJobRunner(
-        jdbi: Jdbi,
-        tracer: Tracer,
-        env: Environment
-    ): AsyncJobRunner<SuomiFiAsyncJob> =
+    fun asyncJobRunner(jdbi: Jdbi, tracer: Tracer, env: Environment): AsyncJobRunner<AsyncJob> =
         AsyncJobRunner(
-            SuomiFiAsyncJob::class,
-            jdbi,
-            AsyncJobRunnerConfig(
-                threadPoolSize = 1,
-                throttleInterval =
-                    Duration.ofSeconds(1).takeIf { env.activeProfiles.contains("production") },
+            AsyncJob::class,
+            listOf(
+                AsyncJob.main,
+                AsyncJob.email,
+                AsyncJob.urgent,
+                AsyncJob.varda,
+                AsyncJob.suomiFi.withThrottleInterval(
+                    Duration.ofSeconds(1).takeIf { env.activeProfiles.contains("production") }
+                )
             ),
+            jdbi,
             tracer
         )
 
     @Bean
-    fun asyncJobRunnerStarter(asyncJobRunners: List<AsyncJobRunner<*>>, evakaEnv: EvakaEnv) =
+    fun asyncJobRunnerStarter(
+        asyncJobRunners: List<AsyncJobRunner<*>>,
+        evakaEnv: EvakaEnv,
+        meterRegistry: MeterRegistry
+    ) =
         ApplicationListener<ApplicationReadyEvent> {
             val logger = KotlinLogging.logger {}
             if (evakaEnv.asyncJobRunnerDisabled) {
                 logger.info("Async job runners disabled")
             } else {
                 asyncJobRunners.forEach {
-                    it.start(pollingInterval = Duration.ofMinutes(1))
-                    logger.info(
-                        "Async job runner AsyncJobRunner<${it.payloadType.simpleName}> started"
-                    )
+                    it.registerMeters(meterRegistry)
+                    it.enableAfterCommitHooks()
+                    it.startBackgroundPolling(Duration.ofMinutes(1))
+                    logger.info("Async job runner ${it.name} started")
                 }
             }
         }

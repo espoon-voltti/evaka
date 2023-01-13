@@ -10,6 +10,7 @@ import { ApplicationType } from 'lib-common/generated/api-types/application'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { H2, H3, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
+import { featureFlags } from 'lib-customizations/citizen'
 
 import { useTranslation } from '../../../localization'
 
@@ -82,7 +83,10 @@ export default React.memo(function ServiceNeedSection({
       <Gap size="s" />
 
       {type === 'PRESCHOOL' && (
-        <ServiceNeedConnectedDaycare formData={formData} />
+        <>
+          <ServiceNeedConnectedDaycare formData={formData} />
+          <Gap size="s" />
+        </>
       )}
 
       <ListGrid
@@ -139,7 +143,9 @@ export default React.memo(function ServiceNeedSection({
           </>
         )}
 
-        {type === 'PRESCHOOL' && <ServiceNeedPreparatory formData={formData} />}
+        {type === 'PRESCHOOL' && featureFlags.preparatory && (
+          <ServiceNeedPreparatory formData={formData} />
+        )}
       </ListGrid>
     </div>
   )

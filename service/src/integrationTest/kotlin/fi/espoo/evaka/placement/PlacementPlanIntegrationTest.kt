@@ -9,11 +9,13 @@ import fi.espoo.evaka.application.ApplicationControllerV2
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ApplicationType
 import fi.espoo.evaka.application.DaycarePlacementPlan
+import fi.espoo.evaka.application.ServiceNeedOption
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.shared.ApplicationId
+import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycare
@@ -37,6 +39,7 @@ import fi.espoo.evaka.toDaycareFormAdult
 import fi.espoo.evaka.toDaycareFormChild
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.UUID
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -194,6 +197,45 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                         preferredStartDate.minusDays(1),
                         defaultDaycareEndDate.plusDays(1)
                     )
+            )
+        )
+    }
+
+    @Test
+    fun testPreschoolWithClub() {
+        val preferredStartDate = LocalDate.of(2023, 8, 1)
+        val applicationId =
+            insertInitialData(
+                status = ApplicationStatus.WAITING_PLACEMENT,
+                type = ApplicationType.PRESCHOOL,
+                preschoolDaycare = true,
+                preferredStartDate = preferredStartDate,
+                serviceNeedOption =
+                    ServiceNeedOption(
+                        ServiceNeedOptionId(UUID.randomUUID()),
+                        "",
+                        "",
+                        "",
+                        PlacementType.PRESCHOOL_CLUB
+                    )
+            )
+        val defaultEndDate = LocalDate.of(2024, 6, 3)
+        val defaultClubEndDate = LocalDate.of(2024, 6, 3)
+        checkPlacementPlanDraft(
+            applicationId,
+            type = PlacementType.PRESCHOOL_CLUB,
+            period = FiniteDateRange(preferredStartDate, defaultEndDate),
+            preschoolDaycarePeriod = FiniteDateRange(preferredStartDate, defaultClubEndDate)
+        )
+        createPlacementPlanAndAssert(
+            applicationId,
+            PlacementType.PRESCHOOL_CLUB,
+            DaycarePlacementPlan(
+                unitId = testDaycare.id,
+                period =
+                    FiniteDateRange(preferredStartDate.plusDays(1), defaultEndDate.minusDays(1)),
+                preschoolDaycarePeriod =
+                    FiniteDateRange(preferredStartDate.minusDays(1), defaultClubEndDate.plusDays(1))
             )
         )
     }
@@ -372,6 +414,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
         adult: DevPerson = testAdult_1,
         child: DevPerson = testChild_1,
         partTime: Boolean = false,
+        serviceNeedOption: ServiceNeedOption? = null,
         preschoolDaycare: Boolean = false,
         preferredUnits: List<DevDaycare> = listOf(testDaycare, testDaycare2),
         preparatory: Boolean = false
@@ -390,6 +433,7 @@ class PlacementPlanIntegrationTest : FullApplicationTest(resetDbBeforeEach = tru
                 DaycareFormV0(
                     type = type,
                     partTime = partTime,
+                    serviceNeedOption = serviceNeedOption,
                     connectedDaycare = preschoolDaycare,
                     serviceStart = "08:00".takeIf { preschoolDaycare },
                     serviceEnd = "16:00".takeIf { preschoolDaycare },

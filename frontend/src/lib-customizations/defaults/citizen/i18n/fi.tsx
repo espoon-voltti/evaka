@@ -224,7 +224,8 @@ export default {
       PURCHASED: 'ostopalvelu',
       EXTERNAL_PURCHASED: 'ostopalvelu',
       PRIVATE: 'yksityiset',
-      PRIVATE_SERVICE_VOUCHER: 'palveluseteli'
+      PRIVATE_SERVICE_VOUCHER: 'palveluseteli',
+      MUNICIPAL_SCHOOL: 'koulu'
     },
     homepage: 'Kotisivu',
     unitHomepage: 'Yksikön kotisivu',
@@ -632,7 +633,9 @@ export default {
             label: 'Liittyvä varhaiskasvatus',
             withConnectedDaycare:
               'Haen myös esiopetukseen liittyvää varhaiskasvatusta.',
-            withoutConnectedDaycare: 'Ei'
+            withoutConnectedDaycare: 'Ei',
+            startDate: 'Toivottu aloituspäivä',
+            serviceNeed: 'Palveluntarve'
           },
           attachments: {
             label: 'Tarvittavat liitteet',

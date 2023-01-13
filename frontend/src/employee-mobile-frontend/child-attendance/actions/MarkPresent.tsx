@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { isAfter } from 'date-fns'
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
@@ -11,6 +11,7 @@ import { combine } from 'lib-common/api'
 import { formatTime } from 'lib-common/date'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import LocalTime from 'lib-common/local-time'
+import { useMutationResult, useQuery, useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { mockNow } from 'lib-common/utils/helpers'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
@@ -25,23 +26,22 @@ import colors from 'lib-customizations/common'
 import { faArrowLeft, farStickyNote } from 'lib-icons'
 
 import { renderResult } from '../../async-rendering'
+import { groupNotesQuery } from '../../child-notes/queries'
 import { Actions, BackButtonInline, TimeWrapper } from '../../common/components'
 import { useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import DailyNote from '../DailyNote'
-import { childArrivesPOST, returnToPresent } from '../api'
-import { ChildAttendanceContext } from '../state'
+import {
+  attendanceStatusesQuery,
+  childrenQuery,
+  createArrivalMutation,
+  returnToPresentMutation
+} from '../queries'
+import { childAttendanceStatus, useChild } from '../utils'
 
 export default React.memo(function MarkPresent() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
-
-  const { attendanceResponse, reloadAttendances } = useContext(
-    ChildAttendanceContext
-  )
-
-  const now = mockNow() ?? new Date()
-  const [time, setTime] = useState<string>(formatTime(now))
 
   const { childId, unitId, groupId } = useNonNullableParams<{
     unitId: string
@@ -49,29 +49,23 @@ export default React.memo(function MarkPresent() {
     groupId: string
   }>()
 
-  const childArrives = useCallback(
-    () => childArrivesPOST(unitId, childId, time),
-    [childId, time, unitId]
+  const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
+
+  const [time, setTime] = useState(() => formatTime(mockNow() ?? new Date()))
+
+  const { mutateAsync: createArrival } = useMutationResult(
+    createArrivalMutation
   )
 
-  const child = useMemo(
-    () =>
-      attendanceResponse.map((response) =>
-        response.children.find((ac) => ac.id === childId)
-      ),
-    [attendanceResponse, childId]
-  )
-
-  const childLatestDeparture = useMemo(
-    () =>
-      child.isSuccess &&
-      child.value &&
-      child.value.attendances &&
-      child.value.attendances.length > 0
-        ? child.value.attendances[0].departed
-        : null,
-    [child]
-  )
+  const { data: attendanceStatuses } = useQuery(attendanceStatusesQuery(unitId))
+  const childLatestDeparture = useMemo(() => {
+    if (!attendanceStatuses) return null
+    const attendances = childAttendanceStatus(
+      attendanceStatuses,
+      childId
+    ).attendances
+    return attendances.length > 0 ? attendances[0].departed : null
+  }, [attendanceStatuses, childId])
 
   const isValidTime = useCallback(() => {
     const parsedTime = LocalTime.tryParse(time, 'HH:mm')
@@ -84,17 +78,16 @@ export default React.memo(function MarkPresent() {
     } else return true
   }, [childLatestDeparture, time])
 
-  const groupNote = useMemo(
-    () =>
-      attendanceResponse.map((response) =>
-        response.groupNotes.find((g) => g.groupId === groupId)
-      ),
-    [attendanceResponse, groupId]
+  const groupNotes = useQueryResult(groupNotesQuery(groupId))
+
+  const { mutateAsync: returnToPresent } = useMutationResult(
+    returnToPresentMutation
   )
 
-  function returnToPresentCall() {
-    return returnToPresent(unitId, childId)
-  }
+  // Prevent the "return to present" AsyncButton from unmounting while the success animation is in progress.
+  // It would unmount because childLatestDeparture vanishes after returnToPresent succeeds. The button needs
+  // to remain mounted because onSuccess handles navigation back to list.
+  const [returningToPresent, setReturningToPresent] = useState(false)
 
   return (
     <TallContentArea
@@ -102,7 +95,7 @@ export default React.memo(function MarkPresent() {
       paddingHorizontal="zero"
       paddingVertical="zero"
     >
-      {renderResult(combine(child, groupNote), ([child, groupNote]) => (
+      {renderResult(combine(child, groupNotes), ([child, groupNotes]) => (
         <>
           <div>
             <BackButtonInline
@@ -136,26 +129,28 @@ export default React.memo(function MarkPresent() {
                   primary
                   text={i18n.common.confirm}
                   disabled={!isValidTime()}
-                  onClick={childArrives}
+                  onClick={() =>
+                    createArrival({ unitId, childId, arrived: time })
+                  }
                   onSuccess={() => {
-                    reloadAttendances()
                     navigate(-2)
                   }}
                   data-qa="mark-present-btn"
                 />
               </FixedSpaceRow>
             </Actions>
-            {childLatestDeparture && (
+            {(childLatestDeparture || returningToPresent) && (
               <>
                 <Gap size="s" />
                 <JustifyContainer>
                   <InlineWideAsyncButton
                     text={i18n.attendances.actions.returnToPresentNoTimeNeeded}
-                    onClick={() => returnToPresentCall()}
-                    onSuccess={() => {
-                      reloadAttendances()
-                      navigate(-2)
+                    onClick={() => {
+                      setReturningToPresent(true)
+                      return returnToPresent({ unitId, childId })
                     }}
+                    onSuccess={() => navigate(-2)}
+                    onFailure={() => setReturningToPresent(false)}
                     data-qa="return-to-present-btn"
                   />
                 </JustifyContainer>
@@ -180,7 +175,7 @@ export default React.memo(function MarkPresent() {
               </span>
               <DailyNote
                 child={child ? child : undefined}
-                groupNote={groupNote ? groupNote : undefined}
+                groupNote={groupNotes.length > 0 ? groupNotes[0] : undefined}
               />
             </DailyNotes>
           </ContentArea>

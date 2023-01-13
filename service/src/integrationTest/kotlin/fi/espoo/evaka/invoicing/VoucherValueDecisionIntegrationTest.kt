@@ -16,9 +16,9 @@ import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionSummary
 import fi.espoo.evaka.invoicing.domain.VoucherValueDecisionType
 import fi.espoo.evaka.invoicing.service.VoucherValueDecisionService
 import fi.espoo.evaka.pis.controllers.ParentshipController
-import fi.espoo.evaka.placement.DaycarePlacementWithDetails
 import fi.espoo.evaka.placement.Placement
 import fi.espoo.evaka.placement.PlacementCreateRequestBody
+import fi.espoo.evaka.placement.PlacementResponse
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementUpdateRequestBody
 import fi.espoo.evaka.serviceneed.ServiceNeedController
@@ -32,7 +32,6 @@ import fi.espoo.evaka.shared.ServiceNeedOptionId
 import fi.espoo.evaka.shared.VoucherValueDecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
@@ -68,8 +67,6 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     @Autowired lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
 
     @Autowired lateinit var voucherValueDecisionService: VoucherValueDecisionService
-
-    @Autowired private lateinit var sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>
 
     @BeforeEach
     fun beforeEach() {
@@ -430,7 +427,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         assertEquals(403, getPdfStatus(decisionIds[0], financeWorker))
 
         // Check that message is still sent via sfi
-        sfiAsyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
+        asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
         assertEquals(1, MockSfiMessagesClient.getMessages().size)
     }
 
@@ -541,6 +538,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         http
             .post("/placements")
             .asUser(serviceWorker)
+            .withMockedTime(now)
             .objectBody(body, mapper = jsonMapper)
             .response()
             .also { (_, res, _) -> assertEquals(200, res.statusCode) }
@@ -549,11 +547,11 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
             http
                 .get("/placements", listOf("childId" to childId))
                 .asUser(serviceWorker)
-                .responseObject<List<DaycarePlacementWithDetails>>(jsonMapper)
+                .responseObject<PlacementResponse>(jsonMapper)
 
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
 
-        return data.get().first().id
+        return data.get().placements.first().id
     }
 
     private fun addServiceNeed(
@@ -587,6 +585,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         http
             .put("/placements/$id")
             .asUser(serviceWorker)
+            .withMockedTime(now)
             .objectBody(body, mapper = jsonMapper)
             .responseObject<Placement>(jsonMapper)
             .also { (_, res, _) -> assertEquals(200, res.statusCode) }
@@ -595,7 +594,8 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     private fun deletePlacement(id: PlacementId) {
-        http.delete("/placements/$id").asUser(serviceWorker).response().also { (_, res, _) ->
+        http.delete("/placements/$id").asUser(serviceWorker).withMockedTime(now).response().also {
+            (_, res, _) ->
             assertEquals(200, res.statusCode)
         }
 
@@ -616,6 +616,7 @@ class VoucherValueDecisionIntegrationTest : FullApplicationTest(resetDbBeforeEac
         http
             .post("/parentships")
             .asUser(serviceWorker)
+            .withMockedTime(now)
             .objectBody(body, mapper = jsonMapper)
             .response()
 

@@ -35,8 +35,8 @@ import fi.espoo.evaka.s3.DocumentService
 import fi.espoo.evaka.setting.getSettings
 import fi.espoo.evaka.sficlient.SfiMessage
 import fi.espoo.evaka.shared.FeeDecisionId
+import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -57,7 +57,7 @@ class FeeDecisionService(
     private val pdfService: PDFService,
     private val documentClient: DocumentService,
     private val messageProvider: IMessageProvider,
-    private val sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>,
+    private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
     private val env: EvakaEnv,
     private val bucketEnv: BucketEnv
 ) {
@@ -259,11 +259,7 @@ class FeeDecisionService(
 
         logger.info("Sending fee decision as suomi.fi message ${message.documentId}")
 
-        sfiAsyncJobRunner.plan(
-            tx,
-            listOf(SuomiFiAsyncJob.SendMessage(message)),
-            runAt = clock.now()
-        )
+        asyncJobRunner.plan(tx, listOf(AsyncJob.SendMessage(message)), runAt = clock.now())
         tx.setFeeDecisionSent(clock, listOf(decision.id))
 
         return true

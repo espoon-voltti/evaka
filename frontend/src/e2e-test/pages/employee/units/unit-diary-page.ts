@@ -36,7 +36,7 @@ export class UnitDiaryPage {
   #addAbsencesButton = this.page.find('[data-qa="add-absences-button"]')
 
   async assertUnitName(expectedName: string) {
-    await waitUntilEqual(() => this.#unitName.text, expectedName)
+    await this.#unitName.assertTextEquals(expectedName)
   }
 
   async assertSelectedGroup(groupId: UUID) {

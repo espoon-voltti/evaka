@@ -13,6 +13,7 @@ import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -21,6 +22,22 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class GroupNoteController(private val ac: AccessControl) {
+    @GetMapping("/daycare-groups/{groupId}/group-notes")
+    fun getGroupNotes(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable groupId: GroupId,
+    ): List<GroupNote> {
+        return db.connect { dbc ->
+                dbc.transaction {
+                    ac.requirePermissionFor(it, user, clock, Action.Group.READ_NOTES, groupId)
+                    it.getGroupNotesForGroup(groupId)
+                }
+            }
+            .also { noteId -> Audit.GroupNoteCreate.log(targetId = groupId, objectId = noteId) }
+    }
+
     @PostMapping("/daycare-groups/{groupId}/group-notes")
     fun createGroupNote(
         db: Database,

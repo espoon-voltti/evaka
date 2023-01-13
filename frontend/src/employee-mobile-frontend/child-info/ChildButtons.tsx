@@ -7,12 +7,14 @@ import { Link } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components'
 
 import { Child } from 'lib-common/generated/api-types/attendance'
+import { useQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { faChild, faComments, faPen } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
+import { groupNotesQuery } from '../child-notes/queries'
 import { useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
 
@@ -20,21 +22,23 @@ interface Props {
   unitId: UUID
   groupId: UUID
   child: Child
-  hasGroupNote: boolean
 }
 
 export default React.memo(function ChildButtons({
   unitId,
   groupId,
-  child,
-  hasGroupNote
+  child
 }: Props) {
   const { i18n } = useTranslation()
   const { colors } = useTheme()
 
+  const { data: groupNotes } = useQuery(groupNotesQuery(groupId))
+
   const { unitInfoResponse } = useContext(UnitContext)
   const noteFound =
-    child.dailyNote !== null || child.stickyNotes.length > 0 || hasGroupNote
+    child.dailyNote !== null ||
+    child.stickyNotes.length > 0 ||
+    (groupNotes && groupNotes.length > 0)
   return renderResult(unitInfoResponse, (unit) => (
     <IconWrapper>
       <FixedSpaceRow

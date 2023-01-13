@@ -225,7 +225,8 @@ const sv: Translations = {
       PURCHASED: 'köpavtal',
       PRIVATE: 'privata',
       PRIVATE_SERVICE_VOUCHER: 'servicesedel',
-      EXTERNAL_PURCHASED: 'köpavtal (annat)'
+      EXTERNAL_PURCHASED: 'köpavtal (annat)',
+      MUNICIPAL_SCHOOL: 'skola'
     },
     homepage: 'Hemsida',
     unitHomepage: 'Enhetens hemsida',
@@ -655,7 +656,9 @@ const sv: Translations = {
             label: 'Småbarnspedagogik i samband med förskoleundervisning',
             withConnectedDaycare:
               'Jag ansöker också om kompletterande småbarnspedagogik utöver förskolan.',
-            withoutConnectedDaycare: 'Nej'
+            withoutConnectedDaycare: 'Nej',
+            startDate: 'Önskat inledningsdatum',
+            serviceNeed: 'Behov av småbarnspedagogisk verksamhet'
           },
           attachments: {
             label: 'Nödvändiga bilagor',

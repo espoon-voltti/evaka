@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { AbsenceType } from 'lib-common/generated/api-types/daycare'
+import { useMutationResult, useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -22,6 +23,7 @@ import colors from 'lib-customizations/common'
 import { faArrowLeft, farStickyNote } from 'lib-icons'
 
 import { renderResult } from '../../async-rendering'
+import { groupNotesQuery } from '../../child-notes/queries'
 import {
   Actions,
   BackButtonInline,
@@ -31,8 +33,8 @@ import {
 import { useTranslation } from '../../common/i18n'
 import { TallContentArea } from '../../pairing/components'
 import DailyNote from '../DailyNote'
-import { postFullDayAbsence } from '../api'
-import { ChildAttendanceContext } from '../state'
+import { childrenQuery, createFullDayAbsenceMutation } from '../queries'
+import { useChild } from '../utils'
 
 import AbsenceSelector from './AbsenceSelector'
 
@@ -40,41 +42,22 @@ export default React.memo(function MarkAbsent() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
 
-  const { attendanceResponse, reloadAttendances } = useContext(
-    ChildAttendanceContext
-  )
-
-  const [selectedAbsenceType, setSelectedAbsenceType] = useState<
-    AbsenceType | undefined
-  >(undefined)
-
   const { childId, unitId, groupId } = useNonNullableParams<{
     unitId: string
     groupId: string
     childId: string
   }>()
+  const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 
-  const postAbsence = useCallback(
-    (absenceType: AbsenceType) =>
-      postFullDayAbsence(unitId, childId, absenceType),
-    [childId, unitId]
+  const [selectedAbsenceType, setSelectedAbsenceType] = useState<
+    AbsenceType | undefined
+  >(undefined)
+
+  const { mutateAsync: createAbsence } = useMutationResult(
+    createFullDayAbsenceMutation
   )
 
-  const child = useMemo(
-    () =>
-      attendanceResponse.map((attendance) =>
-        attendance.children.find((ac) => ac.id === childId)
-      ),
-    [attendanceResponse, childId]
-  )
-
-  const groupNote = useMemo(
-    () =>
-      attendanceResponse.map((attendance) =>
-        attendance.groupNotes.find((g) => g.groupId === groupId)
-      ),
-    [attendanceResponse, groupId]
-  )
+  const groupNotes = useQueryResult(groupNotesQuery(groupId))
 
   return (
     <TallContentArea
@@ -82,7 +65,7 @@ export default React.memo(function MarkAbsent() {
       paddingHorizontal="zero"
       paddingVertical="zero"
     >
-      {renderResult(combine(child, groupNote), ([child, groupNote]) => (
+      {renderResult(combine(child, groupNotes), ([child, groupNotes]) => (
         <>
           <BackButtonInline
             onClick={() => navigate(-2)}
@@ -118,9 +101,14 @@ export default React.memo(function MarkAbsent() {
                   <AsyncButton
                     primary
                     text={i18n.common.confirm}
-                    onClick={() => postAbsence(selectedAbsenceType)}
+                    onClick={() =>
+                      createAbsence({
+                        unitId,
+                        childId,
+                        absenceType: selectedAbsenceType
+                      })
+                    }
                     onSuccess={() => {
-                      reloadAttendances()
                       navigate(-1)
                     }}
                     data-qa="mark-absent-btn"
@@ -149,7 +137,7 @@ export default React.memo(function MarkAbsent() {
               </span>
               <DailyNote
                 child={child ? child : undefined}
-                groupNote={groupNote ? groupNote : undefined}
+                groupNote={groupNotes.length > 0 ? groupNotes[0] : undefined}
               />
             </DailyNotes>
           </ContentArea>

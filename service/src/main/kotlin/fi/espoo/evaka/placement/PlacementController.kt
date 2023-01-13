@@ -64,7 +64,7 @@ class PlacementController(
         @RequestParam(value = "to", required = false)
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         endDate: LocalDate? = null
-    ): Set<DaycarePlacementWithDetails> {
+    ): PlacementResponse {
         return db.connect { dbc ->
                 dbc.read {
                     when {
@@ -103,12 +103,41 @@ class PlacementController(
                             }
                         }
                         .toSet()
+                        .let { placements ->
+                            val placementIds = placements.map { placement -> placement.id }
+                            val serviceNeedIds =
+                                placements.flatMap { placement ->
+                                    placement.serviceNeeds.map { serviceNeed -> serviceNeed.id }
+                                }
+                            PlacementResponse(
+                                placements = placements,
+                                permittedPlacementActions =
+                                    accessControl.getPermittedActions(
+                                        it,
+                                        user,
+                                        clock,
+                                        placementIds
+                                    ),
+                                permittedServiceNeedActions =
+                                    accessControl.getPermittedActions(
+                                        it,
+                                        user,
+                                        clock,
+                                        serviceNeedIds
+                                    ),
+                            )
+                        }
                 }
             }
             .also {
                 Audit.PlacementSearch.log(
                     targetId = daycareId ?: childId,
-                    meta = mapOf("startDate" to startDate, "endDate" to endDate, "count" to it.size)
+                    meta =
+                        mapOf(
+                            "startDate" to startDate,
+                            "endDate" to endDate,
+                            "count" to it.placements.size
+                        )
                 )
             }
     }

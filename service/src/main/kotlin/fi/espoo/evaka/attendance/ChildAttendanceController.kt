@@ -12,7 +12,6 @@ import fi.espoo.evaka.daycare.service.AbsenceUpsert
 import fi.espoo.evaka.daycare.service.insertAbsences
 import fi.espoo.evaka.note.child.daily.getChildDailyNotesInUnit
 import fi.espoo.evaka.note.child.sticky.getChildStickyNotesForUnit
-import fi.espoo.evaka.note.group.getGroupNotesForUnit
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.placement.PlacementType.DAYCARE_FIVE_YEAR_OLDS
 import fi.espoo.evaka.placement.PlacementType.DAYCARE_PART_TIME_FIVE_YEAR_OLDS
@@ -31,7 +30,6 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import java.time.Duration
@@ -64,34 +62,125 @@ class ChildAttendanceController(
     private val accessControl: AccessControl,
     private val featureConfig: FeatureConfig
 ) {
-    @GetMapping("/units/{unitId}")
-    fun getAttendances(
+    @GetMapping("/units/{unitId}/children")
+    fun getChildren(
         db: Database,
         user: AuthenticatedUser,
         clock: EvakaClock,
         @PathVariable unitId: DaycareId
-    ): AttendanceResponse {
+    ): List<Child> {
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     accessControl.requirePermissionFor(
-                        it,
+                        tx,
+                        user,
+                        clock,
+                        Action.Unit.READ_CHILD_ATTENDANCES,
+                        unitId
+                    )
+                    val now = clock.now()
+                    val today = now.toLocalDate()
+
+                    val childrenBasics = tx.fetchChildrenBasics(unitId, now)
+                    val dailyNotesForChildrenInUnit = tx.getChildDailyNotesInUnit(unitId, today)
+                    val stickyNotesForChildrenInUnit = tx.getChildStickyNotesForUnit(unitId, today)
+                    val attendanceReservations = tx.fetchAttendanceReservations(unitId, now)
+
+                    childrenBasics.map { child ->
+                        val dailyNote =
+                            dailyNotesForChildrenInUnit.firstOrNull { it.childId == child.id }
+                        val stickyNotes =
+                            stickyNotesForChildrenInUnit.filter { it.childId == child.id }
+
+                        Child(
+                            id = child.id,
+                            firstName = child.firstName,
+                            lastName = child.lastName,
+                            preferredName = child.preferredName,
+                            placementType = child.placementType,
+                            groupId = child.groupId,
+                            backup = child.backup,
+                            dailyServiceTimes = child.dailyServiceTimes?.times,
+                            dailyNote = dailyNote,
+                            stickyNotes = stickyNotes,
+                            imageUrl = child.imageUrl,
+                            reservations =
+                                attendanceReservations[child.id]?.sortedBy { it.startTime }
+                                    ?: listOf()
+                        )
+                    }
+                }
+            }
+            .also {
+                Audit.ChildAttendanceChildrenRead.log(
+                    targetId = unitId,
+                    meta = mapOf("childCount" to it.size)
+                )
+            }
+    }
+
+    data class ChildAttendanceStatusResponse(
+        val absences: List<ChildAbsence>,
+        val attendances: List<AttendanceTimes>,
+        val status: AttendanceStatus
+    )
+
+    @GetMapping("/units/{unitId}/attendances")
+    fun getAttendanceStatuses(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable unitId: DaycareId,
+    ): Map<ChildId, ChildAttendanceStatusResponse> {
+        val now = clock.now()
+        val today = now.toLocalDate()
+
+        return db.connect { dbc ->
+                dbc.read { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
                         user,
                         clock,
                         Action.Unit.READ_CHILD_ATTENDANCES,
                         unitId
                     )
 
-                    it.getAttendancesResponse(unitId, clock.now())
+                    // Do not return anything for children that have no placement, attendances or
+                    // absences; the implicit attendance status is COMING for children returned
+                    // by the getChildren() endpoint
+                    val childrenAttendances = tx.getUnitChildAttendances(unitId, now)
+                    val childrenAbsences = tx.getUnitChildAbsences(unitId, today)
+                    val childIds = childrenAttendances.keys + childrenAbsences.keys
+                    val childPlacementTypes = tx.getChildPlacementTypes(childIds, today)
+                    childIds
+                        .asSequence()
+                        .map { childId ->
+                            val placementType = childPlacementTypes[childId]
+                            if (placementType == null) {
+                                null
+                            } else {
+                                val absences = childrenAbsences[childId] ?: emptyList()
+                                val attendances = childrenAttendances[childId] ?: emptyList()
+                                childId to
+                                    ChildAttendanceStatusResponse(
+                                        absences,
+                                        attendances,
+                                        getChildAttendanceStatus(
+                                            placementType,
+                                            attendances,
+                                            absences
+                                        )
+                                    )
+                            }
+                        }
+                        .filterNotNull()
+                        .toMap()
                 }
             }
             .also {
-                Audit.ChildAttendancesRead.log(
+                Audit.ChildAttendanceStatusesRead.log(
                     targetId = unitId,
-                    meta =
-                        mapOf(
-                            "childCount" to it.children.size,
-                            "groupNoteCount" to it.groupNotes.size
-                        )
+                    meta = mapOf("childCount" to it.size)
                 )
             }
     }
@@ -224,8 +313,9 @@ class ChildAttendanceController(
                         Action.Unit.READ_CHILD_ATTENDANCES,
                         unitId
                     )
-                    val attendance = getChildOngoingAttendance(tx, childId, unitId)
-                    getPartialAbsenceThresholds(tx, clock, childId, unitId, attendance)
+                    val attendance = tx.getChildOngoingAttendance(childId, unitId)
+                    if (attendance == null) emptyList()
+                    else getPartialAbsenceThresholds(tx, clock, childId, unitId, attendance)
                 }
             }
             .also {
@@ -263,7 +353,10 @@ class ChildAttendanceController(
                 val now = clock.now()
                 val today = clock.today()
 
-                val attendance = getChildOngoingAttendance(tx, childId, unitId)
+                val attendance =
+                    tx.getChildOngoingAttendance(childId, unitId)
+                        ?: throw Conflict("Cannot depart, has not yet arrived")
+
                 val absentFrom =
                     getPartialAbsenceThresholds(tx, clock, childId, unitId, attendance).filter {
                         body.departed <= it.time
@@ -464,10 +557,6 @@ class ChildAttendanceController(
         )
     }
 
-    private fun getChildOngoingAttendance(tx: Database.Read, childId: ChildId, unitId: DaycareId) =
-        tx.getChildOngoingAttendance(childId, unitId)
-            ?: throw Conflict("Cannot depart, has not yet arrived")
-
     private fun getPartialAbsenceThresholds(
         tx: Database.Read,
         clock: EvakaClock,
@@ -545,49 +634,8 @@ private fun Database.Read.fetchChildPlacementTypeDates(
         .list()
 }
 
-private fun Database.Read.getAttendancesResponse(
-    unitId: DaycareId,
-    instant: HelsinkiDateTime
-): AttendanceResponse {
-    val childrenBasics = fetchChildrenBasics(unitId, instant)
-    val dailyNotesForChildrenInUnit = getChildDailyNotesInUnit(unitId, instant.toLocalDate())
-    val stickyNotesForChildrenInUnit = getChildStickyNotesForUnit(unitId, instant.toLocalDate())
-    val attendanceReservations = fetchAttendanceReservations(unitId, instant)
-
-    val children =
-        childrenBasics.map { child ->
-            val placementBasics = ChildPlacementBasics(child.placementType, child.dateOfBirth)
-            val status =
-                getChildAttendanceStatus(placementBasics, child.attendances, child.absences)
-            val dailyNote = dailyNotesForChildrenInUnit.firstOrNull { it.childId == child.id }
-            val stickyNotes = stickyNotesForChildrenInUnit.filter { it.childId == child.id }
-
-            Child(
-                id = child.id,
-                firstName = child.firstName,
-                lastName = child.lastName,
-                preferredName = child.preferredName,
-                placementType = child.placementType,
-                groupId = child.groupId,
-                backup = child.backup,
-                status = status,
-                attendances = child.attendances,
-                absences = child.absences,
-                dailyServiceTimes = child.dailyServiceTimes?.times,
-                dailyNote = dailyNote,
-                stickyNotes = stickyNotes,
-                imageUrl = child.imageUrl,
-                reservations = attendanceReservations[child.id]?.sortedBy { it.startTime }
-                        ?: listOf()
-            )
-        }
-
-    val groupNotes = getGroupNotesForUnit(unitId)
-    return AttendanceResponse(children, groupNotes)
-}
-
 private fun getChildAttendanceStatus(
-    placementBasics: ChildPlacementBasics,
+    placementType: PlacementType,
     attendances: List<AttendanceTimes>,
     absences: List<ChildAbsence>
 ): AttendanceStatus {
@@ -596,19 +644,16 @@ private fun getChildAttendanceStatus(
         else AttendanceStatus.DEPARTED
     }
 
-    if (isFullyAbsent(placementBasics, absences)) {
+    if (isFullyAbsent(placementType, absences)) {
         return AttendanceStatus.ABSENT
     }
 
     return AttendanceStatus.COMING
 }
 
-private fun isFullyAbsent(
-    placementBasics: ChildPlacementBasics,
-    absences: List<ChildAbsence>
-): Boolean {
+private fun isFullyAbsent(placementType: PlacementType, absences: List<ChildAbsence>): Boolean {
     val absenceCategories = absences.asSequence().map { it.category }.toSet()
-    return placementBasics.placementType.absenceCategories() == absenceCategories
+    return placementType.absenceCategories() == absenceCategories
 }
 
 data class AbsenceThreshold(

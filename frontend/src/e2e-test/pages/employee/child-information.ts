@@ -63,7 +63,7 @@ export default class ChildInformationPage {
   }
 
   async assertOphPersonOid(expected: string) {
-    await waitUntilEqual(() => this.#ophPersonOidInput.text, expected)
+    await this.#ophPersonOidInput.assertTextEquals(expected)
   }
 
   async setOphPersonOid(text: string) {
@@ -113,26 +113,10 @@ class Section extends Element {
 }
 
 export class AdditionalInformationSection extends Section {
-  #medication = this.find('[data-qa="medication"]')
-  #editBtn = this.find('[data-qa="edit-child-settings-button"]')
-  #medicationInput = new TextInput(this.find('[data-qa="medication-input"]'))
-  #confirmBtn = this.find('[data-qa="confirm-edited-child-button"]')
-
-  async assertMedication(text: string) {
-    await waitUntilEqual(() => this.#medication.text, text)
-  }
-
-  async fillMedication(text: string) {
-    await this.#medicationInput.fill(text)
-  }
-
-  async edit() {
-    await this.#editBtn.click()
-  }
-
-  async save() {
-    await this.#confirmBtn.click()
-  }
+  medication = this.find('[data-qa="medication"]')
+  editBtn = this.find('[data-qa="edit-child-settings-button"]')
+  medicationInput = new TextInput(this.find('[data-qa="medication-input"]'))
+  confirmBtn = this.find('[data-qa="confirm-edited-child-button"]')
 }
 
 class DailyServiceTimeSectionBaseForm extends Section {
@@ -183,14 +167,12 @@ export class DailyServiceTimeSection extends Section {
   async assertTableRow(nth: number, title: string, status: string) {
     const row = this.findAllByDataQa('daily-service-times-row').nth(nth)
 
-    await waitUntilEqual(
-      () => row.findByDataQa('daily-service-times-row-title').text,
-      title
-    )
-    await waitUntilEqual(
-      () => row.findByDataQa('status').getAttribute('data-qa-status'),
-      status
-    )
+    await row
+      .findByDataQa('daily-service-times-row-title')
+      .assertTextEquals(title)
+    await row
+      .findByDataQa('status')
+      .assertAttributeEquals('data-qa-status', status)
   }
 
   async toggleTableRowCollapsible(nth: number) {
@@ -206,7 +188,7 @@ export class DailyServiceTimeSection extends Section {
       }) + [data-qa="daily-service-times-row-collapsible"]`
     )
 
-    await waitUntilEqual(() => collapsible.text, text)
+    await collapsible.assertTextEquals(text)
   }
 
   async editTableRow(nth: number) {
@@ -436,7 +418,7 @@ export class BackupCaresSection extends Section {
   }
 
   async assertError(expectedError: string) {
-    await waitUntilEqual(() => this.#error.text, expectedError)
+    await this.#error.assertTextEquals(expectedError)
   }
 
   async getBackupCares(): Promise<Array<{ unit: string; period: string }>> {
@@ -511,26 +493,23 @@ export class FamilyContactsSection extends Section {
     await row.waitUntilVisible()
 
     if (data.email) {
-      await waitUntilEqual(
-        () => row.findByDataQa('family-contact-email').text,
-        data.email
-      )
+      await row
+        .findByDataQa('family-contact-email')
+        .assertTextEquals(data.email)
     } else {
       await row.findByDataQa('family-contact-email').waitUntilHidden()
     }
     if (data.phone) {
-      await waitUntilEqual(
-        () => row.findByDataQa('family-contact-phone').text,
-        data.phone
-      )
+      await row
+        .findByDataQa('family-contact-phone')
+        .assertTextEquals(data.phone)
     } else {
       await row.findByDataQa('family-contact-phone').waitUntilHidden()
     }
     if (data.backupPhone) {
-      await waitUntilEqual(
-        () => row.findByDataQa('family-contact-backup-phone').text,
-        `${data.backupPhone} (Varanro)`
-      )
+      await row
+        .findByDataQa('family-contact-backup-phone')
+        .assertTextEquals(`${data.backupPhone} (Varanro)`)
     } else {
       await row.findByDataQa('family-contact-backup-phone').waitUntilHidden()
     }
@@ -571,11 +550,8 @@ export class GuardiansSection extends Section {
     end: LocalDate | null
   ) {
     const row = this.findByDataQa(`foster-parent-row-${parentId}`)
-    await waitUntilEqual(() => row.findByDataQa('start').text, start.format())
-    await waitUntilEqual(
-      () => row.findByDataQa('end').text,
-      end?.format() ?? ''
-    )
+    await row.findByDataQa('start').assertTextEquals(start.format())
+    await row.findByDataQa('end').assertTextEquals(end?.format() ?? '')
   }
 
   async removeGuardianEvakaRights(id: UUID) {
@@ -612,18 +588,16 @@ export class GuardiansSection extends Section {
 
   async assertGuardianStatusAllowed(id: UUID) {
     await this.waitUntilNotLoading()
-    await waitUntilEqual(
-      () => this.guardianRow(id).findByDataQa('evaka-rights-status').text,
-      'Sallittu'
-    )
+    await this.guardianRow(id)
+      .findByDataQa('evaka-rights-status')
+      .assertTextEquals('Sallittu')
   }
 
   async assertGuardianStatusDenied(id: UUID) {
     await this.waitUntilNotLoading()
-    await waitUntilEqual(
-      () => this.guardianRow(id).findByDataQa('evaka-rights-status').text,
-      'Kielletty'
-    )
+    await this.guardianRow(id)
+      .findByDataQa('evaka-rights-status')
+      .assertTextEquals('Kielletty')
   }
 }
 
@@ -658,10 +632,7 @@ export class PlacementsSection extends Section {
   }
 
   async assertNthServiceNeedName(index: number, optionName: string) {
-    await waitUntilEqual(
-      () => this.#serviceNeedRowOptionName(index).text,
-      optionName
-    )
+    await this.#serviceNeedRowOptionName(index).assertTextEquals(optionName)
   }
 
   async assertServiceNeedOptions(placementId: string, optionIds: string[]) {
@@ -751,10 +722,7 @@ export class AssistanceNeedSection extends Section {
   }
 
   async assertAssistanceNeedMultiplier(expected: string, nth = 0) {
-    await waitUntilEqual(
-      () => this.#assistanceNeedMultiplier.nth(nth).text,
-      expected
-    )
+    await this.#assistanceNeedMultiplier.nth(nth).assertTextEquals(expected)
   }
 
   async assertAssistanceNeedCount(expectedCount: number) {

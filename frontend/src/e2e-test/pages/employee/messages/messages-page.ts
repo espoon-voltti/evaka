@@ -63,14 +63,11 @@ export default class MessagesPage {
 
   async assertMessageIsSentForParticipants(nth: number, participants: string) {
     await this.page.findAll('[data-qa="message-box-row-sent"]').first().click()
-    await waitUntilEqual(
-      () =>
-        this.page
-          .findAllByDataQa('sent-message-row')
-          .nth(nth)
-          .findByDataQa('participants').text,
-      participants
-    )
+    await this.page
+      .findAllByDataQa('sent-message-row')
+      .nth(nth)
+      .findByDataQa('participants')
+      .assertTextEquals(participants)
   }
 
   async assertReceivedMessageParticipantsContains(nth: number, str: string) {
@@ -103,7 +100,7 @@ export default class MessagesPage {
   }
 
   async assertReplyContentIsEmpty() {
-    return waitUntilEqual(() => this.#messageReplyContent.text, '')
+    await this.#messageReplyContent.assertTextEquals('')
   }
 
   async sendNewMessage(message: {
@@ -201,20 +198,17 @@ export default class MessagesPage {
 
   async assertMessageContent(index: number, content: string) {
     await this.#receivedMessage.click()
-    await waitUntilEqual(() => this.#messageContent(index).text, content)
+    await this.#messageContent(index).assertTextEquals(content)
   }
 
   async assertDraftContent(title: string, content: string) {
     await this.#draftMessagesBoxRow.click()
-    await waitUntilEqual(
-      () => this.#draftMessage.find('[data-qa="thread-list-item-title"]').text,
-      title
-    )
-    await waitUntilEqual(
-      () =>
-        this.#draftMessage.find('[data-qa="thread-list-item-content"]').text,
-      content
-    )
+    await this.#draftMessage
+      .find('[data-qa="thread-list-item-title"]')
+      .assertTextEquals(title)
+    await this.#draftMessage
+      .find('[data-qa="thread-list-item-content"]')
+      .assertTextEquals(content)
   }
 
   async assertNoDrafts() {
@@ -224,14 +218,12 @@ export default class MessagesPage {
 
   async assertCopyContent(title: string, content: string) {
     await this.#messageCopiesInbox.click()
-    await waitUntilEqual(
-      () => this.page.findByDataQa('thread-list-item-title').text,
-      title
-    )
-    await waitUntilEqual(
-      () => this.page.findByDataQa('thread-list-item-content').text,
-      content
-    )
+    await this.page
+      .findByDataQa('thread-list-item-title')
+      .assertTextEquals(title)
+    await this.page
+      .findByDataQa('thread-list-item-content')
+      .assertTextEquals(content)
   }
 
   async assertNoCopies() {

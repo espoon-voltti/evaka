@@ -17,10 +17,10 @@ import {
 import FiniteDateRange from 'lib-common/finite-date-range'
 import { CitizenChildren } from 'lib-common/generated/api-types/application'
 import LocalDate from 'lib-common/local-date'
+import { useMutation, useQuery, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useBetterParams from 'lib-common/useNonNullableParams'
 import { scrollToTop } from 'lib-common/utils/scrolling'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import Main from 'lib-components/atoms/Main'
 import Button from 'lib-components/atoms/buttons/Button'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -44,14 +44,14 @@ import { useTranslation } from '../../localization'
 import { OverlayContext } from '../../overlay/state'
 import useTitle from '../../useTitle'
 import {
-  getApplication,
-  getApplicationChildren,
-  getClubTerms,
-  getPreschoolTerms,
-  saveApplicationDraft,
-  sendApplication,
-  updateApplication
-} from '../api'
+  applicationChildrenQuery,
+  applicationQuery,
+  clubTermsQuery,
+  preschoolTermsQuery,
+  saveApplicationDraftMutation,
+  sendApplicationMutation,
+  updateApplicationMutation
+} from '../queries'
 
 import {
   ApplicationFormDataErrors,
@@ -62,12 +62,12 @@ import {
 } from './validations'
 
 type ApplicationEditorContentProps = {
-  apiData: ApplicationDetails
+  application: ApplicationDetails
   citizenChildren: CitizenChildren[]
 }
 
 export type ApplicationFormProps = {
-  apiData: ApplicationDetails
+  application: ApplicationDetails
   formData: ApplicationFormData
   setFormData: (
     update: (old: ApplicationFormData) => ApplicationFormData
@@ -81,7 +81,7 @@ export type ApplicationFormProps = {
 }
 
 const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
-  apiData,
+  application,
   citizenChildren
 }: ApplicationEditorContentProps) {
   const t = useTranslation()
@@ -90,67 +90,55 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   const { setErrorMessage, setInfoMessage, clearInfoMessage } =
     useContext(OverlayContext)
 
-  const [terms, setTerms] = useState<FiniteDateRange[]>()
-  useEffect(() => {
-    switch (apiData.type) {
+  const { data: preschoolTerms } = useQuery(preschoolTermsQuery, {
+    enabled: application.type === 'PRESCHOOL'
+  })
+  const { data: clubTerms } = useQuery(clubTermsQuery, {
+    enabled: application.type === 'CLUB'
+  })
+  const terms = useMemo(() => {
+    switch (application.type) {
       case 'PRESCHOOL':
-        void getPreschoolTerms().then((res) =>
-          setTerms(
-            res
-              .map((terms) =>
-                terms
-                  .filter(({ applicationPeriod, extendedTerm }) => {
-                    const today = LocalDate.todayInSystemTz()
-                    return (
-                      applicationPeriod.start.isEqualOrBefore(today) &&
-                      extendedTerm.end.isEqualOrAfter(today)
-                    )
-                  })
-                  .map((term) => term.extendedTerm)
-              )
-              .getOrElse([])
-          )
-        )
-        break
+        return (preschoolTerms ?? [])
+          .filter(({ applicationPeriod, extendedTerm }) => {
+            const today = LocalDate.todayInSystemTz()
+            return (
+              applicationPeriod.start.isEqualOrBefore(today) &&
+              extendedTerm.end.isEqualOrAfter(today)
+            )
+          })
+          .map((term) => term.extendedTerm)
       case 'CLUB':
-        void getClubTerms().then((res) =>
-          setTerms(
-            res
-              .map((terms) =>
-                terms
-                  .filter(({ term }) =>
-                    term.end.isEqualOrAfter(LocalDate.todayInHelsinkiTz())
-                  )
-                  .map(({ term }) => term)
-              )
-              .getOrElse([])
+        return (clubTerms ?? [])
+          .filter(({ term }) =>
+            term.end.isEqualOrAfter(LocalDate.todayInHelsinkiTz())
           )
-        )
-        break
+          .map(({ term }) => term)
+      default:
+        return undefined
     }
-  }, [apiData.type, setTerms])
+  }, [application.type, clubTerms, preschoolTerms])
 
   const [formData, setFormData] = useState<ApplicationFormData>(
-    apiDataToFormData(apiData, citizenChildren)
+    apiDataToFormData(application, citizenChildren)
   )
   const [verificationRequested, setVerificationRequested] =
     useState<boolean>(false)
   const [verifying, setVerifying] = useState<boolean>(false)
   const [verified, setVerified] = useState<boolean>(false)
-  const [submitting, setSubmitting] = useState<boolean>(false)
   const [allowOtherGuardianAccess, setAllowOtherGuardianAccess] =
-    useState<boolean>(apiData.allowOtherGuardianAccess)
+    useState<boolean>(application.allowOtherGuardianAccess)
 
   const [errors, setErrors] = useState<ApplicationFormDataErrors>(
-    validateApplication(apiData, formData)
+    validateApplication(application, formData)
   )
   useEffect(() => {
-    setErrors(validateApplication(apiData, formData, terms))
-  }, [apiData, formData, terms])
+    setErrors(validateApplication(application, formData, terms))
+  }, [application, formData, terms])
 
   const originalPreferredStartDate =
-    apiData.status !== 'CREATED'
-      ? apiData.form.preferences.preferredStartDate
+    application.status !== 'CREATED'
+      ? application.form.preferences.preferredStartDate
       : null
 
   const minDate = useMemo(() => {
@@ -167,10 +155,18 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
     return maxTermDate?.isBefore(maxPreferred) ? maxTermDate : maxPreferred
   }, [terms])
 
-  const hasOtherGuardian = !!apiData.otherGuardianId
+  const hasOtherGuardian = !!application.otherGuardianId
+
+  const { mutateAsync: saveApplicationDraft, isLoading: savingDraft } =
+    useMutation(saveApplicationDraftMutation)
+  const { mutateAsync: updateApplication, isLoading: updatingApplication } =
+    useMutation(updateApplicationMutation)
+  const { mutateAsync: sendApplication, isLoading: sendingApplication } =
+    useMutation(sendApplicationMutation)
+  const submitting = savingDraft || updatingApplication || sendingApplication
 
   const onVerify = () => {
-    setErrors(validateApplication(apiData, formData, terms))
+    setErrors(validateApplication(application, formData, terms))
     setVerificationRequested(true)
 
     if (!applicationHasErrors(errors)) {
@@ -182,17 +178,9 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   }
 
   const onSaveDraft = () => {
-    const reqBody = formDataToApiData(apiData, formData, true)
-    setSubmitting(true)
-    void saveApplicationDraft(apiData.id, reqBody).then((res) => {
-      setSubmitting(false)
-      if (res.isFailure) {
-        setErrorMessage({
-          title: t.applications.editor.actions.updateError,
-          type: 'error',
-          resolveLabel: t.common.ok
-        })
-      } else if (res.isSuccess) {
+    const body = formDataToApiData(application, formData, true)
+    void saveApplicationDraft({ applicationId: application.id, body })
+      .then(() => {
         setInfoMessage({
           title: t.applications.editor.draftPolicyInfo.title,
           text: t.applications.editor.draftPolicyInfo.text,
@@ -207,70 +195,56 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
           },
           'data-qa': 'info-message-draft-saved'
         })
-      }
-    })
-  }
-
-  const onSend = () => {
-    const reqBody = {
-      form: formDataToApiData(apiData, formData),
-      allowOtherGuardianAccess
-    }
-    setSubmitting(true)
-    void updateApplication(apiData.id, reqBody).then((res) => {
-      if (res.isFailure) {
-        setSubmitting(false)
-        setErrorMessage({
-          title: t.applications.editor.actions.sendError,
-          type: 'error',
-          resolveLabel: t.common.ok
-        })
-      } else if (res.isSuccess) {
-        void sendApplication(apiData.id).then((res2) => {
-          setSubmitting(false)
-          if (res2.isFailure) {
-            setErrorMessage({
-              title: t.applications.editor.actions.sendError,
-              type: 'error'
-            })
-          } else {
-            setInfoMessage({
-              title: t.applications.editor.sentInfo.title,
-              text: t.applications.editor.sentInfo.text,
-              type: 'success',
-              icon: faCheck,
-              resolve: {
-                action: () => {
-                  navigate('/applications')
-                  clearInfoMessage()
-                },
-                label: t.applications.editor.sentInfo.ok
-              },
-              'data-qa': 'info-message-application-sent'
-            })
-
-            navigate('/applications')
-          }
-        })
-      }
-    })
-  }
-
-  const onUpdate = () => {
-    const reqBody = {
-      form: formDataToApiData(apiData, formData),
-      allowOtherGuardianAccess
-    }
-    setSubmitting(true)
-    void updateApplication(apiData.id, reqBody).then((res) => {
-      if (res.isFailure) {
-        setSubmitting(false)
+      })
+      .catch(() => {
         setErrorMessage({
           title: t.applications.editor.actions.updateError,
           type: 'error',
           resolveLabel: t.common.ok
         })
-      } else if (res.isSuccess) {
+      })
+  }
+
+  const onSend = () => {
+    const body = {
+      form: formDataToApiData(application, formData),
+      allowOtherGuardianAccess
+    }
+    updateApplication({ applicationId: application.id, body })
+      .then(() => sendApplication(application.id))
+      .then(() => {
+        setInfoMessage({
+          title: t.applications.editor.sentInfo.title,
+          text: t.applications.editor.sentInfo.text,
+          type: 'success',
+          icon: faCheck,
+          resolve: {
+            action: () => {
+              navigate('/applications')
+              clearInfoMessage()
+            },
+            label: t.applications.editor.sentInfo.ok
+          },
+          'data-qa': 'info-message-application-sent'
+        })
+        navigate('/applications')
+      })
+      .catch(() => {
+        setErrorMessage({
+          title: t.applications.editor.actions.sendError,
+          type: 'error',
+          resolveLabel: t.common.ok
+        })
+      })
+  }
+
+  const onUpdate = () => {
+    const body = {
+      form: formDataToApiData(application, formData),
+      allowOtherGuardianAccess
+    }
+    updateApplication({ applicationId: application.id, body })
+      .then(() => {
         setInfoMessage({
           title: t.applications.editor.updateInfo.title,
           text: t.applications.editor.updateInfo.text,
@@ -285,18 +259,23 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
           },
           'data-qa': 'info-message-application-sent'
         })
-
         navigate('/applications')
-      }
-    })
+      })
+      .catch(() => {
+        setErrorMessage({
+          title: t.applications.editor.actions.updateError,
+          type: 'error',
+          resolveLabel: t.common.ok
+        })
+      })
   }
 
   const renderEditor = () => {
-    switch (apiData.type) {
+    switch (application.type) {
       case 'DAYCARE':
         return (
           <ApplicationFormDaycare
-            apiData={apiData}
+            application={application}
             formData={formData}
             setFormData={setFormData}
             errors={errors}
@@ -309,7 +288,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
       case 'PRESCHOOL':
         return (
           <ApplicationFormPreschool
-            apiData={apiData}
+            application={application}
             formData={formData}
             setFormData={setFormData}
             errors={errors}
@@ -323,7 +302,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
       case 'CLUB':
         return (
           <ApplicationFormClub
-            apiData={apiData}
+            application={application}
             formData={formData}
             setFormData={setFormData}
             errors={errors}
@@ -338,11 +317,11 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
   }
 
   const renderVerificationView = () => {
-    switch (apiData.type) {
+    switch (application.type) {
       case 'DAYCARE':
         return (
           <ApplicationVerificationView
-            application={apiData}
+            application={application}
             formData={formData}
             type="DAYCARE"
             closeVerification={() => setVerifying(false)}
@@ -351,7 +330,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
       case 'PRESCHOOL':
         return (
           <ApplicationVerificationView
-            application={apiData}
+            application={application}
             formData={formData}
             type="PRESCHOOL"
             closeVerification={() => setVerifying(false)}
@@ -360,7 +339,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
       case 'CLUB':
         return (
           <ApplicationVerificationView
-            application={apiData}
+            application={application}
             formData={formData}
             type="CLUB"
             closeVerification={() => setVerifying(false)}
@@ -406,7 +385,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 
         <div className="expander" />
 
-        {apiData.status === 'CREATED' && !verifying && (
+        {application.status === 'CREATED' && !verifying && (
           <Button
             text={t.applications.editor.actions.saveDraft}
             onClick={onSaveDraft}
@@ -422,7 +401,7 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
               disabled={submitting}
               data-qa="return-to-edit-btn"
             />
-            {apiData.status === 'CREATED' ? (
+            {application.status === 'CREATED' ? (
               <Button
                 text={t.applications.editor.actions.send}
                 onClick={onSend}
@@ -491,15 +470,12 @@ const ApplicationEditorContent = React.memo(function DaycareApplicationEditor({
 export default React.memo(function ApplicationEditor() {
   const { applicationId } = useBetterParams<{ applicationId: UUID }>()
   const t = useTranslation()
-  const [apiData] = useApiState(
-    () => getApplication(applicationId),
-    [applicationId]
-  )
-  const [children] = useApiState(getApplicationChildren, [])
+  const application = useQueryResult(applicationQuery(applicationId))
+  const children = useQueryResult(applicationChildrenQuery)
 
   useTitle(
     t,
-    apiData
+    application
       .map(({ type }) => t.applications.editor.heading.title[type])
       .getOrElse('')
   )
@@ -507,12 +483,15 @@ export default React.memo(function ApplicationEditor() {
   return (
     <>
       <Container>
-        {renderResult(combine(apiData, children), ([apiData, children]) => (
-          <ApplicationEditorContent
-            apiData={apiData}
-            citizenChildren={children}
-          />
-        ))}
+        {renderResult(
+          combine(application, children),
+          ([application, children]) => (
+            <ApplicationEditorContent
+              application={application}
+              citizenChildren={children}
+            />
+          )
+        )}
       </Container>
       <Footer />
     </>

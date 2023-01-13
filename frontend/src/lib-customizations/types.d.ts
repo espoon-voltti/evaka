@@ -89,6 +89,8 @@ interface MapConfig {
     minLatitude: number
     maxLatitude: number
   }
+  careTypeFilters: ApplicationType[]
+  unitProviderTypeFilters: ProviderType[]
 }
 
 /**
@@ -103,6 +105,11 @@ interface BaseFeatureFlags {
    * citizen's absence modal
    */
   citizenShiftCareAbsence: boolean
+  /**
+   * Whether to show PLANNED_ABSENCE as a third absence option for contract day children in
+   * citizen's absence modal
+   */
+  citizenContractDayAbsence: boolean
 
   assistanceActionOther: boolean
   daycareApplication: {
@@ -112,6 +119,7 @@ interface BaseFeatureFlags {
     connectedDaycarePreferredStartDate: boolean
     serviceNeedOption: boolean
   }
+  decisionDraftMultipleUnits: boolean
   groupsTableServiceNeeds: boolean
   preschool: boolean
   preparatory: boolean

@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 
-import { Result } from 'lib-common/api'
 import { ChildStickyNote } from 'lib-common/generated/api-types/note'
+import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import {
   StickyNoteTab,
@@ -13,14 +13,13 @@ import {
 } from 'lib-components/employee/notes/StickyNoteTab'
 import { EditedNote } from 'lib-components/employee/notes/notes'
 
-import { ChildAttendanceContext } from '../child-attendance/state'
 import { Translations, useTranslation } from '../common/i18n'
 
 import {
-  deleteChildStickyNote,
-  postChildStickyNote,
-  putChildStickyNote
-} from './api'
+  createChildStickyNoteMutation,
+  deleteChildStickyNoteMutation,
+  updateChildStickyNoteMutation
+} from './queries'
 
 const getStickyNoteTabLabels = (i18n: Translations): StickyNoteTabLabels => ({
   addNew: i18n.attendances.notes.addNew,
@@ -38,32 +37,37 @@ const getStickyNoteTabLabels = (i18n: Translations): StickyNoteTabLabels => ({
 })
 
 interface Props {
+  unitId: UUID
   childId: UUID
   notes: ChildStickyNote[]
 }
 
 export const ChildStickyNotesTab = React.memo(function ChildStickyNotesTab({
+  unitId,
   childId,
   notes
 }: Props) {
   const { i18n } = useTranslation()
 
-  const { reloadAttendances } = useContext(ChildAttendanceContext)
-  const reloadOnSuccess = useCallback(
-    (res: Result<unknown>) => res.map(() => reloadAttendances()),
-    [reloadAttendances]
+  const { mutateAsync: createChildStickyNote } = useMutationResult(
+    createChildStickyNoteMutation
+  )
+  const { mutateAsync: updateChildStickyNote } = useMutationResult(
+    updateChildStickyNoteMutation
+  )
+  const { mutateAsync: deleteChildStickyNote } = useMutationResult(
+    deleteChildStickyNoteMutation
   )
   const onSave = useCallback(
     ({ id, ...body }: EditedNote) =>
-      (id
-        ? putChildStickyNote(id, body)
-        : postChildStickyNote(childId, body)
-      ).then(reloadOnSuccess),
-    [childId, reloadOnSuccess]
+      id
+        ? updateChildStickyNote({ unitId, id, body })
+        : createChildStickyNote({ unitId, childId, body }),
+    [updateChildStickyNote, createChildStickyNote, unitId, childId]
   )
   const onRemove = useCallback(
-    (id: UUID) => deleteChildStickyNote(id).then(reloadOnSuccess),
-    [reloadOnSuccess]
+    (id: UUID) => deleteChildStickyNote({ unitId, id }),
+    [deleteChildStickyNote, unitId]
   )
   const labels = useMemo<StickyNoteTabLabels>(
     () => getStickyNoteTabLabels(i18n),

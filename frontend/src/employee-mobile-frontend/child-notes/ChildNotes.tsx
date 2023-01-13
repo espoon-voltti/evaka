@@ -2,17 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Failure, Result, Success } from 'lib-common/api'
-import { Child } from 'lib-common/generated/api-types/attendance'
 import {
   ChildDailyNote,
-  ChildStickyNote,
-  GroupNote
+  ChildStickyNote
 } from 'lib-common/generated/api-types/note'
+import { useQuery, useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Title from 'lib-components/atoms/Title'
@@ -23,7 +21,8 @@ import colors from 'lib-customizations/common'
 import { faArrowLeft } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
-import { ChildAttendanceContext } from '../child-attendance/state'
+import { childrenQuery } from '../child-attendance/queries'
+import { useChild } from '../child-attendance/utils'
 import { BackButtonInline } from '../common/components'
 import { useTranslation } from '../common/i18n'
 import { TallContentArea } from '../pairing/components'
@@ -31,6 +30,7 @@ import { TallContentArea } from '../pairing/components'
 import { ChildStickyNotesTab } from './ChildStickyNotesTab'
 import { DailyNotesTab } from './DailyNotesTab'
 import { GroupNotesTab } from './GroupNotesTab'
+import { groupNotesQuery } from './queries'
 import { ChildDailyNoteFormData } from './types'
 
 type NoteType = 'NOTE' | 'STICKY' | 'GROUP'
@@ -84,28 +84,18 @@ export default React.memo(function ChildNotes() {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
 
-  const { childId, groupId } = useNonNullableParams<{
+  const { unitId, childId, groupId } = useNonNullableParams<{
+    unitId: string
     childId: string
     groupId: string
   }>()
-
-  const { attendanceResponse } = useContext(ChildAttendanceContext)
+  const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
 
   const [selectedTab, setSelectedTab] = useState<NoteType>('NOTE')
 
-  const childResult: Result<Child> = useMemo(
-    () =>
-      attendanceResponse
-        .map((v) => v.children.find((c) => c.id === childId))
-        .chain((c) =>
-          c ? Success.of(c) : Failure.of({ message: 'Child not found' })
-        ),
-    [attendanceResponse, childId]
-  )
-
   const dailyNote = useMemo(
     () =>
-      childResult
+      child
         .map((child) =>
           child.dailyNote
             ? {
@@ -115,40 +105,41 @@ export default React.memo(function ChildNotes() {
             : undefined
         )
         .getOrElse(undefined),
-    [childResult]
+    [child]
   )
 
   const stickyNotes = useMemo<ChildStickyNote[]>(
-    () => childResult.map((c) => c.stickyNotes).getOrElse([]),
-    [childResult]
+    () => child.map((c) => c.stickyNotes).getOrElse([]),
+    [child]
   )
 
-  const groupNotes = useMemo<GroupNote[]>(
-    () =>
-      attendanceResponse
-        .map((v) => v.groupNotes.filter((n) => n.groupId === groupId))
-        .getOrElse([]),
-    [attendanceResponse, groupId]
-  )
+  const { data: groupNotes } = useQuery(groupNotesQuery(groupId), {
+    enabled: groupId !== 'all'
+  })
 
+  const dailyNoteCount = dailyNote ? 1 : 0
+  const stickyNoteCount = stickyNotes.length
+  const groupNoteCount = groupNotes?.length ?? 0
   const noteTabs = useMemo(() => {
     const tabs = [
       {
         type: 'NOTE' as const,
         title: i18n.attendances.notes.day,
-        noteCount: dailyNote ? 1 : 0
+        noteCount: dailyNoteCount
       },
       {
         type: 'STICKY' as const,
         title: `${i18n.common.nb}!`,
-        noteCount: stickyNotes.length
+        noteCount: stickyNoteCount
       },
-      {
-        type: 'GROUP' as const,
-        title: i18n.common.group,
-        noteCount: groupNotes.length
-      }
-    ]
+      groupId !== 'all'
+        ? {
+            type: 'GROUP' as const,
+            title: i18n.common.group,
+            noteCount: groupNoteCount
+          }
+        : null
+    ].flatMap((tab) => (tab ? [tab] : []))
 
     return tabs.map(({ type, title, noteCount }) => (
       <NoteTypeTab
@@ -160,9 +151,16 @@ export default React.memo(function ChildNotes() {
         noteCount={noteCount}
       />
     ))
-  }, [dailyNote, i18n, stickyNotes.length, groupNotes.length, selectedTab])
+  }, [
+    i18n,
+    groupId,
+    dailyNoteCount,
+    stickyNoteCount,
+    groupNoteCount,
+    selectedTab
+  ])
 
-  return renderResult(childResult, (child) => (
+  return renderResult(child, (child) => (
     <TallContentArea
       opaque={false}
       paddingHorizontal="zero"
@@ -191,16 +189,21 @@ export default React.memo(function ChildNotes() {
 
         {selectedTab === 'NOTE' && (
           <DailyNotesTab
+            unitId={unitId}
             childId={childId}
             dailyNoteId={dailyNote?.id}
             formData={dailyNote?.form}
           />
         )}
         {selectedTab === 'STICKY' && (
-          <ChildStickyNotesTab childId={childId} notes={stickyNotes} />
+          <ChildStickyNotesTab
+            unitId={unitId}
+            childId={childId}
+            notes={stickyNotes}
+          />
         )}
-        {selectedTab === 'GROUP' && (
-          <GroupNotesTab groupId={groupId} notes={groupNotes} />
+        {groupId !== 'all' && selectedTab === 'GROUP' && (
+          <GroupNotesTab groupId={groupId} notes={groupNotes ?? []} />
         )}
       </FixedSpaceColumn>
     </TallContentArea>

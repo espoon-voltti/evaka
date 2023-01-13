@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -384,9 +384,9 @@ export interface DaycarePlacementPlan {
 }
 
 /**
-* Generated from fi.espoo.evaka.application.DecisionDraftJSON
+* Generated from fi.espoo.evaka.application.DecisionDraftGroup
 */
-export interface DecisionDraftJSON {
+export interface DecisionDraftGroup {
   child: ChildInfo
   decisions: DecisionDraft[]
   guardian: GuardianInfo

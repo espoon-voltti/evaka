@@ -22,6 +22,7 @@ WITH people_with_no_archive_data AS (
     SELECT id FROM person
     WHERE (last_login IS NULL OR last_login::date < :twoWeeksAgo)
     AND NOT EXISTS (SELECT 1 FROM application WHERE application.guardian_id = person.id OR application.child_id = person.id OR application.other_guardian_id = person.id)
+    AND NOT EXISTS (SELECT 1 FROM application_other_guardian aog WHERE aog.guardian_id = person.id)
     AND NOT EXISTS (SELECT 1 FROM placement WHERE placement.child_id = person.id)
     AND NOT EXISTS (
         SELECT 1 FROM fee_decision JOIN fee_decision_child ON fee_decision.id = fee_decision_child.fee_decision_id
@@ -55,6 +56,10 @@ AND NOT EXISTS (
     SELECT child_id FROM guardian WHERE guardian_id = p.id AND NOT child_id IN (SELECT id FROM people_with_no_archive_data)
     UNION ALL
     SELECT guardian_id FROM guardian WHERE child_id = p.id AND NOT guardian_id IN (SELECT id FROM people_with_no_archive_data)
+)
+-- blocked guardianship
+AND NOT EXISTS (
+    SELECT guardian_id FROM guardian_blocklist WHERE guardian_id = p.id
 )
 -- own fridge child
 AND NOT EXISTS (

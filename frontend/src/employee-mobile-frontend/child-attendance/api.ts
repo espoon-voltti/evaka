@@ -2,14 +2,15 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import mapValues from 'lodash/mapValues'
+
 import { Failure, Result, Success } from 'lib-common/api'
 import DateRange from 'lib-common/date-range'
 import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AbsenceThreshold,
-  AttendanceResponse,
   Child,
-  DepartureRequest
+  ChildAttendanceStatusResponse
 } from 'lib-common/generated/api-types/attendance'
 import { Absence, AbsenceType } from 'lib-common/generated/api-types/daycare'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
@@ -19,86 +20,78 @@ import { UUID } from 'lib-common/types'
 
 import { client } from '../client'
 
-export async function getDaycareAttendances(
+export async function getUnitChildren(unitId: string): Promise<Child[]> {
+  return client
+    .get<JsonOf<Child[]>>(`/attendances/units/${unitId}/children`)
+    .then((res) => deserializeChildren(res.data))
+}
+
+export async function getUnitAttendanceStatuses(
   unitId: string
-): Promise<Result<AttendanceResponse>> {
+): Promise<Record<UUID, ChildAttendanceStatusResponse | undefined>> {
   return client
-    .get<JsonOf<AttendanceResponse>>(`/attendances/units/${unitId}`)
-    .then((res) => deserializeAttendanceResponse(res.data))
-    .then((v) => Success.of(v))
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function childArrivesPOST(
-  unitId: string,
-  childId: string,
-  time: string
-): Promise<Result<void>> {
-  return client
-    .post<JsonOf<void>>(
-      `/attendances/units/${unitId}/children/${childId}/arrival`,
-      {
-        arrived: time
-      }
+    .get<JsonOf<Record<UUID, ChildAttendanceStatusResponse>>>(
+      `/attendances/units/${unitId}/attendances`
     )
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
-}
-
-export async function childDeparts(
-  unitId: string,
-  childId: string,
-  time: string
-): Promise<Result<void>> {
-  return client
-    .post<JsonOf<void>>(
-      `/attendances/units/${unitId}/children/${childId}/departure`,
-      {
-        departed: time
-      }
+    .then((res) =>
+      mapValues(res.data, deserializeChildAttendanceStatusResponse)
     )
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
 }
 
-export async function returnToComing(
-  unitId: string,
+export async function createArrival({
+  unitId,
+  childId,
+  arrived
+}: {
+  unitId: string
   childId: string
-): Promise<Result<void>> {
+  arrived: string
+}): Promise<void> {
   return client
-    .post<JsonOf<void>>(
-      `/attendances/units/${unitId}/children/${childId}/return-to-coming`
-    )
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .post(`/attendances/units/${unitId}/children/${childId}/arrival`, {
+      arrived
+    })
+    .then(() => undefined)
 }
 
-export async function returnToPresent(
-  unitId: string,
+export async function returnToComing({
+  unitId,
+  childId
+}: {
+  unitId: string
   childId: string
-): Promise<Result<void>> {
+}): Promise<void> {
   return client
-    .post<JsonOf<void>>(
-      `/attendances/units/${unitId}/children/${childId}/return-to-present`
-    )
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .post(`/attendances/units/${unitId}/children/${childId}/return-to-coming`)
+    .then(() => undefined)
 }
 
-export async function postFullDayAbsence(
-  unitId: string,
-  childId: string,
+export async function returnToPresent({
+  unitId,
+  childId
+}: {
+  unitId: string
+  childId: string
+}): Promise<void> {
+  return client
+    .post(`/attendances/units/${unitId}/children/${childId}/return-to-present`)
+    .then(() => undefined)
+}
+
+export async function createFullDayAbsence({
+  unitId,
+  childId,
+  absenceType
+}: {
+  unitId: string
+  childId: string
   absenceType: AbsenceType
-): Promise<Result<void>> {
+}): Promise<void> {
   return client
-    .post<JsonOf<void>>(
-      `/attendances/units/${unitId}/children/${childId}/full-day-absence`,
-      {
-        absenceType
-      }
-    )
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .post(`/attendances/units/${unitId}/children/${childId}/full-day-absence`, {
+      absenceType
+    })
+    .then(() => undefined)
 }
 
 export async function postAbsenceRange(
@@ -136,31 +129,37 @@ export async function getFutureAbsencesByChild(
     .catch((e) => Failure.fromError(e))
 }
 
-export async function getChildDeparture(
-  unitId: string,
+export async function getChildDeparture({
+  unitId,
+  childId
+}: {
+  unitId: string
   childId: string
-): Promise<Result<AbsenceThreshold[]>> {
+}): Promise<AbsenceThreshold[]> {
   return client
     .get<JsonOf<AbsenceThreshold[]>>(
       `/attendances/units/${unitId}/children/${childId}/departure`
     )
     .then((res) => res.data)
-    .then((v) => Success.of(v))
-    .catch((e) => Failure.fromError(e))
 }
 
-export async function postDeparture(
-  unitId: string,
-  childId: string,
-  body: DepartureRequest
-): Promise<Result<void>> {
+export async function createDeparture({
+  unitId,
+  childId,
+  absenceType,
+  departed
+}: {
+  unitId: string
+  childId: string
+  absenceType: AbsenceType | null
+  departed: string
+}): Promise<void> {
   return client
-    .post<JsonOf<AttendanceResponse>>(
-      `/attendances/units/${unitId}/children/${childId}/departure`,
-      body
-    )
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .post(`/attendances/units/${unitId}/children/${childId}/departure`, {
+      absenceType,
+      departed
+    })
+    .then(() => undefined)
 }
 
 export async function deleteAbsenceRange(
@@ -193,53 +192,68 @@ function compareByProperty(
   return 0
 }
 
-function deserializeAttendanceResponse(
-  data: JsonOf<AttendanceResponse>
-): AttendanceResponse {
-  {
-    return {
-      children: data.children
-        .map((attendanceChild) => {
-          return {
-            ...attendanceChild,
-            attendances: attendanceChild.attendances.map((attendance) => ({
-              arrived: HelsinkiDateTime.parseIso(attendance.arrived),
-              departed: attendance.departed
-                ? HelsinkiDateTime.parseIso(attendance.departed)
-                : null
-            })),
-            dailyNote: attendanceChild.dailyNote
-              ? {
-                  ...attendanceChild.dailyNote,
-                  modifiedAt: HelsinkiDateTime.parseIso(
-                    attendanceChild.dailyNote.modifiedAt
-                  )
-                }
-              : null,
-            stickyNotes: attendanceChild.stickyNotes.map((note) => ({
-              ...note,
-              modifiedAt: HelsinkiDateTime.parseIso(note.modifiedAt),
-              expires: LocalDate.parseIso(note.expires)
-            })),
-            reservations: attendanceChild.reservations.map((reservation) => ({
-              startTime: HelsinkiDateTime.parseIso(reservation.startTime),
-              endTime: HelsinkiDateTime.parseIso(reservation.endTime)
-            })),
-            dailyServiceTimes: attendanceChild.dailyServiceTimes && {
-              ...attendanceChild.dailyServiceTimes,
-              validityPeriod: DateRange.parseJson(
-                attendanceChild.dailyServiceTimes.validityPeriod
-              )
-            }
+function deserializeChildren(data: JsonOf<Child[]>): Child[] {
+  return data
+    .map((child) => ({
+      ...child,
+      dailyNote: child.dailyNote
+        ? {
+            ...child.dailyNote,
+            modifiedAt: HelsinkiDateTime.parseIso(child.dailyNote.modifiedAt)
           }
-        })
-        .sort((a, b) => compareByProperty(a, b, 'lastName'))
-        .sort((a, b) => compareByProperty(a, b, 'firstName')),
-      groupNotes: data.groupNotes.map((groupNote) => ({
-        ...groupNote,
-        modifiedAt: HelsinkiDateTime.parseIso(groupNote.modifiedAt),
-        expires: LocalDate.parseIso(groupNote.expires)
-      }))
-    }
+        : null,
+      stickyNotes: child.stickyNotes.map((note) => ({
+        ...note,
+        modifiedAt: HelsinkiDateTime.parseIso(note.modifiedAt),
+        expires: LocalDate.parseIso(note.expires)
+      })),
+      reservations: child.reservations.map((reservation) => ({
+        startTime: HelsinkiDateTime.parseIso(reservation.startTime),
+        endTime: HelsinkiDateTime.parseIso(reservation.endTime)
+      })),
+      dailyServiceTimes: child.dailyServiceTimes && {
+        ...child.dailyServiceTimes,
+        validityPeriod: DateRange.parseJson(
+          child.dailyServiceTimes.validityPeriod
+        )
+      }
+    }))
+    .sort((a, b) => compareByProperty(a, b, 'firstName'))
+}
+
+function deserializeChildAttendanceStatusResponse(
+  data: JsonOf<ChildAttendanceStatusResponse>
+): ChildAttendanceStatusResponse {
+  return {
+    ...data,
+    attendances: data.attendances.map((attendance) => ({
+      arrived: HelsinkiDateTime.parseIso(attendance.arrived),
+      departed: attendance.departed
+        ? HelsinkiDateTime.parseIso(attendance.departed)
+        : null
+    }))
   }
+}
+
+export async function uploadChildImage({
+  childId,
+  file
+}: {
+  childId: string
+  file: File
+}): Promise<void> {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  return client
+    .put(`/children/${childId}/image`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    .then(() => undefined)
+}
+
+export async function deleteChildImage(childId: string): Promise<void> {
+  return client.delete(`/children/${childId}/image`).then(() => undefined)
 }

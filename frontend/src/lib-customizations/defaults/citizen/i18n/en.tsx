@@ -227,7 +227,8 @@ const en: Translations = {
       PURCHASED: 'purchased service',
       PRIVATE: 'private service',
       PRIVATE_SERVICE_VOUCHER: 'private service (service voucher)',
-      EXTERNAL_PURCHASED: 'purchased service (other)'
+      EXTERNAL_PURCHASED: 'purchased service (other)',
+      MUNICIPAL_SCHOOL: 'school'
     },
     homepage: 'Homepage',
     unitHomepage: "Unit's homepage",
@@ -671,7 +672,9 @@ const en: Translations = {
             label: 'Early childhood education',
             withConnectedDaycare:
               'I also apply for early childhood education related to pre-primary education.',
-            withoutConnectedDaycare: 'No'
+            withoutConnectedDaycare: 'No',
+            startDate: 'Desired start date',
+            serviceNeed: 'Service need'
           },
           attachments: {
             label: 'Required attachments',

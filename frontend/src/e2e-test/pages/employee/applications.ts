@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { waitUntilEqual } from '../../utils'
 import { Element, Page } from '../../utils/page'
 
 import ApplicationReadView from './applications/application-read-view'
@@ -33,7 +32,7 @@ export class ApplicationRow extends Element {
     super(root)
   }
 
-  #status = this.find('[data-qa="application-status"]')
+  status = this.find('[data-qa="application-status"]')
 
   async openApplication() {
     const applicationDetails = new Promise<ApplicationReadView>((res) => {
@@ -41,9 +40,5 @@ export class ApplicationRow extends Element {
     })
     await this.click()
     return applicationDetails
-  }
-
-  async assertStatus(expectedStatus: string) {
-    await waitUntilEqual(() => this.#status.text, expectedStatus)
   }
 }

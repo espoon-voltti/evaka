@@ -128,3 +128,123 @@ instances:
             MaxTotal:
               alias: jedis.clients.total
               metric_type: gauge
+      - include:
+          domain: metrics
+          type: gauges
+          name: asyncJobWorkersActive.jobType.AsyncJob.pool.main
+          attribute:
+            Value:
+              alias: asyncjob.workers.main
+              metric_type: gauge
+      - include:
+          domain: metrics
+          type: gauges
+          name: asyncJobWorkersActive.jobType.AsyncJob.pool.email
+          attribute:
+            Value:
+              alias: asyncjob.workers.email
+              metric_type: gauge
+      - include:
+          domain: metrics
+          type: gauges
+          name: asyncJobWorkersActive.jobtype.AsyncJob.pool.suomiFi
+          attribute:
+            Value:
+              alias: asyncjob.workers.suomifi
+              metric_type: gauge
+      - include:
+          domain: metrics
+          type: gauges
+          name: asyncJobWorkersActive.jobtype.AsyncJob.pool.urgent
+          attribute:
+            Value:
+              alias: asyncjob.workers.urgent
+              metric_type: gauge
+      - include:
+          domain: metrics
+          type: gauges
+          name: asyncJobWorkersActive.jobtype.AsyncJob.pool.varda
+          attribute:
+            Value:
+              alias: asyncjob.workers.varda
+              metric_type: gauge
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsExecuted.jobType.AsyncJob.pool.main
+          attribute:
+            Count:
+              alias: asyncjobs.executed.main
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsExecuted.jobType.AsyncJob.pool.email
+          attribute:
+            Count:
+              alias: asyncjobs.executed.suomifi
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsExecuted.jobType.AsyncJob.pool.suomiFi
+          attribute:
+            Count:
+              alias: asyncjobs.executed.suomifi
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsExecuted.jobType.AsyncJob.pool.urgent
+          attribute:
+            Count:
+              alias: asyncjobs.executed.urgent
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsExecuted.jobType.AsyncJob.pool.varda
+          attribute:
+            Count:
+              alias: asyncjobs.executed.varda
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsFailed.jobType.AsyncJob.pool.main
+          attribute:
+            Count:
+              alias: asyncjobs.failed.main
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsFailed.jobType.AsyncJob.pool.email
+          attribute:
+            Count:
+              alias: asyncjobs.failed.email
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsFailed.jobType.AsyncJob.pool.suomiFi
+          attribute:
+            Count:
+              alias: asyncjobs.failed.suomifi
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsFailed.jobType.AsyncJob.pool.urgent
+          attribute:
+            Count:
+              alias: asyncjobs.failed.urgent
+              metric_type: counter
+      - include:
+          domain: metrics
+          type: meters
+          name: asyncJobsFailed.jobType.AsyncJob.pool.varda
+          attribute:
+            Count:
+              alias: asyncjobs.failed.varda
+              metric_type: counter

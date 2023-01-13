@@ -14,15 +14,16 @@ import colors from 'lib-customizations/common'
 import { faPlus } from 'lib-icons'
 
 import { useTranslation } from '../../../../state/i18n'
-import { RequireRole } from '../../../../utils/roles'
 
 interface MissingServiceNeedRowProps {
+  createAllowed: boolean
   startDate: LocalDate
   endDate: LocalDate
   onEdit: () => void
   disabled?: boolean
 }
 function MissingServiceNeedRow({
+  createAllowed,
   startDate,
   endDate,
   onEdit,
@@ -45,7 +46,7 @@ function MissingServiceNeedRow({
       <Td />
       <Td />
       <Td align="right">
-        <RequireRole oneOf={['ADMIN', 'UNIT_SUPERVISOR']}>
+        {createAllowed && (
           <InlineButton
             onClick={onEdit}
             text={t.addNewBtn}
@@ -53,7 +54,7 @@ function MissingServiceNeedRow({
             disabled={disabled}
             data-qa="add-new-missing-service-need"
           />
-        </RequireRole>
+        )}
       </Td>
     </Tr>
   )

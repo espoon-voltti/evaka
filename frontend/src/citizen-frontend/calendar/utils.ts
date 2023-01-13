@@ -2,9 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { Result } from 'lib-common/api'
 import FiniteDateRange from 'lib-common/finite-date-range'
+import { ActiveQuestionnaire } from 'lib-common/generated/api-types/holidayperiod'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
+
+import { User } from '../auth/state'
 
 export const getEarliestReservableDate = (
   childInfo: ReservationChild[],
@@ -16,10 +20,10 @@ export const getEarliestReservableDate = (
       undefined
     )
   )
-  const earliestReservableDate = earliestReservableDateByChild.reduce<
-    LocalDate | undefined
-  >((acc, cur) => (!acc || cur?.isBefore(acc) ? cur : acc), undefined)
-  return earliestReservableDate
+  return earliestReservableDateByChild.reduce<LocalDate | undefined>(
+    (acc, cur) => (!acc || cur?.isBefore(acc) ? cur : acc),
+    undefined
+  )
 }
 
 export const getLatestReservableDate = (
@@ -32,11 +36,10 @@ export const getLatestReservableDate = (
       LocalDate.todayInSystemTz()
     )
   )
-  const earliestReservableDate = earliestReservableDateByChild.reduce(
+  return earliestReservableDateByChild.reduce(
     (acc, cur) => (cur.isAfter(acc) ? cur : acc),
     LocalDate.todayInSystemTz()
   )
-  return earliestReservableDate
 }
 
 export const isDayReservableForSomeone = (
@@ -46,3 +49,20 @@ export const isDayReservableForSomeone = (
   Object.entries(reservableDays).some(([_childId, ranges]) =>
     ranges.some((r) => r.includes(date))
   )
+
+export type QuestionnaireAvailability = boolean | 'with-strong-auth'
+
+export function isQuestionnaireAvailable(
+  activeQuestionnaires: Result<ActiveQuestionnaire | null>,
+  user: User | undefined
+): QuestionnaireAvailability {
+  return activeQuestionnaires
+    .map<QuestionnaireAvailability>((val) =>
+      !val || !user
+        ? false
+        : val.questionnaire.requiresStrongAuth && user.authLevel !== 'STRONG'
+        ? 'with-strong-auth'
+        : true
+    )
+    .getOrElse(false)
+}

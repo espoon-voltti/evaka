@@ -84,6 +84,7 @@ export default class MobileChildPage {
   async returnToPresent() {
     await this.#returnToPresentButton.click()
   }
+
   async goBack() {
     await this.#goBack.click()
   }
@@ -101,7 +102,7 @@ export default class MobileChildPage {
   }
 
   async assertSensitiveInfoIsShown(name: string) {
-    await waitUntilEqual(() => this.#sensitiveInfo.name.text, name)
+    await this.#sensitiveInfo.name.assertTextEquals(name)
   }
 
   async assertSensitiveInfo(
@@ -117,49 +118,41 @@ export default class MobileChildPage {
       phone: string
     }>
   ) {
-    await waitUntilEqual(
-      () => this.#sensitiveInfo.allergies.text,
-      additionalInfo.allergies
+    await this.#sensitiveInfo.allergies.assertTextEquals(
+      additionalInfo.allergies ?? 'should be defined'
     )
-    await waitUntilEqual(
-      () => this.#sensitiveInfo.diet.text,
-      additionalInfo.diet
+    await this.#sensitiveInfo.diet.assertTextEquals(
+      additionalInfo.diet ?? 'should be defined'
     )
-    await waitUntilEqual(
-      () => this.#sensitiveInfo.medication.text,
-      additionalInfo.medication
+    await this.#sensitiveInfo.medication.assertTextEquals(
+      additionalInfo.medication ?? 'should be defined'
     )
 
     for (let i = 0; i < contacts.length; i++) {
       const contact = contacts[i]
-      await waitUntilEqual(
-        () => this.#sensitiveInfo.contactName(i).text,
-        `${contact.firstName} ${contact.lastName}`
-      )
+      await this.#sensitiveInfo
+        .contactName(i)
+        .assertTextEquals(`${contact.firstName} ${contact.lastName}`)
       if (contact.phone) {
-        await waitUntilEqual(
-          () => this.#sensitiveInfo.contactPhone(i).text,
-          contact.phone
-        )
+        await this.#sensitiveInfo
+          .contactPhone(i)
+          .assertTextEquals(contact.phone)
       }
       if (contact.email) {
-        await waitUntilEqual(
-          () => this.#sensitiveInfo.contactEmail(i).text,
-          contact.email
-        )
+        await this.#sensitiveInfo
+          .contactEmail(i)
+          .assertTextEquals(contact.email)
       }
     }
 
     for (let i = 0; i < backupPickups.length; i++) {
       const backupPickup = backupPickups[i]
-      await waitUntilEqual(
-        () => this.#sensitiveInfo.backupPickupName(i).text,
-        backupPickup.name
-      )
-      await waitUntilEqual(
-        () => this.#sensitiveInfo.backupPickupPhone(i).text,
-        backupPickup.phone
-      )
+      await this.#sensitiveInfo
+        .backupPickupName(i)
+        .assertTextEquals(backupPickup.name)
+      await this.#sensitiveInfo
+        .backupPickupPhone(i)
+        .assertTextEquals(backupPickup.phone)
     }
   }
 

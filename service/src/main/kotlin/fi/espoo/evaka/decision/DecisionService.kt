@@ -26,7 +26,6 @@ import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
@@ -52,7 +51,6 @@ class DecisionService(
     private val pdfService: PDFService,
     private val messageProvider: IMessageProvider,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val sfiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>,
     env: BucketEnv
 ) {
     private val decisionBucket = env.decisions
@@ -306,11 +304,7 @@ class DecisionService(
                 messageContent = messageProvider.getDecisionContent(lang.messageLang)
             )
 
-        sfiAsyncJobRunner.plan(
-            tx,
-            listOf(SuomiFiAsyncJob.SendMessage(message)),
-            runAt = clock.now()
-        )
+        asyncJobRunner.plan(tx, listOf(AsyncJob.SendMessage(message)), runAt = clock.now())
     }
 
     fun getDecisionPdf(dbc: Database.Connection, decision: Decision): ResponseEntity<Any> {

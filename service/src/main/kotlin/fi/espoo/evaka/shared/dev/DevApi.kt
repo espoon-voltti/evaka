@@ -130,8 +130,6 @@ import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
-import fi.espoo.evaka.shared.async.SuomiFiAsyncJob
-import fi.espoo.evaka.shared.async.VardaAsyncJob
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
@@ -198,8 +196,6 @@ private val logger = KotlinLogging.logger {}
 class DevApi(
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val vardaAsyncJobRunner: AsyncJobRunner<VardaAsyncJob>,
-    private val suomiFiAsyncJobRunner: AsyncJobRunner<SuomiFiAsyncJob>,
     private val placementPlanService: PlacementPlanService,
     private val applicationStateService: ApplicationStateService,
     private val decisionService: DecisionService,
@@ -211,7 +207,7 @@ class DevApi(
     private val digitransit = MockDigitransit()
 
     private fun runAllAsyncJobs(clock: EvakaClock) {
-        listOf(asyncJobRunner, vardaAsyncJobRunner, suomiFiAsyncJobRunner).forEach {
+        listOf(asyncJobRunner).forEach {
             it.runPendingJobsSync(clock)
             it.waitUntilNoRunningJobs(timeout = Duration.ofSeconds(20))
         }

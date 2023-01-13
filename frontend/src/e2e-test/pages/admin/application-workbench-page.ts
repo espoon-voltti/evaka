@@ -3,9 +3,11 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import { ApplicationStatus } from 'lib-common/generated/api-types/application'
+import { DecisionType } from 'lib-common/generated/api-types/decision'
+import { UUID } from 'lib-common/types'
 
 import { waitUntilTrue } from '../../utils'
-import { Checkbox, Page } from '../../utils/page'
+import { Checkbox, Combobox, Page } from '../../utils/page'
 import ApplicationListView from '../employee/applications/application-list-view'
 import { PlacementDraftPage } from '../employee/placement-draft-page'
 
@@ -36,6 +38,17 @@ export class SearchFilter {
 export class DecisionEditorPage {
   constructor(private page: Page) {}
 
+  async waitUntilLoaded() {
+    await this.page.findByDataQa('save-decisions-button').waitUntilVisible()
+  }
+
+  async selectUnit(type: DecisionType, unitId: UUID) {
+    const selector = new Combobox(
+      this.page.findByDataQa(`unit-selector-${type}`)
+    )
+    await selector.fillAndSelectItem('', unitId)
+  }
+
   async save() {
     await this.page.findByDataQa('save-decisions-button').click()
   }
@@ -49,7 +62,6 @@ export class ApplicationWorkbenchPage {
   constructor(private page: Page) {}
 
   searchFilter = new SearchFilter(this.page)
-  decisionEditorPage = new DecisionEditorPage(this.page)
 
   #applicationPlacementProposalStatusIndicator = this.page.findByDataQa(
     'placement-proposal-status'
@@ -180,6 +192,7 @@ export class ApplicationWorkbenchPage {
     await this.getApplicationById(applicationId)
       .findByDataQa('primary-action-edit-decisions')
       .click()
+    return new DecisionEditorPage(this.page)
   }
 
   async assertAgreementStatusNotAgreed() {

@@ -2,102 +2,107 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
 import {
   ChildDailyNoteBody,
   ChildStickyNoteBody,
+  GroupNote,
   GroupNoteBody
 } from 'lib-common/generated/api-types/note'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
+import { JsonOf } from 'lib-common/json'
+import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 
 import { client } from '../client'
 
-export async function postGroupNote(
-  groupId: UUID,
+export function getGroupNotes(groupId: UUID): Promise<GroupNote[]> {
+  return client
+    .get<JsonOf<GroupNote[]>>(`/daycare-groups/${groupId}/group-notes`)
+    .then((res) => res.data.map(deserializeGroupNote))
+}
+
+function deserializeGroupNote(data: JsonOf<GroupNote>): GroupNote {
+  return {
+    ...data,
+    expires: LocalDate.parseIso(data.expires),
+    modifiedAt: HelsinkiDateTime.parseIso(data.modifiedAt)
+  }
+}
+
+export function createGroupNote({
+  groupId,
+  body
+}: {
+  groupId: UUID
   body: GroupNoteBody
-): Promise<Result<void>> {
-  const url = `/daycare-groups/${groupId}/group-notes`
+}): Promise<void> {
   return client
-    .post(url, body)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .post(`/daycare-groups/${groupId}/group-notes`, body)
+    .then(() => undefined)
 }
 
-export async function putGroupNote(
-  id: UUID,
+export function updateGroupNote({
+  id,
+  body
+}: {
+  id: UUID
   body: GroupNoteBody
-): Promise<Result<void>> {
-  const url = `/group-notes/${id}`
-  return client
-    .put(url, body)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+}): Promise<void> {
+  return client.put(`/group-notes/${id}`, body).then(() => undefined)
 }
 
-export async function deleteGroupNote(id: UUID): Promise<Result<void>> {
-  const url = `/group-notes/${id}`
-  return client
-    .delete(url)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+export function deleteGroupNote(id: UUID): Promise<void> {
+  return client.delete(`/group-notes/${id}`).then(() => undefined)
 }
 
-export async function postChildDailyNote(
-  childId: UUID,
+export async function createChildDailyNote({
+  childId,
+  body
+}: {
+  childId: UUID
   body: ChildDailyNoteBody
-): Promise<Result<void>> {
-  const url = `/children/${childId}/child-daily-notes`
+}): Promise<void> {
   return client
-    .post(url, body)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .post(`/children/${childId}/child-daily-notes`, body)
+    .then(() => undefined)
 }
 
-export async function putChildDailyNote(
-  id: UUID,
+export async function updateChildDailyNote({
+  id,
+  body
+}: {
+  id: UUID
   body: ChildDailyNoteBody
-): Promise<Result<void>> {
-  const url = `/child-daily-notes/${id}`
-  return client
-    .put(url, body)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+}): Promise<void> {
+  return client.put(`/child-daily-notes/${id}`, body).then(() => undefined)
 }
 
-export async function deleteChildDailyNote(id: UUID): Promise<Result<void>> {
-  const url = `/child-daily-notes/${id}`
-  return client
-    .delete(url)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+export function deleteChildDailyNote(id: UUID): Promise<void> {
+  return client.delete(`/child-daily-notes/${id}`).then(() => undefined)
 }
 
-export async function postChildStickyNote(
-  childId: UUID,
+export function createChildStickyNote({
+  childId,
+  body
+}: {
+  childId: UUID
   body: ChildStickyNoteBody
-): Promise<Result<void>> {
-  const url = `/children/${childId}/child-sticky-notes`
+}): Promise<void> {
   return client
-    .post(url, body)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+    .post(`/children/${childId}/child-sticky-notes`, body)
+    .then(() => undefined)
 }
 
-export async function putChildStickyNote(
-  id: UUID,
+export function updateChildStickyNote({
+  id,
+  body
+}: {
+  id: UUID
   body: ChildStickyNoteBody
-): Promise<Result<void>> {
-  const url = `/child-sticky-notes/${id}`
-  return client
-    .put(url, body)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+}): Promise<void> {
+  return client.put(`/child-sticky-notes/${id}`, body).then(() => undefined)
 }
 
-export async function deleteChildStickyNote(id: UUID): Promise<Result<void>> {
-  const url = `/child-sticky-notes/${id}`
-  return client
-    .delete(url)
-    .then(() => Success.of())
-    .catch((e) => Failure.fromError(e))
+export function deleteChildStickyNote(id: UUID): Promise<void> {
+  return client.delete(`/child-sticky-notes/${id}`).then(() => undefined)
 }

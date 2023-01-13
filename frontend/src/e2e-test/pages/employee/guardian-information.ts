@@ -7,7 +7,7 @@ import { formatCents } from 'lib-common/money'
 import { UUID } from 'lib-common/types'
 
 import config from '../../config'
-import { waitUntilEqual, waitUntilNotEqual, waitUntilTrue } from '../../utils'
+import { waitUntilEqual, waitUntilTrue } from '../../utils'
 import {
   Checkbox,
   Combobox,
@@ -51,16 +51,14 @@ export default class GuardianInformationPage {
     switch (enabled) {
       case true:
         await this.#restrictedDetailsEnabledLabel.waitUntilVisible()
-        await waitUntilEqual(
-          () => this.#personStreetAddress.text,
+        await this.#personStreetAddress.assertTextEquals(
           'Osoite ei ole saatavilla turvakiellon vuoksi'
         )
         break
       default:
         await this.#restrictedDetailsEnabledLabel.waitUntilHidden()
-        await waitUntilNotEqual(
-          () => this.#personStreetAddress.text,
-          'Osoite ei ole saatavilla turvakiellon vuoksi'
+        await this.#personStreetAddress.assertText(
+          (text) => text !== 'Osoite ei ole saatavilla turvakiellon vuoksi'
         )
     }
   }
@@ -118,7 +116,7 @@ class FamilyOverviewSection extends Section {
 
     if (age !== undefined) {
       const personAge = person.find('[data-qa="person-age"]')
-      await waitUntilEqual(() => personAge.text, age.toString())
+      await personAge.assertTextEquals(age.toString())
     }
 
     if (incomeCents !== undefined) {
@@ -177,7 +175,7 @@ class ChildrenSection extends Section {
 
   async verifyChildAge(age: number) {
     const childAge = this.#childrenTableRow.nth(0).find('[data-qa="child-age"]')
-    await waitUntilEqual(() => childAge.text, age.toString())
+    await childAge.assertTextEquals(age.toString())
   }
 }
 
@@ -251,11 +249,8 @@ class FosterChildrenSection extends Section {
     end: LocalDate | null
   ) {
     const row = this.findByDataQa(`foster-child-row-${childId}`)
-    await waitUntilEqual(() => row.findByDataQa('start').text, start.format())
-    await waitUntilEqual(
-      () => row.findByDataQa('end').text,
-      end?.format() ?? ''
-    )
+    await row.findByDataQa('start').assertTextEquals(start.format())
+    await row.findByDataQa('end').assertTextEquals(end?.format() ?? '')
   }
 
   async assertRowDoesNotExist(childId: string) {
@@ -310,10 +305,7 @@ export class IncomeSection extends Section {
   )
 
   async assertIncomeStatementChildName(nth: number, childName: string) {
-    await waitUntilEqual(
-      () => this.#childIncomeStatementsTitles.nth(nth).text,
-      childName
-    )
+    await this.#childIncomeStatementsTitles.nth(nth).assertTextEquals(childName)
   }
 
   async assertIncomeStatementRowCount(expected: number) {
@@ -508,10 +500,9 @@ class FeeDecisionsSection extends Section {
   }
 
   async checkFeeDecisionSentAt(nth: number, expectedSentAt: LocalDate) {
-    await waitUntilEqual(
-      () => this.#feeDecisionSentAt.nth(nth).text,
-      expectedSentAt.format('dd.MM.yyyy')
-    )
+    await this.#feeDecisionSentAt
+      .nth(nth)
+      .assertTextEquals(expectedSentAt.format('dd.MM.yyyy'))
   }
 }
 
@@ -532,10 +523,9 @@ class VoucherValueDecisionsSection extends Section {
     nth: number,
     expectedSentAt: LocalDate
   ) {
-    await waitUntilEqual(
-      () => this.#voucherValueDecisionSentAt.nth(nth).text,
-      expectedSentAt.format('dd.MM.yyyy')
-    )
+    await this.#voucherValueDecisionSentAt
+      .nth(nth)
+      .assertTextEquals(expectedSentAt.format('dd.MM.yyyy'))
   }
 
   async checkVoucherValueDecisionCount(expectedCount: number) {

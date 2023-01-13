@@ -72,11 +72,11 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             http
                 .get("/placements?daycareId=$daycareId")
                 .asUser(serviceWorker)
-                .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
+                .responseObject<PlacementResponse>(jsonMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
 
-        val placements = result.get().toList()
+        val placements = result.get().placements.toList()
         Assertions.assertThat(placements).hasSize(1)
 
         val placement = placements[0]
@@ -101,10 +101,10 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     "/placements?daycareId=$daycareId&from=$placementStart&to=${placementStart.plusDays(900)}"
                 )
                 .asUser(serviceWorker)
-                .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
+                .responseObject<PlacementResponse>(jsonMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
-        Assertions.assertThat(result.get()).hasSize(1)
+        Assertions.assertThat(result.get().placements).hasSize(1)
     }
 
     @Test
@@ -115,10 +115,10 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     "/placements?daycareId=$daycareId&from=${placementStart.minusDays(900)}&to=${placementEnd.minusDays(300)}"
                 )
                 .asUser(serviceWorker)
-                .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
+                .responseObject<PlacementResponse>(jsonMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
-        Assertions.assertThat(result.get()).hasSize(0)
+        Assertions.assertThat(result.get().placements).hasSize(0)
     }
 
     @Test
@@ -127,10 +127,10 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             http
                 .get("/placements?daycareId=${UUID.randomUUID()}")
                 .asUser(serviceWorker)
-                .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
+                .responseObject<PlacementResponse>(jsonMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
-        Assertions.assertThat(result.get()).isEqualTo(setOf<DaycarePlacementWithDetails>())
+        Assertions.assertThat(result.get().placements).isEqualTo(setOf<PlacementResponse>())
     }
 
     @Test
@@ -139,11 +139,11 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             http
                 .get("/placements?childId=$childId")
                 .asUser(serviceWorker)
-                .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
+                .responseObject<PlacementResponse>(jsonMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
 
-        val placements = result.get().toList()
+        val placements = result.get().placements.toList()
         Assertions.assertThat(placements).hasSize(1)
 
         val placement = placements[0]
@@ -162,10 +162,10 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     "/placements?childId=$childId&from=$placementStart&to=${placementStart.plusDays(900)}"
                 )
                 .asUser(serviceWorker)
-                .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
+                .responseObject<PlacementResponse>(jsonMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
-        Assertions.assertThat(result.get()).hasSize(1)
+        Assertions.assertThat(result.get().placements).hasSize(1)
     }
 
     @Test
@@ -176,10 +176,10 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
                     "/placements?childId=$childId&from=${placementStart.minusDays(900)}&to=${placementStart.minusDays(300)}"
                 )
                 .asUser(serviceWorker)
-                .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
+                .responseObject<PlacementResponse>(jsonMapper)
 
         Assertions.assertThat(res.statusCode).isEqualTo(200)
-        Assertions.assertThat(result.get()).hasSize(0)
+        Assertions.assertThat(result.get().placements).hasSize(0)
     }
 
     @Test
@@ -368,9 +368,9 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             http
                 .get("/placements?daycareId=$daycareId")
                 .asUser(unitSupervisor)
-                .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
+                .responseObject<PlacementResponse>(jsonMapper)
 
-        val groupPlacementsAfter = result.get().toList()[0].groupPlacements
+        val groupPlacementsAfter = result.get().placements.toList()[0].groupPlacements
         Assertions.assertThat(groupPlacementsAfter).hasSize(1)
         Assertions.assertThat(groupPlacementsAfter.first().groupId).isNull()
     }
@@ -401,11 +401,11 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
             http
                 .get("/placements?childId=$childId")
                 .asUser(unitSupervisor)
-                .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
+                .responseObject<PlacementResponse>(jsonMapper)
 
         org.junit.jupiter.api.Assertions.assertEquals(200, res.statusCode)
 
-        val placements = result.get().toList()
+        val placements = result.get().placements.toList()
         val allowed = placements.find { it.id == allowedId }!!
         val restricted = placements.find { it.id == restrictedId }!!
 
@@ -684,9 +684,10 @@ class PlacementControllerIntegrationTest : FullApplicationTest(resetDbBeforeEach
         return http
             .get("/placements?childId=$childId&daycareId=$daycareId")
             .asUser(serviceWorker)
-            .responseObject<Set<DaycarePlacementWithDetails>>(jsonMapper)
+            .responseObject<PlacementResponse>(jsonMapper)
             .third
             .get()
+            .placements
             .toList()
             .first { it.id == testPlacement.id }
             .groupPlacements

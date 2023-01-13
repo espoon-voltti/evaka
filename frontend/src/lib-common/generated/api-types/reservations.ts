@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017-2022 City of Espoo
+// SPDX-FileCopyrightText: 2017-2023 City of Espoo
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
@@ -62,6 +62,7 @@ export interface OpenTimeRange {
 */
 export interface ReservationChild {
   firstName: string
+  hasContractDays: boolean
   id: UUID
   imageId: UUID | null
   inShiftCareUnit: boolean

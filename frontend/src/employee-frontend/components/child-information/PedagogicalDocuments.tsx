@@ -113,7 +113,7 @@ export default React.memo(function PedagogicalDocuments({
     placements
       .map(
         (ps) =>
-          !ps.some((placement) =>
+          !ps.placements.some((placement) =>
             placement.daycare.enabledPilotFeatures.includes('VASU_AND_PEDADOC')
           )
       )

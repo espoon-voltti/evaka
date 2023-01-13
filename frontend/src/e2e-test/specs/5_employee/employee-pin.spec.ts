@@ -8,7 +8,6 @@ import { Fixture } from '../../dev-api/fixtures'
 import { EmployeeDetail } from '../../dev-api/types'
 import EmployeeNav from '../../pages/employee/employee-nav'
 import { EmployeePinPage } from '../../pages/employee/employee-pin'
-import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -35,8 +34,7 @@ describe('Employees PIN', () => {
 
   test('shows a warning if PIN is too easy, and warning disappears once PIN is valid', async () => {
     await pinPage.pinInput.fill('1111')
-    await waitUntilEqual(
-      () => pinPage.inputInfo.text,
+    await pinPage.inputInfo.assertTextEquals(
       'Liian helppo PIN-koodi tai PIN-koodi sisältää kirjaimia'
     )
 

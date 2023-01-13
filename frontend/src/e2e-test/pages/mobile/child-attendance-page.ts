@@ -78,7 +78,7 @@ export default class ChildAttendancePage {
   }
 
   async assertChildStatusLabelIsShown(expectedText: string) {
-    await waitUntilEqual(() => this.#childStatusLabel.text, expectedText)
+    await this.#childStatusLabel.assertTextEquals(expectedText)
   }
 
   // time format: "09:46"

@@ -8,16 +8,19 @@ import styled from 'styled-components'
 
 import ModalAccessibilityWrapper from 'citizen-frontend/ModalAccessibilityWrapper'
 import LocalDate from 'lib-common/local-date'
+import { useQueryResult } from 'lib-common/query'
 import Button from 'lib-components/atoms/buttons/Button'
 import ModalBackground from 'lib-components/molecules/modals/ModalBackground'
 import { defaultMargins } from 'lib-components/white-space'
 import { faCalendarPlus, faTreePalm, faUserMinus } from 'lib-icons'
 
-import { useHolidayPeriods } from '../holiday-periods/state'
+import { useUser } from '../auth/state'
 import { useTranslation } from '../localization'
 import { mobileBottomNavHeight } from '../navigation/const'
 
 import ReportHolidayLabel from './ReportHolidayLabel'
+import { activeQuestionnaireQuery } from './queries'
+import { isQuestionnaireAvailable } from './utils'
 
 interface Props {
   close: () => void
@@ -37,7 +40,10 @@ export default React.memo(function ActionPickerModal({
     () => openAbsences(undefined),
     [openAbsences]
   )
-  const { questionnaireAvailable } = useHolidayPeriods()
+  const questionnaireAvailable = isQuestionnaireAvailable(
+    useQueryResult(activeQuestionnaireQuery),
+    useUser()
+  )
 
   return (
     <ModalAccessibilityWrapper>
@@ -45,7 +51,9 @@ export default React.memo(function ActionPickerModal({
         <Container>
           {questionnaireAvailable && (
             <Action onClick={openHolidays} data-qa="calendar-action-holidays">
-              <ReportHolidayLabel />
+              <ReportHolidayLabel
+                questionnaireAvailable={questionnaireAvailable}
+              />
               <IconBackground>
                 <FontAwesomeIcon icon={faTreePalm} size="1x" />
               </IconBackground>

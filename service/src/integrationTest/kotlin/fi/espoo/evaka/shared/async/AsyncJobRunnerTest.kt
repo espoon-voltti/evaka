@@ -46,7 +46,19 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
 
     @BeforeEach
     fun clean() {
-        asyncJobRunner = AsyncJobRunner(TestJob::class, jdbi, AsyncJobRunnerConfig(), noopTracer)
+        asyncJobRunner =
+            AsyncJobRunner(
+                TestJob::class,
+                listOf(
+                    AsyncJobRunner.Pool(
+                        AsyncJobPool.Id(TestJob::class, "default"),
+                        AsyncJobPool.Config(),
+                        setOf(TestJob::class)
+                    )
+                ),
+                jdbi,
+                noopTracer
+            )
         asyncJobRunner.registerHandler { _, _, msg: TestJob -> currentCallback.get()(msg) }
     }
 
@@ -62,7 +74,10 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
                 throw LetsRollbackException()
             }
         }
-        assertEquals(0, asyncJobRunner.getPendingJobCount())
+        assertEquals(
+            0,
+            db.read { it.createQuery("SELECT count(*) FROM async_job").mapTo<Int>().single() }
+        )
     }
 
     @Test
@@ -103,7 +118,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
         val job = TestJob()
         val future = this.setAsyncJobCallback { assertEquals(job, it) }
         db.transaction { asyncJobRunner.plan(it, listOf(job), runAt = HelsinkiDateTime.now()) }
-        asyncJobRunner.start(pollingInterval = Duration.ofSeconds(1))
+        asyncJobRunner.startBackgroundPolling(Duration.ofSeconds(1))
         future.get(10, TimeUnit.SECONDS)
     }
 
@@ -111,8 +126,7 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
     fun `AsyncJobRunner wakes up automatically after a transaction plans jobs`() {
         val job = TestJob()
         val future = this.setAsyncJobCallback { assertEquals(job, it) }
-        asyncJobRunner.start(pollingInterval = Duration.ofDays(1))
-        TimeUnit.MILLISECONDS.sleep(100)
+        asyncJobRunner.enableAfterCommitHooks()
         db.transaction { asyncJobRunner.plan(it, listOf(job), runAt = HelsinkiDateTime.now()) }
         future.get(10, TimeUnit.SECONDS)
     }
@@ -124,16 +138,16 @@ class AsyncJobRunnerTest : PureJdbiTest(resetDbBeforeEach = true) {
         db.transaction {
             asyncJobRunner.plan(it, listOf(job), 20, Duration.ZERO, runAt = HelsinkiDateTime.now())
         }
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1)
+        assertEquals(1, asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1))
 
         val exception = assertThrows<ExecutionException> { failingFuture.get(10, TimeUnit.SECONDS) }
         assertTrue(exception.cause is LetsRollbackException)
-        assertEquals(1, asyncJobRunner.getPendingJobCount())
 
         val future = this.setAsyncJobCallback { assertEquals(job, it) }
-        asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1)
+        assertEquals(1, asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1))
         future.get(10, TimeUnit.SECONDS)
-        assertEquals(0, asyncJobRunner.getPendingJobCount())
+
+        assertEquals(0, asyncJobRunner.runPendingJobsSync(RealEvakaClock(), 1))
     }
 
     private fun <R> setAsyncJobCallback(f: (msg: TestJob) -> R): Future<R> {

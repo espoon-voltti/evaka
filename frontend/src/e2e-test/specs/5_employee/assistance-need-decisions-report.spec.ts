@@ -25,7 +25,6 @@ import {
   AssistanceNeedDecisionsReport,
   AssistanceNeedDecisionsReportDecision
 } from '../../pages/employee/reports'
-import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -157,8 +156,7 @@ describe('Assistance need decisions report', () => {
     )
 
     const decisionPage = new AssistanceNeedDecisionsReportDecision(page)
-    await waitUntilEqual(
-      decisionPage.decisionMaker,
+    await decisionPage.decisionMaker.assertTextEquals(
       `${decisionMaker.firstName} ${decisionMaker.lastName}, regional director`
     )
 
@@ -184,7 +182,7 @@ describe('Assistance need decisions report', () => {
     await decisionPage.returnForEditBtn.click()
     await decisionPage.returnForEditModal.okBtn.click()
 
-    await waitUntilEqual(decisionPage.decisionStatus, 'NEEDS_WORK')
+    await decisionPage.decisionStatus.assertStatus('NEEDS_WORK')
   })
 
   test('Decision can be rejected', async () => {
@@ -200,7 +198,7 @@ describe('Assistance need decisions report', () => {
     await decisionPage.rejectBtn.click()
     await decisionPage.modalOkBtn.click()
 
-    await waitUntilEqual(decisionPage.decisionStatus, 'REJECTED')
+    await decisionPage.decisionStatus.assertStatus('REJECTED')
   })
 
   test('Decision can be accepted', async () => {
@@ -216,7 +214,7 @@ describe('Assistance need decisions report', () => {
     await decisionPage.approveBtn.click()
     await decisionPage.modalOkBtn.click()
 
-    await waitUntilEqual(decisionPage.decisionStatus, 'ACCEPTED')
+    await decisionPage.decisionStatus.assertStatus('ACCEPTED')
   })
 
   test('Decision-maker can be changed', async () => {
@@ -229,8 +227,7 @@ describe('Assistance need decisions report', () => {
 
     const decisionPage = new AssistanceNeedDecisionsReportDecision(page)
 
-    await waitUntilEqual(
-      decisionPage.decisionMaker,
+    await decisionPage.decisionMaker.assertTextEquals(
       `${decisionMaker.firstName} ${decisionMaker.lastName}, regional director`
     )
 
@@ -240,8 +237,7 @@ describe('Assistance need decisions report', () => {
     await decisionPage.mismatchModal.titleInput.type('director')
     await decisionPage.mismatchModal.okBtn.click()
 
-    await waitUntilEqual(
-      decisionPage.decisionMaker,
+    await decisionPage.decisionMaker.assertTextEquals(
       `${director.firstName} ${director.lastName}, director`
     )
 

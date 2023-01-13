@@ -134,7 +134,6 @@ class MessageNotificationEmailServiceIntegrationTest :
             )
         )
 
-        assertEquals(0, asyncJobRunner.getPendingJobCount())
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
             "Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka",
@@ -183,7 +182,6 @@ class MessageNotificationEmailServiceIntegrationTest :
         )
 
         assertTrue(MockEmailClient.emails.isEmpty())
-        assertEquals(0, asyncJobRunner.getPendingJobCount())
     }
 
     @Test
@@ -221,7 +219,6 @@ class MessageNotificationEmailServiceIntegrationTest :
 
         assertEquals(2, MockEmailClient.emails.size)
         assertTrue(MockEmailClient.emails.none { email -> email.toAddress == testPersonFi.email })
-        assertEquals(0, asyncJobRunner.getPendingJobCount())
     }
 
     private fun postNewThread(

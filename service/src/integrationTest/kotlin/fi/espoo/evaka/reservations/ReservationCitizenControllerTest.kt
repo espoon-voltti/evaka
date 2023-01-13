@@ -24,12 +24,15 @@ import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.insertTestAbsence
 import fi.espoo.evaka.shared.dev.insertTestEmployee
 import fi.espoo.evaka.shared.dev.insertTestPlacement
+import fi.espoo.evaka.shared.dev.insertTestServiceNeed
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.snDaycareContractDays10
 import fi.espoo.evaka.testAdult_1
 import fi.espoo.evaka.testChild_1
 import fi.espoo.evaka.testChild_2
 import fi.espoo.evaka.testDaycare
+import fi.espoo.evaka.testDecisionMaker_1
 import fi.espoo.evaka.withMockedTime
 import java.time.LocalDate
 import java.time.LocalTime
@@ -62,12 +65,21 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                 endDate = testDate.plusDays(1)
             )
             it.insertTestPlacement(
-                childId = testChild_2.id,
-                unitId = testDaycare.id,
-                type = PlacementType.DAYCARE,
-                startDate = testDate,
-                endDate = testDate.plusDays(1)
-            )
+                    childId = testChild_2.id,
+                    unitId = testDaycare.id,
+                    type = PlacementType.DAYCARE,
+                    startDate = testDate,
+                    endDate = testDate.plusDays(1)
+                )
+                .let { placementId ->
+                    it.insertTestServiceNeed(
+                        confirmedBy = EvakaUserId(testDecisionMaker_1.id.raw),
+                        placementId = placementId,
+                        period = FiniteDateRange(testDate, testDate.plusDays(1)),
+                        optionId = snDaycareContractDays10.id,
+                        shiftCare = false
+                    )
+                }
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_1.id)
             it.insertGuardian(guardianId = testAdult_1.id, childId = testChild_2.id)
 
@@ -109,7 +121,8 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                     imageId = null,
                     placements = listOf(FiniteDateRange(testDate, testDate.plusDays(1))),
                     maxOperationalDays = setOf(1, 2, 3, 4, 5),
-                    inShiftCareUnit = false
+                    inShiftCareUnit = false,
+                    hasContractDays = true
                 ),
                 ReservationChild(
                     id = testChild_1.id,
@@ -119,7 +132,8 @@ class ReservationCitizenControllerTest : FullApplicationTest(resetDbBeforeEach =
                     imageId = null,
                     placements = listOf(FiniteDateRange(testDate, testDate.plusDays(1))),
                     maxOperationalDays = setOf(1, 2, 3, 4, 5),
-                    inShiftCareUnit = false
+                    inShiftCareUnit = false,
+                    hasContractDays = false
                 )
             ),
             res.children

@@ -7,23 +7,20 @@ import React, { useContext, useEffect, useState } from 'react'
 
 import { useTranslation } from 'citizen-frontend/localization'
 import { DailyServiceTimeNotification } from 'lib-common/generated/api-types/dailyservicetimes'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import { NotificationsContext } from 'lib-components/Notifications'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import colors from 'lib-customizations/common'
 import { faExclamation, faInfo } from 'lib-icons'
 
-import {
-  dismissDailyServiceTimeNotifications,
-  getDailyServiceTimeNotifications
-} from './api'
+import { dismissDailyServiceTimeNotifications } from './api'
+import { dailyServiceTimeNotificationsQuery } from './queries'
 
 export default React.memo(function DailyServiceTimeNotification() {
   const i18n = useTranslation()
 
-  const [dailyServiceTimeNotifications] = useApiState(
-    getDailyServiceTimeNotifications,
-    []
+  const dailyServiceTimeNotifications = useQueryResult(
+    dailyServiceTimeNotificationsQuery
   )
 
   const notifications = dailyServiceTimeNotifications.getOrElse([])

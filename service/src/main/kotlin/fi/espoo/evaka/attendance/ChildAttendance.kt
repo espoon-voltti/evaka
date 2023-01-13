@@ -26,7 +26,7 @@ data class ContactInfo(
     val priority: Int?
 )
 
-data class AttendanceResponse(val children: List<Child>, val groupNotes: List<GroupNote>)
+data class ChildrenResponse(val children: List<Child>, val groupNotes: List<GroupNote>)
 
 data class Child(
     val id: ChildId,
@@ -36,9 +36,6 @@ data class Child(
     val placementType: PlacementType,
     val groupId: GroupId?,
     val backup: Boolean,
-    val status: AttendanceStatus,
-    val attendances: List<AttendanceTimes>,
-    val absences: List<ChildAbsence>,
     val dailyServiceTimes: DailyServiceTimesValue?,
     val dailyNote: ChildDailyNote?,
     val stickyNotes: List<ChildStickyNote>,

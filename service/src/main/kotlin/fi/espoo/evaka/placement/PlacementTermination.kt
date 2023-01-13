@@ -200,7 +200,7 @@ fun terminateBilledDaycare(
         //  - no adjacent => change PRESCHOOL_DAYCARE to PRESCHOOL
         // If placement is ongoing
         // - has an adjacent placement => change the end date to termination date & adjust adjacent
-        // start
+        //   start
         // - no adjacent => change the end date and create adjacent
 
         if (placement.startDate.isAfter(terminationDate)) {
@@ -218,6 +218,7 @@ fun terminateBilledDaycare(
             }
         } else {
             tx.updatePlacementEndDate(placement.id, terminationDate)
+            tx.updatePlacementTermination(placement.id, terminationRequestedDate, user.evakaUserId)
             tx.deleteServiceNeedsFromPlacementAfter(placement.id, terminationDate)
             if (adjacentPlacement != null) {
                 tx.updatePlacementStartDate(adjacentPlacement.id, terminationDate.plusDays(1))

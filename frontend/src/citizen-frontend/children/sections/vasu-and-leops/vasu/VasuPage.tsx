@@ -52,7 +52,7 @@ export default React.memo(function VasuPage() {
   const [givePermissionToShareSelected, setGivePermissionToShareSelected] =
     useState<boolean>(false)
   const vasuDocument = useQueryResult(vasuDocumentQuery(id))
-  const givePermissionToShareVasu = useMutationResult(
+  const { mutateAsync: givePermissionToShareVasu } = useMutationResult(
     givePermissionToShareVasuMutation
   )
 
@@ -157,7 +157,7 @@ export default React.memo(function VasuPage() {
                         primary
                         text={t.common.confirm}
                         disabled={!givePermissionToShareSelected}
-                        onClick={() => givePermissionToShareVasu.mutate(id)}
+                        onClick={() => givePermissionToShareVasu(id)}
                         onSuccess={() => undefined}
                         data-qa="confirm-button"
                       />

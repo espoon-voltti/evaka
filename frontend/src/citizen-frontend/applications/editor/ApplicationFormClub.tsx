@@ -15,7 +15,7 @@ import UnitPreferenceSection from '../../applications/editor/unit-preference/Uni
 import { ApplicationFormProps } from './ApplicationEditor'
 
 export default React.memo(function ApplicationFormClub({
-  apiData,
+  application,
   formData,
   setFormData,
   errors,
@@ -31,14 +31,14 @@ export default React.memo(function ApplicationFormClub({
     <FixedSpaceColumn spacing="s">
       <Heading
         type={applicationType}
-        transferApplication={apiData.transferApplication}
-        firstName={apiData.form.child.person.firstName}
-        lastName={apiData.form.child.person.lastName}
+        transferApplication={application.transferApplication}
+        firstName={application.form.child.person.firstName}
+        lastName={application.form.child.person.lastName}
         errors={verificationRequested ? errors : undefined}
       />
 
       <ServiceNeedSection
-        status={apiData.status}
+        status={application.status}
         originalPreferredStartDate={originalPreferredStartDate}
         minDate={minDate}
         maxDate={maxDate}
@@ -93,8 +93,8 @@ export default React.memo(function ApplicationFormClub({
         verificationRequested={verificationRequested}
         fullFamily={false}
         otherGuardianStatus={
-          apiData.otherGuardianId
-            ? apiData.otherGuardianLivesInSameAddress
+          application.otherGuardianId
+            ? application.otherGuardianLivesInSameAddress
               ? 'SAME_ADDRESS'
               : 'DIFFERENT_ADDRESS'
             : 'NO'

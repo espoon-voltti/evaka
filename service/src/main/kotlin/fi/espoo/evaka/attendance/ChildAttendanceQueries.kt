@@ -100,8 +100,6 @@ data class ChildBasics(
     val placementType: PlacementType,
     val groupId: GroupId?,
     val backup: Boolean,
-    val attendances: List<AttendanceTimes>,
-    val absences: List<ChildAbsence>,
     val imageUrl: String?
 )
 
@@ -115,8 +113,6 @@ data class ChildBasicsRow(
     val placementType: PlacementType,
     val groupId: GroupId?,
     val backup: Boolean,
-    @Json val attendances: List<AttendanceTimes>,
-    @Json val absences: List<ChildAbsence>,
     val imageId: String?
 ) {
     fun toChildBasics() =
@@ -130,20 +126,16 @@ data class ChildBasicsRow(
             placementType,
             groupId,
             backup,
-            attendances = attendances.sortedBy { it.arrived }.reversed(),
-            absences,
             imageUrl = imageId?.let { id -> "/api/internal/child-images/$id" }
         )
 }
 
-fun Database.Read.fetchChildrenBasics(
-    unitId: DaycareId,
-    instant: HelsinkiDateTime
-): List<ChildBasics> {
+fun Database.Read.fetchChildrenBasics(unitId: DaycareId, now: HelsinkiDateTime): List<ChildBasics> {
     // language=sql
     val sql =
         """
         WITH child_group_placement AS (
+            -- Placed to unit
             SELECT
                 gp.daycare_group_id as group_id,
                 p.child_id,
@@ -168,6 +160,7 @@ fun Database.Read.fetchChildrenBasics(
 
             UNION ALL
 
+            -- Placed to unit as backup
             SELECT
                 bc.group_id,
                 p.child_id,
@@ -189,6 +182,7 @@ fun Database.Read.fetchChildrenBasics(
 
             UNION ALL
 
+            -- Attendance in the unit
             SELECT
                 (CASE WHEN bc.id IS NOT NULL THEN bc.group_id ELSE gp.daycare_group_id END) as group_id,
                 ca.child_id,
@@ -228,39 +222,130 @@ fun Database.Read.fetchChildrenBasics(
             cimg.id AS image_id,
             c.group_id,
             c.placement_type,
-            c.backup,
-            coalesce(ca.attendances, '[]'::jsonb) AS attendances,
-            coalesce(a.absences, '[]'::jsonb) AS absences
+            c.backup
         FROM child_group_placement c
         JOIN person pe ON pe.id = c.child_id
         LEFT JOIN daily_service_time dst ON dst.child_id = c.child_id AND dst.validity_period @> :date
         LEFT JOIN child_images cimg ON pe.id = cimg.child_id
-        LEFT JOIN LATERAL (
-            SELECT
-                jsonb_agg(jsonb_build_object(
-                    'arrived', coalesce((ca_start.date + ca_start.start_time) AT TIME ZONE 'Europe/Helsinki', (ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki'),
-                    'departed', (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki'
-                )) AS attendances
-            FROM child_attendance ca
-            LEFT JOIN child_attendance ca_start ON ca.start_time = '00:00'::time AND ca.child_id = ca_start.child_id AND ca.date = ca_start.date + 1 AND ca_start.end_time = '23:59'::time
-            WHERE ca.child_id = pe.id
-            AND (ca.end_time IS NULL OR (ca.date = :date AND (ca.start_time != '00:00'::time OR (ca.start_time = '00:00'::time AND :departedThreshold < ca.end_time))))
-        ) ca ON true
-        LEFT JOIN LATERAL (
-            SELECT jsonb_agg(jsonb_build_object('category', a.category)) AS absences
-            FROM absence a WHERE a.child_id = pe.id AND a.date = :date
-            GROUP BY a.child_id
-        ) a ON true
         """
             .trimIndent()
 
     return createQuery(sql)
         .bind("unitId", unitId)
-        .bind("date", instant.toLocalDate())
-        .bind("departedThreshold", instant.toLocalTime().minusMinutes(30))
+        .bind("date", now.toLocalDate())
         .mapTo<ChildBasicsRow>()
         .map { it.toChildBasics() }
         .list()
+}
+
+private data class UnitChildAttendancesRow(
+    val childId: ChildId,
+    val arrived: HelsinkiDateTime,
+    var departed: HelsinkiDateTime?
+)
+
+fun Database.Read.getUnitChildAttendances(
+    unitId: DaycareId,
+    now: HelsinkiDateTime,
+): Map<ChildId, List<AttendanceTimes>> {
+    return createQuery(
+            """
+SELECT
+    child_id,
+    (ca.date + ca.start_time) AT TIME ZONE 'Europe/Helsinki' AS arrived,
+    (ca.date + ca.end_time) AT TIME ZONE 'Europe/Helsinki' AS departed
+FROM child_attendance ca
+WHERE
+    ca.unit_id = :unitId AND (
+        ca.end_time IS NULL OR
+        (ca.date = :today AND ca.start_time != '00:00'::time) OR
+        -- An overnight attendance is included for 30 minutes after child has departed
+        (ca.date = :today AND ca.start_time = '00:00'::time AND :departedThreshold < ca.end_time) OR
+        (ca.date = :today - 1 AND ca.end_time = '23:59'::time)
+    )
+"""
+        )
+        .bind("unitId", unitId)
+        .bind("today", now.toLocalDate())
+        .bind("departedThreshold", now.toLocalTime().minusMinutes(30))
+        .mapTo<UnitChildAttendancesRow>()
+        .groupBy { it.childId }
+        .mapValues {
+            it.value
+                .sortedByDescending { att -> att.arrived }
+                .fold(listOf<AttendanceTimes>()) { result, attendance ->
+                    // Merge overnight attendances as one
+                    val departed = attendance.departed
+                    if (
+                        result.isNotEmpty() &&
+                            departed != null &&
+                            departed.hour == 23 &&
+                            departed.minute == 59 &&
+                            result.isNotEmpty()
+                    ) {
+                        result.dropLast(1) + result.last().copy(arrived = attendance.arrived)
+                    } else {
+                        result + AttendanceTimes(attendance.arrived, departed)
+                    }
+                }
+                .filterNot { att ->
+                    // Remove yesterday's stray attendance that wasn't merged because the child
+                    // departed > 30 minutes ago
+                    att.departed != null && att.departed.toLocalDate() != now.toLocalDate()
+                }
+        }
+        .filter { it.value.isNotEmpty() }
+}
+
+private data class UnitChildAbsencesRow(
+    val childId: ChildId,
+    @Json val absences: List<ChildAbsence>
+)
+
+fun Database.Read.getUnitChildAbsences(
+    unitId: DaycareId,
+    date: LocalDate,
+): Map<ChildId, List<ChildAbsence>> {
+    return createQuery(
+            """
+WITH placed_children AS (
+    SELECT child_id FROM placement WHERE unit_id = :unitId AND :date BETWEEN start_date AND end_date
+    UNION
+    SELECT child_id FROM backup_care WHERE unit_id = :unitId AND :date BETWEEN start_date AND end_date
+)
+SELECT 
+    a.child_id, 
+    jsonb_agg(jsonb_build_object('category', a.category)) AS absences
+FROM absence a
+WHERE a.child_id = ANY (SELECT child_id FROM placed_children) AND a.date = :date
+GROUP BY a.child_id
+"""
+        )
+        .bind("unitId", unitId)
+        .bind("date", date)
+        .mapTo<UnitChildAbsencesRow>()
+        .associateBy { it.childId }
+        .mapValues { it.value.absences }
+}
+
+private data class ChildPlacementTypeRow(val childId: ChildId, val placementType: PlacementType)
+
+fun Database.Read.getChildPlacementTypes(
+    childIds: Set<ChildId>,
+    today: LocalDate
+): Map<ChildId, PlacementType> {
+    return createQuery(
+            """
+SELECT child_id, type AS placement_type
+FROM placement p
+WHERE p.child_id = ANY(:childIds) AND :today BETWEEN p.start_date AND p.end_date
+"""
+        )
+        .bind("childIds", childIds)
+        .bind("today", today)
+        .mapTo<ChildPlacementTypeRow>()
+        .associateBy { it.childId }
+        .mapValues { it.value.placementType }
 }
 
 fun Database.Read.getChildAttendanceStartDatesByRange(

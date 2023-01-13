@@ -164,6 +164,8 @@ export default React.memo(function FosterChildren({
                       disableAll={!!uiMode}
                       onEdit={() => startEditing(relationshipId, validDuring)}
                       onDelete={() => startDeleting(relationshipId)}
+                      editable={true}
+                      deletable={true}
                       dateRange={{
                         startDate: validDuring.start,
                         endDate: validDuring.end

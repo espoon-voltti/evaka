@@ -2,14 +2,10 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 
-import { Result, Success } from 'lib-common/api'
-import { ApplicationType } from 'lib-common/generated/api-types/application'
-import { PublicUnit } from 'lib-common/generated/api-types/daycare'
-import LocalDate from 'lib-common/local-date'
-import { useApiState } from 'lib-common/utils/useRestApi'
+import { useQueryResult } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
 import MultiSelect from 'lib-components/atoms/form/MultiSelect'
@@ -27,31 +23,9 @@ import colors from 'lib-customizations/common'
 import PreferredUnitBox from '../../../applications/editor/unit-preference/PreferredUnitBox'
 import { UnwrapResult } from '../../../async-rendering'
 import { useTranslation } from '../../../localization'
-import { ApplicationUnitType, getApplicationUnits } from '../../api'
+import { applicationUnitsQuery } from '../../queries'
 
 import { UnitPreferenceSectionProps } from './UnitPreferenceSection'
-
-async function fetchUnits(
-  preferredStartDate: LocalDate | null,
-  applicationType: ApplicationType,
-  preparatory: boolean,
-  shiftCare: boolean
-): Promise<Result<PublicUnit[]>> {
-  if (!preferredStartDate) {
-    return Success.of([])
-  } else {
-    const unitType: ApplicationUnitType =
-      applicationType === 'CLUB'
-        ? 'CLUB'
-        : applicationType === 'DAYCARE'
-        ? 'DAYCARE'
-        : preparatory
-        ? 'PREPARATORY'
-        : 'PRESCHOOL'
-
-    return await getApplicationUnits(unitType, preferredStartDate, shiftCare)
-  }
-}
 
 export default React.memo(function UnitsSubSection({
   formData,
@@ -67,22 +41,24 @@ export default React.memo(function UnitsSubSection({
   const [displayFinnish, setDisplayFinnish] = useState(true)
   const [displaySwedish, setDisplaySwedish] = useState(false)
 
-  const [units] = useApiState(
-    () =>
-      fetchUnits(preferredStartDate, applicationType, preparatory, shiftCare),
-    [preferredStartDate, applicationType, preparatory, shiftCare]
-  )
-
-  useEffect(() => {
-    if (units.isSuccess) {
-      updateFormData({
-        preferredUnits: formData.preferredUnits.filter(({ id }) =>
-          units.value.some((unit) => unit.id === id)
-        )
-      })
+  const units = useQueryResult(
+    applicationUnitsQuery(
+      applicationType,
+      preparatory,
+      preferredStartDate,
+      shiftCare
+    ),
+    {
+      placeholderData: [],
+      onSuccess: (units) => {
+        updateFormData({
+          preferredUnits: formData.preferredUnits.filter(({ id }) =>
+            units.some((unit) => unit.id === id)
+          )
+        })
+      }
     }
-  }, [units]) // eslint-disable-line react-hooks/exhaustive-deps
-
+  )
   const maxUnits = getMaxPreferredUnits(applicationType)
 
   return (

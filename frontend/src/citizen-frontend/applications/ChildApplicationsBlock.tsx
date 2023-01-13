@@ -12,6 +12,7 @@ import {
   ApplicationsOfChild,
   ApplicationStatus
 } from 'lib-common/generated/api-types/application'
+import { useMutation } from 'lib-common/query'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import AddButton from 'lib-components/atoms/buttons/AddButton'
 import InlineButton from 'lib-components/atoms/buttons/InlineButton'
@@ -34,7 +35,7 @@ import { applicationStatusIcon, Status } from '../decisions/shared'
 import { useTranslation } from '../localization'
 import { OverlayContext } from '../overlay/state'
 
-import { removeUnprocessedApplication } from './api'
+import { removeUnprocessableApplicationMutation } from './queries'
 
 const StyledLink = styled(Link)`
   color: ${colors.main.m2};
@@ -77,7 +78,6 @@ const Icon = styled(FontAwesomeIcon)`
 
 interface ChildApplicationsBlockProps {
   data: ApplicationsOfChild
-  reload: () => void
 }
 
 const ChildHeading = styled(H2)`
@@ -86,13 +86,16 @@ const ChildHeading = styled(H2)`
 `
 
 export default React.memo(function ChildApplicationsBlock({
-  data: { childId, childName, applicationSummaries, permittedActions },
-  reload
+  data: { childId, childName, applicationSummaries, permittedActions }
 }: ChildApplicationsBlockProps) {
   const navigate = useNavigate()
   const t = useTranslation()
   const { setErrorMessage, setInfoMessage, clearInfoMessage } =
     useContext(OverlayContext)
+
+  const { mutateAsync: removeUnprocessedApplication } = useMutation(
+    removeUnprocessableApplicationMutation
+  )
 
   const onDeleteApplication = (
     applicationId: string,
@@ -111,18 +114,17 @@ export default React.memo(function ChildApplicationsBlock({
       icon: applicationStatus === 'CREATED' ? faExclamation : faTimes,
       resolve: {
         action: () => {
-          void removeUnprocessedApplication(applicationId).then((res) => {
-            if (res.isFailure) {
+          removeUnprocessedApplication(applicationId)
+            .catch(() => {
               setErrorMessage({
                 title: t.applications.deleteUnprocessedApplicationError,
                 type: 'error',
                 resolveLabel: t.common.ok
               })
-            }
-
-            clearInfoMessage()
-            reload()
-          })
+            })
+            .finally(() => {
+              clearInfoMessage()
+            })
         },
         label:
           applicationStatus === 'CREATED'

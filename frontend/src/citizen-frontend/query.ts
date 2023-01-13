@@ -7,8 +7,10 @@ import { QueryClient } from '@tanstack/react-query'
 import { queryKeysNamespace } from 'lib-common/query'
 
 export type QueryKeyPrefix =
+  | 'applications'
   | 'applicationDecisions'
   | 'assistanceDecisions'
+  | 'calendar'
   | 'childConsents'
   | 'children'
   | 'pedagogicalDocuments'

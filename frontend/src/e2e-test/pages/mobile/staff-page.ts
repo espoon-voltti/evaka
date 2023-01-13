@@ -151,10 +151,7 @@ export class StaffAttendancePage {
     this.page.find(`[data-qa="staff-link"]`, { hasText: name })
 
   async assertShiftTimeTextShown(expectedText: string) {
-    await waitUntilEqual(
-      () => this.#staffMemberPage.shiftTimeText.text,
-      expectedText
-    )
+    await this.#staffMemberPage.shiftTimeText.assertTextEquals(expectedText)
   }
 
   async assertAttendanceTimeTextShown(expectedText: string) {
@@ -185,7 +182,7 @@ export class StaffAttendancePage {
   }
 
   async assertPresentStaffCount(expected: number) {
-    await waitUntilEqual(() => this.#tabs.present.text, `LÄSNÄ\n(${expected})`)
+    await this.#tabs.present.assertTextEquals(`LÄSNÄ\n(${expected})`)
   }
 
   async openStaffPage(name: string) {
@@ -193,7 +190,7 @@ export class StaffAttendancePage {
   }
 
   async assertEmployeeStatus(expected: string) {
-    await waitUntilEqual(() => this.#anyMemberPage.status.text, expected)
+    await this.#anyMemberPage.status.assertTextEquals(expected)
   }
 
   async selectTab(tab: 'present' | 'absent') {
@@ -205,17 +202,13 @@ export class StaffAttendancePage {
   }
 
   async assertEmployeeAttendanceTimes(index: number, expected: string) {
-    await waitUntilEqual(
-      () => this.#staffMemberPage.attendanceTimes.nth(index).text,
-      expected
-    )
+    await this.#staffMemberPage.attendanceTimes
+      .nth(index)
+      .assertTextEquals(expected)
   }
 
   async assertExternalStaffArrivalTime(expected: string) {
-    await waitUntilEqual(
-      () => this.#externalMemberPage.arrivalTime.text,
-      expected
-    )
+    await this.#externalMemberPage.arrivalTime.assertTextEquals(expected)
   }
 
   async selectAttendanceType(type: StaffAttendanceType) {
@@ -302,15 +295,11 @@ export class StaffAttendancePage {
   }
 
   async assertArrivalTimeInputInfo(expected: string) {
-    await waitUntilEqual(
-      () => this.#staffArrivalPage.timeInputWarningText.text,
-      expected
-    )
+    await this.#staffArrivalPage.timeInputWarningText.assertTextEquals(expected)
   }
 
   async assertDepartureTimeInputInfo(expected: string) {
-    await waitUntilEqual(
-      () => this.#staffDeparturePage.timeInputWarningText.text,
+    await this.#staffDeparturePage.timeInputWarningText.assertTextEquals(
       expected
     )
   }

@@ -2,17 +2,17 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { Fragment, useCallback, useContext, useState } from 'react'
+import React, { Fragment, useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
 import { UpdateStateFn } from 'lib-common/form-state'
 import {
   ChildDailyNoteBody,
   childDailyNoteLevelValues,
   childDailyNoteReminderValues
 } from 'lib-common/generated/api-types/note'
+import { useMutation, useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import { ChipWrapper, ChoiceChip } from 'lib-components/atoms/Chip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -31,14 +31,13 @@ import { H2, H3, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faExclamation, faTrash } from 'lib-icons'
 
-import { ChildAttendanceContext } from '../child-attendance/state'
 import { useTranslation } from '../common/i18n'
 
 import {
-  deleteChildDailyNote,
-  postChildDailyNote,
-  putChildDailyNote
-} from './api'
+  createChildDailyNoteMutation,
+  deleteChildDailyNoteMutation,
+  updateChildDailyNoteMutation
+} from './queries'
 import { ChildDailyNoteFormData } from './types'
 
 const Time = styled.div`
@@ -105,19 +104,20 @@ const emptyNote = () => ({
 })
 
 interface Props {
+  unitId: UUID
   childId: UUID
   formData?: ChildDailyNoteFormData
   dailyNoteId: UUID | undefined
 }
 
 export const DailyNotesTab = React.memo(function DailyNotesTab({
-  dailyNoteId,
+  unitId,
+  childId,
   formData,
-  childId
+  dailyNoteId
 }: Props) {
   const { i18n } = useTranslation()
   const navigate = useNavigate()
-  const { reloadAttendances } = useContext(ChildAttendanceContext)
 
   const [uiMode, setUiMode] = useState<
     'default' | 'confirmExit' | 'confirmDelete'
@@ -135,9 +135,14 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
     []
   )
 
-  const deleteDailyNote: () => Promise<Result<void>> = useCallback(
-    () => (dailyNoteId ? deleteChildDailyNote(dailyNoteId) : Promise.reject()),
-    [dailyNoteId]
+  const { mutateAsync: createDailyNote } = useMutationResult(
+    createChildDailyNoteMutation
+  )
+  const { mutateAsync: updateDailyNote } = useMutationResult(
+    updateChildDailyNoteMutation
+  )
+  const { mutateAsync: deleteDailyNote } = useMutation(
+    deleteChildDailyNoteMutation
   )
 
   const saveChildDailyNote = useCallback(() => {
@@ -146,9 +151,16 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
     }
     const body = childDailyNoteFormDataToRequestBody(dailyNote)
     return dailyNoteId
-      ? putChildDailyNote(dailyNoteId, body)
-      : postChildDailyNote(childId, body)
-  }, [childId, dailyNote, dailyNoteId])
+      ? updateDailyNote({ unitId, id: dailyNoteId, body })
+      : createDailyNote({ unitId, childId, body })
+  }, [
+    updateDailyNote,
+    createDailyNote,
+    childId,
+    dailyNote,
+    dailyNoteId,
+    unitId
+  ])
 
   function DeleteNoteModal() {
     return (
@@ -164,12 +176,11 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
         }}
         resolve={{
           action: () => {
-            void deleteDailyNote().then((res) => {
-              if (res.isSuccess) {
-                reloadAttendances()
+            if (dailyNoteId) {
+              void deleteDailyNote({ unitId, id: dailyNoteId }).then(() => {
                 navigate(-1)
-              }
-            })
+              })
+            }
           },
           label: i18n.common.clear
         }}
@@ -192,11 +203,8 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
         }}
         resolve={{
           action: () => {
-            void saveChildDailyNote().then((res) => {
-              if (res.isSuccess) {
-                reloadAttendances()
-                navigate(-1)
-              }
+            void saveChildDailyNote().then(() => {
+              navigate(-1)
             })
           },
           label: i18n.common.save,
@@ -363,7 +371,6 @@ export const DailyNotesTab = React.memo(function DailyNotesTab({
             primary
             onClick={saveChildDailyNote}
             onSuccess={() => {
-              reloadAttendances()
               navigate(-1)
             }}
             text={i18n.common.save}

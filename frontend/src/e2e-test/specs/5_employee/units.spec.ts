@@ -46,15 +46,24 @@ beforeEach(async () => {
       })
       .save()
   ).data
+
+  const today = LocalDate.of(2022, 12, 1)
   placementFixture = (
     await Fixture.placement()
-      .with({ childId: childFixture.id, unitId: unitFixture.id })
+      .with({
+        childId: childFixture.id,
+        unitId: unitFixture.id,
+        startDate: today.formatIso(),
+        endDate: today.addYears(1).formatIso()
+      })
       .save()
   ).data
 
   const admin = await Fixture.employeeAdmin().save()
 
-  page = await Page.open()
+  page = await Page.open({
+    mockedTime: LocalDate.of(2022, 12, 1).toSystemTzDate()
+  })
   await employeeLogin(page, admin.data)
 })
 

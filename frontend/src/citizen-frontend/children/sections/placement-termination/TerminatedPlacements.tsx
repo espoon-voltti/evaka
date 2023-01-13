@@ -10,6 +10,8 @@ import { Label } from 'lib-components/typography'
 
 import { useTranslation } from '../../../localization'
 
+import { terminatedPlacementInfo } from './utils'
+
 interface Props {
   placements: TerminatablePlacementGroup[]
 }
@@ -21,19 +23,16 @@ export default React.memo(function TerminatedPlacements({ placements }: Props) {
       <HorizontalLine slim />
       <Label>{t.children.placementTermination.terminatedPlacements}</Label>
       <ul>
-        {placements.map((p) => {
-          const terminatedAdditional = p.additionalPlacements.find(
-            (p) => !!p.terminationRequestedDate
-          )
-          const type = terminatedAdditional
-            ? t.children.placementTermination.invoicedDaycare
-            : t.placement.type[p.type]
-          const lastDay = terminatedAdditional
-            ? terminatedAdditional.endDate
-            : p.endDate
+        {placements.map((placementGroup) => {
+          const { type, unitId, unitName, lastDay } =
+            terminatedPlacementInfo(placementGroup)
+          const typeText =
+            type.type === 'placement'
+              ? t.placement.type[type.placementType]
+              : t.children.placementTermination.invoicedDaycare
           return (
-            <li key={`${p.unitId}-${p.type}`} data-qa="terminated-placement">
-              {type}, {p.unitName},{' '}
+            <li key={`${unitId}-${typeText}`} data-qa="terminated-placement">
+              {typeText}, {unitName},{' '}
               {t.children.placementTermination.lastDayOfPresence.toLowerCase()}:{' '}
               {lastDay.format()}
             </li>

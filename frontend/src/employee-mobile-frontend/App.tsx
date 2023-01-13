@@ -13,6 +13,8 @@ import {
 } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 
+import { useQuery } from 'lib-common/query'
+import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import {
   Notifications,
@@ -29,7 +31,10 @@ import MarkAbsent from './child-attendance/actions/MarkAbsent'
 import MarkAbsentBeforehand from './child-attendance/actions/MarkAbsentBeforehand'
 import MarkDeparted from './child-attendance/actions/MarkDeparted'
 import MarkPresent from './child-attendance/actions/MarkPresent'
-import { ChildAttendanceContextProvider } from './child-attendance/state'
+import {
+  attendanceStatusesQuery,
+  childrenQuery
+} from './child-attendance/queries'
 import AttendanceChildPage from './child-info/AttendanceChildPage'
 import ChildSensitiveInfoPage from './child-info/ChildSensitiveInfoPage'
 import ChildNotes from './child-notes/ChildNotes'
@@ -41,6 +46,7 @@ import { UnreadMessagesPage } from './messages/UnreadMessagesPage'
 import { MessageContextProvider } from './messages/state'
 import MobileLander from './pairing/MobileLander'
 import PairingWizard from './pairing/PairingWizard'
+import { queryClient, QueryClientProvider } from './query'
 import ExternalStaffMemberPage from './staff-attendance/ExternalStaffMemberPage'
 import MarkExternalStaffMemberArrivalPage from './staff-attendance/MarkExternalStaffMemberArrivalPage'
 import StaffAttendancesPage from './staff-attendance/StaffAttendancesPage'
@@ -55,44 +61,46 @@ export default function App() {
   const { apiVersion } = useContext(UserContext)
 
   return (
-    <I18nContextProvider>
-      <ThemeProvider theme={theme}>
-        <ErrorBoundary
-          fallback={() => (
-            <ErrorPage basePath="/employee/mobile" labels={i18n.errorPage} />
-          )}
-        >
-          <UserContextProvider>
-            <NotificationsContextProvider>
-              <Notifications apiVersion={apiVersion} />
-              <Router basename="/employee/mobile">
-                <Routes>
-                  <Route path="/landing" element={<MobileLander />} />
-                  <Route path="/pairing" element={<PairingWizard />} />
-                  <Route
-                    path="/units"
-                    element={
-                      <RequireAuth>
-                        <UnitList />
-                      </RequireAuth>
-                    }
-                  />
-                  <Route
-                    path="/units/:unitId/*"
-                    element={
-                      <RequireAuth>
-                        <UnitRouter />
-                      </RequireAuth>
-                    }
-                  />
-                  <Route index element={<Navigate replace to="/landing" />} />
-                </Routes>
-              </Router>
-            </NotificationsContextProvider>
-          </UserContextProvider>
-        </ErrorBoundary>
-      </ThemeProvider>
-    </I18nContextProvider>
+    <QueryClientProvider client={queryClient}>
+      <I18nContextProvider>
+        <ThemeProvider theme={theme}>
+          <ErrorBoundary
+            fallback={() => (
+              <ErrorPage basePath="/employee/mobile" labels={i18n.errorPage} />
+            )}
+          >
+            <UserContextProvider>
+              <NotificationsContextProvider>
+                <Notifications apiVersion={apiVersion} />
+                <Router basename="/employee/mobile">
+                  <Routes>
+                    <Route path="/landing" element={<MobileLander />} />
+                    <Route path="/pairing" element={<PairingWizard />} />
+                    <Route
+                      path="/units"
+                      element={
+                        <RequireAuth>
+                          <UnitList />
+                        </RequireAuth>
+                      }
+                    />
+                    <Route
+                      path="/units/:unitId/*"
+                      element={
+                        <RequireAuth>
+                          <UnitRouter />
+                        </RequireAuth>
+                      }
+                    />
+                    <Route index element={<Navigate replace to="/landing" />} />
+                  </Routes>
+                </Router>
+              </NotificationsContextProvider>
+            </UserContextProvider>
+          </ErrorBoundary>
+        </ThemeProvider>
+      </I18nContextProvider>
+    </QueryClientProvider>
   )
 }
 
@@ -126,41 +134,44 @@ function GroupRouter() {
 }
 
 function ChildAttendanceRouter() {
+  // Re-fetch child data when navigating to the attendance section
+  const { unitId } = useNonNullableParams<{ unitId: UUID }>()
+  useQuery(childrenQuery(unitId), { refetchOnMount: 'always' })
+  useQuery(attendanceStatusesQuery(unitId), { refetchOnMount: 'always' })
+
   return (
-    <ChildAttendanceContextProvider>
-      <Routes>
-        <Route
-          path="list/:attendanceStatus"
-          element={<AttendancePageWrapper />}
-        />
-        <Route path=":childId" element={<AttendanceChildPage />} />
-        <Route path=":childId/mark-present" element={<MarkPresent />} />
-        <Route path=":childId/mark-absent" element={<MarkAbsent />} />
-        <Route
-          path=":childId/mark-absent-beforehand"
-          element={<MarkAbsentBeforehand />}
-        />
-        <Route path=":childId/mark-departed" element={<MarkDeparted />} />
-        <Route path=":childId/note" element={<ChildNotes />} />
-        <Route
-          path=":childId/info"
-          element={
-            <RequireAuth strength="PIN">
-              <ChildSensitiveInfoPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path=":childId/new-message"
-          element={
-            <RequireAuth strength="PIN">
-              <MessageEditorPage />
-            </RequireAuth>
-          }
-        />
-        <Route index element={<Navigate replace to="list/coming" />} />
-      </Routes>
-    </ChildAttendanceContextProvider>
+    <Routes>
+      <Route
+        path="list/:attendanceStatus"
+        element={<AttendancePageWrapper />}
+      />
+      <Route path=":childId" element={<AttendanceChildPage />} />
+      <Route path=":childId/mark-present" element={<MarkPresent />} />
+      <Route path=":childId/mark-absent" element={<MarkAbsent />} />
+      <Route
+        path=":childId/mark-absent-beforehand"
+        element={<MarkAbsentBeforehand />}
+      />
+      <Route path=":childId/mark-departed" element={<MarkDeparted />} />
+      <Route path=":childId/note" element={<ChildNotes />} />
+      <Route
+        path=":childId/info"
+        element={
+          <RequireAuth strength="PIN">
+            <ChildSensitiveInfoPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path=":childId/new-message"
+        element={
+          <RequireAuth strength="PIN">
+            <MessageEditorPage />
+          </RequireAuth>
+        }
+      />
+      <Route index element={<Navigate replace to="list/coming" />} />
+    </Routes>
   )
 }
 

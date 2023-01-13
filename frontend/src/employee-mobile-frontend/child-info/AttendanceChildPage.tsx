@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
+import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { StaticChip } from 'lib-components/atoms/Chip'
@@ -22,9 +23,13 @@ import { faArrowLeft, faCalendarTimes, faQuestion, farUser } from 'lib-icons'
 
 import { renderResult } from '../async-rendering'
 import { IconBox } from '../child-attendance/ChildListItem'
-import { returnToComing } from '../child-attendance/api'
-import { deleteChildImage } from '../child-attendance/childImages'
-import { ChildAttendanceContext } from '../child-attendance/state'
+import {
+  attendanceStatusesQuery,
+  childrenQuery,
+  deleteChildImageMutation,
+  returnToComingMutation
+} from '../child-attendance/queries'
+import { childAttendanceStatus, useChild } from '../child-attendance/utils'
 import BottomModalMenu from '../common/BottomModalMenu'
 import { FlexColumn } from '../common/components'
 import { useTranslation } from '../common/i18n'
@@ -52,10 +57,8 @@ export default React.memo(function AttendanceChildPage() {
   }>()
 
   const { unitInfoResponse } = useContext(UnitContext)
-
-  const { attendanceResponse, reloadAttendances } = useContext(
-    ChildAttendanceContext
-  )
+  const child = useChild(useQueryResult(childrenQuery(unitId)), childId)
+  const attendanceStatuses = useQueryResult(attendanceStatusesQuery(unitId))
 
   const [uiMode, setUiMode] = useState<
     | 'default'
@@ -69,26 +72,17 @@ export default React.memo(function AttendanceChildPage() {
 
   const uploadInputRef = useRef<HTMLInputElement>(null)
 
-  const childInfoResult = useMemo(
+  const { mutateAsync: returnToComing } = useMutation(returnToComingMutation)
+  const { mutateAsync: deleteChildImage } = useMutation(
+    deleteChildImageMutation
+  )
+
+  const group = useMemo(
     () =>
-      combine(attendanceResponse, unitInfoResponse).map(
-        ([attendance, unitInfo]) => {
-          const child = attendance.children.find(
-            (child) => child.id === childId
-          )
-
-          const group = child
-            ? unitInfo.groups.find((group) => group.id === child.groupId)
-            : undefined
-
-          const hasGroupNote = child
-            ? !!attendance.groupNotes.find((g) => g.groupId === child.groupId)
-            : false
-
-          return { child, group, hasGroupNote }
-        }
+      combine(child, unitInfoResponse).map(([child, unitInfo]) =>
+        unitInfo.groups.find((group) => group.id === child.groupId)
       ),
-    [attendanceResponse, unitInfoResponse, childId]
+    [child, unitInfoResponse]
   )
 
   const returnToComingModal = () => setUiMode('attendance-change-cancel')
@@ -97,9 +91,9 @@ export default React.memo(function AttendanceChildPage() {
     return (
       <ImageEditor
         image={rawImage}
+        unitId={unitId}
         childId={childId}
         onReturn={() => {
-          reloadAttendances()
           setRawImage(null)
           setUiMode('default')
         }}
@@ -121,118 +115,131 @@ export default React.memo(function AttendanceChildPage() {
           data-qa="back-btn"
           aria-label={i18n.common.back}
         />
-        {renderResult(childInfoResult, ({ child, group, hasGroupNote }) =>
-          child ? (
-            <>
-              <Shadow>
-                <Zindex>
-                  <ChildBackground status={child.status}>
-                    <Center>
-                      <IconBox
-                        type={child.status}
-                        onClick={() => setUiMode('img-modal')}
-                      >
-                        {child.imageUrl ? (
-                          <RoundImage src={child.imageUrl} />
-                        ) : (
-                          <RoundIcon
-                            content={farUser}
-                            color={attendanceColors[child.status]}
-                            size="XXL"
-                          />
-                        )}
-                      </IconBox>
-
-                      <Gap size="s" />
-
-                      <CustomTitle data-qa="child-name">
-                        {child.firstName} {child.lastName}
-                      </CustomTitle>
-
-                      {!!child.preferredName && (
-                        <CustomTitle data-qa="child-preferred-name">
-                          ({child.preferredName})
-                        </CustomTitle>
-                      )}
-
-                      <GroupName>
-                        {group?.name ?? i18n.attendances.noGroup}
-                      </GroupName>
-
-                      <ChildStatus>
-                        <StaticChip
-                          color={attendanceColors[child.status]}
-                          data-qa="child-status"
+        {renderResult(
+          combine(child, group, attendanceStatuses),
+          ([child, group, attendanceStatuses]) => {
+            if (!child) return null
+            const childAttendance = childAttendanceStatus(
+              attendanceStatuses,
+              child.id
+            )
+            return (
+              <>
+                <Shadow>
+                  <Zindex>
+                    <ChildBackground status={childAttendance.status}>
+                      <Center>
+                        <IconBox
+                          type={childAttendance.status}
+                          onClick={() => setUiMode('img-modal')}
                         >
-                          {i18n.attendances.types[child.status]}
-                        </StaticChip>
-                      </ChildStatus>
-                    </Center>
-                  </ChildBackground>
+                          {child.imageUrl ? (
+                            <RoundImage src={child.imageUrl} />
+                          ) : (
+                            <RoundIcon
+                              content={farUser}
+                              color={attendanceColors[childAttendance.status]}
+                              size="XXL"
+                            />
+                          )}
+                        </IconBox>
 
-                  <ChildButtons
-                    unitId={unitId}
-                    groupId={groupId}
-                    child={child}
-                    hasGroupNote={hasGroupNote}
-                  />
-                </Zindex>
+                        <Gap size="s" />
 
-                <FlexColumn paddingHorizontal="s">
-                  <AttendanceDailyServiceTimes
-                    times={child.dailyServiceTimes}
-                    reservations={child.reservations}
-                  />
-                  <ArrivalAndDeparture
-                    child={child}
-                    returnToComing={returnToComingModal}
-                  />
-                  <Gap size="m" />
-                  <Absences child={child} />
-                  <Gap size="xs" />
-                  {child.status === 'COMING' && (
-                    <AttendanceChildComing
+                        <CustomTitle data-qa="child-name">
+                          {child.firstName} {child.lastName}
+                        </CustomTitle>
+
+                        {!!child.preferredName && (
+                          <CustomTitle data-qa="child-preferred-name">
+                            ({child.preferredName})
+                          </CustomTitle>
+                        )}
+
+                        <GroupName>
+                          {group?.name ?? i18n.attendances.noGroup}
+                        </GroupName>
+
+                        <ChildStatus>
+                          <StaticChip
+                            color={attendanceColors[childAttendance.status]}
+                            data-qa="child-status"
+                          >
+                            {i18n.attendances.types[childAttendance.status]}
+                          </StaticChip>
+                        </ChildStatus>
+                      </Center>
+                    </ChildBackground>
+
+                    <ChildButtons
                       unitId={unitId}
+                      groupId={groupId}
                       child={child}
-                      groupIdOrAll={groupId}
                     />
-                  )}
-                  {child.status === 'PRESENT' && (
-                    <AttendanceChildPresent
-                      child={child}
-                      unitId={unitId}
-                      groupIdOrAll={groupId}
+                  </Zindex>
+
+                  <FlexColumn paddingHorizontal="s">
+                    <AttendanceDailyServiceTimes
+                      times={child.dailyServiceTimes}
+                      reservations={child.reservations}
                     />
-                  )}
-                  {child.status === 'DEPARTED' && (
-                    <AttendanceChildDeparted
-                      child={child}
-                      unitId={unitId}
-                      groupIdOrAll={groupId}
+                    <ArrivalAndDeparture
+                      attendances={childAttendance.attendances}
+                      returnToComing={returnToComingModal}
                     />
-                  )}
-                  {child.status === 'ABSENT' && (
-                    <AttendanceChildAbsent child={child} unitId={unitId} />
-                  )}
-                </FlexColumn>
-              </Shadow>
-              <BottomButtonWrapper>
-                <LinkButtonWithIcon
-                  data-qa="mark-absent-beforehand"
-                  to={`/units/${unitId}/groups/${groupId}/child-attendance/${childId}/mark-absent-beforehand`}
-                >
-                  <RoundIcon
-                    size="L"
-                    content={faCalendarTimes}
-                    color={colors.main.m2}
-                  />
-                  <LinkButtonText>
-                    {i18n.attendances.actions.markAbsentBeforehand}
-                  </LinkButtonText>
-                </LinkButtonWithIcon>
-              </BottomButtonWrapper>
-            </>
-          ) : null
+                    <Gap size="m" />
+                    <Absences
+                      absences={childAttendance.absences}
+                      placementType={child.placementType}
+                    />
+                    <Gap size="xs" />
+                    {childAttendance.status === 'COMING' && (
+                      <AttendanceChildComing
+                        unitId={unitId}
+                        child={child}
+                        groupIdOrAll={groupId}
+                      />
+                    )}
+                    {childAttendance.status === 'PRESENT' && (
+                      <AttendanceChildPresent
+                        child={child}
+                        unitId={unitId}
+                        groupIdOrAll={groupId}
+                      />
+                    )}
+                    {childAttendance.status === 'DEPARTED' && (
+                      <AttendanceChildDeparted
+                        child={child}
+                        unitId={unitId}
+                        groupIdOrAll={groupId}
+                      />
+                    )}
+                    {childAttendance.status === 'ABSENT' && (
+                      <AttendanceChildAbsent
+                        childId={child.id}
+                        unitId={unitId}
+                      />
+                    )}
+                  </FlexColumn>
+                </Shadow>
+                <BottomButtonWrapper>
+                  <LinkButtonWithIcon
+                    data-qa="mark-absent-beforehand"
+                    to={`/units/${unitId}/groups/${groupId}/child-attendance/${childId}/mark-absent-beforehand`}
+                  >
+                    <RoundIcon
+                      size="L"
+                      content={faCalendarTimes}
+                      color={colors.main.m2}
+                    />
+                    <LinkButtonText>
+                      {i18n.attendances.actions.markAbsentBeforehand}
+                    </LinkButtonText>
+                  </LinkButtonWithIcon>
+                </BottomButtonWrapper>
+              </>
+            )
+          }
         )}
       </TallContentAreaNoOverflow>
       {uiMode === 'img-modal' && (
@@ -249,13 +256,12 @@ export default React.memo(function AttendanceChildPage() {
                   if (uploadInputRef.current) uploadInputRef.current.click()
                 }}
               />
-              {childInfoResult.isSuccess &&
-                !!childInfoResult.value.child?.imageUrl && (
-                  <Button
-                    text={i18n.childInfo.image.modalMenu.deleteImageButton}
-                    onClick={() => setUiMode('img-delete')}
-                  />
-                )}
+              {child.isSuccess && !!child.value.imageUrl && (
+                <Button
+                  text={i18n.childInfo.image.modalMenu.deleteImageButton}
+                  onClick={() => setUiMode('img-delete')}
+                />
+              )}
             </FixedSpaceColumn>
           </BottomModalMenu>
           <input
@@ -290,13 +296,8 @@ export default React.memo(function AttendanceChildPage() {
           resolve={{
             label: i18n.childInfo.image.modalMenu.deleteConfirm.resolve,
             action: () => {
-              void deleteChildImage(childId).then((res) => {
-                if (res.isFailure) {
-                  console.error('Deleting image failed', res.message)
-                } else {
-                  reloadAttendances()
-                  setUiMode('default')
-                }
+              deleteChildImage({ unitId, childId }).finally(() => {
+                setUiMode('default')
               })
             }
           }}
@@ -314,17 +315,9 @@ export default React.memo(function AttendanceChildPage() {
           resolve={{
             label: i18n.common.yesIDo,
             action: () => {
-              void returnToComing(unitId, childId).then((res) => {
-                if (res.isFailure) {
-                  console.error(
-                    'Cancelling attendance change failed',
-                    res.message
-                  )
-                } else {
-                  reloadAttendances()
-                  setUiMode('default')
-                  navigate(-1)
-                }
+              returnToComing({ unitId, childId }).finally(() => {
+                setUiMode('default')
+                navigate(-1)
               })
             }
           }}

@@ -38,6 +38,8 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         Those using Snakeyaml to parse untrusted YAML files may be vulnerable to Denial of Service attacks (DOS). If the parser is running on user supplied input, an attacker may supply content that causes the parser to crash by stack overflow. This effect may support a denial of service attack. No fix released yet as of 2022-11-14. We don't parse YAML files from untrusted sources.
         ]]></notes>
         <cve>CVE-2022-41854</cve>
+        <cve>CVE-2022-3064</cve>
+        <cve>CVE-2021-4235</cve>
     </suppress>
     <suppress>
         <notes><![CDATA[
@@ -70,5 +72,12 @@ SPDX-License-Identifier: LGPL-2.1-or-later
         Fixed version in use, but misidentified as vulnerable
         ]]></notes>
         <cve>CVE-2022-41915</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        Misidentification (https://github.com/jeremylong/DependencyCheck/issues/5213)
+        ]]></notes>
+        <packageUrl regex="true">^(?!pkg:maven//software.amazon.awssdk//utils).*$</packageUrl>
+        <cpe>cpe:/a:utils_project:utils</cpe>
     </suppress>
 </suppressions>

@@ -2,14 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { Loading, Result } from 'lib-common/api'
 import { ApplicationType } from 'lib-common/generated/api-types/application'
+import { useMutationResult, useQuery, useQueryResult } from 'lib-common/query'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
-import { useApiState } from 'lib-common/utils/useRestApi'
 import Main from 'lib-components/atoms/Main'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -22,7 +21,7 @@ import ExpandingInfo, {
 } from 'lib-components/molecules/ExpandingInfo'
 import { AlertBox, InfoBox } from 'lib-components/molecules/MessageBoxes'
 import { fontWeights, H1, H2 } from 'lib-components/typography'
-import { Gap, defaultMargins } from 'lib-components/white-space'
+import { defaultMargins, Gap } from 'lib-components/white-space'
 import { featureFlags } from 'lib-customizations/citizen'
 
 import Footer from '../Footer'
@@ -30,18 +29,18 @@ import { useTranslation } from '../localization'
 import useTitle from '../useTitle'
 
 import {
-  createApplication,
-  getActivePlacementsByApplicationType,
-  getApplicationChildren,
-  getDuplicateApplications
-} from './api'
+  activePlacementsByApplicationTypeQuery,
+  applicationChildrenQuery,
+  createApplicationMutation,
+  duplicateApplicationsQuery
+} from './queries'
 
 export default React.memo(function ApplicationCreation() {
   const navigate = useNavigate()
   const { childId } = useNonNullableParams<{ childId: string }>()
   const t = useTranslation()
   useTitle(t, t.applications.creation.title)
-  const [children] = useApiState(getApplicationChildren, [])
+  const children = useQueryResult(applicationChildrenQuery)
   const childName = useMemo(
     () =>
       children.map((children) => {
@@ -55,31 +54,23 @@ export default React.memo(function ApplicationCreation() {
   )
   const [selectedType, setSelectedType] = useState<ApplicationType>()
 
-  const [duplicates, setDuplicates] = useState<
-    Result<Record<ApplicationType, boolean>>
-  >(Loading.of())
-  useEffect(() => {
-    void getDuplicateApplications(childId).then(setDuplicates)
-  }, [childId])
-
+  const { data: duplicates } = useQuery(duplicateApplicationsQuery(childId))
   const duplicateExists =
     selectedType !== undefined &&
-    duplicates.map((ds) => ds[selectedType] === true).getOrElse(false)
+    duplicates !== undefined &&
+    duplicates[selectedType]
 
-  const [transferApplicationTypes, setTransferApplicationTypes] = useState<
-    Result<Record<ApplicationType, boolean>>
-  >(Loading.of())
-  useEffect(() => {
-    void getActivePlacementsByApplicationType(childId).then(
-      setTransferApplicationTypes
-    )
-  }, [childId])
-
+  const { data: transferApplicationTypes } = useQuery(
+    activePlacementsByApplicationTypeQuery(childId)
+  )
   const shouldUseTransferApplication =
     (selectedType === 'DAYCARE' || selectedType === 'PRESCHOOL') &&
-    transferApplicationTypes
-      .map((ts) => ts[selectedType] === true)
-      .getOrElse(false)
+    transferApplicationTypes !== undefined &&
+    transferApplicationTypes[selectedType]
+
+  const { mutateAsync: createApplication } = useMutationResult(
+    createApplicationMutation
+  )
 
   if (!childName.isLoading && childName.getOrElse(undefined) === undefined) {
     return <Navigate replace to="/applications" />
@@ -182,7 +173,7 @@ export default React.memo(function ApplicationCreation() {
                 disabled={selectedType === undefined || duplicateExists}
                 onClick={() =>
                   selectedType !== undefined
-                    ? createApplication(childId, selectedType)
+                    ? createApplication({ childId, type: selectedType })
                     : undefined
                 }
                 onSuccess={(id) => navigate(`/applications/${id}/edit`)}

@@ -495,12 +495,14 @@ export const MessageContextProvider = React.memo(
         [
           ...receivedMessages.getOrElse([]),
           ...sentMessagesAsThreads.getOrElse([]),
-          ...messageCopiesAsThreads.getOrElse([])
+          ...messageCopiesAsThreads.getOrElse([]),
+          ...archivedMessages.getOrElse([])
         ].find((t) => t.id === threadId),
       [
         receivedMessages,
         sentMessagesAsThreads,
         messageCopiesAsThreads,
+        archivedMessages,
         threadId
       ]
     )

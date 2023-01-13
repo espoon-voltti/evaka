@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { ApplicationType } from 'lib-common/generated/api-types/application'
+
 import {
   Combobox,
   DatePickerDeprecated,
@@ -73,5 +75,13 @@ export default class CreateApplicationModal extends Element {
     await this.#postOffice.fill(postOffice)
     await this.#phone.fill(phone)
     await this.#email.fill(email)
+  }
+
+  #applicationTypeSelect = new Select(
+    this.findByDataQa('select-application-type')
+  )
+
+  async selectApplicationType(type: ApplicationType) {
+    await this.#applicationTypeSelect.selectOption(type)
   }
 }

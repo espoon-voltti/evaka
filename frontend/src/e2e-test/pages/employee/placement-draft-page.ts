@@ -4,7 +4,6 @@
 
 import { UUID } from 'lib-common/types'
 
-import { waitUntilEqual } from '../../utils'
 import { Combobox, Page } from '../../utils/page'
 
 export class PlacementDraftPage {
@@ -43,22 +42,18 @@ export class PlacementDraftPage {
     const speculated = this.#unitCard(unitId).find(
       '[data-qa="speculated-occupancies"]'
     )
-    await waitUntilEqual(
-      () => current.find('[data-qa="3months"]').text,
-      occupancies.max3Months
-    )
-    await waitUntilEqual(
-      () => current.find('[data-qa="6months"]').text,
-      occupancies.max6Months
-    )
-    await waitUntilEqual(
-      () => speculated.find('[data-qa="3months"]').text,
-      occupancies.max3MonthsSpeculated
-    )
-    await waitUntilEqual(
-      () => speculated.find('[data-qa="6months"]').text,
-      occupancies.max6MonthsSpeculated
-    )
+    await current
+      .find('[data-qa="3months"]')
+      .assertTextEquals(occupancies.max3Months)
+    await current
+      .find('[data-qa="6months"]')
+      .assertTextEquals(occupancies.max6Months)
+    await speculated
+      .find('[data-qa="3months"]')
+      .assertTextEquals(occupancies.max3MonthsSpeculated)
+    await speculated
+      .find('[data-qa="6months"]')
+      .assertTextEquals(occupancies.max6MonthsSpeculated)
   }
 
   async addOtherUnit(unitName: string) {

@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import { Failure, Result, Success } from 'lib-common/api'
 import {
   ApplicationDetails,
   ApplicationFormUpdate,
@@ -38,94 +37,72 @@ export type ApplicationUnitType =
   | 'PRESCHOOL'
   | 'PREPARATORY'
 
-export async function getApplicationUnits(
+export function getApplicationUnits(
   type: ApplicationUnitType,
   date: LocalDate,
   shiftCare: boolean | null
-): Promise<Result<PublicUnit[]>> {
-  try {
-    const { data } = await client.get<JsonOf<PublicUnit[]>>('/public/units', {
+): Promise<PublicUnit[]> {
+  return client
+    .get<JsonOf<PublicUnit[]>>('/public/units', {
       params: {
         type,
         date: date.formatIso(),
         ...(shiftCare && { shiftCare: shiftCare })
       }
     })
-    return Success.of(data.map(deserializePublicUnit))
-  } catch (e) {
-    return Failure.fromError(e)
-  }
+    .then((res) => res.data.map(deserializePublicUnit))
 }
 
-export async function getApplication(
+export function getApplication(
   applicationId: string
-): Promise<Result<ApplicationDetails>> {
-  try {
-    const { data } = await client.get<JsonOf<ApplicationDetails>>(
-      `/citizen/applications/${applicationId}`
-    )
-    return Success.of(deserializeApplicationDetails(data))
-  } catch (e) {
-    return Failure.fromError(e)
-  }
+): Promise<ApplicationDetails> {
+  return client
+    .get<JsonOf<ApplicationDetails>>(`/citizen/applications/${applicationId}`)
+    .then((res) => deserializeApplicationDetails(res.data))
 }
 
-export async function updateApplication(
-  applicationId: string,
-  data: CitizenApplicationUpdate
-): Promise<Result<void>> {
-  try {
-    await client.put(`/citizen/applications/${applicationId}`, data)
-    return Success.of(undefined)
-  } catch (e) {
-    return Failure.fromError(e)
-  }
-}
-
-export async function saveApplicationDraft(
-  applicationId: string,
-  data: ApplicationFormUpdate
-): Promise<Result<void>> {
-  try {
-    await client.put(`/citizen/applications/${applicationId}/draft`, data)
-    return Success.of(undefined)
-  } catch (e) {
-    return Failure.fromError(e)
-  }
-}
-
-export async function removeUnprocessedApplication(
+export function updateApplication({
+  applicationId,
+  body
+}: {
   applicationId: string
-): Promise<Result<void>> {
-  try {
-    await client.delete(`/citizen/applications/${applicationId}`)
-    return Success.of(undefined)
-  } catch (e) {
-    return Failure.fromError(e)
-  }
+  body: CitizenApplicationUpdate
+}): Promise<void> {
+  return client
+    .put(`/citizen/applications/${applicationId}`, body)
+    .then(() => undefined)
 }
 
-export async function sendApplication(
+export function saveApplicationDraft({
+  applicationId,
+  body
+}: {
   applicationId: string
-): Promise<Result<void>> {
-  try {
-    await client.post(
-      `/citizen/applications/${applicationId}/actions/send-application`
-    )
-    return Success.of(undefined)
-  } catch (e) {
-    return Failure.fromError(e)
-  }
+  body: ApplicationFormUpdate
+}): Promise<void> {
+  return client
+    .put(`/citizen/applications/${applicationId}/draft`, body)
+    .then(() => undefined)
 }
 
-export const getGuardianApplications = async (): Promise<
-  Result<ApplicationsOfChild[]>
-> => {
+export function removeUnprocessedApplication(
+  applicationId: string
+): Promise<void> {
+  return client
+    .delete(`/citizen/applications/${applicationId}`)
+    .then(() => undefined)
+}
+
+export function sendApplication(applicationId: string): Promise<void> {
+  return client
+    .post(`/citizen/applications/${applicationId}/actions/send-application`)
+    .then(() => undefined)
+}
+
+export function getGuardianApplications(): Promise<ApplicationsOfChild[]> {
   return client
     .get<JsonOf<ApplicationsOfChild[]>>('/citizen/applications/by-guardian')
     .then((res) => res.data.map(deserializeApplicationsOfChild))
-    .then((data) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
 }
 
 const deserializeApplicationsOfChild = (
@@ -141,7 +118,7 @@ const deserializeApplicationsOfChild = (
   }))
 })
 
-export const getApplicationChildren = (): Promise<Result<CitizenChildren[]>> =>
+export const getApplicationChildren = (): Promise<CitizenChildren[]> =>
   client
     .get<JsonOf<CitizenChildren[]>>('/citizen/applications/children')
     .then(({ data }) =>
@@ -150,81 +127,61 @@ export const getApplicationChildren = (): Promise<Result<CitizenChildren[]>> =>
         dateOfBirth: LocalDate.parseIso(child.dateOfBirth)
       }))
     )
-    .then((data) => Success.of(data))
-    .catch((e) => Failure.fromError(e))
 
-export async function createApplication(
-  childId: string,
+export function createApplication({
+  childId,
+  type
+}: {
+  childId: string
   type: ApplicationType
-): Promise<Result<string>> {
-  try {
-    const { data: applicationId } = await client.post<string>(
-      '/citizen/applications',
-      {
-        childId,
-        type: type.toUpperCase()
-      }
-    )
-    return Success.of(applicationId)
-  } catch (e) {
-    return Failure.fromError(e)
-  }
+}): Promise<string> {
+  return client
+    .post<JsonOf<string>>('/citizen/applications', {
+      childId,
+      type: type.toUpperCase()
+    })
+    .then((res) => res.data)
 }
 
-export async function getDuplicateApplications(
+export function getDuplicateApplications(
   childId: string
-): Promise<Result<Record<ApplicationType, boolean>>> {
-  try {
-    const { data } = await client.get<Record<ApplicationType, boolean>>(
+): Promise<Record<ApplicationType, boolean>> {
+  return client
+    .get<JsonOf<Record<ApplicationType, boolean>>>(
       `/citizen/applications/duplicates/${childId}`
     )
-    return Success.of(data)
-  } catch (e) {
-    return Failure.fromError(e)
-  }
+    .then((res) => res.data)
 }
 
-export async function getActivePlacementsByApplicationType(
+export function getActivePlacementsByApplicationType(
   childId: string
-): Promise<Result<Record<ApplicationType, boolean>>> {
-  try {
-    const { data } = await client.get<Record<ApplicationType, boolean>>(
+): Promise<Record<ApplicationType, boolean>> {
+  return client
+    .get<Record<ApplicationType, boolean>>(
       `/citizen/applications/active-placements/${childId}`
     )
-    return Success.of(data)
-  } catch (e) {
-    return Failure.fromError(e)
-  }
+    .then((res) => res.data)
 }
 
-export async function getClubTerms(): Promise<Result<ClubTerm[]>> {
-  try {
-    const result = await client.get<JsonOf<ClubTerm[]>>(`/public/club-terms`)
-    return Success.of(result.data.map(deserializeClubTerm))
-  } catch (e) {
-    return Failure.fromError(e)
-  }
+export function getClubTerms(): Promise<ClubTerm[]> {
+  return client
+    .get<JsonOf<ClubTerm[]>>(`/public/club-terms`)
+    .then((res) => res.data.map(deserializeClubTerm))
 }
 
-export async function getPreschoolTerms(): Promise<Result<PreschoolTerm[]>> {
-  try {
-    const result = await client.get<JsonOf<PreschoolTerm[]>>(
-      `/public/preschool-terms`
-    )
-    return Success.of(result.data.map(deserializePreschoolTerm))
-  } catch (e) {
-    return Failure.fromError(e)
-  }
+export function getPreschoolTerms(): Promise<PreschoolTerm[]> {
+  return client
+    .get<JsonOf<PreschoolTerm[]>>(`/public/preschool-terms`)
+    .then((res) => res.data.map(deserializePreschoolTerm))
 }
 
-export async function getServiceNeedOptionPublicInfos(
+export function getServiceNeedOptionPublicInfos(
   placementTypes: PlacementType[]
-): Promise<Result<ServiceNeedOptionPublicInfo[]>> {
+): Promise<ServiceNeedOptionPublicInfo[]> {
   return client
     .get<JsonOf<ServiceNeedOptionPublicInfo[]>>(
       '/public/service-needs/options',
       { params: { placementTypes: placementTypes.join() } }
     )
-    .then((res) => Success.of(res.data))
-    .catch((e) => Failure.fromError(e))
+    .then((res) => res.data)
 }

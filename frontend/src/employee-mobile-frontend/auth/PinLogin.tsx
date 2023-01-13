@@ -12,6 +12,7 @@ import React, {
 } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
 import Button from 'lib-components/atoms/buttons/Button'
@@ -22,7 +23,7 @@ import { PlainPinInput } from 'lib-components/molecules/PinInput'
 import { H1, Label } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
 
-import { ChildAttendanceContext } from '../child-attendance/state'
+import { childrenQuery } from '../child-attendance/queries'
 import TopBar from '../common/TopBar'
 import { useTranslation } from '../common/i18n'
 import { UnitContext } from '../common/unit'
@@ -151,15 +152,18 @@ const PinLoginForm = React.memo(function PinLoginForm() {
 
 export const PinLogin = React.memo(function PinLogin() {
   const { unitInfoResponse } = useContext(UnitContext)
-  const { attendanceResponse } = useContext(ChildAttendanceContext)
-  const { childId } = useNonNullableParams<{ childId: UUID }>()
+  const { unitId, childId } = useNonNullableParams<{
+    unitId: UUID
+    childId: UUID
+  }>()
+  const unitChildren = useQueryResult(childrenQuery(unitId))
 
   const navigate = useNavigate()
   const onClose = useCallback(() => navigate(-1), [navigate])
 
   const title = childId
-    ? attendanceResponse
-        .map((a) => a.children.find((c) => c.id === childId))
+    ? unitChildren
+        .map((children) => children.find((c) => c.id === childId))
         .map((c) => (c ? `${c.firstName} ${c.lastName}` : ''))
         .getOrElse('')
     : unitInfoResponse.map((u) => u.name).getOrElse('')

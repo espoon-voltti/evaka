@@ -85,17 +85,15 @@ class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
                     }
                 val period = FiniteDateRange(startDate, exactTerm.end)
                 val preschoolDaycarePeriod =
-                    if (
-                        type == PlacementType.PRESCHOOL_DAYCARE ||
-                            type == PlacementType.PRESCHOOL_CLUB ||
-                            type == PlacementType.PREPARATORY_DAYCARE
-                    ) {
-                        FiniteDateRange(
-                            startDate,
-                            LocalDate.of(preschoolTerms.extendedTerm.end.year, 7, 31)
-                        )
-                    } else {
-                        null
+                    when (type) {
+                        PlacementType.PRESCHOOL_DAYCARE,
+                        PlacementType.PREPARATORY_DAYCARE ->
+                            FiniteDateRange(
+                                startDate,
+                                LocalDate.of(preschoolTerms.extendedTerm.end.year, 7, 31)
+                            )
+                        PlacementType.PRESCHOOL_CLUB -> FiniteDateRange(startDate, exactTerm.end)
+                        else -> null
                     }
 
                 PlacementPlanDraft(

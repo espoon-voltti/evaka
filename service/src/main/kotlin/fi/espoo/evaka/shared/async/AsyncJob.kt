@@ -49,28 +49,6 @@ interface AsyncJobPayload {
     val user: AuthenticatedUser?
 }
 
-sealed interface VardaAsyncJob : AsyncJobPayload {
-    data class UpdateVardaChild(
-        val serviceNeedDiffByChild: VardaChildCalculatedServiceNeedChanges
-    ) : VardaAsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    data class ResetVardaChild(val childId: ChildId) : VardaAsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
-    data class DeleteVardaChild(val vardaChildId: Long) : VardaAsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-}
-
-sealed interface SuomiFiAsyncJob : AsyncJobPayload {
-    data class SendMessage(val message: SfiMessage) : SuomiFiAsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-}
-
 sealed interface AsyncJob : AsyncJobPayload {
     data class DvvModificationsRefresh(val ssns: List<String>, val requestingUserId: UUID) :
         AsyncJob {
@@ -239,6 +217,90 @@ sealed interface AsyncJob : AsyncJobPayload {
         val sentAt: HelsinkiDateTime
     ) : AsyncJob {
         override val user: AuthenticatedUser? = null
+    }
+
+    data class SendMessage(val message: SfiMessage) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class UpdateVardaChild(
+        val serviceNeedDiffByChild: VardaChildCalculatedServiceNeedChanges
+    ) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class ResetVardaChild(val childId: ChildId) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    data class DeleteVardaChild(val vardaChildId: Long) : AsyncJob {
+        override val user: AuthenticatedUser? = null
+    }
+
+    companion object {
+        val main =
+            AsyncJobRunner.Pool(
+                AsyncJobPool.Id(AsyncJob::class, "main"),
+                AsyncJobPool.Config(concurrency = 4),
+                setOf(
+                    CreateAssistanceNeedDecisionPdf::class,
+                    DvvModificationsRefresh::class,
+                    GarbageCollectPairing::class,
+                    GenerateFinanceDecisions::class,
+                    InitializeFamilyFromApplication::class,
+                    NotifyDecisionCreated::class,
+                    NotifyFeeDecisionApproved::class,
+                    NotifyFeeDecisionPdfGenerated::class,
+                    NotifyFeeThresholdsUpdated::class,
+                    NotifyVoucherValueDecisionApproved::class,
+                    NotifyVoucherValueDecisionPdfGenerated::class,
+                    RunScheduledJob::class,
+                    ScheduleKoskiUploads::class,
+                    SendAssistanceNeedDecisionSfiMessage::class,
+                    SendDecision::class,
+                    SendPatuReport::class,
+                    UpdateFromVtj::class,
+                    UpdateIrregularAbsences::class,
+                    UploadToKoski::class,
+                    VTJRefresh::class,
+                )
+            )
+        val email =
+            AsyncJobRunner.Pool(
+                AsyncJobPool.Id(AsyncJob::class, "email"),
+                AsyncJobPool.Config(concurrency = 4),
+                setOf(
+                    SendApplicationEmail::class,
+                    SendAssistanceNeedDecisionEmail::class,
+                    SendMessageNotificationEmail::class,
+                    SendMissingReservationsReminder::class,
+                    SendPedagogicalDocumentNotificationEmail::class,
+                    SendPendingDecisionEmail::class,
+                    SendVasuNotificationEmail::class,
+                )
+            )
+        val urgent =
+            AsyncJobRunner.Pool(
+                AsyncJobPool.Id(AsyncJob::class, "urgent"),
+                AsyncJobPool.Config(concurrency = 4),
+                setOf(UpdateMessageThreadRecipients::class)
+            )
+        val suomiFi =
+            AsyncJobRunner.Pool(
+                AsyncJobPool.Id(AsyncJob::class, "suomiFi"),
+                AsyncJobPool.Config(concurrency = 1),
+                setOf(SendMessage::class)
+            )
+        val varda =
+            AsyncJobRunner.Pool(
+                AsyncJobPool.Id(AsyncJob::class, "varda"),
+                AsyncJobPool.Config(concurrency = 1),
+                setOf(
+                    UpdateVardaChild::class,
+                    ResetVardaChild::class,
+                    DeleteVardaChild::class,
+                )
+            )
     }
 }
 

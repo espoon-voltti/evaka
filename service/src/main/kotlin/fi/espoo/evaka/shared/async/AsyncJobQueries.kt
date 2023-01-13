@@ -37,34 +37,20 @@ RETURNING id
         .mapTo<UUID>()
         .one()
 
-fun Database.Read.getPendingJobCount(jobTypes: Collection<AsyncJobType<*>>): Int =
-    createQuery(
-            // language=SQL
-            """
-SELECT count(*)
-FROM async_job
-WHERE completed_at IS NULL
-AND type = ANY(:jobTypes)
-"""
-        )
-        .bind("jobTypes", jobTypes.map { it.name })
-        .mapTo<Int>()
-        .one()
-
 fun <T : AsyncJobPayload> Database.Transaction.claimJob(
     now: HelsinkiDateTime,
     jobTypes: Collection<AsyncJobType<out T>>
 ): ClaimedJobRef<out T>? =
-    createUpdate(
-            // language=SQL
-            """
+    createUpdate<Any> {
+            sql(
+                """
 WITH claimed_job AS (
   SELECT id
   FROM async_job
-  WHERE run_at <= :now
+  WHERE run_at <= ${bind(now)}
   AND retry_count > 0
   AND completed_at IS NULL
-  AND type = ANY(:jobTypes)
+  AND type = ANY(${bind(jobTypes.map { it.name })})
   ORDER BY run_at ASC
   LIMIT 1
   FOR UPDATE SKIP LOCKED
@@ -72,15 +58,14 @@ WITH claimed_job AS (
 UPDATE async_job
 SET
   retry_count = greatest(0, retry_count - 1),
-  run_at = :now + retry_interval,
-  claimed_at = :now,
+  run_at = ${bind(now)} + retry_interval,
+  claimed_at = ${bind(now)},
   claimed_by = txid_current()
 WHERE id = (SELECT id FROM claimed_job)
 RETURNING id AS jobId, type AS jobType, txid_current() AS txId, retry_count AS remainingAttempts
-"""
-        )
-        .bind("jobTypes", jobTypes.map { it.name })
-        .bind("now", now)
+        """
+            )
+        }
         .executeAndReturnGeneratedKeys()
         .map { row ->
             ClaimedJobRef(
@@ -163,10 +148,11 @@ AND type = ANY(${bind(jobTypes.map { it.name })})
         }
         .execute()
 
-fun Database.Transaction.removeJobs(runBefore: HelsinkiDateTime): Int =
+fun Database.Transaction.removeUncompletedJobs(runBefore: HelsinkiDateTime): Int =
     createUpdate("""
 DELETE FROM async_job
-WHERE run_at < :runBefore
+WHERE completed_at IS NULL
+AND run_at < :runBefore
 """)
         .bind("runBefore", runBefore)
         .execute()
@@ -177,6 +163,6 @@ fun Database.Connection.removeOldAsyncJobs(now: HelsinkiDateTime) {
     logger.info { "Removed $completedCount async jobs completed before $completedBefore" }
 
     val runBefore = now.minusMonths(6)
-    val oldCount = transaction { it.removeJobs(runBefore = runBefore) }
+    val oldCount = transaction { it.removeUncompletedJobs(runBefore = runBefore) }
     logger.info("Removed $oldCount async jobs originally planned to be run before $runBefore")
 }
