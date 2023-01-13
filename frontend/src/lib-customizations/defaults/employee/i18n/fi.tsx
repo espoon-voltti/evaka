@@ -3580,13 +3580,13 @@ export const fi = {
       modals: {
         editRetroactive: {
           title: 'Haluatko varmasti muokata tietoja?',
-          text: 'Haluatko varmasti muokata jo käytössä olevia maksutietoja? Mikäli muokkaat tietoja, kaikille asiakkaille luodaan takautuva maksupäätös.',
+          text: 'Haluatko varmasti muokata jo käytössä olevia maksutietoja? Mikäli muokkaat tietoja, kaikille asiakkaille, joita muutos koskee, luodaan takautuva maksu- tai arvopäätös.',
           resolve: 'Muokkaa',
           reject: 'Älä muokkaa'
         },
         saveRetroactive: {
           title: 'Haluatko tallentaa maksuasetukset takautuvasti?',
-          text: 'Olet tallentamassa maksuasetuksia, jotka vaikuttavat takautuvasti. Mikäli tallennat tiedot, kaikille asiakkaille luodaan uusi takautuva maksupäätös. Haluatko varmasti tallentaa?',
+          text: 'Olet tallentamassa maksuasetuksia, jotka vaikuttavat takautuvasti. Mikäli tallennat tiedot, kaikille asiakkaille, joihin muutos vaikuttaa, luodaan uusi takautuva maksu- tai arvopäätös.',
           resolve: 'Tallenna',
           reject: 'Peruuta'
         }
