@@ -225,7 +225,8 @@ const sv: Translations = {
       PURCHASED: 'köpavtal',
       PRIVATE: 'privata',
       PRIVATE_SERVICE_VOUCHER: 'servicesedel',
-      EXTERNAL_PURCHASED: 'köpavtal (annat)'
+      EXTERNAL_PURCHASED: 'köpavtal (annat)',
+      MUNICIPAL_SCHOOL: 'skola'
     },
     homepage: 'Hemsida',
     unitHomepage: 'Enhetens hemsida',

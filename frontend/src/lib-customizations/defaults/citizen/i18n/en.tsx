@@ -227,7 +227,8 @@ const en: Translations = {
       PURCHASED: 'purchased service',
       PRIVATE: 'private service',
       PRIVATE_SERVICE_VOUCHER: 'private service (service voucher)',
-      EXTERNAL_PURCHASED: 'purchased service (other)'
+      EXTERNAL_PURCHASED: 'purchased service (other)',
+      MUNICIPAL_SCHOOL: 'school'
     },
     homepage: 'Homepage',
     unitHomepage: "Unit's homepage",
