@@ -640,6 +640,9 @@ describe('Vasu document page', () => {
     }
 
     test('Mark a document closed', async () => {
+      page = await Page.open()
+      await employeeLogin(page, unitSupervisor)
+
       let vasuPage = await openDocument()
 
       await finalizeDocument()
