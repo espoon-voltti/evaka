@@ -63,7 +63,6 @@ fun Database.Read.getUnreadMessagesCounts(
 }
 
 fun Database.Read.getUnreadMessagesCountsByDaycare(
-    now: HelsinkiDateTime,
     daycareId: DaycareId
 ): Set<UnreadCountByAccountAndGroup> {
     // language=SQL
@@ -86,7 +85,6 @@ fun Database.Read.getUnreadMessagesCountsByDaycare(
 
     return this.createQuery(sql)
         .bind("daycareId", daycareId)
-        .bind("undoThreshold", now.minusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS))
         .mapTo<UnreadCountByAccountAndGroup>()
         .toSet()
 }
@@ -396,7 +394,6 @@ private data class ReceivedThread(
 
 /** Return all threads that are visible to the account through sent and received messages */
 fun Database.Read.getThreads(
-    now: HelsinkiDateTime,
     accountId: MessageAccountId,
     pageSize: Int,
     page: Int,
@@ -426,7 +423,7 @@ SELECT
 FROM message_thread_participant tp
 JOIN message_thread t on t.id = tp.thread_id
 WHERE tp.participant_id = :accountId AND tp.folder_id IS NULL
-AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = :accountId OR m.sent_at < :undoThreshold))
+AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = :accountId OR m.sent_at IS NOT NULL))
 ORDER BY tp.last_message_timestamp DESC
 LIMIT :pageSize OFFSET :offset
         """
@@ -434,17 +431,15 @@ LIMIT :pageSize OFFSET :offset
             .bind("accountId", accountId)
             .bind("pageSize", pageSize)
             .bind("offset", (page - 1) * pageSize)
-            .bind("undoThreshold", now.minusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS))
             .mapToPaged<ReceivedThread>(pageSize)
 
     val messagesByThread =
-        getThreadMessages(now, accountId, threads.data.map { it.id }, municipalAccountName)
+        getThreadMessages(accountId, threads.data.map { it.id }, municipalAccountName)
     return combineThreadsAndMessages(accountId, threads, messagesByThread)
 }
 
 /** Return all threads in which the account has received messages */
 fun Database.Read.getReceivedThreads(
-    now: HelsinkiDateTime,
     accountId: MessageAccountId,
     pageSize: Int,
     page: Int,
@@ -485,7 +480,7 @@ WHERE
             "tp.folder_id = :folderId"
         }
     } AND
-    EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND m.sent_at < :undoThreshold)
+    EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND m.sent_at IS NOT NULL)
 ORDER BY tp.last_received_timestamp DESC
 LIMIT :pageSize OFFSET :offset
         """
@@ -494,16 +489,14 @@ LIMIT :pageSize OFFSET :offset
             .bind("pageSize", pageSize)
             .bind("offset", (page - 1) * pageSize)
             .bind("folderId", folderId)
-            .bind("undoThreshold", now.minusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS))
             .mapToPaged<ReceivedThread>(pageSize)
 
     val messagesByThread =
-        getThreadMessages(now, accountId, threads.data.map { it.id }, municipalAccountName)
+        getThreadMessages(accountId, threads.data.map { it.id }, municipalAccountName)
     return combineThreadsAndMessages(accountId, threads, messagesByThread)
 }
 
 private fun Database.Read.getThreadMessages(
-    now: HelsinkiDateTime,
     accountId: MessageAccountId,
     threadIds: List<MessageThreadId>,
     municipalAccountName: String
@@ -514,7 +507,7 @@ private fun Database.Read.getThreadMessages(
 SELECT
     m.id,
     m.thread_id,
-    m.sent_at,
+    COALESCE(m.sent_at, m.created) AS sent_at,
     mc.content,
     mr_self.read_at,
     (
@@ -560,7 +553,6 @@ ORDER BY m.sent_at
         .bind("accountId", accountId)
         .bind("threadIds", threadIds)
         .bind("municipalAccountName", municipalAccountName)
-        .bind("now", now)
         .mapTo<Message>()
         .groupBy { it.threadId }
 }
@@ -611,7 +603,6 @@ data class MessageCopy(
 )
 
 fun Database.Read.getMessageCopiesByAccount(
-    now: HelsinkiDateTime,
     accountId: MessageAccountId,
     pageSize: Int,
     page: Int
@@ -661,7 +652,6 @@ LIMIT :pageSize OFFSET :offset
         .bind("accountId", accountId)
         .bind("offset", (page - 1) * pageSize)
         .bind("pageSize", pageSize)
-        .bind("undoThreshold", now.minusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS))
         .mapToPaged(pageSize)
 }
 

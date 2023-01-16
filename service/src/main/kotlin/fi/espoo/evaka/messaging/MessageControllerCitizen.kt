@@ -103,7 +103,6 @@ class MessageControllerCitizen(
                 val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
                 dbc.read {
                     it.getThreads(
-                        clock.now(),
                         accountId,
                         pageSize,
                         page,
