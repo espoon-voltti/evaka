@@ -426,7 +426,7 @@ SELECT
 FROM message_thread_participant tp
 JOIN message_thread t on t.id = tp.thread_id
 WHERE tp.participant_id = :accountId AND tp.folder_id IS NULL
-AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = :accountId OR m.sent_at < :undoThreshold))
+AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = :accountId OR m.sent_at IS NOT NULL))
 ORDER BY tp.last_message_timestamp DESC
 LIMIT :pageSize OFFSET :offset
         """
@@ -485,7 +485,7 @@ WHERE
             "tp.folder_id = :folderId"
         }
     } AND
-    EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND m.sent_at < :undoThreshold)
+    EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND m.sent_at IS NOT NULL)
 ORDER BY tp.last_received_timestamp DESC
 LIMIT :pageSize OFFSET :offset
         """
@@ -514,7 +514,7 @@ private fun Database.Read.getThreadMessages(
 SELECT
     m.id,
     m.thread_id,
-    m.sent_at,
+    COALESCE(m.sent_at, m.created) AS sent_at,
     mc.content,
     mr_self.read_at,
     (
