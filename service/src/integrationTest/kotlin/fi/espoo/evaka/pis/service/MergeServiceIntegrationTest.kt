@@ -314,7 +314,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         assertEquals(
             listOf(0, 1),
-            receivedThreadCounts(now, listOf(receiverAccount, receiverDuplicateAccount))
+            receivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
         )
 
         db.transaction {
@@ -324,24 +324,18 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         assertEquals(
             listOf(1, 0),
-            receivedThreadCounts(now, listOf(receiverAccount, receiverDuplicateAccount))
+            receivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
         )
     }
 
-    private fun receivedThreadCounts(
-        now: HelsinkiDateTime,
-        accountIds: List<MessageAccountId>
-    ): List<Int> =
-        db.read { tx -> accountIds.map { tx.getReceivedThreads(now, it, 10, 1, "Espoo").total } }
+    private fun receivedThreadCounts(accountIds: List<MessageAccountId>): List<Int> =
+        db.read { tx -> accountIds.map { tx.getReceivedThreads(it, 10, 1, "Espoo").total } }
 
-    private fun archivedThreadCounts(
-        now: HelsinkiDateTime,
-        accountIds: List<MessageAccountId>
-    ): List<Int> =
+    private fun archivedThreadCounts(accountIds: List<MessageAccountId>): List<Int> =
         db.read { tx ->
             accountIds.map {
                 val archiveFolderId = tx.getArchiveFolderId(it)
-                tx.getReceivedThreads(now, it, 10, 1, "Espoo", archiveFolderId).total
+                tx.getReceivedThreads(it, 10, 1, "Espoo", archiveFolderId).total
             }
         }
 
@@ -381,17 +375,17 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
         }
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
         db.transaction { tx ->
-            val threadId = tx.getThreads(now, senderAccount, 1, 1, "Espoo").data.first().id
+            val threadId = tx.getThreads(senderAccount, 1, 1, "Espoo").data.first().id
             tx.archiveThread(receiverDuplicateAccount, threadId)
         }
 
         assertEquals(
             listOf(0, 0),
-            receivedThreadCounts(now, listOf(receiverAccount, receiverDuplicateAccount))
+            receivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
         )
         assertEquals(
             listOf(0, 1),
-            archivedThreadCounts(now, listOf(receiverAccount, receiverDuplicateAccount))
+            archivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
         )
 
         db.transaction {
@@ -401,7 +395,7 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
 
         assertEquals(
             listOf(1, 0),
-            archivedThreadCounts(now, listOf(receiverAccount, receiverDuplicateAccount))
+            archivedThreadCounts(listOf(receiverAccount, receiverDuplicateAccount))
         )
     }
 

@@ -122,7 +122,6 @@ class MessageController(
                 requireMessageAccountAccess(dbc, user, clock, accountId)
                 dbc.read {
                     it.getReceivedThreads(
-                        clock.now(),
                         accountId,
                         pageSize,
                         page,
@@ -155,7 +154,6 @@ class MessageController(
                         Paged(emptyList(), 0, 0)
                     } else {
                         it.getReceivedThreads(
-                            clock.now(),
                             accountId,
                             pageSize,
                             page,
@@ -184,7 +182,7 @@ class MessageController(
     ): Paged<MessageCopy> {
         return db.connect { dbc ->
                 requireMessageAccountAccess(dbc, user, clock, accountId)
-                dbc.read { it.getMessageCopiesByAccount(clock.now(), accountId, pageSize, page) }
+                dbc.read { it.getMessageCopiesByAccount(accountId, pageSize, page) }
             }
             .also {
                 Audit.MessagingReceivedMessagesRead.log(
@@ -252,7 +250,7 @@ class MessageController(
                         Action.Unit.READ_UNREAD_MESSAGES,
                         unitId
                     )
-                    tx.getUnreadMessagesCountsByDaycare(clock.now(), unitId)
+                    tx.getUnreadMessagesCountsByDaycare(unitId)
                 }
             }
             .also {
