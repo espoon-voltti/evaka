@@ -820,7 +820,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
         val pinCode = "1212"
         lateinit var employeeId: EmployeeId
         val plannedStart = HelsinkiDateTime.of(today, LocalTime.of(8, 0))
-        val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(12, 0))
+        val plannedEnd = HelsinkiDateTime.of(today, LocalTime.of(14, 0))
         db.transaction { tx ->
             FixtureBuilder(tx)
                 .addEmployee()
@@ -879,7 +879,7 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             thirdArrivalTime.toLocalTime(),
             StaffAttendanceType.TRAINING
         )
-        val thirdDepartureTime = plannedEnd.minusMinutes(5)
+        val thirdDepartureTime = thirdArrivalTime.plusMinutes(15)
         markDeparture(
             thirdDepartureTime,
             employeeId,
@@ -888,12 +888,30 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             thirdDepartureTime.toLocalTime(),
             null
         )
+        val fourthArrivalTime = thirdDepartureTime.plusMinutes(30)
+        markArrival(
+            fourthArrivalTime,
+            employeeId,
+            pinCode,
+            groupId,
+            fourthArrivalTime.toLocalTime(),
+            null
+        )
+        val fourthDepartureTime = plannedEnd.minusMinutes(5)
+        markDeparture(
+            fourthDepartureTime,
+            employeeId,
+            pinCode,
+            groupId,
+            fourthDepartureTime.toLocalTime(),
+            null
+        )
         val attendances = fetchRealtimeStaffAttendances(testDaycare.id, mobileUser)
         assertEquals(1, attendances.staff.size)
         attendances.staff.first().let {
             assertEquals(employeeId, it.employeeId)
             assertEquals(null, it.present)
-            assertEquals(5, it.attendances.size)
+            assertEquals(6, it.attendances.size)
             assertEquals(firstArrivalTime, it.attendances[0].arrived)
             assertEquals(firstDepartureTime, it.attendances[0].departed)
             assertEquals(StaffAttendanceType.OVERTIME, it.attendances[0].type)
@@ -909,6 +927,9 @@ class MobileRealtimeStaffAttendanceControllerIntegrationTest :
             assertEquals(thirdArrivalTime, it.attendances[4].arrived)
             assertEquals(thirdDepartureTime, it.attendances[4].departed)
             assertEquals(StaffAttendanceType.PRESENT, it.attendances[4].type)
+            assertEquals(fourthArrivalTime, it.attendances[5].arrived)
+            assertEquals(fourthDepartureTime, it.attendances[5].departed)
+            assertEquals(StaffAttendanceType.PRESENT, it.attendances[5].type)
         }
     }
 
