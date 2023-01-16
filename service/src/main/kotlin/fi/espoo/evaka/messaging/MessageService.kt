@@ -26,18 +26,51 @@ class MessageService(
     private val notificationEmailService: MessageNotificationEmailService
 ) {
     init {
-        asyncJobRunner.registerHandler {
-            db: Database.Connection,
-            _: EvakaClock,
-            msg: AsyncJob.UpdateMessageThreadRecipients ->
-            db.transaction {
-                it.upsertReceiverThreadParticipants(msg.threadId, msg.recipientIds, msg.sentAt)
-            }
-        }
+        asyncJobRunner.registerHandler(::handleMarkMessageAsSent)
+        asyncJobRunner.registerHandler(::handleUpdateMessageThreadRecipients)
     }
 
     companion object {
         val SPREAD_MESSAGE_NOTIFICATION_SECONDS: Long = 60 * 60 * 24
+    }
+
+    fun handleMarkMessageAsSent(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.MarkMessagesAsSent
+    ) {
+        db.transaction {
+            it.upsertReceiverThreadParticipants(msg.messageContentId, msg.sentAt)
+            it.markMessagesAsSent(msg.messageContentId, msg.sentAt)
+        }
+    }
+
+    // TODO: Remove after the change has been deployed to all environments
+    fun handleUpdateMessageThreadRecipients(
+        db: Database.Connection,
+        clock: EvakaClock,
+        msg: AsyncJob.UpdateMessageThreadRecipients
+    ) {
+        db.transaction { tx ->
+            val contentId =
+                tx.createQuery(
+                        """
+                    SELECT DISTINCT content_id 
+                    FROM message m
+                    WHERE m.thread_id = :threadId 
+                    AND EXISTS(
+                        SELECT 1 FROM message_recipients mr
+                        WHERE mr.message_id = m.id 
+                        AND mr.recipient_id = ANY(:recipientIds)
+                    )
+"""
+                    )
+                    .bind("threadId", msg.threadId)
+                    .bind("recipientIds", msg.recipientIds)
+                    .mapTo<MessageContentId>()
+                    .one()
+            tx.upsertReceiverThreadParticipants(contentId, msg.sentAt)
+        }
     }
 
     fun createMessageThreadsForRecipientGroups(
@@ -111,13 +144,6 @@ class MessageService(
                 ids.second to recipients.first
             }
         )
-        asyncJobRunner.scheduleThreadRecipientsUpdate(
-            tx,
-            recipientGroupsWithMessageIds.map { (ids, recipients) ->
-                ids.first to recipients.first
-            },
-            now
-        )
 
         notificationEmailService.scheduleSendingMessageNotifications(
             tx,
@@ -152,15 +178,9 @@ class MessageService(
                     ids.second to setOf(recipient)
                 }
             )
-            asyncJobRunner.scheduleThreadRecipientsUpdate(
-                tx,
-                staffRecipientsWithMessageIds.map { (ids, recipient) ->
-                    ids.first to setOf(recipient)
-                },
-                now
-            )
         }
 
+        asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)
         return contentId
     }
 
@@ -192,28 +212,24 @@ class MessageService(
         val message =
             db.transaction { tx ->
                 tx.upsertSenderThreadParticipants(senderAccount, listOf(threadId), now)
-                asyncJobRunner.scheduleThreadRecipientsUpdate(
-                    tx,
-                    listOf(threadId to recipientAccountIds),
-                    now
-                )
                 val recipientNames = tx.getAccountNames(recipientAccountIds)
                 val contentId = tx.insertMessageContent(content, senderAccount)
                 val messageId =
                     tx.insertMessage(
-                        now,
-                        contentId,
-                        threadId,
-                        senderAccount,
+                        now = now,
+                        contentId = contentId,
+                        threadId = threadId,
+                        sender = senderAccount,
                         repliesToMessageId = replyToMessageId,
                         recipientNames = recipientNames,
                         municipalAccountName = municipalAccountName
                     )
                 tx.insertRecipients(listOf(messageId to recipientAccountIds))
+                asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)
                 notificationEmailService.scheduleSendingMessageNotifications(
                     tx,
                     listOf(messageId),
-                    now.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5)
+                    now,
                 )
                 tx.getSentMessage(senderAccount, messageId)
             }
@@ -221,15 +237,13 @@ class MessageService(
     }
 }
 
-fun AsyncJobRunner<AsyncJob>.scheduleThreadRecipientsUpdate(
+fun AsyncJobRunner<AsyncJob>.scheduleMarkMessagesAsSent(
     tx: Database.Transaction,
-    threadRecipientsPairs: List<Pair<MessageThreadId, Set<MessageAccountId>>>,
-    sentAt: HelsinkiDateTime
+    messageContentId: MessageContentId,
+    now: HelsinkiDateTime
 ) =
     this.plan(
         tx,
-        threadRecipientsPairs.map { (threadId, recipients) ->
-            AsyncJob.UpdateMessageThreadRecipients(threadId, recipients, sentAt)
-        },
-        runAt = sentAt.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS)
+        listOf(AsyncJob.MarkMessagesAsSent(messageContentId, now)),
+        runAt = now.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS)
     )

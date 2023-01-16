@@ -48,19 +48,18 @@ class MessageControllerCitizen(
     }
 
     @GetMapping("/unread-count")
-    fun getUnreadMessages(
-        db: Database,
-        user: AuthenticatedUser.Citizen,
-        clock: EvakaClock
-    ): Set<UnreadCountByAccount> {
+    fun getUnreadMessages(db: Database, user: AuthenticatedUser.Citizen, clock: EvakaClock): Int {
         return db.connect { dbc ->
-                val accountId = dbc.read { it.getCitizenMessageAccount(user.id) }
-                dbc.read { it.getUnreadMessagesCounts(clock.now(), setOf(accountId)) }
+                dbc.read { tx ->
+                    val accountId = tx.getCitizenMessageAccount(user.id)
+                    val counts = tx.getUnreadMessagesCounts(clock.now(), setOf(accountId))
+                    counts.firstOrNull()?.unreadCount ?: 0
+                }
             }
             .also {
                 Audit.MessagingUnreadMessagesRead.log(
                     targetId = user.id,
-                    meta = mapOf("count" to it.size)
+                    meta = mapOf("count" to it)
                 )
             }
     }
@@ -200,15 +199,10 @@ class MessageControllerCitizen(
                                 isCopy = false
                             )
                         tx.upsertSenderThreadParticipants(senderId, listOf(threadId), now)
-                        asyncJobRunner.scheduleThreadRecipientsUpdate(
-                            tx,
-                            listOf(threadId to recipientIds),
-                            now
-                        )
                         val recipientNames = tx.getAccountNames(recipientIds)
                         val messageId =
                             tx.insertMessage(
-                                now = clock.now(),
+                                now = now,
                                 contentId = contentId,
                                 threadId = threadId,
                                 sender = senderId,
@@ -217,6 +211,7 @@ class MessageControllerCitizen(
                             )
                         tx.insertMessageThreadChildren(listOf(body.children to threadId))
                         tx.insertRecipients(listOf(messageId to recipientIds))
+                        asyncJobRunner.scheduleMarkMessagesAsSent(tx, contentId, now)
                         threadId
                     }
                 } else {
