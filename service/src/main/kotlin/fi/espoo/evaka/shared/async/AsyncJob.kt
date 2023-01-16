@@ -260,7 +260,6 @@ sealed interface AsyncJob : AsyncJobPayload {
                     SendDecision::class,
                     SendPatuReport::class,
                     UpdateFromVtj::class,
-                    UpdateIrregularAbsences::class,
                     UploadToKoski::class,
                     VTJRefresh::class,
                 )
