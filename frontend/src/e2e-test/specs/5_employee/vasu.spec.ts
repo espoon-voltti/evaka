@@ -177,13 +177,11 @@ describe('Vasu document page', () => {
     vasuDocId = await insertVasuDocument(child.id, templateId)
   })
 
-  beforeEach(async () => {
-    page = await Page.open()
-    await employeeLogin(page, admin)
-  })
-
   describe('Fill out document', () => {
     test('Fill the basic info section', async () => {
+      page = await Page.open()
+      await employeeLogin(page, admin)
+
       const vasuEditPage = await editDocument()
       const basicInfo = vasuEditPage.basicInfoSection
       await waitUntilEqual(
@@ -233,6 +231,9 @@ describe('Vasu document page', () => {
     })
 
     test('Fill the authoring section', async () => {
+      page = await Page.open()
+      await employeeLogin(page, admin)
+
       const vasuEditPage = await editDocument()
       const authoring = vasuEditPage.authoringSection
       await authoring.primaryFirstNameInput.fill('Leena')
@@ -276,6 +277,9 @@ describe('Vasu document page', () => {
     })
 
     test('Fill the multidisciplinary cooperation section', async () => {
+      page = await Page.open()
+      await employeeLogin(page, admin)
+
       const vasuEditPage = await editDocument()
       const cooperation = vasuEditPage.cooperationSection
 
@@ -297,6 +301,9 @@ describe('Vasu document page', () => {
     })
 
     test('Fill the vasu goals section', async () => {
+      page = await Page.open()
+      await employeeLogin(page, admin)
+
       const vasuEditPage = await editDocument()
       const goals = vasuEditPage.vasuGoalsSection
 
@@ -323,6 +330,9 @@ describe('Vasu document page', () => {
     })
 
     test('Fill the goals section', async () => {
+      page = await Page.open()
+      await employeeLogin(page, admin)
+
       const vasuEditPage = await editDocument()
       const goals = vasuEditPage.goalsSection
 
@@ -384,6 +394,9 @@ describe('Vasu document page', () => {
     })
 
     test('Fill the other info section', async () => {
+      page = await Page.open()
+      await employeeLogin(page, admin)
+
       const vasuEditPage = await editDocument()
       const section = vasuEditPage.otherSection
 
@@ -399,6 +412,9 @@ describe('Vasu document page', () => {
     })
 
     test('Fill the other documents and plans section', async () => {
+      page = await Page.open()
+      await employeeLogin(page, admin)
+
       const vasuEditPage = await editDocument()
       const otherDocsAndPlans = vasuEditPage.otherDocsAndPlansSection
 
@@ -415,6 +431,9 @@ describe('Vasu document page', () => {
     })
 
     test('Fill the info shared to section', async () => {
+      page = await Page.open()
+      await employeeLogin(page, admin)
+
       const vasuEditPage = await editDocument()
       const sharedTo = vasuEditPage.infoSharedToSection
 
@@ -431,6 +450,9 @@ describe('Vasu document page', () => {
     })
 
     test('Fill the discussion section', async () => {
+      page = await Page.open()
+      await employeeLogin(page, admin)
+
       const vasuEditPage = await editDocument()
       const discussion = vasuEditPage.discussionSection
 
@@ -454,6 +476,9 @@ describe('Vasu document page', () => {
     })
 
     test('Fill the evaluation section', async () => {
+      page = await Page.open()
+      await employeeLogin(page, admin)
+
       const vasuEditPage = await editDocument()
       const evaluation = vasuEditPage.evaluationSection
 
@@ -476,6 +501,9 @@ describe('Vasu document page', () => {
     })
 
     test('An unpublished vasu document has no followup questions', async () => {
+      page = await Page.open()
+      await employeeLogin(page, admin)
+
       const vasuPage = await openDocument()
       await waitUntilEqual(() => vasuPage.followupQuestionCount, 0)
     })
@@ -488,11 +516,17 @@ describe('Vasu document page', () => {
       })
 
       test('A published vasu document has one followup question', async () => {
+        page = await Page.open()
+        await employeeLogin(page, admin)
+
         const vasuPage = await openDocument()
         await waitUntilEqual(() => vasuPage.followupQuestionCount, 1)
       })
 
       test('Adding a followup comment renders it on the page', async () => {
+        page = await Page.open()
+        await employeeLogin(page, admin)
+
         const vasuEditPage = await editDocument()
         await vasuEditPage.addFollowup()
         await vasuEditPage.inputFollowupWithDateComment(
@@ -534,6 +568,9 @@ describe('Vasu document page', () => {
       })
 
       test('Followup comments are editable', async () => {
+        page = await Page.open()
+        await employeeLogin(page, admin)
+
         page = await Page.open()
         await employeeLogin(page, unitSupervisor)
 
@@ -577,6 +614,9 @@ describe('Vasu document page', () => {
     })
 
     test('Finalize a document', async () => {
+      page = await Page.open()
+      await employeeLogin(page, admin)
+
       let vasuPage = await openDocument()
       await waitUntilEqual(
         () => vasuPage.publishedToGuardiansDate(),
@@ -617,6 +657,9 @@ describe('Vasu document page', () => {
     }
 
     test('Publish a document as reviewed', async () => {
+      page = await Page.open()
+      await employeeLogin(page, admin)
+
       let vasuPage = await openDocument()
 
       await finalizeDocument()
