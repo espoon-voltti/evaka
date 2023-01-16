@@ -231,7 +231,7 @@ export default React.memo(function ApplicationPage() {
                       <AddButton
                         onClick={() =>
                           window.open(
-                            `${getEmployeeUrlPrefix()}/employee/messages`,
+                            `${getEmployeeUrlPrefix()}/employee/messages/send`,
                             '_blank'
                           )
                         }

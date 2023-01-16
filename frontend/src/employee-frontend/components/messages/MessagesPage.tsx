@@ -37,7 +37,11 @@ const PanelContainer = styled.div`
   display: flex;
 `
 
-export default React.memo(function MessagesPage() {
+export default React.memo(function MessagesPage({
+  showEditor: initialShowEditor
+}: {
+  showEditor?: boolean
+}) {
   const {
     accounts,
     selectedDraft,
@@ -55,7 +59,9 @@ export default React.memo(function MessagesPage() {
 
   useEffect(() => refreshMessages(), [refreshMessages])
   const [sending, setSending] = useState(false)
-  const [showEditor, setShowEditor] = useState<boolean>(false)
+  const [showEditor, setShowEditor] = useState<boolean>(
+    initialShowEditor ?? false
+  )
 
   // Select first account if no account is selected. This modifies MessageContextProvider state and so has
   // to be in useEffect. Calling setState() directly in the render function is only allowed if the state
