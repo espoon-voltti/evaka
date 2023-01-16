@@ -158,6 +158,7 @@ export type MessageRecipientType =
   | 'UNIT'
   | 'GROUP'
   | 'CHILD'
+  | 'CITIZEN'
 
 /**
 * Generated from fi.espoo.evaka.messaging.MessageThread

@@ -18,6 +18,7 @@ import fi.espoo.evaka.shared.MessageRecipientId
 import fi.espoo.evaka.shared.MessageThreadFolderId
 import fi.espoo.evaka.shared.MessageThreadId
 import fi.espoo.evaka.shared.Paged
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -962,6 +963,13 @@ data class MunicipalMessageReceiversResult(
     val unitName: String
 )
 
+data class ServiceWorkerMessageReceiversResult(
+    val accountId: MessageAccountId,
+    val personId: PersonId,
+    val firstName: String,
+    val lastName: String
+)
+
 fun Database.Read.getReceiversForNewMessage(
     idFilter: AccessControlFilter<MessageAccountId>,
     today: LocalDate
@@ -1083,7 +1091,37 @@ fun Database.Read.getReceiversForNewMessage(
                 MessageReceiversResponse(accountId = accountId, receivers = accountReceivers)
             }
 
-    return municipalReceivers + unitReceivers
+    val serviceWorkerReceivers =
+        createQuery(
+                """
+        WITH accounts AS (
+            SELECT id, type, daycare_group_id, employee_id, person_id FROM message_account
+            WHERE id = ANY(:accountIds) AND type = 'SERVICE_WORKER'::message_account_type
+        )
+        SELECT acc.id AS account_id, p.id as person_id, p.first_name, p.last_name 
+        FROM accounts acc, person p
+        JOIN application app ON p.id = app.guardian_id
+        WHERE app.status = 'SENT'
+        """
+                    .trimIndent()
+            )
+            .bind("accountIds", accountIds)
+            .bind("date", today)
+            .mapTo<ServiceWorkerMessageReceiversResult>()
+            .toList()
+            .groupBy { it.accountId }
+            .map { (accountId, receivers) ->
+                val accountReceivers =
+                    receivers.map { receiver ->
+                        MessageReceiver.Citizen(
+                            id = receiver.personId,
+                            name = formatName(receiver.firstName, receiver.lastName, true)
+                        )
+                    }
+                MessageReceiversResponse(accountId = accountId, receivers = accountReceivers)
+            }
+
+    return municipalReceivers + serviceWorkerReceivers + unitReceivers
 }
 
 private fun getReceiverGroups(
@@ -1110,7 +1148,7 @@ fun Database.Read.getMessageAccountsForRecipients(
     accountId: MessageAccountId,
     recipients: Set<MessageRecipient>,
     date: LocalDate
-): List<Pair<MessageAccountId, ChildId>> {
+): List<Pair<MessageAccountId, ChildId?>> {
     val groupedRecipients = recipients.groupBy { it.type }
     return this.createQuery(
             """
@@ -1170,6 +1208,13 @@ WHERE NOT EXISTS (
     WHERE bl.child_id = c.child_id
     AND bl.blocked_recipient = fp.parent_id
 )
+
+UNION
+
+SELECT acc.id AS account_id, NULL as child_id
+FROM person p
+JOIN message_account acc ON p.id = acc.person_id
+WHERE p.id = ANY(:citizenRecipients)
 """
         )
         .bind("senderId", accountId)
@@ -1190,8 +1235,12 @@ WHERE NOT EXISTS (
             "childRecipients",
             groupedRecipients[MessageRecipientType.CHILD]?.map { it.id } ?: listOf()
         )
+        .bind(
+            "citizenRecipients",
+            groupedRecipients[MessageRecipientType.CITIZEN]?.map { it.id } ?: listOf()
+        )
         .map { rv ->
-            rv.mapColumn<MessageAccountId>("account_id") to rv.mapColumn<ChildId>("child_id")
+            rv.mapColumn<MessageAccountId>("account_id") to rv.mapColumn<ChildId?>("child_id")
         }
         .toList()
 }

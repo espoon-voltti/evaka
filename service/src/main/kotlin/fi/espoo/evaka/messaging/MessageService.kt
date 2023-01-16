@@ -81,14 +81,14 @@ class MessageService(
         type: MessageType,
         urgent: Boolean,
         sender: MessageAccountId,
-        messageRecipients: List<Pair<MessageAccountId, ChildId>>,
+        messageRecipients: List<Pair<MessageAccountId, ChildId?>>,
         recipientNames: List<String>,
         attachmentIds: Set<AttachmentId> = setOf(),
         staffCopyRecipients: Set<MessageAccountId>,
         municipalAccountName: String,
         serviceWorkerAccountName: String
     ): MessageContentId {
-        val recipientGroups: List<Pair<Set<MessageAccountId>, Set<ChildId>>> =
+        val recipientGroups: List<Pair<Set<MessageAccountId>, Set<ChildId?>>> =
             if (type == MessageType.BULLETIN) {
                 // bulletins cannot be replied to so there is no need to group threads for families
                 messageRecipients
@@ -133,7 +133,7 @@ class MessageService(
         val recipientGroupsWithMessageIds = threadAndMessageIds.zip(recipientGroups)
         tx.insertMessageThreadChildren(
             recipientGroupsWithMessageIds.map { (ids, recipients) ->
-                recipients.second to ids.first
+                recipients.second.filterNotNull().toSet() to ids.first
             }
         )
         tx.upsertSenderThreadParticipants(
