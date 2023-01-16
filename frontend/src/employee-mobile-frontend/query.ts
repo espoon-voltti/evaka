@@ -8,7 +8,16 @@ import { queryKeysNamespace } from 'lib-common/query'
 
 export type QueryKeyPrefix = 'childAttendance' | 'notes'
 
-export const queryClient = new QueryClient()
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      networkMode: 'always'
+    },
+    mutations: {
+      networkMode: 'always'
+    }
+  }
+})
 export { QueryClientProvider } from '@tanstack/react-query'
 
 export const createQueryKeys = queryKeysNamespace<QueryKeyPrefix>()
