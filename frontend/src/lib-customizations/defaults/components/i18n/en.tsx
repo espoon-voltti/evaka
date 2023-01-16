@@ -27,6 +27,7 @@ const components = {
   notifications: {
     close: 'Close'
   },
+  offlineNotification: 'No internet connection',
   reloadNotification: {
     title: 'New version of eVaka is available',
     buttonText: 'Reload page'

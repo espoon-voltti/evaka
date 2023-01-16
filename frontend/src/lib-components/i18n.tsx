@@ -27,6 +27,7 @@ export interface Translations {
   notifications: {
     close: string
   }
+  offlineNotification: string
   reloadNotification: {
     title: string
     buttonText: string

@@ -27,6 +27,7 @@ const components = {
   notifications: {
     close: 'Sulje'
   },
+  offlineNotification: 'Ei verkkoyhteyttä',
   reloadNotification: {
     title: 'Uusi versio eVakasta saatavilla',
     buttonText: 'Lataa sivu uudelleen'
