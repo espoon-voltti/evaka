@@ -11,6 +11,7 @@ import fi.espoo.evaka.dailyservicetimes.getChildDailyServiceTimes
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.getUnitOperationDays
 import fi.espoo.evaka.placement.getChildPlacementTypesByRange
+import fi.espoo.evaka.serviceneed.getActualServiceNeedInfosByRangeAndGroup
 import fi.espoo.evaka.shared.AbsenceId
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.GroupId
@@ -46,6 +47,8 @@ fun getAbsencesInGroupByMonth(
         tx.getGroupName(groupId) ?: throw BadRequest("Couldn't find group with id $groupId")
     val placementList = tx.getPlacementsByRange(groupId, range)
     val absenceList = tx.getAbsencesInGroupByRange(groupId, range).groupBy { it.childId }.toMap()
+    val actualServiceNeeds =
+        tx.getActualServiceNeedInfosByRangeAndGroup(groupId, range).groupBy { it.childId }.toMap()
     val backupCareList =
         tx.getBackupCaresAffectingGroup(groupId, range).groupBy { it.childId }.toMap()
     val reservations = tx.getGroupReservations(groupId, range).groupBy { it.childId }.toMap()
@@ -79,6 +82,7 @@ fun getAbsencesInGroupByMonth(
                                 ?.let { date to it.categories }
                         }
                         .toMap(),
+                actualServiceNeeds = actualServiceNeeds[child.id] ?: listOf(),
                 absences = absenceList[child.id]?.groupBy { it.date } ?: mapOf(),
                 backupCares =
                     backupCareList[child.id]
@@ -310,6 +314,7 @@ data class AbsenceGroup(
 data class AbsenceChild(
     val child: Child,
     val placements: Map<LocalDate, Set<AbsenceCategory>>,
+    val actualServiceNeeds: List<ChildServiceNeedInfo>,
     val absences: Map<LocalDate, List<AbsenceWithModifierInfo>>,
     val backupCares: Map<LocalDate, Boolean>,
     val reservationTotalHours: Int?,
@@ -321,6 +326,13 @@ data class Child(
     val firstName: String,
     val lastName: String,
     val dateOfBirth: LocalDate
+)
+
+data class ChildServiceNeedInfo(
+    val childId: ChildId,
+    val hasContractDays: Boolean,
+    val optionName: String,
+    val validDuring: FiniteDateRange
 )
 
 data class AbsencePlacement(val dateRange: FiniteDateRange, val categories: Set<AbsenceCategory>)

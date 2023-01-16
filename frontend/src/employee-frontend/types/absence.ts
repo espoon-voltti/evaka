@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import FiniteDateRange from 'lib-common/finite-date-range'
 import {
   AbsenceCategory,
   AbsenceChild,
@@ -35,6 +36,10 @@ export interface CellPart {
 
 export const deserializeChild = (json: JsonOf<AbsenceChild>): AbsenceChild => ({
   ...json,
+  actualServiceNeeds: json.actualServiceNeeds.map((cdi) => ({
+    ...cdi,
+    validDuring: FiniteDateRange.parseJson(cdi.validDuring)
+  })),
   child: {
     ...json.child,
     dateOfBirth: LocalDate.parseIso(json.child.dateOfBirth)

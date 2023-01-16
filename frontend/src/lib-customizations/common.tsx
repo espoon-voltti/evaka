@@ -68,6 +68,10 @@ export const absenceColors = {
   ...colors.absences
 }
 
+export const additionalLegendItemColors = {
+  CONTRACT_DAYS: accents.a1greenDark
+}
+
 export const absenceIcons = {
   UNKNOWN_ABSENCE: '?',
   OTHER_ABSENCE: faTreePalm,
@@ -79,6 +83,10 @@ export const absenceIcons = {
   TEMPORARY_RELOCATION: '-',
   UNAUTHORIZED_ABSENCE: '-',
   NO_ABSENCE: '-'
+}
+
+export const additionalLegendItemIcons = {
+  CONTRACT_DAYS: 'S'
 }
 
 export const attendanceColors = {

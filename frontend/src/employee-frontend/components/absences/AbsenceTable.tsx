@@ -21,6 +21,7 @@ import { fasExclamationTriangle } from 'lib-icons'
 import { Translations, useTranslation } from '../../state/i18n'
 import { Cell, CellPart } from '../../types/absence'
 import { AgeIndicatorChip } from '../common/AgeIndicatorChip'
+import { ContractDaysIndicatorChip } from '../common/ContractDaysIndicatorChip'
 
 import AbsenceCell, { DisabledCell } from './AbsenceCell'
 import StaffAttendance from './StaffAttendance'
@@ -74,6 +75,10 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
     reservationTotalHours
   } = absenceChild
 
+  const contractDayServiceNeeds = absenceChild.actualServiceNeeds.filter(
+    (c) => c.hasContractDays
+  )
+
   const showAttendanceWarning =
     !!attendanceTotalHours &&
     !!reservationTotalHours &&
@@ -86,6 +91,11 @@ const AbsenceTableRow = React.memo(function AbsenceTableRow({
           <AgeIndicatorChip
             age={selectedDate.differenceInYears(child.dateOfBirth)}
           />
+          {contractDayServiceNeeds.length > 0 && (
+            <ContractDaysIndicatorChip
+              contractDayServiceNeeds={contractDayServiceNeeds}
+            />
+          )}
           <Tooltip
             tooltip={`${child.lastName}, ${child.firstName}`}
             position="top"

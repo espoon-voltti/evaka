@@ -2647,6 +2647,9 @@ export const fi = {
       UNAUTHORIZED_ABSENCE: 'Ilmoittamaton päivystyksen poissaolo',
       NO_ABSENCE: 'Ei poissaoloa'
     },
+    additionalLegendItems: {
+      CONTRACT_DAYS: 'Sopimuspäivällinen palveluntarve'
+    },
     absenceTypesShort: {
       OTHER_ABSENCE: 'Poissaolo',
       SICKLEAVE: 'Sairaus',
@@ -2677,6 +2680,9 @@ export const fi = {
       FREE_ABSENCE: 'Kesäajan maksuton poissaolo',
       UNAUTHORIZED_ABSENCE: 'Ilmoittamaton päivystyksen poissaolo',
       NO_ABSENCE: 'Jos lapsi on paikalla, älä merkitse mitään.'
+    },
+    additionalLegendItemInfos: {
+      CONTRACT_DAYS: 'Lapsi, jolla palveluntarpeena sopimuspäivä'
     },
     careTypes: {
       SCHOOL_SHIFT_CARE: 'Koululaisten vuorohoito',

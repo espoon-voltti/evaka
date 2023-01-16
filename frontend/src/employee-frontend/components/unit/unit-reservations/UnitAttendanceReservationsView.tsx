@@ -174,6 +174,19 @@ export default React.memo(function UnitAttendanceReservationsView({
               onMakeReservationForChild={setCreatingReservationChild}
               selectedDate={selectedDate}
               reloadReservations={reloadChildReservations}
+              childServiceNeedInfos={
+                selectedGroup.type === 'all-children'
+                  ? childData.unitServiceNeedInfo.groups
+                      .flatMap(({ childInfos }) => childInfos)
+                      .concat(childData.unitServiceNeedInfo.ungrouped)
+                  : selectedGroup.type === 'no-group'
+                  ? childData.unitServiceNeedInfo.ungrouped
+                  : selectedGroup.type === 'group'
+                  ? childData.unitServiceNeedInfo.groups.find(
+                      (g) => g.groupId === selectedGroup.id
+                    )?.childInfos ?? []
+                  : []
+              }
             />
           </>
         )}
@@ -198,7 +211,7 @@ export default React.memo(function UnitAttendanceReservationsView({
               contents={legendTimeLabels}
             />
             <FixedSpaceColumn spacing="xs">
-              <AbsenceLegend icons />
+              <AbsenceLegend icons showAdditionalLegendItems />
             </FixedSpaceColumn>
           </FixedSpaceRow>
         )}

@@ -12,6 +12,7 @@ import {
   ChildDailyRecords,
   OperationalDay
 } from 'lib-common/api-types/reservations'
+import { ChildServiceNeedInfo } from 'lib-common/generated/api-types/daycare'
 import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import { Table, Tbody } from 'lib-components/layout/Table'
@@ -20,6 +21,7 @@ import EllipsisMenu from '../../../components/common/EllipsisMenu'
 import { Translations, useTranslation } from '../../../state/i18n'
 import { formatName } from '../../../utils'
 import { AgeIndicatorChip } from '../../common/AgeIndicatorChip'
+import { ContractDaysIndicatorChip } from '../../common/ContractDaysIndicatorChip'
 
 import ChildDay from './ChildDay'
 import {
@@ -29,7 +31,8 @@ import {
   DayTr,
   EditStateIndicator,
   NameTd,
-  StyledTd
+  StyledTd,
+  ChipWrapper
 } from './attendance-elements'
 import { useUnitReservationEditState } from './reservation-table-edit-state'
 
@@ -40,6 +43,7 @@ interface Props {
   onMakeReservationForChild: (child: Child) => void
   selectedDate: LocalDate
   reloadReservations: () => void
+  childServiceNeedInfos: ChildServiceNeedInfo[]
 }
 
 export default React.memo(function ChildReservationsTable(props: Props) {
@@ -50,7 +54,12 @@ export default React.memo(function ChildReservationsTable(props: Props) {
 })
 
 const ChildReservations = React.memo(function ChildReservations(props: Props) {
-  const { operationalDays, onMakeReservationForChild, selectedDate } = props
+  const {
+    operationalDays,
+    onMakeReservationForChild,
+    selectedDate,
+    childServiceNeedInfos
+  } = props
   const { i18n } = useTranslation()
   const { editState, stopEditing, startEditing, ...editCallbacks } =
     useUnitReservationEditState(
@@ -59,6 +68,9 @@ const ChildReservations = React.memo(function ChildReservations(props: Props) {
       props.unitId
     )
 
+  const contractDayServiceNeeds = childServiceNeedInfos.filter(
+    (c) => c.hasContractDays
+  )
   const allDayRows = useMemo(
     () =>
       sortBy(
@@ -78,6 +90,9 @@ const ChildReservations = React.memo(function ChildReservations(props: Props) {
       <Tbody>
         {allDayRows.flatMap(({ child, dailyData }) => {
           const multipleRows = dailyData.length > 1
+          const childContractDayServiceNeeds = contractDayServiceNeeds.filter(
+            (c) => c.childId === child.id
+          )
           return dailyData.map((childDailyRecordRow, index) => {
             const childEditState =
               editState?.childId === child.id &&
@@ -97,9 +112,20 @@ const ChildReservations = React.memo(function ChildReservations(props: Props) {
                 >
                   {index == 0 && (
                     <NameWrapper>
-                      <AgeIndicatorChip
-                        age={selectedDate.differenceInYears(child.dateOfBirth)}
-                      />
+                      <ChipWrapper spacing="xs">
+                        <AgeIndicatorChip
+                          age={selectedDate.differenceInYears(
+                            child.dateOfBirth
+                          )}
+                        />
+                        {childContractDayServiceNeeds.length > 0 && (
+                          <ContractDaysIndicatorChip
+                            contractDayServiceNeeds={
+                              childContractDayServiceNeeds
+                            }
+                          />
+                        )}
+                      </ChipWrapper>
                       <Link to={`/child-information/${child.id}`}>
                         {formatName(
                           child.firstName.split(/\s/)[0],

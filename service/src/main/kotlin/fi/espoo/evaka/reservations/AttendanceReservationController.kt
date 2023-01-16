@@ -10,6 +10,8 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.dailyservicetimes.getDailyServiceTimesForChildren
 import fi.espoo.evaka.daycare.getDaycare
 import fi.espoo.evaka.daycare.service.AbsenceType
+import fi.espoo.evaka.daycare.service.ChildServiceNeedInfo
+import fi.espoo.evaka.serviceneed.getGroupedActualServiceNeedInfosByRangeAndUnit
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
@@ -66,6 +68,8 @@ class AttendanceReservationController(private val ac: AccessControl) {
                     val effectiveGroupPlacements =
                         tx.getEffectiveGroupPlacementsInRange(unitId, period)
 
+                    val unitServiceNeedInfo =
+                        tx.getGroupedActualServiceNeedInfosByRangeAndUnit(unitId, period)
                     val flatData =
                         period
                             .dates()
@@ -114,7 +118,8 @@ class AttendanceReservationController(private val ac: AccessControl) {
                             },
                         ungrouped =
                             byGroup[null]?.let { toChildDayRows(it, serviceTimes, childData) }
-                                ?: emptyList()
+                                ?: emptyList(),
+                        unitServiceNeedInfo = unitServiceNeedInfo
                     )
                 }
             }
@@ -170,7 +175,8 @@ data class UnitAttendanceReservations(
     val unit: String,
     val operationalDays: List<OperationalDay>,
     val groups: List<GroupAttendanceReservations>,
-    val ungrouped: List<ChildDailyRecords>
+    val ungrouped: List<ChildDailyRecords>,
+    val unitServiceNeedInfo: UnitServiceNeedInfo
 ) {
     data class OperationalDay(val date: LocalDate, val isHoliday: Boolean)
 
@@ -205,6 +211,17 @@ data class UnitAttendanceReservations(
         val firstName: String,
         val lastName: String,
         val dateOfBirth: LocalDate
+    )
+
+    data class UnitServiceNeedInfo(
+        val unitId: DaycareId,
+        val groups: List<GroupServiceNeedInfo>,
+        val ungrouped: List<ChildServiceNeedInfo>
+    )
+
+    data class GroupServiceNeedInfo(
+        val groupId: GroupId,
+        val childInfos: List<ChildServiceNeedInfo>
     )
 }
 
