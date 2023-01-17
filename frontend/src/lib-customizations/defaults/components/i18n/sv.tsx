@@ -27,6 +27,7 @@ const components = {
   notifications: {
     close: 'Stäng'
   },
+  offlineNotification: 'Ingen internetanslutning',
   reloadNotification: {
     title: 'En ny version av eVaka är tillgänglig',
     buttonText: 'Ladda om sidan'

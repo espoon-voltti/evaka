@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import { onlineManager } from '@tanstack/react-query'
 import omit from 'lodash/omit'
 import React, {
   createContext,
@@ -16,7 +17,7 @@ import styled, { useTheme } from 'styled-components'
 
 import { appVersion } from 'lib-common/globals'
 import Toast from 'lib-components/molecules/Toast'
-import { faInfo, faRedo } from 'lib-icons'
+import { faExclamation, faInfo, faRedo } from 'lib-icons'
 
 import InlineButton from './atoms/buttons/InlineButton'
 import { useTranslations } from './i18n'
@@ -91,6 +92,11 @@ export const Notifications = React.memo(function Notifications({
   const i18n = useTranslations()
   const { notifications, addNotification, removeNotification } =
     useContext(NotificationsContext)
+  useOfflineNotification(
+    i18n.offlineNotification,
+    addNotification,
+    removeNotification
+  )
   useReloadNotification(
     apiVersion,
     i18n.reloadNotification.title,
@@ -123,7 +129,7 @@ export const Notifications = React.memo(function Notifications({
 })
 
 const OuterContainer = styled.div`
-  position: sticky;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
@@ -135,6 +141,41 @@ const ColumnContainer = styled(FixedSpaceColumn)`
   margin: ${defaultMargins.s};
   pointer-events: none;
 `
+
+// If the user closes the toast, remind every 5 minutes
+const REMIND_INTERVAL = 5 * 60 * 1000
+
+function useOfflineNotification(
+  title: string,
+  addNotification: (n: Notification, id: string) => void,
+  removeNotification: (id: string) => void
+) {
+  const theme = useTheme()
+
+  const updateNotification = useCallback(() => {
+    if (onlineManager.isOnline()) {
+      removeNotification('offline')
+    } else {
+      addNotification(
+        {
+          icon: faExclamation,
+          iconColor: theme.colors.status.warning,
+          children: title
+        },
+        'offline'
+      )
+    }
+  }, [addNotification, removeNotification, theme.colors.status.warning, title])
+
+  useEffect(() => {
+    const unsubscribe = onlineManager.subscribe(updateNotification)
+    const interval = setInterval(updateNotification, REMIND_INTERVAL)
+    return () => {
+      unsubscribe()
+      clearInterval(interval)
+    }
+  }, [updateNotification])
+}
 
 function useReloadNotification(
   apiVersion: string | undefined,
@@ -174,9 +215,6 @@ function useReloadNotification(
     }
   }, [addNotification, buttonText, onClose, show, theme.colors.main.m1, title])
 }
-
-// If the user closes the toast, remind every 5 minutes
-const REMIND_INTERVAL = 5 * 60 * 1000
 
 const ReloadNotification = React.memo(function ReloadNotification({
   title,
