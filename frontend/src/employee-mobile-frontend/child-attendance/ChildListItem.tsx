@@ -87,10 +87,10 @@ const NameRow = styled.div`
   display: flex;
   justify-content: space-between;
   width: 100%;
+  word-break: break-word;
 `
 
 const GroupName = styled(InformationText)`
-  white-space: nowrap;
   text-align: right;
 `
 
@@ -158,12 +158,12 @@ export default React.memo(function ChildListItem({
             </GroupName>
           </NameRow>
           <DetailsRow>
-            <div>
+            <LeftDetailsDiv>
               {infoText}
               {child.backup && (
                 <RoundIcon content="V" size="m" color={colors.main.m1} />
               )}
-            </div>
+            </LeftDetailsDiv>
             <FixedSpaceRowWithLeftMargin alignItems="center">
               {child.dailyNote && (
                 <Link
@@ -194,7 +194,7 @@ export default React.memo(function ChildListItem({
               <RoundIcon
                 content={`${childAge}v`}
                 color={childAge < 3 ? colors.accents.a6turquoise : colors.main.m1}
-                size="L"
+                size="m-age"
               />
             </FixedSpaceRowWithLeftMargin>
           </DetailsRow>
@@ -229,3 +229,12 @@ const childReservationInfo = (
     </em>
   )
 }
+
+const LeftDetailsDiv = styled.div`
+  > * {
+    margin-left: ${defaultMargins.xs};
+    &:first-child {
+      margin-left: 0;
+    }
+  }
+`

@@ -14,7 +14,7 @@ import useNonNullableParams from 'lib-common/useNonNullableParams'
 import { StaticChip } from 'lib-components/atoms/Chip'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import Button from 'lib-components/atoms/buttons/Button'
-import { FixedSpaceColumn, FixedSpaceRow } from 'lib-components/layout/flex-helpers'
+import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import InfoModal from 'lib-components/molecules/modals/InfoModal'
 import { fontWeights } from 'lib-components/typography'
 import { defaultMargins, Gap } from 'lib-components/white-space'
@@ -156,16 +156,9 @@ export default React.memo(function AttendanceChildPage() {
                         </IconBox>
 
                         <Gap size="s" />
-                        <FixedSpaceRow spacing="xs" alignItems="center">
-                          <RoundIcon
-                            content={`${childAge}v`}
-                            color={childAge < 3 ? colors.accents.a6turquoise : colors.main.m1}
-                            size="L"
-                          />
                           <CustomTitle data-qa="child-name">
                             {child.firstName} {child.lastName}
                           </CustomTitle>
-                        </FixedSpaceRow>
 
                         {!!child.preferredName && (
                           <CustomTitle data-qa="child-preferred-name">
