@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
+import LocalDate from 'lib-common/local-date'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -45,7 +46,6 @@ import AttendanceChildAbsent from './child-state-pages/AttendanceChildAbsent'
 import AttendanceChildComing from './child-state-pages/AttendanceChildComing'
 import AttendanceChildDeparted from './child-state-pages/AttendanceChildDeparted'
 import AttendanceChildPresent from './child-state-pages/AttendanceChildPresent'
-import LocalDate from 'lib-common/local-date'
 
 export default React.memo(function AttendanceChildPage() {
   const { i18n } = useTranslation()
@@ -77,7 +77,6 @@ export default React.memo(function AttendanceChildPage() {
   const { mutateAsync: deleteChildImage } = useMutation(
     deleteChildImageMutation
   )
-
 
   const group = useMemo(
     () =>
@@ -149,16 +148,20 @@ export default React.memo(function AttendanceChildPage() {
                           <IconPlacementBox>
                             <RoundIconOnTop
                               content={`${childAge}v`}
-                              color={childAge < 3 ? colors.accents.a6turquoise : colors.main.m1}
+                              color={
+                                childAge < 3
+                                  ? colors.accents.a6turquoise
+                                  : colors.main.m1
+                              }
                               size="L"
                             />
                           </IconPlacementBox>
                         </IconBox>
 
                         <Gap size="s" />
-                          <CustomTitle data-qa="child-name">
-                            {child.firstName} {child.lastName}
-                          </CustomTitle>
+                        <CustomTitle data-qa="child-name">
+                          {child.firstName} {child.lastName}
+                        </CustomTitle>
 
                         {!!child.preferredName && (
                           <CustomTitle data-qa="child-preferred-name">

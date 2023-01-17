@@ -10,6 +10,7 @@ import {
   AttendanceStatus,
   Child
 } from 'lib-common/generated/api-types/attendance'
+import LocalDate from 'lib-common/local-date'
 import { useQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -27,7 +28,6 @@ import { UnitContext } from '../common/unit'
 
 import { ListItem } from './ChildList'
 import { Reservations } from './Reservations'
-import LocalDate from 'lib-common/local-date'
 
 const ChildBox = styled.div`
   align-items: center;
@@ -193,7 +193,9 @@ export default React.memo(function ChildListItem({
               ) : null}
               <RoundIcon
                 content={`${childAge}v`}
-                color={childAge < 3 ? colors.accents.a6turquoise : colors.main.m1}
+                color={
+                  childAge < 3 ? colors.accents.a6turquoise : colors.main.m1
+                }
                 size="m-age"
               />
             </FixedSpaceRowWithLeftMargin>
