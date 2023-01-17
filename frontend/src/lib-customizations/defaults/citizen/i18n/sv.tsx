@@ -595,7 +595,11 @@ const sv: Translations = {
             andra vårdnadshavaren. Om den andra vårdnadshavaren inte ska kunna
             se denna ansökan, vänligen ta kontakt med servicehandledningen.
             Kontaktinformation hittar du{' '}
-            <a href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/ansokan-till-smabarnspedagogik-och-servicehandledning#section-38795">
+            <a
+              href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/ansokan-till-smabarnspedagogik-och-servicehandledning#section-38795"
+              target="_blank"
+              rel="noreferrer"
+            >
               här
             </a>
             .
