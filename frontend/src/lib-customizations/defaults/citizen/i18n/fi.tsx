@@ -573,7 +573,11 @@ export default {
             Ymmärrän, että tieto hakemuksesta menee myös lapsen toiselle
             huoltajalle. Jos tieto ei saa mennä toiselle huoltajalle, ole
             yhteydessä palveluohjaukseen. Palveluohjauksen yhteystiedot löydät{' '}
-            <a href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatukseen-hakeminen-ja-palveluohjaus#section-38795">
+            <a
+              href="https://www.espoo.fi/fi/kasvatus-ja-opetus/varhaiskasvatus/varhaiskasvatukseen-hakeminen-ja-palveluohjaus#section-38795"
+              target="_blank"
+              rel="noreferrer"
+            >
               täältä
             </a>
             .

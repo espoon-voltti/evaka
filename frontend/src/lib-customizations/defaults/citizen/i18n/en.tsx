@@ -610,7 +610,11 @@ const en: Translations = {
             guardian. If the other guardian should not be able to see this
             application, please contact the Early Childhood Education Service
             Guidance, whose contact information can be found{' '}
-            <a href="https://www.espoo.fi/childcare-and-education/early-childhood-education/service-guidance-and-applying-early-childhood-education#section-38795">
+            <a
+              href="https://www.espoo.fi/childcare-and-education/early-childhood-education/service-guidance-and-applying-early-childhood-education#section-38795"
+              target="_blank"
+              rel="noreferrer"
+            >
               here
             </a>
             .
