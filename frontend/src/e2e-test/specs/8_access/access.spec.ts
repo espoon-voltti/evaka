@@ -60,7 +60,7 @@ describe('Child information page', () => {
       search: true,
       finance: false,
       reports: true,
-      messages: false
+      messages: true
     })
   })
 

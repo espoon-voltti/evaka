@@ -9,6 +9,7 @@ import { UUID } from 'lib-common/types'
 import config from '../../../config'
 import { waitUntilTrue } from '../../../utils'
 import { DatePickerDeprecated, Page, Radio } from '../../../utils/page'
+import MessagesPage from '../messages/messages-page'
 
 import ApplicationEditView from './application-edit-view'
 
@@ -23,6 +24,7 @@ export default class ApplicationReadView {
   #givenOtherGuardianPhone = this.page.find('[data-qa="second-guardian-phone"]')
   #giveOtherGuardianEmail = this.page.find('[data-qa="second-guardian-email"]')
   #applicationStatus = this.page.find('[data-qa="application-status"]')
+  #sendMessageButton = this.page.findByDataQa('send-message-button')
 
   async waitUntilLoaded() {
     await this.page.find('[data-qa="application-read-view"]').waitUntilVisible()
@@ -157,5 +159,12 @@ export default class ApplicationReadView {
   async startEditing(): Promise<ApplicationEditView> {
     await this.#editButton.click()
     return new ApplicationEditView(this.page)
+  }
+
+  async openMessagesPage(): Promise<MessagesPage> {
+    const popup = await this.page.capturePopup(
+      async () => await this.#sendMessageButton.click()
+    )
+    return new MessagesPage(popup)
   }
 }

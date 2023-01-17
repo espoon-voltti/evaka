@@ -124,11 +124,11 @@ export default class MessagesPage {
     if (message.receiver) {
       await this.#receiverSelection.open()
       await this.#receiverSelection.expandAll()
-      await this.#receiverSelection.option(message.receiver).click()
+      await this.#receiverSelection.option(message.receiver).check()
       await this.#receiverSelection.close()
     } else {
       await this.#receiverSelection.open()
-      await this.#receiverSelection.firstOption().click()
+      await this.#receiverSelection.firstOption().check()
       await this.#receiverSelection.close()
     }
     if (message.urgent ?? false) {
