@@ -111,7 +111,6 @@ fun Request.responseStringWithRetries(
                         this.responseStringWithRetries(remainingTries - 1, maxRetryAfterWaitSeconds)
                     }
                 false -> {
-                    logger.error("Varda returned error, full response: $response")
                     return errorCallback(
                         ErrorResponseResultOf(request, response, result),
                         remainingTries - 1
