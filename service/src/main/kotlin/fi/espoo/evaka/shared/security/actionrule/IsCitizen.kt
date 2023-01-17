@@ -177,6 +177,20 @@ WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(now.toLocalDate())}
             )
         }
 
+    fun fosterParentOfChildOfChildImage() =
+        rule<ChildImageId> { userId, now ->
+            sql(
+                """
+SELECT img.id
+FROM child_images img
+JOIN person child ON img.child_id = child.id
+JOIN foster_parent ON child.id = foster_parent.child_id
+WHERE parent_id = ${bind(userId)} AND valid_during @> ${bind(now.toLocalDate())}
+            """
+                    .trimIndent()
+            )
+        }
+
     fun guardianOfChildOfChildImage() =
         rule<ChildImageId> { guardianId, _ ->
             sql(
