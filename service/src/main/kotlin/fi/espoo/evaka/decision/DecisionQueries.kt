@@ -183,11 +183,26 @@ fun Database.Read.getOwnDecisions(guardianId: PersonId): List<ApplicationDecisio
     // language=sql
     val sql =
         """
-        SELECT d.application_id, p.id child_id, p.first_name || ' ' || p.last_name child_name,  d.id, d.type, d.status, d.sent_date, d.resolved::date
+        SELECT
+            d.application_id,
+            p.id AS child_id,
+            p.first_name || ' ' || p.last_name AS child_name,
+            d.id,
+            d.type,
+            d.status,
+            d.sent_date,
+            d.resolved::date
         FROM decision d
         JOIN application a ON d.application_id = a.id
         JOIN person p ON a.child_id = p.id
-        WHERE a.guardian_id = :guardianId AND d.sent_date IS NOT NULL AND a.status != 'WAITING_MAILING'::application_status_type
+        WHERE a.guardian_id = :guardianId
+        AND NOT EXISTS (
+            SELECT 1 FROM guardian_blocklist b
+            WHERE b.child_id = a.child_id
+            AND b.guardian_id = :guardianId
+        )
+        AND d.sent_date IS NOT NULL
+        AND a.status != 'WAITING_MAILING'::application_status_type
         """
             .trimIndent()
 

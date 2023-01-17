@@ -1313,7 +1313,14 @@ fun Database.Read.fetchApplicationNotificationCountForCitizen(citizenId: PersonI
         """
         SELECT COUNT(*)
         FROM application_view a
-        WHERE guardianId = :guardianId AND NOT a.hidefromguardian AND a.status = 'WAITING_CONFIRMATION'
+        WHERE guardianId = :guardianId
+        AND NOT a.hidefromguardian
+        AND NOT EXISTS (
+            SELECT 1 FROM guardian_blocklist
+            WHERE child_id = a.childId
+            AND guardian_id = :guardianId
+        )
+        AND a.status = 'WAITING_CONFIRMATION'
         """
             .trimIndent()
 

@@ -5,24 +5,29 @@
 package fi.espoo.evaka.decision
 
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.ApplicationControllerCitizen
 import fi.espoo.evaka.application.ApplicationControllerV2
+import fi.espoo.evaka.application.ApplicationDecisions
 import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ChildInfo
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.DecisionDraftGroup
+import fi.espoo.evaka.application.DecisionSummary
 import fi.espoo.evaka.application.GuardianInfo
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.pis.service.addToGuardianBlocklist
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -55,8 +60,10 @@ import org.springframework.beans.factory.annotation.Autowired
 class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val serviceWorker =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val citizen = AuthenticatedUser.Citizen(testAdult_5.id, CitizenAuthLevel.STRONG)
 
     @Autowired private lateinit var applicationController: ApplicationControllerV2
+    @Autowired private lateinit var applicationControllerCitizen: ApplicationControllerCitizen
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
     @Autowired private lateinit var applicationStateService: ApplicationStateService
 
@@ -307,6 +314,98 @@ WHERE id = :unitId
                 )
             }
         }
+    }
+
+    @Test
+    fun `citizen sees decision for his own application`() {
+        val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
+        val applicationId = insertInitialData(type = PlacementType.DAYCARE, period = period)
+        checkDecisionDrafts(
+            applicationId,
+            decisions =
+                listOf(
+                    DecisionDraft(
+                        id = decisionId,
+                        unitId = testDaycare.id,
+                        type = DecisionType.DAYCARE,
+                        startDate = period.start,
+                        endDate = period.end,
+                        planned = true
+                    )
+                ),
+            otherGuardian = testAdult_6
+        )
+        val createdDecisions = createDecisions(applicationId)
+        assertEquals(1, createdDecisions.size)
+
+        val notificationCount =
+            applicationControllerCitizen.getGuardianApplicationNotifications(
+                dbInstance(),
+                citizen,
+                RealEvakaClock()
+            )
+        assertEquals(1, notificationCount)
+
+        val citizenDecisions =
+            applicationControllerCitizen.getDecisions(dbInstance(), citizen, RealEvakaClock())
+        assertEquals(
+            citizenDecisions,
+            listOf(
+                ApplicationDecisions(
+                    applicationId = applicationId,
+                    childId = testChild_6.id,
+                    childName =
+                        "Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani Karhula",
+                    decisions =
+                        listOf(
+                            DecisionSummary(
+                                id = createdDecisions[0].id,
+                                type = DecisionType.DAYCARE,
+                                status = DecisionStatus.PENDING,
+                                sentDate = LocalDate.now(),
+                                resolved = null
+                            )
+                        )
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `citizen doesn't see decisions if guardianship has been blocked`() {
+        val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
+        val applicationId = insertInitialData(type = PlacementType.DAYCARE, period = period)
+        checkDecisionDrafts(
+            applicationId,
+            decisions =
+                listOf(
+                    DecisionDraft(
+                        id = decisionId,
+                        unitId = testDaycare.id,
+                        type = DecisionType.DAYCARE,
+                        startDate = period.start,
+                        endDate = period.end,
+                        planned = true
+                    )
+                ),
+            otherGuardian = testAdult_6
+        )
+        val createdDecisions = createDecisions(applicationId)
+        assertEquals(1, createdDecisions.size)
+
+        db.transaction { tx -> tx.addToGuardianBlocklist(testChild_6.id, testAdult_5.id) }
+
+        val notificationCount =
+            applicationControllerCitizen.getGuardianApplicationNotifications(
+                dbInstance(),
+                citizen,
+                RealEvakaClock()
+            )
+        assertEquals(0, notificationCount)
+
+        val citizenDecisions =
+            applicationControllerCitizen.getDecisions(dbInstance(), citizen, RealEvakaClock())
+        assertEquals(0, citizenDecisions.size)
     }
 
     private fun checkDecisionDrafts(
