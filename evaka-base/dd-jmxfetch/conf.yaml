@@ -182,7 +182,7 @@ instances:
           name: asyncJobsExecuted.jobType.AsyncJob.pool.email
           attribute:
             Count:
-              alias: asyncjobs.executed.suomifi
+              alias: asyncjobs.executed.email
               metric_type: counter
       - include:
           domain: metrics
