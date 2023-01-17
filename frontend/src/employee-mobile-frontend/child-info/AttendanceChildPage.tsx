@@ -351,7 +351,7 @@ const ChildStatus = styled.div`
 `
 
 const RoundImage = styled.img`
-  display: flex;
+  display: block;
   border-radius: 100%;
   width: 128px;
   height: 128px;
@@ -366,7 +366,7 @@ const CustomTitle = styled.h2`
   margin-top: 0;
   color: ${colors.main.m1};
   text-align: center;
-  margin-bottom: 0;
+  margin-bottom: ${defaultMargins.xs};
 `
 
 const GroupName = styled.div`
