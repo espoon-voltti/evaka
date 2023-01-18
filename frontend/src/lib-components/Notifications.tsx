@@ -17,6 +17,7 @@ import React, {
 import styled, { useTheme } from 'styled-components'
 
 import { appVersion } from 'lib-common/globals'
+import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import Toast from 'lib-components/molecules/Toast'
 import { faExclamation, faInfo, faRedo } from 'lib-icons'
 
@@ -152,15 +153,27 @@ function useOfflineNotification(
   removeNotification: (id: string) => void
 ) {
   const theme = useTheme()
-  const [isOnline, setIsOnline] = useState(() => onlineManager.isOnline())
+  const [onlineStatus, setOnlineStatus] = useState(() => ({
+    isOnline: onlineManager.isOnline(),
+    since: HelsinkiDateTime.now()
+  }))
 
   useEffect(() => {
     const updateNotification = () => {
-      const oldStatus = isOnline
-      const newStatus = onlineManager.isOnline()
-      if (oldStatus === newStatus) return
+      const wasOnline = onlineStatus.isOnline
+      const isOnline = onlineManager.isOnline()
+      if (wasOnline === isOnline) return
 
-      if (newStatus) {
+      const now = HelsinkiDateTime.now()
+      if (isOnline) {
+        Sentry.captureEvent({
+          message: 'Network connection restored',
+          level: 'info',
+          extra: {
+            offlineSince: onlineStatus.since.formatIso(),
+            durationMs: now.valueOf() - onlineStatus.since.valueOf()
+          }
+        })
         removeNotification('offline')
       } else {
         addNotification(
@@ -172,12 +185,7 @@ function useOfflineNotification(
           'offline'
         )
       }
-      Sentry.captureEvent({
-        message: 'Network connection status change',
-        level: 'info',
-        tags: { isOnline: newStatus }
-      })
-      setIsOnline(newStatus)
+      setOnlineStatus({ isOnline, since: now })
     }
 
     const unsubscribe = onlineManager.subscribe(updateNotification)
@@ -188,7 +196,7 @@ function useOfflineNotification(
     }
   }, [
     addNotification,
-    isOnline,
+    onlineStatus,
     removeNotification,
     theme.colors.status.warning,
     title
