@@ -39,17 +39,17 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         @RequestParam unitId: DaycareId
     ): CurrentDayStaffAttendanceResponse {
         return db.connect { dbc ->
-                dbc.read {
+                dbc.read { tx ->
                     ac.requirePermissionFor(
-                        it,
+                        tx,
                         user,
                         clock,
                         Action.Unit.READ_REALTIME_STAFF_ATTENDANCES,
                         unitId
                     )
                     CurrentDayStaffAttendanceResponse(
-                        staff = it.getStaffAttendances(unitId, clock.now()),
-                        extraAttendances = it.getExternalStaffAttendances(unitId, clock.now())
+                        staff = tx.getStaffAttendances(unitId, clock.now()),
+                        extraAttendances = tx.getExternalStaffAttendances(unitId, clock.now())
                     )
                 }
             }

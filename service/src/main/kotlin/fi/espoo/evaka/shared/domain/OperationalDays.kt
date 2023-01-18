@@ -11,15 +11,10 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month
 
-fun operationalDates(
-    dates: Sequence<LocalDate>,
-    operationalDays: Set<Int>,
-    holidays: Set<LocalDate>
-): Sequence<LocalDate> =
-    dates
-        .filter { operationalDays.contains(it.dayOfWeek.value) }
+fun LocalDate.isOperationalDate(operationalDays: Set<DayOfWeek>, holidays: Set<LocalDate>) =
+    operationalDays.contains(dayOfWeek) &&
         // Units that are operational every day of the week are also operational during holidays
-        .filter { operationalDays.size == 7 || !holidays.contains(it) }
+        (operationalDays.size == 7 || !holidays.contains(this))
 
 data class OperationalDays(
     val fullMonth: List<LocalDate>,
@@ -31,10 +26,7 @@ data class OperationalDays(
 
 fun Database.Read.operationalDays(year: Int, month: Month): OperationalDays {
     val range = FiniteDateRange.ofMonth(year, month)
-    val firstDayOfMonth = LocalDate.of(year, month, 1)
-    val daysOfMonth =
-        generateSequence(firstDayOfMonth) { it.plusDays(1) }
-            .takeWhile { date -> date.month == month }
+    val daysOfMonth = range.dates()
 
     // Only includes units that don't have regular monday to friday operational days
     val specialUnitOperationalDays =
@@ -42,7 +34,8 @@ fun Database.Read.operationalDays(year: Int, month: Month): OperationalDays {
                 "SELECT id, operation_days FROM daycare WHERE NOT (operation_days @> '{1,2,3,4,5}' AND operation_days <@ '{1,2,3,4,5}')"
             )
             .map { row ->
-                row.mapColumn<DaycareId>("id") to row.mapColumn<Set<Int>>("operation_days")
+                row.mapColumn<DaycareId>("id") to
+                    row.mapColumn<Set<Int>>("operation_days").map { DayOfWeek.of(it) }.toSet()
             }
             .toList()
 
@@ -56,7 +49,8 @@ fun Database.Read.operationalDays(year: Int, month: Month): OperationalDays {
 
     val specialCases =
         specialUnitOperationalDays.associate { (unitId, operationalDays) ->
-            unitId to operationalDates(daysOfMonth, operationalDays, holidays).toList()
+            unitId to
+                daysOfMonth.filter { it.isOperationalDate(operationalDays, holidays) }.toList()
         }
 
     return OperationalDays(daysOfMonth.toList(), generalCase, specialCases)

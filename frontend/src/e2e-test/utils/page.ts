@@ -218,6 +218,10 @@ export class Element {
     return this.locator.isDisabled()
   }
 
+  async assertDisabled(disabled: boolean): Promise<void> {
+    await waitUntilEqual(() => this.disabled, disabled)
+  }
+
   async hover(): Promise<void> {
     await this.locator.hover()
   }

@@ -261,7 +261,9 @@ export const fi = {
     departureCannotBeDoneInFuture:
       'Työvuoron uloskirjausta ei voi merkitä ennakkoon.',
     confirmAttendanceChangeCancel:
-      'Haluatko varmasti peruuttaa viimeisimmän lähtö- tai saapumismerkinnän?'
+      'Haluatko varmasti peruuttaa viimeisimmän lähtö- tai saapumismerkinnän?',
+    notOperationalDate:
+      'Yksikköön ei voi kirjautua läsnäolevaksi, koska yksikkö on suljettu.'
   },
   childInfo: {
     header: 'Lapsen tiedot',

@@ -19,7 +19,7 @@ import TimeInput from 'lib-components/atoms/form/TimeInput'
 import { ContentArea } from 'lib-components/layout/Container'
 import ListGrid from 'lib-components/layout/ListGrid'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
-import { H1, Label } from 'lib-components/typography'
+import { H1, H4, Label } from 'lib-components/typography'
 import { Gap } from 'lib-components/white-space'
 import { faArrowLeft } from 'lib-icons'
 
@@ -89,53 +89,64 @@ export default function MarkExternalStaffMemberArrivalPage() {
       >
         <H1 centered>{i18n.attendances.staff.markExternalPersonTitle}</H1>
         <HorizontalLine />
-        <ListGrid>
-          <Label>{i18n.attendances.arrivalTime}</Label>
-          <TimeInput
-            value={form.arrived}
-            onChange={(arrived) => setForm((old) => ({ ...old, arrived }))}
-            data-qa="input-arrived"
-          />
+        {renderResult(unitInfoResponse, (unit) => (
+          <>
+            {unit.isOperationalDate ? (
+              <ListGrid>
+                <Label>{i18n.attendances.arrivalTime}</Label>
+                <TimeInput
+                  value={form.arrived}
+                  onChange={(arrived) =>
+                    setForm((old) => ({ ...old, arrived }))
+                  }
+                  data-qa="input-arrived"
+                />
 
-          <Label>{i18n.common.name}</Label>
-          <InputField
-            type="text"
-            value={form.name}
-            onChange={(name) => setForm((old) => ({ ...old, name }))}
-            width="full"
-            data-qa="input-name"
-            placeholder={`${i18n.common.lastName} ${i18n.common.firstName}`}
-          />
+                <Label>{i18n.common.name}</Label>
+                <InputField
+                  type="text"
+                  value={form.name}
+                  onChange={(name) => setForm((old) => ({ ...old, name }))}
+                  width="full"
+                  data-qa="input-name"
+                  placeholder={`${i18n.common.lastName} ${i18n.common.firstName}`}
+                />
 
-          <Label>{i18n.common.group}</Label>
-          {renderResult(unitInfoResponse, (unit) => (
-            <Combobox
-              items={unit.groups}
-              selectedItem={form.group}
-              getItemLabel={({ name }) => name}
-              getItemDataQa={(group) => group.id}
-              onChange={(group) => setForm((old) => ({ ...old, group }))}
-              data-qa="input-group"
-            />
-          ))}
-        </ListGrid>
-        <Gap size="xs" />
-        <Actions>
-          <FixedSpaceRow fullWidth>
-            <Button text={i18n.common.cancel} onClick={() => navigate(-1)} />
-            <AsyncButton
-              primary
-              text={i18n.common.confirm}
-              disabled={!formIsValid()}
-              onClick={onSubmit}
-              onSuccess={() => {
-                reloadStaffAttendance()
-                history.go(-1)
-              }}
-              data-qa="mark-arrived-btn"
-            />
-          </FixedSpaceRow>
-        </Actions>
+                <Label>{i18n.common.group}</Label>
+                <Combobox
+                  items={unit.groups}
+                  selectedItem={form.group}
+                  getItemLabel={({ name }) => name}
+                  getItemDataQa={(group) => group.id}
+                  onChange={(group) => setForm((old) => ({ ...old, group }))}
+                  data-qa="input-group"
+                />
+              </ListGrid>
+            ) : (
+              <H4 centered={true}>{i18n.attendances.notOperationalDate}</H4>
+            )}
+            <Gap size="xs" />
+            <Actions>
+              <FixedSpaceRow fullWidth>
+                <Button
+                  text={i18n.common.cancel}
+                  onClick={() => navigate(-1)}
+                />
+                <AsyncButton
+                  primary
+                  text={i18n.common.confirm}
+                  disabled={!unit.isOperationalDate || !formIsValid()}
+                  onClick={onSubmit}
+                  onSuccess={() => {
+                    reloadStaffAttendance()
+                    history.go(-1)
+                  }}
+                  data-qa="mark-arrived-btn"
+                />
+              </FixedSpaceRow>
+            </Actions>
+          </>
+        ))}
       </ContentArea>
     </TallContentArea>
   )

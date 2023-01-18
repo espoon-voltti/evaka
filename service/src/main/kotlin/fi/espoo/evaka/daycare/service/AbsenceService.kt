@@ -24,10 +24,11 @@ import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
 import fi.espoo.evaka.shared.domain.getHolidays
-import fi.espoo.evaka.shared.domain.operationalDates
+import fi.espoo.evaka.shared.domain.isOperationalDate
 import fi.espoo.evaka.user.EvakaUserType
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Month
@@ -55,9 +56,10 @@ fun getAbsencesInGroupByMonth(
     val attendances = tx.getGroupAttendances(groupId, range).groupBy { it.childId }.toMap()
     val dailyServiceTimes = tx.getGroupDailyServiceTimes(groupId, range)
 
-    val operationalDays =
-        operationalDates(range.dates(), daycare.operationDays, tx.getHolidays(range))
-    val setOfOperationalDays = operationalDays.toSet()
+    val operationalDays = daycare.operationDays.map { DayOfWeek.of(it) }.toSet()
+    val holidays = tx.getHolidays(range)
+    val operationalDates = range.dates().filter { it.isOperationalDate(operationalDays, holidays) }
+    val setOfOperationalDays = operationalDates.toSet()
 
     val children =
         placementList.map { (child, placements) ->
@@ -98,7 +100,7 @@ fun getAbsencesInGroupByMonth(
             )
         }
 
-    return AbsenceGroup(groupId, daycare.name, groupName, children, operationalDays.toList())
+    return AbsenceGroup(groupId, daycare.name, groupName, children, operationalDates.toList())
 }
 
 fun getAbsencesOfChildByMonth(

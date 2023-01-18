@@ -387,6 +387,7 @@ export interface UnitInfo {
   features: PilotFeature[]
   groups: GroupInfo[]
   id: UUID
+  isOperationalDate: boolean
   name: string
   staff: Staff[]
   utilization: number

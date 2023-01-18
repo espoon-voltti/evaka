@@ -28,6 +28,7 @@ export async function getUnitStaffAttendances(
     )
     .then((res) =>
       Success.of({
+        ...res.data,
         staff: res.data.staff.map((staff) => ({
           ...staff,
           latestCurrentDayAttendance: staff.latestCurrentDayAttendance
