@@ -21,6 +21,7 @@ import HorizontalLine from 'lib-components/atoms/HorizontalLine'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
 import Button from 'lib-components/atoms/buttons/Button'
 import { FixedSpaceFlexWrap } from 'lib-components/layout/flex-helpers'
+import { AlertBox } from 'lib-components/molecules/MessageBoxes'
 import DateRangePicker from 'lib-components/molecules/date-picker/DateRangePicker'
 import {
   ModalHeader,
@@ -205,16 +206,15 @@ export default React.memo(function AbsenceModal({
               </LineContainer>
               <CalendarModalSection>
                 <H2>{i18n.calendar.absenceModal.absenceType}</H2>
+                {contractDayAbsenceTypeSettings.visible &&
+                  !contractDayAbsenceTypeSettings.enabled && (
+                    <AlertBox
+                      message={
+                        i18n.calendar.absenceModal.contractDayAbsenceTypeWarning
+                      }
+                    />
+                  )}
                 <FixedSpaceFlexWrap verticalSpacing="xs">
-                  {contractDayAbsenceTypeSettings.visible &&
-                    !contractDayAbsenceTypeSettings.enabled && (
-                      <Warning>
-                        {
-                          i18n.calendar.absenceModal
-                            .contractDayAbsenceTypeWarning
-                        }
-                      </Warning>
-                    )}
                   <ChoiceChip
                     text={i18n.calendar.absenceModal.absenceTypes.SICKLEAVE}
                     selected={form.absenceType === 'SICKLEAVE'}
