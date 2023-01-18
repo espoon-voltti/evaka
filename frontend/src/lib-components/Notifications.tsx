@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
+import * as Sentry from '@sentry/browser'
 import { onlineManager } from '@tanstack/react-query'
 import omit from 'lodash/omit'
 import React, {
@@ -151,30 +152,47 @@ function useOfflineNotification(
   removeNotification: (id: string) => void
 ) {
   const theme = useTheme()
-
-  const updateNotification = useCallback(() => {
-    if (onlineManager.isOnline()) {
-      removeNotification('offline')
-    } else {
-      addNotification(
-        {
-          icon: faExclamation,
-          iconColor: theme.colors.status.warning,
-          children: title
-        },
-        'offline'
-      )
-    }
-  }, [addNotification, removeNotification, theme.colors.status.warning, title])
+  const [isOnline, setIsOnline] = useState(() => onlineManager.isOnline())
 
   useEffect(() => {
+    const updateNotification = () => {
+      const oldStatus = isOnline
+      const newStatus = onlineManager.isOnline()
+      if (oldStatus === newStatus) return
+
+      if (newStatus) {
+        removeNotification('offline')
+      } else {
+        addNotification(
+          {
+            icon: faExclamation,
+            iconColor: theme.colors.status.warning,
+            children: title
+          },
+          'offline'
+        )
+      }
+      Sentry.captureEvent({
+        message: 'Network connection status change',
+        level: 'info',
+        tags: { isOnline: newStatus }
+      })
+      setIsOnline(newStatus)
+    }
+
     const unsubscribe = onlineManager.subscribe(updateNotification)
     const interval = setInterval(updateNotification, REMIND_INTERVAL)
     return () => {
       unsubscribe()
       clearInterval(interval)
     }
-  }, [updateNotification])
+  }, [
+    addNotification,
+    isOnline,
+    removeNotification,
+    theme.colors.status.warning,
+    title
+  ])
 }
 
 function useReloadNotification(
