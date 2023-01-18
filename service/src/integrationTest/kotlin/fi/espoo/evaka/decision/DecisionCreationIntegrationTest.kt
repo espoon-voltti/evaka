@@ -4,33 +4,37 @@
 
 package fi.espoo.evaka.decision
 
-import com.github.kittinunf.fuel.core.isSuccessful
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
+import fi.espoo.evaka.application.ApplicationControllerCitizen
+import fi.espoo.evaka.application.ApplicationControllerV2
+import fi.espoo.evaka.application.ApplicationDecisions
 import fi.espoo.evaka.application.ApplicationStateService
 import fi.espoo.evaka.application.ApplicationStatus
 import fi.espoo.evaka.application.ChildInfo
 import fi.espoo.evaka.application.DaycarePlacementPlan
 import fi.espoo.evaka.application.DecisionDraftGroup
+import fi.espoo.evaka.application.DecisionSummary
 import fi.espoo.evaka.application.GuardianInfo
 import fi.espoo.evaka.application.persistence.daycare.Apply
 import fi.espoo.evaka.application.persistence.daycare.CareDetails
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.daycare.domain.ProviderType
 import fi.espoo.evaka.insertGeneralTestFixtures
+import fi.espoo.evaka.pis.service.addToGuardianBlocklist
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
+import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.dev.DevDaycare
 import fi.espoo.evaka.shared.dev.DevPerson
 import fi.espoo.evaka.shared.dev.insertTestApplication
 import fi.espoo.evaka.shared.dev.insertTestApplicationForm
 import fi.espoo.evaka.shared.domain.FiniteDateRange
+import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.test.DecisionTableRow
 import fi.espoo.evaka.test.getApplicationStatus
@@ -48,17 +52,19 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class DecisionCreationIntegrationTest : FullApplicationTest(resetDbBeforeEach = true) {
     private val serviceWorker =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
+    private val citizen = AuthenticatedUser.Citizen(testAdult_5.id, CitizenAuthLevel.STRONG)
 
+    @Autowired private lateinit var applicationController: ApplicationControllerV2
+    @Autowired private lateinit var applicationControllerCitizen: ApplicationControllerCitizen
     @Autowired private lateinit var asyncJobRunner: AsyncJobRunner<AsyncJob>
-
     @Autowired private lateinit var applicationStateService: ApplicationStateService
 
     private val decisionId = DecisionId(UUID.randomUUID())
@@ -287,6 +293,121 @@ WHERE id = :unitId
         assertEquals(preschoolDaycarePeriod.end, decision2.endDate)
     }
 
+    @Test
+    fun testEndpointSecurity() {
+        val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
+        val applicationId = insertInitialData(type = PlacementType.DAYCARE, period = period)
+        val invalidRoleLists =
+            listOf(
+                setOf(UserRole.UNIT_SUPERVISOR),
+                setOf(UserRole.FINANCE_ADMIN),
+                setOf(UserRole.END_USER),
+                setOf()
+            )
+        invalidRoleLists.forEach { roles ->
+            assertThrows<Forbidden> {
+                applicationController.getDecisionDrafts(
+                    dbInstance(),
+                    AuthenticatedUser.Employee(testDecisionMaker_1.id, roles),
+                    RealEvakaClock(),
+                    applicationId
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `citizen sees decision for his own application`() {
+        val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
+        val applicationId = insertInitialData(type = PlacementType.DAYCARE, period = period)
+        checkDecisionDrafts(
+            applicationId,
+            decisions =
+                listOf(
+                    DecisionDraft(
+                        id = decisionId,
+                        unitId = testDaycare.id,
+                        type = DecisionType.DAYCARE,
+                        startDate = period.start,
+                        endDate = period.end,
+                        planned = true
+                    )
+                ),
+            otherGuardian = testAdult_6
+        )
+        val createdDecisions = createDecisions(applicationId)
+        assertEquals(1, createdDecisions.size)
+
+        val notificationCount =
+            applicationControllerCitizen.getGuardianApplicationNotifications(
+                dbInstance(),
+                citizen,
+                RealEvakaClock()
+            )
+        assertEquals(1, notificationCount)
+
+        val citizenDecisions =
+            applicationControllerCitizen.getDecisions(dbInstance(), citizen, RealEvakaClock())
+        assertEquals(
+            citizenDecisions,
+            listOf(
+                ApplicationDecisions(
+                    applicationId = applicationId,
+                    childId = testChild_6.id,
+                    childName =
+                        "Jari-Petteri Mukkelis-Makkelis Vetelä-Viljami Eelis-Juhani Karhula",
+                    decisions =
+                        listOf(
+                            DecisionSummary(
+                                id = createdDecisions[0].id,
+                                type = DecisionType.DAYCARE,
+                                status = DecisionStatus.PENDING,
+                                sentDate = LocalDate.now(),
+                                resolved = null
+                            )
+                        )
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `citizen doesn't see decisions if guardianship has been blocked`() {
+        val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
+        val applicationId = insertInitialData(type = PlacementType.DAYCARE, period = period)
+        checkDecisionDrafts(
+            applicationId,
+            decisions =
+                listOf(
+                    DecisionDraft(
+                        id = decisionId,
+                        unitId = testDaycare.id,
+                        type = DecisionType.DAYCARE,
+                        startDate = period.start,
+                        endDate = period.end,
+                        planned = true
+                    )
+                ),
+            otherGuardian = testAdult_6
+        )
+        val createdDecisions = createDecisions(applicationId)
+        assertEquals(1, createdDecisions.size)
+
+        db.transaction { tx -> tx.addToGuardianBlocklist(testChild_6.id, testAdult_5.id) }
+
+        val notificationCount =
+            applicationControllerCitizen.getGuardianApplicationNotifications(
+                dbInstance(),
+                citizen,
+                RealEvakaClock()
+            )
+        assertEquals(0, notificationCount)
+
+        val citizenDecisions =
+            applicationControllerCitizen.getDecisions(dbInstance(), citizen, RealEvakaClock())
+        assertEquals(0, citizenDecisions.size)
+    }
+
     private fun checkDecisionDrafts(
         applicationId: ApplicationId,
         unit: DevDaycare = testDaycare,
@@ -295,11 +416,13 @@ WHERE id = :unitId
         otherGuardian: DevPerson? = null,
         decisions: List<DecisionDraft>
     ) {
-        val (_, _, body) =
-            http
-                .get("/v2/applications/$applicationId/decision-drafts")
-                .asUser(serviceWorker)
-                .responseObject<DecisionDraftGroup>(jsonMapper)
+        val result =
+            applicationController.getDecisionDrafts(
+                dbInstance(),
+                serviceWorker,
+                RealEvakaClock(),
+                applicationId
+            )
         assertEquals(
             DecisionDraftGroup(
                 decisions = decisions.sortedBy { it.type },
@@ -341,23 +464,20 @@ WHERE id = :unitId
                     },
                 child = ChildInfo(child.ssn, child.firstName, child.lastName)
             ),
-            body
-                .get()
-                .copy(
-                    decisions =
-                        body.get().decisions.map { it.copy(id = decisionId) }.sortedBy { it.type }
-                )
+            result.copy(
+                decisions = result.decisions.map { it.copy(id = decisionId) }.sortedBy { it.type }
+            )
         )
     }
 
     private fun createDecisions(applicationId: ApplicationId): List<DecisionTableRow> {
-        val (_, res, _) =
-            http
-                .post("/v2/applications/$applicationId/actions/send-decisions-without-proposal")
-                .asUser(serviceWorker)
-                .response()
-        assertTrue(res.isSuccessful)
-
+        applicationController.simpleAction(
+            dbInstance(),
+            serviceWorker,
+            RealEvakaClock(),
+            applicationId,
+            "send-decisions-without-proposal"
+        )
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         val rows = db.read { r -> r.getDecisionRowsByApplication(applicationId).list() }
@@ -377,27 +497,6 @@ WHERE id = :unitId
             )
         }
         return rows
-    }
-
-    @Test
-    fun testEndpointSecurity() {
-        val period = FiniteDateRange(LocalDate.of(2020, 3, 17), LocalDate.of(2023, 7, 31))
-        val applicationId = insertInitialData(type = PlacementType.DAYCARE, period = period)
-        val invalidRoleLists =
-            listOf(
-                setOf(UserRole.UNIT_SUPERVISOR),
-                setOf(UserRole.FINANCE_ADMIN),
-                setOf(UserRole.END_USER),
-                setOf()
-            )
-        invalidRoleLists.forEach { roles ->
-            val (_, res, _) =
-                http
-                    .get("/v2/applications/$applicationId/decision-drafts")
-                    .asUser(AuthenticatedUser.Employee(testDecisionMaker_1.id, roles))
-                    .response()
-            assertEquals(403, res.statusCode)
-        }
     }
 
     private fun insertInitialData(

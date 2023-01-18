@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.application
 
-import com.github.kittinunf.fuel.jackson.responseObject
 import fi.espoo.evaka.FullApplicationTest
 import fi.espoo.evaka.application.persistence.daycare.DaycareFormV0
 import fi.espoo.evaka.attachment.AttachmentType
@@ -15,7 +14,6 @@ import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.CitizenAuthLevel
 import fi.espoo.evaka.shared.auth.UserRole
-import fi.espoo.evaka.shared.auth.asUser
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
 import fi.espoo.evaka.shared.dev.DevEmployee
 import fi.espoo.evaka.shared.dev.DevPerson
@@ -26,6 +24,7 @@ import fi.espoo.evaka.shared.dev.insertTestPerson
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.MockEvakaClock
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.shared.job.ScheduledJobs
 import fi.espoo.evaka.test.validDaycareApplication
@@ -43,16 +42,18 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 
 class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = true) {
+    @Autowired lateinit var applicationController: ApplicationControllerV2
+    @Autowired lateinit var applicationControllerCitizen: ApplicationControllerCitizen
     @Autowired lateinit var stateService: ApplicationStateService
-
     @Autowired lateinit var scheduledJobs: ScheduledJobs
 
     private val serviceWorker =
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
-    private val endUser = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
+    private val citizen = AuthenticatedUser.Citizen(testAdult_1.id, CitizenAuthLevel.STRONG)
     private val testSpecialEducationTeacherId = EmployeeId(UUID.randomUUID())
     private val testSpecialEducationTeacher =
         AuthenticatedUser.Employee(testSpecialEducationTeacherId, setOf())
@@ -66,9 +67,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
 
     @Test
     fun `application not found returns 404`() {
-        val (_, res, _) =
-            http.get("/v2/applications/${UUID.randomUUID()}").asUser(serviceWorker).response()
-        assertEquals(404, res.statusCode)
+        assertThrows<NotFound> { getApplication(ApplicationId(UUID.randomUUID())) }
     }
 
     @Test
@@ -92,15 +91,8 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
             )
         }
 
-        val (_, res, result) =
-            http
-                .get("/v2/applications/$applicationId")
-                .asUser(serviceWorker)
-                .responseObject<ApplicationResponse>(jsonMapper)
+        val data = getApplication(applicationId)
 
-        assertEquals(200, res.statusCode)
-
-        val data = result.get()
         assertEquals(applicationId, data.application.id)
         assertEquals(testChild_1.id, data.application.childId)
         assertEquals(testAdult_1.id, data.application.guardianId)
@@ -146,15 +138,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
             )
         }
 
-        val (_, res, result) =
-            http
-                .get("/v2/applications/$applicationId")
-                .asUser(serviceWorker)
-                .responseObject<ApplicationResponse>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-
-        val data = result.get()
+        val data = getApplication(applicationId)
         assertEquals(null, data.application.form.child.address)
         assertEquals(true, data.application.childRestricted)
     }
@@ -191,15 +175,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
             )
         }
 
-        val (_, res, result) =
-            http
-                .get("/v2/applications/$applicationId")
-                .asUser(serviceWorker)
-                .responseObject<ApplicationResponse>(jsonMapper)
-
-        assertEquals(200, res.statusCode)
-
-        val data = result.get()
+        val data = getApplication(applicationId)
         assertEquals(null, data.application.form.guardian.address)
         assertEquals(true, data.application.guardianRestricted)
     }
@@ -269,21 +245,14 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
         val applicationId = createPlacementProposalWithAttachments(testDaycare.id)
 
         // Service workers sees attachments
-        val (_, _, serviceWorkerResult) =
-            http
-                .get("/v2/applications/$applicationId")
-                .asUser(serviceWorker)
-                .responseObject<ApplicationResponse>(jsonMapper)
-        assertEquals(2, serviceWorkerResult.get().attachments.size)
+        val serviceWorkerResult = getApplication(applicationId, serviceWorker)
+        assertEquals(2, serviceWorkerResult.attachments.size)
 
         // Special education teacher sees the application (because it has an assistance need) but
         // doesn't see the attachments
-        val (_, _, specialEducationTeacherResult) =
-            http
-                .get("/v2/applications/$applicationId")
-                .asUser(testSpecialEducationTeacher)
-                .responseObject<ApplicationResponse>(jsonMapper)
-        assertEquals(0, specialEducationTeacherResult.get().attachments.size)
+        val specialEducationTeacherResult =
+            getApplication(applicationId, testSpecialEducationTeacher)
+        assertEquals(0, specialEducationTeacherResult.attachments.size)
     }
 
     @Test
@@ -292,19 +261,35 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
 
         assertTrue(uploadAttachment(applicationId, serviceWorker))
 
-        val (_, _, serviceWorkerResult) =
-            http
-                .get("/v2/applications/$applicationId")
-                .asUser(serviceWorker)
-                .responseObject<ApplicationResponse>(jsonMapper)
-        assertEquals(3, serviceWorkerResult.get().attachments.size)
+        val serviceWorkerResult = getApplication(applicationId, serviceWorker)
+        assertEquals(3, serviceWorkerResult.attachments.size)
 
-        val (_, _, endUserResult) =
-            http
-                .get("/citizen/applications/$applicationId")
-                .asUser(endUser)
-                .responseObject<ApplicationDetails>(jsonMapper)
-        assertEquals(2, endUserResult.get().attachments.size)
+        val citizenResult = getApplication(applicationId, citizen)
+        assertEquals(2, citizenResult.attachments.size)
+    }
+
+    private fun getApplication(
+        applicationId: ApplicationId,
+        user: AuthenticatedUser.Employee = serviceWorker
+    ): ApplicationResponse {
+        return applicationController.getApplicationDetails(
+            dbInstance(),
+            user,
+            RealEvakaClock(),
+            applicationId
+        )
+    }
+
+    private fun getApplication(
+        applicationId: ApplicationId,
+        user: AuthenticatedUser.Citizen
+    ): ApplicationDetails {
+        return applicationControllerCitizen.getApplication(
+            dbInstance(),
+            user,
+            RealEvakaClock(),
+            applicationId
+        )
     }
 
     private fun createPlacementProposalWithAttachments(unitId: DaycareId): ApplicationId {
@@ -313,7 +298,7 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                 val applicationId =
                     tx.insertTestApplication(
                         childId = testChild_1.id,
-                        guardianId = endUser.id,
+                        guardianId = citizen.id,
                         status = ApplicationStatus.CREATED,
                         type = ApplicationType.DAYCARE
                     )
@@ -323,8 +308,8 @@ class GetApplicationIntegrationTests : FullApplicationTest(resetDbBeforeEach = t
                 )
                 applicationId
             }
-        uploadAttachment(applicationId, endUser, AttachmentType.URGENCY)
-        uploadAttachment(applicationId, endUser, AttachmentType.EXTENDED_CARE)
+        uploadAttachment(applicationId, citizen, AttachmentType.URGENCY)
+        uploadAttachment(applicationId, citizen, AttachmentType.EXTENDED_CARE)
         val today = LocalDate.of(2021, 1, 1)
         val clock = MockEvakaClock(HelsinkiDateTime.of(today, LocalTime.of(12, 0)))
         db.transaction { tx ->
