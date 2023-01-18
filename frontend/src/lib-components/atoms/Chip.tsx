@@ -163,6 +163,8 @@ const SelectionChipInnerWrapper = styled.div`
   }
   &.disabled {
     background-color: ${(p) => p.theme.colors.grayscale.g4};
+    color: ${(p) => p.theme.colors.grayscale.g70};
+    border: 1px solid ${(p) => p.theme.colors.grayscale.g35};
   }
 
   @media (max-width: ${tabletMin}) {
