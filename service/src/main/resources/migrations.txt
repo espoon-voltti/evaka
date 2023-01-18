@@ -289,3 +289,4 @@ V289__placement_type_preschool_club.sql
 V290__application_other_guardian_access.sql
 V291__application_other_guardian_cascade.sql
 V292__message_sent_nullable.sql
+V293__staff_attendance_realtime_index.sql

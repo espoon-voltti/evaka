@@ -98,7 +98,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             tx.getPlannedStaffAttendances(body.employeeId, clock.now())
                         val ongoingAttendance = tx.getOngoingAttendance(body.employeeId)
                         val latestDepartureToday =
-                            tx.getLatestDepartureToday(body.employeeId, clock)
+                            tx.getLatestDepartureToday(body.employeeId, clock.now())
                         val attendances =
                             createAttendancesFromArrival(
                                 clock.now(),

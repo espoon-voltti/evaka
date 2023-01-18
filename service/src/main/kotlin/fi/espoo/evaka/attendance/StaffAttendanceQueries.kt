@@ -12,7 +12,6 @@ import fi.espoo.evaka.shared.StaffAttendanceId
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.db.mapRow
-import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.FiniteDateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.HelsinkiDateTimeRange
@@ -568,20 +567,20 @@ FROM staff_attendance_realtime WHERE employee_id = :employeeId AND departed IS N
 
 fun Database.Read.getLatestDepartureToday(
     employeeId: EmployeeId,
-    clock: EvakaClock
+    now: HelsinkiDateTime
 ): StaffAttendance? =
     createQuery(
             """
 SELECT id, employee_id, group_id, arrived, departed, occupancy_coefficient, type
 FROM staff_attendance_realtime 
 WHERE employee_id = :employeeId 
-    AND departed IS NOT NULL
-    AND DATE(departed) = :today
+    AND :startOfToday <= departed AND departed < :startOfTomorrow
 ORDER BY departed DESC LIMIT 1   
 """
         )
         .bind("employeeId", employeeId)
-        .bind("today", clock.today())
+        .bind("startOfToday", now.atStartOfDay())
+        .bind("startOfTomorrow", now.plusDays(1).atStartOfDay())
         .mapTo<StaffAttendance>()
         .findOne()
         .orElseGet { null }
