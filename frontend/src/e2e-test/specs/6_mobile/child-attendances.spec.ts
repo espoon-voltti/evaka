@@ -184,8 +184,8 @@ describe('Child mobile attendances', () => {
       .with({
         optionId: sno.data.id,
         placementId: placement.id,
-        startDate: new Date(placement.startDate),
-        endDate: new Date(placement.endDate),
+        startDate: placement.startDate,
+        endDate: placement.endDate,
         confirmedBy: employee.data.id! // eslint-disable-line
       })
       .save()
