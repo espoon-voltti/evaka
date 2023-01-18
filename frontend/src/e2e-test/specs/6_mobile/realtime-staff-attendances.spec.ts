@@ -400,6 +400,7 @@ describe('Realtime staff attendance page', () => {
     await staffAttendancePage.setDepartureTime('14:02')
     await staffAttendancePage.assertMarkDepartedButtonEnabled(true)
     await staffAttendancePage.selectAttendanceType('OTHER_WORK')
+
     await staffAttendancePage.clickMarkDepartedButton()
     await staffAttendancePage.assertEmployeeStatus('Poissa')
     await staffAttendancePage.assertShiftTimeTextShown(
@@ -407,6 +408,64 @@ describe('Realtime staff attendance page', () => {
     )
     await staffAttendancePage.assertAttendanceTimeTextShown(
       'Paikalla 08:02–14:02,Työasia 14:02–'
+    )
+  })
+
+  test('Staff departs to non work in the middle of the planned day and comes back later', async () => {
+    // Planned attendance 08:00 - 16:00
+    const planStart = HelsinkiDateTime.of(2022, 5, 5, 8, 0)
+    const planEnd = HelsinkiDateTime.of(2022, 5, 5, 16, 0)
+    await Fixture.staffAttendancePlan()
+      .with({
+        id: uuidv4(),
+        employeeId: staffFixture.data.id,
+        startTime: planStart,
+        endTime: planEnd
+      })
+      .save()
+
+    await Fixture.realtimeStaffAttendance()
+      .with({
+        employeeId: staffFixture.data.id,
+        groupId: daycareGroupFixture.id,
+        arrived: HelsinkiDateTime.of(2022, 5, 5, 8, 2),
+        departed: null,
+        occupancyCoefficient: 0,
+        type: 'PRESENT'
+      })
+      .save()
+
+    // Now it is 14:02
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 14, 2).toSystemTzDate())
+    const name = `${staffFixture.data.lastName} ${staffFixture.data.firstName}`
+    await staffAttendancePage.assertPresentStaffCount(1)
+    await staffAttendancePage.selectTab('present')
+    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.assertEmployeeStatus('Läsnä')
+    await staffAttendancePage.clickStaffDepartedAndSetPin(pin)
+
+    await staffAttendancePage.setDepartureTime('14:02')
+    await staffAttendancePage.assertMarkDepartedButtonEnabled(true)
+
+    await staffAttendancePage.clickMarkDepartedButton()
+    await staffAttendancePage.assertEmployeeStatus('Poissa')
+    await staffAttendancePage.assertShiftTimeTextShown(
+      'Työvuoro tänään 08:00–16:00'
+    )
+    await staffAttendancePage.assertAttendanceTimeTextShown(
+      'Paikalla 08:02–14:02'
+    )
+
+    await initPages(HelsinkiDateTime.of(2022, 5, 5, 15, 0).toSystemTzDate())
+    await staffAttendancePage.openStaffPage(name)
+    await staffAttendancePage.clickStaffArrivedAndSetPin(pin)
+
+    await staffAttendancePage.setArrivalTime('15:00')
+    await staffAttendancePage.selectGroup(daycareGroupFixture.id)
+    await staffAttendancePage.assertDoneButtonEnabled(true)
+    await staffAttendancePage.clickDoneButton()
+    await staffAttendancePage.assertAttendanceTimeTextShown(
+      'Paikalla 08:02–14:02,Paikalla 15:00–'
     )
   })
 

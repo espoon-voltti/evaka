@@ -97,11 +97,14 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                         val plannedAttendances =
                             tx.getPlannedStaffAttendances(body.employeeId, clock.now())
                         val ongoingAttendance = tx.getOngoingAttendance(body.employeeId)
+                        val latestDepartureToday =
+                            tx.getLatestDepartureToday(body.employeeId, clock.now())
                         val attendances =
                             createAttendancesFromArrival(
                                 clock.now(),
                                 plannedAttendances,
                                 ongoingAttendance,
+                                latestDepartureToday,
                                 body
                             )
                         val occupancyCoefficient =
@@ -283,6 +286,7 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
         now: HelsinkiDateTime,
         plans: List<PlannedStaffAttendance>,
         ongoingAttendance: StaffAttendance?,
+        latestDepartureToday: StaffAttendance?,
         arrival: StaffArrivalRequest
     ): List<StaffAttendance> {
         val arrivalTime =
@@ -346,13 +350,15 @@ class MobileRealtimeStaffAttendanceController(private val ac: AccessControl) {
                             "Arrival type ${arrival.type} does not match ongoing attendance type ${ongoingAttendance.type}"
                         )
                     }
-                    listOf(
+                    listOfNotNull(
                         ongoingAttendance?.copy(departed = arrivalTime)
-                            ?: createNewAttendance(
-                                planStart,
-                                arrivalTime,
-                                arrival.type ?: StaffAttendanceType.PRESENT
-                            ),
+                            ?: if (latestDepartureToday != null) null
+                            else
+                                createNewAttendance(
+                                    planStart,
+                                    arrivalTime,
+                                    arrival.type ?: StaffAttendanceType.PRESENT
+                                ),
                         createNewAttendance(arrivalTime, null, StaffAttendanceType.PRESENT)
                     )
                 }

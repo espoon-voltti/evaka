@@ -565,6 +565,26 @@ FROM staff_attendance_realtime WHERE employee_id = :employeeId AND departed IS N
         .findOne()
         .orElseGet { null }
 
+fun Database.Read.getLatestDepartureToday(
+    employeeId: EmployeeId,
+    now: HelsinkiDateTime
+): StaffAttendance? =
+    createQuery(
+            """
+SELECT id, employee_id, group_id, arrived, departed, occupancy_coefficient, type
+FROM staff_attendance_realtime 
+WHERE employee_id = :employeeId 
+    AND :startOfToday <= departed AND departed < :startOfTomorrow
+ORDER BY departed DESC LIMIT 1   
+"""
+        )
+        .bind("employeeId", employeeId)
+        .bind("startOfToday", now.atStartOfDay())
+        .bind("startOfTomorrow", now.plusDays(1).atStartOfDay())
+        .mapTo<StaffAttendance>()
+        .findOne()
+        .orElseGet { null }
+
 fun Database.Transaction.deleteStaffAttendancesInRangeExcept(
     employeeId: EmployeeId,
     timeRange: HelsinkiDateTimeRange,
