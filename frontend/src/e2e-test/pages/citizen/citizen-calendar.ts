@@ -53,6 +53,10 @@ export default class CitizenCalendarPage {
     this.page.findByDataQa(`${this.type}-calendar-day-${date.formatIso()}`)
   reservationModal = this.page.findByDataQa('reservation-modal')
 
+  async pause() {
+    await this.page.pause()
+  }
+
   async waitUntilLoaded() {
     await this.page
       .find('[data-qa="calendar-page"][data-isloading="false"]')

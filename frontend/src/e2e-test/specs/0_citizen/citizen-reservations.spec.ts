@@ -16,7 +16,9 @@ import {
   initializeAreaAndPersonData
 } from '../../dev-api/data-init'
 import {
+  careArea2Fixture,
   createDaycarePlacementFixture,
+  daycare2Fixture,
   Fixture,
   uuidv4
 } from '../../dev-api/fixtures'
@@ -391,10 +393,11 @@ describe('Citizen calendar child visibility', () => {
   const placement1end = today.addMonths(6)
   const placement2start = today.addMonths(8)
   const placement2end = today.addMonths(12)
+  let fixtures: AreaAndPersonFixtures
 
   beforeEach(async () => {
     await resetDatabase()
-    const fixtures = await initializeAreaAndPersonData()
+    fixtures = await initializeAreaAndPersonData()
     const child = fixtures.enduserChildFixtureJari
 
     await insertDaycarePlacementFixtures([
@@ -420,10 +423,11 @@ describe('Citizen calendar child visibility', () => {
     await enduserLogin(page)
     header = new CitizenHeader(page, 'desktop')
     calendarPage = new CitizenCalendarPage(page, 'desktop')
-    await header.selectTab('calendar')
   })
 
   test('Child visible only while placement is active', async () => {
+    await header.selectTab('calendar')
+
     await calendarPage.assertChildCountOnDay(placement1start.subDays(1), 0)
     await calendarPage.assertChildCountOnDay(placement1start, 1)
     await calendarPage.assertChildCountOnDay(placement1end, 1)
@@ -437,11 +441,33 @@ describe('Citizen calendar child visibility', () => {
   })
 
   test('Day popup contains message if no children placements on that date', async () => {
+    await header.selectTab('calendar')
+
     let dayView = await calendarPage.openDayView(today.subDays(1))
     await dayView.assertNoActivePlacementsMsgVisible()
     await dayView.close()
     dayView = await calendarPage.openDayView(today.addYears(1).addDays(1))
     await dayView.assertNoActivePlacementsMsgVisible()
+  })
+
+  test('If other child is in round the clock daycare, the other child is not required to fill in weekends', async () => {
+    const careArea = await Fixture.careArea().with(careArea2Fixture).save()
+    await Fixture.daycare().with(daycare2Fixture).careArea(careArea).save()
+
+    // Sibling is in 24/7 daycare
+    await insertDaycarePlacementFixtures([
+      createDaycarePlacementFixture(
+        uuidv4(),
+        fixtures.enduserChildFixtureKaarina.id,
+        daycare2Fixture.id,
+        placement1start.formatIso(),
+        placement1end.formatIso()
+      )
+    ])
+
+    await header.selectTab('calendar')
+    // Saturday
+    await calendarPage.assertChildCountOnDay(today.addDays(3), 1)
   })
 })
 
