@@ -91,6 +91,9 @@ function getChildrenWithReservations(
     .filter((child) =>
       child.placements.some((pl) => date.isBetween(pl.start, pl.end))
     )
+    .filter((child) =>
+      child.maxOperationalDays.includes(date.getIsoDayOfWeek())
+    )
     .map((child) => {
       const childReservations = dailyData?.children.find(
         ({ childId }) => childId === child.id

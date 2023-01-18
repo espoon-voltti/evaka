@@ -140,6 +140,9 @@ const groupChildren = (
             date.isBetween(placement.start, placement.end)
           )
         )
+        .filter((childInfo) =>
+          childInfo.maxOperationalDays.includes(date.getIsoDayOfWeek())
+        )
         .map<DailyChildGroupElement>((childInfo) => {
           const child = reservedChildren.find(
             ({ childId }) => childId === childInfo.id
