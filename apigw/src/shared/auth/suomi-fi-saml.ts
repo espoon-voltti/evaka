@@ -3,7 +3,12 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import fs from 'fs'
-import { Profile, SamlConfig, Strategy, VerifiedCallback } from 'passport-saml'
+import passportSaml, {
+  Profile,
+  SamlConfig,
+  Strategy,
+  VerifiedCallback
+} from 'passport-saml'
 import { RedisClient } from 'redis'
 import certificates from '../certificates'
 import { Config } from '../config'
@@ -20,22 +25,16 @@ const SUOMI_FI_SSN_KEY = 'urn:oid:1.2.246.21'
 const SUOMI_FI_GIVEN_NAME_KEY = 'urn:oid:2.5.4.42'
 const SUOMI_FI_SURNAME_KEY = 'urn:oid:2.5.4.4'
 
-interface SuomiFiProfile {
-  nameID?: Profile['nameID']
-  nameIDFormat?: Profile['nameIDFormat']
-  nameQualifier?: Profile['nameQualifier']
-  spNameQualifier?: Profile['spNameQualifier']
-  sessionIndex?: Profile['sessionIndex']
-  [SUOMI_FI_SSN_KEY]: string
-  [SUOMI_FI_SURNAME_KEY]: string
-  [SUOMI_FI_GIVEN_NAME_KEY]: string
-}
+async function verifyProfile(profile: passportSaml.Profile): Promise<SamlUser> {
+  const asString = (value: unknown) =>
+    value == null ? undefined : String(value)
 
-async function verifyProfile(profile: SuomiFiProfile): Promise<SamlUser> {
+  const socialSecurityNumber = asString(profile[SUOMI_FI_SSN_KEY])
+  if (!socialSecurityNumber) throw Error('No SSN in SAML data')
   const person = await citizenLogin({
-    socialSecurityNumber: profile[SUOMI_FI_SSN_KEY],
-    firstName: profile[SUOMI_FI_GIVEN_NAME_KEY],
-    lastName: profile[SUOMI_FI_SURNAME_KEY]
+    socialSecurityNumber,
+    firstName: asString(profile[SUOMI_FI_GIVEN_NAME_KEY]) ?? '',
+    lastName: asString(profile[SUOMI_FI_SURNAME_KEY]) ?? ''
   })
   return {
     id: person.id,
@@ -107,10 +106,13 @@ export default function createSuomiFiStrategy(
     return new Strategy(
       samlConfig,
       (profile: Profile | null | undefined, done: VerifiedCallback) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        verifyProfile(profile as any as SuomiFiProfile)
-          .then((user) => done(null, user))
-          .catch(done)
+        if (!profile) {
+          done(new Error('No SAML profile'))
+        } else {
+          verifyProfile(profile)
+            .then((user) => done(null, user))
+            .catch(done)
+        }
       }
     )
   }

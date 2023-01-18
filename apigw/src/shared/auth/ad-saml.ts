@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import {
+import passportSaml, {
   Profile,
   SamlConfig,
   Strategy as SamlStrategy,
@@ -18,10 +18,8 @@ import { RedisClient } from 'redis'
 import redisCacheProvider from './passport-saml-cache-redis'
 import { Config } from '../config'
 
-const AD_USER_ID_KEY =
+const AD_OID_KEY =
   'http://schemas.microsoft.com/identity/claims/objectidentifier'
-const AD_ROLES_KEY =
-  'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
 const AD_GIVEN_NAME_KEY =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'
 const AD_FAMILY_NAME_KEY =
@@ -31,32 +29,21 @@ const AD_EMAIL_KEY =
 const AD_EMPLOYEE_NUMBER_KEY =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/employeenumber'
 
-interface AdProfile {
-  nameID?: Profile['nameID']
-  nameIDFormat?: Profile['nameIDFormat']
-  nameQualifier?: Profile['nameQualifier']
-  spNameQualifier?: Profile['spNameQualifier']
-  sessionIndex?: Profile['sessionIndex']
-  [AD_USER_ID_KEY]: string
-  [AD_ROLES_KEY]: string | string[]
-  [AD_GIVEN_NAME_KEY]: string
-  [AD_FAMILY_NAME_KEY]: string
-  [AD_EMAIL_KEY]: string
-  [AD_EMPLOYEE_NUMBER_KEY]?: string
-}
-
 async function verifyProfile(
   idPrefix: string,
-  profile: AdProfile
+  profile: passportSaml.Profile
 ): Promise<SamlUser> {
-  const aad = profile[AD_USER_ID_KEY]
+  const asString = (value: unknown) =>
+    value == null ? undefined : String(value)
+
+  const aad = asString(profile[AD_OID_KEY])
   if (!aad) throw Error('No user ID in SAML data')
   const person = await employeeLogin({
     externalId: `${idPrefix}:${aad}`,
-    firstName: profile[AD_GIVEN_NAME_KEY],
-    lastName: profile[AD_FAMILY_NAME_KEY],
-    email: profile[AD_EMAIL_KEY],
-    employeeNumber: profile[AD_EMPLOYEE_NUMBER_KEY]
+    firstName: asString(profile[AD_GIVEN_NAME_KEY]) ?? '',
+    lastName: asString(profile[AD_FAMILY_NAME_KEY]) ?? '',
+    email: asString(profile[AD_EMAIL_KEY]),
+    employeeNumber: asString(profile[AD_EMPLOYEE_NUMBER_KEY])
   })
   return {
     id: person.id,
@@ -111,8 +98,7 @@ export default function createAdStrategy(
       )
       return verifyProfile(config.externalIdPrefix, {
         nameID: 'dummyid',
-        [AD_USER_ID_KEY]: userId,
-        [AD_ROLES_KEY]: [],
+        [AD_OID_KEY]: userId,
         [AD_GIVEN_NAME_KEY]: employee.firstName,
         [AD_FAMILY_NAME_KEY]: employee.lastName,
         [AD_EMAIL_KEY]: employee.email ? employee.email : ''
@@ -136,8 +122,7 @@ export default function createAdStrategy(
       })
       return verifyProfile(config.externalIdPrefix, {
         nameID: 'dummyid',
-        [AD_USER_ID_KEY]: userId,
-        [AD_ROLES_KEY]: roles,
+        [AD_OID_KEY]: userId,
         [AD_GIVEN_NAME_KEY]: firstName,
         [AD_FAMILY_NAME_KEY]: lastName,
         [AD_EMAIL_KEY]: email
@@ -149,10 +134,13 @@ export default function createAdStrategy(
     return new SamlStrategy(
       samlConfig,
       (profile: Profile | null | undefined, done: VerifiedCallback) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        verifyProfile(config.externalIdPrefix, profile as any as AdProfile)
-          .then((user) => done(null, user))
-          .catch(done)
+        if (!profile) {
+          done(new Error('No SAML profile'))
+        } else {
+          verifyProfile(config.externalIdPrefix, profile)
+            .then((user) => done(null, user))
+            .catch(done)
+        }
       }
     )
   }

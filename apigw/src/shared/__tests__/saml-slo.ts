@@ -13,13 +13,18 @@ import xmldom from '@xmldom/xmldom'
 import zlib from 'zlib'
 import { configFromEnv } from '../config'
 import { fromCallback } from '../promise-utils'
-import type { CitizenUser } from '../service-client'
 import { sessionCookie } from '../session'
 import { GatewayTester } from '../test/gateway-tester'
 import redisMock from 'redis-mock'
+import { DevCitizen } from '../dev-api'
+import { CitizenUser } from '../service-client'
 
-const mockUser: CitizenUser = {
-  id: '942b9cab-210d-4d49-b4c9-65f26390eed3'
+const mockUser: DevCitizen & CitizenUser = {
+  id: '942b9cab-210d-4d49-b4c9-65f26390eed3',
+  firstName: 'dummy',
+  lastName: 'dummy',
+  ssn: '010101-999X',
+  dependantCount: 0
 }
 
 const SP_CALLBACK_URL =
@@ -285,7 +290,12 @@ function buildLoginResponse(
               <saml:Audience>${SP_ISSUER}</saml:Audience>
           </saml:AudienceRestriction>
       </saml:Conditions>
-     <saml:AuthnStatement
+      <saml:AttributeStatement>
+        <saml:Attribute Name="urn:oid:1.2.246.21">
+          <saml:AttributeValue>010101-999X</saml:AttributeValue>
+        </saml:Attribute>
+      </saml:AttributeStatement>
+      <saml:AuthnStatement
           AuthnInstant="${issueInstant}"
           SessionNotOnOrAfter="${notOnOrAfter}"
           SessionIndex="${sessionIndex}">

@@ -27,17 +27,17 @@ export async function getEmployeeByExternalId(externalId: string) {
   return data
 }
 
-export async function getCitizenBySsn(ssn: string): Promise<Citizen> {
-  const { data } = await client.get<Citizen>(`/dev-api/citizen/ssn/${ssn}`)
+export async function getCitizenBySsn(ssn: string): Promise<DevCitizen> {
+  const { data } = await client.get<DevCitizen>(`/dev-api/citizen/ssn/${ssn}`)
   return data
 }
 
-export async function getCitizens(): Promise<Citizen[]> {
+export async function getCitizens(): Promise<DevCitizen[]> {
   const { data } = await client.get(`/dev-api/citizen`)
   return data
 }
 
-interface Citizen {
+export interface DevCitizen {
   ssn: string
   firstName: string
   lastName: string

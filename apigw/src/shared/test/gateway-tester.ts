@@ -11,6 +11,7 @@ import { evakaServiceUrl } from '../config'
 import { sessionCookie, SessionType } from '../session'
 import { csrfCookieName } from '../middleware/csrf'
 import { CitizenUser, EmployeeUser } from '../service-client'
+import { DevCitizen } from '../dev-api'
 
 export class GatewayTester {
   public readonly client: AxiosInstance
@@ -82,7 +83,7 @@ export class GatewayTester {
   }
 
   public async login(
-    user: CitizenUser | EmployeeUser,
+    user: (CitizenUser & DevCitizen) | EmployeeUser,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     postData?: any
   ): Promise<void> {
