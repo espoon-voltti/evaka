@@ -60,6 +60,15 @@ const placementTypeFilters: Record<ApplicationType, PlacementType[]> = {
   CLUB: []
 }
 
+const getMessageSubject = (
+  i18n: Translations,
+  applicationData: ApplicationResponse
+) =>
+  i18n.application.messageSubject(
+    applicationData.application.sentDate?.format() ?? '',
+    `${applicationData.application.form.child.person.firstName} ${applicationData.application.form.child.person.lastName}`
+  )
+
 export default React.memo(function ApplicationPage() {
   const { id: applicationId } = useNonNullableParams<{ id: UUID }>()
 
@@ -231,7 +240,12 @@ export default React.memo(function ApplicationPage() {
                       <AddButton
                         onClick={() =>
                           window.open(
-                            `${getEmployeeUrlPrefix()}/employee/messages/send`,
+                            `${getEmployeeUrlPrefix()}/employee/messages/send?recipient=${
+                              applicationData.guardians[0].id
+                            }&title=${getMessageSubject(
+                              i18n,
+                              applicationData
+                            )}`,
                             '_blank'
                           )
                         }

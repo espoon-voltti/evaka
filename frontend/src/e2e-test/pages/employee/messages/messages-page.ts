@@ -16,7 +16,7 @@ export default class MessagesPage {
   constructor(private readonly page: Page) {}
 
   #newMessageButton = this.page.find('[data-qa="new-message-btn"]')
-  #sendMessageButton = this.page.find('[data-qa="send-message-btn"]')
+  sendMessageButton = this.page.find('[data-qa="send-message-btn"]')
   #closeMessageEditorButton = this.page.find(
     '[data-qa="close-message-editor-btn"]'
   )
@@ -25,8 +25,8 @@ export default class MessagesPage {
   #receiverSelection = new TreeDropdown(
     this.page.find('[data-qa="select-receiver"]')
   )
-  #inputTitle = new TextInput(this.page.find('[data-qa="input-title"]'))
-  #inputContent = new TextInput(this.page.find('[data-qa="input-content"]'))
+  inputTitle = new TextInput(this.page.find('[data-qa="input-title"]'))
+  inputContent = new TextInput(this.page.find('[data-qa="input-content"]'))
   #fileUpload = this.page.find('[data-qa="upload-message-attachment"]')
   #personalAccount = this.page.find('[data-qa="personal-account"]')
   #draftMessagesBoxRow = new TextInput(
@@ -115,8 +115,8 @@ export default class MessagesPage {
 
     await this.#newMessageButton.click()
     await waitUntilTrue(() => this.isEditorVisible())
-    await this.#inputTitle.fill(message.title)
-    await this.#inputContent.fill(message.content)
+    await this.inputTitle.fill(message.title)
+    await this.inputContent.fill(message.content)
 
     if (message.sender) {
       await this.#senderSelection.fillAndSelectFirst(message.sender)
@@ -147,7 +147,7 @@ export default class MessagesPage {
         )
       }
     }
-    await this.#sendMessageButton.click()
+    await this.sendMessageButton.click()
     await waitUntilEqual(() => this.isEditorVisible(), false)
   }
 
@@ -168,8 +168,8 @@ export default class MessagesPage {
   async draftNewMessage(title: string, content: string) {
     await this.#newMessageButton.click()
     await waitUntilEqual(() => this.isEditorVisible(), true)
-    await this.#inputTitle.fill(title)
-    await this.#inputContent.fill(content)
+    await this.inputTitle.fill(title)
+    await this.inputContent.fill(content)
     await this.#receiverSelection.open()
     await this.#receiverSelection.firstOption().click()
     await this.#receiverSelection.close()
@@ -178,7 +178,7 @@ export default class MessagesPage {
   }
 
   async sendEditedMessage() {
-    await this.#sendMessageButton.click()
+    await this.sendMessageButton.click()
     await waitUntilEqual(() => this.isEditorVisible(), false)
   }
 
@@ -236,5 +236,13 @@ export default class MessagesPage {
       .findByDataQa('undo-message-toast')
       .findByDataQa('cancel-message')
       .click()
+  }
+
+  async assertReceiver(receiverName: string) {
+    return waitUntilEqual(() => this.#receiverSelection.text, receiverName)
+  }
+
+  async assertTitle(title: string) {
+    return waitUntilEqual(() => this.inputTitle.inputValue, title)
   }
 }

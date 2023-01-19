@@ -340,6 +340,7 @@ export const fi = {
   },
   application: {
     tabTitle: 'Hakemus',
+    messageSubject: (date: string, name: string) => `Hakemus ${date}: ${name}`,
     types: {
       PRESCHOOL: 'Esiopetushakemus',
       DAYCARE: 'Varhaiskasvatushakemus',

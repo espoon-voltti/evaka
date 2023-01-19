@@ -34,8 +34,9 @@ let citizenPage: Page
 let staffPage: Page
 let serviceWorker: EmployeeDetail
 
+const mockedToday = LocalDate.of(2022, 11, 8)
 const mockedTime = HelsinkiDateTime.fromLocal(
-  LocalDate.of(2022, 11, 8),
+  mockedToday,
   LocalTime.of(10, 49, 0)
 )
 
@@ -68,10 +69,13 @@ describe('Service Worker Messaging', () => {
 
   describe('Service Worker and citizen', () => {
     beforeEach(async () => {
-      const applFixture = applicationFixture(
-        fixtures.enduserChildFixtureJari,
-        fixtures.enduserGuardianFixture
-      )
+      const applFixture = {
+        ...applicationFixture(
+          fixtures.enduserChildFixtureJari,
+          fixtures.enduserGuardianFixture
+        ),
+        sentDate: mockedToday.formatIso()
+      }
       await insertApplications([applFixture])
     })
 
@@ -83,21 +87,35 @@ describe('Service Worker Messaging', () => {
         .applicationRow(applicationFixtureId)
         .openApplication()
       const messagesPage = await applReadView.openMessagesPage()
-      const message = {
-        title: 'Message to citizen',
-        content: 'Hello citizen!'
-      }
-      await messagesPage.sendNewMessage({
-        ...message,
-        receiver: fixtures.enduserGuardianFixture.id
-      })
+      const title = 'Message to citizen'
+      const content = 'Hello citizen!'
+      await messagesPage.inputTitle.fill(title)
+      await messagesPage.inputContent.fill(content)
+      await messagesPage.sendMessageButton.click()
 
       await openCitizenPage(mockedTime.addHours(1))
       const header = new CitizenHeader(citizenPage)
       await header.selectTab('messages')
       const citizenMessagesPage = new CitizenMessagesPage(citizenPage)
       await citizenMessagesPage.openFirstThread()
-      await citizenMessagesPage.assertThreadContent(message)
+      await citizenMessagesPage.assertThreadContent({ title, content })
+    })
+
+    it('should prefill the receiver and title fields when sending a new message', async () => {
+      await openStaffPage(mockedTime)
+      const applicationsPage = new ApplicationsPage(staffPage)
+      await new EmployeeNav(staffPage).applicationsTab.click()
+      const applReadView = await applicationsPage
+        .applicationRow(applicationFixtureId)
+        .openApplication()
+      const messagesPage = await applReadView.openMessagesPage()
+
+      await messagesPage.assertReceiver(
+        `${fixtures.enduserGuardianFixture.lastName} ${fixtures.enduserGuardianFixture.firstName}`
+      )
+      await messagesPage.assertTitle(
+        `Hakemus 08.11.2022: ${fixtures.enduserChildFixtureJari.firstName} ${fixtures.enduserChildFixtureJari.lastName}`
+      )
     })
   })
 })

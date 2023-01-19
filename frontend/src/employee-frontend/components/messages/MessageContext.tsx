@@ -106,6 +106,8 @@ export interface MessagesState {
   sentMessagesAsThreads: Result<MessageThread[]>
   messageCopiesAsThreads: Result<MessageThread[]>
   openMessageUndo: (m: CancelableMessage) => void
+  prefilledRecipient: string | null
+  prefilledTitle: string | null
 }
 
 const defaultState: MessagesState = {
@@ -141,7 +143,9 @@ const defaultState: MessagesState = {
   unreadCountsByAccount: Loading.of(),
   sentMessagesAsThreads: Loading.of(),
   messageCopiesAsThreads: Loading.of(),
-  openMessageUndo: () => undefined
+  openMessageUndo: () => undefined,
+  prefilledRecipient: null,
+  prefilledTitle: null
 }
 
 export const MessageContext = createContext<MessagesState>(defaultState)
@@ -172,6 +176,9 @@ export const MessageContextProvider = React.memo(
     const messageBox = searchParams.get('messageBox')
     const unitId = searchParams.get('unitId')
     const threadId = searchParams.get('threadId')
+    const prefilledTitle = searchParams.get('title')
+    const prefilledRecipient = searchParams.get('recipient')
+
     const setParams = useCallback(
       (params: {
         accountId?: string | null
@@ -186,12 +193,16 @@ export const MessageContextProvider = React.memo(
               ? { messageBox: params.messageBox }
               : undefined),
             ...(params.unitId ? { unitId: params.unitId } : undefined),
-            ...(params.threadId ? { threadId: params.threadId } : undefined)
+            ...(params.threadId ? { threadId: params.threadId } : undefined),
+            ...(prefilledTitle ? { title: prefilledTitle } : undefined),
+            ...(prefilledRecipient
+              ? { recipient: prefilledRecipient }
+              : undefined)
           },
           { replace: true }
         )
       },
-      [setSearchParams]
+      [setSearchParams, prefilledTitle, prefilledRecipient]
     )
 
     const [accounts] = useApiState(
@@ -676,7 +687,9 @@ export const MessageContextProvider = React.memo(
         unreadCountsByAccount,
         sentMessagesAsThreads,
         messageCopiesAsThreads,
-        openMessageUndo
+        openMessageUndo,
+        prefilledRecipient,
+        prefilledTitle
       }),
       [
         accounts,
@@ -708,7 +721,9 @@ export const MessageContextProvider = React.memo(
         unreadCountsByAccount,
         sentMessagesAsThreads,
         messageCopiesAsThreads,
-        openMessageUndo
+        openMessageUndo,
+        prefilledRecipient,
+        prefilledTitle
       ]
     )
 
