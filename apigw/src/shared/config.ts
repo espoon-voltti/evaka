@@ -9,6 +9,9 @@ export interface Config {
   ad: {
     mock: boolean
     externalIdPrefix: string
+    userIdKey: string
+    nameIdFormat: string
+    decryptAssertions: boolean
     saml: EvakaSamlConfig | undefined
   }
   sfi: {
@@ -121,9 +124,16 @@ export function configFromEnv(): Config {
     ifNodeEnv(['local', 'test'], true) ??
     false
   const adCallbackUrl = process.env.AD_SAML_CALLBACK_URL
+  const defaultUserIdKey =
+    'http://schemas.microsoft.com/identity/claims/objectidentifier'
+  const defaultNameIdFormat =
+    'urn:oasis:names:tc:SAML:2.0:nameid-format:transient'
   const ad: Config['ad'] = {
     mock: adMock,
     externalIdPrefix: process.env.AD_SAML_EXTERNAL_ID_PREFIX ?? 'espoo-ad',
+    userIdKey: process.env.AD_USER_ID_KEY ?? defaultUserIdKey,
+    nameIdFormat: process.env.AD_NAME_ID_FORMAT ?? defaultNameIdFormat,
+    decryptAssertions: env('AD_DECRYPT_ASSERTIONS', parseBoolean) ?? false,
     saml:
       adCallbackUrl && !adMock
         ? {
