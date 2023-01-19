@@ -122,5 +122,8 @@ data class FeatureConfig(
     val postOffice: String,
 
     /** Name of the message sender when sending messages on the municipal message account */
-    val municipalMessageAccountName: String
+    val municipalMessageAccountName: String,
+
+    /** Name of the message sender when sending messages on the service worker message account */
+    val serviceWorkerMessageAccountName: String
 )

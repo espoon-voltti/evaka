@@ -26,6 +26,10 @@ export const isMunicipalMessageAccount = (
   acc: AuthorizedMessageAccount
 ): acc is AuthorizedMessageAccount => acc.account.type === 'MUNICIPAL'
 
+export const isServiceWorkerMessageAccount = (
+  acc: AuthorizedMessageAccount
+): acc is AuthorizedMessageAccount => acc.account.type === 'SERVICE_WORKER'
+
 export interface SaveDraftParams {
   accountId: UUID
   draftId: UUID

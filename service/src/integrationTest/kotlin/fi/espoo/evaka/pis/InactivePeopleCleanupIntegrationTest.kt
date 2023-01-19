@@ -280,7 +280,8 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     sender = employeeAccount,
                     sentAt = now,
                     recipientNames = listOf("recipient name"),
-                    municipalAccountName = "Espoo"
+                    municipalAccountName = "Espoo",
+                    serviceWorkerAccountName = "Espoon palveluohjaus"
                 )
             tx.insertRecipients(listOf(messageId to setOf(personAccount)))
         }
@@ -312,7 +313,8 @@ class InactivePeopleCleanupIntegrationTest : PureJdbiTest(resetDbBeforeEach = tr
                     sender = personAccount,
                     sentAt = now,
                     recipientNames = listOf("employee name"),
-                    municipalAccountName = "Espoo"
+                    municipalAccountName = "Espoo",
+                    serviceWorkerAccountName = "Espoon palveluohjaus"
                 )
             tx.insertRecipients(listOf(messageId to setOf(employeeAccount)))
         }

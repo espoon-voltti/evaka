@@ -658,16 +658,19 @@ RETURNING id
         db.connect { dbc ->
             dbc.transaction { tx ->
                 tx.execute(
-                    "INSERT INTO message_account (daycare_group_id) SELECT id FROM daycare_group ON CONFLICT DO NOTHING"
+                    "INSERT INTO message_account (daycare_group_id, type) SELECT id, 'GROUP'::message_account_type as type FROM daycare_group ON CONFLICT DO NOTHING"
                 )
                 tx.execute(
-                    "INSERT INTO message_account (person_id) SELECT id FROM person ON CONFLICT DO NOTHING"
+                    "INSERT INTO message_account (person_id, type) SELECT id, 'CITIZEN'::message_account_type as type FROM person ON CONFLICT DO NOTHING"
                 )
                 tx.execute(
-                    "INSERT INTO message_account (employee_id) SELECT employee_id FROM daycare_acl WHERE role = 'UNIT_SUPERVISOR' ON CONFLICT DO NOTHING"
+                    "INSERT INTO message_account (employee_id, type) SELECT employee_id, 'PERSONAL'::message_account_type as type FROM daycare_acl WHERE role = 'UNIT_SUPERVISOR' ON CONFLICT DO NOTHING"
                 )
                 tx.execute(
-                    "INSERT INTO message_account (daycare_group_id, person_id, employee_id) VALUES (NULL, NULL, NULL) ON CONFLICT DO NOTHING"
+                    "INSERT INTO message_account (daycare_group_id, person_id, employee_id, type) VALUES (NULL, NULL, NULL, 'MUNICIPAL') ON CONFLICT DO NOTHING"
+                )
+                tx.execute(
+                    "INSERT INTO message_account (daycare_group_id, person_id, employee_id, type) VALUES (NULL, NULL, NULL, 'SERVICE_WORKER') ON CONFLICT DO NOTHING"
                 )
             }
         }

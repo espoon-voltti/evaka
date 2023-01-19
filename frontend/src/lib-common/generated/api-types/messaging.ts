@@ -18,6 +18,7 @@ export type AccountType =
   | 'GROUP'
   | 'CITIZEN'
   | 'MUNICIPAL'
+  | 'SERVICE_WORKER'
 
 /**
 * Generated from fi.espoo.evaka.messaging.AuthorizedMessageAccount
@@ -157,6 +158,7 @@ export type MessageRecipientType =
   | 'UNIT'
   | 'GROUP'
   | 'CHILD'
+  | 'CITIZEN'
 
 /**
 * Generated from fi.espoo.evaka.messaging.MessageThread

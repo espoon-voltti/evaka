@@ -86,7 +86,7 @@ sealed interface Action {
         FINANCE_PAGE(HasGlobalRole(ADMIN, FINANCE_ADMIN)),
         HOLIDAY_PERIODS_PAGE(HasGlobalRole(ADMIN)),
         MESSAGES_PAGE(
-            HasGlobalRole(ADMIN, MESSAGING),
+            HasGlobalRole(ADMIN, MESSAGING, SERVICE_WORKER),
             HasUnitRole(
                     STAFF,
                     UNIT_SUPERVISOR,
@@ -1233,6 +1233,7 @@ sealed interface Action {
             HasUnitRole(UNIT_SUPERVISOR).hasDaycareMessageAccount(),
             IsEmployee.hasDaycareGroupMessageAccount(),
             IsEmployee.hasMunicipalMessageAccount(),
+            IsEmployee.hasServiceWorkerMessageAccount(),
             IsMobile(requirePinLogin = true).hasPersonalMessageAccount(),
             IsMobile(requirePinLogin = true).hasDaycareMessageAccount(UNIT_SUPERVISOR),
             IsMobile(requirePinLogin = true).hasDaycareGroupMessageAccount(),

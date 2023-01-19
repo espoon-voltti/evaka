@@ -544,6 +544,9 @@ export const fi = {
         save: 'Muistiinpanon tallentaminen epäonnnistui',
         remove: 'Muistiinpanon poistaminen epäonnnistui'
       }
+    },
+    messaging: {
+      sendMessage: 'Lähetä viesti'
     }
   },
   childInformation: {
@@ -3452,6 +3455,7 @@ export const fi = {
     },
     sidePanel: {
       municipalMessages: 'Kunnan tiedotteet',
+      serviceWorkerMessages: 'Palveluohjauksen viestit',
       ownMessages: 'Omat viestit',
       groupsMessages: 'Ryhmien viestit',
       noAccountAccess:

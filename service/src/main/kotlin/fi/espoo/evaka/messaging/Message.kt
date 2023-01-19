@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.MessageAccountId
 import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.MessageId
 import fi.espoo.evaka.shared.MessageThreadId
+import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import org.jdbi.v3.core.mapper.Nested
 import org.jdbi.v3.core.mapper.PropagateNull
@@ -92,13 +93,17 @@ sealed class MessageReceiver(val type: MessageRecipientType) {
 
     data class Child(override val id: ChildId, override val name: String) :
         MessageReceiver(MessageRecipientType.CHILD)
+
+    data class Citizen(override val id: PersonId, override val name: String) :
+        MessageReceiver(MessageRecipientType.CITIZEN)
 }
 
 enum class AccountType {
     PERSONAL,
     GROUP,
     CITIZEN,
-    MUNICIPAL;
+    MUNICIPAL,
+    SERVICE_WORKER;
 
     fun isPrimaryRecipientForCitizenMessage(): Boolean =
         when (this) {
@@ -106,6 +111,7 @@ enum class AccountType {
             GROUP -> true
             CITIZEN -> false
             MUNICIPAL -> false
+            SERVICE_WORKER -> false
         }
 }
 
@@ -127,7 +133,8 @@ enum class MessageRecipientType {
     AREA,
     UNIT,
     GROUP,
-    CHILD
+    CHILD,
+    CITIZEN
 }
 
 data class MessageRecipient(val type: MessageRecipientType, val id: Id<*>)

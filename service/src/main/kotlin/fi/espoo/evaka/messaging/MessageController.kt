@@ -73,7 +73,8 @@ class MessageController(
                         )
                     it.getAuthorizedMessageAccountsForEmployee(
                         filter,
-                        featureConfig.municipalMessageAccountName
+                        featureConfig.municipalMessageAccountName,
+                        featureConfig.serviceWorkerMessageAccountName
                     )
                 }
             }
@@ -100,7 +101,8 @@ class MessageController(
                             )
                         it.getAuthorizedMessageAccountsForEmployee(
                             filter,
-                            featureConfig.municipalMessageAccountName
+                            featureConfig.municipalMessageAccountName,
+                            featureConfig.serviceWorkerMessageAccountName
                         )
                     } else setOf()
                 }
@@ -125,7 +127,8 @@ class MessageController(
                         accountId,
                         pageSize,
                         page,
-                        featureConfig.municipalMessageAccountName
+                        featureConfig.municipalMessageAccountName,
+                        featureConfig.serviceWorkerMessageAccountName
                     )
                 }
             }
@@ -158,6 +161,7 @@ class MessageController(
                             pageSize,
                             page,
                             featureConfig.municipalMessageAccountName,
+                            featureConfig.serviceWorkerMessageAccountName,
                             archiveFolderId
                         )
                     }
@@ -336,7 +340,8 @@ class MessageController(
                             messageRecipients = messageRecipients,
                             attachmentIds = body.attachmentIds,
                             staffCopyRecipients = staffCopyRecipients,
-                            municipalAccountName = featureConfig.municipalMessageAccountName
+                            municipalAccountName = featureConfig.municipalMessageAccountName,
+                            serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName
                         )
                     if (body.draftId != null)
                         tx.deleteDraft(accountId = accountId, draftId = body.draftId)
@@ -431,7 +436,8 @@ class MessageController(
                     senderAccount = accountId,
                     recipientAccountIds = body.recipientAccountIds,
                     content = body.content,
-                    municipalAccountName = featureConfig.municipalMessageAccountName
+                    municipalAccountName = featureConfig.municipalMessageAccountName,
+                    serviceWorkerAccountName = featureConfig.serviceWorkerMessageAccountName
                 )
             }
             .also {

@@ -34,7 +34,8 @@ import {
   GroupMessageAccount,
   isGroupMessageAccount,
   isMunicipalMessageAccount,
-  isPersonalMessageAccount
+  isPersonalMessageAccount,
+  isServiceWorkerMessageAccount
 } from 'lib-components/employee/messages/types'
 import { SelectOption } from 'lib-components/molecules/Select'
 import { faCheck } from 'lib-icons'
@@ -60,7 +61,8 @@ import {
   groupMessageBoxes,
   isValidView,
   municipalMessageBoxes,
-  personalMessageBoxes
+  personalMessageBoxes,
+  serviceWorkerMessageBoxes
 } from './types-view'
 
 const PAGE_SIZE = 20
@@ -73,6 +75,7 @@ export type CancelableMessage = {
 export interface MessagesState {
   accounts: Result<AuthorizedMessageAccount[]>
   municipalAccount: AuthorizedMessageAccount | undefined
+  serviceWorkerAccount: AuthorizedMessageAccount | undefined
   personalAccount: AuthorizedMessageAccount | undefined
   groupAccounts: GroupMessageAccount[]
   unitOptions: SelectOption[]
@@ -108,6 +111,7 @@ export interface MessagesState {
 const defaultState: MessagesState = {
   accounts: Loading.of(),
   municipalAccount: undefined,
+  serviceWorkerAccount: undefined,
   personalAccount: undefined,
   groupAccounts: [],
   unitOptions: [],
@@ -202,6 +206,13 @@ export const MessageContextProvider = React.memo(
       () =>
         accounts
           .map((accounts) => accounts.find(isMunicipalMessageAccount))
+          .getOrElse(undefined),
+      [accounts]
+    )
+    const serviceWorkerAccount = useMemo(
+      () =>
+        accounts
+          .map((accounts) => accounts.find(isServiceWorkerMessageAccount))
           .getOrElse(undefined),
       [accounts]
     )
@@ -604,6 +615,12 @@ export const MessageContextProvider = React.memo(
           account: municipalAccount.account,
           unitId: null
         })
+      } else if (serviceWorkerAccount) {
+        selectAccount({
+          view: serviceWorkerMessageBoxes[0],
+          account: serviceWorkerAccount.account,
+          unitId: null
+        })
       } else if (personalAccount) {
         selectAccount({
           view: personalMessageBoxes[0],
@@ -617,12 +634,19 @@ export const MessageContextProvider = React.memo(
           unitId: groupAccounts[0].daycareGroup.unitId
         })
       }
-    }, [groupAccounts, municipalAccount, personalAccount, selectAccount])
+    }, [
+      groupAccounts,
+      municipalAccount,
+      serviceWorkerAccount,
+      personalAccount,
+      selectAccount
+    ])
 
     const value = useMemo(
       () => ({
         accounts,
         municipalAccount,
+        serviceWorkerAccount,
         personalAccount,
         groupAccounts,
         unitOptions,
@@ -657,6 +681,7 @@ export const MessageContextProvider = React.memo(
       [
         accounts,
         municipalAccount,
+        serviceWorkerAccount,
         personalAccount,
         groupAccounts,
         unitOptions,

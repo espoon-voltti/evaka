@@ -551,6 +551,14 @@ export default function App() {
                     }
                   />
                   <Route
+                    path="/messages/send"
+                    element={
+                      <EmployeeRoute title={i18n.titles.messages}>
+                        <MessagesPage showEditor />
+                      </EmployeeRoute>
+                    }
+                  />
+                  <Route
                     path="/personal-mobile-devices"
                     element={
                       <EmployeeRoute title={i18n.titles.personalMobileDevices}>

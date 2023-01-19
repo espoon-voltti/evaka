@@ -21,6 +21,7 @@ export type MessageReceiver =
   | MessageReceiverUnit
   | MessageReceiverGroup
   | MessageReceiverChild
+  | MessageReceiverCitizen
 
 interface MessageReceiverBase {
   id: UUID
@@ -43,6 +44,7 @@ interface MessageReceiverGroup extends MessageReceiverBase {
 }
 
 type MessageReceiverChild = MessageReceiverBase
+type MessageReceiverCitizen = MessageReceiverBase
 
 export const deserializeMessageAccount = (
   account: JsonOf<MessageAccount>,

@@ -257,7 +257,8 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 messageRecipients = listOf(receiverAccount to testChild_1.id),
                 recipientNames = listOf(),
                 staffCopyRecipients = setOf(),
-                municipalAccountName = "Espoo"
+                municipalAccountName = "Espoo",
+                serviceWorkerAccountName = "Espoon palveluohjaus"
             )
         }
         assertEquals(listOf(0, 1), sentMessageCounts(senderAccount, senderDuplicateAccount))
@@ -307,7 +308,8 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 messageRecipients = listOf(receiverDuplicateAccount to testChild_1.id),
                 recipientNames = listOf(),
                 staffCopyRecipients = setOf(),
-                municipalAccountName = "Espoo"
+                municipalAccountName = "Espoo",
+                serviceWorkerAccountName = "Espoon palveluohjaus"
             )
         }
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
@@ -329,13 +331,18 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
     }
 
     private fun receivedThreadCounts(accountIds: List<MessageAccountId>): List<Int> =
-        db.read { tx -> accountIds.map { tx.getReceivedThreads(it, 10, 1, "Espoo").total } }
+        db.read { tx ->
+            accountIds.map {
+                tx.getReceivedThreads(it, 10, 1, "Espoo", "Espoon palveluohjaus").total
+            }
+        }
 
     private fun archivedThreadCounts(accountIds: List<MessageAccountId>): List<Int> =
         db.read { tx ->
             accountIds.map {
                 val archiveFolderId = tx.getArchiveFolderId(it)
-                tx.getReceivedThreads(it, 10, 1, "Espoo", archiveFolderId).total
+                tx.getReceivedThreads(it, 10, 1, "Espoo", "Espoon palveluohjaus", archiveFolderId)
+                    .total
             }
         }
 
@@ -370,12 +377,14 @@ class MergeServiceIntegrationTest : FullApplicationTest(resetDbBeforeEach = true
                 messageRecipients = listOf(receiverDuplicateAccount to testChild_1.id),
                 recipientNames = listOf(),
                 staffCopyRecipients = setOf(),
-                municipalAccountName = "Espoo"
+                municipalAccountName = "Espoo",
+                serviceWorkerAccountName = "Espoon palveluohjaus"
             )
         }
         asyncJobRunner.runPendingJobsSync(MockEvakaClock(now))
         db.transaction { tx ->
-            val threadId = tx.getThreads(senderAccount, 1, 1, "Espoo").data.first().id
+            val threadId =
+                tx.getThreads(senderAccount, 1, 1, "Espoo", "Espoon palveluohjaus").data.first().id
             tx.archiveThread(receiverDuplicateAccount, threadId)
         }
 

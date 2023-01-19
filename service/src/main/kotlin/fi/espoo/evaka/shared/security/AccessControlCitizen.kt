@@ -55,6 +55,13 @@ SELECT EXISTS (
         WHERE child_id = c.child_id
         AND blocked_recipient = c.parent_id
     )
+    UNION 
+    SELECT 1
+    FROM person p 
+    JOIN message_account ma ON p.id = ma.person_id
+    JOIN message_recipients mr ON ma.id = mr.recipient_id
+    JOIN application app ON p.id = app.guardian_id
+    WHERE app.status = 'SENT' AND p.id = :userId AND mr.id IS NOT NULL
 )
 """
         return createQuery(sql)
