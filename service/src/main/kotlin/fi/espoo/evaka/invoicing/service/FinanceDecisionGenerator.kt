@@ -157,7 +157,9 @@ private fun Database.Read.findFamiliesByChild(
 
     return parentRelations.flatMap {
         val fridgePartners =
-            getPartnersForPerson(it.headOfChildId, includeConflicts = false, period = dateRange)
+            mergeFridgePartnerPeriods(
+                getPartnersForPerson(it.headOfChildId, includeConflicts = false, period = dateRange)
+            )
         val fridgeChildren =
             getParentships(it.headOfChildId, null, includeConflicts = false, period = dateRange)
         val fridgePartnerParentships =
@@ -172,6 +174,21 @@ private fun Database.Read.findFamiliesByChild(
             fridgeChildren,
             fridgePartnerParentships
         )
+    }
+}
+
+private fun mergeFridgePartnerPeriods(
+    fridgePartners: List<Partner>,
+): List<Partner> {
+    val partnerPeriods =
+        fridgePartners.map { partner -> DateRange(partner.startDate, partner.endDate) to partner }
+    val mergedPeriods =
+        mergePeriods(
+            partnerPeriods,
+            equals = { partner1, partner2 -> partner1.person.id == partner2.person.id }
+        )
+    return mergedPeriods.map { (period, partner) ->
+        partner.copy(startDate = period.start, endDate = period.end)
     }
 }
 
