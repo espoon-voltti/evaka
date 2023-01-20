@@ -129,10 +129,61 @@ class MessageNotificationEmailServiceIntegrationTest :
             clock
         )
         asyncJobRunner.runPendingJobsSync(
+            MockEvakaClock(clock.now().plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5))
+        )
+
+        assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
+        assertEquals(
+            "Uusi viesti eVakassa / Nytt meddelande i eVaka / New message in eVaka",
+            getEmailFor(testPersonFi).subject
+        )
+        assertEquals(
+            "Esbo småbarnspedagogik <no-reply.evaka@espoo.fi>",
+            getEmailFor(testPersonSv).fromAddress
+        )
+        assertEquals(
+            "Espoon Varhaiskasvatus <no-reply.evaka@espoo.fi>",
+            getEmailFor(testPersonEn).fromAddress
+        )
+    }
+
+    @Test
+    fun `MUNICIPAL notifications are sent to citizens in a spread window`() {
+        val municipalEmployeeId = EmployeeId(UUID.randomUUID())
+        val municipalEmployee =
+            AuthenticatedUser.Employee(
+                id = municipalEmployeeId,
+                roles = setOf(UserRole.UNIT_SUPERVISOR)
+            )
+
+        val municipalAccount =
+            db.transaction { tx ->
+                tx.insertTestEmployee(DevEmployee(id = municipalEmployeeId))
+                tx.upsertEmployeeMessageAccount(municipalEmployeeId, AccountType.MUNICIPAL)
+            }
+
+        val clock = MockEvakaClock(HelsinkiDateTime.now())
+
+        postNewThread(
+            sender = municipalAccount,
+            recipients = listOf(MessageRecipient(MessageRecipientType.CHILD, testChild_1.id)),
+            user = municipalEmployee,
+            clock,
+            MessageType.BULLETIN
+        )
+
+        asyncJobRunner.runPendingJobsSync(
+            MockEvakaClock(clock.now().plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5))
+        )
+        assertEquals(0, MockEmailClient.emails.size)
+
+        asyncJobRunner.runPendingJobsSync(
             MockEvakaClock(
                 clock.now().plusSeconds(MessageService.SPREAD_MESSAGE_NOTIFICATION_SECONDS)
             )
         )
+
+        assertEquals(3, MockEmailClient.emails.size)
 
         assertEquals(testAddresses.toSet(), MockEmailClient.emails.map { it.toAddress }.toSet())
         assertEquals(
@@ -176,9 +227,7 @@ class MessageNotificationEmailServiceIntegrationTest :
         undoMessage(employeeAccount, contentId, employee, clock)
 
         asyncJobRunner.runPendingJobsSync(
-            MockEvakaClock(
-                clock.now().plusSeconds(MessageService.SPREAD_MESSAGE_NOTIFICATION_SECONDS)
-            )
+            MockEvakaClock(clock.now().plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5))
         )
 
         assertTrue(MockEmailClient.emails.isEmpty())
@@ -212,9 +261,7 @@ class MessageNotificationEmailServiceIntegrationTest :
         markAllRecipientMessagesRead(testPersonFi, clock)
 
         asyncJobRunner.runPendingJobsSync(
-            MockEvakaClock(
-                clock.now().plusSeconds(MessageService.SPREAD_MESSAGE_NOTIFICATION_SECONDS)
-            )
+            MockEvakaClock(clock.now().plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5))
         )
 
         assertEquals(2, MockEmailClient.emails.size)
@@ -225,7 +272,8 @@ class MessageNotificationEmailServiceIntegrationTest :
         sender: MessageAccountId,
         recipients: List<MessageRecipient>,
         user: AuthenticatedUser.Employee,
-        clock: EvakaClock
+        clock: EvakaClock,
+        type: MessageType = MessageType.MESSAGE
     ) =
         messageController.createMessage(
             dbInstance(),
@@ -235,7 +283,7 @@ class MessageNotificationEmailServiceIntegrationTest :
             MessageController.PostMessageBody(
                 title = "Juhannus",
                 content = "Juhannus tulee pian",
-                type = MessageType.MESSAGE,
+                type = type,
                 recipients = recipients.toSet(),
                 recipientNames = listOf(),
                 urgent = false
