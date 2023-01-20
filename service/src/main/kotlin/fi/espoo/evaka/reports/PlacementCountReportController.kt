@@ -89,15 +89,15 @@ FROM daycare d
          JOIN care_area ca
               ON d.care_area_id = ca.id
          JOIN placement pl
-              ON pl.unit_id = d.id AND daterange(pl.start_date, pl.end_date) @> :examinationDate::date
+              ON pl.unit_id = d.id AND daterange(pl.start_date, pl.end_date, '[]') @> :examinationDate::date
          LEFT JOIN service_need sn
-              ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date) @> :examinationDate::date
+              ON sn.placement_id = pl.id AND daterange(sn.start_date, sn.end_date, '[]') @> :examinationDate::date
          LEFT JOIN service_need_option sno
               ON sn.option_id = sno.id
          LEFT JOIN service_need_option default_sno
               ON pl.type = default_sno.valid_placement_type AND default_sno.default_option
          LEFT JOIN assistance_need an
-                   ON pl.child_id = an.child_id AND daterange(an.start_date, an.end_date) @> :examinationDate::date
+                   ON pl.child_id = an.child_id AND daterange(an.start_date, an.end_date, '[]') @> :examinationDate::date
          JOIN LATERAL (SELECT date_part('year', age(:examinationDate, p.date_of_birth)) AS age_in_years
                        FROM person p
                        WHERE p.id = pl.child_id) cwa
