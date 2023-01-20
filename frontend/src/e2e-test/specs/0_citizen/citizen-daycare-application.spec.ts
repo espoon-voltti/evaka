@@ -215,7 +215,7 @@ describe('Citizen daycare applications', () => {
     await editorPage.assertUrgencyFileDownload()
   })
 
-  test('Other guardian can see an application after it has been sent', async () => {
+  test('Other guardian can see an application after it has been sent, and cannot see person details', async () => {
     await header.selectTab('applications')
     const editorPage = await applicationsPage.createApplication(
       fixtures.enduserChildFixtureJari.id,
@@ -236,8 +236,12 @@ describe('Citizen daycare applications', () => {
       otherGuardianPage,
       fixtures.enduserChildJariOtherGuardianFixture.ssn
     )
-    await new CitizenApplicationsPage(
-      otherGuardianPage
-    ).assertApplicationExists(applicationId)
+
+    const applications = new CitizenApplicationsPage(otherGuardianPage)
+    await applications.assertApplicationExists(applicationId)
+    const applicationReadView = await applications.viewApplication(
+      applicationId
+    )
+    await applicationReadView.contactInfoSection.waitUntilHidden()
   })
 })
