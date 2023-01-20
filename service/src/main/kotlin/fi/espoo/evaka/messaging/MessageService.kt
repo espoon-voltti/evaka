@@ -31,7 +31,7 @@ class MessageService(
     }
 
     companion object {
-        val SPREAD_MESSAGE_NOTIFICATION_SECONDS: Long = 60 * 60 * 24
+        val SPREAD_MESSAGE_NOTIFICATION_SECONDS: Long = 60 * 60 * 4
     }
 
     fun handleMarkMessageAsSent(
