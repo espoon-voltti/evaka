@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { ReactNode } from 'react'
 
 import { InvoiceStatus } from 'lib-common/generated/api-types/invoicing'
 import { H3, P } from 'lib-components/typography'
@@ -667,7 +667,7 @@ export const fi = {
         dateRange: 'Tuen tarve ajalle',
         capacityFactor: 'Lapsen tuen kerroin',
         capacityFactorInfo:
-          'Kapasiteetti määräytyy yleensä lapsen iän ja palvelun tarpeen mukaan. Mikäli lapsella on sellainen tuen tarve, joka lisää kapasiteettia, lisätään tuen tarpeen kerroin tähän. Tuen tarpeen ja kertoimen lisää varhaiserityiskasvatuksen koordinaattori.',
+          'Kapasiteetti määräytyy yleensä lapsen iän ja palvelun tarpeen mukaan. Mikäli lapsella on sellainen tuen tarve, joka lisää kapasiteettia, lisätään tuen tarpeen kerroin tähän. Tuen tarpeen ja kertoimen lisää varhaiserityiskasvatuksen koordinaattori.' as ReactNode,
         bases: 'Perusteet'
       },
       create: 'Luo uusi tuen tarpeen ajanjakso',
