@@ -31,7 +31,7 @@ class MessageService(
     }
 
     companion object {
-        val SPREAD_MESSAGE_NOTIFICATION_SECONDS: Long = 60 * 60 * 24
+        val SPREAD_MESSAGE_NOTIFICATION_SECONDS: Long = 60 * 60 * 12
     }
 
     fun handleMarkMessageAsSent(
@@ -147,11 +147,14 @@ class MessageService(
             }
         )
 
+        val senderAccountType = tx.getMessageAccountType(sender)
+
         notificationEmailService.scheduleSendingMessageNotifications(
             tx,
             threadAndMessageIds.map { (_, messageId) -> messageId },
             now.plusSeconds(MESSAGE_UNDO_WINDOW_IN_SECONDS + 5),
-            if (!urgent) SPREAD_MESSAGE_NOTIFICATION_SECONDS else 0
+            if (senderAccountType == AccountType.MUNICIPAL) SPREAD_MESSAGE_NOTIFICATION_SECONDS
+            else 0
         )
 
         if (staffCopyRecipients.isNotEmpty()) {

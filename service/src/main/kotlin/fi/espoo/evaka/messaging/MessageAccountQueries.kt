@@ -142,16 +142,23 @@ fun Database.Transaction.createPersonMessageAccount(personId: PersonId): Message
     return createQuery(sql).bind("personId", personId).mapTo<MessageAccountId>().one()
 }
 
-fun Database.Transaction.upsertEmployeeMessageAccount(employeeId: EmployeeId): MessageAccountId {
+fun Database.Transaction.upsertEmployeeMessageAccount(
+    employeeId: EmployeeId,
+    accountType: AccountType = AccountType.PERSONAL
+): MessageAccountId {
     // language=SQL
     val sql =
         """
-        INSERT INTO message_account (employee_id, type) VALUES (:employeeId, 'PERSONAL')
+        INSERT INTO message_account (employee_id, type) VALUES (:employeeId, :accountType)
         ON CONFLICT (employee_id) WHERE employee_id IS NOT NULL DO UPDATE SET active = true
         RETURNING id
     """
             .trimIndent()
-    return createQuery(sql).bind("employeeId", employeeId).mapTo<MessageAccountId>().one()
+    return createQuery(sql)
+        .bind("employeeId", employeeId)
+        .bind("accountType", accountType)
+        .mapTo<MessageAccountId>()
+        .one()
 }
 
 fun Database.Transaction.deactivateEmployeeMessageAccount(employeeId: EmployeeId) {
