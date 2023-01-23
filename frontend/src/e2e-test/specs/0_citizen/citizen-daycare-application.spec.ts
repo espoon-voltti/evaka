@@ -242,6 +242,8 @@ describe('Citizen daycare applications', () => {
     const applicationReadView = await applications.viewApplication(
       applicationId
     )
+
+    await applicationReadView.unitPreferenceSection.waitUntilVisible()
     await applicationReadView.contactInfoSection.waitUntilHidden()
   })
 })

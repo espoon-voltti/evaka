@@ -44,7 +44,7 @@ export default React.memo(function UnitPreferenceSection({
   })()
 
   return (
-    <div>
+    <div data-qa="unit-preference-section">
       <H2 noMargin>{tLocal.title}</H2>
 
       <Gap size="s" />

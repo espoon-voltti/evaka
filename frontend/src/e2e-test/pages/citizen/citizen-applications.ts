@@ -128,6 +128,7 @@ class CitizenApplicationReadView {
   constructor(private readonly page: Page) {}
 
   contactInfoSection = this.page.findByDataQa('contact-info-section')
+  unitPreferenceSection = this.page.findByDataQa('unit-preference-section')
 }
 
 class CitizenApplicationEditor {
