@@ -1766,6 +1766,7 @@ data class DevEmployee(
     val lastName: String = "Person",
     val email: String? = "test.person@espoo.fi",
     val externalId: ExternalId? = null,
+    val employeeNumber: String? = null,
     val roles: Set<UserRole> = setOf(),
     val lastLogin: HelsinkiDateTime? = HelsinkiDateTime.now()
 )
