@@ -102,6 +102,7 @@ export interface Child {
   backup: boolean
   dailyNote: ChildDailyNote | null
   dailyServiceTimes: DailyServiceTimesValue | null
+  dateOfBirth: LocalDate
   firstName: string
   groupId: UUID | null
   id: UUID

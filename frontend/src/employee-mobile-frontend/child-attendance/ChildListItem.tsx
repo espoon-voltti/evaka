@@ -10,6 +10,7 @@ import {
   AttendanceStatus,
   Child
 } from 'lib-common/generated/api-types/attendance'
+import LocalDate from 'lib-common/local-date'
 import { useQuery } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -86,10 +87,10 @@ const NameRow = styled.div`
   display: flex;
   justify-content: space-between;
   width: 100%;
+  word-break: break-word;
 `
 
 const GroupName = styled(InformationText)`
-  white-space: nowrap;
   text-align: right;
 `
 
@@ -130,6 +131,8 @@ export default React.memo(function ChildListItem({
     : childReservationInfo(i18n, child)
 
   const maybeGroupName = type && groupId === 'all' ? groupName : undefined
+  const today = LocalDate.todayInSystemTz()
+  const childAge = today.differenceInYears(child.dateOfBirth)
 
   return (
     <ChildBox data-qa={`child-${child.id}`}>
@@ -155,13 +158,13 @@ export default React.memo(function ChildListItem({
             </GroupName>
           </NameRow>
           <DetailsRow>
-            <div>
+            <LeftDetailsDiv>
               {infoText}
               {child.backup && (
                 <RoundIcon content="V" size="m" color={colors.main.m1} />
               )}
-            </div>
-            <FixedSpaceRowWithLeftMargin>
+            </LeftDetailsDiv>
+            <FixedSpaceRowWithLeftMargin alignItems="center">
               {child.dailyNote && (
                 <Link
                   to={`/units/${unitId}/groups/${
@@ -188,6 +191,13 @@ export default React.memo(function ChildListItem({
                   />
                 </Link>
               ) : null}
+              <AgeRoundIcon
+                content={`${childAge}v`}
+                color={
+                  childAge < 3 ? colors.accents.a6turquoise : colors.main.m1
+                }
+                size="m"
+              />
             </FixedSpaceRowWithLeftMargin>
           </DetailsRow>
         </ChildBoxInfo>
@@ -221,3 +231,17 @@ const childReservationInfo = (
     </em>
   )
 }
+
+const LeftDetailsDiv = styled.div`
+  > * {
+    margin-left: ${defaultMargins.xs};
+    &:first-child {
+      margin-left: 0;
+    }
+  }
+`
+const AgeRoundIcon = styled(RoundIcon)`
+  &.m {
+    font-size: 14px;
+  }
+`

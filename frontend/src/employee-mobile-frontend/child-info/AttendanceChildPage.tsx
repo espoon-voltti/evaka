@@ -8,6 +8,7 @@ import styled from 'styled-components'
 
 import { combine } from 'lib-common/api'
 import { AttendanceStatus } from 'lib-common/generated/api-types/attendance'
+import LocalDate from 'lib-common/local-date'
 import { useMutation, useQueryResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import useNonNullableParams from 'lib-common/useNonNullableParams'
@@ -123,6 +124,8 @@ export default React.memo(function AttendanceChildPage() {
               attendanceStatuses,
               child.id
             )
+            const today = LocalDate.todayInSystemTz()
+            const childAge = today.differenceInYears(child.dateOfBirth)
             return (
               <>
                 <Shadow>
@@ -142,10 +145,20 @@ export default React.memo(function AttendanceChildPage() {
                               size="XXL"
                             />
                           )}
+                          <IconPlacementBox>
+                            <RoundIconOnTop
+                              content={`${childAge}v`}
+                              color={
+                                childAge < 3
+                                  ? colors.accents.a6turquoise
+                                  : colors.main.m1
+                              }
+                              size="L"
+                            />
+                          </IconPlacementBox>
                         </IconBox>
 
                         <Gap size="s" />
-
                         <CustomTitle data-qa="child-name">
                           {child.firstName} {child.lastName}
                         </CustomTitle>
@@ -424,4 +437,15 @@ const Shadow = styled.div`
   flex-direction: column;
   justify-content: space-between;
   min-height: calc(100vh - 74px);
+`
+const RoundIconOnTop = styled(RoundIcon)`
+  position: absolute;
+  left: 100px;
+  top: -34px;
+  z-index: 2;
+`
+const IconPlacementBox = styled.div`
+  position: relative;
+  width: 0;
+  height: 0;
 `

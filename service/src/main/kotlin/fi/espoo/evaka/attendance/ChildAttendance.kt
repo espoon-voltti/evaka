@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import java.time.LocalDate
 
 data class ContactInfo(
     val id: String,
@@ -33,6 +34,7 @@ data class Child(
     val firstName: String,
     val lastName: String,
     val preferredName: String?,
+    val dateOfBirth: LocalDate,
     val placementType: PlacementType,
     val groupId: GroupId?,
     val backup: Boolean,

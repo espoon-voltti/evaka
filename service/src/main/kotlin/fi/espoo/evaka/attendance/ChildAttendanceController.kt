@@ -97,6 +97,7 @@ class ChildAttendanceController(
                             firstName = child.firstName,
                             lastName = child.lastName,
                             preferredName = child.preferredName,
+                            dateOfBirth = child.dateOfBirth,
                             placementType = child.placementType,
                             groupId = child.groupId,
                             backup = child.backup,
