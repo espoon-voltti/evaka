@@ -230,8 +230,8 @@ fun Database.Transaction.insertTestEmployee(employee: DevEmployee) =
     insertTestDataRow(
             employee,
             """
-INSERT INTO employee (id, preferred_first_name, first_name, last_name, email, external_id, roles, last_login)
-VALUES (:id, :preferredFirstName, :firstName, :lastName, :email, :externalId, :roles::user_role[], :lastLogin)
+INSERT INTO employee (id, preferred_first_name, first_name, last_name, email, external_id, employee_number, roles, last_login)
+VALUES (:id, :preferredFirstName, :firstName, :lastName, :email, :externalId, :employeeNumber, :roles::user_role[], :lastLogin)
 RETURNING id
 """
         )

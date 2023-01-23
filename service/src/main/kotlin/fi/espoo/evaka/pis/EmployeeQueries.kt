@@ -78,7 +78,7 @@ fun Database.Transaction.updateExternalIdByEmployeeNumber(
     externalId: ExternalId
 ) =
     createUpdate(
-            "UPDATE employee SET external_id = :externalId WHERE employee_number = :employeeNumber AND external_id != :externalId"
+            "UPDATE employee SET external_id = :externalId WHERE employee_number = :employeeNumber AND (external_id != :externalId OR external_id IS NULL)"
         )
         .bind("employeeNumber", employeeNumber)
         .bind("externalId", externalId)

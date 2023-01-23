@@ -151,6 +151,50 @@ class SystemControllerTest : FullApplicationTest(resetDbBeforeEach = true) {
     }
 
     @Test
+    fun `external id is set when employee number already exists`() {
+        val externalId = ExternalId.of("evaka", "123456")
+        val employeeId = EmployeeId(UUID.randomUUID())
+        val input =
+            SystemController.EmployeeLoginRequest(
+                externalId = externalId,
+                employeeNumber = "666666",
+                firstName = "Teppo",
+                lastName = "Testaaja",
+                email = null
+            )
+        db.transaction { tx ->
+            tx.insertTestEmployee(
+                DevEmployee(
+                    id = employeeId,
+                    externalId = null,
+                    employeeNumber = "666666",
+                    roles = setOf(UserRole.FINANCE_ADMIN),
+                    preferredFirstName = "Kutsumanimi"
+                )
+            )
+        }
+
+        val (_, res, result) =
+            http
+                .post("/system/employee-login")
+                .asUser(AuthenticatedUser.SystemInternalUser)
+                .jsonBody(jsonMapper.writeValueAsString(input))
+                .responseObject<EmployeeUser>()
+
+        assertTrue(res.isSuccessful)
+        val expected =
+            EmployeeUser(
+                id = employeeId,
+                firstName = "Kutsumanimi",
+                lastName = "Testaaja",
+                globalRoles = setOf(UserRole.FINANCE_ADMIN),
+                allScopedRoles = setOf()
+            )
+        assertEquals(expected, result.get())
+        assertEquals("666666", db.read { tx -> tx.getEmployeeNumber(result.get().id) })
+    }
+
+    @Test
     fun `external id is updated when employee number already exists`() {
         val employeeId = EmployeeId(UUID.randomUUID())
         val employeeNumber = "666666"
