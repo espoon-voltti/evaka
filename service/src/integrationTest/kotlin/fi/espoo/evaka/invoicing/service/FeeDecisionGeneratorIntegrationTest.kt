@@ -1316,6 +1316,50 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
     }
 
     @Test
+    fun `switch both family head and partnership the other way around`() {
+        val firstPeriod = DateRange(LocalDate.of(2020, 11, 13), LocalDate.of(2021, 1, 31))
+        val secondPeriod = DateRange(LocalDate.of(2021, 2, 1), null)
+        insertPartnership(testAdult_1.id, testAdult_2.id, firstPeriod)
+        insertPartnership(testAdult_2.id, testAdult_1.id, secondPeriod)
+        insertFamilyRelations(testAdult_1.id, listOf(testChild_1.id), firstPeriod)
+        insertFamilyRelations(
+            testAdult_2.id,
+            listOf(testChild_1.id),
+            secondPeriod.copy(end = LocalDate.of(2036, 2, 7))
+        )
+
+        val firstPlacementPeriod = DateRange(LocalDate.of(2021, 1, 11), LocalDate.of(2023, 1, 8))
+        insertPlacement(testChild_1.id, firstPlacementPeriod, DAYCARE, testDaycare.id)
+
+        val secondPlacementPeriod = DateRange(LocalDate.of(2023, 1, 9), LocalDate.of(2023, 7, 31))
+        insertPlacement(testChild_1.id, secondPlacementPeriod, DAYCARE, testDaycare.id)
+
+        db.transaction { tx ->
+            generator.generateNewDecisionsForChild(
+                tx,
+                MockEvakaClock(HelsinkiDateTime.of(LocalDate.of(2023, 1, 19), LocalTime.of(9, 8))),
+                testChild_1.id,
+                LocalDate.of(2021, 1, 11),
+            )
+        }
+
+        val decisions = getAllFeeDecisions().sortedBy { it.validFrom }
+        assertEquals(2, decisions.size)
+        decisions.first().let { decision ->
+            assertEquals(decision.validFrom, firstPlacementPeriod.start)
+            assertEquals(decision.validTo, firstPeriod.end)
+            assertEquals(decision.headOfFamilyId, testAdult_1.id)
+            assertEquals(decision.partnerId, testAdult_2.id)
+        }
+        decisions.last().let { decision ->
+            assertEquals(decision.validFrom, secondPeriod.start)
+            assertEquals(decision.validTo, secondPlacementPeriod.end)
+            assertEquals(decision.headOfFamilyId, testAdult_2.id)
+            assertEquals(decision.partnerId, testAdult_1.id)
+        }
+    }
+
+    @Test
     fun `head of family income difference`() {
         val period = DateRange(LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31))
         val subPeriod1 = period.copy(end = LocalDate.of(2022, 6, 30))
@@ -3601,7 +3645,7 @@ class FeeDecisionGeneratorIntegrationTest : FullApplicationTest(resetDbBeforeEac
                 adultId1,
                 adultId2,
                 startDate = period.start,
-                endDate = period.end!!
+                endDate = period.end
             )
         }
     }
