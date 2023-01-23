@@ -56,8 +56,8 @@ beforeEach(async () => {
   await Fixture.serviceNeed()
     .with({
       placementId: placement.data.id,
-      startDate: startDate.toSystemTzDate(),
-      endDate: endDate.toSystemTzDate(),
+      startDate: startDate.formatIso(),
+      endDate: endDate.formatIso(),
       optionId: serviceNeedOption.data.id,
       confirmedBy: unitSupervisor.data.id
     })

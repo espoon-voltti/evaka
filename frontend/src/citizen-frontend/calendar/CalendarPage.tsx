@@ -127,6 +127,17 @@ const CalendarPage = React.memo(function CalendarPage() {
     }
   }, [data])
 
+  const firstPlannedAbsenceDate = data
+    .map((response) =>
+      Object.values(response.reservableDays)
+        .flatMap((reservableDays) => reservableDays)
+        .reduce<LocalDate | null>(
+          (prev, { start: cur }) => (prev !== null && prev < cur ? prev : cur),
+          null
+        )
+    )
+    .getOrElse(null)
+
   if (!user || !user.accessibleFeatures.reservations) return null
 
   return (
@@ -209,6 +220,7 @@ const CalendarPage = React.memo(function CalendarPage() {
               close={closeModal}
               initialDate={modalState.initialDate}
               availableChildren={response.children}
+              firstPlannedAbsenceDate={firstPlannedAbsenceDate}
             />
           )}
           {modalState?.type === 'holidays' && questionnaire && (

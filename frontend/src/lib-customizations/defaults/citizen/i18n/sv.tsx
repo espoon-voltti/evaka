@@ -311,7 +311,9 @@ const sv: Translations = {
         SICKLEAVE: 'Sjukdom',
         OTHER_ABSENCE: 'Frånvaro',
         PLANNED_ABSENCE: 'Skiftarbete frånvaro'
-      }
+      },
+      contractDayAbsenceTypeWarning:
+        'Endast några av barnen har avtalsdagar i bruk, så frånvaron av avtalsdagar kan inte registreras för alla barn samtidigt'
     },
     holidayModal: {
       additionalInformation: 'Läs mera',
