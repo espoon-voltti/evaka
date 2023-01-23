@@ -84,6 +84,11 @@ export default class CitizenApplicationsPage {
     return new CitizenApplicationEditor(this.page)
   }
 
+  async viewApplication(applicationId: string) {
+    await this.#openApplicationButton(applicationId).click()
+    return new CitizenApplicationReadView(this.page)
+  }
+
   async assertChildIsShown(childId: string, childName: string) {
     await this.#childTitle(childId).assertTextEquals(childName)
   }
@@ -117,6 +122,13 @@ export default class CitizenApplicationsPage {
   async assertApplicationExists(id: string) {
     await this.#applicationType(id).waitUntilVisible()
   }
+}
+
+class CitizenApplicationReadView {
+  constructor(private readonly page: Page) {}
+
+  contactInfoSection = this.page.findByDataQa('contact-info-section')
+  unitPreferenceSection = this.page.findByDataQa('unit-preference-section')
 }
 
 class CitizenApplicationEditor {

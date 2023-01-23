@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { useContext } from 'react'
 
 import { ApplicationDetails } from 'lib-common/api-types/application/ApplicationDetails'
 import { ApplicationFormData } from 'lib-common/api-types/application/ApplicationFormData'
@@ -17,6 +17,7 @@ import BasicsSection from '../../applications/editor/verification/BasicsSection'
 import ContactInfoSection from '../../applications/editor/verification/ContactInfoSection'
 import ServiceNeedSection from '../../applications/editor/verification/ServiceNeedSection'
 import UnitPreferenceSection from '../../applications/editor/verification/UnitPreferenceSection'
+import { AuthContext } from '../../auth/state'
 import { useTranslation } from '../../localization'
 
 type DaycareApplicationReadViewProps = {
@@ -30,6 +31,11 @@ export default React.memo(function ApplicationReadViewContents({
 }: DaycareApplicationReadViewProps) {
   const t = useTranslation()
   const type = application.type
+  const { user } = useContext(AuthContext)
+
+  const userIsApplicationGuardian = user
+    .map((u) => u && u.id == application.guardianId)
+    .getOrElse(false)
 
   return (
     <Container>
@@ -43,19 +49,25 @@ export default React.memo(function ApplicationReadViewContents({
           <HorizontalLine />
           <UnitPreferenceSection formData={formData.unitPreference} />
           <HorizontalLine />
-          <ContactInfoSection
-            formData={formData.contactInfo}
-            type={type}
-            showFridgeFamilySection={
-              type === 'DAYCARE' ||
-              (type === 'PRESCHOOL' && formData.serviceNeed.connectedDaycare)
-            }
-          />
-          <HorizontalLine />
-          <AdditionalDetailsSection
-            formData={formData}
-            showAllergiesAndDiet={type !== 'CLUB'}
-          />
+          {userIsApplicationGuardian && (
+            <>
+              <ContactInfoSection
+                data-qa="contact-info-section"
+                formData={formData.contactInfo}
+                type={type}
+                showFridgeFamilySection={
+                  type === 'DAYCARE' ||
+                  (type === 'PRESCHOOL' &&
+                    formData.serviceNeed.connectedDaycare)
+                }
+              />
+              <HorizontalLine />
+              <AdditionalDetailsSection
+                formData={formData}
+                showAllergiesAndDiet={type !== 'CLUB'}
+              />
+            </>
+          )}
         </ContentArea>
       </Main>
     </Container>

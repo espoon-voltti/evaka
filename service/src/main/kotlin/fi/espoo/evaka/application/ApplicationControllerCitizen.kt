@@ -144,7 +144,11 @@ class ApplicationControllerCitizen(
         Audit.ApplicationRead.log(targetId = applicationId)
 
         return if (application?.hideFromGuardian == false) {
-            application
+            if (user.id == application.guardianId) {
+                application
+            } else {
+                hideCriticalApplicationInfoFromOtherGuardian(application)
+            }
         } else {
             throw NotFound("Application not found")
         }
@@ -562,3 +566,29 @@ data class DecisionSummary(
     val sentDate: LocalDate,
     val resolved: LocalDate?
 )
+
+private fun hideCriticalApplicationInfoFromOtherGuardian(
+    application: ApplicationDetails
+): ApplicationDetails =
+    application.copy(
+        form =
+            application.form.copy(
+                child =
+                    application.form.child.copy(
+                        person = application.form.child.person.copy(socialSecurityNumber = null),
+                        address = null,
+                        futureAddress = null,
+                    ),
+                guardian =
+                    application.form.guardian.copy(
+                        person = application.form.guardian.person.copy(socialSecurityNumber = null),
+                        address = null,
+                        futureAddress = null,
+                        phoneNumber = "",
+                        email = ""
+                    ),
+                otherPartner = null,
+                otherChildren = emptyList(),
+                otherInfo = ""
+            )
+    )
