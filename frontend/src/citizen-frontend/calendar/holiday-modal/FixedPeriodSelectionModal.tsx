@@ -13,7 +13,7 @@ import {
   HolidayQuestionnaireAnswer
 } from 'lib-common/generated/api-types/holidayperiod'
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
-import { formatPreferredName } from 'lib-common/names'
+import { formatFirstName } from 'lib-common/names'
 import { useMutationResult } from 'lib-common/query'
 import { UUID } from 'lib-common/types'
 import ExternalLink from 'lib-components/atoms/ExternalLink'
@@ -107,7 +107,7 @@ export default React.memo(function FixedPeriodSelectionModal({
               key={child.id}
               data-qa={`holiday-section-${child.id}`}
             >
-              <H2>{formatPreferredName(child)}</H2>
+              <H2>{formatFirstName(child)}</H2>
               {eligibleChildren.includes(child.id) ? (
                 <PeriodSelector
                   label={questionnaire.periodOptionLabel[lang]}

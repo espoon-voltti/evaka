@@ -6,6 +6,7 @@ import React from 'react'
 import styled, { css } from 'styled-components'
 
 import { ReservationChild } from 'lib-common/generated/api-types/reservations'
+import { formatFirstName } from 'lib-common/names'
 import { UUID } from 'lib-common/types'
 import { fontWeights } from 'lib-components/typography'
 import { theme } from 'lib-customizations/common'
@@ -128,7 +129,7 @@ export const getChildImages = (
   childData.map((child, index) => ({
     childId: child.id,
     imageId: child.imageId,
-    initialLetter: (child.preferredName || child.firstName || '?')[0],
+    initialLetter: (formatFirstName(child) || '?')[0],
     colorIndex: index,
     childName: child.firstName
   }))

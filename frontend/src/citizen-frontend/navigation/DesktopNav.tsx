@@ -8,6 +8,7 @@ import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
+import { formatFirstName } from 'lib-common/names'
 import { desktopMin, desktopSmall } from 'lib-components/breakpoints'
 import { FixedSpaceRow } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from 'lib-components/typography'
@@ -277,7 +278,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
               }}
               data-qa={`children-menu-${child.id}`}
             >
-              {child.preferredName || child.firstName} {child.lastName}
+              {formatFirstName(child)} {child.lastName}
               {unreadChildNotifications[child.id] ? (
                 <CircledChar
                   aria-label={`${unreadChildNotifications[child.id]} ${

@@ -12,7 +12,7 @@ import {
   ReservationChild
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { formatPreferredName } from 'lib-common/names'
+import { formatFirstName } from 'lib-common/names'
 import { useMutationResult } from 'lib-common/query'
 import {
   Repetition,
@@ -205,7 +205,7 @@ export default React.memo(function ReservationModal({
                   {availableChildren.map((child) => (
                     <SelectionChip
                       key={child.id}
-                      text={formatPreferredName(child)}
+                      text={formatFirstName(child)}
                       selected={formData.selectedChildren.includes(child.id)}
                       onChange={(selected) => {
                         if (selected) {
