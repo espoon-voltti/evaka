@@ -9,7 +9,6 @@ import fi.espoo.evaka.application.utils.exhaust
 import fi.espoo.evaka.pis.getEmployeeNamesByIds
 import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.EmployeeId
-import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.VasuDocumentId
 import fi.espoo.evaka.shared.VasuTemplateId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
@@ -37,7 +36,6 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class VasuController(
-    private val featureConfig: FeatureConfig,
     private val accessControl: AccessControl,
     private val vasuNotificationService: VasuNotificationService
 ) {
@@ -306,8 +304,6 @@ class VasuController(
             )
         }
     }
-
-    data class EditFollowupEntryRequest(val text: String)
 
     @PostMapping("/vasu/{id}/update-state")
     fun updateDocumentState(

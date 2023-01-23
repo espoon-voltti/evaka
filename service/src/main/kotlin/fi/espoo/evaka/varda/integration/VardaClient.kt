@@ -344,25 +344,6 @@ class VardaClient(
         }
     }
 
-    fun deleteChild(vardaChildId: Long): Boolean {
-        logger.info("VardaUpdate: client deleting child (id: $vardaChildId)")
-
-        val (request, _, result) =
-            fuel.delete(getChildUrl(vardaChildId)).authenticatedResponseStringWithRetries()
-
-        return when (result) {
-            is Result.Success -> {
-                logger.info("VardaUpdate: client successfully deleted child (id: $vardaChildId)")
-                true
-            }
-            is Result.Failure -> {
-                vardaError(request, result.error) { err ->
-                    "VardaUpdate: client failed to delete child $vardaChildId: $err"
-                }
-            }
-        }
-    }
-
     fun deleteChildAllData(vardaChildId: Long): Boolean {
         logger.info("VardaUpdate: client deleting all child data (id: $vardaChildId)")
 
@@ -441,30 +422,6 @@ class VardaClient(
     }
 
     data class VardaResultId(val id: Long)
-
-    fun getFeeDataByChild(vardaChildId: Long): List<Long> {
-        logger.info("Getting fee data from Varda (child id: $vardaChildId)")
-        return getAllPages("$feeDataUrl?lapsi=$vardaChildId") {
-                jsonMapper.readValue<PaginatedResponse<VardaResultId>>(it)
-            }
-            .map { it.id }
-    }
-
-    fun getPlacementsByDecision(vardaDecisionId: Long): List<Long> {
-        logger.info("Getting placements from Varda (decision id: $vardaDecisionId)")
-        return getAllPages("$placementUrl?varhaiskasvatuspaatos=$vardaDecisionId") {
-                jsonMapper.readValue<PaginatedResponse<VardaResultId>>(it)
-            }
-            .map { it.id }
-    }
-
-    fun getDecisionsByChild(vardaChildId: Long): List<Long> {
-        logger.info("Getting decisions from Varda (child id: $vardaChildId)")
-        return getAllPages("$decisionUrl?lapsi=$vardaChildId") {
-                jsonMapper.readValue<PaginatedResponse<VardaResultId>>(it)
-            }
-            .map { it.id }
-    }
 
     data class PaginatedResponse<T>(
         val count: Int,

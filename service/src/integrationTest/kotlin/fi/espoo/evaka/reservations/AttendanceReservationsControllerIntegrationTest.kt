@@ -14,7 +14,6 @@ import fi.espoo.evaka.insertGeneralTestFixtures
 import fi.espoo.evaka.serviceneed.insertServiceNeed
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
-import fi.espoo.evaka.shared.Timeline
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.insertDaycareAclRow
@@ -610,11 +609,6 @@ class AttendanceReservationsControllerIntegrationTest :
 
         assertEquals(emptyList(), attendanceReservations.ungrouped)
     }
-
-    private fun emptyChildRecords(
-        timeline: Timeline
-    ): Map<LocalDate, UnitAttendanceReservations.ChildRecordOfDay> =
-        timeline.ranges().fold(emptyMap()) { acc, range -> acc + emptyChildRecords(range) }
 
     private fun emptyChildRecords(
         period: FiniteDateRange

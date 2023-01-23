@@ -23,7 +23,6 @@ import fi.espoo.evaka.invoicing.domain.FeeAlteration
 import fi.espoo.evaka.invoicing.domain.FeeThresholds
 import fi.espoo.evaka.invoicing.domain.IncomeEffect
 import fi.espoo.evaka.invoicing.domain.IncomeValue
-import fi.espoo.evaka.invoicing.domain.ServiceNeedOptionVoucherValue
 import fi.espoo.evaka.invoicing.service.ProductKey
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.serviceneed.ServiceNeedOption
@@ -645,17 +644,6 @@ RETURNING id
                 .trimIndent()
         )
         .let(::FeeThresholdsId)
-
-fun Database.Transaction.insertTestServiceNeedOptionVoucherValue(
-    serviceNeedOptionVoucherValue: ServiceNeedOptionVoucherValue
-) =
-    insertTestDataRow(
-        serviceNeedOptionVoucherValue,
-        """
-INSERT INTO service_need_option_voucher_value (id, service_need_option_id, validity, base_value, coefficient, value, base_value_under_3y, coefficient_under_3y, value_under_3y)
-VALUES (:id, :serviceNeedOptionId, :validity, :baseValue, :coefficient, :value, :baseValueUnder3y, :coefficientUnder3y, :valueUnder3y)
-"""
-    )
 
 fun Database.Transaction.insertTestDaycareGroup(group: DevDaycareGroup) =
     insertTestDataRow(

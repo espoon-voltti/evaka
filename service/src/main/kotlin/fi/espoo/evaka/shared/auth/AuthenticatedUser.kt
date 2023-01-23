@@ -53,9 +53,6 @@ sealed class AuthenticatedUser {
         override fun rawId(): UUID = id.raw
         override val isAdmin = globalRoles.contains(UserRole.ADMIN)
         override val type = AuthenticatedUserType.employee
-
-        fun hasOneOfRoles(vararg requiredRoles: UserRole) =
-            requiredRoles.any { globalRoles.contains(it) || allScopedRoles.contains(it) }
     }
 
     data class MobileDevice(val id: MobileDeviceId, val employeeId: EmployeeId? = null) :

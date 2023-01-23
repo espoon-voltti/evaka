@@ -109,7 +109,6 @@ import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.DecisionId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
-import fi.espoo.evaka.shared.FeatureConfig
 import fi.espoo.evaka.shared.FeeThresholdsId
 import fi.espoo.evaka.shared.GroupId
 import fi.espoo.evaka.shared.GroupNoteId
@@ -200,7 +199,6 @@ class DevApi(
     private val applicationStateService: ApplicationStateService,
     private val decisionService: DecisionService,
     private val documentClient: DocumentService,
-    private val featureConfig: FeatureConfig,
     bucketEnv: BucketEnv
 ) {
     private val filesBucket = bucketEnv.attachments

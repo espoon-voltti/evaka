@@ -22,17 +22,11 @@ import fi.espoo.evaka.reports.VoucherReportRowType.CORRECTION
 import fi.espoo.evaka.reports.VoucherReportRowType.ORIGINAL
 import fi.espoo.evaka.reports.VoucherReportRowType.REFUND
 import fi.espoo.evaka.shared.DaycareId
-import fi.espoo.evaka.shared.EvakaUserId
-import fi.espoo.evaka.shared.FeeAlterationId
-import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.async.AsyncJob
 import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.auth.UserRole
 import fi.espoo.evaka.shared.auth.asUser
-import fi.espoo.evaka.shared.dev.DevFeeAlteration
-import fi.espoo.evaka.shared.dev.insertTestFeeAlteration
-import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.domain.RealEvakaClock
 import fi.espoo.evaka.snDefaultDaycare
@@ -45,7 +39,6 @@ import fi.espoo.evaka.toValueDecisionServiceNeed
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -991,22 +984,5 @@ class ServiceVoucherValueUnitReportTest : FullApplicationTest(resetDbBeforeEach 
         asyncJobRunner.runPendingJobsSync(RealEvakaClock())
 
         return db.read { it.getValueDecisionsByIds(listOf(id)).first() }
-    }
-
-    private fun insertFeeAlteration(personId: PersonId, amount: Double, period: DateRange) {
-        db.transaction { tx ->
-            tx.insertTestFeeAlteration(
-                DevFeeAlteration(
-                    id = FeeAlterationId(UUID.randomUUID()),
-                    personId,
-                    type = FeeAlteration.Type.DISCOUNT,
-                    amount = amount,
-                    isAbsolute = false,
-                    validFrom = period.start,
-                    validTo = period.end,
-                    updatedBy = EvakaUserId(testDecisionMaker_1.id.raw)
-                )
-            )
-        }
     }
 }

@@ -22,10 +22,6 @@ fun Database.Transaction.deletePaymentDraftsByDateRange(range: DateRange) {
         .execute()
 }
 
-fun Database.Read.getLastPaymentNumber(): Int? {
-    return createQuery("""SELECT max(number) FROM payment""").mapTo<Int>().firstOrNull()
-}
-
 fun Database.Transaction.insertPaymentDrafts(payments: List<PaymentDraft>) {
     val batch =
         prepareBatch(

@@ -16,7 +16,6 @@ import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
-import mu.KotlinLogging
 import org.apache.commons.imaging.Imaging
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -36,7 +35,6 @@ class ChildImageController(
     private val documentClient: DocumentService,
     env: BucketEnv
 ) {
-    private val logger = KotlinLogging.logger {}
     private val bucket = env.data
 
     @PutMapping("/children/{childId}/image", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])

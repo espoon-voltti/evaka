@@ -14,7 +14,6 @@ import fi.espoo.evaka.occupancy.calculateDailyUnitOccupancyValues
 import fi.espoo.evaka.shared.AreaId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.GroupId
-import fi.espoo.evaka.shared.auth.AccessControlList
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
@@ -29,10 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class OccupancyReportController(
-    private val accessControl: AccessControl,
-    private val acl: AccessControlList
-) {
+class OccupancyReportController(private val accessControl: AccessControl) {
     @GetMapping("/reports/occupancy-by-unit")
     fun getOccupancyUnitReport(
         db: Database,

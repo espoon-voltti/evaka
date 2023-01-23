@@ -100,19 +100,6 @@ enum class ApplicationStatusOption : DatabaseEnum {
     CANCELLED;
 
     override val sqlType: String = "application_status_type"
-
-    fun toStatus(): ApplicationStatus =
-        when (this) {
-            SENT -> ApplicationStatus.SENT
-            WAITING_PLACEMENT -> ApplicationStatus.WAITING_PLACEMENT
-            WAITING_UNIT_CONFIRMATION -> ApplicationStatus.WAITING_UNIT_CONFIRMATION
-            WAITING_DECISION -> ApplicationStatus.WAITING_DECISION
-            WAITING_MAILING -> ApplicationStatus.WAITING_MAILING
-            WAITING_CONFIRMATION -> ApplicationStatus.WAITING_CONFIRMATION
-            REJECTED -> ApplicationStatus.REJECTED
-            ACTIVE -> ApplicationStatus.ACTIVE
-            CANCELLED -> ApplicationStatus.CANCELLED
-        }
 }
 
 enum class TransferApplicationFilter {

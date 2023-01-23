@@ -4,7 +4,6 @@
 
 package fi.espoo.evaka.application
 
-import com.fasterxml.jackson.databind.json.JsonMapper
 import fi.espoo.evaka.Audit
 import fi.espoo.evaka.BucketEnv
 import fi.espoo.evaka.application.ApplicationStatus.ACTIVE
@@ -39,7 +38,6 @@ import fi.espoo.evaka.decision.markApplicationDecisionsSent
 import fi.espoo.evaka.decision.markDecisionAccepted
 import fi.espoo.evaka.decision.markDecisionRejected
 import fi.espoo.evaka.identity.ExternalIdentifier
-import fi.espoo.evaka.invoicing.service.IncomeTypesProvider
 import fi.espoo.evaka.pis.getPersonById
 import fi.espoo.evaka.pis.service.PersonDTO
 import fi.espoo.evaka.pis.service.PersonService
@@ -73,10 +71,7 @@ import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import java.time.LocalDate
-import mu.KotlinLogging
 import org.springframework.stereotype.Service
-
-private val logger = KotlinLogging.logger {}
 
 @Service
 class ApplicationStateService(
@@ -86,9 +81,7 @@ class ApplicationStateService(
     private val decisionDraftService: DecisionDraftService,
     private val personService: PersonService,
     private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
-    private val mapper: JsonMapper,
     private val documentClient: DocumentService,
-    private val incomeTypesProvider: IncomeTypesProvider,
     private val featureConfig: FeatureConfig,
     env: BucketEnv
 ) {

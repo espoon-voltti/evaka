@@ -48,8 +48,6 @@ class HolidayPeriodQuestionnaireIntegrationTest : PureJdbiTest(resetDbBeforeEach
         assertEquals(options, summerQuestionnaire.periodOptions)
     }
 
-    private fun createHolidayPeriod(period: HolidayPeriodBody) =
-        db.transaction { it.createHolidayPeriod(period) }
     private fun createFixedPeriodQuestionnaire(body: FixedPeriodQuestionnaireBody) =
         db.transaction {
             it.createFixedPeriodQuestionnaire(body).let { id ->

@@ -93,16 +93,6 @@ data class SsnDvvInfoGroup(
     val edellisetHenkilotunnukset: List<String>
 ) : DvvInfoGroup
 
-@JsonIgnoreProperties(
-    "sukupuoli",
-    "etunimet",
-    "sukunimi",
-    "kansalaisuuskoodi",
-    "kansalaisuusnimi",
-    "nimienLisatieto"
-)
-data class DvvChild(val henkilotunnus: String?, val syntymapv: DvvDate?)
-
 data class DvvDate(val arvo: String, val tarkkuus: String) {
     fun asLocalDate(): LocalDate {
         return LocalDate.parse(arvo)

@@ -79,18 +79,6 @@ fun Database.Read.getStaffAttendances(unitId: DaycareId, now: HelsinkiDateTime):
         .mapTo<StaffMember>()
         .list()
 
-fun Database.Read.getStaffAttendance(id: StaffAttendanceId): StaffMemberAttendance? =
-    createQuery(
-            """
-    SELECT id, employee_id, group_id, arrived, departed, type
-    FROM staff_attendance_realtime
-    WHERE id = :id
-"""
-        )
-        .bind("id", id)
-        .mapTo<StaffMemberAttendance>()
-        .firstOrNull()
-
 fun Database.Read.getExternalStaffAttendance(
     id: StaffAttendanceExternalId,
     now: HelsinkiDateTime

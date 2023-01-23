@@ -8,7 +8,6 @@ import fi.espoo.evaka.dailyservicetimes.DailyServiceTimesValue
 import fi.espoo.evaka.daycare.service.AbsenceCategory
 import fi.espoo.evaka.note.child.daily.ChildDailyNote
 import fi.espoo.evaka.note.child.sticky.ChildStickyNote
-import fi.espoo.evaka.note.group.GroupNote
 import fi.espoo.evaka.placement.PlacementType
 import fi.espoo.evaka.shared.AttendanceId
 import fi.espoo.evaka.shared.ChildId
@@ -26,8 +25,6 @@ data class ContactInfo(
     val email: String,
     val priority: Int?
 )
-
-data class ChildrenResponse(val children: List<Child>, val groupNotes: List<GroupNote>)
 
 data class Child(
     val id: ChildId,

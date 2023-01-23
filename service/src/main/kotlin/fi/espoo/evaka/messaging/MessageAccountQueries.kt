@@ -15,18 +15,6 @@ import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
 import fi.espoo.evaka.shared.security.actionrule.forTable
 
-fun Database.Read.getDaycareGroupMessageAccount(daycareGroupId: GroupId): MessageAccountId {
-    val sql =
-        """
-SELECT acc.id FROM message_account acc
-WHERE acc.daycare_group_id = :daycareGroupId AND acc.active = true
-"""
-    return this.createQuery(sql)
-        .bind("daycareGroupId", daycareGroupId)
-        .mapTo<MessageAccountId>()
-        .one()
-}
-
 fun Database.Read.getCitizenMessageAccount(personId: PersonId): MessageAccountId {
     val sql =
         """
@@ -184,13 +172,6 @@ fun Database.Read.getMessageAccountType(accountId: MessageAccountId): AccountTyp
         .bind("accountId", accountId)
         .mapTo<AccountType>()
         .one()
-}
-
-fun Database.Read.allFoldersForAccount(accountId: MessageAccountId): List<String> {
-    return createQuery("SELECT name FROM message_thread_folders WHERE owner_id = :accountId")
-        .bind("accountId", accountId)
-        .mapTo<String>()
-        .list()
 }
 
 fun Database.Read.findMessageAccountIdByDraftId(id: MessageDraftId): MessageAccountId? =

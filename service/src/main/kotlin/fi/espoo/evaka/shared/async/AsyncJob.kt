@@ -203,10 +203,6 @@ sealed interface AsyncJob : AsyncJobPayload {
         override val user: AuthenticatedUser? = null
     }
 
-    data class UpdateIrregularAbsences(val childId: ChildId) : AsyncJob {
-        override val user: AuthenticatedUser? = null
-    }
-
     data class SendMissingReservationsReminder(val guardian: PersonId, val range: FiniteDateRange) :
         AsyncJob {
         override val user: AuthenticatedUser? = null
