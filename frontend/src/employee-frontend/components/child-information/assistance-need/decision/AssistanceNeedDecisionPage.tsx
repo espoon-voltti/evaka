@@ -31,6 +31,10 @@ const StickyFooterContainer = styled.div`
   padding: ${defaultMargins.xs};
 `
 
+const canBeEdited = (decision: AssistanceNeedDecision) =>
+  decision.status === 'NEEDS_WORK' ||
+  (decision.status === 'DRAFT' && decision.sentForDecision === null)
+
 export default React.memo(function AssistanceNeedDecisionPage() {
   const { childId, id } = useNonNullableParams<{ childId: UUID; id: UUID }>()
   const navigate = useNavigate()
@@ -48,7 +52,12 @@ export default React.memo(function AssistanceNeedDecisionPage() {
   } = useTranslation()
 
   useEffect(() => {
-    if (assistanceNeedDecision.getOrElse(undefined)?.hasMissingFields) {
+    const response = assistanceNeedDecision.getOrElse(undefined)
+    if (
+      response !== undefined &&
+      response.hasMissingFields &&
+      canBeEdited(response.decision)
+    ) {
       navigate(
         `/child-information/${childId}/assistance-need-decision/${id}/edit`,
         {
@@ -57,14 +66,6 @@ export default React.memo(function AssistanceNeedDecisionPage() {
       )
     }
   }, [assistanceNeedDecision, childId, id, navigate])
-
-  const canBeEdited = assistanceNeedDecision
-    .map(
-      ({ decision }) =>
-        decision.status === 'NEEDS_WORK' ||
-        (decision.status === 'DRAFT' && decision.sentForDecision === null)
-    )
-    .getOrElse(false)
 
   return (
     <>
@@ -102,7 +103,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
                           `/child-information/${childId}/assistance-need-decision/${id}/edit`
                         )
                       }
-                      disabled={!canBeEdited}
+                      disabled={!canBeEdited(decision)}
                     >
                       {t.modifyDecision}
                     </Button>
@@ -128,7 +129,7 @@ export default React.memo(function AssistanceNeedDecisionPage() {
                       text={t.sendToDecisionMaker}
                       onClick={() => sendAssistanceNeedDecision(id)}
                       onSuccess={reloadDecision}
-                      disabled={!canBeEdited}
+                      disabled={!canBeEdited(decision)}
                       data-qa="send-decision"
                     />
                   )}
