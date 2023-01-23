@@ -26,7 +26,10 @@ import { deserializePersonJSON, SearchColumn } from '../types/person'
 
 import { client } from './client'
 
-export async function getPerson(id: UUID): Promise<Result<PersonJSON>> {
+export async function getPerson(id: UUID | null): Promise<Result<PersonJSON>> {
+  if (id === null) {
+    return Failure.of({ message: 'No person id given' })
+  }
   return client
     .get<JsonOf<PersonJSON>>(`/person/identity/${id}`)
     .then((res) => res.data)

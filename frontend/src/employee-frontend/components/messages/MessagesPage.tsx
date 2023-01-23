@@ -11,6 +11,7 @@ import {
 } from 'lib-common/generated/api-types/messaging'
 import HelsinkiDateTime from 'lib-common/helsinki-date-time'
 import { UUID } from 'lib-common/types'
+import { useApiState } from 'lib-common/utils/useRestApi'
 import MessageEditor from 'lib-components/employee/messages/MessageEditor'
 import Container from 'lib-components/layout/Container'
 import { defaultMargins } from 'lib-components/white-space'
@@ -20,8 +21,10 @@ import {
   getAttachmentUrl,
   saveMessageAttachment
 } from '../../api/attachments'
+import { getPerson } from '../../api/person'
 import { useTranslation } from '../../state/i18n'
 import { UIContext } from '../../state/ui'
+import { formatPersonName } from '../../utils'
 import { footerHeight } from '../Footer'
 import { headerHeight } from '../Header'
 
@@ -51,11 +54,18 @@ export default React.memo(function MessagesPage({
     selectAccount,
     setSelectedThread,
     refreshMessages,
-    openMessageUndo
+    openMessageUndo,
+    prefilledRecipient,
+    prefilledTitle
   } = useContext(MessageContext)
 
   const { setErrorMessage } = useContext(UIContext)
   const { i18n } = useTranslation()
+
+  const [prefilledRecipientPerson] = useApiState(
+    () => getPerson(prefilledRecipient),
+    [prefilledRecipient]
+  )
 
   useEffect(() => refreshMessages(), [refreshMessages])
   const [sending, setSending] = useState(false)
@@ -148,6 +158,27 @@ export default React.memo(function MessagesPage({
     }
   }
 
+  const getReceivers = useCallback(():
+    | MessageReceiversResponse[]
+    | undefined => {
+    const person = prefilledRecipientPerson.getOrElse(null)
+    if (person === null || selectedAccount?.account.id === undefined) {
+      return receivers
+    }
+    return [
+      {
+        accountId: selectedAccount?.account.id,
+        receivers: [
+          {
+            id: person.id,
+            name: formatPersonName(person, i18n, true),
+            type: 'CITIZEN'
+          }
+        ]
+      }
+    ]
+  }, [prefilledRecipientPerson, receivers, selectedAccount, i18n])
+
   return (
     <Container>
       <PanelContainer>
@@ -156,9 +187,9 @@ export default React.memo(function MessagesPage({
           setReceivers={setReceivers}
         />
         {selectedAccount?.view && <MessageList {...selectedAccount} />}
-        {showEditor && accounts.isSuccess && receivers && selectedAccount && (
+        {showEditor && accounts.isSuccess && selectedAccount && (
           <MessageEditor
-            availableReceivers={receivers}
+            availableReceivers={getReceivers() ?? []}
             defaultSender={{
               value: selectedAccount.account.id,
               label: selectedAccount.account.name
@@ -179,6 +210,7 @@ export default React.memo(function MessagesPage({
             saveDraftRaw={saveDraft}
             saveMessageAttachment={saveMessageAttachment}
             sending={sending}
+            defaultTitle={prefilledTitle ?? undefined}
           />
         )}
       </PanelContainer>

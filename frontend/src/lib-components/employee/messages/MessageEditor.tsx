@@ -71,18 +71,20 @@ const messageToUpdatableDraftWithAccount = (
   }
 }
 
-const emptyMessage: Omit<Message, 'sender'> = {
+const getEmptyMessage = (sender: SelectOption, title: string): Message => ({
+  sender,
+  title,
   content: '',
   urgent: false,
   attachments: [],
-  title: '',
   type: 'MESSAGE' as const
-}
+})
 
 const getInitialMessage = (
   draft: DraftContent | undefined,
-  sender: SelectOption
-): Message => (draft ? { ...draft, sender } : { sender, ...emptyMessage })
+  sender: SelectOption,
+  title: string
+): Message => (draft ? { ...draft, sender } : getEmptyMessage(sender, title))
 
 const areRequiredFieldsFilled = (
   msg: Message,
@@ -148,6 +150,7 @@ interface Props {
     onUploadProgress: (progressEvent: ProgressEvent) => void
   ) => Promise<Result<UUID>>
   sending: boolean
+  defaultTitle?: string
 }
 
 export default React.memo(function MessageEditor({
@@ -165,13 +168,14 @@ export default React.memo(function MessageEditor({
   onSend,
   saveDraftRaw,
   saveMessageAttachment,
-  sending
+  sending,
+  defaultTitle = ''
 }: Props) {
   const [receiverTree, setReceiverTree] = useState<SelectorNode[]>(
     receiversAsSelectorNode(defaultSender.value, availableReceivers)
   )
   const [message, setMessage] = useState<Message>(() =>
-    getInitialMessage(draftContent, defaultSender)
+    getInitialMessage(draftContent, defaultSender, defaultTitle)
   )
   const {
     draftId,

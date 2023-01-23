@@ -1091,37 +1091,7 @@ fun Database.Read.getReceiversForNewMessage(
                 MessageReceiversResponse(accountId = accountId, receivers = accountReceivers)
             }
 
-    val serviceWorkerReceivers =
-        createQuery(
-                """
-        WITH accounts AS (
-            SELECT id, type, daycare_group_id, employee_id, person_id FROM message_account
-            WHERE id = ANY(:accountIds) AND type = 'SERVICE_WORKER'::message_account_type
-        )
-        SELECT acc.id AS account_id, p.id as person_id, p.first_name, p.last_name 
-        FROM accounts acc, person p
-        JOIN application app ON p.id = app.guardian_id
-        WHERE app.status = 'SENT'
-        """
-                    .trimIndent()
-            )
-            .bind("accountIds", accountIds)
-            .bind("date", today)
-            .mapTo<ServiceWorkerMessageReceiversResult>()
-            .toList()
-            .groupBy { it.accountId }
-            .map { (accountId, receivers) ->
-                val accountReceivers =
-                    receivers.map { receiver ->
-                        MessageReceiver.Citizen(
-                            id = receiver.personId,
-                            name = formatName(receiver.firstName, receiver.lastName, true)
-                        )
-                    }
-                MessageReceiversResponse(accountId = accountId, receivers = accountReceivers)
-            }
-
-    return municipalReceivers + serviceWorkerReceivers + unitReceivers
+    return municipalReceivers + unitReceivers
 }
 
 private fun getReceiverGroups(
