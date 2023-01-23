@@ -15,7 +15,7 @@ import { FixedSpaceColumn } from 'lib-components/layout/flex-helpers'
 import { fontWeights } from '../typography'
 import { BaseProps } from '../utils'
 
-export type IconSize = 'xs' | 's' | 'm' | 'm-age' | 'L' | 'XL' | 'XXL'
+export type IconSize = 'xs' | 's' | 'm' | 'L' | 'XL' | 'XXL'
 
 type IconContainerProps = {
   color: string
@@ -82,11 +82,6 @@ const IconContainer = styled.div<IconContainerProps>`
 
   &.m {
     font-size: 16px;
-    ${diameter(24)}
-  }
-
-  &.m-age {
-    font-size: 14px;
     ${diameter(24)}
   }
 

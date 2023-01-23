@@ -191,12 +191,12 @@ export default React.memo(function ChildListItem({
                   />
                 </Link>
               ) : null}
-              <RoundIcon
+              <AgeRoundIcon
                 content={`${childAge}v`}
                 color={
                   childAge < 3 ? colors.accents.a6turquoise : colors.main.m1
                 }
-                size="m-age"
+                size="m"
               />
             </FixedSpaceRowWithLeftMargin>
           </DetailsRow>
@@ -238,5 +238,10 @@ const LeftDetailsDiv = styled.div`
     &:first-child {
       margin-left: 0;
     }
+  }
+`
+const AgeRoundIcon = styled(RoundIcon)`
+  &.m {
+    font-size: 14px;
   }
 `
