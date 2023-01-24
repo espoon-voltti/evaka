@@ -387,7 +387,7 @@ export const fi = {
       otherGuardianAgreementStatuses: {
         AGREED: 'Sovittu yhdessä',
         NOT_AGREED: 'Ei ole sovittu yhdessä',
-        RIGHT_TO_GET_NOTIFIED: 'Tiedonsaantioikeus',
+        RIGHT_TO_GET_NOTIFIED: 'Vain tiedonsaantioikeus',
         NOT_SET: 'Huoltajat asuvat samassa osoitteessa'
       },
       noOtherChildren: 'Ei muita lapsia',
