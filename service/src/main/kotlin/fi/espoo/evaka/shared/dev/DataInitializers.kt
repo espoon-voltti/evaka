@@ -833,7 +833,7 @@ fun Database.Transaction.insertTestAssistanceNeedDecision(
           expert_responsibilities, guardians_heard_on, view_of_guardians, other_representative_heard, other_representative_details, 
           assistance_levels, motivation_for_decision, decision_maker_employee_id,
           decision_maker_title, preparer_1_employee_id, preparer_1_title, preparer_2_employee_id, preparer_2_title,
-          preparer_1_phone_number, preparer_2_phone_number, unread_guardian_ids
+          preparer_1_phone_number, preparer_2_phone_number, unread_guardian_ids, annulment_reason
         )
         VALUES (
             :id,
@@ -875,7 +875,8 @@ fun Database.Transaction.insertTestAssistanceNeedDecision(
             :preparer2Title,
             :preparer1PhoneNumber,
             :preparer2PhoneNumber,
-            :unreadGuardianIds
+            :unreadGuardianIds,
+            :annulmentReason
         )
         RETURNING id
         """

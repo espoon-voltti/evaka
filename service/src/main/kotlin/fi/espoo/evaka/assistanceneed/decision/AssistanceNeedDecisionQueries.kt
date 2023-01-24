@@ -160,7 +160,7 @@ fun Database.Read.getAssistanceNeedDecisionById(
           service_opt_consultation_special_ed, service_opt_part_time_special_ed, service_opt_full_time_special_ed,
           service_opt_interpretation_and_assistance_services, service_opt_special_aides, services_motivation,
           expert_responsibilities, guardians_heard_on, view_of_guardians, other_representative_heard, other_representative_details, 
-          assistance_levels, motivation_for_decision,
+          assistance_levels, motivation_for_decision, annulment_reason,
           decision_maker_employee_id, decision_maker_title, concat(coalesce(dm.preferred_first_name, dm.first_name), ' ', dm.last_name) decision_maker_name,
           preparer_1_employee_id, preparer_1_title, concat(coalesce(p1.preferred_first_name, p1.first_name), ' ', p1.last_name) preparer_1_name, preparer_1_phone_number,
           preparer_2_employee_id, preparer_2_title, concat(coalesce(p2.preferred_first_name, p2.first_name), ' ', p2.last_name) preparer_2_name, preparer_2_phone_number,
@@ -333,28 +333,6 @@ fun Database.Transaction.markAssistanceNeedDecisionAsOpened(id: AssistanceNeedDe
     createUpdate(sql).bind("id", id).updateExactlyOne()
 }
 
-fun Database.Read.getAssistanceNeedDecisionsByChildIdForCitizen(
-    childId: ChildId,
-    guardianId: PersonId
-): List<AssistanceNeedDecisionCitizenListItem> {
-    // language=sql
-    val sql =
-        """
-        SELECT ad.id, ad.child_id, validity_period, status, decision_made, assistance_levels,
-            selected_unit selected_unit_id, unit.name selected_unit_name,
-            (:guardianId = ANY(unread_guardian_ids)) AS is_unread
-        FROM assistance_need_decision ad
-        LEFT JOIN daycare unit ON unit.id = selected_unit
-        WHERE child_id = :childId AND status IN ('REJECTED', 'ACCEPTED') AND decision_made IS NOT NULL
-        """
-            .trimIndent()
-    return createQuery(sql)
-        .bind("childId", childId)
-        .bind("guardianId", guardianId)
-        .mapTo<AssistanceNeedDecisionCitizenListItem>()
-        .list()
-}
-
 fun Database.Read.getAssistanceNeedDecisionsForCitizen(
     today: LocalDate,
     userId: PersonId
@@ -368,12 +346,12 @@ fun Database.Read.getAssistanceNeedDecisionsForCitizen(
             SELECT child_id FROM foster_parent WHERE parent_id = :userId AND valid_during @> :today
         )
         SELECT ad.id, ad.child_id, validity_period, status, decision_made, assistance_levels,
-            selected_unit AS selected_unit_id, unit.name AS selected_unit_name,
+            selected_unit AS selected_unit_id, unit.name AS selected_unit_name, annulment_reason,
             coalesce(:userId = ANY(unread_guardian_ids), false) AS is_unread
         FROM children c
         JOIN assistance_need_decision ad ON ad.child_id = c.child_id
         LEFT JOIN daycare unit ON unit.id = selected_unit
-        WHERE status IN ('REJECTED', 'ACCEPTED') AND decision_made IS NOT NULL
+        WHERE status IN ('REJECTED', 'ACCEPTED', 'ANNULLED') AND decision_made IS NOT NULL
         """
             .trimIndent()
     return createQuery(sql)
@@ -502,4 +480,42 @@ fun Database.Transaction.endActiveAssistanceNeedDecisions(
         .bind("endDate", endDate.minusDays(1))
         .bind("childId", childId)
         .execute()
+}
+
+fun Database.Read.hasLaterAssistanceNeedDecisions(
+    childId: ChildId,
+    startDate: LocalDate,
+): Boolean {
+    return createQuery(
+            """
+        SELECT EXISTS (
+            SELECT 1
+            FROM assistance_need_decision
+            WHERE child_id = :childId
+              AND :startDate <= lower(validity_period)
+              AND status = 'ACCEPTED'
+        )
+    """
+                .trimIndent()
+        )
+        .bind("childId", childId)
+        .bind("startDate", startDate)
+        .mapTo<Boolean>()
+        .first()
+}
+
+fun Database.Transaction.annulAssistanceNeedDecision(
+    id: AssistanceNeedDecisionId,
+    reason: String,
+) {
+    createUpdate(
+            """
+UPDATE assistance_need_decision
+SET status = 'ANNULLED', annulment_reason = :reason
+WHERE id = :id
+"""
+        )
+        .bind("id", id)
+        .bind("reason", reason)
+        .updateExactlyOne()
 }

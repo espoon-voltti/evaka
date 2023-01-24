@@ -1660,7 +1660,8 @@ data class DevAssistanceNeedDecision(
     val otherRepresentativeDetails: String?,
     val assistanceLevels: Set<AssistanceLevel>,
     val motivationForDecision: String?,
-    val unreadGuardianIds: List<PersonId>?
+    val unreadGuardianIds: List<PersonId>?,
+    val annulmentReason: String,
 )
 
 data class DevChildAttendance(

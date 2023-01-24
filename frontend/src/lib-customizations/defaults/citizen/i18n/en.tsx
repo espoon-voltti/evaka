@@ -1475,7 +1475,8 @@ const en: Translations = {
           DRAFT: 'Draft',
           NEEDS_WORK: 'Needs work',
           ACCEPTED: 'Accepted',
-          REJECTED: 'Rejected'
+          REJECTED: 'Rejected',
+          ANNULLED: 'Annulled'
         },
         assistanceLevel: {
           assistanceEnds: 'Special/enhanced assistance ends',

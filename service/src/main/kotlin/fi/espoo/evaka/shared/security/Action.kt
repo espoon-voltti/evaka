@@ -590,12 +590,10 @@ sealed interface Action {
             HasGlobalRole(ADMIN),
             IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()
         ),
-        DECIDE(HasGlobalRole(ADMIN), IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
+        DECIDE(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
         MARK_AS_OPENED(IsEmployee.andIsDecisionMakerForAssistanceNeedDecision()),
-        UPDATE_DECISION_MAKER(
-            HasGlobalRole(ADMIN),
-            HasGlobalRole(DIRECTOR).andAssistanceNeedDecisionHasBeenSent()
-        );
+        UPDATE_DECISION_MAKER(HasGlobalRole(ADMIN)),
+        ANNUL(HasGlobalRole(ADMIN), IsEmployee.andIsDecisionMakerForAssistanceNeedDecision());
 
         override fun toString(): String = "${javaClass.name}.$name"
     }

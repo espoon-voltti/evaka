@@ -13,6 +13,7 @@ import {
   ApplicationStatus,
   ApplicationType
 } from 'lib-common/generated/api-types/application'
+import { AssistanceNeedDecisionStatus } from 'lib-common/generated/api-types/assistanceneed'
 import { StaffAttendanceType } from 'lib-common/generated/api-types/attendance'
 import { Language } from 'lib-common/generated/api-types/daycare'
 import {
@@ -517,7 +518,7 @@ export interface AssistanceNeedDecision {
   }
   servicesMotivation: string | null
   validityPeriod: DateRange
-  status: 'DRAFT' | 'NEEDS_WORK' | 'ACCEPTED' | 'REJECTED'
+  status: AssistanceNeedDecisionStatus
   structuralMotivationDescription: string | null
   structuralMotivationOptions: {
     additionalStaff: boolean
@@ -529,6 +530,7 @@ export interface AssistanceNeedDecision {
   }
   viewOfGuardians: string | null
   unreadGuardianIds: UUID[] | null
+  annulmentReason: string
 }
 
 export interface DevIncome {

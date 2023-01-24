@@ -15,6 +15,7 @@ import fi.espoo.evaka.shared.async.AsyncJobRunner
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.BadRequest
+import fi.espoo.evaka.shared.domain.Conflict
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.Forbidden
 import fi.espoo.evaka.shared.domain.NotFound
@@ -298,8 +299,13 @@ class AssistanceNeedDecisionController(
         @PathVariable id: AssistanceNeedDecisionId,
         @RequestBody body: DecideAssistanceNeedDecisionRequest
     ) {
-        if (body.status == AssistanceNeedDecisionStatus.DRAFT) {
-            throw BadRequest("Assistance need decisions cannot be decided to be a draft")
+        if (
+            body.status == AssistanceNeedDecisionStatus.DRAFT ||
+                body.status == AssistanceNeedDecisionStatus.ANNULLED
+        ) {
+            throw BadRequest(
+                "Assistance need decisions cannot be decided to be a draft or annulled"
+            )
         }
 
         return db.connect { dbc ->
@@ -316,7 +322,8 @@ class AssistanceNeedDecisionController(
 
                     if (
                         decision.status == AssistanceNeedDecisionStatus.ACCEPTED ||
-                            decision.status == AssistanceNeedDecisionStatus.REJECTED
+                            decision.status == AssistanceNeedDecisionStatus.REJECTED ||
+                            decision.status == AssistanceNeedDecisionStatus.ANNULLED
                     ) {
                         throw BadRequest("Already-decided decisions cannot be decided again")
                     }
@@ -328,6 +335,17 @@ class AssistanceNeedDecisionController(
                     }
 
                     if (body.status == AssistanceNeedDecisionStatus.ACCEPTED) {
+                        if (
+                            tx.hasLaterAssistanceNeedDecisions(
+                                decision.child.id,
+                                decision.validityPeriod.start
+                            )
+                        ) {
+                            throw Conflict(
+                                "Another decision has the same or later start date and must be annulled",
+                                "CONFLICTING_DECISION"
+                            )
+                        }
                         tx.endActiveAssistanceNeedDecisions(
                             decision.id,
                             decision.validityPeriod.start,
@@ -412,6 +430,7 @@ class AssistanceNeedDecisionController(
                     if (
                         decision.status == AssistanceNeedDecisionStatus.ACCEPTED ||
                             decision.status == AssistanceNeedDecisionStatus.REJECTED ||
+                            decision.status == AssistanceNeedDecisionStatus.ANNULLED ||
                             decision.sentForDecision == null
                     ) {
                         throw BadRequest(
@@ -468,6 +487,36 @@ class AssistanceNeedDecisionController(
             }
     }
 
+    @PostMapping("/assistance-need-decision/{id}/annul")
+    fun annulAssistanceNeedDecision(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable id: AssistanceNeedDecisionId,
+        @RequestBody body: AnnulAssistanceNeedDecisionRequest
+    ) {
+        if (body.reason.isEmpty()) {
+            throw BadRequest("Reason must not be empty")
+        }
+        return db.connect { dbc ->
+                dbc.transaction { tx ->
+                    accessControl.requirePermissionFor(
+                        tx,
+                        user,
+                        clock,
+                        Action.AssistanceNeedDecision.ANNUL,
+                        id
+                    )
+                    val decision = tx.getAssistanceNeedDecisionById(id)
+                    if (decision.status != AssistanceNeedDecisionStatus.ACCEPTED) {
+                        throw BadRequest("Only accepted decisions can be annulled")
+                    }
+                    tx.annulAssistanceNeedDecision(id, body.reason)
+                }
+            }
+            .also { Audit.ChildAssistanceNeedDecisionAnnul.log(targetId = id) }
+    }
+
     private fun hasMissingFields(decision: AssistanceNeedDecision): Boolean {
         return decision.selectedUnit == null ||
             (decision.assistanceLevels.contains(AssistanceLevel.ASSISTANCE_SERVICES_FOR_TIME) &&
@@ -499,4 +548,6 @@ class AssistanceNeedDecisionController(
     data class DecideAssistanceNeedDecisionRequest(val status: AssistanceNeedDecisionStatus)
 
     data class UpdateDecisionMakerForAssistanceNeedDecisionRequest(val title: String)
+
+    data class AnnulAssistanceNeedDecisionRequest(val reason: String)
 }

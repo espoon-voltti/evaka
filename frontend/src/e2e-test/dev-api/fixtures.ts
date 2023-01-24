@@ -1396,7 +1396,8 @@ export class Fixture {
         specialGroup: false
       },
       viewOfGuardians: null,
-      unreadGuardianIds: null
+      unreadGuardianIds: null,
+      annulmentReason: ''
     })
   }
 
@@ -1453,7 +1454,8 @@ export class Fixture {
         specialGroup: false
       },
       viewOfGuardians: 'VOG text',
-      unreadGuardianIds: null
+      unreadGuardianIds: null,
+      annulmentReason: ''
     })
   }
 

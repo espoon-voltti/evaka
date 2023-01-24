@@ -24,12 +24,17 @@ export const AssistanceNeedDecisionStatusChip = React.memo(
       DRAFT: theme.colors.accents.a7mint,
       NEEDS_WORK: theme.colors.status.warning,
       ACCEPTED: theme.colors.accents.a3emerald,
-      REJECTED: theme.colors.status.danger
-    }
+      REJECTED: theme.colors.status.danger,
+      ANNULLED: theme.colors.status.danger
+    }[decisionStatus]
+
+    const textColor =
+      decisionStatus === 'ANNULLED' ? theme.colors.grayscale.g0 : undefined
 
     return (
       <StaticChip
-        color={statusColor[decisionStatus]}
+        color={statusColor}
+        textColor={textColor}
         fitContent
         data-qa={dataQa}
         data-qa-status={decisionStatus}

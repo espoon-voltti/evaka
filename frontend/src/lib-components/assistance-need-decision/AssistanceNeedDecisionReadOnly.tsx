@@ -23,6 +23,7 @@ import AssistanceNeedDecisionInfoHeader from './AssistanceNeedDecisionInfoHeader
 
 export interface AssistanceNeedDecisionTexts {
   pageTitle: string
+  annulmentReason: string
   neededTypesOfAssistance: string
   pedagogicalMotivation: string
   structuralMotivation: string
@@ -71,6 +72,7 @@ export interface AssistanceNeedDecisionTexts {
     NEEDS_WORK: string
     ACCEPTED: string
     REJECTED: string
+    ANNULLED: string
   }
   confidential: string
   lawReference: string
@@ -196,13 +198,19 @@ export default React.memo(function AssistanceNeedDecisionReadOnly({
             <ChildName noMargin>{decision.child?.name}</ChildName>
           </FixedSpaceColumn>
           <AssistanceNeedDecisionInfoHeader
-            decisionNumber={decision.decisionNumber || 0}
-            decisionStatus={decision.status || 'DRAFT'}
+            decisionNumber={decision.decisionNumber ?? 0}
+            decisionStatus={decision.status}
             texts={t}
           />
         </TitleRow>
         <Gap size="s" />
         <FixedSpaceColumn spacing={defaultMargins.s}>
+          <OptionalLabelledValue
+            label={t.annulmentReason}
+            value={decision.annulmentReason}
+            data-qa="annulment-reason"
+          />
+
           <H2>{t.neededTypesOfAssistance}</H2>
 
           <div>

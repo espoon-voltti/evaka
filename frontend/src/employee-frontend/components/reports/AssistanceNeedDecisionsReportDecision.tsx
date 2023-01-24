@@ -33,6 +33,7 @@ import { defaultMargins, Gap } from 'lib-components/white-space'
 import { faQuestion, faTimes } from 'lib-icons'
 
 import {
+  annulAssistanceNeedDecision,
   decideAssistanceNeedDecision,
   getAssistanceNeedDecision,
   markAssistanceNeedDecisionAsOpened,
@@ -98,25 +99,36 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
     }
   } = useTranslation()
 
-  const [decisionModalStatus, setDecisionModalStatus] =
-    useState<DecisionStatus>()
-
-  const canBeDecided = assistanceNeedDecision
-    .map(
-      ({ permittedActions, decision }) =>
-        permittedActions.includes('DECIDE') &&
-        decision.status !== 'ACCEPTED' &&
-        decision.status !== 'REJECTED'
-    )
-    .getOrElse(false)
+  const [decisionModalStatus, setDecisionModalStatus] = useState<
+    DecisionStatus | 'ANNULLED' | 'APPROVE_FAILED'
+  >()
 
   const [mismatchDecisionMakerModalOpen, setMismatchDecisionMakerModalOpen] =
     useState(false)
 
   return (
     <>
-      {decisionModalStatus && (
+      {decisionModalStatus === 'ANNULLED' ? (
+        <AnnulModal
+          onClose={(shouldRefresh) => {
+            setDecisionModalStatus(undefined)
+            if (shouldRefresh) {
+              void reloadDecision()
+            }
+          }}
+          decisionId={id}
+        />
+      ) : decisionModalStatus === 'APPROVE_FAILED' ? (
+        <ApproveFailedModal
+          onClose={() => {
+            setDecisionModalStatus(undefined)
+          }}
+        />
+      ) : decisionModalStatus !== undefined ? (
         <DecisionModal
+          onFailed={() => {
+            setDecisionModalStatus('APPROVE_FAILED')
+          }}
           onClose={(shouldRefresh) => {
             setDecisionModalStatus(undefined)
             if (shouldRefresh) {
@@ -126,7 +138,7 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
           decisionId={id}
           decisionStatus={decisionModalStatus}
         />
-      )}
+      ) : null}
 
       {mismatchDecisionMakerModalOpen && (
         <MismatchDecisionMakerModal
@@ -138,96 +150,122 @@ export default React.memo(function AssistanceNeedDecisionsReportDecision() {
         />
       )}
 
-      <Content>
-        <ReturnButton label={i18n.common.goBack} />
+      {renderResult(
+        assistanceNeedDecision,
+        ({ decision, permittedActions }) => (
+          <>
+            <Content>
+              <ReturnButton label={i18n.common.goBack} />
 
-        {renderResult(
-          assistanceNeedDecision,
-          ({ decision, permittedActions }) => (
-            <I18nContext.Provider
-              value={{
-                lang: decision.language.toLowerCase() as Lang,
-                setLang: () => undefined
-              }}
-            >
-              <AssistanceNeedDecisionContent
-                decision={decision}
-                warning={
-                  decision.decisionMaker?.employeeId !== user?.id &&
-                  permittedActions.includes('UPDATE_DECISION_MAKER') && (
-                    <AlertBox
-                      message={
-                        <>
-                          {
-                            i18n.reports.assistanceNeedDecisions
-                              .mismatchDecisionMakerWarning.text
-                          }{' '}
-                          <ButtonLink
-                            onClick={() =>
-                              setMismatchDecisionMakerModalOpen(true)
-                            }
-                            data-qa="mismatch-modal-link"
-                          >
+              <I18nContext.Provider
+                value={{
+                  lang: decision.language.toLowerCase() as Lang,
+                  setLang: () => undefined
+                }}
+              >
+                <AssistanceNeedDecisionContent
+                  decision={decision}
+                  warning={
+                    decision.decisionMaker?.employeeId !== user?.id &&
+                    permittedActions.includes('UPDATE_DECISION_MAKER') && (
+                      <AlertBox
+                        message={
+                          <>
                             {
                               i18n.reports.assistanceNeedDecisions
-                                .mismatchDecisionMakerWarning.link
-                            }
-                          </ButtonLink>
-                        </>
+                                .mismatchDecisionMakerWarning.text
+                            }{' '}
+                            <ButtonLink
+                              onClick={() =>
+                                setMismatchDecisionMakerModalOpen(true)
+                              }
+                              data-qa="mismatch-modal-link"
+                            >
+                              {
+                                i18n.reports.assistanceNeedDecisions
+                                  .mismatchDecisionMakerWarning.link
+                              }
+                            </ButtonLink>
+                          </>
+                        }
+                      />
+                    )
+                  }
+                />
+              </I18nContext.Provider>
+            </Content>
+            <Gap size="m" />
+            <StickyFooter>
+              <StickyFooterContainer>
+                <FixedSpaceRow justifyContent="space-between" flexWrap="wrap">
+                  <FixedSpaceRow spacing="s">
+                    <Button
+                      onClick={() =>
+                        navigate(`/reports/assistance-need-decisions`)
                       }
-                    />
-                  )
-                }
-              />
-            </I18nContext.Provider>
-          )
-        )}
-      </Content>
-      <Gap size="m" />
-      <StickyFooter>
-        <StickyFooterContainer>
-          <FixedSpaceRow justifyContent="space-between" flexWrap="wrap">
-            <FixedSpaceRow spacing="s">
-              <Button
-                onClick={() => navigate(`/reports/assistance-need-decisions`)}
-              >
-                {t.leavePage}
-              </Button>
-            </FixedSpaceRow>
-            <FixedSpaceRow spacing="m">
-              <DangerAsyncButton
-                text={i18n.reports.assistanceNeedDecisions.rejectDecision}
-                onClick={() => setDecisionModalStatus('REJECTED')}
-                onSuccess={() => reloadDecision()}
-                data-qa="reject-button"
-                disabled={!canBeDecided}
-              />
-              <AsyncButton
-                text={
-                  i18n.reports.assistanceNeedDecisions.returnDecisionForEditing
-                }
-                onClick={() => setDecisionModalStatus('NEEDS_WORK')}
-                onSuccess={() => reloadDecision()}
-                data-qa="return-for-edit"
-                disabled={!canBeDecided}
-              />
-              <AsyncButton
-                primary
-                text={i18n.reports.assistanceNeedDecisions.approveDecision}
-                onClick={() => setDecisionModalStatus('ACCEPTED')}
-                onSuccess={() => reloadDecision()}
-                data-qa="approve-button"
-                disabled={!canBeDecided}
-              />
-            </FixedSpaceRow>
-          </FixedSpaceRow>
-        </StickyFooterContainer>
-      </StickyFooter>
+                    >
+                      {t.leavePage}
+                    </Button>
+                  </FixedSpaceRow>
+                  <FixedSpaceRow spacing="m">
+                    {(decision.status === 'DRAFT' ||
+                      decision.status === 'NEEDS_WORK') &&
+                    permittedActions.includes('DECIDE') ? (
+                      <>
+                        <DangerAsyncButton
+                          text={
+                            i18n.reports.assistanceNeedDecisions.rejectDecision
+                          }
+                          onClick={() => setDecisionModalStatus('REJECTED')}
+                          onSuccess={() => reloadDecision()}
+                          data-qa="reject-button"
+                        />
+                        <AsyncButton
+                          text={
+                            i18n.reports.assistanceNeedDecisions
+                              .returnDecisionForEditing
+                          }
+                          onClick={() => setDecisionModalStatus('NEEDS_WORK')}
+                          onSuccess={() => reloadDecision()}
+                          data-qa="return-for-edit"
+                        />
+                        <AsyncButton
+                          primary
+                          text={
+                            i18n.reports.assistanceNeedDecisions.approveDecision
+                          }
+                          onClick={() => setDecisionModalStatus('ACCEPTED')}
+                          onSuccess={() => reloadDecision()}
+                          data-qa="approve-button"
+                        />
+                      </>
+                    ) : decision.status === 'ACCEPTED' ||
+                      (decision.status === 'REJECTED' &&
+                        permittedActions.includes('ANNUL')) ? (
+                      <DangerAsyncButton
+                        text={
+                          i18n.reports.assistanceNeedDecisions.annulDecision
+                        }
+                        onClick={() => setDecisionModalStatus('ANNULLED')}
+                        onSuccess={() => reloadDecision()}
+                        data-qa="annul-button"
+                      />
+                    ) : null}
+                  </FixedSpaceRow>
+                </FixedSpaceRow>
+              </StickyFooterContainer>
+            </StickyFooter>
+          </>
+        )
+      )}
     </>
   )
 })
 
-type DecisionStatus = Exclude<AssistanceNeedDecisionStatus, 'DRAFT'>
+type DecisionStatus = Exclude<
+  AssistanceNeedDecisionStatus,
+  'DRAFT' | 'ANNULLED'
+>
 
 const getModalI18nKey = (
   decisionStatus: DecisionStatus
@@ -247,10 +285,12 @@ const getModalI18nKey = (
 const DecisionModal = React.memo(function DecisionModal({
   decisionId,
   onClose,
+  onFailed,
   decisionStatus
 }: {
   decisionId: UUID
   onClose: (shouldRefresh: boolean) => void
+  onFailed: () => void
   decisionStatus: DecisionStatus
 }) {
   const { i18n } = useTranslation()
@@ -276,12 +316,86 @@ const DecisionModal = React.memo(function DecisionModal({
       }}
       resolve={{
         async action() {
-          await decideAssistanceNeedDecision(decisionId, decisionStatus)
-          onClose(true)
+          const result = await decideAssistanceNeedDecision(
+            decisionId,
+            decisionStatus
+          )
+          if (result.isFailure && result.statusCode === 409) {
+            onFailed()
+          } else {
+            onClose(true)
+          }
         },
         label: t.okBtn
       }}
     />
+  )
+})
+
+const ApproveFailedModal = React.memo(function ApproveFailedModal({
+  onClose
+}: {
+  onClose: () => void
+}) {
+  const { i18n } = useTranslation()
+  const t = i18n.reports.assistanceNeedDecisions.approveFailedModal
+
+  return (
+    <InfoModal
+      type="danger"
+      title={t.title}
+      text={t.text}
+      icon={faTimes}
+      reject={{
+        action: onClose,
+        label: i18n.common.cancel
+      }}
+      resolve={{
+        action: onClose,
+        label: t.okBtn
+      }}
+    />
+  )
+})
+
+const AnnulModal = React.memo(function AnnulModal({
+  decisionId,
+  onClose
+}: {
+  decisionId: UUID
+  onClose: (shouldRefresh: boolean) => void
+}) {
+  const { i18n } = useTranslation()
+  const t = i18n.reports.assistanceNeedDecisions.annulModal
+
+  const [reason, setReason] = useState('')
+
+  return (
+    <InfoModal
+      type="danger"
+      title={t.title}
+      text={t.text}
+      icon={faTimes}
+      reject={{
+        action: () => onClose(false),
+        label: i18n.common.cancel
+      }}
+      resolve={{
+        async action() {
+          await annulAssistanceNeedDecision(decisionId, reason.trim())
+          onClose(true)
+        },
+        label: t.okBtn,
+        disabled: reason.trim() === ''
+      }}
+    >
+      <InputField
+        value={reason}
+        onChange={setReason}
+        placeholder={t.inputPlaceholder}
+        data-qa="annul-reason-input"
+      />
+    </InfoModal>
   )
 })
 

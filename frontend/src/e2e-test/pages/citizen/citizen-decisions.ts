@@ -73,6 +73,7 @@ export default class CitizenDecisionsPage {
       validityPeriod: string
       decisionMade: string
       status: string
+      annulmentReason?: string
     }
   ) {
     await this.openAssistanceDecisionCollapsible(childId, decisionId)
@@ -94,6 +95,11 @@ export default class CitizenDecisionsPage {
     await decision
       .findByDataQa('decision-status')
       .assertTextEquals(contents.status)
+    if (contents.annulmentReason !== undefined) {
+      await decision
+        .findByDataQa('annulment-reason')
+        .assertTextEquals(contents.annulmentReason)
+    }
   }
 
   async assertUnreadAssistanceNeedDecisions(childId: string, count: number) {

@@ -131,6 +131,16 @@ export function decideAssistanceNeedDecision(
     .catch((e) => Failure.fromError(e))
 }
 
+export function annulAssistanceNeedDecision(
+  id: UUID,
+  reason: string
+): Promise<Result<void>> {
+  return client
+    .post(`/assistance-need-decision/${id}/annul`, { reason })
+    .then(() => Success.of())
+    .catch((e) => Failure.fromError(e))
+}
+
 export function markAssistanceNeedDecisionAsOpened(
   id: UUID
 ): Promise<Result<void>> {

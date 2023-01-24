@@ -66,7 +66,8 @@ class AssistanceNeedDecisionCitizenController(
 
                     if (
                         decision.status != AssistanceNeedDecisionStatus.ACCEPTED &&
-                            decision.status != AssistanceNeedDecisionStatus.REJECTED
+                            decision.status != AssistanceNeedDecisionStatus.REJECTED &&
+                            decision.status != AssistanceNeedDecisionStatus.ANNULLED
                     ) {
                         throw NotFound(
                             "Citizen can only view accepted and rejected assistance need decisions"

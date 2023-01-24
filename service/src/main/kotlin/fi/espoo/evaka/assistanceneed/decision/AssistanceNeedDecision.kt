@@ -10,6 +10,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.PersonId
+import fi.espoo.evaka.shared.db.DatabaseEnum
 import fi.espoo.evaka.shared.domain.DateRange
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import java.time.LocalDate
@@ -45,6 +46,7 @@ data class AssistanceNeedDecision(
     val otherRepresentativeDetails: String?,
     val assistanceLevels: Set<AssistanceLevel>,
     val motivationForDecision: String?,
+    val annulmentReason: String,
     val hasDocument: Boolean
 ) {
     fun toForm() =
@@ -114,11 +116,14 @@ data class AssistanceNeedDecisionBasics(
     val created: HelsinkiDateTime
 )
 
-enum class AssistanceNeedDecisionStatus {
+enum class AssistanceNeedDecisionStatus : DatabaseEnum {
     DRAFT,
     NEEDS_WORK,
     ACCEPTED,
-    REJECTED
+    REJECTED,
+    ANNULLED;
+
+    override val sqlType: String = "assistance_need_decision_status"
 }
 
 enum class AssistanceNeedDecisionLanguage {
@@ -214,6 +219,7 @@ data class AssistanceNeedDecisionCitizenListItem(
     val decisionMade: LocalDate,
     @Nested("selected_unit") val selectedUnit: UnitInfoBasics?,
     val assistanceLevels: Set<AssistanceLevel>,
+    val annulmentReason: String,
     val isUnread: Boolean
 )
 

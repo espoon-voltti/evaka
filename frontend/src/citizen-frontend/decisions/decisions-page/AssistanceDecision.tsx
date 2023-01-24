@@ -31,6 +31,7 @@ interface Props {
   validityPeriod: DateRange
   selectedUnit: UnitInfoBasics | null
   status: AssistanceNeedDecisionStatus
+  annulmentReason: string
   isUnread: boolean
 }
 
@@ -41,6 +42,7 @@ export default React.memo(function AssistanceDecision({
   validityPeriod,
   selectedUnit,
   status,
+  annulmentReason,
   isUnread
 }: Props) {
   const t = useTranslation()
@@ -89,6 +91,14 @@ export default React.memo(function AssistanceDecision({
           texts={t.decisions.assistanceDecisions.decision.statuses}
           data-qa="decision-status"
         />
+        {status === 'ANNULLED' ? (
+          <>
+            <Label>
+              {t.decisions.assistanceDecisions.decision.annulmentReason}
+            </Label>
+            <span data-qa="annulment-reason">{annulmentReason}</span>
+          </>
+        ) : null}
       </ListGrid>
       <Gap size="m" />
       <Link to={`/decisions/assistance/${id}`} data-qa="open-decision">

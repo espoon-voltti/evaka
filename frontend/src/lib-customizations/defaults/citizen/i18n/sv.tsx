@@ -1416,6 +1416,7 @@ const sv: Translations = {
       openDecision: 'Visa beslut',
       decision: {
         pageTitle: 'Beslut om stöd',
+        annulmentReason: 'Anledning till annullering av beslutet',
         neededTypesOfAssistance: 'Stödformer utgående från barnets behov',
         pedagogicalMotivation: 'Pedagogiska stödformer och motivering',
         structuralMotivation: 'Strukturella stödformer och motivering',
@@ -1476,7 +1477,8 @@ const sv: Translations = {
           DRAFT: 'Utkast',
           NEEDS_WORK: 'Bör korrigeras',
           ACCEPTED: 'Godkänt',
-          REJECTED: 'Avvisat'
+          REJECTED: 'Avvisat',
+          ANNULLED: 'Annullerat'
         },
         confidential: 'Konfidentiellt',
         lawReference: 'Lagen om småbarnspedagogik 40 §',

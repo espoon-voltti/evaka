@@ -61,8 +61,9 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         AuthenticatedUser.Employee(testDecisionMaker_1.id, setOf(UserRole.SERVICE_WORKER))
     private val decisionMaker =
         AuthenticatedUser.Employee(testDecisionMaker_2.id, setOf(UserRole.DIRECTOR))
-    private val decisionMaker2 =
-        AuthenticatedUser.Employee(testDecisionMaker_3.id, setOf(UserRole.DIRECTOR))
+    private val testAdmin =
+        DevEmployee(id = EmployeeId(UUID.randomUUID()), firstName = "Ad", lastName = "Min")
+    private val admin = AuthenticatedUser.Employee(testAdmin.id, setOf(UserRole.ADMIN))
 
     private val testDecision =
         AssistanceNeedDecisionForm(
@@ -431,6 +432,8 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
 
     @Test
     fun `Decision maker can be changed`() {
+        db.transaction { tx -> tx.insertTestEmployee(testAdmin) }
+
         val assistanceNeedDecision =
             createAssistanceNeedDecision(AssistanceNeedDecisionRequest(decision = testDecision))
 
@@ -439,23 +442,23 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                 title = "regional manager"
             )
 
-        assertThrows<Forbidden> {
+        assertThrows<BadRequest> {
             updateDecisionMakerForAssistanceNeedDecision(
                 assistanceNeedDecision.id,
                 request,
-                decisionMaker2,
+                admin,
             )
         }
         sendAssistanceNeedDecision(assistanceNeedDecision.id)
         updateDecisionMakerForAssistanceNeedDecision(
             assistanceNeedDecision.id,
             request,
-            decisionMaker2,
+            admin,
         )
 
         val updatedDecision = getAssistanceNeedDecision(assistanceNeedDecision.id)
 
-        assertEquals(decisionMaker2.id, updatedDecision.decisionMaker?.employeeId)
+        assertEquals(testAdmin.id, updatedDecision.decisionMaker?.employeeId)
     }
 
     @Test
@@ -644,11 +647,6 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         )
     }
 
-    private fun getEmailFor(person: DevPerson): MockEmail {
-        val address = person.email ?: throw Error("$person has no email")
-        return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
-    }
-
     @Test
     fun `Decision PDF generation is successful`() {
         val pdf =
@@ -727,7 +725,8 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
                             id = ChildId(UUID.randomUUID()),
                             name = "Test Example",
                             dateOfBirth = LocalDate.of(2012, 1, 4)
-                        )
+                        ),
+                    annulmentReason = ""
                 )
             )
 
@@ -738,6 +737,35 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
         FileOutputStream(file).use { it.write(pdf) }
 
         logger.debug { "Generated assistance need decision PDF to ${file.absolutePath}" }
+    }
+
+    @Test
+    fun `accepted assistance need decision can be annulled`() {
+        val admin = AuthenticatedUser.Employee(testDecisionMaker_3.id, setOf(UserRole.ADMIN))
+        val decision = createAssistanceNeedDecision(AssistanceNeedDecisionRequest(testDecision))
+
+        // Cannot annul a draft
+        assertThrows<BadRequest> {
+            annulAssistanceNeedDecision(decision.id, "Hupsista keikkaa", admin)
+        }
+
+        sendAssistanceNeedDecision(decision.id)
+        decideAssistanceNeedDecision(
+            decision.id,
+            AssistanceNeedDecisionController.DecideAssistanceNeedDecisionRequest(
+                status = AssistanceNeedDecisionStatus.ACCEPTED
+            ),
+            decisionMaker,
+        )
+        annulAssistanceNeedDecision(decision.id, "Kaikki oli ihan väärin", decisionMaker)
+
+        val decisionAfter = getAssistanceNeedDecision(decision.id)
+        assertEquals(AssistanceNeedDecisionStatus.ANNULLED, decisionAfter.status)
+    }
+
+    private fun getEmailFor(person: DevPerson): MockEmail {
+        val address = person.email ?: throw Error("$person has no email")
+        return MockEmailClient.getEmail(address) ?: throw Error("No emails sent to $address")
     }
 
     private fun createAssistanceNeedDecision(
@@ -841,6 +869,20 @@ class AssistanceNeedDecisionIntegrationTest : FullApplicationTest(resetDbBeforeE
             user,
             RealEvakaClock(),
             id
+        )
+    }
+
+    private fun annulAssistanceNeedDecision(
+        id: AssistanceNeedDecisionId,
+        reason: String,
+        user: AuthenticatedUser
+    ) {
+        assistanceNeedDecisionController.annulAssistanceNeedDecision(
+            dbInstance(),
+            user,
+            RealEvakaClock(),
+            id,
+            AssistanceNeedDecisionController.AnnulAssistanceNeedDecisionRequest(reason)
         )
     }
 }
