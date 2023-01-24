@@ -18,8 +18,6 @@ import { RedisClient } from 'redis'
 import redisCacheProvider from './passport-saml-cache-redis'
 import { Config } from '../config'
 
-const AD_OID_KEY =
-  'http://schemas.microsoft.com/identity/claims/objectidentifier'
 const AD_GIVEN_NAME_KEY =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname'
 const AD_FAMILY_NAME_KEY =
@@ -30,16 +28,16 @@ const AD_EMPLOYEE_NUMBER_KEY =
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/employeenumber'
 
 async function verifyProfile(
-  idPrefix: string,
+  config: Config['ad'],
   profile: passportSaml.Profile
 ): Promise<SamlUser> {
   const asString = (value: unknown) =>
     value == null ? undefined : String(value)
 
-  const aad = asString(profile[AD_OID_KEY])
-  if (!aad) throw Error('No user ID in SAML data')
+  const aad = profile[config.userIdKey]
+  if (!config.mock && !aad) throw Error('No user ID in SAML data')
   const person = await employeeLogin({
-    externalId: `${idPrefix}:${aad}`,
+    externalId: `${config.externalIdPrefix}:${aad}`,
     firstName: asString(profile[AD_GIVEN_NAME_KEY]) ?? '',
     lastName: asString(profile[AD_FAMILY_NAME_KEY]) ?? '',
     email: asString(profile[AD_EMAIL_KEY]),
@@ -64,7 +62,12 @@ export function createSamlConfig(
 ): SamlConfig {
   if (config.mock) return { cert: 'mock-certificate' }
   if (!config.saml) throw Error('Missing AD SAML configuration')
-  return {
+
+  const privateCert = readFileSync(config.saml.privateCert, {
+    encoding: 'utf8'
+  })
+
+  const samlConfig: SamlConfig = {
     acceptedClockSkewMs: 0,
     audience: config.saml.issuer,
     cacheProvider: redisClient
@@ -78,13 +81,19 @@ export function createSamlConfig(
       : config.saml.publicCert,
     disableRequestedAuthnContext: true,
     entryPoint: config.saml.entryPoint,
-    identifierFormat: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient',
+    identifierFormat: config.nameIdFormat,
     issuer: config.saml.issuer,
     logoutUrl: config.saml.logoutUrl,
-    privateKey: readFileSync(config.saml.privateCert, { encoding: 'utf8' }),
+    privateKey: privateCert,
     signatureAlgorithm: 'sha256',
     validateInResponseTo: config.saml.validateInResponseTo
   }
+
+  if (config.decryptAssertions) {
+    samlConfig.decryptionPvk = privateCert
+  }
+
+  return samlConfig
 }
 
 export default function createAdStrategy(
@@ -96,9 +105,9 @@ export default function createAdStrategy(
       const employee = await getEmployeeByExternalId(
         `${config.externalIdPrefix}:${userId}`
       )
-      return verifyProfile(config.externalIdPrefix, {
+      return verifyProfile(config, {
         nameID: 'dummyid',
-        [AD_OID_KEY]: userId,
+        [config.userIdKey]: userId,
         [AD_GIVEN_NAME_KEY]: employee.firstName,
         [AD_FAMILY_NAME_KEY]: employee.lastName,
         [AD_EMAIL_KEY]: employee.email ? employee.email : ''
@@ -120,9 +129,9 @@ export default function createAdStrategy(
         externalId: `${config.externalIdPrefix}:${userId}`,
         roles: roles as UserRole[]
       })
-      return verifyProfile(config.externalIdPrefix, {
+      return verifyProfile(config, {
         nameID: 'dummyid',
-        [AD_OID_KEY]: userId,
+        [config.userIdKey]: userId,
         [AD_GIVEN_NAME_KEY]: firstName,
         [AD_FAMILY_NAME_KEY]: lastName,
         [AD_EMAIL_KEY]: email
@@ -137,7 +146,7 @@ export default function createAdStrategy(
         if (!profile) {
           done(new Error('No SAML profile'))
         } else {
-          verifyProfile(config.externalIdPrefix, profile)
+          verifyProfile(config, profile)
             .then((user) => done(null, user))
             .catch(done)
         }
