@@ -112,6 +112,7 @@ export function getUnitNotifications(
   return client
     .get<JsonOf<UnitNotifications>>(`/daycares/${id}/notifications`)
     .then((res) => Success.of(res.data))
+    .catch((e) => Failure.fromError(e))
 }
 
 export function getUnitOccupancies(
@@ -124,6 +125,7 @@ export function getUnitOccupancies(
       params: { from: from.formatIso(), to: to.formatIso() }
     })
     .then((res) => Success.of(mapUnitOccupancyJson(res.data)))
+    .catch((e) => Failure.fromError(e))
 }
 
 export function getUnitApplications(
@@ -132,6 +134,7 @@ export function getUnitApplications(
   return client
     .get<JsonOf<UnitApplications>>(`/v2/applications/units/${id}`)
     .then((res) => Success.of(mapUnitApplicationsJson(res.data)))
+    .catch((e) => Failure.fromError(e))
 }
 
 export function getUnitGroupDetails(
@@ -161,6 +164,7 @@ export function getUnitGroupDetails(
           mapGroupOccupancyJson(response.data.groupOccupancies)
       })
     )
+    .catch((e) => Failure.fromError(e))
 }
 
 function mapGroupJson(data: JsonOf<DaycareGroup>): DaycareGroup {
