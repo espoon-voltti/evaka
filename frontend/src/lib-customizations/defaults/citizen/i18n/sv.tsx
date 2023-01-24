@@ -945,7 +945,7 @@ const sv: Translations = {
         preparatory:
           'Barnet behöver stöd för att lära sig finska. Barnet söker också till undervisning som förbereder för den grundläggande utbildningen. Gäller inte svenskspråkig förskoleundervisning.',
         preparatoryInfo:
-          'Förberedande förskoleundervisning på finska ordnas i kommunala finskspråkiga förskolegrupper.'
+          'Barn som ännu inte har kunskaper i finska eller som redan kan lite finska kan söka sig till förberedande undervisning för den grundläggande utbildningen inom förskoleundervisningen. Barnets nuvarande daghem rekommenderar förberedande förskoleundervisning för barnet. Förberedande undervisning för den grundläggande utbildningen för barn i förskoleåldern ordnas inom den finska kommunala förskoleundervisningen. Förberedande undervisning för den grundläggande utbildningen ges inom förskoleundervisningen fem timmar per dag. Undervisningen är gratis.'
       },
       unitPreference: {
         title: 'Ansökningsönskemål',
@@ -955,14 +955,15 @@ const sv: Translations = {
             DAYCARE: (
               <>
                 <P>
-                  Barnet har syskonprincip till samma småbarnspedagogisk enhet
-                  som hens syskon är när beslutet för småbarnspedagogik fattas.
-                  Som syskon betraktas barn som är folkbokförda på samma adress.
-                  Målet är att placera syskon i samma enhet om inte familjen
-                  önskar annat. Om du ansöker om en plats för syskon, som inte
-                  ännu har plats inom småbarnspedagogik, skriv uppgiften i
-                  tilläggsuppgifter. Fyll i dessa uppgifter endast om du vill
-                  hänvisa till barnets syskonrelationer.
+                  Syskonprincipen gäller när du ansöker om en plats i en enhet
+                  för småbarnspedagogik där barnets syskon har en plats då
+                  småbarnspedagogiken börjar. Som syskon betraktas barn som är
+                  folkbokförda på samma adress. Målet är att placera syskon i
+                  samma enhet om inte familjen önskar annat. Om du ansöker om en
+                  plats för syskon, som inte ännu har plats inom
+                  småbarnspedagogik, skriv uppgiften i tilläggsuppgifter. Fyll i
+                  dessa uppgifter endast om du vill hänvisa till barnets
+                  syskonrelationer.
                 </P>
               </>
             ),

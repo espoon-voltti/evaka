@@ -986,7 +986,7 @@ const en: Translations = {
         preparatory:
           'The child needs support with learning Finnish. I am also applying for preparatory education. Not applicable for Swedish pre-primary education.',
         preparatoryInfo:
-          'Children who do not have Finnish language skills or who only speak a little Finnish can apply for preparatory pre-primary education. If your current day-care centre has recommended preparatory pre-primary education for your child, you can apply for it at this point using the application form. Preparatory pre-primary education is organised in municipal Finnish-language pre-primary education groups. Preparatory pre-primary education is free of charge and provided for 5 hours per day.'
+          'Instruction preparing for basic education is offered in connection with pre-primary education to children who do not yet have Finnish language skills or who know some Finnish. The child’s current day care centre has recommended the child attend preparatory pre-primary education. Instruction preparing for basic education is offered to children of pre-primary education age in Finnish-speaking municipal pre-primary education groups. Instruction preparing for basic education is available for 5 hours per day in connection with pre-primary education. Instruction is free of charge.'
       },
       unitPreference: {
         title: 'Preferred units',
@@ -996,14 +996,15 @@ const en: Translations = {
             DAYCARE: (
               <>
                 <P>
-                  The child has a sibling basis to the same early childhood
-                  education place attended by their sibling at the time of
-                  making the decision. All children living at the same address
-                  are considered to be siblings. The aim is to place siblings at
-                  the same early childhood education place, if the family so
-                  wishes. If you are applying for places for siblings who do not
-                  yet attend early childhood education, enter this piece of
-                  information in the additional information field.
+                  The sibling principle applies if you apply for a place in an
+                  early childhood education unit in which the child’s sibling
+                  has a place when early childhood education starts. All
+                  children living at the same address are considered to be
+                  siblings. The aim is to place siblings at the same early
+                  childhood education place, if the family so wishes. If you are
+                  applying for places for siblings who do not yet attend early
+                  childhood education, enter this piece of information in the
+                  additional information field.
                 </P>
                 <P>
                   Fill in this information only if you want to exercise the
