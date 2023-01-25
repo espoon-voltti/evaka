@@ -24,6 +24,7 @@ import fi.espoo.evaka.shared.db.mapColumn
 import fi.espoo.evaka.shared.domain.BadRequest
 import fi.espoo.evaka.shared.domain.EvakaClock
 import fi.espoo.evaka.shared.domain.HelsinkiDateTime
+import fi.espoo.evaka.shared.domain.NotFound
 import fi.espoo.evaka.shared.domain.formatName
 import fi.espoo.evaka.shared.mapToPaged
 import fi.espoo.evaka.shared.security.actionrule.AccessControlFilter
@@ -942,6 +943,56 @@ fun Database.Read.getThreadByMessageId(messageId: MessageId): ThreadWithParticip
         .bind("messageId", messageId)
         .mapTo<ThreadWithParticipants>()
         .firstOrNull()
+}
+
+fun Database.Read.getMessageThread(
+    accountId: MessageAccountId,
+    threadId: MessageThreadId,
+    municipalAccountName: String,
+    serviceWorkerAccountName: String
+): MessageThread {
+    val thread =
+        createQuery(
+                """
+SELECT
+            t.id,
+            t.title,
+            t.message_type AS type,
+            t.urgent,
+            t.is_copy,
+            coalesce((
+                         SELECT jsonb_agg(jsonb_build_object(
+                                 'childId', mtc.child_id,
+                                 'firstName', p.first_name,
+                                 'lastName', p.last_name,
+                                 'preferredName', p.preferred_name
+                             ))
+                         FROM message_thread_children mtc
+                                  JOIN person p ON p.id = mtc.child_id
+                         WHERE mtc.thread_id = t.id
+                     ), '[]'::jsonb) AS children
+FROM message_thread t
+JOIN message_thread_participant tp on t.id = tp.thread_id
+WHERE t.id = :threadId AND tp.participant_id = :accountId
+  AND EXISTS (SELECT 1 FROM message m WHERE m.thread_id = t.id AND (m.sender_id = :accountId OR m.sent_at IS NOT NULL))
+        """
+            )
+            .bind("accountId", accountId)
+            .bind("threadId", threadId)
+            .mapTo<ReceivedThread>()
+            .one()
+
+    val messagesByThread =
+        getThreadMessages(
+            accountId,
+            listOf(thread.id),
+            municipalAccountName,
+            serviceWorkerAccountName
+        )
+    return combineThreadsAndMessages(accountId, Paged(listOf(thread), 1, 1), messagesByThread)
+        .data
+        .firstOrNull()
+        ?: throw NotFound("Thread $threadId not found")
 }
 
 data class UnitMessageReceiversResult(

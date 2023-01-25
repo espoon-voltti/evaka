@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import React, { useContext, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 import { ApplicationNote } from 'lib-common/generated/api-types/application'
@@ -220,6 +221,17 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
 
         {isRead(props) && (
           <div data-qa="application-note-content">
+            {props.note.messageThreadId !== null && (
+              <span>
+                {i18n.application.notes.sent}{' '}
+                <Link
+                  to={`/messages?applicationId=${props.note.applicationId}&messageBox=thread&threadId=${props.note.messageThreadId}`}
+                  target="_blank"
+                >
+                  {i18n.application.notes.message}
+                </Link>
+              </span>
+            )}
             {formatParagraphs(props.note.content)}
           </div>
         )}

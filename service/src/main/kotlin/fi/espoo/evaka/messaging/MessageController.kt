@@ -219,6 +219,28 @@ class MessageController(
             }
     }
 
+    @GetMapping("/{accountId}/thread/{threadId}")
+    fun getThread(
+        db: Database,
+        user: AuthenticatedUser,
+        clock: EvakaClock,
+        @PathVariable accountId: MessageAccountId,
+        @PathVariable threadId: MessageThreadId
+    ): MessageThread {
+        return db.connect { dbc ->
+                requireMessageAccountAccess(dbc, user, clock, accountId)
+                dbc.read {
+                    it.getMessageThread(
+                        accountId,
+                        threadId,
+                        featureConfig.municipalMessageAccountName,
+                        featureConfig.serviceWorkerMessageAccountName
+                    )
+                }
+            }
+            .also { Audit.MessagingMessageThreadRead.log(targetId = Pair(accountId, threadId)) }
+    }
+
     @GetMapping("/unread")
     fun getUnreadMessages(
         db: Database,

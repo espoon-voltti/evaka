@@ -232,3 +232,16 @@ export async function undoMessageReply(
     .then((res) => Success.of(res.data))
     .catch((e) => Failure.fromError(e))
 }
+
+export async function getThread(
+  accountId: UUID,
+  threadId: UUID | null
+): Promise<Result<MessageThread>> {
+  if (threadId === null) {
+    return Failure.of({ message: 'threadId is null' })
+  }
+  return client
+    .get<JsonOf<MessageThread>>(`/messages/${accountId}/thread/${threadId}`)
+    .then(({ data }) => Success.of(deserializeMessageThread(data)))
+    .catch((e) => Failure.fromError(e))
+}

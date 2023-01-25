@@ -5,7 +5,14 @@
 import { MessageAccount } from 'lib-common/generated/api-types/messaging'
 import { UUID } from 'lib-common/types'
 
-const views = ['received', 'sent', 'drafts', 'copies', 'archive'] as const
+const views = [
+  'received',
+  'sent',
+  'drafts',
+  'copies',
+  'archive',
+  'thread'
+] as const
 export type View = typeof views[number]
 
 export const isValidView = (view: string): view is View =>

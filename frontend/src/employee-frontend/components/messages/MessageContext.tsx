@@ -54,7 +54,8 @@ import {
   getUnreadCounts,
   markThreadRead,
   replyToThread,
-  ReplyToThreadParams
+  ReplyToThreadParams,
+  getThread
 } from './api'
 import {
   AccountView,
@@ -391,6 +392,14 @@ export const MessageContextProvider = React.memo(
       setArchivedMessagesResult
     )
 
+    const [singleThread, setSingleThread] = useState<Result<MessageThread>>()
+
+    const loadThread = useRestApi(
+      (accountId: UUID, threadId: UUID | null) =>
+        getThread(accountId, threadId),
+      setSingleThread
+    )
+
     // load messages if account, view or page changes
     const loadMessages = useCallback(() => {
       if (!selectedAccount) {
@@ -407,6 +416,8 @@ export const MessageContextProvider = React.memo(
           return void loadMessageCopies(selectedAccount.account.id, page)
         case 'archive':
           return void loadArchivedMessages(selectedAccount.account.id, page)
+        case 'thread':
+          return void loadThread(selectedAccount.account.id, threadId)
       }
     }, [
       loadMessageDrafts,
@@ -414,6 +425,8 @@ export const MessageContextProvider = React.memo(
       loadSentMessages,
       loadMessageCopies,
       loadArchivedMessages,
+      loadThread,
+      threadId,
       page,
       selectedAccount
     ])
@@ -529,13 +542,15 @@ export const MessageContextProvider = React.memo(
           ...receivedMessages.getOrElse([]),
           ...sentMessagesAsThreads.getOrElse([]),
           ...messageCopiesAsThreads.getOrElse([]),
-          ...archivedMessages.getOrElse([])
-        ].find((t) => t.id === threadId),
+          ...archivedMessages.getOrElse([]),
+          singleThread?.getOrElse(undefined)
+        ].find((t) => t?.id === threadId),
       [
         receivedMessages,
         sentMessagesAsThreads,
         messageCopiesAsThreads,
         archivedMessages,
+        singleThread,
         threadId
       ]
     )
@@ -632,36 +647,42 @@ export const MessageContextProvider = React.memo(
 
     const selectDefaultAccount = useCallback(() => {
       if (municipalAccount) {
-        selectAccount({
-          view: municipalMessageBoxes[0],
-          account: municipalAccount.account,
-          unitId: null
+        setParams({
+          messageBox: messageBox ?? municipalMessageBoxes[0],
+          accountId: municipalAccount.account.id,
+          unitId: null,
+          threadId: threadId
         })
       } else if (serviceWorkerAccount) {
-        selectAccount({
-          view: serviceWorkerMessageBoxes[0],
-          account: serviceWorkerAccount.account,
-          unitId: null
+        setParams({
+          messageBox: messageBox ?? serviceWorkerMessageBoxes[0],
+          accountId: serviceWorkerAccount.account.id,
+          unitId: null,
+          threadId: threadId
         })
       } else if (personalAccount) {
-        selectAccount({
-          view: personalMessageBoxes[0],
-          account: personalAccount.account,
-          unitId: null
+        setParams({
+          messageBox: personalMessageBoxes[0],
+          accountId: personalAccount.account.id,
+          unitId: null,
+          threadId: threadId
         })
       } else if (groupAccounts.length > 0) {
-        return selectAccount({
-          view: groupMessageBoxes[0],
-          account: groupAccounts[0].account,
-          unitId: groupAccounts[0].daycareGroup.unitId
+        setParams({
+          messageBox: groupMessageBoxes[0],
+          accountId: groupAccounts[0].account.id,
+          unitId: groupAccounts[0].daycareGroup.unitId,
+          threadId: threadId
         })
       }
     }, [
+      setParams,
       groupAccounts,
       municipalAccount,
       serviceWorkerAccount,
       personalAccount,
-      selectAccount
+      messageBox,
+      threadId
     ])
 
     const value = useMemo(

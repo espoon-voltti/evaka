@@ -5,7 +5,7 @@
 import React, { useCallback, useContext, useMemo } from 'react'
 import styled from 'styled-components'
 
-import { Result } from 'lib-common/api'
+import { Loading, Result, Success } from 'lib-common/api'
 import {
   MessageAccount,
   MessageThread
@@ -179,7 +179,12 @@ export default React.memo(function ThreadListContainer({
     sent: sentMessageItems,
     drafts: draftMessageItems,
     copies: messageCopyItems,
-    archive: messageArchivedItems
+    archive: messageArchivedItems,
+    thread: selectedThread
+      ? Success.of([
+          threadToListItem(selectedThread, true, 'selected-thread-row')
+        ])
+      : Loading.of<ThreadListItem[]>()
   }[view]
 
   if (selectedThread) {

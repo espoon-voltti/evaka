@@ -19,8 +19,9 @@ SELECT
     n.id, n.application_id, n.content, 
     n.created, n.created_by, (SELECT name FROM evaka_user WHERE id = n.created_by) AS created_by_name,
     n.updated, n.updated_by, (SELECT name FROM evaka_user WHERE id = n.updated_by) AS updated_by_name,
-    n.message_content_id
+    n.message_content_id, m.thread_id as message_thread_id
 FROM application_note n
+LEFT JOIN message m ON m.content_id = n.message_content_id
 WHERE application_id = :applicationId
 ORDER BY n.created
         """

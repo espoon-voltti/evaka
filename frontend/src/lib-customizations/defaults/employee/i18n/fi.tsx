@@ -3484,7 +3484,8 @@ export const fi = {
         sent: 'Lähetetyt',
         drafts: 'Luonnokset',
         copies: 'Johtajan/kunnan tiedotteet',
-        archive: 'Arkisto'
+        archive: 'Arkisto',
+        thread: 'Viestiketju'
       },
       receivers: 'Vastaanottajat',
       newMessage: 'Uusi viesti'
@@ -3495,7 +3496,8 @@ export const fi = {
         sent: 'Lähetetyt viestit',
         drafts: 'Luonnokset',
         copies: 'Johtajan/kunnan tiedotteet',
-        archive: 'Arkisto'
+        archive: 'Arkisto',
+        thread: 'Viestiketju'
       }
     },
     types: {
