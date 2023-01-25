@@ -161,7 +161,22 @@ export default {
       title: 'Kirjaudu käyttäjätunnuksella',
       paragraph:
         'Huoltajat, joiden lapsi on jo varhaiskasvatuksessa tai esiopetuksessa: hoida lapsesi päivittäisiä varhaiskasvatusasioita kuten lue viestejä ja ilmoita lapsen läsnäoloajat ja poissaolot.',
-      link: 'Kirjaudu sisään'
+      link: 'Kirjaudu sisään',
+      infoBoxText: (
+        <>
+          <P>
+            Mikäli kirjautuminen tästä ei onnistu, katso ohjeet{' '}
+            <a
+              href="https://www.espoo.fi/fi/palvelut/evaka"
+              target="_blank"
+              rel="noreferrer"
+            >
+              eVaka | Espoon kaupunki
+            </a>
+            . Voit kirjautua myös käyttämällä vahvaa tunnistautumista.
+          </P>
+        </>
+      )
     },
     applying: {
       title: 'Kirjaudu Suomi.fi:ssä',

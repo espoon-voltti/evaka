@@ -58,7 +58,8 @@ export default React.memo(function LoginPage() {
     [searchParams]
   )
 
-  const [showInfoBoxText, setShowInfoBoxText] = useState(false)
+  const [showInfoBoxText1, setShowInfoBoxText1] = useState(false)
+  const [showInfoBoxText2, setShowInfoBoxText2] = useState(false)
 
   if (user) {
     return <Navigate to="/" replace />
@@ -80,7 +81,21 @@ export default React.memo(function LoginPage() {
           <ContentArea opaque>
             <H2 noMargin>{i18n.loginPage.login.title}</H2>
             <Gap size="m" />
-            <P noMargin>{i18n.loginPage.login.paragraph}</P>
+            <P noMargin>
+              {i18n.loginPage.login.paragraph}
+              <ParagraphInfoButton
+                aria-label={i18n.common.openExpandingInfo}
+                onClick={() => setShowInfoBoxText1(!showInfoBoxText1)}
+                open={showInfoBoxText1}
+              />
+            </P>
+            {showInfoBoxText1 && (
+              <ExpandingInfoBox
+                info={i18n.loginPage.login.infoBoxText}
+                close={() => setShowInfoBoxText1(false)}
+                closeLabel={i18n.common.close}
+              />
+            )}
             <Gap size="s" />
             <LinkButton
               href={getWeakLoginUri(nextPath ?? '/')}
@@ -96,14 +111,14 @@ export default React.memo(function LoginPage() {
               {i18n.loginPage.applying.paragraph}
               <ParagraphInfoButton
                 aria-label={i18n.common.openExpandingInfo}
-                onClick={() => setShowInfoBoxText(!showInfoBoxText)}
-                open={showInfoBoxText}
+                onClick={() => setShowInfoBoxText2(!showInfoBoxText2)}
+                open={showInfoBoxText2}
               />
             </P>
-            {showInfoBoxText && (
+            {showInfoBoxText2 && (
               <ExpandingInfoBox
                 info={i18n.loginPage.applying.infoBoxText}
-                close={() => setShowInfoBoxText(false)}
+                close={() => setShowInfoBoxText2(false)}
                 closeLabel={i18n.common.close}
               />
             )}
