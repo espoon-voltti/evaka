@@ -172,7 +172,7 @@ const sv: Translations = {
               target="_blank"
               rel="noreferrer"
             >
-              eVaka | eVaka | Esbo stad
+              eVaka | Esbo stad
             </a>
             . Du kan också logga in med stark autentisering.
           </P>
