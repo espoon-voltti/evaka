@@ -162,7 +162,22 @@ const sv: Translations = {
       title: 'Logga in med användarnamn',
       paragraph:
         'Sköt ditt barns dagliga ärenden rörande småbarnspedagogiken i eVaka.',
-      link: 'Logga in'
+      link: 'Logga in',
+      infoBoxText: (
+        <>
+          <P>
+            Om du inte kan logga in här, se instruktionerna för{' '}
+            <a
+              href="https://www.espoo.fi/sv/fostran-och-utbildning/smabarnspedagogik/evaka"
+              target="_blank"
+              rel="noreferrer"
+            >
+              eVaka | Esbo stad
+            </a>
+            . Du kan också logga in med stark autentisering.
+          </P>
+        </>
+      )
     },
     applying: {
       title: 'Logga in via Suomi.fi',

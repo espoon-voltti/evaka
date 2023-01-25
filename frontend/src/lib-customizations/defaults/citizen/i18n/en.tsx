@@ -164,7 +164,22 @@ const en: Translations = {
       title: 'Sign in with username',
       paragraph:
         'Take care of your child’s daily early childhood education affairs in eVaka.',
-      link: 'Log in'
+      link: 'Log in',
+      infoBoxText: (
+        <>
+          <P>
+            If you are not able to log in here, see the instructions{' '}
+            <a
+              href="https://www.espoo.fi/fi/palvelut/evaka"
+              target="_blank"
+              rel="noreferrer"
+            >
+              eVaka | Espoon kaupunki
+            </a>
+            . You can also log in with strong authentication.
+          </P>
+        </>
+      )
     },
     applying: {
       title: 'Sign in using Suomi.fi',
