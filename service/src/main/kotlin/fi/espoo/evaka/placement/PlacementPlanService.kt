@@ -95,7 +95,14 @@ class PlacementPlanService(private val asyncJobRunner: AsyncJobRunner<AsyncJob>,
                                 ),
                                 LocalDate.of(preschoolTerms.extendedTerm.end.year, 7, 31)
                             )
-                        PlacementType.PRESCHOOL_CLUB -> FiniteDateRange(startDate, exactTerm.end)
+                        PlacementType.PRESCHOOL_CLUB ->
+                            FiniteDateRange(
+                                maxOf(
+                                    minStartDate,
+                                    form.preferences.connectedDaycarePreferredStartDate ?: startDate
+                                ),
+                                exactTerm.end
+                            )
                         else -> null
                     }
 
