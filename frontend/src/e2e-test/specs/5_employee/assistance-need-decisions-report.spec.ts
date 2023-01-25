@@ -26,6 +26,7 @@ import {
   AssistanceNeedDecisionsReport,
   AssistanceNeedDecisionsReportDecision
 } from '../../pages/employee/reports'
+import { waitUntilEqual } from '../../utils'
 import { Page } from '../../utils/page'
 import { employeeLogin } from '../../utils/user'
 
@@ -126,22 +127,22 @@ describe('Assistance need decisions report', () => {
     const report = new AssistanceNeedDecisionsReport(page)
 
     await report.rows.assertCount(4)
-    expect(await report.row(0)).toMatchObject({
+    await waitUntilEqual(() => report.row(0), {
       ...baseReportRow,
       sentForDecision: '06.01.2021',
       isUnopened: true
     })
-    expect(await report.row(1)).toMatchObject({
+    await waitUntilEqual(() => report.row(1), {
       ...baseReportRow,
       sentForDecision: '08.06.2020',
       isUnopened: true
     })
-    expect(await report.row(2)).toMatchObject({
+    await waitUntilEqual(() => report.row(2), {
       ...baseReportRow,
       sentForDecision: '01.01.2020',
       isUnopened: false // different decision-maker's decision
     })
-    expect(await report.row(3)).toMatchObject({
+    await waitUntilEqual(() => report.row(3), {
       ...baseReportRow,
       status: 'ACCEPTED',
       sentForDecision: '06.09.2019',
@@ -166,7 +167,7 @@ describe('Assistance need decisions report', () => {
 
     await employeeLogin(page, decisionMaker)
     await page.goto(`${config.employeeUrl}/reports/assistance-need-decisions`)
-    expect(await new AssistanceNeedDecisionsReport(page).row(0)).toMatchObject({
+    await waitUntilEqual(() => new AssistanceNeedDecisionsReport(page).row(0), {
       ...baseReportRow,
       sentForDecision: '06.01.2021',
       isUnopened: true
@@ -183,7 +184,7 @@ describe('Assistance need decisions report', () => {
 
     await page.goto(`${config.employeeUrl}/reports/assistance-need-decisions`)
 
-    expect(await new AssistanceNeedDecisionsReport(page).row(0)).toMatchObject({
+    await waitUntilEqual(() => new AssistanceNeedDecisionsReport(page).row(0), {
       ...baseReportRow,
       sentForDecision: '06.01.2021',
       isUnopened: false
@@ -345,6 +346,6 @@ describe('Assistance need decisions report', () => {
       `${admin.firstName} ${admin.lastName}, director`
     )
 
-    expect(await decisionPage.approveBtn.getAttribute('disabled')).toBe(null)
+    await decisionPage.approveBtn.assertDisabled(false)
   })
 })
