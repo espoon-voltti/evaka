@@ -141,12 +141,12 @@ enum class FeeDecisionDifference(val contentEquals: (d1: FeeDecision, d2: FeeDec
     INCOME({ d1, d2 ->
         setOf(d1.headOfFamilyIncome, d1.partnerIncome) ==
             setOf(d2.headOfFamilyIncome, d2.partnerIncome) &&
-            childrenEquals(d1, d2) { it.childIncome }
+            decisionChildrenEquals(d1, d2) { it.childIncome }
     }),
-    PLACEMENT({ d1, d2 -> childrenEquals(d1, d2) { it.placement } }),
-    SERVICE_NEED({ d1, d2 -> childrenEquals(d1, d2) { it.serviceNeed } }),
-    SIBLING_DISCOUNT({ d1, d2 -> childrenEquals(d1, d2) { it.siblingDiscount } }),
-    FEE_ALTERATIONS({ d1, d2 -> childrenEquals(d1, d2) { it.feeAlterations } }),
+    PLACEMENT({ d1, d2 -> decisionChildrenEquals(d1, d2) { it.placement } }),
+    SERVICE_NEED({ d1, d2 -> decisionChildrenEquals(d1, d2) { it.serviceNeed } }),
+    SIBLING_DISCOUNT({ d1, d2 -> decisionChildrenEquals(d1, d2) { it.siblingDiscount } }),
+    FEE_ALTERATIONS({ d1, d2 -> decisionChildrenEquals(d1, d2) { it.feeAlterations } }),
     FAMILY_SIZE({ d1, d2 -> d1.familySize == d2.familySize }),
     FEE_THRESHOLDS({ d1, d2 -> d1.feeThresholds == d2.feeThresholds });
 
@@ -159,18 +159,18 @@ enum class FeeDecisionDifference(val contentEquals: (d1: FeeDecision, d2: FeeDec
             }
             return values().filterNot { it.contentEquals(d1, d2) }.toSet()
         }
-
-        private fun <T> childrenEquals(
-            d1: FeeDecision,
-            d2: FeeDecision,
-            fn: (child: FeeDecisionChild) -> T
-        ): Boolean {
-            val map1 = d1.children.associateBy({ it.child.id }, fn)
-            val map2 = d2.children.associateBy({ it.child.id }, fn)
-            // equals only with matching keys
-            return map1.all { (key, value) -> map2.getOrDefault(key, value) == value }
-        }
     }
+}
+
+private fun <T> decisionChildrenEquals(
+    d1: FeeDecision,
+    d2: FeeDecision,
+    fn: (child: FeeDecisionChild) -> T
+): Boolean {
+    val map1 = d1.children.associateBy({ it.child.id }, fn)
+    val map2 = d2.children.associateBy({ it.child.id }, fn)
+    // equals only with matching keys
+    return map1.all { (key, value) -> map2.getOrDefault(key, value) == value }
 }
 
 data class FeeDecisionDetailed(
