@@ -16,6 +16,7 @@ import fi.espoo.evaka.shared.ChildId
 import fi.espoo.evaka.shared.DaycareId
 import fi.espoo.evaka.shared.EmployeeId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.PersonId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
@@ -178,7 +179,8 @@ data class ApplicationNote(
     val updatedBy: EvakaUserId,
     val updatedByName: String,
     val created: HelsinkiDateTime,
-    val updated: HelsinkiDateTime
+    val updated: HelsinkiDateTime,
+    val messageContentId: MessageContentId?
 )
 
 data class ApplicationUnitSummary(

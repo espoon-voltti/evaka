@@ -133,6 +133,7 @@ export interface ApplicationNote {
   createdBy: UUID
   createdByName: string
   id: UUID
+  messageContentId: UUID | null
   updated: HelsinkiDateTime
   updatedBy: UUID
   updatedByName: string

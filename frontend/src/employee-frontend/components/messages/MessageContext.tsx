@@ -108,6 +108,7 @@ export interface MessagesState {
   openMessageUndo: (m: CancelableMessage) => void
   prefilledRecipient: string | null
   prefilledTitle: string | null
+  relatedApplicationId: UUID | null
 }
 
 const defaultState: MessagesState = {
@@ -145,7 +146,8 @@ const defaultState: MessagesState = {
   messageCopiesAsThreads: Loading.of(),
   openMessageUndo: () => undefined,
   prefilledRecipient: null,
-  prefilledTitle: null
+  prefilledTitle: null,
+  relatedApplicationId: null
 }
 
 export const MessageContext = createContext<MessagesState>(defaultState)
@@ -178,6 +180,7 @@ export const MessageContextProvider = React.memo(
     const threadId = searchParams.get('threadId')
     const prefilledTitle = searchParams.get('title')
     const prefilledRecipient = searchParams.get('recipient')
+    const relatedApplicationId = searchParams.get('applicationId')
 
     const setParams = useCallback(
       (params: {
@@ -197,12 +200,20 @@ export const MessageContextProvider = React.memo(
             ...(prefilledTitle ? { title: prefilledTitle } : undefined),
             ...(prefilledRecipient
               ? { recipient: prefilledRecipient }
+              : undefined),
+            ...(relatedApplicationId
+              ? { applicationId: relatedApplicationId }
               : undefined)
           },
           { replace: true }
         )
       },
-      [setSearchParams, prefilledTitle, prefilledRecipient]
+      [
+        setSearchParams,
+        prefilledTitle,
+        prefilledRecipient,
+        relatedApplicationId
+      ]
     )
 
     const [accounts] = useApiState(
@@ -689,7 +700,8 @@ export const MessageContextProvider = React.memo(
         messageCopiesAsThreads,
         openMessageUndo,
         prefilledRecipient,
-        prefilledTitle
+        prefilledTitle,
+        relatedApplicationId
       }),
       [
         accounts,
@@ -723,7 +735,8 @@ export const MessageContextProvider = React.memo(
         messageCopiesAsThreads,
         openMessageUndo,
         prefilledRecipient,
-        prefilledTitle
+        prefilledTitle,
+        relatedApplicationId
       ]
     )
 

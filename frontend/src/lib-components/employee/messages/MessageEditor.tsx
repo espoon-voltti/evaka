@@ -273,7 +273,8 @@ export default React.memo(function MessageEditor({
       recipients: selectedReceivers.map(
         ({ messageRecipient }) => messageRecipient
       ),
-      recipientNames: selectedReceivers.map(({ text: name }) => name)
+      recipientNames: selectedReceivers.map(({ text: name }) => name),
+      relatedApplicationId: null
     })
   }, [onSend, message, selectedReceivers, draftId])
 

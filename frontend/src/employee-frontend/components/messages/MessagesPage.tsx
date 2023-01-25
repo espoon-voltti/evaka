@@ -56,7 +56,8 @@ export default React.memo(function MessagesPage({
     refreshMessages,
     openMessageUndo,
     prefilledRecipient,
-    prefilledTitle
+    prefilledTitle,
+    relatedApplicationId
   } = useContext(MessageContext)
 
   const { setErrorMessage } = useContext(UIContext)
@@ -99,7 +100,10 @@ export default React.memo(function MessagesPage({
   const onSend = useCallback(
     (accountId: UUID, messageBody: PostMessageBody) => {
       setSending(true)
-      void postMessage(accountId, messageBody).then((res) => {
+      void postMessage(accountId, {
+        ...messageBody,
+        relatedApplicationId
+      }).then((res) => {
         if (res.isSuccess) {
           refreshMessages(accountId)
           const senderAccount = accounts
@@ -142,7 +146,8 @@ export default React.memo(function MessagesPage({
       refreshMessages,
       selectAccount,
       setErrorMessage,
-      setSelectedThread
+      setSelectedThread,
+      relatedApplicationId
     ]
   )
 

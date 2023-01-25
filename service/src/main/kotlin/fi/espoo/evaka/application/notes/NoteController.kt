@@ -8,11 +8,9 @@ import fi.espoo.evaka.Audit
 import fi.espoo.evaka.application.ApplicationNote
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
-import fi.espoo.evaka.shared.EvakaUserId
 import fi.espoo.evaka.shared.auth.AuthenticatedUser
 import fi.espoo.evaka.shared.db.Database
 import fi.espoo.evaka.shared.domain.EvakaClock
-import fi.espoo.evaka.shared.domain.HelsinkiDateTime
 import fi.espoo.evaka.shared.security.AccessControl
 import fi.espoo.evaka.shared.security.Action
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -177,16 +175,4 @@ data class NoteRequest(val text: String)
 data class ApplicationNoteResponse(
     val note: ApplicationNote,
     val permittedActions: Set<Action.ApplicationNote>
-)
-
-data class ApplicationNote(
-    val applicationId: ApplicationId,
-    val id: ApplicationNoteId,
-    val text: String,
-    val created: HelsinkiDateTime,
-    val createdBy: EvakaUserId,
-    val createdByName: String,
-    val updated: HelsinkiDateTime,
-    val updatedBy: EvakaUserId?,
-    val updatedByName: String?
 )

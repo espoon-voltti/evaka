@@ -189,6 +189,7 @@ export interface PostMessageBody {
   draftId: UUID | null
   recipientNames: string[]
   recipients: MessageRecipient[]
+  relatedApplicationId: UUID | null
   title: string
   type: MessageType
   urgent: boolean

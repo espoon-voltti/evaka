@@ -245,7 +245,7 @@ export default React.memo(function ApplicationPage() {
                             }&title=${getMessageSubject(
                               i18n,
                               applicationData
-                            )}`,
+                            )}&applicationId=${applicationId}`,
                             '_blank'
                           )
                         }

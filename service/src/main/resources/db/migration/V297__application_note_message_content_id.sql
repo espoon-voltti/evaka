@@ -1,0 +1,1 @@
+ALTER TABLE application_note ADD COLUMN message_content_id uuid CONSTRAINT fk$message_content_id REFERENCES message_content (id);

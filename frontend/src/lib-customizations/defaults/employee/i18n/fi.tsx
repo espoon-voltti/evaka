@@ -541,6 +541,8 @@ export const fi = {
       lastEdited: 'Muokattu viimeksi',
       placeholder: 'Kirjoita muistiinpano',
       confirmDelete: 'Haluatko varmasti poistaa muistiinpanon',
+      sent: 'Lähetetty',
+      message: 'viesti',
       error: {
         save: 'Muistiinpanon tallentaminen epäonnnistui',
         remove: 'Muistiinpanon poistaminen epäonnnistui'

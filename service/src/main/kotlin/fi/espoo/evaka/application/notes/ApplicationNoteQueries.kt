@@ -8,6 +8,7 @@ import fi.espoo.evaka.application.ApplicationNote
 import fi.espoo.evaka.shared.ApplicationId
 import fi.espoo.evaka.shared.ApplicationNoteId
 import fi.espoo.evaka.shared.EvakaUserId
+import fi.espoo.evaka.shared.MessageContentId
 import fi.espoo.evaka.shared.db.Database
 
 fun Database.Read.getApplicationNotes(applicationId: ApplicationId): List<ApplicationNote> {
@@ -17,7 +18,8 @@ fun Database.Read.getApplicationNotes(applicationId: ApplicationId): List<Applic
 SELECT 
     n.id, n.application_id, n.content, 
     n.created, n.created_by, (SELECT name FROM evaka_user WHERE id = n.created_by) AS created_by_name,
-    n.updated, n.updated_by, (SELECT name FROM evaka_user WHERE id = n.updated_by) AS updated_by_name
+    n.updated, n.updated_by, (SELECT name FROM evaka_user WHERE id = n.updated_by) AS updated_by_name,
+    n.message_content_id
 FROM application_note n
 WHERE application_id = :applicationId
 ORDER BY n.created
@@ -50,13 +52,14 @@ ORDER BY n.created
 fun Database.Transaction.createApplicationNote(
     applicationId: ApplicationId,
     content: String,
-    createdBy: EvakaUserId
+    createdBy: EvakaUserId,
+    messageContentId: MessageContentId? = null
 ): ApplicationNote {
     // language=SQL
     val sql =
         """
 WITH new_note AS (
-    INSERT INTO application_note (application_id, content, created_by, updated_by) VALUES (:applicationId, :content, :createdBy, :createdBy)
+    INSERT INTO application_note (application_id, content, created_by, updated_by, message_content_id) VALUES (:applicationId, :content, :createdBy, :createdBy, :messageContentId)
     RETURNING *
 ) 
 SELECT
@@ -78,6 +81,7 @@ LEFT JOIN evaka_user eu ON n.created_by = eu.id
         .bind("applicationId", applicationId)
         .bind("content", content)
         .bind("createdBy", createdBy)
+        .bind("messageContentId", messageContentId)
         .mapTo<ApplicationNote>()
         .first()
 }
