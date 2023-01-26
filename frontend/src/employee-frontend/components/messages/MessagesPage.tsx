@@ -2,7 +2,13 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  useMemo
+} from 'react'
 import styled from 'styled-components'
 
 import {
@@ -163,26 +169,40 @@ export default React.memo(function MessagesPage({
     }
   }
 
-  const getReceivers = useCallback(():
+  const prefilledOrReceivers = useMemo(():
     | MessageReceiversResponse[]
     | undefined => {
-    const person = prefilledRecipientPerson.getOrElse(null)
-    if (person === null || selectedAccount?.account.id === undefined) {
-      return receivers
+    if (selectedAccount === undefined) {
+      return undefined
     }
-    return [
-      {
-        accountId: selectedAccount?.account.id,
-        receivers: [
+    if (prefilledRecipient) {
+      if (!prefilledRecipientPerson.isSuccess) {
+        return undefined
+      }
+      const person = prefilledRecipientPerson.getOrElse(null)
+      if (person !== null) {
+        return [
           {
-            id: person.id,
-            name: formatPersonName(person, i18n, true),
-            type: 'CITIZEN'
+            accountId: selectedAccount.account.id,
+            receivers: [
+              {
+                id: prefilledRecipient,
+                name: formatPersonName(person, i18n, true),
+                type: 'CITIZEN'
+              }
+            ]
           }
         ]
       }
-    ]
-  }, [prefilledRecipientPerson, receivers, selectedAccount, i18n])
+    }
+    return receivers
+  }, [
+    prefilledRecipient,
+    prefilledRecipientPerson,
+    receivers,
+    selectedAccount,
+    i18n
+  ])
 
   return (
     <Container>
@@ -192,32 +212,35 @@ export default React.memo(function MessagesPage({
           setReceivers={setReceivers}
         />
         {selectedAccount?.view && <MessageList {...selectedAccount} />}
-        {showEditor && accounts.isSuccess && selectedAccount && (
-          <MessageEditor
-            availableReceivers={getReceivers() ?? []}
-            defaultSender={{
-              value: selectedAccount.account.id,
-              label: selectedAccount.account.name
-            }}
-            deleteAttachment={deleteAttachment}
-            draftContent={selectedDraft}
-            getAttachmentUrl={getAttachmentUrl}
-            i18n={{
-              ...i18n.messages.messageEditor,
-              ...i18n.fileUpload,
-              ...i18n.common
-            }}
-            initDraftRaw={initDraft}
-            accounts={accounts.value}
-            onClose={onHide}
-            onDiscard={onDiscard}
-            onSend={onSend}
-            saveDraftRaw={saveDraft}
-            saveMessageAttachment={saveMessageAttachment}
-            sending={sending}
-            defaultTitle={prefilledTitle ?? undefined}
-          />
-        )}
+        {showEditor &&
+          accounts.isSuccess &&
+          prefilledOrReceivers &&
+          selectedAccount && (
+            <MessageEditor
+              availableReceivers={prefilledOrReceivers}
+              defaultSender={{
+                value: selectedAccount.account.id,
+                label: selectedAccount.account.name
+              }}
+              deleteAttachment={deleteAttachment}
+              draftContent={selectedDraft}
+              getAttachmentUrl={getAttachmentUrl}
+              i18n={{
+                ...i18n.messages.messageEditor,
+                ...i18n.fileUpload,
+                ...i18n.common
+              }}
+              initDraftRaw={initDraft}
+              accounts={accounts.value}
+              onClose={onHide}
+              onDiscard={onDiscard}
+              onSend={onSend}
+              saveDraftRaw={saveDraft}
+              saveMessageAttachment={saveMessageAttachment}
+              sending={sending}
+              defaultTitle={prefilledTitle ?? undefined}
+            />
+          )}
       </PanelContainer>
     </Container>
   )
