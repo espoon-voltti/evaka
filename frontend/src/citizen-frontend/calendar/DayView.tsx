@@ -19,7 +19,7 @@ import {
   TimeRange
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { formatPreferredName } from 'lib-common/names'
+import { formatFirstName } from 'lib-common/names'
 import { useMutation } from 'lib-common/query'
 import {
   reservationsAndAttendancesDiffer,
@@ -277,9 +277,7 @@ export default React.memo(function DayView({
                                 <RoundChildImage
                                   imageId={child.imageId}
                                   initialLetter={
-                                    (child.preferredName ||
-                                      child.firstName ||
-                                      '?')[0]
+                                    (formatFirstName(child) || '?')[0]
                                   }
                                   colorIndex={childIndex}
                                   size={48}
@@ -290,7 +288,7 @@ export default React.memo(function DayView({
                                 justifyContent="center"
                               >
                                 <H2 noMargin data-qa="child-name">
-                                  {`${formatPreferredName(child)} ${
+                                  {`${formatFirstName(child)} ${
                                     child.lastName
                                   }`}
                                 </H2>

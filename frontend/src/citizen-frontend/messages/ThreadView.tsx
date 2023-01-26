@@ -17,7 +17,7 @@ import {
   Message,
   MessageThread
 } from 'lib-common/generated/api-types/messaging'
-import { formatPreferredName } from 'lib-common/names'
+import { formatFirstName } from 'lib-common/names'
 import { UUID } from 'lib-common/types'
 import { scrollRefIntoView } from 'lib-common/utils/scrolling'
 import { StaticChip } from 'lib-components/atoms/Chip'
@@ -253,7 +253,7 @@ export default React.memo(function ThreadView({
               </ScreenReaderOnly>
               {children.map((child) => (
                 <StaticChip key={child.childId} color={theme.colors.main.m2}>
-                  {formatPreferredName(child) || ''}
+                  {formatFirstName(child) || ''}
                 </StaticChip>
               ))}
             </>

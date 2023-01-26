@@ -8,6 +8,7 @@ import React, { useCallback, useContext, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import styled, { css } from 'styled-components'
 
+import { formatFirstName } from 'lib-common/names'
 import { useQuery } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import { desktopMin } from 'lib-components/breakpoints'
@@ -307,7 +308,7 @@ const ChildrenMenu = React.memo(function ChildrenMenu({
             to={`/children/${child.id}`}
             onClick={closeMenu}
           >
-            {child.preferredName || child.firstName} {child.lastName} {lock}
+            {formatFirstName(child)} {child.lastName} {lock}
             {unreadChildNotifications[child.id] ? (
               <CircledChar
                 aria-label={`${unreadChildNotifications[child.id]} ${

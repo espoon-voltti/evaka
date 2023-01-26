@@ -14,7 +14,7 @@ import {
   GetReceiversResponse,
   MessageAccount
 } from 'lib-common/generated/api-types/messaging'
-import { formatPreferredName } from 'lib-common/names'
+import { formatFirstName } from 'lib-common/names'
 import { useQueryResult } from 'lib-common/query'
 import { SelectionChip } from 'lib-components/atoms/Chip'
 import AsyncButton from 'lib-components/atoms/buttons/AsyncButton'
@@ -148,7 +148,7 @@ export default React.memo(function MessageEditor({
                         .map((child) => (
                           <SelectionChip
                             key={child.id}
-                            text={formatPreferredName(child)}
+                            text={formatFirstName(child)}
                             selected={message.children.includes(child.id)}
                             onChange={(selected) => {
                               const children = selected

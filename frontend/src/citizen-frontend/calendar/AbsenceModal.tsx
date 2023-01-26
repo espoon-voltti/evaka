@@ -13,7 +13,7 @@ import {
   ReservationChild
 } from 'lib-common/generated/api-types/reservations'
 import LocalDate from 'lib-common/local-date'
-import { formatPreferredName } from 'lib-common/names'
+import { formatFirstName } from 'lib-common/names'
 import { useMutationResult } from 'lib-common/query'
 import { scrollIntoViewSoftKeyboard } from 'lib-common/utils/scrolling'
 import { ChoiceChip, SelectionChip } from 'lib-components/atoms/Chip'
@@ -154,7 +154,7 @@ export default React.memo(function AbsenceModal({
                   {availableChildren.map((child) => (
                     <SelectionChip
                       key={child.id}
-                      text={formatPreferredName(child)}
+                      text={formatFirstName(child)}
                       selected={form.selectedChildren.includes(child.id)}
                       onChange={(checked) =>
                         updateForm({

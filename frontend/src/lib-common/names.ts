@@ -6,3 +6,6 @@ export const formatPreferredName = (person: {
   firstName: string
   preferredName: string | null
 }) => person.preferredName || person.firstName.split(' ')[0]
+
+export const formatFirstName = (person: { firstName: string }) =>
+  person.firstName.split(' ')[0]
