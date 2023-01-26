@@ -953,7 +953,7 @@ export default {
         preparatory:
           'Lapsi tarvitsee tukea suomen kielen oppimisessa. Haen myös perusopetukseen valmistavaan opetukseen. Ei koske ruotsinkielistä esiopetusta.',
         preparatoryInfo:
-          'Esiopetuksessa toteutettavaan perusopetukseen valmistavaan opetukseen voivat hakeutua lapset, joilla ei ole vielä suomen kielen taitoa tai jotka osaavat jo jonkin verran suomea. Jos lapselle on nykyisestä päiväkodista suositeltu valmistavaa esiopetusta, hae sitä hakulomakkeella tässä kohdassa. Valmistavaa esiopetusta järjestetään kunnallisissa suomenkielisissä esiopetusryhmissä. Valmistava esiopetus on maksutonta ja sitä annetaan 5 h/päivä.'
+          'Esiopetuksessa toteutettavaan perusopetukseen valmistavaan opetukseen voivat hakeutua lapset, joilla ei ole vielä suomenkielentaitoa tai jotka osaavat jo jonkin verran suomea. Lapselle on suositeltu valmistavaa esiopetusta nykyisestä päiväkodista. Esiopetusikäisten perusopetukseen valmistavaa opetusta järjestetään kunnallisissa suomenkielisissä esiopetusryhmissä. '
       },
       unitPreference: {
         title: 'Hakutoive',
@@ -964,11 +964,11 @@ export default {
               <>
                 <P>
                   Lapsella on sisarusperuste samaan varhaiskasvatuspaikkaan,
-                  jossa hänen sisaruksensa on päätöksentekohetkellä.
-                  Sisarukseksi katsotaan kaikki samassa osoitteessa asuvat
-                  lapset. Tavoitteena on sijoittaa sisarukset samaan
-                  varhaiskasvatuspaikkaan perheen niin toivoessa. Jos haet
-                  paikkaa sisaruksille, jotka eivät vielä ole
+                  jossa hänen sisaruksensa on varhaiskasvatuksen
+                  aloitushetkellä. Sisarukseksi katsotaan kaikki samassa
+                  osoitteessa asuvat lapset. Tavoitteena on sijoittaa sisarukset
+                  samaan varhaiskasvatuspaikkaan perheen niin toivoessa. Jos
+                  haet paikkaa sisaruksille, jotka eivät vielä ole
                   varhaiskasvatuksessa, kirjoita tieto lisätietokenttään.
                 </P>
                 <P>
