@@ -3,15 +3,14 @@
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
 import classNames from 'classnames'
-import FocusTrap from 'focus-trap-react'
 import React, { useEffect, useState } from 'react'
+import FocusLock from 'react-focus-lock'
 import styled, { useTheme } from 'styled-components'
 
 import { useTranslation } from 'citizen-frontend/localization'
-import { useUniqueId } from 'lib-common/utils/useUniqueId'
 import RoundIcon from 'lib-components/atoms/RoundIcon'
 import IconButton from 'lib-components/atoms/buttons/IconButton'
-import { tabletMin } from 'lib-components/breakpoints'
+import { tabletMin, tabletMinPx } from 'lib-components/breakpoints'
 import {
   CollapsibleContentAreaProps,
   ContentArea,
@@ -36,10 +35,6 @@ const BreakingH2 = styled(H2)`
   word-break: break-word;
   hyphens: auto;
 `
-
-const NormalFocus = React.memo(function UntrapFocus({ children }) {
-  return <div>{children}</div>
-})
 
 export default React.memo(function ResponsiveWholePageCollapsible({
   open,
@@ -76,11 +71,7 @@ export default React.memo(function ResponsiveWholePageCollapsible({
     }
   }, [])
 
-  // 600 = tabletMin
-  const MobileFocusTrap = width < 600 ? FocusTrap : NormalFocus
-
   const [isFocusable, setIsFocusable] = useState(true)
-  const mobileHeaderId = useUniqueId('mobile-header')
 
   return (
     <ContentArea {...props} data-status={open ? 'open' : 'closed'}>
@@ -122,12 +113,7 @@ export default React.memo(function ResponsiveWholePageCollapsible({
           </div>
         </FixedSpaceRow>
       </TitleContainer>
-      <MobileFocusTrap
-        active={open}
-        focusTrapOptions={{
-          initialFocus: `#${mobileHeaderId}`
-        }}
-      >
+      <FocusLock disabled={!open || width >= tabletMinPx}>
         <ResponsiveCollapsibleContainer open={open}>
           <MobileOnly>
             <ResponsiveCollapsibleTitle>
@@ -141,7 +127,7 @@ export default React.memo(function ResponsiveWholePageCollapsible({
                 <div
                   tabIndex={isFocusable ? 0 : undefined}
                   onBlur={() => setIsFocusable(false)}
-                  id={mobileHeaderId}
+                  data-autofocus="true"
                 >
                   {title}
                 </div>
@@ -152,7 +138,7 @@ export default React.memo(function ResponsiveWholePageCollapsible({
             {children}
           </CollapsibleContainer>
         </ResponsiveCollapsibleContainer>
-      </MobileFocusTrap>
+      </FocusLock>
     </ContentArea>
   )
 })
