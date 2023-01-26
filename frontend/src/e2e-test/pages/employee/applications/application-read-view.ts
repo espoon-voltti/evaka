@@ -25,6 +25,7 @@ export default class ApplicationReadView {
   #giveOtherGuardianEmail = this.page.find('[data-qa="second-guardian-email"]')
   #applicationStatus = this.page.find('[data-qa="application-status"]')
   #sendMessageButton = this.page.findByDataQa('send-message-button')
+  #notes = this.page.findAllByDataQa('note-container')
 
   async waitUntilLoaded() {
     await this.page.find('[data-qa="application-read-view"]').waitUntilVisible()
@@ -166,5 +167,26 @@ export default class ApplicationReadView {
       async () => await this.#sendMessageButton.click()
     )
     return new MessagesPage(popup)
+  }
+
+  async clickMessageThreadLinkInNote(index: number): Promise<MessagesPage> {
+    const popup = await this.page.capturePopup(async () => {
+      await this.#notes
+        .nth(index)
+        .findByDataQa('note-message-thread-link')
+        .click()
+    })
+    return new MessagesPage(popup)
+  }
+
+  async assertNote(index: number, note: string) {
+    await this.#notes
+      .nth(index)
+      .findByDataQa('application-note-content')
+      .assertTextEquals(note)
+  }
+
+  async reload() {
+    return this.page.reload()
   }
 }

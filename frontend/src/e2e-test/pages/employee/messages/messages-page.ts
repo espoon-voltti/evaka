@@ -33,7 +33,7 @@ export default class MessagesPage {
     this.#personalAccount.find('[data-qa="message-box-row-drafts"]')
   )
   #messageCopiesInbox = this.page.findByDataQa('message-box-row-copies')
-  #receivedMessage = this.page.find('[data-qa="received-message-row"]')
+  receivedMessage = this.page.find('[data-qa="received-message-row"]')
   #draftMessage = this.page.find('[data-qa="draft-message-row"]')
   #messageContent = (index = 0) =>
     this.page.find(`[data-qa="message-content"][data-index="${index}"]`)
@@ -87,7 +87,7 @@ export default class MessagesPage {
   }
 
   async openFirstThreadReplyEditor() {
-    await this.#receivedMessage.click()
+    await this.receivedMessage.click()
     await this.#openReplyEditorButton.click()
   }
 
@@ -193,11 +193,10 @@ export default class MessagesPage {
   }
 
   async deleteFirstThread() {
-    await this.#receivedMessage.findByDataQa('delete-thread-btn').click()
+    await this.receivedMessage.findByDataQa('delete-thread-btn').click()
   }
 
   async assertMessageContent(index: number, content: string) {
-    await this.#receivedMessage.click()
     await this.#messageContent(index).assertTextEquals(content)
   }
 
@@ -244,5 +243,9 @@ export default class MessagesPage {
 
   async assertTitle(title: string) {
     return waitUntilEqual(() => this.inputTitle.inputValue, title)
+  }
+
+  async close() {
+    return this.page.close()
   }
 }

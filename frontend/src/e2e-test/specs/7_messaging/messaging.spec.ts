@@ -170,6 +170,7 @@ describe('Sending and receiving messages', () => {
         messagesPage = new MessagesPage(unitSupervisorPage)
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+        await messagesPage.receivedMessage.click()
         await messagesPage.assertMessageContent(1, defaultReply)
       })
 
@@ -227,6 +228,7 @@ describe('Sending and receiving messages', () => {
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         messagesPage = new MessagesPage(unitSupervisorPage)
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+        await messagesPage.receivedMessage.click()
         await messagesPage.assertMessageContent(1, defaultReply)
       })
 
@@ -280,6 +282,7 @@ describe('Sending and receiving messages', () => {
         await unitSupervisorPage.goto(`${config.employeeUrl}/messages`)
         messagesPage = new MessagesPage(unitSupervisorPage)
         await waitUntilEqual(() => messagesPage.getReceivedMessageCount(), 1)
+        await messagesPage.receivedMessage.click()
         await messagesPage.assertMessageContent(1, defaultReply)
       })
 

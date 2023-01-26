@@ -225,6 +225,7 @@ export default React.memo(function ApplicationNoteBox(props: Props) {
               <span>
                 {i18n.application.notes.sent}{' '}
                 <Link
+                  data-qa="note-message-thread-link"
                   to={`/messages?applicationId=${props.note.applicationId}&messageBox=thread&threadId=${props.note.messageThreadId}`}
                   target="_blank"
                 >
