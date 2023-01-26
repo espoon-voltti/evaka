@@ -2913,12 +2913,12 @@ export const fi = {
       approveFailedModal: {
         title: 'Päätöksen hyväksyminen epäonnistui',
         okBtn: 'Sulje',
-        text: 'Päätöksen hyväksyminen epäonnistui, koska toinen hyväksytty päätös on tehty alkaen samasta tai myöhemmästä päivästä. Mitöi toinen päätös ensin.'
+        text: 'Päätöksen hyväksyminen epäonnistui, koska toinen hyväksytty päätös on tehty alkaen samasta tai myöhemmästä päivästä. Mitätöi toinen päätös ensin.'
       },
       annulModal: {
         title: 'Mitätöidäänkö päätös?',
         okBtn: 'Mitätöi päätös',
-        text: 'Haluatko varmasti mitätöidäänkö päätöksen? Päätöksen voimassaolo lakkaa välittömästi. Tieto mitätöinnistä ja sen perustelu lähetetään kuntalaisen nähtäväksi eVakaan.',
+        text: 'Haluatko varmasti mitätöidä päätöksen? Päätöksen voimassaolo lakkaa välittömästi. Tieto mitätöinnistä ja sen perustelu lähetetään kuntalaisen nähtäväksi eVakaan.',
         inputPlaceholder: 'Kuvaile miksi päätös on mitätöity'
       },
       mismatchDecisionMakerWarning: {
