@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-2.1-or-later
 
-import React from 'react'
+import React, { ReactNode } from 'react'
 import styled from 'styled-components'
 
 import Tooltip from './Tooltip'
@@ -32,7 +32,7 @@ const HalfCircle = styled.div`
 
 type Props = {
   type: 'half' | 'full'
-  label: string
+  label: ReactNode
   tooltipUp?: boolean
 }
 

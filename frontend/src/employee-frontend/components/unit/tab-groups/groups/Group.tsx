@@ -19,7 +19,6 @@ import {
   NotesByGroupResponse
 } from 'lib-common/generated/api-types/note'
 import { OccupancyResponse } from 'lib-common/generated/api-types/occupancy'
-import LocalDate from 'lib-common/local-date'
 import { capitalizeFirstLetter } from 'lib-common/string'
 import { UUID } from 'lib-common/types'
 import { formatPercentage } from 'lib-common/utils/number'
@@ -623,17 +622,14 @@ export default React.memo(function Group({
                                   : 'full'
                               }
                               label={
-                                featureFlags.groupsTableServiceNeeds
-                                  ? placement.serviceNeeds
-                                      .filter((sn) =>
-                                        new FiniteDateRange(
-                                          sn.startDate,
-                                          sn.endDate
-                                        ).includes(LocalDate.todayInSystemTz())
-                                      )
-                                      .map((sn) => sn.option.nameFi)
-                                      .join(' / ')
-                                  : i18n.placement.type[placement.type]
+                                featureFlags.groupsTableServiceNeeds ? (
+                                  <ServiceNeedTooltipLabel
+                                    placement={placement}
+                                    filters={filters}
+                                  />
+                                ) : (
+                                  i18n.placement.type[placement.type]
+                                )
                               }
                             />
                           ) : null}
@@ -820,3 +816,34 @@ const TitleSummary = React.memo(function TitleSummary({
     </>
   )
 })
+
+const ServiceNeedTooltipLabel = ({
+  placement,
+  filters
+}: {
+  placement: DaycareGroupPlacementDetailed
+  filters: UnitFilters
+}) => {
+  const placementRange = new FiniteDateRange(
+    placement.startDate,
+    placement.endDate
+  )
+  const filterRange = new FiniteDateRange(filters.startDate, filters.endDate)
+  const serviceNeeds = placement.serviceNeeds.filter((sn) => {
+    const snRange = new FiniteDateRange(sn.startDate, sn.endDate)
+    return snRange.overlaps(placementRange) && snRange.overlaps(filterRange)
+  })
+  return (
+    <>
+      {serviceNeeds
+        .sort((a, b) => a.startDate.compareTo(b.startDate))
+        .map((sn) => (
+          <p key={`service-need-${sn.id}`} style={{ whiteSpace: 'nowrap' }}>
+            {sn.option.nameFi}:
+            <br />
+            {sn.startDate.format()} - {sn.endDate.format()}
+          </p>
+        ))}
+    </>
+  )
+}

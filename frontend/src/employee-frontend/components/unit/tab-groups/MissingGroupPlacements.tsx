@@ -10,7 +10,6 @@ import FiniteDateRange from 'lib-common/finite-date-range'
 import { Action } from 'lib-common/generated/action'
 import { UnitBackupCare } from 'lib-common/generated/api-types/backupcare'
 import { MissingGroupPlacement } from 'lib-common/generated/api-types/placement'
-import LocalDate from 'lib-common/local-date'
 import { UUID } from 'lib-common/types'
 import PlacementCircle from 'lib-components/atoms/PlacementCircle'
 import Title from 'lib-components/atoms/Title'
@@ -42,7 +41,6 @@ function renderMissingGroupPlacementRow(
     dateOfBirth,
     placementPeriod,
     gap,
-    serviceNeeds,
     placementType
   } = missingPlacement
 
@@ -72,16 +70,11 @@ function renderMissingGroupPlacementRow(
           <PlacementCircle
             type={isPartDayPlacement(placementType) ? 'half' : 'full'}
             label={
-              featureFlags.groupsTableServiceNeeds
-                ? serviceNeeds
-                    .filter((sn) =>
-                      new FiniteDateRange(sn.startDate, sn.endDate).includes(
-                        LocalDate.todayInSystemTz()
-                      )
-                    )
-                    .map((sn) => sn.nameFi)
-                    .join(' / ')
-                : i18n.placement.type[placementType]
+              featureFlags.groupsTableServiceNeeds ? (
+                <ServiceNeedTooltipLabel placement={missingPlacement} />
+              ) : (
+                i18n.placement.type[placementType]
+              )
             }
           />
         )}
@@ -103,6 +96,32 @@ function renderMissingGroupPlacementRow(
         )}
       </Td>
     </Tr>
+  )
+}
+
+const ServiceNeedTooltipLabel = ({
+  placement
+}: {
+  placement: MissingGroupPlacement
+}) => {
+  const serviceNeeds = placement.serviceNeeds.filter((sn) =>
+    placement.gap.overlaps(new FiniteDateRange(sn.startDate, sn.endDate))
+  )
+  return (
+    <>
+      {serviceNeeds
+        .sort((a, b) => a.startDate.compareTo(b.startDate))
+        .map((sn, index) => (
+          <p
+            key={`service-need-option-${sn.nameFi}-${index}`}
+            style={{ whiteSpace: 'nowrap' }}
+          >
+            {sn.nameFi}:
+            <br />
+            {sn.startDate.format()} - {sn.endDate.format()}
+          </p>
+        ))}
+    </>
   )
 }
 
