@@ -125,5 +125,11 @@ data class FeatureConfig(
     val municipalMessageAccountName: String,
 
     /** Name of the message sender when sending messages on the service worker message account */
-    val serviceWorkerMessageAccountName: String
+    val serviceWorkerMessageAccountName: String,
+
+    /**
+     * true = placement unit is resolved from decision when it's accepted, false = placement unit is
+     * resolved from placement plan
+     */
+    val applyPlacementUnitFromDecision: Boolean
 )

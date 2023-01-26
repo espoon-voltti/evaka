@@ -742,7 +742,7 @@ class ApplicationStateService(
             tx,
             clock,
             application,
-            plan.unitId,
+            if (featureConfig.applyPlacementUnitFromDecision) decision.unit.id else plan.unitId,
             plan.type,
             extent
         )
